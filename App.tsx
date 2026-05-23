@@ -5,6 +5,7 @@ const UniversalLanguageIndex = lazy(() => import('./components/UniversalLanguage
 const UniversalLanguageCard = lazy(() => import('./components/UniversalLanguageCard'));
 const OracleGateway = lazy(() => import('./components/OracleGateway'));
 const OracleSystems = lazy(() => import('./components/OracleSystems'));
+const AtlasPage = lazy(() => import('./components/AtlasPage'));
 const NotFound = lazy(() => import('./components/NotFound'));
 
 import { useSeoMeta } from './useSeoMeta';
@@ -37,6 +38,9 @@ const AppInner: React.FC = () => {
               {/* Universal Language deck */}
               <Route path="/universal-language" element={<UniversalLanguageIndex />} />
               <Route path="/universal-language/:number" element={<UniversalLanguageCard />} />
+
+              {/* Atlas — globe of placed Universal Language pieces with kinship arcs */}
+              <Route path="/atlas" element={<AtlasPage />} />
 
               {/* Legacy /oracle/* paths — redirect to the new flat structure.
                   Catches anyone who copied a URL from the old domain before adrianrasmussen.com
