@@ -6,9 +6,14 @@ Living list of what's outstanding on the oracle. Loose priority order — top it
 
 - [ ] **Reprint physical cards with `mandalacodes.com/qr/:n` QR codes.** New plaques should encode the new domain directly (one redirect hop instead of two). The old plaques (encoded `adrianrasmussen.com/qr/:n`) keep working forever via the redirect on the art site — so this is an upgrade for new print runs, not a fix. Regenerate via `npm run generate:qr` (BASE_URL is already set to mandalacodes.com in `scripts/generate-ul-qr.ts`).
 
-- [ ] **Activate `www.mandalacodes.com`** as a second custom domain in the Cloudflare Pages dashboard, then set up an apex-canonical bulk redirect (www → bare apex).
+- [ ] **Merge PR #110 on Adrian-Website** ([link](https://github.com/technicianofthesacred/Adrian-Website/pull/110)) — adds the redirect from `adrianrasmussen.com/qr/:n` (printed plaques) → `mandalacodes.com/universal-language/:n`. Until this merges, scanned plaques still land on the old oracle inside the art site (which works, just goes to the old home). PR is open, mergeable, Cloudflare preview build passed.
 
-- [ ] **Connect this GitHub repo to the Cloudflare Pages project** so pushes to `main` auto-deploy. Currently deploys are CLI-driven via `wrangler pages deploy`. Five clicks in the dashboard: Pages → mandalacodes → Settings → Builds & deployments → Connect to Git → pick `technicianofthesacred/mandalacodes` / branch `main` / build command `npm run build` / output `dist`.
+- [ ] *(optional polish)* **Set up apex-canonical redirect** for `www.mandalacodes.com` → `mandalacodes.com` via a Cloudflare Bulk Redirect rule. Both URLs work today; this just picks one canonical form for SEO.
+
+### ✅ Done
+
+- ~~Activate `www.mandalacodes.com` as a second custom domain~~ — done 2026-05-23, serves correctly.
+- ~~Connect GitHub to Cloudflare Pages for auto-deploy~~ — done 2026-05-23, every push to `main` auto-builds and deploys.
 
 ## Phase 1b — Accounts
 
