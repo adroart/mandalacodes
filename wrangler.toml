@@ -1,0 +1,13 @@
+name = "mandalacodes"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+# D1 binding — uncomment after provisioning:
+#   wrangler d1 create mandalacodes-oracle
+# Then paste the printed database_id below.
+#
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "mandalacodes-oracle"
+# database_id = "REPLACE_WITH_ID_FROM_WRANGLER_D1_CREATE"
+# migrations_dir = "migrations"

@@ -1,0 +1,815 @@
+/* ─── READABILITY GUARDRAILS ────────────────────────────────────────────────
+ * FONT ROLES (enforced):
+ *   - font-display / font-serif (Cormorant Garamond): titles + display text
+ *     ONLY at >= 20px. Cormorant is a display serif; its thin strokes
+ *     disappear at body sizes.
+ *   - font-sans (Lora): ALL body, descriptions, captions, meta < 20px.
+ *     Lora is a body-grade serif with screen-tuned strokes.
+ *   - font-label (Karla): uppercase eyebrows / row labels only.
+ * Italic Cormorant under 20px is forbidden — fails legibility on dark bg.
+ *
+ * TYPE SCALE — prefer the var() tokens below over arbitrary pixel values.
+ * Existing code uses Tailwind classes (text-sm, text-base...) which still work;
+ * use the tokens for new components and when refactoring inconsistent sizes.
+ *
+ * Do NOT use these combinations — they fail WCAG AA:
+ *   - text-wood-400 / text-stone-400 / text-paper-300 as body text on
+ *     paper-50/100/200 backgrounds (contrast < 3.5:1)
+ *   - text-[9px], text-[10px] as default body or label size
+ *   - uppercase + tracking-[0.15em] or wider on text smaller than 12px
+ *   - italic multi-line Cormorant Garamond body copy at text-sm or smaller
+ *   - opacity-80/90 stacked on text over images/video (use darker scrim)
+ * Safe defaults:
+ *   - Body text:      text-wood-700 / text-wood-800 (light)  |  text-wood-600+ (dark)
+ *   - Secondary meta: text-wood-600 (light)  |  text-wood-500 (dark)
+ *   - Labels/eyebrow: min text-[11px] (mobile) / text-xs (desktop), tracking ≤ 0.12em
+ *   - Over images:    text-paper-50 + strong scrim (stone-950/90+), no opacity suffixes
+ * See: git log — "accessibility: contrast + typography pass"
+ * ─────────────────────────────────────────────────────────────────────────── */
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@source "../";
+@source "../components";
+
+/* ─── Art Image Design Tokens ─────────────────────────────────────────────── */
+/* These mirror the constants in components/ArtImage.tsx.
+   Defined here for reference and for any non-component CSS that needs them. */
+:root {
+  --art-hover-scale: 1.03;
+  --art-transition-duration: 700ms;
+  --art-transition-easing: ease-out;
+  /* Updated dynamically by Navigation.tsx based on scroll state */
+  --nav-height: 56px;
+
+  /* ─── Type scale ─────────────────────────────────────────────────────────
+   * Semantic sizes paired with their intended font role.
+   * Use these in new components instead of arbitrary text-[14px] values.
+   * Marketing/hero headings can fluid-size via clamp() inline; app UI
+   * (oracle reader, shop, piece pages) should hold to this fixed scale. */
+  --text-eyebrow:  0.6875rem; /* 11px — Karla uppercase labels       */
+  --text-caption:  0.8125rem; /* 13px — Lora — fine print only       */
+  --text-meta:     0.875rem;  /* 14px — Lora — secondary info, dates */
+  --text-small:    0.9375rem; /* 15px — Lora — secondary body        */
+  --text-body:     1rem;      /* 16px — Lora — default body          */
+  --text-lead:     1.0625rem; /* 17px — Lora — intro / lyrics        */
+  --text-subhead:  1.375rem;  /* 22px — Cormorant — small titles     */
+  --text-heading:  1.75rem;   /* 28px — Cormorant — page headings    */
+  --text-display:  clamp(2.5rem, 6vw, 4.5rem); /* 40-72px — hero    */
+}
+
+/* ─── Global Typography Foundations ───────────────────────────────────────── */
+
+/* #1 Font smoothing — crisper serifs on macOS/iOS */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  font-variant-numeric: lining-nums;
+}
+
+/* Smooth scroll globally — respects reduced-motion preference */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+/* #5 Custom selection color — warm palette instead of jarring blue */
+::selection {
+  background-color: #c4aa7c40;
+  color: #262321;
+}
+.dark ::selection {
+  background-color: #c4aa7c50;
+  color: #f0ede7;
+}
+
+/* #2 Balanced headings — prevents lopsided line breaks */
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+/* #6 Body text uses the browser default greedy line-breaker so each line
+ * fills the available width. `text-wrap: pretty` was producing visible
+ * gaps on the right side of paragraphs in narrow reading columns
+ * (notably the oracle reading at max-w-2xl) because it pulls words back
+ * from earlier lines to avoid orphans. Headings still use `balance`
+ * above, which is appropriate for short titles. */
+
+/* #8 Hyphenation disabled — mid-word line breaks interrupt reading rhythm */
+
+/* #11 Blockquote styling — left border, indentation, proper spacing */
+blockquote {
+  border-left: 2px solid #c4aa7c;
+  padding-left: 1.5rem;
+  margin-left: 0;
+  margin-right: 0;
+}
+.dark blockquote {
+  border-left-color: #d4b88a;
+}
+
+/* #21 Tabular figures on prices — digits align in columns */
+.font-label,
+.font-mono {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* #36 Consistent placeholder styling */
+::placeholder {
+  color: #7a746b;
+  opacity: 1;
+}
+/* #12 Pull-quote base styling */
+.pull-quote {
+  position: relative;
+  padding-left: 1.5rem;
+  border-left: 2px solid #c4aa7c80;
+}
+.dark .pull-quote {
+  border-left-color: #d4b88a80;
+}
+
+/* #30 Article prose refinements */
+.prose p + p {
+  margin-top: 1.75em;
+}
+
+/* ─── Writings Section Enhancements ─────────────────────────────────────── */
+
+/* #10 Drop cap on first paragraph of articles */
+.article-prose > p:first-of-type::first-letter {
+  float: left;
+  font-family: "Cinzel", serif;
+  font-size: 3.5em;
+  line-height: 0.8;
+  padding-right: 0.1em;
+  padding-top: 0.05em;
+  color: var(--color-wood-900);
+  font-weight: 500;
+}
+
+/* #2 Staggered card entrance animation */
+.stagger-in {
+  opacity: 0;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Card entrance stagger — applies to gallery/masonry grids */
+.card-stagger > * {
+  opacity: 0;
+  animation: cardReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.card-stagger > *:nth-child(1)  { animation-delay: 0ms; }
+.card-stagger > *:nth-child(2)  { animation-delay: 40ms; }
+.card-stagger > *:nth-child(3)  { animation-delay: 80ms; }
+.card-stagger > *:nth-child(4)  { animation-delay: 120ms; }
+.card-stagger > *:nth-child(5)  { animation-delay: 160ms; }
+.card-stagger > *:nth-child(6)  { animation-delay: 200ms; }
+.card-stagger > *:nth-child(7)  { animation-delay: 240ms; }
+.card-stagger > *:nth-child(8)  { animation-delay: 280ms; }
+.card-stagger > *:nth-child(9)  { animation-delay: 320ms; }
+.card-stagger > *:nth-child(10) { animation-delay: 360ms; }
+.card-stagger > *:nth-child(n+11) { animation-delay: 400ms; }
+
+@keyframes cardReveal {
+  0% { opacity: 0; translate: 0 24px; }
+  100% { opacity: 1; translate: 0 0; }
+}
+
+@theme {
+  /* Font families */
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Lora", serif;
+  --font-mono: "Karla", sans-serif;          /* kept for backward compat */
+  --font-label: "Karla", sans-serif;         /* semantic alias — use font-label in new code */
+  --font-display: "Cormorant Garamond", serif; /* structural titles: brand name, page headings */
+
+  /* Colors: taupe */
+  --color-taupe: #453d39;
+  --color-taupe-light: #594e48;
+
+  /* Colors: cream */
+  --color-cream: #f2efe9;
+  --color-cream-dark: #e6e2d8;
+
+  /* Colors: warm-gold */
+  --color-warm-gold: #b0966b;
+  --color-warm-gold-hover: #9e8459;
+
+  /* Colors: paper */
+  --color-paper-50: #f5f4f0;
+  --color-paper-100: #ebe8e1;
+  --color-paper-200: #e0dbcf;
+  --color-paper-300: #cfc6b5;
+
+  /* Colors: wood */
+  --color-wood-50: #faf9f7;
+  --color-wood-100: #f0ece5;
+  --color-wood-200: #e0d8cc;
+  --color-wood-300: #c8bda8;
+  --color-wood-400: #a89070;
+  --color-wood-500: #8f7a5b;
+  --color-wood-600: #736046;
+  --color-wood-700: #524330;
+  --color-wood-800: #3d3226;
+  --color-wood-900: #262321;
+
+  /* Colors: stone */
+  --color-stone-50: #f7f6f4;
+  --color-stone-100: #ebe9e6;
+  --color-stone-200: #dcd9d4;
+  --color-stone-300: #c2beb8;
+  --color-stone-400: #8a857c;
+  --color-stone-500: #6f6a62;
+  --color-stone-600: #6b665f;
+  --color-stone-700: #524e49;
+  --color-stone-800: #3d3a36;
+  --color-stone-900: #2b2926;
+  --color-stone-950: #23201e;
+
+  /* Colors: availability states */
+  --color-avail-ready: #1A1A1A;
+  --color-avail-order: #666666;
+  --color-avail-sold: #7a6a5e;
+
+  /* Colors: bronze */
+  --color-bronze-50: #faf6f0;
+  --color-bronze-100: #f0e8d8;
+  --color-bronze-200: #e6d9c3;
+  --color-bronze-300: #d5c1a0;
+  --color-bronze-400: #c4aa7c;
+  --color-bronze-500: #ab9266;
+  --color-bronze-600: #8a744e;
+  --color-bronze-700: #6d5a3c;
+  --color-bronze-900: #453825;
+
+  /* Animations */
+  --animate-spin-slow: spin 20s linear infinite;
+  --animate-spin-reverse-slow: spinReverse 25s linear infinite;
+  --animate-draw: draw 2s ease-out forwards;
+  --animate-fade-in: fadeIn 0.8s ease-out forwards;
+  --animate-slide-up: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-marquee: marquee 25s linear infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-ripple: ripple 0.6s linear forwards;
+
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-100%); }
+  }
+  @keyframes spinReverse {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+  }
+  @keyframes draw {
+    0% { stroke-dashoffset: 1000; }
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes slideUp {
+    0% { transform: translateY(40px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes ripple {
+    0% { transform: scale(0); opacity: 1; }
+    100% { transform: scale(4); opacity: 0; }
+  }
+  @keyframes heroBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
+  --animate-hero-bounce: heroBounce 2.5s ease-in-out infinite;
+}
+
+/* ─── Dark Mode: CSS Variable Remapping ─────────────────────────────────── */
+/* Overrides color tokens so all Tailwind utilities adapt automatically.
+   Intentionally dark sections use .dark-preserve to keep original colors. */
+
+.dark {
+  color-scheme: dark;
+
+  /* Paper: light surfaces → warm darks (wider spread for separation) */
+  --color-paper-50: #171310;
+  --color-paper-100: #1f1a15;
+  --color-paper-200: #29231c;
+  --color-paper-300: #362f26;
+
+  /* Wood: dark → light  (low end = dark surfaces, high end = light text) */
+  --color-wood-50: #181614;
+  --color-wood-100: #1f1d1a;
+  --color-wood-200: #3a3630;
+  --color-wood-300: #504a42;
+  --color-wood-400: #c4beb4;
+  --color-wood-500: #d4cec4;
+  --color-wood-600: #ddd8cf;
+  --color-wood-700: #d0cabe;
+  --color-wood-800: #dedad0;
+  --color-wood-900: #ede9e2;
+
+  /* Stone: inverted gray scale */
+  --color-stone-50: #141210;
+  --color-stone-100: #1c1a17;
+  --color-stone-200: #2e2b26;
+  --color-stone-300: #4a453e;
+  --color-stone-400: #b0aaa0;
+  --color-stone-500: #c0bab0;
+  --color-stone-600: #ccc5bc;
+  --color-stone-700: #d4cec4;
+  --color-stone-800: #dfdbd3;
+  --color-stone-900: #ece8e1;
+  --color-stone-950: #f2efe9;
+
+  /* Cream → warm darks */
+  --color-cream: #1a1816;
+  --color-cream-dark: #222018;
+
+  /* Taupe → light taupe */
+  --color-taupe: #c5beb8;
+  --color-taupe-light: #b0a89f;
+
+  /* Warm gold: brighten for dark backgrounds */
+  --color-warm-gold: #c8a878;
+  --color-warm-gold-hover: #b89868;
+
+  /* Bronze: brighten accents for dark backgrounds */
+  --color-bronze-50: #2a2418;
+  --color-bronze-100: #3a3020;
+  --color-bronze-200: #5a4a30;
+  --color-bronze-300: #7a6848;
+  --color-bronze-400: #d4b88a;
+  --color-bronze-500: #c4a878;
+  --color-bronze-600: #d4b88a;
+  --color-bronze-700: #9a8058;
+  --color-bronze-900: #3a2e1a;
+
+  /* Availability: invert for dark-bg readability */
+  --color-avail-ready: #e0e0e0;
+  --color-avail-order: #a0a0a0;
+  --color-avail-sold: #9a8a7e;
+}
+
+/* ─── dark-preserve: restores original light-mode colors ────────────────── */
+/* Apply to sections that are intentionally dark (hero, accent blocks,
+   image-overlay gradients). They stay dark in both light & dark mode.      */
+
+.dark .dark-preserve {
+  --color-paper-50: #f5f4f0;
+  --color-paper-100: #ebe8e1;
+  --color-paper-200: #e0dbcf;
+  --color-paper-300: #cfc6b5;
+  --color-wood-50: #faf9f7;
+  --color-wood-100: #f0ece5;
+  --color-wood-200: #e0d8cc;
+  --color-wood-300: #c8bda8;
+  --color-wood-400: #a89070;
+  --color-wood-500: #8f7a5b;
+  --color-wood-600: #736046;
+  --color-wood-700: #524330;
+  --color-wood-800: #3d3226;
+  --color-wood-900: #262321;
+  --color-stone-50: #f7f6f4;
+  --color-stone-100: #ebe9e6;
+  --color-stone-200: #dcd9d4;
+  --color-stone-300: #c2beb8;
+  --color-stone-400: #a39e96;
+  --color-stone-500: #aaa49a;
+  --color-stone-600: #6b665f;
+  --color-stone-700: #524e49;
+  --color-stone-800: #3d3a36;
+  --color-stone-900: #2b2926;
+  --color-stone-950: #23201e;
+  --color-bronze-200: #e6d9c3;
+  --color-bronze-300: #d5c1a0;
+  --color-bronze-400: #c4aa7c;
+  --color-bronze-500: #ab9266;
+  --color-bronze-600: #8a744e;
+}
+
+/* bg-white is a Tailwind built-in — override in dark mode */
+.dark .bg-white,
+.dark .hover\:bg-white:hover {
+  background-color: #1f1d1a;
+}
+/* Semantic status colors on dark backgrounds */
+.dark .bg-green-50 { background-color: #0a2010; }
+.dark .border-green-200 { border-color: #1a4030; }
+.dark .text-green-800 { color: #6ee7a0; }
+.dark .text-green-600 { color: #4ade80; }
+
+/* Cart overlay scrim stays dark */
+.dark .dark-overlay {
+  --color-wood-900: #262321;
+}
+
+/* Body background */
+body { transition: background-color 0.5s ease; }
+html.dark body { background-color: #171310; }
+
+/* On the oracle card page only, force the page (html + body) to the
+   dark warm background so chapter swipes don't briefly flash white when
+   one panel slides off and the next slides on. The body default is
+   normally light; the .oracle-card-page class is added by the card
+   component when mounted and removed on unmount. */
+html.oracle-card-page,
+html.oracle-card-page body {
+  background-color: #171310;
+}
+
+/* Placeholder text — slightly brighter in dark mode */
+.dark ::placeholder { color: #a09a92; }
+
+/* ─── Scrollbar Hide Utility ───────────────────────────────────────────── */
+/* Used on horizontally-scrollable chip bars and similar UI. */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Progressive Disclosure (grid row animation) ──────────────────────── */
+
+.form-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.5s ease-out;
+}
+.form-reveal.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.form-reveal > .form-reveal-inner {
+  overflow: hidden;
+}
+
+/* ─── Oracle ritual motion ──────────────────────────────────────────────── */
+/* Shared keyframes for the gateway, QR entrance, and card-entrance rituals.
+ * Defined once here so the <style> blocks in those components don't ship
+ * duplicate CSS on every mount. */
+
+@keyframes oracle-ring-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes oracle-ring-bloom {
+  0%   { transform: scale(0.04); opacity: 0; }
+  16%  { opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes oracle-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes oracle-draw-ltr {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0%   0 0); }
+}
+@keyframes oracle-draw-rtl {
+  from { clip-path: inset(0 0 0 100%); }
+  to   { clip-path: inset(0 0 0 0%  ); }
+}
+@keyframes oracle-pulse {
+  0%   { opacity: 0.3; }
+  50%  { opacity: 0.85; }
+  100% { opacity: 0.3; }
+}
+
+/* ─── Chinese serif (Mingti / Song) for hexagram glyph labels ──────────── */
+/* Loads Noto Serif TC from Google Fonts (see index.html) for consistent
+ * sharp Mingti rendering across platforms. Falls back to system Song fonts
+ * if the network fails. */
+.font-chinese-serif {
+  font-family: "Noto Serif TC", "Source Han Serif TC", "Source Han Serif SC",
+               "Noto Serif SC",
+               "PMingLiU", "MingLiU", "DFKai-SB",
+               "Songti TC", "Songti SC", "STSong",
+               "AR PL UMing TW", "AR PL UMing CN",
+               "宋體", "新細明體", serif;
+  font-weight: 600;
+  font-feature-settings: "palt";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── System overlay (full-screen system explainer) ─────────────────────── */
+/* Triggered by tapping the oversized hexagram on each system header.
+ * Entrance mirrors Oracle Gateway's slow-rise cadence; exit on outside-tap
+ * reverses it. Tapping the bottom attribution band runs sink-to-point on
+ * every text element before navigating to the deep-dive page. */
+
+@keyframes system-overlay-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes system-overlay-scrim-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes system-overlay-glyph-in {
+  from { opacity: 0; transform: scale(0.86) translateY(14px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes system-overlay-glyph-out {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(0.92) translateY(8px); }
+}
+@keyframes system-overlay-rise-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes system-overlay-rise-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(6px); }
+}
+/* Sink: each text element drifts toward the touch coordinate, then fades.
+ * --dx and --dy are computed in JS per element on the click event so every
+ * word converges on the exact point the user pressed. */
+@keyframes system-overlay-sink {
+  from { opacity: 1; transform: translate(0, 0); }
+  to   { opacity: 0; transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(0.85); }
+}
+
+.system-overlay-scrim          { animation: system-overlay-scrim-in 320ms ease both; }
+.system-overlay-glyph          { animation: system-overlay-glyph-in 900ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both; }
+.system-overlay-label          { animation: system-overlay-rise-in  800ms cubic-bezier(0.22, 1, 0.36, 1) 320ms both; }
+.system-overlay-body           { animation: system-overlay-rise-in  900ms cubic-bezier(0.22, 1, 0.36, 1) 460ms both; }
+.system-overlay-attribution    { animation: system-overlay-rise-in  900ms cubic-bezier(0.22, 1, 0.36, 1) 640ms both; }
+
+.system-overlay.is-dismissing .system-overlay-scrim       { animation: system-overlay-scrim-out 380ms ease both; }
+.system-overlay.is-dismissing .system-overlay-glyph       { animation: system-overlay-glyph-out 380ms cubic-bezier(0.4, 0, 1, 1) both; }
+.system-overlay.is-dismissing .system-overlay-label,
+.system-overlay.is-dismissing .system-overlay-body,
+.system-overlay.is-dismissing .system-overlay-attribution { animation: system-overlay-rise-out 320ms cubic-bezier(0.4, 0, 1, 1) both; }
+
+.system-overlay.is-sinking .system-overlay-scrim          { animation: system-overlay-scrim-out 600ms ease 100ms both; }
+.system-overlay.is-sinking .sink-target {
+  animation: system-overlay-sink 540ms cubic-bezier(0.5, 0, 0.75, 0) both;
+  animation-delay: calc(var(--sink-i, 0) * 22ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .system-overlay-scrim,
+  .system-overlay-glyph,
+  .system-overlay-label,
+  .system-overlay-body,
+  .system-overlay-attribution,
+  .system-overlay.is-dismissing .system-overlay-scrim,
+  .system-overlay.is-dismissing .system-overlay-glyph,
+  .system-overlay.is-dismissing .system-overlay-label,
+  .system-overlay.is-dismissing .system-overlay-body,
+  .system-overlay.is-dismissing .system-overlay-attribution,
+  .system-overlay.is-sinking .system-overlay-scrim,
+  .system-overlay.is-sinking .sink-target {
+    animation-duration: 1ms !important;
+  }
+}
+
+/* ─── Oracle card field screen ──────────────────────────────────────────── */
+
+/* Warm card surface with paper grain overlay — used for identity cluster */
+.card-grain {
+  position: relative;
+  overflow: hidden;
+}
+.card-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* ─── Footer Enhancements ──────────────────────────────────────────────── */
+
+/* #15 Noise texture overlay — subtle paper/linen grain */
+.footer-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+}
+
+/* #6 Sliding underline hover animation + #9 Accent dot marker */
+.footer-link {
+  position: relative;
+  display: inline-block;
+}
+
+.footer-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.footer-link:hover::after {
+  transform: scaleX(1);
+}
+
+.footer-link::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--color-bronze-400);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.footer-link:hover::before {
+  transform: translateY(-50%) scale(1);
+}
+
+/* ─── Unified hover underline ──────────────────────────────────────────── */
+/* Sliding underline from left, matches footer-link style but without the dot */
+.hover-underline {
+  position: relative;
+  display: inline-block;
+}
+.hover-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.hover-underline:hover::after {
+  transform: scaleX(1);
+}
+
+/* ─── Touch active states ─────────────────────────────────────────────── */
+/* Subtle press feedback for interactive elements on touch devices */
+@media (pointer: coarse) {
+  .touch-active:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Kill 300ms tap delay on interactive elements while preserving pinch-zoom */
+button, a, [role="button"], input, select, textarea, label {
+  touch-action: manipulation;
+}
+
+@media (pointer: coarse) {
+  a[href]:not(.sr-only),
+  button:not(.sr-only),
+  [role="button"]:not(.sr-only),
+  [role="link"]:not(.sr-only),
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+}
+
+/* Safe area insets for notched/Dynamic Island iPhones */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-top { padding-top: env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* ─── Longform Page: Shared Reveal & Typography ────────────────────────── */
+/* Used by About.tsx and OracleCards.tsx. Defined once here so the           */
+/* <style> blocks in those components aren't duplicated on re-render.        */
+
+/* Reveal animations use translateX which can push content past the viewport
+   on narrow screens. Clip horizontal overflow at the document root so reveal
+   start states never produce a scrollbar. */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Varied reveal animations */
+.reveal-block {
+  opacity: 0;
+  transition: opacity 0.85s cubic-bezier(0.16,1,0.3,1), transform 0.85s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-up    { transform: translateY(36px); }
+.reveal-left  { transform: translateX(-44px); }
+.reveal-right { transform: translateX(44px); }
+.reveal-scale { transform: scale(0.94); }
+.reveal-fade  { transform: none; }
+.reveal-block.is-visible {
+  opacity: 1;
+  transform: translateY(0) translateX(0) scale(1);
+}
+
+/* Drop caps */
+.drop-cap::first-letter {
+  float: left;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3.6em;
+  line-height: 0.78;
+  padding-right: 0.07em;
+  padding-top: 0.04em;
+  color: var(--color-bronze-500);
+  font-weight: 500;
+}
+.dark .drop-cap::first-letter { color: var(--color-bronze-400); }
+
+/* Paragraph opacity gradient (clears on reveal) */
+.pg-1 { opacity: 1; }
+.pg-2 { opacity: 0.75; transition: opacity 1s ease 0.5s; }
+.pg-3 { opacity: 0.6;  transition: opacity 1s ease 0.7s; }
+.pg-4 { opacity: 0.5;  transition: opacity 1s ease 0.9s; }
+.reveal-block.is-visible .pg-2,
+.reveal-block.is-visible .pg-3,
+.reveal-block.is-visible .pg-4 { opacity: 1; }
+
+/* Section tag line animation (unified — was .about-tag-line / .oracle-tag-line) */
+.tag-line {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.25s;
+}
+.reveal-block.is-visible .tag-line { transform: scaleX(1); }
+
+/* Margin annotation */
+@media (min-width: 1280px) {
+  .with-margin-note { position: relative; }
+  .margin-note {
+    position: absolute;
+    right: -200px;
+    width: 168px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--color-wood-600);
+    line-height: 1.45;
+    border-left: 1px solid rgba(196,170,124,0.4);
+    padding-left: 11px;
+  }
+  .dark .margin-note { color: var(--color-wood-500); }
+}
+@media (max-width: 1279px) {
+  .margin-note { display: none; }
+}
+
+/* ─── Route Transition ────────────────────────────────────────────────── */
+/* Subtle fade + slight lift when navigating between pages.                 */
+@keyframes routeFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.route-fade-in {
+  animation: routeFadeIn 0.3s ease-out;
+}
+
+/* ─── Reduced Motion Support ──────────────────────────────────────────── */
+/* Respects user preference to minimize non-essential animations (WCAG 2.1) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-pulse, .animate-pulse-slow, .animate-spin-slow, .animate-spin-reverse-slow, .animate-hero-bounce {
+    animation: none !important;
+  }
+  .stagger-in, .card-stagger > * {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}
+
+/* ─── Screen Reader Only ──────────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─── Accordion plate expand entry animation ──────────────────────────── */
+@keyframes plate-expand {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

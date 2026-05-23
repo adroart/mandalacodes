@@ -1,0 +1,10 @@
+# Mandala Codes — redirect rules
+# Processed top-to-bottom, first match wins.
+
+# Legacy /oracle/* paths (in case anyone copied a URL from the old domain
+# before adrianrasmussen.com's 301s were in place). The SPA also handles
+# these via <Navigate>, but a server-side 301 is preferred for crawlers.
+/oracle                         /                               301
+/oracle/the-systems             /the-systems                    301
+/oracle/universal-language      /universal-language             301
+/oracle/universal-language/*    /universal-language/:splat      301
