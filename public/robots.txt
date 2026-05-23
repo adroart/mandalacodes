@@ -1,10 +1,4 @@
 User-agent: *
 Allow: /
 
-Disallow: /admin/
-Disallow: /admin
-Disallow: /api/
-Disallow: /keystatic/
-Disallow: /font-preview
-
-Sitemap: https://adrianrasmussen.com/sitemap.xml
+Sitemap: https://mandalacodes.com/sitemap.xml
