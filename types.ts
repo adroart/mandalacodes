@@ -143,3 +143,34 @@ export interface Story {
   isFeatured?: boolean;
   relatedArtifactId?: string;
 }
+
+/* ─── Atlas ────────────────────────────────────────────────────────────────
+ * Types for the /atlas page: a globe of placed Universal Language pieces.
+ * Ported from Adrian-Website. The ledger / steward backend lives in a
+ * follow-up PR; this repo only consumes the public projection.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export interface CityCentroid {
+  id: string;            // 'lisbon-pt', 'denpasar-id' — stable kebab-case slug
+  city: string;
+  region?: string;
+  country: string;
+  countryCode: string;   // ISO 3166-1 alpha-2, uppercase
+  lat: number;
+  lng: number;
+}
+
+export interface PublicAtlasState {
+  generatedAt: string;
+  schemaVersion: number;
+  pieces: Array<{
+    pieceId: string;
+    editionNumber?: number;
+    series?: string;
+    category?: string;
+    cityId: string | null;
+    status: 'seeking' | 'placed';
+    placedAt?: string;
+  }>;
+  cities: CityCentroid[];
+}
