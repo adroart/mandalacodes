@@ -2,12 +2,11 @@ name = "mandalacodes"
 compatibility_date = "2024-09-23"
 pages_build_output_dir = "dist"
 
-# D1 binding — uncomment after provisioning:
-#   wrangler d1 create mandalacodes-oracle
-# Then paste the printed database_id below.
-#
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "mandalacodes-oracle"
-# database_id = "REPLACE_WITH_ID_FROM_WRANGLER_D1_CREATE"
-# migrations_dir = "migrations"
+# D1 database — provisioned 2026-05-23 via `wrangler d1 create mandalacodes-oracle`.
+# Region: APAC. Used by future accounts work (Phase 1b — Clerk + birthdate energy panels).
+# No tables yet; v1 oracle reader is stateless and does not query DB.
+[[d1_databases]]
+binding = "DB"
+database_name = "mandalacodes-oracle"
+database_id = "c8d07902-f80a-4c84-a82e-7d70dad34672"
+migrations_dir = "migrations"
