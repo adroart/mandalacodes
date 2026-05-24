@@ -1,98 +1,28 @@
 /**
  * LAUNCH FLAGS — Temporary disables for initial launch
  *
- * This file is the single source of truth for everything temporarily
- * disabled at launch. When you're ready to re-enable a feature:
- *
- * 1. Flip the flag from false to true
- * 2. Check the "Files affected" note for that flag
- * 3. That's it — all UI code is still in place, just gated behind these flags
- *
- * To restore the full site, set every flag to true and delete this file's
- * import from each component listed below.
+ * Single source of truth for things temporarily off. Flip a flag from
+ * false to true when the feature behind it is ready to expose.
  */
 
 export const LAUNCH_FLAGS = {
   /**
    * ACCOUNTS — Clerk sign-in + D1-backed profile + collections.
-   * Disabled because: Clerk app, D1 migration, and Pages env vars are not
-   * yet provisioned for mandalacodes.com. When all three are in place:
-   *   1. Set VITE_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY, CLERK_WEBHOOK_SECRET on Pages
-   *   2. Apply migrations/001_init.sql to the D1 (mandalacodes-oracle)
-   *   3. Configure Clerk webhook → https://mandalacodes.com/api/clerk/webhook
-   *   4. Flip this flag to true and merge
+   * To enable:
+   *   1. Set VITE_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY, CLERK_WEBHOOK_SECRET on Cloudflare Pages
+   *   2. Configure Clerk webhook → https://mandalacodes.com/api/clerk/webhook
+   *   3. Flip this flag to true
    * Files affected:
    *   - lib/account/AccountProvider.tsx (mounts ClerkProvider when on)
-   *   - components/Navigation / header (AuthButton renders nothing when off)
    *   - components/account/AccountLayout.tsx (redirects to / when off)
    */
   accounts: false,
 
   /**
-   * HOLOGENETIC PROFILE — Local-first birth chart at /profile and the
+   * HOLOGENETIC PROFILE — Birth chart at /profile and the
    * YourPositionCallout overlay on universal-language card pages.
-   * Independent of accounts — works in guest mode via localStorage.
-   * Set to true to expose /profile and the callout site-wide.
+   * Local-first (works in guest mode via localStorage); syncs to D1
+   * only when accounts is on and the user is signed in.
    */
   hologeneticProfile: false,
-
-  /**
-   * SHOP / CART — Online purchasing via Stripe
-   * Disabled because: All stripePriceIds are 'price_REPLACE' placeholders.
-   * To re-enable: Set up Stripe Products/Prices, replace IDs in mockData.ts,
-   *   set env vars (STRIPE_SECRET_KEY, VITE_STRIPE_PUBLISHABLE_KEY), flip to true.
-   * Files affected:
-   *   - Navigation.tsx (Shop nav item hidden, cart icon hidden)
-   *   - PiecePage.tsx ("Add to Cart" replaced with "Request to Purchase" linking to /inquire)
-   *   - Footer.tsx (Shop link hidden)
-   *   - Welcome.tsx (Shop link hidden)
-   *   - Creations.tsx ("Visit the Shop" link hidden)
-   *   - About.tsx ("Acquire a piece" changed to "Inquire about a piece" linking to /inquire)
-   *   - Store.tsx, CartDrawer.tsx (route still exists but not linked from anywhere)
-   */
-  shopEnabled: false,
-
-  /**
-   * ORACLE CARDS category tile
-   * Disabled because: No artwork pieces, placeholder images only.
-   * To re-enable: Upload real images, add pieces to mockData.ts,
-   *   remove hidden: true from ORACLE in mockData.ts CREATION_CATEGORIES.
-   * Files affected: mockData.ts (hidden: true on ORACLE category)
-   */
-  oracleCards: false,
-
-  /**
-   * FURNITURE category tile (formerly Tables)
-   * Disabled because: Only 1 piece (SOLD), placeholder image.
-   * To re-enable: Upload real images, add pieces to mockData.ts,
-   *   remove hidden: true from FURNITURE in mockData.ts CREATION_CATEGORIES.
-   * Files affected: mockData.ts (hidden: true on FURNITURE category)
-   */
-  furniture: false,
-
-  /**
-   * INSTALLATIONS category tile
-   * Disabled because: Only 1 piece (SOLD), placeholder image.
-   * To re-enable: Upload real images, add pieces to mockData.ts,
-   *   remove hidden: true from INSTALL in mockData.ts CREATION_CATEGORIES.
-   * Files affected: mockData.ts (hidden: true on INSTALL category)
-   */
-  installations: false,
-
-  /**
-   * SPACES category tile
-   * Disabled because: No pieces at all.
-   * To re-enable: Upload images, add pieces to mockData.ts,
-   *   remove hidden: true from SPACES in mockData.ts CREATION_CATEGORIES.
-   * Files affected: mockData.ts (hidden: true on SPACES category)
-   */
-  spaces: false,
-
-  /**
-   * ABOUT — "What Art Can Mean" section
-   * Disabled because: Adrian didn't finish writing this section.
-   * To re-enable: Finish the writing, flip to true.
-   * Files affected: About.tsx (section + side nav entry hidden)
-   */
-  aboutMeaning: false,
 };
