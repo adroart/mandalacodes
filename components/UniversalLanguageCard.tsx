@@ -16,6 +16,7 @@ import ReadingStage, { type ReadingStageHandle } from './oracle/ReadingStage';
 import ImageViewer from './oracle/ImageViewer';
 import BuySheet from './oracle/BuySheet';
 import CoinCast from './oracle/CoinCast';
+import CorrespondenceSheet, { type Correspondence, type CorrespondenceChainStep } from './oracle/CorrespondenceSheet';
 import { castForHexagram, type CastResult } from '../utils/ichingCasting';
 // TEMPLATE: cast persistence (saveCast/loadCast) intentionally not used —
 // each cast is a fresh ritual the reader performs, never restored stale.
@@ -38,6 +39,35 @@ const LABEL_PANEL = 'font-label text-[11px] uppercase tracking-[0.32em]';
 // Section labels are TITLES — they must read larger and bolder than the body
 // text beneath them (body is 16px regular). 14px, bold.
 const LABEL_SECTION = 'font-label text-[14px] uppercase tracking-[0.2em] font-bold';
+
+/* ─── Correspondence helpers ────────────────────────────────────────────────
+   Used by the hero identity stack to render and trace the small
+   correspondences row (♐ Sagittarius · XIV · The Art). */
+
+const ZODIAC_GLYPHS: Record<string, string> = {
+  Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',
+  Leo: '♌', Virgo: '♍', Libra: '♎', Scorpio: '♏',
+  Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
+};
+
+function zodiacGlyph(sign?: string): string {
+  if (!sign) return '';
+  return ZODIAC_GLYPHS[sign] ?? '';
+}
+
+/** Build the trace chain shown in the CorrespondenceSheet. Same chain
+ *  is used for both the zodiac and tarot taps on the hero — they both
+ *  trace back through the codon ring's correspondence layer. Ring name
+ *  comes from synthesis.ring_name (the per-card synthesis data carries
+ *  it; the raw card object doesn't). */
+function ringCorrespondenceChain(cardNumber: number, ringName?: string): CorrespondenceChainStep[] {
+  const steps: CorrespondenceChainStep[] = [
+    { label: `Code ${cardNumber}`, source: 'Mandala Codes' },
+  ];
+  if (ringName) steps.push({ label: ringName, source: 'Gene Keys' });
+  steps.push({ label: 'Xuan Tarot', source: 'Golden Dawn' });
+  return steps;
+}
 
 /* ─── Sections ───────────────────────────────────────────────────────────── */
 
@@ -868,22 +898,32 @@ const ExpandCard: React.FC<{
 /* ─── Card link ──────────────────────────────────────────────────────────── */
 
 const EssenceBlock: React.FC<{ essence: string }> = ({ essence }) => {
-  const paras = essence.split('\n\n').filter(Boolean);
-  // The Reading prose is the felt summary of the card — the deck's
-  // voice speaking to the reader directly. Set in Cormorant Garamond
-  // (the deck's serif body face) at 18-19px with generous leading so
-  // the prose reads as editorial / literary rather than as web body
-  // copy. No bubble container — the prose flows on the paper page;
-  // no border, background, shadow, or rounded corner. The wrapper div
-  // above supplies horizontal padding so we don't double-pad on
-  // mobile.
+  // The Reading prose splits into three clusters using a double blank line
+  // (\n\n\n) as the cluster boundary; paragraphs within a cluster split on
+  // the standard double newline (\n\n). The triple-newline is the deck's
+  // notation for the deliberate breath between clusters that Job 1 locked.
+  // Falls back gracefully when the source uses only \n\n (treats each as
+  // its own single-paragraph cluster). Site color tokens auto-invert via
+  // CSS vars for dark sections.
+  const clusters = essence
+    .split(/\n{3,}/)
+    .map(c => c.split(/\n\n+/).filter(Boolean))
+    .filter(c => c.length > 0);
+
   return (
-    <div className="mt-6 py-2">
-      <div className="space-y-5">
-        {paras.map((p, i) => (
-          <p key={i} className="font-serif text-[18px] sm:text-[19px] text-wood-800 leading-[1.65]">{p}</p>
-        ))}
-      </div>
+    <div className="py-2">
+      {clusters.map((cluster, ci) => (
+        <div
+          key={ci}
+          className={ci > 0 ? 'mt-12 sm:mt-14' : ''}
+        >
+          <div className="space-y-5">
+            {cluster.map((p, i) => (
+              <p key={i} className="font-serif text-[18px] sm:text-[19px] text-wood-800 leading-[1.7]">{p}</p>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
@@ -1047,6 +1087,9 @@ const UniversalLanguageCard: React.FC = () => {
   const [casting, setCasting] = useState(false);
   const ichingRef    = useRef<HTMLDivElement>(null);
   const [systemOverlay, setSystemOverlay] = useState<SystemKey | null>(null);
+  // The tap-to-trace bottom sheet for hero correspondences (zodiac, tarot).
+  // null = closed; set to a Correspondence object to open with that data.
+  const [correspondence, setCorrespondence] = useState<Correspondence | null>(null);
 
   // ── New layout state ────────────────────────────────────────────────────
   // Active chapter in the reading stage (synced with ?system= URL param).
@@ -1415,6 +1458,11 @@ const UniversalLanguageCard: React.FC = () => {
         originRect={lightboxOrigin}
         onClose={() => setLightboxOpen(false)}
       />
+      <CorrespondenceSheet
+        open={correspondence !== null}
+        onClose={() => setCorrespondence(null)}
+        data={correspondence}
+      />
       <BuySheet
         open={buyOpen}
         onClose={() => setBuyOpen(false)}
@@ -1453,20 +1501,17 @@ const UniversalLanguageCard: React.FC = () => {
         {/* ════════════ FIELD ════════════════════════════════════════════ */}
         <section id="field" className={`${SCREEN_BG.field} scroll-mt-16`}>
 
-          {/* Card-as-object container — title + artwork + keywords belong
-              to the card itself, wrapped in one bordered surface. The
-              keywords sit inside as the bottom edge of the label. The
-              acquire/share row that follows is intentionally OUTSIDE this
-              container: it is chrome around the object, not part of it. */}
+          {/* Card-as-object container — Job 3 locked architecture: the hero
+              owns identity. Order: artwork → Code N label → card name →
+              correspondences row (tappable: Tarot Arcana, Zodiac) →
+              keywords. The acquire/share row that follows is intentionally
+              OUTSIDE this container: it is chrome around the object, not
+              part of it. */}
           <div className="md:max-w-2xl md:mx-auto px-4">
             <div className="rounded-2xl border border-wood-200/70 shadow-[0_4px_24px_rgba(60,44,22,0.09),0_1px_3px_rgba(60,44,22,0.05)] overflow-hidden bg-paper-50">
 
-              {/* Title — labels the work above the artwork. */}
-              <div className="px-6 pt-6 pb-5 text-center">
-                <h1 className="font-serif text-[32px] text-wood-900 leading-[1.1] tracking-[-0.01em] whitespace-nowrap">{card.card_name}</h1>
-              </div>
-
-              {/* Artwork */}
+              {/* Artwork — the visual anchor, sits at the top of the card
+                  object. Tap opens the lightbox. */}
               <figure
                 className="w-full aspect-square cursor-zoom-in"
                 onClick={(e) => {
@@ -1494,16 +1539,75 @@ const UniversalLanguageCard: React.FC = () => {
                 />
               </figure>
 
-              {/* Keywords — the bottom edge of the label. Inside the
-                  container, fastened to the work. */}
-              {(() => {
-                const kws = synthesis?.keywords ?? expanded?.keywords ?? [];
-                return kws.length > 0 ? (
-                  <div className="px-6 pt-4 pb-5 border-t border-wood-200/60">
-                    <KeywordRow kws={kws} onClick={() => go('genekeys')} />
+              {/* Identity stack — the card's voice in three beats:
+                    1. Code N (label)
+                    2. The card name (the dominant typographic element)
+                    3. Correspondences row (♐ Sagittarius · XIV · The Art)
+                    4. Keywords (fire · spark · ignition)
+                  Each step quieter than the last, like the card naming
+                  itself once and then opening into its register.  */}
+              <div className="px-6 pt-7 pb-6 text-center border-t border-wood-200/60">
+                <p className="font-label text-[11px] uppercase tracking-[0.32em] text-wood-500">
+                  Code {card.number}
+                </p>
+                <h1 className="font-serif text-[30px] sm:text-[34px] text-wood-900 leading-[1.1] tracking-[-0.01em] mt-3">
+                  {card.card_name}
+                </h1>
+
+                {/* Correspondences row — tap-to-trace pattern. Zodiac and
+                    Tarot Arcana per the synthesis reference. Each item
+                    opens a CorrespondenceSheet bottom sheet with the
+                    chain back to the code. */}
+                {(synthesis?.reference?.astrology || synthesis?.reference?.tarot_card) && (
+                  <div className="mt-5 flex items-center justify-center flex-wrap gap-x-3 gap-y-2">
+                    {synthesis?.reference?.astrology && (
+                      <button
+                        type="button"
+                        onClick={() => setCorrespondence({
+                          kind: 'zodiac',
+                          name: `${zodiacGlyph(synthesis.reference!.astrology)} ${synthesis.reference!.astrology}`,
+                          meaning: `${synthesis.reference!.astrology} is the astrological correspondence for this code's codon ring, the channel through which its frequency reaches you.`,
+                          chain: ringCorrespondenceChain(card.number, synthesis.ring_name),
+                          referenceSlug: 'zodiac',
+                        })}
+                        className="font-serif text-[15px] sm:text-[16px] text-wood-800 hover:text-bronze-700 underline decoration-bronze-600/30 underline-offset-[5px] decoration-1 transition-colors focus-visible:outline-none focus-visible:text-bronze-700 focus-visible:decoration-bronze-500"
+                      >
+                        <span aria-hidden="true">{zodiacGlyph(synthesis.reference.astrology)}</span>{' '}
+                        {synthesis.reference.astrology}
+                      </button>
+                    )}
+                    {synthesis?.reference?.astrology && synthesis?.reference?.tarot_card && (
+                      <span aria-hidden="true" className="font-serif text-[16px] text-wood-400">·</span>
+                    )}
+                    {synthesis?.reference?.tarot_card && (
+                      <button
+                        type="button"
+                        onClick={() => setCorrespondence({
+                          kind: 'tarot',
+                          name: synthesis.reference!.tarot_card,
+                          meaning: `${synthesis.reference!.tarot_card} is the Major Arcana that maps to this code's codon ring in the Xuan Tarot system.`,
+                          chain: ringCorrespondenceChain(card.number, synthesis.ring_name),
+                          referenceSlug: 'tarot',
+                        })}
+                        className="font-serif text-[15px] sm:text-[16px] text-wood-800 hover:text-bronze-700 underline decoration-bronze-600/30 underline-offset-[5px] decoration-1 transition-colors focus-visible:outline-none focus-visible:text-bronze-700 focus-visible:decoration-bronze-500"
+                      >
+                        {synthesis.reference.tarot_card}
+                      </button>
+                    )}
                   </div>
-                ) : null;
-              })()}
+                )}
+
+                {/* Keywords — promoted to identity-stack position. Card
+                    essence in three beats. */}
+                {(() => {
+                  const kws = synthesis?.keywords ?? expanded?.keywords ?? [];
+                  return kws.length > 0 ? (
+                    <div className="mt-6 pt-5 border-t border-wood-200/50">
+                      <KeywordRow kws={kws} onClick={() => go('genekeys')} />
+                    </div>
+                  ) : null;
+                })()}
+              </div>
             </div>
           </div>
 
@@ -1637,17 +1741,9 @@ const UniversalLanguageCard: React.FC = () => {
               onSelect={jumpToChapter}
               variant="paper"
               shape="sticky"
+              showProgress
             />
           </div>
-
-          {/* Title card — its own dignified framed object. Sits below
-              the chapter strip with its own breathing room. The bronze
-              accent bar is the strongest visual signal in the hero
-              area, marking this as the named, labeled artwork. */}
-          {/* Card title + keywords used to render here in the hero. Moved
-              into the UL chapter panel so the title sits above The Reading
-              within the same panel. The hero is now just the artwork +
-              creator voice. */}
 
           {/* Creator voice (conditional). Only renders padding when the
               block is actually present, otherwise the chapter strip sits
@@ -1769,6 +1865,7 @@ const UniversalLanguageCard: React.FC = () => {
             onSelect={jumpToChapter}
             variant="paper"
             shape="sticky"
+            showProgress
           />
         </div>
 
@@ -1796,53 +1893,69 @@ const UniversalLanguageCard: React.FC = () => {
 
               {/* The UL panel holds The Reading (the felt summary) and the
                   Invocation. Both UL-specific. Title + keywords live above
-                  the artwork in the hero, visible on every page. */}
+                  the artwork in the hero, visible on every page.
 
-              {/* The Reading — the felt summary of this card. The header
-                  is the prominent title for this panel, set in serif at
-                  size; the prose follows below. */}
+                  Job 1 LOCKED typography:
+                  · No "The Reading" h2 — the prose teaches itself.
+                  · Three reading clusters separated by deliberate breath
+                    (handled in EssenceBlock).
+                  · Single horizontal hairline between Reading and
+                    Invocation.
+                  · INVOCATION as small-caps label flanked by short rules
+                    (no "to be read aloud" framing).
+                  · More leading on invocation lines (each line is its
+                    own breath).
+                  · Single centered · after the closing line, closing
+                    hairline mirrors the opening one.  */}
+
+              {/* Reading — the felt summary of this card. No header. */}
               {synthesis?.essence && (
-                <section className="mb-12 sm:mb-14">
-                  <h2 className="font-serif text-[26px] sm:text-[30px] text-bronze-300 leading-[1.15] tracking-[-0.005em] text-center mb-6">The Reading</h2>
+                <section className="mb-2">
                   <EssenceBlock essence={synthesis.essence} />
                 </section>
               )}
 
-              {/* Invocation — the ritual opening of this code. Set in
-                  plain serif (not italic). Each line breaks naturally,
-                  centred, like a small prayer.
-
-                  The "Invocation" heading uses the same panel-label
-                  typography as "The Reading" on the opening page so
-                  the deck reads with one consistent section-header
-                  vocabulary. */}
+              {/* Invocation block — opens and closes on a hairline rule,
+                  with the small-caps INVOCATION label flanked by short
+                  rule-fragments at the head. The dignified empty-state
+                  carries cards 2-64 until each invocation is written. */}
               {invocation ? (
-                <section>
-                  <h2 className="font-serif text-[26px] sm:text-[30px] text-bronze-300 leading-[1.15] tracking-[-0.005em] text-center mb-6">Invocation</h2>
-                  {/*
-                    Optional info paragraph below the heading — explains
-                    what an invocation is, how to use it. Left commented
-                    out until we have the canonical copy. When ready,
-                    uncomment and replace the placeholder text below.
+                <section className="mt-16 sm:mt-20">
+                  <hr className="border-t border-bronze-600/25 max-w-prose mx-auto" />
 
-                    <p className="font-serif text-[14px] sm:text-[15px] text-wood-600 leading-[1.6] text-center max-w-prose mx-auto mb-6">
-                      [Short paragraph framing the invocation — what
-                      it is, how to use it, generic to all 64 cards.]
-                    </p>
-                  */}
-                  <div className="border-y border-bronze-600/25 py-8 sm:py-10 max-w-prose mx-auto">
+                  <div className="flex items-center justify-center gap-4 mt-12 sm:mt-14 mb-10 sm:mb-12" aria-hidden="true">
+                    <span className="h-px w-12 bg-bronze-600/40" />
+                    <span className="font-label text-[11px] uppercase tracking-[0.32em] text-bronze-500/90">Invocation</span>
+                    <span className="h-px w-12 bg-bronze-600/40" />
+                  </div>
+
+                  <div className="max-w-prose mx-auto">
                     {invocation.split('\n').filter(Boolean).map((line, i) => (
-                      <p key={i} className="font-serif text-[17px] sm:text-[18px] text-wood-800 leading-[1.75] text-center">
+                      <p
+                        key={i}
+                        className="font-serif text-[18px] sm:text-[19px] text-wood-800 leading-[1.7] text-center"
+                        style={{ marginBottom: '1.4em' }}
+                      >
                         {line}
                       </p>
                     ))}
+                    <p className="font-serif text-[20px] text-bronze-500/70 text-center mt-2 mb-0" aria-hidden="true">·</p>
                   </div>
+
+                  <hr className="border-t border-bronze-600/25 max-w-prose mx-auto mt-12 sm:mt-14" />
                 </section>
               ) : (
-                <section className="text-center mt-2">
-                  <p className="font-serif text-[14px] text-wood-500 leading-[1.6]">
-                    The invocation for this code is being written.
+                <section className="mt-16 sm:mt-20">
+                  <hr className="border-t border-bronze-600/25 max-w-prose mx-auto" />
+                  <div className="flex items-center justify-center gap-4 mt-12 sm:mt-14 mb-8" aria-hidden="true">
+                    <span className="h-px w-12 bg-bronze-600/40" />
+                    <span className="font-label text-[11px] uppercase tracking-[0.32em] text-bronze-500/70">Invocation</span>
+                    <span className="h-px w-12 bg-bronze-600/40" />
+                  </div>
+                  <p className="font-serif text-[15px] text-wood-500 italic leading-[1.7] text-center max-w-prose mx-auto">
+                    The invocation for this code is still being written.
                   </p>
+                  <hr className="border-t border-bronze-600/25 max-w-prose mx-auto mt-10" />
                 </section>
               )}
 

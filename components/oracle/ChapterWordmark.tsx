@@ -51,8 +51,14 @@ export const ChapterWordmark: React.FC<{
    *   pill would look disconnected from the header chrome above it.
    */
   shape?: 'inline' | 'sticky';
+  /**
+   * When set, renders a small dot progress row above the wordmark — one
+   * dot per chapter, the active dot filled. Surfaces the "N of total"
+   * position without adding text weight to the wordmark itself.
+   */
+  showProgress?: boolean;
   className?: string;
-}> = ({ chapters, active, onSelect, variant, shape = 'inline', className = '' }) => {
+}> = ({ chapters, active, onSelect, variant, shape = 'inline', showProgress = false, className = '' }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<Map<ChapterKey, HTMLButtonElement | null>>(new Map());
   const [underline, setUnderline] = useState<{ left: number; top: number; width: number; ready: boolean }>({
@@ -105,6 +111,8 @@ export const ChapterWordmark: React.FC<{
   const dotCls = paper ? 'text-wood-400' : 'text-stone-500';
   const activeCls = 'text-bronze-700';
 
+  const activeIndex = chapters.findIndex(c => c.key === active);
+
   return (
     <div
       ref={containerRef}
@@ -112,6 +120,27 @@ export const ChapterWordmark: React.FC<{
       role="tablist"
       aria-label="Reading chapters"
     >
+      {/* Six-dot progress row — one dot per chapter, active dot filled.
+          Sits above the wordmark with quiet breathing room. The reader
+          sees "you are N of total" at a glance without numbering the
+          chapter labels. */}
+      {showProgress && (
+        <div
+          className={`flex items-center justify-center gap-2 w-full pt-2 pb-1 bg-paper-100 ${shape === 'sticky' ? '' : 'sm:rounded-t-2xl'}`}
+          aria-hidden="true"
+        >
+          {chapters.map((c, i) => {
+            const isActive = i === activeIndex;
+            return (
+              <span
+                key={c.key}
+                className={`block h-[5px] w-[5px] rounded-full motion-safe:transition-colors motion-safe:duration-300 ${isActive ? 'bg-bronze-500' : (paper ? 'bg-wood-300/60' : 'bg-stone-400/40')}`}
+              />
+            );
+          })}
+        </div>
+      )}
+
       {/* Shape variants:
 
           shape="inline" (default, used for the on-page strip below
