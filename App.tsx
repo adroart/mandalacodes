@@ -6,10 +6,16 @@ const UniversalLanguageCard = lazy(() => import('./components/UniversalLanguageC
 const OracleGateway = lazy(() => import('./components/OracleGateway'));
 const OracleSystems = lazy(() => import('./components/OracleSystems'));
 const AtlasPage = lazy(() => import('./components/AtlasPage'));
+const OracleProfile = lazy(() => import('./components/OracleProfile'));
+const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
+const CollectionsManager = lazy(() => import('./components/account/CollectionsManager'));
 const NotFound = lazy(() => import('./components/NotFound'));
 
 import { useSeoMeta } from './useSeoMeta';
 import { DarkModeProvider } from './DarkModeContext';
+import { AccountProvider } from './lib/account/AccountProvider';
+import { ProfileProvider } from './lib/profile/context';
+import { CollectionsProvider } from './lib/collections/context';
 
 const AppInner: React.FC = () => {
   const location = useLocation();
@@ -42,6 +48,13 @@ const AppInner: React.FC = () => {
               {/* Atlas — globe of placed Universal Language pieces with kinship arcs */}
               <Route path="/atlas" element={<AtlasPage />} />
 
+              {/* Hologenetic Profile (local-first, optionally synced when signed in) */}
+              <Route path="/profile" element={<OracleProfile />} />
+
+              {/* Account dashboard + collections (only reachable when accounts flag is on) */}
+              <Route path="/account" element={<AccountDashboard />} />
+              <Route path="/account/collections" element={<CollectionsManager />} />
+
               {/* Legacy /oracle/* paths — redirect to the new flat structure.
                   Catches anyone who copied a URL from the old domain before adrianrasmussen.com
                   redirects were in place. */}
@@ -68,7 +81,13 @@ const RedirectToFlatCard: React.FC = () => {
 
 const App: React.FC = () => (
   <DarkModeProvider>
-    <AppInner />
+    <AccountProvider>
+      <ProfileProvider>
+        <CollectionsProvider>
+          <AppInner />
+        </CollectionsProvider>
+      </ProfileProvider>
+    </AccountProvider>
   </DarkModeProvider>
 );
 
