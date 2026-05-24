@@ -14,6 +14,29 @@
 
 export const LAUNCH_FLAGS = {
   /**
+   * ACCOUNTS — Clerk sign-in + D1-backed profile + collections.
+   * Disabled because: Clerk app, D1 migration, and Pages env vars are not
+   * yet provisioned for mandalacodes.com. When all three are in place:
+   *   1. Set VITE_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY, CLERK_WEBHOOK_SECRET on Pages
+   *   2. Apply migrations/001_init.sql to the D1 (mandalacodes-oracle)
+   *   3. Configure Clerk webhook → https://mandalacodes.com/api/clerk/webhook
+   *   4. Flip this flag to true and merge
+   * Files affected:
+   *   - lib/account/AccountProvider.tsx (mounts ClerkProvider when on)
+   *   - components/Navigation / header (AuthButton renders nothing when off)
+   *   - components/account/AccountLayout.tsx (redirects to / when off)
+   */
+  accounts: false,
+
+  /**
+   * HOLOGENETIC PROFILE — Local-first birth chart at /profile and the
+   * YourPositionCallout overlay on universal-language card pages.
+   * Independent of accounts — works in guest mode via localStorage.
+   * Set to true to expose /profile and the callout site-wide.
+   */
+  hologeneticProfile: false,
+
+  /**
    * SHOP / CART — Online purchasing via Stripe
    * Disabled because: All stripePriceIds are 'price_REPLACE' placeholders.
    * To re-enable: Set up Stripe Products/Prices, replace IDs in mockData.ts,

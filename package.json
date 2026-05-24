@@ -14,14 +14,18 @@
     "test:mobile": "npx playwright test --project='Mobile Chrome' --reporter=list"
   },
   "dependencies": {
+    "@clerk/backend": "^3.4.11",
+    "@clerk/clerk-react": "^5.61.6",
     "@fontsource/cormorant-garamond": "^5.2.11",
     "@fontsource/karla": "^5.2.8",
     "@fontsource/lora": "^5.2.8",
+    "astronomy-engine": "^2.1.19",
     "cobe": "^2.0.1",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.13.0"
+    "react-router-dom": "^7.13.0",
+    "svix": "^1.94.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
