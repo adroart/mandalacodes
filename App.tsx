@@ -31,7 +31,19 @@ import { CollectionsProvider } from './lib/collections/context';
 const isLedHost = (): boolean => {
   if (typeof window === 'undefined') return false;
   const host = window.location.hostname;
-  return host === 'led.mandalacodes.com' || host.startsWith('led.');
+  if (host === 'led.mandalacodes.com' || host.startsWith('led.')) return true;
+  // Escape hatch: `?led=1` forces the Lightweaver route table on any host,
+  // including preview URLs (xxx.mandalacodes.pages.dev) which never match
+  // the led. prefix. Sticks in localStorage so the user only needs to add
+  // it once per device.
+  try {
+    if (new URLSearchParams(window.location.search).get('led') === '1') {
+      window.localStorage.setItem('force_led_host', '1');
+      return true;
+    }
+    if (window.localStorage.getItem('force_led_host') === '1') return true;
+  } catch {}
+  return false;
 };
 
 const AppInner: React.FC = () => {
