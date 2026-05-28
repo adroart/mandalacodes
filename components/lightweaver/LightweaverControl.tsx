@@ -218,29 +218,7 @@ const LightweaverControl: React.FC = () => {
 
         {state.kind === 'ready' && (
           <>
-            <section className="mb-8">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs uppercase tracking-[0.2em] text-bronze-600 dark:text-bronze-300">
-                  Brightness
-                </span>
-                <span className="text-2xl font-light text-wood-900 dark:text-paper-50">
-                  {Math.round(brightness * 100)}%
-                </span>
-              </div>
-              <input
-                type="range"
-                min={2}
-                max={100}
-                value={Math.round(brightness * 100)}
-                onChange={onBrightnessInput}
-                className="w-full accent-bronze-600"
-              />
-            </section>
-
-            <section className="mb-8">
-              <div className="text-xs uppercase tracking-[0.2em] text-bronze-600 dark:text-bronze-300 mb-3">
-                Pattern
-              </div>
+            <section className="mb-4">
               <div className="grid grid-cols-2 gap-3">
                 {state.patterns.map((p) => {
                   const active = p.id === currentId;
@@ -255,7 +233,7 @@ const LightweaverControl: React.FC = () => {
                           : 'border-wood-200 dark:border-wood-700 hover:border-bronze-500 bg-paper-100 dark:bg-wood-800'
                       }`}
                     >
-                      <div className={`sw ${swClass} mb-2`} />
+                      <div className={`sw ${swClass} mb-2`} style={{ height: 64 }} />
                       <div className="text-sm font-medium text-wood-900 dark:text-paper-50">
                         {p.label}
                       </div>
@@ -266,6 +244,23 @@ const LightweaverControl: React.FC = () => {
                   );
                 })}
               </div>
+            </section>
+
+            <section className="bg-paper-100 dark:bg-wood-800 border border-wood-200 dark:border-wood-700 rounded-md px-4 py-3 mb-4 flex items-center gap-3">
+              <span className="text-xs uppercase tracking-[0.15em] text-bronze-600 dark:text-bronze-300 flex-shrink-0">
+                Brightness
+              </span>
+              <input
+                type="range"
+                min={2}
+                max={100}
+                value={Math.round(brightness * 100)}
+                onChange={onBrightnessInput}
+                className="flex-1 accent-bronze-600"
+              />
+              <span className="text-xs font-mono text-bronze-600 dark:text-bronze-300 min-w-[36px] text-right">
+                {Math.round(brightness * 100)}%
+              </span>
             </section>
 
             <section className="flex flex-wrap gap-3 mb-8">
