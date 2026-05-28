@@ -28,4 +28,4 @@ migrations_dir = "migrations"
 # Then paste the returned id into the `id` field below.
 [[kv_namespaces]]
 binding = "LIGHTWEAVER_RELAY"
-id = "PLACEHOLDER_RUN_WRANGLER_KV_CREATE_THEN_PASTE_ID_HERE"
+id = "16165e81896a4d72ad15d5ca4c3def83"
