@@ -200,9 +200,12 @@ const LightweaverControl: React.FC = () => {
         .sw-cool-white{background:linear-gradient(90deg,#1a2a3a,#5c8ac8,#e0edf4,#5c8ac8,#1a2a3a);background-size:200% 100%;animation:lwFlow 8s linear infinite}
         .sw-photo-white{background:linear-gradient(90deg,#3a3328,#c8b89c,#f4ede0,#c8b89c,#3a3328);background-size:200% 100%;animation:lwFlow 10s linear infinite}
         .sw-custom-color{background:linear-gradient(90deg,#e74c3c,#f39c12,#f1c40f,#27ae60,#3498db,#9b59b6,#e74c3c)}
-        .lw-hue-track{-webkit-appearance:none;appearance:none;height:14px;border-radius:7px;background:linear-gradient(90deg,#e74c3c,#f39c12,#f1c40f,#27ae60,#3498db,#9b59b6,#e74c3c);outline:none;width:100%}
-        .lw-hue-track::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#f4ede0;border:2px solid #0a0a0a;cursor:pointer}
-        .lw-hue-track::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#f4ede0;border:2px solid #0a0a0a;cursor:pointer}
+        .lw-hue-track{-webkit-appearance:none;appearance:none;height:22px;border-radius:11px;background:linear-gradient(90deg,#e74c3c,#f39c12,#f1c40f,#27ae60,#3498db,#9b59b6,#e74c3c);outline:none;width:100%}
+        .lw-hue-track::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;background:#f4ede0;border:3px solid #0a0a0a;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.5)}
+        .lw-hue-track::-moz-range-thumb{width:32px;height:32px;border-radius:50%;background:#f4ede0;border:3px solid #0a0a0a;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.5)}
+        .lw-fat-track{-webkit-appearance:none;appearance:none;height:14px;border-radius:7px;outline:none;width:100%}
+        .lw-fat-track::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#c89b5c;cursor:pointer;border:0;box-shadow:0 2px 6px rgba(0,0,0,0.5)}
+        .lw-fat-track::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:#c89b5c;cursor:pointer;border:0;box-shadow:0 2px 6px rgba(0,0,0,0.5)}
         @keyframes lwFlow{0%{background-position:0 0}100%{background-position:200% 0}}
         @keyframes lwScan{0%{background-position:100% 0}100%{background-position:-100% 0}}
         @keyframes lwFlicker{0%,100%{opacity:.9}25%{opacity:1}50%{opacity:.7}75%{opacity:1}}
@@ -223,7 +226,7 @@ const LightweaverControl: React.FC = () => {
         </div>
 
         <h1 className="text-3xl font-light tracking-tight text-wood-900 dark:text-paper-50 mb-1">
-          {pieceName}
+          {pieceName === 'Lightweaver' ? host : pieceName}
         </h1>
         <p className="text-xs uppercase tracking-[0.2em] text-bronze-600 dark:text-bronze-300 mb-10">
           Lightweaver Card
@@ -291,9 +294,6 @@ const LightweaverControl: React.FC = () => {
                       <div className="text-sm font-medium text-wood-900 dark:text-paper-50">
                         {p.label}
                       </div>
-                      <div className="text-xs text-wood-500 dark:text-paper-400 uppercase tracking-wider">
-                        {p.mode}
-                      </div>
                     </button>
                   );
                 })}
@@ -332,38 +332,41 @@ const LightweaverControl: React.FC = () => {
                     max={255}
                     value={customSat}
                     onChange={onSatInput}
-                    className="flex-1 accent-bronze-600"
+                    className="lw-fat-track flex-1"
+                    style={{ background: '#262626' }}
                   />
                   <span className="text-xs font-mono text-bronze-600 dark:text-bronze-300 min-w-[30px] text-right">
                     {customSat}
                   </span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={onToggleBreathe}
-                    className={`flex-1 px-3 py-2 rounded-md text-xs uppercase tracking-wider transition-colors ${
+                    className={`flex-1 px-3 py-3 rounded-md transition-colors flex flex-col items-center gap-1 ${
                       customBreathe
                         ? 'bg-bronze-600 text-paper-50'
                         : 'border border-wood-300 dark:border-wood-600 text-wood-700 dark:text-paper-300'
                     }`}
                   >
-                    Breathe
+                    <span className="text-xs uppercase tracking-wider font-medium">Breathe</span>
+                    <span className="text-[10px] opacity-70">slow fade in & out</span>
                   </button>
                   <button
                     onClick={onToggleDrift}
-                    className={`flex-1 px-3 py-2 rounded-md text-xs uppercase tracking-wider transition-colors ${
+                    className={`flex-1 px-3 py-3 rounded-md transition-colors flex flex-col items-center gap-1 ${
                       customDrift
                         ? 'bg-bronze-600 text-paper-50'
                         : 'border border-wood-300 dark:border-wood-600 text-wood-700 dark:text-paper-300'
                     }`}
                   >
-                    Drift
+                    <span className="text-xs uppercase tracking-wider font-medium">Drift</span>
+                    <span className="text-[10px] opacity-70">slowly cycle hues</span>
                   </button>
                 </div>
               </section>
             )}
 
-            <section className="bg-paper-100 dark:bg-wood-800 border border-wood-200 dark:border-wood-700 rounded-md px-4 py-3 mb-4 flex items-center gap-3">
+            <section className="bg-paper-100 dark:bg-wood-800 border border-wood-200 dark:border-wood-700 rounded-md px-4 py-4 mb-4 flex items-center gap-3">
               <span className="text-xs uppercase tracking-[0.15em] text-bronze-600 dark:text-bronze-300 flex-shrink-0">
                 Brightness
               </span>
@@ -373,7 +376,8 @@ const LightweaverControl: React.FC = () => {
                 max={100}
                 value={Math.round(brightness * 100)}
                 onChange={onBrightnessInput}
-                className="flex-1 accent-bronze-600"
+                className="lw-fat-track flex-1"
+                style={{ background: '#262626' }}
               />
               <span className="text-xs font-mono text-bronze-600 dark:text-bronze-300 min-w-[36px] text-right">
                 {Math.round(brightness * 100)}%
