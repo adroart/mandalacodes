@@ -16,6 +16,7 @@ const CollectionsManager = lazy(() => import('./components/account/CollectionsMa
 const NotFound = lazy(() => import('./components/NotFound'));
 const LightweaverLanding = lazy(() => import('./components/lightweaver/LightweaverLanding'));
 const LightweaverControl = lazy(() => import('./components/lightweaver/LightweaverControl'));
+const LightweaverRelayHome = lazy(() => import('./components/lightweaver/LightweaverRelayHome'));
 
 import { useSeoMeta } from './useSeoMeta';
 import { DarkModeProvider } from './DarkModeContext';
@@ -53,8 +54,11 @@ const AppInner: React.FC = () => {
           >
             {ledHost ? (
               <Routes>
-                {/* led.mandalacodes.com — Lightweaver is the whole site */}
-                <Route path="/" element={<LightweaverLanding />} />
+                {/* led.mandalacodes.com — primary path is the relay home. */}
+                <Route path="/" element={<LightweaverRelayHome />} />
+                {/* Local-network control surface (when the customer types a
+                    specific card hostname). Kept for direct-LAN use. */}
+                <Route path="/local" element={<LightweaverLanding />} />
                 <Route path="/control/:host" element={<LightweaverControl />} />
                 {/* Legacy /lightweaver/* paths from before the subdomain move */}
                 <Route path="/lightweaver" element={<Navigate to="/" replace />} />
