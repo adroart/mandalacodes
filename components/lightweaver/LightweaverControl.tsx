@@ -36,7 +36,11 @@ const SWATCH_CLASS: Record<string, string> = {
   'warm-white': 'sw-warm-white',
   'cool-white': 'sw-cool-white',
   'photo-white': 'sw-photo-white',
+  'custom-color': 'sw-custom-color',
 };
+
+const hueToHsl = (h: number, s: number) =>
+  `hsl(${Math.round((h / 255) * 360)}, ${Math.round((s / 255) * 100)}%, 50%)`;
 
 const LightweaverControl: React.FC = () => {
   const params = useParams<{ host: string }>();
@@ -46,30 +50,40 @@ const LightweaverControl: React.FC = () => {
   const [currentId, setCurrentId] = useState('');
   const [blackoutOn, setBlackoutOn] = useState(false);
   const [identifyMsg, setIdentifyMsg] = useState('');
+  const [customHue, setCustomHue] = useState(32);
+  const [customSat, setCustomSat] = useState(230);
+  const [customBreathe, setCustomBreathe] = useState(false);
+  const [customDrift, setCustomDrift] = useState(false);
 
-  const sendPending = useRef<number | null>(null);
-  const sendInflight = useRef(false);
+  // Generic coalescing sender — one in-flight per key
+  const useCoalescedSender = (key: keyof import('../../lib/lightweaver/cardApi').ControlPayload) => {
+    const pending = useRef<number | null>(null);
+    const inflight = useRef(false);
+    return useCallback(
+      (val: number) => {
+        pending.current = val;
+        const flush = async () => {
+          if (inflight.current || pending.current === null) return;
+          inflight.current = true;
+          const v = pending.current;
+          pending.current = null;
+          try {
+            await postCardControl(host, { [key]: v } as any);
+          } catch {
+            /* swallow */
+          }
+          inflight.current = false;
+          if (pending.current !== null) flush();
+        };
+        flush();
+      },
+      [host, key],
+    );
+  };
 
-  const sendBrightness = useCallback(
-    async (val: number) => {
-      sendPending.current = val;
-      const flush = async () => {
-        if (sendInflight.current || sendPending.current === null) return;
-        sendInflight.current = true;
-        const v = sendPending.current;
-        sendPending.current = null;
-        try {
-          await postCardControl(host, { brightness: v });
-        } catch {
-          /* swallow — UI already shows position optimistically */
-        }
-        sendInflight.current = false;
-        if (sendPending.current !== null) flush();
-      };
-      flush();
-    },
-    [host],
-  );
+  const sendBrightness = useCoalescedSender('brightness');
+  const sendHue = useCoalescedSender('hue');
+  const sendSat = useCoalescedSender('saturation');
 
   const load = useCallback(async () => {
     if (!host) {
@@ -82,6 +96,16 @@ const LightweaverControl: React.FC = () => {
       rememberCard(host, status.piece?.name || host);
       setCurrentId(patterns.currentId);
       setBlackoutOn(!!status.blackout);
+      // Pull current color state by posting an empty control (the echo includes it)
+      try {
+        const echo = await postCardControl(host, {});
+        if (typeof echo.hue === 'number') setCustomHue(echo.hue);
+        if (typeof echo.saturation === 'number') setCustomSat(echo.saturation);
+        if (typeof echo.breathe === 'boolean') setCustomBreathe(echo.breathe);
+        if (typeof echo.drift === 'boolean') setCustomDrift(echo.drift);
+      } catch {
+        /* echo failure isn't fatal */
+      }
       setState({ kind: 'ready', status, patterns: patterns.patterns });
     } catch (err) {
       if (err instanceof CardUnreachableError && err.reason === 'mixed-content') {
@@ -115,6 +139,30 @@ const LightweaverControl: React.FC = () => {
     } catch {
       setBlackoutOn(!next);
     }
+  };
+
+  const onToggleBreathe = async () => {
+    const next = !customBreathe;
+    setCustomBreathe(next);
+    try { await postCardControl(host, { breathe: next }); } catch {}
+  };
+
+  const onToggleDrift = async () => {
+    const next = !customDrift;
+    setCustomDrift(next);
+    try { await postCardControl(host, { drift: next }); } catch {}
+  };
+
+  const onHueInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = parseInt(e.target.value, 10);
+    setCustomHue(v);
+    sendHue(v);
+  };
+
+  const onSatInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = parseInt(e.target.value, 10);
+    setCustomSat(v);
+    sendSat(v);
   };
 
   const onIdentify = async () => {
@@ -151,6 +199,10 @@ const LightweaverControl: React.FC = () => {
         .sw-warm-white{background:linear-gradient(90deg,#3a2c1a,#c89b5c,#f4ede0,#c89b5c,#3a2c1a);background-size:200% 100%;animation:lwFlow 8s linear infinite}
         .sw-cool-white{background:linear-gradient(90deg,#1a2a3a,#5c8ac8,#e0edf4,#5c8ac8,#1a2a3a);background-size:200% 100%;animation:lwFlow 8s linear infinite}
         .sw-photo-white{background:linear-gradient(90deg,#3a3328,#c8b89c,#f4ede0,#c8b89c,#3a3328);background-size:200% 100%;animation:lwFlow 10s linear infinite}
+        .sw-custom-color{background:linear-gradient(90deg,#e74c3c,#f39c12,#f1c40f,#27ae60,#3498db,#9b59b6,#e74c3c)}
+        .lw-hue-track{-webkit-appearance:none;appearance:none;height:14px;border-radius:7px;background:linear-gradient(90deg,#e74c3c,#f39c12,#f1c40f,#27ae60,#3498db,#9b59b6,#e74c3c);outline:none;width:100%}
+        .lw-hue-track::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#f4ede0;border:2px solid #0a0a0a;cursor:pointer}
+        .lw-hue-track::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#f4ede0;border:2px solid #0a0a0a;cursor:pointer}
         @keyframes lwFlow{0%{background-position:0 0}100%{background-position:200% 0}}
         @keyframes lwScan{0%{background-position:100% 0}100%{background-position:-100% 0}}
         @keyframes lwFlicker{0%,100%{opacity:.9}25%{opacity:1}50%{opacity:.7}75%{opacity:1}}
@@ -223,6 +275,8 @@ const LightweaverControl: React.FC = () => {
                 {state.patterns.map((p) => {
                   const active = p.id === currentId;
                   const swClass = SWATCH_CLASS[p.id] || '';
+                  const swStyle: React.CSSProperties = { height: 64 };
+                  if (p.id === 'custom-color') swStyle.background = hueToHsl(customHue, customSat);
                   return (
                     <button
                       key={p.id}
@@ -233,7 +287,7 @@ const LightweaverControl: React.FC = () => {
                           : 'border-wood-200 dark:border-wood-700 hover:border-bronze-500 bg-paper-100 dark:bg-wood-800'
                       }`}
                     >
-                      <div className={`sw ${swClass} mb-2`} style={{ height: 64 }} />
+                      <div className={`sw ${swClass} mb-2`} style={swStyle} />
                       <div className="text-sm font-medium text-wood-900 dark:text-paper-50">
                         {p.label}
                       </div>
@@ -245,6 +299,69 @@ const LightweaverControl: React.FC = () => {
                 })}
               </div>
             </section>
+
+            {currentId === 'custom-color' && (
+              <section className="bg-paper-100 dark:bg-wood-800 border border-bronze-500 rounded-md p-4 mb-4 flex flex-col gap-3">
+                <div
+                  className="rounded-md border border-wood-200 dark:border-wood-700"
+                  style={{ height: 42, background: hueToHsl(customHue, customSat) }}
+                />
+                <div className="flex items-center gap-3">
+                  <span className="text-xs uppercase tracking-[0.15em] text-bronze-600 dark:text-bronze-300 w-16 flex-shrink-0">
+                    Hue
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={255}
+                    value={customHue}
+                    onChange={onHueInput}
+                    className="lw-hue-track"
+                  />
+                  <span className="text-xs font-mono text-bronze-600 dark:text-bronze-300 min-w-[30px] text-right">
+                    {customHue}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs uppercase tracking-[0.15em] text-bronze-600 dark:text-bronze-300 w-16 flex-shrink-0">
+                    Sat
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={255}
+                    value={customSat}
+                    onChange={onSatInput}
+                    className="flex-1 accent-bronze-600"
+                  />
+                  <span className="text-xs font-mono text-bronze-600 dark:text-bronze-300 min-w-[30px] text-right">
+                    {customSat}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={onToggleBreathe}
+                    className={`flex-1 px-3 py-2 rounded-md text-xs uppercase tracking-wider transition-colors ${
+                      customBreathe
+                        ? 'bg-bronze-600 text-paper-50'
+                        : 'border border-wood-300 dark:border-wood-600 text-wood-700 dark:text-paper-300'
+                    }`}
+                  >
+                    Breathe
+                  </button>
+                  <button
+                    onClick={onToggleDrift}
+                    className={`flex-1 px-3 py-2 rounded-md text-xs uppercase tracking-wider transition-colors ${
+                      customDrift
+                        ? 'bg-bronze-600 text-paper-50'
+                        : 'border border-wood-300 dark:border-wood-600 text-wood-700 dark:text-paper-300'
+                    }`}
+                  >
+                    Drift
+                  </button>
+                </div>
+              </section>
+            )}
 
             <section className="bg-paper-100 dark:bg-wood-800 border border-wood-200 dark:border-wood-700 rounded-md px-4 py-3 mb-4 flex items-center gap-3">
               <span className="text-xs uppercase tracking-[0.15em] text-bronze-600 dark:text-bronze-300 flex-shrink-0">

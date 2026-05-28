@@ -48,6 +48,10 @@ export type ControlPayload = {
   next?: boolean;
   previous?: boolean;
   patternId?: string;
+  hue?: number;               // 0..255 (FastLED hue space, custom color)
+  saturation?: number;        // 0..255
+  breathe?: boolean;
+  drift?: boolean;
 };
 
 export type ControlEcho = {
@@ -56,6 +60,10 @@ export type ControlEcho = {
   speed: number;
   hueShift: number;
   blackout: boolean;
+  hue?: number;
+  saturation?: number;
+  breathe?: boolean;
+  drift?: boolean;
 };
 
 export class CardUnreachableError extends Error {
