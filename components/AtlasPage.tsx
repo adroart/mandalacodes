@@ -58,10 +58,29 @@ const AtlasPage: React.FC = () => {
   const globeBoxRef = useRef<HTMLDivElement | null>(null);
   const [globeSize, setGlobeSize] = useState({ width: 0, height: 0 });
 
-  /* Read from the local seed. The ledger backend lives in a follow-up PR;
-     until then `data/atlasSeed.ts` is the source of truth for placements. */
+  /* Fetch the live atlas from /api/atlas. On any failure (dev server with
+     no Functions runtime, ledger not yet seeded, network blip), fall back
+     to the local seed so the page always renders something. */
   useEffect(() => {
-    setState({ kind: 'ready', data: buildSeedAtlasState() });
+    let active = true;
+    fetch('/api/atlas')
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`atlas ${res.status}`);
+        const body = await res.json();
+        if (!body || body.ok !== true || !body.state) {
+          throw new Error('atlas malformed');
+        }
+        return body.state as PublicAtlasState;
+      })
+      .then((data) => {
+        if (active) setState({ kind: 'ready', data });
+      })
+      .catch(() => {
+        if (active) setState({ kind: 'ready', data: buildSeedAtlasState() });
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   /* Enrich pieces with titles, build the series list for the filter. */

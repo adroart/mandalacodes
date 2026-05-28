@@ -6,10 +6,16 @@ const UniversalLanguageCard = lazy(() => import('./components/UniversalLanguageC
 const OracleGateway = lazy(() => import('./components/OracleGateway'));
 const OracleSystems = lazy(() => import('./components/OracleSystems'));
 const AtlasPage = lazy(() => import('./components/AtlasPage'));
+const AdminLogin = lazy(() => import('./components/AdminLogin'));
+const AdminAtlas = lazy(() => import('./components/AdminAtlas'));
+const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
+const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
 const OracleProfile = lazy(() => import('./components/OracleProfile'));
 const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
 const CollectionsManager = lazy(() => import('./components/account/CollectionsManager'));
 const NotFound = lazy(() => import('./components/NotFound'));
+const LightweaverLanding = lazy(() => import('./components/lightweaver/LightweaverLanding'));
+const LightweaverControl = lazy(() => import('./components/lightweaver/LightweaverControl'));
 
 import { useSeoMeta } from './useSeoMeta';
 import { DarkModeProvider } from './DarkModeContext';
@@ -47,6 +53,13 @@ const AppInner: React.FC = () => {
 
               {/* Atlas — globe of placed Universal Language pieces with kinship arcs */}
               <Route path="/atlas" element={<AtlasPage />} />
+              <Route path="/atlas/claim" element={<StewardClaim />} />
+              <Route path="/atlas/edit" element={<StewardEdit />} />
+
+              {/* Admin — atlas ledger + steward key issuance */}
+              <Route path="/admin" element={<Navigate to="/admin/atlas" replace />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/atlas" element={<AdminAtlas />} />
 
               {/* Hologenetic Profile (local-first, optionally synced when signed in) */}
               <Route path="/profile" element={<OracleProfile />} />
@@ -54,6 +67,10 @@ const AppInner: React.FC = () => {
               {/* Account dashboard + collections (only reachable when accounts flag is on) */}
               <Route path="/account" element={<AccountDashboard />} />
               <Route path="/account/collections" element={<CollectionsManager />} />
+
+              {/* Lightweaver — light installation control */}
+              <Route path="/lightweaver" element={<LightweaverLanding />} />
+              <Route path="/lightweaver/control/:host" element={<LightweaverControl />} />
 
               {/* Legacy /oracle/* paths — redirect to the new flat structure.
                   Catches anyone who copied a URL from the old domain before adrianrasmussen.com

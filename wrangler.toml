@@ -2,6 +2,16 @@ name = "mandalacodes"
 compatibility_date = "2024-09-23"
 pages_build_output_dir = "dist"
 
+# R2 bucket for the Atlas ledger (city-level world map of where every UL piece lives).
+# Provisioned 2026-05-24 via `wrangler r2 bucket create mandalacodes-atlas`.
+# Three JSON objects live in here:
+#   atlas/ledger.json   — append-only LedgerEvent[]
+#   atlas/stewards.json — private StewardRecord[] (never served publicly)
+#   atlas/public.json   — derived PublicAtlasState, regenerated after every write
+[[r2_buckets]]
+binding = "ATLAS_BUCKET"
+bucket_name = "mandalacodes-atlas"
+
 # D1 database — provisioned 2026-05-23 via `wrangler d1 create mandalacodes-oracle`.
 # Region: APAC. Used by future accounts work (Phase 1b — Clerk + birthdate energy panels).
 # No tables yet; v1 oracle reader is stateless and does not query DB.
