@@ -1,19 +1,23 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { PieceRecord, CityCentroid } from '../../types';
+import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/clerk-react';
+import type { PieceRecord, CityCentroid, StewardRecord } from '../../types';
 import { CITIES, getCityById } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
 
 /**
  * Steward edit page. Rendered at `/atlas/edit`.
  *
- * Relies on the HttpOnly `steward_session` cookie set by the claim endpoint.
- * On mount, we POST `/api/atlas/steward/update` with an empty body — per the
- * spec (docs/ledger-api.md) this is a no-op that returns the current
- * `PieceRecord` from the session's scope, which we use as the load. If the
- * cookie is missing or expired, that POST returns 401 and we send the user
- * back to `/atlas/claim`.
+ * Requires Clerk auth. On mount we POST /api/atlas/steward/claim with the
+ * bearer token to load every piece bound to this user. For now we render the
+ * first matching piece — multi-piece picker is a follow-up. If no record is
+ * bound to this user, we send them to /atlas/claim.
  */
+
+type ClaimResponse = {
+  ok: boolean;
+  claimed: Array<{ steward: StewardRecord; piece: PieceRecord | null }>;
+};
 
 type UpdateResponse = {
   ok: boolean;
@@ -38,7 +42,11 @@ const formatCityLabel = (city: CityCentroid): string => {
 
 const StewardEdit: React.FC = () => {
   const navigate = useNavigate();
+  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { signOut } = useClerk();
   const [piece, setPiece] = useState<PieceRecord | null>(null);
+  const [stewardRecord, setStewardRecord] = useState<StewardRecord | null>(null);
+  const [multiPiece, setMultiPiece] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -51,20 +59,30 @@ const StewardEdit: React.FC = () => {
   const [cityOpen, setCityOpen] = useState(false);
   const comboRef = useRef<HTMLDivElement>(null);
 
-  // Initial rehydrate via empty-body update. Spec guarantees this returns
-  // the current PieceRecord with no event appended.
+  // Load claimed pieces via Clerk-authed claim call.
   useEffect(() => {
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      navigate('/atlas/claim', { replace: true });
+      return;
+    }
     let cancelled = false;
     const load = async () => {
       try {
-        const res = await fetch('/api/atlas/steward/update', {
+        const token = await getToken();
+        const res = await fetch('/api/atlas/steward/claim', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify({}),
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         });
         if (cancelled) return;
         if (res.status === 401) {
+          navigate('/atlas/claim', { replace: true });
+          return;
+        }
+        if (res.status === 404) {
           navigate('/atlas/claim', { replace: true });
           return;
         }
@@ -72,9 +90,17 @@ const StewardEdit: React.FC = () => {
           setLoadError('Could not load your piece. Please try again.');
           return;
         }
-        const data: UpdateResponse = await res.json();
+        const data: ClaimResponse = await res.json();
         if (cancelled) return;
-        setPiece(data.piece);
+        const entries = data.claimed ?? [];
+        if (entries.length === 0) {
+          navigate('/atlas/claim', { replace: true });
+          return;
+        }
+        setMultiPiece(entries.length > 1);
+        const first = entries[0];
+        setStewardRecord(first.steward);
+        setPiece(first.piece);
       } catch {
         if (!cancelled) setLoadError('Could not load your piece. Please try again.');
       } finally {
@@ -86,7 +112,7 @@ const StewardEdit: React.FC = () => {
       cancelled = true;
       if (savedTimerRef.current) window.clearTimeout(savedTimerRef.current);
     };
-  }, [navigate]);
+  }, [isLoaded, isSignedIn, getToken, navigate]);
 
   // Click-outside to close the city combobox
   useEffect(() => {
@@ -107,14 +133,22 @@ const StewardEdit: React.FC = () => {
   };
 
   const submitUpdate = async (body: { cityId?: string; isPublic?: boolean }) => {
+    if (!stewardRecord) return;
     setSaving(true);
     setSaveError(null);
     try {
+      const token = await getToken();
       const res = await fetch('/api/atlas/steward/update', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          ...body,
+          pieceId: stewardRecord.pieceId,
+          editionNumber: stewardRecord.editionNumber,
+        }),
       });
       if (res.status === 401) {
         navigate('/atlas/claim', { replace: true });
@@ -150,15 +184,8 @@ const StewardEdit: React.FC = () => {
     submitUpdate({ isPublic: !piece.isPublic });
   };
 
-  // Sign out: navigate back to claim. The steward_session cookie is HttpOnly,
-  // so JS can't clear it directly. The server enforces expiry; on the claim
-  // page no checks read it, and the next claim will overwrite it. Until then,
-  // returning to /atlas/edit would still rehydrate — so we just send the user
-  // to claim and trust the 30-day expiry from the spec.
-  const handleSignOut = () => {
-    // Best-effort: attempt to clear a non-HttpOnly mirror if anything exists.
-    // HttpOnly cookies will be unaffected by this line, which is fine.
-    document.cookie = 'steward_session=; Max-Age=0; Path=/; SameSite=Lax';
+  const handleSignOut = async () => {
+    await signOut();
     navigate('/atlas/claim', { replace: true });
   };
 
@@ -364,6 +391,12 @@ const StewardEdit: React.FC = () => {
             <span className="font-serif italic text-base text-stone-600">{saveError}</span>
           )}
         </div>
+
+        {multiPiece && (
+          <p className="font-serif italic text-sm text-stone-600 text-center pt-4">
+            You steward more than one piece. Editing for additional pieces is coming soon — for now, this page edits the first.
+          </p>
+        )}
 
         {/* Sign out */}
         <div className="text-center pt-6 border-t border-wood-200">

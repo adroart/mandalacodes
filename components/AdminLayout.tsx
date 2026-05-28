@@ -1,51 +1,115 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
 
+/**
+ * Wraps admin routes. Checks Clerk auth client-side, then verifies the user's
+ * email is on the admin allowlist by pinging /api/atlas (or any admin-gated
+ * endpoint we trust to return 403 cleanly). Falls back to /admin/login on
+ * any unauthenticated state.
+ *
+ * Two-stage check: Clerk says "you are signed in" → we still ask the server
+ * "but are you admin?" The server is the only source of truth on allowlist.
+ */
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [checking, setChecking] = useState(true);
-  const [authed, setAuthed] = useState(false);
+  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const navigate = useNavigate();
   const location = useLocation();
+  const [adminVerified, setAdminVerified] = useState<'checking' | 'yes' | 'no'>('checking');
 
   useEffect(() => {
-    fetch('/api/admin/verify')
-      .then(r => r.json())
-      .then(data => {
-        if (data.ok) {
-          setAuthed(true);
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      navigate('/admin/login', {
+        state: { from: location.pathname },
+        replace: true,
+      });
+      return;
+    }
+    // Ping an admin-gated endpoint. /api/atlas/stewards is GET-only and
+    // requires admin; 200 means allowlist passed, 403 means signed-in but
+    // not admin, 401 means token problem.
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch('/api/atlas/stewards', {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (cancelled) return;
+        if (res.ok) {
+          setAdminVerified('yes');
         } else {
-          navigate('/admin/login', { state: { from: location.pathname }, replace: true });
+          setAdminVerified('no');
         }
-      })
-      .catch(() => navigate('/admin/login', { replace: true }))
-      .finally(() => setChecking(false));
-  }, []);
+      } catch {
+        if (!cancelled) setAdminVerified('no');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn, getToken, navigate, location.pathname]);
 
   const logout = async () => {
-    await fetch('/api/admin/logout', { method: 'POST' });
+    await signOut();
     navigate('/admin/login', { replace: true });
   };
 
-  if (checking) {
+  if (!isLoaded || adminVerified === 'checking') {
     return (
       <div className="min-h-screen bg-paper-50 flex items-center justify-center">
-        <span className="font-label text-xs uppercase tracking-[0.2em] text-wood-400 font-semibold">Checking session...</span>
+        <span className="font-label text-xs uppercase tracking-[0.2em] text-wood-400 font-semibold">
+          Checking session...
+        </span>
       </div>
     );
   }
 
-  if (!authed) return null;
+  if (adminVerified === 'no') {
+    return (
+      <div className="min-h-screen bg-paper-50 flex items-center justify-center px-6">
+        <div className="max-w-md text-center">
+          <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 font-semibold mb-3">
+            Access denied
+          </p>
+          <h1 className="font-serif text-2xl text-wood-900 font-medium mb-4">
+            Not an admin.
+          </h1>
+          <p className="font-sans text-sm text-wood-600 leading-relaxed mb-8">
+            You are signed in as{' '}
+            <span className="text-wood-900">
+              {user?.primaryEmailAddress?.emailAddress ?? 'unknown'}
+            </span>
+            , but that email is not on the admin allowlist.
+          </p>
+          <button
+            onClick={logout}
+            className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-500 hover:text-wood-900 transition-colors font-semibold"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-paper-50">
       <div className="border-b border-wood-200 bg-white px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-5">
-          <Link to="/admin" className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 hover:text-bronze-800 transition-colors font-semibold flex items-center gap-1.5">
+          <Link
+            to="/admin/atlas"
+            className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 hover:text-bronze-800 transition-colors font-semibold flex items-center gap-1.5"
+          >
             ← Admin
           </Link>
           <span className="text-wood-200">|</span>
-          <Link to="/admin/files" className="font-sans text-sm text-wood-500 hover:text-wood-900 transition-colors">Files</Link>
-          <Link to="/keystatic" className="font-sans text-sm text-wood-500 hover:text-wood-900 transition-colors">Content</Link>
+          <span className="font-sans text-xs text-wood-400">
+            {user?.primaryEmailAddress?.emailAddress}
+          </span>
         </div>
         <button
           onClick={logout}
