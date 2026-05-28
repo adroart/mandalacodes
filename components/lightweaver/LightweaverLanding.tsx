@@ -1,9 +1,14 @@
 /**
  * LightweaverLanding
  *
- * Entrance for visitors and owners arriving at /lightweaver. Two doors:
- * 1. View my piece — opens or registers a card hostname, routes to /lightweaver/control/<host>
- * 2. Design mode — opens the designer app (separate Vite project in led/lightweaver/)
+ * Entrance for visitors and owners. On led.mandalacodes.com this is the root
+ * page; on mandalacodes.com it's still reachable at /lightweaver for backward
+ * compatibility. Two doors:
+ *
+ *   1. View my piece — opens or registers a card hostname, routes to
+ *      /control/<host> on the led subdomain (or /lightweaver/control/<host>
+ *      on the legacy path).
+ *   2. Design mode — opens the static designer bundle at /design/.
  *
  * A list of previously-visited cards is shown when present, so an owner with
  * several pieces can jump straight in without retyping the hostname.
@@ -13,7 +18,21 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getSavedCards, sanitizeHost, type SavedCard } from '../../lib/lightweaver/cards';
 
-const DESIGNER_URL = 'https://design.mandalacodes.com'; // placeholder; falls back to /lightweaver/design if route exists
+// Designer lives at /design/index.html as a static bundle on whichever
+// domain serves the SPA. Works for both mandalacodes.com/design and
+// led.mandalacodes.com/design.
+const DESIGNER_URL = '/design/';
+
+// Pick the right base path for control links based on hostname. On
+// led.mandalacodes.com the Lightweaver app is the root, so /control/:host
+// is the canonical route. On the legacy mandalacodes.com path it sits under
+// /lightweaver/control/:host.
+const isLedHost = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const h = window.location.hostname;
+  return h === 'led.mandalacodes.com' || h.startsWith('led.');
+};
+const controlPath = (host: string) => (isLedHost() ? `/control/${host}` : `/lightweaver/control/${host}`);
 
 const LightweaverLanding: React.FC = () => {
   const navigate = useNavigate();
@@ -27,7 +46,7 @@ const LightweaverLanding: React.FC = () => {
   const openCard = (rawHost: string) => {
     const clean = sanitizeHost(rawHost);
     if (!clean) return;
-    navigate(`/lightweaver/control/${clean}`);
+    navigate(controlPath(clean));
   };
 
   const submit = (e: React.FormEvent) => {
@@ -97,7 +116,7 @@ const LightweaverLanding: React.FC = () => {
               {saved.map((card) => (
                 <li key={card.host}>
                   <Link
-                    to={`/lightweaver/control/${card.host}`}
+                    to={controlPath(card.host)}
                     className="flex items-center justify-between bg-paper-100 dark:bg-wood-800 border border-wood-200 dark:border-wood-700 rounded-md px-4 py-3 hover:border-bronze-500 transition-colors"
                   >
                     <div>
@@ -126,8 +145,6 @@ const LightweaverLanding: React.FC = () => {
           </p>
           <a
             href={DESIGNER_URL}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-block px-6 py-3 border border-wood-300 dark:border-wood-600 rounded-md text-sm uppercase tracking-wider text-wood-900 dark:text-paper-50 hover:border-bronze-500 transition-colors"
           >
             Open designer →
