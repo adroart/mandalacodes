@@ -33,6 +33,9 @@ const SWATCH_CLASS: Record<string, string> = {
   rainbow: 'sw-rainbow',
   breathe: 'sw-breathe',
   scanner: 'sw-scanner',
+  sunset: 'sw-sunset',
+  twinkle: 'sw-twinkle',
+  wave: 'sw-wave',
   'warm-white': 'sw-warm-white',
   'cool-white': 'sw-cool-white',
   'photo-white': 'sw-photo-white',
@@ -54,6 +57,8 @@ const LightweaverControl: React.FC = () => {
   const [customSat, setCustomSat] = useState(230);
   const [customBreathe, setCustomBreathe] = useState(false);
   const [customDrift, setCustomDrift] = useState(false);
+  const [driftMin, setDriftMin] = useState(0);
+  const [driftMax, setDriftMax] = useState(255);
 
   // Generic coalescing sender — one in-flight per key
   const useCoalescedSender = (key: keyof import('../../lib/lightweaver/cardApi').ControlPayload) => {
@@ -103,6 +108,8 @@ const LightweaverControl: React.FC = () => {
         if (typeof echo.saturation === 'number') setCustomSat(echo.saturation);
         if (typeof echo.breathe === 'boolean') setCustomBreathe(echo.breathe);
         if (typeof echo.drift === 'boolean') setCustomDrift(echo.drift);
+        if (typeof echo.driftMin === 'number') setDriftMin(echo.driftMin);
+        if (typeof echo.driftMax === 'number') setDriftMax(echo.driftMax);
       } catch {
         /* echo failure isn't fatal */
       }
@@ -153,6 +160,19 @@ const LightweaverControl: React.FC = () => {
     try { await postCardControl(host, { drift: next }); } catch {}
   };
 
+  const setPalette = async (lo: number, hi: number) => {
+    setDriftMin(lo);
+    setDriftMax(hi);
+    if (!customDrift) setCustomDrift(true);
+    try {
+      await postCardControl(host, { drift: true, driftMin: lo, driftMax: hi });
+    } catch {}
+  };
+
+  const isWarmPalette = driftMin === 0 && driftMax === 60;
+  const isCoolPalette = driftMin === 130 && driftMax === 200;
+  const isRainbowPalette = driftMin === 0 && driftMax === 255;
+
   const onHueInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = parseInt(e.target.value, 10);
     setCustomHue(v);
@@ -166,13 +186,13 @@ const LightweaverControl: React.FC = () => {
   };
 
   const onIdentify = async () => {
-    setIdentifyMsg('Flashing…');
+    setIdentifyMsg('Watch the strip — flashing 3 times.');
     try {
       await postCardIdentify(host);
-      setTimeout(() => setIdentifyMsg(''), 2200);
+      setTimeout(() => setIdentifyMsg(''), 3000);
     } catch {
-      setIdentifyMsg('Could not reach card');
-      setTimeout(() => setIdentifyMsg(''), 2500);
+      setIdentifyMsg('Could not reach the card on this network.');
+      setTimeout(() => setIdentifyMsg(''), 3000);
     }
   };
 
@@ -196,6 +216,9 @@ const LightweaverControl: React.FC = () => {
         .sw-rainbow{background:linear-gradient(90deg,#e74c3c,#f39c12,#f1c40f,#27ae60,#3498db,#9b59b6,#e74c3c);background-size:200% 100%;animation:lwFlow 4s linear infinite}
         .sw-breathe{background:radial-gradient(circle at 50% 50%,#c89b5c,#5a3a1a 60%,#1a1208);animation:lwBreathe 3s ease-in-out infinite}
         .sw-scanner{background:linear-gradient(90deg,#000 0%,#000 30%,#c89b5c 50%,#000 70%,#000 100%);background-size:200% 100%;animation:lwScan 2.5s linear infinite}
+        .sw-sunset{background:linear-gradient(90deg,#2a0830,#8a2050,#d04a18,#f1c40f,#d04a18,#8a2050,#2a0830);background-size:200% 100%;animation:lwFlow 9s linear infinite}
+        .sw-twinkle{background-color:#3a2c1a;background-image:radial-gradient(circle at 20% 40%,#f4ede0 0%,transparent 8%),radial-gradient(circle at 70% 60%,#f4ede0 0%,transparent 6%),radial-gradient(circle at 45% 80%,#f4ede0 0%,transparent 5%),linear-gradient(180deg,#3a2c1a,#1a1208);animation:lwFlicker 2s ease-in-out infinite}
+        .sw-wave{background:linear-gradient(90deg,#1a1a4a,#5c5cc8,#9b9be0,#5c5cc8,#1a1a4a);background-size:200% 100%;animation:lwFlow 5s linear infinite}
         .sw-warm-white{background:linear-gradient(90deg,#3a2c1a,#c89b5c,#f4ede0,#c89b5c,#3a2c1a);background-size:200% 100%;animation:lwFlow 8s linear infinite}
         .sw-cool-white{background:linear-gradient(90deg,#1a2a3a,#5c8ac8,#e0edf4,#5c8ac8,#1a2a3a);background-size:200% 100%;animation:lwFlow 8s linear infinite}
         .sw-photo-white{background:linear-gradient(90deg,#3a3328,#c8b89c,#f4ede0,#c8b89c,#3a3328);background-size:200% 100%;animation:lwFlow 10s linear infinite}
@@ -239,7 +262,7 @@ const LightweaverControl: React.FC = () => {
               Your browser blocks secure pages from talking to local devices over plain HTTP.
             </p>
             <p className="text-sm text-wood-600 dark:text-paper-300 mb-4">
-              To control this card, open the card's onboard page directly:
+              Open the card directly. Same controls, same network:
             </p>
             <a
               href={`http://${host}.local`}
@@ -252,12 +275,27 @@ const LightweaverControl: React.FC = () => {
 
         {state.kind === 'unreachable' && (
           <div className="bg-paper-100 dark:bg-wood-800 border border-wood-200 dark:border-wood-700 rounded-md p-6 mb-6">
-            <p className="text-sm text-wood-900 dark:text-paper-50 mb-2">
-              Could not reach <span className="font-mono">{host}.local</span> ({state.reason}).
+            <p className="text-sm text-wood-900 dark:text-paper-50 mb-3">
+              Can't reach <span className="font-mono">{host}.local</span> on this network.
             </p>
-            <p className="text-sm text-wood-600 dark:text-paper-300 mb-4">
-              Make sure you're on the same WiFi as the card. If the card isn't online yet, plug it
-              in and run the setup again.
+            <p className="text-xs text-wood-600 dark:text-paper-400 mb-4 leading-relaxed">
+              If the LEDs are slowly pulsing in warm white, the card is in setup mode
+              waiting for new WiFi credentials. Here's how to bring it back:
+            </p>
+            <ol className="text-sm text-wood-900 dark:text-paper-50 space-y-2 mb-5 pl-5 list-decimal">
+              <li>Open <strong>WiFi settings</strong> on your phone or laptop.</li>
+              <li>
+                Look for a network called <span className="font-mono">Lightweaver-XXXX</span> and join it.
+              </li>
+              <li>
+                The setup page should pop up on its own. Enter your home WiFi name and password,
+                then tap <strong>Save and reboot</strong>. The card will join the new network and
+                this page will work again.
+              </li>
+            </ol>
+            <p className="text-xs text-wood-500 dark:text-paper-400 mb-4 leading-relaxed">
+              If the LEDs are completely off and the card isn't broadcasting <span className="font-mono">Lightweaver-XXXX</span>,
+              power-cycle it (unplug, wait 5 seconds, plug back in) and try again.
             </p>
             <button
               onClick={load}
@@ -271,28 +309,25 @@ const LightweaverControl: React.FC = () => {
         {state.kind === 'ready' && (
           <>
             <section className="mb-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {state.patterns.map((p) => {
                   const active = p.id === currentId;
                   const swClass = SWATCH_CLASS[p.id] || '';
-                  const swStyle: React.CSSProperties = { height: 64 };
+                  const swStyle: React.CSSProperties = { height: 54 };
                   if (p.id === 'custom-color') swStyle.background = hueToHsl(customHue, customSat);
                   return (
                     <button
                       key={p.id}
                       onClick={() => onPickPattern(p.id)}
-                      className={`text-left rounded-md p-3 border transition-colors ${
+                      className={`text-center rounded-md p-2 border transition-colors ${
                         active
                           ? 'border-bronze-500 bg-bronze-50 dark:bg-wood-800'
                           : 'border-wood-200 dark:border-wood-700 hover:border-bronze-500 bg-paper-100 dark:bg-wood-800'
                       }`}
                     >
-                      <div className={`sw ${swClass} mb-2`} style={swStyle} />
-                      <div className="text-sm font-medium text-wood-900 dark:text-paper-50">
+                      <div className={`sw ${swClass} mb-1`} style={swStyle} />
+                      <div className="text-xs font-medium text-wood-900 dark:text-paper-50">
                         {p.label}
-                      </div>
-                      <div className="text-xs text-wood-500 dark:text-paper-400 uppercase tracking-wider">
-                        {p.mode}
                       </div>
                     </button>
                   );
@@ -341,23 +376,54 @@ const LightweaverControl: React.FC = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={onToggleBreathe}
-                    className={`flex-1 px-3 py-2 rounded-md text-xs uppercase tracking-wider transition-colors ${
+                    className={`flex-1 px-3 py-3 rounded-md transition-colors flex flex-col items-center gap-0.5 ${
                       customBreathe
                         ? 'bg-bronze-600 text-paper-50'
                         : 'border border-wood-300 dark:border-wood-600 text-wood-700 dark:text-paper-300'
                     }`}
                   >
-                    Breathe
+                    <span className="text-xs uppercase tracking-wider">Breathe</span>
+                    <span className="text-[10px] opacity-70">slow fade in &amp; out</span>
                   </button>
                   <button
                     onClick={onToggleDrift}
-                    className={`flex-1 px-3 py-2 rounded-md text-xs uppercase tracking-wider transition-colors ${
+                    className={`flex-1 px-3 py-3 rounded-md transition-colors flex flex-col items-center gap-0.5 ${
                       customDrift
                         ? 'bg-bronze-600 text-paper-50'
                         : 'border border-wood-300 dark:border-wood-600 text-wood-700 dark:text-paper-300'
                     }`}
                   >
-                    Drift
+                    <span className="text-xs uppercase tracking-wider">Drift</span>
+                    <span className="text-[10px] opacity-70">slowly cycle hues</span>
+                  </button>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => setPalette(0, 60)}
+                    className={`flex-1 py-2 rounded-full text-[11px] uppercase tracking-wider font-semibold text-wood-900 ${
+                      isWarmPalette ? 'ring-2 ring-bronze-500 opacity-100' : 'opacity-70 hover:opacity-100'
+                    }`}
+                    style={{ background: 'linear-gradient(90deg,#8a2008,#d04a18,#f1c40f)' }}
+                  >
+                    Warm
+                  </button>
+                  <button
+                    onClick={() => setPalette(130, 200)}
+                    className={`flex-1 py-2 rounded-full text-[11px] uppercase tracking-wider font-semibold text-paper-50 ${
+                      isCoolPalette ? 'ring-2 ring-bronze-500 opacity-100' : 'opacity-70 hover:opacity-100'
+                    }`}
+                    style={{ background: 'linear-gradient(90deg,#0a3a4a,#2a8a9a,#5c5cc8)' }}
+                  >
+                    Cool
+                  </button>
+                  <button
+                    onClick={() => setPalette(0, 255)}
+                    className={`flex-1 py-2 rounded-full text-[11px] uppercase tracking-wider font-semibold text-wood-900 ${
+                      isRainbowPalette ? 'ring-2 ring-bronze-500 opacity-100' : 'opacity-70 hover:opacity-100'
+                    }`}
+                    style={{ background: 'linear-gradient(90deg,#e74c3c,#f39c12,#27ae60,#3498db,#9b59b6)' }}
+                  >
+                    Rainbow
                   </button>
                 </div>
               </section>
@@ -394,8 +460,9 @@ const LightweaverControl: React.FC = () => {
               <button
                 onClick={onIdentify}
                 className="px-5 py-3 rounded-md text-sm uppercase tracking-wider bg-paper-100 dark:bg-wood-800 border border-wood-200 dark:border-wood-700 text-wood-900 dark:text-paper-50"
+                title="Flashes the strip 3 times so you can tell which physical card this is"
               >
-                Identify
+                Find this card
               </button>
               {identifyMsg && (
                 <span className="text-xs text-wood-500 dark:text-paper-400 self-center">
