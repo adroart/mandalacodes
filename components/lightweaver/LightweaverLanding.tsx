@@ -38,10 +38,61 @@ const LightweaverLanding: React.FC = () => {
   const navigate = useNavigate();
   const [host, setHost] = useState('lightweaver');
   const [saved, setSaved] = useState<SavedCard[]>([]);
+  const [discovering, setDiscovering] = useState(true);
 
   useEffect(() => {
-    setSaved(getSavedCards());
-  }, []);
+    const recent = getSavedCards();
+    setSaved(recent);
+
+    // Auto-discover: try the most recent card first, then 'lightweaver'.
+    // If a /api/status answers within 1500ms, jump straight to its control
+    // page. If nothing answers, fall through to the manual input.
+    //
+    // Mixed-content reality: this site is HTTPS, the card is HTTP, so the
+    // fetch will be blocked on production. In that case the catch fires
+    // quickly and we drop to the input UI — no worse than today. On a
+    // localhost dev server the call goes through.
+    const candidates = [
+      ...recent.slice(0, 1).map((c) => c.host),
+      'lightweaver',
+    ];
+    const unique = [...new Set(candidates)];
+    let cancelled = false;
+
+    const tryHost = async (h: string): Promise<string | null> => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 1500);
+        const r = await fetch(`http://${h}.local/api/status`, {
+          signal: controller.signal,
+          cache: 'no-store',
+        });
+        clearTimeout(timer);
+        if (!r.ok) return null;
+        const j = await r.json();
+        if (!j?.ok) return null;
+        return h;
+      } catch {
+        return null;
+      }
+    };
+
+    (async () => {
+      for (const h of unique) {
+        if (cancelled) return;
+        const found = await tryHost(h);
+        if (found && !cancelled) {
+          navigate(controlPath(found));
+          return;
+        }
+      }
+      if (!cancelled) setDiscovering(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
 
   const openCard = (rawHost: string) => {
     const clean = sanitizeHost(rawHost);
@@ -53,6 +104,23 @@ const LightweaverLanding: React.FC = () => {
     e.preventDefault();
     openCard(host);
   };
+
+  // While we're checking, show a minimal "Looking for your piece…" splash
+  // so the page doesn't flash the manual form for a beat then disappear.
+  if (discovering) {
+    return (
+      <div className="min-h-screen bg-paper-50 dark:bg-wood-900 transition-colors flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-3xl font-light tracking-tight text-wood-900 dark:text-paper-50 mb-3">
+            Lightweaver
+          </h1>
+          <p className="text-sm text-bronze-600 dark:text-bronze-300 uppercase tracking-[0.2em]">
+            Looking for your piece…
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-paper-50 dark:bg-wood-900 transition-colors">
