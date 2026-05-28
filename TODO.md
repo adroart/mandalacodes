@@ -4,6 +4,10 @@ Living list of what's outstanding on the oracle. Loose priority order — top it
 
 ## Soon
 
+- [ ] **Smoke-test Clerk auth on production.** PR #5 merged 2026-05-28. Need to create the Clerk app at clerk.com (name: `mandalacodes`, enable Google + email), copy the publishable + secret keys, add three env vars to Cloudflare Pages → mandalacodes → Settings → Environment variables → Production: `VITE_CLERK_PUBLISHABLE_KEY` (plaintext), `CLERK_SECRET_KEY` (encrypted), `ADMIN_EMAILS=sccsclothing@gmail.com` (plaintext). Then trigger a redeploy and sign in at `/admin/login`. Until the env vars are saved, `/admin/atlas` and `/atlas/claim` show broken Clerk widgets; `/atlas` itself keeps working.
+
+- [ ] **Delete obsolete env vars after Clerk smoke test passes.** Once Clerk auth is verified working, remove `ATLAS_ADMIN_PASSWORD_HASH` and `ATLAS_STEWARD_SECRET` from Cloudflare Pages → mandalacodes → Settings → Environment variables. They're no longer referenced anywhere in the code. `ATLAS_PUBLIC_ONLY_IN_DEV=false` stays (reserved for future use).
+
 - [ ] **Reprint physical cards with `mandalacodes.com/qr/:n` QR codes.** New plaques should encode the new domain directly (one redirect hop instead of two). The old plaques (encoded `adrianrasmussen.com/qr/:n`) keep working forever via the redirect on the art site — so this is an upgrade for new print runs, not a fix. Regenerate via `npm run generate:qr` (BASE_URL is already set to mandalacodes.com in `scripts/generate-ul-qr.ts`).
 
 - [ ] **Merge PR #110 on Adrian-Website** ([link](https://github.com/technicianofthesacred/Adrian-Website/pull/110)) — adds the redirect from `adrianrasmussen.com/qr/:n` (printed plaques) → `mandalacodes.com/universal-language/:n`. Until this merges, scanned plaques still land on the old oracle inside the art site (which works, just goes to the old home). PR is open, mergeable, Cloudflare preview build passed.
