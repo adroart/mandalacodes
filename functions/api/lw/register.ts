@@ -5,7 +5,7 @@
 // code. The card prints the pairing code on its onboard page; the customer
 // types it once at led.mandalacodes.com to bind the card to their browser.
 
-import { RelayEnv, CardMeta, jsonResponse, corsPreflight, readJson, cardMetaKey, pairKey, newToken, newPairCode, PAIR_TTL } from './_lib';
+import { RelayEnv, PagesFunction, CardMeta, jsonResponse, corsPreflight, readJson, cardMetaKey, pairKey, newToken, newPairCode, PAIR_TTL } from './_lib';
 
 interface RegisterRequest {
   cardId: string;

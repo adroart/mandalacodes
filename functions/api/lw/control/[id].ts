@@ -3,7 +3,7 @@
 // so only the most recent command is delivered — slider drags don't queue
 // up. The card polls every ~1s and applies + clears.
 
-import { RelayEnv, CardMeta, PendingCommand, jsonResponse, corsPreflight, readJson, cardMetaKey, cardPendingKey, PENDING_TTL } from '../_lib';
+import { RelayEnv, PagesFunction, CardMeta, PendingCommand, jsonResponse, corsPreflight, readJson, cardMetaKey, cardPendingKey, PENDING_TTL } from '../_lib';
 
 export const onRequestOptions: PagesFunction = async () => corsPreflight();
 

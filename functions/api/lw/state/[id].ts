@@ -3,7 +3,7 @@
 // based on how recently the card heartbeat'd (60s threshold).
 // Auth: same X-LW-Token the pair endpoint returned to the browser.
 
-import { RelayEnv, CardState, CardMeta, jsonResponse, corsPreflight, cardMetaKey, cardStateKey, ONLINE_THRESHOLD_MS } from '../_lib';
+import { RelayEnv, PagesFunction, CardState, CardMeta, jsonResponse, corsPreflight, cardMetaKey, cardStateKey, ONLINE_THRESHOLD_MS } from '../_lib';
 
 export const onRequestOptions: PagesFunction = async () => corsPreflight();
 

@@ -6,7 +6,7 @@
 // Auth: header `X-LW-Token: <ownerToken>` proves this card owns its meta
 // entry. Cheap: we just check the token matches the stored meta.
 
-import { RelayEnv, CardState, CardMeta, jsonResponse, corsPreflight, readJson, cardMetaKey, cardStateKey, STATE_TTL } from './_lib';
+import { RelayEnv, PagesFunction, CardState, CardMeta, jsonResponse, corsPreflight, readJson, cardMetaKey, cardStateKey, STATE_TTL } from './_lib';
 
 export const onRequestOptions: PagesFunction = async () => corsPreflight();
 

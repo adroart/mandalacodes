@@ -6,6 +6,25 @@
 //   card:<id>:meta     — { ownerToken, label, pairedAt }. JSON. Persistent.
 //   pair:<code>        — { cardId, expiresAt }. JSON. TTL 10 min.
 
+// Inline types to avoid depending on global Cloudflare Workers types being
+// resolvable at deploy-time compilation. Pages Functions runtime exposes
+// KVNamespace and the PagesFunction signature regardless of whether the
+// types package is installed.
+type KVNamespace = {
+  get<T>(key: string, type: 'json'): Promise<T | null>;
+  get(key: string): Promise<string | null>;
+  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
+  delete(key: string): Promise<void>;
+};
+
+export type PagesFunction<Env = unknown, Params extends string = string> = (
+  context: {
+    request: Request;
+    env: Env;
+    params: Record<Params, string | string[]>;
+  }
+) => Response | Promise<Response>;
+
 export interface RelayEnv {
   LIGHTWEAVER_RELAY: KVNamespace;
 }

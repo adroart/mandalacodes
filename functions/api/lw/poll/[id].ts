@@ -3,7 +3,7 @@
 // browser most recently wrote and atomically clears the slot — at-most-once
 // delivery per command. If nothing pending, returns { ok: true, pending: null }.
 
-import { RelayEnv, CardMeta, PendingCommand, jsonResponse, corsPreflight, cardMetaKey, cardPendingKey } from '../_lib';
+import { RelayEnv, PagesFunction, CardMeta, PendingCommand, jsonResponse, corsPreflight, cardMetaKey, cardPendingKey } from '../_lib';
 
 export const onRequestOptions: PagesFunction = async () => corsPreflight();
 

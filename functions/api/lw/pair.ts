@@ -3,7 +3,7 @@
 // browser can authenticate future control/state requests.
 // One-time use — the pair entry is deleted on successful pair.
 
-import { RelayEnv, CardMeta, jsonResponse, corsPreflight, readJson, cardMetaKey, pairKey } from './_lib';
+import { RelayEnv, PagesFunction, CardMeta, jsonResponse, corsPreflight, readJson, cardMetaKey, pairKey } from './_lib';
 
 interface PairRequest { code: string; }
 
