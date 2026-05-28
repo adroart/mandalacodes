@@ -1,11 +1,12 @@
 /**
  * POST /api/atlas/steward/update
  *
- * Steward-authenticated. The session cookie carries the piece scope, so the
- * body never re-asserts identity. Diffs the incoming desired state against
- * the current PieceRecord and appends 0..N events to express the change.
+ * Clerk-authenticated. Body specifies which piece the steward is editing
+ * (since one Clerk user can steward multiple pieces). We verify a steward
+ * record exists for (pieceId, editionNumber) AND its clerkUserId matches
+ * the bearer token's user.
  *
- * Diff rules (from spec):
+ * Diff rules (unchanged from HMAC version):
  *   - cityId differs (and current isPublic) → 'placed' if no prior city,
  *     else 'moved'.
  *   - isPublic flipping false (currently public) → 'withdrawn'.
@@ -13,7 +14,6 @@
  *   - No-op → return current record, no event appended.
  *
  * cityId must validate via getCityById; notes are admin-only and ignored.
- * On every successful write we refresh the steward session cookie.
  */
 
 import type { LedgerEvent, LedgerEventType, PieceRecord } from '../../../../types';
@@ -23,25 +23,22 @@ import { getCityById } from '../../../../data/cities';
 import type { PagesContext } from '../_helpers';
 import {
   json,
-  getCookie,
-  STEWARD_COOKIE,
   readLedger,
   writeLedger,
+  readStewards,
+  writeStewards,
   regeneratePublicState,
-  verifyStewardSession,
-  issueStewardSession,
-  stewardSessionCookie,
-  isSecureRequest,
 } from '../_helpers';
+import { requireUser, isAuthResponse } from '../../_lib/clerk';
 
 interface UpdateBody {
+  pieceId?: unknown;
+  editionNumber?: unknown;
   cityId?: unknown;
   isPublic?: unknown;
 }
 
 function genEventId(): string {
-  // Cheap unique-enough id for a low-write ledger. Not a ULID but stable
-  // and url-safe; collisions with real ULIDs are astronomically unlikely.
   const rnd = crypto.getRandomValues(new Uint8Array(10));
   let hex = '';
   for (let i = 0; i < rnd.length; i++) hex += rnd[i].toString(16).padStart(2, '0');
@@ -53,11 +50,8 @@ export async function onRequestPost(
 ): Promise<Response> {
   const { request, env } = context;
 
-  const token = getCookie(request, STEWARD_COOKIE) || '';
-  const session = await verifyStewardSession(token, env.ATLAS_STEWARD_SECRET);
-  if (!session) {
-    return json({ ok: false, error: 'Unauthorized' }, 401);
-  }
+  const auth = await requireUser(request, env);
+  if (isAuthResponse(auth)) return auth;
 
   let body: UpdateBody;
   try {
@@ -66,8 +60,26 @@ export async function onRequestPost(
     return json({ ok: false, error: 'Invalid JSON' }, 400);
   }
 
-  const cityIdProvided =
-    body.cityId !== undefined && body.cityId !== null;
+  const pieceId = typeof body.pieceId === 'string' ? body.pieceId : '';
+  if (!pieceId) {
+    return json({ ok: false, error: 'Missing pieceId' }, 400);
+  }
+  const editionNumber =
+    typeof body.editionNumber === 'number' ? body.editionNumber : undefined;
+
+  // Authorize: steward record must exist for this piece AND be bound to
+  // this Clerk user.
+  const stewards = await readStewards(env);
+  const record = stewards.find(
+    (s) =>
+      s.pieceId === pieceId &&
+      (s.editionNumber ?? undefined) === (editionNumber ?? undefined),
+  );
+  if (!record || record.clerkUserId !== auth.userId) {
+    return json({ ok: false, error: 'forbidden' }, 403);
+  }
+
+  const cityIdProvided = body.cityId !== undefined && body.cityId !== null;
   const cityId = cityIdProvided
     ? typeof body.cityId === 'string'
       ? body.cityId
@@ -82,13 +94,10 @@ export async function onRequestPost(
 
   const events = await readLedger(env);
   const chains = groupChains(events);
-  const chainKey = `${session.pieceId}:${session.editionNumber ?? 0}`;
+  const chainKey = `${pieceId}:${editionNumber ?? 0}`;
   const chain = chains.get(chainKey);
   if (!chain || chain.length === 0) {
-    return json(
-      { ok: false, error: 'No chain for this piece' },
-      403,
-    );
+    return json({ ok: false, error: 'No chain for this piece' }, 403);
   }
 
   const current: PieceRecord = projectPiece(chain);
@@ -96,8 +105,6 @@ export async function onRequestPost(
   const now = new Date().toISOString();
   const appended: LedgerEvent[] = [];
 
-  // Track running state so multiple flips in one request can produce
-  // multiple events in deterministic order.
   let runningChain = chain.slice();
   let runningCity = current.currentCityId;
   let runningIsPublic = current.isPublic;
@@ -109,8 +116,8 @@ export async function onRequestPost(
   ): Promise<void> {
     const draft: Omit<LedgerEvent, 'hash' | 'prevHash'> = {
       id: genEventId(),
-      pieceId: session!.pieceId,
-      editionNumber: session!.editionNumber,
+      pieceId,
+      editionNumber,
       type,
       date: now,
       cityId: eventCityId,
@@ -121,7 +128,6 @@ export async function onRequestPost(
     appended.push(full);
   }
 
-  // 1. City change → placed (if seeking) or moved.
   if (cityIdProvided && cityId && cityId !== runningCity) {
     if (runningStatus === 'placed') {
       await pushEvent('moved', cityId);
@@ -132,7 +138,6 @@ export async function onRequestPost(
     runningStatus = 'placed';
   }
 
-  // 2. Visibility change.
   if (isPublicProvided) {
     if (desiredIsPublic === false && runningIsPublic) {
       await pushEvent('withdrawn', runningCity);
@@ -143,21 +148,16 @@ export async function onRequestPost(
     }
   }
 
-  // Empty / no-op update: return the current record unchanged.
+  // Bump steward activity timestamp.
+  const updatedStewards = stewards.map((s) =>
+    s === record ? { ...s, lastClaimAt: now } : s,
+  );
+  await writeStewards(env, updatedStewards);
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-store',
   };
-
-  // Refresh the steward session on every authenticated hit (slide TTL).
-  const refreshedToken = await issueStewardSession(
-    { pieceId: session.pieceId, editionNumber: session.editionNumber },
-    env.ATLAS_STEWARD_SECRET,
-  );
-  headers['Set-Cookie'] = stewardSessionCookie(
-    refreshedToken,
-    isSecureRequest(request),
-  );
 
   if (appended.length === 0) {
     return new Response(

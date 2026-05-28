@@ -3,21 +3,24 @@
  *
  * Centralizes:
  *   - R2 read/write for the three Atlas keys (ledger, stewards, public).
- *   - Cookie parsing and admin / steward auth.
- *   - Steward session token (HMAC-signed) issue + verify.
- *   - JSON response helpers, identical surface to functions/api/poems.js.
+ *   - JSON response helper.
  *   - Public state regeneration after any ledger write.
+ *   - Steward lookup by Clerk identity (userId or email).
+ *
+ * Admin and steward auth both run through `functions/api/_lib/clerk.ts` —
+ * Clerk verifies the bearer JWT, ADMIN_EMAILS gates admin routes, and the
+ * steward record's `clerkUserId` / `email` binds a piece to its collector.
  *
  * No HTTP handlers live here — only utilities the route files import.
  */
 
 import type { LedgerEvent, StewardRecord, PublicAtlasState } from '../../../types';
-import { projectAll } from '../../../utils/ledgerProjection';
-import { toPublicState } from '../../../utils/ledgerProjection';
+import { projectAll, toPublicState } from '../../../utils/ledgerProjection';
 import { CITIES } from '../../../data/cities';
 import { FULL_ARCHIVE } from '../../../data/mockData';
 import { mirrorPublicState } from './_mirror';
 import type { MirrorEnv } from './_mirror';
+import type { AuthEnv } from '../_lib/clerk';
 
 // ---------- R2 keys ----------
 
@@ -25,19 +28,10 @@ export const KEY_LEDGER = 'atlas/ledger.json';
 export const KEY_STEWARDS = 'atlas/stewards.json';
 export const KEY_PUBLIC = 'atlas/public.json';
 
-// ---------- Cookie names ----------
-
-export const ADMIN_COOKIE = 'admin_session';
-export const STEWARD_COOKIE = 'steward_session';
-
 // ---------- Env typing ----------
 
-export interface AtlasEnv extends MirrorEnv {
+export interface AtlasEnv extends MirrorEnv, AuthEnv {
   ATLAS_BUCKET: R2Bucket;
-  /** Admin cookie compares against this. Set in Cloudflare Pages dashboard. */
-  ATLAS_ADMIN_PASSWORD_HASH: string;
-  /** HMAC signing key for steward session tokens. Set in Cloudflare Pages dashboard. */
-  ATLAS_STEWARD_SECRET: string;
 }
 
 // Minimal shape we need from R2 — avoids depending on @cloudflare/workers-types.
@@ -73,35 +67,6 @@ export function json(
       ...extraHeaders,
     },
   });
-}
-
-// ---------- Cookies ----------
-
-export function getCookie(request: Request, name: string): string | null {
-  const header = request.headers.get('Cookie') || '';
-  const match = header
-    .split(';')
-    .map((c) => c.trim())
-    .find((c) => c.startsWith(`${name}=`));
-  return match ? match.slice(name.length + 1) : null;
-}
-
-export function isAdmin(request: Request, env: AtlasEnv): boolean {
-  return getCookie(request, ADMIN_COOKIE) === env.ATLAS_ADMIN_PASSWORD_HASH;
-}
-
-export function buildCookie(
-  name: string,
-  value: string,
-  isSecure: boolean,
-  maxAgeSeconds: number,
-): string {
-  const base = `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}`;
-  return isSecure ? `${base}; Secure` : base;
-}
-
-export function isSecureRequest(request: Request): boolean {
-  return new URL(request.url).protocol === 'https:';
 }
 
 // ---------- R2 read/write ----------
@@ -172,12 +137,6 @@ export async function writePublicState(
 
 // ---------- Public state regeneration ----------
 
-/**
- * Build the {pieceId → {series, category}} map from data/mockData.ts.
- * The mockData module is the only source of artwork metadata until a CMS
- * lands. We import FULL_ARCHIVE and project it down to just the two fields
- * toPublicState consumes.
- */
 function buildArtworkMeta(): Map<string, { series?: string; category?: string }> {
   const map = new Map<string, { series?: string; category?: string }>();
   for (const a of FULL_ARCHIVE) {
@@ -189,6 +148,7 @@ function buildArtworkMeta(): Map<string, { series?: string; category?: string }>
 /**
  * Re-derive PublicAtlasState from a full ledger and persist it to R2.
  * Called after every successful ledger write so the GET cache stays fresh.
+ * The GitHub mirror is a side-effect that never blocks the response.
  */
 export async function regeneratePublicState(
   env: AtlasEnv,
@@ -197,135 +157,47 @@ export async function regeneratePublicState(
   const records = projectAll(events);
   const meta = buildArtworkMeta();
   const state = toPublicState(records, meta, CITIES);
-  const json = JSON.stringify(state, null, 2);
-  await env.ATLAS_BUCKET.put(KEY_PUBLIC, json, {
+  const jsonBody = JSON.stringify(state, null, 2);
+  await env.ATLAS_BUCKET.put(KEY_PUBLIC, jsonBody, {
     httpMetadata: { contentType: 'application/json' },
   });
-  // Public mirror to GitHub for durability. No-ops unless the three
-  // GITHUB_MIRROR_* env vars are set; failures never throw. Result is
-  // intentionally ignored — the ledger write must not depend on it.
-  void mirrorPublicState(env, json).catch(() => undefined);
+  void mirrorPublicState(env, jsonBody).catch(() => undefined);
   return state;
 }
 
-// ---------- Steward session token (HMAC-signed) ----------
+// ---------- Steward lookup by Clerk identity ----------
 
-export interface StewardSessionPayload {
-  pieceId: string;
-  editionNumber?: number;
-  exp: number; // epoch ms
-}
-
-const STEWARD_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-
-function base64UrlEncode(bytes: Uint8Array): string {
-  let s = '';
-  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
-  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function base64UrlDecode(input: string): Uint8Array {
-  const pad = input.length % 4 === 0 ? '' : '='.repeat(4 - (input.length % 4));
-  const b64 = input.replace(/-/g, '+').replace(/_/g, '/') + pad;
-  const raw = atob(b64);
-  const out = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
-  return out;
-}
-
-function encodeText(s: string): Uint8Array {
-  return new TextEncoder().encode(s);
-}
-
-function decodeText(bytes: Uint8Array): string {
-  return new TextDecoder().decode(bytes);
-}
-
-async function hmacSign(payload: string, secret: string): Promise<Uint8Array> {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encodeText(secret) as BufferSource,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, encodeText(payload) as BufferSource);
-  return new Uint8Array(sig);
-}
-
-function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
-  return diff === 0;
+/**
+ * Find a steward record matching either the Clerk user id (preferred) or
+ * the email (fallback for first-time bind). Returns the *first* matching
+ * record — a Clerk user can only steward one piece via this lookup, but
+ * the `editionNumber` field still distinguishes editions of the same
+ * piece if relevant.
+ */
+export function findStewardForUser(
+  stewards: readonly StewardRecord[],
+  userId: string,
+  email: string | null,
+): StewardRecord | null {
+  const byUserId = stewards.find((s) => s.clerkUserId === userId);
+  if (byUserId) return byUserId;
+  if (!email) return null;
+  const normalized = email.toLowerCase();
+  return stewards.find((s) => (s.email || '').toLowerCase() === normalized) ?? null;
 }
 
 /**
- * Build a steward session token: base64url(JSON payload).base64url(HMAC sig).
- * The payload encodes the piece scope and expiry; the HMAC is over the
- * base64url-encoded payload string itself, so the verifier can rebuild it
- * without re-serializing JSON (and dodge canonicalization issues).
+ * Same as findStewardForUser but returns every match — useful when one
+ * collector stewards multiple pieces.
  */
-export async function issueStewardSession(
-  payload: Omit<StewardSessionPayload, 'exp'>,
-  secret: string,
-): Promise<string> {
-  const full: StewardSessionPayload = {
-    ...payload,
-    exp: Date.now() + STEWARD_TTL_MS,
-  };
-  const payloadB64 = base64UrlEncode(encodeText(JSON.stringify(full)));
-  const sig = await hmacSign(payloadB64, secret);
-  return `${payloadB64}.${base64UrlEncode(sig)}`;
-}
-
-/**
- * Verify and decode a steward session token. Returns null on any failure
- * (bad format, bad signature, expired). Callers should treat null as 401.
- */
-export async function verifyStewardSession(
-  token: string,
-  secret: string,
-): Promise<StewardSessionPayload | null> {
-  if (!token || typeof token !== 'string') return null;
-  const dot = token.indexOf('.');
-  if (dot < 1 || dot === token.length - 1) return null;
-
-  const payloadB64 = token.slice(0, dot);
-  const sigB64 = token.slice(dot + 1);
-
-  let expectedSig: Uint8Array;
-  try {
-    expectedSig = await hmacSign(payloadB64, secret);
-  } catch {
-    return null;
-  }
-
-  let providedSig: Uint8Array;
-  try {
-    providedSig = base64UrlDecode(sigB64);
-  } catch {
-    return null;
-  }
-
-  if (!constantTimeEqual(expectedSig, providedSig)) return null;
-
-  let payload: StewardSessionPayload;
-  try {
-    const json = decodeText(base64UrlDecode(payloadB64));
-    payload = JSON.parse(json) as StewardSessionPayload;
-  } catch {
-    return null;
-  }
-
-  if (!payload || typeof payload.pieceId !== 'string' || typeof payload.exp !== 'number') {
-    return null;
-  }
-  if (payload.exp < Date.now()) return null;
-  return payload;
-}
-
-export function stewardSessionCookie(token: string, isSecure: boolean): string {
-  // 30 days in seconds, matches STEWARD_TTL_MS.
-  return buildCookie(STEWARD_COOKIE, token, isSecure, 30 * 24 * 60 * 60);
+export function findStewardsForUser(
+  stewards: readonly StewardRecord[],
+  userId: string,
+  email: string | null,
+): StewardRecord[] {
+  const byUserId = stewards.filter((s) => s.clerkUserId === userId);
+  if (byUserId.length) return byUserId;
+  if (!email) return [];
+  const normalized = email.toLowerCase();
+  return stewards.filter((s) => (s.email || '').toLowerCase() === normalized);
 }

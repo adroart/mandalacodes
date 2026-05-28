@@ -1,8 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import AdminLayout from './AdminLayout';
 import { CITIES } from '../data/cities';
 import { FULL_ARCHIVE } from '../data/mockData';
 import type { CityCentroid, LedgerEvent, LedgerEventType, StewardRecord } from '../types';
+
+/**
+ * Bearer-token fetch hook. Every admin call needs to pass the Clerk JWT
+ * so the server-side requireAdmin() can verify identity + allowlist.
+ * Wraps window.fetch and merges Authorization header.
+ */
+function useAdminFetch(): (input: string, init?: RequestInit) => Promise<Response> {
+  const { getToken } = useAuth();
+  return async (input, init = {}) => {
+    const token = await getToken();
+    const headers = new Headers(init.headers);
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    return fetch(input, { ...init, headers });
+  };
+}
 
 // ───────────────────────────────────────────────────────────────────────────
 // Style tokens — mirrored from AdminPoetry.tsx so this page sits beside it
@@ -181,6 +197,7 @@ const SeedEventSection: React.FC = () => {
     const [saving, setSaving] = useState(false);
     const [result, setResult] = useState<LedgerEvent | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
 
     const submit = async () => {
         if (!form.pieceId) {
@@ -209,12 +226,12 @@ const SeedEventSection: React.FC = () => {
                 note: form.note.trim() || undefined,
                 actor: 'admin' as const,
             };
-            const res = await fetch('/api/atlas/event', {
+            const res = await adminFetch('/api/atlas/event', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ event }),
             });
-            if (res.status === 401) {
+            if (res.status === 401 || res.status === 403) {
                 window.location.href = '/admin/login';
                 return;
             }
@@ -386,14 +403,17 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
 }) => {
     const [form, setForm] = useState<StewardForm>(EMPTY_STEWARD);
     const [saving, setSaving] = useState(false);
-    const [rawKey, setRawKey] = useState<string | null>(null);
-    const [warning, setWarning] = useState<string>('');
+    const [success, setSuccess] = useState<{ email: string; name?: string } | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [copied, setCopied] = useState(false);
+    const adminFetch = useAdminFetch();
 
     const submit = async () => {
         if (!form.pieceId) {
             setError('Pick a piece.');
+            return;
+        }
+        if (!form.email.trim()) {
+            setError('Email is required — the collector signs in with it.');
             return;
         }
         setSaving(true);
@@ -405,28 +425,27 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                     ? Number(form.editionNumber)
                     : undefined,
                 name: form.name.trim() || undefined,
-                email: form.email.trim() || undefined,
+                email: form.email.trim(),
             };
-            const res = await fetch('/api/atlas/stewards/issue', {
+            const res = await adminFetch('/api/atlas/stewards/issue', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
-            if (res.status === 401) {
+            if (res.status === 401 || res.status === 403) {
                 window.location.href = '/admin/login';
                 return;
             }
             const data = await res.json();
-            if (data?.ok && data.rawKey) {
-                setRawKey(data.rawKey);
-                setWarning(
-                    data.warning ??
-                        'This key will only be shown once. Print or copy it now.',
-                );
+            if (data?.ok && data.record) {
+                setSuccess({
+                    email: data.record.email,
+                    name: data.record.name,
+                });
                 setForm(EMPTY_STEWARD);
                 onIssued();
             } else {
-                setError(data?.error || 'Could not issue key.');
+                setError(data?.error || 'Could not add steward.');
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -435,28 +454,17 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
         }
     };
 
-    const copy = async () => {
-        if (!rawKey) return;
-        try {
-            await navigator.clipboard.writeText(rawKey);
-            setCopied(true);
-        } catch {
-            // ignore; user can select and copy manually
-        }
-    };
-
     const dismiss = () => {
-        setRawKey(null);
-        setWarning('');
-        setCopied(false);
+        setSuccess(null);
     };
 
     return (
         <div className="bg-white border border-wood-200 p-8 mb-10">
-            <h2 className={sectionTitle}>Issue Steward Key</h2>
+            <h2 className={sectionTitle}>Add Steward</h2>
             <p className={sectionLead}>
-                Generates a one-time key for a collector. The raw key is shown
-                once on this screen and never stored.
+                Bind a piece to a collector's email. They sign in to
+                mandalacodes with that email and the record claims itself on
+                first visit to /atlas/claim.
             </p>
 
             {error && (
@@ -465,33 +473,24 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                 </p>
             )}
 
-            {rawKey && (
+            {success && (
                 <div className="mb-6 border border-bronze-400 bg-bronze-50 px-4 py-4">
                     <p className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold mb-2">
-                        New steward key
+                        Steward added
                     </p>
-                    <code className="block font-mono text-base text-wood-900 break-all bg-white border border-wood-200 px-3 py-2 mb-3">
-                        {rawKey}
-                    </code>
+                    <p className="font-serif text-sm text-wood-900 mb-2">
+                        {success.name ? `${success.name} (${success.email})` : success.email}
+                    </p>
                     <p className="font-serif italic text-sm text-stone-700 mb-3">
-                        {warning}
+                        Send them this link: <code className="font-mono not-italic">/atlas/claim</code>. They sign in with the email above and the record binds to their account.
                     </p>
-                    <div className="flex items-center gap-4">
-                        <button
-                            type="button"
-                            onClick={copy}
-                            className="font-label text-[11px] uppercase tracking-[0.15em] text-paper-50 bg-wood-900 hover:bg-bronze-700 transition-colors font-semibold px-4 py-2"
-                        >
-                            {copied ? 'Copied' : 'Copy key'}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={dismiss}
-                            className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
-                        >
-                            Dismiss
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        onClick={dismiss}
+                        className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                    >
+                        Dismiss
+                    </button>
                 </div>
             )}
 
@@ -546,7 +545,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                 </div>
 
                 <div>
-                    <label className={fieldLabel}>Email (optional)</label>
+                    <label className={fieldLabel}>Email (required)</label>
                     <input
                         type="email"
                         value={form.email}
@@ -563,7 +562,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                     disabled={saving}
                     className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
                 >
-                    {saving ? 'Issuing...' : 'Issue key'}
+                    {saving ? 'Adding...' : 'Add steward'}
                 </button>
             </div>
         </div>
@@ -583,7 +582,9 @@ const StewardRoster: React.FC<{
         <div className="bg-white border border-wood-200 p-8">
             <h2 className={sectionTitle}>Steward Roster</h2>
             <p className={sectionLead}>
-                Read-only view of issued keys. Hashes are never shown.
+                Read-only view of bound and pending collectors. Status flips
+                from "invited" to "claimed" on their first signed-in visit to
+                /atlas/claim.
             </p>
 
             {error && (
@@ -649,7 +650,7 @@ const StewardRoster: React.FC<{
                                         {s.outreachStatus}
                                     </td>
                                     <td className="font-sans text-sm text-wood-500 py-3 pr-4">
-                                        {formatRelative(s.keyIssuedAt)}
+                                        {formatRelative(s.issuedAt)}
                                     </td>
                                     <td className="font-sans text-sm text-wood-500 py-3">
                                         {s.lastClaimAt
@@ -674,13 +675,14 @@ const AdminAtlas: React.FC = () => {
     const [stewards, setStewards] = useState<StewardRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [rosterError, setRosterError] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
 
     const loadStewards = async () => {
         setLoading(true);
         setRosterError(null);
         try {
-            const res = await fetch('/api/atlas/stewards');
-            if (res.status === 401) {
+            const res = await adminFetch('/api/atlas/stewards');
+            if (res.status === 401 || res.status === 403) {
                 window.location.href = '/admin/login';
                 return;
             }
@@ -712,8 +714,7 @@ const AdminAtlas: React.FC = () => {
                         Atlas
                     </h1>
                     <p className="font-sans text-sm text-wood-500 mb-12">
-                        Seed ledger events and issue steward keys for the world
-                        map.
+                        Seed ledger events and add stewards for the world map.
                     </p>
 
                     <SeedEventSection />

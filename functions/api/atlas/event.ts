@@ -12,11 +12,11 @@ import { getCityById } from '../../../data/cities';
 import type { PagesContext } from './_helpers';
 import {
   json,
-  isAdmin,
   readLedger,
   writeLedger,
   regeneratePublicState,
 } from './_helpers';
+import { requireAdmin, isAuthResponse } from '../_lib/clerk';
 
 const VALID_TYPES: ReadonlySet<LedgerEventType> = new Set<LedgerEventType>([
   'created',
@@ -53,9 +53,8 @@ export async function onRequestPost(
 ): Promise<Response> {
   const { request, env } = context;
 
-  if (!isAdmin(request, env)) {
-    return json({ ok: false, error: 'Unauthorized' }, 401);
-  }
+  const auth = await requireAdmin(request, env);
+  if (isAuthResponse(auth)) return auth;
 
   let body: unknown;
   try {

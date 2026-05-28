@@ -212,14 +212,32 @@ export interface PieceRecord {
   isPublic: boolean;
 }
 
+/**
+ * Steward record — binds a piece to a Clerk user identity.
+ *
+ * Admin creates the record with the collector's `email`. On first sign-in
+ * matching that email, the steward `claim` Function fills `clerkUserId`.
+ * From then on, lookups can match by `clerkUserId` even if the user's
+ * primary email later changes.
+ *
+ * `name` and `notes` are admin-only context. `outreachStatus` tracks where
+ * the collector is in the bind funnel for the admin dashboard:
+ *   no-contact → invited (email sent) → claimed (clerkUserId bound) → declined
+ */
 export interface StewardRecord {
   pieceId: string;
   editionNumber?: number;
+  /** Collector's email, set by admin at issuance. */
+  email: string;
+  /** Bound after the collector's first signed-in /atlas/claim hit matches the email. */
+  clerkUserId?: string;
+  /** Display name, admin-set. Optional. */
   name?: string;
-  email?: string;
+  /** Admin-only notes — never returned to non-admin Functions. */
   notes?: string;
-  keyHash: string;
-  keyIssuedAt: string;
+  /** When the record was created. */
+  issuedAt: string;
   outreachStatus: 'no-contact' | 'invited' | 'claimed' | 'declined';
+  /** When the collector most recently exercised the claim or edit flow. */
   lastClaimAt?: string;
 }

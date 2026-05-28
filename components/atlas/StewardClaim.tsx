@@ -1,97 +1,121 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  SignedIn,
+  SignedOut,
+  SignIn,
+  useAuth,
+  useUser,
+} from '@clerk/clerk-react';
 
 /**
- * Steward claim form. Rendered at `/atlas/claim`.
+ * Steward claim — rendered at /atlas/claim.
  *
- * A collector enters the raw key printed on their certificate. On success
- * the server sets an HttpOnly `steward_session` cookie scoped to the
- * (pieceId, editionNumber) pair, and we redirect to `/atlas/edit`, which
- * rehydrates its state from that cookie.
- *
- * See docs/ledger-api.md → POST /api/atlas/steward/claim.
+ * Flow:
+ *   1. Collector signs in to mandalacodes with Clerk using the email Adrian
+ *      added them with.
+ *   2. The page POSTs to /api/atlas/steward/claim (no body — identity comes
+ *      from the bearer token).
+ *   3. Server matches the steward record by clerkUserId or email, binds the
+ *      userId on first match, and returns the claimed pieces.
+ *   4. We redirect to /atlas/edit on success, or show a friendly "ask Adrian"
+ *      message if no record is bound to this email.
  */
 const StewardClaim: React.FC = () => {
-  const [rawKey, setRawKey] = useState('');
-  const [error, setError] = useState<'unrecognized' | 'generic' | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
   const navigate = useNavigate();
+  const [status, setStatus] = useState<'idle' | 'claiming' | 'no-record' | 'error'>(
+    'idle',
+  );
 
-  const submit = async () => {
-    const trimmed = rawKey.trim();
-    if (!trimmed || loading) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/atlas/steward/claim', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ rawKey: trimmed }),
-      });
-      if (res.status === 200) {
-        navigate('/atlas/edit', { replace: true });
-        return;
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || status !== 'idle') return;
+    let cancelled = false;
+    (async () => {
+      setStatus('claiming');
+      try {
+        const token = await getToken();
+        const res = await fetch('/api/atlas/steward/claim', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+        if (cancelled) return;
+        if (res.ok) {
+          navigate('/atlas/edit', { replace: true });
+          return;
+        }
+        if (res.status === 404) {
+          setStatus('no-record');
+        } else {
+          setStatus('error');
+        }
+      } catch {
+        if (!cancelled) setStatus('error');
       }
-      if (res.status === 401) {
-        setError('unrecognized');
-      } else {
-        setError('generic');
-      }
-    } catch {
-      setError('generic');
-    } finally {
-      setLoading(false);
-    }
-  };
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn, getToken, navigate, status]);
 
   return (
     <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-md">
-        <h1 className="font-display text-3xl text-wood-900 font-medium text-center mb-6 tracking-wide" style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}>
+        <h1
+          className="font-display text-3xl text-wood-900 font-medium text-center mb-6 tracking-wide"
+          style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}
+        >
           Claim your piece
         </h1>
-        <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 text-center mb-10">
-          If you hold one of Adrian Rasmussen's pieces, enter the key from your certificate to anchor it on the atlas. Only your city will appear publicly, never an address. You can switch to private at any time.
-        </p>
-        <div className="space-y-4">
-          <label htmlFor="steward-key" className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold">
-            Key
-          </label>
-          <input
-            id="steward-key"
-            type="text"
-            value={rawKey}
-            onChange={e => setRawKey(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && submit()}
-            placeholder="A3kf-9zPq-WxLm-7nQr"
-            autoFocus
-            autoComplete="off"
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-            aria-invalid={error != null}
-            aria-describedby={error ? 'steward-key-error' : undefined}
-            className="w-full min-h-[44px] border border-wood-300 bg-white px-4 py-3 font-mono text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 tracking-wide"
+
+        <SignedOut>
+          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 text-center mb-10">
+            If you hold one of Adrian Rasmussen's pieces, sign in with the email Adrian used when he added you. Only your city will appear publicly, never an address. You can switch to private at any time.
+          </p>
+          <SignIn
+            path="/atlas/claim"
+            routing="path"
+            signUpUrl="/atlas/claim"
+            afterSignInUrl="/atlas/claim"
+            appearance={{
+              elements: {
+                rootBox: 'mx-auto',
+                card: 'shadow-none border border-wood-200 bg-white',
+              },
+            }}
           />
-          {error === 'unrecognized' && (
-            <p id="steward-key-error" className="font-serif italic text-base text-stone-600">
-              That key was not recognized.
+        </SignedOut>
+
+        <SignedIn>
+          {status === 'claiming' && (
+            <p className="font-serif italic text-base text-stone-700 text-center">
+              Looking up your piece...
             </p>
           )}
-          {error === 'generic' && (
-            <p id="steward-key-error" className="font-serif italic text-base text-stone-600">
-              Something went wrong, please try again.
+          {status === 'no-record' && (
+            <div className="text-center">
+              <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 mb-3">
+                We don't have a piece bound to{' '}
+                <span className="text-wood-900">
+                  {user?.primaryEmailAddress?.emailAddress ?? 'your email'}
+                </span>{' '}
+                yet.
+              </p>
+              <p className="font-serif italic text-sm text-stone-600">
+                If you hold one of Adrian's pieces, send him a note and he'll add you with this email address.
+              </p>
+            </div>
+          )}
+          {status === 'error' && (
+            <p className="font-serif italic text-base text-stone-600 text-center">
+              Something went wrong. Please try again.
             </p>
           )}
-          <button
-            onClick={submit}
-            disabled={!rawKey.trim() || loading}
-            className="w-full min-h-[44px] bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors disabled:opacity-40"
-          >
-            {loading ? 'Checking...' : 'Continue'}
-          </button>
-        </div>
+        </SignedIn>
       </div>
     </section>
   );
