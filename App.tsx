@@ -6,6 +6,10 @@ const UniversalLanguageCard = lazy(() => import('./components/UniversalLanguageC
 const OracleGateway = lazy(() => import('./components/OracleGateway'));
 const OracleSystems = lazy(() => import('./components/OracleSystems'));
 const AtlasPage = lazy(() => import('./components/AtlasPage'));
+const AdminLogin = lazy(() => import('./components/AdminLogin'));
+const AdminAtlas = lazy(() => import('./components/AdminAtlas'));
+const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
+const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
 const OracleProfile = lazy(() => import('./components/OracleProfile'));
 const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
 const CollectionsManager = lazy(() => import('./components/account/CollectionsManager'));
@@ -49,6 +53,13 @@ const AppInner: React.FC = () => {
 
               {/* Atlas — globe of placed Universal Language pieces with kinship arcs */}
               <Route path="/atlas" element={<AtlasPage />} />
+              <Route path="/atlas/claim" element={<StewardClaim />} />
+              <Route path="/atlas/edit" element={<StewardEdit />} />
+
+              {/* Admin — atlas ledger + steward key issuance */}
+              <Route path="/admin" element={<Navigate to="/admin/atlas" replace />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/atlas" element={<AdminAtlas />} />
 
               {/* Hologenetic Profile (local-first, optionally synced when signed in) */}
               <Route path="/profile" element={<OracleProfile />} />

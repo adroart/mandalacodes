@@ -174,3 +174,52 @@ export interface PublicAtlasState {
   }>;
   cities: CityCentroid[];
 }
+
+/* ─── Ledger (private) ─────────────────────────────────────────────────────
+ * Append-only event log + steward records that back the public projection.
+ * These never leave the Cloudflare Functions side except via the public
+ * state derivation. Server-only types live alongside their public siblings
+ * so the projector (utils/ledgerProjection.ts) can be imported by both.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export type LedgerEventType =
+  | 'created'
+  | 'placed'
+  | 'moved'
+  | 'withdrawn'
+  | 'revealed'
+  | 'retired';
+
+export interface LedgerEvent {
+  id: string;
+  pieceId: string;
+  editionNumber?: number;
+  type: LedgerEventType;
+  date: string;
+  cityId?: string | null;
+  note?: string;
+  actor: 'admin' | 'steward';
+  prevHash: string | null;
+  hash: string;
+}
+
+export interface PieceRecord {
+  pieceId: string;
+  editionNumber?: number;
+  currentCityId: string | null;
+  status: 'seeking' | 'placed' | 'withdrawn' | 'retired';
+  history: LedgerEvent[];
+  isPublic: boolean;
+}
+
+export interface StewardRecord {
+  pieceId: string;
+  editionNumber?: number;
+  name?: string;
+  email?: string;
+  notes?: string;
+  keyHash: string;
+  keyIssuedAt: string;
+  outreachStatus: 'no-contact' | 'invited' | 'claimed' | 'declined';
+  lastClaimAt?: string;
+}
