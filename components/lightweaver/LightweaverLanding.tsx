@@ -135,6 +135,118 @@ const LightweaverLanding: React.FC = () => {
           </section>
         )}
 
+        <section className="border-t border-wood-200 dark:border-wood-700 pt-10 mb-12">
+          <h2 className="text-xs uppercase tracking-[0.2em] text-bronze-600 dark:text-bronze-300 mb-4">
+            New to Lightweaver?
+          </h2>
+          <p className="text-sm text-wood-600 dark:text-paper-300 mb-6 leading-relaxed">
+            You just unwrapped your piece. Two minutes to get it on your home WiFi:
+          </p>
+          <ol className="space-y-4 mb-6 pl-5 list-decimal text-sm text-wood-900 dark:text-paper-50">
+            <li>
+              <strong>Plug it in.</strong> The lights come on. Turn the knob to dim or brighten.
+              Press the knob to change patterns.
+            </li>
+            <li>
+              <strong>For more control,</strong> open your phone's WiFi list. Look for a network
+              called <span className="font-mono text-bronze-700 dark:text-bronze-300">Lightweaver-XXXX</span> and join it.
+            </li>
+            <li>
+              <strong>A setup page opens automatically.</strong> Enter your home WiFi name and
+              password. Tap <em>Save and reboot</em>.
+            </li>
+            <li>
+              <strong>Anytime after that,</strong> from any device on your home WiFi, open{' '}
+              <span className="font-mono text-bronze-700 dark:text-bronze-300">lightweaver.local</span>{' '}
+              in a browser. Patterns, colors, brightness — all from your phone.
+            </li>
+          </ol>
+          <p className="text-xs text-wood-500 dark:text-paper-400 leading-relaxed">
+            Lost the WiFi later? If the lights start pulsing slowly in warm white, the piece is back
+            in setup mode and ready to be joined to a new network. Same steps as above.
+          </p>
+        </section>
+
+        <section className="border-t border-wood-200 dark:border-wood-700 pt-10 mb-12">
+          <h2 className="text-xs uppercase tracking-[0.2em] text-bronze-600 dark:text-bronze-300 mb-4">
+            Why this works the way it works
+          </h2>
+          <ul className="space-y-3 text-sm text-wood-600 dark:text-paper-300 leading-relaxed list-disc pl-5">
+            <li>
+              Each piece is its own small computer. It plays patterns on its own — no internet, no
+              account, no app required.
+            </li>
+            <li>
+              When it's on your WiFi, your phone or laptop can talk to it directly. Nothing in
+              between, nothing tracking what you do.
+            </li>
+            <li>
+              The website you're reading this on (<span className="font-mono">led.mandalacodes.com</span>)
+              is the same controls in a friendlier browser, plus a place to find new patterns when
+              they're released.
+            </li>
+            <li>
+              You don't need an account to use your piece. If you ever want to save settings or
+              hear about new patterns, you can sign up — that's all it does.
+            </li>
+          </ul>
+        </section>
+
+        <section className="border-t border-wood-200 dark:border-wood-700 pt-10 mb-12">
+          <h2 className="text-xs uppercase tracking-[0.2em] text-bronze-600 dark:text-bronze-300 mb-4">
+            Something's not right
+          </h2>
+          <dl className="space-y-5 text-sm text-wood-600 dark:text-paper-300 leading-relaxed">
+            <div>
+              <dt className="font-medium text-wood-900 dark:text-paper-50 mb-1">
+                The lights are off and nothing happens when I plug it in.
+              </dt>
+              <dd>
+                Check the power adapter is fully seated. Try a different outlet. If still nothing,
+                email me and I'll send a replacement adapter.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-wood-900 dark:text-paper-50 mb-1">
+                The piece is pulsing warm white slowly and won't stop.
+              </dt>
+              <dd>
+                That's setup mode. Open your phone's WiFi, look for{' '}
+                <span className="font-mono">Lightweaver-XXXX</span>, join it, and follow the setup
+                page that opens. Two minutes.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-wood-900 dark:text-paper-50 mb-1">
+                I can't open lightweaver.local on my computer.
+              </dt>
+              <dd>
+                Make sure you're on the same WiFi as the piece. On Windows, you may need to install
+                Bonjour (it ships with iTunes, or download from Apple's site). On a phone — almost
+                always just works.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-wood-900 dark:text-paper-50 mb-1">
+                I want it to do something it doesn't do.
+              </dt>
+              <dd>
+                Tell me. New patterns and capabilities ship over time. The more I hear, the better
+                the next release is.
+              </dd>
+            </div>
+          </dl>
+          <p className="text-sm text-wood-900 dark:text-paper-50 mt-8">
+            <a
+              href="mailto:hello@mandalacodes.com"
+              className="text-bronze-700 dark:text-bronze-300 hover:underline"
+            >
+              hello@mandalacodes.com
+            </a>
+            {' '}— I read every message.
+          </p>
+        </section>
+
         <section className="border-t border-wood-200 dark:border-wood-700 pt-10">
           <h2 className="text-xs uppercase tracking-[0.2em] text-bronze-600 dark:text-bronze-300 mb-4">
             Design mode
