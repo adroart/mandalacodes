@@ -15,7 +15,6 @@ const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
 const CollectionsManager = lazy(() => import('./components/account/CollectionsManager'));
 const NotFound = lazy(() => import('./components/NotFound'));
 const LightweaverLanding = lazy(() => import('./components/lightweaver/LightweaverLanding'));
-const LightweaverControl = lazy(() => import('./components/lightweaver/LightweaverControl'));
 
 import { useSeoMeta } from './useSeoMeta';
 import { DarkModeProvider } from './DarkModeContext';
@@ -25,7 +24,7 @@ import { CollectionsProvider } from './lib/collections/context';
 
 // Two domains share the same Pages bundle:
 //   mandalacodes.com           → Oracle / Universal Language / Atlas (default routes)
-//   led.mandalacodes.com       → Lightweaver landing + control surface
+//   led.mandalacodes.com       → Lightweaver Studio/install/support surface
 // Hostname detection picks which route table applies.
 const isLedHost = (): boolean => {
   if (typeof window === 'undefined') return false;
@@ -68,13 +67,11 @@ const AppInner: React.FC = () => {
                 {/* led.mandalacodes.com — Studio/install entry. The card is
                     the runtime. */}
                 <Route path="/" element={<LightweaverLanding />} />
-                {/* Hosted local-network control surface. Kept for direct-LAN
-                    use, but the preferred runtime is the card's onboard page. */}
                 <Route path="/local" element={<LightweaverLanding />} />
-                <Route path="/control/:host" element={<LightweaverControl />} />
+                <Route path="/control/:host" element={<Navigate to="/" replace />} />
                 {/* Legacy /lightweaver/* paths from before the subdomain move */}
                 <Route path="/lightweaver" element={<Navigate to="/" replace />} />
-                <Route path="/lightweaver/control/:host" element={<LightweaverControlRedirect />} />
+                <Route path="/lightweaver/control/:host" element={<Navigate to="/" replace />} />
                 {/* Designer is served as a static bundle from /design/ */}
                 <Route path="/design" element={<DesignerRedirect />} />
                 <Route path="*" element={<NotFound />} />
@@ -111,7 +108,7 @@ const AppInner: React.FC = () => {
                 {/* Lightweaver — kept for backward compatibility; the live home
                     is led.mandalacodes.com root. */}
                 <Route path="/lightweaver" element={<LightweaverLanding />} />
-                <Route path="/lightweaver/control/:host" element={<LightweaverControl />} />
+                <Route path="/lightweaver/control/:host" element={<LightweaverLanding />} />
 
                 {/* Legacy /oracle/* paths — redirect to the new flat structure. */}
                 <Route path="/oracle" element={<Navigate to="/" replace />} />
@@ -127,14 +124,6 @@ const AppInner: React.FC = () => {
       </div>
     </Suspense>
   );
-};
-
-// Forward /lightweaver/control/:host → /control/:host on led.mandalacodes.com.
-const LightweaverControlRedirect: React.FC = () => {
-  const location = useLocation();
-  const m = location.pathname.match(/^\/lightweaver\/control\/(.+)$/);
-  const host = m ? m[1] : '';
-  return <Navigate to={`/control/${host}${location.search}`} replace />;
 };
 
 // Designer is a static bundle under /design/index.html. Cloudflare Pages

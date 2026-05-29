@@ -14,6 +14,6 @@
 # don't break. The SPA also handles these via <Navigate> on the
 # mandalacodes.com side; the server-side redirect catches link crawlers.
 https://mandalacodes.com/lightweaver                          https://led.mandalacodes.com/                       301
-https://mandalacodes.com/lightweaver/control/:host            https://led.mandalacodes.com/control/:host          301
+https://mandalacodes.com/lightweaver/control/:host            https://led.mandalacodes.com/                       301
 https://www.mandalacodes.com/lightweaver                      https://led.mandalacodes.com/                       301
-https://www.mandalacodes.com/lightweaver/control/:host        https://led.mandalacodes.com/control/:host          301
+https://www.mandalacodes.com/lightweaver/control/:host        https://led.mandalacodes.com/                       301
