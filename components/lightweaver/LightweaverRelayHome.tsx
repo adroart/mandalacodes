@@ -170,9 +170,9 @@ const LightweaverRelayHome: React.FC = () => {
         const s = await fetchState();
         if (!cancelled) {
           setStateData(s);
-          if (typeof s.hue === 'number') setLocalHue(s.hue);
-          if (typeof s.saturation === 'number') setLocalSat(s.saturation);
-          if (typeof s.brightness === 'number') setLocalBri(s.brightness);
+          if (typeof s.hue === 'number' && typeof pendingRemote?.hue !== 'number') setLocalHue(s.hue);
+          if (typeof s.saturation === 'number' && typeof pendingRemote?.saturation !== 'number') setLocalSat(s.saturation);
+          if (typeof s.brightness === 'number' && typeof pendingRemote?.brightness !== 'number') setLocalBri(s.brightness);
           if (typeof s.currentPatternId === 'string') {
             setOptimisticPatternId((pending) => pending === s.currentPatternId ? null : pending);
           }

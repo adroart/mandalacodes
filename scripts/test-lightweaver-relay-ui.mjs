@@ -38,6 +38,7 @@ try {
   const page = await browser.newPage();
 
   let currentPatternId = 'aurora';
+  let currentBrightness = 1;
   await page.addInitScript(() => {
     localStorage.setItem('lw_relay_card_id', 'test-card');
     localStorage.setItem('lw_relay_owner_token', 'test-token');
@@ -56,7 +57,7 @@ try {
           online: true,
           lastSeenAt: Date.now(),
           currentPatternId,
-          brightness: 1,
+          brightness: currentBrightness,
           hue: 32,
           saturation: 230,
           blackout: false,
@@ -72,6 +73,11 @@ try {
         currentPatternId = body.patternId;
       }, 1800);
     }
+    if (typeof body?.brightness === 'number') {
+      setTimeout(() => {
+        currentBrightness = body.brightness;
+      }, 1800);
+    }
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -80,6 +86,16 @@ try {
   });
 
   await page.goto(`${baseUrl}/?led=1`);
+  await expectLocatorText(page, '100%');
+
+  const brightness = page.locator('input[type="range"][max="100"]');
+  await brightness.fill('45');
+  await expectLocatorText(page, 'Sending to piece');
+  await page.waitForTimeout(600);
+  assert.equal(await brightness.inputValue(), '45');
+  await expectLocatorText(page, '45%');
+  await page.locator('.lw-remote-status').filter({ hasText: 'Applied' }).waitFor({ state: 'visible', timeout: 4000 });
+
   await page.getByRole('button', { name: 'Wave' }).click();
   await expectLocatorText(page, 'Sending to piece');
 
@@ -90,9 +106,9 @@ try {
   server.kill();
 }
 
-async function expectLocatorText(page, text) {
+async function expectLocatorText(page, text, timeout = 1000) {
   const locator = page.getByText(text);
-  await locator.waitFor({ state: 'visible', timeout: 1000 });
+  await locator.waitFor({ state: 'visible', timeout });
 }
 
 async function expectClassContains(locator, className) {
