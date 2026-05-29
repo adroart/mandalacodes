@@ -31,9 +31,77 @@ Living list of what's outstanding on the oracle. Loose priority order — top it
 
 - [ ] **Light Codes deck.** Route shape is already reserved (`/light-codes/*`). Content lives in `Coding/_archive/light-codes/` and needs integration work.
 
-- [ ] **Articles / writing section.** Mandalacodes is meant to become a wisdom hub, not just a deck reader. Route shape TBD (`/writings/*`? `/articles/*`?). Content authoring approach TBD.
-
 - [ ] **Additional decks beyond Universal Language + Light Codes** as they emerge.
+
+## Mandala Authority Strategy
+
+Mandalacodes is becoming the editorial mandala-authority destination. Full strategy in [`docs/research/seo/`](docs/research/seo/) (4 docs committed 2026-05-29). Companion strategy in `~/Documents/Obsidian Vault/4 Outputs/mandalas/` (master plan, outreach intelligence, source picks, collaboration templates). Research corpus (482 files) at `~/Documents/Obsidian Vault/5 Sources/mandalas/`.
+
+### Phase 1 — Foundation (blocks everything else)
+
+- [ ] **Build `/about` page** stating editorial mission. Establishes mandalacodes as editorial-not-promotional before any content ships. Spec: [`page-targets.md`](docs/research/seo/2026-05-28-page-targets.md) row `/about`. Owner: Claude drafts + Adrian voice-passes. ~1 day.
+
+- [ ] **Adrian reads 5 curated sources for "What Is Mandala Art?"** Unblocks everything. The 5 picks: [`_top-sources-for-writing.md § Article 1`](../../../../Documents/Obsidian%20Vault/4%20Outputs/mandalas/_top-sources-for-writing.md). 2-3 hours focused reading. Owner: Adrian only.
+
+- [ ] **Draft & ship `/articles/what-is-mandala-art`** — targets `mandala art` (49,500/mo). Foundational explainer. Source corpus: `5 Sources/mandalas/what-is-mandala-art/` (23 files). Spec: [`article-cluster-plan.md § Article 1`](docs/research/seo/2026-05-28-article-cluster-plan.md). Owner: Claude drafts from Adrian's notes + Adrian voice-pass. Blocked on previous item.
+
+- [ ] **Build `/artists` hub + `/artists/adrian-rasmussen`** — first Featured Artist proves the template. Spec: [`featured-artist-page-spec.md`](docs/research/seo/2026-05-28-featured-artist-page-spec.md). Owner: Claude. ~1 day. Blocked on `/about` + first article.
+
+### Phase 2 — Editorial cluster
+
+- [ ] **Ship `/articles/sacred-geometry-mandala-art`** — targets `sacred geometry mandala art` (1,300/mo) + bridges to `sacred geometry art` (18,100/mo) over time. Spec: [`article-cluster-plan.md § Article 2`](docs/research/seo/2026-05-28-article-cluster-plan.md). Blocked on Phase 1 complete.
+
+- [ ] **Ship `/articles/commissioning-a-mandala`** — targets `mandala art commission` (140/mo, very high intent). Editorial guide; Adrian's specific process stays on his Featured Artist page. Spec: [`article-cluster-plan.md § Article 3`](docs/research/seo/2026-05-28-article-cluster-plan.md).
+
+- [ ] **Ship `/articles/laser-cut-wooden-mandalas` (Part A)** — targets `laser cut mandala art` (1,600/mo). Editorial medium overview. Cross-links to Adrian's first-person essay on adrianrasmussen.com. Spec: [`article-cluster-plan.md § Article 4`](docs/research/seo/2026-05-28-article-cluster-plan.md).
+
+- [ ] **Phase 2 depth articles** (Tibetan, Hindu, Jung, sand mandalas, mandala history, sacred geometry history, flower of life, mandala meditation). Full list: [`article-cluster-plan.md § Phase 2`](docs/research/seo/2026-05-28-article-cluster-plan.md). Run after the core 4 are live.
+
+### Phase 3 — Collaboration outreach (parallel, kick off anytime)
+
+- [ ] **Adrian drops collaboration names** in chat. 5-15 mandala/sacred-geometry artists with IG handle + one-line context. Framework: [`_outreach-intelligence.md § Tier 0`](../../../../Documents/Obsidian%20Vault/4%20Outputs/mandalas/_outreach-intelligence.md). Owner: Adrian only. ~15 min.
+
+- [ ] **Score candidates + draft tailored DMs.** Claude scores on 5 criteria, assigns collaboration shape (1-5), drafts DM per artist. Templates: [`_collaboration-outreach-templates.md`](../../../../Documents/Obsidian%20Vault/4%20Outputs/mandalas/_collaboration-outreach-templates.md). Owner: Claude. Blocked on names.
+
+- [ ] **Adrian sends first wave (3-5 DMs).** Personalize each, no template-blasting. Owner: Adrian.
+
+- [ ] **Build first collaborator's Featured Artist page** when one says yes. Reuses [`featured-artist-page-spec.md`](docs/research/seo/2026-05-28-featured-artist-page-spec.md) template. Owner: Claude. ~1 day.
+
+### Phase 4 — Press kit & Tier 3 outreach
+
+- [ ] **Draft press bios (250/500/1000 word).** Claude drafts from existing About content; Adrian voice-passes. ~1 hour.
+- [ ] **Adrian compiles high-res image library** (10-15 hero images, 3000px+, Cloudinary IDs marked "press hero"). Owner: Adrian.
+- [ ] **Adrian provides CV + exhibition history.** Required for Tier 1 pitches. Owner: Adrian.
+- [ ] **Adrian compiles process documentation** (10-15 photos + 60-90s studio video). Highest-value asset for Tier 2 editorial pitches. Owner: Adrian.
+- [ ] **Draft Tier 3 pitch templates** for 5 outlets (invaluable, dailyartmagazine, artzolo, gaia/buddhagroove, rareearthgallerycc). Source: [`_outreach-intelligence.md § Tier 3`](../../../../Documents/Obsidian%20Vault/4%20Outputs/mandalas/_outreach-intelligence.md). Owner: Claude.
+- [ ] **Adrian sends Tier 3 wave** (5 personalized pitches). Owner: Adrian. Blocked on previous items.
+- [ ] **Build pitch tracking sheet** in `~/Documents/Obsidian Vault/4 Outputs/mandalas/press-kit/pitch-tracker.md`. Owner: Claude.
+
+### Phase 5 — Authority participation (always-on, starts month 3)
+
+- [ ] **Reddit & Quora playbook** — specific subreddits, Quora question targets, response templates. Owner: Claude. Source: AI citation playbook on Adrian-Website.
+- [ ] **Adrian Reddit warmup** — 2-4 weeks genuine participation in r/Art, r/SacredGeometry, r/woodworking, r/buddhism, r/Bali before any self-mention. Owner: Adrian.
+- [ ] **Adrian Quora — first 5 answers** (400-800 words each, one link). Owner: Adrian.
+- [ ] **First YouTube video** — "How I Create Laser-Cut Wooden Mandalas." Script reuses Adrian's first-person essay. Owner: Adrian films, Claude transcribes.
+
+### Phase 6 — Corpus maintenance (agent-runnable on trigger)
+
+- [ ] **Top-up: Kalachakra mandala.** Before writing Phase 2 Tibetan article. Command: `~/builds/mandala-research.sh "Tibetan Kalachakra mandala iconography construction"`. ~5 min.
+- [ ] **Top-up: Islamic geometric patterns.** Before Sacred Geometry article. Command: `~/builds/mandala-research.sh "Islamic geometric patterns sacred art history"`. ~5 min.
+- [ ] **Top-up: Jung's Red Book.** Before Phase 2 Jung article. Command: `~/builds/mandala-research.sh "Carl Jung Red Book mandala individuation imagery"`. ~5 min.
+- [ ] **Rerun 5 empty subtopics** when Firecrawl credits reset (wood-sculpture-artists, crystal-art-illuminated-sculpture, ye-ming-zhu-luminous-pearl, i-ching-art, gene-keys-archetypes). Failed during overnight run on 2026-05-22 due to rate limit.
+
+### Phase 7 — AI citation tracking (monthly, starts month 4)
+
+- [ ] **Build AI citation tracking sheet** at `~/Documents/Obsidian Vault/4 Outputs/mandalas/_ai-citation-tracker.md`. Columns: month, prompt, platform, Adrian-appeared, domain cited, competitors, accuracy. Owner: Claude.
+- [ ] **Run 12-prompt tracking set monthly** across Google AI Mode, ChatGPT Search, Perplexity, Gemini, Bing Copilot. The 12 prompts are listed in Adrian-Website's AI citation playbook. Owner: Adrian runs + Claude logs.
+
+### Phase 8 — Adrian-Website cross-linking (lower priority)
+
+- [ ] **Add two-domain note** to Adrian-Website SEO docs (`docs/research/seo/` on main) so anyone reading those docs cold sees the split. ~30 min. Blocked on switching to a branch with those docs.
+- [ ] **Add cross-links** from Adrian-Website's mandala pages → mandalacodes articles. After mandalacodes Phase 1-2 articles are live.
+- [ ] **Add `sameAs` schema** in Adrian-Website's Person schema → `https://mandalacodes.com/about`. ~15 min. Blocked on `/about` being live here.
+
 
 ## Operational notes (not TODOs — context for future-you)
 
