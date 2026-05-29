@@ -8,28 +8,14 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { getSavedCards, sanitizeHost, type SavedCard } from '../../lib/lightweaver/cards';
 
 // Designer lives at /design/index.html as a static bundle on whichever
 // domain serves the SPA. Works for both mandalacodes.com/design and
 // led.mandalacodes.com/design.
-const DESIGNER_URL = '/design/';
-const DESIGNER_EXPORT_URL = '/design/#screen=export';
-const DESIGNER_DEVICES_URL = '/design/#screen=devices';
+const DESIGNER_CHIP_URL = '/design/#screen=chip';
 const DEFAULT_CARD_URL = 'http://lightweaver.local/';
 const AP_SETUP_URL = 'http://192.168.4.1/';
-
-// Pick the right base path for control links based on hostname. On
-// led.mandalacodes.com the Lightweaver app is the root, so /control/:host
-// is the canonical route. On the legacy mandalacodes.com path it sits under
-// /lightweaver/control/:host.
-const isLedHost = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  const h = window.location.hostname;
-  return h === 'led.mandalacodes.com' || h.startsWith('led.');
-};
-const controlPath = (host: string) => (isLedHost() ? `/control/${host}` : `/lightweaver/control/${host}`);
 
 const cardUrlFor = (rawHost: string): string => {
   const withoutProtocol = rawHost.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
@@ -76,24 +62,18 @@ const LightweaverLanding: React.FC = () => {
           required for the normal Lightweaver path.
         </p>
 
-        <section className="mb-10 grid gap-3 sm:grid-cols-3">
+        <section className="mb-10 grid gap-3 sm:grid-cols-2">
           <a
-            href={DESIGNER_URL}
+            href={DESIGNER_CHIP_URL}
             className="px-4 py-3 bg-bronze-600 text-paper-50 rounded-md text-sm uppercase tracking-wider hover:bg-bronze-700 transition-colors text-center"
           >
-            Open Studio
+            Open Studio v3
           </a>
           <a
             href={DEFAULT_CARD_URL}
             className="px-4 py-3 border border-wood-300 dark:border-wood-600 rounded-md text-sm uppercase tracking-wider text-wood-900 dark:text-paper-50 hover:border-bronze-500 transition-colors text-center"
           >
             Open Card
-          </a>
-          <a
-            href="https://led.mandalacodes.com/relay"
-            className="px-4 py-3 border border-wood-300 dark:border-wood-600 rounded-md text-sm uppercase tracking-wider text-wood-900 dark:text-paper-50 hover:border-bronze-500 transition-colors text-center"
-          >
-            Optional Relay
           </a>
         </section>
 
@@ -129,16 +109,6 @@ const LightweaverLanding: React.FC = () => {
             <span className="font-mono">http://lightweaver.local</span>. If the card is still in
             setup mode, join its <span className="font-mono">Lightweaver-XXXX</span> WiFi network
             and open <a href={AP_SETUP_URL} className="text-bronze-700 dark:text-bronze-300 hover:underline">192.168.4.1</a>.
-          </p>
-          <p className="text-xs text-wood-500 dark:text-paper-400 mt-2 leading-relaxed">
-            Advanced hosted controls are still available at{' '}
-            <Link
-              to={controlPath(sanitizeHost(host) || 'lightweaver')}
-              className="text-bronze-700 dark:text-bronze-300 hover:underline"
-            >
-              /control/{sanitizeHost(host) || 'lightweaver'}
-            </Link>
-            , but the card page is the reliable local controller.
           </p>
         </section>
 
@@ -197,9 +167,8 @@ const LightweaverLanding: React.FC = () => {
               in a browser. Patterns, colors, brightness, and saved settings all live on the card.
             </li>
             <li>
-              <strong>To redesign it,</strong> open Studio on this site, export the Lightweaver card
-              config, then paste it into the card page's settings drawer or push it from the Devices
-              panel when your browser allows local HTTP.
+              <strong>To redesign it,</strong> open Studio v3 on this site, copy or download the
+              chip config, then paste it into the card page's Settings drawer.
             </li>
           </ol>
           <p className="text-xs text-wood-500 dark:text-paper-400 leading-relaxed">
@@ -223,13 +192,12 @@ const LightweaverLanding: React.FC = () => {
             </li>
             <li>
               The website you're reading this on (<span className="font-mono">led.mandalacodes.com</span>)
-              is the Studio: draw layouts, export card configs, and install updates. It is not the
-              transport the lights depend on every second.
+              is Studio v3: adjust only what can be written into the ESP32 chip config, then copy
+              or download that config for the card.
             </li>
             <li>
-              Remote relay control is optional at <span className="font-mono">/relay</span>. It is
-              useful for experiments, but local control is the default because it is immediate and
-              does not burn Cloudflare KV reads.
+              Incomplete live, relay, WLED, and show-control experiments are not part of this
+              customer surface.
             </li>
           </ul>
         </section>
@@ -295,27 +263,21 @@ const LightweaverLanding: React.FC = () => {
             Studio and install
           </h2>
           <p className="text-sm text-wood-600 dark:text-paper-300 mb-4 leading-relaxed">
-            For artists and installers. Build the LED layout, configure outputs, export the card
-            runtime file, or push directly to a card on the same WiFi.
+            For artists and installers. Build the LED layout, choose chip looks, configure outputs,
+            and prepare the file the card can actually load.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <a
-              href={DESIGNER_URL}
+              href={DESIGNER_CHIP_URL}
               className="inline-block px-6 py-3 border border-wood-300 dark:border-wood-600 rounded-md text-sm uppercase tracking-wider text-wood-900 dark:text-paper-50 hover:border-bronze-500 transition-colors text-center"
             >
-              Open Studio
+              Open Studio v3
             </a>
             <a
-              href={DESIGNER_EXPORT_URL}
+              href="/design/#screen=layout"
               className="inline-block px-6 py-3 border border-wood-300 dark:border-wood-600 rounded-md text-sm uppercase tracking-wider text-wood-900 dark:text-paper-50 hover:border-bronze-500 transition-colors text-center"
             >
-              Export Config
-            </a>
-            <a
-              href={DESIGNER_DEVICES_URL}
-              className="inline-block px-6 py-3 border border-wood-300 dark:border-wood-600 rounded-md text-sm uppercase tracking-wider text-wood-900 dark:text-paper-50 hover:border-bronze-500 transition-colors text-center"
-            >
-              Push to Card
+              Edit Layout
             </a>
           </div>
         </section>

@@ -16,7 +16,6 @@ const CollectionsManager = lazy(() => import('./components/account/CollectionsMa
 const NotFound = lazy(() => import('./components/NotFound'));
 const LightweaverLanding = lazy(() => import('./components/lightweaver/LightweaverLanding'));
 const LightweaverControl = lazy(() => import('./components/lightweaver/LightweaverControl'));
-const LightweaverRelayHome = lazy(() => import('./components/lightweaver/LightweaverRelayHome'));
 
 import { useSeoMeta } from './useSeoMeta';
 import { DarkModeProvider } from './DarkModeContext';
@@ -67,10 +66,10 @@ const AppInner: React.FC = () => {
             {ledHost ? (
               <Routes>
                 {/* led.mandalacodes.com — Studio/install entry. The card is
-                    the runtime; relay control is intentionally opt-in. */}
+                    the runtime; relay control is not part of customer v3. */}
                 <Route path="/" element={<LightweaverLanding />} />
-                <Route path="/relay" element={<LightweaverRelayHome />} />
-                <Route path="/remote" element={<Navigate to="/relay" replace />} />
+                <Route path="/relay" element={<Navigate to="/" replace />} />
+                <Route path="/remote" element={<Navigate to="/" replace />} />
                 {/* Hosted local-network control surface. Kept for direct-LAN
                     use, but the preferred runtime is the card's onboard page. */}
                 <Route path="/local" element={<LightweaverLanding />} />
