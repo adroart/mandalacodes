@@ -36,6 +36,18 @@ id = "abc123def456..."   # the value from step 1
 
 Commit and push. Cloudflare Pages will pick up the binding on the next deploy.
 
+As of 2026-05-29, `led.mandalacodes.com` is attached to the separate
+Cloudflare Pages project named `lightweaver` because DNS already points at
+`lightweaver-edw.pages.dev`. Deploy this repo's built `dist/` + Functions
+bundle there with:
+
+```bash
+wrangler pages deploy dist --project-name lightweaver --branch main
+```
+
+The `lightweaver` Pages project also needs the same `LIGHTWEAVER_RELAY` KV
+binding in its production and preview deployment configs.
+
 ## What the endpoints do
 
 | Method + path | Caller | Purpose |
@@ -43,6 +55,7 @@ Commit and push. Cloudflare Pages will pick up the binding on the next deploy.
 | `POST /api/lw/register` | Card | First boot: get ownerToken + pair code |
 | `POST /api/lw/heartbeat` | Card | Every 15s: post current state |
 | `GET  /api/lw/poll/:id` | Card | Every 1s: read pending command |
+| `POST /api/lw/poll/:id` | Card | Ack applied command by `commandId`; clears pending |
 | `POST /api/lw/pair` | Browser | Submit 6-char code, receive token |
 | `POST /api/lw/control/:id` | Browser | Write a command bundle |
 | `GET  /api/lw/state/:id` | Browser | Read card's last state |

@@ -52,6 +52,8 @@ export type ControlPayload = {
   saturation?: number;        // 0..255
   breathe?: boolean;
   drift?: boolean;
+  driftMin?: number;          // 0..255
+  driftMax?: number;          // 0..255
 };
 
 export type ControlEcho = {
@@ -64,6 +66,8 @@ export type ControlEcho = {
   saturation?: number;
   breathe?: boolean;
   drift?: boolean;
+  driftMin?: number;
+  driftMax?: number;
 };
 
 export class CardUnreachableError extends Error {

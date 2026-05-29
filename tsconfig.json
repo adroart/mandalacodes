@@ -27,5 +27,5 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "exclude": ["functions/**/*", "node_modules", "dist"]
+  "exclude": ["functions/**/*", "node_modules", "dist", "keystatic.config.ts"]
 }

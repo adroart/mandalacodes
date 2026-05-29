@@ -13,6 +13,7 @@
     "preview": "vite preview",
     "generate:qr": "tsx scripts/generate-ul-qr.ts",
     "test": "npx playwright test",
+    "test:relay": "tsx scripts/test-lightweaver-relay.ts",
     "test:mobile": "npx playwright test --project='Mobile Chrome' --reporter=list"
   },
   "dependencies": {

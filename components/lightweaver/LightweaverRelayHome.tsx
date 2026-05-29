@@ -97,11 +97,16 @@ const LightweaverRelayHome: React.FC = () => {
   const [localHue, setLocalHue] = useState(32);
   const [localSat, setLocalSat] = useState(230);
   const [localBri, setLocalBri] = useState(1);
+  const [optimisticPatternId, setOptimisticPatternId] = useState<string | null>(null);
+  const [optimisticBlackout, setOptimisticBlackout] = useState<boolean | null>(null);
 
   // Coalescing sender: one in-flight POST per key, latest value wins.
   const senderRef = useRef<{ pending: RelayCommand | null; busy: boolean }>({ pending: null, busy: false });
 
   const send = useCallback(async (cmd: RelayCommand) => {
+    if (cmd.patternId) setOptimisticPatternId(cmd.patternId);
+    if (typeof cmd.blackout === 'boolean') setOptimisticBlackout(cmd.blackout);
+    setError('');
     senderRef.current.pending = { ...(senderRef.current.pending || {}), ...cmd };
     if (senderRef.current.busy) return;
     senderRef.current.busy = true;
@@ -111,7 +116,7 @@ const LightweaverRelayHome: React.FC = () => {
       try {
         await postCommand(next);
       } catch (e) {
-        // best-effort; the next state poll will repair UI mismatch
+        setError(e instanceof Error ? e.message : 'command failed');
       }
     }
     senderRef.current.busy = false;
@@ -129,6 +134,12 @@ const LightweaverRelayHome: React.FC = () => {
           if (typeof s.hue === 'number') setLocalHue(s.hue);
           if (typeof s.saturation === 'number') setLocalSat(s.saturation);
           if (typeof s.brightness === 'number') setLocalBri(s.brightness);
+          if (typeof s.currentPatternId === 'string') {
+            setOptimisticPatternId((pending) => pending === s.currentPatternId ? null : pending);
+          }
+          if (typeof s.blackout === 'boolean') {
+            setOptimisticBlackout((pending) => pending === s.blackout ? null : pending);
+          }
         }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'fetch failed');
@@ -138,6 +149,15 @@ const LightweaverRelayHome: React.FC = () => {
     const id = setInterval(tick, 1500);
     return () => { cancelled = true; clearInterval(id); };
   }, [binding]);
+
+  useEffect(() => {
+    if (!optimisticPatternId && optimisticBlackout === null) return;
+    const id = window.setTimeout(() => {
+      setOptimisticPatternId(null);
+      setOptimisticBlackout(null);
+    }, 12000);
+    return () => window.clearTimeout(id);
+  }, [optimisticPatternId, optimisticBlackout]);
 
   const handlePair = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,8 +255,8 @@ const LightweaverRelayHome: React.FC = () => {
     );
   }
 
-  const currentId = state?.currentPatternId || '';
-  const blackoutOn = !!state?.blackout;
+  const currentId = optimisticPatternId || state?.currentPatternId || '';
+  const blackoutOn = optimisticBlackout ?? !!state?.blackout;
 
   return (
     <div className="lw-bg">
@@ -249,6 +269,7 @@ const LightweaverRelayHome: React.FC = () => {
           </span>
           <span className="lw-piece">{binding.label}</span>
         </div>
+        {error && <div className="lw-err">{error}</div>}
 
         <div className="lw-grid">
           {PATTERN_LIST.map((p) => {

@@ -3,7 +3,7 @@
 // so only the most recent command is delivered — slider drags don't queue
 // up. The card polls every ~1s and applies + clears.
 
-import { RelayEnv, PagesFunction, CardMeta, PendingCommand, jsonResponse, corsPreflight, readJson, cardMetaKey, cardPendingKey, PENDING_TTL } from '../_lib';
+import { RelayEnv, PagesFunction, CardMeta, PendingCommand, jsonResponse, corsPreflight, readJson, cardMetaKey, cardPendingKey, PENDING_TTL, newCommandId } from '../_lib';
 
 export const onRequestOptions: PagesFunction = async () => corsPreflight();
 
@@ -22,7 +22,7 @@ export const onRequestPost: PagesFunction<RelayEnv, 'id'> = async ({ params, req
   // Merge with any existing pending so multiple browsers within ~1s don't
   // overwrite each other's distinct fields. Last write wins per key.
   const existing = await env.LIGHTWEAVER_RELAY.get<PendingCommand>(cardPendingKey(id), 'json');
-  const merged: PendingCommand = { ...(existing || {}), ...body };
+  const merged: PendingCommand = { ...(existing || {}), ...body, commandId: newCommandId() };
   await env.LIGHTWEAVER_RELAY.put(cardPendingKey(id), JSON.stringify(merged), { expirationTtl: PENDING_TTL });
-  return jsonResponse({ ok: true });
+  return jsonResponse({ ok: true, commandId: merged.commandId });
 };

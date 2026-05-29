@@ -46,6 +46,7 @@ export type CardState = {
 };
 
 export type PendingCommand = {
+  commandId?: string;
   brightness?: number;
   hue?: number;
   saturation?: number;
@@ -56,6 +57,10 @@ export type PendingCommand = {
   speed?: number;
   hueShift?: number;
   syncToken?: string; // browser sets this; card echoes in next state so browser knows the command landed
+};
+
+export type AckRequest = {
+  commandId?: string;
 };
 
 export type CardMeta = {
@@ -92,6 +97,11 @@ export function newPairCode(): string {
   crypto.getRandomValues(buf);
   for (let i = 0; i < 6; i++) out.push(alphabet[buf[i] % alphabet.length]);
   return out.join('');
+}
+
+export function newCommandId(): string {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  return newToken(16);
 }
 
 export function jsonResponse(body: unknown, init: ResponseInit = {}) {
