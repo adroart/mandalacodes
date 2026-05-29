@@ -44,6 +44,26 @@ const PATTERN_LIST: { id: string; label: string }[] = [
 const hueToHsl = (h: number, s: number) =>
   `hsl(${Math.round((h / 255) * 360)}, ${Math.round((s / 255) * 100)}%, 50%)`;
 
+type PendingRemoteCommand = {
+  patternId?: string;
+  blackout?: boolean;
+  brightness?: number;
+  hue?: number;
+  saturation?: number;
+};
+
+const nearlyEqual = (a: number | undefined, b: number | undefined, tolerance = 0.015) =>
+  typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= tolerance;
+
+const commandMatchesState = (pending: PendingRemoteCommand, state: RelayState) => {
+  if (pending.patternId && state.currentPatternId !== pending.patternId) return false;
+  if (typeof pending.blackout === 'boolean' && state.blackout !== pending.blackout) return false;
+  if (typeof pending.brightness === 'number' && !nearlyEqual(state.brightness, pending.brightness)) return false;
+  if (typeof pending.hue === 'number' && state.hue !== pending.hue) return false;
+  if (typeof pending.saturation === 'number' && state.saturation !== pending.saturation) return false;
+  return true;
+};
+
 const STYLES = `
 .lw-bg{min-height:100vh;background:#050505;color:#f4ede0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
 .lw-wrap{max-width:520px;margin:0 auto;padding:24px 18px 36px;display:flex;flex-direction:column;gap:16px}
@@ -54,7 +74,9 @@ const STYLES = `
 .lw-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .lw-tile{background:#141414;border:1px solid #262626;border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;cursor:pointer}
 .lw-tile.lw-active{border-color:#c89b5c}
+.lw-tile.lw-pending{box-shadow:0 0 0 1px rgba(200,155,92,.35),0 0 18px rgba(200,155,92,.14)}
 .lw-tile-name{font-size:12px;font-weight:500;color:#f4ede0;text-align:center}
+.lw-tile-badge{min-height:12px;font-size:9px;line-height:12px;letter-spacing:1px;text-transform:uppercase;text-align:center;color:#c89b5c}
 .lw-sw{height:54px;border-radius:6px;background-color:#262626}
 .lwsw-aurora{background:linear-gradient(90deg,#0a3a4a,#2a8a9a,#4ac0d0,#2a8a9a,#0a3a4a);background-size:200% 100%;animation:lwflow 6s linear infinite}
 .lwsw-ember{background:radial-gradient(circle at 30% 50%,#d04a18,#8a2008 40%,#2a0800);animation:lwflicker 1.5s ease-in-out infinite}
@@ -69,6 +91,7 @@ const STYLES = `
 @keyframes lwscan{0%{background-position:100% 0}100%{background-position:-100% 0}}
 @keyframes lwflicker{0%,100%{opacity:.9}25%{opacity:1}50%{opacity:.7}75%{opacity:1}}
 @keyframes lwbreathe{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.05);opacity:1}}
+@keyframes lwspin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 .lw-bright{background:#141414;border:1px solid #262626;border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px}
 .lw-bright-lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#9a8d75;flex-shrink:0}
 .lw-bright-val{font-size:12px;color:#c89b5c;font-family:ui-monospace,SF Mono,monospace;flex-shrink:0;min-width:36px;text-align:right}
@@ -83,6 +106,10 @@ const STYLES = `
 .lw-err{color:#e07856;font-size:13px;margin-top:8px;text-align:center}
 .lw-status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7fb069;margin-right:8px;vertical-align:middle}
 .lw-status-dot.lw-off{background:#e07856}
+.lw-remote-status{min-height:18px;display:flex;align-items:center;justify-content:center;gap:7px;color:#9a8d75;font-size:11px;letter-spacing:1.2px;text-transform:uppercase}
+.lw-remote-status.lw-sending{color:#c89b5c}
+.lw-spinner{width:9px;height:9px;border:1px solid rgba(200,155,92,.25);border-top-color:#c89b5c;border-radius:50%;animation:lwspin .75s linear infinite}
+.lw-applied-dot{width:8px;height:8px;border-radius:50%;background:#7fb069;box-shadow:0 0 12px rgba(127,176,105,.45)}
 .lw-offline{padding:32px 18px;text-align:center;background:#141414;border:1px solid #262626;border-radius:14px}
 .lw-offline h2{font-size:16px;font-weight:500;color:#e07856;margin:0 0 8px}
 .lw-offline p{font-size:13px;color:#9a8d75;line-height:1.5;margin:0}
@@ -99,13 +126,24 @@ const LightweaverRelayHome: React.FC = () => {
   const [localBri, setLocalBri] = useState(1);
   const [optimisticPatternId, setOptimisticPatternId] = useState<string | null>(null);
   const [optimisticBlackout, setOptimisticBlackout] = useState<boolean | null>(null);
+  const [pendingRemote, setPendingRemote] = useState<PendingRemoteCommand | null>(null);
+  const [appliedPulse, setAppliedPulse] = useState(false);
+  const appliedTimerRef = useRef<number | null>(null);
 
   // Coalescing sender: one in-flight POST per key, latest value wins.
   const senderRef = useRef<{ pending: RelayCommand | null; busy: boolean }>({ pending: null, busy: false });
 
+  const showAppliedPulse = useCallback(() => {
+    if (appliedTimerRef.current) window.clearTimeout(appliedTimerRef.current);
+    setAppliedPulse(true);
+    appliedTimerRef.current = window.setTimeout(() => setAppliedPulse(false), 1800);
+  }, []);
+
   const send = useCallback(async (cmd: RelayCommand) => {
     if (cmd.patternId) setOptimisticPatternId(cmd.patternId);
     if (typeof cmd.blackout === 'boolean') setOptimisticBlackout(cmd.blackout);
+    setPendingRemote((pending) => ({ ...(pending || {}), ...cmd }));
+    setAppliedPulse(false);
     setError('');
     senderRef.current.pending = { ...(senderRef.current.pending || {}), ...cmd };
     if (senderRef.current.busy) return;
@@ -116,6 +154,7 @@ const LightweaverRelayHome: React.FC = () => {
       try {
         await postCommand(next);
       } catch (e) {
+        setPendingRemote(null);
         setError(e instanceof Error ? e.message : 'command failed');
       }
     }
@@ -140,6 +179,10 @@ const LightweaverRelayHome: React.FC = () => {
           if (typeof s.blackout === 'boolean') {
             setOptimisticBlackout((pending) => pending === s.blackout ? null : pending);
           }
+          if (pendingRemote && commandMatchesState(pendingRemote, s)) {
+            setPendingRemote(null);
+            showAppliedPulse();
+          }
         }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'fetch failed');
@@ -148,16 +191,21 @@ const LightweaverRelayHome: React.FC = () => {
     tick();
     const id = setInterval(tick, 1500);
     return () => { cancelled = true; clearInterval(id); };
-  }, [binding]);
+  }, [binding, pendingRemote, showAppliedPulse]);
 
   useEffect(() => {
-    if (!optimisticPatternId && optimisticBlackout === null) return;
+    if (!optimisticPatternId && optimisticBlackout === null && !pendingRemote) return;
     const id = window.setTimeout(() => {
       setOptimisticPatternId(null);
       setOptimisticBlackout(null);
+      setPendingRemote(null);
     }, 12000);
     return () => window.clearTimeout(id);
-  }, [optimisticPatternId, optimisticBlackout]);
+  }, [optimisticPatternId, optimisticBlackout, pendingRemote]);
+
+  useEffect(() => () => {
+    if (appliedTimerRef.current) window.clearTimeout(appliedTimerRef.current);
+  }, []);
 
   const handlePair = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -257,6 +305,7 @@ const LightweaverRelayHome: React.FC = () => {
 
   const currentId = optimisticPatternId || state?.currentPatternId || '';
   const blackoutOn = optimisticBlackout ?? !!state?.blackout;
+  const remoteStatus = pendingRemote ? 'sending' : appliedPulse ? 'applied' : 'idle';
 
   return (
     <div className="lw-bg">
@@ -270,22 +319,34 @@ const LightweaverRelayHome: React.FC = () => {
           <span className="lw-piece">{binding.label}</span>
         </div>
         {error && <div className="lw-err">{error}</div>}
+        {remoteStatus !== 'idle' && (
+          <div
+            className={`lw-remote-status ${remoteStatus === 'sending' ? 'lw-sending' : ''}`}
+            role="status"
+            aria-live="polite"
+          >
+            {remoteStatus === 'sending' ? <span className="lw-spinner" /> : <span className="lw-applied-dot" />}
+            {remoteStatus === 'sending' ? 'Sending to piece' : 'Applied'}
+          </div>
+        )}
 
         <div className="lw-grid">
           {PATTERN_LIST.map((p) => {
             const active = p.id === currentId;
+            const pending = pendingRemote?.patternId === p.id;
             const swClass = SWATCH_CLASS[p.id] || '';
             const swStyle: React.CSSProperties = {};
             if (p.id === 'custom-color') swStyle.background = hueToHsl(localHue, localSat);
             return (
               <button
                 key={p.id}
-                className={`lw-tile ${active ? 'lw-active' : ''}`}
+                className={`lw-tile ${active ? 'lw-active' : ''}${pending ? ' lw-pending' : ''}`}
                 onClick={() => send({ patternId: p.id })}
                 type="button"
               >
                 <div className={`lw-sw ${swClass}`} style={swStyle} />
                 <div className="lw-tile-name">{p.label}</div>
+                <div className="lw-tile-badge">{pending ? 'Sending' : active && appliedPulse ? 'Applied' : ''}</div>
               </button>
             );
           })}

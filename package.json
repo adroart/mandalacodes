@@ -14,6 +14,7 @@
     "generate:qr": "tsx scripts/generate-ul-qr.ts",
     "test": "npx playwright test",
     "test:relay": "tsx scripts/test-lightweaver-relay.ts",
+    "test:relay-ui": "node scripts/test-lightweaver-relay-ui.mjs",
     "test:mobile": "npx playwright test --project='Mobile Chrome' --reporter=list"
   },
   "dependencies": {
