@@ -13,7 +13,7 @@ import { getSavedCards, sanitizeHost, type SavedCard } from '../../lib/lightweav
 // Designer lives at /design/index.html as a static bundle on whichever
 // domain serves the SPA. Works for both mandalacodes.com/design and
 // led.mandalacodes.com/design.
-const DESIGNER_CHIP_URL = '/design/#screen=chip';
+const DESIGNER_PATTERNS_URL = '/design/#screen=patterns';
 const DEFAULT_CARD_URL = 'http://lightweaver.local/';
 const AP_SETUP_URL = 'http://192.168.4.1/';
 
@@ -64,7 +64,7 @@ const LightweaverLanding: React.FC = () => {
 
         <section className="mb-10 grid gap-3 sm:grid-cols-2">
           <a
-            href={DESIGNER_CHIP_URL}
+            href={DESIGNER_PATTERNS_URL}
             className="px-4 py-3 bg-bronze-600 text-paper-50 rounded-md text-sm uppercase tracking-wider hover:bg-bronze-700 transition-colors text-center"
           >
             Open Studio v3
@@ -167,8 +167,8 @@ const LightweaverLanding: React.FC = () => {
               in a browser. Patterns, colors, brightness, and saved settings all live on the card.
             </li>
             <li>
-              <strong>To redesign it,</strong> open Studio v3 on this site, copy or download the
-              chip config, then paste it into the card page's Settings drawer.
+              <strong>To redesign it,</strong> open Studio v3 on this site, choose the patterns
+              and colors, copy or download the chip config, then paste it into the card page.
             </li>
           </ol>
           <p className="text-xs text-wood-500 dark:text-paper-400 leading-relaxed">
@@ -268,7 +268,7 @@ const LightweaverLanding: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <a
-              href={DESIGNER_CHIP_URL}
+              href={DESIGNER_PATTERNS_URL}
               className="inline-block px-6 py-3 border border-wood-300 dark:border-wood-600 rounded-md text-sm uppercase tracking-wider text-wood-900 dark:text-paper-50 hover:border-bronze-500 transition-colors text-center"
             >
               Open Studio v3
