@@ -66,10 +66,13 @@ const AppInner: React.FC = () => {
           >
             {ledHost ? (
               <Routes>
-                {/* led.mandalacodes.com — primary path is the relay home. */}
-                <Route path="/" element={<LightweaverRelayHome />} />
-                {/* Local-network control surface (when the customer types a
-                    specific card hostname). Kept for direct-LAN use. */}
+                {/* led.mandalacodes.com — Studio/install entry. The card is
+                    the runtime; relay control is intentionally opt-in. */}
+                <Route path="/" element={<LightweaverLanding />} />
+                <Route path="/relay" element={<LightweaverRelayHome />} />
+                <Route path="/remote" element={<Navigate to="/relay" replace />} />
+                {/* Hosted local-network control surface. Kept for direct-LAN
+                    use, but the preferred runtime is the card's onboard page. */}
                 <Route path="/local" element={<LightweaverLanding />} />
                 <Route path="/control/:host" element={<LightweaverControl />} />
                 {/* Legacy /lightweaver/* paths from before the subdomain move */}

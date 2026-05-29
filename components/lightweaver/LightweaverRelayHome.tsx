@@ -244,7 +244,8 @@ const LightweaverRelayHome: React.FC = () => {
           </div>
           <div className="lw-card">
             <p style={{ fontSize: 14, color: '#f4ede0', marginTop: 0, marginBottom: 18, lineHeight: 1.5 }}>
-              First time? Pair this device to your piece.
+              Optional remote relay. Pair this browser only if you want internet control away from
+              the card's local WiFi page.
             </p>
             <p style={{ fontSize: 13, color: '#9a8d75', margin: '0 0 18px', lineHeight: 1.6 }}>
               On the same WiFi as your card, open{' '}
@@ -271,7 +272,7 @@ const LightweaverRelayHome: React.FC = () => {
             </form>
           </div>
           <p style={{ fontSize: 11, color: '#5a5247', textAlign: 'center', marginTop: 8 }}>
-            After pairing, you can control your piece from anywhere on the internet.
+            No code is needed for normal local use. <a href="/" style={{ color: '#9a8d75' }}>Open the standalone setup page</a>.
           </p>
         </div>
       </div>
