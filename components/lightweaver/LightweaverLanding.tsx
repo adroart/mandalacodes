@@ -3,8 +3,7 @@
  *
  * Public Lightweaver entry point. The hosted site is the Studio, installer,
  * and support surface; the ESP32 card is the runtime. Owners open their card
- * directly at http://lightweaver.local, so normal use does not depend on the
- * relay, Cloudflare KV polling, or a pairing code.
+ * directly at http://lightweaver.local. There is no pairing-code remote path.
  */
 
 import React, { useEffect, useState } from 'react';

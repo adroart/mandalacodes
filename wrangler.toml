@@ -20,12 +20,3 @@ binding = "DB"
 database_name = "mandalacodes-oracle"
 database_id = "c8d07902-f80a-4c84-a82e-7d70dad34672"
 migrations_dir = "migrations"
-
-# KV namespace for the Lightweaver relay. Holds per-card state + pending
-# commands. Customer browser writes commands, card polls for them.
-# Provisioned at deploy time via:
-#   wrangler kv:namespace create LIGHTWEAVER_RELAY
-# Then paste the returned id into the `id` field below.
-[[kv_namespaces]]
-binding = "LIGHTWEAVER_RELAY"
-id = "16165e81896a4d72ad15d5ca4c3def83"
