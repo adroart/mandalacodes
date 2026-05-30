@@ -9,7 +9,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5555,
+    port: 2222,
   },
   build: {
     target: 'es2022',
