@@ -18,10 +18,18 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 ## Phase 1b: Accounts
 
+The unified accounts code (Clerk + D1 + profile + collections) is ported and merged (PR #2) but flagged off. Finishing the migration is provisioning + flag flips, in this order:
+
+- [ ] Apply the D1 schema to the remote database: `wrangler d1 migrations apply mandalacodes-oracle --remote` (until then every account Function returns `503 db_not_configured`) _(band: you-required)_ _(effort: quick)_ → Schema: [migrations/001_init.sql](migrations/001_init.sql)
+- [ ] Provision Clerk for the accounts surface and decide one-app-vs-two: `accounts-branch.md` implies a fresh instance separate from admin sign-in, but the code reads a single key set (`VITE_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY`) _(band: you-required)_ _(effort: moderate)_ → Plan: [accounts-branch.md](todo/plans/accounts-branch.md)
+- [ ] Set the Clerk env vars on Cloudflare Pages, including `CLERK_WEBHOOK_SECRET` (now wired into the secrets-sync script + doc) _(band: you-required)_ _(effort: quick)_ → Plan: [docs/secrets-sync.md](docs/secrets-sync.md)
+- [ ] Register the Clerk webhook endpoint `https://mandalacodes.com/api/clerk/webhook` for `user.created` / `user.updated` / `user.deleted` _(band: you-required)_ _(effort: quick)_
+- [ ] Flip `LAUNCH_FLAGS.accounts` and `LAUNCH_FLAGS.hologeneticProfile` to true once the infra above is live, then verify sign-up → D1 row, profile round-trip, and `user.deleted` cascade _(band: you-required)_ _(effort: moderate)_ → File: [launchFlags.ts](launchFlags.ts)
 - [ ] Bring sign-up and the energy panels over from Adrian-Website _(band: you-required)_ _(effort: deep)_ → Plan: [accounts-branch.md](todo/plans/accounts-branch.md)
 
 ### Done
 
+- ~~Decouple `ClerkProvider` from the accounts launch flag~~, branch `claude/migration-completion-requirements-eaDFz`, 2026-06-02. Provider now mounts whenever a Clerk key is present so admin sign-in + atlas steward pages stop throwing "must be wrapped in ClerkProvider"; the accounts flag gates the public surface via `available`. Also fixed stale Stripe comments, the `wrangler.toml` "no tables yet" note, and the missing `CLERK_WEBHOOK_SECRET` in the secrets-sync script/doc.
 - ~~Remove dead oracle code from Adrian-Website~~, Adrian-Website PR #113 ([link](https://github.com/technicianofthesacred/Adrian-Website/pull/113)), 2026-05-29. Deletes all oracle components / data / scripts / assets, replaces `/oracle` with a directory page that links to mandalacodes, 301-redirects every old card URL via `_redirects`. Awaiting merge.
 
 ## Oracle deck content (Universal Language)
