@@ -15,17 +15,22 @@ export const isClerkConfigured: boolean = Boolean(CLERK_PUBLISHABLE_KEY);
 
 /**
  * `AccountProvider` is the single place where the rest of the app reads
- * its sign-in state from. When Clerk has been provisioned (publishable
- * key set at build time) AND the accounts launch flag is on, it mounts
- * ClerkProvider and bridges Clerk's hooks into AccountContext. Otherwise
- * it provides stub values so the site keeps working in guest mode and the
- * code never has to special-case "Clerk not loaded" elsewhere.
+ * its sign-in state from. When Clerk has been provisioned (publishable key
+ * set at build time) it mounts ClerkProvider and bridges Clerk's hooks into
+ * AccountContext. Otherwise it provides stub values so the site keeps working
+ * in guest mode and the code never has to special-case "Clerk not loaded".
+ *
+ * Mounting is gated only on the key being present — NOT on the accounts launch
+ * flag — because the admin sign-in (/admin/*) and the atlas steward surfaces
+ * (/atlas/claim, /atlas/edit) call Clerk hooks directly and would throw
+ * "must be wrapped in <ClerkProvider>" if the provider were withheld. The
+ * accounts flag instead gates the public /account surface via `available`
+ * on the context (see ClerkAccountBridge below).
  */
 export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const enabled = isClerkConfigured && LAUNCH_FLAGS.accounts;
-  if (!enabled || !CLERK_PUBLISHABLE_KEY) return <>{children}</>;
+  if (!isClerkConfigured || !CLERK_PUBLISHABLE_KEY) return <>{children}</>;
 
   return (
     <ClerkProvider
@@ -49,9 +54,10 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({
 
 /**
  * Sits inside ClerkProvider, reads the real Clerk hooks, and publishes
- * the resulting state onto AccountContext. Also runs the one-time
- * sync-user request the first time it sees a signed-in user, so the
- * server creates the corresponding row in D1 and a Stripe Customer.
+ * the resulting state onto AccountContext. When the accounts launch flag is
+ * on, it also runs the one-time sync-user request the first time it sees a
+ * signed-in user, so the server upserts the corresponding row in D1. (No
+ * Stripe — sales live on adrianrasmussen.com; this site only needs identity.)
  */
 const ClerkAccountBridge: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -70,10 +76,13 @@ const ClerkAccountBridge: React.FC<{ children: React.ReactNode }> = ({
     [auth.getToken],
   );
 
-  // First time we observe a signed-in user in this tab, ping the
-  // sync-user endpoint so the server upserts the row and creates a
-  // Stripe Customer if needed. Idempotent server-side; safe to retry.
+  // First time we observe a signed-in user in this tab, ping the sync-user
+  // endpoint so the server upserts the D1 users row. Idempotent server-side;
+  // safe to retry. Gated on the accounts flag: while accounts are off, the
+  // provider still mounts for admin/steward sign-in, but we don't write user
+  // rows to D1 until the public accounts surface is live.
   useEffect(() => {
+    if (!LAUNCH_FLAGS.accounts) return;
     if (!auth.isLoaded || !auth.isSignedIn || !auth.userId) return;
     if (syncedFor.current === auth.userId) return;
     syncedFor.current = auth.userId;
@@ -88,7 +97,11 @@ const ClerkAccountBridge: React.FC<{ children: React.ReactNode }> = ({
 
   const value = useMemo<AccountState>(
     () => ({
-      available: true,
+      // `available` is the master switch for the public account features
+      // (AuthButton, collections, profile sync, /account routes). It stays
+      // gated on the launch flag even though the provider itself is mounted
+      // for admin/steward sign-in.
+      available: LAUNCH_FLAGS.accounts,
       isSignedIn: !!auth.isSignedIn,
       isLoaded: !!auth.isLoaded,
       userId: auth.userId ?? null,

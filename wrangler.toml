@@ -13,8 +13,12 @@ binding = "ATLAS_BUCKET"
 bucket_name = "mandalacodes-atlas"
 
 # D1 database — provisioned 2026-05-23 via `wrangler d1 create mandalacodes-oracle`.
-# Region: APAC. Used by future accounts work (Phase 1b — Clerk + birthdate energy panels).
-# No tables yet; v1 oracle reader is stateless and does not query DB.
+# Region: APAC. Backs the accounts work (Phase 1b — Clerk + birthdate energy
+# panels): users + profiles + collections.
+# Schema lives in migrations/001_init.sql. Apply to the remote DB with:
+#   wrangler d1 migrations apply mandalacodes-oracle --remote
+# The public oracle reader is stateless; only the /api/{auth,profile,collections}
+# Functions and the Clerk webhook query this DB.
 [[d1_databases]]
 binding = "DB"
 database_name = "mandalacodes-oracle"
