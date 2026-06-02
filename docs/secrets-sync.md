@@ -48,7 +48,13 @@ Current set (2026-05-28):
 |---|---|---|
 | `VITE_CLERK_PUBLISHABLE_KEY` | plaintext | Clerk widget on /admin, /atlas/claim |
 | `CLERK_SECRET_KEY` | encrypted | Clerk JWT verification in Functions |
+| `CLERK_WEBHOOK_SECRET` | encrypted | Svix verification for /api/clerk/webhook (accounts) |
 | `ADMIN_EMAILS` | plaintext | Admin allowlist for /admin/atlas |
+
+`CLERK_WEBHOOK_SECRET` is only needed once the public accounts surface goes
+live (the launch flag in `launchFlags.ts` flips on). Until then it can be
+absent — the sync script `[skip]`s any var with no value in Infisical, and the
+webhook endpoint returns `503 webhook_not_configured` rather than erroring.
 
 `ATLAS_BUCKET` and the D1 binding are configured in `wrangler.toml`, not
 via env vars, and need no sync.

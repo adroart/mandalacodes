@@ -25,6 +25,7 @@ PLAINTEXT_VARS=(
 # Encrypted vars (real secrets). Stored encrypted at rest in Cloudflare.
 ENCRYPTED_VARS=(
   "CLERK_SECRET_KEY"
+  "CLERK_WEBHOOK_SECRET"
 )
 
 # ─── Pre-flight ────────────────────────────────────────────────────────────
