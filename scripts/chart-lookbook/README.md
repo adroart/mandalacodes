@@ -82,6 +82,24 @@ Add a `recommendation` block to the profile JSON to close the lookbook with what
 - **Energy text** — swap which fields a spread shows in `template.ts` `spread()`
   (e.g. lead with the line instead of the Gift, or add the I-Ching reading).
 
+## Roadmap — into the site (later)
+
+This CLI is the framework. Once the oracle Functions are live, the same data
+layer (`build-data.ts`, which reuses the shared corpus + the profile model) can
+back an on-site feature, with the CLI kept as the offline path:
+
+- **Generate from a chart on the site** — compute the profile from birth data
+  with `lib/astrology/buildHologeneticProfile` (no PDF), or accept an uploaded
+  chart, then render the lookbook in-browser.
+- **The recommendation step as UI** — let the curator star pieces and write the
+  reasons in an admin view, instead of hand-editing JSON.
+- **Persist & share** — save a generated lookbook (D1) and give the client a
+  private link; `collection_items.kind` already reserves `'artwork'`.
+- **Link from card pages** — "see this code in your chart" from a piece page.
+
+Kept deliberately out of this pass — see TODO.md "Oracle MCP, search &
+personalization".
+
 ## Note
 
 The art images load from Cloudinary at render time, so render where the network
