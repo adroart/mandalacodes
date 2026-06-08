@@ -34,10 +34,33 @@ npx tsx scripts/chart-lookbook/generate.ts clients/adrian.json --name "Adrian" -
 - Without `--pdf` (or if chromium isn't installed), open the HTML and **Print →
   Save as PDF** — same result.
 
-**3 · Send it.** One cover page (their name + a contact-sheet of all the pieces)
-then one A4 spread per piece: the art, the sphere it answers in their chart, the
-essence, the Gift, the Shadow→Gift→Siddhi spectrum, and their specific line —
-ending with a quiet "does this one move you?".
+**3 · Send it.** One cover page (their name + a contact-sheet of all the pieces,
+recommended ones starred), then one A4 spread per piece: the art, the sphere it
+answers in their chart, the essence, the Gift, the Shadow→Gift→Siddhi spectrum,
+and their specific line — and finally **your recommendation page**.
+
+### The recommendation (your curated pick)
+
+Add a `recommendation` block to the profile JSON to close the lookbook with what
+*you* would have them acquire and why, based on their intention:
+
+```jsonc
+"recommendation": {
+  "intention": "stepping into visible leadership without losing your softness",
+  "picks": [
+    { "sphere": "lifesWork", "reason": "Your headline gift — the piece to anchor the room you lead from." },
+    { "sphere": "radiance",  "reason": "Your vitality runs through this code…" },
+    { "gate": 45,            "reason": "Your Pearl — the natural third in the set." }
+  ],
+  "closing": "Pick these three up together — they hold the throughline of your intention."
+}
+```
+
+- Each pick references a `sphere` **or** a `gate` already in the chart, plus your
+  `reason`. The referenced pieces get a ★ on the cover contact-sheet.
+- `intention` frames the page ("Based on your intention — …"); `closing` is the
+  "order these together" note. It renders as a signed recommendation from you.
+- Omit the block entirely for a catalog with no recommendation.
 
 ## What each spread pulls (all from the shared oracle corpus)
 

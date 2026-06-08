@@ -34,9 +34,35 @@ function spread(p: LookbookPiece): string {
   </section>`;
 }
 
+function recommendationPage(data: LookbookData): string {
+  const r = data.recommendation;
+  if (!r || r.picks.length === 0) return '';
+  const picks = r.picks
+    .map((p) => `
+      <div class="pick">
+        ${p.thumb ? `<img src="${p.thumb}" alt="${esc(p.cardName)}" />` : '<div class="pick-noimg"></div>'}
+        <div>
+          <p class="pick-sphere">${esc(p.sphere)} · Code ${p.gate}/L${p.line}</p>
+          <h3 class="pick-name">${esc(p.cardName) || `Code ${p.gate}`}</h3>
+          ${p.reason ? `<p class="pick-reason">${esc(p.reason)}</p>` : ''}
+        </div>
+      </div>`)
+    .join('');
+  return `
+  <div class="page rec">
+    <p class="kicker">A recommendation</p>
+    <h1 class="rec-title">What I'd pick for you</h1>
+    ${r.intention ? `<p class="rec-intention">Based on your intention — <em>${esc(r.intention)}</em></p>` : ''}
+    <div class="picks">${picks}</div>
+    ${r.closing ? `<p class="rec-closing">${esc(r.closing)}</p>` : ''}
+    <p class="rec-sign">— Adrian</p>
+    <div class="foot"><span>Order these together, or one at a time.</span><span>mandalacodes.com</span></div>
+  </div>`;
+}
+
 export function renderHtml(data: LookbookData): string {
   const contact = data.pieces
-    .map((p) => `<div class="chip">${p.thumb ? `<img src="${p.thumb}" alt="" />` : ''}<span>${esc(p.sphere)}<br><b>${esc(p.cardName) || p.gate}</b></span></div>`)
+    .map((p) => `<div class="chip">${p.thumb ? `<img src="${p.thumb}" alt="" />` : ''}<span>${p.recommended ? '<i class="star">★</i> ' : ''}${esc(p.sphere)}<br><b>${esc(p.cardName) || p.gate}</b></span></div>`)
     .join('');
 
   return `<!doctype html>
@@ -79,6 +105,21 @@ export function renderHtml(data: LookbookData): string {
   .gift p,.line p{ font-size:13.5px; line-height:1.6; margin:.2em 0 1em; }
   .connect{ font-style:italic; color:var(--wood); border-top:1px solid var(--line); padding-top:10px; margin-top:14px; font-size:13px; }
 
+  .chip .star{ color:var(--bronze); font-style:normal; }
+
+  /* Recommendation page */
+  .rec .kicker{ font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:var(--bronze); }
+  .rec-title{ font-size:46px; line-height:1.04; margin:.15em 0 .3em; }
+  .rec-intention{ font-size:16px; color:var(--wood); max-width:54ch; margin:0 0 22px; }
+  .picks{ display:flex; flex-direction:column; gap:16px; }
+  .pick{ display:grid; grid-template-columns:96px 1fr; gap:16px; align-items:start; border-top:1px solid var(--line); padding-top:16px; }
+  .pick img,.pick-noimg{ width:96px; height:96px; object-fit:cover; border:1px solid var(--line); background:#efe8da; }
+  .pick-sphere{ font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--bronze); margin:0; }
+  .pick-name{ font-family:'Cormorant Garamond',serif; font-weight:500; font-size:26px; margin:.1em 0 .3em; }
+  .pick-reason{ font-size:13.5px; line-height:1.6; margin:0; }
+  .rec-closing{ margin-top:26px; font-size:15px; line-height:1.6; border-top:1px solid var(--line); padding-top:16px; }
+  .rec-sign{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:20px; color:var(--wood); margin-top:8px; }
+
   .foot{ position:absolute; bottom:12mm; left:20mm; right:20mm; display:flex; justify-content:space-between; font-size:9.5px; color:var(--bronze); letter-spacing:.08em; }
 </style></head>
 <body>
@@ -90,5 +131,6 @@ export function renderHtml(data: LookbookData): string {
     <div class="foot"><span>The codes of your hologenetic profile, rendered as art.</span><span>mandalacodes.com</span></div>
   </div>
   ${data.pieces.map((p) => `<div class="page">${spread(p)}<div class="foot"><span>${esc(p.sequence)} Sequence · ${esc(p.sphere)}</span><span>Code ${p.gate}</span></div></div>`).join('')}
+  ${recommendationPage(data)}
 </body></html>`;
 }

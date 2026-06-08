@@ -43,16 +43,43 @@ export interface LookbookPiece {
   pieceTitle?: string;
   image?: string;        // full-size, for the spread
   thumb?: string;        // small, for the contact sheet
+  recommended?: boolean; // flagged in the recommendation block
+}
+
+/** A pick in the input: reference a sphere OR a gate, plus the reason. */
+export interface RecInput { sphere?: ProfileKey; gate?: number; reason?: string }
+
+/** A resolved recommendation pick, ready to render. */
+export interface RecPick {
+  sphere: string;
+  cardName?: string;
+  gate: number;
+  line: number;
+  thumb?: string;
+  pieceTitle?: string;
+  reason?: string;
+}
+
+export interface Recommendation {
+  intention?: string;   // the client's intention the picks are based on
+  closing?: string;     // the "order these together" note
+  picks: RecPick[];
+}
+
+/** The input profile: the 11 spheres + an optional recommendation block. */
+export interface ChartInput extends Partial<HologeneticProfile> {
+  recommendation?: { intention?: string; closing?: string; picks?: RecInput[] };
 }
 
 export interface LookbookData {
   clientName: string;
   subtitle: string;
   pieces: LookbookPiece[];
+  recommendation?: Recommendation;
 }
 
 export async function buildLookbookData(
-  profile: Partial<HologeneticProfile>,
+  profile: ChartInput,
   opts: { clientName?: string; spheres?: ProfileKey[] } = {},
 ): Promise<LookbookData> {
   const corpus = await loadCorpus();
@@ -87,9 +114,39 @@ export async function buildLookbookData(
     });
   }
 
+  // Resolve the recommendation: each pick points at a sphere or a gate already
+  // in the lookbook. Flag the matching pieces so the cover can star them.
+  const labelByKey = new Map(SPHERES.map((s) => [s.key, s.label]));
+  let recommendation: Recommendation | undefined;
+  if (profile.recommendation) {
+    const picks: RecPick[] = [];
+    for (const pick of profile.recommendation.picks ?? []) {
+      const piece = pick.sphere
+        ? pieces.find((p) => p.sphere === labelByKey.get(pick.sphere!))
+        : pieces.find((p) => p.gate === pick.gate);
+      if (!piece) continue;
+      piece.recommended = true;
+      picks.push({
+        sphere: piece.sphere,
+        cardName: piece.cardName,
+        gate: piece.gate,
+        line: piece.line,
+        thumb: piece.thumb,
+        pieceTitle: piece.pieceTitle,
+        reason: pick.reason,
+      });
+    }
+    recommendation = {
+      intention: profile.recommendation.intention,
+      closing: profile.recommendation.closing,
+      picks,
+    };
+  }
+
   return {
     clientName: opts.clientName ?? 'Your',
     subtitle: 'The art pieces of your chart, and the energy each one carries.',
     pieces,
+    recommendation,
   };
 }
