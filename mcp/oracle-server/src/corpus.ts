@@ -21,82 +21,11 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ORACLE_DIR, DATA_DIR, pad2 } from './paths.ts';
+import type { CanonicalCard, MovingLine, CardArtwork } from '../../../lib/oracle/types.ts';
+
+export type { CanonicalCard, MovingLine, CardArtwork };
 
 /* ─── Public shape ───────────────────────────────────────────────────────── */
-
-export interface MovingLine {
-  line: number;
-  image?: string;
-  reading: string;
-  becomes?: { hexagram: number; name: string };
-}
-
-export interface CardArtwork {
-  id: string;
-  title: string;
-  coverImage?: string;
-  year?: string;
-  availability?: string;
-}
-
-export interface CanonicalCard {
-  number: number;
-  card_name: string;
-  ring_name: string;
-  ring_tarot?: string;
-  keywords: string[];
-  essence?: string;
-
-  glance: { reading?: string; invocation?: string };
-
-  iching: {
-    hexagram_name?: string;
-    trigram_combination?: string;
-    reading?: string;
-    judgement_lines?: string[];
-    image_lines?: string[];
-    upper_trigram?: { symbol?: string; name?: string; nature?: string };
-    lower_trigram?: { symbol?: string; name?: string; nature?: string };
-    lines: MovingLine[];
-  };
-
-  gene_keys: {
-    shadow_name?: string;
-    gift_name?: string;
-    siddhi_name?: string;
-    shadow?: string;
-    repressive?: string;
-    reactive?: string;
-    gift?: string;
-    siddhi?: string;
-    programming_partner?: string;
-  };
-
-  human_design: {
-    gate_number?: number;
-    gate_keyword?: string;
-    gate?: string;
-    centre?: string;
-    channel?: string;
-  };
-
-  tarot: { arcana?: string; ring_role?: string; tarot_resonance?: string };
-
-  body: { physiology?: string; amino_acid?: string };
-
-  relations: {
-    programming_partner_number?: number | null;
-    programming_partner?: string;
-    codon_ring_siblings: number[];
-  };
-
-  reference?: Record<string, unknown>;
-
-  artworks: CardArtwork[];
-
-  /** Pre-joined lowercase blob of every searchable field. */
-  searchText: string;
-}
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 
