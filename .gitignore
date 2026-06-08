@@ -10,3 +10,9 @@ dist
 test-results
 playwright-report
 scripts/output
+
+# LED firmware — belongs in the led/ project, not the oracle repo
+LED-Programming/
+
+# Local Claude session config
+.claude/

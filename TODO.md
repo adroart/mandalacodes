@@ -4,8 +4,8 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 ## Soon
 
-- [ ] Launch sign-in on the live Mandala Codes site _(band: you-required)_ _(effort: deep)_ → Plan: [clerk-launch.md](todo/plans/clerk-launch.md)
 - [ ] Reprint the physical cards so the QR codes point at the new mandalacodes.com domain _(band: you-required)_ _(effort: quick)_
+- [ ] Launch sign-in on the live Mandala Codes site _(band: you-required)_ _(effort: deep)_ → Plan: [clerk-launch.md](todo/plans/clerk-launch.md)
 - [ ] Close Adrian-Website PR #110 in favour of the newer PR #113 _(band: you-required)_ _(effort: quick)_ → PRs: [#110](https://github.com/technicianofthesacred/Adrian-Website/pull/110), [#113](https://github.com/technicianofthesacred/Adrian-Website/pull/113)
 - [ ] Pick the canonical web address: redirect www to the bare domain for SEO _(band: you-required)_ _(effort: quick)_
 - [ ] Decide what to do with the leftover local atlas/Clerk work branch and its uncommitted files _(band: you-required)_ _(effort: moderate)_
