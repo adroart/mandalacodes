@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite --port 5555",
     "dev:full": "npm run build && wrangler pages dev dist --port 5555 --ip 127.0.0.1",
+    "build:search-index": "tsx scripts/build-search-index.ts",
+    "prebuild": "tsx scripts/build-search-index.ts",
     "build": "vite build",
     "build:designer": "cd ../led/lightweaver && npx vite build --base=/design/ && rm -rf ../../mandalacodes/public/design && mkdir -p ../../mandalacodes/public/design && cp -R dist/. ../../mandalacodes/public/design/ && rm -f ../../mandalacodes/public/design/_headers ../../mandalacodes/public/design/_redirects",
     "build:all": "npm run build:designer && npm run build",

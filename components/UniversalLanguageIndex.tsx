@@ -1,9 +1,10 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CODON_RINGS, ALL_CARDS, CARD_BY_NUMBER, type OracleCard } from '../data/oracleData';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { img } from '../utils/cloudinary';
+import { loadOracleIndex, rank, type SearchDoc } from '../lib/oracle/search';
 
 type ViewMode = 'grid' | 'rings';
 type GridMode = 'cards' | 'artwork';
@@ -466,6 +467,30 @@ const UniversalLanguageIndex: React.FC = () => {
   const [flippedCards, setFlippedCards] = useState<Set<number>>(new Set());
   const [query, setQuery] = useState('');
 
+  // Meaning-aware search index (shared ranker, same as the oracle MCP). Loaded
+  // lazily so it never delays first paint; until it arrives, search falls back
+  // to the substring matcher below.
+  const [searchDocs, setSearchDocs] = useState<SearchDoc[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    loadOracleIndex().then((docs) => { if (live) setSearchDocs(docs); }).catch(() => {});
+    return () => { live = false; };
+  }, []);
+
+  /** Card numbers, best-match first, for the current query — or null if the
+   *  index isn't ready yet (callers fall back to substring matching). */
+  const rankedNumbers = useMemo<number[] | null>(() => {
+    const q = query.trim();
+    if (!q) return null;
+    // Direct lookup by code number (the ranker drops single digits).
+    if (/^\d{1,2}$/.test(q)) {
+      const n = Number(q);
+      return n >= 1 && n <= 64 ? [n] : [];
+    }
+    if (!searchDocs) return null;
+    return rank(searchDocs, q, { limit: 64 }).map((h) => h.number);
+  }, [query, searchDocs]);
+
   const handleGridMode = (mode: GridMode) => {
     setGridMode(mode);
     setFlippedCards(new Set());
@@ -495,15 +520,27 @@ const UniversalLanguageIndex: React.FC = () => {
 
   const filteredCards = useMemo(() => {
     if (!query.trim()) return ALL_CARDS;
+    // Ranked, meaning-aware order when the index is ready; substring fallback otherwise.
+    if (rankedNumbers) {
+      return rankedNumbers
+        .map(n => CARD_BY_NUMBER.get(n))
+        .filter((c): c is OracleCard => Boolean(c));
+    }
     return ALL_CARDS.filter(c => matchCard(c, query));
-  }, [query]);
+  }, [query, rankedNumbers]);
 
   const filteredRings = useMemo(() => {
     if (!query.trim()) return CODON_RINGS;
+    if (rankedNumbers) {
+      const keep = new Set(rankedNumbers);
+      return CODON_RINGS
+        .map(ring => ({ ...ring, cards: ring.cards.filter(c => keep.has(c.number)) }))
+        .filter(ring => ring.cards.length > 0);
+    }
     return CODON_RINGS
       .map(ring => ({ ...ring, cards: ring.cards.filter(c => matchCard(c, query)) }))
       .filter(ring => ring.cards.length > 0);
-  }, [query]);
+  }, [query, rankedNumbers]);
 
   const totalShown = viewMode === 'grid'
     ? filteredCards.length
