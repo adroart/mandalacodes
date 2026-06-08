@@ -78,8 +78,13 @@ const AppInner: React.FC = () => {
               </Routes>
             ) : (
               <Routes>
-                {/* Home — gateway becomes the landing page */}
-                <Route path="/" element={<OracleGateway />} />
+                {/* Home — defaults to the Universal Language deck while the rest
+                    of the oracle is in development. Restore <OracleGateway /> here
+                    to bring the QR-arrival gateway back as the landing. */}
+                <Route path="/" element={<Navigate to="/universal-language" replace />} />
+
+                {/* Gateway — the QR-arrival orbit screen, still reachable directly */}
+                <Route path="/gateway" element={<OracleGateway />} />
 
                 {/* The Systems — educational page about I Ching / Gene Keys / Human Design */}
                 <Route path="/the-systems" element={<OracleSystems />} />
