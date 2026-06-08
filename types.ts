@@ -15,6 +15,8 @@ export interface Artwork {
   title: string;
   category: string; // e.g. "Multidimensional Art", "Jewelry"
   series?: string; // e.g. "Universal Language", "Mandala", "Light Codes"
+  cardNumber?: number; // 1–64 — the oracle code this piece embodies (UL series). The
+                       // explicit artwork↔code link, derived from the "- N" title suffix.
   coverImage: string;
   images: string[];
   description: string;

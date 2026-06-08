@@ -126,11 +126,14 @@ async function loadArtworkMap(): Promise<Map<number, CardArtwork[]>> {
     const archive: any[] = mod.FULL_ARCHIVE ?? [];
     for (const a of archive) {
       if (a?.series !== 'Universal Language') continue;
-      // Title convention: "<name> - <N>". Fall back to description "Number N".
-      const m = String(a.title ?? '').match(/-\s*(\d{1,2})\s*$/) ||
-        String(a.description ?? '').match(/Number\s+(\d{1,2})/i);
-      if (!m) continue;
-      const n = Number(m[1]);
+      // Prefer the explicit cardNumber field; fall back to the "<name> - <N>"
+      // title suffix (or "Number N" description) for any legacy/unbackfilled row.
+      let n = typeof a.cardNumber === 'number' ? a.cardNumber : NaN;
+      if (!Number.isFinite(n)) {
+        const m = String(a.title ?? '').match(/-\s*(\d{1,2})\s*$/) ||
+          String(a.description ?? '').match(/Number\s+(\d{1,2})/i);
+        if (m) n = Number(m[1]);
+      }
       if (!Number.isFinite(n) || n < 1 || n > 64) continue;
       const list = map.get(n) ?? [];
       list.push({

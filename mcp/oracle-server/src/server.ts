@@ -17,10 +17,12 @@ import { loadCorpus, type CanonicalCard } from './corpus.ts';
 import { searchCorpus, type Voice } from './search.ts';
 import { composeReading } from './reading.ts';
 import { castHexagram } from './cast.ts';
+import { loadReadings } from './readings-cache.ts';
 
 const VOICES: Voice[] = ['glance', 'iching', 'gene_keys', 'human_design', 'tarot', 'body'];
 
 const corpus = await loadCorpus();
+const readings = await loadReadings();
 const byNumber = new Map<number, CanonicalCard>(corpus.map((c) => [c.number, c]));
 const byName = new Map<string, CanonicalCard>(corpus.map((c) => [c.card_name.toLowerCase(), c]));
 
@@ -111,6 +113,16 @@ const tools = [
     },
   },
   {
+    name: 'get_reading',
+    description:
+      'Get the authored, cached reading for a specific artwork (e.g. "UL-122") if one exists in oracle/readings/. Returns the final prose. If none is authored yet, falls back to a compose_reading scaffold for that piece\'s code.',
+    inputSchema: {
+      type: 'object',
+      properties: { artworkId: { type: 'string' } },
+      required: ['artworkId'],
+    },
+  },
+  {
     name: 'compose_reading',
     description:
       'Assemble the material for a reading of a code (optionally framed around one of its artworks and/or a drawn line). Returns a structured scaffold for you to render into final prose in the deck\'s voice — it does not write the prose itself.',
@@ -198,7 +210,25 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         if (hit) { card = byNumber.get(hit.number); via = `top search match for "${a.query}"`; }
       }
       if (!card) return err('give a number, name, or query');
-      return text({ code: card.number, card_name: card.card_name, via, artworks: card.artworks });
+      const artworks = card.artworks.map((art) => ({
+        ...art,
+        reading: readings.has(art.id) ? 'authored' : 'none',
+      }));
+      return text({ code: card.number, card_name: card.card_name, via, artworks });
+    }
+
+    case 'get_reading': {
+      if (!a.artworkId) return err('artworkId is required');
+      const cached = readings.get(a.artworkId);
+      if (cached) return text({ source: 'authored', ...cached });
+      // fall back to a scaffold for the piece's code
+      const card = corpus.find((c) => c.artworks.some((art) => art.id === a.artworkId));
+      if (!card) return err(`no reading and no artwork found for ${a.artworkId}`);
+      return text({
+        source: 'scaffold',
+        note: `No authored reading for ${a.artworkId} yet — returning material to write one.`,
+        ...composeReading(card, { artworkId: a.artworkId }),
+      });
     }
 
     case 'compose_reading': {
