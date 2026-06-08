@@ -10,3 +10,6 @@ dist
 test-results
 playwright-report
 scripts/output
+scripts/chart-lookbook/clients/
+scripts/chart-lookbook/*-lookbook.html
+scripts/chart-lookbook/*-lookbook.pdf
