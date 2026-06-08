@@ -40,7 +40,7 @@ export function toSearchDoc(card: CanonicalCard): SearchDoc {
 export function searchCorpus(
   corpus: CanonicalCard[],
   query: string,
-  opts: { limit?: number; systems?: string[] } = {},
+  opts: { limit?: number; systems?: string[]; expand?: boolean } = {},
 ): SearchHit[] {
   const docs = corpus.map(toSearchDoc);
   return rank(docs, query, opts).map((h) => ({ ...h, artwork_count: h.artwork.count }));

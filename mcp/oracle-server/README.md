@@ -80,10 +80,14 @@ spawns it in does not matter.
   synthesized prose for authoring. Any *hosted/public* surface (Phase 3) must
   serve own-voice content only — never the raw vault source translations. Bake
   that as a build-time allowlist before going remote.
-- **Search is keyword-based and transparent** (the Phase 1 floor). Semantically
-  obvious-but-lexically-distant matches (e.g. *Earth's Breath* for "creation")
-  rank below cards literally named "Creation"/"Beginning" — Phase 3 adds
-  embeddings to close that gap, keeping the same tool surface.
+- **Search is keyword + concept-expansion, transparent, offline.** The shared
+  ranker (`lib/oracle/ranker.ts`) expands a query through a concept ontology
+  tuned to the deck's vocabulary, so lexically-distant intent matches land — e.g.
+  *Earth's Breath* now tops "creation and new beginnings" via its keywords
+  *Originating Force / Creative Impulse / Genesis / Pure Potential*, and the hit
+  explains itself ("related keywords: …"). Pass `literal: true` to match only the
+  typed terms. Hosted embeddings can later layer on behind the same `rank()`
+  signature for cases the ontology doesn't cover.
 - **Moving-line coverage** depends on the `oracle/sections/iching/` files; lines
   not yet authored return a clear note rather than inventing text.
 - The corpus loader (`src/corpus.ts`) is the single merge point. When the

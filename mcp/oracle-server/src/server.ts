@@ -50,7 +50,7 @@ const tools = [
   {
     name: 'search_oracle',
     description:
-      'Search the 64 oracle codes by meaning/keyword. Use for queries like "art about creation and new beginnings" — returns the codes that match, ranked, with the matched keywords and a snippet. Each hit also reports how many artworks exist for that code.',
+      'Search the 64 oracle codes by meaning/keyword. Use for queries like "art about creation and new beginnings" — returns the codes that match, ranked, with the matched (and concept-related) keywords and a snippet. A concept ontology bridges intent to the deck\'s vocabulary (e.g. "creation" reaches a code keyworded "Originating Force"). Each hit reports how many artworks exist for that code.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -61,6 +61,7 @@ const tools = [
           items: { type: 'string', enum: ['iching', 'gene_keys', 'human_design', 'tarot', 'body'] },
           description: 'Optional: restrict the deep-prose fields searched to these voices (name/keywords/glance are always searched).',
         },
+        literal: { type: 'boolean', description: 'Disable concept expansion — match only the typed terms.' },
       },
       required: ['query'],
     },
@@ -164,7 +165,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
   switch (name) {
     case 'search_oracle': {
       if (!a.query) return err('query is required');
-      return text(searchCorpus(corpus, a.query, { limit: a.limit, systems: a.systems }));
+      return text(searchCorpus(corpus, a.query, { limit: a.limit, systems: a.systems, expand: !a.literal }));
     }
 
     case 'get_card': {
