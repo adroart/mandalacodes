@@ -131,6 +131,18 @@ const OracleProfile: React.FC = () => {
           Your birth data is stored on this device only. When you sign in, it
           syncs to your account so it follows you across browsers.
         </p>
+        <p style={{ marginTop: 8 }}>
+          Place data from{' '}
+          <a
+            href="https://www.geonames.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--color-bronze-600)', textDecoration: 'none' }}
+          >
+            GeoNames
+          </a>
+          , licensed under CC BY 4.0.
+        </p>
       </footer>
     </main>
   );
