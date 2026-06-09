@@ -109,31 +109,45 @@ export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
   },
 ];
 
+export interface ProfileChannel {
+  from: ProfileKey;
+  to: ProfileKey;
+  /** Which sequence this line belongs to, so it is drawn in that colour. */
+  sequence: ProfileSequence;
+}
+
 /**
- * The channels between spheres, mirrored from the official body-map:
- * the central spine, the Pearl triangle, the Venus diamond, and the two
- * Activation wings into the center. Used to draw connecting lines (which
- * light up on hover/focus of a connected sphere).
+ * The channels between spheres, mirrored from the official Gene Keys
+ * body-map. Each sequence is its OWN connected path, drawn in its own
+ * colour, so the four Venus codes read as one journey, the Pearl three as
+ * another, and the Activation four as the cross — rather than every line
+ * funnelling through the centre.
+ *
+ *   Activation (green): the cross — Life's Work down the spine to Purpose,
+ *     and the Radiance/Evolution horizontal, meeting at the centre (SQ).
+ *   Venus (red): Attraction up through IQ and EQ to SQ — the diamond.
+ *   Pearl (blue): SQ up through Vocation and Culture to the Pearl, which
+ *     crowns to Life's Work.
  */
-export const PROFILE_CHANNELS: ReadonlyArray<readonly [ProfileKey, ProfileKey]> = [
-  // Central spine, crown to base
-  ['lifesWork', 'pearl'],
-  ['pearl', 'sq'],
-  ['sq', 'attraction'],
-  ['attraction', 'purpose'],
-  // Pearl triangle
-  ['pearl', 'core'],
-  ['pearl', 'culture'],
-  ['core', 'sq'],
-  ['culture', 'sq'],
-  // Venus diamond
-  ['sq', 'iq'],
-  ['sq', 'eq'],
-  ['iq', 'attraction'],
-  ['eq', 'attraction'],
-  // Activation wings into center
-  ['radiance', 'sq'],
-  ['evolution', 'sq'],
+export const PROFILE_CHANNELS: readonly ProfileChannel[] = [
+  // ── Activation: the cross through the centre ──
+  { from: 'lifesWork', to: 'sq', sequence: 'activation' },
+  { from: 'sq', to: 'purpose', sequence: 'activation' },
+  { from: 'radiance', to: 'sq', sequence: 'activation' },
+  { from: 'evolution', to: 'sq', sequence: 'activation' },
+
+  // ── Venus: the diamond, Attraction up to SQ ──
+  { from: 'attraction', to: 'iq', sequence: 'venus' },
+  { from: 'attraction', to: 'eq', sequence: 'venus' },
+  { from: 'iq', to: 'sq', sequence: 'venus' },
+  { from: 'eq', to: 'sq', sequence: 'venus' },
+
+  // ── Pearl: the triangle, SQ up to the Pearl, Pearl crowns to Life's Work ──
+  { from: 'sq', to: 'core', sequence: 'pearl' },
+  { from: 'sq', to: 'culture', sequence: 'pearl' },
+  { from: 'core', to: 'pearl', sequence: 'pearl' },
+  { from: 'culture', to: 'pearl', sequence: 'pearl' },
+  { from: 'pearl', to: 'lifesWork', sequence: 'pearl' },
 ];
 
 export const POSITIONS_BY_KEY: Record<ProfileKey, ProfilePositionMeta> =
