@@ -561,7 +561,7 @@ const UniversalLanguageIndex: React.FC = () => {
       {/* ── Header ────────────────────────────────────────────────────────── */}
       {/* Top padding clears the fixed nav (--nav-height) + breathing room so the
           breadcrumb never tucks under the bar. */}
-      <div className="relative px-6 pb-6 max-w-2xl mx-auto text-center pt-[calc(var(--nav-height)+2rem)] md:pt-[calc(var(--nav-height)+2.5rem)]">
+      <div className="relative px-6 pb-6 max-w-2xl mx-auto text-center pt-[calc(var(--nav-height)+3rem)] md:pt-[calc(var(--nav-height)+4rem)]">
 
         {/* Faint warm center glow — registers only as "the center is warmer" */}
         <div
@@ -571,7 +571,7 @@ const UniversalLanguageIndex: React.FC = () => {
 
         {/* Breadcrumb — recedes to the lightest thing on the page */}
         <nav aria-label="Breadcrumb" className="flex flex-wrap justify-center items-center gap-2 gap-y-1 font-label text-[11px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.2em] text-wood-400 mb-7 sm:mb-8">
-          <Link to="/creations" className="hover:text-wood-900 transition-colors">Creations</Link>
+          <Link to="/" className="hover:text-wood-900 transition-colors">Mandala Codes</Link>
           <span aria-hidden className="text-wood-400">/</span>
           <span className="text-wood-500">Universal Language</span>
         </nav>
@@ -709,10 +709,10 @@ const UniversalLanguageIndex: React.FC = () => {
       {/* ── Footer ────────────────────────────────────────────────────────── */}
       <div className="border-t border-wood-200 px-6 py-10 max-w-7xl mx-auto flex items-center justify-between">
         <Link
-          to="/creations"
+          to="/the-systems"
           className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-700 hover:text-wood-900 transition-colors"
         >
-          ← Creations
+          The Systems →
         </Link>
         <button
           onClick={handleRandom}

@@ -24,10 +24,10 @@ const NotFound: React.FC = () => {
                         Go Home <ArrowRight size={14} />
                     </Link>
                     <Link
-                        to="/creations"
+                        to="/universal-language"
                         className="inline-flex items-center gap-2 font-label text-xs uppercase tracking-[0.2em] text-wood-900 hover:text-bronze-600 font-semibold border-b border-wood-900 pb-1"
                     >
-                        Browse Creations
+                        Open the Deck
                     </Link>
                     <button
                         onClick={() => navigate(-1)}

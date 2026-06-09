@@ -233,7 +233,7 @@ const AtlasPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div className="px-6 pt-32 pb-10 max-w-7xl mx-auto">
+      <div className="px-6 pb-10 max-w-7xl mx-auto pt-[calc(var(--nav-height)+3rem)] sm:pt-[calc(var(--nav-height)+4rem)]">
         <nav
           aria-label="Breadcrumb"
           className="flex flex-wrap items-center gap-2 gap-y-1 font-label text-[11px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.2em] text-wood-700 mb-8 sm:mb-12"

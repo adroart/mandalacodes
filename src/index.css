@@ -38,8 +38,9 @@
   --art-hover-scale: 1.03;
   --art-transition-duration: 700ms;
   --art-transition-easing: ease-out;
-  /* Updated dynamically by Navigation.tsx based on scroll state */
-  --nav-height: 56px;
+  /* Updated dynamically by Navigation.tsx based on scroll state. This is the
+     first-paint fallback; the live value tracks the bar's real rendered height. */
+  --nav-height: 64px;
 
   /* ─── Type scale ─────────────────────────────────────────────────────────
    * Semantic sizes paired with their intended font role.

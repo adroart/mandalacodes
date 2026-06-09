@@ -16,6 +16,7 @@ const CollectionsManager = lazy(() => import('./components/account/CollectionsMa
 const NotFound = lazy(() => import('./components/NotFound'));
 const LightweaverLanding = lazy(() => import('./components/lightweaver/LightweaverLanding'));
 
+import Navigation from './components/Navigation';
 import { useSeoMeta } from './useSeoMeta';
 import { DarkModeProvider } from './DarkModeContext';
 import { AccountProvider } from './lib/account/AccountProvider';
@@ -54,9 +55,14 @@ const AppInner: React.FC = () => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
+  // The Gateway is a fullscreen orbit-arrival screen with its own chrome; the
+  // global top bar belongs on every other oracle page. LED host never shows it.
+  const showNav = !ledHost && location.pathname !== '/gateway';
+
   return (
     <Suspense fallback={<div className="min-h-screen bg-wood-900" />}>
       <div className="min-h-screen bg-paper-50 text-wood-900 selection:bg-bronze-200 transition-colors duration-500">
+        {showNav && <Navigation />}
         <main id="main-content">
           <div
             key={/^\/universal-language\/\d+$/.test(location.pathname) ? '/universal-language/:n' : location.pathname}

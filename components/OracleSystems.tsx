@@ -44,7 +44,7 @@ const OracleSystems: React.FC = () => {
 
   return (
     <article className="bg-paper-50 text-wood-900 min-h-screen">
-      <div className="max-w-2xl mx-auto px-5 sm:px-7 pt-24 sm:pt-32 pb-20 sm:pb-28">
+      <div className="max-w-2xl mx-auto px-5 sm:px-7 pb-20 sm:pb-28 pt-[calc(var(--nav-height)+3rem)] sm:pt-[calc(var(--nav-height)+4rem)]">
         <p className="font-label text-[11px] uppercase tracking-[0.32em] text-bronze-600 mb-6">
           The Three Systems
         </p>
