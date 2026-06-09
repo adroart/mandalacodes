@@ -10,6 +10,7 @@ export default defineConfig({
   },
   server: {
     port: 2222,
+    strictPort: true,
   },
   build: {
     target: 'es2022',

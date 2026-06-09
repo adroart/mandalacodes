@@ -4,7 +4,7 @@
   "status": "scaffold",
   "card_name": "Veils of Knowledge",
 
-  "unity_line": "Held against Code 3, this is the long apprenticeship after the storm, the bewildered student finding shape for what just broke in.",
+  "unity_line": "Held against UL 3, this is the long apprenticeship after the storm, the bewildered student finding shape for what just broke in.",
 
   "pair": {
     "number": 3,
@@ -18,13 +18,13 @@
     "card_name": "Messengers of the Infinite",
     "hexagram_name": "Difficulty at the Beginning (Chun)",
     "is_self_inverse": false,
-    "teaching": "Flip the lines and you arrive at Code 3, Messengers of the Infinite. The same difficulty turned over becomes the strain of what is pushing through rather than the confusion of the one receiving it."
+    "teaching": "Flip the lines and you arrive at UL 3, Messengers of the Infinite. The same difficulty turned over becomes the strain of what is pushing through rather than the confusion of the one receiving it."
   },
 
   "programming_partner": {
     "number": 49,
     "card_name": "Union in the Ashes",
-    "teaching": "Through the genetic code, this pairing runs with Code 49, Union in the Ashes. The student of veiled knowledge is held by the one who knows when an old form must burn, and what they know together is that real understanding only comes once the borrowed answers have been let go."
+    "teaching": "Through the genetic code, this pairing runs with UL 49, Union in the Ashes. The student of veiled knowledge is held by the one who knows when an old form must burn, and what they know together is that real understanding only comes once the borrowed answers have been let go."
   },
 
   "codon_ring": {
@@ -35,8 +35,26 @@
   },
 
   "tarot": {
-    "card": "VI · The Lovers",
-    "teaching": "Resonant here is VI The Lovers, and the choice it pictures is the heart of this code. The card shows a figure standing between possibilities, an inner choosing that no teacher can make for them. Veiled knowledge is exactly that moment, the one where the student must finally decide for themselves."
+    "ring_arcana": {
+      "card": "VI · The Lovers",
+      "keyword": "Choice, Union",
+      "teaching": "Through the Ring of Union, this code carries the Lovers. Not romance but the choice that joins two into one path, the inner decision no teacher can make for the student. Veiled knowledge is exactly that moment, the one where the seeker must finally choose for themselves."
+    },
+    "upper_trigram": {
+      "trigram": "Mountain",
+      "cards": [
+        { "card": "V · The Hierophant", "keyword": "Tradition, Teach", "teaching": "The Mountain above this hexagram wears the Hierophant, the keeper of what is handed down, who teaches the form before the student can find their own. The still peak is the inherited answer the young mind must first stand under." },
+        { "card": "IX · The Hermit", "keyword": "Wisdom, Right Path", "teaching": "Mountain also carries the Hermit, who climbs alone with a lamp and waits in stillness for the path to show itself. The folly above the spring is also the patience that lets understanding ripen rather than forcing it." }
+      ]
+    },
+    "lower_trigram": {
+      "trigram": "Water",
+      "cards": [
+        { "card": "II · The High Priestess", "keyword": "Perceive, Listen", "teaching": "The Water at the root wears the High Priestess, who does not explain but perceives, who sits at the threshold and listens to what has not yet spoken. The spring still finding its way is a depth to be read, not rushed." },
+        { "card": "XII · The Hanged Man", "keyword": "Pause for Perspective", "teaching": "Water also carries the Hanged Man, suspended and seeing the situation upside down, because the young question cannot be forced to an answer yet. The held pause is how veiled knowledge unveils itself in its own time." }
+      ]
+    },
+    "teaching": "The Tarot meets this hexagram on two axes. The codon ring gives one Arcana, the Lovers, the choice that finally belongs to the student. The two trigrams each give their own faces: Mountain above as the Hierophant and the Hermit, the inherited form and the patient solitary climb; Water below as the High Priestess and the Hanged Man, the depth that listens and the pause that will not be hurried. Read together they are the whole motion of the card, a young not-yet-knowing that learns by waiting and then chooses."
   },
 
   "trigrams": {
@@ -54,16 +72,16 @@
   "immortals": {
     "upper": {
       "trigram": "Mountain",
-      "name": "Zhang Guolao",
+      "name": "Zhang Guo Lao",
       "virtue": "The old hermit who rides his donkey backwards"
     },
     "lower": {
       "trigram": "Water",
-      "name": "Lü Dongbin",
-      "virtue": "The scholar-warrior who carries the sword of discernment"
+      "name": "Li Tie Guai",
+      "virtue": "The crippled healer whose iron crutch and gourd of medicine pass through suffering"
     },
     "same_trigram": false,
-    "teaching": "Zhang Guolao sits above on his backward donkey, seeing where things came from more clearly than where they go, and Lü Dongbin moves below with his sword that cuts illusion. Together they teach that understanding asks both the long look back and the willingness to cut what no longer holds."
+    "teaching": "Zhang Guo Lao sits above on his backward donkey, seeing where things came from more clearly than where they go, and Li Tie Guai below, the healer who came back through his own death and carries medicine in a gourd. Together they teach that the young mind learns by looking to what came before and by trusting the one who has already passed through the dark water."
   },
 
   "hebrew_letter": {
@@ -76,6 +94,20 @@
 
   "meta": {
     "source": "relations v1, scaffold UL 4",
-    "generated": "relations-v1"
+    "generated": "relations-v1",
+    "sourcing_log": {
+      "ring_arcana_lovers": "_hexagram-04.md line 120 (codon ring carries The Lovers); tarot-06-the-lovers.md (upright_keyword Choice; Union, archetype The Union, i_ching_trigram Lake — ring identity, not a trigram match)",
+      "upper_trigram_hierophant": "tarot-05-hierophant.md (i_ching_trigram Mountain, upright_keyword Tradition; Teach, archetype The Teacher)",
+      "upper_trigram_hermit": "tarot-09-the-hermit.md (i_ching_trigram Mountain, upright_keyword Wisdom; Right Path, archetype The Seeker)",
+      "lower_trigram_high_priestess": "tarot-02-high-priestess.md (i_ching_trigram Water, upright_keyword Perceive; Listen, archetype The Oracle)",
+      "lower_trigram_hanged_man": "tarot-12-hanged-man.md (i_ching_trigram Water, upright_keyword Pause for Perspective, archetype The Sacrifice)",
+      "trigrams_upper_lower": "_hexagram-04.md lines 6-7, 25-26 (upper Mountain/Gen, lower Water/Kan)",
+      "immortal_upper": "_hexagram-04.md line 116 (Mountain/Gen carries Zhang Guo Lao)",
+      "immortal_lower": "_hexagram-04.md line 117 (Water/Kan carries Li Tie Guai)",
+      "pair_inverse": "_hexagram-04.md line 87 (inverse 3 Difficulty at the Beginning)",
+      "programming_partner": "_hexagram-04.md line 12 (opposite_hexagram 49 Revolution = Gene Keys programming partner)",
+      "codon_ring_siblings": "_hexagram-04.md lines 102-104 (Codon Ring of Union, Valine; siblings 7, 29, 59)"
+    },
+    "fact_check": "Verified against _hexagram-04.md: inverse/pair = 3 Difficulty at the Beginning (line 87); programming partner = 49 Revolution (line 12, opposite_hexagram); codon ring = Ring of Union with siblings 7, 29, 59 (lines 102-104); both immortals corrected to upper Mountain/Gen = Zhang Guo Lao (line 116), lower Water/Kan = Li Tie Guai (line 117) — scaffold had the WRONG lower immortal (Lü Dongbin) and is now fixed; tarot ring Arcana = The Lovers (line 120); upper-trigram Majors (Mountain) = Hierophant + Hermit, lower-trigram Majors (Water) = High Priestess + Hanged Man, all by each file's i_ching_trigram field. The Lovers' own i_ching_trigram is Lake, so it sits only as the ring identity, not a trigram seat — correct per the grammar. Kin labels changed from Code N to UL N (UL 3, UL 49). Minor arcana (Cups/Pentacles) excluded per Majors-only rule."
   }
 }

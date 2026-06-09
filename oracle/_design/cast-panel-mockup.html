@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cast panel — grid mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Lora:wght@400;500&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ── dark-theme tokens, lifted verbatim from src/index.css @theme (dark block) ── */
+  :root{
+    --font-serif:"Cormorant Garamond",serif;
+    --font-sans:"Lora",serif;
+    --font-label:"Karla",sans-serif;
+    --stone-100:#1c1a17; --stone-300:#4a453e; --stone-400:#8a857c;
+    --stone-700:#524e49; --stone-900:#2b2926; --stone-950:#23201e;
+    /* the panel sits on a dark ground; these are the ACTUAL pixel values the
+       dark CoinCast renders against (stone-900/950 surface, bronze accents). */
+    --bronze-300:#7a6848; --bronze-400:#d4b88a; --bronze-500:#c4a878;
+    --line-dim:rgba(176,128,72,0.5);
+    --line-bright:rgba(208,168,98,0.95);
+    /* the grid system */
+    --rule:rgba(196,168,120,0.16);      /* structural ruleline — quiet but real */
+    --rule-strong:rgba(196,168,120,0.28);
+    --ground:#23201e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#171310; color:#e9e3d8;
+    font-family:var(--font-sans);
+    display:flex; flex-direction:column; align-items:center; gap:28px;
+    padding:40px 16px 80px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .note{max-width:440px;font-family:var(--font-label);font-size:12px;line-height:1.7;color:#9c958a;text-align:center}
+  .note b{color:var(--bronze-400);font-weight:600}
+  .frame{width:100%;max-width:430px}
+  .frame > h3{font-family:var(--font-label);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:#7c756a;margin:0 0 10px 4px}
+
+  /* outer card surface (matches the parent "The Changing" panel ground) */
+  .panel{
+    background:linear-gradient(to bottom,rgba(43,41,38,0.5),rgba(35,32,30,0.3));
+    border:1px solid var(--stone-700);
+    border-radius:4px;
+    overflow:hidden;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     THE GRID. Three columns: [label | spine | number].
+     The label column and number column are FIXED width and EQUAL, so the
+     spine is mathematically centered. Every register (NOW / glyphs /
+     BECOMING) is the same 3-column grid, so the three rows share their
+     column edges exactly — vertical alignment by construction.
+     Two vertical rulelines mark the inner edges of the spine column; the
+     horizontal rulelines separate the three registers. That is the
+     "instrument panel": real structure, no ornament.
+     ════════════════════════════════════════════════════════════════════ */
+  .grid{
+    --col:84px;                 /* label & number columns: equal, fixed */
+    display:grid;
+    grid-template-columns:var(--col) 1fr var(--col);
+    position:relative;
+  }
+  /* the two vertical rulelines, drawn on the spine's column edges */
+  .grid::before,.grid::after{
+    content:"";position:absolute;top:0;bottom:0;width:1px;background:var(--rule);
+    pointer-events:none;
+  }
+  .grid::before{left:var(--col)}
+  .grid::after{right:var(--col)}
+
+  /* a register = one horizontal band spanning all three columns */
+  .reg{
+    display:grid;
+    grid-template-columns:subgrid;
+    grid-column:1 / -1;
+    align-items:center;
+    min-height:var(--reg-h,48px);
+  }
+  .reg + .reg{border-top:1px solid var(--rule)}
+
+  /* cells */
+  .cell-label{padding:0 0 0 16px}
+  .cell-mid{padding:0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .cell-num{padding:0 16px 0 0;display:flex;justify-content:flex-end}
+
+  .eyebrow{
+    font-family:var(--font-label);font-size:10px;font-weight:600;
+    letter-spacing:.26em;text-transform:uppercase;color:var(--stone-400);
+    line-height:1;
+  }
+  .eyebrow.becoming{color:var(--bronze-400)}
+  .title{
+    font-family:var(--font-serif);font-weight:500;
+    font-size:21px;line-height:1.05;color:#efeae1;text-align:center;
+  }
+  .num{
+    font-family:var(--font-label);font-size:15px;font-weight:500;
+    color:var(--bronze-400);font-variant-numeric:tabular-nums;line-height:1;
+  }
+
+  /* the glyph register is taller and holds the two hexagrams + spine arrow */
+  .reg-glyphs{--reg-h:132px}
+  .glyph-wrap{
+    grid-column:2;                 /* the spine column only */
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+    gap:0;padding:18px 0;
+  }
+  .glyph{display:flex;justify-content:center}
+  .glyph.present{justify-content:flex-end;padding-right:18px}
+  .glyph.becoming{justify-content:flex-start;padding-left:18px}
+  .arrow{display:flex;align-items:center;justify-content:center}
+
+  /* the NOW / BECOMING eyebrows ALSO appear as row anchors on the left rule,
+     and the numbers anchor on the right rule — so reading DOWN the left
+     column you get NOW … BECOMING, and down the right column the two
+     numbers stack flush. Horizontal + vertical alignment, both real. */
+
+  /* hexagram lines, drawn as the component does (bottom-up bits) */
+  svg .ln-dim rect{fill:var(--line-dim)}
+  svg .ln-bright rect{fill:var(--line-bright)}
+
+  /* readings + doorway are SEPARATE elements below the grid (kept apart) */
+  .below{margin-top:22px}
+  .lineread{margin-bottom:24px}
+  .lineread .lbl{font-family:var(--font-label);font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--bronze-400);margin-bottom:9px;display:block}
+  .lineread p{font-family:var(--font-sans);font-size:16px;line-height:1.8;color:#d6cfc2;max-width:66ch}
+  .doorway{
+    display:flex;align-items:center;gap:16px;width:100%;text-align:left;
+    border:1px solid var(--stone-700);border-radius:8px;
+    background:rgba(43,41,38,0.3);padding:14px;
+  }
+  .doorway .thumb{width:56px;height:56px;border-radius:6px;background:#3a3228;
+    border:1px solid var(--stone-700);flex:0 0 auto;
+    background-image:linear-gradient(135deg,#4a3f2e,#2c2519);}
+  .doorway .dlabel{font-family:var(--font-label);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#7c756a;margin-bottom:4px;display:block}
+  .doorway .dname{font-family:var(--font-serif);font-size:18px;color:#efeae1;line-height:1.2}
+  .doorway .dgo{margin-left:auto;font-family:var(--font-label);font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze-400);flex:0 0 auto}
+
+  /* a debug toggle: outline every grid cell so the alignment is visible */
+  .show-grid .grid{outline:1px dashed rgba(120,200,255,.25)}
+  .show-grid .cell-label,.show-grid .cell-mid,.show-grid .cell-num,.show-grid .glyph-wrap{outline:1px dashed rgba(120,200,255,.18)}
+  .toggle{font-family:var(--font-label);font-size:12px;color:#9c958a;cursor:pointer;user-select:none;border:1px solid var(--stone-700);padding:6px 12px;border-radius:4px;background:transparent}
+  .toggle:hover{color:var(--bronze-400);border-color:var(--bronze-300)}
+</style>
+</head>
+<body>
+  <p class="note">
+    <b>Cast panel — grid structure mockup.</b> Three shared columns
+    (label · spine · number); two vertical rulelines on the spine edges,
+    horizontal rulelines between registers. NOW, the glyph pair, and
+    BECOMING all sit on the <b>same</b> columns, so the eye tracks straight
+    <b>across each row and down each column</b>. No corner-ticks, no pills,
+    no decorative dividers — only the grid lines that do real work.
+  </p>
+
+  <button class="toggle" onclick="document.body.classList.toggle('show-grid')">Toggle grid guides</button>
+
+  <div class="frame">
+    <h3>Cast result — both-axis grid</h3>
+    <div class="panel">
+      <div class="grid">
+
+        <!-- REGISTER 1 — NOW -->
+        <div class="reg" style="--reg-h:54px">
+          <div class="cell-label"><span class="eyebrow">Now</span></div>
+          <div class="cell-mid"><span class="title">Difficulty at the Beginning</span></div>
+          <div class="cell-num"><span class="num">3</span></div>
+        </div>
+
+        <!-- REGISTER 2 — the two glyphs on the spine, arrow between -->
+        <div class="reg reg-glyphs">
+          <!-- left & right label/number cells stay EMPTY here but hold the
+               columns open, so the glyph spine is the exact same width as
+               the title spine above and below. -->
+          <div class="cell-label"></div>
+          <div class="glyph-wrap">
+            <div class="glyph present">
+              <!-- present hexagram (h3: lines bottom-up, 2 moving = bright) -->
+              <svg width="78" height="92" viewBox="0 0 78 92" aria-hidden="true">
+                <!-- top(line6)…bottom(line1); h3 = water over thunder -->
+                <g class="ln-dim"><rect x="0" y="0" width="30" height="7" rx="1.5"/><rect x="48" y="0" width="30" height="7" rx="1.5"/></g>
+                <g class="ln-dim"><rect x="0" y="17" width="78" height="7" rx="1.5"/></g>
+                <g class="ln-bright"><rect x="0" y="34" width="30" height="7" rx="1.5"/><rect x="48" y="34" width="30" height="7" rx="1.5"/></g>
+                <g class="ln-dim"><rect x="0" y="51" width="30" height="7" rx="1.5"/><rect x="48" y="51" width="30" height="7" rx="1.5"/></g>
+                <g class="ln-bright"><rect x="0" y="68" width="78" height="7" rx="1.5"/></g>
+                <g class="ln-dim"><rect x="0" y="85" width="78" height="7" rx="1.5"/></g>
+              </svg>
+            </div>
+            <div class="arrow">
+              <svg width="56" height="14" viewBox="0 0 56 14" fill="none" aria-hidden="true" style="overflow:visible">
+                <defs><linearGradient id="ar" x1="0" y1="0" x2="56" y2="0" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#d4b88a" stop-opacity="0.15"/>
+                  <stop offset="1" stop-color="#d4b88a" stop-opacity="0.85"/>
+                </linearGradient></defs>
+                <line x1="2" y1="7" x2="46" y2="7" stroke="url(#ar)" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M44 3 L52 7 L44 11" stroke="#d4b88a" stroke-opacity="0.85" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+            </div>
+            <div class="glyph becoming">
+              <svg width="78" height="92" viewBox="0 0 78 92" aria-hidden="true">
+                <!-- becoming: the 2 moving lines flipped -->
+                <g class="ln-dim"><rect x="0" y="0" width="30" height="7" rx="1.5"/><rect x="48" y="0" width="30" height="7" rx="1.5"/></g>
+                <g class="ln-dim"><rect x="0" y="17" width="78" height="7" rx="1.5"/></g>
+                <g class="ln-dim"><rect x="0" y="34" width="78" height="7" rx="1.5"/></g>
+                <g class="ln-dim"><rect x="0" y="51" width="30" height="7" rx="1.5"/><rect x="48" y="51" width="30" height="7" rx="1.5"/></g>
+                <g class="ln-dim"><rect x="0" y="68" width="30" height="7" rx="1.5"/><rect x="48" y="68" width="30" height="7" rx="1.5"/></g>
+                <g class="ln-dim"><rect x="0" y="85" width="78" height="7" rx="1.5"/></g>
+              </svg>
+            </div>
+          </div>
+          <div class="cell-num"></div>
+        </div>
+
+        <!-- REGISTER 3 — BECOMING -->
+        <div class="reg" style="--reg-h:54px">
+          <div class="cell-label"><span class="eyebrow becoming">Becoming</span></div>
+          <div class="cell-mid"><span class="title">The Receptive</span></div>
+          <div class="cell-num"><span class="num">2</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SEPARATE below: line readings, then the doorway card -->
+    <div class="below">
+      <div class="lineread">
+        <span class="lbl">Line 2</span>
+        <p>Held back at the threshold, the horse turns and turns. This is not refusal; it is the pause before the right alliance. Wait, and the bond you need arrives in its own season.</p>
+      </div>
+      <div class="lineread">
+        <span class="lbl">Line 5</span>
+        <p>The sprout strains under stone. Offer your fullness in small measures and it is received; force it all at once and it is refused.</p>
+      </div>
+
+      <div class="doorway">
+        <div class="thumb"></div>
+        <div>
+          <span class="dlabel">Read about what this is becoming</span>
+          <span class="dname">The Receptive</span>
+        </div>
+        <span class="dgo">UL 2 →</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

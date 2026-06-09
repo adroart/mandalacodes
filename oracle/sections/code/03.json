@@ -1,0 +1,34 @@
+{
+  "number": 3,
+  "section": "code",
+  "status": "scaffold",
+  "card_name": "Messengers of the Infinite",
+  "keywords": [
+    "New Beginning",
+    "New Life",
+    "Starting Small",
+    "Finding Order",
+    "Innovation",
+    "Through a Child's Eyes",
+    "Patience"
+  ],
+  "reading": [
+    "A beginning that has already happened and has not found its shape. The seed is in the ground with the whole weight of the ground on top of it. Something has started in you. It is real, and it is tangled, pushing up through more than you thought would be in the way. The root goes down a long way before any green shows.",
+    "Then there is the face people brace against. The storm builds, the first thunder comes up out of the ground, and the rain just does not fall. It can feel like the floor went out from under you, like the thing to do is grab whatever is closest and hold on. But the old word under chaos never meant a mess. It meant the open ground, the space a thing gets born into. The coming-apart is the room the new thing needs.",
+    "What it asks of you is small and slow, the work of someone at a loom. Not forcing the rain. Not standing frozen in all that charge either. You sort one thread, then the next. You find the two or three people who will hold the corners with you. The whole of it is already here, pooled like oil in the press, spreading inside you and not bright yet. Stay small. Let the beginning be difficult."
+  ],
+  "invocation": null,
+  "meta": {
+    "source": "vault hexagrams/03 (oracle-03-sprouting, gene-key-03, _hexagram-03, practical-03)",
+    "sourcing_log": {
+      "seed under the weight of the ground / sprout piercing hard soil": "oracle-03-sprouting.md — ZHUN ideogram, sprout piercing hard soil",
+      "storm built, first thunder, rain not yet fallen": "oracle-03-sprouting.md — Patterns of Wisdom: clouds and thunder; Water(Kan) over Thunder(Zhen)",
+      "chaos meant open ground / space a thing is born into": "gene-key-03.md — chaos/chasm same root; original meaning closer to primordial space, not disorder",
+      "the work of someone at a loom, sort the threads": "oracle-03-sprouting.md — LUN: twist fibres into rope; JING: warp threads in a loom; jun zi coordinates",
+      "find the two or three who hold the corners": "oracle-03-sprouting.md — installing feudatories (JIAN HOU); appoint the helpers",
+      "pooled like oil in the press, not bright yet": "oracle-03-sprouting.md — line 5: one's juice (GAO, active essence/genius), spreading not-yet shining"
+    },
+    "invocation_status": "left null — Adrian writes invocations himself",
+    "generated": "code-section-v1, opus interactive (reference card for batch)"
+  }
+}

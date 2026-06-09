@@ -24,6 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import type { CastResult } from '../../utils/ichingCasting';
 import { CARD_BY_NUMBER, type OracleCard } from '../../data/oracleData';
 import { getLineText } from '../../data/ichingLines';
+import { getMarkdownLineText } from '../../data/cardMarkdown';
 import { ulCardImageUrl } from '../../utils/universalLanguage';
 
 /* ─── Hexagram glyph ─────────────────────────────────────────────────────── */
@@ -477,114 +478,157 @@ const CoinCast: React.FC<{
             title beneath it, then the detail (moving lines / the becoming
             reading). The eye travels straight down a consistent column. */}
 
-        {/* ── Stage one — the present and its moving lines ── */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
-          {/* Glyph, with its label + hexagram number tucked beneath it */}
-          <div className="flex flex-col items-center flex-shrink-0">
+        {/* ── The cast — your layout: a top row (NOW · title · number) spanning
+            across, the two glyphs with a drawn arrow between, then a bottom row
+            (BECOMING · title · number). Held in a compact, subtly-framed surface
+            so it reads as one designed component. Not a big empty box. The
+            readings + doorway are their own elements below. */}
+        <div className="relative rounded-2xl border border-stone-700/40 bg-gradient-to-b from-stone-900/40 to-stone-950/20 px-6 py-6 sm:px-10 sm:py-8">
+          {/* corner ticks — a quiet framing detail */}
+          <span aria-hidden className="pointer-events-none absolute left-3 top-3 h-3 w-3 border-l border-t border-bronze-500/25 rounded-tl" />
+          <span aria-hidden className="pointer-events-none absolute right-3 top-3 h-3 w-3 border-r border-t border-bronze-500/25 rounded-tr" />
+          <span aria-hidden className="pointer-events-none absolute left-3 bottom-3 h-3 w-3 border-l border-b border-bronze-500/25 rounded-bl" />
+          <span aria-hidden className="pointer-events-none absolute right-3 bottom-3 h-3 w-3 border-r border-b border-bronze-500/25 rounded-br" />
+
+          {/* TOP ROW — NOW · hexagram title · number, regimented: the label set
+              off by a hairline, the title the serif lead, the number in a
+              tinted token. All on one baseline. */}
+          <div className="flex items-center justify-center gap-4 mb-7">
+            <span className="font-label text-[10.5px] uppercase tracking-[0.3em] text-stone-400 flex-shrink-0">
+              Now
+            </span>
+            <span aria-hidden className="h-3.5 w-px bg-stone-600/50 flex-shrink-0" />
+            <span className="font-serif text-[20px] sm:text-[22px] text-stone-100 leading-none text-center">
+              {primaryCard?.iching.hexagram_name ?? `Hexagram ${primaryNumber}`}
+            </span>
+            <span className="flex-shrink-0 inline-flex items-center justify-center min-w-[26px] h-[26px] px-1.5 rounded-full border border-bronze-500/30 bg-bronze-500/5 font-label text-[12px] tabular-nums text-bronze-300/90">
+              {primaryNumber}
+            </span>
+          </div>
+
+          {/* THE GLYPHS with a drawn arrow between them */}
+          <div className="flex items-center justify-center gap-6 sm:gap-10">
             <Hexagram
               bits={presentBits}
               moving={movingBits}
               flipProgress={becomingIn ? 0 : flipProgress}
               revealCount={revealCount}
-              width={88}
+              width={84}
             />
-            <span className="font-label text-[10px] uppercase tracking-[0.2em] text-stone-500 mt-3.5">
-              Now
-            </span>
-            <span className="font-label text-[10px] uppercase tracking-[0.2em] text-stone-500 mt-1">
-              Hexagram {primaryNumber}
-            </span>
-          </div>
 
-          {/* Text block — the title at the top, aligned with the glyph's
-              top edge, then the moving lines below. */}
-          <div className="flex-1 min-w-0 w-full text-center sm:text-left">
-            <p className="font-serif text-[17px] sm:text-[19px] text-stone-100 leading-[1.3]">
-              {primaryCard?.iching.hexagram_name ?? `Code ${primaryNumber}`}
-            </p>
-
-            {/* The moving lines — TEMPLATE: a close-set list. No divider,
-                just a small gap, so the lines read together as one group. */}
-            {settled && movingCount > 0 && (
+            {changedNumber && changedCard && settled && (
               <div
-                className="mt-4 text-left space-y-1.5"
-                style={{ animation: reduceMotion ? undefined : 'ul-cast-soft-in 420ms ease-out both' }}
+                className="flex flex-col items-center gap-2 flex-shrink-0"
+                style={{ opacity: becomingIn ? 1 : 0, transition: 'opacity 500ms ease-out' }}
               >
-                {movingPositions.map((pos) => {
-                  const text = getLineText(primaryNumber, pos);
-                  return (
-                    <p key={pos} className="font-sans text-[16px] text-stone-200 leading-[1.7]">
-                      <span className="font-label text-[11px] uppercase tracking-[0.14em] font-semibold text-bronze-400/80 mr-2">
-                        Line {pos}
-                      </span>
-                      {text ? (
-                        text
-                      ) : (
-                        <span className="text-stone-500">
-                          Line text to be added.
-                        </span>
-                      )}
-                    </p>
-                  );
-                })}
+                {/* a proper drawn arrow — a hairline shaft into a clean head,
+                    on a soft bronze gradient, not a flimsy character */}
+                <svg width="64" height="16" viewBox="0 0 64 16" fill="none" aria-hidden="true" className="overflow-visible">
+                  <defs>
+                    <linearGradient id="ul-cast-arrow" x1="0" y1="0" x2="64" y2="0" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" stopColor="rgb(168 130 86)" stopOpacity="0.15" />
+                      <stop offset="1" stopColor="rgb(196 158 110)" stopOpacity="0.85" />
+                    </linearGradient>
+                  </defs>
+                  <line x1="2" y1="8" x2="52" y2="8" stroke="url(#ul-cast-arrow)" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M50 3 L60 8 L50 13" stroke="rgb(196 158 110)" strokeOpacity="0.85" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              </div>
+            )}
+
+            {changedNumber && changedCard && settled && (
+              <div
+                className="flex-shrink-0"
+                style={{ opacity: becomingIn ? 1 : 0, transition: 'opacity 500ms ease-out' }}
+              >
+                <Hexagram
+                  bits={changedBits}
+                  moving={new Array(6).fill(false)}
+                  flipProgress={0}
+                  revealCount={6}
+                  width={84}
+                />
               </div>
             )}
           </div>
-        </div>
 
-        {/* ── Stage two — what it is becoming ────────────────────────────
-            TEMPLATE: same structure as stage one — glyph on the LEFT, the
-            label / title / reading block on the RIGHT. The two stages are
-            a consistent column down the panel. */}
-        {changedNumber && changedCard && settled && (
-          <div
-            className="mt-9 pt-7 border-t border-stone-700/50 flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8"
-            style={{ opacity: becomingIn ? 1 : 0, transition: 'opacity 400ms ease-out' }}
-          >
-            {/* The becoming glyph — on the left, with its label + number
-                tucked beneath it, matching stage one. */}
-            <div className="flex flex-col items-center flex-shrink-0">
-              <Hexagram
-                bits={changedBits}
-                moving={new Array(6).fill(false)}
-                flipProgress={0}
-                revealCount={6}
-                width={88}
-              />
-              <span className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/70 mt-3.5">
+          {/* BOTTOM ROW — BECOMING · becoming title · number, matched to the top
+              row's structure: label / hairline / serif title / tinted token. */}
+          {changedNumber && changedCard && settled && (
+            <div
+              className="flex items-center justify-center gap-4 mt-7"
+              style={{ opacity: becomingIn ? 1 : 0, transition: 'opacity 500ms ease-out' }}
+            >
+              <span className="font-label text-[10.5px] uppercase tracking-[0.3em] text-bronze-400/80 flex-shrink-0">
                 Becoming
               </span>
-              <span className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/70 mt-1">
-                Hexagram {changedNumber}
+              <span aria-hidden className="h-3.5 w-px bg-bronze-500/30 flex-shrink-0" />
+              <span className="font-serif text-[20px] sm:text-[22px] text-stone-100 leading-none text-center">
+                {changedCard.iching.hexagram_name}
+              </span>
+              <span className="flex-shrink-0 inline-flex items-center justify-center min-w-[26px] h-[26px] px-1.5 rounded-full border border-bronze-500/30 bg-bronze-500/5 font-label text-[12px] tabular-nums text-bronze-300/90">
+                {changedNumber}
               </span>
             </div>
+          )}
+        </div>
 
-            {/* Text block — title at the top, aligned with the glyph's top
-                edge, then the becoming reading and the link. */}
-            <div className="flex-1 min-w-0 w-full text-center sm:text-left">
-              <p className="font-serif text-[17px] sm:text-[19px] text-stone-100 leading-[1.3]">
-                {changedCard.iching.hexagram_name}
-              </p>
-              {/* TEMPLATE: the becoming reading describes the quality of the
-                  change, it does not name the hexagram (the title above
-                  already names it). One sentence on what the present is
-                  moving toward. NOTE: this is a generic placeholder — the
-                  real per-becoming description is synthesis content, wired
-                  when the becoming card's reading is reachable here. */}
-              <p className="font-sans text-[15px] sm:text-[16px] text-stone-300 leading-[1.7] mt-3 text-left">
-                As the moving line settles, the present begins to give way to
-                a different shape, a new configuration the moment is travelling
-                into. Follow the changing line to see what it asks of you.
-              </p>
-              <button
-                type="button"
-                onClick={() => setPreviewOpen(true)}
-                className="group mt-4 font-label text-[12px] uppercase tracking-[0.2em] font-semibold text-bronze-400 hover:text-bronze-300 transition-colors pb-1 border-b border-bronze-500/40 hover:border-bronze-400/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-bronze-500/50 focus-visible:ring-offset-4 focus-visible:ring-offset-stone-900 rounded-sm"
-              >
-                Read Code {changedNumber}
-              </button>
-            </div>
+        {/* The moving-line readings — their OWN element below the pair, full
+            width. Not inside any box. */}
+        {settled && movingCount > 0 && (
+          <div
+            className="mt-9 space-y-7"
+            style={{ animation: reduceMotion ? undefined : 'ul-cast-soft-in 420ms ease-out both' }}
+          >
+            {movingPositions.map((pos) => {
+              const text = getMarkdownLineText(primaryNumber, pos) || getLineText(primaryNumber, pos);
+              return (
+                <div key={pos} className="text-left">
+                  <span className="block font-label text-[10px] uppercase tracking-[0.22em] font-semibold text-bronze-400/80 mb-2.5">
+                    Line {pos}
+                  </span>
+                  {text ? (
+                    <p className="font-sans text-[16px] sm:text-[16.5px] text-stone-200/95 leading-[1.8] max-w-[66ch]">
+                      {text}
+                    </p>
+                  ) : (
+                    <p className="font-sans text-[16px] text-stone-500 leading-[1.8]">
+                      Line text to be added.
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
+        )}
+
+        {/* The doorway — its OWN standalone element, a small card that can hold
+            on its own: the becoming art + a read link. Separate from the pair. */}
+        {changedNumber && changedCard && settled && (
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+            className="group mt-9 w-full flex items-center gap-4 text-left rounded-lg border border-stone-700/50 bg-stone-900/30 hover:border-bronze-500/40 hover:bg-stone-800/30 transition-colors p-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-bronze-500/40"
+            style={{ opacity: becomingIn ? 1 : 0, transition: 'opacity 400ms ease-out' }}
+          >
+            <img
+              src={ulCardImageUrl(changedNumber, 240)}
+              alt=""
+              className="w-14 h-14 rounded-md object-cover flex-shrink-0 ring-1 ring-stone-700/60 group-hover:ring-bronze-500/50 transition"
+              loading="lazy"
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block font-label text-[10px] uppercase tracking-[0.2em] text-stone-500 mb-1">
+                Read about what this is transforming to
+              </span>
+              <span className="block font-serif text-[17px] text-stone-100 leading-[1.25]">
+                {changedCard.card_name ?? changedCard.iching.hexagram_name}
+              </span>
+            </span>
+            <span className="font-label text-[12px] uppercase tracking-[0.2em] font-semibold text-bronze-400 group-hover:text-bronze-300 transition-colors flex-shrink-0">
+              UL {changedNumber} →
+            </span>
+          </button>
         )}
 
         {/* TEMPLATE: no "throw again" — once the coins are thrown, the cast

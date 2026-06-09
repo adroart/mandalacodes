@@ -6,6 +6,27 @@ spectrum of one of the 64 codes. This brief is the locked standard. Follow it
 exactly. Card 1 (UL 1, "Earth's Breath") was written with Adrian line by line
 and is the reference; match its level.
 
+## NAME THE OFFICIAL TERMS (hardened 2026-06-09 — the card teaches the system)
+
+Every Shadow/Gift/Siddhi AND the repressive + reactive natures carry their
+OFFICIAL Gene Keys name in the heading, then the accessible prose in the body.
+Showing both is what makes the card teach the system, not just describe a
+feeling. The official name in the heading, the plain teaching underneath.
+
+- Shadow / Gift / Siddhi: name them (e.g. "Shadow — Chaos", "Gift — Innovation",
+  "Siddhi — Innocence"). These are the kept lineage.
+- **Repressive nature: name it.** "Repressive nature — Anal" (card 3), then the
+  prose. Do NOT reduce it to "Shadow, inward face" with the name dropped — that
+  was the loss Adrian caught 2026-06-09. The name + the accessible writing both.
+- **Reactive nature: name it.** "Reactive nature — Disordered" (card 3), then
+  the prose.
+- The official names come from the card's `gene-key-NN-*.md` frontmatter
+  (`shadow`, `gift`, `siddhi`, `repressed`, `reactive`). Source-verify them.
+
+Same principle hardened for DESIGN (gate/centre/channel official names) in
+`sections/design/_BRIEF.md`. The pattern is deck-wide: official term teaches,
+accessible prose lands.
+
 ## Your task
 
 For the assigned hexagram number, read that hexagram's Gene Keys source from

@@ -1,8 +1,33 @@
 # DESIGN section — generation brief
 
+> **AGENT: load `oracle/WRITE.md` FIRST.** It carries the gate, the precedence
+> rule, the voice + copyright + terms spine, and the BATCH-AGENT HARDENING (glob
+> vault files, card 3 = worked reference at `sections/design/03.json`, output a
+> verification block, stay in your lane, no "Gate N is…" template). This brief is
+> section-specific only; the universal rules live in WRITE.md.
+
 You are writing the **DESIGN section** for one card of the Universal Language
 Oracle. DESIGN is the Human Design voice: the code in the energy body. This
 brief is the locked standard. Follow it exactly.
+
+## NAME THE OFFICIAL TERMS IN THE HEADINGS (hardened 2026-06-09)
+
+The card teaches Human Design by showing the official terms ALONGSIDE the
+accessible writing. The official gate/centre/channel names go in the section
+HEADINGS; the bridge rule (no HD jargon) still governs the PROSE BODY.
+
+- The drive heading: "The drive — Gate N, <Keyword>" (card 3: "Gate 3, Ordering").
+- The centre heading: "Where it lives — the <Centre> Center" (card 3: "the
+  Sacral Center").
+- The channel heading: "What completes it — the <Channel name> (N–M)" (card 3:
+  "the Channel of Mutation (3–60)").
+- Source the official names from the card's `qw-gate-NN-*.md` + `_hexagram-NN.md`
+  (gate keyword, centre, channel). Source-verify.
+
+This does NOT break the bridge rule: the official term lives in the heading (a
+label that teaches the system), while the prose body stays jargon-free and
+experiential as before. Heading teaches the system; body lands the experience.
+(Adrian, 2026-06-09 — the accessible-only headings dropped the teaching layer.)
 
 ## Your task
 

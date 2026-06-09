@@ -1,10 +1,64 @@
 # ICHING section — generation brief
 
+> **AGENT: load `oracle/WRITE.md` FIRST.** It carries the gate, the precedence
+> rule, the voice + copyright + terms spine, and the BATCH-AGENT HARDENING (glob
+> vault files, card 3 = worked reference at `sections/iching/03.deep.json` [the
+> `.deep` is canonical], output a verification block, stay in your lane). Note:
+> inside ICHING the thing is a "hexagram," NEVER a "code". This brief is
+> section-specific only; the universal rules live in WRITE.md.
+
 You are writing the **ICHING section** for one card of the Universal Language
 Oracle, a 64-card deck. ICHING is the I-Ching voice: the hexagram's situation
 and its natural image, the trigram pair, the Judgement and Image freshly
 rendered, and the six moving lines. This brief is the locked standard. UL 1
 worked samples in `oracle/WRITING_METHOD.md` §3 ICHING are the level to hit.
+
+## THE FIDELITY RULES (hardened 2026-06-09 from the card 3 pass)
+
+These are the checks that separate a true I-Ching section from a well-written
+but invented one. Run all four before marking a section final. They exist
+because the writing voice tends to add evocative images that are NOT in the
+Chinese — and the whole value of this section is that it teaches the real thing.
+
+1. **Every concrete image traces to a vault source line.** Before you keep an
+   image (a figure, a number, a custom, an object), point at the file and line
+   it came from. If you cannot, it is invented — cut it or replace it with the
+   real source image. Card 3 caught two inventions this way: "hold the four
+   corners" (the source's "four" is the four Time-Cycle stages, unrelated) and
+   "the first dynasty of a small house" (not in the source at all). Both were
+   cut. The real source image (JIAN HOU = appoint nobles to govern the
+   provinces) replaced the invented one.
+
+2. **No invented numbers.** "Four corners", "three gates", "the seven" — if a
+   number is not in the source for THIS hexagram, it does not go in. Numbers
+   read as philological fact and mislead when invented.
+
+3. **Name a character only where it ADDS — never per-slot, never formulaic.**
+   The reader wants to understand the Mandarin a little through the card
+   (Adrian's standing wish), but coverage is not the goal — benefit is. A named
+   character earns its place ONLY when the Chinese word carries meaning the
+   English image alone misses. Do NOT put one in every line or every section.
+   - **Always carry the hexagram's own NAME-character** in `combination` (it is
+     the most meaningful by definition): quote the source's "Ideogram:" line,
+     write only what it says. Card 3: Zhun = "sprout piercing hard soil"
+     (source: oracle-03-sprouting.md). 
+   - **Elsewhere, add a character only where it deepens the image.** Card 3
+     added Gao to line 5 only — "active essence / genius / rich oil" is a
+     surprising word the English "oil in the press" does not carry. The other
+     five lines' power was the scene and the custom (bride-seizing, the deer
+     with no forester), not a character, so they stayed clean. That restraint
+     IS the rule: most lines name no character.
+   - NEVER write a gloss you have not read in the vault. When you add one, quote
+     the source line to Adrian so he can see it is real. Source-verify every
+     character (its meaning + that it belongs to THIS hexagram/line).
+
+4. **Terms: inside ICHING the thing is a "hexagram," never a "code."** "Code" is
+   the cross-lineage synthesis word and belongs to Section 1 / RELATIONS. Grep
+   the finished section for "code" before finalizing. (00 §3.)
+
+The test for all four: the prose teaches the REAL I-Ching, the actual Chinese,
+not a plausible-sounding version of it. Evocative-but-invented is the failure
+mode this section exists to avoid.
 
 ## Your task
 
