@@ -19,6 +19,12 @@ export interface ProfilePositionMeta {
    */
   x: number;
   y: number;
+  /**
+   * Which side of the sphere the label + Gene Keys triad sit on, so text
+   * lives outside the orb (only the gate.line sits inside). Chosen to push
+   * outward from the mandala's center and avoid collisions.
+   */
+  labelSide: 'left' | 'right' | 'top' | 'bottom';
 }
 
 /**
@@ -37,69 +43,69 @@ export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
     key: 'lifesWork', sequence: 'activation', label: "Life's Work",
     planet: 'sun', side: 'persona', body: '',
     role: 'Your core vocation, the work you came here to express.',
-    x: 0.5, y: 0.08,
+    x: 0.5, y: 0.11, labelSide: 'top',
   },
   {
     key: 'evolution', sequence: 'activation', label: 'Evolution',
     planet: 'earth', side: 'persona', body: '',
     role: 'The contrast that shapes you, what you learn by living against.',
-    x: 0.88, y: 0.5,
+    x: 0.84, y: 0.5, labelSide: 'right',
   },
   {
     key: 'radiance', sequence: 'activation', label: 'Radiance',
     planet: 'sun', side: 'design', body: '',
     role: 'The light you carry into the world, felt before it is named.',
-    x: 0.12, y: 0.5,
+    x: 0.16, y: 0.5, labelSide: 'left',
   },
   {
     key: 'purpose', sequence: 'activation', label: 'Purpose',
     planet: 'earth', side: 'design', body: '',
     role: 'The current beneath your work, the reason it bends toward meaning.',
-    x: 0.5, y: 0.92,
+    x: 0.5, y: 0.89, labelSide: 'bottom',
   },
 
   {
     key: 'attraction', sequence: 'venus', label: 'Attraction',
     planet: 'moon', side: 'design', body: '',
     role: 'How others first feel you, the quality that draws them close.',
-    x: 0.5, y: 0.7,
+    x: 0.5, y: 0.7, labelSide: 'bottom',
   },
   {
     key: 'iq', sequence: 'venus', label: 'IQ',
     planet: 'venus', side: 'persona', body: '',
     role: 'How your mind moves, the shape of your thinking.',
-    x: 0.36, y: 0.6,
+    x: 0.36, y: 0.6, labelSide: 'left',
   },
   {
     key: 'eq', sequence: 'venus', label: 'EQ',
     planet: 'mars', side: 'persona', body: '',
     role: 'How you meet feeling, your way through what is felt and unsaid.',
-    x: 0.64, y: 0.6,
+    x: 0.64, y: 0.6, labelSide: 'right',
   },
   {
     key: 'sq', sequence: 'venus', label: 'SQ',
     planet: 'venus', side: 'design', body: '',
     role: 'How spirit speaks through you, the quiet intelligence beneath.',
-    x: 0.5, y: 0.5,
+    x: 0.5, y: 0.5, labelSide: 'left',
   },
 
   {
     key: 'core', sequence: 'pearl', label: 'Vocation',
     planet: 'mars', side: 'design', body: '',
     role: 'The work that carries you, where your gifts meet the world.',
-    x: 0.36, y: 0.4,
+    x: 0.36, y: 0.4, labelSide: 'left',
   },
   {
     key: 'culture', sequence: 'pearl', label: 'Culture',
     planet: 'jupiter', side: 'design', body: '',
     role: 'The field you came from, the inheritance you are reweaving.',
-    x: 0.64, y: 0.4,
+    x: 0.64, y: 0.4, labelSide: 'right',
   },
   {
     key: 'pearl', sequence: 'pearl', label: 'Pearl',
     planet: 'jupiter', side: 'persona', body: '',
     role: 'The synthesis, where vocation and gift meet your daily choices.',
-    x: 0.5, y: 0.3,
+    x: 0.5, y: 0.3, labelSide: 'top',
   },
 ];
 
