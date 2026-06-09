@@ -36,6 +36,7 @@ export interface LookbookPiece {
   gate: number;
   line: number;
   cardName?: string;
+  keywords?: string[];
   essence?: string;
   giftName?: string;
   gift?: string;
@@ -103,6 +104,7 @@ export function assembleLookbook(
       gate: gl.gate,
       line: gl.line,
       cardName: card?.card_name,
+      keywords: card?.keywords,
       essence: card?.essence,
       giftName: card?.gene_keys.gift_name,
       gift: card?.gene_keys.gift,
