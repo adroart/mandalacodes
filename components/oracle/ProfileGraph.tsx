@@ -60,22 +60,55 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                 <stop offset="100%" stopColor={SEQUENCE_COLOR[seq].edge} />
               </radialGradient>
             ))}
+            {(['activation', 'venus', 'pearl'] as const).map((seq) => (
+              <marker
+                key={seq}
+                id={`arrow-${seq}`}
+                viewBox="0 0 10 10"
+                refX="9" refY="5"
+                markerWidth="7" markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0,0 L10,5 L0,10 z" fill={SEQUENCE_COLOR[seq].edge} />
+              </marker>
+            ))}
           </defs>
 
-          {/* Channels — each line carries its sequence's colour so the
-              Venus, Pearl and Activation paths read as connected units. */}
+          {/* Channels — directional arrows in canonical Golden Path order,
+              each coloured by its sequence. Lines are trimmed to the orb
+              edge so the arrowhead sits just outside the destination. */}
           <g className="profile-graph__channels">
             {PROFILE_CHANNELS.map((ch, i) => {
               const pa = pos(ch.from);
               const pb = pos(ch.to);
               const lit = isLit(ch.from, ch.to);
+              const dx = pb.x - pa.x, dy = pb.y - pa.y;
+              const len = Math.hypot(dx, dy) || 1;
+              const ux = dx / len, uy = dy / len;
+              const x1 = pa.x + ux * (R + 2);
+              const y1 = pa.y + uy * (R + 2);
+              const x2 = pb.x - ux * (R + 9);
+              const y2 = pb.y - uy * (R + 9);
+              const mx = (x1 + x2) / 2;
+              const my = (y1 + y2) / 2;
               return (
-                <line
-                  key={i}
-                  x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
-                  stroke={SEQUENCE_COLOR[ch.sequence].edge}
-                  className={`profile-graph__channel${lit ? ' is-lit' : ''}`}
-                />
+                <g key={i}>
+                  <line
+                    x1={x1} y1={y1} x2={x2} y2={y2}
+                    stroke={SEQUENCE_COLOR[ch.sequence].edge}
+                    markerEnd={`url(#arrow-${ch.sequence})`}
+                    className={`profile-graph__channel${lit ? ' is-lit' : ''}`}
+                  />
+                  {lit && (
+                    <text
+                      x={mx} y={my - 5}
+                      className="profile-graph__pathway"
+                      fill={SEQUENCE_COLOR[ch.sequence].edge}
+                    >
+                      {ch.pathway}
+                    </text>
+                  )}
+                </g>
               );
             })}
           </g>
@@ -190,6 +223,11 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         }
         .profile-graph__channel.is-lit { opacity: 1; stroke-width: 3; }
         .profile-graph__mandala.has-active .profile-graph__channel:not(.is-lit) { opacity: 0.15; }
+        .profile-graph__pathway {
+          font-family: 'Lato', Helvetica, sans-serif;
+          font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+          text-anchor: middle;
+        }
 
         /* ── orbs ── */
         .profile-graph__orb { cursor: pointer; outline: none; }
