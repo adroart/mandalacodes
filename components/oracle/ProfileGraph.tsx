@@ -42,10 +42,6 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
   const isLit = (a: ProfileKey, b: ProfileKey) =>
     active != null && (a === active || b === active);
 
-  // Spine channels animate a slow travelling pulse at rest.
-  const SPINE = new Set(['lifesWork>pearl', 'pearl>sq', 'sq>attraction', 'attraction>purpose']);
-  const isSpine = (a: ProfileKey, b: ProfileKey) => SPINE.has(`${a}>${b}`);
-
   const go = (k: ProfileKey) => navigate(`/universal-language/${profile[k].gate}`);
 
   return (
@@ -66,16 +62,21 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             ))}
           </defs>
 
-          {/* Channels */}
+          {/* Channels — each line carries its sequence's colour so the
+              Venus, Pearl and Activation paths read as connected units. */}
           <g className="profile-graph__channels">
-            {PROFILE_CHANNELS.map(([a, b], i) => {
-              const pa = pos(a);
-              const pb = pos(b);
-              const cls =
-                'profile-graph__channel' +
-                (isLit(a, b) ? ' is-lit' : '') +
-                (isSpine(a, b) && active == null ? ' is-spine' : '');
-              return <line key={i} x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y} className={cls} />;
+            {PROFILE_CHANNELS.map((ch, i) => {
+              const pa = pos(ch.from);
+              const pb = pos(ch.to);
+              const lit = isLit(ch.from, ch.to);
+              return (
+                <line
+                  key={i}
+                  x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
+                  stroke={SEQUENCE_COLOR[ch.sequence].edge}
+                  className={`profile-graph__channel${lit ? ' is-lit' : ''}`}
+                />
+              );
             })}
           </g>
 
@@ -180,18 +181,15 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .profile-graph__svg { width: 100%; height: auto; overflow: visible; }
 
         /* ── channels ── */
+        /* Stroke colour is set inline per-sequence; opacity carries the
+           rest/active state so each sequence's path reads in its own hue. */
         .profile-graph__channel {
-          stroke: color-mix(in oklab, var(--color-wood-600) 20%, transparent);
-          stroke-width: 1;
-          transition: stroke 0.3s, stroke-width 0.3s;
+          stroke-width: 1.5;
+          opacity: 0.35;
+          transition: opacity 0.3s, stroke-width 0.3s;
         }
-        .profile-graph__channel.is-lit { stroke: var(--color-bronze-500); stroke-width: 2.5; }
-        .profile-graph__channel.is-spine {
-          stroke: color-mix(in oklab, var(--color-bronze-500) 45%, transparent);
-          stroke-dasharray: 6 10;
-          animation: spine-flow 6s linear infinite;
-        }
-        @keyframes spine-flow { to { stroke-dashoffset: -16; } }
+        .profile-graph__channel.is-lit { opacity: 1; stroke-width: 3; }
+        .profile-graph__mandala.has-active .profile-graph__channel:not(.is-lit) { opacity: 0.15; }
 
         /* ── orbs ── */
         .profile-graph__orb { cursor: pointer; outline: none; }
@@ -270,8 +268,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .profile-graph__channel.is-spine { animation: none; }
-          .profile-graph__circle, .profile-graph__ring, .profile-graph__channel { transition: none; }
+          .profile-graph__circle, .profile-graph__ring, .profile-graph__channel, .profile-graph__node { transition: none; }
         }
       `}</style>
     </div>
