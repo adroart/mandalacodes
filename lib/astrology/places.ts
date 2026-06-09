@@ -43,17 +43,27 @@ async function loadCitiesIndex(): Promise<CitiesIndex> {
 }
 
 /**
+ * Fold a string to lowercase ASCII so an accent-free query still matches
+ * accented city names — "reykjavik" finds "Reykjavík", "sao paulo" finds
+ * "São Paulo". NFD splits accented chars into base + combining mark, then
+ * we drop the combining marks (Unicode range U+0300–U+036F).
+ */
+function fold(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+/**
  * Typeahead search across the bundled cities index. Returns up to
  * `limit` matches sorted by the order they appear in the dataset
- * (already population-sorted at build time).
+ * (already population-sorted at build time). Accent-insensitive.
  */
 export async function searchPlaces(query: string, limit = 8): Promise<Place[]> {
-  const q = query.trim().toLowerCase();
+  const q = fold(query.trim());
   if (q.length < 2) return [];
   const idx = await loadCitiesIndex();
   const out: Place[] = [];
   for (const c of idx) {
-    const haystack = `${c.name} ${c.admin ?? ''} ${c.country}`.toLowerCase();
+    const haystack = fold(`${c.name} ${c.admin ?? ''} ${c.country}`);
     if (haystack.includes(q)) {
       out.push({
         label: [c.name, c.admin, c.country].filter(Boolean).join(', '),
