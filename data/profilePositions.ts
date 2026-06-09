@@ -50,12 +50,12 @@ export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
 
   {
     key: 'attraction', sequence: 'venus', label: 'Attraction',
-    planet: 'venus', side: 'persona', body: '',
+    planet: 'moon', side: 'design', body: '',
     role: 'How others first feel you, the quality that draws them close.',
   },
   {
     key: 'iq', sequence: 'venus', label: 'IQ',
-    planet: 'mars', side: 'design', body: '',
+    planet: 'venus', side: 'persona', body: '',
     role: 'How your mind moves, the shape of your thinking.',
   },
   {
@@ -70,9 +70,9 @@ export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
   },
 
   {
-    key: 'core', sequence: 'pearl', label: 'Core',
-    planet: 'jupiter', side: 'persona', body: '',
-    role: 'What is fundamentally yours, the seed of everything else.',
+    key: 'core', sequence: 'pearl', label: 'Vocation',
+    planet: 'mars', side: 'design', body: '',
+    role: 'The work that carries you, where your gifts meet the world.',
   },
   {
     key: 'culture', sequence: 'pearl', label: 'Culture',
@@ -81,7 +81,7 @@ export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
   },
   {
     key: 'pearl', sequence: 'pearl', label: 'Pearl',
-    planet: 'mercury', side: 'persona', body: '',
+    planet: 'jupiter', side: 'persona', body: '',
     role: 'The synthesis, where vocation and gift meet your daily choices.',
   },
 ];

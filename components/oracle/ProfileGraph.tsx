@@ -46,6 +46,21 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                         {card ? card.card_name : `Gate ${gl.gate}`}
                         {meta.body ? ` · ${meta.body}` : null}
                       </div>
+                      {card?.gene_keys?.gift && (
+                        <div className="profile-graph__genekey">
+                          <span className="profile-graph__gk profile-graph__gk--siddhi">
+                            {card.gene_keys.siddhi}
+                          </span>
+                          <span className="profile-graph__gk-sep">·</span>
+                          <span className="profile-graph__gk profile-graph__gk--gift">
+                            {card.gene_keys.gift}
+                          </span>
+                          <span className="profile-graph__gk-sep">·</span>
+                          <span className="profile-graph__gk profile-graph__gk--shadow">
+                            {card.gene_keys.shadow}
+                          </span>
+                        </div>
+                      )}
                       <p className="profile-graph__role">{meta.role}</p>
                     </div>
                   </Link>
@@ -118,6 +133,20 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
           color: var(--color-wood-600);
           margin-top: 2px;
         }
+        .profile-graph__genekey {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: baseline;
+          gap: 6px;
+          margin-top: 4px;
+          font-family: 'Lato', Helvetica, sans-serif;
+          font-size: 11px;
+          letter-spacing: 0.06em;
+        }
+        .profile-graph__gk--siddhi { color: var(--color-bronze-600); }
+        .profile-graph__gk--gift   { color: var(--color-wood-800); }
+        .profile-graph__gk--shadow { color: color-mix(in oklab, #a04a32 80%, var(--color-wood-700)); }
+        .profile-graph__gk-sep     { color: var(--color-wood-500, var(--color-wood-600)); }
         .profile-graph__role {
           font-family: 'Cormorant Garamond', serif;
           font-size: 14px;
