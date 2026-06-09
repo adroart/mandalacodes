@@ -82,11 +82,31 @@ Add a `recommendation` block to the profile JSON to close the lookbook with what
 - **Energy text** — swap which fields a spread shows in `template.ts` `spread()`
   (e.g. lead with the line instead of the Gift, or add the I-Ching reading).
 
+## Cross-site: the recommendation API (the bridge)
+
+The assembly logic lives in `lib/oracle/recommendation.ts` (fs-free, corpus-
+injected), so this CLI and the hosted endpoint share one engine. The endpoint is
+the seam between the two sites:
+
+```
+POST /api/oracle/recommendation        (Mandala Codes — the engine)
+  body: { clientName?, profile? | utcBirth?, recommendation? }
+  → returns the LookbookData: the art pieces of the chart's codes, the energy
+    of each, and the resolved curator picks.
+```
+
+- Pass a ready `profile` (the 11 spheres) **or** `utcBirth` (ISO UTC) and it
+  computes the chart via `buildHologeneticProfile` — "create a chart for someone".
+- The **Adrian Rasmussen quote system** calls this, then adds pricing / inventory
+  / the purchase flow and renders the client recommendation page + PDF. Meaning
+  on Mandala Codes, money on Adrian Rasmussen.
+- Optionally gate it with an `ORACLE_API_TOKEN` env var (Pages dashboard).
+
 ## Roadmap — into the site (later)
 
 This CLI is the framework. Once the oracle Functions are live, the same data
-layer (`build-data.ts`, which reuses the shared corpus + the profile model) can
-back an on-site feature, with the CLI kept as the offline path:
+layer (the shared `recommendation.ts` engine + the profile model) can back an
+on-site feature, with the CLI kept as the offline path:
 
 - **Generate from a chart on the site** — compute the profile from birth data
   with `lib/astrology/buildHologeneticProfile` (no PDF), or accept an uploaded
