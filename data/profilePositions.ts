@@ -117,32 +117,30 @@ export interface ProfileChannel {
 }
 
 /**
- * The channels between spheres, mirrored from the official Gene Keys
- * body-map. Each sequence is its OWN connected path, drawn in its own
- * colour, so the four Venus codes read as one journey, the Pearl three as
- * another, and the Activation four as the cross — rather than every line
- * funnelling through the centre.
+ * The channels between spheres, traced arrow-by-arrow from the official
+ * Gene Keys body-map. Each sequence is its OWN connected path, drawn in
+ * its own colour.
  *
- *   Activation (green): the cross — Life's Work down the spine to Purpose,
- *     and the Radiance/Evolution horizontal, meeting at the centre (SQ).
- *   Venus (red): Attraction up through IQ and EQ to SQ — the diamond.
+ *   Activation (green): Life's Work and Evolution both flow into Radiance,
+ *     and Radiance flows down to Purpose. Radiance is the hub.
+ *   Venus (red): a chain — Attraction up to IQ, IQ across to EQ, EQ up
+ *     to SQ.
  *   Pearl (blue): SQ up through Vocation and Culture to the Pearl, which
  *     crowns to Life's Work.
  */
 export const PROFILE_CHANNELS: readonly ProfileChannel[] = [
-  // ── Activation: the cross through the centre ──
-  { from: 'lifesWork', to: 'sq', sequence: 'activation' },
-  { from: 'sq', to: 'purpose', sequence: 'activation' },
-  { from: 'radiance', to: 'sq', sequence: 'activation' },
-  { from: 'evolution', to: 'sq', sequence: 'activation' },
+  // ── Activation (green): into Radiance, then down to Purpose ──
+  { from: 'lifesWork', to: 'radiance', sequence: 'activation' },
+  { from: 'evolution', to: 'radiance', sequence: 'activation' },
+  { from: 'radiance', to: 'purpose', sequence: 'activation' },
 
-  // ── Venus: the diamond, Attraction up to SQ ──
+  // ── Venus (red): the chain Attraction -> IQ -> EQ -> SQ ──
   { from: 'attraction', to: 'iq', sequence: 'venus' },
-  { from: 'attraction', to: 'eq', sequence: 'venus' },
-  { from: 'iq', to: 'sq', sequence: 'venus' },
+  { from: 'iq', to: 'eq', sequence: 'venus' },
   { from: 'eq', to: 'sq', sequence: 'venus' },
 
-  // ── Pearl: the triangle, SQ up to the Pearl, Pearl crowns to Life's Work ──
+  // ── Pearl (blue): SQ up through Vocation and Culture to the Pearl,
+  //    which crowns to Life's Work ──
   { from: 'sq', to: 'core', sequence: 'pearl' },
   { from: 'sq', to: 'culture', sequence: 'pearl' },
   { from: 'core', to: 'pearl', sequence: 'pearl' },
