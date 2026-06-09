@@ -17,6 +17,7 @@ export interface OracleIChing {
 }
 
 export interface OracleGeneKeys {
+  /** Single-word spectrum names, e.g. Interference / Teamwork / Synarchy. */
   shadow: string;
   gift: string;
   siddhi: string;
