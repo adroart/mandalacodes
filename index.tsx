@@ -17,11 +17,8 @@ import '@fontsource/lora/400-italic.css';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { ClerkProvider } from '@clerk/clerk-react';
 import './src/index.css';
 import App from './App';
-
-const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
 
 const statusEl = document.getElementById('loader-status');
 if (statusEl) statusEl.innerText = "Loading Modules...";
@@ -83,17 +80,11 @@ const mountApp = () => {
         rootElement.innerHTML = '';
 
         const root = createRoot(rootElement);
-        // Clerk is required only for /admin and /atlas/{claim,edit}. If the
-        // publishable key is missing (local dev without env), render without
-        // ClerkProvider so the public oracle/atlas pages still work. Admin
-        // and steward routes will show "Clerk not configured" copy.
-        const tree = CLERK_PUBLISHABLE_KEY ? (
-            <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
-                <BrowserRouter>
-                    <App />
-                </BrowserRouter>
-            </ClerkProvider>
-        ) : (
+        // ClerkProvider is mounted once, inside <App> via <AccountProvider>
+        // (which provides Clerk app-wide when the publishable key is set, and
+        // falls back to guest stubs otherwise). Mounting it here too caused a
+        // "multiple <ClerkProvider>" crash, so the root only sets up routing.
+        const tree = (
             <BrowserRouter>
                 <App />
             </BrowserRouter>
