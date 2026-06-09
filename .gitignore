@@ -13,3 +13,11 @@ scripts/output
 scripts/chart-lookbook/clients/
 scripts/chart-lookbook/*-lookbook.html
 scripts/chart-lookbook/*-lookbook.pdf
+
+# LED firmware — belongs in the led/ project, not the oracle repo
+LED-Programming/
+
+# Local Claude session config — but keep committed slash commands shared
+.claude/*
+!.claude/commands/
+!.claude/commands/**
