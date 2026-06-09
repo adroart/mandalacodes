@@ -99,39 +99,6 @@ export const ChapterWordmark: React.FC<{
     };
   }, [active, chapters]);
 
-  // Keep the active label centered in the strip. When the row overflows
-  // (narrow viewports) the strip scrolls so the current section sits dead-
-  // center with its neighbors flanking it; the 40% inline padding lets even
-  // the first/last label reach the center. Runs on active change, on resize,
-  // and after fonts load (which changes label widths). Uses an instant jump on
-  // first paint and smooth scrolling thereafter so it doesn't visibly lurch on
-  // mount.
-  const didCenterOnce = useRef(false);
-  useLayoutEffect(() => {
-    const center = () => {
-      const scroller = scrollRef.current;
-      const item = itemsRef.current.get(active);
-      if (!scroller || !item) return;
-      const target = item.offsetLeft - (scroller.clientWidth - item.offsetWidth) / 2;
-      scroller.scrollTo({
-        left: Math.max(0, target),
-        behavior: didCenterOnce.current ? 'smooth' : 'auto',
-      });
-      didCenterOnce.current = true;
-    };
-    center();
-    const ro = new ResizeObserver(center);
-    if (scrollRef.current) ro.observe(scrollRef.current);
-    window.addEventListener('resize', center);
-    if (typeof document !== 'undefined' && (document as any).fonts?.ready) {
-      (document as any).fonts.ready.then(center).catch(() => {});
-    }
-    return () => {
-      ro.disconnect();
-      window.removeEventListener('resize', center);
-    };
-  }, [active, chapters]);
-
   // Variant tokens. Paper for light section backgrounds; mixed for the
   // floating chrome strip that crosses light/dark sections.
   const paper = variant === 'paper';
@@ -164,36 +131,31 @@ export const ChapterWordmark: React.FC<{
               no top gap. Bottom hairline only (the header above
               provides the visual top edge).
 
-          The justify-between distribution applies to both shapes —
-          labels spread evenly across the full inner width so each
-          gets a comfortable tap target. */}
+          Both shapes keep all six labels visible and tappable — they
+          wrap onto a second line when the viewport is too narrow rather
+          than scrolling anything out of reach. */}
       <div
         ref={scrollRef}
         style={shape === 'sticky'
-          // Fluid gap + dot/label size: the spacing between words AND the
-          // words themselves shrink smoothly as the viewport narrows, so the
-          // row scales to fit instead of staying fixed-size. clamp(min, vw, max)
-          // ties both to viewport width. When it still can't fit (very narrow
-          // phones) the row scrolls and the active label is auto-centered.
+          // Fluid gap + dot/label size: the spacing between words AND the words
+          // themselves shrink smoothly as the viewport narrows (clamp ties both
+          // to viewport width), so more fits on one line before the row wraps.
           ? {
               columnGap: 'clamp(0.5rem, 2.4vw, 1.75rem)',
+              rowGap: '0.25rem',
               fontSize: 'clamp(13px, 3.6vw, 16px)',
-              // 50% inline padding lets the first and last label scroll all the
-              // way to the visual center, so the active section is ALWAYS dead-
-              // center with its neighbors flanking it, at every width.
-              scrollPaddingInline: '50%',
-              paddingInline: '50%',
             }
           : undefined}
         className={
           shape === 'sticky'
-            ? `relative flex items-center justify-start w-full py-3 bg-paper-100 border-b ${ruleCls} overflow-x-auto flex-nowrap chapter-scroll chapter-edge-fade`
+            // Wrap-and-center: every label stays on screen and tappable; when
+            // six don't fit one line they wrap to a second, centered line.
+            ? `relative flex flex-wrap items-center justify-center w-full px-3 py-3 bg-paper-100 border-b ${ruleCls}`
             : `relative flex flex-wrap items-center justify-between gap-x-1 sm:gap-x-3 w-full sm:max-w-2xl sm:mx-auto px-4 sm:px-6 py-4 bg-paper-100 border-t border-b sm:border sm:rounded-2xl sm:shadow-[0_1px_3px_rgba(60,44,22,0.06)] ${ruleCls}`
         }
       >
         {chapters.map((chapter, idx) => {
           const isActive = chapter.key === active;
-          const isLast = idx === chapters.length - 1;
           const label = chapter.label;
           // Sticky strip reads as navigation and inherits the fluid font-size
           // set on the row (clamp), so labels scale with the viewport. Inline
@@ -201,8 +163,22 @@ export const ChapterWordmark: React.FC<{
           const labelSize = shape === 'sticky'
             ? '' // size comes from the row's fluid fontSize
             : 'text-[17px] sm:text-[20px] md:text-[22px]';
+          const isFirst = idx === 0;
+          // Each entry is a single flex item: the leading dot (all but the
+          // first) and its label live in ONE inline-flex group so they never
+          // split across a wrap — the dot always travels with the label it
+          // precedes instead of dangling at the end of the line above.
           return (
-            <React.Fragment key={chapter.key}>
+            <span
+              key={chapter.key}
+              className="inline-flex items-center flex-shrink-0"
+              style={{ columnGap: 'clamp(0.5rem, 2.4vw, 1.75rem)' }}
+            >
+              {!isFirst && (
+                <span aria-hidden="true" style={{ fontFamily: '"Cormorant Garamond", serif' }} className={`${labelSize} leading-[1.2] tracking-[-0.005em] select-none ${dotCls}`}>
+                  ·
+                </span>
+              )}
               <button
                 ref={el => { itemsRef.current.set(chapter.key, el); }}
                 type="button"
@@ -210,20 +186,11 @@ export const ChapterWordmark: React.FC<{
                 aria-selected={isActive}
                 onClick={() => onSelect(chapter.key)}
                 style={{ fontFamily: '"Cormorant Garamond", serif' }}
-                className={`${labelSize} leading-[1.2] tracking-[-0.005em] whitespace-nowrap flex-shrink-0 transition-colors focus-visible:outline-none focus-visible:text-bronze-700 ${isActive ? `${activeCls} font-medium` : inactiveCls}`}
+                className={`${labelSize} leading-[1.2] tracking-[-0.005em] whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:text-bronze-700 ${isActive ? `${activeCls} font-medium` : inactiveCls}`}
               >
                 {label}
               </button>
-              {/* Dot separator between every adjacent label. Visible
-                  on all viewports — the dots provide the visual rhythm
-                  of the row and are part of the deck's typographic
-                  signature (matching the keyword-row pattern). */}
-              {!isLast && (
-                <span aria-hidden="true" style={{ fontFamily: '"Cormorant Garamond", serif' }} className={`${labelSize} leading-[1.2] tracking-[-0.005em] flex-shrink-0 select-none ${dotCls}`}>
-                  ·
-                </span>
-              )}
-            </React.Fragment>
+            </span>
           );
         })}
 
