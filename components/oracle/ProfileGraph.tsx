@@ -51,7 +51,11 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
   return (
     <div className="profile-graph">
       {/* ── Mandala (wide) ───────────────────────────────────────────── */}
-      <div className="profile-graph__mandala" role="group" aria-label="Hologenetic profile mandala">
+      <div
+        className={`profile-graph__mandala${active ? ' has-active' : ''}`}
+        role="group"
+        aria-label="Hologenetic profile mandala"
+      >
         <svg viewBox={`-150 -20 ${VIEW + 300} ${VIEW + 40}`} className="profile-graph__svg">
           <defs>
             {(['activation', 'venus', 'pearl'] as const).map((seq) => (
@@ -191,6 +195,9 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
 
         /* ── orbs ── */
         .profile-graph__orb { cursor: pointer; outline: none; }
+        /* When one sphere is reached, the rest recede so focus lands cleanly. */
+        .profile-graph__node { transition: opacity 0.25s; }
+        .profile-graph__mandala.has-active .profile-graph__node:not(.is-active) { opacity: 0.4; }
         .profile-graph__ring {
           fill: none;
           stroke: color-mix(in oklab, var(--color-wood-600) 22%, transparent);
@@ -227,7 +234,12 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .profile-graph__triad {
           display: flex; flex-wrap: wrap; gap: 5px;
           font-family: 'Lato', Helvetica, sans-serif; font-size: 9.5px; letter-spacing: 0.04em; line-height: 1.3;
+          /* Calm by default: the triad is a whisper until its sphere is
+             reached, so the busy centre stays readable. Names stay solid. */
+          opacity: 0.42;
+          transition: opacity 0.25s;
         }
+        .profile-graph__node.is-active .profile-graph__triad { opacity: 1; }
         .profile-graph__label.is-right .profile-graph__triad { justify-content: flex-end; }
         .profile-graph__label.is-center .profile-graph__triad { justify-content: center; }
 
