@@ -814,3 +814,23 @@ html, body {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ─── Chapter strip (ChapterWordmark sticky scroll) ───────────────────────
+ * The card's section nav scrolls horizontally when the six labels don't fit.
+ * Hide the scrollbar (the edge-fade communicates "more to either side") and
+ * keep touch scrolling smooth. */
+.chapter-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* old Edge */
+  scroll-behavior: smooth;
+}
+.chapter-scroll::-webkit-scrollbar { display: none; } /* WebKit */
+
+/* Soft fade on both inner edges so a clipped label reads as "scrollable",
+ * never as "broken/cut off". The fade is only meaningful when content
+ * overflows; when it all fits, the fully-opaque middle covers the row. */
+.chapter-edge-fade {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+}

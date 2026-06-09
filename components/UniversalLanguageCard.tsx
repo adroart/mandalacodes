@@ -1006,7 +1006,7 @@ const CHAPTERS: Chapter[] = [
   // not as a tab bar — "UL · I Ching · Gene Keys · Human Design · Body
   // · Relations" — with the same dot-separator pattern as the keyword
   // row in the title card.
-  { key: 'ul',          label: 'UL' },
+  { key: 'ul',          label: 'Universal' },
   // Thin space (U+2009) between "I" and "Ching" so the visual gap
   // between the one-letter first word and "Ching" doesn't read as two
   // separate labels in the chapter strip. The label still says "I Ching"

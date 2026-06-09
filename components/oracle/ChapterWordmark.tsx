@@ -54,6 +54,7 @@ export const ChapterWordmark: React.FC<{
   className?: string;
 }> = ({ chapters, active, onSelect, variant, shape = 'inline', className = '' }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<Map<ChapterKey, HTMLButtonElement | null>>(new Map());
   const [underline, setUnderline] = useState<{ left: number; top: number; width: number; ready: boolean }>({
     left: 0,
@@ -70,20 +71,23 @@ export const ChapterWordmark: React.FC<{
   // the active label down to its wrapped line.
   useLayoutEffect(() => {
     const update = () => {
-      const container = containerRef.current;
+      // Measure relative to the scrolling row (offsetParent), so the underline
+      // stays glued to the active label even when the row is scrolled
+      // horizontally. offsetLeft/offsetTop are content-relative and therefore
+      // scroll-invariant; getBoundingClientRect would drift as the row scrolls.
       const item = itemsRef.current.get(active);
-      if (!container || !item) return;
-      const cRect = container.getBoundingClientRect();
-      const iRect = item.getBoundingClientRect();
+      const measureParent = scrollRef.current ?? containerRef.current;
+      if (!item || !measureParent) return;
       setUnderline({
-        left: iRect.left - cRect.left,
-        top: iRect.bottom - cRect.top, // underline sits below the label's baseline
-        width: iRect.width,
+        left: item.offsetLeft,
+        top: item.offsetTop + item.offsetHeight, // below the label's baseline
+        width: item.offsetWidth,
         ready: true,
       });
     };
     update();
     const ro = new ResizeObserver(update);
+    if (scrollRef.current) ro.observe(scrollRef.current);
     if (containerRef.current) ro.observe(containerRef.current);
     window.addEventListener('resize', update);
     if (typeof document !== 'undefined' && (document as any).fonts?.ready) {
@@ -92,6 +96,39 @@ export const ChapterWordmark: React.FC<{
     return () => {
       ro.disconnect();
       window.removeEventListener('resize', update);
+    };
+  }, [active, chapters]);
+
+  // Keep the active label centered in the strip. When the row overflows
+  // (narrow viewports) the strip scrolls so the current section sits dead-
+  // center with its neighbors flanking it; the 40% inline padding lets even
+  // the first/last label reach the center. Runs on active change, on resize,
+  // and after fonts load (which changes label widths). Uses an instant jump on
+  // first paint and smooth scrolling thereafter so it doesn't visibly lurch on
+  // mount.
+  const didCenterOnce = useRef(false);
+  useLayoutEffect(() => {
+    const center = () => {
+      const scroller = scrollRef.current;
+      const item = itemsRef.current.get(active);
+      if (!scroller || !item) return;
+      const target = item.offsetLeft - (scroller.clientWidth - item.offsetWidth) / 2;
+      scroller.scrollTo({
+        left: Math.max(0, target),
+        behavior: didCenterOnce.current ? 'smooth' : 'auto',
+      });
+      didCenterOnce.current = true;
+    };
+    center();
+    const ro = new ResizeObserver(center);
+    if (scrollRef.current) ro.observe(scrollRef.current);
+    window.addEventListener('resize', center);
+    if (typeof document !== 'undefined' && (document as any).fonts?.ready) {
+      (document as any).fonts.ready.then(center).catch(() => {});
+    }
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', center);
     };
   }, [active, chapters]);
 
@@ -130,15 +167,40 @@ export const ChapterWordmark: React.FC<{
           The justify-between distribution applies to both shapes —
           labels spread evenly across the full inner width so each
           gets a comfortable tap target. */}
-      <div className={
-        shape === 'sticky'
-          ? `flex items-center justify-center gap-x-6 sm:gap-x-10 w-full px-4 sm:px-6 py-3.5 bg-paper-100 border-b ${ruleCls}`
-          : `flex items-center justify-between gap-x-1 sm:gap-x-3 w-full sm:max-w-2xl sm:mx-auto px-4 sm:px-6 py-4 bg-paper-100 border-t border-b sm:border sm:rounded-2xl sm:shadow-[0_1px_3px_rgba(60,44,22,0.06)] ${ruleCls}`
-      }>
+      <div
+        ref={scrollRef}
+        style={shape === 'sticky'
+          // Fluid gap + dot/label size: the spacing between words AND the
+          // words themselves shrink smoothly as the viewport narrows, so the
+          // row scales to fit instead of staying fixed-size. clamp(min, vw, max)
+          // ties both to viewport width. When it still can't fit (very narrow
+          // phones) the row scrolls and the active label is auto-centered.
+          ? {
+              columnGap: 'clamp(0.5rem, 2.4vw, 1.75rem)',
+              fontSize: 'clamp(13px, 3.6vw, 16px)',
+              // 50% inline padding lets the first and last label scroll all the
+              // way to the visual center, so the active section is ALWAYS dead-
+              // center with its neighbors flanking it, at every width.
+              scrollPaddingInline: '50%',
+              paddingInline: '50%',
+            }
+          : undefined}
+        className={
+          shape === 'sticky'
+            ? `relative flex items-center justify-start w-full py-3 bg-paper-100 border-b ${ruleCls} overflow-x-auto flex-nowrap chapter-scroll chapter-edge-fade`
+            : `relative flex flex-wrap items-center justify-between gap-x-1 sm:gap-x-3 w-full sm:max-w-2xl sm:mx-auto px-4 sm:px-6 py-4 bg-paper-100 border-t border-b sm:border sm:rounded-2xl sm:shadow-[0_1px_3px_rgba(60,44,22,0.06)] ${ruleCls}`
+        }
+      >
         {chapters.map((chapter, idx) => {
           const isActive = chapter.key === active;
           const isLast = idx === chapters.length - 1;
           const label = chapter.label;
+          // Sticky strip reads as navigation and inherits the fluid font-size
+          // set on the row (clamp), so labels scale with the viewport. Inline
+          // strip keeps the larger fixed editorial display size.
+          const labelSize = shape === 'sticky'
+            ? '' // size comes from the row's fluid fontSize
+            : 'text-[17px] sm:text-[20px] md:text-[22px]';
           return (
             <React.Fragment key={chapter.key}>
               <button
@@ -148,7 +210,7 @@ export const ChapterWordmark: React.FC<{
                 aria-selected={isActive}
                 onClick={() => onSelect(chapter.key)}
                 style={{ fontFamily: '"Cormorant Garamond", serif' }}
-                className={`text-[17px] sm:text-[20px] md:text-[22px] leading-[1.2] tracking-[-0.005em] whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:text-bronze-700 ${isActive ? activeCls : inactiveCls}`}
+                className={`${labelSize} leading-[1.2] tracking-[-0.005em] whitespace-nowrap flex-shrink-0 transition-colors focus-visible:outline-none focus-visible:text-bronze-700 ${isActive ? `${activeCls} font-medium` : inactiveCls}`}
               >
                 {label}
               </button>
@@ -157,31 +219,33 @@ export const ChapterWordmark: React.FC<{
                   of the row and are part of the deck's typographic
                   signature (matching the keyword-row pattern). */}
               {!isLast && (
-                <span aria-hidden="true" style={{ fontFamily: '"Cormorant Garamond", serif' }} className={`text-[17px] sm:text-[20px] md:text-[22px] leading-[1.2] tracking-[-0.005em] select-none ${dotCls}`}>
+                <span aria-hidden="true" style={{ fontFamily: '"Cormorant Garamond", serif' }} className={`${labelSize} leading-[1.2] tracking-[-0.005em] flex-shrink-0 select-none ${dotCls}`}>
                   ·
                 </span>
               )}
             </React.Fragment>
           );
         })}
+
+        {/* Sliding accent beneath the active label. Not a plain
+            underline — a short rounded-end bronze line that reads as a
+            deliberate typographic mark. Sits a few pixels below the
+            label's baseline so it doesn't visually touch the letters.
+            Lives INSIDE the scrolling row so it scrolls with the labels
+            and tracks the active one even when the row is scrolled or
+            wrapped. */}
+        <span
+          aria-hidden="true"
+          className="absolute h-[2px] rounded-full bg-bronze-500 motion-safe:transition-all motion-safe:duration-[280ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] pointer-events-none"
+          style={{
+            left: 0,
+            top: 0,
+            transform: `translate(${underline.left}px, ${underline.top + 3}px)`,
+            width: underline.width,
+            opacity: underline.ready ? 1 : 0,
+          }}
+        />
       </div>
-      {/* Sliding accent beneath the active label. Not a plain
-          underline — a short rounded-end bronze line that reads as a
-          deliberate typographic mark. Sits a few pixels below the
-          label's baseline so it doesn't visually touch the letters.
-          Tracks both horizontal and vertical position so it follows
-          the active label even when the row wraps. */}
-      <span
-        aria-hidden="true"
-        className="absolute h-[2px] rounded-full bg-bronze-500 motion-safe:transition-all motion-safe:duration-[280ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] pointer-events-none"
-        style={{
-          left: 0,
-          top: 0,
-          transform: `translate(${underline.left}px, ${underline.top + 3}px)`,
-          width: underline.width,
-          opacity: underline.ready ? 1 : 0,
-        }}
-      />
     </div>
   );
 };
