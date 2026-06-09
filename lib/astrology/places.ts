@@ -43,28 +43,60 @@ async function loadCitiesIndex(): Promise<CitiesIndex> {
 }
 
 /**
- * Typeahead search across the bundled cities index. Returns up to
- * `limit` matches sorted by the order they appear in the dataset
- * (already population-sorted at build time).
+ * Fold a string to lowercase ASCII so an accent-free query still matches
+ * accented city names — "reykjavik" finds "Reykjavík", "sao paulo" finds
+ * "São Paulo". NFD splits accented chars into base + combining mark, then
+ * we drop the combining marks (Unicode range U+0300–U+036F).
+ */
+function fold(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+/**
+ * Typeahead search across the bundled cities index. Returns up to `limit`
+ * matches, ranked by relevance so the obvious intended city surfaces even
+ * when a larger same-named city exists elsewhere ("Santa Cruz" should not
+ * bury Santa Cruz, California behind eight foreign ones).
+ *
+ * The index is population-sorted, so equally-relevant matches keep that
+ * order (bigger city first) as a natural tiebreaker. Accent-insensitive.
  */
 export async function searchPlaces(query: string, limit = 8): Promise<Place[]> {
-  const q = query.trim().toLowerCase();
+  const q = fold(query.trim());
   if (q.length < 2) return [];
   const idx = await loadCitiesIndex();
-  const out: Place[] = [];
-  for (const c of idx) {
-    const haystack = `${c.name} ${c.admin ?? ''} ${c.country}`.toLowerCase();
-    if (haystack.includes(q)) {
-      out.push({
+
+  type Scored = { place: Place; score: number; order: number };
+  const scored: Scored[] = [];
+
+  for (let i = 0; i < idx.length; i++) {
+    const c = idx[i];
+    const name = fold(c.name);
+    const full = fold(`${c.name} ${c.admin ?? ''} ${c.country}`);
+    if (!full.includes(q)) continue;
+
+    // Higher score = better match. City name beats incidental admin/country
+    // hits; exact and prefix matches beat mid-word substring matches.
+    let score = 0;
+    if (name === q) score = 100;            // exact city name
+    else if (name.startsWith(q)) score = 80; // "santa cr" -> Santa Cruz
+    else if (name.includes(q)) score = 60;   // query inside the city name
+    else score = 20;                         // matched only via admin/country
+
+    scored.push({
+      place: {
         label: [c.name, c.admin, c.country].filter(Boolean).join(', '),
         lat: c.lat,
         lng: c.lng,
         tzId: c.tz,
-      });
-      if (out.length >= limit) break;
-    }
+      },
+      score,
+      order: i, // dataset index = population rank; lower is bigger
+    });
   }
-  return out;
+
+  scored.sort((a, b) => b.score - a.score || a.order - b.order);
+  return scored.slice(0, limit).map((s) => s.place);
 }
 
 /**
