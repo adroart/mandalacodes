@@ -24,5 +24,5 @@ export const LAUNCH_FLAGS = {
    * Local-first (works in guest mode via localStorage); syncs to D1
    * only when accounts is on and the user is signed in.
    */
-  hologeneticProfile: false,
+  hologeneticProfile: true,
 };
