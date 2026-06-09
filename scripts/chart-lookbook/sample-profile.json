@@ -1,0 +1,23 @@
+{
+  "lifesWork":  { "gate": 1,  "line": 3 },
+  "evolution":  { "gate": 2,  "line": 5 },
+  "radiance":   { "gate": 30, "line": 4 },
+  "purpose":    { "gate": 29, "line": 6 },
+  "attraction": { "gate": 14, "line": 2 },
+  "iq":         { "gate": 43, "line": 3 },
+  "eq":         { "gate": 25, "line": 1 },
+  "sq":         { "gate": 51, "line": 4 },
+  "core":       { "gate": 19, "line": 5 },
+  "culture":    { "gate": 8,  "line": 2 },
+  "pearl":      { "gate": 45, "line": 1 },
+
+  "recommendation": {
+    "intention": "stepping into visible leadership without losing your softness",
+    "picks": [
+      { "sphere": "lifesWork", "reason": "Your headline gift. This is the piece to anchor the room you lead from — keep it where you begin your days." },
+      { "sphere": "radiance", "reason": "Your vitality runs through this code. It will remind you that leading is meant to light you up, not drain you." },
+      { "gate": 45, "reason": "Your Pearl — prosperity through gathering people. The natural third in the set; it grounds the leadership into livelihood." }
+    ],
+    "closing": "Pick these three up together — they hold the throughline of your intention, from gift to vitality to harvest. Ordered as a set, they speak to one another."
+  }
+}

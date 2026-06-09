@@ -1,0 +1,23 @@
+{
+  "name": "@mandalacodes/oracle-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server for the Universal Language Oracle — search the 64 codes, read any voice, draw lines, cast hexagrams, and find the artworks for a code.",
+  "bin": {
+    "oracle-mcp": "src/server.ts"
+  },
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "smoke": "tsx src/smoke.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "@types/node": "^22.0.0"
+  }
+}

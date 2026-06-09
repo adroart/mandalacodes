@@ -45,6 +45,17 @@ The unified accounts code (Clerk + D1 + profile + collections) is ported and mer
 - [ ] Do the full whole-deck review of all 64 cards against the writing method, then launch _(band: you-required)_ _(effort: deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md)
 - [ ] Show a "no moving lines, the hexagram is stable" message when a cast produces no moving lines _(band: agent-runnable)_ _(effort: quick)_
 
+## Oracle MCP, search & personalization
+
+Framework built on branch `claude/oracle-mcp-artwork-readings-MMa1k` (pending merge): a local MCP server, a shared query layer with concept-expansion search (live on the deck index), the artwork↔code link + an authored-reading layer, staged hosted search + remote-MCP Functions, and a chart→art lookbook generator. Plans: [docs/oracle-mcp-integration-plan.md](docs/oracle-mcp-integration-plan.md), [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md).
+
+- [ ] Deploy the hosted oracle Functions (`/api/oracle/{search,card,mcp,recommendation}`) by merging to main; optionally set `ORACLE_MCP_TOKEN` / `ORACLE_API_TOKEN` to gate the remote MCP and the recommendation API _(band: you-required)_ _(effort: quick)_ → Plan: [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md)
+- [ ] Wire the Adrian Rasmussen quote system to `POST /api/oracle/recommendation` (chart/birth → art + energy), then add pricing + purchase + the client page/PDF on that side _(band: you-required)_ _(effort: deep)_ → Plan: [todo/plans/adrian-quote-integration.md](todo/plans/adrian-quote-integration.md)
+- [ ] Register the remote oracle MCP as a Claude custom connector once it's live _(band: you-required)_ _(effort: quick)_
+- [ ] Develop the chart→art lookbook into the site — an admin/client flow to generate a personalized lookbook (compute from birth data or upload), with the recommendation step, replacing the CLI _(band: agent-runnable)_ _(effort: deep)_ → Tool: [scripts/chart-lookbook/README.md](scripts/chart-lookbook/README.md)
+- [ ] Write per-artwork readings into `oracle/readings/` over time (UL-122 is the reference) _(band: you-required)_ _(effort: deep)_ → Spec: [oracle/readings/README.md](oracle/readings/README.md)
+- [ ] (Optional) Add embeddings via Workers AI + Vectorize if the concept ontology misses real queries _(band: agent-runnable)_ _(effort: deep)_ → Plan: [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md)
+
 ## Future ("home for all things mandala")
 
 - [ ] Integrate the Light Codes deck (route is reserved, content lives in the archive) _(band: agent-runnable)_ _(effort: deep)_
