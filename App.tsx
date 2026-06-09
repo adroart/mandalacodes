@@ -11,6 +11,7 @@ const AdminAtlas = lazy(() => import('./components/AdminAtlas'));
 const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
 const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
 const OracleProfile = lazy(() => import('./components/OracleProfile'));
+const SharedProfile = lazy(() => import('./components/SharedProfile'));
 const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
 const CollectionsManager = lazy(() => import('./components/account/CollectionsManager'));
 const NotFound = lazy(() => import('./components/NotFound'));
@@ -111,6 +112,7 @@ const AppInner: React.FC = () => {
 
                 {/* Hologenetic Profile (local-first, optionally synced when signed in) */}
                 <Route path="/profile" element={<OracleProfile />} />
+                <Route path="/profile/shared/:data" element={<SharedProfile />} />
 
                 {/* Account dashboard + collections (only reachable when accounts flag is on) */}
                 <Route path="/account" element={<AccountDashboard />} />

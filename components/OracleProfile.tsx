@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useProfile } from '../lib/profile/context';
 import ProfileForm from './oracle/ProfileForm';
 import ProfileGraph from './oracle/ProfileGraph';
+import { encodeSharedProfile } from '../lib/profile/share';
 import { useMetaTags } from '../hooks/useMetaTags';
 
 /**
@@ -15,6 +16,24 @@ import { useMetaTags } from '../hooks/useMetaTags';
 const OracleProfile: React.FC = () => {
   const { profile } = useProfile();
   const [editing, setEditing] = useState(false);
+  const [shareState, setShareState] = useState<'idle' | 'copied'>('idle');
+
+  const shareProfile = async () => {
+    if (!profile) return;
+    const token = encodeSharedProfile(profile.computed, profile.inputs.place.label);
+    const url = `${window.location.origin}/profile/shared/${token}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'My Hologenetic Profile', url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setShareState('copied');
+      window.setTimeout(() => setShareState('idle'), 2400);
+    } catch {
+      // User dismissed the share sheet, or clipboard denied; leave state idle.
+    }
+  };
 
   useMetaTags({
     title: 'Your Hologenetic Profile · Universal Language',
@@ -98,23 +117,43 @@ const OracleProfile: React.FC = () => {
                 {profile!.inputs.place.label} — on the Atlas →
               </Link>
             </div>
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              style={{
-                fontFamily: "'Lato', Helvetica, sans-serif",
-                fontSize: 10,
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: 'var(--color-bronze-600)',
-                background: 'transparent',
-                border: 0,
-                cursor: 'pointer',
-                padding: 4,
-              }}
-            >
-              Edit
-            </button>
+            <div style={{ display: 'flex', gap: 18, alignItems: 'baseline' }}>
+              <button
+                type="button"
+                onClick={shareProfile}
+                style={{
+                  fontFamily: "'Lato', Helvetica, sans-serif",
+                  fontSize: 10,
+                  letterSpacing: '0.22em',
+                  textTransform: 'uppercase',
+                  color: shareState === 'copied' ? 'var(--color-wood-600)' : 'var(--color-bronze-600)',
+                  background: 'transparent',
+                  border: 0,
+                  cursor: 'pointer',
+                  padding: 4,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {shareState === 'copied' ? 'Link copied' : 'Share'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                style={{
+                  fontFamily: "'Lato', Helvetica, sans-serif",
+                  fontSize: 10,
+                  letterSpacing: '0.22em',
+                  textTransform: 'uppercase',
+                  color: 'var(--color-bronze-600)',
+                  background: 'transparent',
+                  border: 0,
+                  cursor: 'pointer',
+                  padding: 4,
+                }}
+              >
+                Edit
+              </button>
+            </div>
           </div>
           <ProfileGraph profile={profile!.computed} />
         </>

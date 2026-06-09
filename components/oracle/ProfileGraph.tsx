@@ -194,6 +194,21 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             );
           })}
         </svg>
+
+        {/* Caption: the reached sphere's plain-voice role, so the desktop
+            mandala explains each position the way the mobile list does. A
+            non-breaking-space placeholder holds the height so the layout does
+            not jump as spheres are reached. */}
+        <p className="profile-graph__caption" aria-live="polite">
+          {active ? (
+            <>
+              <span className="profile-graph__caption-name">{POSITIONS_BY_KEY[active].label}.</span>{' '}
+              {POSITIONS_BY_KEY[active].role}
+            </>
+          ) : (
+            <span className="profile-graph__caption-hint">Hover or focus a sphere to read its place in you.</span>
+          )}
+        </p>
       </div>
 
       {/* ── Grouped list (narrow) ────────────────────────────────────── */}
@@ -328,11 +343,29 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .profile-graph__list-view .profile-graph__triad { margin-top: 8px; font-size: 11px; gap: 6px; }
         .profile-graph__role { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; color: var(--color-wood-700); margin: 8px 0 0; }
 
+        /* ── caption (mandala only) ── */
+        .profile-graph__caption { display: none; }
+        .profile-graph__caption-name { color: var(--color-wood-900); }
+        .profile-graph__caption-hint { color: var(--color-wood-600); font-style: normal; }
+
         /* Mandala on wide screens, grouped list on narrow. Placed last so
            it wins on source order over the base display declarations. */
         @media (min-width: 760px) {
           .profile-graph__mandala { display: block; max-width: 760px; margin: 0 auto; }
           .profile-graph__list-view { display: none; }
+          .profile-graph__caption {
+            display: block;
+            text-align: center;
+            min-height: 2.6em;
+            max-width: 520px;
+            margin: 8px auto 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            font-style: italic;
+            line-height: 1.45;
+            color: var(--color-wood-700);
+            transition: color 0.25s;
+          }
         }
 
         @media (prefers-reduced-motion: reduce) {
