@@ -114,38 +114,44 @@ export interface ProfileChannel {
   to: ProfileKey;
   /** Which sequence this line belongs to, so it is drawn in that colour. */
   sequence: ProfileSequence;
+  /**
+   * The canonical Gene Keys pathway name for this directional link
+   * (e.g. Challenge, Karma, Initiative). Shown when the line is active.
+   */
+  pathway: string;
 }
 
 /**
- * The channels between spheres, traced arrow-by-arrow from the official
- * Gene Keys body-map. Each sequence is its OWN connected path, drawn in
- * its own colour.
+ * The directional pathways of the Gene Keys Golden Path, in their canonical
+ * contemplation order with the official pathway names (verified against
+ * genekeys.com). Each sequence is its own coloured, directional journey.
  *
- *   Activation (green): Life's Work and Evolution both flow into Radiance,
- *     and Radiance flows down to Purpose. Radiance is the hub.
- *   Venus (red): a chain — Attraction up to IQ, IQ across to EQ, EQ up
- *     to SQ.
- *   Pearl (blue): SQ up through Vocation and Culture to the Pearl, which
- *     crowns to Life's Work.
+ *   Activation: Life's Work -> Evolution -> Radiance -> Purpose
+ *     (Challenge, Breakthrough, Core Stability)
+ *   Venus: Purpose -> Attraction -> IQ -> EQ -> SQ
+ *     (Dharma, Karma, Intelligence, Love) — the Core sphere is a re-read
+ *     of an existing gate, not a separate orb on this chart.
+ *   Pearl: Vocation -> Culture -> Pearl
+ *     (Initiative, Service) — the Brand sphere is a re-read of Life's Work.
+ *
+ * `from -> to` is the direction of flow; arrowheads are drawn at `to`.
  */
 export const PROFILE_CHANNELS: readonly ProfileChannel[] = [
-  // ── Activation (green): into Radiance, then down to Purpose ──
-  { from: 'lifesWork', to: 'radiance', sequence: 'activation' },
-  { from: 'evolution', to: 'radiance', sequence: 'activation' },
-  { from: 'radiance', to: 'purpose', sequence: 'activation' },
+  // ── Activation ──
+  { from: 'lifesWork', to: 'evolution', sequence: 'activation', pathway: 'Challenge' },
+  { from: 'evolution', to: 'radiance',  sequence: 'activation', pathway: 'Breakthrough' },
+  { from: 'radiance',  to: 'purpose',   sequence: 'activation', pathway: 'Core Stability' },
 
-  // ── Venus (red): the chain Attraction -> IQ -> EQ -> SQ ──
-  { from: 'attraction', to: 'iq', sequence: 'venus' },
-  { from: 'iq', to: 'eq', sequence: 'venus' },
-  { from: 'eq', to: 'sq', sequence: 'venus' },
+  // ── Venus ──
+  { from: 'purpose',    to: 'attraction', sequence: 'venus', pathway: 'Dharma' },
+  { from: 'attraction', to: 'iq',         sequence: 'venus', pathway: 'Karma' },
+  { from: 'iq',         to: 'eq',         sequence: 'venus', pathway: 'Intelligence' },
+  { from: 'eq',         to: 'sq',         sequence: 'venus', pathway: 'Love' },
 
-  // ── Pearl (blue): SQ up through Vocation and Culture to the Pearl,
-  //    which crowns to Life's Work ──
-  { from: 'sq', to: 'core', sequence: 'pearl' },
-  { from: 'sq', to: 'culture', sequence: 'pearl' },
-  { from: 'core', to: 'pearl', sequence: 'pearl' },
-  { from: 'culture', to: 'pearl', sequence: 'pearl' },
-  { from: 'pearl', to: 'lifesWork', sequence: 'pearl' },
+  // ── Pearl ──
+  { from: 'core',    to: 'culture', sequence: 'pearl', pathway: 'Initiative' },
+  { from: 'culture', to: 'pearl',   sequence: 'pearl', pathway: 'Service' },
+  { from: 'pearl',   to: 'lifesWork', sequence: 'pearl', pathway: 'Pearl Harvest' },
 ];
 
 export const POSITIONS_BY_KEY: Record<ProfileKey, ProfilePositionMeta> =
