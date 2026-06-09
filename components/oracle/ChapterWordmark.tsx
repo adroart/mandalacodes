@@ -55,6 +55,7 @@ export const ChapterWordmark: React.FC<{
 }> = ({ chapters, active, onSelect, variant, shape = 'inline', className = '' }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<Map<ChapterKey, HTMLButtonElement | null>>(new Map());
   const [underline, setUnderline] = useState<{ left: number; top: number; width: number; ready: boolean }>({
     left: 0,
@@ -76,8 +77,7 @@ export const ChapterWordmark: React.FC<{
       // horizontally. offsetLeft/offsetTop are content-relative and therefore
       // scroll-invariant; getBoundingClientRect would drift as the row scrolls.
       const item = itemsRef.current.get(active);
-      const measureParent = scrollRef.current ?? containerRef.current;
-      if (!item || !measureParent) return;
+      if (!item) return;
       setUnderline({
         left: item.offsetLeft,
         top: item.offsetTop + item.offsetHeight, // below the label's baseline
@@ -87,6 +87,7 @@ export const ChapterWordmark: React.FC<{
     };
     update();
     const ro = new ResizeObserver(update);
+    if (rowRef.current) ro.observe(rowRef.current);
     if (scrollRef.current) ro.observe(scrollRef.current);
     if (containerRef.current) ro.observe(containerRef.current);
     window.addEventListener('resize', update);
@@ -131,26 +132,38 @@ export const ChapterWordmark: React.FC<{
               no top gap. Bottom hairline only (the header above
               provides the visual top edge).
 
-          Both shapes keep all six labels visible and tappable — they
-          wrap onto a second line when the viewport is too narrow rather
-          than scrolling anything out of reach. */}
+          The sticky strip is a single dedicated full-width band that never
+          wraps: the labels stay readable and centered, and on the narrowest
+          phones (where six serif words can't share one readable line) the
+          band scrolls horizontally instead of breaking to two ragged rows. */}
       <div
         ref={scrollRef}
+        className={
+          shape === 'sticky'
+            // The scroller: full-width band that scrolls horizontally only when
+            // its inner row can't fit. overscroll-x-contain stops a sideways
+            // flick from also scrolling the page.
+            ? `relative w-full px-3 py-3 bg-paper-100 border-b ${ruleCls} overflow-x-auto overscroll-x-contain chapter-scroll`
+            : ''
+        }
+      >
+      <div
+        ref={rowRef}
         style={shape === 'sticky'
-          // Fluid gap + dot/label size: the spacing between words AND the words
-          // themselves shrink smoothly as the viewport narrows (clamp ties both
-          // to viewport width), so more fits on one line before the row wraps.
+          // Fluid gap + label size: spacing and labels shrink smoothly as the
+          // viewport narrows so the row stays on ONE line at a readable size as
+          // long as possible before the band scrolls. `mx-auto` + `w-max`
+          // centers the row when it's narrower than the band and scrolls
+          // cleanly from the start when it's wider (justify-center would clip
+          // the start out of reach on overflow).
           ? {
-              columnGap: 'clamp(0.5rem, 2.4vw, 1.75rem)',
-              rowGap: '0.25rem',
+              columnGap: 'clamp(0.6rem, 3vw, 1.75rem)',
               fontSize: 'clamp(13px, 3.6vw, 16px)',
             }
           : undefined}
         className={
           shape === 'sticky'
-            // Wrap-and-center: every label stays on screen and tappable; when
-            // six don't fit one line they wrap to a second, centered line.
-            ? `relative flex flex-wrap items-center justify-center w-full px-3 py-3 bg-paper-100 border-b ${ruleCls}`
+            ? `relative flex flex-nowrap items-center w-max mx-auto`
             : `relative flex flex-wrap items-center justify-between gap-x-1 sm:gap-x-3 w-full sm:max-w-2xl sm:mx-auto px-4 sm:px-6 py-4 bg-paper-100 border-t border-b sm:border sm:rounded-2xl sm:shadow-[0_1px_3px_rgba(60,44,22,0.06)] ${ruleCls}`
         }
       >
@@ -212,6 +225,7 @@ export const ChapterWordmark: React.FC<{
             opacity: underline.ready ? 1 : 0,
           }}
         />
+      </div>
       </div>
     </div>
   );

@@ -102,7 +102,9 @@ const Navigation: React.FC = () => {
   const surface = isScrolled || open
     ? 'bg-paper-50/95 backdrop-blur-xl border-b border-wood-200'
     : 'bg-paper-50/85 backdrop-blur-md border-b border-wood-200/50';
-  const pad = isScrolled ? 'py-1.5 md:py-2' : 'py-2.5 md:py-4';
+  // On phones the bar stays slim so it reads as a compact top strip above the
+  // page chrome (e.g. the card's chapter band); desktop keeps a generous bar.
+  const pad = isScrolled ? 'py-1.5 md:py-2' : 'py-2 md:py-4';
 
   return (
     <nav
@@ -113,7 +115,7 @@ const Navigation: React.FC = () => {
         <Link to="/" className="group flex flex-col items-start py-2 -my-2" aria-label="Mandala Codes home">
           <span
             className={`font-serif tracking-normal leading-none transition-all duration-300 font-normal text-wood-900 group-hover:text-bronze-600 ${
-              isScrolled ? 'text-lg' : 'text-xl md:text-2xl'
+              isScrolled ? 'text-base md:text-lg' : 'text-lg md:text-2xl'
             }`}
             style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.06em' }}
           >

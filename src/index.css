@@ -815,3 +815,14 @@ html, body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ─── Chapter strip (ChapterWordmark sticky band) ─────────────────────────
+ * The card's section nav is a single-line band that scrolls horizontally on
+ * the narrowest phones rather than wrapping. Hide the scrollbar — the band
+ * stays a clean typographic line; the labels themselves signal there's more. */
+.chapter-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* old Edge */
+}
+.chapter-scroll::-webkit-scrollbar { display: none; } /* WebKit */
+
