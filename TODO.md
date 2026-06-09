@@ -18,7 +18,11 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 ## Phase 1b: Accounts
 
-The unified accounts code (Clerk + D1 + profile + collections) is ported and merged (PR #2) but flagged off. Finishing the migration is provisioning + flag flips, in this order:
+**Status update 2026-06-09:** shared dev login is now LIVE. accounts flag is on, the D1 binding points at the shared `adrian-website` database (the old `mandalacodes-oracle` DB is retired), and the dev Clerk app is shared with adrianrasmussen.com. The remaining provisioning items below are superseded by the production launch item.
+
+- [ ] Take mandalacodes login to production with its OWN free Clerk instance (own domain + DNS + Google OAuth), still pointed at the shared `adrian-website` D1 so collectors stay unified. NO paid satellite. _(band: you-required)_ _(effort: deep)_ → Plan: [clerk-production-launch.md](../Adrian-Website/todo/plans/clerk-production-launch.md) § D
+
+The original provisioning steps (now mostly done in dev; kept for the production pass):
 
 - [ ] Apply the D1 schema to the remote database: `wrangler d1 migrations apply mandalacodes-oracle --remote` (until then every account Function returns `503 db_not_configured`) _(band: you-required)_ _(effort: quick)_ → Schema: [migrations/001_init.sql](migrations/001_init.sql)
 - [ ] Provision Clerk for the accounts surface and decide one-app-vs-two: `accounts-branch.md` implies a fresh instance separate from admin sign-in, but the code reads a single key set (`VITE_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY`) _(band: you-required)_ _(effort: moderate)_ → Plan: [accounts-branch.md](todo/plans/accounts-branch.md)
