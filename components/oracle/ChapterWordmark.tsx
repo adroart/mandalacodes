@@ -156,9 +156,14 @@ export const ChapterWordmark: React.FC<{
           // centers the row when it's narrower than the band and scrolls
           // cleanly from the start when it's wider (justify-center would clip
           // the start out of reach on overflow).
+          // Karla (sans) reads cleaner than the display serif at these small
+          // sizes — the codebase's own rule forbids Cormorant under 20px. No
+          // separators on the sticky band: the wide gap does the separating,
+          // and bronze + underline mark the active section. Slightly larger
+          // min size is safe in Karla, which holds up small.
           ? {
-              columnGap: 'clamp(0.6rem, 3vw, 1.75rem)',
-              fontSize: 'clamp(13px, 3.6vw, 16px)',
+              columnGap: 'clamp(1rem, 4.5vw, 2rem)',
+              fontSize: 'clamp(13px, 3.5vw, 15px)',
             }
           : undefined}
         className={
@@ -170,24 +175,23 @@ export const ChapterWordmark: React.FC<{
         {chapters.map((chapter, idx) => {
           const isActive = chapter.key === active;
           const label = chapter.label;
-          // Sticky strip reads as navigation and inherits the fluid font-size
-          // set on the row (clamp), so labels scale with the viewport. Inline
-          // strip keeps the larger fixed editorial display size.
-          const labelSize = shape === 'sticky'
-            ? '' // size comes from the row's fluid fontSize
-            : 'text-[17px] sm:text-[20px] md:text-[22px]';
+          const sticky = shape === 'sticky';
+          // Sticky band: Karla (sans), readable small, no separators (the wide
+          // gap separates). Inline strip: the larger editorial display serif
+          // with dot separators, unchanged.
+          const labelFont = sticky ? '"Karla", sans-serif' : '"Cormorant Garamond", serif';
+          const labelSize = sticky ? '' /* fluid size from the row */ : 'text-[17px] sm:text-[20px] md:text-[22px]';
           const isFirst = idx === 0;
-          // Each entry is a single flex item: the leading dot (all but the
-          // first) and its label live in ONE inline-flex group so they never
-          // split across a wrap — the dot always travels with the label it
-          // precedes instead of dangling at the end of the line above.
+          // Inline strip keeps the dot+label group so a wrapping label carries
+          // its leading dot with it. Sticky band has no dots, so the label is
+          // the flex item directly.
           return (
             <span
               key={chapter.key}
               className="inline-flex items-center flex-shrink-0"
-              style={{ columnGap: 'clamp(0.5rem, 2.4vw, 1.75rem)' }}
+              style={sticky ? undefined : { columnGap: 'clamp(0.5rem, 2.4vw, 1.75rem)' }}
             >
-              {!isFirst && (
+              {!isFirst && !sticky && (
                 <span aria-hidden="true" style={{ fontFamily: '"Cormorant Garamond", serif' }} className={`${labelSize} leading-[1.2] tracking-[-0.005em] select-none ${dotCls}`}>
                   ·
                 </span>
@@ -198,8 +202,8 @@ export const ChapterWordmark: React.FC<{
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => onSelect(chapter.key)}
-                style={{ fontFamily: '"Cormorant Garamond", serif' }}
-                className={`${labelSize} leading-[1.2] tracking-[-0.005em] whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:text-bronze-700 ${isActive ? `${activeCls} font-medium` : inactiveCls}`}
+                style={{ fontFamily: labelFont }}
+                className={`${labelSize} ${sticky ? 'tracking-[0.01em]' : 'tracking-[-0.005em]'} leading-[1.2] whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:text-bronze-700 ${isActive ? `${activeCls} font-semibold` : inactiveCls}`}
               >
                 {label}
               </button>
