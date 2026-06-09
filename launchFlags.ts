@@ -15,8 +15,11 @@ export const LAUNCH_FLAGS = {
    * Files affected:
    *   - lib/account/AccountProvider.tsx (mounts ClerkProvider when on)
    *   - components/account/AccountLayout.tsx (redirects to / when off)
+   *
+   * Enabled 2026-06-09: same Clerk app + shared D1 as adrianrasmussen.com,
+   * so one sign-in spans both domains. Keys in Cloudflare Pages env (prod).
    */
-  accounts: false,
+  accounts: true,
 
   /**
    * HOLOGENETIC PROFILE — Birth chart at /profile and the

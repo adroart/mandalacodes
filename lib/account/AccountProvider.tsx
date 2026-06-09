@@ -14,6 +14,22 @@ const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as
 export const isClerkConfigured: boolean = Boolean(CLERK_PUBLISHABLE_KEY);
 
 /**
+ * Shared accounts, NOT shared session. adrianrasmussen.com and mandalacodes.com
+ * use ONE Clerk app (enabling-oyster-2) and ONE D1 user database, so it is the
+ * same account, same password, same saved collections on both sites. A collector
+ * signs in independently on each domain (one sign-in per domain), but it is the
+ * same identity behind both.
+ *
+ * We deliberately do NOT use Clerk satellite domains here: that feature is a
+ * paid plan in production. Free tier still gives a shared user pool from one app
+ * across two domains — it only omits the automatic cross-domain session bridge,
+ * which is the paid part. If a seamless single sign-in across both domains is
+ * ever wanted, upgrade the Clerk plan and add satellite config (isSatellite /
+ * domain / signInUrl) here. Until then, independent-login-shared-account is the
+ * free, correct shape.
+ */
+
+/**
  * `AccountProvider` is the single place where the rest of the app reads
  * its sign-in state from. When Clerk has been provisioned (publishable key
  * set at build time) it mounts ClerkProvider and bridges Clerk's hooks into
