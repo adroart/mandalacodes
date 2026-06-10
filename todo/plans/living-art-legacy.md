@@ -1,6 +1,6 @@
 ---
 name: living-art-legacy
-status: ready
+status: built-pending-ops
 created: 2026-06-10
 last_updated: 2026-06-10
 owner: mandalacodes
@@ -542,3 +542,22 @@ Storage placement (the PII table):
    certificate. Series drive their own colors and numbering. No founding-
    tier badge system is pre-built — tiering/celebration ideas come later;
    the ordinal itself is the permanent artifact.
+
+## Build record (2026-06-10)
+
+All six milestones implemented on branch `claude/gallant-faraday-kb2y28` across
+six commits:
+
+| Commit | Milestone | Content |
+|---|---|---|
+| `06fa436` | M0 — Hardening | Concurrency-safe R2 writes (If-Match etag), multi-piece claim-binding fix, edition-key unification, backdated-event guard, admin-notes leak fix, actorRef attribution, first tests, `scripts/backup-atlas.ts` |
+| `a5fb402` | M1 — Public piece page + Founding Lights | Zero-signup piece page, `claimed` event type, Founding Lights ordinal, `pieceType` derivation, unawakened dots |
+| `0002730` | M2 — Consent capture + two-phase claim | Two-phase `claim.ts` (Phase A bind / Phase B consent), `ConsentState`, `consentHistory`, Ring 2 active opt-in, first-inscription ritual, `utils/consent.ts` |
+| `c92b956` | M3 — Ring 1 legacy entries, export, heirs | `atlas_inscriptions` D1 table (via `003_atlas_legacy.sql`), salted commitments, time capsules, heir registrations, holder export, `utils/inscriptions.ts` |
+| `7c1b8a7` | M4 — Sale bridge + claim requests | HMAC-SHA256 sale webhook, admin-confirmed queue, `atlas_sale_events` D1 table, self-serve claim-request flow (routing + anti-takeover), `utils/saleBridge.ts`, `utils/claimRequests.ts` |
+| `21fb27b` | M5 — Ring 3 chart presence + the piece writes back | Ring 3 consent gate on kinship, kin-claim letters, anniversary letters, transfer letters, `utils/letters.ts`, `atlas/letters.json` R2 key |
+
+**Final test count: 157 unit tests across 9 test files** (`tests/unit/`).
+
+**Operations required before features are fully live:** see
+`todo/handoff/MORNING-AFTER.md`.
