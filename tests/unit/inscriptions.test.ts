@@ -412,16 +412,18 @@ describe('pendingFirstInscription conversion planning', () => {
     const chain = await buildChain([{ type: 'created' }]);
     const plan = planPendingConversion(base, false, chain);
     expect(plan).toEqual({
-      inscriptionId: pendingInscriptionId('UL-1', undefined),
+      inscriptionId: pendingInscriptionId('UL-1', undefined, STEWARD_A),
       insertRow: true,
       appendEvent: true,
       clearField: true,
     });
-    expect(pendingInscriptionId('UL-1', undefined)).toBe(pendingInscriptionId('UL-1', undefined));
+    expect(pendingInscriptionId('UL-1', undefined, STEWARD_A)).toBe(
+      pendingInscriptionId('UL-1', undefined, STEWARD_A),
+    );
   });
 
   it('re-runs converge: existing row and existing event are not redone', async () => {
-    const id = pendingInscriptionId('UL-1', undefined);
+    const id = pendingInscriptionId('UL-1', undefined, STEWARD_A);
     const chain = await buildChain([
       { type: 'created', date: '2026-01-01T00:00:00.000Z' },
       {
@@ -444,6 +446,51 @@ describe('pendingFirstInscription conversion planning', () => {
     expect(plan?.appendEvent).toBe(false);
     expect(plan?.clearField).toBe(false);
     expect(plan?.insertRow).toBe(true);
+  });
+
+  it("a second steward's ritual answer never collides with the first steward's converted entry", async () => {
+    // The piece changed hands: the first steward's answer was converted
+    // (row + event under THEIR deterministic id), then the new steward
+    // claimed with their own firstInscription. The ids are author-scoped, so
+    // the new steward's plan must insert a FRESH row and event — without the
+    // author scope, rowExists/eventExists would match the first steward's
+    // entry and the second answer would be cleared without ever landing.
+    const firstId = pendingInscriptionId('UL-1', undefined, STEWARD_A);
+    const secondId = pendingInscriptionId('UL-1', undefined, STEWARD_B);
+    expect(secondId).not.toBe(firstId);
+
+    const chain = await buildChain([
+      { type: 'created', date: '2026-01-01T00:00:00.000Z' },
+      { type: 'claimed', date: '2026-01-02T00:00:00.000Z', actor: 'steward', actorRef: STEWARD_A },
+      {
+        type: 'inscribed', date: '2026-01-03T00:00:00.000Z', actor: 'steward',
+        actorRef: STEWARD_A, inscriptionId: firstId, contentHash: 'a'.repeat(64),
+        inscriptionKind: 'intention',
+      },
+      {
+        type: 'transferred', date: '2026-02-01T00:00:00.000Z',
+        fromRef: STEWARD_A, toRef: STEWARD_B, transferKind: 'sale',
+      },
+    ]);
+
+    // rowExists=false: the handler looks the row up by the SECOND steward's
+    // id, which does not exist yet.
+    const plan = planPendingConversion(
+      {
+        pieceId: 'UL-1',
+        editionNumber: undefined,
+        clerkUserId: STEWARD_B,
+        pendingFirstInscription: { text: 'a new hope', createdAt: '2026-03-01T00:00:00.000Z' },
+      },
+      false,
+      chain,
+    );
+    expect(plan).toEqual({
+      inscriptionId: secondId,
+      insertRow: true,
+      appendEvent: true,
+      clearField: true,
+    });
   });
 });
 

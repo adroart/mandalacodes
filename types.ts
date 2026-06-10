@@ -198,6 +198,15 @@ export interface PublicAtlasState {
     kinshipEligible?: boolean;
   }>;
   cities: CityCentroid[];
+  /** Per-piece chain-tip hashes, keyed `pieceId:editionNumber ?? 0` → the
+   *  last event's `hash` on that chain. This is the Continuity plank: the
+   *  public GitHub mirror's commit history over these tips is the actual
+   *  tamper-evidence (the server could otherwise rewrite R2 and recompute
+   *  every hash). Hashes only — a tip reveals nothing about events, holders,
+   *  or places. Scope: ONLY chains of pieces visible in `pieces` above —
+   *  withdrawn/retired pieces stay entirely undisclosed, same rule as the
+   *  pieces array. Additive (older readers ignore it). */
+  chainTips?: Record<string, string>;
 }
 
 /* ─── Ledger (private) ─────────────────────────────────────────────────────

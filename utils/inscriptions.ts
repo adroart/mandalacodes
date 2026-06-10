@@ -170,12 +170,18 @@ export function genInscriptionId(): string {
 }
 
 /** Deterministic id for the migrated pendingFirstInscription — the
- *  idempotency anchor of the M2 → M3 conversion (one per chain key). */
+ *  idempotency anchor of the M2 → M3 conversion. Scoped per (chain key,
+ *  author): a piece that changes hands can carry one ritual answer per
+ *  steward, and without the author in the id a second steward's answer
+ *  would collide with the first steward's converted row and be silently
+ *  dropped. authorRef is the opaque Clerk userId — already on the chain
+ *  as the event's actorRef, so the id leaks nothing new. */
 export function pendingInscriptionId(
   pieceId: string,
   editionNumber: number | undefined,
+  authorRef: string,
 ): string {
-  return `ins-first-${pieceId}-${editionNumber ?? 0}`;
+  return `ins-first-${pieceId}-${editionNumber ?? 0}-${authorRef}`;
 }
 
 // ---------- Chain event drafting (fixed field set) ----------
@@ -436,6 +442,7 @@ export function planPendingConversion(
   const inscriptionId = pendingInscriptionId(
     record.pieceId,
     record.editionNumber,
+    record.clerkUserId,
   );
   const eventExists = chain.some(
     (e) => e.type === 'inscribed' && e.inscriptionId === inscriptionId,

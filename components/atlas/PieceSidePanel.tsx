@@ -20,11 +20,11 @@ export interface KinEntry {
 }
 
 /** Derived, non-identifying holder-chart summary (M5). Served only when the
- *  steward opted into Ring 3 and has a D1 profile — DERIVED fields only,
- *  never raw birth data or a name. */
+ *  steward opted into Ring 3 and has a D1 profile — the 8-way trigram
+ *  element only, never raw birth data, a name, or anything gate-resolution
+ *  (see functions/api/atlas/holder-chart.ts). */
 export interface HolderChartSummary {
   element: string;
-  gift?: string;
 }
 
 export interface PieceSidePanelProps {
@@ -186,9 +186,6 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
           </p>
           <p className="font-serif text-lg text-wood-900 leading-snug">
             {holderChart.element}
-            {holderChart.gift ? (
-              <span className="text-wood-700"> · {holderChart.gift}</span>
-            ) : null}
           </p>
         </div>
       )}

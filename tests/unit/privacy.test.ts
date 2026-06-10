@@ -205,6 +205,32 @@ describe('toPublicState privacy', () => {
     expect(state.pieces.find((p) => p.pieceId === 'UL-1')?.kinshipEligible).toBe(true);
   });
 
+  it('carries chain-tip hashes for VISIBLE pieces only (mirror tamper-evidence)', () => {
+    // chainTips is the Continuity plank: the public mirror's commit history
+    // over these opaque hashes is the tamper-evidence for the chains. Added
+    // to the public surface DELIBERATELY — hashes only, and scoped to the
+    // pieces already disclosed by the pieces array, so a withdrawn/retired
+    // piece's existence stays undisclosed here too.
+    const events = [
+      evt({ type: 'created' }),
+      evt({ type: 'placed', cityId: 'lisbon-pt' }),
+      evt({ type: 'claimed', actorRef: 'user_holder_xyz' }),
+      evt({ pieceId: 'UL-2', type: 'created' }),
+      evt({ pieceId: 'UL-2', type: 'withdrawn' }),
+      evt({ pieceId: 'UL-3', type: 'created' }),
+      evt({ pieceId: 'UL-3', type: 'retired' }),
+    ];
+    const tipHash = events[2].hash; // UL-1's last event
+    const state = toPublicState(projectAll(events), new Map(), [lisbon]);
+    const tips = state.chainTips ?? {};
+    // The tip is the last event's hash on the visible chain — an opaque
+    // value, never an actorRef/email/note.
+    expect(Object.keys(tips)).toEqual(['UL-1:0']);
+    expect(tips['UL-1:0']).toBe(tipHash);
+    expect(Object.keys(tips)).not.toContain('UL-2:0'); // withdrawn
+    expect(Object.keys(tips)).not.toContain('UL-3:0'); // retired
+  });
+
   it('exposes the Founding Lights ordinal but not the holder behind it', () => {
     const state = buildState();
     const ul1 = state.pieces.find((p) => p.pieceId === 'UL-1');

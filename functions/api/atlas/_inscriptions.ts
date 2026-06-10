@@ -137,10 +137,12 @@ export async function convertPendingFirstInscription(
 
   let row: InscriptionRow | null;
   try {
-    // Deterministic id — re-runs find this row instead of duplicating it.
+    // Deterministic id (scoped to this steward) — re-runs find this row
+    // instead of duplicating it, and a later steward's answer can never
+    // collide with a previous holder's converted entry.
     row = await selectInscription(
       db,
-      pendingInscriptionId(record.pieceId, record.editionNumber),
+      pendingInscriptionId(record.pieceId, record.editionNumber, record.clerkUserId),
     );
   } catch (err) {
     if (isMissingTableError(err)) return migrationNotApplied();

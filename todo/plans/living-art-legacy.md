@@ -557,7 +557,17 @@ six commits:
 | `7c1b8a7` | M4 — Sale bridge + claim requests | HMAC-SHA256 sale webhook, admin-confirmed queue, `atlas_sale_events` D1 table, self-serve claim-request flow (routing + anti-takeover), `utils/saleBridge.ts`, `utils/claimRequests.ts` |
 | `21fb27b` | M5 — Ring 3 chart presence + the piece writes back | Ring 3 consent gate on kinship, kin-claim letters, anniversary letters, transfer letters, `utils/letters.ts`, `atlas/letters.json` R2 key |
 
-**Final test count: 157 unit tests across 9 test files** (`tests/unit/`).
+**Final test count: 159 unit tests across 9 test files** (`tests/unit/`).
+
+Final review pass (same date): per-piece chain-tip hashes now ride in
+`public.json` (`chainTips`, visible pieces only — hashes only, additive, no
+schema bump), closing the Continuity item about mirror tamper-evidence; the
+M2→M3 pendingFirstInscription conversion id is author-scoped so a second
+steward's claim-ritual answer survives a transfer; the public holder-chart
+endpoint returns the 8-way trigram element only (the Gene Key gift word was
+a 1:1 proxy for the gate number); `scripts/backup-atlas.ts` fetches all five
+atlas keys; `scripts/sync-secrets-to-cloudflare.sh` knows
+`SALE_WEBHOOK_SECRET` + `GITHUB_MIRROR_*`.
 
 **Operations required before features are fully live:** see
 `todo/handoff/MORNING-AFTER.md`.

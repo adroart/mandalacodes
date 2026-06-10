@@ -147,10 +147,12 @@ Before any real collector data lands:
 npm run backup:atlas
 ```
 
-This pulls `atlas/ledger.json` and `atlas/stewards.json` from the production
-bucket into a gitignored `backups/atlas-<timestamp>/` folder. Move the output
-to offline storage. `stewards.json` contains collector contact information;
-keep it private.
+This pulls all five atlas objects (`ledger.json`, `stewards.json`,
+`public.json`, `claimRequests.json`, `letters.json`) from the production
+bucket into a gitignored `backups/atlas-<timestamp>/` folder — keys that
+don't exist yet are skipped with a note. Move the output to offline storage.
+`stewards.json` and `claimRequests.json` contain collector contact
+information; keep them private.
 
 Run `npm run backup:atlas` before any structural change in the future. It takes
 seconds and costs nothing.

@@ -229,6 +229,10 @@ export function toPublicState(
 ): PublicAtlasState {
   const referencedCityIds = new Set<string>();
   const pieces: PublicAtlasState['pieces'] = [];
+  // Chain-tip hashes for the public mirror's tamper-evidence (Continuity).
+  // Visible pieces only — a withdrawn/retired piece's existence stays
+  // undisclosed, exactly like the pieces array itself.
+  const chainTips: Record<string, string> = {};
 
   // Founding Lights ordinals are a property of the whole ledger, derived once
   // across every chain (not per piece) so ranks are globally consistent.
@@ -279,6 +283,13 @@ export function toPublicState(
       claimOrdinal: ordinals.get(key),
       kinshipEligible: isKinshipEligible(record, ring3ByKey?.get(key)),
     });
+
+    // The chain tip: history is in date order (projectAll sorts it), so the
+    // last event's hash is the tip. The hash is opaque (SHA-256 of the
+    // canonical payload) — carrying it discloses nothing the pieces array
+    // doesn't already.
+    const tip = record.history[record.history.length - 1];
+    if (tip?.hash) chainTips[key] = tip.hash;
   }
 
   const filteredCities = cities.filter((c) => referencedCityIds.has(c.id));
@@ -288,5 +299,6 @@ export function toPublicState(
     schemaVersion: 2,
     pieces,
     cities: filteredCities,
+    chainTips,
   };
 }

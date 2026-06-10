@@ -103,9 +103,12 @@ null`.
 **The verification guarantee is only as strong as the mirror.** The R2 bucket
 is mutable storage — someone with admin access could rewrite `ledger.json` and
 recompute all hashes. The GitHub mirror (when active) turns every `public.json`
-write into a commit, and the commit history is the actual tamper evidence. If
-the mirror is disabled, verification still catches accidental corruption or
-software bugs; it does not catch a deliberate rewrite by an admin.
+write into a commit, and the commit history is the actual tamper evidence:
+`public.json` carries a `chainTips` map (`pieceId:edition` → the last event's
+hash for every publicly visible chain), so a rewritten chain shows up as an
+unexplained tip change in the commit log. If the mirror is disabled,
+verification still catches accidental corruption or software bugs; it does not
+catch a deliberate rewrite by an admin.
 
 ---
 
@@ -204,15 +207,17 @@ The backup script is at `scripts/backup-atlas.ts`. Run it with:
 npm run backup:atlas
 ```
 
-This fetches `atlas/ledger.json` and `atlas/stewards.json` from the production
+This fetches all five atlas objects (`ledger.json`, `stewards.json`,
+`public.json`, `claimRequests.json`, `letters.json`) from the production
 `mandalacodes-atlas` bucket into a gitignored `backups/atlas-<timestamp>/`
-directory via `wrangler r2 object get --remote`. You need a wrangler login with
-access to the bucket first (`npx wrangler login`).
+directory via `wrangler r2 object get --remote`; keys not yet created are
+skipped with a note. You need a wrangler login with access to the bucket
+first (`npx wrangler login`).
 
 Run this before any structural change ships. Move long-term copies to
 artist-controlled offline storage — the `backups/` folder is gitignored and
-must never be committed, as `stewards.json` contains collector contact
-information.
+must never be committed, as `stewards.json` and `claimRequests.json` contain
+collector contact information.
 
 ---
 

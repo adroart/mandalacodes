@@ -6,14 +6,15 @@
  * opted into Ring 3 (ring3ChartPresence === true) AND has a hologenetic
  * profile in D1.
  *
- * What it returns is DERIVED FIELDS ONLY, taken from the profile's computed
- * HologeneticProfile JSON (gate/line pairs — itself already derived, holding
- * no raw birth data):
- *   - the element of the holder's Life's Work gate (its I Ching trigram —
- *     "Water", "Fire", "Mountain"…), and
- *   - the Gene Key gift word for that gate (a single evocative word).
+ * What it returns is a single DERIVED FIELD, taken from the profile's
+ * computed HologeneticProfile JSON (gate/line pairs — itself already
+ * derived, holding no raw birth data): the element of the holder's Life's
+ * Work gate (its I Ching trigram — "Water", "Fire", "Mountain"…).
  * NEVER the raw birth date / time / place, NEVER a name, NEVER the gate
- * numbers themselves (which could re-identify) — only the elemental summary.
+ * number — or any 1:1 proxy for it like the gate's Gene Key gift word —
+ * because the Life's Work gate pins the holder's birth date to a ~6-day
+ * window and this endpoint is public. Only the 8-way elemental summary is
+ * coarse enough to be genuinely non-identifying.
  *
  * Raw birth data (profiles.birth_date / birth_time / birth_place_label / lat
  * / lng / tz_id) is never selected here and is unreadable from any public
@@ -39,8 +40,6 @@ interface ProfileRow {
 interface HolderChartSummary {
   /** I Ching trigram element of the Life's Work gate — "Water", "Fire"… */
   element: string;
-  /** Gene Key gift word for that gate — a single evocative word. */
-  gift?: string;
 }
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
@@ -100,10 +99,11 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
   const card = CARD_BY_NUMBER.get(gate);
   if (!card) return json({ ok: true, chart: null });
 
-  // Derived, non-identifying: the gate's trigram element + its Gene Key gift.
+  // Derived, non-identifying: the gate's trigram element — 8 values across
+  // all holders. Anything gate-resolution (the number, its Gene Key words)
+  // stays private; see the header comment.
   const summary: HolderChartSummary = {
     element: card.iching.upper_trigram.name,
-    ...(card.gene_keys?.gift ? { gift: card.gene_keys.gift } : {}),
   };
   return json({ ok: true, chart: summary });
 }
