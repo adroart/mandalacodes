@@ -20,27 +20,64 @@ const VALID_TYPES: ReadonlySet<LedgerEventType> = new Set<LedgerEventType>([
   'withdrawn',
   'revealed',
   'retired',
+  // M1 groundwork: admin can append a claim (Adrian lights #1 on launch day).
+  // The two-phase steward claim flow that appends `claimed` lands in M2.
+  // inscribed | transferred stay reserved for M3 — not added here.
+  'claimed',
 ]);
 
-function isValidEventInput(
-  e: unknown,
-): e is Omit<LedgerEvent, 'hash' | 'prevHash'> {
-  if (!e || typeof e !== 'object') return false;
+type CleanEventInput = Omit<LedgerEvent, 'hash' | 'prevHash'>;
+
+/**
+ * Validate a candidate event AND return a clean copy containing only the
+ * known, allowed fields. Unknown extra keys are dropped here — before the
+ * event reaches appendEvent/computeHash — so a client can never smuggle an
+ * arbitrary field into the hashed payload (which would also make the hash
+ * non-reproducible by anyone recomputing from the documented schema).
+ *
+ * Returns null when the input fails validation.
+ */
+function cleanEventInput(e: unknown): CleanEventInput | null {
+  if (!e || typeof e !== 'object') return null;
   const obj = e as Record<string, unknown>;
-  if (typeof obj.id !== 'string' || !obj.id) return false;
-  if (typeof obj.pieceId !== 'string' || !obj.pieceId) return false;
-  if (typeof obj.type !== 'string') return false;
-  if (!VALID_TYPES.has(obj.type as LedgerEventType)) return false;
-  if (typeof obj.date !== 'string' || !obj.date) return false;
-  if (obj.actor !== 'admin' && obj.actor !== 'steward') return false;
+  if (typeof obj.id !== 'string' || !obj.id) return null;
+  if (typeof obj.pieceId !== 'string' || !obj.pieceId) return null;
+  if (typeof obj.type !== 'string') return null;
+  if (!VALID_TYPES.has(obj.type as LedgerEventType)) return null;
+  if (typeof obj.date !== 'string' || !obj.date) return null;
+  if (obj.actor !== 'admin' && obj.actor !== 'steward') return null;
   if (obj.cityId !== undefined && obj.cityId !== null && typeof obj.cityId !== 'string') {
-    return false;
+    return null;
   }
   if (obj.editionNumber !== undefined && typeof obj.editionNumber !== 'number') {
-    return false;
+    return null;
   }
-  if (obj.note !== undefined && typeof obj.note !== 'string') return false;
-  return true;
+  if (obj.note !== undefined && typeof obj.note !== 'string') return null;
+  if (
+    obj.pieceType !== undefined &&
+    obj.pieceType !== 'mandala' &&
+    obj.pieceType !== 'other'
+  ) {
+    return null;
+  }
+
+  // Whitelist: copy only known fields. actorRef is intentionally NOT copied
+  // from the client — the handler stamps it from the verified token below.
+  const clean: CleanEventInput = {
+    id: obj.id,
+    pieceId: obj.pieceId,
+    type: obj.type as LedgerEventType,
+    date: obj.date,
+    actor: obj.actor,
+  };
+  if (obj.editionNumber !== undefined) clean.editionNumber = obj.editionNumber as number;
+  if (obj.cityId !== undefined) clean.cityId = obj.cityId as string | null;
+  if (obj.note !== undefined) clean.note = obj.note as string;
+  // pieceType is meaningful on the genesis event only; carry it there.
+  if (obj.type === 'created' && obj.pieceType !== undefined) {
+    clean.pieceType = obj.pieceType as 'mandala' | 'other';
+  }
+  return clean;
 }
 
 export async function onRequestPost(
@@ -58,8 +95,8 @@ export async function onRequestPost(
     return json({ ok: false, error: 'Invalid JSON' }, 400);
   }
 
-  const incoming = (body as { event?: unknown })?.event;
-  if (!isValidEventInput(incoming)) {
+  const incoming = cleanEventInput((body as { event?: unknown })?.event);
+  if (!incoming) {
     return json({ ok: false, error: 'Invalid event' }, 400);
   }
 

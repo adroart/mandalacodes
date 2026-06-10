@@ -8,6 +8,7 @@ const OracleSystems = lazy(() => import('./components/OracleSystems'));
 const AtlasPage = lazy(() => import('./components/AtlasPage'));
 const AdminLogin = lazy(() => import('./components/AdminLogin'));
 const AdminAtlas = lazy(() => import('./components/AdminAtlas'));
+const PiecePage = lazy(() => import('./components/PiecePage'));
 const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
 const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
 const OracleProfile = lazy(() => import('./components/OracleProfile'));
@@ -103,6 +104,13 @@ const AppInner: React.FC = () => {
                 {/* Atlas — globe of placed Universal Language pieces with kinship arcs */}
                 <Route path="/atlas" element={<AtlasPage />} />
                 <Route path="/atlas/claim" element={<StewardClaim />} />
+
+                {/* Public piece page — the QR-arrival surface. Pre-auth; shows
+                    the artwork, story, edition, Founding Lights ordinal, and
+                    the public history spine. `/piece/:pieceId` resolves via the
+                    `:0` no-edition fallback; `/piece/:pieceId/:edition` pins one. */}
+                <Route path="/piece/:pieceId" element={<PiecePage />} />
+                <Route path="/piece/:pieceId/:edition" element={<PiecePage />} />
                 <Route path="/atlas/edit" element={<StewardEdit />} />
 
                 {/* Admin — atlas ledger + steward key issuance */}

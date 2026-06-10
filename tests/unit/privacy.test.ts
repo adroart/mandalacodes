@@ -74,6 +74,8 @@ function buildState() {
   const events = [
     evt({ type: 'created', note: 'bought at the Lisbon opening — call Maria' }),
     evt({ type: 'placed', cityId: 'lisbon-pt', actorRef: 'user_abc123' }),
+    // A claim carries the holder's opaque ref — it must never surface.
+    evt({ type: 'claimed', actorRef: 'user_holder_xyz' }),
     evt({ pieceId: 'UL-2', type: 'created' }),
     evt({ pieceId: 'UL-2', type: 'placed', cityId: 'lisbon-pt' }),
     evt({ pieceId: 'UL-2', type: 'withdrawn', note: 'collector asked for privacy' }),
@@ -104,6 +106,11 @@ describe('toPublicState privacy', () => {
       'cityId',
       'status',
       'placedAt',
+      // M1 additions (schemaVersion 2): marker color category + Founding
+      // Lights ordinal. Both are non-personal — derived from series/dates,
+      // never from holder data. Added to the whitelist deliberately.
+      'pieceType',
+      'claimOrdinal',
     ]);
     for (const piece of state.pieces) {
       for (const key of Object.keys(piece)) {
@@ -119,10 +126,19 @@ describe('toPublicState privacy', () => {
     expect(ids).not.toContain('UL-3'); // retired
   });
 
-  it('never leaks note text into the serialized output', () => {
+  it('never leaks note text or actor refs into the serialized output', () => {
     const serialized = JSON.stringify(buildState());
     expect(serialized).not.toContain('Maria');
     expect(serialized).not.toContain('privacy');
     expect(serialized).not.toContain('user_abc123');
+    expect(serialized).not.toContain('user_holder_xyz');
+  });
+
+  it('exposes the Founding Lights ordinal but not the holder behind it', () => {
+    const state = buildState();
+    const ul1 = state.pieces.find((p) => p.pieceId === 'UL-1');
+    expect(ul1?.claimOrdinal).toBe(1); // claimed → the 1st light
+    // UL-1 is the only claimed, placed piece → status 'placed', not unawakened.
+    expect(ul1?.status).toBe('placed');
   });
 });

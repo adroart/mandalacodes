@@ -162,12 +162,23 @@ const AtlasPage: React.FC = () => {
     [seriesFiltered],
   );
 
+  /* Low-density framing: this is Adrian's body of work, not a constellation
+     of strangers. A "light" is a claimed piece (carries an ordinal); the
+     collective framing earns its place as density grows. */
+  const totalCount = enriched.length;
+  const lightsLit = useMemo(
+    () => enriched.filter((p) => typeof p.claimOrdinal === 'number').length,
+    [enriched],
+  );
+
   /* Pieces visible on the globe respect both filters; status=seeking is shown
      in the seeking section, never on the globe (no coords to plot). */
   const globeNodes: GlobeNode[] = useMemo(() => {
     const visible = seriesFiltered.filter((p) => {
       if (status === 'seeking') return false; // seeking-only filter hides globe markers
-      if (p.status !== 'placed') return false;
+      // Both lit ('placed') and sold-but-unclaimed ('unawakened') pieces have
+      // a city and belong on the globe; only the truly unplaced are hidden.
+      if (p.status !== 'placed' && p.status !== 'unawakened') return false;
       if (!p.cityId) return false;
       return true;
     });
@@ -179,8 +190,9 @@ const AtlasPage: React.FC = () => {
         id: p.key,
         lat: c.lat,
         lng: c.lng,
-        status: 'placed',
+        status: p.status === 'unawakened' ? 'unawakened' : 'placed',
         label: p.title,
+        pieceType: p.pieceType,
       });
     }
     // The visitor's birth place rides along regardless of filters — it is
@@ -225,6 +237,7 @@ const AtlasPage: React.FC = () => {
       cityLabel: cityLabelFor(match.cityId),
       placedAt: match.placedAt,
       cardNumber: cardNumberFor(match.pieceId),
+      claimOrdinal: match.claimOrdinal,
     };
   }, [selectedKey, seriesFiltered]);
 
@@ -332,8 +345,18 @@ const AtlasPage: React.FC = () => {
           Atlas
         </h1>
         <p className="font-serif text-xl md:text-2xl text-wood-700 max-w-2xl leading-[1.6]">
-          Every piece, wherever it has come to rest. City-level only, never an address.
+          Adrian Rasmussen's body of work, across the world — every piece,
+          wherever it has come to rest. City-level only, never an address.
         </p>
+        {state.kind === 'ready' && totalCount > 0 && (
+          <p className="mt-5 font-label text-[11px] sm:text-xs uppercase tracking-[0.2em] text-bronze-700">
+            {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
+            <span aria-hidden className="mx-2 text-wood-400">
+              ·
+            </span>
+            {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
+          </p>
+        )}
       </div>
 
       {/* ── Body ──────────────────────────────────────────────────────────── */}

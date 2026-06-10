@@ -7,10 +7,11 @@ export interface SelectedPiece {
   title: string;
   series?: string;
   category?: string;
-  status: 'seeking' | 'placed';
+  status: 'seeking' | 'placed' | 'unawakened';
   cityLabel?: string;     // e.g. "Lisbon, Portugal"  (omitted when seeking)
   placedAt?: string;      // ISO of most recent placed/moved event
   cardNumber?: number;    // Universal Language code 1–64, when the piece carries one
+  claimOrdinal?: number;  // Founding Lights ordinal (1 = first light) when claimed
 }
 
 export interface KinEntry {
@@ -33,6 +34,22 @@ function formatPlacedYear(iso?: string): string | null {
   return String(d.getUTCFullYear());
 }
 
+/** Ordinal word for the Founding Lights number: 1 → "1st", 2 → "2nd", … */
+export function ordinalLabel(n: number): string {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1:
+      return `${n}st`;
+    case 2:
+      return `${n}nd`;
+    case 3:
+      return `${n}rd`;
+    default:
+      return `${n}th`;
+  }
+}
+
 const PieceSidePanel: React.FC<PieceSidePanelProps> = ({ piece, kin, onSelectKin }) => {
   if (!piece) {
     return (
@@ -49,8 +66,13 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({ piece, kin, onSelectKin
 
   const placedYear = formatPlacedYear(piece.placedAt);
   const isSeeking = piece.status === 'seeking';
+  const isUnawakened = piece.status === 'unawakened';
   const statusLine = isSeeking
     ? 'seeking ground'
+    : isUnawakened
+    ? piece.cityLabel
+      ? `at rest in ${piece.cityLabel}, awaiting its keeper`
+      : 'awaiting its keeper'
     : piece.cityLabel
     ? `placed in ${piece.cityLabel}`
     : 'placed';
@@ -95,11 +117,33 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({ piece, kin, onSelectKin
         </p>
         <p
           className={`font-serif text-lg leading-snug ${
-            isSeeking ? 'italic text-wood-700' : 'text-wood-900'
+            isSeeking || isUnawakened ? 'italic text-wood-700' : 'text-wood-900'
           }`}
         >
           {statusLine}
         </p>
+      </div>
+
+      {typeof piece.claimOrdinal === 'number' && (
+        <div className="border-t border-wood-200 pt-5 mt-5">
+          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
+            Founding light
+          </p>
+          <p className="font-serif text-lg text-wood-900 leading-snug">
+            The {ordinalLabel(piece.claimOrdinal)} light
+          </p>
+        </div>
+      )}
+
+      <div className="border-t border-wood-200 pt-5 mt-5">
+        <Link
+          to={`/piece/${piece.pieceId}${
+            typeof piece.editionNumber === 'number' ? `/${piece.editionNumber}` : ''
+          }`}
+          className="font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+        >
+          Open this piece's book →
+        </Link>
       </div>
 
       {/* Bridge back into the deck — every Universal Language piece carries

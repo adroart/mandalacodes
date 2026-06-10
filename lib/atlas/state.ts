@@ -37,7 +37,7 @@ export function loadAtlasState(): Promise<PublicAtlasState> {
 export interface CardPlacement {
   pieceId: string;
   editionNumber?: number;
-  status: 'seeking' | 'placed';
+  status: 'seeking' | 'placed' | 'unawakened';
   /** "Lisbon, Portugal" — present only when placed in a known city. */
   cityLabel?: string;
 }
@@ -59,6 +59,35 @@ export function findPlacementForCard(
     };
   }
   return null;
+}
+
+/* ─── Single-piece lookup (the public piece page) ─────────────────────────
+ * The piece page resolves `/piece/:pieceId` (optionally `/piece/:pieceId/:ed`)
+ * against the same public state every other surface reads. The piece-key
+ * convention is `pieceId:editionNumber ?? 0`; a deep link without an edition
+ * resolves via the `:0` fallback (first matching piece). */
+
+export type PublicPiece = PublicAtlasState['pieces'][number];
+
+/**
+ * Find a single public piece by pieceId and (optional) edition number.
+ * When `editionNumber` is omitted, matches the first piece for that pieceId
+ * (the `:0`/no-edition fallback). Returns null when absent from public state
+ * — i.e. seeking-but-private, withdrawn, retired, or simply not in the ledger.
+ */
+export function findPublicPiece(
+  state: PublicAtlasState,
+  pieceId: string,
+  editionNumber?: number,
+): PublicPiece | null {
+  if (typeof editionNumber === 'number') {
+    return (
+      state.pieces.find(
+        (p) => p.pieceId === pieceId && (p.editionNumber ?? 0) === editionNumber,
+      ) ?? null
+    );
+  }
+  return state.pieces.find((p) => p.pieceId === pieceId) ?? null;
 }
 
 /** Placement of a card's physical piece, or null while loading / when the

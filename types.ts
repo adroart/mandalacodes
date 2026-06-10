@@ -164,6 +164,9 @@ export interface CityCentroid {
 
 export interface PublicAtlasState {
   generatedAt: string;
+  /** Bumped to 2 in M1: pieces gained pieceType, claimOrdinal, and the
+   *  'unawakened' status. All three are additive — schemaVersion-1 consumers
+   *  read the shared fields and ignore the rest. */
   schemaVersion: number;
   pieces: Array<{
     pieceId: string;
@@ -171,8 +174,19 @@ export interface PublicAtlasState {
     series?: string;
     category?: string;
     cityId: string | null;
-    status: 'seeking' | 'placed';
+    /** 'unawakened' = sold-but-unclaimed: the chain places it at a city but
+     *  no `claimed` event has landed yet. Renders as a dim point distinct
+     *  from 'placed' (claimed + placed) and 'seeking' (no city). Carries no
+     *  holder data — its existence is already public via the chain. */
+    status: 'seeking' | 'placed' | 'unawakened';
     placedAt?: string;
+    /** Marker color category. 'mandala' for Universal Language pieces, 'other'
+     *  for everything else; overridable per piece via the genesis event. */
+    pieceType?: 'mandala' | 'other';
+    /** Founding Lights ordinal — this piece's permanent claim-order number
+     *  across ALL chains (1 = first light ever claimed). Present only once the
+     *  piece carries a `claimed` event. Never reveals the holder. */
+    claimOrdinal?: number;
   }>;
   cities: CityCentroid[];
 }
@@ -190,7 +204,8 @@ export type LedgerEventType =
   | 'moved'
   | 'withdrawn'
   | 'revealed'
-  | 'retired';
+  | 'retired'
+  | 'claimed'; // first bind; Founding Lights ordinal source; no PII
 
 export interface LedgerEvent {
   id: string;
@@ -207,6 +222,13 @@ export interface LedgerEvent {
    *  Optional and additive: the canonicalizer drops undefined, so events
    *  written before this field existed keep their original hashes. */
   actorRef?: string;
+  /** Marker type override, set on `created` (genesis) only. Lets a piece that
+   *  lives outside FULL_ARCHIVE declare its globe color category without a
+   *  series lookup. When absent, `pieceType` is derived from the series in
+   *  toPublicState (Universal Language → mandala, else other). Additive &
+   *  optional: dropped by the canonicalizer when undefined, so pre-existing
+   *  hashes stay valid. Never personal. */
+  pieceType?: 'mandala' | 'other';
   prevHash: string | null;
   hash: string;
 }
@@ -218,6 +240,13 @@ export interface PieceRecord {
   status: 'seeking' | 'placed' | 'withdrawn' | 'retired';
   history: LedgerEvent[];
   isPublic: boolean;
+  /** Date of the first `claimed` event on this chain, when one exists. The
+   *  Founding Lights ordinal (rank across all chains) is derived from this in
+   *  a second pass; here we only record the per-piece "when". Additive. */
+  claimedAt?: string;
+  /** Marker-type override carried on the genesis `created` event, if any.
+   *  Surfaces to toPublicState which falls back to a series-derived value. */
+  pieceType?: 'mandala' | 'other';
 }
 
 /**
