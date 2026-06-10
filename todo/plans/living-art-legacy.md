@@ -532,5 +532,9 @@ Storage placement (the PII table):
 4. **Sale price — ratified: record it.** D1-only, never chain/public;
    visible to the admin (master ledger holder) and the piece's current
    steward.
-5. **Founding Lights scope** — still open (pure product taste; defaulted:
-   every light shows its number, the first 64 carry the founding mark).
+5. **Founding Lights scope — ratified: all pieces, all series.** Not just
+   the 64 — every claimed piece in every series gets its permanent
+   claim-order number, recorded in the ledger and living with the digital
+   certificate. Series drive their own colors and numbering. No founding-
+   tier badge system is pre-built — tiering/celebration ideas come later;
+   the ordinal itself is the permanent artifact.
