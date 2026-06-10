@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/clerk-react';
 import type { PieceRecord, CityCentroid, StewardRecord } from '../../types';
-import { CITIES, getCityById } from '../../data/cities';
+import { ATLAS_PLACES, getCityById, isCountryPlace } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
+import ConsentRings from './ConsentRings';
+import type { ConsentChoice } from './ConsentRings';
 
 /**
  * Steward edit page. Rendered at `/atlas/edit`.
@@ -12,11 +14,24 @@ import { FULL_ARCHIVE } from '../../data/mockData';
  * bearer token to load every piece bound to this user. Stewards with more
  * than one piece get a picker; edits always apply to the selected piece.
  * If no record is bound to this user, we send them to /atlas/claim.
+ *
+ * Retro-consent (M2): a steward bound before consent capture existed sees
+ * the ConsentRings step once — the same Phase B POST as the claim flow —
+ * before the edit UI. From then on the visibility toggle below IS the
+ * Ring 2 control (the server keeps consent.ring2MapPresence + the audit
+ * history in sync on every flip).
+ *
+ * The place picker offers cities and "country only" centroids — picking a
+ * country places the public dot at the country's geographic center.
  */
 
 type ClaimResponse = {
   ok: boolean;
-  claimed: Array<{ steward: StewardRecord; piece: PieceRecord | null }>;
+  claimed: Array<{
+    steward: StewardRecord;
+    piece: PieceRecord | null;
+    needsConsent?: boolean;
+  }>;
 };
 
 type UpdateResponse = {
@@ -35,6 +50,7 @@ const cityMatches = (city: CityCentroid, query: string): boolean => {
 };
 
 const formatCityLabel = (city: CityCentroid): string => {
+  if (isCountryPlace(city)) return `${city.country} — country only`;
   return city.region
     ? `${city.city}, ${city.region}, ${city.country}`
     : `${city.city}, ${city.country}`;
@@ -50,6 +66,8 @@ const StewardEdit: React.FC = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [consentSubmitting, setConsentSubmitting] = useState(false);
+  const [consentError, setConsentError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const savedTimerRef = useRef<number | null>(null);
 
@@ -203,6 +221,46 @@ const StewardEdit: React.FC = () => {
     navigate('/atlas/claim', { replace: true });
   };
 
+  // Retro-consent: a record bound before M2 has no captured consent — the
+  // ConsentRings step renders once, posting the same Phase B body as the
+  // claim flow. One capture covers every piece this steward holds.
+  const needsConsent = entries.some(e => !e.steward.consent);
+
+  const handleConsentSubmit = async (choice: ConsentChoice) => {
+    setConsentSubmitting(true);
+    setConsentError(null);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/atlas/steward/claim', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          consent: { ring2MapPresence: choice.ring2MapPresence },
+          ...(choice.firstInscription
+            ? { firstInscription: choice.firstInscription }
+            : {}),
+        }),
+      });
+      if (res.status === 401) {
+        navigate('/atlas/claim', { replace: true });
+        return;
+      }
+      if (!res.ok) {
+        setConsentError('Something went wrong. Please try again.');
+        return;
+      }
+      const data: ClaimResponse = await res.json();
+      setEntries(data.claimed ?? []);
+    } catch {
+      setConsentError('Something went wrong. Please try again.');
+    } finally {
+      setConsentSubmitting(false);
+    }
+  };
+
   // === Derived view data ===
 
   const artwork = useMemo(() => {
@@ -216,8 +274,11 @@ const StewardEdit: React.FC = () => {
   }, [piece]);
 
   const filteredCities = useMemo(() => {
-    if (!cityQuery.trim()) return CITIES.slice(0, 12);
-    return CITIES.filter(c => cityMatches(c, cityQuery)).slice(0, 12);
+    // ATLAS_PLACES lists cities first, then country-level centroids — a
+    // country search surfaces its cities followed by the "country only"
+    // option.
+    if (!cityQuery.trim()) return ATLAS_PLACES.slice(0, 12);
+    return ATLAS_PLACES.filter(c => cityMatches(c, cityQuery)).slice(0, 12);
   }, [cityQuery]);
 
   const statusLine = useMemo(() => {
@@ -273,6 +334,21 @@ const StewardEdit: React.FC = () => {
             Return to claim
           </button>
         </div>
+      </section>
+    );
+  }
+
+  if (needsConsent) {
+    const pending = entries.find(e => !e.steward.consent) ?? entries[0];
+    const title = FULL_ARCHIVE.find(a => a.id === pending.steward.pieceId)?.title;
+    return (
+      <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6 py-16">
+        <ConsentRings
+          pieceTitle={title}
+          submitting={consentSubmitting}
+          error={consentError}
+          onSubmit={handleConsentSubmit}
+        />
       </section>
     );
   }

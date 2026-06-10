@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FULL_ARCHIVE } from '../data/mockData';
-import { CITIES_BY_ID } from '../data/cities';
+import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { CARD_BY_NUMBER } from '../data/oracleData';
 import { img } from '../utils/cloudinary';
 import { ulCardNumber } from '../utils/universalLanguage';
@@ -46,7 +46,7 @@ interface SpineEntry {
 function cityLabel(cityId: string | null | undefined): string | undefined {
   if (!cityId) return undefined;
   const c = CITIES_BY_ID.get(cityId);
-  return c ? `${c.city}, ${c.country}` : undefined;
+  return c ? formatPlaceLabel(c) : undefined;
 }
 
 function yearOf(iso?: string): string | undefined {

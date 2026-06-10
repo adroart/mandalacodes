@@ -7,28 +7,54 @@ import {
   useAuth,
   useUser,
 } from '@clerk/clerk-react';
+import type { PieceRecord, StewardRecord } from '../../types';
+import { FULL_ARCHIVE } from '../../data/mockData';
+import ConsentRings from './ConsentRings';
+import type { ConsentChoice } from './ConsentRings';
 
 /**
- * Steward claim — rendered at /atlas/claim.
+ * Steward claim — rendered at /atlas/claim. Two-phase since M2.
  *
  * Flow:
  *   1. Collector signs in to mandalacodes with Clerk using the email Adrian
  *      added them with.
- *   2. The page POSTs to /api/atlas/steward/claim (no body — identity comes
- *      from the bearer token).
- *   3. Server matches the steward record by clerkUserId or email, binds the
- *      userId on first match, and returns the claimed pieces.
- *   4. We redirect to /atlas/edit on success, or show a friendly "ask Adrian"
- *      message if no record is bound to this email.
+ *   2. Phase A: the page POSTs to /api/atlas/steward/claim (no consent in
+ *      the body — identity comes from the bearer token). Server binds the
+ *      userId and answers with the claimed pieces + needsConsent flags.
+ *   3. If consent is already captured we redirect straight to /atlas/edit.
+ *      Otherwise the consent step renders here (ConsentRings): the one
+ *      Ring 2 map question, the optional first-inscription prompt, the
+ *      quiet deferred line for Rings 3–4.
+ *   4. Phase B: the choice POSTs back with `{ consent, firstInscription? }`.
+ *      The server stamps the consent, appends the `claimed` event (the
+ *      piece's Founding Lights ordinal), applies the Ring 2 choice, and we
+ *      land on /atlas/edit.
  */
+
+type ClaimEntry = {
+  steward: StewardRecord;
+  piece: PieceRecord | null;
+  needsConsent?: boolean;
+};
+
+type ClaimResponse = {
+  ok: boolean;
+  claimed: ClaimEntry[];
+  needsConsent?: boolean;
+};
+
 const StewardClaim: React.FC = () => {
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { user } = useUser();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<'idle' | 'claiming' | 'no-record' | 'error'>(
-    'idle',
-  );
+  const [status, setStatus] = useState<
+    'idle' | 'claiming' | 'consent' | 'no-record' | 'error'
+  >('idle');
+  const [entries, setEntries] = useState<ClaimEntry[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [consentError, setConsentError] = useState<string | null>(null);
 
+  // Phase A — bind on arrival.
   useEffect(() => {
     if (!isLoaded || !isSignedIn || status !== 'idle') return;
     let cancelled = false;
@@ -45,6 +71,15 @@ const StewardClaim: React.FC = () => {
         });
         if (cancelled) return;
         if (res.ok) {
+          const data: ClaimResponse = await res.json();
+          if (cancelled) return;
+          const claimed = data.claimed ?? [];
+          if (claimed.some(c => c.needsConsent)) {
+            // The consent moment happens here — no redirect.
+            setEntries(claimed);
+            setStatus('consent');
+            return;
+          }
           navigate('/atlas/edit', { replace: true });
           return;
         }
@@ -62,15 +97,55 @@ const StewardClaim: React.FC = () => {
     };
   }, [isLoaded, isSignedIn, getToken, navigate, status]);
 
+  // Phase B — consent capture.
+  const handleConsentSubmit = async (choice: ConsentChoice) => {
+    setSubmitting(true);
+    setConsentError(null);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/atlas/steward/claim', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          consent: { ring2MapPresence: choice.ring2MapPresence },
+          ...(choice.firstInscription
+            ? { firstInscription: choice.firstInscription }
+            : {}),
+        }),
+      });
+      if (!res.ok) {
+        setConsentError('Something went wrong. Please try again.');
+        return;
+      }
+      navigate('/atlas/edit', { replace: true });
+    } catch {
+      setConsentError('Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Title of the (first) piece awaiting consent — for the heading copy.
+  const consentPieceTitle = (() => {
+    const entry = entries.find(e => e.needsConsent) ?? entries[0];
+    if (!entry) return undefined;
+    return FULL_ARCHIVE.find(a => a.id === entry.steward.pieceId)?.title;
+  })();
+
   return (
     <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-md">
-        <h1
-          className="font-display text-3xl text-wood-900 font-medium text-center mb-6 tracking-wide"
-          style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}
-        >
-          Claim your piece
-        </h1>
+        {status !== 'consent' && (
+          <h1
+            className="font-display text-3xl text-wood-900 font-medium text-center mb-6 tracking-wide"
+            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}
+          >
+            Claim your piece
+          </h1>
+        )}
 
         <SignedOut>
           <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 text-center mb-10">
@@ -95,6 +170,14 @@ const StewardClaim: React.FC = () => {
             <p className="font-serif italic text-base text-stone-700 text-center">
               Looking up your piece...
             </p>
+          )}
+          {status === 'consent' && (
+            <ConsentRings
+              pieceTitle={consentPieceTitle}
+              submitting={submitting}
+              error={consentError}
+              onSubmit={handleConsentSubmit}
+            />
           )}
           {status === 'no-record' && (
             <div className="text-center">

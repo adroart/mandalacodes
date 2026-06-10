@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { PublicAtlasState } from '../../types';
 import { buildSeedAtlasState } from '../../data/atlasSeed';
-import { CITIES_BY_ID } from '../../data/cities';
+import { CITIES_BY_ID, formatPlaceLabel } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
 import { ulCardNumber } from '../../utils/universalLanguage';
 
@@ -55,7 +55,7 @@ export function findPlacementForCard(
       pieceId: piece.pieceId,
       editionNumber: piece.editionNumber,
       status: piece.status,
-      cityLabel: city ? `${city.city}, ${city.country}` : undefined,
+      cityLabel: city ? formatPlaceLabel(city) : undefined,
     };
   }
   return null;

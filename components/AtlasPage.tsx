@@ -6,7 +6,7 @@ import PieceSidePanel, { type KinEntry, type SelectedPiece } from './atlas/Piece
 import SeekingGround, { type SeekingPiece } from './atlas/SeekingGround';
 import KinshipLayer from './atlas/KinshipLayer';
 import { FULL_ARCHIVE } from '../data/mockData';
-import { CITIES_BY_ID } from '../data/cities';
+import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
 import { useProfile } from '../lib/profile/context';
 import { ulCardNumber } from '../utils/universalLanguage';
@@ -52,7 +52,7 @@ function cityLabelFor(cityId: string | null | undefined): string | undefined {
   if (!cityId) return undefined;
   const c = CITIES_BY_ID.get(cityId);
   if (!c) return undefined;
-  return `${c.city}, ${c.country}`;
+  return formatPlaceLabel(c);
 }
 
 /** Universal Language card number for a piece, when it has one (1–64). */
@@ -263,7 +263,7 @@ const AtlasPage: React.FC = () => {
       out.push({
         key: p.key,
         title: p.title,
-        cityLabel: `${c.city}, ${c.country}`,
+        cityLabel: formatPlaceLabel(c),
         km: Math.round(rad * EARTH_RADIUS_KM),
       });
     }

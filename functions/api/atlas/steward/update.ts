@@ -13,7 +13,14 @@
  *   - isPublic flipping true (currently withdrawn) → 'revealed'.
  *   - No-op → return current record, no event appended.
  *
- * cityId must validate via getCityById; notes are admin-only and ignored.
+ * Since M2 the isPublic toggle IS the Ring 2 consent control: when the
+ * steward record carries a captured consent, flipping visibility also
+ * updates consent.ring2MapPresence and appends the new state to
+ * consentHistory — one write path for the choice and its audit trail.
+ *
+ * cityId must validate via getCityById (cities AND country-level centroids
+ * — the "country only" option is just a country centroid in the catalog);
+ * notes are admin-only and ignored.
  * Ledger and steward writes go through the conditional-put mutators, and
  * every appended event carries the steward's opaque Clerk userId as
  * `actorRef`. Responses strip admin-authored event notes.
@@ -22,6 +29,7 @@
 import type { LedgerEvent, LedgerEventType, PieceRecord } from '../../../../types';
 import { appendEvent, groupChains, BackdatedEventError } from '../../../../utils/ledger';
 import { projectPiece } from '../../../../utils/ledgerProjection';
+import { nextConsentState } from '../../../../utils/consent';
 import { getCityById } from '../../../../data/cities';
 import type { PagesContext } from '../_helpers';
 import {
@@ -105,15 +113,41 @@ export async function onRequestPost(
 
   const now = new Date().toISOString();
 
-  // Bump steward activity timestamp (conditional write — a concurrent
-  // claim or issue must not be clobbered).
+  // Bump steward activity timestamp, and — when the visibility toggle is
+  // exercised — keep the Ring 2 consent in sync: write the updated
+  // ConsentState and push it onto consentHistory. Records without a
+  // captured consent are left untouched (the UI gates them through the
+  // retro-consent step first; an API-only caller keeps legacy single-
+  // toggle behavior until consent is captured via /claim Phase B).
+  // Conditional write — a concurrent claim or issue must not be clobbered.
   const stewardOutcome = await mutateStewards(env, (current) => ({
-    next: current.map((s) =>
-      s.pieceId === record.pieceId &&
-      (s.editionNumber ?? undefined) === (record.editionNumber ?? undefined)
-        ? { ...s, lastClaimAt: now }
-        : s,
-    ),
+    next: current.map((s) => {
+      if (
+        s.pieceId !== record.pieceId ||
+        (s.editionNumber ?? undefined) !== (record.editionNumber ?? undefined)
+      ) {
+        return s;
+      }
+      if (
+        desiredIsPublic === undefined ||
+        !s.consent ||
+        s.consent.ring2MapPresence === desiredIsPublic
+      ) {
+        return { ...s, lastClaimAt: now };
+      }
+      const consent = nextConsentState(
+        { ring2MapPresence: desiredIsPublic },
+        s.consent,
+        actorUserId,
+        now,
+      );
+      return {
+        ...s,
+        lastClaimAt: now,
+        consent,
+        consentHistory: [...(s.consentHistory ?? []), consent],
+      };
+    }),
     result: undefined,
   }));
   if (stewardOutcome instanceof Response) return stewardOutcome;

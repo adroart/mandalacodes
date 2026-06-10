@@ -249,6 +249,49 @@ export interface PieceRecord {
   pieceType?: 'mandala' | 'other';
 }
 
+/* ─── Consent (M2) ─────────────────────────────────────────────────────────
+ * The four-rings consent model, captured at claim (or retroactively on the
+ * steward's next visit). Consent is revocable, so it lives ONLY on the
+ * mutable StewardRecord — never in a hashed ledger payload, never in the
+ * public projection. `consentHistory` is the append-style audit trail of
+ * every captured state; the chain content invariant (no PII, nothing
+ * revocable in hashes) is law here.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** Bump when the consent wording/shape changes; stamped onto every capture. */
+export const CONSENT_VERSION = 1;
+
+/** Ring 4 — identity, per-field flags. All default false; the public gallery
+ *  surface is density-gated and unbuilt — only the schema ships. */
+export interface Ring4Fields {
+  face: boolean;
+  name: boolean;
+  intention: boolean;
+  business: boolean;
+  mission: boolean;
+}
+
+/**
+ * One captured consent state. Ring 1 (the private living record) is always
+ * on and needs no flag. Ring 2 is the single active question at claim —
+ * map presence, city-level only, active opt-in (never pre-ticked). Rings 3
+ * and 4 are not asked at claim; they're recorded as 'deferred' and can be
+ * opened later from the piece's book.
+ */
+export interface ConsentState {
+  version: number;
+  /** ISO timestamp, stamped server-side at capture. */
+  capturedAt: string;
+  /** Opaque Clerk userId of the consenting steward, stamped server-side. */
+  capturedBy: string;
+  /** Ring 2 — "Place your piece as a light on the world map?" */
+  ring2MapPresence: boolean;
+  /** Ring 3 — chart presence. 'deferred' until the holder opts in/out later. */
+  ring3ChartPresence: boolean | 'deferred';
+  /** Ring 4 — identity flags. 'deferred' until the holder opens them later. */
+  ring4: Ring4Fields | 'deferred';
+}
+
 /**
  * Steward record — binds a piece to a Clerk user identity.
  *
@@ -277,4 +320,17 @@ export interface StewardRecord {
   outreachStatus: 'no-contact' | 'invited' | 'claimed' | 'declined';
   /** When the collector most recently exercised the claim or edit flow. */
   lastClaimAt?: string;
+  /** Current consent state. Absent on records issued before M2 — the
+   *  steward sees the consent step once on their next visit. */
+  consent?: ConsentState;
+  /** Audit trail: every consent state ever captured, oldest first. */
+  consentHistory?: ConsentState[];
+  /**
+   * The claim-ritual answer — "What do you hope this piece holds for you?"
+   * Private Ring 1 content belonging to the AUTHORING steward only: never
+   * in any hashed payload, never in public state, never returned to other
+   * parties (admin roster included). M3 migrates this into the real
+   * inscription model (D1 row + salted commitment + `inscribed` event).
+   */
+  pendingFirstInscription?: { text: string; createdAt: string };
 }

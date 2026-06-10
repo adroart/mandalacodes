@@ -16,7 +16,7 @@
 
 import type { LedgerEvent, StewardRecord, PublicAtlasState } from '../../../types';
 import { projectAll, toPublicState } from '../../../utils/ledgerProjection';
-import { CITIES } from '../../../data/cities';
+import { ATLAS_PLACES } from '../../../data/cities';
 import { FULL_ARCHIVE } from '../../../data/mockData';
 import { mirrorPublicState } from './_mirror';
 import type { MirrorEnv } from './_mirror';
@@ -239,7 +239,9 @@ export async function regeneratePublicState(
 ): Promise<PublicAtlasState> {
   const records = projectAll(events);
   const meta = buildArtworkMeta();
-  const state = toPublicState(records, meta, CITIES);
+  // ATLAS_PLACES = cities + country-level centroids, so "country only"
+  // placements resolve to a glowing dot like any city.
+  const state = toPublicState(records, meta, ATLAS_PLACES);
   const jsonBody = JSON.stringify(state, null, 2);
   await env.ATLAS_BUCKET.put(KEY_PUBLIC, jsonBody, {
     httpMetadata: { contentType: 'application/json' },
@@ -301,9 +303,24 @@ export function findStewardsForUser(
  * non-admin caller. `notes` are the admin's private annotations and must
  * never reach the collector; everything else on the record is the
  * collector's own data.
+ *
+ * `pendingFirstInscription` (the claim-ritual answer) belongs to the
+ * AUTHORING steward only: it is returned solely when `viewerUserId` matches
+ * the record's bound clerkUserId, and never to anyone else — admin roster
+ * included (see stewards/index.ts).
  */
-export function toStewardView(record: StewardRecord): Omit<StewardRecord, 'notes'> {
+export function toStewardView(
+  record: StewardRecord,
+  viewerUserId?: string,
+): Omit<StewardRecord, 'notes'> {
   const { notes: _notes, ...rest } = record;
+  if (
+    rest.pendingFirstInscription &&
+    (!viewerUserId || record.clerkUserId !== viewerUserId)
+  ) {
+    const { pendingFirstInscription: _pfi, ...withoutInscription } = rest;
+    return withoutInscription;
+  }
   return rest;
 }
 
