@@ -67,8 +67,8 @@ The original provisioning steps (now mostly done in dev; kept for the production
   Wrong or mislabelled images would mismatch a card's reading with its art. Done when all 64 images are confirmed correct on URL, piece, filename, and alt text. See [oracle/TODO.md](oracle/TODO.md).
 - [ ] **Retire legacy data** — retire the legacy oracle data files once every overlay fully covers its content _(agent · moderate)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
   Old data files are dead weight once the new overlays render everything they held. Done when the legacy files are deleted and nothing references them. See [oracle/TODO.md](oracle/TODO.md).
-- [ ] **OracleSystems network** — build the OracleSystems lineage page and the network UI (map of placed sculptures plus holder profiles) _(agent · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
-  The deck has no public view of where physical sculptures live and who holds them. Done when the lineage page and network map of placed sculptures ship. See [oracle/TODO.md](oracle/TODO.md).
+- [ ] **OracleSystems network** — build the OracleSystems lineage page and the network UI (map of placed sculptures plus holder profiles) _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(routed → Backlog)_
+  The deck has no public view of where physical sculptures live and who holds them. The map + holder-profiles half of this is the same work as living-art-legacy Rings 2/4 — build it there, not twice. Done when the lineage page ships and the network map is delivered via the atlas. See [living-art-legacy.md](todo/plans/living-art-legacy.md).
 - [ ] **Whole-deck review** — do the full whole-deck review of all 64 cards against the writing method, then launch _(you · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
   Before launch every card should be checked for consistency against the agreed writing method. Done when all 64 cards pass the review and the deck launches. See [oracle/TODO.md](oracle/TODO.md).
 
@@ -117,12 +117,16 @@ Framework built on branch `claude/oracle-mcp-artwork-readings-MMa1k` (pending me
 
 ### Living art legacy (the piece carries an ever-growing history; the planet is the global mandala)
 
-- [ ] **Ring 1 — holder legacy entries** — let stewards (and their heirs) append intention / story / dedication entries to a piece's ledger, plus confirm claim-binds-to-account as the lost-code recovery key _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md)
-  The ledger today only has admin/steward placement events; the vision needs a living, private, ever-growing record holders write to. Done when a steward can append a free-text legacy entry to a piece and a lost printed code is recoverable via account. Builds on the existing `utils/ledger.ts` + steward system, not a rebuild.
-- [ ] **Ring 2 — map presence default-on + pieceType color** — every piece (mandala or not) places on the globe by default with opt-out, non-mandalas styled a different color _(agent · moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md)
-  The planet is the global mandala, so all pieces glow on it; the atlas mostly exists already. Done when a claimed piece appears city-level by default, the claim screen shows the opt-out line, and pieceType drives color.
-- [ ] **Rings 3-4 — chart presence + social gallery** — opt-in chart attach (kinship arcs) and the per-field opt-in gallery of art owners (face/name/intention/business/mission) _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md)
-  The most exposing layer; ships last, after the ledger holds real holder data. Done when stewards can opt into chart presence and per-field identity, and the public gallery renders only opted-in fields. See the direction for the consent model.
+- [ ] **M0 — ledger hardening** — concurrency-safe R2 writes, multi-piece claim-binding fix, edition-key unification, backdated-event guard, admin-notes leak fix, actorRef attribution, first tests _(agent · moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md)
+  The review found writes can silently drop ledger events and a collector can never bind a second piece — fatal for an append-only promise. Done when the M0 checklist in the plan is green and the privacy/verifyChain tests run on CI.
+- [ ] **M1 — public piece page + Founding Lights** — zero-signup QR landing page per piece, `claimed` event + permanent claim-order ordinal (Adrian is light #1), pieceType color, unawakened dots _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md)
+  The QR must land on the piece's story, not a login wall, and claim order turns the sparse early map into the launch story. Done when a scan shows the piece's book cover and Adrian's claim ignites light #1.
+- [ ] **M2 + M3 — consent capture + Ring 1 legacy entries** — two-phase claim with one active map question (active opt-in, Rings 3-4 recorded deferred), then holder-authored `inscribed` entries with bodies in D1 (salted commitments on chain), time capsules, heir hints, holder export _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md)
+  Consent is captured once at claim; free text never enters the hashed payload so erasure stays possible. Done when a steward writes an intention, the chain verifies, erasure tombstones cleanly, and the book exports as signed JSON + PDF.
+- [ ] **M4 — sale bridge + claim requests** — HMAC webhook from adrianrasmussen.com into an admin-confirmed queue, plus self-serve stewardship requests for secondary sales/gifts/inheritance _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md)
+  A forged sale must never grant ownership, and buyers Adrian didn't pre-register need a path in. Done when a test checkout produces a pending sale Adrian confirms in one click and the buyer's QR claim works end to end.
+- [ ] **M5 — Ring 3 chart presence + the piece writes back** — consent-gated kinship/chart attach, kin-claim notifications in the piece's voice _(agent · moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md)
+  The notification is the return loop that brings holders back. Done when arcs only draw for consenting holders and a kin claim sends the letter. Ring 4's gallery surface is density-gated (≥25 opt-ins) and stays off the roadmap until then.
 
 - [ ] **Light Codes deck** — integrate the Light Codes deck (route is reserved, content lives in the archive) _(agent · deep)_ _(routed → Backlog)_
   A second deck is planned, with its route reserved and content sitting in the archive. Done when the Light Codes deck is integrated and reads on its reserved route.
