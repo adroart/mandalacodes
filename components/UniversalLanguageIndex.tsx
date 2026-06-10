@@ -2,74 +2,22 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CODON_RINGS, ALL_CARDS, CARD_BY_NUMBER, type OracleCard } from '../data/oracleData';
-import { FULL_ARCHIVE } from '../data/mockData';
-import { img } from '../utils/cloudinary';
+import { ulCardImageUrl } from '../utils/universalLanguage';
+import { HexagramSVG } from './oracle/HexagramGlyph';
 import { loadOracleIndex, rank, type SearchDoc } from '../lib/oracle/search';
 
 type ViewMode = 'grid' | 'rings';
 type GridMode = 'cards' | 'artwork';
 
 /* ─── Card image lookup ──────────────────────────────────────────────────── */
+/* Shared with the card page, the atlas, and the cast preview — one parser,
+ * one placeholder, one Cloudinary recipe (utils/universalLanguage.ts). */
 
-const UL_IMAGE_BY_NUMBER = new Map<number, string>(
-  FULL_ARCHIVE
-    .filter(a => a.series === 'Universal Language')
-    .map(a => {
-      const num = parseInt(a.coverImage.split('_')[0], 10);
-      return [num, a.coverImage] as [number, string];
-    })
-    .filter(([num]) => !isNaN(num))
-);
-
-
-function cardImageUrl(number: number, size: number): string {
-  const publicId = UL_IMAGE_BY_NUMBER.get(number);
-  if (!publicId) return img('adrian-website/placeholders/oracle-card-3', { w: size, h: size });
-  return img(publicId, { w: size, h: size, crop: 'fill', gravity: 'center', format: 'webp' });
-}
+const cardImageUrl = ulCardImageUrl;
 
 /* ─── Hexagram SVG renderer ─────────────────────────────────────────────── */
-// Unicode trigram chars → [top, mid, bot] solid (true) or broken (false).
-// Each trigram has 3 lines displayed top-to-bottom.
-const TRIGRAM_LINES: Record<string, readonly [boolean, boolean, boolean]> = {
-  '☰': [true,  true,  true ],  // Qian / Heaven
-  '☷': [false, false, false],  // Kun  / Earth
-  '☳': [false, false, true ],  // Zhen / Thunder
-  '☵': [false, true,  false],  // Kan  / Water
-  '☶': [true,  false, false],  // Gen  / Mountain
-  '☴': [true,  true,  false],  // Xun  / Wind
-  '☲': [true,  false, true ],  // Li   / Fire
-  '☱': [false, true,  true ],  // Dui  / Lake
-};
-
-// Draws a full hexagram (6 lines) as SVG with precise coordinates.
-const HexagramSVG: React.FC<{ upper: string; lower: string }> = ({ upper, lower }) => {
-  const uLines = TRIGRAM_LINES[upper] ?? [true, true, true];
-  const lLines = TRIGRAM_LINES[lower] ?? [true, true, true];
-  const lines = [...uLines, ...lLines]; // 6 lines, top → bottom
-
-  const lineH = 4;
-  const lineGap = 4;
-  const W = 40;
-  const brokenGap = 8;
-  const halfW = (W - brokenGap) / 2; // 16
-
-  return (
-    <svg viewBox="0 0 40 46" width="100%" height="100%" aria-hidden>
-      {lines.map((solid, i) => {
-        const y = 1 + i * (lineH + lineGap);
-        return solid ? (
-          <rect key={i} x={0} y={y} width={W} height={lineH} fill="currentColor" />
-        ) : (
-          <g key={i}>
-            <rect x={0}                y={y} width={halfW} height={lineH} fill="currentColor" />
-            <rect x={halfW + brokenGap} y={y} width={halfW} height={lineH} fill="currentColor" />
-          </g>
-        );
-      })}
-    </svg>
-  );
-};
+/* Shared renderer (one table, one geometry across the site) — see
+ * components/oracle/HexagramGlyph.tsx. */
 
 /* ─── Flip card tile (grid view) ─────────────────────────────────────────── */
 
@@ -81,7 +29,7 @@ const CardThumbnail: React.FC<{
   onFlipBack: () => void;
 }> = ({ card, isFlipped, artworkMode, onFlip, onFlipBack }) => {
   const navigate = useNavigate();
-  const goRead = () => navigate(`/oracle/universal-language/${card.number}`, { state: { ritual: true } });
+  const goRead = () => navigate(`/universal-language/${card.number}`, { state: { ritual: true } });
 
   // Artwork mode renders the front face flat - no 3D layer per tile.
   if (artworkMode) {
@@ -125,6 +73,8 @@ const CardThumbnail: React.FC<{
             <HexagramSVG
               upper={card.iching.upper_trigram.symbol}
               lower={card.iching.lower_trigram.symbol}
+              width={40}
+              className="w-full h-auto"
             />
           </span>
           <span className="font-label font-bold text-[14px] text-wood-900 leading-none">
@@ -180,7 +130,7 @@ const CardThumbnail: React.FC<{
 
 const RingCardTile: React.FC<{ card: OracleCard }> = ({ card }) => (
   <Link
-    to={`/oracle/universal-language/${card.number}`}
+    to={`/universal-language/${card.number}`}
     state={{ ritual: true }}
     className="group block"
   >
@@ -426,7 +376,7 @@ const FeaturedRow: React.FC = () => {
             numberAlign="left"
             title={today.card_name}
             meta={dateLabel}
-            to={`/oracle/universal-language/${today.number}`}
+            to={`/universal-language/${today.number}`}
           />
           <FeaturedTile
             eyebrow="Card of the Year"
@@ -434,7 +384,7 @@ const FeaturedRow: React.FC = () => {
             numberAlign="right"
             title={year.card_name}
             meta={yearLabel}
-            to={`/oracle/universal-language/${year.number}`}
+            to={`/universal-language/${year.number}`}
           />
         </div>
       </div>
@@ -548,7 +498,7 @@ const UniversalLanguageIndex: React.FC = () => {
 
   const handleRandom = () => {
     const card = ALL_CARDS[Math.floor(Math.random() * ALL_CARDS.length)];
-    navigate(`/oracle/universal-language/${card.number}`, { state: { ritual: true } });
+    navigate(`/universal-language/${card.number}`, { state: { ritual: true } });
   };
 
   const gridInstruction = gridMode === 'cards'

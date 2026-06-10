@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export interface SelectedPiece {
   pieceId: string;
@@ -9,6 +10,7 @@ export interface SelectedPiece {
   status: 'seeking' | 'placed';
   cityLabel?: string;     // e.g. "Lisbon, Portugal"  (omitted when seeking)
   placedAt?: string;      // ISO of most recent placed/moved event
+  cardNumber?: number;    // Universal Language code 1–64, when the piece carries one
 }
 
 export interface KinEntry {
@@ -99,6 +101,23 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({ piece, kin, onSelectKin
           {statusLine}
         </p>
       </div>
+
+      {/* Bridge back into the deck — every Universal Language piece carries
+          one of the 64 codes; the reading lives on the card page. */}
+      {typeof piece.cardNumber === 'number' && (
+        <div className="border-t border-wood-200 pt-5 mt-5">
+          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
+            The code it carries
+          </p>
+          <Link
+            to={`/universal-language/${piece.cardNumber}`}
+            state={{ ritual: true }}
+            className="font-serif text-lg text-wood-900 hover:text-bronze-700 transition-colors leading-snug"
+          >
+            Read Code {piece.cardNumber} →
+          </Link>
+        </div>
+      )}
 
       {kin && kin.length > 0 && (
         <div className="border-t border-wood-200 pt-5 mt-5">

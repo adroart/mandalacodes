@@ -73,6 +73,8 @@ export interface CardSynthesis {
     human_design: SynthesisHumanDesign;
     body: SynthesisBody;
   };
+  /** RELATIONS overlay, present when oracle/sections/relations/NN.json exists. */
+  relations?: RelationsSection;
 }
 
 /* ─── Auto-discovery ─────────────────────────────────────────────────────── */
@@ -130,10 +132,68 @@ type BodySection = {
   meta?: { organ?: string; amino_acid_name?: string; codon_ring?: string };
 };
 
+/* RELATIONS overlay — the kinship web around a code. Every seat in the card's
+ * Relations panel (pair, inverse, programming partner, codon ring, tarot,
+ * sky, immortals, hebrew letter) reads from here when the file exists. */
+export interface RelationsSection {
+  number: number;
+  card_name: string;
+  status?: string;
+  unity_line: string;
+  pair: {
+    number: number;
+    card_name: string;
+    hexagram_name: string;
+    teaching: string;
+  };
+  inverse: {
+    number: number;
+    card_name: string | null;
+    hexagram_name: string | null;
+    is_self_inverse: boolean;
+    teaching: string;
+  };
+  programming_partner: {
+    number: number;
+    card_name: string;
+    teaching: string;
+  };
+  codon_ring: {
+    name: string;
+    tarot: string;
+    siblings: number[];
+    teaching: string;
+  };
+  tarot: {
+    card: string;
+    teaching: string;
+  };
+  sky: {
+    value: string;
+    type: string;
+    teaching: string;
+  };
+  immortals: {
+    upper: { trigram: string; name: string; virtue: string };
+    lower: { trigram: string; name: string; virtue: string };
+    same_trigram: boolean;
+    teaching: string;
+  };
+  hebrew_letter: {
+    letter: string;
+    meaning: string;
+    path_number: string;
+    path_connects: string;
+    teaching: string;
+  };
+}
+
 const keysModules = import.meta.glob<{ default: KeysSection }>('../oracle/sections/keys/*.json');
 const designModules = import.meta.glob<{ default: DesignSection }>('../oracle/sections/design/*.json');
 const ichingModules = import.meta.glob<{ default: IchingSection }>('../oracle/sections/iching/*.json');
 const bodyModules = import.meta.glob<{ default: BodySection }>('../oracle/sections/body/*.json');
+// Character class keeps the per-card files only (skips _per_card_reference.json).
+const relationsModules = import.meta.glob<{ default: RelationsSection }>('../oracle/sections/relations/[0-9][0-9].json');
 
 /* Deep-pass priority. When a `NN.deep.json` exists alongside `NN.json`, prefer
  * the deep version. This lets the pilot (UL 3 / 22 / 50) preview the deep
@@ -243,6 +303,14 @@ export async function getSynthesis(cardNumber: number): Promise<CardSynthesis | 
       physiology: body.physiology,
       amino_acid: body.amino_acid,
     };
+  }
+
+  // RELATIONS overlay. Feeds every seat of the card's Relations panel:
+  // unity line, pair, inverse, programming partner, codon ring, tarot,
+  // sky, immortals, hebrew letter.
+  const relationsLoader = relationsModules[`../oracle/sections/relations/${pad2(cardNumber)}.json`];
+  if (relationsLoader) {
+    merged.relations = (await relationsLoader()).default;
   }
 
   synthesisCache.set(cardNumber, merged);

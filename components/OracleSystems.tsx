@@ -212,7 +212,7 @@ const OracleSystems: React.FC = () => {
           </p>
 
           <Link
-            to="/oracle/universal-language"
+            to="/universal-language"
             className="inline-block mt-10 font-label text-[11px] uppercase tracking-[0.32em] text-bronze-700 hover:text-bronze-900 transition-colors"
           >
             Return to the Oracle <span aria-hidden="true">→</span>

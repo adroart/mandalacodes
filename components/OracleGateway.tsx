@@ -55,11 +55,11 @@ const OracleGateway: React.FC = () => {
   []);
 
   const go = (number: number) => {
-    navigate(`/oracle/universal-language/${number}`, { state: { ritual: true } });
+    navigate(`/universal-language/${number}`, { state: { ritual: true } });
   };
 
   const goToReading = () => {
-    navigate('/oracle/universal-language');
+    navigate('/universal-language');
   };
 
   return (
@@ -207,9 +207,11 @@ const OracleGateway: React.FC = () => {
             Universal Language
           </p>
 
-          <Link to="/oracle/universal-language" className="og-link">Get a Reading</Link>
-          <Link to="/creations/multidimensional-art/universal-language" className="og-link">View the Artwork</Link>
-          <Link to="/inquire" className="og-link">Contact the Artist</Link>
+          <Link to="/universal-language" className="og-link">Get a Reading</Link>
+          {/* Artwork sales + inquiries live on adrianrasmussen.com, not on
+              this domain — internal Links here would land on the 404 page. */}
+          <a href="https://adrianrasmussen.com/creations/multidimensional-art/universal-language" className="og-link">View the Artwork</a>
+          <a href="https://adrianrasmussen.com/inquire" className="og-link">Contact the Artist</a>
 
           <p style={{
             fontFamily: "'Lato', Helvetica, sans-serif",

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useProfile } from '../lib/profile/context';
 import ProfileForm from './oracle/ProfileForm';
 import ProfileGraph from './oracle/ProfileGraph';
@@ -87,7 +88,15 @@ const OracleProfile: React.FC = () => {
                 color: 'var(--color-wood-700)',
               }}
             >
-              {profile!.inputs.date} at {profile!.inputs.time} · {profile!.inputs.place.label}
+              {profile!.inputs.date} at {profile!.inputs.time} ·{' '}
+              {/* The birth place is also a sage marker on the Atlas globe;
+                  this deep link preselects it there. */}
+              <Link
+                to="/atlas?piece=__birth-place__"
+                style={{ color: 'var(--color-bronze-600)', textDecoration: 'none' }}
+              >
+                {profile!.inputs.place.label} — on the Atlas →
+              </Link>
             </div>
             <button
               type="button"
