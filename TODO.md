@@ -10,6 +10,7 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 - [ ] Pick the canonical web address: redirect www to the bare domain for SEO _(band: you-required)_ _(effort: quick)_
 - [ ] Decide what to do with the leftover local atlas/Clerk work branch and its uncommitted files _(band: you-required)_ _(effort: moderate)_
 - [ ] Start writing the 384 changing-line texts for the oracle via `/cast-content` _(band: you-required)_ _(effort: deep)_ → PR: [#6](https://github.com/technicianofthesacred/mandalacodes/pull/6)
+- [ ] Click through the interconnection branch on a preview deploy (card Relations seats, atlas deep links, birth-place marker, steward picker) before merging _(band: you-required)_ _(effort: quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify
 
 ### Done
 
@@ -41,13 +42,29 @@ The original provisioning steps (now mostly done in dev; kept for the production
 - [ ] Decide whether to commit the full deep-pass rewrite for the remaining 61 I Ching and Body cards _(band: you-required)_ _(effort: deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md)
 - [ ] Write invocations for cards 2 to 64 (Adrian's own voice, not delegable) _(band: you-required)_ _(effort: deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md)
 - [ ] Do the Phase 2 personal pass on the Gene Keys and Human Design scaffolds to take each card to final _(band: you-required)_ _(effort: deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md)
-- [ ] Wire the Relations overlay into the live card (files exist on disk, not yet rendering) _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [oracle/TODO.md](oracle/TODO.md)
+- [ ] Do the Phase 2 personal pass on the 63 scaffold RELATIONS files — they now render live on every card's Relations panel _(band: you-required)_ _(effort: deep)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Content
 - [ ] Build the acquire detail section and configurator (sizes, editions) on the buy sheet _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [oracle/TODO.md](oracle/TODO.md)
 - [ ] Verify all 64 artwork images (Cloudinary URL, correct piece, filename, alt text) _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [oracle/TODO.md](oracle/TODO.md)
 - [ ] Retire the legacy oracle data files once every overlay fully covers its content _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [oracle/TODO.md](oracle/TODO.md)
 - [ ] Build the OracleSystems lineage page and the network UI (map of placed sculptures plus holder profiles) _(band: agent-runnable)_ _(effort: deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md)
 - [ ] Do the full whole-deck review of all 64 cards against the writing method, then launch _(band: you-required)_ _(effort: deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md)
-- [ ] Show a "no moving lines, the hexagram is stable" message when a cast produces no moving lines _(band: agent-runnable)_ _(effort: quick)_
+
+### Done
+
+- ~~Wire the Relations overlay into the live card~~, branch `claude/interconnection-architecture-review-z9vmtw`, 2026-06-10. All 64 RELATIONS files now feed every seat of the Relations panel (pair, inverse, partner, ring, tarot, zodiac, Immortal, Hebrew letter).
+- ~~Show a "no moving lines, the hexagram is stable" message when a cast produces no moving lines~~, same branch, 2026-06-10.
+
+## Interconnection (four pillars)
+
+The June 2026 structural review wired the deck ↔ atlas ↔ profile ↔ reading bridges; full write-up of what shipped and what remains: [interconnection-followups.md](todo/plans/interconnection-followups.md).
+
+- [ ] Wire Collections into the card pages (save a card near Acquire/Share; "my collected cards on the atlas" view) _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md)
+- [ ] Dedupe the sphere metadata (PROFILE_POSITIONS vs SPHERES) and the 11-key ProfileKey lists across profile.ts / put.js _(band: agent-runnable)_ _(effort: quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md)
+- [ ] Extract one shared city-picker component for AdminAtlas and StewardEdit _(band: agent-runnable)_ _(effort: quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md)
+- [ ] Surface the kinship-arc cap ("showing X of Y") in the atlas filters row _(band: agent-runnable)_ _(effort: quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md)
+- [ ] Add a "Map your birth chart" link to the Gateway so QR scanners find the profile _(band: agent-runnable)_ _(effort: quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md)
+- [ ] Unify the last two hexagram renderers (Gateway orbital, CoinCast animated) onto the shared glyph module — needs visual QA _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md)
+- [ ] Make the CoinCast "becoming" reading per-hexagram instead of one generic sentence _(band: you-required)_ _(effort: deep)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Content
 
 ## Oracle MCP, search & personalization
 
