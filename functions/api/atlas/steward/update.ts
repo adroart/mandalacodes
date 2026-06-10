@@ -30,6 +30,7 @@ import type { LedgerEvent, LedgerEventType, PieceRecord } from '../../../../type
 import { appendEvent, groupChains, BackdatedEventError } from '../../../../utils/ledger';
 import { projectPiece } from '../../../../utils/ledgerProjection';
 import { nextConsentState } from '../../../../utils/consent';
+import { addHeir, parseHeirInput, revokeHeir } from '../../../../utils/inscriptions';
 import { getCityById } from '../../../../data/cities';
 import type { PagesContext } from '../_helpers';
 import {
@@ -39,6 +40,7 @@ import {
   readStewards,
   regeneratePublicState,
   sanitizeEventsForSteward,
+  toStewardView,
 } from '../_helpers';
 import { requireUser, isAuthResponse } from '../../_lib/clerk';
 
@@ -47,6 +49,12 @@ interface UpdateBody {
   editionNumber?: unknown;
   cityId?: unknown;
   isPublic?: unknown;
+  /** "Pass it on" (M3): register an heir hint — { email, name? }. Hints
+   *  for the executor only, mutable storage only; the transfer itself is
+   *  always an artist-mediated `transferred` event. No ledger write. */
+  addHeir?: unknown;
+  /** Revoke a registered heir hint — { email }. */
+  revokeHeir?: unknown;
 }
 
 function genEventId(): string {
@@ -96,6 +104,70 @@ export async function onRequestPost(
   );
   if (!record || record.clerkUserId !== auth.userId) {
     return json({ ok: false, error: 'forbidden' }, 403);
+  }
+
+  // ---------- "Pass it on" — heir registrations (M3) ----------
+  // Pure steward-record mutation: heirs are hints for the executor, never
+  // credentials, so there is no ledger event and no public-state regen.
+  // Heir emails live ONLY on the mutable record — never in a hashed
+  // payload, never in the public projection.
+  if (body.addHeir !== undefined || body.revokeHeir !== undefined) {
+    if (body.addHeir !== undefined && body.revokeHeir !== undefined) {
+      return json({ ok: false, error: 'Send addHeir OR revokeHeir, not both' }, 400);
+    }
+    const now = new Date().toISOString();
+    let heirError: string | null = null;
+    const heirOutcome = await mutateStewards(env, (current) => {
+      heirError = null; // reset on mutator retry
+      const next = current.map((s) => {
+        if (
+          s.pieceId !== record.pieceId ||
+          (s.editionNumber ?? undefined) !== (record.editionNumber ?? undefined)
+        ) {
+          return s;
+        }
+        if (body.addHeir !== undefined) {
+          const input = parseHeirInput(body.addHeir);
+          if (!input.ok) {
+            heirError = input.error;
+            return s;
+          }
+          const added = addHeir(s, input.value, actorUserId, now);
+          if (!added.ok) {
+            heirError = added.error;
+            return s;
+          }
+          return { ...added.value, lastClaimAt: now };
+        }
+        const revokeObj = body.revokeHeir as { email?: unknown } | null;
+        const email =
+          revokeObj && typeof revokeObj === 'object' && typeof revokeObj.email === 'string'
+            ? revokeObj.email
+            : '';
+        if (!email) {
+          heirError = 'revokeHeir: missing email';
+          return s;
+        }
+        const revoked = revokeHeir(s, email);
+        if (!revoked.ok) {
+          heirError = revoked.error;
+          return s;
+        }
+        return { ...revoked.value, lastClaimAt: now };
+      });
+      if (heirError) return json({ ok: false, error: heirError }, 400);
+      return { next, result: undefined };
+    });
+    if (heirOutcome instanceof Response) return heirOutcome;
+    const updated = heirOutcome.next.find(
+      (s) =>
+        s.pieceId === record.pieceId &&
+        (s.editionNumber ?? undefined) === (record.editionNumber ?? undefined),
+    );
+    return json({
+      ok: true,
+      steward: updated ? toStewardView(updated, actorUserId) : null,
+    });
   }
 
   const cityIdProvided = body.cityId !== undefined && body.cityId !== null;

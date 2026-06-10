@@ -32,6 +32,42 @@ export const KEY_PUBLIC = 'atlas/public.json';
 
 export interface AtlasEnv extends MirrorEnv, AuthEnv {
   ATLAS_BUCKET: R2Bucket;
+  /** Shared `adrian-website` D1 database (see wrangler.toml). The atlas
+   *  side uses it ONLY for the mutable legacy tables shipped in the
+   *  003_atlas_legacy migration (todo/handoff/adrian-website/). Optional:
+   *  handlers degrade with a clear 503 until that migration is applied. */
+  DB?: AtlasD1Database;
+}
+
+// Minimal D1 shapes — same philosophy as the R2 types above: just what we
+// call, so we don't depend on @cloudflare/workers-types here.
+export interface AtlasD1PreparedStatement {
+  bind(...values: unknown[]): AtlasD1PreparedStatement;
+  first<T = unknown>(): Promise<T | null>;
+  run(): Promise<{ success: boolean; meta?: { changes?: number } }>;
+  all<T = unknown>(): Promise<{ results: T[] }>;
+}
+export interface AtlasD1Database {
+  prepare(query: string): AtlasD1PreparedStatement;
+}
+
+/** True when a D1 error means the 003_atlas_legacy tables don't exist yet
+ *  (migration not applied on the shared database). */
+export function isMissingTableError(err: unknown): boolean {
+  return err instanceof Error && /no such table/i.test(err.message);
+}
+
+/** The graceful-degradation response for every legacy endpoint until the
+ *  D1 migration lands (it ships via todo/handoff/adrian-website/). */
+export function migrationNotApplied(): Response {
+  return json(
+    {
+      ok: false,
+      error:
+        'The legacy archive is not available yet — D1 migration 003_atlas_legacy has not been applied to the shared database.',
+    },
+    503,
+  );
 }
 
 // Minimal shape we need from R2 — avoids depending on @cloudflare/workers-types.

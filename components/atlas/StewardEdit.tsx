@@ -6,6 +6,7 @@ import { ATLAS_PLACES, getCityById, isCountryPlace } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
 import ConsentRings from './ConsentRings';
 import type { ConsentChoice } from './ConsentRings';
+import LegacyBook from './LegacyBook';
 
 /**
  * Steward edit page. Rendered at `/atlas/edit`.
@@ -354,8 +355,11 @@ const StewardEdit: React.FC = () => {
   }
 
   return (
-    <section className="min-h-screen bg-paper-50 px-6 py-16">
+    <section className="min-h-screen bg-paper-50 px-6 py-16 print:bg-white print:py-0">
       <div className="w-full max-w-xl mx-auto">
+        {/* Everything interactive is print-hidden; the LegacyBook below
+            carries its own print-only rendering of the piece's book. */}
+        <div className="print:hidden">
         <h1
           className="font-display text-3xl text-wood-900 font-medium text-center mb-6"
           style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}
@@ -526,9 +530,25 @@ const StewardEdit: React.FC = () => {
         </div>
         </>
         )}
+        </div>
+
+        {/* Legacy book — Ring 1 timeline, add-entry, heirs, export (M3).
+            Includes the print-only book rendering. */}
+        {piece && stewardRecord && (
+          <LegacyBook
+            steward={stewardRecord}
+            piece={piece}
+            getToken={getToken}
+            onStewardUpdate={(s) =>
+              setEntries(prev =>
+                prev.map((e, i) => (i === selectedIdx ? { ...e, steward: s } : e)),
+              )
+            }
+          />
+        )}
 
         {/* Sign out */}
-        <div className="text-center pt-6 border-t border-wood-200">
+        <div className="text-center pt-6 border-t border-wood-200 print:hidden">
           <button
             type="button"
             onClick={handleSignOut}

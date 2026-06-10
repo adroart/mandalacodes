@@ -73,6 +73,15 @@ const FORBIDDEN_KEYS = [
   'history',
   'hash',
   'prevHash',
+  // M3 inscription fields — the body lives only in D1; even the contentless
+  // chain pointers (inscriptionId/contentHash) stay off the public surface.
+  'body',
+  'inscriptionId',
+  'contentHash',
+  'inscriptionKind',
+  'fromRef',
+  'toRef',
+  'erase_reason',
 ];
 
 function buildState() {

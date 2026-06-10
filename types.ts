@@ -205,7 +205,9 @@ export type LedgerEventType =
   | 'withdrawn'
   | 'revealed'
   | 'retired'
-  | 'claimed'; // first bind; Founding Lights ordinal source; no PII
+  | 'claimed'     // first bind; Founding Lights ordinal source; no PII
+  | 'inscribed'   // body lives in D1; chain holds pointer + salted commitment
+  | 'transferred'; // stewardship passed; opaque refs only
 
 export interface LedgerEvent {
   id: string;
@@ -217,11 +219,29 @@ export interface LedgerEvent {
   /** Non-personal operational text only — admin-authored notes are stripped
    *  from steward-facing responses. Never put names/emails/free prose here. */
   note?: string;
-  actor: 'admin' | 'steward';
+  actor: 'admin' | 'steward' | 'heir';
   /** Opaque actor reference (Clerk userId today) — never an email or name.
    *  Optional and additive: the canonicalizer drops undefined, so events
    *  written before this field existed keep their original hashes. */
   actorRef?: string;
+  /** 'inscribed' only — id of the D1 atlas_inscriptions row. The body lives
+   *  exclusively in mutable D1 storage; the chain carries the pointer plus
+   *  a salted commitment so the entry's existence is tamper-evident while
+   *  its content stays erasable (chain content invariant). */
+  inscriptionId?: string;
+  /** 'inscribed' only — SHA-256(salt || body), hex. The salt lives beside
+   *  the body in D1 and is deleted with it on legal erasure, making the
+   *  commitment unlinkable. Never a hash of the bare body. */
+  contentHash?: string;
+  /** 'inscribed' only — non-personal category label. */
+  inscriptionKind?: 'intention' | 'story' | 'dedication';
+  /** 'transferred' only — opaque ref of the outgoing steward. Never an
+   *  email or name. */
+  fromRef?: string;
+  /** 'transferred' only — opaque ref of the incoming steward. */
+  toRef?: string;
+  /** 'transferred' only — why stewardship moved. */
+  transferKind?: 'sale' | 'gift' | 'inheritance' | 'artist-rebind';
   /** Marker type override, set on `created` (genesis) only. Lets a piece that
    *  lives outside FULL_ARCHIVE declare its globe color category without a
    *  series lookup. When absent, `pieceType` is derived from the series in
@@ -293,6 +313,25 @@ export interface ConsentState {
 }
 
 /**
+ * Heir registration (M3) — a HINT for whoever settles the steward's estate,
+ * never an auto-binding credential. Activation is always a mediated
+ * `transferred` event issued by the artist/executor. Lives ONLY on the
+ * mutable StewardRecord: heir emails/names never enter a hashed payload,
+ * the public projection, or the GitHub mirror.
+ */
+export interface HeirRegistration {
+  email: string;
+  name?: string;
+  /** ISO timestamp, stamped server-side at registration. */
+  registeredAt: string;
+  /** Opaque Clerk userId of the steward who registered the heir. */
+  registeredBy: string;
+  /** 'pending' on registration; 'active'/'revoked' via later edits.
+   *  Status is informational only — no value ever grants access. */
+  status: 'pending' | 'active' | 'revoked';
+}
+
+/**
  * Steward record — binds a piece to a Clerk user identity.
  *
  * Admin creates the record with the collector's `email`. On first sign-in
@@ -333,4 +372,10 @@ export interface StewardRecord {
    * inscription model (D1 row + salted commitment + `inscribed` event).
    */
   pendingFirstInscription?: { text: string; createdAt: string };
+  /**
+   * "Pass it on" registrations — hints for the executor (see
+   * HeirRegistration). The transfer itself always happens through the
+   * artist via an audited `transferred` event; nothing here binds anyone.
+   */
+  heirs?: HeirRegistration[];
 }
