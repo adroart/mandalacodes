@@ -51,9 +51,14 @@ export function buildHologeneticProfile({ utcBirth }: ProfileInputs): Hologeneti
     iq:         toGL(natal.venus),
     eq:         toGL(natal.mars),
     sq:         toGL(design.venus),
+    // Venus Core (6th Venus sphere). Re-read of the same gate as the Pearl's
+    // Vocation (`core`), per the Golden Path (wound -> gift).
+    venusCore:  toGL(design.mars),
 
-    core:       toGL(design.mars),
+    core:       toGL(design.mars),   // Pearl "Vocation"
     culture:    toGL(design.jupiter),
+    // Brand re-reads the Personality Sun gate — the same Gene Key as Life's Work.
+    brand:      toGL(natal.sun),
     pearl:      toGL(natal.jupiter),
   };
 }
