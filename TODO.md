@@ -115,6 +115,15 @@ Framework built on branch `claude/oracle-mcp-artwork-readings-MMa1k` (pending me
 
 ## Future ("home for all things mandala")
 
+### Living art legacy (the piece carries an ever-growing history; the planet is the global mandala)
+
+- [ ] **Ring 1 — holder legacy entries** — let stewards (and their heirs) append intention / story / dedication entries to a piece's ledger, plus confirm claim-binds-to-account as the lost-code recovery key _(agent · deep)_ → Direction: [living-art-legacy](../i64os/substrate/directions/living-art-legacy.md)
+  The ledger today only has admin/steward placement events; the vision needs a living, private, ever-growing record holders write to. Done when a steward can append a free-text legacy entry to a piece and a lost printed code is recoverable via account. Builds on the existing `utils/ledger.ts` + steward system, not a rebuild.
+- [ ] **Ring 2 — map presence default-on + pieceType color** — every piece (mandala or not) places on the globe by default with opt-out, non-mandalas styled a different color _(agent · moderate)_ → Direction: [living-art-legacy](../i64os/substrate/directions/living-art-legacy.md)
+  The planet is the global mandala, so all pieces glow on it; the atlas mostly exists already. Done when a claimed piece appears city-level by default, the claim screen shows the opt-out line, and pieceType drives color.
+- [ ] **Rings 3-4 — chart presence + social gallery** — opt-in chart attach (kinship arcs) and the per-field opt-in gallery of art owners (face/name/intention/business/mission) _(agent · deep)_ → Direction: [living-art-legacy](../i64os/substrate/directions/living-art-legacy.md)
+  The most exposing layer; ships last, after the ledger holds real holder data. Done when stewards can opt into chart presence and per-field identity, and the public gallery renders only opted-in fields. See the direction for the consent model.
+
 - [ ] **Light Codes deck** — integrate the Light Codes deck (route is reserved, content lives in the archive) _(agent · deep)_ _(routed → Backlog)_
   A second deck is planned, with its route reserved and content sitting in the archive. Done when the Light Codes deck is integrated and reads on its reserved route.
 - [ ] **More decks** — add more decks beyond Universal Language and Light Codes as they emerge _(you · deep)_ _(routed → Backlog)_
