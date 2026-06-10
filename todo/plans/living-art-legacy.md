@@ -195,13 +195,20 @@ page (`WorksPage.tsx`). The QR is a *pointer*, never a credential.
    commitments (`SHA-256(salt || body)`, salt stored beside the body in D1,
    deleted together on erasure so the commitment becomes unlinkable). Names,
    emails, free text, birth data, photos live exclusively in mutable storage.
-   Erasure = delete body+salt, set tombstone; the projection renders
-   "[entry removed by its author]". A distinct moderator-redaction path
-   exists with the reason logged. **Only the contentless chain and
-   `public.json` may ever reach the public GitHub mirror** — Software
-   Heritage archives that repo indefinitely, so anything personal that
-   touches it is unerasable globally. The existing `LedgerEvent.note` field
-   is restricted to non-personal operational text from now on.
+   **Erasure semantics (ratified 2026-06-10): the history lives with the
+   piece, forever.** Entries persist across account deletion and ownership
+   transfer; whoever holds the piece — now or in fifty years — can read its
+   whole book. What a holder controls is the opt-in display layer only
+   (map presence, identity fields, what's publicly shown). The erasure
+   mechanism (delete body+salt, tombstone, "[entry removed]") exists solely
+   as the legal escape hatch for an explicit data-erasure demand the law
+   compels us to honor — it is never triggered by account deletion or
+   transfer. A distinct moderator-redaction path exists with the reason
+   logged. **Only the contentless chain and `public.json` may ever reach
+   the public GitHub mirror** — Software Heritage archives that repo
+   indefinitely, so anything personal that touches it is unerasable
+   globally. The existing `LedgerEvent.note` field is restricted to
+   non-personal operational text from now on.
 
 7. **NEW — Founding Lights (claim-order provenance).** First successful claim
    appends a `claimed` chain event (actor `steward`, `actorRef`, no PII).
@@ -319,8 +326,10 @@ their book.
   auto-binding credentials**; activation is always a mediated `transferred`
   event).
 - **Holder export**: signed JSON + print-styled PDF of the full book.
-- Clerk `user.deleted` webhook → tombstone inscriptions by author, unbind
-  steward records (piece reverts to artist root-of-trust; chain intact).
+- Clerk `user.deleted` webhook → unbind steward records (piece reverts to
+  artist root-of-trust; chain intact). **Inscriptions are NOT erased** —
+  the history lives with the piece forever (ratified); the erasure endpoint
+  is reserved for explicit legal demands only.
 - `transferred` event type live for admin use (artist-mediated transfer);
   `event.ts` VALID_TYPES gains `inscribed|transferred|claimed`.
 
@@ -335,7 +344,9 @@ record requests stewardship and Adrian approves.
   `timestamp + "." + rawBody`, dedicated `SALE_WEBHOOK_SECRET`), ±5-min
   replay window, idempotent on `saleId` (`INSERT OR IGNORE`). Payload:
   `{saleId, sku?, pieceId?, editionNumber?, buyerEmail, buyerName?, saleDate,
-  priceCents?, currency?}`. Never writes the ledger directly.
+  priceCents?, currency?}`. Never writes the ledger directly. Price is
+  D1-only, never chain/public, visible to the admin **and the piece's
+  current steward** (ratified).
 - **Admin-confirmed queue** (ratified — no auto-fire at this volume; a forged
   webhook would otherwise grant ownership): `GET /api/atlas/sales` +
   `POST /api/atlas/sales/confirm` → steward record + `created` (or
@@ -504,21 +515,22 @@ Storage placement (the PII table):
 - Auto-firing sale → ledger — **closed**: admin-confirmed queue (a forged
   webhook must never grant ownership).
 
-## Open questions (the short list that actually needs Adrian)
+## Open questions — RATIFIED 2026-06-10 (Adrian's answers)
 
-1. **Heir model** — recommended and assumed above: pre-registered heirs are
-   hints for the executor; activation is always artist/executor-mediated
-   `transferred`. Confirm.
-2. **Piece registry for non-mandalas** — artwork metadata comes from
-   `FULL_ARCHIVE`; a sold piece outside it has no title/series anywhere.
-   Does Adrian add an archive entry per sellable piece, or do we build a
-   minimal piece registry? (Blocks M4 polish, not M0–M3.)
-3. **User-deletion semantics** — recommended: account deletion unbinds the
-   steward record (piece reverts to artist root-of-trust) and tombstones
-   their inscriptions. Confirm.
-4. **Record `priceCents`?** — proposed optional, D1-only, never public/chain.
-   Confirm Adrian wants it recorded at all.
-5. **Founding Lights scope** — badge the first 64 lights (mirroring the
-   hexagrams), the first 8, or all ordinals equally? (Pure product taste;
-   default: every light shows its number, the first 64 get the founding
-   mark.)
+1. **Heir model — ratified: hints + mediated transfer.** Pre-registered
+   heirs are hints for the executor; activation is always artist/executor-
+   mediated `transferred`. Never auto-binding.
+2. **Piece registry — ratified: archive entries per piece.** Adrian adds a
+   `FULL_ARCHIVE` entry for each sellable piece; no separate registry built.
+3. **User-deletion semantics — ratified: the history lives with the piece,
+   forever.** This is an art project; account deletion unbinds the steward
+   record (piece reverts to artist root-of-trust) but inscriptions persist
+   and travel with the piece — every current and future owner can read the
+   whole book. Holders control only the opt-in display layer (map, identity,
+   what's shown publicly). The erasure/tombstone mechanism is retained
+   strictly as the legal escape hatch for an explicit erasure demand.
+4. **Sale price — ratified: record it.** D1-only, never chain/public;
+   visible to the admin (master ledger holder) and the piece's current
+   steward.
+5. **Founding Lights scope** — still open (pure product taste; defaulted:
+   every light shows its number, the first 64 carry the founding mark).
