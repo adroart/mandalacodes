@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CODON_RINGS, ALL_CARDS, CARD_BY_NUMBER, type OracleCard } from '../data/oracleData';
 import { ulCardImageUrl } from '../utils/universalLanguage';
+import { HexagramSVG } from './oracle/HexagramGlyph';
 import { loadOracleIndex, rank, type SearchDoc } from '../lib/oracle/search';
 
 type ViewMode = 'grid' | 'rings';
@@ -15,47 +16,8 @@ type GridMode = 'cards' | 'artwork';
 const cardImageUrl = ulCardImageUrl;
 
 /* ─── Hexagram SVG renderer ─────────────────────────────────────────────── */
-// Unicode trigram chars → [top, mid, bot] solid (true) or broken (false).
-// Each trigram has 3 lines displayed top-to-bottom.
-const TRIGRAM_LINES: Record<string, readonly [boolean, boolean, boolean]> = {
-  '☰': [true,  true,  true ],  // Qian / Heaven
-  '☷': [false, false, false],  // Kun  / Earth
-  '☳': [false, false, true ],  // Zhen / Thunder
-  '☵': [false, true,  false],  // Kan  / Water
-  '☶': [true,  false, false],  // Gen  / Mountain
-  '☴': [true,  true,  false],  // Xun  / Wind
-  '☲': [true,  false, true ],  // Li   / Fire
-  '☱': [false, true,  true ],  // Dui  / Lake
-};
-
-// Draws a full hexagram (6 lines) as SVG with precise coordinates.
-const HexagramSVG: React.FC<{ upper: string; lower: string }> = ({ upper, lower }) => {
-  const uLines = TRIGRAM_LINES[upper] ?? [true, true, true];
-  const lLines = TRIGRAM_LINES[lower] ?? [true, true, true];
-  const lines = [...uLines, ...lLines]; // 6 lines, top → bottom
-
-  const lineH = 4;
-  const lineGap = 4;
-  const W = 40;
-  const brokenGap = 8;
-  const halfW = (W - brokenGap) / 2; // 16
-
-  return (
-    <svg viewBox="0 0 40 46" width="100%" height="100%" aria-hidden>
-      {lines.map((solid, i) => {
-        const y = 1 + i * (lineH + lineGap);
-        return solid ? (
-          <rect key={i} x={0} y={y} width={W} height={lineH} fill="currentColor" />
-        ) : (
-          <g key={i}>
-            <rect x={0}                y={y} width={halfW} height={lineH} fill="currentColor" />
-            <rect x={halfW + brokenGap} y={y} width={halfW} height={lineH} fill="currentColor" />
-          </g>
-        );
-      })}
-    </svg>
-  );
-};
+/* Shared renderer (one table, one geometry across the site) — see
+ * components/oracle/HexagramGlyph.tsx. */
 
 /* ─── Flip card tile (grid view) ─────────────────────────────────────────── */
 
@@ -111,6 +73,8 @@ const CardThumbnail: React.FC<{
             <HexagramSVG
               upper={card.iching.upper_trigram.symbol}
               lower={card.iching.lower_trigram.symbol}
+              width={40}
+              className="w-full h-auto"
             />
           </span>
           <span className="font-label font-bold text-[14px] text-wood-900 leading-none">

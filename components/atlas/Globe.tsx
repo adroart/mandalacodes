@@ -30,7 +30,10 @@ export interface GlobeNode {
   id: string;                       // unique key (e.g. `pieceId:editionNumber`)
   lat: number;
   lng: number;
-  status: 'placed' | 'seeking';     // seeking = not yet anchored, render dimmer
+  // seeking = not yet anchored, render dimmer.
+  // origin = the visitor's own birth place (from their Hologenetic Profile),
+  // rendered in the profile's activation sage rather than bronze.
+  status: 'placed' | 'seeking' | 'origin';
   label?: string;                   // unused by Globe itself, passed through
 }
 
@@ -51,6 +54,12 @@ const GLOW_COLOR: [number, number, number] = [0.27, 0.22, 0.14];   // bronze-900
 // Marker sizes in cobe units.
 const PLACED_SIZE = 0.04;
 const SEEKING_SIZE = 0.025;
+const ORIGIN_SIZE = 0.035;
+
+// The visitor's birth place — profile activation sage (#9bab86), so the
+// personal marker reads as a different order of thing than the bronze pieces.
+const ORIGIN_COLOR: [number, number, number] = [0.61, 0.67, 0.53];
+const SEEKING_COLOR: [number, number, number] = [0.55, 0.48, 0.36];
 
 // Auto-rotation in radians per frame; ~0.005 reads as a slow, quiet drift.
 const ROTATION_SPEED = 0.005;
@@ -169,13 +178,17 @@ export default function Globe({
     () =>
       nodes.map(n => ({
         location: [n.lat, n.lng] as [number, number],
-        size: n.status === 'placed' ? PLACED_SIZE : SEEKING_SIZE,
-        // Seeking pieces get a softer bronze (lower-saturation, dimmer).
-        // Cobe's per-marker `color` overrides the global markerColor.
+        size:
+          n.status === 'placed' ? PLACED_SIZE
+          : n.status === 'origin' ? ORIGIN_SIZE
+          : SEEKING_SIZE,
+        // Seeking pieces get a softer bronze (lower-saturation, dimmer);
+        // the visitor's birth place gets the profile sage. Cobe's per-marker
+        // `color` overrides the global markerColor.
         color:
-          n.status === 'seeking'
-            ? ([0.55, 0.48, 0.36] as [number, number, number])
-            : undefined,
+          n.status === 'seeking' ? SEEKING_COLOR
+          : n.status === 'origin' ? ORIGIN_COLOR
+          : undefined,
         id: n.id,
       })),
     [nodes],

@@ -16,6 +16,7 @@ import ImageViewer from './oracle/ImageViewer';
 import BuySheet from './oracle/BuySheet';
 import CoinCast from './oracle/CoinCast';
 import YourPositionCallout from './oracle/YourPositionCallout';
+import { HexagramSVG, TrigramSVG } from './oracle/HexagramGlyph';
 import { castForHexagram, type CastResult } from '../utils/ichingCasting';
 import { ulCardImageUrl, ulCardPublicId, ulPieceForCard } from '../utils/universalLanguage';
 import { useCardPlacement } from '../lib/atlas/state';
@@ -86,82 +87,9 @@ const CARD_SHADOW_DEEP = 'shadow-[0_1px_0_rgba(255,255,255,0.05),0_12px_40px_rgb
 const CARD_SHADOW_LIGHT = 'shadow-[0_4px_16px_rgba(60,44,22,0.1),0_1px_3px_rgba(60,44,22,0.06)]';
 
 
-/* ─── Trigram / hexagram SVG - pure vector, no Unicode emoji ─────────────── */
-
-// lines = [top, middle, bottom], true = yang (solid), false = yin (broken)
-const TRIGRAM_LINES: Record<string, [boolean, boolean, boolean]> = {
-  '☰': [true,  true,  true ],  // Heaven
-  '☱': [false, true,  true ],  // Lake
-  '☲': [true,  false, true ],  // Fire
-  '☳': [false, false, true ],  // Thunder
-  '☴': [true,  true,  false],  // Wind
-  '☵': [false, true,  false],  // Water
-  '☶': [true,  false, false],  // Mountain
-  '☷': [false, false, false],  // Earth
-};
-
-const TrigramSVG: React.FC<{
-  symbol: string;
-  color?: string;
-  width?: number;
-  height?: number;
-}> = ({ symbol, color = 'currentColor', width = 64, height = 44 }) => {
-  const lines = TRIGRAM_LINES[symbol];
-  if (!lines) return null;
-  const lh = Math.max(2, Math.round(height * 0.2));
-  const gap = Math.round(width * 0.14);
-  const hw = (width - gap) / 2;
-  const yMid = Math.round((height - lh) / 2);
-  const positions = [0, yMid, height - lh];
-
-  return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} fill="none" aria-hidden="true">
-      {lines.map((solid, i) =>
-        solid ? (
-          <rect key={i} x={0} y={positions[i]} width={width} height={lh} rx={1} fill={color} />
-        ) : (
-          <React.Fragment key={i}>
-            <rect x={0}        y={positions[i]} width={hw} height={lh} rx={1} fill={color} />
-            <rect x={hw + gap} y={positions[i]} width={hw} height={lh} rx={1} fill={color} />
-          </React.Fragment>
-        )
-      )}
-    </svg>
-  );
-};
-
-// Hexagram = 6 lines with uniform spacing (upper trigram lines 1–3, lower lines 4–6)
-const HexagramSVG: React.FC<{
-  upper: string;
-  lower: string;
-  color?: string;
-  width?: number;
-}> = ({ upper, lower, color = 'currentColor', width = 64 }) => {
-  const lh      = Math.max(2, Math.round(width * 0.1));
-  const step    = Math.round(width * 0.18);
-  const totalH  = lh + step * 5;
-  const gap     = Math.round(width * 0.14);
-  const hw      = (width - gap) / 2;
-
-  const allLines = [...(TRIGRAM_LINES[upper] ?? [true, true, true]),
-                    ...(TRIGRAM_LINES[lower] ?? [true, true, true])];
-
-  return (
-    <svg width={width} height={totalH} viewBox={`0 0 ${width} ${totalH}`} fill="none" aria-hidden="true">
-      {allLines.map((solid, i) => {
-        const y = i * step;
-        return solid ? (
-          <rect key={i} x={0} y={y} width={width} height={lh} rx={1} fill={color} />
-        ) : (
-          <React.Fragment key={i}>
-            <rect x={0}        y={y} width={hw} height={lh} rx={1} fill={color} />
-            <rect x={hw + gap} y={y} width={hw} height={lh} rx={1} fill={color} />
-          </React.Fragment>
-        );
-      })}
-    </svg>
-  );
-};
+/* ─── Trigram / hexagram SVG ──────────────────────────────────────────────
+   Shared renderers live in ./oracle/HexagramGlyph (one table, one geometry
+   for the card page, the deck index, the profile graph, and the callout). */
 
 /* ─── Gene Keys dragonfly glyph ─────────────────────────────────────────── */
 /* Heraldic dragonfly silhouette inspired by Japanese kamon "tombo" crests.

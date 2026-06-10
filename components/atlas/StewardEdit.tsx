@@ -9,9 +9,9 @@ import { FULL_ARCHIVE } from '../../data/mockData';
  * Steward edit page. Rendered at `/atlas/edit`.
  *
  * Requires Clerk auth. On mount we POST /api/atlas/steward/claim with the
- * bearer token to load every piece bound to this user. For now we render the
- * first matching piece — multi-piece picker is a follow-up. If no record is
- * bound to this user, we send them to /atlas/claim.
+ * bearer token to load every piece bound to this user. Stewards with more
+ * than one piece get a picker; edits always apply to the selected piece.
+ * If no record is bound to this user, we send them to /atlas/claim.
  */
 
 type ClaimResponse = {
@@ -44,9 +44,8 @@ const StewardEdit: React.FC = () => {
   const navigate = useNavigate();
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { signOut } = useClerk();
-  const [piece, setPiece] = useState<PieceRecord | null>(null);
-  const [stewardRecord, setStewardRecord] = useState<StewardRecord | null>(null);
-  const [multiPiece, setMultiPiece] = useState(false);
+  const [entries, setEntries] = useState<ClaimResponse['claimed']>([]);
+  const [selectedIdx, setSelectedIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -92,15 +91,13 @@ const StewardEdit: React.FC = () => {
         }
         const data: ClaimResponse = await res.json();
         if (cancelled) return;
-        const entries = data.claimed ?? [];
-        if (entries.length === 0) {
+        const claimed = data.claimed ?? [];
+        if (claimed.length === 0) {
           navigate('/atlas/claim', { replace: true });
           return;
         }
-        setMultiPiece(entries.length > 1);
-        const first = entries[0];
-        setStewardRecord(first.steward);
-        setPiece(first.piece);
+        setEntries(claimed);
+        setSelectedIdx(0);
       } catch {
         if (!cancelled) setLoadError('Could not load your piece. Please try again.');
       } finally {
@@ -126,10 +123,25 @@ const StewardEdit: React.FC = () => {
     return () => document.removeEventListener('mousedown', onDoc);
   }, [cityOpen]);
 
+  // The piece currently being edited. Every update targets this entry.
+  const current = entries[selectedIdx] ?? null;
+  const stewardRecord = current?.steward ?? null;
+  const piece = current?.piece ?? null;
+
   const flashSaved = () => {
     setSavedAt(Date.now());
     if (savedTimerRef.current) window.clearTimeout(savedTimerRef.current);
     savedTimerRef.current = window.setTimeout(() => setSavedAt(null), 2000);
+  };
+
+  // Switch which claimed piece the form edits; clears transient picker state
+  // so the city search and save flash don't leak across pieces.
+  const handlePieceSwitch = (idx: number) => {
+    setSelectedIdx(idx);
+    setCityQuery('');
+    setCityOpen(false);
+    setSaveError(null);
+    setSavedAt(null);
   };
 
   const submitUpdate = async (body: { cityId?: string; isPublic?: boolean }) => {
@@ -159,7 +171,9 @@ const StewardEdit: React.FC = () => {
         return;
       }
       const data: UpdateResponse = await res.json();
-      setPiece(data.piece);
+      setEntries(prev =>
+        prev.map((e, i) => (i === selectedIdx ? { ...e, piece: data.piece } : e)),
+      );
       flashSaved();
     } catch {
       setSaveError('Something went wrong, please try again.');
@@ -245,7 +259,7 @@ const StewardEdit: React.FC = () => {
     );
   }
 
-  if (loadError || !piece) {
+  if (loadError || entries.length === 0) {
     return (
       <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6">
         <div className="w-full max-w-md text-center space-y-4">
@@ -270,9 +284,52 @@ const StewardEdit: React.FC = () => {
           className="font-display text-3xl text-wood-900 font-medium text-center mb-6"
           style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}
         >
-          Your piece
+          {entries.length > 1 ? 'Your pieces' : 'Your piece'}
         </h1>
 
+        {/* Piece picker — only for stewards of more than one piece. The
+            form below always edits the selected piece. */}
+        {entries.length > 1 && (
+          <div className="mb-10">
+            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
+              Choose a piece
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {entries.map((e, i) => {
+                const art = FULL_ARCHIVE.find(a => a.id === e.steward.pieceId);
+                const label =
+                  (art?.title ?? e.steward.pieceId) +
+                  (e.steward.editionNumber != null ? ` · Ed. ${e.steward.editionNumber}` : '');
+                const active = i === selectedIdx;
+                return (
+                  <button
+                    key={`${e.steward.pieceId}:${e.steward.editionNumber ?? ''}`}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => handlePieceSwitch(i)}
+                    className={`min-h-[44px] px-4 py-2 border font-sans text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
+                      active
+                        ? 'bg-bronze-100 border-bronze-500 text-wood-900'
+                        : 'bg-white border-wood-300 text-wood-700 hover:bg-paper-100'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {!piece ? (
+          /* Claimed steward record but no ledger projection yet — nothing to
+             edit until an event exists for this piece. */
+          <p className="font-serif italic text-base text-stone-600 text-center mb-12">
+            This piece doesn't have an atlas record yet. Ask Adrian to seed it
+            and it will appear here.
+          </p>
+        ) : (
+        <>
         {/* Piece details */}
         <div className="text-center mb-12">
           <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700">
@@ -391,11 +448,7 @@ const StewardEdit: React.FC = () => {
             <span className="font-serif italic text-base text-stone-600">{saveError}</span>
           )}
         </div>
-
-        {multiPiece && (
-          <p className="font-serif italic text-sm text-stone-600 text-center pt-4">
-            You steward more than one piece. Editing for additional pieces is coming soon — for now, this page edits the first.
-          </p>
+        </>
         )}
 
         {/* Sign out */}

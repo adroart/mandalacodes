@@ -8,11 +8,18 @@ import KinshipLayer from './atlas/KinshipLayer';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
+import { useProfile } from '../lib/profile/context';
 import { ulCardNumber } from '../utils/universalLanguage';
-import { buildKinshipIndex, MAX_KINSHIP_ARCS } from '../utils/kinship';
+import { buildKinshipIndex, greatCircleDistance, MAX_KINSHIP_ARCS } from '../utils/kinship';
 import type { PublicAtlasState } from '../types';
 
 const MAX_KIN_PER_PIECE = 6;
+
+/* Selection key for the visitor's own birth place (from their Hologenetic
+   Profile) — a globe node that is not a piece. */
+const BIRTH_KEY = '__birth-place__';
+
+const EARTH_RADIUS_KM = 6371;
 
 /* ─── State machine ────────────────────────────────────────────────────────── */
 type FetchState =
@@ -63,6 +70,12 @@ const AtlasPage: React.FC = () => {
   const [selectedSeries, setSelectedSeries] = useState<string>('all');
   const [status, setStatus] = useState<AtlasStatusFilter>('all');
   const [kinshipVisible, setKinshipVisible] = useState<boolean>(true);
+
+  /* The visitor's saved birth place (Hologenetic Profile, local-first).
+     When present it appears as a sage marker on the globe — the bridge
+     between the birthday map and the geography of the placed pieces. */
+  const { profile } = useProfile();
+  const birthPlace = profile?.inputs.place ?? null;
 
   /* Selection setter that mirrors the choice into the URL (replace, so
      browsing pieces doesn't pile up history entries). */
@@ -116,11 +129,16 @@ const AtlasPage: React.FC = () => {
   }, [enriched]);
 
   /* Apply the ?piece= deep link once the atlas is loaded. Accepts both
-     "UL-122" and "UL-122:2" (piece keys without an edition end in ":"). */
+     "UL-122" and "UL-122:2" (piece keys without an edition end in ":"),
+     plus the birth-place key when the visitor has a saved profile. */
   useEffect(() => {
     if (enriched.length === 0) return;
     const param = searchParams.get('piece');
     if (!param) return;
+    if (param === BIRTH_KEY) {
+      if (birthPlace) setSelectedKeyState(BIRTH_KEY);
+      return;
+    }
     const match = enriched.find((p) => p.key === param || p.key === `${param}:`);
     if (match) setSelectedKeyState(match.key);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -163,8 +181,19 @@ const AtlasPage: React.FC = () => {
         label: p.title,
       });
     }
+    // The visitor's birth place rides along regardless of filters — it is
+    // not a piece, it is where they entered the map.
+    if (birthPlace) {
+      nodes.push({
+        id: BIRTH_KEY,
+        lat: birthPlace.lat,
+        lng: birthPlace.lng,
+        status: 'origin',
+        label: 'Your birth place',
+      });
+    }
     return nodes;
-  }, [seriesFiltered, status]);
+  }, [seriesFiltered, status, birthPlace]);
 
   /* Seeking section honors filters — when status=placed, the section hides. */
   const seekingPieces: SeekingPiece[] = useMemo(() => {
@@ -198,12 +227,33 @@ const AtlasPage: React.FC = () => {
   }, [selectedKey, seriesFiltered]);
 
   /* If the selected piece falls outside the current filters, drop selection
-     silently so the side panel doesn't show stale info. */
+     silently so the side panel doesn't show stale info. The birth place is
+     not a piece and is never filtered out. */
   useEffect(() => {
-    if (!selectedKey) return;
+    if (!selectedKey || selectedKey === BIRTH_KEY) return;
     const stillVisible = seriesFiltered.some((p) => p.key === selectedKey);
     if (!stillVisible) setSelectedKey(null);
   }, [selectedKey, seriesFiltered]);
+
+  /* The placed pieces nearest the visitor's birth place — the "what of this
+     language lives near where I began" list in the birth-place panel. */
+  const nearestToBirth = useMemo(() => {
+    if (!birthPlace) return [];
+    const out: Array<{ key: string; title: string; cityLabel: string; km: number }> = [];
+    for (const p of enriched) {
+      if (p.status !== 'placed' || !p.cityId) continue;
+      const c = CITIES_BY_ID.get(p.cityId);
+      if (!c) continue;
+      const rad = greatCircleDistance(birthPlace.lat, birthPlace.lng, c.lat, c.lng);
+      out.push({
+        key: p.key,
+        title: p.title,
+        cityLabel: `${c.city}, ${c.country}`,
+        km: Math.round(rad * EARTH_RADIUS_KM),
+      });
+    }
+    return out.sort((a, b) => a.km - b.km).slice(0, 3);
+  }, [birthPlace, enriched]);
 
   /* Mirror cobe's square sizing — Globe sets width=height=min(box.w,box.h). The
      SVG overlay reads the same dimensions so arcs land on the canvas pixels. */
@@ -346,11 +396,59 @@ const AtlasPage: React.FC = () => {
                 )}
               </div>
               <div className="lg:col-span-1">
-                <PieceSidePanel
-                  piece={selectedPiece}
-                  kin={kinForSelected}
-                  onSelectKin={(key) => setSelectedKey(key)}
-                />
+                {selectedKey === BIRTH_KEY && birthPlace ? (
+                  /* The visitor's own marker — not a piece, so it gets its
+                     own panel: birth place, the bridge to the profile, and
+                     the placed pieces nearest their origin. */
+                  <aside
+                    aria-label="Your birth place"
+                    className="bg-paper-100 border border-wood-200 p-6 sm:p-8"
+                  >
+                    <p className="font-label text-[11px] uppercase tracking-[0.25em] text-bronze-700 mb-3">
+                      Your birth place
+                    </p>
+                    <h3 className="font-serif text-2xl sm:text-3xl text-wood-900 font-medium leading-tight mb-3">
+                      {birthPlace.label}
+                    </h3>
+                    <p className="font-sans text-sm text-wood-700 leading-relaxed mb-5">
+                      The sky over this point at the moment you arrived is what
+                      your Hologenetic Profile is calculated from.
+                    </p>
+                    <Link
+                      to="/profile"
+                      className="font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+                    >
+                      View your full chart →
+                    </Link>
+                    {nearestToBirth.length > 0 && (
+                      <div className="border-t border-wood-200 pt-5 mt-5">
+                        <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-2">
+                          Pieces nearest your origin
+                        </p>
+                        <ul className="space-y-1.5">
+                          {nearestToBirth.map((n) => (
+                            <li key={n.key}>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedKey(n.key)}
+                                className="font-serif text-base text-wood-900 hover:text-bronze-700 transition-colors text-left leading-snug"
+                              >
+                                {n.title}
+                                <span className="text-wood-500"> · {n.cityLabel}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </aside>
+                ) : (
+                  <PieceSidePanel
+                    piece={selectedPiece}
+                    kin={kinForSelected}
+                    onSelectKin={(key) => setSelectedKey(key)}
+                  />
+                )}
               </div>
             </div>
 
