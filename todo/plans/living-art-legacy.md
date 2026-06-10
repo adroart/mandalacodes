@@ -3,23 +3,15 @@ name: living-art-legacy
 status: draft
 created: 2026-06-10
 last_updated: 2026-06-10
-last_synthesized: 2026-06-10
-absorbs: []
-related_projects:
-  - mandalacodes
-  - adrian-website
-related_directions:
-  - i64os-as-substrate
-related_belief_shards:
-  - Art
-  - USER
-source_conversations:
-  - 2026-06-10 — "item ledgers and certificates" → became the living-history legacy + planetary atlas vision (Adrian-Website). The piece carries an ever-growing record; the planet is the global mandala; holders place pieces on a map, opt into charts/identity, and a future social gallery of art owners forms.
-supersedes: []
-superseded_by: null
+owner: mandalacodes
+also_touches: adrian-website
+source_conversation: 2026-06-10 — "item ledgers and certificates" → became the living-history legacy + planetary atlas vision. The piece carries an ever-growing record; the planet is the global mandala; holders place pieces on a map, opt into charts/identity, and a future social gallery of art owners forms.
 ---
 
-# Direction — The living art legacy: every piece carries an ever-growing history, the planet is the global mandala
+# Plan — The living art legacy: every piece carries an ever-growing history, the planet is the global mandala
+
+> Owned by mandalacodes (ledger, atlas, steward, social gallery all live here).
+> Adrian-Website only feeds the first sale event in via the sale → ledger bridge.
 
 ## The one-paragraph why
 
