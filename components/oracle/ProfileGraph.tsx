@@ -89,8 +89,11 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
               const y1 = pa.y + uy * (R + 2);
               const x2 = pb.x - ux * (R + 9);
               const y2 = pb.y - uy * (R + 9);
-              const mx = (x1 + x2) / 2;
-              const my = (y1 + y2) / 2;
+              // Offset the pathway label perpendicular to the line so it
+              // sits beside the channel, clear of the orbs and other labels.
+              const nx = -uy, ny = ux;
+              const mx = (x1 + x2) / 2 + nx * 14;
+              const my = (y1 + y2) / 2 + ny * 14;
               return (
                 <g key={i}>
                   <line
@@ -101,7 +104,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                   />
                   {lit && (
                     <text
-                      x={mx} y={my - 5}
+                      x={mx} y={my}
                       className="profile-graph__pathway"
                       fill={SEQUENCE_COLOR[ch.sequence].edge}
                     >
