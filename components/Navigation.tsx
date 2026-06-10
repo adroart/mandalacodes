@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { useDarkMode } from '../DarkModeContext';
+import AuthButton from './account/AuthButton';
 
 interface NavItem {
   path: string;
@@ -124,28 +125,34 @@ const Navigation: React.FC = () => {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-8 xl:gap-12">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`group relative text-xs uppercase tracking-[0.2em] font-label py-3 transition-all duration-300 font-semibold ${
-                isNavActive(item.path) ? 'text-wood-900' : 'text-wood-700 hover:text-bronze-600'
-              }`}
-            >
-              {item.label}
-              <span
-                aria-hidden="true"
-                className={`absolute -bottom-0 left-0 h-px bg-bronze-500 transition-all duration-300 ease-out ${
-                  isNavActive(item.path) ? 'w-full' : 'w-0 group-hover:w-full'
+        <div className="hidden lg:flex items-center">
+          {NAV_ITEMS.map((item, i) => (
+            <React.Fragment key={item.path}>
+              {i > 0 && (
+                <span aria-hidden="true" className="h-3.5 w-px bg-wood-900/15" />
+              )}
+              <Link
+                to={item.path}
+                className={`group relative text-[13px] uppercase tracking-[0.18em] font-label py-3 px-4 xl:px-5 transition-all duration-300 font-semibold ${
+                  isNavActive(item.path) ? 'text-wood-900' : 'text-wood-700 hover:text-bronze-600'
                 }`}
-              />
-            </Link>
+              >
+                {item.label}
+                <span
+                  aria-hidden="true"
+                  className={`absolute -bottom-0 left-4 xl:left-5 right-4 xl:right-5 h-px bg-bronze-500 transition-all duration-300 ease-out ${
+                    isNavActive(item.path) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  }`}
+                />
+              </Link>
+            </React.Fragment>
           ))}
         </div>
 
         {/* Right controls: dark toggle + mobile hamburger */}
         <div className="flex items-center gap-0">
+          <AuthButton />
+
           <button
             onClick={toggleDarkMode}
             className="px-3 min-w-[44px] min-h-[44px] flex items-center justify-center hover:opacity-70 transition-opacity font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-wood-900"
