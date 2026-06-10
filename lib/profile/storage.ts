@@ -35,14 +35,7 @@ export function loadProfile(): StoredProfile | null {
     // the newest keys (venusCore, brand) too, so a profile saved before the
     // 13-sphere chart is discarded and recomputed rather than rendered with
     // missing positions.
-    if (
-      !parsed?.inputs?.place?.tzId ||
-      !parsed?.computed?.lifesWork ||
-      !parsed?.computed?.venusCore ||
-      !parsed?.computed?.brand
-    ) {
-      return null;
-    }
+    if (!parsed?.inputs?.place?.tzId || !parsed?.computed?.lifesWork) return null;
     return parsed;
   } catch {
     return null;
