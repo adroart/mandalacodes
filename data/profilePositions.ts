@@ -145,16 +145,14 @@ export const PROFILE_CHANNELS: readonly ProfileChannel[] = [
   { from: 'iq',         to: 'eq',         sequence: 'venus', pathway: 'Intelligence' },
   { from: 'eq',         to: 'sq',         sequence: 'venus', pathway: 'Love' },
 
-  // ── Pearl (blue triangle with SQ hub) ──
+  // ── Pearl (blue): exactly 4 spheres — the triangle Vocation/Culture/Pearl
+  //    with SQ as the central hub joined to all three. ──
   { from: 'sq',      to: 'core',    sequence: 'pearl', pathway: 'Realisation' },
   { from: 'sq',      to: 'culture', sequence: 'pearl', pathway: 'Realisation' },
   { from: 'sq',      to: 'pearl',   sequence: 'pearl', pathway: 'Synthesis' },
   { from: 'core',    to: 'culture', sequence: 'pearl', pathway: 'Initiative' },
   { from: 'core',    to: 'pearl',   sequence: 'pearl', pathway: 'Growth' },
   { from: 'culture', to: 'pearl',   sequence: 'pearl', pathway: 'Service' },
-  // The Pearl crowns back up to Life's Work, making Life's Work the third
-  // shared sphere (Activation + Pearl).
-  { from: 'pearl',   to: 'lifesWork', sequence: 'pearl', pathway: 'Harvest' },
 ];
 
 export const POSITIONS_BY_KEY: Record<ProfileKey, ProfilePositionMeta> =
