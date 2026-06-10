@@ -16,7 +16,15 @@ wrangler d1 migrations apply adrian-website --remote
 Additive only (two new tables + indexes; nothing altered or dropped — D1 has
 no down-migrations). Until it is applied, the mandalacodes legacy endpoints
 (`/api/atlas/steward/inscribe`, `/inscriptions`, `/export`,
-`/api/atlas/inscriptions/erase`) degrade gracefully with a clear
-`503 migration not applied`; everything else is unaffected. After it is
-applied, the mandalacodes code assumes both tables exist behind the existing
-`DB` binding.
+`/api/atlas/inscriptions/erase`, and the M4 sale bridge `/api/atlas/sale`,
+`/api/atlas/sales`, `/sales/confirm`, `/sales/dismiss`) degrade gracefully
+with a clear `503 migration not applied`; everything else is unaffected.
+After it is applied, the mandalacodes code assumes both tables exist behind
+the existing `DB` binding.
+
+## sale-webhook-spec.md
+
+The contract for the `notifyMandalacodes(sale)` call Adrian-Website fires on
+checkout success (M4): endpoint, HMAC signature recipe with a worked
+example, payload schema, retry policy, idempotency semantics, and the
+`SALE_WEBHOOK_SECRET` provisioning steps (set on BOTH Pages projects).

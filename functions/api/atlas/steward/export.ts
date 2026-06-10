@@ -23,6 +23,11 @@
  *   - placement history with human place labels (formatPlaceLabel).
  *   - the Founding Lights claim ordinal, derived across all chains.
  *   - the holder's current consent state (their own data).
+ *   - confirmed sale records for the piece (M4, ratified): sale date +
+ *     price/currency, visible to the admin and the piece's CURRENT steward
+ *     only. Joined from D1 atlas_sale_events (status 'confirmed'); never
+ *     chain, never public — and never another buyer's email, which stays
+ *     in D1 even here.
  */
 
 import type { LedgerEvent } from '../../../../types';
@@ -115,6 +120,44 @@ export async function onRequestGet(
     inscriptionsNote = 'Legacy archive not yet available (D1 migration pending).';
   }
 
+  // Confirmed sales — price is D1-only, visible to admin + the current
+  // steward (ratified decision #4). Buyer identity is NOT included: a
+  // previous buyer's email is their data, not the current holder's.
+  // Same quiet degradation as inscriptions until the migration lands.
+  let sales: Array<{
+    saleId: string;
+    saleDate: string;
+    priceCents?: number;
+    currency?: string;
+  }> = [];
+  if (env.DB) {
+    try {
+      const { results } = await env.DB
+        .prepare(
+          `SELECT sale_id, sale_date, price_cents, currency
+           FROM atlas_sale_events
+           WHERE piece_id = ?1 AND edition_number = ?2 AND status = 'confirmed'
+           ORDER BY sale_date ASC, sale_id ASC`,
+        )
+        .bind(pieceId, editionNumber ?? 0)
+        .all<{
+          sale_id: string;
+          sale_date: string;
+          price_cents: number | null;
+          currency: string | null;
+        }>();
+      sales = results.map((r) => ({
+        saleId: r.sale_id,
+        saleDate: r.sale_date,
+        ...(r.price_cents !== null ? { priceCents: r.price_cents } : {}),
+        ...(r.currency !== null ? { currency: r.currency } : {}),
+      }));
+    } catch (err) {
+      if (!isMissingTableError(err)) throw err;
+      // Same pending-migration note as inscriptions; sales stay empty.
+    }
+  }
+
   // Placement history, human-labeled. City-level only — the same
   // granularity the chain itself carries.
   const placements = chain
@@ -158,6 +201,9 @@ export async function onRequestGet(
     inscriptions,
     ...(inscriptionsNote ? { inscriptionsNote } : {}),
     placements,
+    // Confirmed sale records (date + price only) — the current steward's
+    // ratified view; never public, never in any hashed payload.
+    sales,
     consent: record.consent ?? null,
   };
 

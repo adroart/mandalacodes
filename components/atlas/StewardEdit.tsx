@@ -7,6 +7,7 @@ import { FULL_ARCHIVE } from '../../data/mockData';
 import ConsentRings from './ConsentRings';
 import type { ConsentChoice } from './ConsentRings';
 import LegacyBook from './LegacyBook';
+import StewardRequests from './StewardRequests';
 
 /**
  * Steward edit page. Rendered at `/atlas/edit`.
@@ -531,6 +532,19 @@ const StewardEdit: React.FC = () => {
         </>
         )}
         </div>
+
+        {/* Claim requests routed to this holder (M4) — only the current
+            steward can pass the piece on; approving re-binds the record,
+            so we reload from /atlas/claim afterwards. */}
+        {stewardRecord && (
+          <StewardRequests
+            steward={stewardRecord}
+            getToken={getToken}
+            onTransferred={() => {
+              navigate('/atlas/claim', { replace: true });
+            }}
+          />
+        )}
 
         {/* Legacy book — Ring 1 timeline, add-entry, heirs, export (M3).
             Includes the print-only book rendering. */}

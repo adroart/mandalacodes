@@ -11,7 +11,9 @@ import { appendEvent, groupChains } from '../../../utils/ledger';
 import { INSCRIPTION_KINDS } from '../../../utils/inscriptions';
 import { getCityById } from '../../../data/cities';
 import type { PagesContext } from './_helpers';
-import { json, mutateLedger, mutateStewards, regeneratePublicState } from './_helpers';
+import { json, mutateLedger, regeneratePublicState } from './_helpers';
+import { applyRebind, cleanRebindInput } from './_transfer';
+import type { RebindInput } from './_transfer';
 import { requireAdmin, isAuthResponse } from '../_lib/clerk';
 
 const VALID_TYPES: ReadonlySet<LedgerEventType> = new Set<LedgerEventType>([
@@ -128,70 +130,6 @@ export function cleanEventInput(e: unknown): CleanEventInput | null {
   return clean;
 }
 
-// ---------- Transfer rebind (decision #2, server-enforced) ----------
-
-/**
- * The new steward's contact details for a `transferred` event. Travels in
- * the request body NEXT TO the event — email and name never enter the
- * hashed payload. This rebind is the ONLY path that may change the email /
- * clerkUserId of a steward record that already has a bound clerkUserId
- * (issue.ts refuses duplicates; claim.ts never matches bound records by
- * email).
- */
-interface RebindInput {
-  email: string;
-  clerkUserId?: string;
-  name?: string;
-}
-
-function isValidEmail(s: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-}
-
-function cleanRebindInput(value: unknown): RebindInput | null {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  const obj = value as Record<string, unknown>;
-  for (const key of Object.keys(obj)) {
-    if (key !== 'email' && key !== 'clerkUserId' && key !== 'name') return null;
-  }
-  const email = typeof obj.email === 'string' ? obj.email.trim() : '';
-  if (!email || !isValidEmail(email)) return null;
-  if (obj.clerkUserId !== undefined && typeof obj.clerkUserId !== 'string') return null;
-  if (obj.name !== undefined && typeof obj.name !== 'string') return null;
-  return {
-    email,
-    ...(obj.clerkUserId ? { clerkUserId: obj.clerkUserId as string } : {}),
-    ...(obj.name ? { name: obj.name as string } : {}),
-  };
-}
-
-/**
- * Build the post-transfer steward record. The piece's chain history stays
- * (it lives with the piece, ratified); the PERSONAL layer resets: the old
- * steward's email/name/consent/heirs/pendingFirstInscription never carry
- * over to the new holder's record. Admin notes (piece context) persist.
- */
-function rebindStewardRecord(
-  previous: StewardRecord | undefined,
-  pieceId: string,
-  editionNumber: number | undefined,
-  rebind: RebindInput,
-  now: string,
-): StewardRecord {
-  return {
-    pieceId,
-    editionNumber,
-    email: rebind.email,
-    ...(rebind.clerkUserId ? { clerkUserId: rebind.clerkUserId } : {}),
-    ...(rebind.name ? { name: rebind.name } : {}),
-    ...(previous?.notes ? { notes: previous.notes } : {}),
-    issuedAt: now,
-    // The new steward walks the normal funnel: claim bind + Phase B
-    // consent flip this to 'claimed'.
-    outreachStatus: 'invited',
-  };
-}
-
 export async function onRequestPost(
   context: PagesContext,
 ): Promise<Response> {
@@ -275,31 +213,19 @@ export async function onRequestPost(
   if (outcome instanceof Response) return outcome;
 
   // Re-bind the steward record for a transfer — the audited path that
-  // decision #2 reserves for changing a bound record. Replaces the record
-  // in place (or creates one if the piece never had a steward); the chain
-  // event above is the audit trail.
+  // decision #2 reserves for changing a bound record (shared with the M4
+  // sale-queue / claim-request approvals via _transfer.ts). Replaces the
+  // record in place (or creates one if the piece never had a steward); the
+  // chain event above is the audit trail.
   let rebound: StewardRecord | null = null;
   if (incoming.type === 'transferred' && rebind) {
-    const now = new Date().toISOString();
-    const rebindInput = rebind;
-    const stewardOutcome = await mutateStewards(env, (stewards) => {
-      const idx = stewards.findIndex(
-        (s) =>
-          s.pieceId === incoming.pieceId &&
-          (s.editionNumber ?? undefined) === (incoming.editionNumber ?? undefined),
-      );
-      const next = stewards.slice();
-      const record = rebindStewardRecord(
-        idx === -1 ? undefined : stewards[idx],
-        incoming.pieceId,
-        incoming.editionNumber,
-        rebindInput,
-        now,
-      );
-      if (idx === -1) next.push(record);
-      else next[idx] = record;
-      return { next, result: record };
-    });
+    const stewardOutcome = await applyRebind(
+      env,
+      incoming.pieceId,
+      incoming.editionNumber,
+      rebind,
+      new Date().toISOString(),
+    );
     if (stewardOutcome instanceof Response) return stewardOutcome;
     rebound = stewardOutcome.result;
   }

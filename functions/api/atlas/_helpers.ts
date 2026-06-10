@@ -14,7 +14,12 @@
  * No HTTP handlers live here — only utilities the route files import.
  */
 
-import type { LedgerEvent, StewardRecord, PublicAtlasState } from '../../../types';
+import type {
+  ClaimRequest,
+  LedgerEvent,
+  StewardRecord,
+  PublicAtlasState,
+} from '../../../types';
 import { projectAll, toPublicState } from '../../../utils/ledgerProjection';
 import { ATLAS_PLACES } from '../../../data/cities';
 import { FULL_ARCHIVE } from '../../../data/mockData';
@@ -27,6 +32,7 @@ import type { AuthEnv } from '../_lib/clerk';
 export const KEY_LEDGER = 'atlas/ledger.json';
 export const KEY_STEWARDS = 'atlas/stewards.json';
 export const KEY_PUBLIC = 'atlas/public.json';
+export const KEY_CLAIM_REQUESTS = 'atlas/claimRequests.json';
 
 // ---------- Env typing ----------
 
@@ -37,6 +43,11 @@ export interface AtlasEnv extends MirrorEnv, AuthEnv {
    *  003_atlas_legacy migration (todo/handoff/adrian-website/). Optional:
    *  handlers degrade with a clear 503 until that migration is applied. */
   DB?: AtlasD1Database;
+  /** Dedicated secret for the adrianrasmussen.com sale webhook (M4) —
+   *  HMAC-SHA256 over `timestamp.rawBody`. 32+ random bytes, set on BOTH
+   *  Pages projects (see todo/handoff/adrian-website/sale-webhook-spec.md).
+   *  Optional: /api/atlas/sale answers 503 until it is provisioned. */
+  SALE_WEBHOOK_SECRET?: string;
 }
 
 // Minimal D1 shapes — same philosophy as the R2 types above: just what we
@@ -150,6 +161,10 @@ export async function readStewards(env: AtlasEnv): Promise<StewardRecord[]> {
   return readJsonArray<StewardRecord>(env, KEY_STEWARDS);
 }
 
+export async function readClaimRequests(env: AtlasEnv): Promise<ClaimRequest[]> {
+  return readJsonArray<ClaimRequest>(env, KEY_CLAIM_REQUESTS);
+}
+
 // NOTE: there are deliberately no bare writeLedger/writeStewards helpers.
 // Every mutation of those two objects must go through mutateLedger /
 // mutateStewards below so concurrent writes can never silently drop data.
@@ -252,6 +267,62 @@ export function mutateStewards<R>(
   mutate: Mutator<StewardRecord, R>,
 ): Promise<MutateSuccess<StewardRecord, R> | Response> {
   return mutateJsonArray<StewardRecord, R>(env, KEY_STEWARDS, mutate);
+}
+
+/** Concurrency-safe mutation of atlas/claimRequests.json (M4). */
+export function mutateClaimRequests<R>(
+  env: AtlasEnv,
+  mutate: Mutator<ClaimRequest, R>,
+): Promise<MutateSuccess<ClaimRequest, R> | Response> {
+  return mutateJsonArray<ClaimRequest, R>(env, KEY_CLAIM_REQUESTS, mutate);
+}
+
+// ---------- Steward issuance (shared by issue.ts + the sale queue) ----------
+
+export interface IssueStewardInput {
+  pieceId: string;
+  editionNumber?: number;
+  email: string;
+  name?: string;
+  notes?: string;
+}
+
+/**
+ * Create a steward record for a piece, with the dup-check running INSIDE
+ * the mutator so it re-applies against fresh data on a conflict retry —
+ * two racing issuances for the same piece can never both land. One steward
+ * per (pieceId, editionNumber) tuple. Shared by the admin issue endpoint
+ * and the sale-queue confirm path (which must never duplicate this logic).
+ */
+export async function issueStewardRecord(
+  env: AtlasEnv,
+  input: IssueStewardInput,
+): Promise<MutateSuccess<StewardRecord, StewardRecord> | Response> {
+  return mutateStewards(env, (stewards) => {
+    const exists = stewards.find(
+      (s) =>
+        s.pieceId === input.pieceId &&
+        (s.editionNumber ?? undefined) === (input.editionNumber ?? undefined),
+    );
+    if (exists) {
+      return json(
+        { ok: false, error: 'A steward already exists for this piece' },
+        400,
+      );
+    }
+
+    const record: StewardRecord = {
+      pieceId: input.pieceId,
+      editionNumber: input.editionNumber,
+      email: input.email,
+      name: input.name,
+      notes: input.notes,
+      issuedAt: new Date().toISOString(),
+      outreachStatus: 'invited',
+    };
+
+    return { next: [...stewards, record], result: record };
+  });
 }
 
 // ---------- Public state regeneration ----------

@@ -1,4 +1,4 @@
--- Atlas living-legacy schema, v3 (M3 of todo/plans/living-art-legacy.md).
+-- Atlas living-legacy schema, v3 (M3 + M4 of todo/plans/living-art-legacy.md).
 -- OWNED BY ADRIAN-WEBSITE: copy this file into that repo's migrations/ and
 -- apply from THAT checkout (it owns the shared `adrian-website` D1 schema):
 --   wrangler d1 migrations apply adrian-website --remote
@@ -50,7 +50,8 @@ CREATE TABLE IF NOT EXISTS atlas_sale_events (
   currency TEXT,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'dismissed')),
   received_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  confirmed_at INTEGER,
+  confirmed_at INTEGER,                       -- resolution time for BOTH confirm and dismiss
+  dismissed_reason TEXT,                      -- admin's note when a pending sale is dismissed
   raw_json TEXT                               -- full verified webhook payload for dispute evidence
 );
 

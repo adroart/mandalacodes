@@ -331,6 +331,37 @@ export interface HeirRegistration {
   status: 'pending' | 'active' | 'revoked';
 }
 
+/* ─── Claim requests (M4) ──────────────────────────────────────────────────
+ * Self-serve "Request stewardship": a signed-in visitor asks to become the
+ * steward of a piece (secondary sale, auction, gift, retroactive collector,
+ * inheritance — one mechanism for all five). Requests live in mutable R2
+ * storage only (atlas/claimRequests.json); nothing here ever enters a hashed
+ * payload or the public projection. Anti-takeover: requests against a piece
+ * with a BOUND steward route to that holder, never to the admin by default —
+ * the current holder decides who inherits their record.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export interface ClaimRequest {
+  id: string;
+  pieceId: string;
+  editionNumber?: number;
+  /** Opaque Clerk userId of the requester. */
+  requesterRef: string;
+  /** Requester's email from the verified JWT — needed to seed the steward
+   *  record on approval. Mutable storage only, never the chain. */
+  requesterEmail: string;
+  /** Optional evidence ("bought at the Vienna auction, lot 12"). ≤500 chars. */
+  note?: string;
+  createdAt: string;
+  status: 'pending' | 'approved' | 'declined';
+  /** 'holder' when the piece has a bound steward (the CURRENT holder
+   *  decides — anti-takeover); 'admin' otherwise. */
+  routedTo: 'admin' | 'holder';
+  /** Stamped on resolution. resolvedBy is an opaque Clerk userId. */
+  resolvedAt?: string;
+  resolvedBy?: string;
+}
+
 /**
  * Steward record — binds a piece to a Clerk user identity.
  *

@@ -11,9 +11,8 @@
  * a steward record."
  */
 
-import type { StewardRecord } from '../../../../types';
 import type { PagesContext } from '../_helpers';
-import { json, mutateStewards } from '../_helpers';
+import { json, issueStewardRecord } from '../_helpers';
 import { requireAdmin, isAuthResponse } from '../../_lib/clerk';
 
 interface IssueBody {
@@ -59,35 +58,18 @@ export async function onRequestPost(
   const name = typeof body.name === 'string' ? body.name : undefined;
   const notes = typeof body.notes === 'string' ? body.notes : undefined;
 
-  // Dup-check runs INSIDE the mutator so it re-applies against fresh data
-  // if a concurrent steward write forces a retry — two racing issuances
-  // for the same piece can't both land.
-  const outcome = await mutateStewards(env, (stewards) => {
-    // One steward per (pieceId, editionNumber) tuple. Editioned pieces can
-    // have separate stewards per copy.
-    const exists = stewards.find(
-      (s) =>
-        s.pieceId === pieceId &&
-        (s.editionNumber ?? undefined) === (editionNumber ?? undefined),
-    );
-    if (exists) {
-      return json(
-        { ok: false, error: 'A steward already exists for this piece' },
-        400,
-      );
-    }
-
-    const record: StewardRecord = {
-      pieceId,
-      editionNumber,
-      email,
-      name,
-      notes,
-      issuedAt: new Date().toISOString(),
-      outreachStatus: 'invited',
-    };
-
-    return { next: [...stewards, record], result: record };
+  // Shared issuance helper (also used by the sale-queue confirm path).
+  // The dup-check runs INSIDE the mutator so it re-applies against fresh
+  // data if a concurrent steward write forces a retry — two racing
+  // issuances for the same piece can't both land. One steward per
+  // (pieceId, editionNumber) tuple; editioned pieces can have separate
+  // stewards per copy.
+  const outcome = await issueStewardRecord(env, {
+    pieceId,
+    editionNumber,
+    email,
+    name,
+    notes,
   });
   if (outcome instanceof Response) return outcome;
 
