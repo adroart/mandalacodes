@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import type { HeirRegistration, LedgerEvent, PieceRecord, StewardRecord } from '../../types';
+import type {
+  AtlasLetter,
+  HeirRegistration,
+  LedgerEvent,
+  PieceRecord,
+  StewardRecord,
+} from '../../types';
 import type { InscriptionView, InscriptionKind } from '../../utils/inscriptions';
 import { getCityById, formatPlaceLabel } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
@@ -43,6 +49,12 @@ const KIND_LABELS: Record<InscriptionKind, string> = {
   intention: 'Intention',
   story: 'Story',
   dedication: 'Dedication',
+};
+
+const LETTER_KIND_LABELS: Record<AtlasLetter['kind'], string> = {
+  'kin-claim': 'A kin came to light',
+  anniversary: 'An anniversary',
+  transfer: 'A change of hands',
 };
 
 const formatDate = (iso: string): string => {
@@ -111,6 +123,13 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
 
   const [exportError, setExportError] = useState<string | null>(null);
 
+  // Letters — the piece writes back (M5). Generated on the server lazily on
+  // read (anniversary / transfer) and on kin claims elsewhere; here we load,
+  // show the unread badge, and mark read when the steward opens the section.
+  const [letters, setLetters] = useState<AtlasLetter[] | null>(null);
+  const [lettersOpen, setLettersOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
+
   const query = useMemo(() => {
     const params = new URLSearchParams({ pieceId: steward.pieceId });
     if (steward.editionNumber != null) {
@@ -160,6 +179,57 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
     setInscriptions(null);
     loadInscriptions();
   }, [loadInscriptions]);
+
+  // === Letters ===
+
+  const loadLetters = useCallback(async () => {
+    try {
+      const res = await authedFetch(`/api/atlas/steward/letters?${query}`);
+      if (!res.ok) {
+        setLetters([]);
+        setUnread(0);
+        return;
+      }
+      const data = (await res.json()) as { letters?: AtlasLetter[]; unread?: number };
+      setLetters(data.letters ?? []);
+      setUnread(data.unread ?? 0);
+    } catch {
+      setLetters([]);
+      setUnread(0);
+    }
+  }, [authedFetch, query]);
+
+  useEffect(() => {
+    setLetters(null);
+    setLettersOpen(false);
+    setUnread(0);
+    loadLetters();
+  }, [loadLetters]);
+
+  const handleOpenLetters = useCallback(async () => {
+    setLettersOpen(true);
+    if (unread === 0) return;
+    // Mark read on open. Optimistic locally; reconcile from the response.
+    setUnread(0);
+    try {
+      const res = await authedFetch('/api/atlas/steward/letters', {
+        method: 'POST',
+        body: JSON.stringify({
+          pieceId: steward.pieceId,
+          ...(steward.editionNumber != null
+            ? { editionNumber: steward.editionNumber }
+            : {}),
+          markRead: true,
+        }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { letters?: AtlasLetter[] };
+        if (data.letters) setLetters(data.letters);
+      }
+    } catch {
+      // Non-fatal — the badge already cleared locally.
+    }
+  }, [authedFetch, unread, steward.pieceId, steward.editionNumber]);
 
   // === Timeline (book pages, oldest first) ===
 
@@ -360,6 +430,47 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
     <>
       {/* ─── Interactive (screen only) ─── */}
       <div className="print:hidden">
+        {/* Letters — the piece writes back */}
+        {letters !== null && letters.length > 0 && (
+          <div className="mb-10 pt-10 border-t border-wood-200">
+            <button
+              type="button"
+              onClick={handleOpenLetters}
+              aria-expanded={lettersOpen}
+              className="flex items-center gap-3 font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+            >
+              <span>Letters from the piece</span>
+              {unread > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-bronze-600 text-paper-50 font-sans text-[11px] font-semibold tracking-normal">
+                  {unread}
+                </span>
+              )}
+              <span aria-hidden className="text-wood-400">
+                {lettersOpen ? '–' : '+'}
+              </span>
+            </button>
+            {lettersOpen && (
+              <ul className="mt-5 space-y-6">
+                {letters.map((letter) => (
+                  <li
+                    key={letter.id}
+                    className={`border-l-2 pl-5 py-1 ${
+                      letter.readAt ? 'border-wood-200' : 'border-bronze-400'
+                    }`}
+                  >
+                    <span className="font-label text-[10px] uppercase tracking-[0.2em] text-stone-500">
+                      {formatDate(letter.createdAt)} · {LETTER_KIND_LABELS[letter.kind]}
+                    </span>
+                    <p className="font-serif text-[1.0625rem] leading-[1.7] text-wood-900 italic mt-1 whitespace-pre-line">
+                      {letter.body}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
         {/* Legacy timeline */}
         <div className="mb-10 pt-10 border-t border-wood-200">
           <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">

@@ -187,6 +187,15 @@ export interface PublicAtlasState {
      *  across ALL chains (1 = first light ever claimed). Present only once the
      *  piece carries a `claimed` event. Never reveals the holder. */
     claimOrdinal?: number;
+    /** M5 — whether this piece may join the kinship constellation (shared-
+     *  trigram arcs + holder-chart attach). A single derived BOOLEAN, never
+     *  the consent object: a piece with a `claimed` event needs its current
+     *  steward's Ring 3 (ring3ChartPresence === true) to be eligible; an
+     *  artist-placed piece with no claim keeps today's behavior (eligible —
+     *  it's the artist's own data). Absent is treated as eligible by readers
+     *  for backward compatibility with schemaVersion-2 consumers. Carries no
+     *  holder data: it answers only "draw arcs to this piece?" */
+    kinshipEligible?: boolean;
   }>;
   cities: CityCentroid[];
 }
@@ -360,6 +369,40 @@ export interface ClaimRequest {
   /** Stamped on resolution. resolvedBy is an opaque Clerk userId. */
   resolvedAt?: string;
   resolvedBy?: string;
+}
+
+/* ─── Letters — the piece writes back (M5) ─────────────────────────────────
+ * In-app letters a piece writes to its steward: a kin piece lit somewhere on
+ * Earth, a claim anniversary, a change of hands. No email infrastructure
+ * exists — letters live in the product (a future ops layer could bolt on a
+ * sender). They are MUTABLE R2 (atlas/letters.json), NEVER chain events: the
+ * chain content invariant is law and a letter is generated prose, not a
+ * tamper-evident fact.
+ *
+ * The body references ONLY public facts: a piece lit in a city that is itself
+ * ring2-public, the shared trigram (an attribute of the hexagram, not the
+ * holder), an ordinal. Never a name, never an email, never an opaque ref.
+ * Letters live in private R2 and are served only to the bound steward, but
+ * the body discipline holds regardless: nothing in here could identify a
+ * person even if it leaked.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export type LetterKind = 'kin-claim' | 'anniversary' | 'transfer';
+
+export interface AtlasLetter {
+  id: string;
+  /** Recipient piece, keyed `pieceId:editionNumber ?? 0` — the steward of
+   *  THIS piece reads the letter. Never a userId: the binding to a holder is
+   *  resolved at read time through the steward record, so a transfer carries
+   *  the unread letters to the new holder automatically. */
+  recipientKey: string;
+  kind: LetterKind;
+  /** ISO timestamp the letter was generated. */
+  createdAt: string;
+  /** The prose, in the piece's own voice. Public facts only — never PII. */
+  body: string;
+  /** ISO timestamp the recipient opened it, when read. Absent = unread. */
+  readAt?: string;
 }
 
 /**

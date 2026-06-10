@@ -151,6 +151,83 @@ describe('buildKinshipIndex', () => {
     expect(pairKeys).toEqual(['UL-11:0|UL-1:0', 'UL-11:0|UL-2:0']);
   });
 
+  it('excludes a claimed-but-unconsented piece (kinshipEligible false)', () => {
+    // UL-11 is kin with both pure hexagrams, but its steward has not opted
+    // into Ring 3 → the projector set kinshipEligible false → no node, no arcs.
+    const index = buildKinshipIndex(
+      state([
+        {
+          pieceId: 'UL-1',
+          series: 'Universal Language',
+          cityId: 'lisbon-pt',
+          status: 'placed',
+          kinshipEligible: true,
+        },
+        {
+          pieceId: 'UL-11',
+          series: 'Universal Language',
+          cityId: 'denpasar-id',
+          status: 'placed',
+          kinshipEligible: false, // claimed + ring3 not opted in
+        },
+      ]),
+      citiesById,
+      [art('UL-1', 1), art('UL-11', 11)],
+    );
+    expect(Array.from(index.nodes.keys())).toEqual(['UL-1:0']);
+    expect(index.pairs).toEqual([]);
+  });
+
+  it('includes a claimed-and-consented piece (kinshipEligible true)', () => {
+    const index = buildKinshipIndex(
+      state([
+        {
+          pieceId: 'UL-1',
+          series: 'Universal Language',
+          cityId: 'lisbon-pt',
+          status: 'placed',
+          kinshipEligible: true,
+        },
+        {
+          pieceId: 'UL-11',
+          series: 'Universal Language',
+          cityId: 'denpasar-id',
+          status: 'placed',
+          kinshipEligible: true,
+        },
+      ]),
+      citiesById,
+      [art('UL-1', 1), art('UL-11', 11)],
+    );
+    expect(index.nodes.size).toBe(2);
+    expect(index.pairs).toHaveLength(1);
+  });
+
+  it('keeps unclaimed artist pieces (kinshipEligible undefined) unchanged', () => {
+    // schemaVersion-2 / artist-placed pieces leave the flag undefined; they
+    // must still render (fail-open) — only an explicit `false` excludes.
+    const index = buildKinshipIndex(
+      state([
+        {
+          pieceId: 'UL-1',
+          series: 'Universal Language',
+          cityId: 'lisbon-pt',
+          status: 'placed',
+        },
+        {
+          pieceId: 'UL-11',
+          series: 'Universal Language',
+          cityId: 'denpasar-id',
+          status: 'placed',
+        },
+      ]),
+      citiesById,
+      [art('UL-1', 1), art('UL-11', 11)],
+    );
+    expect(index.nodes.size).toBe(2);
+    expect(index.pairs).toHaveLength(1);
+  });
+
   it('excludes same-piece sibling editions from the arc list', () => {
     const index = buildKinshipIndex(
       state([

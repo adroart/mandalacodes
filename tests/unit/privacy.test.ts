@@ -125,6 +125,10 @@ describe('toPublicState privacy', () => {
       // never from holder data. Added to the whitelist deliberately.
       'pieceType',
       'claimOrdinal',
+      // M5: a single derived BOOLEAN — "draw kinship arcs to this piece?".
+      // Carries no holder data; the consent OBJECT and ring3ChartPresence
+      // stay forbidden (above). Added to the whitelist deliberately.
+      'kinshipEligible',
     ]);
     for (const piece of state.pieces) {
       for (const key of Object.keys(piece)) {
@@ -146,6 +150,59 @@ describe('toPublicState privacy', () => {
     expect(serialized).not.toContain('privacy');
     expect(serialized).not.toContain('user_abc123');
     expect(serialized).not.toContain('user_holder_xyz');
+  });
+
+  it('threads kinshipEligible as a derived boolean, never the consent object', () => {
+    // A claimed piece with ring3 = true is eligible; the ring3 map passed in
+    // is consent-derived but only the boolean reaches the public state.
+    const events = [
+      evt({ type: 'created' }),
+      evt({ type: 'placed', cityId: 'lisbon-pt' }),
+      evt({ type: 'claimed', actorRef: 'user_holder' }),
+    ];
+    const meta = new Map([
+      ['UL-1', { series: 'Universal Language', category: 'Multidimensional Art' }],
+    ]);
+    const ring3 = new Map<string, boolean | 'deferred'>([['UL-1:0', true]]);
+    const state = toPublicState(projectAll(events), meta, [lisbon], ring3);
+    const ul1 = state.pieces.find((p) => p.pieceId === 'UL-1');
+    expect(ul1?.kinshipEligible).toBe(true);
+    // The whole serialized state must still carry no consent fields.
+    const keys = collectKeys(state, new Set<string>());
+    expect(keys).not.toContain('ring3ChartPresence');
+    expect(keys).not.toContain('consent');
+    expect(keys.has('kinshipEligible')).toBe(true);
+  });
+
+  it('marks a claimed piece ineligible when ring3 is deferred or absent', () => {
+    const events = [
+      evt({ type: 'created' }),
+      evt({ type: 'placed', cityId: 'lisbon-pt' }),
+      evt({ type: 'claimed', actorRef: 'user_holder' }),
+    ];
+    const meta = new Map([['UL-1', { series: 'Universal Language' }]]);
+    // No ring3 entry → fail-closed.
+    const a = toPublicState(projectAll(events), meta, [lisbon]);
+    expect(a.pieces.find((p) => p.pieceId === 'UL-1')?.kinshipEligible).toBe(false);
+    // ring3 'deferred' → still ineligible.
+    const b = toPublicState(
+      projectAll(events),
+      meta,
+      [lisbon],
+      new Map<string, boolean | 'deferred'>([['UL-1:0', 'deferred']]),
+    );
+    expect(b.pieces.find((p) => p.pieceId === 'UL-1')?.kinshipEligible).toBe(false);
+  });
+
+  it('keeps an artist-placed (unclaimed) piece eligible — unchanged behavior', () => {
+    const events = [
+      evt({ type: 'created' }),
+      evt({ type: 'placed', cityId: 'lisbon-pt' }),
+    ];
+    const meta = new Map([['UL-1', { series: 'Universal Language' }]]);
+    const state = toPublicState(projectAll(events), meta, [lisbon]);
+    // No claim → artist's own data → eligible regardless of any consent map.
+    expect(state.pieces.find((p) => p.pieceId === 'UL-1')?.kinshipEligible).toBe(true);
   });
 
   it('exposes the Founding Lights ordinal but not the holder behind it', () => {

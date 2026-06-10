@@ -108,6 +108,13 @@ export function buildKinshipIndex(
   for (const p of state.pieces) {
     if (p.series !== 'Universal Language') continue;
     if (p.status !== 'placed') continue;
+    // M5 — consent-gated kinship. A claimed piece only joins the
+    // constellation when its steward opted into Ring 3 (kinshipEligible
+    // true). Artist-placed pieces with no claim leave the flag undefined and
+    // keep today's behavior. `=== false` (not `!`) so an absent flag from a
+    // schemaVersion-2 public.json still renders — additive, fail-open for
+    // pre-M5 data, fail-closed only when the projector explicitly excluded.
+    if (p.kinshipEligible === false) continue;
     if (!p.cityId) continue;
     const city = citiesById.get(p.cityId);
     if (!city) continue;

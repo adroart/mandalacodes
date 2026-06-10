@@ -15,6 +15,7 @@
  */
 
 import type {
+  AtlasLetter,
   ClaimRequest,
   LedgerEvent,
   StewardRecord,
@@ -33,6 +34,7 @@ export const KEY_LEDGER = 'atlas/ledger.json';
 export const KEY_STEWARDS = 'atlas/stewards.json';
 export const KEY_PUBLIC = 'atlas/public.json';
 export const KEY_CLAIM_REQUESTS = 'atlas/claimRequests.json';
+export const KEY_LETTERS = 'atlas/letters.json';
 
 // ---------- Env typing ----------
 
@@ -165,6 +167,10 @@ export async function readClaimRequests(env: AtlasEnv): Promise<ClaimRequest[]> 
   return readJsonArray<ClaimRequest>(env, KEY_CLAIM_REQUESTS);
 }
 
+export async function readLetters(env: AtlasEnv): Promise<AtlasLetter[]> {
+  return readJsonArray<AtlasLetter>(env, KEY_LETTERS);
+}
+
 // NOTE: there are deliberately no bare writeLedger/writeStewards helpers.
 // Every mutation of those two objects must go through mutateLedger /
 // mutateStewards below so concurrent writes can never silently drop data.
@@ -277,6 +283,16 @@ export function mutateClaimRequests<R>(
   return mutateJsonArray<ClaimRequest, R>(env, KEY_CLAIM_REQUESTS, mutate);
 }
 
+/** Concurrency-safe mutation of atlas/letters.json (M5). The piece's letters
+ *  are mutable R2 — never chain events — so generation, mark-read, and the
+ *  anniversary-on-read derivation all serialize through this. */
+export function mutateLetters<R>(
+  env: AtlasEnv,
+  mutate: Mutator<AtlasLetter, R>,
+): Promise<MutateSuccess<AtlasLetter, R> | Response> {
+  return mutateJsonArray<AtlasLetter, R>(env, KEY_LETTERS, mutate);
+}
+
 // ---------- Steward issuance (shared by issue.ts + the sale queue) ----------
 
 export interface IssueStewardInput {
@@ -336,9 +352,31 @@ function buildArtworkMeta(): Map<string, { series?: string; category?: string }>
 }
 
 /**
+ * Build the map of chain key → the steward's ring3ChartPresence value, used
+ * by toPublicState to derive the kinshipEligible boolean (M5). Only the
+ * single boolean-or-'deferred' is lifted off each record — the consent
+ * OBJECT never travels into the projection or the public state.
+ */
+function buildRing3ByKey(
+  stewards: readonly StewardRecord[],
+): Map<string, boolean | 'deferred'> {
+  const map = new Map<string, boolean | 'deferred'>();
+  for (const s of stewards) {
+    const ring3 = s.consent?.ring3ChartPresence;
+    if (ring3 === undefined) continue;
+    map.set(`${s.pieceId}:${s.editionNumber ?? 0}`, ring3);
+  }
+  return map;
+}
+
+/**
  * Re-derive PublicAtlasState from a full ledger and persist it to R2.
  * Called after every successful ledger write so the GET cache stays fresh.
  * The GitHub mirror is a side-effect that never blocks the response.
+ *
+ * Reads the steward records too — but ONLY to lift each piece's Ring 3
+ * boolean for the kinshipEligible flag (M5). No consent object, email, name,
+ * or any other steward field ever reaches the public projection.
  */
 export async function regeneratePublicState(
   env: AtlasEnv,
@@ -346,9 +384,11 @@ export async function regeneratePublicState(
 ): Promise<PublicAtlasState> {
   const records = projectAll(events);
   const meta = buildArtworkMeta();
+  const stewards = await readStewards(env);
+  const ring3ByKey = buildRing3ByKey(stewards);
   // ATLAS_PLACES = cities + country-level centroids, so "country only"
   // placements resolve to a glowing dot like any city.
-  const state = toPublicState(records, meta, ATLAS_PLACES);
+  const state = toPublicState(records, meta, ATLAS_PLACES, ring3ByKey);
   const jsonBody = JSON.stringify(state, null, 2);
   await env.ATLAS_BUCKET.put(KEY_PUBLIC, jsonBody, {
     httpMetadata: { contentType: 'application/json' },

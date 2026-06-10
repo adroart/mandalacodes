@@ -29,7 +29,7 @@
 import type { LedgerEvent, LedgerEventType, PieceRecord } from '../../../../types';
 import { appendEvent, groupChains, BackdatedEventError } from '../../../../utils/ledger';
 import { projectPiece } from '../../../../utils/ledgerProjection';
-import { nextConsentState } from '../../../../utils/consent';
+import { nextConsentState, nextRing3ConsentState } from '../../../../utils/consent';
 import { addHeir, parseHeirInput, revokeHeir } from '../../../../utils/inscriptions';
 import { getCityById } from '../../../../data/cities';
 import type { PagesContext } from '../_helpers';
@@ -37,6 +37,7 @@ import {
   json,
   mutateLedger,
   mutateStewards,
+  readLedger,
   readStewards,
   regeneratePublicState,
   sanitizeEventsForSteward,
@@ -55,6 +56,11 @@ interface UpdateBody {
   addHeir?: unknown;
   /** Revoke a registered heir hint — { email }. */
   revokeHeir?: unknown;
+  /** Ring 3 chart presence (M5): join/leave the kinship constellation. A
+   *  boolean flips ring3ChartPresence on the captured consent and pushes the
+   *  new state onto consentHistory; public state regenerates so the
+   *  kinshipEligible flag follows. No ledger event — consent is mutable. */
+  ring3ChartPresence?: unknown;
 }
 
 function genEventId(): string {
@@ -160,6 +166,64 @@ export async function onRequestPost(
     });
     if (heirOutcome instanceof Response) return heirOutcome;
     const updated = heirOutcome.next.find(
+      (s) =>
+        s.pieceId === record.pieceId &&
+        (s.editionNumber ?? undefined) === (record.editionNumber ?? undefined),
+    );
+    return json({
+      ok: true,
+      steward: updated ? toStewardView(updated, actorUserId) : null,
+    });
+  }
+
+  // ---------- Ring 3 chart presence (M5) ----------
+  // The steward joins or leaves the kinship constellation. Pure consent
+  // mutation (mutable, revocable — never a chain event), but the public
+  // kinshipEligible flag is derived from it, so we regenerate public state
+  // afterwards. Requires a captured consent (the retro-consent step runs at
+  // claim/edit before the book exposes this toggle).
+  if (body.ring3ChartPresence !== undefined) {
+    if (typeof body.ring3ChartPresence !== 'boolean') {
+      return json({ ok: false, error: 'ring3ChartPresence must be a boolean' }, 400);
+    }
+    if (!record.consent) {
+      return json(
+        { ok: false, error: 'Capture consent before opening chart presence' },
+        409,
+      );
+    }
+    const ring3 = body.ring3ChartPresence;
+    const now3 = new Date().toISOString();
+    const ring3Outcome = await mutateStewards(env, (current) => ({
+      next: current.map((s) => {
+        if (
+          s.pieceId !== record.pieceId ||
+          (s.editionNumber ?? undefined) !== (record.editionNumber ?? undefined) ||
+          !s.consent
+        ) {
+          return s;
+        }
+        if (s.consent.ring3ChartPresence === ring3) {
+          return { ...s, lastClaimAt: now3 };
+        }
+        const consent = nextRing3ConsentState(ring3, s.consent, actorUserId, now3);
+        return {
+          ...s,
+          lastClaimAt: now3,
+          consent,
+          consentHistory: [...(s.consentHistory ?? []), consent],
+        };
+      }),
+      result: undefined,
+    }));
+    if (ring3Outcome instanceof Response) return ring3Outcome;
+
+    // Regenerate so the kinshipEligible boolean on this piece follows the
+    // flip. No ledger write happened — pass the current ledger through.
+    const events = await readLedger(env);
+    await regeneratePublicState(env, events);
+
+    const updated = ring3Outcome.next.find(
       (s) =>
         s.pieceId === record.pieceId &&
         (s.editionNumber ?? undefined) === (record.editionNumber ?? undefined),

@@ -181,6 +181,28 @@ export function derivePieceType(
 }
 
 /**
+ * Whether a piece may join the kinship constellation (M5).
+ *
+ * Ratified rule: a piece that carries a `claimed` event requires its current
+ * steward's Ring 3 consent (ring3ChartPresence === true) to be eligible —
+ * the constellation is the chart-presence surface and joining it is an active
+ * opt-in. A piece with NO claim keeps today's behavior: it's artist-placed
+ * inventory (the artist's own data), so it stays eligible.
+ *
+ * The consent value is a SINGLE BOOLEAN-or-'deferred' read off the mutable
+ * steward record — the consent OBJECT never enters this function, let alone
+ * the public state. Absent consent on a claimed piece means not-yet-opted-in,
+ * so it is ineligible (fail-closed, consistent with active opt-in).
+ */
+export function isKinshipEligible(
+  record: PieceRecord,
+  ring3: boolean | 'deferred' | undefined,
+): boolean {
+  if (!record.claimedAt) return true; // artist-placed, no claim → unchanged
+  return ring3 === true;
+}
+
+/**
  * Build the safe, public-facing projection. Strips private fields, hides
  * withdrawn and retired pieces, and includes only the cities those pieces
  * reference. The result is what gets cached at /api/atlas and mirrored to
@@ -193,11 +215,17 @@ export function derivePieceType(
  *                  later) without coupling this util to a particular data
  *                  source.
  * @param cities    The full city catalog. Filtered down to referenced ones.
+ * @param ring3ByKey  Optional map of chain key (`pieceId:editionNumber ?? 0`)
+ *                  → the steward's ring3ChartPresence value. Used ONLY to
+ *                  derive the kinshipEligible boolean — the consent object
+ *                  itself never reaches this projection. Absent map = every
+ *                  claimed piece is treated as not-opted-in (fail-closed).
  */
 export function toPublicState(
   records: Map<string, PieceRecord>,
   artworks: Map<string, { series?: string; category?: string }>,
   cities: CityCentroid[],
+  ring3ByKey?: Map<string, boolean | 'deferred'>,
 ): PublicAtlasState {
   const referencedCityIds = new Set<string>();
   const pieces: PublicAtlasState['pieces'] = [];
@@ -249,6 +277,7 @@ export function toPublicState(
       placedAt,
       pieceType: derivePieceType(record, meta?.series),
       claimOrdinal: ordinals.get(key),
+      kinshipEligible: isKinshipEligible(record, ring3ByKey?.get(key)),
     });
   }
 

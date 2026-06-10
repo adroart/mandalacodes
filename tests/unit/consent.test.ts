@@ -26,6 +26,7 @@ import {
   applyConsentToSteward,
   bindStewardOnClaim,
   nextConsentState,
+  nextRing3ConsentState,
   parseConsentInput,
   parseFirstInscription,
   planClaimChainEvents,
@@ -176,6 +177,27 @@ describe('nextConsentState', () => {
     expect(updated.ring4).toEqual(prev.ring4);
     expect(updated.capturedAt).toBe('2026-07-01T00:00:00.000Z');
     expect(updated.capturedBy).toBe('user_other_session');
+  });
+});
+
+describe('nextRing3ConsentState', () => {
+  it('flips only ring3 + the stamp, carrying Rings 2 and 4 forward (M5)', () => {
+    const prev = consentState({
+      ring2MapPresence: true,
+      ring3ChartPresence: 'deferred',
+      ring4: { face: false, name: true, intention: false, business: false, mission: false },
+    });
+    const next = nextRing3ConsentState(true, prev, 'user_ring3', '2026-08-01T00:00:00.000Z');
+    expect(next.ring3ChartPresence).toBe(true);
+    expect(next.ring2MapPresence).toBe(true); // unchanged
+    expect(next.ring4).toEqual(prev.ring4); // unchanged
+    expect(next.version).toBe(CONSENT_VERSION);
+    expect(next.capturedAt).toBe('2026-08-01T00:00:00.000Z');
+    expect(next.capturedBy).toBe('user_ring3');
+    // Turning it back off is symmetric.
+    const off = nextRing3ConsentState(false, next, 'user_ring3', '2026-09-01T00:00:00.000Z');
+    expect(off.ring3ChartPresence).toBe(false);
+    expect(off.ring2MapPresence).toBe(true);
   });
 });
 

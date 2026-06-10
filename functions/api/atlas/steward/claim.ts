@@ -57,6 +57,8 @@ import {
   toStewardView,
 } from '../_helpers';
 import { requireUser, isAuthResponse } from '../../_lib/clerk';
+import { generateKinClaimLetters } from '../_letters';
+import { letterRecipientKey } from '../../../../utils/letters';
 
 interface ClaimedPiece {
   steward: Omit<StewardRecord, 'notes'>;
@@ -226,7 +228,23 @@ export async function onRequestPost(
   if (ledgerOutcome instanceof Response) return ledgerOutcome;
 
   if (ledgerOutcome.result.length > 0) {
-    await regeneratePublicState(env, ledgerOutcome.next);
+    const publicState = await regeneratePublicState(env, ledgerOutcome.next);
+
+    // The piece writes back (M5): for every FRESH `claimed` event, write
+    // kin-claim letters to consenting, ring2-public kin pieces. Generation
+    // reads only the regenerated public state — a piece whose steward
+    // declined Ring 2 (private) or Ring 3 (not in the constellation) is
+    // absent from it, so a private claim notifies no one and references no
+    // one. Letter writes are best-effort and never block the claim response.
+    const freshClaims = ledgerOutcome.result.filter((e) => e.type === 'claimed');
+    for (const e of freshClaims) {
+      const key = letterRecipientKey(e.pieceId, e.editionNumber);
+      try {
+        await generateKinClaimLetters(env, publicState, key, now);
+      } catch {
+        // A letter is a courtesy, not a fact — never fail the claim over it.
+      }
+    }
   }
 
   return buildClaimedResponse(stewardOutcome.next, ledgerOutcome.next, userId);

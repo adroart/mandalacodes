@@ -2,7 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
 import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
-import PieceSidePanel, { type KinEntry, type SelectedPiece } from './atlas/PieceSidePanel';
+import PieceSidePanel, {
+  type KinEntry,
+  type SelectedPiece,
+  type HolderChartSummary,
+} from './atlas/PieceSidePanel';
 import SeekingGround, { type SeekingPiece } from './atlas/SeekingGround';
 import KinshipLayer from './atlas/KinshipLayer';
 import { FULL_ARCHIVE } from '../data/mockData';
@@ -320,6 +324,30 @@ const AtlasPage: React.FC = () => {
       });
   }, [selectedKey, kinshipIndex]);
 
+  /* Holder chart (M5) — "held by a chart of…". Derived, non-identifying
+     fields only; the endpoint returns chart: null unless the steward opted
+     into Ring 3 and has a profile. Fetched per selected piece; cleared
+     between selections so one piece's chart never bleeds onto another. */
+  const [holderChart, setHolderChart] = useState<HolderChartSummary | null>(null);
+  useEffect(() => {
+    setHolderChart(null);
+    if (!selectedPiece || selectedPiece.status !== 'placed') return;
+    let active = true;
+    const params = new URLSearchParams({ pieceId: selectedPiece.pieceId });
+    if (typeof selectedPiece.editionNumber === 'number') {
+      params.set('editionNumber', String(selectedPiece.editionNumber));
+    }
+    fetch(`/api/atlas/holder-chart?${params.toString()}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { chart?: HolderChartSummary | null } | null) => {
+        if (active && data?.chart) setHolderChart(data.chart);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [selectedPiece]);
+
   /* ─── Render ─────────────────────────────────────────────────────────────── */
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
@@ -472,6 +500,7 @@ const AtlasPage: React.FC = () => {
                     piece={selectedPiece}
                     kin={kinForSelected}
                     onSelectKin={(key) => setSelectedKey(key)}
+                    holderChart={holderChart}
                   />
                 )}
               </div>

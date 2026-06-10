@@ -218,6 +218,54 @@ const StewardEdit: React.FC = () => {
     submitUpdate({ isPublic: !piece.isPublic });
   };
 
+  // Ring 3 — chart presence. Joining the kinship constellation is a consent
+  // flip (mutable, revocable), not a ledger event; the server keeps the audit
+  // history and regenerates the public kinshipEligible flag. We update the
+  // steward record in place so the toggle reflects immediately.
+  const [ring3Saving, setRing3Saving] = useState(false);
+  const ring3On = stewardRecord?.consent?.ring3ChartPresence === true;
+
+  const handleRing3Toggle = async () => {
+    if (!stewardRecord || ring3Saving) return;
+    setRing3Saving(true);
+    setSaveError(null);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/atlas/steward/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          pieceId: stewardRecord.pieceId,
+          editionNumber: stewardRecord.editionNumber,
+          ring3ChartPresence: !ring3On,
+        }),
+      });
+      if (res.status === 401) {
+        navigate('/atlas/claim', { replace: true });
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as
+        | { ok?: boolean; steward?: StewardRecord }
+        | null;
+      if (!res.ok || !data?.ok || !data.steward) {
+        setSaveError('Something went wrong, please try again.');
+        return;
+      }
+      const updated = data.steward;
+      setEntries(prev =>
+        prev.map((e, i) => (i === selectedIdx ? { ...e, steward: updated } : e)),
+      );
+      flashSaved();
+    } catch {
+      setSaveError('Something went wrong, please try again.');
+    } finally {
+      setRing3Saving(false);
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/atlas/claim', { replace: true });
@@ -511,6 +559,48 @@ const StewardEdit: React.FC = () => {
               />
             </span>
             <span>{piece.isPublic ? 'Show on the atlas' : 'Keep this private'}</span>
+          </button>
+        </div>
+
+        {/* Ring 3 — chart presence (the kinship constellation) */}
+        <div className="mb-10">
+          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
+            Chart presence
+          </span>
+          <p className="font-serif italic text-sm text-stone-600 mb-4">
+            Turn this on and your piece joins the kinship constellation; arcs
+            may connect it to other consenting pieces that share its trigrams.
+            No name and no birth data are ever shown — only the elemental
+            shape. You can turn it off at any time.
+          </p>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={ring3On}
+            aria-label="Join the kinship constellation"
+            onClick={handleRing3Toggle}
+            disabled={ring3Saving}
+            className="group flex items-center gap-4 min-h-[44px] font-sans text-base text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+          >
+            <span
+              aria-hidden="true"
+              className={`relative inline-block w-11 h-6 border transition-colors ${
+                ring3On
+                  ? 'bg-bronze-400 border-bronze-500'
+                  : 'bg-paper-100 border-wood-300'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white transition-transform ${
+                  ring3On ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </span>
+            <span>
+              {ring3On
+                ? 'Joined the constellation'
+                : 'Join the kinship constellation'}
+            </span>
           </button>
         </div>
 

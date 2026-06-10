@@ -107,6 +107,29 @@ export function nextConsentState(
   };
 }
 
+/**
+ * Build the next ConsentState for a Ring 3 (chart presence) flip — M5.
+ * Carries Ring 2 and Ring 4 forward unchanged, moves only ring3ChartPresence
+ * and the server stamp. A steward toggles this from their book to join (or
+ * leave) the kinship constellation; the value drives the public
+ * kinshipEligible flag at regen time. Consent stays mutable and revocable —
+ * it never enters a hashed payload.
+ */
+export function nextRing3ConsentState(
+  ring3ChartPresence: boolean,
+  previous: ConsentState,
+  capturedBy: string,
+  capturedAt: string,
+): ConsentState {
+  return {
+    ...previous,
+    version: CONSENT_VERSION,
+    capturedAt,
+    capturedBy,
+    ring3ChartPresence,
+  };
+}
+
 // ---------- Steward record transitions ----------
 
 /**

@@ -19,11 +19,22 @@ export interface KinEntry {
   title: string;
 }
 
+/** Derived, non-identifying holder-chart summary (M5). Served only when the
+ *  steward opted into Ring 3 and has a D1 profile — DERIVED fields only,
+ *  never raw birth data or a name. */
+export interface HolderChartSummary {
+  element: string;
+  gift?: string;
+}
+
 export interface PieceSidePanelProps {
   piece: SelectedPiece | null;
   /** Kindred pieces, already sorted nearest-first, capped to ~6. Empty for non-UL pieces. */
   kin?: readonly KinEntry[];
   onSelectKin?: (key: string) => void;
+  /** "Held by a chart of…" — present only when ring3 is on AND a profile
+   *  exists; null/undefined otherwise (the line simply doesn't render). */
+  holderChart?: HolderChartSummary | null;
 }
 
 function formatPlacedYear(iso?: string): string | null {
@@ -50,7 +61,12 @@ export function ordinalLabel(n: number): string {
   }
 }
 
-const PieceSidePanel: React.FC<PieceSidePanelProps> = ({ piece, kin, onSelectKin }) => {
+const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
+  piece,
+  kin,
+  onSelectKin,
+  holderChart,
+}) => {
   if (!piece) {
     return (
       <aside
@@ -160,6 +176,20 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({ piece, kin, onSelectKin
           >
             Read Code {piece.cardNumber} →
           </Link>
+        </div>
+      )}
+
+      {holderChart && (
+        <div className="border-t border-wood-200 pt-5 mt-5">
+          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
+            Held by a chart of
+          </p>
+          <p className="font-serif text-lg text-wood-900 leading-snug">
+            {holderChart.element}
+            {holderChart.gift ? (
+              <span className="text-wood-700"> · {holderChart.gift}</span>
+            ) : null}
+          </p>
         </div>
       )}
 
