@@ -23,9 +23,7 @@ const FIXTURES = [
     expected: {
       lifesWork: '61.6', evolution: '62.6', radiance: '50.2', purpose: '3.2',
       attraction: '33.6', iq: '41.3', eq: '48.4', sq: '5.3',
-      venusCore: '59.1' /* re-read of Vocation gate */,
-      core: '59.1' /* Vocation */, culture: '32.2',
-      brand: '61.6' /* re-read of Life's Work gate */, pearl: '44.1',
+      core: '59.1' /* Vocation */, culture: '32.2', pearl: '44.1',
     },
   },
 ] as const;

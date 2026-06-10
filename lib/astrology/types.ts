@@ -21,10 +21,8 @@ export type ProfileKey =
   | 'iq'
   | 'eq'
   | 'sq'
-  | 'venusCore'  // Venus Sequence 6th sphere (the Core / Core Wound)
-  | 'core'       // Pearl 'Vocation' (legacy key name); re-read of venusCore's gate
+  | 'core'       // Pearl 'Vocation' (legacy key name)
   | 'culture'
-  | 'brand'      // Pearl 3rd sphere; re-read of Life's Work's gate
   | 'pearl';
 
 export type ProfileSequence = 'activation' | 'venus' | 'pearl';
@@ -38,10 +36,8 @@ export interface HologeneticProfile {
   iq: GateLine;
   eq: GateLine;
   sq: GateLine;
-  venusCore: GateLine;
   core: GateLine;
   culture: GateLine;
-  brand: GateLine;
   pearl: GateLine;
 }
 
