@@ -139,6 +139,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
           {/* Spheres + outside labels */}
           {PROFILE_POSITIONS.map((meta) => {
             const gl = profile[meta.key];
+            if (!gl) return null; // defensive: stale profile missing a sphere
             const card = CARD_BY_NUMBER.get(gl.gate);
             const p = pos(meta.key);
             const isActive = active === meta.key;
@@ -219,6 +220,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             <ul className="profile-graph__list">
               {PROFILE_POSITIONS.filter((p) => p.sequence === seq).map((meta) => {
                 const gl = profile[meta.key];
+                if (!gl) return null; // defensive: stale profile missing a sphere
                 const card = CARD_BY_NUMBER.get(gl.gate);
                 return (
                   <li key={meta.key}>

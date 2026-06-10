@@ -88,6 +88,12 @@ export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
     role: 'How spirit speaks through you, the quiet intelligence beneath.',
     x: 0.5, y: 0.5, labelSide: 'left',
   },
+  {
+    key: 'venusCore', sequence: 'venus', label: 'Core',
+    planet: 'mars', side: 'design', body: '',
+    role: 'The wound at the root, the place your healing begins.',
+    x: 0.30, y: 0.78, labelSide: 'left',
+  },
 
   {
     key: 'core', sequence: 'pearl', label: 'Vocation',
@@ -100,6 +106,12 @@ export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
     planet: 'jupiter', side: 'design', body: '',
     role: 'The field you came from, the inheritance you are reweaving.',
     x: 0.64, y: 0.4, labelSide: 'right',
+  },
+  {
+    key: 'brand', sequence: 'pearl', label: 'Brand',
+    planet: 'sun', side: 'persona', body: '',
+    role: 'How your gift is recognised, the same light as your Life’s Work.',
+    x: 0.64, y: 0.22, labelSide: 'right',
   },
   {
     key: 'pearl', sequence: 'pearl', label: 'Pearl',
@@ -123,20 +135,25 @@ export interface ProfileChannel {
 
 /**
  * The connection topology of each sequence, traced from the official Gene
- * Keys sequence emblems (green Activation triangle, red Venus chain, blue
- * Pearl triangle-with-hub). Pathway names follow the canonical Golden Path
- * (verified against genekeys.com). `from -> to` sets the arrow direction.
+ * Keys Golden Path. Each sequence is an OPEN CHAIN (N spheres, N-1 lines,
+ * no closing edge) with the official pathway names, verified 3-0 against
+ * genekeys.com. `from -> to` sets the arrow direction.
  *
- *   Activation (green): Life's Work and Radiance both into Evolution, and
- *     Radiance down to Purpose — the emblem's triangle + tail.
- *   Venus (red): the chain Purpose -> Attraction -> IQ -> EQ -> SQ.
- *   Pearl (blue): a triangle (Vocation, Culture, Pearl) with SQ as the
- *     central hub joined to all three.
+ *   Activation (green): Life's Work -> Evolution -> Radiance -> Purpose
+ *     (Challenge, Breakthrough, Core Stability)
+ *   Venus (red): Purpose -> Attraction -> IQ -> EQ -> SQ -> Core
+ *     (Dharma, Karma, Intelligence, Love, Realisation)
+ *   Pearl (blue): Vocation -> Culture -> Brand -> Pearl
+ *     (Initiative, Growth, Service)
+ *
+ * Shared gates tie the three chains into one hologram: Purpose is the same
+ * orb in Activation and Venus; Brand re-reads Life's Work's gate; the Pearl
+ * Vocation re-reads the Venus Core's gate.
  */
 export const PROFILE_CHANNELS: readonly ProfileChannel[] = [
-  // ── Activation (green triangle + tail) ──
+  // ── Activation (green chain) ──
   { from: 'lifesWork', to: 'evolution', sequence: 'activation', pathway: 'Challenge' },
-  { from: 'radiance',  to: 'evolution', sequence: 'activation', pathway: 'Breakthrough' },
+  { from: 'evolution', to: 'radiance',  sequence: 'activation', pathway: 'Breakthrough' },
   { from: 'radiance',  to: 'purpose',   sequence: 'activation', pathway: 'Core Stability' },
 
   // ── Venus (red chain) ──
@@ -144,15 +161,12 @@ export const PROFILE_CHANNELS: readonly ProfileChannel[] = [
   { from: 'attraction', to: 'iq',         sequence: 'venus', pathway: 'Karma' },
   { from: 'iq',         to: 'eq',         sequence: 'venus', pathway: 'Intelligence' },
   { from: 'eq',         to: 'sq',         sequence: 'venus', pathway: 'Love' },
+  { from: 'sq',         to: 'venusCore',  sequence: 'venus', pathway: 'Realisation' },
 
-  // ── Pearl (blue): exactly 4 spheres — the triangle Vocation/Culture/Pearl
-  //    with SQ as the central hub joined to all three. ──
-  { from: 'sq',      to: 'core',    sequence: 'pearl', pathway: 'Realisation' },
-  { from: 'sq',      to: 'culture', sequence: 'pearl', pathway: 'Realisation' },
-  { from: 'sq',      to: 'pearl',   sequence: 'pearl', pathway: 'Synthesis' },
+  // ── Pearl (blue chain) ──
   { from: 'core',    to: 'culture', sequence: 'pearl', pathway: 'Initiative' },
-  { from: 'core',    to: 'pearl',   sequence: 'pearl', pathway: 'Growth' },
-  { from: 'culture', to: 'pearl',   sequence: 'pearl', pathway: 'Service' },
+  { from: 'culture', to: 'brand',   sequence: 'pearl', pathway: 'Growth' },
+  { from: 'brand',   to: 'pearl',   sequence: 'pearl', pathway: 'Service' },
 ];
 
 export const POSITIONS_BY_KEY: Record<ProfileKey, ProfilePositionMeta> =

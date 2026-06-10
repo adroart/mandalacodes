@@ -32,7 +32,7 @@ const YourPositionCallout: React.FC<Props> = ({ gate }) => {
     const out: Match[] = [];
     for (const key of POSITION_KEYS) {
       const gl = profile.computed[key];
-      if (gl.gate === gate) out.push({ key, line: gl.line });
+      if (gl && gl.gate === gate) out.push({ key, line: gl.line });
     }
     return out;
   }, [profile, gate]);
