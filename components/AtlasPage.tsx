@@ -33,8 +33,10 @@ type EnrichedPiece = PublicAtlasState['pieces'][number] & {
 };
 
 /* ─── Helpers ──────────────────────────────────────────────────────────────── */
+/* Same key convention as the ledger (groupChains / projectAll) and the
+   kinship index: pieces with no editionNumber use `0`. */
 function makeKey(pieceId: string, editionNumber?: number): string {
-  return `${pieceId}:${editionNumber ?? ''}`;
+  return `${pieceId}:${editionNumber ?? 0}`;
 }
 
 function titleFor(pieceId: string): string {
@@ -84,7 +86,7 @@ const AtlasPage: React.FC = () => {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        if (key) next.set('piece', key.replace(/:$/, ''));
+        if (key) next.set('piece', key.replace(/:0$/, ''));
         else next.delete('piece');
         return next;
       },
@@ -129,7 +131,7 @@ const AtlasPage: React.FC = () => {
   }, [enriched]);
 
   /* Apply the ?piece= deep link once the atlas is loaded. Accepts both
-     "UL-122" and "UL-122:2" (piece keys without an edition end in ":"),
+     "UL-122" and "UL-122:2" (piece keys without an edition end in ":0"),
      plus the birth-place key when the visitor has a saved profile. */
   useEffect(() => {
     if (enriched.length === 0) return;
@@ -139,7 +141,7 @@ const AtlasPage: React.FC = () => {
       if (birthPlace) setSelectedKeyState(BIRTH_KEY);
       return;
     }
-    const match = enriched.find((p) => p.key === param || p.key === `${param}:`);
+    const match = enriched.find((p) => p.key === param || p.key === `${param}:0`);
     if (match) setSelectedKeyState(match.key);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enriched]);

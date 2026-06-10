@@ -14,20 +14,23 @@
  *   - No-op → return current record, no event appended.
  *
  * cityId must validate via getCityById; notes are admin-only and ignored.
+ * Ledger and steward writes go through the conditional-put mutators, and
+ * every appended event carries the steward's opaque Clerk userId as
+ * `actorRef`. Responses strip admin-authored event notes.
  */
 
 import type { LedgerEvent, LedgerEventType, PieceRecord } from '../../../../types';
-import { appendEvent, groupChains } from '../../../../utils/ledger';
+import { appendEvent, groupChains, BackdatedEventError } from '../../../../utils/ledger';
 import { projectPiece } from '../../../../utils/ledgerProjection';
 import { getCityById } from '../../../../data/cities';
 import type { PagesContext } from '../_helpers';
 import {
   json,
-  readLedger,
-  writeLedger,
+  mutateLedger,
+  mutateStewards,
   readStewards,
-  writeStewards,
   regeneratePublicState,
+  sanitizeEventsForSteward,
 } from '../_helpers';
 import { requireUser, isAuthResponse } from '../../_lib/clerk';
 
@@ -45,6 +48,11 @@ function genEventId(): string {
   return `evt-${Date.now().toString(36)}-${hex}`;
 }
 
+/** Steward-facing copy of a projected piece: admin event notes removed. */
+function sanitizePiece(piece: PieceRecord): PieceRecord {
+  return { ...piece, history: sanitizeEventsForSteward(piece.history) };
+}
+
 export async function onRequestPost(
   context: PagesContext,
 ): Promise<Response> {
@@ -52,6 +60,9 @@ export async function onRequestPost(
 
   const auth = await requireUser(request, env);
   if (isAuthResponse(auth)) return auth;
+  // Captured by the mutator closure below — TS doesn't carry the narrowing
+  // of `auth` into nested function declarations.
+  const actorUserId = auth.userId;
 
   let body: UpdateBody;
   try {
@@ -92,87 +103,104 @@ export async function onRequestPost(
   const isPublicProvided = typeof body.isPublic === 'boolean';
   const desiredIsPublic = isPublicProvided ? (body.isPublic as boolean) : undefined;
 
-  const events = await readLedger(env);
-  const chains = groupChains(events);
-  const chainKey = `${pieceId}:${editionNumber ?? 0}`;
-  const chain = chains.get(chainKey);
-  if (!chain || chain.length === 0) {
-    return json({ ok: false, error: 'No chain for this piece' }, 403);
-  }
-
-  const current: PieceRecord = projectPiece(chain);
-
   const now = new Date().toISOString();
-  const appended: LedgerEvent[] = [];
 
-  let runningChain = chain.slice();
-  let runningCity = current.currentCityId;
-  let runningIsPublic = current.isPublic;
-  let runningStatus = current.status;
+  // Bump steward activity timestamp (conditional write — a concurrent
+  // claim or issue must not be clobbered).
+  const stewardOutcome = await mutateStewards(env, (current) => ({
+    next: current.map((s) =>
+      s.pieceId === record.pieceId &&
+      (s.editionNumber ?? undefined) === (record.editionNumber ?? undefined)
+        ? { ...s, lastClaimAt: now }
+        : s,
+    ),
+    result: undefined,
+  }));
+  if (stewardOutcome instanceof Response) return stewardOutcome;
 
-  async function pushEvent(
-    type: LedgerEventType,
-    eventCityId: string | null,
-  ): Promise<void> {
-    const draft: Omit<LedgerEvent, 'hash' | 'prevHash'> = {
-      id: genEventId(),
-      pieceId,
-      editionNumber,
-      type,
-      date: now,
-      cityId: eventCityId,
-      actor: 'steward',
+  // The diff is computed INSIDE the mutator so it re-applies against fresh
+  // chain state if a concurrent ledger write forces a retry.
+  const outcome = await mutateLedger(env, async (events) => {
+    const chains = groupChains(events);
+    const chainKey = `${pieceId}:${editionNumber ?? 0}`;
+    const chain = chains.get(chainKey);
+    if (!chain || chain.length === 0) {
+      return json({ ok: false, error: 'No chain for this piece' }, 403);
+    }
+
+    const current: PieceRecord = projectPiece(chain);
+
+    const appended: LedgerEvent[] = [];
+    let runningChain = chain.slice();
+    let runningCity = current.currentCityId;
+    let runningIsPublic = current.isPublic;
+    let runningStatus = current.status;
+
+    async function pushEvent(
+      type: LedgerEventType,
+      eventCityId: string | null,
+    ): Promise<void> {
+      const draft: Omit<LedgerEvent, 'hash' | 'prevHash'> = {
+        id: genEventId(),
+        pieceId,
+        editionNumber,
+        type,
+        date: now,
+        cityId: eventCityId,
+        actor: 'steward',
+        actorRef: actorUserId,
+      };
+      const full = await appendEvent(runningChain, draft);
+      runningChain = [...runningChain, full];
+      appended.push(full);
+    }
+
+    try {
+      if (cityIdProvided && cityId && cityId !== runningCity) {
+        if (runningStatus === 'placed') {
+          await pushEvent('moved', cityId);
+        } else {
+          await pushEvent('placed', cityId);
+        }
+        runningCity = cityId;
+        runningStatus = 'placed';
+      }
+
+      if (isPublicProvided) {
+        if (desiredIsPublic === false && runningIsPublic) {
+          await pushEvent('withdrawn', runningCity);
+          runningIsPublic = false;
+        } else if (desiredIsPublic === true && !runningIsPublic) {
+          await pushEvent('revealed', runningCity);
+          runningIsPublic = true;
+        }
+      }
+    } catch (err) {
+      // Only reachable when the chain tip is dated in the future (an admin
+      // event with a forward date) — appending "now" would backdate.
+      if (err instanceof BackdatedEventError) {
+        return json({ ok: false, error: err.message }, 409);
+      }
+      throw err;
+    }
+
+    if (appended.length === 0) {
+      // No-op: nothing to write. Short-circuit with the current record.
+      return json({ ok: true, piece: sanitizePiece(current), appended: [] });
+    }
+
+    return {
+      next: events.concat(appended),
+      result: { piece: projectPiece(runningChain), appended },
     };
-    const full = await appendEvent(runningChain, draft);
-    runningChain = [...runningChain, full];
-    appended.push(full);
-  }
+  });
+  if (outcome instanceof Response) return outcome;
 
-  if (cityIdProvided && cityId && cityId !== runningCity) {
-    if (runningStatus === 'placed') {
-      await pushEvent('moved', cityId);
-    } else {
-      await pushEvent('placed', cityId);
-    }
-    runningCity = cityId;
-    runningStatus = 'placed';
-  }
+  await regeneratePublicState(env, outcome.next);
 
-  if (isPublicProvided) {
-    if (desiredIsPublic === false && runningIsPublic) {
-      await pushEvent('withdrawn', runningCity);
-      runningIsPublic = false;
-    } else if (desiredIsPublic === true && !runningIsPublic) {
-      await pushEvent('revealed', runningCity);
-      runningIsPublic = true;
-    }
-  }
-
-  // Bump steward activity timestamp.
-  const updatedStewards = stewards.map((s) =>
-    s === record ? { ...s, lastClaimAt: now } : s,
-  );
-  await writeStewards(env, updatedStewards);
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-store',
-  };
-
-  if (appended.length === 0) {
-    return new Response(
-      JSON.stringify({ ok: true, piece: current, appended: [] }),
-      { status: 200, headers },
-    );
-  }
-
-  const allEvents = events.concat(appended);
-  await writeLedger(env, allEvents);
-  await regeneratePublicState(env, allEvents);
-
-  const updated = projectPiece(runningChain);
-  return new Response(
-    JSON.stringify({ ok: true, piece: updated, appended }),
-    { status: 200, headers },
-  );
+  return json({
+    ok: true,
+    piece: sanitizePiece(outcome.result.piece),
+    appended: outcome.result.appended,
+  });
 }

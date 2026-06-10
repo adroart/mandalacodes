@@ -474,6 +474,10 @@ Storage placement (the PII table):
   data rollback = restore the backed-up R2 objects. Run `verifyChain` after
   every write once stewards can author events; refuse writes on a broken
   chain.
+- Backup (shipped in M0): `npm run backup:atlas` pulls `atlas/ledger.json` +
+  `atlas/stewards.json` from the production bucket into a gitignored
+  `backups/atlas-<timestamp>/` dir via `wrangler r2 object get --remote`.
+  Run it before any structural change ships; move long-term copies offline.
 - Local dev of claim/inscribe: `wrangler pages dev` with local R2 simulation
   + `--local` D1 — never the production bucket/DB.
 - Doc hygiene (part of M0): supersede-notes on `docs/ledger-architecture.md`

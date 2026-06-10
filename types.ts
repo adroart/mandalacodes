@@ -199,8 +199,14 @@ export interface LedgerEvent {
   type: LedgerEventType;
   date: string;
   cityId?: string | null;
+  /** Non-personal operational text only — admin-authored notes are stripped
+   *  from steward-facing responses. Never put names/emails/free prose here. */
   note?: string;
   actor: 'admin' | 'steward';
+  /** Opaque actor reference (Clerk userId today) — never an email or name.
+   *  Optional and additive: the canonicalizer drops undefined, so events
+   *  written before this field existed keep their original hashes. */
+  actorRef?: string;
   prevHash: string | null;
   hash: string;
 }

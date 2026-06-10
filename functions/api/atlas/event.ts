@@ -10,12 +10,7 @@ import type { LedgerEvent, LedgerEventType } from '../../../types';
 import { appendEvent, groupChains } from '../../../utils/ledger';
 import { getCityById } from '../../../data/cities';
 import type { PagesContext } from './_helpers';
-import {
-  json,
-  readLedger,
-  writeLedger,
-  regeneratePublicState,
-} from './_helpers';
+import { json, mutateLedger, regeneratePublicState } from './_helpers';
 import { requireAdmin, isAuthResponse } from '../_lib/clerk';
 
 const VALID_TYPES: ReadonlySet<LedgerEventType> = new Set<LedgerEventType>([
@@ -72,25 +67,46 @@ export async function onRequestPost(
     return json({ ok: false, error: 'Unknown cityId' }, 400);
   }
 
-  const events = await readLedger(env);
-  const chains = groupChains(events);
-  const key = `${incoming.pieceId}:${incoming.editionNumber ?? 0}`;
-  const chain = chains.get(key) ?? [];
+  // All chain checks run INSIDE the mutator so they re-apply against fresh
+  // data if a concurrent write forces a retry.
+  const outcome = await mutateLedger(env, async (events) => {
+    const chains = groupChains(events);
+    const key = `${incoming.pieceId}:${incoming.editionNumber ?? 0}`;
+    const chain = chains.get(key) ?? [];
 
-  // Genesis guard: a 'created' event for a piece that already has a chain
-  // would corrupt the projection. Reject with 409 per spec.
-  if (incoming.type === 'created' && chain.length > 0) {
-    return json(
-      { ok: false, error: 'Genesis event already exists for this piece' },
-      409,
-    );
-  }
+    // Genesis guard: a 'created' event for a piece that already has a chain
+    // would corrupt the projection. Reject with 409 per spec.
+    if (incoming.type === 'created' && chain.length > 0) {
+      return json(
+        { ok: false, error: 'Genesis event already exists for this piece' },
+        409,
+      );
+    }
 
-  const fullEvent = await appendEvent(chain, incoming);
-  events.push(fullEvent);
+    // Backdated guard: chains sort by date, so an event dated before the
+    // current tip would reorder the chain and break verification.
+    const tip = chain[chain.length - 1];
+    if (tip && incoming.date < tip.date) {
+      return json(
+        {
+          ok: false,
+          error: `Event date ${incoming.date} is earlier than the chain tip (${tip.date}). Backdated events would break chain verification — use a date at or after the tip.`,
+        },
+        400,
+      );
+    }
 
-  await writeLedger(env, events);
-  await regeneratePublicState(env, events);
+    // Attribution: stamp the admin's opaque Clerk userId, overriding any
+    // client-supplied value. Never an email or name.
+    const fullEvent = await appendEvent(chain, {
+      ...incoming,
+      actorRef: auth.userId,
+    });
+    return { next: [...events, fullEvent], result: fullEvent };
+  });
+  if (outcome instanceof Response) return outcome;
 
-  return json({ ok: true, event: fullEvent });
+  await regeneratePublicState(env, outcome.next);
+
+  return json({ ok: true, event: outcome.result });
 }

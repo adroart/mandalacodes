@@ -52,8 +52,12 @@ export interface KinshipIndex {
 /**
  * Two pieces are kin if any trigram (upper or lower) on one matches any
  * trigram (upper or lower) on the other. Order independent.
+ *
+ * Sibling editions of the same piece are never kin — they trivially share
+ * both trigrams and would flood the constellation with self-kin arcs.
  */
 export function isKin(a: KinshipNode, b: KinshipNode): boolean {
+  if (a.pieceId === b.pieceId) return false;
   return (
     a.upperTrigram === b.upperTrigram ||
     a.upperTrigram === b.lowerTrigram ||
@@ -114,7 +118,9 @@ export function buildKinshipIndex(
     const card = CARD_BY_NUMBER.get(num);
     if (!card) continue;
 
-    const key = `${p.pieceId}:${p.editionNumber ?? ''}`;
+    // Same key convention as ledger.ts groupChains / ledgerProjection's
+    // projectAll: pieces with no editionNumber use `0`.
+    const key = `${p.pieceId}:${p.editionNumber ?? 0}`;
     nodes.set(key, {
       key,
       pieceId: p.pieceId,
