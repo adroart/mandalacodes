@@ -147,11 +147,13 @@ const DesignerRedirect: React.FC = () => {
   return <div className="min-h-screen bg-wood-900" />;
 };
 
-// Preserve the :number param when redirecting from the legacy /oracle/universal-language/:n path.
+// Preserve the :number param — and the navigation state (the ritual-entrance
+// flag rides on it) — when redirecting from the legacy
+// /oracle/universal-language/:n path.
 const RedirectToFlatCard: React.FC = () => {
   const location = useLocation();
   const num = location.pathname.split('/').pop();
-  return <Navigate to={`/universal-language/${num}${location.search}`} replace />;
+  return <Navigate to={`/universal-language/${num}${location.search}`} state={location.state} replace />;
 };
 
 const App: React.FC = () => (

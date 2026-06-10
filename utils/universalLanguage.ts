@@ -54,12 +54,27 @@ export function ulMetaTitle(art: Artwork): string {
   return `${art.title} · Universal Language · Mandala Art`;
 }
 
-/** Universal Language card number → Cloudinary public ID. */
-const UL_IMAGE_BY_NUMBER = new Map<number, string>(
+/** Universal Language card number → archive piece. One physical sculpture per code. */
+const UL_PIECE_BY_NUMBER = new Map<number, Artwork>(
   FULL_ARCHIVE
     .filter(a => a.series === 'Universal Language')
-    .map(a => [ulCardNumber(a.coverImage), a.coverImage] as const)
-    .filter((pair): pair is readonly [number, string] => pair[0] != null)
+    .map(a => [ulCardNumber(a.coverImage), a] as const)
+    .filter((pair): pair is readonly [number, Artwork] => pair[0] != null)
+);
+
+/** The physical Universal Language piece for a card number, when one exists. */
+export function ulPieceForCard(number: number): Artwork | undefined {
+  return UL_PIECE_BY_NUMBER.get(number);
+}
+
+/** Cloudinary public ID for a card's artwork, when one exists. */
+export function ulCardPublicId(number: number): string | undefined {
+  return UL_PIECE_BY_NUMBER.get(number)?.coverImage;
+}
+
+/** Universal Language card number → Cloudinary public ID. */
+const UL_IMAGE_BY_NUMBER = new Map<number, string>(
+  Array.from(UL_PIECE_BY_NUMBER, ([num, a]) => [num, a.coverImage] as const)
 );
 
 /**

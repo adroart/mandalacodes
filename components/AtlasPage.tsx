@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
 import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
 import PieceSidePanel, { type KinEntry, type SelectedPiece } from './atlas/PieceSidePanel';
@@ -7,7 +7,8 @@ import SeekingGround, { type SeekingPiece } from './atlas/SeekingGround';
 import KinshipLayer from './atlas/KinshipLayer';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID } from '../data/cities';
-import { buildSeedAtlasState } from '../data/atlasSeed';
+import { loadAtlasState } from '../lib/atlas/state';
+import { ulCardNumber } from '../utils/universalLanguage';
 import { buildKinshipIndex, MAX_KINSHIP_ARCS } from '../utils/kinship';
 import type { PublicAtlasState } from '../types';
 
@@ -45,39 +46,52 @@ function cityLabelFor(cityId: string | null | undefined): string | undefined {
   return `${c.city}, ${c.country}`;
 }
 
+/** Universal Language card number for a piece, when it has one (1–64). */
+function cardNumberFor(pieceId: string): number | undefined {
+  const a = FULL_ARCHIVE.find((art) => art.id === pieceId);
+  if (!a || a.series !== 'Universal Language') return undefined;
+  return ulCardNumber(a.coverImage) ?? undefined;
+}
+
 /* ─── Component ────────────────────────────────────────────────────────────── */
 const AtlasPage: React.FC = () => {
   const [state, setState] = useState<FetchState>({ kind: 'loading' });
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  // ?piece=<pieceId[:edition]> deep-links to a selection — card pages use it
+  // for their "See it on the Atlas" bridge, and selections stay shareable.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedKey, setSelectedKeyState] = useState<string | null>(null);
   const [selectedSeries, setSelectedSeries] = useState<string>('all');
   const [status, setStatus] = useState<AtlasStatusFilter>('all');
   const [kinshipVisible, setKinshipVisible] = useState<boolean>(true);
+
+  /* Selection setter that mirrors the choice into the URL (replace, so
+     browsing pieces doesn't pile up history entries). */
+  const setSelectedKey = (key: string | null) => {
+    setSelectedKeyState(key);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (key) next.set('piece', key.replace(/:$/, ''));
+        else next.delete('piece');
+        return next;
+      },
+      { replace: true },
+    );
+  };
 
   /* Globe container size — KinshipLayer needs CSS pixels to render the SVG
      overlay at the same dimensions cobe is drawing into. */
   const globeBoxRef = useRef<HTMLDivElement | null>(null);
   const [globeSize, setGlobeSize] = useState({ width: 0, height: 0 });
 
-  /* Fetch the live atlas from /api/atlas. On any failure (dev server with
-     no Functions runtime, ledger not yet seeded, network blip), fall back
-     to the local seed so the page always renders something. */
+  /* Fetch the live atlas via the shared loader (falls back to the local
+     seed on any failure so the page always renders something). The card
+     page's "On the Atlas" seat reads the same cached state. */
   useEffect(() => {
     let active = true;
-    fetch('/api/atlas')
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`atlas ${res.status}`);
-        const body = await res.json();
-        if (!body || body.ok !== true || !body.state) {
-          throw new Error('atlas malformed');
-        }
-        return body.state as PublicAtlasState;
-      })
-      .then((data) => {
-        if (active) setState({ kind: 'ready', data });
-      })
-      .catch(() => {
-        if (active) setState({ kind: 'ready', data: buildSeedAtlasState() });
-      });
+    loadAtlasState().then((data) => {
+      if (active) setState({ kind: 'ready', data });
+    });
     return () => {
       active = false;
     };
@@ -99,6 +113,17 @@ const AtlasPage: React.FC = () => {
       if (p.series) set.add(p.series);
     }
     return Array.from(set).sort();
+  }, [enriched]);
+
+  /* Apply the ?piece= deep link once the atlas is loaded. Accepts both
+     "UL-122" and "UL-122:2" (piece keys without an edition end in ":"). */
+  useEffect(() => {
+    if (enriched.length === 0) return;
+    const param = searchParams.get('piece');
+    if (!param) return;
+    const match = enriched.find((p) => p.key === param || p.key === `${param}:`);
+    if (match) setSelectedKeyState(match.key);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enriched]);
 
   /* Apply series filter to derive what the rest of the page sees. */
@@ -168,6 +193,7 @@ const AtlasPage: React.FC = () => {
       status: match.status,
       cityLabel: cityLabelFor(match.cityId),
       placedAt: match.placedAt,
+      cardNumber: cardNumberFor(match.pieceId),
     };
   }, [selectedKey, seriesFiltered]);
 

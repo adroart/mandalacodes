@@ -503,6 +503,19 @@ const CoinCast: React.FC<{
               {primaryCard?.iching.hexagram_name ?? `Code ${primaryNumber}`}
             </p>
 
+            {/* No moving lines — the cast is stable. Say so explicitly;
+                a silent result reads as a broken throw. */}
+            {settled && movingCount === 0 && (
+              <p
+                className="font-sans text-[15px] sm:text-[16px] text-stone-300 leading-[1.7] mt-4 text-left"
+                style={{ animation: reduceMotion ? undefined : 'ul-cast-soft-in 420ms ease-out both' }}
+              >
+                No moving lines. The hexagram is stable — the moment is not
+                turning into anything else. Read the present code as it
+                stands; it is the whole answer.
+              </p>
+            )}
+
             {/* The moving lines — TEMPLATE: a close-set list. No divider,
                 just a small gap, so the lines read together as one group. */}
             {settled && movingCount > 0 && (
@@ -602,7 +615,7 @@ const CoinCast: React.FC<{
       onRead={() => {
         setPreviewOpen(false);
         if (changedNumber != null) {
-          navigate(`/oracle/universal-language/${changedNumber}`, {
+          navigate(`/universal-language/${changedNumber}`, {
             state: { ritual: true },
           });
         }
