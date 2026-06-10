@@ -152,6 +152,9 @@ export const PROFILE_CHANNELS: readonly ProfileChannel[] = [
   { from: 'core',    to: 'culture', sequence: 'pearl', pathway: 'Initiative' },
   { from: 'core',    to: 'pearl',   sequence: 'pearl', pathway: 'Growth' },
   { from: 'culture', to: 'pearl',   sequence: 'pearl', pathway: 'Service' },
+  // The Pearl crowns back up to Life's Work, making Life's Work the third
+  // shared sphere (Activation + Pearl).
+  { from: 'pearl',   to: 'lifesWork', sequence: 'pearl', pathway: 'Harvest' },
 ];
 
 export const POSITIONS_BY_KEY: Record<ProfileKey, ProfilePositionMeta> =

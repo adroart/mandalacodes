@@ -39,12 +39,28 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
     return { x: m.x * VIEW, y: m.y * VIEW };
   };
 
-  // The sequence of the hovered/focused sphere. Hovering any sphere lights
-  // up its WHOLE sequence — every line and every sphere in that emblem —
-  // so the section reads as one unit, the way the official emblems do.
-  const activeSequence: ProfileSequence | null = active
-    ? POSITIONS_BY_KEY[active].sequence
-    : null;
+  // A sphere can belong to more than one sequence (the shared "hinge"
+  // spheres where the emblems overlap — e.g. Purpose joins Activation and
+  // Venus). Hovering a sphere lights EVERY sequence it participates in, so
+  // the overlap reads as the connective tissue between the emblems. We
+  // derive the set from the channels that actually touch the active sphere.
+  const activeSequences: Set<ProfileSequence> = active
+    ? new Set(
+        PROFILE_CHANNELS
+          .filter((ch) => ch.from === active || ch.to === active)
+          .map((ch) => ch.sequence),
+      )
+    : new Set();
+  const seqActive = (seq: ProfileSequence) => activeSequences.has(seq);
+
+  // Every sequence a given sphere participates in (via the channels touching
+  // it). A shared sphere returns more than one.
+  const sequencesOf = (k: ProfileKey): Set<ProfileSequence> =>
+    new Set(
+      PROFILE_CHANNELS
+        .filter((ch) => ch.from === k || ch.to === k)
+        .map((ch) => ch.sequence),
+    );
 
   const go = (k: ProfileKey) => navigate(`/universal-language/${profile[k].gate}`);
 
@@ -85,7 +101,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             {PROFILE_CHANNELS.map((ch, i) => {
               const pa = pos(ch.from);
               const pb = pos(ch.to);
-              const lit = activeSequence === ch.sequence;
+              const lit = seqActive(ch.sequence);
               const dx = pb.x - pa.x, dy = pb.y - pa.y;
               const len = Math.hypot(dx, dy) || 1;
               const ux = dx / len, uy = dy / len;
@@ -126,7 +142,8 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             const card = CARD_BY_NUMBER.get(gl.gate);
             const p = pos(meta.key);
             const isActive = active === meta.key;
-            const inSequence = activeSequence === meta.sequence;
+            const inSequence = active != null &&
+              [...sequencesOf(meta.key)].some((s) => activeSequences.has(s));
 
             // Label box placement relative to the orb.
             const W = 170, H = 64, pad = R + 10;
