@@ -39,8 +39,12 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
     return { x: m.x * VIEW, y: m.y * VIEW };
   };
 
-  const isLit = (a: ProfileKey, b: ProfileKey) =>
-    active != null && (a === active || b === active);
+  // The sequence of the hovered/focused sphere. Hovering any sphere lights
+  // up its WHOLE sequence — every line and every sphere in that emblem —
+  // so the section reads as one unit, the way the official emblems do.
+  const activeSequence: ProfileSequence | null = active
+    ? POSITIONS_BY_KEY[active].sequence
+    : null;
 
   const go = (k: ProfileKey) => navigate(`/universal-language/${profile[k].gate}`);
 
@@ -81,7 +85,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             {PROFILE_CHANNELS.map((ch, i) => {
               const pa = pos(ch.from);
               const pb = pos(ch.to);
-              const lit = isLit(ch.from, ch.to);
+              const lit = activeSequence === ch.sequence;
               const dx = pb.x - pa.x, dy = pb.y - pa.y;
               const len = Math.hypot(dx, dy) || 1;
               const ux = dx / len, uy = dy / len;
@@ -102,7 +106,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                     markerEnd={`url(#arrow-${ch.sequence})`}
                     className={`profile-graph__channel${lit ? ' is-lit' : ''}`}
                   />
-                  {lit && (
+                  {(ch.from === active || ch.to === active) && (
                     <text
                       x={mx} y={my}
                       className="profile-graph__pathway"
@@ -122,6 +126,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             const card = CARD_BY_NUMBER.get(gl.gate);
             const p = pos(meta.key);
             const isActive = active === meta.key;
+            const inSequence = activeSequence === meta.sequence;
 
             // Label box placement relative to the orb.
             const W = 170, H = 64, pad = R + 10;
@@ -133,7 +138,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             if (meta.labelSide === 'bottom') { ly = p.y + pad;     alignClass = 'is-center'; }
 
             return (
-              <g key={meta.key} className={`profile-graph__node${isActive ? ' is-active' : ''}`}>
+              <g key={meta.key} className={`profile-graph__node${isActive ? ' is-active' : ''}${inSequence ? ' in-sequence' : ''}`}>
                 {/* label outside the orb */}
                 <foreignObject x={lx} y={ly} width={W} height={H} className="profile-graph__label-fo">
                   <div className={`profile-graph__label ${alignClass}`}>
@@ -236,7 +241,9 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .profile-graph__orb { cursor: pointer; outline: none; }
         /* When one sphere is reached, the rest recede so focus lands cleanly. */
         .profile-graph__node { transition: opacity 0.25s; }
-        .profile-graph__mandala.has-active .profile-graph__node:not(.is-active) { opacity: 0.4; }
+        /* Whole-sequence highlight: spheres in the active sequence stay full,
+           everything else recedes. */
+        .profile-graph__mandala.has-active .profile-graph__node:not(.in-sequence) { opacity: 0.3; }
         .profile-graph__ring {
           fill: none;
           stroke: color-mix(in oklab, var(--color-wood-600) 22%, transparent);
@@ -247,10 +254,13 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
           transition: filter 0.25s;
           filter: drop-shadow(0 2px 5px rgba(0,0,0,0.18));
         }
-        .profile-graph__node.is-active .profile-graph__circle {
-          filter: drop-shadow(0 0 12px color-mix(in oklab, var(--color-bronze-400) 70%, transparent));
+        .profile-graph__node.in-sequence .profile-graph__circle {
+          filter: drop-shadow(0 0 10px color-mix(in oklab, var(--color-bronze-400) 55%, transparent));
         }
-        .profile-graph__node.is-active .profile-graph__ring { stroke: var(--color-bronze-500); }
+        .profile-graph__node.is-active .profile-graph__circle {
+          filter: drop-shadow(0 0 14px color-mix(in oklab, var(--color-bronze-400) 80%, transparent));
+        }
+        .profile-graph__node.in-sequence .profile-graph__ring { stroke: var(--color-bronze-500); }
         .profile-graph__orb:focus-visible .profile-graph__ring { stroke: var(--color-bronze-400); stroke-width: 2.5; }
         .profile-graph__gate {
           fill: var(--color-paper-50);
@@ -278,7 +288,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
           opacity: 0.42;
           transition: opacity 0.25s;
         }
-        .profile-graph__node.is-active .profile-graph__triad { opacity: 1; }
+        .profile-graph__node.in-sequence .profile-graph__triad { opacity: 1; }
         .profile-graph__label.is-right .profile-graph__triad { justify-content: flex-end; }
         .profile-graph__label.is-center .profile-graph__triad { justify-content: center; }
 
