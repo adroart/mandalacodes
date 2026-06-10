@@ -122,36 +122,36 @@ export interface ProfileChannel {
 }
 
 /**
- * The directional pathways of the Gene Keys Golden Path, in their canonical
- * contemplation order with the official pathway names (verified against
- * genekeys.com). Each sequence is its own coloured, directional journey.
+ * The connection topology of each sequence, traced from the official Gene
+ * Keys sequence emblems (green Activation triangle, red Venus chain, blue
+ * Pearl triangle-with-hub). Pathway names follow the canonical Golden Path
+ * (verified against genekeys.com). `from -> to` sets the arrow direction.
  *
- *   Activation: Life's Work -> Evolution -> Radiance -> Purpose
- *     (Challenge, Breakthrough, Core Stability)
- *   Venus: Purpose -> Attraction -> IQ -> EQ -> SQ
- *     (Dharma, Karma, Intelligence, Love) — the Core sphere is a re-read
- *     of an existing gate, not a separate orb on this chart.
- *   Pearl: Vocation -> Culture -> Pearl
- *     (Initiative, Service) — the Brand sphere is a re-read of Life's Work.
- *
- * `from -> to` is the direction of flow; arrowheads are drawn at `to`.
+ *   Activation (green): Life's Work and Radiance both into Evolution, and
+ *     Radiance down to Purpose — the emblem's triangle + tail.
+ *   Venus (red): the chain Purpose -> Attraction -> IQ -> EQ -> SQ.
+ *   Pearl (blue): a triangle (Vocation, Culture, Pearl) with SQ as the
+ *     central hub joined to all three.
  */
 export const PROFILE_CHANNELS: readonly ProfileChannel[] = [
-  // ── Activation ──
+  // ── Activation (green triangle + tail) ──
   { from: 'lifesWork', to: 'evolution', sequence: 'activation', pathway: 'Challenge' },
-  { from: 'evolution', to: 'radiance',  sequence: 'activation', pathway: 'Breakthrough' },
+  { from: 'radiance',  to: 'evolution', sequence: 'activation', pathway: 'Breakthrough' },
   { from: 'radiance',  to: 'purpose',   sequence: 'activation', pathway: 'Core Stability' },
 
-  // ── Venus ──
+  // ── Venus (red chain) ──
   { from: 'purpose',    to: 'attraction', sequence: 'venus', pathway: 'Dharma' },
   { from: 'attraction', to: 'iq',         sequence: 'venus', pathway: 'Karma' },
   { from: 'iq',         to: 'eq',         sequence: 'venus', pathway: 'Intelligence' },
   { from: 'eq',         to: 'sq',         sequence: 'venus', pathway: 'Love' },
 
-  // ── Pearl ──
+  // ── Pearl (blue triangle with SQ hub) ──
+  { from: 'sq',      to: 'core',    sequence: 'pearl', pathway: 'Realisation' },
+  { from: 'sq',      to: 'culture', sequence: 'pearl', pathway: 'Realisation' },
+  { from: 'sq',      to: 'pearl',   sequence: 'pearl', pathway: 'Synthesis' },
   { from: 'core',    to: 'culture', sequence: 'pearl', pathway: 'Initiative' },
+  { from: 'core',    to: 'pearl',   sequence: 'pearl', pathway: 'Growth' },
   { from: 'culture', to: 'pearl',   sequence: 'pearl', pathway: 'Service' },
-  { from: 'pearl',   to: 'lifesWork', sequence: 'pearl', pathway: 'Pearl Harvest' },
 ];
 
 export const POSITIONS_BY_KEY: Record<ProfileKey, ProfilePositionMeta> =
