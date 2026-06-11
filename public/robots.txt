@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://mandalacodes.com/sitemap.xml
+Sitemap: https://mandalacodes.com/learn/sitemap-index.xml

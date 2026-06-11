@@ -1,0 +1,102 @@
+:root {
+  --bg: #faf8f4;
+  --ink: #1f1d1a;
+  --muted: #6e675d;
+  --accent: #8a6d3b;
+  --rule: #e4ded3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14120f;
+    --ink: #ece7dd;
+    --muted: #9d9586;
+    --accent: #c9a96a;
+    --rule: #2b2722;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 42rem;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+
+h1, h2, h3 {
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: 2rem; margin: 0.5rem 0 0.25rem; }
+h2 { font-size: 1.4rem; margin-top: 2.25rem; }
+h3 { font-size: 1.15rem; margin-top: 1.75rem; }
+
+blockquote {
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--accent);
+  color: var(--muted);
+  font-style: italic;
+}
+
+hr { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+img { max-width: 100%; height: auto; }
+
+code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.85em;
+  background: var(--rule);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.site-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.95rem;
+}
+
+.site-header .wordmark {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.site-header nav { display: flex; gap: 1rem; }
+
+.meta { color: var(--muted); font-size: 0.9rem; margin: 0 0 2rem; }
+
+.article-list { list-style: none; padding: 0; margin: 2rem 0; }
+.article-list li { margin-bottom: 2rem; }
+.article-list h2 { margin: 0 0 0.25rem; font-size: 1.3rem; }
+.article-list p { margin: 0.25rem 0 0; color: var(--muted); }
+
+.tags { color: var(--muted); font-size: 0.85rem; }
+
+.site-footer {
+  margin-top: 4rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.9rem;
+}

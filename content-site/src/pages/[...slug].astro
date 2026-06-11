@@ -1,0 +1,89 @@
+---
+import { render } from 'astro:content'
+import Base from '../layouts/Base.astro'
+import { getPublishedArticles, type Article } from '../lib/articles'
+
+export async function getStaticPaths() {
+  const articles = await getPublishedArticles()
+  return articles.map(article => ({
+    params: { slug: article.id },
+    props: { article },
+  }))
+}
+
+interface Props {
+  article: Article
+}
+
+const { article } = Astro.props
+const { Content } = await render(article)
+const base = import.meta.env.BASE_URL
+
+const dateFmt = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+})
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.data.title,
+    description: article.data.description,
+    datePublished: article.data.pubDate.toISOString(),
+    ...(article.data.updatedDate && { dateModified: article.data.updatedDate.toISOString() }),
+    keywords: article.data.tags.join(', '),
+    mainEntityOfPage: canonical,
+    author: { '@type': 'Person', name: 'Adrian Rasmussen', url: 'https://adrianrasmussen.com' },
+    publisher: { '@type': 'Organization', name: 'Mandala Codes', url: 'https://mandalacodes.com' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Learn',
+        item: new URL(`${base}/`, Astro.site).href,
+      },
+      { '@type': 'ListItem', position: 2, name: article.data.title, item: canonical },
+    ],
+  },
+]
+---
+
+<Base
+  title={`${article.data.title} · Mandala Codes`}
+  description={article.data.description}
+  jsonLd={jsonLd}
+  ogType="article"
+>
+  <article>
+    <h1>{article.data.title}</h1>
+    <p class="meta">
+      {dateFmt.format(article.data.pubDate)}
+      {article.data.updatedDate && ` · updated ${dateFmt.format(article.data.updatedDate)}`}
+      {article.data.tags.length > 0 && (
+        <span class="tags"> · {article.data.tags.join(', ')}</span>
+      )}
+    </p>
+
+    <Content />
+
+    {article.data.relatedCard && (
+      <footer>
+        <hr />
+        <p>
+          Explore this theme in the deck:
+          <a href={`https://mandalacodes.com/universal-language/${article.data.relatedCard}`}>
+            Card {article.data.relatedCard} of the Universal Language
+          </a>
+        </p>
+      </footer>
+    )}
+  </article>
+</Base>
