@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
 import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
@@ -15,7 +15,22 @@ import { loadAtlasState } from '../lib/atlas/state';
 import { useProfile } from '../lib/profile/context';
 import { ulCardNumber } from '../utils/universalLanguage';
 import { buildKinshipIndex, greatCircleDistance, MAX_KINSHIP_ARCS } from '../utils/kinship';
+import { SIZE_BANDS, sizeBandFor, type SizeBand } from '../utils/sizeBands';
 import type { PublicAtlasState } from '../types';
+
+/* The Three.js globe loads as its own chunk so the page paints immediately;
+   browsers without WebGL keep the cobe globe + SVG kinship overlay. */
+const Globe3D = lazy(() => import('./atlas/three/Globe3D'));
+
+function webglAvailable(): boolean {
+  if (typeof document === 'undefined') return false;
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch {
+    return false;
+  }
+}
 
 const MAX_KIN_PER_PIECE = 6;
 
@@ -73,9 +88,54 @@ const AtlasPage: React.FC = () => {
   // for their "See it on the Atlas" bridge, and selections stay shareable.
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedKey, setSelectedKeyState] = useState<string | null>(null);
-  const [selectedSeries, setSelectedSeries] = useState<string>('all');
-  const [status, setStatus] = useState<AtlasStatusFilter>('all');
+  /* Filters initialize from the URL so filtered views are shareable
+     (e.g. /atlas?series=Universal+Language&size=large). */
+  const [selectedSeries, setSelectedSeriesState] = useState<string>(
+    () => searchParams.get('series') ?? 'all',
+  );
+  const [status, setStatusState] = useState<AtlasStatusFilter>(() => {
+    const s = searchParams.get('status');
+    return s === 'placed' || s === 'seeking' ? s : 'all';
+  });
+  const [selectedCategory, setSelectedCategoryState] = useState<string>(
+    () => searchParams.get('category') ?? 'all',
+  );
+  const [selectedSize, setSelectedSizeState] = useState<SizeBand | 'all'>(() => {
+    const s = searchParams.get('size');
+    return s && (SIZE_BANDS as readonly string[]).includes(s) ? (s as SizeBand) : 'all';
+  });
   const [kinshipVisible, setKinshipVisible] = useState<boolean>(true);
+  const [mandala, setMandala] = useState<boolean>(false);
+  const [use3D] = useState<boolean>(webglAvailable);
+
+  /* Mirror a filter into the URL; 'all' clears the param. */
+  const setFilterParam = (key: string, value: string) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value === 'all') next.delete(key);
+        else next.set(key, value);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+  const setSelectedSeries = (v: string) => {
+    setSelectedSeriesState(v);
+    setFilterParam('series', v);
+  };
+  const setStatus = (v: AtlasStatusFilter) => {
+    setStatusState(v);
+    setFilterParam('status', v);
+  };
+  const setSelectedCategory = (v: string) => {
+    setSelectedCategoryState(v);
+    setFilterParam('category', v);
+  };
+  const setSelectedSize = (v: SizeBand | 'all') => {
+    setSelectedSizeState(v);
+    setFilterParam('size', v);
+  };
 
   /* The visitor's saved birth place (Hologenetic Profile, local-first).
      When present it appears as a sage marker on the globe — the bridge
@@ -150,11 +210,40 @@ const AtlasPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enriched]);
 
-  /* Apply series filter to derive what the rest of the page sees. */
+  /* Category and size-band lookups come from the archive, keyed by pieceId. */
+  const categoriesAvailable: string[] = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of enriched) {
+      const c = p.category ?? categoryFor(p.pieceId);
+      if (c) set.add(c);
+    }
+    return Array.from(set).sort();
+  }, [enriched]);
+
+  const sizeBandByPiece = useMemo(() => {
+    const map = new Map<string, SizeBand | null>();
+    for (const art of FULL_ARCHIVE) map.set(art.id, sizeBandFor(art));
+    return map;
+  }, []);
+
+  const availableSizes: SizeBand[] = useMemo(
+    () => SIZE_BANDS.filter((b) => enriched.some((p) => sizeBandByPiece.get(p.pieceId) === b)),
+    [enriched, sizeBandByPiece],
+  );
+
+  /* Apply series, category and size filters to derive what the rest of the
+     page sees. Status stays separate so the counts read pre-status. */
   const seriesFiltered: EnrichedPiece[] = useMemo(() => {
-    if (selectedSeries === 'all') return enriched;
-    return enriched.filter((p) => p.series === selectedSeries);
-  }, [enriched, selectedSeries]);
+    return enriched.filter((p) => {
+      if (selectedSeries !== 'all' && p.series !== selectedSeries) return false;
+      if (selectedCategory !== 'all') {
+        const c = p.category ?? categoryFor(p.pieceId);
+        if (c !== selectedCategory) return false;
+      }
+      if (selectedSize !== 'all' && sizeBandByPiece.get(p.pieceId) !== selectedSize) return false;
+      return true;
+    });
+  }, [enriched, selectedSeries, selectedCategory, selectedSize, sizeBandByPiece]);
 
   /* Counts for filter chrome — based on the series filter, before status filter. */
   const placedCount = useMemo(
@@ -307,6 +396,20 @@ const AtlasPage: React.FC = () => {
     }
   }, [kinshipIndex]);
 
+  /* First placed location per hexagram (1–64) — feeds the hexagram ring's
+     city-to-glyph threads. Built from the raw ledger, never the filters. */
+  const placedByCard = useMemo(() => {
+    const map = new Map<number, { lat: number; lng: number }>();
+    for (const p of enriched) {
+      if (p.status !== 'placed' || !p.cityId) continue;
+      const num = cardNumberFor(p.pieceId);
+      if (num == null || map.has(num)) continue;
+      const c = CITIES_BY_ID.get(p.cityId);
+      if (c) map.set(num, { lat: c.lat, lng: c.lng });
+    }
+    return map;
+  }, [enriched]);
+
   /* Kin list for the selected piece — only for UL pieces with kindred peers. */
   const kinForSelected: KinEntry[] = useMemo(() => {
     if (!selectedKey || !kinshipIndex) return [];
@@ -417,6 +520,12 @@ const AtlasPage: React.FC = () => {
                 onSeriesChange={setSelectedSeries}
                 status={status}
                 onStatusChange={setStatus}
+                categories={categoriesAvailable}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                availableSizes={availableSizes}
+                selectedSize={selectedSize}
+                onSizeChange={setSelectedSize}
                 placedCount={placedCount}
                 seekingCount={seekingCount}
                 kinshipVisible={kinshipVisible}
@@ -432,20 +541,61 @@ const AtlasPage: React.FC = () => {
                 className="lg:col-span-2 w-full max-w-full overflow-hidden relative"
                 style={{ height: '60vh', minHeight: 360 }}
               >
-                <Globe
-                  nodes={globeNodes}
-                  selectedId={selectedKey}
-                  onSelect={(id) => setSelectedKey(id)}
-                  className="w-full h-full"
-                />
-                {kinshipIndex && (
-                  <KinshipLayer
-                    index={kinshipIndex}
-                    width={globeSize.width}
-                    height={globeSize.height}
-                    selectedId={selectedKey}
-                    visible={kinshipVisible}
-                  />
+                {use3D ? (
+                  <>
+                    <Suspense
+                      fallback={
+                        /* Poster while the 3D chunk loads — same stone, a hint
+                           of the sphere, no layout shift. */
+                        <div
+                          aria-hidden
+                          className="w-full h-full"
+                          style={{
+                            background:
+                              'radial-gradient(circle at 50% 50%, rgb(28, 25, 21) 0%, rgb(15, 13, 11) 62%)',
+                          }}
+                        />
+                      }
+                    >
+                      <Globe3D
+                        nodes={globeNodes}
+                        selectedId={selectedKey}
+                        onSelect={(id) => setSelectedKey(id)}
+                        kinship={kinshipIndex}
+                        kinshipVisible={kinshipVisible}
+                        placedByCard={placedByCard}
+                        mandala={mandala}
+                        mandalaCaption={`The mandala so far — ${placedByCard.size} of 64 placed`}
+                        className="w-full h-full"
+                      />
+                    </Suspense>
+                    <button
+                      type="button"
+                      aria-pressed={mandala}
+                      onClick={() => setMandala((m) => !m)}
+                      className="absolute top-3 right-3 font-label text-[10px] uppercase tracking-[0.2em] px-3 py-2 border transition-colors duration-300 text-bronze-400/70 border-bronze-400/25 hover:text-bronze-400 hover:border-bronze-400/60 bg-black/20"
+                    >
+                      {mandala ? 'Return' : 'Mandala view'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Globe
+                      nodes={globeNodes}
+                      selectedId={selectedKey}
+                      onSelect={(id) => setSelectedKey(id)}
+                      className="w-full h-full"
+                    />
+                    {kinshipIndex && (
+                      <KinshipLayer
+                        index={kinshipIndex}
+                        width={globeSize.width}
+                        height={globeSize.height}
+                        selectedId={selectedKey}
+                        visible={kinshipVisible}
+                      />
+                    )}
+                  </>
                 )}
               </div>
               <div className="lg:col-span-1">
