@@ -3,7 +3,14 @@ import { useAuth } from '@clerk/clerk-react';
 import AdminLayout from './AdminLayout';
 import { CITIES } from '../data/cities';
 import { FULL_ARCHIVE } from '../data/mockData';
-import type { CityCentroid, LedgerEvent, LedgerEventType, StewardRecord } from '../types';
+import type { SaleQueueItem } from '../utils/saleBridge';
+import type {
+    CityCentroid,
+    ClaimRequest,
+    LedgerEvent,
+    LedgerEventType,
+    StewardRecord,
+} from '../types';
 
 /**
  * Bearer-token fetch hook. Every admin call needs to pass the Clerk JWT
@@ -570,6 +577,415 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
 };
 
 // ───────────────────────────────────────────────────────────────────────────
+// Pending Sales (M4 — the sale → ledger bridge queue)
+// ───────────────────────────────────────────────────────────────────────────
+
+const formatPrice = (priceCents?: number, currency?: string): string => {
+    if (priceCents === undefined) return '-';
+    const amount = (priceCents / 100).toFixed(2);
+    return currency ? `${amount} ${currency}` : amount;
+};
+
+/** Prefill the confirm form's piece from the payload: an explicit pieceId
+ *  that matches the archive wins; otherwise a SKU that IS an archive id. */
+const prefillPieceId = (sale: SaleQueueItem): string => {
+    if (sale.pieceId && pieceById.has(sale.pieceId)) return sale.pieceId;
+    if (sale.sku && pieceById.has(sale.sku)) return sale.sku;
+    return '';
+};
+
+const PendingSaleRow: React.FC<{
+    sale: SaleQueueItem;
+    onResolved: () => void;
+}> = ({ sale, onResolved }) => {
+    const [pieceId, setPieceId] = useState(() => prefillPieceId(sale));
+    const [editionNumber, setEditionNumber] = useState(
+        sale.editionNumber !== undefined ? String(sale.editionNumber) : '',
+    );
+    const [pieceType, setPieceType] = useState<'' | 'mandala' | 'other'>('');
+    const [dismissReason, setDismissReason] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
+
+    const post = async (path: string, body: Record<string, unknown>) => {
+        setBusy(true);
+        setError(null);
+        try {
+            const res = await adminFetch(path, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                onResolved();
+            } else {
+                setError(data?.error || 'Request failed.');
+            }
+        } catch {
+            setError('Network error. Check your connection.');
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const confirm = () => {
+        if (!pieceId) {
+            setError('Pick the piece this sale is for.');
+            return;
+        }
+        post('/api/atlas/sales/confirm', {
+            saleId: sale.saleId,
+            pieceId,
+            editionNumber: editionNumber ? Number(editionNumber) : undefined,
+            pieceType: pieceType || undefined,
+        });
+    };
+
+    const dismiss = () => {
+        post('/api/atlas/sales/dismiss', {
+            saleId: sale.saleId,
+            reason: dismissReason.trim() || undefined,
+        });
+    };
+
+    return (
+        <div className="border border-wood-200 p-5 mb-4">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+                <span className="font-serif text-base text-wood-900">
+                    {sale.buyerName ? `${sale.buyerName} (${sale.buyerEmail})` : sale.buyerEmail}
+                </span>
+                <span className="font-sans text-sm text-wood-500">
+                    {formatPrice(sale.priceCents, sale.currency)}
+                </span>
+                <span className="font-sans text-sm text-wood-500">
+                    {sale.saleDate.slice(0, 10)}
+                </span>
+            </div>
+            <p className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 mb-4 break-all">
+                {sale.saleId}
+                {sale.sku ? ` · sku ${sale.sku}` : ''}
+            </p>
+
+            {error && (
+                <p className="font-serif italic text-sm text-stone-600 mb-3">{error}</p>
+            )}
+
+            <div className="space-y-3">
+                <div>
+                    <label className={fieldLabel}>Piece</label>
+                    <select
+                        value={pieceId}
+                        onChange={(e) => setPieceId(e.target.value)}
+                        className={fieldInput}
+                    >
+                        <option value="">Choose a piece...</option>
+                        {pieceOptions.map((p) => (
+                            <option key={p.id} value={p.id}>
+                                {p.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className={fieldLabel}>Edition number (optional)</label>
+                        <input
+                            type="number"
+                            min={1}
+                            value={editionNumber}
+                            onChange={(e) => setEditionNumber(e.target.value)}
+                            placeholder="1"
+                            className={fieldInput}
+                        />
+                    </div>
+                    <div>
+                        <label className={fieldLabel}>Piece type (genesis only)</label>
+                        <select
+                            value={pieceType}
+                            onChange={(e) =>
+                                setPieceType(e.target.value as '' | 'mandala' | 'other')
+                            }
+                            className={fieldInput}
+                        >
+                            <option value="">derive from series</option>
+                            <option value="mandala">mandala</option>
+                            <option value="other">other</option>
+                        </select>
+                    </div>
+                </div>
+                <button
+                    onClick={confirm}
+                    disabled={busy}
+                    className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                >
+                    {busy ? 'Working...' : 'Confirm sale'}
+                </button>
+                <div className="flex gap-3">
+                    <input
+                        type="text"
+                        value={dismissReason}
+                        onChange={(e) => setDismissReason(e.target.value)}
+                        placeholder="Dismiss reason (optional)"
+                        className={fieldInput}
+                    />
+                    <button
+                        onClick={dismiss}
+                        disabled={busy}
+                        className="shrink-0 px-4 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                    >
+                        Dismiss
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const PendingSalesSection: React.FC = () => {
+    const [pending, setPending] = useState<SaleQueueItem[]>([]);
+    const [resolved, setResolved] = useState<SaleQueueItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
+
+    const load = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await adminFetch('/api/atlas/sales');
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                setPending(data.pending || []);
+                setResolved(data.resolved || []);
+            } else {
+                setError(data?.error || 'Could not load the sale queue.');
+            }
+        } catch {
+            setError('Could not load the sale queue.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    return (
+        <div className="bg-white border border-wood-200 p-8 mb-10">
+            <h2 className={sectionTitle}>Pending Sales</h2>
+            <p className={sectionLead}>
+                Checkouts reported by adrianrasmussen.com, waiting for your
+                confirmation. Confirming issues the steward record (and the
+                genesis event for a new piece, or a transfer for a claimed
+                one) — nothing fires automatically.
+            </p>
+
+            {error && (
+                <p className="font-serif italic text-sm text-stone-600 mb-4">{error}</p>
+            )}
+            {loading && <p className="font-sans text-sm text-wood-400">Loading...</p>}
+            {!loading && !error && pending.length === 0 && (
+                <p className="font-sans text-sm text-wood-400">No pending sales.</p>
+            )}
+
+            {!loading &&
+                pending.map((sale) => (
+                    <PendingSaleRow key={sale.saleId} sale={sale} onResolved={load} />
+                ))}
+
+            {!loading && resolved.length > 0 && (
+                <div className="mt-6 border-t border-wood-100 pt-4">
+                    <p className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold mb-2">
+                        Recently resolved
+                    </p>
+                    <ul className="space-y-1">
+                        {resolved.map((s) => (
+                            <li
+                                key={s.saleId}
+                                className="font-sans text-sm text-wood-500"
+                            >
+                                {s.status} · {s.buyerEmail} ·{' '}
+                                {formatPrice(s.priceCents, s.currency)}
+                                {s.pieceId
+                                    ? ` · ${resolvePieceTitle(s.pieceId, s.editionNumber || undefined)}`
+                                    : ''}
+                                {s.dismissedReason ? ` — ${s.dismissedReason}` : ''}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ───────────────────────────────────────────────────────────────────────────
+// Claim Requests (M4 — self-serve stewardship requests)
+// ───────────────────────────────────────────────────────────────────────────
+
+const ClaimRequestsSection: React.FC = () => {
+    const [requests, setRequests] = useState<ClaimRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [busyId, setBusyId] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
+
+    const load = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await adminFetch('/api/atlas/claim-requests');
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                setRequests(data.requests || []);
+            } else {
+                setError(data?.error || 'Could not load claim requests.');
+            }
+        } catch {
+            setError('Could not load claim requests.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const resolve = async (requestId: string, approve: boolean) => {
+        setBusyId(requestId);
+        setError(null);
+        try {
+            const res = await adminFetch('/api/atlas/claim-requests/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestId, approve }),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                await load();
+            } else {
+                setError(data?.error || 'Could not resolve the request.');
+            }
+        } catch {
+            setError('Network error. Check your connection.');
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const pending = requests.filter((r) => r.status === 'pending');
+    const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
+
+    return (
+        <div className="bg-white border border-wood-200 p-8 mb-10">
+            <h2 className={sectionTitle}>Claim Requests</h2>
+            <p className={sectionLead}>
+                Self-serve stewardship requests. Approving an unclaimed piece
+                binds it to the requester (consent still happens on their next
+                visit). Requests on claimed pieces route to the current holder
+                — resolving one here is an adjudication, recorded as a
+                transfer.
+            </p>
+
+            {error && (
+                <p className="font-serif italic text-sm text-stone-600 mb-4">{error}</p>
+            )}
+            {loading && <p className="font-sans text-sm text-wood-400">Loading...</p>}
+            {!loading && !error && pending.length === 0 && (
+                <p className="font-sans text-sm text-wood-400">No pending requests.</p>
+            )}
+
+            {!loading &&
+                pending.map((r) => (
+                    <div key={r.id} className="border border-wood-200 p-5 mb-4">
+                        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+                            <span className="font-serif text-base text-wood-900">
+                                {resolvePieceTitle(r.pieceId, r.editionNumber)}
+                            </span>
+                            <span className="font-sans text-sm text-wood-700">
+                                {r.requesterEmail}
+                            </span>
+                            <span
+                                className={`font-label text-[10px] uppercase tracking-[0.15em] font-semibold ${
+                                    r.routedTo === 'holder'
+                                        ? 'text-stone-500'
+                                        : 'text-bronze-700'
+                                }`}
+                            >
+                                {r.routedTo === 'holder'
+                                    ? 'routed to holder'
+                                    : 'yours to decide'}
+                            </span>
+                        </div>
+                        <p className="font-sans text-sm text-wood-500 mb-3">
+                            {formatRelative(r.createdAt)}
+                        </p>
+                        {r.note && (
+                            <p className="font-serif italic text-sm text-wood-700 mb-4">
+                                “{r.note}”
+                            </p>
+                        )}
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => resolve(r.id, true)}
+                                disabled={busyId === r.id}
+                                className="flex-1 bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                            >
+                                {busyId === r.id ? 'Working...' : 'Approve'}
+                            </button>
+                            <button
+                                onClick={() => resolve(r.id, false)}
+                                disabled={busyId === r.id}
+                                className="flex-1 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                            >
+                                Decline
+                            </button>
+                        </div>
+                    </div>
+                ))}
+
+            {!loading && recent.length > 0 && (
+                <div className="mt-6 border-t border-wood-100 pt-4">
+                    <p className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold mb-2">
+                        Recently resolved
+                    </p>
+                    <ul className="space-y-1">
+                        {recent.map((r) => (
+                            <li key={r.id} className="font-sans text-sm text-wood-500">
+                                {r.status} · {resolvePieceTitle(r.pieceId, r.editionNumber)} ·{' '}
+                                {r.requesterEmail}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ───────────────────────────────────────────────────────────────────────────
 // Steward Roster
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -718,6 +1134,8 @@ const AdminAtlas: React.FC = () => {
                     </p>
 
                     <SeedEventSection />
+                    <PendingSalesSection />
+                    <ClaimRequestsSection />
                     <IssueStewardKeySection onIssued={loadStewards} />
                     <StewardRoster
                         stewards={stewards}

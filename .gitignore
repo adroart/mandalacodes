@@ -21,3 +21,7 @@ LED-Programming/
 .claude/*
 !.claude/commands/
 !.claude/commands/**
+
+# Local R2 backups (scripts/backup-atlas.ts) — stewards.json holds collector
+# emails; these must never be committed
+backups/

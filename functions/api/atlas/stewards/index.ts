@@ -19,5 +19,11 @@ export async function onRequestGet(
   if (isAuthResponse(auth)) return auth;
 
   const stewards = await readStewards(env);
-  return json({ ok: true, stewards });
+  // The claim-ritual answer (pendingFirstInscription) is private Ring 1
+  // content belonging to the authoring steward only — not even the admin
+  // roster sees it. Everything else on the record is admin context.
+  const roster = stewards.map(
+    ({ pendingFirstInscription: _pfi, ...rest }) => rest,
+  );
+  return json({ ok: true, stewards: roster });
 }

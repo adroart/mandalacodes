@@ -12,6 +12,7 @@
 
 import { Webhook } from 'svix';
 import { upsertUser, deleteUserByClerkId } from '../_lib/db.js';
+import { mutateStewards } from '../atlas/_helpers';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -50,7 +51,29 @@ export async function onRequest(context) {
       break;
     }
     case 'user.deleted': {
-      if (event.data?.id) await deleteUserByClerkId(env.DB, event.data.id);
+      const clerkUserId = event.data?.id;
+      if (!clerkUserId) break;
+      await deleteUserByClerkId(env.DB, clerkUserId);
+      // Unbind the user's atlas steward records: clear clerkUserId so the
+      // piece reverts to the artist's root of trust (email-pre-binding can
+      // re-issue or transfer later) and rewind outreachStatus to 'invited'.
+      // RATIFIED: the history lives with the piece — inscriptions and the
+      // chain are NOT touched by account deletion; only the binding goes.
+      if (env.ATLAS_BUCKET) {
+        try {
+          await mutateStewards(env, (stewards) => ({
+            next: stewards.map((s) => {
+              if (s.clerkUserId !== clerkUserId) return s;
+              const { clerkUserId: _gone, ...rest } = s;
+              return { ...rest, outreachStatus: 'invited' };
+            }),
+            result: undefined,
+          }));
+        } catch {
+          // Steward unbind is best-effort here; a failed attempt must not
+          // make Clerk retry the (already-applied) D1 deletion forever.
+        }
+      }
       break;
     }
     default:

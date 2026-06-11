@@ -1,5 +1,12 @@
 # Atlas Ledger API
 
+> **Historical — do not implement from this doc (2026-06-10).** The
+> endpoints were since built with different auth and storage: Clerk JWTs
+> (not `steward_session` cookies) and the `ATLAS_BUCKET` R2 binding (not
+> `MUSIC_BUCKET`). For current work, read the code under
+> `functions/api/atlas/` and the plan at
+> [todo/plans/living-art-legacy.md](../todo/plans/living-art-legacy.md).
+
 This is the contract for the downstream agents who will implement the
 Cloudflare Functions backing the `/atlas` page. The data layer (types,
 projection, hashing) is already built. The endpoints below are not yet

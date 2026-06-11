@@ -30,11 +30,18 @@ export interface GlobeNode {
   id: string;                       // unique key (e.g. `pieceId:editionNumber`)
   lat: number;
   lng: number;
-  // seeking = not yet anchored, render dimmer.
-  // origin = the visitor's own birth place (from their Hologenetic Profile),
-  // rendered in the profile's activation sage rather than bronze.
-  status: 'placed' | 'seeking' | 'origin';
+  // placed     = a lit light (claimed + placed), full bronze.
+  // unawakened = sold-but-unclaimed: anchored to a city but not yet claimed.
+  //              Renders as a faint ember — honest about the early map and
+  //              doubling as Adrian's outreach dashboard.
+  // seeking    = not yet anchored, render dimmer.
+  // origin     = the visitor's own birth place (Hologenetic Profile),
+  //              rendered in the profile's activation sage rather than bronze.
+  status: 'placed' | 'unawakened' | 'seeking' | 'origin';
   label?: string;                   // unused by Globe itself, passed through
+  // Marker color family: 'other' (non-mandala pieces) gets a distinct hue from
+  // the bronze Universal Language pieces. Undefined ⇒ mandala/bronze.
+  pieceType?: 'mandala' | 'other';
 }
 
 export interface GlobeProps {
@@ -53,6 +60,7 @@ const GLOW_COLOR: [number, number, number] = [0.27, 0.22, 0.14];   // bronze-900
 
 // Marker sizes in cobe units.
 const PLACED_SIZE = 0.04;
+const UNAWAKENED_SIZE = 0.022;
 const SEEKING_SIZE = 0.025;
 const ORIGIN_SIZE = 0.035;
 
@@ -60,6 +68,15 @@ const ORIGIN_SIZE = 0.035;
 // personal marker reads as a different order of thing than the bronze pieces.
 const ORIGIN_COLOR: [number, number, number] = [0.61, 0.67, 0.53];
 const SEEKING_COLOR: [number, number, number] = [0.55, 0.48, 0.36];
+
+// Non-mandala ('other') pieces get a muted verdigris-bronze — a cooler,
+// patinated metal that sits beside the warm bronze of the Universal Language
+// pieces without clashing. Same metallic family, different oxidation.
+const OTHER_COLOR: [number, number, number] = [0.49, 0.58, 0.52];
+
+// Sold-but-unclaimed pieces — a dim ember, present but not yet lit. Dimmer
+// and smaller than a placed light, distinct from the cooler seeking dots.
+const UNAWAKENED_COLOR: [number, number, number] = [0.34, 0.29, 0.21];
 
 // Auto-rotation in radians per frame; ~0.005 reads as a slow, quiet drift.
 const ROTATION_SPEED = 0.005;
@@ -180,14 +197,19 @@ export default function Globe({
         location: [n.lat, n.lng] as [number, number],
         size:
           n.status === 'placed' ? PLACED_SIZE
+          : n.status === 'unawakened' ? UNAWAKENED_SIZE
           : n.status === 'origin' ? ORIGIN_SIZE
           : SEEKING_SIZE,
-        // Seeking pieces get a softer bronze (lower-saturation, dimmer);
-        // the visitor's birth place gets the profile sage. Cobe's per-marker
-        // `color` overrides the global markerColor.
+        // Per-marker color overrides the global markerColor (the warm bronze
+        // used for lit Universal Language lights). Order matters: status
+        // (origin/seeking/unawakened) wins, then a placed non-mandala piece
+        // takes the cooler verdigris; a placed mandala falls through to the
+        // default bronze.
         color:
-          n.status === 'seeking' ? SEEKING_COLOR
-          : n.status === 'origin' ? ORIGIN_COLOR
+          n.status === 'origin' ? ORIGIN_COLOR
+          : n.status === 'seeking' ? SEEKING_COLOR
+          : n.status === 'unawakened' ? UNAWAKENED_COLOR
+          : n.pieceType === 'other' ? OTHER_COLOR
           : undefined,
         id: n.id,
       })),

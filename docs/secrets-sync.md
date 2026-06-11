@@ -42,14 +42,18 @@ Edit `scripts/sync-secrets-to-cloudflare.sh` and update the two arrays:
 - `ENCRYPTED_VARS` — true secrets, only read by Cloudflare Functions at
   runtime, never embedded in the client bundle.
 
-Current set (2026-05-28):
+Current set (updated 2026-06-10):
 
-| Name | Type | Used by |
-|---|---|---|
-| `VITE_CLERK_PUBLISHABLE_KEY` | plaintext | Clerk widget on /admin, /atlas/claim |
-| `CLERK_SECRET_KEY` | encrypted | Clerk JWT verification in Functions |
-| `CLERK_WEBHOOK_SECRET` | encrypted | Svix verification for /api/clerk/webhook (accounts) |
-| `ADMIN_EMAILS` | plaintext | Admin allowlist for /admin/atlas |
+| Name | Type | Projects | Used by |
+|---|---|---|---|
+| `VITE_CLERK_PUBLISHABLE_KEY` | plaintext | mandalacodes | Clerk widget on /admin, /atlas/claim |
+| `CLERK_SECRET_KEY` | encrypted | mandalacodes | Clerk JWT verification in Functions |
+| `CLERK_WEBHOOK_SECRET` | encrypted | mandalacodes | Svix verification for /api/clerk/webhook (accounts) |
+| `ADMIN_EMAILS` | plaintext | mandalacodes | Admin allowlist for /admin/atlas |
+| `SALE_WEBHOOK_SECRET` | encrypted | **both** | HMAC-SHA256 verification of sale webhooks from adrianrasmussen.com; mandalacodes verifies, adrianrasmussen.com signs. Same value on both projects. Generate with `openssl rand -hex 32`. See `todo/handoff/adrian-website/sale-webhook-spec.md`. |
+| `GITHUB_MIRROR_TOKEN` | encrypted | mandalacodes | Fine-grained GitHub PAT (Contents: Read/Write) for the public `public.json` mirror. Together with the two vars below, activates the durability mirror in `functions/api/atlas/_mirror.ts`. |
+| `GITHUB_MIRROR_REPO` | plaintext | mandalacodes | `owner/repo` of the public mirror repository (e.g. `technicianofthesacred/adrian-atlas-mirror`). |
+| `GITHUB_MIRROR_PATH` | plaintext | mandalacodes | Path inside the mirror repo (e.g. `atlas/public.json`). Only `public.json` is ever mirrored — never the ledger or stewards files. |
 
 `CLERK_WEBHOOK_SECRET` is only needed once the public accounts surface goes
 live (the launch flag in `launchFlags.ts` flips on). Until then it can be

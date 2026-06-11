@@ -17,7 +17,9 @@
     "generate:qr": "tsx scripts/generate-ul-qr.ts",
     "verify:profile": "tsx scripts/verify-profile-math.ts",
     "test": "npx playwright test",
-    "test:mobile": "npx playwright test --project='Mobile Chrome' --reporter=list"
+    "test:mobile": "npx playwright test --project='Mobile Chrome' --reporter=list",
+    "test:unit": "vitest run",
+    "backup:atlas": "tsx scripts/backup-atlas.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.4.14",
@@ -48,6 +50,7 @@
     "tailwindcss": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.2.2",
-    "vite": "^5.2.0"
+    "vite": "^5.2.0",
+    "vitest": "^3.2.6"
   }
 }
