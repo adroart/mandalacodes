@@ -1,0 +1,52 @@
+---
+import Base from '../layouts/Base.astro'
+import { getPublishedArticles } from '../lib/articles'
+
+const articles = await getPublishedArticles()
+const base = import.meta.env.BASE_URL
+
+const dateFmt = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+})
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Learn · Mandala Codes',
+    description:
+      'Essays and reference articles on mandalas, the I Ching, Gene Keys, and Human Design.',
+    url: new URL(`${base}/`, Astro.site).href,
+    isPartOf: { '@type': 'WebSite', name: 'Mandala Codes', url: 'https://mandalacodes.com' },
+  },
+]
+---
+
+<Base
+  title="Learn · Mandala Codes"
+  description="Essays and reference articles on mandalas, the I Ching, Gene Keys, and Human Design — the living library behind the Universal Language oracle."
+  jsonLd={jsonLd}
+>
+  <h1>Learn</h1>
+  <p class="meta">
+    The living library behind the Universal Language deck — mandalas, the
+    I&nbsp;Ching, Gene Keys, and Human Design.
+  </p>
+
+  <ul class="article-list">
+    {articles.map(article => (
+      <li>
+        <h2><a href={`${base}/${article.id}/`}>{article.data.title}</a></h2>
+        <p class="meta" style="margin:0">
+          {dateFmt.format(article.data.pubDate)}
+          {article.data.tags.length > 0 && (
+            <span class="tags"> · {article.data.tags.join(', ')}</span>
+          )}
+        </p>
+        <p>{article.data.description}</p>
+      </li>
+    ))}
+  </ul>
+</Base>

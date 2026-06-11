@@ -1,0 +1,23 @@
+# Mandala Codes
+
+> The Universal Language oracle — a reading deck of 64 mandala paintings by
+> Adrian Rasmussen. Each card connects a hexagram of the I Ching, a Gene Key,
+> and a Human Design gate.
+
+## Learn library
+
+- [Article index (llms.txt)](https://mandalacodes.com/learn/llms.txt): full
+  markdown index of all essays and reference articles on mandalas, the
+  I Ching, Gene Keys, and Human Design
+- [Learn](https://mandalacodes.com/learn/): the human-readable article listing
+
+## The deck
+
+- [The deck index](https://mandalacodes.com/universal-language): all 64 cards
+- [The systems](https://mandalacodes.com/the-systems): how the I Ching, Gene
+  Keys, and Human Design relate
+
+## Optional
+
+- [The paintings](https://adrianrasmussen.com): the original 64 mandala
+  paintings, where they are sold

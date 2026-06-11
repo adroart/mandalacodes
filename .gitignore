@@ -1,6 +1,10 @@
 node_modules
 dist
 .DS_Store
+
+# Astro content site — build artifacts only (source lives in content-site/)
+content-site/.astro/
+public/learn/
 *.log
 .env
 .env.local

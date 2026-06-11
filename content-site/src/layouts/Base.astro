@@ -1,0 +1,72 @@
+---
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  description: string
+  /** Extra JSON-LD blocks to inject (Article, BreadcrumbList, …) */
+  jsonLd?: Record<string, unknown>[]
+  ogType?: string
+}
+
+const { title, description, jsonLd = [], ogType = 'website' } = Astro.props
+
+const canonical = new URL(Astro.url.pathname, Astro.site)
+const ogImage =
+  'https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/48_ttflpq'
+const base = import.meta.env.BASE_URL
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="Mandala Codes · Learn"
+      href={`${base}/rss.xml`}
+    />
+    <link rel="sitemap" href={`${base}/sitemap-index.xml`} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="Mandala Codes" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {jsonLd.map(block => (
+      <script type="application/ld+json" set:html={JSON.stringify(block)} />
+    ))}
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="wordmark" href="https://mandalacodes.com/">Mandala Codes</a>
+      <nav>
+        <a href={`${base}/`}>Learn</a>
+        <a href="https://mandalacodes.com/universal-language">The Deck</a>
+        <a href="https://mandalacodes.com/the-systems">The Systems</a>
+      </nav>
+    </header>
+
+    <slot />
+
+    <footer class="site-footer">
+      <p>
+        Part of <a href="https://mandalacodes.com/">mandalacodes.com</a> — the
+        Universal Language oracle of 64 mandalas.
+        <a href={`${base}/rss.xml`}>RSS</a>
+      </p>
+    </footer>
+  </body>
+</html>
