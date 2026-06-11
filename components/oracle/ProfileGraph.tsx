@@ -22,9 +22,12 @@ interface Props {
 const SEQUENCE_COLOR: Record<ProfileSequence, { core: string; edge: string }> = {
   // Activation: a deliberate sage/celadon so it reads as a distinct third
   // sequence rather than a neutral brown.
-  activation: { core: '#9bab86', edge: '#5f7355' },
-  venus: { core: '#c06a4e', edge: '#7e3a28' },
-  pearl: { core: '#d8b88a', edge: '#9c7434' },
+  // Saturated to match the official chart and stay readable on BOTH the
+  // dark and the light (paper) background — the pale earlier tones washed
+  // out to near-white in light mode.
+  activation: { core: '#3f8f4e', edge: '#1f5a2c' },
+  venus: { core: '#c0392b', edge: '#7e1f17' },
+  pearl: { core: '#3f7fb5', edge: '#27557e' },
 };
 
 const VIEW = 720;     // square viewBox
@@ -39,28 +42,13 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
     return { x: m.x * VIEW, y: m.y * VIEW };
   };
 
-  // A sphere can belong to more than one sequence (the shared "hinge"
-  // spheres where the emblems overlap — e.g. Purpose joins Activation and
-  // Venus). Hovering a sphere lights EVERY sequence it participates in, so
-  // the overlap reads as the connective tissue between the emblems. We
-  // derive the set from the channels that actually touch the active sphere.
-  const activeSequences: Set<ProfileSequence> = active
-    ? new Set(
-        PROFILE_CHANNELS
-          .filter((ch) => ch.from === active || ch.to === active)
-          .map((ch) => ch.sequence),
-      )
-    : new Set();
-  const seqActive = (seq: ProfileSequence) => activeSequences.has(seq);
-
-  // Every sequence a given sphere participates in (via the channels touching
-  // it). A shared sphere returns more than one.
-  const sequencesOf = (k: ProfileKey): Set<ProfileSequence> =>
-    new Set(
-      PROFILE_CHANNELS
-        .filter((ch) => ch.from === k || ch.to === k)
-        .map((ch) => ch.sequence),
-    );
+  // Hovering a sphere lights only ITS OWN sequence — the one emblem it
+  // belongs to — not every sequence whose lines happen to touch it. Each
+  // sphere has a single home sequence (its `sequence` field).
+  const activeSequence: ProfileSequence | null = active
+    ? POSITIONS_BY_KEY[active].sequence
+    : null;
+  const seqActive = (seq: ProfileSequence) => activeSequence === seq;
 
   const go = (k: ProfileKey) => navigate(`/universal-language/${profile[k].gate}`);
 
@@ -143,8 +131,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             const card = CARD_BY_NUMBER.get(gl.gate);
             const p = pos(meta.key);
             const isActive = active === meta.key;
-            const inSequence = active != null &&
-              [...sequencesOf(meta.key)].some((s) => activeSequences.has(s));
+            const inSequence = activeSequence === meta.sequence;
 
             // Label box placement relative to the orb.
             const W = 170, H = 64, pad = R + 10;
@@ -260,11 +247,11 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
            rest/active state so each sequence's path reads in its own hue. */
         .profile-graph__channel {
           stroke-width: 1.5;
-          opacity: 0.35;
+          opacity: 0.5;
           transition: opacity 0.3s, stroke-width 0.3s;
         }
         .profile-graph__channel.is-lit { opacity: 1; stroke-width: 3; }
-        .profile-graph__mandala.has-active .profile-graph__channel:not(.is-lit) { opacity: 0.15; }
+        .profile-graph__mandala.has-active .profile-graph__channel:not(.is-lit) { opacity: 0.25; }
         .profile-graph__pathway {
           font-family: 'Lato', Helvetica, sans-serif;
           font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
@@ -277,7 +264,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .profile-graph__node { transition: opacity 0.25s; }
         /* Whole-sequence highlight: spheres in the active sequence stay full,
            everything else recedes. */
-        .profile-graph__mandala.has-active .profile-graph__node:not(.in-sequence) { opacity: 0.3; }
+        .profile-graph__mandala.has-active .profile-graph__node:not(.in-sequence) { opacity: 0.55; }
         .profile-graph__ring {
           fill: none;
           stroke: color-mix(in oklab, var(--color-wood-600) 22%, transparent);
