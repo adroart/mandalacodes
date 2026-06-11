@@ -49,63 +49,63 @@ export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
     key: 'evolution', sequence: 'activation', label: 'Evolution',
     planet: 'earth', side: 'persona', body: '',
     role: 'The contrast that shapes you, what you learn by living against.',
-    x: 0.67, y: 0.50, labelSide: 'right',
+    x: 0.73, y: 0.46, labelSide: 'right',
   },
   {
     key: 'radiance', sequence: 'activation', label: 'Radiance',
     planet: 'sun', side: 'design', body: '',
     role: 'The light you carry into the world, felt before it is named.',
-    x: 0.33, y: 0.50, labelSide: 'left',
+    x: 0.27, y: 0.46, labelSide: 'left',
   },
   {
     key: 'purpose', sequence: 'activation', label: 'Purpose',
     planet: 'earth', side: 'design', body: '',
     role: 'The current beneath your work, the reason it bends toward meaning.',
-    x: 0.50, y: 0.87, labelSide: 'bottom',
+    x: 0.50, y: 0.78, labelSide: 'bottom',
   },
 
   {
     key: 'attraction', sequence: 'venus', label: 'Attraction',
     planet: 'moon', side: 'design', body: '',
     role: 'How others first feel you, the quality that draws them close.',
-    x: 0.50, y: 0.68, labelSide: 'right',
+    x: 0.50, y: 0.64, labelSide: 'right',
   },
   {
     key: 'iq', sequence: 'venus', label: 'IQ',
     planet: 'venus', side: 'persona', body: '',
     role: 'How your mind moves, the shape of your thinking.',
-    x: 0.42, y: 0.59, labelSide: 'left',
+    x: 0.40, y: 0.55, labelSide: 'left',
   },
   {
     key: 'eq', sequence: 'venus', label: 'EQ',
     planet: 'mars', side: 'persona', body: '',
     role: 'How you meet feeling, your way through what is felt and unsaid.',
-    x: 0.58, y: 0.59, labelSide: 'right',
+    x: 0.58, y: 0.55, labelSide: 'right',
   },
   {
     key: 'sq', sequence: 'venus', label: 'SQ',
     planet: 'venus', side: 'design', body: '',
     role: 'How spirit speaks through you, the quiet intelligence beneath.',
-    x: 0.50, y: 0.50, labelSide: 'left',
+    x: 0.50, y: 0.46, labelSide: 'left',
   },
 
   {
     key: 'core', sequence: 'pearl', label: 'Vocation',
     planet: 'mars', side: 'design', body: '',
     role: 'The work that carries you, where your gifts meet the world.',
-    x: 0.42, y: 0.41, labelSide: 'left',
+    x: 0.40, y: 0.38, labelSide: 'left',
   },
   {
     key: 'culture', sequence: 'pearl', label: 'Culture',
     planet: 'jupiter', side: 'design', body: '',
     role: 'The field you came from, the inheritance you are reweaving.',
-    x: 0.58, y: 0.41, labelSide: 'right',
+    x: 0.60, y: 0.38, labelSide: 'right',
   },
   {
     key: 'pearl', sequence: 'pearl', label: 'Pearl',
     planet: 'jupiter', side: 'persona', body: '',
     role: 'The synthesis, where vocation and gift meet your daily choices.',
-    x: 0.50, y: 0.32, labelSide: 'top',
+    x: 0.50, y: 0.30, labelSide: 'top',
   },
 ];
 
@@ -134,27 +134,27 @@ export interface ProfileChannel {
  *     and those down to SQ.
  */
 export const PROFILE_CHANNELS: readonly ProfileChannel[] = [
-  // ── Activation (green) ──
-  { from: 'lifesWork', to: 'radiance',  sequence: 'activation', pathway: 'Challenge' },
-  { from: 'lifesWork', to: 'evolution', sequence: 'activation', pathway: 'Challenge' },
+  // ── Activation (green): the two outer arcs up to Life's Work, the
+  //    Evolution->Radiance horizontal, and Purpose up to Radiance. ──
+  { from: 'evolution', to: 'lifesWork', sequence: 'activation', pathway: 'Challenge' },
   { from: 'evolution', to: 'radiance',  sequence: 'activation', pathway: 'Breakthrough' },
-  { from: 'radiance',  to: 'purpose',   sequence: 'activation', pathway: 'Core Stability' },
-  { from: 'evolution', to: 'purpose',   sequence: 'activation', pathway: 'Core Stability' },
+  { from: 'purpose',   to: 'radiance',  sequence: 'activation', pathway: 'Core Stability' },
 
-  // ── Venus (red diamond) ──
-  { from: 'sq',         to: 'iq',         sequence: 'venus', pathway: 'Intelligence' },
-  { from: 'sq',         to: 'eq',         sequence: 'venus', pathway: 'Intelligence' },
-  { from: 'iq',         to: 'eq',         sequence: 'venus', pathway: 'Karma' },
-  { from: 'iq',         to: 'attraction', sequence: 'venus', pathway: 'Love' },
-  { from: 'eq',         to: 'attraction', sequence: 'venus', pathway: 'Love' },
-  { from: 'attraction', to: 'purpose',   sequence: 'venus', pathway: 'Dharma' },
+  // ── Venus (red): the chain up the centre — Attraction -> IQ -> EQ ->
+  //    SQ -> Vocation. ──
+  { from: 'attraction', to: 'iq',   sequence: 'venus', pathway: 'Dharma' },
+  { from: 'iq',         to: 'eq',   sequence: 'venus', pathway: 'Karma' },
+  { from: 'eq',         to: 'sq',   sequence: 'venus', pathway: 'Intelligence' },
+  { from: 'sq',         to: 'core', sequence: 'venus', pathway: 'Realisation' },
 
-  // ── Pearl (blue) ──
-  { from: 'lifesWork', to: 'pearl',   sequence: 'pearl', pathway: 'Harvest' },
-  { from: 'pearl',     to: 'core',    sequence: 'pearl', pathway: 'Initiative' },
-  { from: 'pearl',     to: 'culture', sequence: 'pearl', pathway: 'Service' },
-  { from: 'core',      to: 'sq',      sequence: 'pearl', pathway: 'Realisation' },
-  { from: 'culture',   to: 'sq',      sequence: 'pearl', pathway: 'Realisation' },
+  // ── Pearl (blue): Vocation & Culture up into both Pearl and Life's Work,
+  //    Vocation<->Culture across, and Pearl up to Life's Work. ──
+  { from: 'core',    to: 'pearl',     sequence: 'pearl', pathway: 'Initiative' },
+  { from: 'culture', to: 'pearl',     sequence: 'pearl', pathway: 'Growth' },
+  { from: 'core',    to: 'lifesWork', sequence: 'pearl', pathway: 'Service' },
+  { from: 'culture', to: 'lifesWork', sequence: 'pearl', pathway: 'Service' },
+  { from: 'core',    to: 'culture',   sequence: 'pearl', pathway: 'Synarchy' },
+  { from: 'pearl',   to: 'lifesWork', sequence: 'pearl', pathway: 'Harvest' },
 ];
 
 export const POSITIONS_BY_KEY: Record<ProfileKey, ProfilePositionMeta> =
