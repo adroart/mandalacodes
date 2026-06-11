@@ -164,6 +164,9 @@ export interface CityCentroid {
 
 export interface PublicAtlasState {
   generatedAt: string;
+  /** Bumped to 2 in M1: pieces gained pieceType, claimOrdinal, and the
+   *  'unawakened' status. All three are additive — schemaVersion-1 consumers
+   *  read the shared fields and ignore the rest. */
   schemaVersion: number;
   pieces: Array<{
     pieceId: string;
@@ -171,10 +174,39 @@ export interface PublicAtlasState {
     series?: string;
     category?: string;
     cityId: string | null;
-    status: 'seeking' | 'placed';
+    /** 'unawakened' = sold-but-unclaimed: the chain places it at a city but
+     *  no `claimed` event has landed yet. Renders as a dim point distinct
+     *  from 'placed' (claimed + placed) and 'seeking' (no city). Carries no
+     *  holder data — its existence is already public via the chain. */
+    status: 'seeking' | 'placed' | 'unawakened';
     placedAt?: string;
+    /** Marker color category. 'mandala' for Universal Language pieces, 'other'
+     *  for everything else; overridable per piece via the genesis event. */
+    pieceType?: 'mandala' | 'other';
+    /** Founding Lights ordinal — this piece's permanent claim-order number
+     *  across ALL chains (1 = first light ever claimed). Present only once the
+     *  piece carries a `claimed` event. Never reveals the holder. */
+    claimOrdinal?: number;
+    /** M5 — whether this piece may join the kinship constellation (shared-
+     *  trigram arcs + holder-chart attach). A single derived BOOLEAN, never
+     *  the consent object: a piece with a `claimed` event needs its current
+     *  steward's Ring 3 (ring3ChartPresence === true) to be eligible; an
+     *  artist-placed piece with no claim keeps today's behavior (eligible —
+     *  it's the artist's own data). Absent is treated as eligible by readers
+     *  for backward compatibility with schemaVersion-2 consumers. Carries no
+     *  holder data: it answers only "draw arcs to this piece?" */
+    kinshipEligible?: boolean;
   }>;
   cities: CityCentroid[];
+  /** Per-piece chain-tip hashes, keyed `pieceId:editionNumber ?? 0` → the
+   *  last event's `hash` on that chain. This is the Continuity plank: the
+   *  public GitHub mirror's commit history over these tips is the actual
+   *  tamper-evidence (the server could otherwise rewrite R2 and recompute
+   *  every hash). Hashes only — a tip reveals nothing about events, holders,
+   *  or places. Scope: ONLY chains of pieces visible in `pieces` above —
+   *  withdrawn/retired pieces stay entirely undisclosed, same rule as the
+   *  pieces array. Additive (older readers ignore it). */
+  chainTips?: Record<string, string>;
 }
 
 /* ─── Ledger (private) ─────────────────────────────────────────────────────
@@ -190,7 +222,10 @@ export type LedgerEventType =
   | 'moved'
   | 'withdrawn'
   | 'revealed'
-  | 'retired';
+  | 'retired'
+  | 'claimed'     // first bind; Founding Lights ordinal source; no PII
+  | 'inscribed'   // body lives in D1; chain holds pointer + salted commitment
+  | 'transferred'; // stewardship passed; opaque refs only
 
 export interface LedgerEvent {
   id: string;
@@ -199,8 +234,39 @@ export interface LedgerEvent {
   type: LedgerEventType;
   date: string;
   cityId?: string | null;
+  /** Non-personal operational text only — admin-authored notes are stripped
+   *  from steward-facing responses. Never put names/emails/free prose here. */
   note?: string;
-  actor: 'admin' | 'steward';
+  actor: 'admin' | 'steward' | 'heir';
+  /** Opaque actor reference (Clerk userId today) — never an email or name.
+   *  Optional and additive: the canonicalizer drops undefined, so events
+   *  written before this field existed keep their original hashes. */
+  actorRef?: string;
+  /** 'inscribed' only — id of the D1 atlas_inscriptions row. The body lives
+   *  exclusively in mutable D1 storage; the chain carries the pointer plus
+   *  a salted commitment so the entry's existence is tamper-evident while
+   *  its content stays erasable (chain content invariant). */
+  inscriptionId?: string;
+  /** 'inscribed' only — SHA-256(salt || body), hex. The salt lives beside
+   *  the body in D1 and is deleted with it on legal erasure, making the
+   *  commitment unlinkable. Never a hash of the bare body. */
+  contentHash?: string;
+  /** 'inscribed' only — non-personal category label. */
+  inscriptionKind?: 'intention' | 'story' | 'dedication';
+  /** 'transferred' only — opaque ref of the outgoing steward. Never an
+   *  email or name. */
+  fromRef?: string;
+  /** 'transferred' only — opaque ref of the incoming steward. */
+  toRef?: string;
+  /** 'transferred' only — why stewardship moved. */
+  transferKind?: 'sale' | 'gift' | 'inheritance' | 'artist-rebind';
+  /** Marker type override, set on `created` (genesis) only. Lets a piece that
+   *  lives outside FULL_ARCHIVE declare its globe color category without a
+   *  series lookup. When absent, `pieceType` is derived from the series in
+   *  toPublicState (Universal Language → mandala, else other). Additive &
+   *  optional: dropped by the canonicalizer when undefined, so pre-existing
+   *  hashes stay valid. Never personal. */
+  pieceType?: 'mandala' | 'other';
   prevHash: string | null;
   hash: string;
 }
@@ -212,6 +278,140 @@ export interface PieceRecord {
   status: 'seeking' | 'placed' | 'withdrawn' | 'retired';
   history: LedgerEvent[];
   isPublic: boolean;
+  /** Date of the first `claimed` event on this chain, when one exists. The
+   *  Founding Lights ordinal (rank across all chains) is derived from this in
+   *  a second pass; here we only record the per-piece "when". Additive. */
+  claimedAt?: string;
+  /** Marker-type override carried on the genesis `created` event, if any.
+   *  Surfaces to toPublicState which falls back to a series-derived value. */
+  pieceType?: 'mandala' | 'other';
+}
+
+/* ─── Consent (M2) ─────────────────────────────────────────────────────────
+ * The four-rings consent model, captured at claim (or retroactively on the
+ * steward's next visit). Consent is revocable, so it lives ONLY on the
+ * mutable StewardRecord — never in a hashed ledger payload, never in the
+ * public projection. `consentHistory` is the append-style audit trail of
+ * every captured state; the chain content invariant (no PII, nothing
+ * revocable in hashes) is law here.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** Bump when the consent wording/shape changes; stamped onto every capture. */
+export const CONSENT_VERSION = 1;
+
+/** Ring 4 — identity, per-field flags. All default false; the public gallery
+ *  surface is density-gated and unbuilt — only the schema ships. */
+export interface Ring4Fields {
+  face: boolean;
+  name: boolean;
+  intention: boolean;
+  business: boolean;
+  mission: boolean;
+}
+
+/**
+ * One captured consent state. Ring 1 (the private living record) is always
+ * on and needs no flag. Ring 2 is the single active question at claim —
+ * map presence, city-level only, active opt-in (never pre-ticked). Rings 3
+ * and 4 are not asked at claim; they're recorded as 'deferred' and can be
+ * opened later from the piece's book.
+ */
+export interface ConsentState {
+  version: number;
+  /** ISO timestamp, stamped server-side at capture. */
+  capturedAt: string;
+  /** Opaque Clerk userId of the consenting steward, stamped server-side. */
+  capturedBy: string;
+  /** Ring 2 — "Place your piece as a light on the world map?" */
+  ring2MapPresence: boolean;
+  /** Ring 3 — chart presence. 'deferred' until the holder opts in/out later. */
+  ring3ChartPresence: boolean | 'deferred';
+  /** Ring 4 — identity flags. 'deferred' until the holder opens them later. */
+  ring4: Ring4Fields | 'deferred';
+}
+
+/**
+ * Heir registration (M3) — a HINT for whoever settles the steward's estate,
+ * never an auto-binding credential. Activation is always a mediated
+ * `transferred` event issued by the artist/executor. Lives ONLY on the
+ * mutable StewardRecord: heir emails/names never enter a hashed payload,
+ * the public projection, or the GitHub mirror.
+ */
+export interface HeirRegistration {
+  email: string;
+  name?: string;
+  /** ISO timestamp, stamped server-side at registration. */
+  registeredAt: string;
+  /** Opaque Clerk userId of the steward who registered the heir. */
+  registeredBy: string;
+  /** 'pending' on registration; 'active'/'revoked' via later edits.
+   *  Status is informational only — no value ever grants access. */
+  status: 'pending' | 'active' | 'revoked';
+}
+
+/* ─── Claim requests (M4) ──────────────────────────────────────────────────
+ * Self-serve "Request stewardship": a signed-in visitor asks to become the
+ * steward of a piece (secondary sale, auction, gift, retroactive collector,
+ * inheritance — one mechanism for all five). Requests live in mutable R2
+ * storage only (atlas/claimRequests.json); nothing here ever enters a hashed
+ * payload or the public projection. Anti-takeover: requests against a piece
+ * with a BOUND steward route to that holder, never to the admin by default —
+ * the current holder decides who inherits their record.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export interface ClaimRequest {
+  id: string;
+  pieceId: string;
+  editionNumber?: number;
+  /** Opaque Clerk userId of the requester. */
+  requesterRef: string;
+  /** Requester's email from the verified JWT — needed to seed the steward
+   *  record on approval. Mutable storage only, never the chain. */
+  requesterEmail: string;
+  /** Optional evidence ("bought at the Vienna auction, lot 12"). ≤500 chars. */
+  note?: string;
+  createdAt: string;
+  status: 'pending' | 'approved' | 'declined';
+  /** 'holder' when the piece has a bound steward (the CURRENT holder
+   *  decides — anti-takeover); 'admin' otherwise. */
+  routedTo: 'admin' | 'holder';
+  /** Stamped on resolution. resolvedBy is an opaque Clerk userId. */
+  resolvedAt?: string;
+  resolvedBy?: string;
+}
+
+/* ─── Letters — the piece writes back (M5) ─────────────────────────────────
+ * In-app letters a piece writes to its steward: a kin piece lit somewhere on
+ * Earth, a claim anniversary, a change of hands. No email infrastructure
+ * exists — letters live in the product (a future ops layer could bolt on a
+ * sender). They are MUTABLE R2 (atlas/letters.json), NEVER chain events: the
+ * chain content invariant is law and a letter is generated prose, not a
+ * tamper-evident fact.
+ *
+ * The body references ONLY public facts: a piece lit in a city that is itself
+ * ring2-public, the shared trigram (an attribute of the hexagram, not the
+ * holder), an ordinal. Never a name, never an email, never an opaque ref.
+ * Letters live in private R2 and are served only to the bound steward, but
+ * the body discipline holds regardless: nothing in here could identify a
+ * person even if it leaked.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export type LetterKind = 'kin-claim' | 'anniversary' | 'transfer';
+
+export interface AtlasLetter {
+  id: string;
+  /** Recipient piece, keyed `pieceId:editionNumber ?? 0` — the steward of
+   *  THIS piece reads the letter. Never a userId: the binding to a holder is
+   *  resolved at read time through the steward record, so a transfer carries
+   *  the unread letters to the new holder automatically. */
+  recipientKey: string;
+  kind: LetterKind;
+  /** ISO timestamp the letter was generated. */
+  createdAt: string;
+  /** The prose, in the piece's own voice. Public facts only — never PII. */
+  body: string;
+  /** ISO timestamp the recipient opened it, when read. Absent = unread. */
+  readAt?: string;
 }
 
 /**
@@ -242,4 +442,23 @@ export interface StewardRecord {
   outreachStatus: 'no-contact' | 'invited' | 'claimed' | 'declined';
   /** When the collector most recently exercised the claim or edit flow. */
   lastClaimAt?: string;
+  /** Current consent state. Absent on records issued before M2 — the
+   *  steward sees the consent step once on their next visit. */
+  consent?: ConsentState;
+  /** Audit trail: every consent state ever captured, oldest first. */
+  consentHistory?: ConsentState[];
+  /**
+   * The claim-ritual answer — "What do you hope this piece holds for you?"
+   * Private Ring 1 content belonging to the AUTHORING steward only: never
+   * in any hashed payload, never in public state, never returned to other
+   * parties (admin roster included). M3 migrates this into the real
+   * inscription model (D1 row + salted commitment + `inscribed` event).
+   */
+  pendingFirstInscription?: { text: string; createdAt: string };
+  /**
+   * "Pass it on" registrations — hints for the executor (see
+   * HeirRegistration). The transfer itself always happens through the
+   * artist via an audited `transferred` event; nothing here binds anyone.
+   */
+  heirs?: HeirRegistration[];
 }

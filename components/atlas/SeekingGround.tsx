@@ -11,7 +11,7 @@ export interface SeekingGroundProps {
   seekingPieces: SeekingPiece[];
   totalPieces: number;
   onSelect?: (pieceId: string, editionNumber?: number) => void;
-  selectedKey?: string | null;   // matches `${pieceId}:${editionNumber ?? ''}`
+  selectedKey?: string | null;   // matches `${pieceId}:${editionNumber ?? 0}`
 }
 
 const SeekingGround: React.FC<SeekingGroundProps> = ({
@@ -63,7 +63,7 @@ const SeekingGround: React.FC<SeekingGroundProps> = ({
 
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
         {seekingPieces.map((p) => {
-          const key = `${p.pieceId}:${p.editionNumber ?? ''}`;
+          const key = `${p.pieceId}:${p.editionNumber ?? 0}`;
           const isSelected = selectedKey === key;
           const inline: string[] = [];
           if (p.series) inline.push(p.series);

@@ -137,17 +137,119 @@ export const CITIES: CityCentroid[] = [
 ];
 
 /**
- * Look up a city by id. Returns `undefined` if no match. Stewards' selected
- * cityIds are validated against this list before being written to the ledger.
+ * Country-level centroids — the "country only" privacy option (M2).
+ *
+ * The curated city list above already enforces a large-city floor; a steward
+ * who wants even less precision picks their COUNTRY instead of a city. These
+ * are ordinary CityCentroid entries (id prefix `country-`), so the existing
+ * placed/moved event mechanics, validation, and public projection all work
+ * unchanged — the piece still glows, just at the country's geographic
+ * centroid. No new public-state semantics, no steward-record input to the
+ * projector. Detect with isCountryPlace(); label with formatPlaceLabel().
+ *
+ * One entry per country already present in CITIES. Coordinates are the
+ * well-known country geocodes (geographic centers as used by major mapping
+ * datasets), rounded to 2 decimals — country-level precision by design.
+ * City-states (Singapore, Hong Kong) are omitted: their city entry IS the
+ * country centroid, so a country option would add nothing.
+ */
+export const COUNTRY_CENTROIDS: CityCentroid[] = [
+  { id: 'country-id', city: 'Indonesia', country: 'Indonesia', countryCode: 'ID', lat: -2.55, lng: 118.01 },
+  { id: 'country-de', city: 'Germany', country: 'Germany', countryCode: 'DE', lat: 51.17, lng: 10.45 },
+  { id: 'country-pt', city: 'Portugal', country: 'Portugal', countryCode: 'PT', lat: 39.56, lng: -7.84 },
+  { id: 'country-nl', city: 'Netherlands', country: 'Netherlands', countryCode: 'NL', lat: 52.13, lng: 5.29 },
+  { id: 'country-gb', city: 'United Kingdom', country: 'United Kingdom', countryCode: 'GB', lat: 55.38, lng: -3.44 },
+  { id: 'country-ie', city: 'Ireland', country: 'Ireland', countryCode: 'IE', lat: 53.41, lng: -8.24 },
+  { id: 'country-fr', city: 'France', country: 'France', countryCode: 'FR', lat: 46.23, lng: 2.21 },
+  { id: 'country-es', city: 'Spain', country: 'Spain', countryCode: 'ES', lat: 40.46, lng: -3.75 },
+  { id: 'country-it', city: 'Italy', country: 'Italy', countryCode: 'IT', lat: 41.87, lng: 12.57 },
+  { id: 'country-at', city: 'Austria', country: 'Austria', countryCode: 'AT', lat: 47.52, lng: 14.55 },
+  { id: 'country-cz', city: 'Czechia', country: 'Czechia', countryCode: 'CZ', lat: 49.82, lng: 15.47 },
+  { id: 'country-hu', city: 'Hungary', country: 'Hungary', countryCode: 'HU', lat: 47.16, lng: 19.50 },
+  { id: 'country-pl', city: 'Poland', country: 'Poland', countryCode: 'PL', lat: 51.92, lng: 19.15 },
+  { id: 'country-dk', city: 'Denmark', country: 'Denmark', countryCode: 'DK', lat: 56.26, lng: 9.50 },
+  { id: 'country-se', city: 'Sweden', country: 'Sweden', countryCode: 'SE', lat: 60.13, lng: 18.64 },
+  { id: 'country-no', city: 'Norway', country: 'Norway', countryCode: 'NO', lat: 60.47, lng: 8.47 },
+  { id: 'country-fi', city: 'Finland', country: 'Finland', countryCode: 'FI', lat: 61.92, lng: 25.75 },
+  { id: 'country-is', city: 'Iceland', country: 'Iceland', countryCode: 'IS', lat: 64.96, lng: -19.02 },
+  { id: 'country-be', city: 'Belgium', country: 'Belgium', countryCode: 'BE', lat: 50.50, lng: 4.47 },
+  { id: 'country-ch', city: 'Switzerland', country: 'Switzerland', countryCode: 'CH', lat: 46.82, lng: 8.23 },
+  { id: 'country-ee', city: 'Estonia', country: 'Estonia', countryCode: 'EE', lat: 58.60, lng: 25.01 },
+  { id: 'country-lv', city: 'Latvia', country: 'Latvia', countryCode: 'LV', lat: 56.88, lng: 24.60 },
+  { id: 'country-lt', city: 'Lithuania', country: 'Lithuania', countryCode: 'LT', lat: 55.17, lng: 23.88 },
+  { id: 'country-gr', city: 'Greece', country: 'Greece', countryCode: 'GR', lat: 39.07, lng: 21.82 },
+  { id: 'country-tr', city: 'Turkey', country: 'Turkey', countryCode: 'TR', lat: 38.96, lng: 35.24 },
+  { id: 'country-il', city: 'Israel', country: 'Israel', countryCode: 'IL', lat: 31.05, lng: 34.85 },
+  { id: 'country-ma', city: 'Morocco', country: 'Morocco', countryCode: 'MA', lat: 31.79, lng: -7.09 },
+  { id: 'country-eg', city: 'Egypt', country: 'Egypt', countryCode: 'EG', lat: 26.82, lng: 30.80 },
+  { id: 'country-za', city: 'South Africa', country: 'South Africa', countryCode: 'ZA', lat: -30.56, lng: 22.94 },
+  { id: 'country-ke', city: 'Kenya', country: 'Kenya', countryCode: 'KE', lat: -0.02, lng: 37.91 },
+  { id: 'country-ng', city: 'Nigeria', country: 'Nigeria', countryCode: 'NG', lat: 9.08, lng: 8.68 },
+  { id: 'country-us', city: 'United States', country: 'United States', countryCode: 'US', lat: 37.09, lng: -95.71 },
+  { id: 'country-ca', city: 'Canada', country: 'Canada', countryCode: 'CA', lat: 56.13, lng: -106.35 },
+  { id: 'country-mx', city: 'Mexico', country: 'Mexico', countryCode: 'MX', lat: 23.63, lng: -102.55 },
+  { id: 'country-cr', city: 'Costa Rica', country: 'Costa Rica', countryCode: 'CR', lat: 9.75, lng: -83.75 },
+  { id: 'country-pa', city: 'Panama', country: 'Panama', countryCode: 'PA', lat: 8.54, lng: -80.78 },
+  { id: 'country-cu', city: 'Cuba', country: 'Cuba', countryCode: 'CU', lat: 21.52, lng: -77.78 },
+  { id: 'country-br', city: 'Brazil', country: 'Brazil', countryCode: 'BR', lat: -14.24, lng: -51.93 },
+  { id: 'country-ar', city: 'Argentina', country: 'Argentina', countryCode: 'AR', lat: -38.42, lng: -63.62 },
+  { id: 'country-co', city: 'Colombia', country: 'Colombia', countryCode: 'CO', lat: 4.57, lng: -74.30 },
+  { id: 'country-pe', city: 'Peru', country: 'Peru', countryCode: 'PE', lat: -9.19, lng: -75.02 },
+  { id: 'country-ec', city: 'Ecuador', country: 'Ecuador', countryCode: 'EC', lat: -1.83, lng: -78.18 },
+  { id: 'country-cl', city: 'Chile', country: 'Chile', countryCode: 'CL', lat: -35.68, lng: -71.54 },
+  { id: 'country-jp', city: 'Japan', country: 'Japan', countryCode: 'JP', lat: 36.20, lng: 138.25 },
+  { id: 'country-kr', city: 'South Korea', country: 'South Korea', countryCode: 'KR', lat: 35.91, lng: 127.77 },
+  { id: 'country-cn', city: 'China', country: 'China', countryCode: 'CN', lat: 35.86, lng: 104.20 },
+  { id: 'country-tw', city: 'Taiwan', country: 'Taiwan', countryCode: 'TW', lat: 23.70, lng: 120.96 },
+  { id: 'country-th', city: 'Thailand', country: 'Thailand', countryCode: 'TH', lat: 15.87, lng: 100.99 },
+  { id: 'country-my', city: 'Malaysia', country: 'Malaysia', countryCode: 'MY', lat: 4.21, lng: 101.98 },
+  { id: 'country-ph', city: 'Philippines', country: 'Philippines', countryCode: 'PH', lat: 12.88, lng: 121.77 },
+  { id: 'country-vn', city: 'Vietnam', country: 'Vietnam', countryCode: 'VN', lat: 14.06, lng: 108.28 },
+  { id: 'country-kh', city: 'Cambodia', country: 'Cambodia', countryCode: 'KH', lat: 12.57, lng: 104.99 },
+  { id: 'country-la', city: 'Laos', country: 'Laos', countryCode: 'LA', lat: 19.86, lng: 102.50 },
+  { id: 'country-mm', city: 'Myanmar', country: 'Myanmar', countryCode: 'MM', lat: 21.91, lng: 95.96 },
+  { id: 'country-in', city: 'India', country: 'India', countryCode: 'IN', lat: 20.59, lng: 78.96 },
+  { id: 'country-np', city: 'Nepal', country: 'Nepal', countryCode: 'NP', lat: 28.39, lng: 84.12 },
+  { id: 'country-au', city: 'Australia', country: 'Australia', countryCode: 'AU', lat: -25.27, lng: 133.78 },
+  { id: 'country-nz', city: 'New Zealand', country: 'New Zealand', countryCode: 'NZ', lat: -40.90, lng: 174.89 },
+];
+
+/**
+ * Every place a piece may rest: curated cities first, then country-level
+ * centroids. This is the validation set for steward-chosen cityIds and the
+ * catalog handed to the public projection.
+ */
+export const ATLAS_PLACES: CityCentroid[] = [...CITIES, ...COUNTRY_CENTROIDS];
+
+/** True for the country-level "country only" entries. */
+export function isCountryPlace(place: CityCentroid): boolean {
+  return place.id.startsWith('country-');
+}
+
+/**
+ * Display label for a place. Country-level entries show just the country
+ * name (never "Portugal, Portugal"); city entries keep the familiar
+ * "Lisbon, Portugal" — also deduped for city-states like Singapore.
+ */
+export function formatPlaceLabel(place: CityCentroid): string {
+  if (isCountryPlace(place) || place.city === place.country) return place.country;
+  return `${place.city}, ${place.country}`;
+}
+
+/**
+ * Look up a place (city or country centroid) by id. Returns `undefined` if
+ * no match. Stewards' selected cityIds are validated against this before
+ * being written to the ledger.
  */
 export function getCityById(id: string): CityCentroid | undefined {
-  return CITIES.find((c) => c.id === id);
+  return CITIES_BY_ID.get(id);
 }
 
 /**
  * Convenience map keyed by id, for O(1) lookups in tight loops (e.g. the
- * public projection). Built once at module load.
+ * public projection). Built once at module load. Covers cities AND country
+ * centroids so country-only placements resolve everywhere labels render.
  */
 export const CITIES_BY_ID: Map<string, CityCentroid> = new Map(
-  CITIES.map((c) => [c.id, c]),
+  ATLAS_PLACES.map((c) => [c.id, c]),
 );

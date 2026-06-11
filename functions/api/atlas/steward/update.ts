@@ -13,21 +13,35 @@
  *   - isPublic flipping true (currently withdrawn) → 'revealed'.
  *   - No-op → return current record, no event appended.
  *
- * cityId must validate via getCityById; notes are admin-only and ignored.
+ * Since M2 the isPublic toggle IS the Ring 2 consent control: when the
+ * steward record carries a captured consent, flipping visibility also
+ * updates consent.ring2MapPresence and appends the new state to
+ * consentHistory — one write path for the choice and its audit trail.
+ *
+ * cityId must validate via getCityById (cities AND country-level centroids
+ * — the "country only" option is just a country centroid in the catalog);
+ * notes are admin-only and ignored.
+ * Ledger and steward writes go through the conditional-put mutators, and
+ * every appended event carries the steward's opaque Clerk userId as
+ * `actorRef`. Responses strip admin-authored event notes.
  */
 
 import type { LedgerEvent, LedgerEventType, PieceRecord } from '../../../../types';
-import { appendEvent, groupChains } from '../../../../utils/ledger';
+import { appendEvent, groupChains, BackdatedEventError } from '../../../../utils/ledger';
 import { projectPiece } from '../../../../utils/ledgerProjection';
+import { nextConsentState, nextRing3ConsentState } from '../../../../utils/consent';
+import { addHeir, parseHeirInput, revokeHeir } from '../../../../utils/inscriptions';
 import { getCityById } from '../../../../data/cities';
 import type { PagesContext } from '../_helpers';
 import {
   json,
+  mutateLedger,
+  mutateStewards,
   readLedger,
-  writeLedger,
   readStewards,
-  writeStewards,
   regeneratePublicState,
+  sanitizeEventsForSteward,
+  toStewardView,
 } from '../_helpers';
 import { requireUser, isAuthResponse } from '../../_lib/clerk';
 
@@ -36,6 +50,17 @@ interface UpdateBody {
   editionNumber?: unknown;
   cityId?: unknown;
   isPublic?: unknown;
+  /** "Pass it on" (M3): register an heir hint — { email, name? }. Hints
+   *  for the executor only, mutable storage only; the transfer itself is
+   *  always an artist-mediated `transferred` event. No ledger write. */
+  addHeir?: unknown;
+  /** Revoke a registered heir hint — { email }. */
+  revokeHeir?: unknown;
+  /** Ring 3 chart presence (M5): join/leave the kinship constellation. A
+   *  boolean flips ring3ChartPresence on the captured consent and pushes the
+   *  new state onto consentHistory; public state regenerates so the
+   *  kinshipEligible flag follows. No ledger event — consent is mutable. */
+  ring3ChartPresence?: unknown;
 }
 
 function genEventId(): string {
@@ -45,6 +70,11 @@ function genEventId(): string {
   return `evt-${Date.now().toString(36)}-${hex}`;
 }
 
+/** Steward-facing copy of a projected piece: admin event notes removed. */
+function sanitizePiece(piece: PieceRecord): PieceRecord {
+  return { ...piece, history: sanitizeEventsForSteward(piece.history) };
+}
+
 export async function onRequestPost(
   context: PagesContext,
 ): Promise<Response> {
@@ -52,6 +82,9 @@ export async function onRequestPost(
 
   const auth = await requireUser(request, env);
   if (isAuthResponse(auth)) return auth;
+  // Captured by the mutator closure below — TS doesn't carry the narrowing
+  // of `auth` into nested function declarations.
+  const actorUserId = auth.userId;
 
   let body: UpdateBody;
   try {
@@ -79,6 +112,128 @@ export async function onRequestPost(
     return json({ ok: false, error: 'forbidden' }, 403);
   }
 
+  // ---------- "Pass it on" — heir registrations (M3) ----------
+  // Pure steward-record mutation: heirs are hints for the executor, never
+  // credentials, so there is no ledger event and no public-state regen.
+  // Heir emails live ONLY on the mutable record — never in a hashed
+  // payload, never in the public projection.
+  if (body.addHeir !== undefined || body.revokeHeir !== undefined) {
+    if (body.addHeir !== undefined && body.revokeHeir !== undefined) {
+      return json({ ok: false, error: 'Send addHeir OR revokeHeir, not both' }, 400);
+    }
+    const now = new Date().toISOString();
+    let heirError: string | null = null;
+    const heirOutcome = await mutateStewards(env, (current) => {
+      heirError = null; // reset on mutator retry
+      const next = current.map((s) => {
+        if (
+          s.pieceId !== record.pieceId ||
+          (s.editionNumber ?? undefined) !== (record.editionNumber ?? undefined)
+        ) {
+          return s;
+        }
+        if (body.addHeir !== undefined) {
+          const input = parseHeirInput(body.addHeir);
+          if (!input.ok) {
+            heirError = input.error;
+            return s;
+          }
+          const added = addHeir(s, input.value, actorUserId, now);
+          if (!added.ok) {
+            heirError = added.error;
+            return s;
+          }
+          return { ...added.value, lastClaimAt: now };
+        }
+        const revokeObj = body.revokeHeir as { email?: unknown } | null;
+        const email =
+          revokeObj && typeof revokeObj === 'object' && typeof revokeObj.email === 'string'
+            ? revokeObj.email
+            : '';
+        if (!email) {
+          heirError = 'revokeHeir: missing email';
+          return s;
+        }
+        const revoked = revokeHeir(s, email);
+        if (!revoked.ok) {
+          heirError = revoked.error;
+          return s;
+        }
+        return { ...revoked.value, lastClaimAt: now };
+      });
+      if (heirError) return json({ ok: false, error: heirError }, 400);
+      return { next, result: undefined };
+    });
+    if (heirOutcome instanceof Response) return heirOutcome;
+    const updated = heirOutcome.next.find(
+      (s) =>
+        s.pieceId === record.pieceId &&
+        (s.editionNumber ?? undefined) === (record.editionNumber ?? undefined),
+    );
+    return json({
+      ok: true,
+      steward: updated ? toStewardView(updated, actorUserId) : null,
+    });
+  }
+
+  // ---------- Ring 3 chart presence (M5) ----------
+  // The steward joins or leaves the kinship constellation. Pure consent
+  // mutation (mutable, revocable — never a chain event), but the public
+  // kinshipEligible flag is derived from it, so we regenerate public state
+  // afterwards. Requires a captured consent (the retro-consent step runs at
+  // claim/edit before the book exposes this toggle).
+  if (body.ring3ChartPresence !== undefined) {
+    if (typeof body.ring3ChartPresence !== 'boolean') {
+      return json({ ok: false, error: 'ring3ChartPresence must be a boolean' }, 400);
+    }
+    if (!record.consent) {
+      return json(
+        { ok: false, error: 'Capture consent before opening chart presence' },
+        409,
+      );
+    }
+    const ring3 = body.ring3ChartPresence;
+    const now3 = new Date().toISOString();
+    const ring3Outcome = await mutateStewards(env, (current) => ({
+      next: current.map((s) => {
+        if (
+          s.pieceId !== record.pieceId ||
+          (s.editionNumber ?? undefined) !== (record.editionNumber ?? undefined) ||
+          !s.consent
+        ) {
+          return s;
+        }
+        if (s.consent.ring3ChartPresence === ring3) {
+          return { ...s, lastClaimAt: now3 };
+        }
+        const consent = nextRing3ConsentState(ring3, s.consent, actorUserId, now3);
+        return {
+          ...s,
+          lastClaimAt: now3,
+          consent,
+          consentHistory: [...(s.consentHistory ?? []), consent],
+        };
+      }),
+      result: undefined,
+    }));
+    if (ring3Outcome instanceof Response) return ring3Outcome;
+
+    // Regenerate so the kinshipEligible boolean on this piece follows the
+    // flip. No ledger write happened — pass the current ledger through.
+    const events = await readLedger(env);
+    await regeneratePublicState(env, events);
+
+    const updated = ring3Outcome.next.find(
+      (s) =>
+        s.pieceId === record.pieceId &&
+        (s.editionNumber ?? undefined) === (record.editionNumber ?? undefined),
+    );
+    return json({
+      ok: true,
+      steward: updated ? toStewardView(updated, actorUserId) : null,
+    });
+  }
+
   const cityIdProvided = body.cityId !== undefined && body.cityId !== null;
   const cityId = cityIdProvided
     ? typeof body.cityId === 'string'
@@ -92,87 +247,130 @@ export async function onRequestPost(
   const isPublicProvided = typeof body.isPublic === 'boolean';
   const desiredIsPublic = isPublicProvided ? (body.isPublic as boolean) : undefined;
 
-  const events = await readLedger(env);
-  const chains = groupChains(events);
-  const chainKey = `${pieceId}:${editionNumber ?? 0}`;
-  const chain = chains.get(chainKey);
-  if (!chain || chain.length === 0) {
-    return json({ ok: false, error: 'No chain for this piece' }, 403);
-  }
-
-  const current: PieceRecord = projectPiece(chain);
-
   const now = new Date().toISOString();
-  const appended: LedgerEvent[] = [];
 
-  let runningChain = chain.slice();
-  let runningCity = current.currentCityId;
-  let runningIsPublic = current.isPublic;
-  let runningStatus = current.status;
+  // Bump steward activity timestamp, and — when the visibility toggle is
+  // exercised — keep the Ring 2 consent in sync: write the updated
+  // ConsentState and push it onto consentHistory. Records without a
+  // captured consent are left untouched (the UI gates them through the
+  // retro-consent step first; an API-only caller keeps legacy single-
+  // toggle behavior until consent is captured via /claim Phase B).
+  // Conditional write — a concurrent claim or issue must not be clobbered.
+  const stewardOutcome = await mutateStewards(env, (current) => ({
+    next: current.map((s) => {
+      if (
+        s.pieceId !== record.pieceId ||
+        (s.editionNumber ?? undefined) !== (record.editionNumber ?? undefined)
+      ) {
+        return s;
+      }
+      if (
+        desiredIsPublic === undefined ||
+        !s.consent ||
+        s.consent.ring2MapPresence === desiredIsPublic
+      ) {
+        return { ...s, lastClaimAt: now };
+      }
+      const consent = nextConsentState(
+        { ring2MapPresence: desiredIsPublic },
+        s.consent,
+        actorUserId,
+        now,
+      );
+      return {
+        ...s,
+        lastClaimAt: now,
+        consent,
+        consentHistory: [...(s.consentHistory ?? []), consent],
+      };
+    }),
+    result: undefined,
+  }));
+  if (stewardOutcome instanceof Response) return stewardOutcome;
 
-  async function pushEvent(
-    type: LedgerEventType,
-    eventCityId: string | null,
-  ): Promise<void> {
-    const draft: Omit<LedgerEvent, 'hash' | 'prevHash'> = {
-      id: genEventId(),
-      pieceId,
-      editionNumber,
-      type,
-      date: now,
-      cityId: eventCityId,
-      actor: 'steward',
+  // The diff is computed INSIDE the mutator so it re-applies against fresh
+  // chain state if a concurrent ledger write forces a retry.
+  const outcome = await mutateLedger(env, async (events) => {
+    const chains = groupChains(events);
+    const chainKey = `${pieceId}:${editionNumber ?? 0}`;
+    const chain = chains.get(chainKey);
+    if (!chain || chain.length === 0) {
+      return json({ ok: false, error: 'No chain for this piece' }, 403);
+    }
+
+    const current: PieceRecord = projectPiece(chain);
+
+    const appended: LedgerEvent[] = [];
+    let runningChain = chain.slice();
+    let runningCity = current.currentCityId;
+    let runningIsPublic = current.isPublic;
+    let runningStatus = current.status;
+
+    async function pushEvent(
+      type: LedgerEventType,
+      eventCityId: string | null,
+    ): Promise<void> {
+      const draft: Omit<LedgerEvent, 'hash' | 'prevHash'> = {
+        id: genEventId(),
+        pieceId,
+        editionNumber,
+        type,
+        date: now,
+        cityId: eventCityId,
+        actor: 'steward',
+        actorRef: actorUserId,
+      };
+      const full = await appendEvent(runningChain, draft);
+      runningChain = [...runningChain, full];
+      appended.push(full);
+    }
+
+    try {
+      if (cityIdProvided && cityId && cityId !== runningCity) {
+        if (runningStatus === 'placed') {
+          await pushEvent('moved', cityId);
+        } else {
+          await pushEvent('placed', cityId);
+        }
+        runningCity = cityId;
+        runningStatus = 'placed';
+      }
+
+      if (isPublicProvided) {
+        if (desiredIsPublic === false && runningIsPublic) {
+          await pushEvent('withdrawn', runningCity);
+          runningIsPublic = false;
+        } else if (desiredIsPublic === true && !runningIsPublic) {
+          await pushEvent('revealed', runningCity);
+          runningIsPublic = true;
+        }
+      }
+    } catch (err) {
+      // Only reachable when the chain tip is dated in the future (an admin
+      // event with a forward date) — appending "now" would backdate.
+      if (err instanceof BackdatedEventError) {
+        return json({ ok: false, error: err.message }, 409);
+      }
+      throw err;
+    }
+
+    if (appended.length === 0) {
+      // No-op: nothing to write. Short-circuit with the current record.
+      return json({ ok: true, piece: sanitizePiece(current), appended: [] });
+    }
+
+    return {
+      next: events.concat(appended),
+      result: { piece: projectPiece(runningChain), appended },
     };
-    const full = await appendEvent(runningChain, draft);
-    runningChain = [...runningChain, full];
-    appended.push(full);
-  }
+  });
+  if (outcome instanceof Response) return outcome;
 
-  if (cityIdProvided && cityId && cityId !== runningCity) {
-    if (runningStatus === 'placed') {
-      await pushEvent('moved', cityId);
-    } else {
-      await pushEvent('placed', cityId);
-    }
-    runningCity = cityId;
-    runningStatus = 'placed';
-  }
+  await regeneratePublicState(env, outcome.next);
 
-  if (isPublicProvided) {
-    if (desiredIsPublic === false && runningIsPublic) {
-      await pushEvent('withdrawn', runningCity);
-      runningIsPublic = false;
-    } else if (desiredIsPublic === true && !runningIsPublic) {
-      await pushEvent('revealed', runningCity);
-      runningIsPublic = true;
-    }
-  }
-
-  // Bump steward activity timestamp.
-  const updatedStewards = stewards.map((s) =>
-    s === record ? { ...s, lastClaimAt: now } : s,
-  );
-  await writeStewards(env, updatedStewards);
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-store',
-  };
-
-  if (appended.length === 0) {
-    return new Response(
-      JSON.stringify({ ok: true, piece: current, appended: [] }),
-      { status: 200, headers },
-    );
-  }
-
-  const allEvents = events.concat(appended);
-  await writeLedger(env, allEvents);
-  await regeneratePublicState(env, allEvents);
-
-  const updated = projectPiece(runningChain);
-  return new Response(
-    JSON.stringify({ ok: true, piece: updated, appended }),
-    { status: 200, headers },
-  );
+  return json({
+    ok: true,
+    piece: sanitizePiece(outcome.result.piece),
+    appended: outcome.result.appended,
+  });
 }

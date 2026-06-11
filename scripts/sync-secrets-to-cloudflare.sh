@@ -20,12 +20,22 @@ PROJECT_NAME="mandalacodes"
 PLAINTEXT_VARS=(
   "VITE_CLERK_PUBLISHABLE_KEY"
   "ADMIN_EMAILS"
+  # Public GitHub mirror configuration (docs/secrets-sync.md): repo + path
+  # are configuration, not secrets. Only public.json is ever mirrored.
+  "GITHUB_MIRROR_REPO"
+  "GITHUB_MIRROR_PATH"
 )
 
 # Encrypted vars (real secrets). Stored encrypted at rest in Cloudflare.
 ENCRYPTED_VARS=(
   "CLERK_SECRET_KEY"
   "CLERK_WEBHOOK_SECRET"
+  # Sale → ledger bridge (M4): HMAC secret shared with adrianrasmussen.com —
+  # the SAME value must be set on that Pages project too (this script only
+  # syncs mandalacodes; see todo/handoff/adrian-website/sale-webhook-spec.md).
+  "SALE_WEBHOOK_SECRET"
+  # Fine-grained GitHub PAT for the public-state mirror (_mirror.ts).
+  "GITHUB_MIRROR_TOKEN"
 )
 
 # ─── Pre-flight ────────────────────────────────────────────────────────────

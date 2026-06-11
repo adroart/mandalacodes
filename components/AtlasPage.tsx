@@ -2,11 +2,15 @@ import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'rea
 import { Link, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
 import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
-import PieceSidePanel, { type KinEntry, type SelectedPiece } from './atlas/PieceSidePanel';
+import PieceSidePanel, {
+  type KinEntry,
+  type SelectedPiece,
+  type HolderChartSummary,
+} from './atlas/PieceSidePanel';
 import SeekingGround, { type SeekingPiece } from './atlas/SeekingGround';
 import KinshipLayer from './atlas/KinshipLayer';
 import { FULL_ARCHIVE } from '../data/mockData';
-import { CITIES_BY_ID } from '../data/cities';
+import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
 import { useProfile } from '../lib/profile/context';
 import { ulCardNumber } from '../utils/universalLanguage';
@@ -48,8 +52,10 @@ type EnrichedPiece = PublicAtlasState['pieces'][number] & {
 };
 
 /* ─── Helpers ──────────────────────────────────────────────────────────────── */
+/* Same key convention as the ledger (groupChains / projectAll) and the
+   kinship index: pieces with no editionNumber use `0`. */
 function makeKey(pieceId: string, editionNumber?: number): string {
-  return `${pieceId}:${editionNumber ?? ''}`;
+  return `${pieceId}:${editionNumber ?? 0}`;
 }
 
 function titleFor(pieceId: string): string {
@@ -65,7 +71,7 @@ function cityLabelFor(cityId: string | null | undefined): string | undefined {
   if (!cityId) return undefined;
   const c = CITIES_BY_ID.get(cityId);
   if (!c) return undefined;
-  return `${c.city}, ${c.country}`;
+  return formatPlaceLabel(c);
 }
 
 /** Universal Language card number for a piece, when it has one (1–64). */
@@ -144,7 +150,7 @@ const AtlasPage: React.FC = () => {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        if (key) next.set('piece', key.replace(/:$/, ''));
+        if (key) next.set('piece', key.replace(/:0$/, ''));
         else next.delete('piece');
         return next;
       },
@@ -189,7 +195,7 @@ const AtlasPage: React.FC = () => {
   }, [enriched]);
 
   /* Apply the ?piece= deep link once the atlas is loaded. Accepts both
-     "UL-122" and "UL-122:2" (piece keys without an edition end in ":"),
+     "UL-122" and "UL-122:2" (piece keys without an edition end in ":0"),
      plus the birth-place key when the visitor has a saved profile. */
   useEffect(() => {
     if (enriched.length === 0) return;
@@ -199,7 +205,7 @@ const AtlasPage: React.FC = () => {
       if (birthPlace) setSelectedKeyState(BIRTH_KEY);
       return;
     }
-    const match = enriched.find((p) => p.key === param || p.key === `${param}:`);
+    const match = enriched.find((p) => p.key === param || p.key === `${param}:0`);
     if (match) setSelectedKeyState(match.key);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enriched]);
@@ -249,12 +255,23 @@ const AtlasPage: React.FC = () => {
     [seriesFiltered],
   );
 
+  /* Low-density framing: this is Adrian's body of work, not a constellation
+     of strangers. A "light" is a claimed piece (carries an ordinal); the
+     collective framing earns its place as density grows. */
+  const totalCount = enriched.length;
+  const lightsLit = useMemo(
+    () => enriched.filter((p) => typeof p.claimOrdinal === 'number').length,
+    [enriched],
+  );
+
   /* Pieces visible on the globe respect both filters; status=seeking is shown
      in the seeking section, never on the globe (no coords to plot). */
   const globeNodes: GlobeNode[] = useMemo(() => {
     const visible = seriesFiltered.filter((p) => {
       if (status === 'seeking') return false; // seeking-only filter hides globe markers
-      if (p.status !== 'placed') return false;
+      // Both lit ('placed') and sold-but-unclaimed ('unawakened') pieces have
+      // a city and belong on the globe; only the truly unplaced are hidden.
+      if (p.status !== 'placed' && p.status !== 'unawakened') return false;
       if (!p.cityId) return false;
       return true;
     });
@@ -266,8 +283,9 @@ const AtlasPage: React.FC = () => {
         id: p.key,
         lat: c.lat,
         lng: c.lng,
-        status: 'placed',
+        status: p.status === 'unawakened' ? 'unawakened' : 'placed',
         label: p.title,
+        pieceType: p.pieceType,
       });
     }
     // The visitor's birth place rides along regardless of filters — it is
@@ -312,6 +330,7 @@ const AtlasPage: React.FC = () => {
       cityLabel: cityLabelFor(match.cityId),
       placedAt: match.placedAt,
       cardNumber: cardNumberFor(match.pieceId),
+      claimOrdinal: match.claimOrdinal,
     };
   }, [selectedKey, seriesFiltered]);
 
@@ -337,7 +356,7 @@ const AtlasPage: React.FC = () => {
       out.push({
         key: p.key,
         title: p.title,
-        cityLabel: `${c.city}, ${c.country}`,
+        cityLabel: formatPlaceLabel(c),
         km: Math.round(rad * EARTH_RADIUS_KM),
       });
     }
@@ -408,6 +427,30 @@ const AtlasPage: React.FC = () => {
       });
   }, [selectedKey, kinshipIndex]);
 
+  /* Holder chart (M5) — "held by a chart of…". Derived, non-identifying
+     fields only; the endpoint returns chart: null unless the steward opted
+     into Ring 3 and has a profile. Fetched per selected piece; cleared
+     between selections so one piece's chart never bleeds onto another. */
+  const [holderChart, setHolderChart] = useState<HolderChartSummary | null>(null);
+  useEffect(() => {
+    setHolderChart(null);
+    if (!selectedPiece || selectedPiece.status !== 'placed') return;
+    let active = true;
+    const params = new URLSearchParams({ pieceId: selectedPiece.pieceId });
+    if (typeof selectedPiece.editionNumber === 'number') {
+      params.set('editionNumber', String(selectedPiece.editionNumber));
+    }
+    fetch(`/api/atlas/holder-chart?${params.toString()}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { chart?: HolderChartSummary | null } | null) => {
+        if (active && data?.chart) setHolderChart(data.chart);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [selectedPiece]);
+
   /* ─── Render ─────────────────────────────────────────────────────────────── */
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
@@ -433,8 +476,18 @@ const AtlasPage: React.FC = () => {
           Atlas
         </h1>
         <p className="font-serif text-xl md:text-2xl text-wood-700 max-w-2xl leading-[1.6]">
-          Every piece, wherever it has come to rest. City-level only, never an address.
+          Adrian Rasmussen's body of work, across the world — every piece,
+          wherever it has come to rest. City-level only, never an address.
         </p>
+        {state.kind === 'ready' && totalCount > 0 && (
+          <p className="mt-5 font-label text-[11px] sm:text-xs uppercase tracking-[0.2em] text-bronze-700">
+            {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
+            <span aria-hidden className="mx-2 text-wood-400">
+              ·
+            </span>
+            {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
+          </p>
+        )}
       </div>
 
       {/* ── Body ──────────────────────────────────────────────────────────── */}
@@ -597,6 +650,7 @@ const AtlasPage: React.FC = () => {
                     piece={selectedPiece}
                     kin={kinForSelected}
                     onSelectKin={(key) => setSelectedKey(key)}
+                    holderChart={holderChart}
                   />
                 )}
               </div>
