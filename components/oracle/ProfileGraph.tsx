@@ -36,22 +36,18 @@ const R = 34;         // orb radius in viewBox units
 const ProfileGraph: React.FC<Props> = ({ profile }) => {
   const navigate = useNavigate();
   const [active, setActive] = useState<ProfileKey | null>(null);
+  // Which sequence the current hover targets. On a shared sphere, mousing
+  // over the left/right HALF picks that half's sequence; null falls back to
+  // the sphere's home sequence.
+  const [hoverSeq, setHoverSeq] = useState<ProfileSequence | null>(null);
 
   const pos = (k: ProfileKey) => {
     const m = POSITIONS_BY_KEY[k];
     return { x: m.x * VIEW, y: m.y * VIEW };
   };
 
-  // Hovering a sphere lights only ITS OWN sequence — the one emblem it
-  // belongs to — not every sequence whose lines happen to touch it. Each
-  // sphere has a single home sequence (its `sequence` field).
-  const activeSequence: ProfileSequence | null = active
-    ? POSITIONS_BY_KEY[active].sequence
-    : null;
-  const seqActive = (seq: ProfileSequence) => activeSequence === seq;
-
   // Every sequence whose lines touch a sphere. A shared "hinge" sphere
-  // (Purpose, SQ, Life's Work) returns two — its orb is drawn half-and-half.
+  // (Life's Work, Vocation, Radiance) returns two — its orb is half-and-half.
   const SEQ_ORDER: ProfileSequence[] = ['activation', 'venus', 'pearl'];
   const sequencesOf = (k: ProfileKey): ProfileSequence[] => {
     const set = new Set<ProfileSequence>([POSITIONS_BY_KEY[k].sequence]);
@@ -60,6 +56,15 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
     }
     return SEQ_ORDER.filter((s) => set.has(s));
   };
+
+  // The lit sequence: the half the cursor is over (hoverSeq) if set,
+  // otherwise the active sphere's home sequence.
+  const activeSequence: ProfileSequence | null = hoverSeq
+    ? hoverSeq
+    : active
+    ? POSITIONS_BY_KEY[active].sequence
+    : null;
+  const seqActive = (seq: ProfileSequence) => activeSequence === seq;
 
   const go = (k: ProfileKey) => navigate(`/universal-language/${profile[k].gate}`);
 
@@ -191,9 +196,9 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                   role="button"
                   aria-label={`${meta.label}, gate ${gl.gate} line ${gl.line}, ${card?.card_name ?? ''}`}
                   onMouseEnter={() => setActive(meta.key)}
-                  onMouseLeave={() => setActive((c) => (c === meta.key ? null : c))}
+                  onMouseLeave={() => { setActive((c) => (c === meta.key ? null : c)); setHoverSeq(null); }}
                   onFocus={() => setActive(meta.key)}
-                  onBlur={() => setActive((c) => (c === meta.key ? null : c))}
+                  onBlur={() => { setActive((c) => (c === meta.key ? null : c)); setHoverSeq(null); }}
                   onClick={() => go(meta.key)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(meta.key); }
@@ -202,6 +207,20 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                   <circle r={R + 4} className="profile-graph__ring" />
                   <circle r={R} fill={orbFill} className="profile-graph__circle" />
                   <text className="profile-graph__gate" y={5}>{gl.gate}.{gl.line}</text>
+                  {/* Shared sphere: left/right half-zones light the matching
+                      sequence on hover. Transparent, sit on top of the orb. */}
+                  {seqs.length >= 2 && (
+                    <>
+                      <rect
+                        x={-R} y={-R} width={R} height={2 * R} fill="transparent"
+                        onMouseEnter={() => setHoverSeq(seqs[0])}
+                      />
+                      <rect
+                        x={0} y={-R} width={R} height={2 * R} fill="transparent"
+                        onMouseEnter={() => setHoverSeq(seqs[1])}
+                      />
+                    </>
+                  )}
                 </g>
               </g>
             );
@@ -217,7 +236,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             const card = gl ? CARD_BY_NUMBER.get(gl.gate) : undefined;
             return (
               <>
-                <div className="profile-graph__panel-seq">{SEQUENCE_LABEL[meta.sequence]}</div>
+                <div className="profile-graph__panel-seq">{SEQUENCE_LABEL[activeSequence ?? meta.sequence]}</div>
                 <div className="profile-graph__panel-head">
                   <span className="profile-graph__panel-name">{meta.label}</span>
                   {gl && <span className="profile-graph__panel-gate">{gl.gate}.{gl.line}</span>}
