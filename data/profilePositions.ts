@@ -74,13 +74,13 @@ export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
     key: 'iq', sequence: 'venus', label: 'IQ',
     planet: 'venus', side: 'persona', body: '',
     role: 'How your mind moves, the shape of your thinking.',
-    x: 0.40, y: 0.55, labelSide: 'left',
+    x: 0.37, y: 0.56, labelSide: 'left',
   },
   {
     key: 'eq', sequence: 'venus', label: 'EQ',
     planet: 'mars', side: 'persona', body: '',
     role: 'How you meet feeling, your way through what is felt and unsaid.',
-    x: 0.58, y: 0.55, labelSide: 'right',
+    x: 0.63, y: 0.56, labelSide: 'right',
   },
   {
     key: 'sq', sequence: 'venus', label: 'SQ',
@@ -93,13 +93,13 @@ export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
     key: 'core', sequence: 'pearl', label: 'Vocation',
     planet: 'mars', side: 'design', body: '',
     role: 'The work that carries you, where your gifts meet the world.',
-    x: 0.40, y: 0.38, labelSide: 'left',
+    x: 0.37, y: 0.38, labelSide: 'left',
   },
   {
     key: 'culture', sequence: 'pearl', label: 'Culture',
     planet: 'jupiter', side: 'design', body: '',
     role: 'The field you came from, the inheritance you are reweaving.',
-    x: 0.60, y: 0.38, labelSide: 'right',
+    x: 0.63, y: 0.38, labelSide: 'right',
   },
   {
     key: 'pearl', sequence: 'pearl', label: 'Pearl',
