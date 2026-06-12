@@ -213,20 +213,35 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
           })}
         </svg>
 
-        {/* Caption: the reached sphere's plain-voice role, so the desktop
-            mandala explains each position the way the mobile list does. A
-            non-breaking-space placeholder holds the height so the layout does
-            not jump as spheres are reached. */}
-        <p className="profile-graph__caption" aria-live="polite">
-          {active ? (
-            <>
-              <span className="profile-graph__caption-name">{POSITIONS_BY_KEY[active].label}.</span>{' '}
-              {POSITIONS_BY_KEY[active].role}
-            </>
-          ) : (
-            <span className="profile-graph__caption-hint">Hover or focus a sphere to read its place in you.</span>
+        {/* Side reading panel: the reached sphere's full detail. Sits beside
+            the chart on desktop, below it on mobile. */}
+        <aside className="profile-graph__panel" aria-live="polite">
+          {active ? (() => {
+            const meta = POSITIONS_BY_KEY[active];
+            const gl = profile[active];
+            const card = gl ? CARD_BY_NUMBER.get(gl.gate) : undefined;
+            return (
+              <>
+                <div className="profile-graph__panel-seq">{SEQUENCE_LABEL[meta.sequence]}</div>
+                <div className="profile-graph__panel-head">
+                  <span className="profile-graph__panel-name">{meta.label}</span>
+                  {gl && <span className="profile-graph__panel-gate">{gl.gate}.{gl.line}</span>}
+                </div>
+                {card && <div className="profile-graph__panel-art">{card.card_name}</div>}
+                {card?.gene_keys?.gift && (
+                  <div className="profile-graph__panel-triad">
+                    <span className="profile-graph__gk profile-graph__gk--siddhi">{card.gene_keys.siddhi}</span>
+                    <span className="profile-graph__gk profile-graph__gk--gift">{card.gene_keys.gift}</span>
+                    <span className="profile-graph__gk profile-graph__gk--shadow">{card.gene_keys.shadow}</span>
+                  </div>
+                )}
+                <p className="profile-graph__panel-role">{meta.role}</p>
+              </>
+            );
+          })() : (
+            <span className="profile-graph__panel-hint">Hover or focus a sphere to read its place in you.</span>
           )}
-        </p>
+        </aside>
       </div>
 
       {/* ── Grouped list (narrow) ────────────────────────────────────── */}
@@ -366,29 +381,45 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .profile-graph__list-view .profile-graph__triad { margin-top: 8px; font-size: 11px; gap: 6px; }
         .profile-graph__role { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; color: var(--color-wood-700); margin: 8px 0 0; }
 
-        /* ── caption (mandala only) ── */
-        .profile-graph__caption { display: none; }
-        .profile-graph__caption-name { color: var(--color-wood-900); }
-        .profile-graph__caption-hint { color: var(--color-wood-600); font-style: normal; }
+        /* ── side reading panel ── */
+        .profile-graph__panel { display: none; }
+        .profile-graph__panel-seq {
+          font-family: Cinzel, Palatino, serif; font-size: 10px; letter-spacing: 0.3em;
+          text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 10px;
+        }
+        .profile-graph__panel-head { display: flex; align-items: baseline; gap: 12px; }
+        .profile-graph__panel-name { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--color-wood-900); }
+        .profile-graph__panel-gate { font-family: 'Lato', Helvetica, sans-serif; font-size: 13px; letter-spacing: 0.18em; color: var(--color-bronze-600); }
+        .profile-graph__panel-art { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; color: var(--color-wood-700); margin-top: 4px; }
+        .profile-graph__panel-triad { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-family: 'Lato', Helvetica, sans-serif; font-size: 12px; letter-spacing: 0.04em; }
+        .profile-graph__panel-role { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-style: italic; line-height: 1.5; color: var(--color-wood-700); margin: 16px 0 0; }
+        .profile-graph__panel-hint { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; color: var(--color-wood-600); }
 
-        /* Mandala on wide screens, grouped list on narrow. Placed last so
-           it wins on source order over the base display declarations. */
-        @media (min-width: 760px) {
-          .profile-graph__mandala { display: block; max-width: 760px; margin: 0 auto; }
-          .profile-graph__list-view { display: none; }
-          .profile-graph__caption {
-            display: block;
-            text-align: center;
-            min-height: 2.6em;
-            max-width: 520px;
-            margin: 8px auto 0;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 16px;
-            font-style: italic;
-            line-height: 1.45;
-            color: var(--color-wood-700);
-            transition: color 0.25s;
+        /* Mandala (chart + side panel) on wide screens, grouped list on narrow.
+           Placed last so it wins on source order. */
+        @media (min-width: 880px) {
+          .profile-graph__mandala {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            align-items: center;
+            gap: 40px;
+            max-width: 1080px;
+            margin: 0 auto;
           }
+          .profile-graph__list-view { display: none; }
+          .profile-graph__panel {
+            display: block;
+            align-self: center;
+            border-left: 1px solid color-mix(in oklab, var(--color-wood-600) 16%, transparent);
+            padding-left: 28px;
+            min-height: 200px;
+          }
+        }
+        /* Tablet (760-880px): chart only, panel becomes a line below it. */
+        @media (min-width: 760px) and (max-width: 879px) {
+          .profile-graph__mandala { display: block; max-width: 720px; margin: 0 auto; }
+          .profile-graph__list-view { display: none; }
+          .profile-graph__panel { display: block; text-align: center; max-width: 560px; margin: 12px auto 0; min-height: 4em; }
         }
 
         @media (prefers-reduced-motion: reduce) {
