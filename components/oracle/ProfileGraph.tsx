@@ -50,6 +50,17 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
     : null;
   const seqActive = (seq: ProfileSequence) => activeSequence === seq;
 
+  // Every sequence whose lines touch a sphere. A shared "hinge" sphere
+  // (Purpose, SQ, Life's Work) returns two — its orb is drawn half-and-half.
+  const SEQ_ORDER: ProfileSequence[] = ['activation', 'venus', 'pearl'];
+  const sequencesOf = (k: ProfileKey): ProfileSequence[] => {
+    const set = new Set<ProfileSequence>([POSITIONS_BY_KEY[k].sequence]);
+    for (const ch of PROFILE_CHANNELS) {
+      if (ch.from === k || ch.to === k) set.add(ch.sequence);
+    }
+    return SEQ_ORDER.filter((s) => set.has(s));
+  };
+
   const go = (k: ProfileKey) => navigate(`/universal-language/${profile[k].gate}`);
 
   return (
@@ -67,6 +78,20 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                 <stop offset="0%" stopColor={SEQUENCE_COLOR[seq].core} />
                 <stop offset="100%" stopColor={SEQUENCE_COLOR[seq].edge} />
               </radialGradient>
+            ))}
+            {/* Split fills for the shared "hinge" spheres: left half one
+                sequence's colour, right half the other, with a hard edge. */}
+            {([
+              ['activation', 'venus'],
+              ['activation', 'pearl'],
+              ['venus', 'pearl'],
+            ] as const).map(([a, b]) => (
+              <linearGradient key={`${a}-${b}`} id={`split-${a}-${b}`} x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor={SEQUENCE_COLOR[a].core} />
+                <stop offset="50%" stopColor={SEQUENCE_COLOR[a].edge} />
+                <stop offset="50%" stopColor={SEQUENCE_COLOR[b].edge} />
+                <stop offset="100%" stopColor={SEQUENCE_COLOR[b].core} />
+              </linearGradient>
             ))}
             {(['activation', 'venus', 'pearl'] as const).map((seq) => (
               <marker
@@ -132,6 +157,11 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             const p = pos(meta.key);
             const isActive = active === meta.key;
             const inSequence = activeSequence === meta.sequence;
+            // Shared spheres (in two sequences) get a half-and-half fill.
+            const seqs = sequencesOf(meta.key);
+            const orbFill = seqs.length >= 2
+              ? `url(#split-${seqs[0]}-${seqs[1]})`
+              : `url(#orb-${meta.sequence})`;
 
             // Label box placement relative to the orb.
             const W = 170, H = 64, pad = R + 10;
@@ -175,7 +205,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                   }}
                 >
                   <circle r={R + 4} className="profile-graph__ring" />
-                  <circle r={R} fill={`url(#orb-${meta.sequence})`} className="profile-graph__circle" />
+                  <circle r={R} fill={orbFill} className="profile-graph__circle" />
                   <text className="profile-graph__gate" y={5}>{gl.gate}.{gl.line}</text>
                 </g>
               </g>
@@ -296,17 +326,21 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .profile-graph__label.is-left   { align-items: flex-start; text-align: left; }
         .profile-graph__label.is-right  { align-items: flex-end;   text-align: right; }
         .profile-graph__label.is-center { align-items: center;     text-align: center; }
+        /* A soft pill behind each label so the text stays legible over orbs
+           and lines, in both light and dark mode. */
         .profile-graph__name {
-          font-family: 'Cormorant Garamond', serif; font-size: 17px; line-height: 1.1;
+          font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; line-height: 1.1;
           color: var(--color-wood-900);
+          background: color-mix(in oklab, var(--color-paper-50) 82%, transparent);
+          padding: 1px 6px; border-radius: 4px;
         }
         .profile-graph__node.is-active .profile-graph__name { color: var(--color-bronze-700, var(--color-bronze-600)); }
         .profile-graph__triad {
-          display: flex; flex-wrap: wrap; gap: 5px;
-          font-family: 'Lato', Helvetica, sans-serif; font-size: 9.5px; letter-spacing: 0.04em; line-height: 1.3;
-          /* Calm by default: the triad is a whisper until its sphere is
-             reached, so the busy centre stays readable. Names stay solid. */
-          opacity: 0.42;
+          display: inline-flex; flex-wrap: wrap; gap: 5px;
+          font-family: 'Lato', Helvetica, sans-serif; font-size: 10px; letter-spacing: 0.04em; line-height: 1.35;
+          background: color-mix(in oklab, var(--color-paper-50) 78%, transparent);
+          padding: 1px 6px; border-radius: 4px;
+          opacity: 0.72;
           transition: opacity 0.25s;
         }
         .profile-graph__node.in-sequence .profile-graph__triad { opacity: 1; }
