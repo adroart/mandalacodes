@@ -44,7 +44,7 @@ const OracleProfile: React.FC = () => {
   const showForm = editing || !profile;
 
   return (
-    <main className="min-h-screen pb-24 px-6 max-w-3xl mx-auto pt-[calc(var(--nav-height)+3rem)] sm:pt-[calc(var(--nav-height)+4rem)]">
+    <main className="min-h-screen pb-24 px-6 max-w-6xl mx-auto pt-[calc(var(--nav-height)+3rem)] sm:pt-[calc(var(--nav-height)+4rem)]">
       <header className="mb-10">
         <p
           style={{
