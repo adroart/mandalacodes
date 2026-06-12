@@ -402,8 +402,8 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             display: grid;
             grid-template-columns: minmax(0, 1fr) 300px;
             align-items: center;
-            gap: 40px;
-            max-width: 1080px;
+            gap: 48px;
+            max-width: 1400px;
             margin: 0 auto;
           }
           .profile-graph__list-view { display: none; }
