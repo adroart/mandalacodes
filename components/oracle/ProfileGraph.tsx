@@ -414,10 +414,10 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         @media (min-width: 880px) {
           .profile-graph__mandala {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 300px;
+            grid-template-columns: minmax(0, 1fr) 280px;
             align-items: center;
-            gap: 48px;
-            max-width: 1400px;
+            gap: 56px;
+            max-width: 1560px;
             margin: 0 auto;
           }
           .profile-graph__list-view { display: none; }
