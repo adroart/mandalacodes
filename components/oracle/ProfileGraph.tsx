@@ -31,7 +31,7 @@ const SEQUENCE_COLOR: Record<ProfileSequence, { core: string; edge: string }> = 
 };
 
 const VIEW = 720;     // square viewBox
-const R = 30;         // orb radius in viewBox units
+const R = 34;         // orb radius in viewBox units
 
 const ProfileGraph: React.FC<Props> = ({ profile }) => {
   const navigate = useNavigate();
@@ -163,8 +163,9 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
               ? `url(#split-${seqs[0]}-${seqs[1]})`
               : `url(#orb-${meta.sequence})`;
 
-            // Label box placement relative to the orb.
-            const W = 170, H = 64, pad = R + 10;
+            // Label box placement relative to the orb. Generous pad so the
+            // name never sits on top of a sphere.
+            const W = 150, H = 30, pad = R + 16;
             let lx = p.x - W / 2, ly = p.y - H / 2;
             let alignClass = 'is-center';
             if (meta.labelSide === 'left')   { lx = p.x - pad - W; alignClass = 'is-right'; }
@@ -174,17 +175,11 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
 
             return (
               <g key={meta.key} className={`profile-graph__node${isActive ? ' is-active' : ''}${inSequence ? ' in-sequence' : ''}`}>
-                {/* label outside the orb */}
+                {/* On-chart label: just the position name. The Gene Keys
+                    triad now lives in the side panel so the chart stays clean. */}
                 <foreignObject x={lx} y={ly} width={W} height={H} className="profile-graph__label-fo">
                   <div className={`profile-graph__label ${alignClass}`}>
                     <div className="profile-graph__name">{meta.label}</div>
-                    {card?.gene_keys?.gift && (
-                      <div className="profile-graph__triad">
-                        <span className="profile-graph__gk profile-graph__gk--siddhi">{card.gene_keys.siddhi}</span>
-                        <span className="profile-graph__gk profile-graph__gk--gift">{card.gene_keys.gift}</span>
-                        <span className="profile-graph__gk profile-graph__gk--shadow">{card.gene_keys.shadow}</span>
-                      </div>
-                    )}
                   </div>
                 </foreignObject>
 
@@ -239,7 +234,18 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
               </>
             );
           })() : (
-            <span className="profile-graph__panel-hint">Hover or focus a sphere to read its place in you.</span>
+            <div className="profile-graph__legend">
+              <div className="profile-graph__legend-title">The Golden Path</div>
+              <ul className="profile-graph__legend-list">
+                <li><span className="profile-graph__swatch" style={{ background: SEQUENCE_COLOR.activation.core }} /> Activation — your genius</li>
+                <li><span className="profile-graph__swatch" style={{ background: SEQUENCE_COLOR.venus.core }} /> Venus — your heart</li>
+                <li><span className="profile-graph__swatch" style={{ background: SEQUENCE_COLOR.pearl.core }} /> Pearl — your prosperity</li>
+                <li>
+                  <span className="profile-graph__swatch profile-graph__swatch--split" /> a half sphere belongs to two sequences
+                </li>
+              </ul>
+              <p className="profile-graph__legend-hint">Hover or tap a sphere to read its place in you.</p>
+            </div>
           )}
         </aside>
       </div>
@@ -344,10 +350,12 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         /* A soft pill behind each label so the text stays legible over orbs
            and lines, in both light and dark mode. */
         .profile-graph__name {
-          font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; line-height: 1.1;
+          display: inline-block;
+          font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; line-height: 1.15;
           color: var(--color-wood-900);
-          background: color-mix(in oklab, var(--color-paper-50) 82%, transparent);
-          padding: 1px 6px; border-radius: 4px;
+          background: color-mix(in oklab, var(--color-paper-50) 88%, transparent);
+          padding: 2px 9px; border-radius: 5px;
+          white-space: nowrap;
         }
         .profile-graph__node.is-active .profile-graph__name { color: var(--color-bronze-700, var(--color-bronze-600)); }
         .profile-graph__triad {
@@ -394,6 +402,12 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .profile-graph__panel-triad { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-family: 'Lato', Helvetica, sans-serif; font-size: 12px; letter-spacing: 0.04em; }
         .profile-graph__panel-role { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-style: italic; line-height: 1.5; color: var(--color-wood-700); margin: 16px 0 0; }
         .profile-graph__panel-hint { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; color: var(--color-wood-600); }
+        .profile-graph__legend-title { font-family: Cinzel, Palatino, serif; font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 18px; }
+        .profile-graph__legend-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+        .profile-graph__legend-list li { display: flex; align-items: center; gap: 10px; font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--color-wood-800); line-height: 1.3; }
+        .profile-graph__swatch { width: 16px; height: 16px; border-radius: 50%; flex: none; }
+        .profile-graph__swatch--split { background: linear-gradient(90deg, #3f8f4e 0 50%, #3f7fb5 50% 100%); }
+        .profile-graph__legend-hint { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: var(--color-wood-600); margin: 20px 0 0; }
 
         /* Mandala (chart + side panel) on wide screens, grouped list on narrow.
            Placed last so it wins on source order. */
