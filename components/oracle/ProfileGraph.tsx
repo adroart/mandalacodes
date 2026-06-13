@@ -31,7 +31,7 @@ const SEQUENCE_COLOR: Record<ProfileSequence, { core: string; edge: string }> = 
 };
 
 const VIEW = 720;     // square viewBox
-const R = 26;         // orb radius in viewBox units
+const R = 30;         // orb radius in viewBox units (~60px rendered)
 
 const ProfileGraph: React.FC<Props> = ({ profile }) => {
   const navigate = useNavigate();
