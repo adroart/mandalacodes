@@ -31,7 +31,10 @@ const SEQUENCE_COLOR: Record<ProfileSequence, { core: string; edge: string }> = 
 };
 
 const VIEW = 720;     // square viewBox
-const R = 30;         // orb radius in viewBox units (~60px rendered)
+// The viewBox is padded out around the 0..1 positions (see the svg below)
+// so the same sphere positions spread over more canvas — more space between
+// orbs, identical shape — while R keeps the orbs their usual pixel size.
+const R = 28;         // orb radius in viewBox units (~60px rendered)
 
 const ProfileGraph: React.FC<Props> = ({ profile }) => {
   const navigate = useNavigate();
@@ -421,10 +424,10 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         @media (min-width: 880px) {
           .profile-graph__mandala {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 280px;
+            grid-template-columns: minmax(0, 1fr) 240px;
             align-items: center;
-            gap: 56px;
-            max-width: 1560px;
+            gap: 36px;
+            max-width: 1600px;
             margin: 0 auto;
           }
           .profile-graph__list-view { display: none; }
