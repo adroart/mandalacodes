@@ -127,29 +127,14 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
               const y1 = pa.y + uy * (R + 2);
               const x2 = pb.x - ux * (R + 9);
               const y2 = pb.y - uy * (R + 9);
-              // Offset the pathway label perpendicular to the line so it
-              // sits beside the channel, clear of the orbs and other labels.
-              const nx = -uy, ny = ux;
-              const mx = (x1 + x2) / 2 + nx * 14;
-              const my = (y1 + y2) / 2 + ny * 14;
               return (
-                <g key={i}>
-                  <line
-                    x1={x1} y1={y1} x2={x2} y2={y2}
-                    stroke={SEQUENCE_COLOR[ch.sequence].edge}
-                    markerEnd={`url(#arrow-${ch.sequence})`}
-                    className={`profile-graph__channel${lit ? ' is-lit' : ''}`}
-                  />
-                  {(ch.from === active || ch.to === active) && (
-                    <text
-                      x={mx} y={my}
-                      className="profile-graph__pathway"
-                      fill={SEQUENCE_COLOR[ch.sequence].edge}
-                    >
-                      {ch.pathway}
-                    </text>
-                  )}
-                </g>
+                <line
+                  key={i}
+                  x1={x1} y1={y1} x2={x2} y2={y2}
+                  stroke={SEQUENCE_COLOR[ch.sequence].edge}
+                  markerEnd={`url(#arrow-${ch.sequence})`}
+                  className={`profile-graph__channel${lit ? ' is-lit' : ''}`}
+                />
               );
             })}
           </g>
@@ -161,9 +146,12 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             const card = CARD_BY_NUMBER.get(gl.gate);
             const p = pos(meta.key);
             const isActive = active === meta.key;
-            const inSequence = activeSequence === meta.sequence;
             // Shared spheres (in two sequences) get a half-and-half fill.
             const seqs = sequencesOf(meta.key);
+            // A sphere lights when the active sequence is one its channels
+            // belong to — so the WHOLE path lights, including the destination
+            // (e.g. Life's Work when the Pearl sequence is active).
+            const inSequence = activeSequence != null && seqs.includes(activeSequence);
             const orbFill = seqs.length >= 2
               ? `url(#split-${seqs[0]}-${seqs[1]})`
               : `url(#orb-${meta.sequence})`;
@@ -334,7 +322,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .profile-graph__node { transition: opacity 0.25s; }
         /* Whole-sequence highlight: spheres in the active sequence stay full,
            everything else recedes. */
-        .profile-graph__mandala.has-active .profile-graph__node:not(.in-sequence) { opacity: 0.55; }
+        .profile-graph__mandala.has-active .profile-graph__node:not(.in-sequence) { opacity: 0.72; }
         .profile-graph__ring {
           fill: none;
           stroke: color-mix(in oklab, var(--color-wood-600) 22%, transparent);
@@ -351,7 +339,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .profile-graph__node.is-active .profile-graph__circle {
           filter: drop-shadow(0 0 14px color-mix(in oklab, var(--color-bronze-400) 80%, transparent));
         }
-        .profile-graph__node.in-sequence .profile-graph__ring { stroke: var(--color-bronze-500); }
+        .profile-graph__node.is-active .profile-graph__ring { stroke: var(--color-bronze-500); }
         .profile-graph__orb:focus-visible .profile-graph__ring { stroke: var(--color-bronze-400); stroke-width: 2.5; }
         .profile-graph__gate {
           fill: var(--color-paper-50);
