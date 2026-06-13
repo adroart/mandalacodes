@@ -45,8 +45,10 @@
   <body class="bg-[#262321]">
     <script>
       (function() {
-        var stored = localStorage.getItem('dark-mode');
-        if (stored === 'true' || (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        // Default to dark (matches DarkModeProvider). Only light when the
+        // visitor has explicitly chosen it — applied before first paint so
+        // there is no dark->light->dark flash on navigation.
+        if (localStorage.getItem('dark-mode') !== 'false') {
           document.documentElement.classList.add('dark');
         }
       })();
