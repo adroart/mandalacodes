@@ -105,16 +105,28 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
               </linearGradient>
             ))}
             {(['activation', 'venus', 'pearl'] as const).map((seq) => (
-              <marker
-                key={seq}
-                id={`arrow-${seq}`}
-                viewBox="0 0 10 10"
-                refX="9" refY="5"
-                markerWidth="7" markerHeight="7"
-                orient="auto-start-reverse"
-              >
-                <path d="M0,0 L10,5 L0,10 z" fill={SEQUENCE_COLOR[seq].edge} />
-              </marker>
+              <React.Fragment key={seq}>
+                {/* Equilateral arrowhead (base 10, height 10*sqrt3/2 = 8.66).
+                    Fixed pixel size via userSpaceOnUse so it does not balloon
+                    when the line thickens on hover. The "-lit" variant is only
+                    slightly larger, so an active arrow grows just a little. */}
+                <marker
+                  id={`arrow-${seq}`}
+                  viewBox="0 0 8.66 10" refX="8" refY="5"
+                  markerWidth="11" markerHeight="11"
+                  markerUnits="userSpaceOnUse" orient="auto-start-reverse"
+                >
+                  <path d="M0,0 L8.66,5 L0,10 z" fill={SEQUENCE_COLOR[seq].edge} />
+                </marker>
+                <marker
+                  id={`arrow-${seq}-lit`}
+                  viewBox="0 0 8.66 10" refX="8" refY="5"
+                  markerWidth="14" markerHeight="14"
+                  markerUnits="userSpaceOnUse" orient="auto-start-reverse"
+                >
+                  <path d="M0,0 L8.66,5 L0,10 z" fill={SEQUENCE_COLOR[seq].edge} />
+                </marker>
+              </React.Fragment>
             ))}
           </defs>
 
@@ -138,7 +150,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                   key={i}
                   x1={x1} y1={y1} x2={x2} y2={y2}
                   stroke={SEQUENCE_COLOR[ch.sequence].edge}
-                  markerEnd={`url(#arrow-${ch.sequence})`}
+                  markerEnd={`url(#arrow-${ch.sequence}${lit ? '-lit' : ''})`}
                   className={`profile-graph__channel${lit ? ' is-lit' : ''}`}
                 />
               );
