@@ -34,7 +34,7 @@ const VIEW = 720;     // square viewBox
 // The viewBox is padded out around the 0..1 positions (see the svg below)
 // so the same sphere positions spread over more canvas — more space between
 // orbs, identical shape — while R keeps the orbs their usual pixel size.
-const R = 28;         // orb radius in viewBox units (~60px rendered)
+const R = 22;         // orb radius in viewBox units (20% smaller than 28)
 
 const ProfileGraph: React.FC<Props> = ({ profile }) => {
   const navigate = useNavigate();
