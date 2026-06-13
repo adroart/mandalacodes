@@ -67,7 +67,11 @@ html {
   text-rendering: optimizeLegibility;
   font-kerning: normal;
   font-variant-numeric: lining-nums;
+  /* Default the document background to dark so there is never a white frame
+     before body/React paint. Light mode opts back out below. */
+  background-color: #171310;
 }
+html:not(.dark) { background-color: #f5f4f0; }
 
 /* Smooth scroll globally — respects reduced-motion preference */
 @media (prefers-reduced-motion: no-preference) {
