@@ -79,7 +79,10 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         role="group"
         aria-label="Hologenetic profile mandala"
       >
-        <svg viewBox={`-150 -20 ${VIEW + 300} ${VIEW + 40}`} className="profile-graph__svg">
+        {/* viewBox is tightened to the constellation + its outside labels, so
+            the whole shape scales up to fill the chart frame instead of
+            floating as a small island in a large padded canvas. */}
+        <svg viewBox={`-70 8 860 660`} className="profile-graph__svg" preserveAspectRatio="xMidYMid meet">
           <defs>
             {(['activation', 'venus', 'pearl'] as const).map((seq) => (
               <radialGradient key={seq} id={`orb-${seq}`} cx="38%" cy="32%" r="75%">
