@@ -18,6 +18,7 @@ import type {
   AtlasLetter,
   ClaimRequest,
   LedgerEvent,
+  PieceEditorial,
   StewardRecord,
   PublicAtlasState,
 } from '../../../types';
@@ -35,6 +36,10 @@ export const KEY_STEWARDS = 'atlas/stewards.json';
 export const KEY_PUBLIC = 'atlas/public.json';
 export const KEY_CLAIM_REQUESTS = 'atlas/claimRequests.json';
 export const KEY_LETTERS = 'atlas/letters.json';
+/** The artist-written editorial layer: a map of pieceId → PieceEditorial.
+ *  Mutable prose + photo gallery, never part of the hashed chain. Stored as a
+ *  single JSON object (not an array) keyed by pieceId for O(1) read/write. */
+export const KEY_EDITORIAL = 'atlas/editorial.json';
 
 // ---------- Env typing ----------
 
@@ -169,6 +174,61 @@ export async function readClaimRequests(env: AtlasEnv): Promise<ClaimRequest[]> 
 
 export async function readLetters(env: AtlasEnv): Promise<AtlasLetter[]> {
   return readJsonArray<AtlasLetter>(env, KEY_LETTERS);
+}
+
+/** The full editorial map (pieceId → PieceEditorial). Empty object when the
+ *  store doesn't exist yet — every piece simply has no written book. */
+export async function readEditorial(
+  env: AtlasEnv,
+): Promise<Record<string, PieceEditorial>> {
+  const obj = await readJsonObject<Record<string, PieceEditorial>>(
+    env,
+    KEY_EDITORIAL,
+  );
+  return obj ?? {};
+}
+
+/**
+ * Concurrency-safe write of one piece's editorial record. Reads the whole map
+ * (capturing its etag), applies the change, writes back conditionally so two
+ * admin saves landing together can never clobber each other — same pattern as
+ * mutateJsonArray, but the store is an object keyed by pieceId. Returns the
+ * saved record on success, or an error Response.
+ */
+export async function writeEditorial(
+  env: AtlasEnv,
+  pieceId: string,
+  next: PieceEditorial,
+): Promise<PieceEditorial | Response> {
+  for (let attempt = 0; attempt < MAX_MUTATE_ATTEMPTS; attempt++) {
+    const obj = await env.ATLAS_BUCKET.get(KEY_EDITORIAL);
+    let map: Record<string, PieceEditorial> = {};
+    if (obj) {
+      try {
+        const parsed = JSON.parse(await obj.text());
+        if (parsed && typeof parsed === 'object') {
+          map = parsed as Record<string, PieceEditorial>;
+        }
+      } catch {
+        map = {};
+      }
+    }
+    map[pieceId] = next;
+    const onlyIf: R2Conditional = obj
+      ? { etagMatches: obj.etag }
+      : { etagDoesNotMatch: '*' };
+    const put = await env.ATLAS_BUCKET.put(
+      KEY_EDITORIAL,
+      JSON.stringify(map, null, 2),
+      { httpMetadata: { contentType: 'application/json' }, onlyIf },
+    );
+    if (put !== null) return next;
+    // Precondition failed — another writer got in first. Re-read and re-apply.
+  }
+  return json(
+    { ok: false, error: 'Concurrent write conflict — please retry' },
+    503,
+  );
 }
 
 // NOTE: there are deliberately no bare writeLedger/writeStewards helpers.

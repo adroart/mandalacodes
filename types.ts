@@ -209,6 +209,39 @@ export interface PublicAtlasState {
   chainTips?: Record<string, string>;
 }
 
+/* ─── Editorial content (the piece's written book) ─────────────────────────
+ * The narrative layer the artist writes per piece, stored apart from both the
+ * static archive (data/mockData.ts — title, dimensions, cover image) and the
+ * append-only ledger (placement events). One record per pieceId, edited from
+ * the admin screen and read by the public piece page. Everything here is
+ * mutable prose + a photo gallery; it never enters the hashed chain.
+ *
+ * The gallery holds Cloudinary public ids — the same identifiers every archive
+ * image already uses — so adding a photo is "paste the id", consistent with
+ * the rest of the site. (Collector-contributed photos with a real upload
+ * widget are a planned follow-up, see TODO.)
+ *
+ * Keyed by pieceId only (not edition) — the written book belongs to the work,
+ * not a single numbered copy.
+ */
+export interface PieceEditorial {
+  pieceId: string;
+  /** The long, free-form story of the piece, in the artist's voice. Newlines
+   *  are honored (rendered with paragraph breaks). */
+  story?: string;
+  /** Extra photos beyond the archive cover image: Cloudinary public ids. The
+   *  cover image still comes from the archive and always leads the gallery. */
+  gallery?: string[];
+  /** Materials / making notes, shown more prominently than the inline archive
+   *  `material` string when present. */
+  materials?: string;
+  /** Provenance: the piece's making + history as the artist wishes to tell it
+   *  publicly (distinct from the placement spine derived from the ledger). */
+  provenance?: string;
+  /** Last-edited timestamp (ISO), set server-side on every save. */
+  updatedAt?: string;
+}
+
 /* ─── Ledger (private) ─────────────────────────────────────────────────────
  * Append-only event log + steward records that back the public projection.
  * These never leave the Cloudflare Functions side except via the public
