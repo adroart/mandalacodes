@@ -106,6 +106,26 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           >
             ← Admin
           </Link>
+          <Link
+            to="/admin/atlas"
+            className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors font-semibold ${
+              location.pathname === '/admin/atlas'
+                ? 'text-wood-900'
+                : 'text-wood-400 hover:text-wood-700'
+            }`}
+          >
+            Atlas
+          </Link>
+          <Link
+            to="/admin/pieces"
+            className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors font-semibold ${
+              location.pathname === '/admin/pieces'
+                ? 'text-wood-900'
+                : 'text-wood-400 hover:text-wood-700'
+            }`}
+          >
+            Pieces
+          </Link>
           <span className="text-wood-200">|</span>
           <span className="font-sans text-xs text-wood-400">
             {user?.primaryEmailAddress?.emailAddress}
