@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { SignedIn } from '@clerk/clerk-react';
 import { useDarkMode } from '../DarkModeContext';
+import { useAccount } from '../lib/account/useAccount';
 import AuthButton from './account/AuthButton';
 
 interface NavItem {
@@ -36,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
  * gap. The nav owns that variable.
  */
 const Navigation: React.FC = () => {
+  const { isSignedIn } = useAccount();
   const location = useLocation();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -163,11 +164,7 @@ const Navigation: React.FC = () => {
                 </Link>
               </React.Fragment>
             );
-            return item.signedInOnly ? (
-              <SignedIn key={item.path}>{link}</SignedIn>
-            ) : (
-              link
-            );
+            return item.signedInOnly ? (isSignedIn ? <React.Fragment key={item.path}>{link}</React.Fragment> : null) : link;
           })}
         </div>
 
@@ -216,11 +213,7 @@ const Navigation: React.FC = () => {
                 {item.label}
               </button>
             );
-            return item.signedInOnly ? (
-              <SignedIn key={item.path}>{button}</SignedIn>
-            ) : (
-              button
-            );
+            return item.signedInOnly ? (isSignedIn ? <React.Fragment key={item.path}>{button}</React.Fragment> : null) : button;
           })}
         </div>
       )}

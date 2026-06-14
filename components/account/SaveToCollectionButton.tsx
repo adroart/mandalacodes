@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react';
 import { useCollections, type CollectionItemKind } from '../../lib/collections/context';
 import { useAccount } from '../../lib/account/useAccount';
+import SignInTrigger from './SignInTrigger';
 
 interface Props {
   kind: CollectionItemKind;
@@ -24,6 +24,18 @@ const SaveToCollectionButton: React.FC<Props> = ({ kind, itemRef, label = 'Save 
 
   if (!account.available) return null;
 
+  // Signed out: a single button that opens the sign-in modal.
+  if (!account.isSignedIn) {
+    return (
+      <div className="stc">
+        <SignInTrigger>
+          <button type="button" className="stc__btn">{label}</button>
+        </SignInTrigger>
+        <style>{stcStyles}</style>
+      </div>
+    );
+  }
+
   const handleAdd = async (collectionId: number) => {
     await addItem(collectionId, { kind, ref: itemRef });
     setOpen(false);
@@ -38,60 +50,57 @@ const SaveToCollectionButton: React.FC<Props> = ({ kind, itemRef, label = 'Save 
     setOpen(false);
   };
 
+  // Signed in: the collection chooser.
   return (
     <div className="stc">
-      <SignedOut>
-        <SignInButton mode="modal">
-          <button type="button" className="stc__btn">
-            {label}
-          </button>
-        </SignInButton>
-      </SignedOut>
-      <SignedIn>
-        <button type="button" className="stc__btn" onClick={() => setOpen((o) => !o)}>
-          {label}
-        </button>
-        {open && (
-          <div className="stc__menu">
-            {collections.length === 0 ? (
-              <p className="stc__menu-empty">No collections yet. Create your first one below.</p>
-            ) : (
-              <ul className="stc__menu-list">
-                {collections.map((c) => (
-                  <li key={c.id}>
-                    <button
-                      type="button"
-                      className="stc__menu-item"
-                      onClick={() => handleAdd(c.id)}
-                    >
-                      {c.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="stc__create">
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); }}
-                placeholder="New collection name"
-                className="stc__input"
-              />
-              <button
-                type="button"
-                className="stc__create-btn"
-                onClick={handleCreate}
-                disabled={!newName.trim()}
-              >
-                Save
-              </button>
-            </div>
+      <button type="button" className="stc__btn" onClick={() => setOpen((o) => !o)}>
+        {label}
+      </button>
+      {open && (
+        <div className="stc__menu">
+          {collections.length === 0 ? (
+            <p className="stc__menu-empty">No collections yet. Create your first one below.</p>
+          ) : (
+            <ul className="stc__menu-list">
+              {collections.map((c) => (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    className="stc__menu-item"
+                    onClick={() => handleAdd(c.id)}
+                  >
+                    {c.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="stc__create">
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); }}
+              placeholder="New collection name"
+              className="stc__input"
+            />
+            <button
+              type="button"
+              className="stc__create-btn"
+              onClick={handleCreate}
+              disabled={!newName.trim()}
+            >
+              Save
+            </button>
           </div>
-        )}
-      </SignedIn>
-      <style>{`
+        </div>
+      )}
+      <style>{stcStyles}</style>
+    </div>
+  );
+};
+
+const stcStyles = `
         .stc { position: relative; display: inline-block; }
         .stc__btn {
           font-family: 'Lato', Helvetica, sans-serif;
@@ -170,9 +179,6 @@ const SaveToCollectionButton: React.FC<Props> = ({ kind, itemRef, label = 'Save 
           cursor: pointer;
         }
         .stc__create-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-      `}</style>
-    </div>
-  );
-};
+`;
 
 export default SaveToCollectionButton;

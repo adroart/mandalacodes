@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
+import { useAccount } from '../lib/account/useAccount';
+import { signOut } from '../lib/account/authClient';
 
 /**
- * Wraps admin routes. Checks Clerk auth client-side, then verifies the user's
- * email is on the admin allowlist by pinging /api/atlas (or any admin-gated
- * endpoint we trust to return 403 cleanly). Falls back to /admin/login on
- * any unauthenticated state.
+ * Wraps admin routes. Checks Better Auth session client-side, then verifies
+ * the user's email is on the admin allowlist by pinging an admin-gated
+ * endpoint we trust to return 403 cleanly. Falls back to /admin/login on any
+ * unauthenticated state.
  *
- * Two-stage check: Clerk says "you are signed in" → we still ask the server
- * "but are you admin?" The server is the only source of truth on allowlist.
+ * Two-stage check: the session cookie says "you are signed in" → we still ask
+ * the server "but are you admin?" The server is the only source of truth on
+ * the ADMIN_EMAILS allowlist. The session rides along on the cookie via
+ * fetchAuthed (credentials: 'include') — there is no bearer token anymore.
  */
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isLoaded, isSignedIn, getToken } = useAuth();
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { isLoaded, isSignedIn, email, fetchAuthed } = useAccount();
   const navigate = useNavigate();
   const location = useLocation();
   const [adminVerified, setAdminVerified] = useState<'checking' | 'yes' | 'no'>('checking');
@@ -30,14 +31,12 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
     // Ping an admin-gated endpoint. /api/atlas/stewards is GET-only and
     // requires admin; 200 means allowlist passed, 403 means signed-in but
-    // not admin, 401 means token problem.
+    // not admin, 401 means no valid session. The session cookie rides along
+    // via fetchAuthed (credentials: 'include') — no bearer token.
     let cancelled = false;
     (async () => {
       try {
-        const token = await getToken();
-        const res = await fetch('/api/atlas/stewards', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
+        const res = await fetchAuthed('/api/atlas/stewards');
         if (cancelled) return;
         if (res.ok) {
           setAdminVerified('yes');
@@ -51,7 +50,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn, getToken, navigate, location.pathname]);
+  }, [isLoaded, isSignedIn, fetchAuthed, navigate, location.pathname]);
 
   const logout = async () => {
     await signOut();
@@ -81,7 +80,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <p className="font-sans text-sm text-wood-600 leading-relaxed mb-8">
             You are signed in as{' '}
             <span className="text-wood-900">
-              {user?.primaryEmailAddress?.emailAddress ?? 'unknown'}
+              {email ?? 'unknown'}
             </span>
             , but that email is not on the admin allowlist.
           </p>
@@ -128,7 +127,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </Link>
           <span className="text-wood-200">|</span>
           <span className="font-sans text-xs text-wood-400">
-            {user?.primaryEmailAddress?.emailAddress}
+            {email}
           </span>
         </div>
         <button
