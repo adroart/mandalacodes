@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAccount } from '../lib/account/useAccount';
 import { Link } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import { FULL_ARCHIVE } from '../data/mockData';
@@ -49,13 +49,9 @@ const pieceOptions: PieceOption[] = FULL_ARCHIVE.map((a) => ({
 const archiveById = new Map(FULL_ARCHIVE.map((a) => [a.id, a]));
 
 function useAdminFetch(): (input: string, init?: RequestInit) => Promise<Response> {
-  const { getToken } = useAuth();
-  return async (input, init = {}) => {
-    const token = await getToken();
-    const headers = new Headers(init.headers);
-    if (token) headers.set('Authorization', `Bearer ${token}`);
-    return fetch(input, { ...init, headers });
-  };
+  // Better Auth uses a session cookie; fetchAuthed sends it via credentials.
+  const { fetchAuthed } = useAccount();
+  return fetchAuthed;
 }
 
 // ───────────────────────────────────────────────────────────────────────────
