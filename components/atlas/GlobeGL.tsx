@@ -18,7 +18,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
 import * as THREE from 'three';
 import type { KinshipIndex } from '../../utils/kinship';
-import type { GlobeNode } from './Globe';
+import { clusterSizeScale, type GlobeNode } from './Globe';
 
 const COUNTRIES_URL = '/atlas/countries-110m.geojson';
 
@@ -68,6 +68,8 @@ interface PointDatum {
   color: string;
   selected: boolean;
   size: number;
+  /** Pieces resting at this city; > 1 ⇒ a cluster (bigger marker + count label). */
+  count: number;
 }
 
 // A glowing marker: a bright core sprite plus a soft wide halo, both additive
@@ -88,6 +90,29 @@ function haloTexture(): THREE.Texture {
   ctx.fillRect(0, 0, s, s);
   HALO_TEXTURE = new THREE.CanvasTexture(cv);
   return HALO_TEXTURE;
+}
+
+// A small bronze count number for a multi-piece city, as a DOM element pinned
+// to the cluster's coordinate by the globe's html-elements layer. Pointer
+// events pass through to the marker beneath so the click still selects.
+function countLabelEl(count: number): HTMLElement {
+  const el = document.createElement('div');
+  el.textContent = String(count);
+  el.style.cssText = [
+    'font-family: Lato, system-ui, sans-serif',
+    'font-size: 11px',
+    'font-weight: 700',
+    'letter-spacing: 0.04em',
+    'color: #1a1410',
+    'background: rgba(196,170,124,0.92)',
+    'padding: 1px 6px',
+    'border-radius: 999px',
+    'transform: translate(-50%, -160%)',
+    'pointer-events: none',
+    'white-space: nowrap',
+    'box-shadow: 0 1px 4px rgba(0,0,0,0.5)',
+  ].join(';');
+  return el;
 }
 
 function makeMarker(d: PointDatum): THREE.Object3D {
@@ -308,15 +333,30 @@ export default function GlobeGL({
 
   const pointsData = useMemo(
     () =>
-      nodes.map((n) => ({
-        id: n.id,
-        lat: n.lat,
-        lng: n.lng,
-        color: markerColor(n),
-        selected: n.id === selectedId,
-        size: n.status === 'placed' ? 0.32 : n.status === 'origin' ? 0.3 : 0.22,
-      })),
+      nodes.map((n) => {
+        const base =
+          n.status === 'placed' ? 0.32 : n.status === 'origin' ? 0.3 : 0.22;
+        return {
+          id: n.id,
+          lat: n.lat,
+          lng: n.lng,
+          color: markerColor(n),
+          selected: n.id === selectedId,
+          // A multi-piece city reads as weightier — the marker grows with its
+          // count so a busy place draws the eye.
+          size: base * clusterSizeScale(n.count),
+          count: n.count ?? 1,
+        };
+      }),
     [nodes, selectedId],
+  );
+
+  // Count labels for multi-piece cities — small bronze numbers pinned over the
+  // cluster markers via the globe's html-elements layer (the sprites can't
+  // carry text). Single-piece markers carry no label.
+  const labelData = useMemo(
+    () => pointsData.filter((d) => d.count > 1),
+    [pointsData],
   );
 
   // Kinship pairs → great-circle arcs. Brighten the selected piece's arcs.
@@ -426,6 +466,13 @@ export default function GlobeGL({
           arcDashInitialGap={(d: { startLat: number }) => Math.abs(d.startLat) / 90}
           arcDashAnimateTime={4000}
           arcsTransitionDuration={1500}
+          // Count labels for multi-piece cities — a small bronze number pinned
+          // over each cluster so "20 in Santa Cruz" reads at a glance.
+          htmlElementsData={labelData}
+          htmlLat="lat"
+          htmlLng="lng"
+          htmlAltitude={0.02}
+          htmlElement={(d: PointDatum) => countLabelEl(d.count)}
         />
         </div>
       )}

@@ -45,6 +45,25 @@ export interface GlobeNode {
   // Art series this piece belongs to (e.g. 'Universal Language'). Drives the
   // marker hue so each series reads as its own constellation on the map.
   series?: string;
+  // ─── Clustering (set on cluster nodes only) ──────────────────────────────
+  // The globe plots ONE marker per city, not one per piece, so N pieces in a
+  // single city no longer stack invisibly on one point. count > 1 renders a
+  // larger marker (and, on the GL globe, a count label); a click opens the
+  // city-list HUD instead of selecting a single piece. count 1/undefined is an
+  // ordinary single-piece marker, unchanged. The birth origin is never grouped.
+  count?: number;
+  // Piece keys (`pieceId:editionNumber`) of every member at this city, for the
+  // city-list HUD to list and open each one. Plus the city's display label.
+  memberKeys?: string[];
+  cityLabel?: string;
+}
+
+/** Marker size bump for a multi-piece cluster: grows gently with the count so
+ *  a busy city reads as weightier without ballooning. Capped so a 20-piece
+ *  city stays a marker, not a blob. */
+export function clusterSizeScale(count?: number): number {
+  if (!count || count <= 1) return 1;
+  return Math.min(1.9, 1 + Math.log2(count) * 0.28);
 }
 
 export interface GlobeProps {
@@ -199,10 +218,10 @@ export default function Globe({
       nodes.map(n => ({
         location: [n.lat, n.lng] as [number, number],
         size:
-          n.status === 'placed' ? PLACED_SIZE
+          (n.status === 'placed' ? PLACED_SIZE
           : n.status === 'unawakened' ? UNAWAKENED_SIZE
           : n.status === 'origin' ? ORIGIN_SIZE
-          : SEEKING_SIZE,
+          : SEEKING_SIZE) * clusterSizeScale(n.count),
         // Per-marker color overrides the global markerColor (the warm bronze
         // used for lit Universal Language lights). Order matters: status
         // (origin/seeking/unawakened) wins, then a placed non-mandala piece

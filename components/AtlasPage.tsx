@@ -13,6 +13,7 @@ import KinshipLayer from './atlas/KinshipLayer';
 import { useIdleFade } from './atlas/useIdleFade';
 import { seriesColor } from './atlas/GlobeGL';
 import PieceHUD from './atlas/PieceHUD';
+import CityListHUD, { type CityListMember } from './atlas/CityListHUD';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
@@ -97,6 +98,14 @@ const AtlasPage: React.FC = () => {
   // for their "See it on the Atlas" bridge, and selections stay shareable.
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedKey, setSelectedKeyState] = useState<string | null>(null);
+  /* When a multi-piece city is clicked, the globe opens the city-list HUD
+     instead of a single piece HUD — it holds that cluster's id, label, and
+     member keys. Selecting a piece supersedes the list. */
+  const [cityList, setCityList] = useState<{
+    clusterId: string;
+    cityLabel?: string;
+    memberKeys: string[];
+  } | null>(null);
   /* Filters initialize from the URL so filtered views are shareable
      (e.g. /atlas?series=Universal+Language&size=large). */
   const [selectedSeries, setSelectedSeriesState] = useState<string>(
@@ -119,17 +128,19 @@ const AtlasPage: React.FC = () => {
   const [markerScreenPos, setMarkerScreenPos] = useState<{ x: number; y: number } | null>(null);
   // Corner chrome fades when the visitor stops interacting, leaving only the
   // turning world. A selected piece or open filters keep the chrome awake.
-  const idle = useIdleFade(4000) && !selectedKey && !filtersOpen;
+  const idle = useIdleFade(4000) && !selectedKey && !cityList && !filtersOpen;
 
-  // Esc releases the locked piece.
+  // Esc releases the locked piece, or closes the city list.
   useEffect(() => {
-    if (!selectedKey) return;
+    if (!selectedKey && !cityList) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedKeyState(null);
+      if (e.key !== 'Escape') return;
+      if (selectedKey) setSelectedKeyState(null);
+      else setCityList(null);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedKey]);
+  }, [selectedKey, cityList]);
   const [use3D] = useState<boolean>(webglAvailable);
 
   /* Mirror a filter into the URL; 'all' clears the param. */
@@ -171,6 +182,7 @@ const AtlasPage: React.FC = () => {
      browsing pieces doesn't pile up history entries). */
   const setSelectedKey = (key: string | null) => {
     setSelectedKeyState(key);
+    if (key) setCityList(null); // a single piece supersedes the city list
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
@@ -326,6 +338,91 @@ const AtlasPage: React.FC = () => {
     }
     return nodes;
   }, [seriesFiltered, status, birthPlace]);
+
+  /* Cluster the per-piece nodes by city so the globe plots ONE marker per
+     place — N pieces in one city no longer stack invisibly on a single point.
+     globeNodes stays the per-piece truth (HUD + kin depend on it); this is a
+     derived layer the globe renders. A single-piece city keeps the piece's own
+     key as its id, so it behaves exactly as before (click → that piece's HUD).
+     A multi-piece city gets a `cluster:<cityId>` id, a count, and the keys of
+     all its members for the city-list HUD. The birth origin is never grouped. */
+  const clusterNodes: GlobeNode[] = useMemo(() => {
+    const byCity = new Map<string, GlobeNode[]>();
+    const out: GlobeNode[] = [];
+    for (const n of globeNodes) {
+      if (n.status === 'origin') {
+        out.push(n); // origin marker is its own single point, never clustered
+        continue;
+      }
+      const cityKey = `${n.lat.toFixed(4)},${n.lng.toFixed(4)}`;
+      const arr = byCity.get(cityKey);
+      if (arr) arr.push(n);
+      else byCity.set(cityKey, [n]);
+    }
+    for (const members of byCity.values()) {
+      if (members.length === 1) {
+        out.push(members[0]); // unchanged single-piece marker
+        continue;
+      }
+      const first = members[0];
+      const anyPlaced = members.some((m) => m.status === 'placed');
+      const cityId = enriched.find((p) => p.key === first.id)?.cityId ?? undefined;
+      const label = cityLabelFor(cityId);
+      out.push({
+        id: cityId ? `cluster:${cityId}` : `cluster:${first.id}`,
+        lat: first.lat,
+        lng: first.lng,
+        status: anyPlaced ? 'placed' : 'unawakened',
+        label,
+        series: first.series,
+        count: members.length,
+        memberKeys: members.map((m) => m.id),
+        cityLabel: label,
+      });
+    }
+    return out;
+  }, [globeNodes, enriched]);
+
+  /* The globe reports a click on a cluster marker. A single-piece cluster
+     carries the piece's own key → select it as before. A multi-piece cluster
+     carries `cluster:<cityId>` with member keys → open the city-list HUD. */
+  const handleGlobeSelect = (id: string) => {
+    if (id.startsWith('cluster:')) {
+      const node = clusterNodes.find((n) => n.id === id);
+      if (node?.memberKeys && node.memberKeys.length > 1) {
+        setSelectedKeyState(null);
+        setCityList({
+          clusterId: id,
+          cityLabel: node.cityLabel,
+          memberKeys: node.memberKeys,
+        });
+        return;
+      }
+    }
+    setSelectedKey(id);
+  };
+
+  /* The members of the open city list, shaped for the HUD: title + a quiet
+     edition suffix. Order follows the cluster's member order. */
+  const cityListMembers: CityListMember[] = useMemo(() => {
+    if (!cityList) return [];
+    return cityList.memberKeys.map((key) => {
+      const p = enriched.find((e) => e.key === key);
+      const editionLabel =
+        p && typeof p.editionNumber === 'number'
+          ? `Edition ${p.editionNumber}`
+          : undefined;
+      return {
+        key,
+        title: (p?.title ?? key).replace(/\s*-\s*\d+\s*$/, ''),
+        editionLabel,
+      };
+    });
+  }, [cityList, enriched]);
+
+  /* What the globe should treat as selected: a chosen piece, or the open
+     city's cluster marker so it stays framed while the list is up. */
+  const globeSelectedId = selectedKey ?? cityList?.clusterId ?? null;
 
   /* Seeking section honors filters — when status=placed, the section hides. */
   const seekingPieces: SeekingPiece[] = useMemo(() => {
@@ -531,23 +628,26 @@ const AtlasPage: React.FC = () => {
             >
               {USE_GL_GLOBE ? (
                 <GlobeGL
-                  nodes={globeNodes}
-                  selectedId={selectedKey}
-                  onSelect={(id) => setSelectedKey(id)}
+                  nodes={clusterNodes}
+                  selectedId={globeSelectedId}
+                  onSelect={handleGlobeSelect}
                   kinship={kinshipIndex}
                   kinshipVisible={kinshipVisible}
                   placedByCard={placedByCard}
                   mandala={mandala}
                   mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed`}
                   onMarkerScreenPos={setMarkerScreenPos}
-                  onBackgroundClick={() => setSelectedKey(null)}
+                  onBackgroundClick={() => {
+                    setSelectedKey(null);
+                    setCityList(null);
+                  }}
                   className="w-full h-full"
                 />
               ) : (
                 <Globe3D
-                  nodes={globeNodes}
-                  selectedId={selectedKey}
-                  onSelect={(id) => setSelectedKey(id)}
+                  nodes={clusterNodes}
+                  selectedId={globeSelectedId}
+                  onSelect={handleGlobeSelect}
                   kinship={kinshipIndex}
                   kinshipVisible={kinshipVisible}
                   placedByCard={placedByCard}
@@ -770,6 +870,25 @@ const AtlasPage: React.FC = () => {
                   onRelease={() => setSelectedKey(null)}
                 />
               ) : null}
+            </div>
+          )}
+
+          {/* ── City-list HUD: the cluster's pieces, when no single piece is
+                selected. A multi-piece city opens this; choosing a member opens
+                its piece HUD (which clears the list via setSelectedKey). ──── */}
+          {!selectedKey && cityList && (
+            <div
+              className="absolute z-30 animate-[hud-in_400ms_ease-out]
+                inset-x-3 bottom-3 max-h-[52%]
+                sm:inset-x-auto sm:right-8 sm:bottom-auto sm:left-auto sm:w-[380px]"
+              style={{ top: 'var(--hud-top)' }}
+            >
+              <CityListHUD
+                cityLabel={cityList.cityLabel}
+                members={cityListMembers}
+                onSelectMember={(key) => setSelectedKey(key)}
+                onRelease={() => setCityList(null)}
+              />
             </div>
           )}
         </section>
