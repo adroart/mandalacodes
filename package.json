@@ -37,9 +37,11 @@
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-globe.gl": "^2.27.0",
     "react-router-dom": "^7.13.0",
     "svix": "^1.94.0",
-    "three": "^0.166.1"
+    "three": "^0.166.1",
+    "three-globe": "^2.31.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260528.1",

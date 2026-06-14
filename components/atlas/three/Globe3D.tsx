@@ -292,7 +292,18 @@ export default function Globe3D({
           frameloop={inView ? 'always' : 'never'}
           dpr={[1, 2]}
           camera={{ fov: 26, near: 0.1, far: 60, position: [0, 0, CAMERA_NEAR_DIST] }}
-          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+          gl={{ antialias: true, alpha: false }}
+          // Tone mapping clamps the scene's stacked bright values (sphere base +
+          // additive rim + additive atmosphere + bright markers) into range.
+          // The bloom EffectComposer used to own output and kept this in check;
+          // with it gone the globe blew out to near-white and the small per-
+          // frame brightness swings crossed the clip point — read as flicker.
+          // ACES Filmic brings back the warm dark stone and pulls the whole
+          // image away from clipping, so it sits steady instead of shimmering.
+          onCreated={({ gl }) => {
+            gl.toneMapping = THREE.ACESFilmicToneMapping;
+            gl.toneMappingExposure = 0.85;
+          }}
           style={{ position: 'absolute', inset: 0 }}
         >
           <GlobeScene

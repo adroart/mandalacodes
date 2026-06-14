@@ -65,6 +65,8 @@ const FRAG = /* glsl */ `
     if (alpha <= 0.004) discard;
     vec3 col = uColor * (1.0 + vHighlight * 0.5 + pulse * 0.8);
     gl_FragColor = vec4(col, alpha);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
   }
 `;
 

@@ -122,10 +122,12 @@ export function stepRig(rig: Rig, deltaSeconds: number): void {
     rig.phi += ROTATION_SPEED * deltaSeconds;
   }
 
-  // Ease the mandala blend toward its target (~1.6s either way).
+  // Ease the mandala blend toward its target with a bounded exponential, so a
+  // frame hitch can never overshoot the target (the old k*3.2 factor sprang
+  // past 1 on a dropped frame and oscillated).
   const want = rig.mandalaTarget;
-  const k = Math.min(1, deltaSeconds / 1.6);
-  rig.mandala += (want - rig.mandala) * (k * 3.2);
+  const k = 1 - Math.exp(-Math.max(0, deltaSeconds) * 2);
+  rig.mandala += (want - rig.mandala) * k;
   if (Math.abs(rig.mandala - want) < 0.002) rig.mandala = want;
 }
 

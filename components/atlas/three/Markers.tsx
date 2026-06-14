@@ -57,13 +57,17 @@ const FRAG = /* glsl */ `
     vec2 c = gl_PointCoord - 0.5;
     float d = length(c) * 2.0;
     if (d > 1.0) discard;
-    // Bright core + wide soft halo. Bloom picks up the core.
+    // Bright core + wide soft halo. The halo carries the glow directly now
+    // (no post-process bloom): a brighter core and a fuller, wider falloff so
+    // placed pieces still read as luminous on their own.
     float core = smoothstep(0.42, 0.0, d);
-    float halo = exp(-d * 2.4) * 0.5;
+    float halo = exp(-d * 1.9) * 0.8;
     // Selected markers carry a thin ring just outside the core.
     float ring = vSelected * smoothstep(0.08, 0.0, abs(d - 0.62)) * 0.9;
-    float energy = core * 1.35 + halo + ring;
+    float energy = core * 1.7 + halo + ring;
     gl_FragColor = vec4(vColor * energy, vAlpha * min(energy, 1.0));
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
   }
 `;
 

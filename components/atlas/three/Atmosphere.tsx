@@ -29,6 +29,8 @@ const FRAG = /* glsl */ `
     float facing = dot(normalize(-vWorldNormal), normalize(vViewDir));
     float glow = pow(clamp(facing, 0.0, 1.0), 3.2);
     gl_FragColor = vec4(uColor * glow * 1.6, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
   }
 `;
 

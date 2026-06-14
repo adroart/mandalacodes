@@ -4,7 +4,6 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import type { KinshipIndex } from '../../../utils/kinship';
@@ -48,6 +47,8 @@ export default function GlobeScene({
     .filter((n) => n.status === 'placed')
     .map((n) => [n.lat, n.lng] as const);
 
+  // Priority -1: commit the rig step (rotation, camera dolly) before any child
+  // shader subscriber reads it, so uniforms and transforms never lag a frame.
   useFrame((_, delta) => {
     stepRig(rig, Math.min(delta, 0.1));
     if (spinRef.current) spinRef.current.rotation.y = -rig.phi;
@@ -55,12 +56,10 @@ export default function GlobeScene({
     // Mandala view pulls the camera back to show the whole weave.
     const e = easeInOutCubic(rig.mandala);
     camera.position.z = CAMERA_NEAR_DIST + (CAMERA_FAR_DIST - CAMERA_NEAR_DIST) * e;
-  });
+  }, -1);
 
   return (
     <>
-      {/* Explicit background — keeps the composer path identical to the
-          plain path and matches the page's stone tone exactly. */}
       <color attach="background" args={[15 / 255, 13 / 255, 11 / 255]} />
       <Starfield />
       <group ref={tiltRef}>
@@ -75,16 +74,6 @@ export default function GlobeScene({
         </group>
       </group>
       <Atmosphere />
-      {!rig.lowTier && (
-        <EffectComposer>
-          <Bloom
-            luminanceThreshold={0.32}
-            luminanceSmoothing={0.25}
-            intensity={0.65}
-            mipmapBlur
-          />
-        </EffectComposer>
-      )}
     </>
   );
 }

@@ -55,6 +55,8 @@ export default function Starfield() {
             float d = length(c) * 2.0;
             float a = smoothstep(1.0, 0.2, d);
             gl_FragColor = vec4(vec3(0.42, 0.40, 0.36) * 0.55, a * 0.35);
+            #include <tonemapping_fragment>
+            #include <colorspace_fragment>
           }
         `,
         uniforms: { uPixelRatio: { value: 1 } },
