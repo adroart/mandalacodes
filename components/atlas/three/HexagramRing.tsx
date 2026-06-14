@@ -60,6 +60,8 @@ const FRAG = /* glsl */ `
     float alpha = vAlpha * (0.75 + uMandala * 0.9);
     if (alpha <= 0.004) discard;
     gl_FragColor = vec4(uColor, alpha);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
   }
 `;
 

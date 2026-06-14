@@ -1,7 +1,8 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
-import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
+import { type AtlasStatusFilter } from './atlas/AtlasFilters';
+import AtlasFiltersDark from './atlas/AtlasFiltersDark';
 import PieceSidePanel, {
   type KinEntry,
   type SelectedPiece,
@@ -9,6 +10,9 @@ import PieceSidePanel, {
 } from './atlas/PieceSidePanel';
 import SeekingGround, { type SeekingPiece } from './atlas/SeekingGround';
 import KinshipLayer from './atlas/KinshipLayer';
+import { useIdleFade } from './atlas/useIdleFade';
+import { seriesColor } from './atlas/GlobeGL';
+import PieceHUD from './atlas/PieceHUD';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
@@ -21,6 +25,11 @@ import type { PublicAtlasState } from '../types';
 /* The Three.js globe loads as its own chunk so the page paints immediately;
    browsers without WebGL keep the cobe globe + SVG kinship overlay. */
 const Globe3D = lazy(() => import('./atlas/three/Globe3D'));
+const GlobeGL = lazy(() => import('./atlas/GlobeGL'));
+// Library-backed globe (react-globe.gl) is the default; ?oldglobe falls back
+// to the custom Three.js one for comparison.
+const USE_GL_GLOBE =
+  typeof window === 'undefined' || !window.location.search.includes('oldglobe');
 
 function webglAvailable(): boolean {
   if (typeof document === 'undefined') return false;
@@ -106,6 +115,21 @@ const AtlasPage: React.FC = () => {
   });
   const [kinshipVisible, setKinshipVisible] = useState<boolean>(true);
   const [mandala, setMandala] = useState<boolean>(false);
+  const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
+  const [markerScreenPos, setMarkerScreenPos] = useState<{ x: number; y: number } | null>(null);
+  // Corner chrome fades when the visitor stops interacting, leaving only the
+  // turning world. A selected piece or open filters keep the chrome awake.
+  const idle = useIdleFade(4000) && !selectedKey && !filtersOpen;
+
+  // Esc releases the locked piece.
+  useEffect(() => {
+    if (!selectedKey) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedKeyState(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedKey]);
   const [use3D] = useState<boolean>(webglAvailable);
 
   /* Mirror a filter into the URL; 'all' clears the param. */
@@ -286,6 +310,7 @@ const AtlasPage: React.FC = () => {
         status: p.status === 'unawakened' ? 'unawakened' : 'placed',
         label: p.title,
         pieceType: p.pieceType,
+        series: p.series,
       });
     }
     // The visitor's birth place rides along regardless of filters — it is
@@ -452,46 +477,306 @@ const AtlasPage: React.FC = () => {
   }, [selectedPiece]);
 
   /* ─── Render ─────────────────────────────────────────────────────────────── */
+  // Which series currently have placed pieces on the map — drives the legend.
+  const legendSeries: string[] = useMemo(() => {
+    const set = new Set<string>();
+    for (const n of globeNodes) {
+      if (n.status === 'origin') continue;
+      set.add(n.series ?? 'Universal Language');
+    }
+    return Array.from(set).sort();
+  }, [globeNodes]);
+
+  const hasBirthOrigin = globeNodes.some((n) => n.status === 'origin');
+
+  // Coordinate of the selected marker, for the HUD's lat-long readout.
+  const selectedCoord = useMemo(() => {
+    if (!selectedKey) return null;
+    const n = globeNodes.find((node) => node.id === selectedKey);
+    return n ? { lat: n.lat, lng: n.lng } : null;
+  }, [selectedKey, globeNodes]);
+
+  // Chrome opacity easing — one class drives every corner overlay together.
+  const chromeOpacity = idle ? 'opacity-25' : 'opacity-100';
+
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div className="px-6 pb-10 max-w-7xl mx-auto pt-[calc(var(--nav-height)+3rem)] sm:pt-[calc(var(--nav-height)+4rem)]">
-        <nav
-          aria-label="Breadcrumb"
-          className="flex flex-wrap items-center gap-2 gap-y-1 font-label text-[11px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.2em] text-wood-700 mb-8 sm:mb-12"
+      {/* ── Immersive globe stage ─────────────────────────────────────────── */}
+      {state.kind === 'ready' && use3D && (
+        <section
+          ref={globeBoxRef}
+          aria-label="Atlas globe"
+          className="relative w-full overflow-hidden bg-[rgb(15,13,11)] block"
+          style={{
+            height: 'calc(100svh - var(--nav-height))',
+            minHeight: 'min(560px, calc(100svh - var(--nav-height)))',
+            marginBottom: 0,
+            // HUD and corner chrome anchor below the fixed nav using this.
+            ['--hud-top' as string]: 'calc(var(--nav-height) + 1rem)',
+          }}
         >
-          <Link to="/" className="hover:text-wood-900 transition-colors">
-            Home
-          </Link>
-          <span aria-hidden className="text-wood-400">
-            /
-          </span>
-          <span className="text-wood-900">Atlas</span>
-        </nav>
+          {/* The world, full-bleed. */}
+          <div className="absolute inset-0">
+            <Suspense
+              fallback={
+                <div
+                  aria-hidden
+                  className="w-full h-full"
+                  style={{
+                    background:
+                      'radial-gradient(circle at 50% 50%, rgb(28, 25, 21) 0%, rgb(15, 13, 11) 62%)',
+                  }}
+                />
+              }
+            >
+              {USE_GL_GLOBE ? (
+                <GlobeGL
+                  nodes={globeNodes}
+                  selectedId={selectedKey}
+                  onSelect={(id) => setSelectedKey(id)}
+                  kinship={kinshipIndex}
+                  kinshipVisible={kinshipVisible}
+                  placedByCard={placedByCard}
+                  mandala={mandala}
+                  mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed`}
+                  onMarkerScreenPos={setMarkerScreenPos}
+                  onBackgroundClick={() => setSelectedKey(null)}
+                  className="w-full h-full"
+                />
+              ) : (
+                <Globe3D
+                  nodes={globeNodes}
+                  selectedId={selectedKey}
+                  onSelect={(id) => setSelectedKey(id)}
+                  kinship={kinshipIndex}
+                  kinshipVisible={kinshipVisible}
+                  placedByCard={placedByCard}
+                  mandala={mandala}
+                  mandalaCaption={`The mandala so far — ${placedByCard.size} of 64 placed`}
+                  className="w-full h-full"
+                />
+              )}
+            </Suspense>
+          </div>
 
-        <h1
-          className="font-serif text-5xl md:text-7xl lg:text-8xl text-wood-900 font-medium leading-[0.93] mb-6"
-          style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.04em' }}
-        >
-          Atlas
-        </h1>
-        <p className="font-serif text-xl md:text-2xl text-wood-700 max-w-2xl leading-[1.6]">
-          Adrian Rasmussen's body of work, across the world — every piece,
-          wherever it has come to rest. City-level only, never an address.
-        </p>
-        {state.kind === 'ready' && totalCount > 0 && (
-          <p className="mt-5 font-label text-[11px] sm:text-xs uppercase tracking-[0.2em] text-bronze-700">
-            {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
-            <span aria-hidden className="mx-2 text-wood-400">
-              ·
-            </span>
-            {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
-          </p>
-        )}
-      </div>
+          {/* ── Corner chrome (fades when idle) ─────────────────────────────── */}
+          <div
+            className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${chromeOpacity}`}
+          >
+            {/* Top-left: breadcrumb + title */}
+            <div className="pointer-events-auto absolute left-5 sm:left-8 top-[calc(var(--nav-height)+1rem)]">
+              <nav
+                aria-label="Breadcrumb"
+                className="flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/60 mb-3"
+              >
+                <Link to="/" className="hover:text-bronze-400 transition-colors">
+                  Home
+                </Link>
+                <span aria-hidden>/</span>
+                <span className="text-bronze-400/90">Atlas</span>
+              </nav>
+              <h1
+                className="text-3xl sm:text-5xl text-bronze-300 font-medium leading-none"
+                style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}
+              >
+                Atlas
+              </h1>
+            </div>
 
-      {/* ── Body ──────────────────────────────────────────────────────────── */}
-      <div className="px-6 pb-32 max-w-7xl mx-auto">
+            {/* Top-right: legend */}
+            {legendSeries.length > 0 && (
+              <div className="pointer-events-auto absolute right-5 sm:right-8 top-[calc(var(--nav-height)+1rem)] text-right">
+                {legendSeries.map((s) => (
+                  <div
+                    key={s}
+                    className="font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed"
+                  >
+                    {s}
+                    <span aria-hidden style={{ color: seriesColor(s) }}>
+                      {' '}·
+                    </span>
+                  </div>
+                ))}
+                {hasBirthOrigin && (
+                  <div className="font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed">
+                    your origin
+                    <span aria-hidden style={{ color: '#9caa87' }}>
+                      {' '}·
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Bottom-left: the quiet stat caption */}
+            {totalCount > 0 && (
+              <p className="pointer-events-none absolute left-5 sm:left-8 bottom-6 font-label text-[11px] uppercase tracking-[0.2em] text-bronze-400/70">
+                {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
+                <span aria-hidden className="mx-2 text-wood-500">·</span>
+                {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
+              </p>
+            )}
+
+            {/* Bottom gutter: threads · filter · mandala */}
+            <div className="pointer-events-auto absolute right-5 sm:right-8 bottom-6 flex items-center gap-4 sm:gap-6">
+              <button
+                type="button"
+                aria-pressed={kinshipVisible}
+                onClick={() => setKinshipVisible((v) => !v)}
+                className={`font-label text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                  kinshipVisible
+                    ? 'text-bronze-400'
+                    : 'text-wood-400 hover:text-bronze-400/80'
+                }`}
+              >
+                threads
+              </button>
+              <button
+                type="button"
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen((o) => !o)}
+                className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-300 hover:text-bronze-400 transition-colors"
+              >
+                filter
+                {(selectedSeries !== 'all' ||
+                  status !== 'all' ||
+                  selectedCategory !== 'all' ||
+                  selectedSize !== 'all') && (
+                  <span className="text-bronze-400"> · ·</span>
+                )}
+              </button>
+              <button
+                type="button"
+                aria-pressed={mandala}
+                onClick={() => setMandala((m) => !m)}
+                className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/80 hover:text-bronze-400 transition-colors"
+              >
+                {mandala ? 'return' : 'mandala'}
+              </button>
+              {selectedKey && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedKey(null)}
+                  className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-300 hover:text-bronze-200 transition-colors"
+                >
+                  release
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* ── Filter slide-up (bottom-left), dark translucent ─────────────── */}
+          {filtersOpen && (
+            <div className="absolute inset-x-4 bottom-20 z-30 sm:inset-x-auto sm:left-8 sm:bottom-16 sm:w-[400px]">
+              <div
+                className="border border-bronze-400/15 p-6 sm:p-7 shadow-2xl"
+                style={{
+                  background:
+                    'linear-gradient(160deg, rgba(28,23,18,0.95) 0%, rgba(17,14,11,0.96) 100%)',
+                  backdropFilter: 'blur(16px)',
+                  boxShadow: '0 20px 60px -12px rgba(0,0,0,0.7)',
+                }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <span className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-400/70">
+                    Refine the map
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setFiltersOpen(false)}
+                    className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors"
+                  >
+                    close
+                  </button>
+                </div>
+                <AtlasFiltersDark
+                  series={availableSeries}
+                  selectedSeries={selectedSeries}
+                  onSeriesChange={setSelectedSeries}
+                  status={status}
+                  onStatusChange={setStatus}
+                  categories={categoriesAvailable}
+                  selectedCategory={selectedCategory}
+                  onCategoryChange={setSelectedCategory}
+                  availableSizes={availableSizes}
+                  selectedSize={selectedSize}
+                  onSizeChange={setSelectedSize}
+                  placedCount={placedCount}
+                  seekingCount={seekingCount}
+                  kinshipVisible={kinshipVisible}
+                  onKinshipChange={setKinshipVisible}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* ── Leader-line: a hairline from the marker to the HUD card ──────── */}
+          {selectedKey && markerScreenPos && globeBoxRef.current && (
+            <svg
+              className="pointer-events-none absolute inset-0 z-20 hidden sm:block"
+              width="100%"
+              height="100%"
+            >
+              <line
+                x1={markerScreenPos.x}
+                y1={markerScreenPos.y}
+                x2={globeBoxRef.current.clientWidth - 412}
+                y2={Math.min(
+                  Math.max(markerScreenPos.y, 120),
+                  globeBoxRef.current.clientHeight - 160,
+                )}
+                stroke={selectedKey === BIRTH_KEY ? 'rgba(156,170,135,0.5)' : 'rgba(196,170,124,0.45)'}
+                strokeWidth={1}
+              />
+              <circle
+                cx={markerScreenPos.x}
+                cy={markerScreenPos.y}
+                r={2.5}
+                fill={selectedKey === BIRTH_KEY ? '#9caa87' : '#c4aa7c'}
+              />
+            </svg>
+          )}
+
+          {/* ── Piece HUD: instrument readout in the cleared space ───────────── */}
+          {selectedKey && (
+            <div
+              className="absolute z-30 animate-[hud-in_400ms_ease-out]
+                inset-x-3 bottom-3 max-h-[52%]
+                sm:inset-x-auto sm:right-8 sm:bottom-auto sm:left-auto sm:w-[380px]"
+              style={{ top: 'var(--hud-top)' }}
+            >
+              {selectedKey === BIRTH_KEY && birthPlace ? (
+                <PieceHUD
+                  isOrigin
+                  piece={{
+                    pieceId: 'origin',
+                    title: birthPlace.label,
+                    status: 'placed',
+                    cityLabel: birthPlace.label,
+                    category: 'Your birth place',
+                  }}
+                  coord={selectedCoord}
+                  kin={nearestToBirth.map((n) => ({ key: n.key, title: `${n.title} · ${n.cityLabel}` }))}
+                  onSelectKin={(key) => setSelectedKey(key)}
+                  onRelease={() => setSelectedKey(null)}
+                />
+              ) : selectedPiece ? (
+                <PieceHUD
+                  piece={selectedPiece}
+                  coord={selectedCoord}
+                  kin={kinForSelected}
+                  onSelectKin={(key) => setSelectedKey(key)}
+                  holderChart={holderChart}
+                  onRelease={() => setSelectedKey(null)}
+                />
+              ) : null}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── Body (below the fold): loading/error + seeking ground ──────────── */}
+      <div className="px-6 pb-32 max-w-7xl mx-auto pt-16">
         {state.kind === 'loading' && (
           <p
             className="font-serif italic text-lg text-wood-700 py-24 text-center"
@@ -512,152 +797,8 @@ const AtlasPage: React.FC = () => {
 
         {state.kind === 'ready' && (
           <>
-            {/* Filters */}
-            <div className="border-t border-wood-200 pt-6 pb-8">
-              <AtlasFilters
-                series={availableSeries}
-                selectedSeries={selectedSeries}
-                onSeriesChange={setSelectedSeries}
-                status={status}
-                onStatusChange={setStatus}
-                categories={categoriesAvailable}
-                selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
-                availableSizes={availableSizes}
-                selectedSize={selectedSize}
-                onSizeChange={setSelectedSize}
-                placedCount={placedCount}
-                seekingCount={seekingCount}
-                kinshipVisible={kinshipVisible}
-                onKinshipChange={setKinshipVisible}
-              />
-            </div>
-
-            {/* Globe + side panel.
-                Globe takes ~60vh; side panel sits beside on lg+, below on smaller. */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-              <div
-                ref={globeBoxRef}
-                className="lg:col-span-2 w-full max-w-full overflow-hidden relative"
-                style={{ height: '60vh', minHeight: 360 }}
-              >
-                {use3D ? (
-                  <>
-                    <Suspense
-                      fallback={
-                        /* Poster while the 3D chunk loads — same stone, a hint
-                           of the sphere, no layout shift. */
-                        <div
-                          aria-hidden
-                          className="w-full h-full"
-                          style={{
-                            background:
-                              'radial-gradient(circle at 50% 50%, rgb(28, 25, 21) 0%, rgb(15, 13, 11) 62%)',
-                          }}
-                        />
-                      }
-                    >
-                      <Globe3D
-                        nodes={globeNodes}
-                        selectedId={selectedKey}
-                        onSelect={(id) => setSelectedKey(id)}
-                        kinship={kinshipIndex}
-                        kinshipVisible={kinshipVisible}
-                        placedByCard={placedByCard}
-                        mandala={mandala}
-                        mandalaCaption={`The mandala so far — ${placedByCard.size} of 64 placed`}
-                        className="w-full h-full"
-                      />
-                    </Suspense>
-                    <button
-                      type="button"
-                      aria-pressed={mandala}
-                      onClick={() => setMandala((m) => !m)}
-                      className="absolute top-3 right-3 font-label text-[10px] uppercase tracking-[0.2em] px-3 py-2 border transition-colors duration-300 text-bronze-400/70 border-bronze-400/25 hover:text-bronze-400 hover:border-bronze-400/60 bg-black/20"
-                    >
-                      {mandala ? 'Return' : 'Mandala view'}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Globe
-                      nodes={globeNodes}
-                      selectedId={selectedKey}
-                      onSelect={(id) => setSelectedKey(id)}
-                      className="w-full h-full"
-                    />
-                    {kinshipIndex && (
-                      <KinshipLayer
-                        index={kinshipIndex}
-                        width={globeSize.width}
-                        height={globeSize.height}
-                        selectedId={selectedKey}
-                        visible={kinshipVisible}
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-              <div className="lg:col-span-1">
-                {selectedKey === BIRTH_KEY && birthPlace ? (
-                  /* The visitor's own marker — not a piece, so it gets its
-                     own panel: birth place, the bridge to the profile, and
-                     the placed pieces nearest their origin. */
-                  <aside
-                    aria-label="Your birth place"
-                    className="bg-paper-100 border border-wood-200 p-6 sm:p-8"
-                  >
-                    <p className="font-label text-[11px] uppercase tracking-[0.25em] text-bronze-700 mb-3">
-                      Your birth place
-                    </p>
-                    <h3 className="font-serif text-2xl sm:text-3xl text-wood-900 font-medium leading-tight mb-3">
-                      {birthPlace.label}
-                    </h3>
-                    <p className="font-sans text-sm text-wood-700 leading-relaxed mb-5">
-                      The sky over this point at the moment you arrived is what
-                      your Hologenetic Profile is calculated from.
-                    </p>
-                    <Link
-                      to="/profile"
-                      className="font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
-                    >
-                      View your full chart →
-                    </Link>
-                    {nearestToBirth.length > 0 && (
-                      <div className="border-t border-wood-200 pt-5 mt-5">
-                        <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-2">
-                          Pieces nearest your origin
-                        </p>
-                        <ul className="space-y-1.5">
-                          {nearestToBirth.map((n) => (
-                            <li key={n.key}>
-                              <button
-                                type="button"
-                                onClick={() => setSelectedKey(n.key)}
-                                className="font-serif text-base text-wood-900 hover:text-bronze-700 transition-colors text-left leading-snug"
-                              >
-                                {n.title}
-                                <span className="text-wood-500"> · {n.cityLabel}</span>
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </aside>
-                ) : (
-                  <PieceSidePanel
-                    piece={selectedPiece}
-                    kin={kinForSelected}
-                    onSelectKin={(key) => setSelectedKey(key)}
-                    holderChart={holderChart}
-                  />
-                )}
-              </div>
-            </div>
-
             {/* Seeking ground */}
-            <div className="mt-16">
+            <div className="mt-4">
               <SeekingGround
                 seekingPieces={seekingPieces}
                 totalPieces={seriesFiltered.length}

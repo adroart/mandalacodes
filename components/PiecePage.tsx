@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { SignedIn, SignedOut, useAuth } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignInButton, useAuth } from '@clerk/clerk-react';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { CARD_BY_NUMBER } from '../data/oracleData';
@@ -149,15 +149,22 @@ const RequestStewardship: React.FC<{
   return (
     <div className="mt-4">
       <SignedOut>
+        {/* A secondary owner (auction, gift, inheritance) is NOT pre-bound by
+            Adrian, so the email-based /atlas/claim flow 404s for them. Sign in
+            in place with a modal and stay on this piece — once signed in the
+            SignedIn branch below shows the request-stewardship form, which is
+            the right path for them. Never send them to /atlas/claim. */}
         <p className="font-serif text-sm text-wood-600 leading-[1.6]">
           Hold this piece but arrived another way — an auction, a gift, an
           inheritance?{' '}
-          <Link
-            to="/atlas/claim"
-            className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
-          >
-            Sign in to request stewardship →
-          </Link>
+          <SignInButton mode="modal">
+            <button
+              type="button"
+              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+            >
+              Sign in to request stewardship →
+            </button>
+          </SignInButton>
         </p>
       </SignedOut>
       <SignedIn>

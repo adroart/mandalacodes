@@ -42,6 +42,9 @@ export interface GlobeNode {
   // Marker color family: 'other' (non-mandala pieces) gets a distinct hue from
   // the bronze Universal Language pieces. Undefined ⇒ mandala/bronze.
   pieceType?: 'mandala' | 'other';
+  // Art series this piece belongs to (e.g. 'Universal Language'). Drives the
+  // marker hue so each series reads as its own constellation on the map.
+  series?: string;
 }
 
 export interface GlobeProps {

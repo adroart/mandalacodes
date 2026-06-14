@@ -1,21 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { SignedIn } from '@clerk/clerk-react';
 import { useDarkMode } from '../DarkModeContext';
 import AuthButton from './account/AuthButton';
 
 interface NavItem {
   path: string;
   label: string;
+  /** Only render this item when the visitor is signed in. */
+  signedInOnly?: boolean;
 }
 
 // Mandala Codes is its own site (split from Adrian-Website). The menu lists
 // only real destinations on this domain — no Creations/Writings/Shop, those
 // live on adrianrasmussen.com.
+//
+// "Your pieces" is the way back in for an owner who already claimed: /atlas/edit
+// is otherwise reachable only by completing the claim flow or typing the URL,
+// which strands returning stewards. It renders only when signed in.
 const NAV_ITEMS: NavItem[] = [
   { path: '/universal-language', label: 'Deck' },
   { path: '/the-systems', label: 'The Systems' },
   { path: '/atlas', label: 'Atlas' },
+  { path: '/atlas/edit', label: 'Your pieces', signedInOnly: true },
   { path: '/profile', label: 'Profile' },
 ];
 
@@ -37,8 +45,15 @@ const Navigation: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   // Prefix-match so a card page (/universal-language/12) keeps "Deck" active.
-  const isNavActive = (itemPath: string) =>
-    location.pathname === itemPath || location.pathname.startsWith(itemPath + '/');
+  // But never let a shorter item (/atlas) also claim a page that another nav
+  // item matches exactly (/atlas/edit) — otherwise both highlight at once.
+  const isNavActive = (itemPath: string) => {
+    if (location.pathname === itemPath) return true;
+    if (!location.pathname.startsWith(itemPath + '/')) return false;
+    return !NAV_ITEMS.some(
+      (other) => other.path !== itemPath && other.path === location.pathname,
+    );
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -126,27 +141,34 @@ const Navigation: React.FC = () => {
 
         {/* Desktop nav */}
         <div className="hidden lg:flex items-center">
-          {NAV_ITEMS.map((item, i) => (
-            <React.Fragment key={item.path}>
-              {i > 0 && (
-                <span aria-hidden="true" className="h-3.5 w-px bg-wood-900/15" />
-              )}
-              <Link
-                to={item.path}
-                className={`group relative text-[13px] uppercase tracking-[0.18em] font-label py-3 px-4 xl:px-5 transition-all duration-300 font-semibold ${
-                  isNavActive(item.path) ? 'text-wood-900' : 'text-wood-700 hover:text-bronze-600'
-                }`}
-              >
-                {item.label}
-                <span
-                  aria-hidden="true"
-                  className={`absolute -bottom-0 left-4 xl:left-5 right-4 xl:right-5 h-px bg-bronze-500 transition-all duration-300 ease-out ${
-                    isNavActive(item.path) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          {NAV_ITEMS.map((item, i) => {
+            const link = (
+              <React.Fragment key={item.path}>
+                {i > 0 && (
+                  <span aria-hidden="true" className="h-3.5 w-px bg-wood-900/15" />
+                )}
+                <Link
+                  to={item.path}
+                  className={`group relative text-[13px] uppercase tracking-[0.18em] font-label py-3 px-4 xl:px-5 transition-all duration-300 font-semibold ${
+                    isNavActive(item.path) ? 'text-wood-900' : 'text-wood-700 hover:text-bronze-600'
                   }`}
-                />
-              </Link>
-            </React.Fragment>
-          ))}
+                >
+                  {item.label}
+                  <span
+                    aria-hidden="true"
+                    className={`absolute -bottom-0 left-4 xl:left-5 right-4 xl:right-5 h-px bg-bronze-500 transition-all duration-300 ease-out ${
+                      isNavActive(item.path) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    }`}
+                  />
+                </Link>
+              </React.Fragment>
+            );
+            return item.signedInOnly ? (
+              <SignedIn key={item.path}>{link}</SignedIn>
+            ) : (
+              link
+            );
+          })}
         </div>
 
         {/* Right controls: dark toggle + mobile hamburger */}
@@ -182,17 +204,24 @@ const Navigation: React.FC = () => {
           aria-label="Mobile navigation"
           className="lg:hidden absolute top-full left-0 w-full bg-paper-50/98 backdrop-blur-xl border-b border-wood-200 py-10 px-6 flex flex-col gap-7 items-center shadow-2xl"
         >
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => handleNavClick(item.path)}
-              className={`text-sm font-label uppercase tracking-[0.2em] font-semibold transition-colors ${
-                isNavActive(item.path) ? 'text-bronze-600' : 'text-wood-800 hover:text-wood-900'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const button = (
+              <button
+                key={item.path}
+                onClick={() => handleNavClick(item.path)}
+                className={`text-sm font-label uppercase tracking-[0.2em] font-semibold transition-colors ${
+                  isNavActive(item.path) ? 'text-bronze-600' : 'text-wood-800 hover:text-wood-900'
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+            return item.signedInOnly ? (
+              <SignedIn key={item.path}>{button}</SignedIn>
+            ) : (
+              button
+            );
+          })}
         </div>
       )}
     </nav>
