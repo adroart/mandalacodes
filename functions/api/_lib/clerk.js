@@ -1,19 +1,19 @@
 /**
- * Shared Clerk + auth helpers for Pages Functions.
+ * Shared auth helpers for Pages Functions.
  *
- * Verifies the JWT in the `Authorization: Bearer ...` header against Clerk's
- * JWKs. Returns the user's Clerk ID + primary email, or null if verification
- * fails. Endpoints requiring auth use `requireUser(request, env)` which
- * either returns a populated context or a 401 Response ready to send.
+ * NOTE ON THE NAME: still called clerk.js so the endpoints that import
+ * `requireUser`/`jsonResponse` don't all have to change. It no longer uses
+ * Clerk — it validates the self-owned Better Auth session cookie. Return
+ * contract unchanged: `{ userId, email }` or a 401 Response.
+ *
+ * `userId` is the Better Auth user id; the D1 users row stores it in the
+ * `clerk_user_id` column (kept as the generic external-auth-id), so
+ * `getUserByClerkId(env.DB, auth.userId)` keeps working without a rename.
  */
 
-import { verifyToken } from '@clerk/backend';
+import { createAuth } from '../../../lib/account/auth.server.js';
 
-/**
- * Pull the bearer token from the Authorization header.
- * @param {Request} request
- * @returns {string | null}
- */
+/** Kept for back-compat with any importer; bearer tokens are no longer used. */
 export function bearerToken(request) {
   const header = request.headers.get('authorization') || request.headers.get('Authorization');
   if (!header) return null;
@@ -22,40 +22,21 @@ export function bearerToken(request) {
 }
 
 /**
- * Verify the request's bearer token. Returns `{ userId, email, payload }`
- * on success, `null` on any failure (missing token, bad signature, expired).
- * @param {Request} request
- * @param {{ CLERK_SECRET_KEY?: string }} env
- * @returns {Promise<null | { userId: string; email: string | null; payload: any }>}
+ * Verify the request's Better Auth session cookie.
+ * @returns {Promise<null | { userId: string; email: string | null; session: any; user: any }>}
  */
 export async function verifyRequest(request, env) {
-  const token = bearerToken(request);
-  if (!token) return null;
-  if (!env.CLERK_SECRET_KEY) return null;
+  if (!env.DB) return null;
   try {
-    const payload = await verifyToken(token, { secretKey: env.CLERK_SECRET_KEY });
-    if (!payload || !payload.sub) return null;
-    // Clerk includes the primary email in the JWT when configured. Fall back
-    // to null and let the caller fetch the user record if needed.
-    const email =
-      (typeof payload.email === 'string' && payload.email) ||
-      (Array.isArray(payload.email_addresses) && payload.email_addresses[0]?.email_address) ||
-      null;
-    return { userId: payload.sub, email, payload };
+    const auth = createAuth(env);
+    const data = await auth.api.getSession({ headers: request.headers });
+    if (!data || !data.user?.id) return null;
+    return { userId: data.user.id, email: data.user.email ?? null, session: data.session, user: data.user };
   } catch {
     return null;
   }
 }
 
-/**
- * Require a verified user. On success returns the auth context. On failure
- * returns a fully formed 401 `Response` that the handler should immediately
- * return to the client.
- *
- * @param {Request} request
- * @param {{ CLERK_SECRET_KEY?: string }} env
- * @returns {Promise<{ userId: string; email: string | null; payload: any } | Response>}
- */
 export async function requireUser(request, env) {
   const auth = await verifyRequest(request, env);
   if (!auth) {
@@ -67,10 +48,6 @@ export async function requireUser(request, env) {
   return auth;
 }
 
-/**
- * Standard CORS preflight + headers used across the account-aware endpoints.
- * Same allow-list as /api/checkout — keep them in sync.
- */
 const ALLOWED_ORIGINS = [
   'https://mandalacodes.com',
   'https://www.mandalacodes.com',
@@ -80,7 +57,8 @@ const ALLOWED_ORIGINS = [
 export function isAllowedOrigin(origin, env) {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
-  if (env?.CLERK_SECRET_KEY?.startsWith?.('sk_test_')) {
+  const isDev = !env?.BETTER_AUTH_URL || env.BETTER_AUTH_URL.includes('localhost');
+  if (isDev) {
     try {
       const url = new URL(origin);
       return url.hostname === 'localhost' || url.hostname === '127.0.0.1';
