@@ -9,6 +9,20 @@
 ## The actual gap
 The piece page **renders fine but has no real content.** Every one of the 64 Universal Language pieces in `data/mockData.ts` (`FULL_ARCHIVE`) has a placeholder description: `"Number 32 in the Universal Language series."` There is no per-piece story, no extra photos (`images: []` everywhere), no provenance writing. And there is **no way for Adrian to write that content without editing the data file by hand.**
 
+## Also queued: globe marker clustering (sibling task, same session)
+
+**The gap (Adrian, 2026-06-14):** "If there are 20 in Santa Cruz how does this work? I sell worldwide but many may be in one area." Today every piece in a city is plotted at that city's EXACT lat/lng (`AtlasPage.tsx` globeNodes loop, `c.lat`/`c.lng` from `CITIES_BY_ID`), so N pieces in one city stack invisibly on one point — only one is reachable from the globe, the rest are not.
+
+**Adrian chose options 1 + 3 combined:** one marker per city, sized/brightened by how many pieces rest there AND showing the count number on it. Clicking a multi-piece city zooms in and the HUD lists all pieces there, each clickable to open its piece. A single-piece city behaves as today (click → that piece's HUD).
+
+**Why this is a sibling of the piece-page work:** both revolve around the same piece records and the same detail panel (`PieceHUD.tsx`). The cluster's "city list" is a new HUD state that should be designed alongside the piece detail, not bolted on twice.
+
+**Build notes:**
+- Keep `globeNodes` as the per-piece list (HUD + kin logic depend on it). Add a derived CLUSTER layer: group nodes by cityId, one cluster node carrying `{ cityId, lat, lng, count, memberKeys[], series? }`.
+- The globe (`GlobeGL.tsx`) renders clusters, not raw pieces. Marker visual: size + glow scale with count; render the count number for count > 1 (the markers are custom sprites — add a count label, or a `htmlElementsData` layer for the numbers).
+- Click flow: cluster with count 1 → `onSelect(memberKey)` (current behavior). Cluster with count > 1 → new "city list" HUD state showing the members; selecting one opens its piece HUD; a back affordance returns to the city list.
+- Edge: the birth-origin marker is its own single point, never clustered.
+
 ## What to build (option 3 = both)
 
 ### A. Richer piece page (`components/PiecePage.tsx`)
