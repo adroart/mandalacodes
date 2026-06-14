@@ -33,6 +33,7 @@
     "@react-three/fiber": "^8.18.0",
     "@react-three/postprocessing": "^2.19.1",
     "astronomy-engine": "^2.1.19",
+    "better-auth": "^1.6.18",
     "cobe": "^2.0.1",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
