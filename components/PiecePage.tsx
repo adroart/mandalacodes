@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { SignedIn, SignedOut, SignInButton, useAuth } from '@clerk/clerk-react';
+import { useAccount } from '../lib/account/useAccount';
+import SignInTrigger from './account/SignInTrigger';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { CARD_BY_NUMBER } from '../data/oracleData';
@@ -93,14 +94,14 @@ function buildSpine(piece: PublicPiece, art: Artwork): SpineEntry[] {
  * winners, gift recipients, heirs. Signed-in visitors send a request (with
  * an optional evidence note) into the queue — the admin decides for
  * unclaimed pieces, the current holder for claimed ones; nothing binds
- * automatically. Anonymous visitors get a sign-in prompt into the existing
- * Clerk flow at /atlas/claim.
+ * automatically. Anonymous visitors get a sign-in prompt into the
+ * self-owned sign-in modal, staying on this piece.
  */
 const RequestStewardship: React.FC<{
   pieceId: string;
   editionNumber?: number;
 }> = ({ pieceId, editionNumber }) => {
-  const { getToken } = useAuth();
+  const { isSignedIn, fetchAuthed } = useAccount();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -111,12 +112,10 @@ const RequestStewardship: React.FC<{
     setBusy(true);
     setError(null);
     try {
-      const token = await getToken();
-      const res = await fetch('/api/atlas/steward/request-claim', {
+      const res = await fetchAuthed('/api/atlas/steward/request-claim', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           pieceId,
@@ -148,27 +147,27 @@ const RequestStewardship: React.FC<{
 
   return (
     <div className="mt-4">
-      <SignedOut>
-        {/* A secondary owner (auction, gift, inheritance) is NOT pre-bound by
-            Adrian, so the email-based /atlas/claim flow 404s for them. Sign in
-            in place with a modal and stay on this piece — once signed in the
-            SignedIn branch below shows the request-stewardship form, which is
-            the right path for them. Never send them to /atlas/claim. */}
+      {!isSignedIn && (
+        /* A secondary owner (auction, gift, inheritance) is NOT pre-bound by
+           Adrian, so the email-based /atlas/claim flow 404s for them. Sign in
+           in place with a modal and stay on this piece — once signed in the
+           signed-in branch below shows the request-stewardship form, which is
+           the right path for them. Never send them to /atlas/claim. */
         <p className="font-serif text-sm text-wood-600 leading-[1.6]">
           Hold this piece but arrived another way — an auction, a gift, an
           inheritance?{' '}
-          <SignInButton mode="modal">
+          <SignInTrigger>
             <button
               type="button"
               className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
             >
               Sign in to request stewardship →
             </button>
-          </SignInButton>
+          </SignInTrigger>
         </p>
-      </SignedOut>
-      <SignedIn>
-        {!open ? (
+      )}
+      {isSignedIn && (
+        !open ? (
           <p className="font-serif text-sm text-wood-600 leading-[1.6]">
             Hold this piece but arrived another way?{' '}
             <button
@@ -208,8 +207,8 @@ const RequestStewardship: React.FC<{
               {busy ? 'Sending...' : 'Send request'}
             </button>
           </div>
-        )}
-      </SignedIn>
+        )
+      )}
     </div>
   );
 };

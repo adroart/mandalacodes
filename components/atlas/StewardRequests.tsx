@@ -25,14 +25,14 @@ interface HolderRequest {
 
 interface StewardRequestsProps {
   steward: StewardRecord;
-  getToken: () => Promise<string | null>;
+  fetchAuthed: (input: string, init?: RequestInit) => Promise<Response>;
   /** Called after an approval — the piece no longer belongs to this user. */
   onTransferred: () => void;
 }
 
 const StewardRequests: React.FC<StewardRequestsProps> = ({
   steward,
-  getToken,
+  fetchAuthed,
   onTransferred,
 }) => {
   const [requests, setRequests] = useState<HolderRequest[]>([]);
@@ -45,10 +45,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
     let cancelled = false;
     (async () => {
       try {
-        const token = await getToken();
-        const res = await fetch('/api/atlas/steward/claim-requests', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await fetchAuthed('/api/atlas/steward/claim-requests');
         if (cancelled || !res.ok) return;
         const data = await res.json();
         if (cancelled || !data?.ok) return;
@@ -60,7 +57,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [getToken]);
+  }, [fetchAuthed]);
 
   const forThisPiece = requests.filter(
     (r) =>
@@ -73,12 +70,10 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
     setBusyId(requestId);
     setError(null);
     try {
-      const token = await getToken();
-      const res = await fetch('/api/atlas/steward/resolve-claim-request', {
+      const res = await fetchAuthed('/api/atlas/steward/resolve-claim-request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           requestId,
