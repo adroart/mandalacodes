@@ -123,12 +123,15 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
     <div
       className="relative [color-scheme:dark]"
       style={{
+        // Darker, more opaque than before so the text reads clearly — the
+        // earlier translucent panel let the bright globe behind it wash out the
+        // serif value text.
         background:
-          'linear-gradient(160deg, rgba(28,23,18,0.86) 0%, rgba(17,14,11,0.92) 100%)',
-        backdropFilter: 'blur(14px)',
-        WebkitBackdropFilter: 'blur(14px)',
+          'linear-gradient(160deg, rgba(20,16,12,0.94) 0%, rgba(11,9,7,0.97) 100%)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         border: `1px solid ${isOrigin ? 'rgba(156,170,135,0.2)' : 'rgba(196,170,124,0.18)'}`,
-        boxShadow: '0 24px 70px -16px rgba(0,0,0,0.75)',
+        boxShadow: '0 24px 70px -16px rgba(0,0,0,0.85)',
       }}
     >
       {/* Corner brackets — the instrument signature. */}
@@ -154,10 +157,13 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         {/* Series + category */}
         <Label>{piece.category ?? 'Selected piece'}</Label>
         {inlineBits.length > 0 && (
-          <p className="font-serif text-sm text-wood-300 leading-snug mb-3">
+          <p
+            className="font-serif text-sm leading-snug mb-3"
+            style={{ color: '#cbbfa8' }}
+          >
             {inlineBits.map((b, i) => (
               <React.Fragment key={i}>
-                {i > 0 && <span className="mx-1.5 text-wood-500">·</span>}
+                {i > 0 && <span className="mx-1.5" style={{ color: '#8a7d64' }}>·</span>}
                 {b}
               </React.Fragment>
             ))}
@@ -165,7 +171,10 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         )}
 
         {/* Title */}
-        <h3 className="font-serif text-2xl sm:text-[1.7rem] text-paper-50 font-medium leading-tight">
+        <h3
+          className="font-serif text-2xl sm:text-[1.7rem] font-semibold leading-tight"
+          style={{ color: '#f6f1e8' }}
+        >
           {title}
         </h3>
 
@@ -188,8 +197,9 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         <Label>Where it rests</Label>
         <p
           className={`font-serif text-lg leading-snug ${
-            isSeeking || isUnawakened ? 'italic text-wood-300' : 'text-paper-50'
+            isSeeking || isUnawakened ? 'italic' : ''
           }`}
+          style={{ color: isSeeking || isUnawakened ? '#cbbfa8' : '#f6f1e8' }}
         >
           {statusLine}
         </p>
@@ -199,7 +209,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           <>
             <Rule />
             <Label>Founding light</Label>
-            <p className="font-serif text-lg text-paper-50 leading-snug">
+            <p className="font-serif text-lg leading-snug" style={{ color: "#f6f1e8" }}>
               The {ordinalLabel(piece.claimOrdinal)} light
             </p>
           </>
@@ -210,7 +220,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           <>
             <Rule />
             <Label>Held by a chart of</Label>
-            <p className="font-serif text-lg text-paper-50 leading-snug">
+            <p className="font-serif text-lg leading-snug" style={{ color: "#f6f1e8" }}>
               {holderChart.element}
             </p>
           </>
@@ -227,7 +237,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
                   <button
                     type="button"
                     onClick={() => onSelectKin?.(k.key)}
-                    className="font-serif text-base text-paper-50 hover:text-bronze-300 transition-colors text-left leading-snug"
+                    className="font-serif text-base hover:text-bronze-300 transition-colors text-left leading-snug" style={{ color: "#f6f1e8" }}
                   >
                     {k.title}
                   </button>
