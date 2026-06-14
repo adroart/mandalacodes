@@ -18,6 +18,8 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
   Casts that produce moving lines have no per-line reading until these are authored in Adrian's voice. Done when the 384 line texts are drafted via `/cast-content` and landed through PR [#6](https://github.com/technicianofthesacred/mandalacodes/pull/6).
 - [ ] **Verify interconnection** — click through the interconnection branch on a preview deploy (Relations seats, atlas deep links, birth-place marker, steward picker) before merging _(you · quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify _(routed → Backlog)_
   The deck↔atlas↔profile bridges need a human pass on a real preview before they reach main. Done when each listed surface is confirmed working on a preview deploy. See [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify.
+- [ ] **Collector photo contributions** — let a signed-in collector add their own photo to their piece's page, with an approval step before it shows publicly _(agent · moderate)_
+  A collector may hold the only photo of where a piece now lives, but pasting an image ID is a non-starter for them. Done when a steward can upload a photo from their piece screen, it waits for Adrian's approval, and approved photos appear in that piece's gallery.
 
 ### Done
 
