@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAccount } from '../lib/account/useAccount';
 import AdminLayout from './AdminLayout';
 import { CITIES } from '../data/cities';
 import { FULL_ARCHIVE } from '../data/mockData';
@@ -13,18 +13,14 @@ import type {
 } from '../types';
 
 /**
- * Bearer-token fetch hook. Every admin call needs to pass the Clerk JWT
- * so the server-side requireAdmin() can verify identity + allowlist.
- * Wraps window.fetch and merges Authorization header.
+ * Cookie-session fetch hook. Better Auth uses a same-origin session cookie,
+ * not a bearer token. fetchAuthed sends `credentials: 'include'` so the
+ * cookie rides along on every admin call; the server-side requireAdmin()
+ * reads that session + the ADMIN_EMAILS allowlist. No Authorization header.
  */
 function useAdminFetch(): (input: string, init?: RequestInit) => Promise<Response> {
-  const { getToken } = useAuth();
-  return async (input, init = {}) => {
-    const token = await getToken();
-    const headers = new Headers(init.headers);
-    if (token) headers.set('Authorization', `Bearer ${token}`);
-    return fetch(input, { ...init, headers });
-  };
+  const { fetchAuthed } = useAccount();
+  return fetchAuthed;
 }
 
 // ───────────────────────────────────────────────────────────────────────────

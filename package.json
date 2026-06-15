@@ -25,14 +25,13 @@
     "backup:atlas": "tsx scripts/backup-atlas.ts"
   },
   "dependencies": {
-    "@clerk/backend": "^3.4.14",
-    "@clerk/clerk-react": "^5.61.8",
     "@fontsource/cormorant-garamond": "^5.2.11",
     "@fontsource/karla": "^5.2.8",
     "@fontsource/lora": "^5.2.8",
     "@react-three/fiber": "^8.18.0",
     "@react-three/postprocessing": "^2.19.1",
     "astronomy-engine": "^2.1.19",
+    "better-auth": "^1.6.18",
     "cobe": "^2.0.1",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",

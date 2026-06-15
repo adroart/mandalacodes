@@ -1,19 +1,22 @@
 /**
- * Clerk auth helpers for Cloudflare Pages Functions.
+ * Auth helpers for Cloudflare Pages Functions (atlas steward + admin).
  *
- * Verifies the JWT in the `Authorization: Bearer ...` header against Clerk.
- * Two helpers:
- *   requireUser  — any signed-in Clerk user
- *   requireAdmin — signed-in AND email is in ADMIN_EMAILS env var
+ * NOTE ON THE NAME: still clerk.ts so the endpoints importing
+ * requireUser/requireAdmin/isAuthResponse don't all change. It no longer uses
+ * Clerk — it validates the self-owned Better Auth session cookie.
  *
- * Pattern ported from Adrian-Website/functions/api/_lib/clerk.js with the
- * admin allowlist check folded in.
+ *   requireUser  — any signed-in user
+ *   requireAdmin — signed-in AND email is on the ADMIN_EMAILS allowlist
+ *
+ * Return contract unchanged (AuthContext | Response).
  */
 
-import { verifyToken } from '@clerk/backend';
+import { createAuth } from '../../../lib/account/auth.server.js';
 
 export interface AuthEnv {
-  CLERK_SECRET_KEY?: string;
+  DB?: unknown;
+  BETTER_AUTH_SECRET?: string;
+  BETTER_AUTH_URL?: string;
   ADMIN_EMAILS?: string;
 }
 
@@ -23,6 +26,7 @@ export interface AuthContext {
   payload: Record<string, unknown>;
 }
 
+/** Kept for back-compat; bearer tokens are no longer used. */
 export function bearerToken(request: Request): string | null {
   const header =
     request.headers.get('authorization') || request.headers.get('Authorization');
@@ -32,35 +36,22 @@ export function bearerToken(request: Request): string | null {
 }
 
 /**
- * Verify the request's bearer token. Returns `{userId, email, payload}` on
- * success, `null` on any failure (missing token, bad signature, expired,
- * no CLERK_SECRET_KEY env var configured).
+ * Verify the request's Better Auth session cookie. Returns the auth context
+ * on success, `null` on any failure.
  */
 export async function verifyRequest(
   request: Request,
   env: AuthEnv,
 ): Promise<AuthContext | null> {
-  const token = bearerToken(request);
-  if (!token) return null;
-  if (!env.CLERK_SECRET_KEY) return null;
+  if (!env.DB) return null;
   try {
-    const payload = await verifyToken(token, { secretKey: env.CLERK_SECRET_KEY });
-    if (!payload || typeof payload.sub !== 'string') return null;
-    // Clerk includes the primary email in the JWT when configured. Fall back
-    // to null and let the caller fetch the user record if needed.
-    const rawEmail = (payload as Record<string, unknown>).email;
-    const rawEmailAddresses = (payload as Record<string, unknown>).email_addresses;
-    let email: string | null = null;
-    if (typeof rawEmail === 'string') {
-      email = rawEmail;
-    } else if (Array.isArray(rawEmailAddresses) && rawEmailAddresses[0]) {
-      const first = rawEmailAddresses[0] as { email_address?: unknown };
-      if (typeof first.email_address === 'string') email = first.email_address;
-    }
+    const auth = createAuth(env as Record<string, unknown>);
+    const data = await auth.api.getSession({ headers: request.headers });
+    if (!data || !data.user?.id) return null;
     return {
-      userId: payload.sub,
-      email,
-      payload: payload as Record<string, unknown>,
+      userId: data.user.id,
+      email: data.user.email ?? null,
+      payload: { session: data.session, user: data.user },
     };
   } catch {
     return null;
@@ -69,8 +60,7 @@ export async function verifyRequest(
 
 /**
  * Require a verified user. On success returns the auth context. On failure
- * returns a fully formed 401 Response that the handler should immediately
- * return to the client.
+ * returns a 401 Response the handler should return immediately.
  */
 export async function requireUser(
   request: Request,
@@ -88,11 +78,7 @@ export async function requireUser(
 
 /**
  * Require a signed-in user whose email is on the ADMIN_EMAILS allowlist.
- * Returns the auth context on success, or a 401/403 Response on failure.
- *
- * ADMIN_EMAILS is a comma-separated list set in the Cloudflare Pages
- * dashboard. Compares case-insensitively. Empty / missing env var means
- * no one is admin — fail closed.
+ * Comma-separated, case-insensitive. Empty/missing = no one is admin (fail closed).
  */
 export async function requireAdmin(
   request: Request,
@@ -120,11 +106,9 @@ export async function requireAdmin(
 }
 
 /**
- * Type guard — narrows the union returned by requireAdmin/requireUser to
- * the AuthContext branch. Use at the top of every handler:
+ * Type guard — narrows the union returned by requireAdmin/requireUser.
  *   const auth = await requireAdmin(request, env);
- *   if (auth instanceof Response) return auth;
- *   // auth is now AuthContext
+ *   if (isAuthResponse(auth)) return auth;
  */
 export function isAuthResponse(value: AuthContext | Response): value is Response {
   return value instanceof Response;

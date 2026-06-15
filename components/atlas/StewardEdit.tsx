@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/clerk-react';
+import { useAccount } from '../../lib/account/useAccount';
+import { signOut } from '../../lib/account/authClient';
 import type { PieceRecord, CityCentroid, StewardRecord } from '../../types';
 import { ATLAS_PLACES, getCityById, isCountryPlace } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
@@ -60,8 +61,7 @@ const formatCityLabel = (city: CityCentroid): string => {
 
 const StewardEdit: React.FC = () => {
   const navigate = useNavigate();
-  const { isLoaded, isSignedIn, getToken } = useAuth();
-  const { signOut } = useClerk();
+  const { isLoaded, isSignedIn, fetchAuthed } = useAccount();
   const [entries, setEntries] = useState<ClaimResponse['claimed']>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -88,12 +88,10 @@ const StewardEdit: React.FC = () => {
     let cancelled = false;
     const load = async () => {
       try {
-        const token = await getToken();
-        const res = await fetch('/api/atlas/steward/claim', {
+        const res = await fetchAuthed('/api/atlas/steward/claim', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
         if (cancelled) return;
@@ -129,7 +127,7 @@ const StewardEdit: React.FC = () => {
       cancelled = true;
       if (savedTimerRef.current) window.clearTimeout(savedTimerRef.current);
     };
-  }, [isLoaded, isSignedIn, getToken, navigate]);
+  }, [isLoaded, isSignedIn, fetchAuthed, navigate]);
 
   // Click-outside to close the city combobox
   useEffect(() => {
@@ -169,12 +167,10 @@ const StewardEdit: React.FC = () => {
     setSaving(true);
     setSaveError(null);
     try {
-      const token = await getToken();
-      const res = await fetch('/api/atlas/steward/update', {
+      const res = await fetchAuthed('/api/atlas/steward/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           ...body,
@@ -230,12 +226,10 @@ const StewardEdit: React.FC = () => {
     setRing3Saving(true);
     setSaveError(null);
     try {
-      const token = await getToken();
-      const res = await fetch('/api/atlas/steward/update', {
+      const res = await fetchAuthed('/api/atlas/steward/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           pieceId: stewardRecord.pieceId,
@@ -280,12 +274,10 @@ const StewardEdit: React.FC = () => {
     setConsentSubmitting(true);
     setConsentError(null);
     try {
-      const token = await getToken();
-      const res = await fetch('/api/atlas/steward/claim', {
+      const res = await fetchAuthed('/api/atlas/steward/claim', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           consent: { ring2MapPresence: choice.ring2MapPresence },
@@ -629,7 +621,7 @@ const StewardEdit: React.FC = () => {
         {stewardRecord && (
           <StewardRequests
             steward={stewardRecord}
-            getToken={getToken}
+            fetchAuthed={fetchAuthed}
             onTransferred={() => {
               navigate('/atlas/claim', { replace: true });
             }}
@@ -642,7 +634,7 @@ const StewardEdit: React.FC = () => {
           <LegacyBook
             steward={stewardRecord}
             piece={piece}
-            getToken={getToken}
+            fetchAuthed={fetchAuthed}
             onStewardUpdate={(s) =>
               setEntries(prev =>
                 prev.map((e, i) => (i === selectedIdx ? { ...e, steward: s } : e)),

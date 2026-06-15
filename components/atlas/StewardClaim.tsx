@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  SignedIn,
-  SignedOut,
-  SignIn,
-  useAuth,
-  useUser,
-} from '@clerk/clerk-react';
+import { useAccount } from '../../lib/account/useAccount';
+import SignInModal from '../account/SignInModal';
 import type { PieceRecord, StewardRecord } from '../../types';
 import { FULL_ARCHIVE } from '../../data/mockData';
 import ConsentRings from './ConsentRings';
@@ -44,8 +39,7 @@ type ClaimResponse = {
 };
 
 const StewardClaim: React.FC = () => {
-  const { isLoaded, isSignedIn, getToken } = useAuth();
-  const { user } = useUser();
+  const { isLoaded, isSignedIn, email, fetchAuthed } = useAccount();
   const navigate = useNavigate();
   const [status, setStatus] = useState<
     'idle' | 'claiming' | 'consent' | 'no-record' | 'error'
@@ -61,12 +55,10 @@ const StewardClaim: React.FC = () => {
     (async () => {
       setStatus('claiming');
       try {
-        const token = await getToken();
-        const res = await fetch('/api/atlas/steward/claim', {
+        const res = await fetchAuthed('/api/atlas/steward/claim', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
         if (cancelled) return;
@@ -95,19 +87,17 @@ const StewardClaim: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn, getToken, navigate, status]);
+  }, [isLoaded, isSignedIn, fetchAuthed, navigate, status]);
 
   // Phase B — consent capture.
   const handleConsentSubmit = async (choice: ConsentChoice) => {
     setSubmitting(true);
     setConsentError(null);
     try {
-      const token = await getToken();
-      const res = await fetch('/api/atlas/steward/claim', {
+      const res = await fetchAuthed('/api/atlas/steward/claim', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           consent: { ring2MapPresence: choice.ring2MapPresence },
@@ -147,25 +137,25 @@ const StewardClaim: React.FC = () => {
           </h1>
         )}
 
-        <SignedOut>
-          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 text-center mb-10">
-            If you hold one of Adrian Rasmussen's pieces, sign in with the email Adrian used when he added you. Only your city will appear publicly, never an address. You can switch to private at any time.
-          </p>
-          <SignIn
-            path="/atlas/claim"
-            routing="path"
-            signUpUrl="/atlas/claim"
-            afterSignInUrl="/atlas/claim"
-            appearance={{
-              elements: {
-                rootBox: 'mx-auto',
-                card: 'shadow-none border border-wood-200 bg-white',
-              },
-            }}
-          />
-        </SignedOut>
+        {isLoaded && !isSignedIn && (
+          <>
+            <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 text-center mb-10">
+              If you hold one of Adrian Rasmussen's pieces, sign in with the email Adrian used when he added you. Only your city will appear publicly, never an address. You can switch to private at any time.
+            </p>
+            {/* Self-owned sign-in. Once signed in, the Phase A effect above
+                fires automatically (isSignedIn flips) and binds the piece —
+                no redirect needed; the claim happens in place. */}
+            <SignInModal
+              onClose={() => navigate('/atlas', { replace: true })}
+              onSignedIn={() => {
+                /* Phase A effect handles binding once isSignedIn flips. */
+              }}
+            />
+          </>
+        )}
 
-        <SignedIn>
+        {isSignedIn && (
+          <>
           {status === 'claiming' && (
             <p className="font-serif italic text-base text-stone-700 text-center">
               Looking up your piece...
@@ -184,7 +174,7 @@ const StewardClaim: React.FC = () => {
               <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 mb-3">
                 We don't have a piece bound to{' '}
                 <span className="text-wood-900">
-                  {user?.primaryEmailAddress?.emailAddress ?? 'your email'}
+                  {email ?? 'your email'}
                 </span>{' '}
                 yet.
               </p>
@@ -198,7 +188,8 @@ const StewardClaim: React.FC = () => {
               Something went wrong. Please try again.
             </p>
           )}
-        </SignedIn>
+          </>
+        )}
       </div>
     </section>
   );

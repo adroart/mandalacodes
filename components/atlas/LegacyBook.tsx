@@ -36,7 +36,7 @@ type StewardView = Omit<StewardRecord, 'notes'>;
 interface LegacyBookProps {
   steward: StewardView;
   piece: PieceRecord;
-  getToken: () => Promise<string | null>;
+  fetchAuthed: (input: string, init?: RequestInit) => Promise<Response>;
   /** Called with the updated record after a heir add/revoke. */
   onStewardUpdate: (steward: StewardView) => void;
 }
@@ -101,7 +101,7 @@ const eventLabel = (e: LedgerEvent): string | null => {
 const LegacyBook: React.FC<LegacyBookProps> = ({
   steward,
   piece,
-  getToken,
+  fetchAuthed,
   onStewardUpdate,
 }) => {
   const [inscriptions, setInscriptions] = useState<InscriptionView[] | null>(null);
@@ -140,17 +140,15 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
 
   const authedFetch = useCallback(
     async (input: string, init?: RequestInit) => {
-      const token = await getToken();
-      return fetch(input, {
+      return fetchAuthed(input, {
         ...init,
         headers: {
           'Content-Type': 'application/json',
           ...(init?.headers ?? {}),
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
     },
-    [getToken],
+    [fetchAuthed],
   );
 
   const loadInscriptions = useCallback(async () => {

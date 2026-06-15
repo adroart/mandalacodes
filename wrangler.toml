@@ -1,5 +1,7 @@
 name = "mandalacodes"
 compatibility_date = "2024-09-23"
+# Better Auth (self-owned login) uses node:crypto, exposed only behind this flag.
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
 # R2 bucket for the Atlas ledger (city-level world map of where every UL piece lives).
