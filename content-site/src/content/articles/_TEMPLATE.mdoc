@@ -1,0 +1,74 @@
+---
+title: 'Template: How to Write a Learn Article'
+description: >-
+  Copy this file, rename it to your-article-slug.mdoc, and replace every field.
+  This description becomes the meta description and link preview, so keep it
+  around 155 characters and make it read like a sentence.
+pubDate: 2026-06-15
+# updatedDate: 2026-07-01   # uncomment when you revise a published piece
+tags:
+  - foundations
+# relatedCard: 1            # 1–64, optional. Links the article to a deck card.
+draft: true
+---
+
+This first paragraph is the opening. Write it the way the published articles
+open: a plain, concrete statement that earns attention without overselling.
+The body is Markdoc (a superset of Markdown), so everything below works the
+same as in any `.md` file.
+
+## Use H2 for the main sections
+
+Headings start at level 2 (`##`) because the article title is already the H1.
+Keep sections short and let each one carry a single idea. Sub-points can go a
+level deeper with `###` when a section genuinely needs it.
+
+Paragraphs are just blank-line-separated text. *Italic* and **bold** both work.
+Links look like [this](https://mandalacodes.com/universal-language).
+
+### Lists, when a section needs structure
+
+- A bullet for each parallel point.
+- Keep them short; if a bullet runs to three lines, it probably wants to be a
+  paragraph instead.
+- **Lead term.** A bold lead and a short gloss is a clean way to define things,
+  matching the house style in the mandala article. (No em dashes anywhere on
+  this site: use a comma, a period, a colon, or "to" for ranges.)
+
+Numbered steps work when order matters:
+
+1. First the reader does this.
+2. Then this.
+3. The payoff lands here.
+
+## Quotes and emphasis
+
+> A blockquote sets apart a line worth pausing on: a definition, a saying, or
+> a sentence you want to slow the reader down for.
+
+## Closing
+
+End by pointing somewhere. If the piece relates to a specific card, set
+`relatedCard` in the frontmatter above and the footer link to that card renders
+automatically. Otherwise close with an invitation, the way the mandala article
+ends by inviting the reader to draw a card.
+
+<!--
+  WORKFLOW
+  --------
+  1. Copy this file:  cp _TEMPLATE.mdoc your-slug.mdoc
+  2. Edit the frontmatter and body (or use the visual editor, see below).
+  3. Set `draft: false` when ready to publish.
+  4. Commit and push to main; Cloudflare Pages rebuilds /learn.
+
+  VISUAL EDITOR
+  -------------
+  From the repo root:  npm run write
+  Then open http://localhost:4321/learn/keystatic, a full editing UI that
+  writes these same .mdoc files. Files are the source of truth; Keystatic is
+  just a UI over them.
+
+  Files starting with `_` (like this one) are ignored as drafts because
+  `draft: true` keeps them out of the build, RSS, sitemap, and llms.txt.
+  Leave this template here as a reference; it will never publish while draft.
+-->

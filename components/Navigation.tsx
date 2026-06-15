@@ -10,6 +10,12 @@ interface NavItem {
   label: string;
   /** Only render this item when the visitor is signed in. */
   signedInOnly?: boolean;
+  /**
+   * Static (non-SPA) destination served outside React Router — e.g. the Astro
+   * `/learn` library. Rendered as a plain anchor so the browser does a real
+   * navigation instead of asking the router for a route that does not exist.
+   */
+  external?: boolean;
 }
 
 // Mandala Codes is its own site (split from Adrian-Website). The menu lists
@@ -22,6 +28,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { path: '/universal-language', label: 'Deck' },
   { path: '/the-systems', label: 'The Systems' },
+  { path: '/learn', label: 'Learn', external: true },
   { path: '/atlas', label: 'Atlas' },
   { path: '/atlas/edit', label: 'Your pieces', signedInOnly: true },
   { path: '/profile', label: 'Profile' },
@@ -143,25 +150,33 @@ const Navigation: React.FC = () => {
         {/* Desktop nav */}
         <div className="hidden lg:flex items-center">
           {NAV_ITEMS.map((item, i) => {
+            const linkClass = `group relative text-[13px] uppercase tracking-[0.18em] font-label py-3 px-4 xl:px-5 transition-all duration-300 font-semibold ${
+              isNavActive(item.path) ? 'text-wood-900' : 'text-wood-700 hover:text-bronze-600'
+            }`;
+            const underline = (
+              <span
+                aria-hidden="true"
+                className={`absolute -bottom-0 left-4 xl:left-5 right-4 xl:right-5 h-px bg-bronze-500 transition-all duration-300 ease-out ${
+                  isNavActive(item.path) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                }`}
+              />
+            );
             const link = (
               <React.Fragment key={item.path}>
                 {i > 0 && (
                   <span aria-hidden="true" className="h-3.5 w-px bg-wood-900/15" />
                 )}
-                <Link
-                  to={item.path}
-                  className={`group relative text-[13px] uppercase tracking-[0.18em] font-label py-3 px-4 xl:px-5 transition-all duration-300 font-semibold ${
-                    isNavActive(item.path) ? 'text-wood-900' : 'text-wood-700 hover:text-bronze-600'
-                  }`}
-                >
-                  {item.label}
-                  <span
-                    aria-hidden="true"
-                    className={`absolute -bottom-0 left-4 xl:left-5 right-4 xl:right-5 h-px bg-bronze-500 transition-all duration-300 ease-out ${
-                      isNavActive(item.path) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                    }`}
-                  />
-                </Link>
+                {item.external ? (
+                  <a href={item.path} className={linkClass}>
+                    {item.label}
+                    {underline}
+                  </a>
+                ) : (
+                  <Link to={item.path} className={linkClass}>
+                    {item.label}
+                    {underline}
+                  </Link>
+                )}
               </React.Fragment>
             );
             return item.signedInOnly ? (isSignedIn ? <React.Fragment key={item.path}>{link}</React.Fragment> : null) : link;
@@ -202,13 +217,18 @@ const Navigation: React.FC = () => {
           className="lg:hidden absolute top-full left-0 w-full bg-paper-50/98 backdrop-blur-xl border-b border-wood-200 py-10 px-6 flex flex-col gap-7 items-center shadow-2xl"
         >
           {NAV_ITEMS.map((item) => {
-            const button = (
+            const itemClass = `text-sm font-label uppercase tracking-[0.2em] font-semibold transition-colors ${
+              isNavActive(item.path) ? 'text-bronze-600' : 'text-wood-800 hover:text-wood-900'
+            }`;
+            const button = item.external ? (
+              <a key={item.path} href={item.path} className={itemClass}>
+                {item.label}
+              </a>
+            ) : (
               <button
                 key={item.path}
                 onClick={() => handleNavClick(item.path)}
-                className={`text-sm font-label uppercase tracking-[0.2em] font-semibold transition-colors ${
-                  isNavActive(item.path) ? 'text-bronze-600' : 'text-wood-800 hover:text-wood-900'
-                }`}
+                className={itemClass}
               >
                 {item.label}
               </button>
