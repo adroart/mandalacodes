@@ -26,7 +26,11 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 ## Phase 1b: Accounts
 
-**Status update 2026-06-09:** shared dev login is now LIVE. accounts flag is on, the D1 binding points at the shared `adrian-website` database (the old `mandalacodes-oracle` DB is retired), and the dev Clerk app is shared with adrianrasmussen.com. The remaining provisioning items below are superseded by the production launch item.
+**Status update 2026-06-15:** login moved OFF Clerk to self-owned Better Auth (Google + email/password + email code), live on mandalacodes.com, sharing the `adrian-website` collector database with the art site. Everything below about Clerk/production-Clerk is SUPERSEDED — kept only for history. Live secrets set (BETTER_AUTH_SECRET, BETTER_AUTH_URL, RESEND, GOOGLE_*, ADMIN_EMAILS).
+
+- [ ] **Remove old login reference from the pieces admin file** — `components/AdminPieces.tsx` still imports the retired Clerk library; it lives on a separate in-progress branch (not main), so the auth switch left it untouched. Clean it when that branch lands. _(agent · quick)_
+
+**Status update 2026-06-09 (superseded by the 2026-06-15 note above):** shared dev login is now LIVE. accounts flag is on, the D1 binding points at the shared `adrian-website` database (the old `mandalacodes-oracle` DB is retired), and the dev Clerk app is shared with adrianrasmussen.com. The remaining provisioning items below are superseded by the production launch item.
 
 - [ ] **Production login** — take mandalacodes login to production with its OWN free Clerk instance (own domain + DNS + Google OAuth), still pointed at the shared `adrian-website` D1 so collectors stay unified. NO paid satellite. _(you · deep)_ → Plan: [clerk-production-launch.md](../Adrian-Website/todo/plans/clerk-production-launch.md) § D _(routed → Backlog)_
   The shared dev login works but production needs its own Clerk instance while keeping one unified collector database. Done when a free production Clerk instance with its own domain/DNS/OAuth is live against the shared `adrian-website` D1. See [clerk-production-launch.md](../Adrian-Website/todo/plans/clerk-production-launch.md) § D.
@@ -143,6 +147,8 @@ Framework built on branch `claude/oracle-mcp-artwork-readings-MMa1k` (pending me
   The site needs a stance page and an artists hub to anchor authority and feature creators. Done when /about and /artists ship with Adrian as the first featured artist. See [2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md).
 - [ ] **Phase 2 + 3 articles** — publish the Phase 2 editorial-depth articles and the Phase 3 symbolism glossary _(agent · deep)_ → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(routed → Backlog)_
   The deeper editorial articles and glossary extend the authority cluster beyond Phase 1. Done when the Phase 2 articles and Phase 3 glossary are published. See [2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md).
+- [ ] **Learn editor in the browser** _(band: you-required)_ _(effort: moderate)_ — switch the `/learn` Keystatic editor from local-only mode to GitHub mode so articles can be written from any browser without running the dev server.
+  Today writing requires `npm run write` locally; GitHub mode needs a Keystatic GitHub App and a host with server routes. Steps are in [content-site/README.md](content-site/README.md) "Editing from the browser in production." Done when you can open a hosted Keystatic URL, write an article, and it commits to `main`.
 
 ## Operational notes (not TODOs: context for future-you)
 

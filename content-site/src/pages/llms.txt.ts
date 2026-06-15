@@ -1,7 +1,7 @@
 import type { APIContext } from 'astro'
 import { getPublishedArticles } from '../lib/articles'
 
-// llms.txt — a markdown index of this site's content for AI systems.
+// llms.txt: a markdown index of this site's content for AI systems.
 // Spec: https://llmstxt.org. Served at /learn/llms.txt; the root
 // /llms.txt (in the main repo's public/) points here.
 export async function GET(context: APIContext) {
@@ -13,7 +13,7 @@ export async function GET(context: APIContext) {
     '# Mandala Codes · Learn',
     '',
     '> Essays and reference articles on mandalas, the I Ching, Gene Keys, and',
-    '> Human Design — the living library behind the Universal Language oracle,',
+    '> Human Design, the living library behind the Universal Language oracle,',
     '> a reading deck of 64 mandala paintings by Adrian Rasmussen.',
     '',
     `The interactive deck lives at ${origin}/universal-language (cards 1–64).`,
