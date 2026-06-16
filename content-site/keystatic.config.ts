@@ -56,6 +56,39 @@ export default config({
           validation: { isRequired: false, min: 1, max: 64 },
         }),
 
+        field: fields.select({
+          label: 'Field of study',
+          description: 'Drives the Library filter tabs and the per-field accent tint.',
+          options: [
+            { label: 'Foundations', value: 'Foundations' },
+            { label: 'Traditions', value: 'Traditions' },
+            { label: 'Symbolism & Geometry', value: 'Symbolism & Geometry' },
+            { label: 'History', value: 'History' },
+          ],
+          defaultValue: 'Foundations',
+        }),
+
+        culture: fields.text({
+          label: 'Culture / origin',
+          description: 'Shown beside the field, e.g. "Tibet", "Universal". Optional.',
+        }),
+
+        cover: fields.text({
+          label: 'Cover image (Cloudinary id)',
+          description: 'Public id of the cover artwork, e.g. "1_o8tafh". Falls back to a deck plate when blank.',
+        }),
+
+        readTime: fields.text({
+          label: 'Reading time',
+          description: 'e.g. "9 min". Computed from the body when blank.',
+        }),
+
+        spotlight: fields.checkbox({
+          label: 'Spotlight',
+          description: 'Lift this article into the Library spotlight band. Use on at most one article.',
+          defaultValue: false,
+        }),
+
         draft: fields.checkbox({
           label: 'Draft',
           description: 'Drafts are excluded from the published site, RSS, sitemap, and llms.txt.',
