@@ -42,23 +42,28 @@ Edit `scripts/sync-secrets-to-cloudflare.sh` and update the two arrays:
 - `ENCRYPTED_VARS` — true secrets, only read by Cloudflare Functions at
   runtime, never embedded in the client bundle.
 
-Current set (updated 2026-06-10):
+Current set (updated 2026-06-16 — auth is self-owned Better Auth, not Clerk):
 
 | Name | Type | Projects | Used by |
 |---|---|---|---|
-| `VITE_CLERK_PUBLISHABLE_KEY` | plaintext | mandalacodes | Clerk widget on /admin, /atlas/claim |
-| `CLERK_SECRET_KEY` | encrypted | mandalacodes | Clerk JWT verification in Functions |
-| `CLERK_WEBHOOK_SECRET` | encrypted | mandalacodes | Svix verification for /api/clerk/webhook (accounts) |
+| `BETTER_AUTH_SECRET` | encrypted | mandalacodes | Better Auth session signing (32+ random chars) |
+| `BETTER_AUTH_URL` | plaintext | mandalacodes | Deployed origin, e.g. `https://mandalacodes.com` (must be set in prod) |
+| `RESEND_API_KEY` | encrypted | mandalacodes | Sends the email sign-in code |
+| `RESEND_FROM_EMAIL` | plaintext | mandalacodes | Verified sender for the sign-in code email |
+| `GOOGLE_CLIENT_ID` | plaintext | mandalacodes | "Continue with Google" OAuth (public by design) |
+| `GOOGLE_CLIENT_SECRET` | encrypted | mandalacodes | Google OAuth client secret |
+| `ORACLE_API_TOKEN` | encrypted | mandalacodes | Optional bearer gating /api/oracle/recommendation (rate-limited when unset) |
 | `ADMIN_EMAILS` | plaintext | mandalacodes | Admin allowlist for /admin/atlas |
 | `SALE_WEBHOOK_SECRET` | encrypted | **both** | HMAC-SHA256 verification of sale webhooks from adrianrasmussen.com; mandalacodes verifies, adrianrasmussen.com signs. Same value on both projects. Generate with `openssl rand -hex 32`. See `todo/handoff/adrian-website/sale-webhook-spec.md`. |
 | `GITHUB_MIRROR_TOKEN` | encrypted | mandalacodes | Fine-grained GitHub PAT (Contents: Read/Write) for the public `public.json` mirror. Together with the two vars below, activates the durability mirror in `functions/api/atlas/_mirror.ts`. |
 | `GITHUB_MIRROR_REPO` | plaintext | mandalacodes | `owner/repo` of the public mirror repository (e.g. `technicianofthesacred/adrian-atlas-mirror`). |
 | `GITHUB_MIRROR_PATH` | plaintext | mandalacodes | Path inside the mirror repo (e.g. `atlas/public.json`). Only `public.json` is ever mirrored — never the ledger or stewards files. |
 
-`CLERK_WEBHOOK_SECRET` is only needed once the public accounts surface goes
-live (the launch flag in `launchFlags.ts` flips on). Until then it can be
-absent — the sync script `[skip]`s any var with no value in Infisical, and the
-webhook endpoint returns `503 webhook_not_configured` rather than erroring.
+The sync script `[skip]`s any var with no value in Infisical, so an
+unconfigured optional var (e.g. `ORACLE_API_TOKEN`, `GOOGLE_*` before Google
+sign-in is wired) is simply skipped rather than erroring. The required-vars
+preflight only insists on `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and
+`ADMIN_EMAILS`.
 
 `ATLAS_BUCKET` and the D1 binding are configured in `wrangler.toml`, not
 via env vars, and need no sync.
@@ -71,6 +76,4 @@ Two reasons:
 2. The dashboard shows values once and then hides them. Lose the page, lose
    the value. Infisical is the recoverable home.
 
-But the dashboard *is* fine as a fallback. The Clerk vars Adrian set up on
-2026-05-28 went directly into the dashboard, not Infisical. The next
-rotation is the natural moment to migrate them, not an urgent task.
+But the dashboard *is* fine as a fallback.

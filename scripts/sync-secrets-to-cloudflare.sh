@@ -15,11 +15,15 @@ set -euo pipefail
 # ─── Configure ─────────────────────────────────────────────────────────────
 PROJECT_NAME="mandalacodes"
 
-# Plaintext vars (visible in dashboard, NOT encrypted). Used for build-time
-# values like Vite publishable keys, and configuration like email allowlists.
+# Plaintext vars (visible in dashboard, NOT encrypted). Configuration and
+# public identifiers — no real secrets here. (Auth moved in-house to Better
+# Auth; there is no Vite publishable key anymore.)
 PLAINTEXT_VARS=(
-  "VITE_CLERK_PUBLISHABLE_KEY"
   "ADMIN_EMAILS"
+  # Better Auth public configuration.
+  "BETTER_AUTH_URL"
+  "RESEND_FROM_EMAIL"
+  "GOOGLE_CLIENT_ID"          # OAuth client id is public by design
   # Public GitHub mirror configuration (docs/secrets-sync.md): repo + path
   # are configuration, not secrets. Only public.json is ever mirrored.
   "GITHUB_MIRROR_REPO"
@@ -28,14 +32,18 @@ PLAINTEXT_VARS=(
 
 # Encrypted vars (real secrets). Stored encrypted at rest in Cloudflare.
 ENCRYPTED_VARS=(
-  "CLERK_SECRET_KEY"
-  "CLERK_WEBHOOK_SECRET"
+  # Self-owned Better Auth (replaced Clerk).
+  "BETTER_AUTH_SECRET"
+  "RESEND_API_KEY"
+  "GOOGLE_CLIENT_SECRET"
   # Sale → ledger bridge (M4): HMAC secret shared with adrianrasmussen.com —
   # the SAME value must be set on that Pages project too (this script only
   # syncs mandalacodes; see todo/handoff/adrian-website/sale-webhook-spec.md).
   "SALE_WEBHOOK_SECRET"
   # Fine-grained GitHub PAT for the public-state mirror (_mirror.ts).
   "GITHUB_MIRROR_TOKEN"
+  # Optional bearer token gating /api/oracle/recommendation.
+  "ORACLE_API_TOKEN"
 )
 
 # ─── Pre-flight ────────────────────────────────────────────────────────────
@@ -46,7 +54,7 @@ fi
 
 # Ensure we're inside an Infisical-injected process. The exact var names below
 # are required-to-be-set; this catches the "ran without infisical run" mistake.
-if [[ -z "${VITE_CLERK_PUBLISHABLE_KEY:-}" || -z "${CLERK_SECRET_KEY:-}" || -z "${ADMIN_EMAILS:-}" ]]; then
+if [[ -z "${BETTER_AUTH_SECRET:-}" || -z "${BETTER_AUTH_URL:-}" || -z "${ADMIN_EMAILS:-}" ]]; then
   cat >&2 <<'EOF'
 Missing one of the required env vars in this process.
 
