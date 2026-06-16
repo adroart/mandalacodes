@@ -6,8 +6,7 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 - [ ] **Reprint QR cards** — physical cards so the QR codes point at the new mandalacodes.com domain _(you · quick)_ _(routed → Backlog)_
   The printed plaques still encode the old URL, so scanners may land on a stale path. Done when a fresh batch encoding `mandalacodes.com/qr/:n` is printed and verified.
-- [ ] **Launch sign-in** — bring account sign-in live on the production Mandala Codes site _(you · deep)_ → Plan: [clerk-launch.md](todo/plans/clerk-launch.md) _(routed → Backlog)_
-  Collectors can't create or use accounts until Clerk is wired on the live domain. Done when sign-in works end to end on mandalacodes.com per the plan. See [clerk-launch.md](todo/plans/clerk-launch.md).
+- [x] **Launch sign-in** — DONE 2026-06-15. Account sign-in is live on mandalacodes.com via self-owned Better Auth (email code + password + Google), same-origin, sharing the `adrian-website` collector DB. The old Clerk plan is superseded (see Phase 1b below).
 - [ ] **Close PR #110** — supersede the older Adrian-Website PR #110 with the newer PR #113 _(you · quick)_ → PRs: [#110](https://github.com/technicianofthesacred/Adrian-Website/pull/110), [#113](https://github.com/technicianofthesacred/Adrian-Website/pull/113) _(routed → Backlog)_
   Two overlapping PRs exist; the newer one replaces the old, so the stale one should be closed to avoid confusion. Done when [#110](https://github.com/technicianofthesacred/Adrian-Website/pull/110) is closed in favour of [#113](https://github.com/technicianofthesacred/Adrian-Website/pull/113).
 - [ ] **Canonical domain** — redirect www to the bare domain so SEO consolidates on one address _(you · quick)_ _(routed → Backlog)_
@@ -35,7 +34,14 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 - [ ] **Production login** — take mandalacodes login to production with its OWN free Clerk instance (own domain + DNS + Google OAuth), still pointed at the shared `adrian-website` D1 so collectors stay unified. NO paid satellite. _(you · deep)_ → Plan: [clerk-production-launch.md](../Adrian-Website/todo/plans/clerk-production-launch.md) § D _(routed → Backlog)_
   The shared dev login works but production needs its own Clerk instance while keeping one unified collector database. Done when a free production Clerk instance with its own domain/DNS/OAuth is live against the shared `adrian-website` D1. See [clerk-production-launch.md](../Adrian-Website/todo/plans/clerk-production-launch.md) § D.
 
-The original provisioning steps (now mostly done in dev; kept for the production pass):
+> ⚠️ **OBSOLETE — do not execute.** The steps below provision *Clerk*, which has
+> been fully removed. Auth is self-owned Better Auth (live); the
+> `/api/clerk/webhook` endpoint named below no longer exists (deleted), the
+> `mandalacodes-oracle` DB is retired, and `VITE_CLERK_PUBLISHABLE_KEY` /
+> `CLERK_SECRET_KEY` / `CLERK_WEBHOOK_SECRET` are gone from the secrets-sync
+> script. Kept only as a record of the original plan.
+
+The original provisioning steps (kept for history only — see warning above):
 
 - [ ] **Apply D1 schema** — apply the schema to the remote database: `wrangler d1 migrations apply mandalacodes-oracle --remote` (until then every account Function returns `503 db_not_configured`) _(you · quick)_ → Schema: [migrations/001_init.sql](migrations/001_init.sql) _(routed → Backlog)_
   Account Functions return `503 db_not_configured` until the tables exist on the remote DB. Done when the migration is applied and account Functions stop returning 503. See [migrations/001_init.sql](migrations/001_init.sql).
