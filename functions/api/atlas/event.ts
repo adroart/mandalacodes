@@ -14,7 +14,7 @@ import type { PagesContext } from './_helpers';
 import { json, mutateLedger, regeneratePublicState } from './_helpers';
 import { applyRebind, cleanRebindInput } from './_transfer';
 import type { RebindInput } from './_transfer';
-import { requireAdmin, isAuthResponse } from '../_lib/clerk';
+import { requireAdmin, isAuthResponse } from '../_lib/auth';
 
 const VALID_TYPES: ReadonlySet<LedgerEventType> = new Set<LedgerEventType>([
   'created',

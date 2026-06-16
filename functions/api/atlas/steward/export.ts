@@ -45,7 +45,7 @@ import {
   readStewards,
 } from '../_helpers';
 import { chainKey, selectInscriptionsForPiece } from '../_inscriptions';
-import { requireUser, isAuthResponse } from '../../_lib/clerk';
+import { requireUser, isAuthResponse } from '../../_lib/auth';
 
 /** A chain event as exported to the steward: admin operational notes are
  *  redacted (M0 rule) but flagged, so the holder knows exactly which

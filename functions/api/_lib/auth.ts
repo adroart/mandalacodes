@@ -1,14 +1,11 @@
 /**
  * Auth helpers for Cloudflare Pages Functions (atlas steward + admin).
  *
- * NOTE ON THE NAME: still clerk.ts so the endpoints importing
- * requireUser/requireAdmin/isAuthResponse don't all change. It no longer uses
- * Clerk — it validates the self-owned Better Auth session cookie.
- *
+ * Validates the self-owned Better Auth session cookie:
  *   requireUser  — any signed-in user
  *   requireAdmin — signed-in AND email is on the ADMIN_EMAILS allowlist
  *
- * Return contract unchanged (AuthContext | Response).
+ * Return contract: AuthContext | Response.
  */
 
 import { createAuth } from '../../../lib/account/auth.server.js';
@@ -29,15 +26,6 @@ export interface AuthContext {
    *  email. */
   emailVerified: boolean;
   payload: Record<string, unknown>;
-}
-
-/** Kept for back-compat; bearer tokens are no longer used. */
-export function bearerToken(request: Request): string | null {
-  const header =
-    request.headers.get('authorization') || request.headers.get('Authorization');
-  if (!header) return null;
-  const m = header.match(/^Bearer\s+(.+)$/i);
-  return m ? m[1].trim() : null;
 }
 
 /**

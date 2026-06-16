@@ -24,7 +24,7 @@ import {
 } from '../../../../utils/claimRequests';
 import type { PagesContext } from '../_helpers';
 import { json, mutateClaimRequests, readStewards } from '../_helpers';
-import { requireUser, isAuthResponse } from '../../_lib/clerk';
+import { requireUser, isAuthResponse } from '../../_lib/auth';
 
 export async function onRequestPost(
   context: PagesContext,

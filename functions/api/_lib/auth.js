@@ -1,10 +1,8 @@
 /**
- * Shared auth helpers for Pages Functions.
+ * Shared auth helpers for Pages Functions (profile / collections / sync-user).
  *
- * NOTE ON THE NAME: still called clerk.js so the endpoints that import
- * `requireUser`/`jsonResponse` don't all have to change. It no longer uses
- * Clerk — it validates the self-owned Better Auth session cookie. Return
- * contract unchanged: `{ userId, email }` or a 401 Response.
+ * Validates the self-owned Better Auth session cookie. Return contract:
+ * `{ userId, email, emailVerified, session, user }` or a 401 Response.
  *
  * `userId` is the Better Auth user id; the D1 users row stores it in the
  * `clerk_user_id` column (kept as the generic external-auth-id), so
@@ -12,14 +10,6 @@
  */
 
 import { createAuth } from '../../../lib/account/auth.server.js';
-
-/** Kept for back-compat with any importer; bearer tokens are no longer used. */
-export function bearerToken(request) {
-  const header = request.headers.get('authorization') || request.headers.get('Authorization');
-  if (!header) return null;
-  const m = header.match(/^Bearer\s+(.+)$/i);
-  return m ? m[1].trim() : null;
-}
 
 /**
  * Verify the request's Better Auth session cookie.

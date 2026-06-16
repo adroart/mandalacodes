@@ -37,7 +37,7 @@ import {
   convertPendingFirstInscription,
   selectInscriptionsForPiece,
 } from '../_inscriptions';
-import { requireUser, isAuthResponse } from '../../_lib/clerk';
+import { requireUser, isAuthResponse } from '../../_lib/auth';
 
 export async function onRequestGet(
   context: PagesContext,

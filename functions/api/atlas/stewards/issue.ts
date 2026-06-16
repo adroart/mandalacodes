@@ -13,7 +13,7 @@
 
 import type { PagesContext } from '../_helpers';
 import { json, issueStewardRecord } from '../_helpers';
-import { requireAdmin, isAuthResponse } from '../../_lib/clerk';
+import { requireAdmin, isAuthResponse } from '../../_lib/auth';
 
 interface IssueBody {
   pieceId?: unknown;

@@ -5,11 +5,12 @@
  *   - R2 read/write for the three Atlas keys (ledger, stewards, public).
  *   - JSON response helper.
  *   - Public state regeneration after any ledger write.
- *   - Steward lookup by Clerk identity (userId or email).
+ *   - Steward lookup by auth identity (userId or verified email).
  *
- * Admin and steward auth both run through `functions/api/_lib/clerk.ts` —
- * Clerk verifies the bearer JWT, ADMIN_EMAILS gates admin routes, and the
- * steward record's `clerkUserId` / `email` binds a piece to its collector.
+ * Admin and steward auth both run through `functions/api/_lib/auth.ts` —
+ * Better Auth verifies the session cookie, ADMIN_EMAILS gates admin routes,
+ * and the steward record's `clerkUserId` / `email` binds a piece to its
+ * collector.
  *
  * No HTTP handlers live here — only utilities the route files import.
  */
@@ -26,7 +27,7 @@ import { ATLAS_PLACES } from '../../../data/cities';
 import { FULL_ARCHIVE } from '../../../data/mockData';
 import { mirrorPublicState } from './_mirror';
 import type { MirrorEnv } from './_mirror';
-import type { AuthEnv } from '../_lib/clerk';
+import type { AuthEnv } from '../_lib/auth';
 
 // ---------- R2 keys ----------
 

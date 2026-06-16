@@ -56,7 +56,7 @@ import {
   sanitizeEventsForSteward,
   toStewardView,
 } from '../_helpers';
-import { requireUser, isAuthResponse } from '../../_lib/clerk';
+import { requireUser, isAuthResponse } from '../../_lib/auth';
 import { generateKinClaimLetters } from '../_letters';
 import { letterRecipientKey } from '../../../../utils/letters';
 

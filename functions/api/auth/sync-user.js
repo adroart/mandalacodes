@@ -9,7 +9,7 @@
  * Sales live on adrianrasmussen.com, so this site only needs identity.
  */
 
-import { requireUser, jsonResponse } from '../_lib/clerk.js';
+import { requireUser, jsonResponse } from '../_lib/auth.js';
 import { upsertUser } from '../_lib/db.js';
 
 export async function onRequest(context) {
