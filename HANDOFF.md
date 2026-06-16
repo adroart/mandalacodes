@@ -15,13 +15,14 @@ Stubbed / partial:
 - No UI for the curation/recommendation flow yet — engine only.
 
 Untested:
-- Live deployed endpoints not yet curl-verified against `mandalacodes.com` (only local + handler-level).
+- Live endpoints unverified — this sandbox's egress blocks `mandalacodes.com` (host not in allowlist, HTTP 403); run the curls below from a networked machine.
 - PDF render not run here (sandbox: Cloudinary 403 + no Playwright browser) — renders on a real machine.
 
 Cross-site: meaning engine lives here; the **Curation Desk + purchase** belong on the Adrian Rasmussen quote system (repo `technicianofthesacred/Adrian-Website`, not in this session's scope) — not started.
 
 ## Next — the exact commands or steps to continue, one per line, specific enough to paste.
 
+# Run the two curls from a networked machine — this sandbox's egress blocks mandalacodes.com.
 curl 'https://mandalacodes.com/api/oracle/search?q=creation+and+new+beginnings'   # expect top hit #1 Earth's Breath
 curl -X POST https://mandalacodes.com/api/oracle/recommendation -H 'content-type: application/json' -d '{"clientName":"Test","utcBirth":"1990-06-09T14:30:00Z"}'   # expect 11 pieces + energy
 cd mcp/oracle-server && npm install && cd ../.. && claude mcp add oracle -- npx tsx mcp/oracle-server/src/server.ts   # local MCP in Claude
