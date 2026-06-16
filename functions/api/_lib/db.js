@@ -8,10 +8,13 @@
  */
 
 /**
- * Look up a user row by their Clerk user id. Returns null when the user
+ * Look up a user row by their auth user id. Returns null when the user
  * has not yet been synced (first sign-in hasn't called /api/auth/sync-user).
+ *
+ * NOTE: the `clerk_user_id` column name is retained as the generic
+ * external-auth-id; it now stores the Better Auth `user.id`.
  * @param {D1Database} db
- * @param {string} clerkUserId
+ * @param {string} clerkUserId  Better Auth user id
  */
 export async function getUserByClerkId(db, clerkUserId) {
   return db
@@ -21,8 +24,8 @@ export async function getUserByClerkId(db, clerkUserId) {
 }
 
 /**
- * Upsert by clerk_user_id. Used by /api/auth/sync-user on first sign-in
- * and by the Clerk webhook on user.created / user.updated.
+ * Upsert by clerk_user_id (the Better Auth user id). Used by
+ * /api/auth/sync-user on first sign-in.
  * @param {D1Database} db
  * @param {{ clerkUserId: string; email: string }} input
  */
@@ -41,8 +44,11 @@ export async function upsertUser(db, { clerkUserId, email }) {
 }
 
 /**
- * On user.deleted: D1 cascades take care of profiles/collections via
- * FK ON DELETE CASCADE.
+ * Remove the app `users` row (profiles/collections follow via FK ON DELETE
+ * CASCADE). Called by the Better Auth account-deletion hook
+ * (lib/account/auth.server.js), which replaced the retired Clerk webhook.
+ * @param {D1Database} db
+ * @param {string} clerkUserId  Better Auth user id
  */
 export async function deleteUserByClerkId(db, clerkUserId) {
   await db

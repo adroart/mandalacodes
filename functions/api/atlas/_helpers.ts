@@ -341,6 +341,30 @@ export async function issueStewardRecord(
   });
 }
 
+/**
+ * Unbind every steward record bound to `userId`: drop the binding and rewind
+ * outreachStatus to 'invited', so the piece reverts to the artist's root of
+ * trust (it can be re-issued or transferred later). RATIFIED: the history
+ * lives with the piece — inscriptions and the chain are NOT touched by an
+ * account removal; only the binding goes. No-ops when the steward bucket is
+ * unconfigured. Used by the Better Auth account-deletion hook (it replaced the
+ * retired Clerk `user.deleted` webhook).
+ */
+export async function unbindStewardsForUser(
+  env: AtlasEnv,
+  userId: string,
+): Promise<void> {
+  if (!env.ATLAS_BUCKET || !userId) return;
+  await mutateStewards(env, (stewards) => ({
+    next: stewards.map((s) => {
+      if (s.clerkUserId !== userId) return s;
+      const { clerkUserId: _gone, ...rest } = s;
+      return { ...rest, outreachStatus: 'invited' };
+    }),
+    result: undefined,
+  }));
+}
+
 // ---------- Public state regeneration ----------
 
 function buildArtworkMeta(): Map<string, { series?: string; category?: string }> {
