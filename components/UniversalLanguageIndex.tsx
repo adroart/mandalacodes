@@ -390,19 +390,18 @@ const FeaturedRow: React.FC = () => {
       </div>
 
       <div className="mt-6 flex justify-center">
-        <button
-          type="button"
-          disabled
-          aria-label="Your astrology grid, link your birthday to the oracle, coming soon"
-          className="flex flex-col items-center text-center border border-wood-400 px-6 py-3 cursor-not-allowed opacity-80"
+        <Link
+          to="/profile"
+          aria-label="Your astrology grid, link your birthday to the oracle"
+          className="flex flex-col items-center text-center border border-wood-400 px-6 py-3 transition-colors hover:border-wood-600 hover:bg-paper-100/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wood-600"
         >
           <span className="font-label text-xs uppercase tracking-[0.22em] text-wood-700">
             Your Astrology Grid
           </span>
           <span className="font-sans text-[12px] text-wood-500 leading-snug mt-1">
-            Link your birthday to the oracle · coming soon
+            Link your birthday to the oracle
           </span>
-        </button>
+        </Link>
       </div>
     </section>
   );
