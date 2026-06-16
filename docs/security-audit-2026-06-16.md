@@ -17,6 +17,52 @@
 
 ---
 
+## Remediation status — UPDATED 2026-06-16 (everything fixed on `claude/trusting-johnson-0yqtcx`)
+
+Following the audit, all findings were remediated on this branch (the user
+authorized fixing the sensitive auth/ownership/deletion items too). Summary:
+
+| # | Fix | Commit subject |
+|---|-----|----------------|
+| H1 | Steward email-bind now requires a verified email | `fix(atlas): require a verified email before binding a steward record` |
+| H3/M2/O2 | Dead Clerk webhook removed; deletion cleanup re-homed onto a gated Better Auth hook; `svix` dropped; two-table model documented | `fix(auth): retire dead Clerk webhook; wire gated account-deletion cleanup` |
+| H2 | Durable D1 rate-limiting on auth + recommendation | `feat(security): durable D1-backed rate limiting on auth + recommendation` |
+| M3 | OAuth `callbackURL` validated; CORS fails closed on unset `BETTER_AUTH_URL` | `fix(auth): validate OAuth callbackURL; fail closed on unset BETTER_AUTH_URL` |
+| L1 | CSP `script-src 'unsafe-inline'` replaced with a hash | `harden(csp): drop script-src 'unsafe-inline' in favor of a hash` |
+| L2/L3/L4 | frame-ancestors; innerHTML→textContent; dead orders link | (earlier safe-fix commits) |
+| O1 | Clerk env removed from sync script/types/docs; Better Auth vars added | `chore(config): drop orphaned Clerk env vars; document Better Auth secrets` |
+| O3 | `_lib/clerk.{ts,js}` → `_lib/auth.{ts,js}`; dead `bearerToken` removed | `refactor(auth): rename _lib/clerk.{ts,js} to _lib/auth.{ts,js}` |
+| D1/D2 | TODO Clerk items corrected; INDEX generator note fixed | `docs: correct stale Clerk roadmap items and dead INDEX generator note` |
+| L5 | **Deliberately deferred** — low severity, self-heals; a conditional-write loop in the crown-jewel R2 path is too fragile to add unattended. Documented below. | — |
+| D3 | **No action** — `oracle/card.ts` is a deliberate public/cacheable endpoint; having no in-repo caller is correct. | — |
+
+### Deploy checklist (required for the fixes to take full effect)
+
+1. **Apply migration 003** to the shared D1 so the rate-limiter has its table:
+   `wrangler d1 migrations apply adrian-website --remote`. Until applied the
+   limiter **fails open** (allows traffic) — safe to deploy code first.
+2. **Set `BETTER_AUTH_URL`** in the Pages env (the CORS relaxation now fails
+   closed if it's unset — intended, but it must be present in prod).
+3. **Account deletion stays OFF** unless you set `ENABLE_ACCOUNT_DELETION=true`.
+   Before enabling, review the cascade on the **shared** `adrian-website` DB
+   (orders/invoices) with the art site — that's why it's gated.
+4. **Resync secrets**: the sync script's required vars changed to
+   `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL` / `ADMIN_EMAILS` (was Clerk).
+5. **Verify** sign-in (email-code + Google) and a steward claim on a preview
+   deploy — H1 means an *unverified* password session can no longer bind by
+   email (it now returns a 403 asking the user to verify via email code).
+
+### L5 — `public.json` write race (deferred, with reasoning)
+
+`regeneratePublicState` writes the derived `public.json` with a plain `put`.
+Two concurrent ledger writes can momentarily leave it reflecting the losing
+snapshot until the next write heals it. The only correct fix is a
+version-guarded conditional-write retry loop (like `mutateJsonArray`) in the
+most critical R2 path. Given it is low severity and self-healing, adding that
+concurrency machinery unattended carries more risk (a subtle bug could break
+public-state writes outright) than the race itself. Recommend doing it
+deliberately, with a test, when the ledger write path is next touched.
+
 ## Severity index
 
 | # | Finding | Severity | Status |
