@@ -31,7 +31,13 @@ export async function verifyRequest(request, env) {
     const auth = createAuth(env);
     const data = await auth.api.getSession({ headers: request.headers });
     if (!data || !data.user?.id) return null;
-    return { userId: data.user.id, email: data.user.email ?? null, session: data.session, user: data.user };
+    return {
+      userId: data.user.id,
+      email: data.user.email ?? null,
+      emailVerified: data.user.emailVerified === true,
+      session: data.session,
+      user: data.user,
+    };
   } catch {
     return null;
   }

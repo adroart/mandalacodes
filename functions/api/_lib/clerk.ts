@@ -23,6 +23,11 @@ export interface AuthEnv {
 export interface AuthContext {
   userId: string;
   email: string | null;
+  /** True when the session's email is proven (email-code / Google sign-in, or
+   *  a verified password account). Gates email-fallback steward binding so an
+   *  unverified password signup can't claim a piece issued to someone else's
+   *  email. */
+  emailVerified: boolean;
   payload: Record<string, unknown>;
 }
 
@@ -51,6 +56,7 @@ export async function verifyRequest(
     return {
       userId: data.user.id,
       email: data.user.email ?? null,
+      emailVerified: data.user.emailVerified === true,
       payload: { session: data.session, user: data.user },
     };
   } catch {
