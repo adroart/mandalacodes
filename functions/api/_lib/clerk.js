@@ -63,7 +63,11 @@ const ALLOWED_ORIGINS = [
 export function isAllowedOrigin(origin, env) {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
-  const isDev = !env?.BETTER_AUTH_URL || env.BETTER_AUTH_URL.includes('localhost');
+  // Only relax to localhost when BETTER_AUTH_URL EXPLICITLY points at
+  // localhost. A missing BETTER_AUTH_URL must NOT enable the dev relaxation
+  // (that would open localhost CORS on a misconfigured prod deploy) — fail
+  // closed instead.
+  const isDev = env?.BETTER_AUTH_URL ? env.BETTER_AUTH_URL.includes('localhost') : false;
   if (isDev) {
     try {
       const url = new URL(origin);
