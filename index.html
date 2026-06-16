@@ -50,6 +50,9 @@
 </script>
   </head>
   <body class="bg-[#262321]">
+    <!-- CSP: this inline script is allowlisted by sha256 hash in public/_headers
+         (script-src). If you edit ANY byte between the <script> tags below, the
+         hash changes — recompute it and update _headers or the script is blocked. -->
     <script>
       (function() {
         // Default to dark (matches DarkModeProvider). Only light when the
