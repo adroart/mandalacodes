@@ -48,9 +48,6 @@ const AuthButton: React.FC = () => {
           <Link to="/account/collections" className="ar-auth-menu__item" onClick={() => setMenuOpen(false)}>
             Collections
           </Link>
-          <Link to="/account/orders" className="ar-auth-menu__item" onClick={() => setMenuOpen(false)}>
-            Orders
-          </Link>
           <button
             type="button"
             className="ar-auth-menu__item ar-auth-menu__signout"
