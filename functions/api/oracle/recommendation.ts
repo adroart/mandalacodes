@@ -22,8 +22,9 @@ import { assembleLookbook, type ChartInput } from '../../../lib/oracle/recommend
 import { buildHologeneticProfile } from '../../../lib/astrology/profile';
 import type { CanonicalCard } from '../../../lib/oracle/types';
 import corpusData from '../../../data/oracle-corpus.json';
+import { checkRateLimit, clientIp, tooManyRequests } from '../_lib/rate-limit.js';
 
-interface Env { ORACLE_API_TOKEN?: string }
+interface Env { ORACLE_API_TOKEN?: string; DB?: unknown }
 
 const CARDS = (corpusData as { cards: CanonicalCard[] }).cards;
 
@@ -52,6 +53,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (required) {
     const tok = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
     if (tok !== required) return json({ error: 'unauthorized' }, 401);
+  } else {
+    // Unauthenticated (no token configured): this runs astronomy compute per
+    // call, so cap it per-IP to prevent a CPU/DoS amplifier. Fail-open.
+    const { ok, retryAfterSec } = await checkRateLimit(
+      env as { DB?: unknown },
+      `oracle:rec:${clientIp(request)}`,
+      { limit: 20, windowMs: 60_000 },
+    );
+    if (!ok) return tooManyRequests(retryAfterSec, CORS);
   }
 
   let body: any;
