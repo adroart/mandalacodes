@@ -7,9 +7,13 @@ interface Props {
   /** Extra JSON-LD blocks to inject (Article, BreadcrumbList, …) */
   jsonLd?: Record<string, unknown>[]
   ogType?: string
+  /** Which top-nav item to mark active. */
+  activeNav?: 'learn' | null
+  /** Field name to tint this page's accent (per-essay tint on article pages). */
+  accent?: string
 }
 
-const { title, description, jsonLd = [], ogType = 'website' } = Astro.props
+const { title, description, jsonLd = [], ogType = 'website', activeNav = 'learn', accent } = Astro.props
 
 const canonical = new URL(Astro.url.pathname, Astro.site)
 const ogImage =
@@ -34,6 +38,13 @@ const base = import.meta.env.BASE_URL
     />
     <link rel="sitemap" href={`${base}/sitemap-index.xml`} />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Karla:wght@400;500;600;700&family=Cinzel:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content="Mandala Codes" />
     <meta property="og:title" content={title} />
@@ -48,25 +59,122 @@ const base = import.meta.env.BASE_URL
     {jsonLd.map(block => (
       <script type="application/ld+json" set:html={JSON.stringify(block)} />
     ))}
+
+    {/* No-flash theme: apply the saved/system theme before paint. */}
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('lp-theme')
+          var dark = saved
+            ? saved === 'dark'
+            : !window.matchMedia('(prefers-color-scheme: light)').matches
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark')
+        }
+      })()
+    </script>
   </head>
   <body>
-    <header class="site-header">
-      <a class="wordmark" href="https://mandalacodes.com/">Mandala Codes</a>
-      <nav>
-        <a href={`${base}/`}>Learn</a>
-        <a href="https://mandalacodes.com/universal-language">The Deck</a>
-        <a href="https://mandalacodes.com/the-systems">The Systems</a>
-      </nav>
-    </header>
+    <div class="lp-page" data-r="page" data-motion="on" style={accent ? `--acc: ${accent}` : undefined}>
+      <div class="lp-grain" data-r="grain"></div>
 
-    <slot />
+      <header class="lp-topbar" data-r="topbar">
+        <a class="lp-wordmark" href="https://mandalacodes.com/">MANDALA CODES</a>
+        <div class="lp-topbar-right">
+          <nav class="lp-nav" data-r="nav">
+            <a href={`${base}/`} class={activeNav === 'learn' ? 'is-active' : undefined}>Learn</a>
+            <a href="https://mandalacodes.com/universal-language">The Deck</a>
+            <a href="https://mandalacodes.com/the-systems">The Systems</a>
+            <a href="https://mandalacodes.com/atlas">Atlas</a>
+          </nav>
+          <button class="lp-toggle" type="button" data-theme-toggle aria-label="Toggle light or dark theme">
+            <span data-theme-glyph>☀</span> <span class="label" data-theme-label>Light</span>
+          </button>
+          <button class="lp-menu" type="button" data-theme-toggle aria-label="Toggle light or dark theme">≡</button>
+        </div>
+      </header>
 
-    <footer class="site-footer">
-      <p>
-        Part of <a href="https://mandalacodes.com/">mandalacodes.com</a>, the
-        Universal Language oracle of 64 mandalas.
-        <a href={`${base}/rss.xml`}>RSS</a>
-      </p>
-    </footer>
+      <slot />
+
+      <footer class="lp-site-footer">
+        Part of the <a href="https://mandalacodes.com/universal-language">Universal Language</a> ·
+        64 mandalas · <a href={`${base}/rss.xml`}>RSS</a>
+      </footer>
+    </div>
+
+    <script is:inline>
+      (function () {
+        function syncLabels() {
+          var dark = document.documentElement.getAttribute('data-theme') !== 'light'
+          document.querySelectorAll('[data-theme-glyph]').forEach(function (el) {
+            el.textContent = dark ? '☀' : '☾'
+          })
+          document.querySelectorAll('[data-theme-label]').forEach(function (el) {
+            el.textContent = dark ? 'Light' : 'Dark'
+          })
+        }
+        syncLabels()
+
+        function flip() {
+          var dark = document.documentElement.getAttribute('data-theme') !== 'light'
+          var next = dark ? 'light' : 'dark'
+          document.documentElement.setAttribute('data-theme', next)
+          try { localStorage.setItem('lp-theme', next) } catch (e) {}
+          syncLabels()
+        }
+
+        document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            var root = document.documentElement
+            if (e && e.clientX != null) {
+              root.style.setProperty('--vt-x', e.clientX + 'px')
+              root.style.setProperty('--vt-y', e.clientY + 'px')
+            }
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            if (document.startViewTransition && !reduce) {
+              document.startViewTransition(flip)
+            } else {
+              flip()
+            }
+          })
+        })
+
+        // Reveal-on-scroll: additive only. Mark the page so CSS hides reveal
+        // targets, then unhide each as it enters. If anything is already in
+        // view (or below the fold but the observer never fires), the fallback
+        // timeout reveals everything so content is never stranded.
+        var page = document.querySelector('[data-r="page"]')
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        var targets = Array.prototype.slice.call(document.querySelectorAll('[data-reveal]'))
+        if (page && targets.length && 'IntersectionObserver' in window && !reduce) {
+          page.classList.add('js-reveal')
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target) }
+            })
+          }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 })
+          targets.forEach(function (t) { io.observe(t) })
+          // Safety net: if observer support is flaky, reveal all after 2.5s.
+          setTimeout(function () { targets.forEach(function (t) { t.classList.add('is-in') }) }, 2500)
+        }
+
+        // Magnetic CTAs: lean slightly toward the cursor (fine pointers only).
+        if (window.matchMedia('(pointer: fine)').matches) {
+          document.querySelectorAll('[data-magnetic]').forEach(function (el) {
+            var s = 0.3
+            el.addEventListener('mousemove', function (ev) {
+              var r = el.getBoundingClientRect()
+              el.style.transform =
+                'translate(' + (ev.clientX - (r.left + r.width / 2)) * s + 'px,' +
+                (ev.clientY - (r.top + r.height / 2)) * s + 'px)'
+            })
+            el.addEventListener('mouseleave', function () {
+              el.style.transform = 'translate(0,0)'
+            })
+          })
+        }
+      })()
+    </script>
   </body>
 </html>

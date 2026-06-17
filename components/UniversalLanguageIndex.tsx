@@ -1,121 +1,232 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CODON_RINGS, ALL_CARDS, CARD_BY_NUMBER, type OracleCard } from '../data/oracleData';
 import { ulCardImageUrl } from '../utils/universalLanguage';
 import { HexagramSVG } from './oracle/HexagramGlyph';
+import Constellation from './oracle/Constellation';
 import { loadOracleIndex, rank, type SearchDoc } from '../lib/oracle/search';
+import { useProfile } from '../lib/profile/context';
+import { useJournal, relTime } from '../lib/oracle/journal';
+import { elementForCard, tintForCard, ELEMENTS, ELEMENT_DOT, type Element } from '../lib/oracle/elements';
 
-type ViewMode = 'grid' | 'rings';
-type GridMode = 'cards' | 'artwork';
+/* ─── The Oracle Table ───────────────────────────────────────────────────────
+ * A two-pane reading room: a sticky ritual rail (title, invocation, Card of the
+ * Day / Year, your astrology grid, learn-the-systems) beside the deck pane
+ * (search, view tabs, element filters, the faithful I Ching flip wall, Artwork,
+ * By Ring, and a Map constellation). Overlays: Your Grid, Systems, Reading,
+ * Journal, Onboarding.
+ *
+ * Palette, fonts, hexagram renderer, card data, the deterministic Card-of-Day /
+ * Year, and the Hologenetic Profile all come from the existing codebase — this
+ * file recomposes them into the redesigned shape. */
 
-/* ─── Card image lookup ──────────────────────────────────────────────────── */
-/* Shared with the card page, the atlas, and the cast preview — one parser,
- * one placeholder, one Cloudinary recipe (utils/universalLanguage.ts). */
+type View = 'iching' | 'artwork' | 'rings' | 'map';
 
 const cardImageUrl = ulCardImageUrl;
 
-/* ─── Hexagram SVG renderer ─────────────────────────────────────────────── */
-/* Shared renderer (one table, one geometry across the site) — see
- * components/oracle/HexagramGlyph.tsx. */
+/* ─── Featured card-of helpers (deterministic, same as before) ─────────────── */
 
-/* ─── Flip card tile (grid view) ─────────────────────────────────────────── */
+function hashTo64(seed: string): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  return (Math.abs(h) % 64) + 1;
+}
+function cardForToday(now = new Date()): OracleCard {
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return CARD_BY_NUMBER.get(hashTo64(`day:${y}-${m}-${d}`))!;
+}
+function cardForYear(now = new Date()): OracleCard {
+  return CARD_BY_NUMBER.get(hashTo64(`year:${now.getFullYear()}`))!;
+}
 
-const CardThumbnail: React.FC<{
-  card: OracleCard;
-  isFlipped: boolean;
-  artworkMode: boolean;
-  onFlip: () => void;
-  onFlipBack: () => void;
-}> = ({ card, isFlipped, artworkMode, onFlip, onFlipBack }) => {
-  const navigate = useNavigate();
-  const goRead = () => navigate(`/universal-language/${card.number}`, { state: { ritual: true } });
+/* ─── Small shared pieces ────────────────────────────────────────────────── */
 
-  // Artwork mode renders the front face flat - no 3D layer per tile.
-  if (artworkMode) {
-    return (
-      <div className="relative w-full aspect-square bg-[#e0d8cc] select-none">
-        <button
-          type="button"
-          onClick={goRead}
-          aria-label={`Read ${card.card_name}, Card ${card.number}`}
-          className="absolute inset-0 cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
-        >
-          <img
-            src={cardImageUrl(card.number, 320)}
-            alt={`${card.card_name}, Universal Language ${card.number}`}
-            className="w-full h-full object-cover block"
-            loading="lazy"
-            decoding="async"
-          />
-        </button>
-      </div>
-    );
-  }
+const CardHex: React.FC<{ card: OracleCard; width: number; color?: string }> = ({ card, width, color }) => (
+  <HexagramSVG
+    upper={card.iching.upper_trigram.symbol}
+    lower={card.iching.lower_trigram.symbol}
+    width={width}
+    color={color}
+    className="block"
+  />
+);
 
-  // Both faces share the same shape: square image area + 44px action strip beneath.
-  // Strip sits OUTSIDE the image - nothing ever covers the art.
+/* Element-tinted artwork panel (uses the real Cloudinary image, tint as the
+ * loading/fallback ground so the panel always reads as its element). */
+const ArtPanel: React.FC<{ card: OracleCard; rounded?: boolean; className?: string }> = ({
+  card,
+  className = '',
+}) => {
+  const [lo, hi] = tintForCard(card.number);
   return (
-    <div className={`[perspective:600px] relative select-none ${isFlipped ? 'z-10' : ''}`}>
-      <div
-        className={`relative w-full transition-transform duration-500 [transform-style:preserve-3d] ${
-          isFlipped ? '[transform:rotateY(180deg)]' : ''
-        }`}
+    <span
+      className={`relative block w-full h-full overflow-hidden ${className}`}
+      style={{ background: `linear-gradient(150deg, ${lo}, ${hi})` }}
+    >
+      <img
+        src={cardImageUrl(card.number, 400)}
+        alt={`${card.card_name}, Universal Language ${card.number}`}
+        className="absolute inset-0 w-full h-full object-cover block"
+        loading="lazy"
+        decoding="async"
+      />
+    </span>
+  );
+};
+
+/* ─── Rail: featured tile (Card of the Day / Year) ───────────────────────── */
+
+const FeatTile: React.FC<{ eyebrow: string; date: string; card: OracleCard; onRead: () => void }> = ({
+  eyebrow,
+  date,
+  card,
+  onRead,
+}) => (
+  <button
+    type="button"
+    onClick={onRead}
+    className="block w-full text-left -mx-3 px-3 py-3 transition-colors hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+  >
+    <span className="font-label text-[10px] font-bold uppercase tracking-[0.18em] text-bronze-600 block">
+      {eyebrow}
+      <span aria-hidden className="text-wood-300 mx-1.5">·</span>
+      <span className="text-wood-600">{date}</span>
+    </span>
+    <span className="flex items-center gap-3 mt-2.5">
+      <span className="leading-none flex-shrink-0 text-wood-800">
+        <CardHex card={card} width={30} />
+      </span>
+      <span className="flex flex-col gap-0.5 min-w-0">
+        <span className="font-label text-[11px] font-bold tracking-[0.08em] text-bronze-600">
+          No. {String(card.number).padStart(2, '0')}
+        </span>
+        <span className="font-serif text-xl leading-tight text-wood-900 font-medium">{card.card_name}</span>
+      </span>
+    </span>
+  </button>
+);
+
+/* ─── Rail: the astrology grid module (wired to the real profile) ────────────
+ * When a Hologenetic Profile is set, the rail shows the four Activation codes
+ * and "View my grid". When not, it prompts the visitor to link their birth
+ * moment — which opens the real /profile form (no fake hash codes). */
+
+const ACTIVATION: Array<{ key: 'lifesWork' | 'evolution' | 'radiance' | 'purpose'; label: string }> = [
+  { key: 'lifesWork', label: "Life's Work" },
+  { key: 'evolution', label: 'Evolution' },
+  { key: 'radiance', label: 'Radiance' },
+  { key: 'purpose', label: 'Purpose' },
+];
+
+const AstrologyGrid: React.FC<{ onViewGrid: () => void; hasProfile: boolean; placeLabel?: string }> = ({
+  onViewGrid,
+  hasProfile,
+  placeLabel,
+}) => (
+  <div className="border border-wood-300 bg-paper-100/40 px-4 pt-4 pb-[18px]">
+    <p className="font-label text-[10px] font-bold uppercase tracking-[0.2em] text-wood-700 m-0">
+      Your Astrology Grid
+    </p>
+    <p className="font-sans text-[12.5px] text-wood-600 leading-[1.5] mt-1.5 mb-3.5">
+      Your exact birth moment links you to four codes. Time and place sharpen the reading.
+    </p>
+    {hasProfile ? (
+      <button
+        type="button"
+        onClick={onViewGrid}
+        className="flex items-center justify-center gap-2.5 w-full py-3 bg-wood-900 text-paper-50 font-label text-[11px] font-bold uppercase tracking-[0.18em] transition-colors hover:bg-bronze-600"
       >
-        {/* BACK face - hexagram only, no card background. Page background shows through. */}
+        View my grid →
+      </button>
+    ) : (
+      <Link
+        to="/profile"
+        className="flex items-center justify-center gap-2.5 w-full py-3 bg-wood-900 text-paper-50 font-label text-[11px] font-bold uppercase tracking-[0.18em] transition-colors hover:bg-bronze-600 no-underline"
+      >
+        Link your birth moment →
+      </Link>
+    )}
+    {hasProfile && placeLabel && (
+      <p className="font-label text-[9.5px] font-semibold tracking-[0.04em] text-bronze-600 flex items-center gap-1.5 mt-2.5 mb-0">
+        <span aria-hidden>✓</span> Your codes are linked
+      </p>
+    )}
+  </div>
+);
+
+/* ─── Deck: I Ching flip tile ────────────────────────────────────────────── */
+
+const FlipTile: React.FC<{
+  card: OracleCard;
+  flipped: boolean;
+  onFlip: () => void;
+  onBack: () => void;
+  onRead: () => void;
+}> = ({ card, flipped, onFlip, onBack, onRead }) => {
+  const el = elementForCard(card.number);
+  const [lo, hi] = tintForCard(card.number);
+  return (
+    <div className={`relative [perspective:900px] ${flipped ? 'z-10' : ''}`} style={{ aspectRatio: '1 / 1' }}>
+      <div
+        className="absolute inset-0 [transform-style:preserve-3d] transition-transform duration-[600ms] [transition-timing-function:cubic-bezier(.16,1,.3,1)]"
+        style={{ transform: flipped ? 'rotateY(180deg)' : 'none' }}
+      >
+        {/* BACK — hexagram on bare paper */}
         <button
           type="button"
           onClick={onFlip}
           aria-label={`Reveal Card ${card.number}: ${card.iching.hexagram_name}`}
-          className="absolute inset-0 [backface-visibility:hidden] bg-transparent flex flex-col items-center justify-center gap-2 cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+          className="absolute inset-0 [backface-visibility:hidden] flex flex-col items-center justify-center gap-1.5 bg-transparent cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+          style={{ opacity: flipped ? 0 : 1, transition: 'opacity .01s linear .28s' }}
         >
-          <span className="w-[55%] max-w-[62px] text-wood-900">
-            <HexagramSVG
-              upper={card.iching.upper_trigram.symbol}
-              lower={card.iching.lower_trigram.symbol}
-              width={40}
-              className="w-full h-auto"
-            />
+          <span className="leading-none text-wood-800">
+            <CardHex card={card} width={46} />
           </span>
-          <span className="font-label font-bold text-[14px] text-wood-900 leading-none">
-            {card.number}
+          <span className="font-label text-[13px] font-bold text-wood-500 tracking-[0.1em] leading-none">
+            {String(card.number).padStart(2, '0')}
           </span>
         </button>
 
-        {/* FRONT face - art square (uncovered) + action strip beneath */}
-        <div className="relative w-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col">
-          {/* Art - clean, nothing overlaid */}
+        {/* FRONT — artwork + Back · Read strip beneath */}
+        <div
+          className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden shadow-[0_1px_3px_rgba(38,35,33,0.12)]"
+          style={{ opacity: flipped ? 1 : 0, transition: 'opacity .01s linear .28s' }}
+        >
           <button
             type="button"
-            onClick={goRead}
+            onClick={onRead}
             aria-label={`Read ${card.card_name}, Card ${card.number}`}
-            className="block w-full aspect-square bg-[#e0d8cc] cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+            className="flex-1 block min-h-0 cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+            style={{ background: `linear-gradient(150deg, ${lo}, ${hi})` }}
           >
-            <img
-              src={cardImageUrl(card.number, 320)}
-              alt={`${card.card_name}, Universal Language ${card.number}`}
-              className="w-full h-full object-cover block"
-              loading="lazy"
-              decoding="async"
-            />
+            <span className="flex flex-col items-center justify-center gap-1 text-center h-full p-2">
+              <span className="font-label text-[7.5px] font-semibold uppercase tracking-[0.16em] text-paper-50/70">
+                Universal Language
+              </span>
+              <span className="font-serif font-medium leading-[1.12] text-paper-50 [text-wrap:balance] text-[clamp(15px,2.4vw,19px)]">
+                {card.card_name}
+              </span>
+              <span className="font-label text-[7.5px] font-semibold uppercase tracking-[0.14em] text-paper-50/55 mt-0.5">
+                {el}
+              </span>
+            </span>
           </button>
-
-          {/* Action strip - BELOW the image, never overlaps */}
-          <div className="h-11 flex items-stretch bg-paper-100">
+          <div className="h-[38px] flex-shrink-0 flex items-stretch bg-paper-100">
             <button
               type="button"
-              onClick={onFlipBack}
-              aria-label={`Flip Card ${card.number} back to hexagram`}
-              className="flex-1 flex items-center justify-center font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-wood-700 hover:text-wood-900 font-semibold transition-colors leading-none cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+              onClick={onBack}
+              className="flex-1 flex items-center justify-center font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-wood-700 hover:text-wood-900 transition-colors cursor-pointer"
             >
               Back
             </button>
-            <span aria-hidden className="w-px self-center h-3 bg-wood-400" />
+            <span aria-hidden className="w-px self-center h-[11px] bg-wood-400" />
             <button
               type="button"
-              onClick={goRead}
-              aria-label={`Read ${card.card_name}, Card ${card.number}`}
-              className="flex-1 flex items-center justify-center font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-bronze-700 hover:text-wood-900 font-semibold transition-colors leading-none cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+              onClick={onRead}
+              className="flex-1 flex items-center justify-center font-label text-[10px] font-bold uppercase tracking-[0.16em] text-bronze-700 hover:text-wood-900 transition-colors cursor-pointer"
             >
               Read
             </button>
@@ -126,312 +237,166 @@ const CardThumbnail: React.FC<{
   );
 };
 
-/* ─── Ring card tile (rings view) ────────────────────────────────────────── */
+/* ─── Deck: artwork flat tile ────────────────────────────────────────────── */
 
-const RingCardTile: React.FC<{ card: OracleCard }> = ({ card }) => (
-  <Link
-    to={`/universal-language/${card.number}`}
-    state={{ ritual: true }}
-    className="group block"
-  >
-    {/* Image */}
-    <div className="relative aspect-square overflow-hidden mb-3">
-      <img
-        src={cardImageUrl(card.number, 400)}
-        alt={`${card.card_name}, Card ${card.number}, Universal Language Oracle`}
-        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        loading="lazy"
-      />
-    </div>
-
-    {/* Info below image */}
-    <div className="px-0.5">
-      <div className="flex items-baseline gap-2 mb-1">
-        <span className="font-label text-[11px] uppercase tracking-[0.1em] text-bronze-700 flex-shrink-0">
-          {String(card.number).padStart(2, '0')}
-        </span>
-        <h4 className="font-sans text-base text-wood-900 font-medium leading-tight group-hover:text-bronze-700 transition-colors duration-200">
-          {card.card_name}
-        </h4>
-      </div>
-      <p className="font-sans text-sm text-wood-700 leading-snug mb-2">
-        {card.iching.hexagram_name}
-      </p>
-      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-        <span className="font-label text-[11px] uppercase tracking-[0.08em] text-wood-600">{card.gene_keys.shadow}</span>
-        <span aria-hidden className="text-wood-400 text-[11px]">·</span>
-        <span className="font-label text-[11px] uppercase tracking-[0.08em] text-bronze-700">{card.gene_keys.gift}</span>
-        <span aria-hidden className="text-wood-400 text-[11px]">·</span>
-        <span className="font-label text-[11px] uppercase tracking-[0.08em] text-wood-600">{card.gene_keys.siddhi}</span>
-      </div>
-    </div>
-  </Link>
-);
-
-/* ─── Ring section (rings view) ──────────────────────────────────────────── */
-
-const RingSection: React.FC<{
-  ring_name: string;
-  tarot: string;
-  description: string;
-  cards: OracleCard[];
-}> = ({ ring_name, tarot, description, cards }) => (
-  <div className="border-t border-wood-200 pt-10 pb-6">
-    <div className="mb-6">
-      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2">
-        <h3 className="font-serif text-xl text-wood-900 font-medium">{ring_name}</h3>
-        <span className="font-label text-[11px] uppercase tracking-[0.18em] text-bronze-700">{tarot}</span>
-      </div>
-      <p className="font-sans text-sm text-wood-700 max-w-xl leading-[1.65]">{description}</p>
-    </div>
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-      {cards.map(card => <RingCardTile key={card.number} card={card} />)}
-    </div>
-  </div>
-);
-
-/* ─── Search bar ─────────────────────────────────────────────────────────── */
-
-const SearchBar: React.FC<{ value: string; onChange: (v: string) => void }> = ({ value, onChange }) => (
-  <div className="relative flex-1">
-    <label htmlFor="ul-search" className="sr-only">Search cards</label>
-    <input
-      id="ul-search"
-      type="search"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      onKeyDown={e => { if (e.key === 'Escape' && value) { e.preventDefault(); onChange(''); } }}
-      placeholder="Search cards..."
-      aria-label="Search cards"
-      className="w-full bg-transparent border border-wood-400 focus:border-bronze-700 text-wood-900 placeholder-wood-600 font-sans text-sm px-4 py-2.5 min-h-[44px] outline-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors duration-200"
-    />
-    {value && (
-      <button
-        onClick={() => onChange('')}
-        aria-label="Clear search"
-        className="absolute right-3 top-1/2 -translate-y-1/2 font-label text-[11px] uppercase tracking-widest text-wood-700 hover:text-wood-900 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-      >
-        Clear
-      </button>
-    )}
-  </div>
-);
-
-/* ─── Grid mode toggle ───────────────────────────────────────────────────── */
-
-const GridToggle: React.FC<{
-  gridMode: GridMode;
-  viewMode: ViewMode;
-  onGridMode: (m: GridMode) => void;
-  onViewMode: (v: ViewMode) => void;
-}> = ({ gridMode, viewMode, onGridMode, onViewMode }) => {
-  const btnBase = 'font-label text-[11px] uppercase tracking-[0.18em] px-4 min-h-[44px] border transition-colors duration-200 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
-  const active = 'bg-wood-900 text-paper-50 border-wood-900 z-10 relative';
-  const inactive = 'text-wood-700 border-wood-400 hover:text-wood-900 hover:border-wood-700 bg-transparent';
-
-  const isCards = viewMode === 'grid' && gridMode === 'cards';
-  const isArtwork = viewMode === 'grid' && gridMode === 'artwork';
-  const isRings = viewMode === 'rings';
-
-  return (
-    <div role="group" aria-label="View mode" className="flex items-center">
-      <button
-        type="button"
-        aria-pressed={isCards}
-        onClick={() => { onGridMode('cards'); onViewMode('grid'); }}
-        className={`${btnBase} ${isCards ? active : inactive}`}
-      >
-        I Ching
-      </button>
-      <button
-        type="button"
-        aria-pressed={isArtwork}
-        onClick={() => { onGridMode('artwork'); onViewMode('grid'); }}
-        className={`${btnBase} -ml-px ${isArtwork ? active : inactive}`}
-      >
-        Artwork
-      </button>
-      <button
-        type="button"
-        aria-pressed={isRings}
-        onClick={() => onViewMode('rings')}
-        className={`${btnBase} -ml-px ${isRings ? active : inactive}`}
-      >
-        By Ring
-      </button>
-    </div>
-  );
-};
-
-/* ─── Empty state ────────────────────────────────────────────────────────── */
-
-const EmptyState: React.FC<{ onClear: () => void }> = ({ onClear }) => (
-  <div className="border-t border-wood-200 pt-16 text-center py-24">
-    <p className="font-serif text-xl text-wood-700 mb-4">No cards match that search.</p>
-    <button
-      onClick={onClear}
-      className="font-label text-[11px] uppercase tracking-[0.18em] text-bronze-700 hover:text-wood-900 transition-colors border-b border-bronze-700/50 pb-px"
-    >
-      Clear search
-    </button>
-  </div>
-);
-
-/* ─── Featured row: today, this year, your grid ──────────────────────────── */
-
-// Stable string hash → 1..64. Same input always returns the same card.
-function hashTo64(seed: string): number {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) {
-    h = (h * 31 + seed.charCodeAt(i)) | 0;
-  }
-  return ((Math.abs(h) % 64) + 1);
-}
-
-function cardForToday(now = new Date()): OracleCard {
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return CARD_BY_NUMBER.get(hashTo64(`day:${y}-${m}-${d}`))!;
-}
-
-function cardForYear(now = new Date()): OracleCard {
-  return CARD_BY_NUMBER.get(hashTo64(`year:${now.getFullYear()}`))!;
-}
-
-const FeaturedTile: React.FC<{
-  eyebrow: string;
-  number: number;
-  numberAlign: 'left' | 'right';
-  title: string;
-  meta?: string;
-  to: string;
-}> = ({ eyebrow, number, numberAlign, title, meta, to }) => {
-  const navigate = useNavigate();
-  const onClick = () => navigate(to, { state: { ritual: true } });
-  const numStr = String(number).padStart(2, '0');
-
-  // Eyebrow row: "CARD OF THE DAY · 28" or "34 · CARD OF THE YEAR"
-  const eyebrowRow = numberAlign === 'left'
-    ? <><span>{eyebrow}</span><span aria-hidden className="mx-2 text-bronze-700/60">·</span><span className="text-wood-900 font-bold">{numStr}</span></>
-    : <><span className="text-wood-900 font-bold">{numStr}</span><span aria-hidden className="mx-2 text-bronze-700/60">·</span><span>{eyebrow}</span></>;
-
-  const justify = numberAlign === 'left' ? 'justify-start' : 'justify-end';
-  const textAlign = numberAlign === 'left' ? 'text-left' : 'text-right';
-
+const FlatTile: React.FC<{ card: OracleCard; onRead: () => void }> = ({ card, onRead }) => {
+  const el = elementForCard(card.number);
   return (
     <button
       type="button"
-      onClick={onClick}
-      aria-label={`${eyebrow}, number ${number}: ${title}`}
-      className={`group ${textAlign} px-5 py-4 transition-colors duration-200 hover:bg-paper-100 cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]`}
+      onClick={onRead}
+      aria-label={`Read ${card.card_name}, Card ${card.number}`}
+      className="relative block w-full overflow-hidden transition-transform duration-200 hover:-translate-y-[3px] hover:shadow-[0_8px_20px_rgba(38,35,33,0.2)] focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+      style={{ aspectRatio: '1 / 1' }}
     >
-      <p className={`flex items-baseline ${justify} font-label text-[10px] uppercase tracking-[0.2em] text-bronze-700`}>
-        {eyebrowRow}
-      </p>
-      <div className={`flex items-baseline ${justify} gap-3 mt-1.5`}>
-        <p className="font-serif text-lg sm:text-xl text-wood-900 font-medium leading-tight">
-          {title}
-        </p>
-      </div>
-      {meta && (
-        <p className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 mt-1">
-          {meta}
-        </p>
-      )}
-      <p className={`flex ${justify} mt-3`}>
-        <span
-          aria-hidden
-          className="font-label text-[11px] uppercase tracking-[0.18em] text-bronze-700 group-hover:text-wood-900 transition-colors"
-        >
-          Enter →
+      <ArtPanel card={card} />
+      <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-center p-2.5 bg-gradient-to-t from-black/35 via-transparent to-black/10">
+        <span className="font-serif font-medium leading-[1.12] text-paper-50 [text-wrap:balance] text-[clamp(15px,2.4vw,19px)] drop-shadow">
+          {card.card_name}
         </span>
-      </p>
+        <span className="font-label text-[7.5px] font-semibold uppercase tracking-[0.14em] text-paper-50/70">
+          {el}
+        </span>
+      </span>
+      <span className="absolute top-[7px] left-2 font-label text-[8px] font-bold tracking-[0.12em] text-paper-50/70">
+        {String(card.number).padStart(2, '0')}
+      </span>
     </button>
   );
 };
 
-const FeaturedRow: React.FC = () => {
-  const now = new Date();
-  const today = cardForToday(now);
-  const year = cardForYear(now);
+/* ─── Deck: By Ring card ─────────────────────────────────────────────────── */
 
-  const dateLabel = now.toLocaleDateString(undefined, {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-  const yearLabel = String(now.getFullYear());
+const RingCard: React.FC<{ card: OracleCard; onRead: () => void }> = ({ card, onRead }) => (
+  <button type="button" onClick={onRead} className="flex flex-col text-left bg-transparent border-none p-0 cursor-pointer group">
+    <span className="relative w-full overflow-hidden" style={{ aspectRatio: '1 / 1' }}>
+      <ArtPanel card={card} className="transition-transform duration-500 group-hover:scale-105" />
+    </span>
+    <span className="flex items-baseline gap-1.5 mt-2.5">
+      <span className="font-label text-[10px] font-bold tracking-[0.08em] text-bronze-700">
+        {String(card.number).padStart(2, '0')}
+      </span>
+      <span className="font-serif text-[17px] leading-[1.05] text-wood-900 group-hover:text-bronze-700 transition-colors">
+        {card.card_name}
+      </span>
+    </span>
+    <span className="font-sans text-xs text-wood-500 mt-0.5">{card.iching.hexagram_name}</span>
+    <span className="font-label text-[9.5px] uppercase tracking-[0.06em] text-wood-400 mt-1.5">
+      {card.gene_keys.shadow} · {card.gene_keys.gift} · {card.gene_keys.siddhi}
+    </span>
+  </button>
+);
 
-  return (
-    <section
-      aria-label="Featured readings"
-      className="px-6 pt-10 pb-2 max-w-7xl mx-auto"
+/* ─── Overlay shell ──────────────────────────────────────────────────────── */
+
+const Overlay: React.FC<{ onClose: () => void; width: string; children: React.ReactNode }> = ({
+  onClose,
+  width,
+  children,
+}) => (
+  <div
+    onClick={onClose}
+    className="fixed inset-0 z-[80] flex items-center justify-center p-6 overflow-auto bg-[rgba(30,26,22,0.55)] [backdrop-filter:blur(5px)]"
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="bg-paper-50 shadow-[0_24px_60px_rgba(30,26,22,0.4)] cursor-default"
+      style={{ width }}
     >
-      <div className="border border-wood-200 bg-paper-100/40">
-        <div className="grid grid-cols-1 sm:grid-cols-2 sm:divide-x divide-wood-200 divide-y sm:divide-y-0">
-          <FeaturedTile
-            eyebrow="Card of the Day"
-            number={today.number}
-            numberAlign="left"
-            title={today.card_name}
-            meta={dateLabel}
-            to={`/universal-language/${today.number}`}
-          />
-          <FeaturedTile
-            eyebrow="Card of the Year"
-            number={year.number}
-            numberAlign="right"
-            title={year.card_name}
-            meta={yearLabel}
-            to={`/universal-language/${year.number}`}
-          />
-        </div>
-      </div>
-
-      <div className="mt-6 flex justify-center">
-        <Link
-          to="/profile"
-          aria-label="Your astrology grid, link your birthday to the oracle"
-          className="flex flex-col items-center text-center border border-wood-400 px-6 py-3 transition-colors hover:border-wood-600 hover:bg-paper-100/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wood-600"
-        >
-          <span className="font-label text-xs uppercase tracking-[0.22em] text-wood-700">
-            Your Astrology Grid
-          </span>
-          <span className="font-sans text-[12px] text-wood-500 leading-snug mt-1">
-            Link your birthday to the oracle
-          </span>
-        </Link>
-      </div>
-    </section>
-  );
-};
+      {children}
+    </div>
+  </div>
+);
 
 /* ─── Main component ─────────────────────────────────────────────────────── */
 
 const UniversalLanguageIndex: React.FC = () => {
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [gridMode, setGridMode] = useState<GridMode>('cards');
-  const [flippedCards, setFlippedCards] = useState<Set<number>>(new Set());
-  const [query, setQuery] = useState('');
+  const { profile } = useProfile();
+  const { entries: journal, record: recordJournal, clear: clearJournal } = useJournal();
 
-  // Meaning-aware search index (shared ranker, same as the oracle MCP). Loaded
-  // lazily so it never delays first paint; until it arrives, search falls back
-  // to the substring matcher below.
+  const [view, setView] = useState<View>('iching');
+  const [query, setQuery] = useState('');
+  const [elFilter, setElFilter] = useState<Element | 'All'>('All');
+  const [flipped, setFlipped] = useState<Set<number>>(new Set());
+
+  const [reading, setReading] = useState<OracleCard | null>(null);
+  const [gridOpen, setGridOpen] = useState(false);
+  const [systemsOpen, setSystemsOpen] = useState(false);
+  const [journalOpen, setJournalOpen] = useState(false);
+  const [onboarding, setOnboarding] = useState(false);
+  const [toast, setToast] = useState('');
+
+  const now = useMemo(() => new Date(), []);
+  const today = useMemo(() => cardForToday(now), [now]);
+  const year = useMemo(() => cardForYear(now), [now]);
+
+  /* The visitor's four Activation codes, from the real Hologenetic Profile. */
+  const grid = useMemo(() => {
+    if (!profile) return null;
+    return ACTIVATION.map(({ key, label }) => {
+      const gl = profile.computed[key];
+      const card = CARD_BY_NUMBER.get(gl.gate);
+      return card ? { label, card } : null;
+    }).filter((x): x is { label: string; card: OracleCard } => Boolean(x));
+  }, [profile]);
+
+  const gridNums = useMemo(() => (grid ? new Set(grid.map((g) => g.card.number)) : null), [grid]);
+  const gridLabelByNumber = useMemo(() => {
+    const m = new Map<number, string>();
+    grid?.forEach((g) => { if (!m.has(g.card.number)) m.set(g.card.number, g.label); });
+    return m;
+  }, [grid]);
+
+  /* ── Search index (lazy, meaning-aware; substring fallback) ─────────────── */
   const [searchDocs, setSearchDocs] = useState<SearchDoc[] | null>(null);
   useEffect(() => {
     let live = true;
-    loadOracleIndex().then((docs) => { if (live) setSearchDocs(docs); }).catch(() => {});
+    loadOracleIndex().then((d) => { if (live) setSearchDocs(d); }).catch(() => {});
     return () => { live = false; };
   }, []);
 
-  /** Card numbers, best-match first, for the current query — or null if the
-   *  index isn't ready yet (callers fall back to substring matching). */
+  /* ── First-run onboarding + keyboard + deep link ────────────────────────── */
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem('ul-onboarded')) setOnboarding(true);
+    } catch {}
+    try {
+      const cn = parseInt(new URLSearchParams(location.search).get('card') || '', 10);
+      if (cn >= 1 && cn <= 64) {
+        const c = CARD_BY_NUMBER.get(cn);
+        if (c) { setReading(c); setOnboarding(false); }
+      }
+    } catch {}
+  }, []);
+
+  const finishOnboarding = useCallback(() => {
+    try { localStorage.setItem('ul-onboarded', '1'); } catch {}
+    setOnboarding(false);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName || '';
+      if (e.key === '/' && !/^(INPUT|TEXTAREA)$/.test(tag)) {
+        const el = document.getElementById('ul-search');
+        if (el) { e.preventDefault(); (el as HTMLInputElement).focus(); }
+      } else if (e.key === 'Escape') {
+        if (reading) setReading(null);
+        else if (gridOpen) setGridOpen(false);
+        else if (systemsOpen) setSystemsOpen(false);
+        else if (journalOpen) setJournalOpen(false);
+        else if (onboarding) finishOnboarding();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [reading, gridOpen, systemsOpen, journalOpen, onboarding, finishOnboarding]);
+
+  /* ── Ranked search ──────────────────────────────────────────────────────── */
   const rankedNumbers = useMemo<number[] | null>(() => {
     const q = query.trim();
     if (!q) return null;
-    // Direct lookup by code number (the ranker drops single digits).
     if (/^\d{1,2}$/.test(q)) {
       const n = Number(q);
       return n >= 1 && n <= 64 ? [n] : [];
@@ -440,237 +405,571 @@ const UniversalLanguageIndex: React.FC = () => {
     return rank(searchDocs, q, { limit: 64 }).map((h) => h.number);
   }, [query, searchDocs]);
 
-  const handleGridMode = (mode: GridMode) => {
-    setGridMode(mode);
-    setFlippedCards(new Set());
-  };
-
-  const flipCard = (number: number) => {
-    setFlippedCards(prev => new Set([...prev, number]));
-  };
-
-  const flipCardBack = (number: number) => {
-    setFlippedCards(prev => { const next = new Set(prev); next.delete(number); return next; });
-  };
-
-  const matchCard = (card: OracleCard, q: string): boolean => {
+  const matchCard = useCallback((c: OracleCard, q: string): boolean => {
     const lq = q.toLowerCase();
     return (
-      card.card_name.toLowerCase().includes(lq) ||
-      card.iching.hexagram_name.toLowerCase().includes(lq) ||
-      card.gene_keys.shadow.toLowerCase().includes(lq) ||
-      card.gene_keys.gift.toLowerCase().includes(lq) ||
-      card.gene_keys.siddhi.toLowerCase().includes(lq) ||
-      card.element.toLowerCase().includes(lq) ||
-      card.ring_name.toLowerCase().includes(lq) ||
-      String(card.number) === lq.trim()
+      c.card_name.toLowerCase().includes(lq) ||
+      c.iching.hexagram_name.toLowerCase().includes(lq) ||
+      c.gene_keys.shadow.toLowerCase().includes(lq) ||
+      c.gene_keys.gift.toLowerCase().includes(lq) ||
+      c.gene_keys.siddhi.toLowerCase().includes(lq) ||
+      c.element.toLowerCase().includes(lq) ||
+      c.ring_name.toLowerCase().includes(lq) ||
+      String(c.number) === lq.trim()
     );
-  };
+  }, []);
 
-  const filteredCards = useMemo(() => {
-    if (!query.trim()) return ALL_CARDS;
-    // Ranked, meaning-aware order when the index is ready; substring fallback otherwise.
-    if (rankedNumbers) {
-      return rankedNumbers
-        .map(n => CARD_BY_NUMBER.get(n))
-        .filter((c): c is OracleCard => Boolean(c));
-    }
-    return ALL_CARDS.filter(c => matchCard(c, query));
-  }, [query, rankedNumbers]);
+  const elOk = useCallback((c: OracleCard) => elFilter === 'All' || elementForCard(c.number) === elFilter, [elFilter]);
 
-  const filteredRings = useMemo(() => {
-    if (!query.trim()) return CODON_RINGS;
-    if (rankedNumbers) {
-      const keep = new Set(rankedNumbers);
-      return CODON_RINGS
-        .map(ring => ({ ...ring, cards: ring.cards.filter(c => keep.has(c.number)) }))
-        .filter(ring => ring.cards.length > 0);
-    }
-    return CODON_RINGS
-      .map(ring => ({ ...ring, cards: ring.cards.filter(c => matchCard(c, query)) }))
-      .filter(ring => ring.cards.length > 0);
-  }, [query, rankedNumbers]);
+  const filtered = useMemo(() => {
+    const q = query.trim();
+    let base: OracleCard[];
+    if (!q) base = ALL_CARDS;
+    else if (rankedNumbers)
+      base = rankedNumbers.map((n) => CARD_BY_NUMBER.get(n)).filter((c): c is OracleCard => Boolean(c));
+    else base = ALL_CARDS.filter((c) => matchCard(c, q));
+    return base.filter(elOk);
+  }, [query, rankedNumbers, matchCard, elOk]);
 
-  const totalShown = viewMode === 'grid'
-    ? filteredCards.length
-    : filteredRings.reduce((n, r) => n + r.cards.length, 0);
+  const ringSections = useMemo(() => {
+    const q = query.trim();
+    const keep = rankedNumbers ? new Set(rankedNumbers) : null;
+    return CODON_RINGS.map((ring) => ({
+      ring,
+      cards: ring.cards.filter(
+        (c) => elOk(c) && (!q || (keep ? keep.has(c.number) : matchCard(c, q))),
+      ),
+    })).filter((r) => r.cards.length > 0);
+  }, [query, rankedNumbers, matchCard, elOk]);
 
-  const handleRandom = () => {
-    const card = ALL_CARDS[Math.floor(Math.random() * ALL_CARDS.length)];
-    navigate(`/universal-language/${card.number}`, { state: { ritual: true } });
-  };
+  /* ── Actions ────────────────────────────────────────────────────────────── */
+  const openReading = useCallback((c: OracleCard) => {
+    recordJournal(c.number, c.card_name);
+    setReading(c);
+    setGridOpen(false);
+  }, [recordJournal]);
 
-  const gridInstruction = gridMode === 'cards'
-    ? 'Tap a card to reveal it, then Read to enter'
-    : 'Tap any card to enter';
+  const goCardPage = useCallback((c: OracleCard) => {
+    navigate(`/universal-language/${c.number}`, { state: { ritual: true } });
+  }, [navigate]);
+
+  const drawRandom = useCallback(() => {
+    const c = ALL_CARDS[Math.floor(Math.random() * ALL_CARDS.length)];
+    openReading(c);
+  }, [openReading]);
+
+  const flip = (n: number) => setFlipped((p) => new Set([...p, n]));
+  const flipBack = (n: number) => setFlipped((p) => { const x = new Set(p); x.delete(n); return x; });
+
+  const toastTimer = useRef<number | undefined>(undefined);
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(''), 2200);
+  }, []);
+  useEffect(() => () => window.clearTimeout(toastTimer.current), []);
+
+  const copyText = useCallback((str: string) => {
+    try {
+      if (navigator.clipboard?.writeText) { navigator.clipboard.writeText(str); showToast('Copied to clipboard'); return; }
+    } catch {}
+    showToast('Could not copy');
+  }, [showToast]);
+
+  const shareCard = useCallback((c: OracleCard) => {
+    const url = location.origin + location.pathname + '?card=' + c.number;
+    const text = `${c.card_name} — Universal Language ${String(c.number).padStart(2, '0')} · ${c.iching.hexagram_name}`;
+    if (navigator.share) navigator.share({ title: c.card_name, text, url }).catch(() => {});
+    else copyText(text + '\n' + url);
+  }, [copyText]);
+
+  /* ── Derived display values ─────────────────────────────────────────────── */
+  const elFiltered = query.trim() || elFilter !== 'All';
+  const matchSet = useMemo(() => (elFiltered ? new Set(filtered.map((c) => c.number)) : null), [elFiltered, filtered]);
+  const total = view === 'rings' ? ringSections.reduce((n, r) => n + r.cards.length, 0) : filtered.length;
+
+  const instruction =
+    query.trim() || elFilter !== 'All'
+      ? `${total} ${total === 1 ? 'card' : 'cards'} shown`
+      : view === 'iching'
+        ? 'Tap a hexagram to reveal its card · Read to enter'
+        : view === 'artwork'
+          ? 'Tap any card to enter'
+          : view === 'map'
+            ? 'The codon rings as a constellation · tap a star to read it'
+            : 'The sixty-four, gathered into their codon rings';
+
+  const showEmpty =
+    view !== 'map' &&
+    (view === 'rings' ? ringSections.length === 0 : filtered.length === 0) &&
+    (!!query.trim() || elFilter !== 'All');
+
+  const viewTabs: Array<{ label: string; v: View }> = [
+    { label: 'I Ching', v: 'iching' },
+    { label: 'Artwork', v: 'artwork' },
+    { label: 'By Ring', v: 'rings' },
+    { label: 'Map', v: 'map' },
+  ];
+
+  const tabBase =
+    'font-label text-[11px] font-semibold uppercase tracking-[0.14em] px-3.5 h-[42px] border transition-colors cursor-pointer whitespace-nowrap -ml-px focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
+  const tabActive = 'bg-wood-900 text-paper-50 border-wood-900 relative z-10';
+  const tabIdle = 'bg-transparent text-wood-700 border-wood-300 hover:text-wood-900 hover:border-wood-700';
+
+  const chipBase =
+    'font-label text-[10px] font-bold uppercase tracking-[0.12em] px-2.5 py-[7px] border transition-colors cursor-pointer inline-flex items-center gap-1.5 leading-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
 
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
 
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      {/* Top padding clears the fixed nav (--nav-height) + breathing room so the
-          breadcrumb never tucks under the bar. */}
-      <div className="relative px-6 pb-6 max-w-2xl mx-auto text-center pt-[calc(var(--nav-height)+3rem)] md:pt-[calc(var(--nav-height)+4rem)]">
-
-        {/* Faint warm center glow — registers only as "the center is warmer" */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-[120%] h-[120%] bg-[radial-gradient(ellipse_at_center,rgba(138,116,78,0.10),transparent_70%)]"
-        />
-
-        {/* Breadcrumb — recedes to the lightest thing on the page */}
-        <nav aria-label="Breadcrumb" className="flex flex-wrap justify-center items-center gap-2 gap-y-1 font-label text-[11px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.2em] text-wood-400 mb-7 sm:mb-8">
-          <Link to="/" className="hover:text-wood-900 transition-colors">Mandala Codes</Link>
-          <span aria-hidden className="text-wood-400">/</span>
-          <span className="text-wood-500">Universal Language</span>
-        </nav>
-
-        {/* Title — single tone, carved feel */}
-        <h1 className="font-serif text-5xl md:text-7xl text-wood-900 font-medium leading-[0.95] tracking-[-0.01em]">
-          Universal Language
-        </h1>
-        <p className="font-serif italic text-xl md:text-2xl text-wood-500 font-light mt-2">
-          Sixty-Four Expressions
-        </p>
-
-        {/* One thin divider rule */}
-        <div aria-hidden className="w-12 h-px bg-bronze-600/30 mx-auto my-6" />
-
-        {/* Opening invocation — the intention the deck is read through.
-            Line breaks fall on clause boundaries so each line is a whole thought;
-            the sm: break only engages once the column is wide enough to need it. */}
-        <div className="font-serif italic text-lg md:text-xl text-wood-800 leading-[1.6] max-w-2xl mx-auto space-y-3">
-          <p>
-            <span aria-hidden className="text-bronze-600 not-italic mr-1.5">❧</span>
-            Let this oracle be an instrument of attunement to the light within,
-            <br className="hidden sm:inline" />{' '}
-            as we move through the unfolding of this mystery.
-          </p>
-          <p>
-            Let it nurture harmony, clarity, and compassion
-            <br className="hidden sm:inline" />{' '}
-            in thought, word, and action.
-          </p>
-          <p>
-            Let us move beyond thoughts and in through the heart,
-            <br className="hidden sm:inline" />{' '}
-            in devotion and celebration of the perfection of this moment.
-          </p>
-        </div>
-
-        {/* Single centered CTA */}
-        <div className="flex justify-center mt-7">
-          <button
-            onClick={handleRandom}
-            className="inline-flex items-center justify-center px-8 py-3.5 bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-200 hover:bg-bronze-600 motion-safe:hover:-translate-y-0.5 hover:shadow-lg hover:shadow-bronze-600/20"
-          >
-            Draw at Random
-          </button>
-        </div>
-      </div>
-
-      {/* Soft fade from hero into the deck — descend, don't hit a toolbar */}
-      <div aria-hidden className="h-8 -mb-8 bg-gradient-to-b from-transparent to-paper-50" />
-
-      {/* ── Featured: today, this year, your grid ─────────────────────────── */}
-      <FeaturedRow />
-
-      {/* ── Sticky search + tabs ───────────────────────────────────────────── */}
-      <div className="sticky top-[var(--nav-height)] z-20 bg-paper-50 border-b border-wood-200">
-        <div className="px-6 py-3 max-w-7xl mx-auto flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          <SearchBar value={query} onChange={setQuery} />
-          <GridToggle
-            gridMode={gridMode}
-            viewMode={viewMode}
-            onGridMode={handleGridMode}
-            onViewMode={setViewMode}
-          />
-        </div>
-        {query && (
-          <div className="px-6 pb-3 max-w-7xl mx-auto" aria-live="polite">
-            <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-700">
-              {totalShown} {totalShown === 1 ? 'card' : 'cards'} found
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* ── Content ───────────────────────────────────────────────────────── */}
-      <div className="px-6 pb-32 max-w-7xl mx-auto">
-
-        {/* Grid view */}
-        {viewMode === 'grid' && (
-          filteredCards.length > 0 ? (
-            <>
-              {/* First-time instruction */}
-              <h2 className="sr-only">All cards</h2>
-              <p className="pt-3 pb-3 font-label text-[11px] uppercase tracking-[0.18em] text-wood-600">
-                {gridInstruction}
-              </p>
-              <div className="-mx-6 px-[5px] sm:mx-0 sm:px-0">
-                <div className="grid grid-cols-4 lg:grid-cols-8 gap-[3px]">
-                  {filteredCards.map(card => (
-                    <CardThumbnail
-                      key={card.number}
-                      card={card}
-                      isFlipped={flippedCards.has(card.number)}
-                      artworkMode={gridMode === 'artwork'}
-                      onFlip={() => flipCard(card.number)}
-                      onFlipBack={() => flipCardBack(card.number)}
-                    />
-                  ))}
-                </div>
-              </div>
-              {/* The convergence of systems — said once, after the full deck */}
-              {!query && (
-                <p className="font-sans text-[14px] text-wood-500 max-w-md mx-auto text-center leading-[1.7] font-light tracking-wide mt-12">
-                  Each card carries a hexagram from the I Ching, a Gene Key, and a gate from Human Design.
-                  Nothing needs to be understood to speak with them.
-                </p>
+      {/* ── Masthead ─────────────────────────────────────────────────────── */}
+      <header className="sticky top-[var(--nav-height)] z-40 bg-paper-50/95 [backdrop-filter:blur(8px)] border-b border-wood-200">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-[58px] flex items-center justify-between gap-2 sm:gap-4">
+          <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-2.5 font-label text-[11px] uppercase tracking-[0.2em] text-wood-400 min-w-0">
+            <Link to="/" className="text-wood-500 hover:text-wood-900 transition-colors">Mandala Codes</Link>
+            <span aria-hidden>/</span>
+            <span className="text-wood-900 font-semibold whitespace-nowrap">Universal Language</span>
+          </nav>
+          {/* On narrow screens the global nav already names the page; drop the
+              breadcrumb entirely so the action cluster never collides with it.
+              A spacer keeps the actions right-aligned. */}
+          <span aria-hidden className="md:hidden flex-1" />
+          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => setJournalOpen(true)}
+              className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-wood-700 hover:text-bronze-600 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            >
+              Journal
+              {journal.length > 0 && (
+                <span className="text-[9px] font-bold text-paper-50 bg-bronze-600 rounded-[9px] min-w-[16px] h-4 inline-flex items-center justify-center px-1">
+                  {journal.length}
+                </span>
               )}
-            </>
-          ) : (
-            <EmptyState onClear={() => setQuery('')} />
-          )
-        )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSystemsOpen(true)}
+              className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-wood-700 hover:text-bronze-600 transition-colors whitespace-nowrap hidden sm:inline"
+            >
+              The Systems
+            </button>
+            <button
+              type="button"
+              onClick={() => setOnboarding(true)}
+              aria-label="How to read a card"
+              title="How to read a card"
+              className="font-label text-xs font-bold w-[26px] h-[26px] rounded-full text-wood-600 border border-wood-300 hover:bg-paper-100 hover:border-bronze-600 transition-colors flex-shrink-0"
+            >
+              ?
+            </button>
+            <button
+              type="button"
+              onClick={drawRandom}
+              className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-paper-50 bg-wood-900 px-5 py-2.5 hover:bg-bronze-600 transition-colors whitespace-nowrap"
+            >
+              Draw at Random
+            </button>
+          </div>
+        </div>
+      </header>
 
-        {/* Rings view */}
-        {viewMode === 'rings' && (
-          filteredRings.length > 0 ? (
-            <div className="space-y-2">
-              <h2 className="sr-only">Cards by codon ring</h2>
-              {filteredRings.map(ring => (
-                <RingSection
-                  key={ring.ring_name}
-                  ring_name={ring.ring_name}
-                  tarot={ring.tarot}
-                  description={ring.description}
-                  cards={ring.cards}
-                />
+      {/* ── Body: two-pane reading room ──────────────────────────────────── */}
+      <div className="max-w-[1280px] mx-auto px-6 pt-7 lg:pt-10 pb-2 grid grid-cols-1 lg:grid-cols-[330px_minmax(0,1fr)] gap-x-12 gap-y-7 items-start">
+
+        {/* LEFT RAIL */}
+        <aside className="min-w-0 lg:sticky lg:top-[calc(var(--nav-height)+58px+24px)]">
+          <h1 className="font-serif font-medium text-wood-900 leading-[0.96] tracking-[-0.01em] m-0 text-[clamp(36px,4.4vw,50px)]">
+            Universal Language
+          </h1>
+          <p className="font-serif italic text-bronze-600 mt-1.5 text-[clamp(17px,2vw,21px)]">Sixty-Four Expressions</p>
+
+          <div aria-hidden className="w-10 h-px bg-bronze-600/45 my-[22px]" />
+
+          <div className="font-serif italic text-base leading-[1.6] text-wood-800 flex flex-col gap-[11px] max-w-[30em]">
+            <p className="m-0">
+              <span aria-hidden className="not-italic text-bronze-600 mr-1.5">❧</span>
+              Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.
+            </p>
+            <p className="m-0">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
+            <p className="m-0">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
+          </div>
+
+          <div aria-hidden className="h-px bg-wood-200 my-6" />
+
+          <FeatTile eyebrow="Card of the Day" date={now.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })} card={today} onRead={() => openReading(today)} />
+          <FeatTile eyebrow="Card of the Year" date={String(now.getFullYear())} card={year} onRead={() => openReading(year)} />
+
+          <div className="mt-3.5">
+            <AstrologyGrid onViewGrid={() => setGridOpen(true)} hasProfile={!!grid && grid.length > 0} placeLabel={profile?.inputs.place.label} />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setSystemsOpen(true)}
+            className="flex items-center justify-between gap-3 w-full mt-3.5 px-3.5 py-3 bg-transparent border border-wood-300 hover:bg-paper-100 transition-colors text-left"
+          >
+            <span className="flex flex-col gap-0.5 min-w-0">
+              <span className="font-label text-[10px] font-bold uppercase tracking-[0.18em] text-wood-700">New here?</span>
+              <span className="font-sans text-[12.5px] text-wood-600 leading-[1.4]">How the four systems connect</span>
+            </span>
+            <span aria-hidden className="font-label text-[15px] text-bronze-600 flex-shrink-0">→</span>
+          </button>
+
+          {journal.length > 0 && (
+            <div className="mt-[22px] border-t border-wood-200 pt-[18px]">
+              <div className="flex items-baseline justify-between mb-2.5">
+                <span className="font-label text-[10px] font-bold uppercase tracking-[0.18em] text-wood-700">Recent draws</span>
+                <button type="button" onClick={() => setJournalOpen(true)} className="font-label text-[9.5px] font-semibold uppercase tracking-[0.12em] text-bronze-600 hover:text-wood-900 transition-colors">
+                  View all →
+                </button>
+              </div>
+              <div className="flex flex-col">
+                {journal.slice(0, 3).map((e) => {
+                  const c = CARD_BY_NUMBER.get(e.n);
+                  if (!c) return null;
+                  return (
+                    <button key={e.n} type="button" onClick={() => openReading(c)} aria-label={`Reopen ${c.card_name}`} className="flex items-center gap-2.5 w-full py-2 border-b border-wood-100 hover:opacity-70 transition-opacity text-left">
+                      <span className="leading-none flex-shrink-0 text-wood-800"><CardHex card={c} width={22} /></span>
+                      <span className="flex items-baseline gap-1.5 min-w-0 flex-1">
+                        <span className="font-label text-[9px] font-bold tracking-[0.08em] text-wood-400 flex-shrink-0">{String(c.number).padStart(2, '0')}</span>
+                        <span className="font-serif text-[15px] leading-tight text-wood-900 truncate">{c.card_name}</span>
+                      </span>
+                      <span className="font-label text-[9px] tracking-[0.04em] text-wood-300 flex-shrink-0">{relTime(e.t)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </aside>
+
+        {/* RIGHT — the deck */}
+        <main id="ul-main" className="min-w-0">
+          {/* Controls */}
+          <div className="sticky top-[calc(var(--nav-height)+58px)] z-20 bg-paper-50 flex flex-wrap gap-3 items-center py-3.5 border-b border-wood-200">
+            <div className="relative flex-1 min-w-[160px]">
+              <label htmlFor="ul-search" className="sr-only">Search cards</label>
+              <input
+                id="ul-search"
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search name, keyword, or number  ( / )"
+                className="w-full font-sans text-sm text-wood-900 bg-transparent border border-wood-300 focus:border-bronze-700 px-3.5 min-h-[42px] outline-none transition-colors"
+              />
+            </div>
+            <div role="group" aria-label="View mode" className="flex items-center flex-shrink-0">
+              {viewTabs.map((t) => (
+                <button key={t.v} type="button" onClick={() => setView(t.v)} className={`${tabBase} ${view === t.v ? tabActive : tabIdle}`}>
+                  {t.label}
+                </button>
               ))}
             </div>
-          ) : (
-            <EmptyState onClear={() => setQuery('')} />
-          )
-        )}
+          </div>
+
+          {/* Element filters */}
+          <div role="group" aria-label="Filter by element" className="flex flex-wrap gap-1.5 pt-4">
+            {(['All', ...ELEMENTS] as Array<Element | 'All'>).map((e) => {
+              const active = elFilter === e;
+              return (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => setElFilter(e)}
+                  className={`${chipBase} ${active ? 'bg-wood-900 text-paper-50 border-wood-900' : 'bg-transparent text-wood-700 border-wood-300'}`}
+                >
+                  {e !== 'All' && <span aria-hidden className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ELEMENT_DOT[e] }} />}
+                  {e}
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="m-0 pt-3.5 font-label text-[11px] uppercase tracking-[0.18em] text-wood-500" aria-live="polite">
+            {instruction}
+          </p>
+
+          {/* I CHING flip wall */}
+          {view === 'iching' && filtered.length > 0 && (
+            <div className="pt-3.5">
+              <div className="grid grid-cols-4 gap-1">
+                {filtered.map((c) => (
+                  <FlipTile key={c.number} card={c} flipped={flipped.has(c.number)} onFlip={() => flip(c.number)} onBack={() => flipBack(c.number)} onRead={() => goCardPage(c)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ARTWORK */}
+          {view === 'artwork' && filtered.length > 0 && (
+            <div className="pt-3.5">
+              <div className="grid grid-cols-4 gap-1">
+                {filtered.map((c) => (
+                  <FlatTile key={c.number} card={c} onRead={() => goCardPage(c)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* BY RING */}
+          {view === 'rings' && ringSections.length > 0 && (
+            <div className="pt-2">
+              {ringSections.map(({ ring, cards }) => (
+                <section key={ring.ring_name} className="border-t border-wood-200 pt-[26px] pb-2">
+                  <div className="flex flex-wrap items-baseline gap-x-3.5 gap-y-1 mb-2">
+                    <h3 className="m-0 font-serif text-2xl font-medium leading-tight text-wood-900 whitespace-nowrap">{ring.ring_name}</h3>
+                    <span className="font-label text-[11px] uppercase tracking-[0.18em] text-bronze-600 whitespace-nowrap">{ring.tarot}</span>
+                  </div>
+                  <p className="m-0 mb-[18px] font-sans text-[13.5px] leading-[1.6] text-wood-600 max-w-[62ch]">{ring.description}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {cards.map((c) => <RingCard key={c.number} card={c} onRead={() => goCardPage(c)} />)}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
+
+          {/* MAP */}
+          {view === 'map' && (
+            <div className="pt-4">
+              <div className="py-1.5">
+                <Constellation matchSet={matchSet} gridSet={gridNums} onRead={openReading} />
+              </div>
+              <div className="flex flex-wrap gap-x-[18px] gap-y-3 justify-center items-center mt-4 font-label text-[10px] uppercase tracking-[0.12em] text-wood-600">
+                {ELEMENTS.map((e) => (
+                  <span key={e} className="inline-flex items-center gap-1.5">
+                    <span className="w-[9px] h-[9px] rounded-full" style={{ background: ELEMENT_DOT[e] }} />
+                    {e}
+                  </span>
+                ))}
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-[13px] h-[13px] rounded-full border-[1.5px] border-bronze-600" />
+                  Your codes
+                </span>
+                <span className="text-wood-400">Lines link cards within a codon ring</span>
+              </div>
+            </div>
+          )}
+
+          {/* Empty */}
+          {showEmpty && (
+            <div className="border-t border-wood-200 mt-3.5 py-16 text-center">
+              <p className="font-serif text-[22px] text-wood-600 mb-3.5">No cards match that search.</p>
+              <button type="button" onClick={() => { setQuery(''); setElFilter('All'); }} className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-700 hover:text-wood-900 transition-colors border-b border-wood-700/50 pb-px">
+                Clear search
+              </button>
+            </div>
+          )}
+
+          <p className="font-sans text-[13.5px] text-wood-500 mt-10 leading-[1.7]">
+            Each card carries a hexagram from the I Ching, a Gene Key, and a gate from Human Design. Nothing needs to be understood to speak with them.
+          </p>
+        </main>
       </div>
 
-      {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <div className="border-t border-wood-200 px-6 py-10 max-w-7xl mx-auto flex items-center justify-between">
-        <Link
-          to="/the-systems"
-          className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-700 hover:text-wood-900 transition-colors"
-        >
-          The Systems →
-        </Link>
-        <button
-          onClick={handleRandom}
-          className="font-label text-[11px] uppercase tracking-[0.18em] text-bronze-700 hover:text-wood-900 transition-colors font-semibold border-b border-bronze-700/50 hover:border-wood-900 pb-px"
-        >
-          Draw at Random →
-        </button>
-      </div>
+      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      <footer className="border-t border-wood-200 mt-2">
+        <div className="max-w-[1280px] mx-auto px-6 py-7 flex items-center justify-between">
+          <button type="button" onClick={() => setSystemsOpen(true)} className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 hover:text-wood-900 transition-colors">
+            The Systems &amp; Connections →
+          </button>
+          <button type="button" onClick={drawRandom} className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-bronze-700 hover:text-wood-900 transition-colors border-b border-bronze-700/50 pb-px">
+            Draw at Random →
+          </button>
+        </div>
+      </footer>
 
+      {/* ── Your Grid overlay ────────────────────────────────────────────── */}
+      {gridOpen && grid && (
+        <Overlay onClose={() => setGridOpen(false)} width="min(560px, 94vw)">
+          <div className="px-8 pt-7 pb-[22px] border-b border-wood-200">
+            <p className="m-0 mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">Your Grid</p>
+            <h2 className="m-0 font-serif font-medium text-[33px] leading-[1.04] text-wood-900">Four codes, in totality</h2>
+            {profile && (
+              <p className="m-0 mt-2.5 font-label text-[10px] uppercase tracking-[0.14em] text-wood-400">
+                {[profile.inputs.date, profile.inputs.time, profile.inputs.place.label].filter(Boolean).join(' · ')}
+              </p>
+            )}
+          </div>
+          <div className="px-8 py-[22px] grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {grid.map((g) => (
+              <button key={g.label} type="button" onClick={() => openReading(g.card)} aria-label={`Open ${g.label} code`} className="flex flex-col gap-2.5 p-4 bg-white border border-wood-200 hover:border-wood-400 transition-colors text-left">
+                <span className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-bronze-600">{g.label}</span>
+                <span className="flex items-center gap-3 min-w-0">
+                  <span className="leading-none flex-shrink-0 text-wood-800"><CardHex card={g.card} width={34} /></span>
+                  <span className="flex flex-col gap-0.5 min-w-0">
+                    <span className="font-label text-[9px] font-bold tracking-[0.08em] text-wood-400">No. {String(g.card.number).padStart(2, '0')}</span>
+                    <span className="font-serif text-xl leading-[1.04] text-wood-900">{g.card.card_name}</span>
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="px-8 pt-5 pb-7 bg-paper-100 border-t border-wood-200">
+            <p className="m-0 mb-[15px] font-sans text-[13.5px] leading-[1.55] text-wood-700 flex items-center gap-2.5">
+              <span aria-hidden className="text-wood-600">✓</span> Your codes are linked from your Hologenetic Profile. Readings flag when one of your four appears.
+            </p>
+            <div className="flex flex-wrap items-center gap-x-[18px] gap-y-3.5">
+              <button type="button" onClick={() => setGridOpen(false)} className="font-label text-[11px] font-bold uppercase tracking-[0.16em] text-paper-50 bg-wood-900 px-6 py-3 hover:bg-bronze-600 transition-colors">Done</button>
+              <Link to="/profile" className="font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-wood-700 border border-wood-300 px-5 py-3 hover:border-bronze-600 hover:text-wood-900 transition-colors no-underline">Full profile →</Link>
+            </div>
+          </div>
+        </Overlay>
+      )}
+
+      {/* ── Systems overlay ──────────────────────────────────────────────── */}
+      {systemsOpen && (
+        <Overlay onClose={() => setSystemsOpen(false)} width="min(580px, 94vw)">
+          <div className="px-8 pt-[30px] pb-[22px] border-b border-wood-200">
+            <p className="m-0 mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">The Universal Language</p>
+            <h2 className="m-0 font-serif font-medium text-[34px] leading-[1.04] text-wood-900">Four systems, one frequency</h2>
+          </div>
+          <div className="px-8 pt-2 pb-3.5">
+            {[
+              ['I Ching', "The 64 hexagrams. Each card's six-line figure — the ancient Book of Changes, read here as living code."],
+              ['Gene Keys', 'Shadow, Gift, and Siddhi — the spectrum each code travels, from reactive pattern to its realized essence.'],
+              ['Human Design', 'The gate — where the code lives in the bodygraph, and how its energy wants to move through a life.'],
+              ['Tarot', 'The codon rings gather the 64 into the Major Arcana — the archetypal throughline that orders the deck.'],
+            ].map(([label, body], i, arr) => (
+              <div key={label} className={`flex gap-4 py-[18px] ${i < arr.length - 1 ? 'border-b border-wood-100' : ''}`}>
+                <span className="flex-[0_0_84px] font-label text-[11px] font-bold uppercase tracking-[0.14em] text-wood-700 pt-[3px]">{label}</span>
+                <span className="font-sans text-sm leading-[1.6] text-wood-800">{body}</span>
+              </div>
+            ))}
+          </div>
+          <div className="px-8 pt-5 pb-[30px] bg-paper-100">
+            <p className="m-0 mb-[18px] font-serif italic text-lg leading-[1.5] text-wood-700">
+              Every card is one frequency spoken in four languages. The connections between them are the grammar of the whole.
+            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <Link to="/the-systems" className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-wood-700 border border-wood-300 px-6 py-3 hover:border-bronze-600 hover:text-wood-900 transition-colors no-underline">Read the full story →</Link>
+              <button type="button" onClick={() => setSystemsOpen(false)} className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-paper-50 bg-wood-900 px-7 py-3 hover:bg-bronze-600 transition-colors">Close</button>
+            </div>
+          </div>
+        </Overlay>
+      )}
+
+      {/* ── Reading lightbox ─────────────────────────────────────────────── */}
+      {reading && (() => {
+        const c = reading;
+        const [lo, hi] = tintForCard(c.number);
+        const inGrid = gridLabelByNumber.get(c.number);
+        return (
+          <Overlay onClose={() => setReading(null)} width="min(400px, 92vw)">
+            <div className="overflow-hidden">
+              <div className="px-6 pt-[30px] pb-7 text-center flex flex-col items-center" style={{ background: `linear-gradient(150deg, ${lo}, ${hi})` }}>
+                <span className="font-label text-[10px] font-semibold uppercase tracking-[0.2em] text-paper-50/80">
+                  Universal Language · {String(c.number).padStart(2, '0')}
+                </span>
+                <span className="leading-none block mt-3.5 text-paper-50"><CardHex card={c} width={58} color="#f7f5f1" /></span>
+              </div>
+              <div className="px-7 pt-[26px] pb-[30px] text-center">
+                {inGrid && (
+                  <p className="inline-flex items-center gap-[7px] font-label text-[10px] font-bold uppercase tracking-[0.16em] text-bronze-700 bg-[#e7decc] px-3.5 py-[7px] m-0 mb-[18px]">
+                    <span aria-hidden>◆</span> In your grid · {inGrid}
+                  </p>
+                )}
+                <h2 className="font-serif font-medium text-[31px] leading-[1.08] text-wood-900 m-0 mb-2">{c.card_name}</h2>
+                <p className="font-serif italic text-lg text-wood-500 m-0 mb-[18px]">{c.iching.hexagram_name}</p>
+                <div className="flex justify-center items-center flex-wrap gap-2 m-0 mb-6 font-label text-[11px] font-semibold uppercase tracking-[0.12em]">
+                  <span className="text-wood-400">{c.gene_keys.shadow}</span>
+                  <span aria-hidden className="text-wood-300">·</span>
+                  <span className="text-bronze-700">{c.gene_keys.gift}</span>
+                  <span aria-hidden className="text-wood-300">·</span>
+                  <span className="text-bronze-600">{c.gene_keys.siddhi}</span>
+                </div>
+                <div className="flex gap-2.5 justify-center items-center flex-wrap">
+                  <button type="button" onClick={() => shareCard(c)} className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-wood-700 border border-wood-300 px-5 py-3 hover:border-bronze-600 hover:text-wood-900 transition-colors">
+                    {typeof navigator !== 'undefined' && navigator.share ? 'Share' : 'Copy link'}
+                  </button>
+                  <button type="button" onClick={() => goCardPage(c)} className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-paper-50 bg-wood-900 px-6 py-3 hover:bg-bronze-600 transition-colors">
+                    Enter the reading
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Overlay>
+        );
+      })()}
+
+      {/* ── Journal overlay ──────────────────────────────────────────────── */}
+      {journalOpen && (
+        <Overlay onClose={() => setJournalOpen(false)} width="min(460px, 94vw)">
+          <div className="max-h-[84vh] flex flex-col">
+            <div className="px-7 pt-[26px] pb-[18px] border-b border-wood-200 flex items-end justify-between gap-3">
+              <div>
+                <p className="m-0 mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">Your Journal</p>
+                <h2 className="m-0 font-serif font-medium text-[28px] leading-none text-wood-900">Cards you have drawn</h2>
+              </div>
+              {journal.length > 0 && (
+                <button type="button" onClick={clearJournal} className="font-label text-[10px] font-semibold uppercase tracking-[0.14em] text-wood-500 hover:text-wood-900 transition-colors whitespace-nowrap">Clear</button>
+              )}
+            </div>
+            <div className="overflow-y-auto px-7 py-1.5">
+              {journal.length > 0 ? (
+                journal.map((e) => {
+                  const c = CARD_BY_NUMBER.get(e.n);
+                  if (!c) return null;
+                  return (
+                    <button key={e.n} type="button" onClick={() => openReading(c)} aria-label={`Reopen ${c.card_name}`} className="flex items-center gap-3.5 w-full py-3 border-b border-wood-100 hover:opacity-70 transition-opacity text-left">
+                      <span className="leading-none flex-shrink-0 text-wood-800"><CardHex card={c} width={26} /></span>
+                      <span className="flex items-baseline gap-2 min-w-0 flex-1">
+                        <span className="font-label text-[10px] font-bold tracking-[0.08em] text-wood-400 flex-shrink-0">{String(c.number).padStart(2, '0')}</span>
+                        <span className="font-serif text-[19px] leading-tight text-wood-900 truncate">{c.card_name}</span>
+                      </span>
+                      <span className="font-label text-[10px] tracking-[0.04em] text-wood-300 flex-shrink-0">{relTime(e.t)}</span>
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="py-9 text-center">
+                  <p className="m-0 mb-2 font-serif italic text-xl text-wood-500">Nothing drawn yet.</p>
+                  <p className="m-0 font-sans text-[13px] text-wood-400 leading-[1.6]">Every card you open is quietly kept here.</p>
+                </div>
+              )}
+            </div>
+            <div className="px-7 pt-4 pb-[22px] border-t border-wood-200 flex gap-3">
+              <button type="button" onClick={drawRandom} className="font-label text-[11px] font-bold uppercase tracking-[0.16em] text-paper-50 bg-wood-900 px-5 py-3 hover:bg-bronze-600 transition-colors">Draw a card</button>
+              <button type="button" onClick={() => setJournalOpen(false)} className="font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-wood-500 hover:text-wood-900 transition-colors">Close</button>
+            </div>
+          </div>
+        </Overlay>
+      )}
+
+      {/* ── Onboarding overlay ───────────────────────────────────────────── */}
+      {onboarding && (
+        <div onClick={finishOnboarding} className="fixed inset-0 z-[90] flex items-center justify-center p-6 overflow-auto bg-[rgba(30,26,22,0.6)] [backdrop-filter:blur(6px)]">
+          <div onClick={(e) => e.stopPropagation()} className="bg-paper-50 shadow-[0_24px_60px_rgba(30,26,22,0.45)] cursor-default" style={{ width: 'min(500px, 94vw)' }}>
+            <div className="px-[34px] pt-[34px] pb-2 text-center">
+              <p className="m-0 mb-2 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">Welcome</p>
+              <h2 className="m-0 font-serif font-medium text-4xl leading-[1.02] text-wood-900">How to read a card</h2>
+            </div>
+            <div className="px-[34px] pt-[22px] pb-2 flex flex-col gap-[18px]">
+              {[
+                ['Draw or choose.', 'Tap Draw at Random, or pick any hexagram from the deck and flip it to reveal its card.'],
+                ['Sit with it.', 'Each card holds an I Ching hexagram and a Gene Key spectrum — Shadow, Gift, Siddhi. Nothing needs to be understood to speak with it.'],
+                ['Make it yours.', 'Add your birth moment to find your four codes, and your draws are kept in a private journal.'],
+              ].map(([lead, body], i) => (
+                <div key={i} className="flex gap-[15px] items-start">
+                  <span className="flex-[0_0_28px] font-serif text-[26px] text-bronze-600 leading-none">{i + 1}</span>
+                  <span className="font-sans text-sm leading-[1.6] text-wood-800"><strong className="font-semibold">{lead}</strong> {body}</span>
+                </div>
+              ))}
+            </div>
+            <div className="px-[34px] pt-[22px] pb-[30px] text-center">
+              <button type="button" onClick={finishOnboarding} className="font-label text-[11px] font-bold uppercase tracking-[0.18em] text-paper-50 bg-wood-900 px-10 py-3.5 hover:bg-bronze-600 transition-colors">Begin</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Toast ────────────────────────────────────────────────────────── */}
+      {toast && (
+        <div className="fixed left-1/2 bottom-7 -translate-x-1/2 z-[95] bg-wood-900 text-paper-50 font-label text-xs font-semibold tracking-[0.06em] px-[22px] py-3.5 shadow-[0_12px_30px_rgba(30,26,22,0.35)] pointer-events-none">
+          {toast}
+        </div>
+      )}
     </div>
   );
 };

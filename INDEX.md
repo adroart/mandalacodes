@@ -8,7 +8,7 @@
 ## File tree
 
 ```
-components/  (66 files, 17,310 lines)
+components/  (67 files, 17,724 lines)
 │   ├── account/  (6 files, 847 lines)
 │   │   ├── AccountLayout.tsx  (81 lines)
 │   │   ├── AuthButton.tsx  (129 lines)
@@ -34,16 +34,16 @@ components/  (66 files, 17,310 lines)
 │   │   └── … 6 more files
 │   ├── lightweaver/  (1 files, 289 lines)
 │   │   └── LightweaverLanding.tsx  (289 lines)
-│   ├── oracle/  (14 files, 2,729 lines)
+│   ├── oracle/  (15 files, 2,843 lines)
 │   │   ├── BuySheet.tsx  → BuySheet
 │   │   ├── ChapterWordmark.tsx  → ChapterKey, Chapter, ChapterWordmark
 │   │   ├── CoinCast.tsx  (629 lines)
+│   │   ├── Constellation.tsx  (114 lines)
 │   │   ├── ContinueRail.tsx  → ContinueRail
 │   │   ├── CorrespondenceSheet.tsx  → CorrespondenceChainStep, Correspondence
 │   │   ├── HexagramGlyph.tsx  → TrigramSVG, HexagramSVG
 │   │   ├── ImageViewer.tsx  → ImageViewer
-│   │   ├── ProfileForm.tsx  (271 lines)
-│   │   └── … 6 more files
+│   │   └── … 7 more files
 │   ├── shared/  (5 files, 155 lines)
 │   │   ├── BackToTop.tsx  (27 lines)
 │   │   ├── LongformElements.tsx  → Tag, GlyphDivider, Interstitial, ParallaxImg
@@ -55,7 +55,7 @@ components/  (66 files, 17,310 lines)
 │   ├── AdminLayout.tsx  (126 lines)
 │   ├── AdminLogin.tsx  (28 lines)
 │   ├── AtlasPage.tsx  (829 lines)
-│   ├── Navigation.tsx  (245 lines)
+│   ├── Navigation.tsx  (246 lines)
 │   ├── NotFound.tsx  (45 lines)
 │   ├── OracleCardEntrance.tsx  → OracleCardEntrance
 │   └── … 8 more files
@@ -115,7 +115,7 @@ hooks/  (5 files, 141 lines)
 │   ├── useParallax.ts  → useParallax
 │   ├── useReveal.ts  → useReveal
 │   └── useScrollProgress.ts  → useScrollProgress
-lib/  (25 files, 2,184 lines)
+lib/  (27 files, 2,333 lines)
 │   ├── account/  (4 files, 252 lines)
 │   │   ├── AccountProvider.tsx  → AccountProvider
 │   │   ├── auth.server.js  → createAuth
@@ -135,15 +135,16 @@ lib/  (25 files, 2,184 lines)
 │   │   └── context.tsx  → CollectionItemKind, CollectionItem, Collection, CollectionsProvider, useCollections
 │   ├── lightweaver/  (1 files, 79 lines)
 │   │   └── cards.ts  → SavedCard, sanitizeHost, getSavedCards, rememberCard, forgetCard
-│   ├── oracle/  (8 files, 817 lines)
+│   ├── oracle/  (10 files, 966 lines)
 │   │   ├── cast.ts  → BinaryCard, CastLine, CastResult, castHexagram
+│   │   ├── elements.ts  → Element, ELEMENT_TINT, ELEMENT_DOT, ELEMENTS, primaryElement +3 more
 │   │   ├── hosted.ts  → HostedData, ToolError, dispatch
+│   │   ├── journal.ts  → JournalEntry, relTime, useJournal
 │   │   ├── ranker.ts  → SearchDoc, RankHit, RankOptions, queryTerms, rank
 │   │   ├── recommendation.ts  → SPHERES, LookbookPiece, RecInput, RecPick, Recommendation +3 more
 │   │   ├── search.ts  → loadOracleIndex, rank
 │   │   ├── tool-defs.ts  → PUBLIC_TOOL_DEFS, PUBLIC_TOOL_NAMES
-│   │   ├── transform.ts  → toSearchDoc
-│   │   └── types.ts  → MovingLine, CardArtwork, CanonicalCard, Voice
+│   │   └── … 2 more files
 │   └── profile/  (3 files, 278 lines)
 │       ├── context.tsx  → ProfileProvider, useProfile
 │       ├── share.ts  → SharedProfile, encodeSharedProfile, decodeSharedProfile
@@ -254,7 +255,9 @@ lib/atlas/state.ts → loadAtlasState, CardPlacement, findPlacementForCard, Publ
 lib/collections/context.tsx → CollectionItemKind, CollectionItem, Collection, CollectionsProvider, useCollections
 lib/lightweaver/cards.ts → SavedCard, sanitizeHost, getSavedCards, rememberCard, forgetCard
 lib/oracle/cast.ts → BinaryCard, CastLine, CastResult, castHexagram
+lib/oracle/elements.ts → Element, ELEMENT_TINT, ELEMENT_DOT, ELEMENTS, primaryElement, CARD_ELEMENT, elementForCard, tintForCard
 lib/oracle/hosted.ts → HostedData, ToolError, dispatch
+lib/oracle/journal.ts → JournalEntry, relTime, useJournal
 lib/oracle/ranker.ts → SearchDoc, RankHit, RankOptions, queryTerms, rank
 lib/oracle/recommendation.ts → SPHERES, LookbookPiece, RecInput, RecPick, Recommendation, ChartInput, LookbookData, assembleLookbook
 lib/oracle/search.ts → loadOracleIndex, rank

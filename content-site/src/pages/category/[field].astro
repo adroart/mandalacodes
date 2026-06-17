@@ -1,0 +1,43 @@
+---
+import Base from '../../layouts/Base.astro'
+import Library from '../../components/Library.astro'
+import { getPublishedArticles, toView, TABS } from '../../lib/articles'
+
+export async function getStaticPaths() {
+  // One page per real field (skip the "All" tab, which is the index).
+  return TABS.filter(t => t.slug).map(t => ({
+    params: { field: t.slug },
+    props: { fieldValue: t.value, label: t.label },
+  }))
+}
+
+interface Props {
+  fieldValue: string
+  label: string
+}
+
+const { fieldValue, label } = Astro.props
+const base = import.meta.env.BASE_URL
+
+const articles = await getPublishedArticles()
+const views = articles.map((a, i) => toView(a, i))
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${label} · Learn · Mandala Codes`,
+    description: `Articles on mandalas in the field of ${label}.`,
+    url: new URL(Astro.url.pathname, Astro.site).href,
+    isPartOf: { '@type': 'WebSite', name: 'Mandala Codes', url: 'https://mandalacodes.com' },
+  },
+]
+---
+
+<Base
+  title={`${label} · Learn · Mandala Codes`}
+  description={`Articles on mandalas in the field of ${label}, part of the Mandala Codes Learn library.`}
+  jsonLd={jsonLd}
+>
+  <Library views={views} active={fieldValue} />
+</Base>

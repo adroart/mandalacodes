@@ -138,10 +138,10 @@ const Navigation: React.FC = () => {
       <div className="max-w-[1800px] mx-auto px-6 md:px-12 flex justify-between items-center relative z-[120]">
         <Link to="/" className="group flex flex-col items-start py-2 -my-2" aria-label="Mandala Codes home">
           <span
-            className={`font-serif tracking-normal leading-none transition-all duration-300 font-normal text-wood-900 group-hover:text-bronze-600 ${
-              isScrolled ? 'text-base md:text-lg' : 'text-lg md:text-2xl'
+            className={`font-serif leading-none transition-all duration-300 font-normal uppercase text-wood-900 group-hover:text-bronze-600 ${
+              isScrolled ? 'text-sm md:text-base' : 'text-base md:text-xl'
             }`}
-            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.06em' }}
+            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.16em' }}
           >
             Mandala Codes
           </span>
@@ -189,10 +189,11 @@ const Navigation: React.FC = () => {
 
           <button
             onClick={toggleDarkMode}
-            className="px-3 min-w-[44px] min-h-[44px] flex items-center justify-center hover:opacity-70 transition-opacity font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-wood-900"
+            className="ml-1 inline-flex items-center justify-center gap-2 rounded-full border border-bronze-500/40 text-wood-700 hover:border-bronze-500 hover:text-bronze-600 transition-colors font-label text-[10px] uppercase tracking-[0.16em] font-semibold h-9 w-9 md:h-auto md:w-auto md:px-3.5 md:py-2"
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            {isDarkMode ? 'Light' : 'Dark'}
+            <span aria-hidden="true" className="text-[13px] leading-none">{isDarkMode ? '☀' : '☾'}</span>
+            <span className="hidden md:inline">{isDarkMode ? 'Light' : 'Dark'}</span>
           </button>
 
           <button

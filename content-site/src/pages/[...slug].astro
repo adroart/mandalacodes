@@ -1,29 +1,30 @@
 ---
 import { render } from 'astro:content'
 import Base from '../layouts/Base.astro'
-import { getPublishedArticles, type Article } from '../lib/articles'
+import { getPublishedArticles, toView, type Article } from '../lib/articles'
 
 export async function getStaticPaths() {
   const articles = await getPublishedArticles()
-  return articles.map(article => ({
+  return articles.map((article, i) => ({
     params: { slug: article.id },
-    props: { article },
+    props: { article, index: i },
   }))
 }
 
 interface Props {
   article: Article
+  index: number
 }
 
-const { article } = Astro.props
+const { article, index } = Astro.props
 const { Content } = await render(article)
 const base = import.meta.env.BASE_URL
 
-const dateFmt = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-})
+// Full decorated set so we can build "Continue in the Library" + this view.
+const all = await getPublishedArticles()
+const views = all.map((a, i) => toView(a, i))
+const view = views[index]
+const related = views.filter(v => v.id !== view.id).slice(0, 3)
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href
 
@@ -37,6 +38,7 @@ const jsonLd = [
     ...(article.data.updatedDate && { dateModified: article.data.updatedDate.toISOString() }),
     keywords: article.data.tags.join(', '),
     mainEntityOfPage: canonical,
+    image: view.heroWide,
     author: { '@type': 'Person', name: 'Adrian Rasmussen', url: 'https://adrianrasmussen.com' },
     publisher: { '@type': 'Organization', name: 'Mandala Codes', url: 'https://mandalacodes.com' },
   },
@@ -44,12 +46,7 @@ const jsonLd = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Learn',
-        item: new URL(`${base}/`, Astro.site).href,
-      },
+      { '@type': 'ListItem', position: 1, name: 'Learn', item: new URL(`${base}/`, Astro.site).href },
       { '@type': 'ListItem', position: 2, name: article.data.title, item: canonical },
     ],
   },
@@ -61,29 +58,104 @@ const jsonLd = [
   description={article.data.description}
   jsonLd={jsonLd}
   ogType="article"
+  activeNav={null}
+  accent={view.tint}
 >
-  <article>
-    <h1>{article.data.title}</h1>
-    <p class="meta">
-      {dateFmt.format(article.data.pubDate)}
-      {article.data.updatedDate && ` · updated ${dateFmt.format(article.data.updatedDate)}`}
-      {article.data.tags.length > 0 && (
-        <span class="tags"> · {article.data.tags.join(', ')}</span>
-      )}
-    </p>
+  <article class="lp-read-section" data-r="readSection">
+    {/* reading-progress ring (scroll-driven where supported) */}
+    <div class="lp-progress-wrap" data-r="progressWrap">
+      <div class="lp-progress" data-r="progress">
+        <svg width="54" height="54" viewBox="0 0 54 54">
+          <circle cx="27" cy="27" r="20" fill="none" stroke-width="2" style="stroke: var(--rule)"></circle>
+          <circle
+            data-r="progressArc"
+            cx="27" cy="27" r="20" fill="none" stroke-width="2" stroke-linecap="round"
+            stroke-dasharray="126" stroke-dashoffset="126" transform="rotate(-90 27 27)"
+            style="stroke: var(--acc)"
+          ></circle>
+          <circle cx="27" cy="27" r="2.4" style="fill: var(--acc)"></circle>
+        </svg>
+      </div>
+    </div>
 
-    <Content />
+    <div class="lp-read-topbar">
+      <a class="back" href={`${base}/`}>← The Library</a>
+      <span class="mark">MANDALA CODES</span>
+      <span>{view.field}</span>
+    </div>
+
+    <div class="lp-read-pad">
+      <header class="lp-read-masthead" data-reveal>
+        <div class="lp-read-orn">◦ ◦ ◦</div>
+        <div class="lp-read-field">{view.field}</div>
+        <h1 class="lp-read-title">{article.data.title}</h1>
+        <p class="lp-read-dek">{article.data.description}</p>
+      </header>
+
+      <div class="lp-byline" data-reveal>
+        <div class="medallion">AR</div>
+        <div class="meta">
+          <span class="name">Adrian Rasmussen</span><span>·</span><span>{view.date}</span>
+          {article.data.updatedDate && (<><span>·</span><span>updated</span></>)}
+          <span>·</span><span>{view.read} read</span>
+        </div>
+      </div>
+
+      <figure class="lp-figure" data-reveal>
+        <div class="frame">
+          <img src={view.heroWide} alt="" />
+          <div class="inner"></div>
+        </div>
+        <figcaption class="lp-figcaption">
+          <span class="acc">Plate {view.plate}</span> &nbsp;·&nbsp; {view.culture} &nbsp;·&nbsp; Universal Language
+        </figcaption>
+      </figure>
+
+      <div class="lp-read-body" data-reveal>
+        <Content />
+        <div class="lp-hexagram" aria-hidden="true">
+          <div class="full"></div>
+          <div class="broken"><span></span><span></span></div>
+          <div class="full"></div>
+          <div class="full"></div>
+          <div class="broken"><span></span><span></span></div>
+          <div class="full"></div>
+        </div>
+      </div>
+    </div>
+
+    {/* ===== Continue in the Library ===== */}
+    {related.length > 0 && (
+      <section class="lp-related-section" data-reveal>
+        <div class="lp-related-head">
+          <span class="line"></span>
+          <span class="label">Continue in the Library</span>
+          <span class="line"></span>
+        </div>
+        <div class="lp-related" data-r="related">
+          {related.map(r => (
+            <a class="lp-rel-card" href={`${base}/${r.id}/`}>
+              <div class="frame"><img class="lp-rel-img" src={r.cover} alt="" /></div>
+              <div class="lp-rel-field" style={`color:${r.tint}`}>{r.field}</div>
+              <h3 class="lp-rel-title">{r.title}</h3>
+              <div class="lp-rel-read">{r.read} read</div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
 
     {article.data.relatedCard && (
-      <footer>
-        <hr />
-        <p>
-          Explore this theme in the deck:
-          <a href={`https://mandalacodes.com/universal-language/${article.data.relatedCard}`}>
-            Card {article.data.relatedCard} of the Universal Language
-          </a>
-        </p>
-      </footer>
+      <div class="lp-read-pad" style="padding-top:0; padding-bottom:56px; text-align:center;">
+        <a
+          class="lp-cta"
+          data-magnetic
+          style="color: var(--acc); border-color: var(--mat);"
+          href={`https://mandalacodes.com/universal-language/${article.data.relatedCard}`}
+        >
+          Explore Card {article.data.relatedCard} in the deck <span class="arrow">→</span>
+        </a>
+      </div>
     )}
   </article>
 </Base>
