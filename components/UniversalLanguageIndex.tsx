@@ -187,35 +187,30 @@ const FlipTile: React.FC<{
           </span>
         </button>
 
-        {/* FRONT — artwork + Back · Read strip beneath */}
+        {/* FRONT — full square artwork + Back · Read strip BELOW it (so the
+            revealed card is a rectangle: square art on top, actions beneath) */}
         <div
-          className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden shadow-[0_1px_3px_rgba(38,35,33,0.12)]"
-          style={{ opacity: flipped ? 1 : 0, transition: 'opacity .01s linear .28s' }}
+          className="absolute top-0 left-0 right-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden shadow-[0_4px_14px_rgba(38,35,33,0.22)]"
+          style={{ opacity: flipped ? 1 : 0, transition: 'opacity .01s linear .28s', pointerEvents: flipped ? 'auto' : 'none' }}
         >
           <button
             type="button"
             onClick={onRead}
             aria-label={`Read ${card.card_name}, Card ${card.number}`}
-            className="relative flex-1 block min-h-0 overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
-            style={{ background: `linear-gradient(150deg, ${lo}, ${hi})` }}
+            className="relative block overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+            style={{ aspectRatio: '1 / 1' }}
           >
-            {/* the square painting, peeking through softly behind the colors */}
+            {/* the full square painting */}
             <img
               src={cardImageUrl(card.number, 400)}
-              alt=""
-              aria-hidden
-              className="absolute inset-0 w-full h-full object-cover block opacity-20"
+              alt={`${card.card_name}, Universal Language ${card.number}`}
+              className="absolute inset-0 w-full h-full object-cover block"
               loading="lazy"
               decoding="async"
             />
-            <span className="relative flex flex-col items-center justify-center gap-1 text-center h-full p-2">
-              <span className="font-label text-[7.5px] font-semibold uppercase tracking-[0.16em] text-paper-50/70">
-                Universal Language
-              </span>
-              <span className="font-serif font-medium leading-[1.12] text-paper-50 [text-wrap:balance] text-[clamp(15px,2.4vw,19px)]">
-                {card.card_name}
-              </span>
-              <span className="font-label text-[7.5px] font-semibold uppercase tracking-[0.14em] text-paper-50/55 mt-0.5">
+            {/* element word, centered, over a soft scrim for legibility */}
+            <span className="absolute inset-0 flex items-center justify-center text-center p-2 bg-gradient-to-t from-black/30 via-transparent to-black/15">
+              <span className="font-label text-[13px] font-bold uppercase tracking-[0.22em] text-paper-50 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
                 {el}
               </span>
             </span>
