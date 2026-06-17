@@ -77,37 +77,64 @@ const ArtPanel: React.FC<{ card: OracleCard; rounded?: boolean; className?: stri
   );
 };
 
-/* ─── Rail: featured tile (Card of the Day / Year) ───────────────────────── */
+/* ─── Rail: featured tile (Card of the Day / Year) ───────────────────────────
+ * A small square painting (art only) with its label above. Tap to flip: the
+ * back reveals the name + a Read action. Two sit side by side, compact, so they
+ * take little height and the deck comes sooner. */
 
 const FeatTile: React.FC<{ eyebrow: string; date: string; card: OracleCard; onRead: () => void }> = ({
   eyebrow,
   date,
   card,
   onRead,
-}) => (
-  <button
-    type="button"
-    onClick={onRead}
-    className="block w-full text-left -mx-3 px-3 py-3 transition-colors hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
-  >
-    <span className="font-label text-[10px] font-bold uppercase tracking-[0.18em] text-bronze-600 block">
-      {eyebrow}
-      <span aria-hidden className="text-wood-300 mx-1.5">·</span>
-      <span className="text-wood-600">{date}</span>
-    </span>
-    <span className="flex items-center gap-3 mt-2.5">
-      <span className="leading-none flex-shrink-0 text-wood-800">
-        <CardHex card={card} width={30} />
+}) => {
+  const [flipped, setFlipped] = useState(false);
+  const [lo, hi] = tintForCard(card.number);
+  return (
+    <div className="min-w-0">
+      <span className="font-label text-[10px] font-bold uppercase tracking-[0.16em] text-bronze-600 block mb-2 truncate">
+        {eyebrow}
+        <span aria-hidden className="text-wood-300 mx-1.5">·</span>
+        <span className="text-wood-600">{date}</span>
       </span>
-      <span className="flex flex-col gap-0.5 min-w-0">
-        <span className="font-label text-[11px] font-bold tracking-[0.08em] text-bronze-600">
-          No. {String(card.number).padStart(2, '0')}
-        </span>
-        <span className="font-serif text-xl leading-tight text-wood-900 font-medium">{card.card_name}</span>
-      </span>
-    </span>
-  </button>
-);
+      <div className="relative [perspective:900px]" style={{ aspectRatio: '1 / 1' }}>
+        <div
+          className="absolute inset-0 [transform-style:preserve-3d] transition-transform duration-[600ms] [transition-timing-function:cubic-bezier(.16,1,.3,1)]"
+          style={{ transform: flipped ? 'rotateY(180deg)' : 'none' }}
+        >
+          {/* FRONT — the square painting only */}
+          <button
+            type="button"
+            onClick={() => setFlipped(true)}
+            aria-label={`Reveal ${eyebrow}: Card ${card.number}`}
+            className="absolute inset-0 [backface-visibility:hidden] block overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+            style={{ opacity: flipped ? 0 : 1, transition: 'opacity .01s linear .28s' }}
+          >
+            <ArtPanel card={card} />
+          </button>
+          {/* BACK — name + Read over the colors */}
+          <button
+            type="button"
+            onClick={onRead}
+            aria-label={`Read ${card.card_name}, Card ${card.number}`}
+            className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-center gap-1 text-center p-2 overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+            style={{ opacity: flipped ? 1 : 0, transition: 'opacity .01s linear .28s', background: `linear-gradient(150deg, ${lo}, ${hi})` }}
+          >
+            <span className="font-label text-[10px] font-bold tracking-[0.08em] text-paper-50/80">
+              No. {String(card.number).padStart(2, '0')}
+            </span>
+            <span className="font-serif font-medium leading-[1.12] text-paper-50 [text-wrap:balance] text-[clamp(14px,2vw,18px)]">
+              {card.card_name}
+            </span>
+            <span className="font-label text-[9px] font-bold uppercase tracking-[0.16em] text-paper-50 mt-1 underline underline-offset-2">
+              Read →
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /* ─── Rail: the astrology grid module (wired to the real profile) ────────────
  * When a Hologenetic Profile is set, the rail shows the four Activation codes
@@ -199,10 +226,19 @@ const FlipTile: React.FC<{
             type="button"
             onClick={onRead}
             aria-label={`Read ${card.card_name}, Card ${card.number}`}
-            className="flex-1 block min-h-0 cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+            className="relative flex-1 block min-h-0 overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
             style={{ background: `linear-gradient(150deg, ${lo}, ${hi})` }}
           >
-            <span className="flex flex-col items-center justify-center gap-1 text-center h-full p-2">
+            {/* the square painting, peeking through softly behind the colors */}
+            <img
+              src={cardImageUrl(card.number, 400)}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover block opacity-20"
+              loading="lazy"
+              decoding="async"
+            />
+            <span className="relative flex flex-col items-center justify-center gap-1 text-center h-full p-2">
               <span className="font-label text-[7.5px] font-semibold uppercase tracking-[0.16em] text-paper-50/70">
                 Universal Language
               </span>
@@ -240,7 +276,6 @@ const FlipTile: React.FC<{
 /* ─── Deck: artwork flat tile ────────────────────────────────────────────── */
 
 const FlatTile: React.FC<{ card: OracleCard; onRead: () => void }> = ({ card, onRead }) => {
-  const el = elementForCard(card.number);
   return (
     <button
       type="button"
@@ -249,18 +284,8 @@ const FlatTile: React.FC<{ card: OracleCard; onRead: () => void }> = ({ card, on
       className="relative block w-full overflow-hidden transition-transform duration-200 hover:-translate-y-[3px] hover:shadow-[0_8px_20px_rgba(38,35,33,0.2)] focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
       style={{ aspectRatio: '1 / 1' }}
     >
+      {/* small card = the square painting only, no name overlay */}
       <ArtPanel card={card} />
-      <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-center p-2.5 bg-gradient-to-t from-black/35 via-transparent to-black/10">
-        <span className="font-serif font-medium leading-[1.12] text-paper-50 [text-wrap:balance] text-[clamp(15px,2.4vw,19px)] drop-shadow">
-          {card.card_name}
-        </span>
-        <span className="font-label text-[7.5px] font-semibold uppercase tracking-[0.14em] text-paper-50/70">
-          {el}
-        </span>
-      </span>
-      <span className="absolute top-[7px] left-2 font-label text-[8px] font-bold tracking-[0.12em] text-paper-50/70">
-        {String(card.number).padStart(2, '0')}
-      </span>
     </button>
   );
 };
@@ -597,12 +622,23 @@ const UniversalLanguageIndex: React.FC = () => {
 
           <div aria-hidden className="h-px bg-wood-200 my-6" />
 
-          <FeatTile eyebrow="Card of the Day" date={now.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })} card={today} onRead={() => openReading(today)} />
-          <FeatTile eyebrow="Card of the Year" date={String(now.getFullYear())} card={year} onRead={() => openReading(year)} />
-
-          <div className="mt-3.5">
-            <AstrologyGrid onViewGrid={() => setGridOpen(true)} hasProfile={!!grid && grid.length > 0} placeLabel={profile?.inputs.place.label} />
+          {/* Card of the Day + Card of the Year — small square art, side by side */}
+          <div className="grid grid-cols-2 gap-4">
+            <FeatTile eyebrow="Day" date={now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} card={today} onRead={() => openReading(today)} />
+            <FeatTile eyebrow="Year" date={String(now.getFullYear())} card={year} onRead={() => openReading(year)} />
           </div>
+
+          {/* Sign in to yours — one button; the popup is where you enter your birth moment */}
+          <button
+            type="button"
+            onClick={() => setGridOpen(true)}
+            className="flex items-center justify-between gap-3 w-full mt-4 px-4 py-3.5 bg-wood-900 text-paper-50 hover:bg-bronze-600 transition-colors text-left"
+          >
+            <span className="font-label text-[11px] font-bold uppercase tracking-[0.16em]">
+              {grid && grid.length > 0 ? 'View your codes' : 'Sign in to yours'}
+            </span>
+            <span aria-hidden className="font-label text-[15px] flex-shrink-0">→</span>
+          </button>
 
           <button
             type="button"
@@ -615,50 +651,12 @@ const UniversalLanguageIndex: React.FC = () => {
             </span>
             <span aria-hidden className="font-label text-[15px] text-bronze-600 flex-shrink-0">→</span>
           </button>
-
-          {journal.length > 0 && (
-            <div className="mt-[22px] border-t border-wood-200 pt-[18px]">
-              <div className="flex items-baseline justify-between mb-2.5">
-                <span className="font-label text-[10px] font-bold uppercase tracking-[0.18em] text-wood-700">Recent draws</span>
-                <button type="button" onClick={() => setJournalOpen(true)} className="font-label text-[9.5px] font-semibold uppercase tracking-[0.12em] text-bronze-600 hover:text-wood-900 transition-colors">
-                  View all →
-                </button>
-              </div>
-              <div className="flex flex-col">
-                {journal.slice(0, 3).map((e) => {
-                  const c = CARD_BY_NUMBER.get(e.n);
-                  if (!c) return null;
-                  return (
-                    <button key={e.n} type="button" onClick={() => openReading(c)} aria-label={`Reopen ${c.card_name}`} className="flex items-center gap-2.5 w-full py-2 border-b border-wood-100 hover:opacity-70 transition-opacity text-left">
-                      <span className="leading-none flex-shrink-0 text-wood-800"><CardHex card={c} width={22} /></span>
-                      <span className="flex items-baseline gap-1.5 min-w-0 flex-1">
-                        <span className="font-label text-[9px] font-bold tracking-[0.08em] text-wood-400 flex-shrink-0">{String(c.number).padStart(2, '0')}</span>
-                        <span className="font-serif text-[15px] leading-tight text-wood-900 truncate">{c.card_name}</span>
-                      </span>
-                      <span className="font-label text-[9px] tracking-[0.04em] text-wood-300 flex-shrink-0">{relTime(e.t)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </aside>
 
         {/* RIGHT — the deck */}
         <main id="ul-main" className="min-w-0">
-          {/* Controls */}
+          {/* Controls — view mode (no search) */}
           <div className="sticky top-[calc(var(--nav-height)+58px)] z-20 bg-paper-50 flex flex-wrap gap-3 items-center py-3.5 border-b border-wood-200">
-            <div className="relative flex-1 min-w-[160px]">
-              <label htmlFor="ul-search" className="sr-only">Search cards</label>
-              <input
-                id="ul-search"
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search name, keyword, or number  ( / )"
-                className="w-full font-sans text-sm text-wood-900 bg-transparent border border-wood-300 focus:border-bronze-700 px-3.5 min-h-[42px] outline-none transition-colors"
-              />
-            </div>
             <div role="group" aria-label="View mode" className="flex items-center flex-shrink-0">
               {viewTabs.map((t) => (
                 <button key={t.v} type="button" onClick={() => setView(t.v)} className={`${tabBase} ${view === t.v ? tabActive : tabIdle}`}>
@@ -813,6 +811,23 @@ const UniversalLanguageIndex: React.FC = () => {
             <div className="flex flex-wrap items-center gap-x-[18px] gap-y-3.5">
               <button type="button" onClick={() => setGridOpen(false)} className="font-label text-[11px] font-bold uppercase tracking-[0.16em] text-paper-50 bg-wood-900 px-6 py-3 hover:bg-bronze-600 transition-colors">Done</button>
               <Link to="/profile" className="font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-wood-700 border border-wood-300 px-5 py-3 hover:border-bronze-600 hover:text-wood-900 transition-colors no-underline">Full profile →</Link>
+            </div>
+          </div>
+        </Overlay>
+      )}
+
+      {/* ── Sign-in / link-your-birth-moment popup (no profile yet) ──────────── */}
+      {gridOpen && !(grid && grid.length > 0) && (
+        <Overlay onClose={() => setGridOpen(false)} width="min(460px, 94vw)">
+          <div className="px-8 pt-8 pb-7">
+            <p className="m-0 mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">Sign in to yours</p>
+            <h2 className="m-0 font-serif font-medium text-[30px] leading-[1.05] text-wood-900">Link your birth moment</h2>
+            <p className="m-0 mt-3.5 font-sans text-[13.5px] leading-[1.6] text-wood-700 max-w-[34em]">
+              Your exact birth moment links you to four of the sixty-four codes. Add your date, time, and place, and your readings will flag when one of your four appears.
+            </p>
+            <div className="flex flex-wrap items-center gap-x-[18px] gap-y-3.5 mt-6">
+              <Link to="/profile" className="font-label text-[11px] font-bold uppercase tracking-[0.16em] text-paper-50 bg-wood-900 px-6 py-3 hover:bg-bronze-600 transition-colors no-underline">Enter my birth moment →</Link>
+              <button type="button" onClick={() => setGridOpen(false)} className="font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-wood-700 hover:text-wood-900 transition-colors">Not now</button>
             </div>
           </div>
         </Overlay>
