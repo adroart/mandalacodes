@@ -163,69 +163,63 @@ const FlipTile: React.FC<{
   onBack: () => void;
   onRead: () => void;
 }> = ({ card, flipped, onFlip, onBack, onRead }) => {
-  const el = elementForCard(card.number);
-  const [lo, hi] = tintForCard(card.number);
-  // When flipped, the cell grows to fit the full square painting PLUS the
-  // action strip beneath it, so the revealed card pushes its neighbours down
-  // instead of overlapping them. When unflipped it's a plain square hexagram.
-  if (!flipped) {
-    return (
-      <button
-        type="button"
-        onClick={onFlip}
-        aria-label={`Reveal Card ${card.number}: ${card.iching.hexagram_name}`}
-        className="relative flex flex-col items-center justify-center gap-1.5 bg-transparent cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
-        style={{ aspectRatio: '1 / 1' }}
-      >
-        <span className="leading-none text-wood-800">
-          <CardHex card={card} width={46} />
-        </span>
-        <span className="font-label text-[13px] font-bold text-wood-500 tracking-[0.1em] leading-none">
-          {String(card.number).padStart(2, '0')}
-        </span>
-      </button>
-    );
-  }
+  // Both states share ONE footprint: a square top area + a 38px strip beneath.
+  // The row is already that tall, so revealing a card never shifts the layout.
   return (
-    <div className="relative z-10 flex flex-col overflow-hidden shadow-[0_4px_14px_rgba(38,35,33,0.22)]">
-      {/* full square painting */}
-      <button
-        type="button"
-        onClick={onRead}
-        aria-label={`Read ${card.card_name}, Card ${card.number}`}
-        className="relative block overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
-        style={{ aspectRatio: '1 / 1' }}
-      >
-        <img
-          src={cardImageUrl(card.number, 400)}
-          alt={`${card.card_name}, Universal Language ${card.number}`}
-          className="absolute inset-0 w-full h-full object-cover block"
-          loading="lazy"
-          decoding="async"
-        />
-        {/* element word, centered, over a soft scrim for legibility */}
-        <span className="absolute inset-0 flex items-center justify-center text-center p-2 bg-gradient-to-t from-black/30 via-transparent to-black/15">
-          <span className="font-label text-[13px] font-bold uppercase tracking-[0.22em] text-paper-50 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
-            {el}
+    <div className="relative flex flex-col overflow-hidden">
+      {/* square top area — hexagram when closed, full painting when revealed */}
+      <div className="relative" style={{ aspectRatio: '1 / 1' }}>
+        {flipped ? (
+          <button
+            type="button"
+            onClick={onRead}
+            aria-label={`Read ${card.card_name}, Card ${card.number}`}
+            className="absolute inset-0 block overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+          >
+            <img
+              src={cardImageUrl(card.number, 400)}
+              alt={`${card.card_name}, Universal Language ${card.number}`}
+              className="absolute inset-0 w-full h-full object-cover block"
+              loading="lazy"
+              decoding="async"
+            />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onFlip}
+            aria-label={`Reveal Card ${card.number}: ${card.iching.hexagram_name}`}
+            className="absolute inset-0 flex items-center justify-center bg-transparent cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+          >
+            <CardHex card={card} width={46} />
+          </button>
+        )}
+      </div>
+      {/* strip — number when closed, Back · Read when revealed */}
+      <div className="h-[38px] flex-shrink-0 flex items-stretch">
+        {flipped ? (
+          <>
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex-1 flex items-center justify-center bg-paper-100 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-wood-700 hover:text-wood-900 transition-colors cursor-pointer"
+            >
+              Back
+            </button>
+            <span aria-hidden className="w-px self-center h-[11px] bg-wood-400" />
+            <button
+              type="button"
+              onClick={onRead}
+              className="flex-1 flex items-center justify-center bg-paper-100 font-label text-[10px] font-bold uppercase tracking-[0.16em] text-bronze-700 hover:text-wood-900 transition-colors cursor-pointer"
+            >
+              Read
+            </button>
+          </>
+        ) : (
+          <span className="flex-1 flex items-center justify-center font-label text-[12px] font-bold tracking-[0.1em] text-wood-500 leading-none">
+            {String(card.number).padStart(2, '0')}
           </span>
-        </span>
-      </button>
-      <div className="h-[38px] flex-shrink-0 flex items-stretch bg-paper-100">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 flex items-center justify-center font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-wood-700 hover:text-wood-900 transition-colors cursor-pointer"
-        >
-          Back
-        </button>
-        <span aria-hidden className="w-px self-center h-[11px] bg-wood-400" />
-        <button
-          type="button"
-          onClick={onRead}
-          className="flex-1 flex items-center justify-center font-label text-[10px] font-bold uppercase tracking-[0.16em] text-bronze-700 hover:text-wood-900 transition-colors cursor-pointer"
-        >
-          Read
-        </button>
+        )}
       </div>
     </div>
   );
