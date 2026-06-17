@@ -555,27 +555,28 @@ const UniversalLanguageIndex: React.FC = () => {
       </header>
 
       {/* ── Body: two-pane reading room ──────────────────────────────────── */}
-      <div className="max-w-[1280px] mx-auto px-6 pt-[72px] lg:pt-[80px] pb-2 grid grid-cols-1 lg:grid-cols-[330px_minmax(0,1fr)] gap-x-12 gap-y-5 items-start">
+      {/* ── Centered hero: title + invocation, big ──────────────────────────── */}
+      <div className="max-w-[860px] mx-auto px-6 pt-[64px] lg:pt-[76px] text-center">
+        <h1 className="font-serif font-medium text-wood-900 leading-[0.98] tracking-[-0.01em] m-0 text-[clamp(44px,7vw,76px)]">
+          Universal Language
+        </h1>
+        <p className="font-serif italic text-bronze-600 mt-2 text-[clamp(19px,2.6vw,26px)]">Sixty-Four Expressions</p>
+
+        <div aria-hidden className="w-12 h-px bg-bronze-600/45 mx-auto my-6" />
+
+        <div className="font-serif italic text-[clamp(18px,2.4vw,23px)] leading-[1.55] text-wood-800 flex flex-col gap-3 max-w-[40em] mx-auto">
+          <p className="m-0">
+            Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.
+          </p>
+          <p className="m-0">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
+          <p className="m-0">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
+        </div>
+      </div>
+
+      <div className="max-w-[1280px] mx-auto px-6 pt-8 pb-2 grid grid-cols-1 lg:grid-cols-[330px_minmax(0,1fr)] gap-x-12 gap-y-5 items-start">
 
         {/* LEFT RAIL */}
         <aside className="min-w-0 lg:sticky lg:top-[calc(var(--nav-height)+58px+24px)]">
-          <h1 className="font-serif font-medium text-wood-900 leading-[0.96] tracking-[-0.01em] m-0 text-[clamp(36px,4.4vw,50px)]">
-            Universal Language
-          </h1>
-          <p className="font-serif italic text-bronze-600 mt-1.5 text-[clamp(17px,2vw,21px)]">Sixty-Four Expressions</p>
-
-          <div aria-hidden className="w-10 h-px bg-bronze-600/45 my-3.5" />
-
-          <div className="font-serif italic text-base leading-[1.6] text-wood-800 flex flex-col gap-[11px] max-w-[30em]">
-            <p className="m-0">
-              Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.
-            </p>
-            <p className="m-0">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
-            <p className="m-0">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
-          </div>
-
-          <div aria-hidden className="h-px bg-wood-200 my-4" />
-
           {/* Card of the Day + Card of the Year — tiny art, side by side */}
           <div className="flex items-center gap-5">
             <FeatTile eyebrow="Day" date={now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} card={today} onRead={() => openReading(today)} />
