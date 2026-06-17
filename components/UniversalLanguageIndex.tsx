@@ -90,17 +90,17 @@ const FeatTile: React.FC<{ eyebrow: string; date: string; card: OracleCard; onRe
     type="button"
     onClick={onRead}
     aria-label={`See the ${eyebrow} card`}
-    className="group flex items-center gap-2.5 min-w-0 text-left bg-transparent border-none p-0 cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+    className="group flex items-center gap-3 min-w-0 text-left bg-transparent border-none p-0 cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
   >
-    <span className="leading-none flex-shrink-0 text-wood-700 group-hover:text-bronze-600 transition-colors">
-      <CardHex card={card} width={22} />
+    <span className="leading-none flex-shrink-0 text-wood-800 group-hover:text-bronze-600 transition-colors">
+      <CardHex card={card} width={30} />
     </span>
     <span className="flex flex-col gap-0.5 min-w-0">
-      <span className="font-label text-[11px] font-bold uppercase tracking-[0.14em] text-bronze-600 truncate">
-        {eyebrow} <span aria-hidden className="text-wood-300">·</span> <span className="text-wood-500">{date}</span>
+      <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-wood-500 truncate">
+        {eyebrow}
       </span>
-      <span className="font-label text-[10px] font-semibold uppercase tracking-[0.12em] text-wood-600 group-hover:text-bronze-600 transition-colors">
-        See it →
+      <span className="font-label text-[11px] font-semibold uppercase tracking-[0.1em] text-bronze-600 group-hover:text-wood-900 transition-colors truncate">
+        {date}
       </span>
     </span>
   </button>
@@ -466,11 +466,11 @@ const UniversalLanguageIndex: React.FC = () => {
     query.trim() || elFilter !== 'All'
       ? `${total} ${total === 1 ? 'card' : 'cards'} shown`
       : view === 'iching'
-        ? 'Tap a hexagram to reveal its card · Read to enter'
+        ? 'Sixty-four hexagrams · tap one to reveal it'
         : view === 'artwork'
-          ? 'Tap any card to enter'
+          ? 'Sixty-four paintings · tap one to enter'
           : view === 'map'
-            ? 'The codon rings as a constellation · tap a star to read it'
+            ? 'The codon rings as a constellation · tap a star'
             : 'The sixty-four, gathered into their codon rings';
 
   const showEmpty =
@@ -485,13 +485,15 @@ const UniversalLanguageIndex: React.FC = () => {
     { label: 'Map', v: 'map' },
   ];
 
+  // Tabs: a quiet underline switch (not form buttons)
   const tabBase =
-    'font-label text-[10px] font-semibold uppercase tracking-[0.12em] px-2.5 h-[32px] border transition-colors cursor-pointer whitespace-nowrap -ml-px focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
-  const tabActive = 'bg-wood-900 text-paper-50 border-wood-900 relative z-10';
-  const tabIdle = 'bg-transparent text-wood-700 border-wood-300 hover:text-wood-900 hover:border-wood-700';
+    'font-label text-[11px] font-semibold uppercase tracking-[0.14em] pb-1.5 border-b-2 transition-colors cursor-pointer whitespace-nowrap focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
+  const tabActive = 'text-wood-900 border-bronze-600';
+  const tabIdle = 'text-wood-400 border-transparent hover:text-wood-700';
 
+  // Element filters: text-only, the active one carries a dot
   const chipBase =
-    'font-label text-[9px] font-bold uppercase tracking-[0.1em] px-2 py-[4px] border transition-colors cursor-pointer inline-flex items-center gap-1 leading-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
+    'font-label text-[9.5px] font-bold uppercase tracking-[0.1em] transition-colors cursor-pointer inline-flex items-center gap-1.5 leading-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
 
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
@@ -508,11 +510,11 @@ const UniversalLanguageIndex: React.FC = () => {
               breadcrumb entirely so the action cluster never collides with it.
               A spacer keeps the actions right-aligned. */}
           <span aria-hidden className="md:hidden flex-1" />
-          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-4 sm:gap-5 flex-shrink-0">
             <button
               type="button"
               onClick={() => setJournalOpen(true)}
-              className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-wood-700 hover:text-bronze-600 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+              className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-wood-600 hover:text-bronze-600 transition-colors flex items-center gap-1.5 whitespace-nowrap"
             >
               Journal
               {journal.length > 0 && (
@@ -523,51 +525,36 @@ const UniversalLanguageIndex: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setSystemsOpen(true)}
-              className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-wood-700 hover:text-bronze-600 transition-colors whitespace-nowrap hidden sm:inline"
-            >
-              The Systems
-            </button>
-            <button
-              type="button"
               onClick={() => setOnboarding(true)}
               aria-label="How to read a card"
               title="How to read a card"
-              className="font-label text-xs font-bold w-[26px] h-[26px] rounded-full text-wood-600 border border-wood-300 hover:bg-paper-100 hover:border-bronze-600 transition-colors flex-shrink-0"
+              className="font-label text-xs font-bold w-[24px] h-[24px] rounded-full text-wood-500 border border-wood-300 hover:bg-paper-100 hover:border-bronze-600 transition-colors flex-shrink-0"
             >
               ?
             </button>
             <button
               type="button"
               onClick={drawRandom}
-              className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-paper-50 bg-wood-900 px-5 py-2.5 hover:bg-bronze-600 transition-colors whitespace-nowrap"
+              className="font-label text-[12px] font-bold uppercase tracking-[0.18em] text-paper-50 bg-bronze-600 px-6 py-3 hover:bg-wood-900 transition-colors whitespace-nowrap shadow-[0_2px_8px_rgba(38,35,33,0.18)]"
             >
-              Draw at Random
+              Draw a Card
             </button>
           </div>
         </div>
       </header>
 
-      {/* ── Body: two-pane reading room ──────────────────────────────────── */}
-      {/* ── Centered hero: title + invocation, big ──────────────────────────── */}
-      <div className="max-w-[860px] mx-auto px-6 pt-[64px] lg:pt-[76px] text-center">
-        <h1 className="font-serif font-medium text-wood-900 leading-[0.98] tracking-[-0.01em] m-0 text-[clamp(44px,7vw,76px)]">
+      {/* ── Centered hero: big title, subtitle, one-line invocation ─────────── */}
+      <div className="max-w-[800px] mx-auto px-6 pt-12 lg:pt-14 text-center">
+        <h1 className="font-serif font-medium text-wood-900 leading-[0.98] tracking-[-0.01em] m-0 text-[clamp(44px,7vw,72px)]">
           Universal Language
         </h1>
-        <p className="font-serif italic text-bronze-600 mt-2 text-[clamp(19px,2.6vw,26px)]">Sixty-Four Expressions</p>
-
-        <div aria-hidden className="w-12 h-px bg-bronze-600/45 mx-auto my-6" />
-
-        <div className="font-serif italic text-[clamp(18px,2.4vw,23px)] leading-[1.55] text-wood-800 flex flex-col gap-3 max-w-[40em] mx-auto">
-          <p className="m-0">
-            Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.
-          </p>
-          <p className="m-0">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
-          <p className="m-0">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
-        </div>
+        <p className="font-serif italic text-bronze-600 mt-2 text-[clamp(18px,2.4vw,24px)]">Sixty-Four Expressions</p>
+        <p className="font-serif italic text-[clamp(16px,2vw,20px)] leading-[1.5] text-wood-700 max-w-[36em] mx-auto mt-4">
+          An instrument of attunement to the light within, as we move through the unfolding of this mystery.
+        </p>
       </div>
 
-      <div className="max-w-[1280px] mx-auto px-6 pt-8 pb-2 grid grid-cols-1 lg:grid-cols-[330px_minmax(0,1fr)] gap-x-12 gap-y-5 items-start">
+      <div className="max-w-[1280px] mx-auto px-6 pt-6 pb-2 grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] gap-x-12 gap-y-4 items-start">
 
         {/* LEFT RAIL */}
         <aside className="min-w-0 lg:sticky lg:top-[calc(var(--nav-height)+58px+24px)]">
@@ -577,64 +564,64 @@ const UniversalLanguageIndex: React.FC = () => {
             <FeatTile eyebrow="Year" date={String(now.getFullYear())} card={year} onRead={() => openReading(year)} />
           </div>
 
-          {/* Sign in to yours + New here — side by side, small; sign-in says WHY */}
-          <div className="grid grid-cols-2 gap-2 mt-3.5">
+          {/* Sign in + New here — slim single lines, both quiet */}
+          <div className="flex flex-col mt-3.5 border-t border-wood-200">
             <button
               type="button"
               onClick={() => setGridOpen(true)}
-              className="flex flex-col gap-0.5 px-3 py-2.5 bg-wood-900 text-paper-50 hover:bg-bronze-600 transition-colors text-left"
+              className="group flex items-center justify-between gap-3 w-full py-2.5 border-b border-wood-200 text-left hover:text-bronze-600 transition-colors"
             >
-              <span className="font-label text-[9.5px] font-bold uppercase tracking-[0.14em]">
-                {grid && grid.length > 0 ? 'Your codes' : 'Sign in'}
+              <span className="font-sans text-[12.5px] text-wood-700 group-hover:text-bronze-600">
+                <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-wood-900 mr-2">{grid && grid.length > 0 ? 'Your codes' : 'Sign in'}</span>
+                find your own cards in every reading
               </span>
-              <span className="font-sans text-[10.5px] leading-[1.3] text-paper-50/75">
-                See your chart light up in the cards.
-              </span>
+              <span aria-hidden className="font-label text-[13px] text-bronze-600 flex-shrink-0">→</span>
             </button>
             <button
               type="button"
               onClick={() => setSystemsOpen(true)}
-              className="flex flex-col gap-0.5 px-3 py-2.5 bg-transparent border border-wood-300 hover:bg-paper-100 transition-colors text-left"
+              className="group flex items-center justify-between gap-3 w-full py-2.5 border-b border-wood-200 text-left hover:text-bronze-600 transition-colors"
             >
-              <span className="font-label text-[9.5px] font-bold uppercase tracking-[0.14em] text-wood-700">New here?</span>
-              <span className="font-sans text-[10.5px] leading-[1.3] text-wood-600">How the systems connect.</span>
+              <span className="font-sans text-[12.5px] text-wood-700 group-hover:text-bronze-600">
+                <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-wood-900 mr-2">New here?</span>
+                how the four systems connect
+              </span>
+              <span aria-hidden className="font-label text-[13px] text-bronze-600 flex-shrink-0">→</span>
             </button>
           </div>
         </aside>
 
         {/* RIGHT — the deck */}
         <main id="ul-main" className="min-w-0">
-          {/* Controls — view mode (no search) */}
-          <div className="sticky top-[calc(var(--nav-height)+58px)] z-20 bg-paper-50 flex flex-wrap gap-3 items-center py-3.5 border-b border-wood-200">
-            <div role="group" aria-label="View mode" className="flex items-center flex-shrink-0">
+          {/* Controls — view switch + element filters on one quiet row */}
+          <div className="sticky top-[calc(var(--nav-height)+58px)] z-20 bg-paper-50 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-1 pb-3 border-b border-wood-200">
+            <div role="group" aria-label="View mode" className="flex items-end gap-5 flex-shrink-0">
               {viewTabs.map((t) => (
                 <button key={t.v} type="button" onClick={() => setView(t.v)} className={`${tabBase} ${view === t.v ? tabActive : tabIdle}`}>
                   {t.label}
                 </button>
               ))}
             </div>
+            <div role="group" aria-label="Filter by element" className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
+              {(['All', ...ELEMENTS] as Array<Element | 'All'>).map((e) => {
+                const active = elFilter === e;
+                return (
+                  <button
+                    key={e}
+                    type="button"
+                    onClick={() => setElFilter(e)}
+                    className={`${chipBase} ${active ? 'text-wood-900' : 'text-wood-400 hover:text-wood-700'}`}
+                  >
+                    {e !== 'All' && <span aria-hidden className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: active ? ELEMENT_DOT[e] : 'transparent', boxShadow: active ? 'none' : `inset 0 0 0 1px ${ELEMENT_DOT[e]}` }} />}
+                    {e}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Element filters */}
-          <div role="group" aria-label="Filter by element" className="flex flex-wrap gap-1.5 pt-2.5">
-            {(['All', ...ELEMENTS] as Array<Element | 'All'>).map((e) => {
-              const active = elFilter === e;
-              return (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => setElFilter(e)}
-                  className={`${chipBase} ${active ? 'bg-wood-900 text-paper-50 border-wood-900' : 'bg-transparent text-wood-700 border-wood-300'}`}
-                >
-                  {e !== 'All' && <span aria-hidden className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ELEMENT_DOT[e] }} />}
-                  {e}
-                </button>
-              );
-            })}
-          </div>
-
-          <p className="m-0 pt-4 font-serif italic text-[clamp(17px,2.2vw,21px)] leading-snug text-wood-700" aria-live="polite">
-            {instruction}
+          <p className="m-0 pt-3.5 font-serif italic text-[15px] leading-snug text-wood-500" aria-live="polite">
+            {elFiltered ? `${total} of 64 shown` : instruction}
           </p>
 
           {/* I CHING flip wall */}
