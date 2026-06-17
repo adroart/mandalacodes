@@ -394,7 +394,9 @@ export default function GlobeGL({
           pointLng="lng"
           pointColor={() => 'rgba(0,0,0,0)'}
           pointAltitude={0.012}
-          pointRadius={0.6}
+          // Generous invisible click target so the small glowing markers are
+          // easy to hit — the visible sprite stays small, the hit area is wide.
+          pointRadius={1.4}
           pointResolution={6}
           pointsMerge={false}
           onPointClick={(d: PointDatum) => onSelect?.(d.id)}
