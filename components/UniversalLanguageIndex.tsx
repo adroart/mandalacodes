@@ -78,63 +78,35 @@ const ArtPanel: React.FC<{ card: OracleCard; rounded?: boolean; className?: stri
 };
 
 /* ─── Rail: featured tile (Card of the Day / Year) ───────────────────────────
- * A small square painting (art only) with its label above. Tap to flip: the
- * back reveals the name + a Read action. Two sit side by side, compact, so they
- * take little height and the deck comes sooner. */
+ * A compact row: a tiny label, the small square painting, and a tiny hexagram
+ * that links to the reading. No name shown — tap to go see what it is. */
 
 const FeatTile: React.FC<{ eyebrow: string; date: string; card: OracleCard; onRead: () => void }> = ({
   eyebrow,
   date,
   card,
   onRead,
-}) => {
-  const [flipped, setFlipped] = useState(false);
-  const [lo, hi] = tintForCard(card.number);
-  return (
-    <div className="min-w-0">
-      <span className="font-label text-[10px] font-bold uppercase tracking-[0.16em] text-bronze-600 block mb-2 truncate">
-        {eyebrow}
-        <span aria-hidden className="text-wood-300 mx-1.5">·</span>
-        <span className="text-wood-600">{date}</span>
+}) => (
+  <button
+    type="button"
+    onClick={onRead}
+    aria-label={`See the ${eyebrow} card`}
+    className="group flex items-center gap-2.5 min-w-0 text-left bg-transparent border-none p-0 cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+  >
+    <span className="relative block w-12 h-12 flex-shrink-0 overflow-hidden">
+      <ArtPanel card={card} />
+    </span>
+    <span className="flex flex-col gap-0.5 min-w-0">
+      <span className="font-label text-[9px] font-bold uppercase tracking-[0.16em] text-bronze-600 truncate">
+        {eyebrow} <span aria-hidden className="text-wood-300">·</span> <span className="text-wood-500">{date}</span>
       </span>
-      <div className="relative [perspective:900px]" style={{ aspectRatio: '1 / 1' }}>
-        <div
-          className="absolute inset-0 [transform-style:preserve-3d] transition-transform duration-[600ms] [transition-timing-function:cubic-bezier(.16,1,.3,1)]"
-          style={{ transform: flipped ? 'rotateY(180deg)' : 'none' }}
-        >
-          {/* FRONT — the square painting only */}
-          <button
-            type="button"
-            onClick={() => setFlipped(true)}
-            aria-label={`Reveal ${eyebrow}: Card ${card.number}`}
-            className="absolute inset-0 [backface-visibility:hidden] block overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
-            style={{ opacity: flipped ? 0 : 1, transition: 'opacity .01s linear .28s' }}
-          >
-            <ArtPanel card={card} />
-          </button>
-          {/* BACK — name + Read over the colors */}
-          <button
-            type="button"
-            onClick={onRead}
-            aria-label={`Read ${card.card_name}, Card ${card.number}`}
-            className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-center gap-1 text-center p-2 overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
-            style={{ opacity: flipped ? 1 : 0, transition: 'opacity .01s linear .28s', background: `linear-gradient(150deg, ${lo}, ${hi})` }}
-          >
-            <span className="font-label text-[10px] font-bold tracking-[0.08em] text-paper-50/80">
-              No. {String(card.number).padStart(2, '0')}
-            </span>
-            <span className="font-serif font-medium leading-[1.12] text-paper-50 [text-wrap:balance] text-[clamp(14px,2vw,18px)]">
-              {card.card_name}
-            </span>
-            <span className="font-label text-[9px] font-bold uppercase tracking-[0.16em] text-paper-50 mt-1 underline underline-offset-2">
-              Read →
-            </span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+      <span className="flex items-center gap-1.5 text-wood-700 group-hover:text-bronze-600 transition-colors">
+        <CardHex card={card} width={16} />
+        <span className="font-label text-[10px] font-semibold uppercase tracking-[0.12em]">See it →</span>
+      </span>
+    </span>
+  </button>
+);
 
 /* ─── Rail: the astrology grid module (wired to the real profile) ────────────
  * When a Hologenetic Profile is set, the rail shows the four Activation codes
@@ -537,12 +509,12 @@ const UniversalLanguageIndex: React.FC = () => {
   ];
 
   const tabBase =
-    'font-label text-[11px] font-semibold uppercase tracking-[0.14em] px-3.5 h-[42px] border transition-colors cursor-pointer whitespace-nowrap -ml-px focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
+    'font-label text-[10px] font-semibold uppercase tracking-[0.12em] px-2.5 h-[32px] border transition-colors cursor-pointer whitespace-nowrap -ml-px focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
   const tabActive = 'bg-wood-900 text-paper-50 border-wood-900 relative z-10';
   const tabIdle = 'bg-transparent text-wood-700 border-wood-300 hover:text-wood-900 hover:border-wood-700';
 
   const chipBase =
-    'font-label text-[10px] font-bold uppercase tracking-[0.12em] px-2.5 py-[7px] border transition-colors cursor-pointer inline-flex items-center gap-1.5 leading-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
+    'font-label text-[9px] font-bold uppercase tracking-[0.1em] px-2 py-[4px] border transition-colors cursor-pointer inline-flex items-center gap-1 leading-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
 
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
@@ -600,7 +572,7 @@ const UniversalLanguageIndex: React.FC = () => {
       </header>
 
       {/* ── Body: two-pane reading room ──────────────────────────────────── */}
-      <div className="max-w-[1280px] mx-auto px-6 pt-7 lg:pt-10 pb-2 grid grid-cols-1 lg:grid-cols-[330px_minmax(0,1fr)] gap-x-12 gap-y-7 items-start">
+      <div className="max-w-[1280px] mx-auto px-6 pt-4 lg:pt-7 pb-2 grid grid-cols-1 lg:grid-cols-[330px_minmax(0,1fr)] gap-x-12 gap-y-5 items-start">
 
         {/* LEFT RAIL */}
         <aside className="min-w-0 lg:sticky lg:top-[calc(var(--nav-height)+58px+24px)]">
@@ -609,7 +581,7 @@ const UniversalLanguageIndex: React.FC = () => {
           </h1>
           <p className="font-serif italic text-bronze-600 mt-1.5 text-[clamp(17px,2vw,21px)]">Sixty-Four Expressions</p>
 
-          <div aria-hidden className="w-10 h-px bg-bronze-600/45 my-[22px]" />
+          <div aria-hidden className="w-10 h-px bg-bronze-600/45 my-3.5" />
 
           <div className="font-serif italic text-base leading-[1.6] text-wood-800 flex flex-col gap-[11px] max-w-[30em]">
             <p className="m-0">
@@ -620,37 +592,37 @@ const UniversalLanguageIndex: React.FC = () => {
             <p className="m-0">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
           </div>
 
-          <div aria-hidden className="h-px bg-wood-200 my-6" />
+          <div aria-hidden className="h-px bg-wood-200 my-4" />
 
-          {/* Card of the Day + Card of the Year — small square art, side by side */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Card of the Day + Card of the Year — tiny art, side by side */}
+          <div className="flex items-center gap-5">
             <FeatTile eyebrow="Day" date={now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} card={today} onRead={() => openReading(today)} />
             <FeatTile eyebrow="Year" date={String(now.getFullYear())} card={year} onRead={() => openReading(year)} />
           </div>
 
-          {/* Sign in to yours — one button; the popup is where you enter your birth moment */}
-          <button
-            type="button"
-            onClick={() => setGridOpen(true)}
-            className="flex items-center justify-between gap-3 w-full mt-4 px-4 py-3.5 bg-wood-900 text-paper-50 hover:bg-bronze-600 transition-colors text-left"
-          >
-            <span className="font-label text-[11px] font-bold uppercase tracking-[0.16em]">
-              {grid && grid.length > 0 ? 'View your codes' : 'Sign in to yours'}
-            </span>
-            <span aria-hidden className="font-label text-[15px] flex-shrink-0">→</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setSystemsOpen(true)}
-            className="flex items-center justify-between gap-3 w-full mt-3.5 px-3.5 py-3 bg-transparent border border-wood-300 hover:bg-paper-100 transition-colors text-left"
-          >
-            <span className="flex flex-col gap-0.5 min-w-0">
-              <span className="font-label text-[10px] font-bold uppercase tracking-[0.18em] text-wood-700">New here?</span>
-              <span className="font-sans text-[12.5px] text-wood-600 leading-[1.4]">How the four systems connect</span>
-            </span>
-            <span aria-hidden className="font-label text-[15px] text-bronze-600 flex-shrink-0">→</span>
-          </button>
+          {/* Sign in to yours + New here — side by side; sign-in says WHY */}
+          <div className="grid grid-cols-2 gap-2.5 mt-4">
+            <button
+              type="button"
+              onClick={() => setGridOpen(true)}
+              className="flex flex-col gap-1 px-3.5 py-3 bg-wood-900 text-paper-50 hover:bg-bronze-600 transition-colors text-left"
+            >
+              <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em]">
+                {grid && grid.length > 0 ? 'Your codes' : 'Sign in'}
+              </span>
+              <span className="font-sans text-[11.5px] leading-[1.35] text-paper-50/80">
+                See your own chart light up in the cards as you read.
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSystemsOpen(true)}
+              className="flex flex-col gap-1 px-3.5 py-3 bg-transparent border border-wood-300 hover:bg-paper-100 transition-colors text-left"
+            >
+              <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-wood-700">New here?</span>
+              <span className="font-sans text-[11.5px] leading-[1.35] text-wood-600">How the four systems connect.</span>
+            </button>
+          </div>
         </aside>
 
         {/* RIGHT — the deck */}
@@ -667,7 +639,7 @@ const UniversalLanguageIndex: React.FC = () => {
           </div>
 
           {/* Element filters */}
-          <div role="group" aria-label="Filter by element" className="flex flex-wrap gap-1.5 pt-4">
+          <div role="group" aria-label="Filter by element" className="flex flex-wrap gap-1.5 pt-2.5">
             {(['All', ...ELEMENTS] as Array<Element | 'All'>).map((e) => {
               const active = elFilter === e;
               return (
