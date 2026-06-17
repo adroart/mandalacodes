@@ -1,9 +1,22 @@
 -- Better Auth core tables (self-owned customer login replacing Clerk).
 -- Email one-time-code sign-in stores codes in the shared `verification` table;
--- no separate OTP table is needed. Google OAuth (later) uses `account`.
+-- no separate OTP table is needed. Google OAuth uses `account`.
 --
 -- Better Auth default SQLite schema, field names per
 -- https://better-auth.com/docs/concepts/database. Applied to D1 binding `DB`.
+--
+-- TWO-TABLE IDENTITY MODEL (read before touching either table):
+--   * `user` (below) is OWNED by Better Auth — `user.id` is a string, sessions
+--     and OAuth accounts FK to it, and it is the source of truth for login.
+--   * `users` (001_init.sql) is the APP table — profiles + collections FK to
+--     its integer `users.id`. Its `clerk_user_id` column stores the Better
+--     Auth `user.id` (column name retained as the generic external-auth-id).
+--     /api/auth/sync-user upserts this row on first sign-in.
+-- The two are joined only by convention (`users.clerk_user_id == user.id`),
+-- so deleting from `user` does NOT cascade to `users`. The account-deletion
+-- hook in lib/account/auth.server.js bridges that gap (it deletes the `users`
+-- row and unbinds atlas steward records), and is gated behind
+-- ENABLE_ACCOUNT_DELETION because this DB is shared with adrianrasmussen.com.
 
 CREATE TABLE IF NOT EXISTS user (
   id            TEXT PRIMARY KEY,

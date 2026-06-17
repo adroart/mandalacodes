@@ -5,11 +5,12 @@
  *   - R2 read/write for the three Atlas keys (ledger, stewards, public).
  *   - JSON response helper.
  *   - Public state regeneration after any ledger write.
- *   - Steward lookup by Clerk identity (userId or email).
+ *   - Steward lookup by auth identity (userId or verified email).
  *
- * Admin and steward auth both run through `functions/api/_lib/clerk.ts` —
- * Clerk verifies the bearer JWT, ADMIN_EMAILS gates admin routes, and the
- * steward record's `clerkUserId` / `email` binds a piece to its collector.
+ * Admin and steward auth both run through `functions/api/_lib/auth.ts` —
+ * Better Auth verifies the session cookie, ADMIN_EMAILS gates admin routes,
+ * and the steward record's `clerkUserId` / `email` binds a piece to its
+ * collector.
  *
  * No HTTP handlers live here — only utilities the route files import.
  */
@@ -26,7 +27,7 @@ import { ATLAS_PLACES } from '../../../data/cities';
 import { FULL_ARCHIVE } from '../../../data/mockData';
 import { mirrorPublicState } from './_mirror';
 import type { MirrorEnv } from './_mirror';
-import type { AuthEnv } from '../_lib/clerk';
+import type { AuthEnv } from '../_lib/auth';
 
 // ---------- R2 keys ----------
 
@@ -341,6 +342,30 @@ export async function issueStewardRecord(
   });
 }
 
+/**
+ * Unbind every steward record bound to `userId`: drop the binding and rewind
+ * outreachStatus to 'invited', so the piece reverts to the artist's root of
+ * trust (it can be re-issued or transferred later). RATIFIED: the history
+ * lives with the piece — inscriptions and the chain are NOT touched by an
+ * account removal; only the binding goes. No-ops when the steward bucket is
+ * unconfigured. Used by the Better Auth account-deletion hook (it replaced the
+ * retired Clerk `user.deleted` webhook).
+ */
+export async function unbindStewardsForUser(
+  env: AtlasEnv,
+  userId: string,
+): Promise<void> {
+  if (!env.ATLAS_BUCKET || !userId) return;
+  await mutateStewards(env, (stewards) => ({
+    next: stewards.map((s) => {
+      if (s.clerkUserId !== userId) return s;
+      const { clerkUserId: _gone, ...rest } = s;
+      return { ...rest, outreachStatus: 'invited' };
+    }),
+    result: undefined,
+  }));
+}
+
 // ---------- Public state regeneration ----------
 
 function buildArtworkMeta(): Map<string, { series?: string; category?: string }> {
@@ -400,22 +425,30 @@ export async function regeneratePublicState(
 // ---------- Steward lookup by Clerk identity ----------
 
 /**
- * Find a steward record matching either the Clerk user id (preferred) or
+ * Find a steward record matching either the auth user id (preferred) or
  * the email (fallback for first-time bind). Returns the *first* matching
- * record — a Clerk user can only steward one piece via this lookup, but
+ * record — a user can only steward one piece via this lookup, but
  * the `editionNumber` field still distinguishes editions of the same
  * piece if relevant.
+ *
+ * The email fallback only runs when `emailVerified` is true: binding a piece
+ * by email is an identity claim, so the session must have proven control of
+ * that email (email-code / Google sign-in, or a verified password account).
+ * Otherwise an unverified password signup could bind a piece issued to
+ * someone else's address. Records already bound to a userId still match by
+ * userId regardless.
  */
 export function findStewardForUser(
   stewards: readonly StewardRecord[],
   userId: string,
   email: string | null,
+  emailVerified: boolean = false,
 ): StewardRecord | null {
   const byUserId = stewards.find((s) => s.clerkUserId === userId);
   if (byUserId) return byUserId;
-  if (!email) return null;
+  if (!email || !emailVerified) return null;
   const normalized = email.toLowerCase();
-  return stewards.find((s) => (s.email || '').toLowerCase() === normalized) ?? null;
+  return stewards.find((s) => !s.clerkUserId && (s.email || '').toLowerCase() === normalized) ?? null;
 }
 
 /**
@@ -427,14 +460,18 @@ export function findStewardForUser(
  * collector who already bound one piece could never bind a second one
  * issued to the same email. Records already bound to a DIFFERENT userId
  * never match by email — re-binding is reserved for an audited transfer.
+ *
+ * The email fallback only runs when `emailVerified` is true — see
+ * findStewardForUser. userId matches are always returned.
  */
 export function findStewardsForUser(
   stewards: readonly StewardRecord[],
   userId: string,
   email: string | null,
+  emailVerified: boolean = false,
 ): StewardRecord[] {
   const matches = stewards.filter((s) => s.clerkUserId === userId);
-  if (!email) return matches;
+  if (!email || !emailVerified) return matches;
   const normalized = email.toLowerCase();
   for (const s of stewards) {
     if (s.clerkUserId) continue; // bound records only ever match by userId

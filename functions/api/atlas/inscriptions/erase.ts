@@ -28,7 +28,7 @@ import {
   migrationNotApplied,
 } from '../_helpers';
 import { selectInscription } from '../_inscriptions';
-import { requireAdmin, isAuthResponse } from '../../_lib/clerk';
+import { requireAdmin, isAuthResponse } from '../../_lib/auth';
 
 export async function onRequestPost(
   context: PagesContext,

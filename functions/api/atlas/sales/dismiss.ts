@@ -9,7 +9,7 @@
 
 import type { PagesContext } from '../_helpers';
 import { isMissingTableError, json, migrationNotApplied } from '../_helpers';
-import { requireAdmin, isAuthResponse } from '../../_lib/clerk';
+import { requireAdmin, isAuthResponse } from '../../_lib/auth';
 
 const REASON_MAX = 500;
 

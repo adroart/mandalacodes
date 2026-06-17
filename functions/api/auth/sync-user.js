@@ -1,14 +1,15 @@
 /**
  * POST /api/auth/sync-user
  *
- * Called once per session after Clerk reports a signed-in user. Idempotent:
- * upserts the D1 users row by clerk_user_id, returns the persisted row.
+ * Called once per session after Better Auth reports a signed-in user.
+ * Idempotent: upserts the D1 users row by clerk_user_id (the Better Auth
+ * user id), returns the persisted row.
  *
  * Mandala Codes scope: no Stripe customer creation, no guest-order relink.
  * Sales live on adrianrasmussen.com, so this site only needs identity.
  */
 
-import { requireUser, jsonResponse } from '../_lib/clerk.js';
+import { requireUser, jsonResponse } from '../_lib/auth.js';
 import { upsertUser } from '../_lib/db.js';
 
 export async function onRequest(context) {

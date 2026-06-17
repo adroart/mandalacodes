@@ -8,7 +8,7 @@
 
 import type { PagesContext } from '../_helpers';
 import { json, readStewards } from '../_helpers';
-import { requireAdmin, isAuthResponse } from '../../_lib/clerk';
+import { requireAdmin, isAuthResponse } from '../../_lib/auth';
 
 export async function onRequestGet(
   context: PagesContext,

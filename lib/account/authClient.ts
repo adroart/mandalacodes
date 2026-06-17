@@ -34,9 +34,21 @@ export function signInWithPassword(email: string, password: string) {
   return authClient.signIn.email({ email, password });
 }
 
+/**
+ * Coerce a post-login return target to a SAME-SITE relative path. Rejects
+ * absolute URLs and protocol-relative (`//host`) / backslash tricks so the
+ * OAuth `callbackURL` can never become an open redirect. Defense-in-depth:
+ * Better Auth also checks it against trustedOrigins server-side.
+ */
+function safeReturnPath(path: string): string {
+  if (typeof path !== 'string' || !path.startsWith('/')) return '/';
+  if (path.startsWith('//') || path.startsWith('/\\') || path.includes('\\')) return '/';
+  return path;
+}
+
 /** Continue with Google (redirects to Google, returns to the site). */
 export function signInWithGoogle(callbackURL: string = '/') {
-  return authClient.signIn.social({ provider: 'google', callbackURL });
+  return authClient.signIn.social({ provider: 'google', callbackURL: safeReturnPath(callbackURL) });
 }
 
 /** Sign out and clear the session cookie. */

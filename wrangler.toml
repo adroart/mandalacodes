@@ -15,7 +15,7 @@ binding = "ATLAS_BUCKET"
 bucket_name = "mandalacodes-atlas"
 
 # D1 database — SHARED with adrianrasmussen.com as of 2026-06-09.
-# Both sites use one Clerk app (enabling-oyster-2) and one user database so a
+# Both sites run self-owned Better Auth against this one user database, so a
 # collector who signs in on either domain is the same identity on both. The
 # canonical schema is the SUPERSET held in the Adrian-Website repo
 # (migrations/001_init.sql + 002_invoices.sql): users + profiles + collections
@@ -23,7 +23,7 @@ bucket_name = "mandalacodes-atlas"
 # Apply/evolve the schema from the Adrian-Website repo, NOT from here, so the
 # two never diverge. The old mandalacodes-oracle DB (c8d07902…) is retired.
 # The public oracle reader is stateless; only the /api/{auth,profile,collections}
-# Functions and the Clerk webhook query this DB.
+# Functions and the atlas rate-limiter query this DB.
 [[d1_databases]]
 binding = "DB"
 database_name = "adrian-website"
