@@ -1,8 +1,11 @@
 /// <reference types="vite/client" />
 
+// Customer login is same-origin Better Auth — there is no build-time
+// publishable key. All auth secrets are runtime-only (Cloudflare Pages env),
+// so there are intentionally no VITE_* auth vars here.
 interface ImportMetaEnv {
-  /** Clerk publishable key. Set in Cloudflare Pages → mandalacodes → Settings → Environment variables → Production. */
-  readonly VITE_CLERK_PUBLISHABLE_KEY?: string;
+  readonly DEV: boolean;
+  readonly PROD: boolean;
 }
 
 interface ImportMeta {

@@ -28,7 +28,7 @@ import { resolveRequest } from '../../../../utils/claimRequests';
 import type { PagesContext } from '../_helpers';
 import { json, mutateClaimRequests, readClaimRequests, readStewards } from '../_helpers';
 import { executeTransfer } from '../_transfer';
-import { requireUser, isAuthResponse } from '../../_lib/clerk';
+import { requireUser, isAuthResponse } from '../../_lib/auth';
 
 interface ResolveBody {
   requestId?: unknown;

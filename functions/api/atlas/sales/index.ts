@@ -14,7 +14,7 @@ import { toSaleQueueItem } from '../../../../utils/saleBridge';
 import type { SaleEventRow } from '../../../../utils/saleBridge';
 import type { PagesContext } from '../_helpers';
 import { isMissingTableError, json, migrationNotApplied } from '../_helpers';
-import { requireAdmin, isAuthResponse } from '../../_lib/clerk';
+import { requireAdmin, isAuthResponse } from '../../_lib/auth';
 
 /** How many resolved rows ride along with the pending queue. */
 const RECENT_RESOLVED_LIMIT = 10;

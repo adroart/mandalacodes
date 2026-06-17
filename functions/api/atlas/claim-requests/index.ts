@@ -10,7 +10,7 @@
 import type { ClaimRequest } from '../../../../types';
 import type { PagesContext } from '../_helpers';
 import { json, readClaimRequests } from '../_helpers';
-import { requireAdmin, isAuthResponse } from '../../_lib/clerk';
+import { requireAdmin, isAuthResponse } from '../../_lib/auth';
 
 function sortKey(r: ClaimRequest): string {
   return `${r.status === 'pending' ? '0' : '1'}:${r.createdAt}`;

@@ -1,14 +1,14 @@
 /**
  * POST /api/atlas/steward/claim — the two-phase claim (M2).
  *
- * Signed-in via Clerk; identity always comes from the bearer token. The
- * phase is selected by the body:
+ * Signed-in via the self-owned Better Auth session cookie; identity always
+ * comes from the verified session. The phase is selected by the body:
  *
  * Phase A — no `consent` in the body (or no body at all, the pre-M2 shape):
- *   Bind. We look up steward records matching the Clerk userId or email
- *   (unbound email matches merge with userId matches, so one collector can
- *   bind several pieces), bind the userId on first match, and return the
- *   piece(s) they steward. Each entry carries `needsConsent: true` when the
+ *   Bind. We look up steward records matching the auth userId or — only when
+ *   the session's email is verified — the email (unbound email matches merge
+ *   with userId matches, so one collector can bind several pieces), bind the
+ *   userId on first match, and return the piece(s) they steward. Each entry carries `needsConsent: true` when the
  *   record has no captured consent yet. outreachStatus is NOT flipped here
  *   — 'claimed' gates on consent capture, not on the bind.
  *
@@ -56,7 +56,7 @@ import {
   sanitizeEventsForSteward,
   toStewardView,
 } from '../_helpers';
-import { requireUser, isAuthResponse } from '../../_lib/clerk';
+import { requireUser, isAuthResponse } from '../../_lib/auth';
 import { generateKinClaimLetters } from '../_letters';
 import { letterRecipientKey } from '../../../../utils/letters';
 
@@ -69,6 +69,9 @@ interface ClaimedPiece {
 
 const NO_RECORD_ERROR =
   'No steward record is bound to your account. Ask Adrian to add you (he needs the email you signed in with).';
+
+const UNVERIFIED_EMAIL_ERROR =
+  'Confirm your email before claiming a piece — sign in with the emailed code (or Continue with Google) so we can verify the address a piece may be issued to.';
 
 function findRecord(
   events: LedgerEvent[],
@@ -116,6 +119,7 @@ export async function onRequestPost(
   // `auth` into nested functions.
   const userId = auth.userId;
   const email = auth.email;
+  const emailVerified = auth.emailVerified;
 
   // The pre-M2 client sent no body at all; an empty body is Phase A.
   let body: Record<string, unknown> = {};
@@ -137,9 +141,12 @@ export async function onRequestPost(
   // ---------- Phase A: bind only ----------
   if (!('consent' in body)) {
     const outcome = await mutateStewards(env, (stewards) => {
-      const matches = findStewardsForUser(stewards, userId, email);
+      const matches = findStewardsForUser(stewards, userId, email, emailVerified);
       if (matches.length === 0) {
-        return json({ ok: false, error: NO_RECORD_ERROR }, 404);
+        return json(
+          { ok: false, error: emailVerified ? NO_RECORD_ERROR : UNVERIFIED_EMAIL_ERROR },
+          emailVerified ? 404 : 403,
+        );
       }
       const next = stewards.map((s) =>
         matches.includes(s) ? bindStewardOnClaim(s, userId, now) : s,
@@ -176,9 +183,12 @@ export async function onRequestPost(
   //    the ritual answer once. The lookup re-runs inside the mutator so a
   //    retry re-validates against fresh state.
   const stewardOutcome = await mutateStewards(env, (stewards) => {
-    const matches = findStewardsForUser(stewards, userId, email);
+    const matches = findStewardsForUser(stewards, userId, email, emailVerified);
     if (matches.length === 0) {
-      return json({ ok: false, error: NO_RECORD_ERROR }, 404);
+      return json(
+        { ok: false, error: emailVerified ? NO_RECORD_ERROR : UNVERIFIED_EMAIL_ERROR },
+        emailVerified ? 404 : 403,
+      );
     }
     const next = stewards.map((s) => {
       if (!matches.includes(s)) return s;

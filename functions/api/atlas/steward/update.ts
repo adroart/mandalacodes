@@ -43,7 +43,7 @@ import {
   sanitizeEventsForSteward,
   toStewardView,
 } from '../_helpers';
-import { requireUser, isAuthResponse } from '../../_lib/clerk';
+import { requireUser, isAuthResponse } from '../../_lib/auth';
 
 interface UpdateBody {
   pieceId?: unknown;

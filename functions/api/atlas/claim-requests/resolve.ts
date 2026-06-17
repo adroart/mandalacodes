@@ -37,7 +37,7 @@ import {
   readStewards,
 } from '../_helpers';
 import { executeTransfer, rebindStewardRecord } from '../_transfer';
-import { requireAdmin, isAuthResponse } from '../../_lib/clerk';
+import { requireAdmin, isAuthResponse } from '../../_lib/auth';
 
 interface ResolveBody {
   requestId?: unknown;
