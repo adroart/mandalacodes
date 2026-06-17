@@ -549,9 +549,11 @@ const UniversalLanguageIndex: React.FC = () => {
           Universal Language
         </h1>
         <p className="font-serif italic text-bronze-600 mt-2 text-[clamp(18px,2.4vw,24px)]">Sixty-Four Expressions</p>
-        <p className="font-serif italic text-[clamp(16px,2vw,20px)] leading-[1.5] text-wood-700 max-w-[36em] mx-auto mt-4">
-          An instrument of attunement to the light within, as we move through the unfolding of this mystery.
-        </p>
+        <div className="font-serif italic text-[clamp(16px,2vw,20px)] leading-[1.55] text-wood-700 max-w-[40em] mx-auto mt-5 flex flex-col gap-2.5">
+          <p className="m-0">Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.</p>
+          <p className="m-0">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
+          <p className="m-0">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
+        </div>
       </div>
 
       <div className="max-w-[1280px] mx-auto px-6 pt-6 pb-2 grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] gap-x-12 gap-y-4 items-start">
