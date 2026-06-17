@@ -78,8 +78,7 @@ const ArtPanel: React.FC<{ card: OracleCard; rounded?: boolean; className?: stri
 };
 
 /* ─── Rail: featured tile (Card of the Day / Year) ───────────────────────────
- * A compact row: a tiny label, the small square painting, and a tiny hexagram
- * that links to the reading. No name shown — tap to go see what it is. */
+ * A clean text line — label + date + a hexagram, no image. Tap to go see it. */
 
 const FeatTile: React.FC<{ eyebrow: string; date: string; card: OracleCard; onRead: () => void }> = ({
   eyebrow,
@@ -93,16 +92,15 @@ const FeatTile: React.FC<{ eyebrow: string; date: string; card: OracleCard; onRe
     aria-label={`See the ${eyebrow} card`}
     className="group flex items-center gap-2.5 min-w-0 text-left bg-transparent border-none p-0 cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
   >
-    <span className="relative block w-12 h-12 flex-shrink-0 overflow-hidden">
-      <ArtPanel card={card} />
+    <span className="leading-none flex-shrink-0 text-wood-700 group-hover:text-bronze-600 transition-colors">
+      <CardHex card={card} width={22} />
     </span>
     <span className="flex flex-col gap-0.5 min-w-0">
-      <span className="font-label text-[9px] font-bold uppercase tracking-[0.16em] text-bronze-600 truncate">
+      <span className="font-label text-[11px] font-bold uppercase tracking-[0.14em] text-bronze-600 truncate">
         {eyebrow} <span aria-hidden className="text-wood-300">·</span> <span className="text-wood-500">{date}</span>
       </span>
-      <span className="flex items-center gap-1.5 text-wood-700 group-hover:text-bronze-600 transition-colors">
-        <CardHex card={card} width={16} />
-        <span className="font-label text-[10px] font-semibold uppercase tracking-[0.12em]">See it →</span>
+      <span className="font-label text-[10px] font-semibold uppercase tracking-[0.12em] text-wood-600 group-hover:text-bronze-600 transition-colors">
+        See it →
       </span>
     </span>
   </button>
@@ -572,7 +570,7 @@ const UniversalLanguageIndex: React.FC = () => {
       </header>
 
       {/* ── Body: two-pane reading room ──────────────────────────────────── */}
-      <div className="max-w-[1280px] mx-auto px-6 pt-4 lg:pt-7 pb-2 grid grid-cols-1 lg:grid-cols-[330px_minmax(0,1fr)] gap-x-12 gap-y-5 items-start">
+      <div className="max-w-[1280px] mx-auto px-6 pt-7 lg:pt-9 pb-2 grid grid-cols-1 lg:grid-cols-[330px_minmax(0,1fr)] gap-x-12 gap-y-5 items-start">
 
         {/* LEFT RAIL */}
         <aside className="min-w-0 lg:sticky lg:top-[calc(var(--nav-height)+58px+24px)]">
@@ -600,27 +598,27 @@ const UniversalLanguageIndex: React.FC = () => {
             <FeatTile eyebrow="Year" date={String(now.getFullYear())} card={year} onRead={() => openReading(year)} />
           </div>
 
-          {/* Sign in to yours + New here — side by side; sign-in says WHY */}
-          <div className="grid grid-cols-2 gap-2.5 mt-4">
+          {/* Sign in to yours + New here — side by side, small; sign-in says WHY */}
+          <div className="grid grid-cols-2 gap-2 mt-3.5">
             <button
               type="button"
               onClick={() => setGridOpen(true)}
-              className="flex flex-col gap-1 px-3.5 py-3 bg-wood-900 text-paper-50 hover:bg-bronze-600 transition-colors text-left"
+              className="flex flex-col gap-0.5 px-3 py-2.5 bg-wood-900 text-paper-50 hover:bg-bronze-600 transition-colors text-left"
             >
-              <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em]">
+              <span className="font-label text-[9.5px] font-bold uppercase tracking-[0.14em]">
                 {grid && grid.length > 0 ? 'Your codes' : 'Sign in'}
               </span>
-              <span className="font-sans text-[11.5px] leading-[1.35] text-paper-50/80">
-                See your own chart light up in the cards as you read.
+              <span className="font-sans text-[10.5px] leading-[1.3] text-paper-50/75">
+                See your chart light up in the cards.
               </span>
             </button>
             <button
               type="button"
               onClick={() => setSystemsOpen(true)}
-              className="flex flex-col gap-1 px-3.5 py-3 bg-transparent border border-wood-300 hover:bg-paper-100 transition-colors text-left"
+              className="flex flex-col gap-0.5 px-3 py-2.5 bg-transparent border border-wood-300 hover:bg-paper-100 transition-colors text-left"
             >
-              <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-wood-700">New here?</span>
-              <span className="font-sans text-[11.5px] leading-[1.35] text-wood-600">How the four systems connect.</span>
+              <span className="font-label text-[9.5px] font-bold uppercase tracking-[0.14em] text-wood-700">New here?</span>
+              <span className="font-sans text-[10.5px] leading-[1.3] text-wood-600">How the systems connect.</span>
             </button>
           </div>
         </aside>
