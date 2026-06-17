@@ -165,74 +165,67 @@ const FlipTile: React.FC<{
 }> = ({ card, flipped, onFlip, onBack, onRead }) => {
   const el = elementForCard(card.number);
   const [lo, hi] = tintForCard(card.number);
-  return (
-    <div className={`relative [perspective:900px] ${flipped ? 'z-10' : ''}`} style={{ aspectRatio: '1 / 1' }}>
-      <div
-        className="absolute inset-0 [transform-style:preserve-3d] transition-transform duration-[600ms] [transition-timing-function:cubic-bezier(.16,1,.3,1)]"
-        style={{ transform: flipped ? 'rotateY(180deg)' : 'none' }}
+  // When flipped, the cell grows to fit the full square painting PLUS the
+  // action strip beneath it, so the revealed card pushes its neighbours down
+  // instead of overlapping them. When unflipped it's a plain square hexagram.
+  if (!flipped) {
+    return (
+      <button
+        type="button"
+        onClick={onFlip}
+        aria-label={`Reveal Card ${card.number}: ${card.iching.hexagram_name}`}
+        className="relative flex flex-col items-center justify-center gap-1.5 bg-transparent cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+        style={{ aspectRatio: '1 / 1' }}
       >
-        {/* BACK — hexagram on bare paper */}
+        <span className="leading-none text-wood-800">
+          <CardHex card={card} width={46} />
+        </span>
+        <span className="font-label text-[13px] font-bold text-wood-500 tracking-[0.1em] leading-none">
+          {String(card.number).padStart(2, '0')}
+        </span>
+      </button>
+    );
+  }
+  return (
+    <div className="relative z-10 flex flex-col overflow-hidden shadow-[0_4px_14px_rgba(38,35,33,0.22)]">
+      {/* full square painting */}
+      <button
+        type="button"
+        onClick={onRead}
+        aria-label={`Read ${card.card_name}, Card ${card.number}`}
+        className="relative block overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+        style={{ aspectRatio: '1 / 1' }}
+      >
+        <img
+          src={cardImageUrl(card.number, 400)}
+          alt={`${card.card_name}, Universal Language ${card.number}`}
+          className="absolute inset-0 w-full h-full object-cover block"
+          loading="lazy"
+          decoding="async"
+        />
+        {/* element word, centered, over a soft scrim for legibility */}
+        <span className="absolute inset-0 flex items-center justify-center text-center p-2 bg-gradient-to-t from-black/30 via-transparent to-black/15">
+          <span className="font-label text-[13px] font-bold uppercase tracking-[0.22em] text-paper-50 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
+            {el}
+          </span>
+        </span>
+      </button>
+      <div className="h-[38px] flex-shrink-0 flex items-stretch bg-paper-100">
         <button
           type="button"
-          onClick={onFlip}
-          aria-label={`Reveal Card ${card.number}: ${card.iching.hexagram_name}`}
-          className="absolute inset-0 [backface-visibility:hidden] flex flex-col items-center justify-center gap-1.5 bg-transparent cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
-          style={{ opacity: flipped ? 0 : 1, transition: 'opacity .01s linear .28s' }}
+          onClick={onBack}
+          className="flex-1 flex items-center justify-center font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-wood-700 hover:text-wood-900 transition-colors cursor-pointer"
         >
-          <span className="leading-none text-wood-800">
-            <CardHex card={card} width={46} />
-          </span>
-          <span className="font-label text-[13px] font-bold text-wood-500 tracking-[0.1em] leading-none">
-            {String(card.number).padStart(2, '0')}
-          </span>
+          Back
         </button>
-
-        {/* FRONT — full square artwork + Back · Read strip BELOW it (so the
-            revealed card is a rectangle: square art on top, actions beneath) */}
-        <div
-          className="absolute top-0 left-0 right-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden shadow-[0_4px_14px_rgba(38,35,33,0.22)]"
-          style={{ opacity: flipped ? 1 : 0, transition: 'opacity .01s linear .28s', pointerEvents: flipped ? 'auto' : 'none' }}
+        <span aria-hidden className="w-px self-center h-[11px] bg-wood-400" />
+        <button
+          type="button"
+          onClick={onRead}
+          className="flex-1 flex items-center justify-center font-label text-[10px] font-bold uppercase tracking-[0.16em] text-bronze-700 hover:text-wood-900 transition-colors cursor-pointer"
         >
-          <button
-            type="button"
-            onClick={onRead}
-            aria-label={`Read ${card.card_name}, Card ${card.number}`}
-            className="relative block overflow-hidden cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
-            style={{ aspectRatio: '1 / 1' }}
-          >
-            {/* the full square painting */}
-            <img
-              src={cardImageUrl(card.number, 400)}
-              alt={`${card.card_name}, Universal Language ${card.number}`}
-              className="absolute inset-0 w-full h-full object-cover block"
-              loading="lazy"
-              decoding="async"
-            />
-            {/* element word, centered, over a soft scrim for legibility */}
-            <span className="absolute inset-0 flex items-center justify-center text-center p-2 bg-gradient-to-t from-black/30 via-transparent to-black/15">
-              <span className="font-label text-[13px] font-bold uppercase tracking-[0.22em] text-paper-50 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
-                {el}
-              </span>
-            </span>
-          </button>
-          <div className="h-[38px] flex-shrink-0 flex items-stretch bg-paper-100">
-            <button
-              type="button"
-              onClick={onBack}
-              className="flex-1 flex items-center justify-center font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-wood-700 hover:text-wood-900 transition-colors cursor-pointer"
-            >
-              Back
-            </button>
-            <span aria-hidden className="w-px self-center h-[11px] bg-wood-400" />
-            <button
-              type="button"
-              onClick={onRead}
-              className="flex-1 flex items-center justify-center font-label text-[10px] font-bold uppercase tracking-[0.16em] text-bronze-700 hover:text-wood-900 transition-colors cursor-pointer"
-            >
-              Read
-            </button>
-          </div>
-        </div>
+          Read
+        </button>
       </div>
     </div>
   );
@@ -565,7 +558,7 @@ const UniversalLanguageIndex: React.FC = () => {
       </header>
 
       {/* ── Body: two-pane reading room ──────────────────────────────────── */}
-      <div className="max-w-[1280px] mx-auto px-6 pt-7 lg:pt-9 pb-2 grid grid-cols-1 lg:grid-cols-[330px_minmax(0,1fr)] gap-x-12 gap-y-5 items-start">
+      <div className="max-w-[1280px] mx-auto px-6 pt-[72px] lg:pt-[80px] pb-2 grid grid-cols-1 lg:grid-cols-[330px_minmax(0,1fr)] gap-x-12 gap-y-5 items-start">
 
         {/* LEFT RAIL */}
         <aside className="min-w-0 lg:sticky lg:top-[calc(var(--nav-height)+58px+24px)]">
@@ -656,7 +649,7 @@ const UniversalLanguageIndex: React.FC = () => {
           {/* I CHING flip wall */}
           {view === 'iching' && filtered.length > 0 && (
             <div className="pt-3.5">
-              <div className="grid grid-cols-4 gap-1">
+              <div className="grid grid-cols-4 gap-1 items-start">
                 {filtered.map((c) => (
                   <FlipTile key={c.number} card={c} flipped={flipped.has(c.number)} onFlip={() => flip(c.number)} onBack={() => flipBack(c.number)} onRead={() => goCardPage(c)} />
                 ))}
