@@ -54,6 +54,16 @@ export function projectPiece(events: LedgerEvent[]): PieceRecord {
         // until an explicit 'placed' event.
         if (e.cityId) record.currentCityId = e.cityId;
         record.status = 'seeking';
+        // pieceType override travels on the genesis event only.
+        if (e.pieceType) record.pieceType = e.pieceType;
+        break;
+      case 'claimed':
+        // First bind. Records *when* the piece was first claimed; the
+        // Founding Lights ordinal (rank across all chains) is derived
+        // separately. Claiming does not move or place the piece — those are
+        // their own events — so we touch nothing but claimedAt, and only the
+        // first claim counts (re-claims after a transfer keep the original).
+        if (!record.claimedAt) record.claimedAt = e.date;
         break;
       case 'placed':
         record.currentCityId = e.cityId ?? null;
@@ -104,6 +114,95 @@ export function projectAll(events: LedgerEvent[]): Map<string, PieceRecord> {
 }
 
 /**
+ * Founding Lights ordinals.
+ *
+ * Each claimed piece carries a permanent claim-order number — the 1st light,
+ * the 2nd light… — equal to the rank of its first `claimed` event date
+ * across ALL chains. Ratified scope: every claimed piece in every series gets
+ * a number (no founding-tier system; the ordinal itself is the artifact).
+ *
+ * Derivation:
+ *   - Consider only chains that have a claim (PieceRecord.claimedAt set).
+ *   - Sort by claimedAt ascending; ties broken by the first `claimed` event's
+ *     id (stable, deterministic — never depends on Map iteration order).
+ *   - Ordinals are dense and 1-based: 1, 2, 3, …
+ *
+ * Returned map is keyed the same way as projectAll (`pieceId:editionNumber ?? 0`).
+ * Pieces with no claim are absent from the map (no ordinal).
+ */
+export function deriveClaimOrdinals(
+  records: Map<string, PieceRecord>,
+): Map<string, number> {
+  interface ClaimedRef {
+    key: string;
+    claimedAt: string;
+    /** id of the chain's first `claimed` event — the tie-breaker. */
+    eventId: string;
+  }
+
+  const claimed: ClaimedRef[] = [];
+  for (const [key, record] of records) {
+    if (!record.claimedAt) continue;
+    // Find the first claimed event's id for a stable tie-break. history is in
+    // append/date order (projectAll sorts it), so the earliest claim is first.
+    let eventId = '';
+    for (const e of record.history) {
+      if (e.type === 'claimed') {
+        eventId = e.id;
+        break;
+      }
+    }
+    claimed.push({ key, claimedAt: record.claimedAt, eventId });
+  }
+
+  claimed.sort((a, b) => {
+    if (a.claimedAt !== b.claimedAt) return a.claimedAt < b.claimedAt ? -1 : 1;
+    if (a.eventId !== b.eventId) return a.eventId < b.eventId ? -1 : 1;
+    return 0;
+  });
+
+  const ordinals = new Map<string, number>();
+  claimed.forEach((c, i) => ordinals.set(c.key, i + 1));
+  return ordinals;
+}
+
+/**
+ * Derive a piece's marker-type category. The genesis `created` event may
+ * carry an explicit override (record.pieceType); otherwise Universal Language
+ * pieces are 'mandala' and everything else is 'other'. Series drives color;
+ * charts/kinship stay mandala-only elsewhere.
+ */
+export function derivePieceType(
+  record: PieceRecord,
+  series: string | undefined,
+): 'mandala' | 'other' {
+  if (record.pieceType) return record.pieceType;
+  return series === 'Universal Language' ? 'mandala' : 'other';
+}
+
+/**
+ * Whether a piece may join the kinship constellation (M5).
+ *
+ * Ratified rule: a piece that carries a `claimed` event requires its current
+ * steward's Ring 3 consent (ring3ChartPresence === true) to be eligible —
+ * the constellation is the chart-presence surface and joining it is an active
+ * opt-in. A piece with NO claim keeps today's behavior: it's artist-placed
+ * inventory (the artist's own data), so it stays eligible.
+ *
+ * The consent value is a SINGLE BOOLEAN-or-'deferred' read off the mutable
+ * steward record — the consent OBJECT never enters this function, let alone
+ * the public state. Absent consent on a claimed piece means not-yet-opted-in,
+ * so it is ineligible (fail-closed, consistent with active opt-in).
+ */
+export function isKinshipEligible(
+  record: PieceRecord,
+  ring3: boolean | 'deferred' | undefined,
+): boolean {
+  if (!record.claimedAt) return true; // artist-placed, no claim → unchanged
+  return ring3 === true;
+}
+
+/**
  * Build the safe, public-facing projection. Strips private fields, hides
  * withdrawn and retired pieces, and includes only the cities those pieces
  * reference. The result is what gets cached at /api/atlas and mirrored to
@@ -116,25 +215,48 @@ export function projectAll(events: LedgerEvent[]): Map<string, PieceRecord> {
  *                  later) without coupling this util to a particular data
  *                  source.
  * @param cities    The full city catalog. Filtered down to referenced ones.
+ * @param ring3ByKey  Optional map of chain key (`pieceId:editionNumber ?? 0`)
+ *                  → the steward's ring3ChartPresence value. Used ONLY to
+ *                  derive the kinshipEligible boolean — the consent object
+ *                  itself never reaches this projection. Absent map = every
+ *                  claimed piece is treated as not-opted-in (fail-closed).
  */
 export function toPublicState(
   records: Map<string, PieceRecord>,
   artworks: Map<string, { series?: string; category?: string }>,
   cities: CityCentroid[],
+  ring3ByKey?: Map<string, boolean | 'deferred'>,
 ): PublicAtlasState {
   const referencedCityIds = new Set<string>();
   const pieces: PublicAtlasState['pieces'] = [];
+  // Chain-tip hashes for the public mirror's tamper-evidence (Continuity).
+  // Visible pieces only — a withdrawn/retired piece's existence stays
+  // undisclosed, exactly like the pieces array itself.
+  const chainTips: Record<string, string> = {};
 
-  for (const record of records.values()) {
+  // Founding Lights ordinals are a property of the whole ledger, derived once
+  // across every chain (not per piece) so ranks are globally consistent.
+  const ordinals = deriveClaimOrdinals(records);
+
+  for (const [key, record] of records) {
     if (record.status === 'retired') continue;
     if (!record.isPublic) continue;
 
     const meta = artworks.get(record.pieceId);
 
-    // The public status is binary: a piece is either placed or seeking.
+    // Public status, three-way:
+    //   placed      — has a city AND has been claimed (a lit light)
+    //   unawakened  — has a city but no claim yet (sold-but-unclaimed; the
+    //                 admin-placed dim point that doubles as the outreach
+    //                 dashboard). Carries no holder data.
+    //   seeking     — no city yet
     // The internal 'withdrawn' state never reaches the public projection.
-    const publicStatus: 'seeking' | 'placed' =
-      record.status === 'placed' ? 'placed' : 'seeking';
+    let publicStatus: 'seeking' | 'placed' | 'unawakened';
+    if (record.status === 'placed') {
+      publicStatus = record.claimedAt ? 'placed' : 'unawakened';
+    } else {
+      publicStatus = 'seeking';
+    }
 
     // Most recent placed/moved event's date, for client-side sorting and
     // the "recently placed" view.
@@ -157,15 +279,26 @@ export function toPublicState(
       cityId: record.currentCityId,
       status: publicStatus,
       placedAt,
+      pieceType: derivePieceType(record, meta?.series),
+      claimOrdinal: ordinals.get(key),
+      kinshipEligible: isKinshipEligible(record, ring3ByKey?.get(key)),
     });
+
+    // The chain tip: history is in date order (projectAll sorts it), so the
+    // last event's hash is the tip. The hash is opaque (SHA-256 of the
+    // canonical payload) — carrying it discloses nothing the pieces array
+    // doesn't already.
+    const tip = record.history[record.history.length - 1];
+    if (tip?.hash) chainTips[key] = tip.hash;
   }
 
   const filteredCities = cities.filter((c) => referencedCityIds.has(c.id));
 
   return {
     generatedAt: new Date().toISOString(),
-    schemaVersion: 1,
+    schemaVersion: 2,
     pieces,
     cities: filteredCities,
+    chainTips,
   };
 }

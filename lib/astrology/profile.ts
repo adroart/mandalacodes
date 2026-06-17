@@ -20,15 +20,18 @@ export interface ProfileInputs {
  *     - Purpose       (Design Earth)
  *
  *   Venus
- *     - Attraction    (Persona Venus)
- *     - IQ            (Design Mars)
+ *     - Attraction    (Design Moon)
+ *     - IQ            (Persona Venus)
  *     - EQ            (Persona Mars)
  *     - SQ            (Design Venus)
  *
  *   Pearl
- *     - Core          (Persona Jupiter)
+ *     - Vocation      (Design Mars)
  *     - Culture       (Design Jupiter)
- *     - Pearl         (Persona Mercury, the synthesis)
+ *     - Pearl         (Persona Jupiter, the synthesis)
+ *
+ * Planet-to-position mapping verified against an official Gene Keys
+ * Publishing chart (see scripts/verify-chart for the fixture).
  */
 export function buildHologeneticProfile({ utcBirth }: ProfileInputs): HologeneticProfile {
   const natal = eclipticLongitudes(utcBirth);
@@ -44,13 +47,13 @@ export function buildHologeneticProfile({ utcBirth }: ProfileInputs): Hologeneti
     radiance:   toGL(design.sun),
     purpose:    toGL(design.earth),
 
-    attraction: toGL(natal.venus),
-    iq:         toGL(design.mars),
+    attraction: toGL(design.moon),
+    iq:         toGL(natal.venus),
     eq:         toGL(natal.mars),
     sq:         toGL(design.venus),
 
-    core:       toGL(natal.jupiter),
+    core:       toGL(design.mars),   // Pearl "Vocation"
     culture:    toGL(design.jupiter),
-    pearl:      toGL(natal.mercury),
+    pearl:      toGL(natal.jupiter),
   };
 }

@@ -1,6 +1,10 @@
 node_modules
 dist
 .DS_Store
+
+# Astro content site — build artifacts only (source lives in content-site/)
+content-site/.astro/
+public/learn/
 *.log
 .env
 .env.local
@@ -21,3 +25,7 @@ LED-Programming/
 .claude/*
 !.claude/commands/
 !.claude/commands/**
+
+# Local R2 backups (scripts/backup-atlas.ts) — stewards.json holds collector
+# emails; these must never be committed
+backups/

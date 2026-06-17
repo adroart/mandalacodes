@@ -7,16 +7,18 @@
 
 export const LAUNCH_FLAGS = {
   /**
-   * ACCOUNTS — Clerk sign-in + D1-backed profile + collections.
-   * To enable:
-   *   1. Set VITE_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY, CLERK_WEBHOOK_SECRET on Cloudflare Pages
-   *   2. Configure Clerk webhook → https://mandalacodes.com/api/clerk/webhook
-   *   3. Flip this flag to true
+   * ACCOUNTS — self-owned Better Auth sign-in + D1-backed profile + collections.
+   * Same-origin (email code + password + Google); no public build-time key.
+   * Runtime secrets live in Cloudflare Pages env: BETTER_AUTH_SECRET,
+   * BETTER_AUTH_URL, RESEND_API_KEY, RESEND_FROM_EMAIL, GOOGLE_CLIENT_ID,
+   * GOOGLE_CLIENT_SECRET, ADMIN_EMAILS.
    * Files affected:
-   *   - lib/account/AccountProvider.tsx (mounts ClerkProvider when on)
+   *   - lib/account/AccountProvider.tsx (mounts the auth context when on)
    *   - components/account/AccountLayout.tsx (redirects to / when off)
+   *
+   * Enabled 2026-06-09; auth moved in-house from Clerk to Better Auth.
    */
-  accounts: false,
+  accounts: true,
 
   /**
    * HOLOGENETIC PROFILE — Birth chart at /profile and the

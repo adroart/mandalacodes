@@ -2,6 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Paint the document dark before ANY external CSS or script loads, so
+         there is never a white frame on load/navigation. Light mode removes
+         the class below. This inline style beats the CSS-file load gap. -->
+    <style>
+      html { background-color: #171310; }
+      html.light-mode { background-color: #f5f4f0; }
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Mandala Codes · Universal Language Oracle</title>
 
@@ -43,11 +50,18 @@
 </script>
   </head>
   <body class="bg-[#262321]">
+    <!-- CSP: the inline script below is allowlisted by sha256 hash in
+         public/_headers (script-src). Editing ANY byte of its body changes the
+         hash — recompute and update _headers, or the browser blocks it. -->
     <script>
       (function() {
-        var stored = localStorage.getItem('dark-mode');
-        if (stored === 'true' || (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        // Default to dark (matches DarkModeProvider). Only light when the
+        // visitor has explicitly chosen it — applied before first paint so
+        // there is no dark->light->dark flash on navigation.
+        if (localStorage.getItem('dark-mode') !== 'false') {
           document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.add('light-mode');
         }
       })();
     </script>

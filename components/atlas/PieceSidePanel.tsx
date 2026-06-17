@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export interface SelectedPiece {
   pieceId: string;
@@ -6,9 +7,11 @@ export interface SelectedPiece {
   title: string;
   series?: string;
   category?: string;
-  status: 'seeking' | 'placed';
+  status: 'seeking' | 'placed' | 'unawakened';
   cityLabel?: string;     // e.g. "Lisbon, Portugal"  (omitted when seeking)
   placedAt?: string;      // ISO of most recent placed/moved event
+  cardNumber?: number;    // Universal Language code 1–64, when the piece carries one
+  claimOrdinal?: number;  // Founding Lights ordinal (1 = first light) when claimed
 }
 
 export interface KinEntry {
@@ -16,11 +19,22 @@ export interface KinEntry {
   title: string;
 }
 
+/** Derived, non-identifying holder-chart summary (M5). Served only when the
+ *  steward opted into Ring 3 and has a D1 profile — the 8-way trigram
+ *  element only, never raw birth data, a name, or anything gate-resolution
+ *  (see functions/api/atlas/holder-chart.ts). */
+export interface HolderChartSummary {
+  element: string;
+}
+
 export interface PieceSidePanelProps {
   piece: SelectedPiece | null;
   /** Kindred pieces, already sorted nearest-first, capped to ~6. Empty for non-UL pieces. */
   kin?: readonly KinEntry[];
   onSelectKin?: (key: string) => void;
+  /** "Held by a chart of…" — present only when ring3 is on AND a profile
+   *  exists; null/undefined otherwise (the line simply doesn't render). */
+  holderChart?: HolderChartSummary | null;
 }
 
 function formatPlacedYear(iso?: string): string | null {
@@ -31,7 +45,28 @@ function formatPlacedYear(iso?: string): string | null {
   return String(d.getUTCFullYear());
 }
 
-const PieceSidePanel: React.FC<PieceSidePanelProps> = ({ piece, kin, onSelectKin }) => {
+/** Ordinal word for the Founding Lights number: 1 → "1st", 2 → "2nd", … */
+export function ordinalLabel(n: number): string {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1:
+      return `${n}st`;
+    case 2:
+      return `${n}nd`;
+    case 3:
+      return `${n}rd`;
+    default:
+      return `${n}th`;
+  }
+}
+
+const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
+  piece,
+  kin,
+  onSelectKin,
+  holderChart,
+}) => {
   if (!piece) {
     return (
       <aside
@@ -47,8 +82,13 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({ piece, kin, onSelectKin
 
   const placedYear = formatPlacedYear(piece.placedAt);
   const isSeeking = piece.status === 'seeking';
+  const isUnawakened = piece.status === 'unawakened';
   const statusLine = isSeeking
     ? 'seeking ground'
+    : isUnawakened
+    ? piece.cityLabel
+      ? `at rest in ${piece.cityLabel}, awaiting its keeper`
+      : 'awaiting its keeper'
     : piece.cityLabel
     ? `placed in ${piece.cityLabel}`
     : 'placed';
@@ -93,12 +133,62 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({ piece, kin, onSelectKin
         </p>
         <p
           className={`font-serif text-lg leading-snug ${
-            isSeeking ? 'italic text-wood-700' : 'text-wood-900'
+            isSeeking || isUnawakened ? 'italic text-wood-700' : 'text-wood-900'
           }`}
         >
           {statusLine}
         </p>
       </div>
+
+      {typeof piece.claimOrdinal === 'number' && (
+        <div className="border-t border-wood-200 pt-5 mt-5">
+          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
+            Founding light
+          </p>
+          <p className="font-serif text-lg text-wood-900 leading-snug">
+            The {ordinalLabel(piece.claimOrdinal)} light
+          </p>
+        </div>
+      )}
+
+      <div className="border-t border-wood-200 pt-5 mt-5">
+        <Link
+          to={`/piece/${piece.pieceId}${
+            typeof piece.editionNumber === 'number' ? `/${piece.editionNumber}` : ''
+          }`}
+          className="font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+        >
+          Open this piece's book →
+        </Link>
+      </div>
+
+      {/* Bridge back into the deck — every Universal Language piece carries
+          one of the 64 codes; the reading lives on the card page. */}
+      {typeof piece.cardNumber === 'number' && (
+        <div className="border-t border-wood-200 pt-5 mt-5">
+          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
+            The code it carries
+          </p>
+          <Link
+            to={`/universal-language/${piece.cardNumber}`}
+            state={{ ritual: true }}
+            className="font-serif text-lg text-wood-900 hover:text-bronze-700 transition-colors leading-snug"
+          >
+            Read Code {piece.cardNumber} →
+          </Link>
+        </div>
+      )}
+
+      {holderChart && (
+        <div className="border-t border-wood-200 pt-5 mt-5">
+          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
+            Held by a chart of
+          </p>
+          <p className="font-serif text-lg text-wood-900 leading-snug">
+            {holderChart.element}
+          </p>
+        </div>
+      )}
 
       {kin && kin.length > 0 && (
         <div className="border-t border-wood-200 pt-5 mt-5">

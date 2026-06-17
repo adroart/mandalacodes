@@ -17,11 +17,8 @@ import '@fontsource/lora/400-italic.css';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { ClerkProvider } from '@clerk/clerk-react';
 import './src/index.css';
 import App from './App';
-
-const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
 
 const statusEl = document.getElementById('loader-status');
 if (statusEl) statusEl.innerText = "Loading Modules...";
@@ -83,17 +80,10 @@ const mountApp = () => {
         rootElement.innerHTML = '';
 
         const root = createRoot(rootElement);
-        // Clerk is required only for /admin and /atlas/{claim,edit}. If the
-        // publishable key is missing (local dev without env), render without
-        // ClerkProvider so the public oracle/atlas pages still work. Admin
-        // and steward routes will show "Clerk not configured" copy.
-        const tree = CLERK_PUBLISHABLE_KEY ? (
-            <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
-                <BrowserRouter>
-                    <App />
-                </BrowserRouter>
-            </ClerkProvider>
-        ) : (
+        // Account context is mounted once, inside <App> via <AccountProvider>
+        // (self-owned Better Auth, same-origin; falls back to guest stubs when
+        // accounts are off). The root only sets up routing.
+        const tree = (
             <BrowserRouter>
                 <App />
             </BrowserRouter>
@@ -101,7 +91,13 @@ const mountApp = () => {
         root.render(<ErrorBoundary>{tree}</ErrorBoundary>);
     } catch (e) {
         console.error("Fatal: React failed to mount.", e);
-        rootElement.innerHTML = `<div style="padding:40px; color:red; font-family:monospace;">Fatal: Failed to mount application.<br/><br/>${e}</div>`;
+        // Build the fallback via DOM + textContent rather than innerHTML so the
+        // stringified error can never be interpreted as HTML (no raw-HTML sink).
+        rootElement.replaceChildren();
+        const errBox = document.createElement('div');
+        errBox.setAttribute('style', 'padding:40px; color:red; font-family:monospace;');
+        errBox.textContent = `Fatal: Failed to mount application. ${e}`;
+        rootElement.appendChild(errBox);
     }
 };
 

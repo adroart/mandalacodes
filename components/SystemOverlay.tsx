@@ -97,7 +97,7 @@ const SystemOverlay: React.FC<Props> = ({ open, systemKey, glyph, onClose }) => 
       });
       setPhase('sinking');
       window.setTimeout(() => {
-        navigate(`/oracle/the-systems#${systemKey}`);
+        navigate(`/the-systems#${systemKey}`);
       }, 700);
     },
     [navigate, systemKey],

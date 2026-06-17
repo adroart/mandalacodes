@@ -2,19 +2,35 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { useDarkMode } from '../DarkModeContext';
+import { useAccount } from '../lib/account/useAccount';
+import AuthButton from './account/AuthButton';
 
 interface NavItem {
   path: string;
   label: string;
+  /** Only render this item when the visitor is signed in. */
+  signedInOnly?: boolean;
+  /**
+   * Static (non-SPA) destination served outside React Router — e.g. the Astro
+   * `/learn` library. Rendered as a plain anchor so the browser does a real
+   * navigation instead of asking the router for a route that does not exist.
+   */
+  external?: boolean;
 }
 
 // Mandala Codes is its own site (split from Adrian-Website). The menu lists
 // only real destinations on this domain — no Creations/Writings/Shop, those
 // live on adrianrasmussen.com.
+//
+// "Your pieces" is the way back in for an owner who already claimed: /atlas/edit
+// is otherwise reachable only by completing the claim flow or typing the URL,
+// which strands returning stewards. It renders only when signed in.
 const NAV_ITEMS: NavItem[] = [
   { path: '/universal-language', label: 'Deck' },
   { path: '/the-systems', label: 'The Systems' },
+  { path: '/learn', label: 'Learn', external: true },
   { path: '/atlas', label: 'Atlas' },
+  { path: '/atlas/edit', label: 'Your pieces', signedInOnly: true },
   { path: '/profile', label: 'Profile' },
 ];
 
@@ -27,6 +43,7 @@ const NAV_ITEMS: NavItem[] = [
  * gap. The nav owns that variable.
  */
 const Navigation: React.FC = () => {
+  const { isSignedIn } = useAccount();
   const location = useLocation();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,8 +53,15 @@ const Navigation: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   // Prefix-match so a card page (/universal-language/12) keeps "Deck" active.
-  const isNavActive = (itemPath: string) =>
-    location.pathname === itemPath || location.pathname.startsWith(itemPath + '/');
+  // But never let a shorter item (/atlas) also claim a page that another nav
+  // item matches exactly (/atlas/edit) — otherwise both highlight at once.
+  const isNavActive = (itemPath: string) => {
+    if (location.pathname === itemPath) return true;
+    if (!location.pathname.startsWith(itemPath + '/')) return false;
+    return !NAV_ITEMS.some(
+      (other) => other.path !== itemPath && other.path === location.pathname,
+    );
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -114,44 +138,62 @@ const Navigation: React.FC = () => {
       <div className="max-w-[1800px] mx-auto px-6 md:px-12 flex justify-between items-center relative z-[120]">
         <Link to="/" className="group flex flex-col items-start py-2 -my-2" aria-label="Mandala Codes home">
           <span
-            className={`font-serif tracking-normal leading-none transition-all duration-300 font-normal text-wood-900 group-hover:text-bronze-600 ${
-              isScrolled ? 'text-base md:text-lg' : 'text-lg md:text-2xl'
+            className={`font-serif leading-none transition-all duration-300 font-normal uppercase text-wood-900 group-hover:text-bronze-600 ${
+              isScrolled ? 'text-sm md:text-base' : 'text-base md:text-xl'
             }`}
-            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.06em' }}
+            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.16em' }}
           >
             Mandala Codes
           </span>
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-8 xl:gap-12">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`group relative text-xs uppercase tracking-[0.2em] font-label py-3 transition-all duration-300 font-semibold ${
-                isNavActive(item.path) ? 'text-wood-900' : 'text-wood-700 hover:text-bronze-600'
-              }`}
-            >
-              {item.label}
+        <div className="hidden lg:flex items-center">
+          {NAV_ITEMS.map((item, i) => {
+            const linkClass = `group relative text-[13px] uppercase tracking-[0.18em] font-label py-3 px-4 xl:px-5 transition-all duration-300 font-semibold ${
+              isNavActive(item.path) ? 'text-wood-900' : 'text-wood-700 hover:text-bronze-600'
+            }`;
+            const underline = (
               <span
                 aria-hidden="true"
-                className={`absolute -bottom-0 left-0 h-px bg-bronze-500 transition-all duration-300 ease-out ${
-                  isNavActive(item.path) ? 'w-full' : 'w-0 group-hover:w-full'
+                className={`absolute -bottom-0 left-4 xl:left-5 right-4 xl:right-5 h-px bg-bronze-500 transition-all duration-300 ease-out ${
+                  isNavActive(item.path) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                 }`}
               />
-            </Link>
-          ))}
+            );
+            const link = (
+              <React.Fragment key={item.path}>
+                {i > 0 && (
+                  <span aria-hidden="true" className="h-3.5 w-px bg-wood-900/15" />
+                )}
+                {item.external ? (
+                  <a href={item.path} className={linkClass}>
+                    {item.label}
+                    {underline}
+                  </a>
+                ) : (
+                  <Link to={item.path} className={linkClass}>
+                    {item.label}
+                    {underline}
+                  </Link>
+                )}
+              </React.Fragment>
+            );
+            return item.signedInOnly ? (isSignedIn ? <React.Fragment key={item.path}>{link}</React.Fragment> : null) : link;
+          })}
         </div>
 
         {/* Right controls: dark toggle + mobile hamburger */}
         <div className="flex items-center gap-0">
+          <AuthButton />
+
           <button
             onClick={toggleDarkMode}
-            className="px-3 min-w-[44px] min-h-[44px] flex items-center justify-center hover:opacity-70 transition-opacity font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-wood-900"
+            className="ml-1 inline-flex items-center justify-center gap-2 rounded-full border border-bronze-500/40 text-wood-700 hover:border-bronze-500 hover:text-bronze-600 transition-colors font-label text-[10px] uppercase tracking-[0.16em] font-semibold h-9 w-9 md:h-auto md:w-auto md:px-3.5 md:py-2"
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            {isDarkMode ? 'Light' : 'Dark'}
+            <span aria-hidden="true" className="text-[13px] leading-none">{isDarkMode ? '☀' : '☾'}</span>
+            <span className="hidden md:inline">{isDarkMode ? 'Light' : 'Dark'}</span>
           </button>
 
           <button
@@ -175,17 +217,25 @@ const Navigation: React.FC = () => {
           aria-label="Mobile navigation"
           className="lg:hidden absolute top-full left-0 w-full bg-paper-50/98 backdrop-blur-xl border-b border-wood-200 py-10 px-6 flex flex-col gap-7 items-center shadow-2xl"
         >
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => handleNavClick(item.path)}
-              className={`text-sm font-label uppercase tracking-[0.2em] font-semibold transition-colors ${
-                isNavActive(item.path) ? 'text-bronze-600' : 'text-wood-800 hover:text-wood-900'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const itemClass = `text-sm font-label uppercase tracking-[0.2em] font-semibold transition-colors ${
+              isNavActive(item.path) ? 'text-bronze-600' : 'text-wood-800 hover:text-wood-900'
+            }`;
+            const button = item.external ? (
+              <a key={item.path} href={item.path} className={itemClass}>
+                {item.label}
+              </a>
+            ) : (
+              <button
+                key={item.path}
+                onClick={() => handleNavClick(item.path)}
+                className={itemClass}
+              >
+                {item.label}
+              </button>
+            );
+            return item.signedInOnly ? (isSignedIn ? <React.Fragment key={item.path}>{button}</React.Fragment> : null) : button;
+          })}
         </div>
       )}
     </nav>

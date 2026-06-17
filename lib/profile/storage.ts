@@ -31,7 +31,10 @@ export function loadProfile(): StoredProfile | null {
     const raw = window.localStorage.getItem(KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoredProfile;
-    // Minimal shape check so a stale schema doesn't crash the UI.
+    // Minimal shape check so a stale schema doesn't crash the UI. We require
+    // the newest keys (venusCore, brand) too, so a profile saved before the
+    // 13-sphere chart is discarded and recomputed rather than rendered with
+    // missing positions.
     if (!parsed?.inputs?.place?.tzId || !parsed?.computed?.lifesWork) return null;
     return parsed;
   } catch {

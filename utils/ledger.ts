@@ -66,17 +66,42 @@ function bufferToHex(buf: ArrayBuffer): string {
 }
 
 /**
+ * Thrown by appendEvent when the new event is dated before the chain tip.
+ * Chains are reconstructed by sorting on `date` (see groupChains), so a
+ * backdated append would reorder the chain and break every prevHash link
+ * on the next verification. Callers (e.g. /api/atlas/event) should catch
+ * this and surface a 400 rather than corrupt the ledger.
+ */
+export class BackdatedEventError extends Error {
+  constructor(tipDate: string, eventDate: string) {
+    super(
+      `event date ${eventDate} is earlier than the chain tip ${tipDate} — ` +
+        'backdated events would break chain verification',
+    );
+    this.name = 'BackdatedEventError';
+  }
+}
+
+/**
  * Given the existing per-piece chain (in append order) and an incomplete
  * new event, return a fully-formed event with `prevHash` and `hash` set.
  *
  * The chain MUST already be in append order (oldest first). The caller is
  * responsible for filtering global events down to a single (pieceId,
  * editionNumber) chain before calling.
+ *
+ * Rejects events dated before the chain tip (BackdatedEventError) — see
+ * the class doc above. Equal dates are allowed; groupChains' sort is
+ * stable, so same-date events keep their append order.
  */
 export async function appendEvent(
   chain: LedgerEvent[],
   newEvent: Omit<LedgerEvent, 'hash' | 'prevHash'>,
 ): Promise<LedgerEvent> {
+  const tip = chain.length === 0 ? null : chain[chain.length - 1];
+  if (tip && newEvent.date < tip.date) {
+    throw new BackdatedEventError(tip.date, newEvent.date);
+  }
   const prevHash = chain.length === 0 ? null : chain[chain.length - 1].hash;
   const withPrev: Omit<LedgerEvent, 'hash'> = { ...newEvent, prevHash };
   const hash = await computeHash(withPrev);

@@ -52,8 +52,12 @@ export interface KinshipIndex {
 /**
  * Two pieces are kin if any trigram (upper or lower) on one matches any
  * trigram (upper or lower) on the other. Order independent.
+ *
+ * Sibling editions of the same piece are never kin — they trivially share
+ * both trigrams and would flood the constellation with self-kin arcs.
  */
 export function isKin(a: KinshipNode, b: KinshipNode): boolean {
+  if (a.pieceId === b.pieceId) return false;
   return (
     a.upperTrigram === b.upperTrigram ||
     a.upperTrigram === b.lowerTrigram ||
@@ -104,6 +108,13 @@ export function buildKinshipIndex(
   for (const p of state.pieces) {
     if (p.series !== 'Universal Language') continue;
     if (p.status !== 'placed') continue;
+    // M5 — consent-gated kinship. A claimed piece only joins the
+    // constellation when its steward opted into Ring 3 (kinshipEligible
+    // true). Artist-placed pieces with no claim leave the flag undefined and
+    // keep today's behavior. `=== false` (not `!`) so an absent flag from a
+    // schemaVersion-2 public.json still renders — additive, fail-open for
+    // pre-M5 data, fail-closed only when the projector explicitly excluded.
+    if (p.kinshipEligible === false) continue;
     if (!p.cityId) continue;
     const city = citiesById.get(p.cityId);
     if (!city) continue;
@@ -114,7 +125,9 @@ export function buildKinshipIndex(
     const card = CARD_BY_NUMBER.get(num);
     if (!card) continue;
 
-    const key = `${p.pieceId}:${p.editionNumber ?? ''}`;
+    // Same key convention as ledger.ts groupChains / ledgerProjection's
+    // projectAll: pieces with no editionNumber use `0`.
+    const key = `${p.pieceId}:${p.editionNumber ?? 0}`;
     nodes.set(key, {
       key,
       pieceId: p.pieceId,

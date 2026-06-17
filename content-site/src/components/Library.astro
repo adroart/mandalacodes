@@ -1,0 +1,200 @@
+---
+import { TABS, fieldSlug, type ArticleView } from '../lib/articles'
+
+interface Props {
+  /** Full set of decorated articles (newest first). */
+  views: ArticleView[]
+  /** Active filter field value, or 'All'. */
+  active?: string
+}
+
+const { views, active = 'All' } = Astro.props
+const base = import.meta.env.BASE_URL
+const isAll = active === 'All'
+
+// Hero = newest article. Remaining fill the editorial list.
+const featured = views[0]
+const rest = views.slice(1)
+
+// Spotlight: a flagged article, else the 4th remaining one.
+const spotIndex = rest.findIndex(a => a.spotlight)
+const spotlight = spotIndex >= 0 ? rest[spotIndex] : rest[3]
+const listed = rest.filter(a => a !== spotlight)
+const rowsTop = listed.slice(0, 3)
+const rowsBottom = listed.slice(3)
+
+const filtered = isAll ? [] : views.filter(a => a.field === active)
+const activeLabel = (TABS.find(t => t.value === active) || { label: 'All' }).label
+const filteredCount = `${filtered.length} ${filtered.length === 1 ? 'essay' : 'essays'}`
+
+const tabHref = (slug: string) => (slug ? `${base}/category/${slug}/` : `${base}/`)
+---
+
+{/* ===== HERO ===== */}
+{featured && (
+  <section class="lp-hero" data-r="hero">
+    <img class="lp-hero-img" data-r="heroimg" src={featured.heroWide} alt="" />
+    <div class="lp-hero-scrim-side"></div>
+    <div class="lp-hero-scrim-bottom"></div>
+    <div class="lp-hero-frame f1"></div>
+    <div class="lp-hero-frame f2"></div>
+    <div class="lp-hero-pad">
+      <div class="lp-eyebrow">
+        <span class="lp-goldline" data-r="goldline"></span>
+        <span class="lp-eyebrow-text">Featured Essay · {featured.field}</span>
+      </div>
+      <h1 class="lp-hero-title">{featured.title}</h1>
+      <p class="lp-hero-dek">{featured.description}</p>
+      <div class="lp-hero-actions">
+        <a class="lp-cta" data-magnetic href={`${base}/${featured.id}/`}>
+          Enter the essay <span class="arrow">→</span>
+        </a>
+        <span class="lp-hero-meta">{featured.date} · {featured.read} read</span>
+      </div>
+    </div>
+    <div class="lp-hero-corner">
+      <div class="latest">Latest</div>
+      <div class="plate">No. {featured.plate}</div>
+    </div>
+  </section>
+)}
+
+{/* ===== LIBRARY ===== */}
+<section class="lp-frame-pad" data-r="framePad">
+  <div class="lp-section-head">
+    <div>
+      <div class="lp-kicker">Browse</div>
+      <h2 class="lp-section-title">The Library</h2>
+    </div>
+    <nav class="lp-filters" data-r="filters">
+      {TABS.map(t => (
+        <a href={tabHref(t.slug)} data-field={t.value} class={active === t.value ? 'is-active' : undefined}>
+          {t.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+
+  {isAll ? (
+    <div data-r="all">
+      {rowsTop.map(a => (
+        <a class="lp-row" data-reveal data-field={a.field} href={`${base}/${a.id}/`}>
+          <div class="lp-row-thumb"><img class="lp-row-img" src={a.cover} alt="" /></div>
+          <div>
+            <div class="lp-row-field" style={`color:${a.tint}`}>{a.field} · {a.culture}</div>
+            <h3 class="lp-row-title">{a.title}</h3>
+            <p class="lp-row-dek">{a.description}</p>
+            <div class="lp-row-read-m">{a.read} read</div>
+          </div>
+          <div class="lp-row-no">
+            <div class="num" style={`color:${a.tint}`}>{a.roman}</div>
+            <div class="read">{a.read}</div>
+          </div>
+        </a>
+      ))}
+
+      {spotlight && (
+        <a class="lp-spotlight" data-reveal href={`${base}/${spotlight.id}/`}>
+          <div class="lp-spot-figure">
+            <img class="lp-spot-img" src={spotlight.coverWide} alt="" />
+            <div class="inner"></div>
+            <div class="lp-spot-tag">Plate {spotlight.plate} &nbsp;·&nbsp; Universal Language</div>
+          </div>
+          <div>
+            <div class="lp-spot-eyebrow">
+              <span class="lp-goldline" data-r="goldline"></span>
+              <span class="label">Spotlight · {spotlight.culture}</span>
+            </div>
+            <h3 class="lp-spot-title">{spotlight.title}</h3>
+            <p class="lp-spot-dek">{spotlight.description}</p>
+            <span class="lp-spot-cta">Read the essay <span>→</span></span>
+          </div>
+        </a>
+      )}
+
+      {rowsBottom.map(a => (
+        <a class="lp-row" data-reveal data-field={a.field} href={`${base}/${a.id}/`}>
+          <div class="lp-row-thumb"><img class="lp-row-img" src={a.cover} alt="" /></div>
+          <div>
+            <div class="lp-row-field" style={`color:${a.tint}`}>{a.field} · {a.culture}</div>
+            <h3 class="lp-row-title">{a.title}</h3>
+            <p class="lp-row-dek">{a.description}</p>
+            <div class="lp-row-read-m">{a.read} read</div>
+          </div>
+          <div class="lp-row-no">
+            <div class="num" style={`color:${a.tint}`}>{a.roman}</div>
+            <div class="read">{a.read}</div>
+          </div>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <div data-r="filtered">
+      <div class="lp-filtered-head">
+        <span class="label">Filtered · {activeLabel}</span>
+        <span class="count">{filteredCount}</span>
+      </div>
+      {filtered.map(a => (
+        <a class="lp-row" data-reveal data-field={a.field} href={`${base}/${a.id}/`}>
+          <div class="lp-row-thumb"><img class="lp-row-img" src={a.cover} alt="" /></div>
+          <div>
+            <div class="lp-row-field" style={`color:${a.tint}`}>{a.field} · {a.culture}</div>
+            <h3 class="lp-row-title">{a.title}</h3>
+            <p class="lp-row-dek">{a.description}</p>
+            <div class="lp-row-read-m">{a.read} read</div>
+          </div>
+          <div class="lp-row-no">
+            <div class="num" style={`color:${a.tint}`}>{a.roman}</div>
+            <div class="read">{a.read}</div>
+          </div>
+        </a>
+      ))}
+    </div>
+  )}
+
+  <div class="lp-lib-footer">
+    <span class="mark">MANDALA CODES</span>
+    <span>Part of the Universal Language · 64 mandalas</span>
+    <a href={`${base}/rss.xml`}>RSS ↗</a>
+  </div>
+</section>
+
+{/*
+  Progressive enhancement: on the "All" index, clicking a filter tab narrows the
+  list instantly (no page load) and updates the URL. The tabs remain real links
+  to /category/{slug}/ pages, so this is purely additive and crawlers still see
+  per-category URLs. Only runs when the full ("All") list is rendered.
+*/}
+{isAll && (
+  <script is:inline>
+    (function () {
+      var pad = document.querySelector('[data-r="framePad"]')
+      if (!pad) return
+      var tabs = pad.querySelectorAll('[data-r="filters"] a')
+      var rows = pad.querySelectorAll('[data-r="all"] .lp-row')
+      var spotlight = pad.querySelector('[data-r="all"] .lp-spotlight')
+
+      function apply(value, href) {
+        rows.forEach(function (r) {
+          var show = value === 'All' || r.getAttribute('data-field') === value
+          r.style.display = show ? '' : 'none'
+        })
+        if (spotlight) spotlight.style.display = value === 'All' ? '' : 'none'
+        tabs.forEach(function (t) {
+          t.classList.toggle('is-active', t.getAttribute('data-field') === value)
+        })
+        if (href) history.replaceState(null, '', href)
+      }
+
+      tabs.forEach(function (t) {
+        t.addEventListener('click', function (e) {
+          // Let modified clicks open the real category URL in a new tab.
+          if (e.metaKey || e.ctrlKey || e.shiftKey) return
+          e.preventDefault()
+          apply(t.getAttribute('data-field'), t.getAttribute('href'))
+          pad.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        })
+      })
+    })()
+  </script>
+)}

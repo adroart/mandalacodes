@@ -1,22 +1,40 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/clerk-react';
+import { useAccount } from '../../lib/account/useAccount';
+import { signOut } from '../../lib/account/authClient';
 import type { PieceRecord, CityCentroid, StewardRecord } from '../../types';
-import { CITIES, getCityById } from '../../data/cities';
+import { ATLAS_PLACES, getCityById, isCountryPlace } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
+import ConsentRings from './ConsentRings';
+import type { ConsentChoice } from './ConsentRings';
+import LegacyBook from './LegacyBook';
+import StewardRequests from './StewardRequests';
 
 /**
  * Steward edit page. Rendered at `/atlas/edit`.
  *
  * Requires Clerk auth. On mount we POST /api/atlas/steward/claim with the
- * bearer token to load every piece bound to this user. For now we render the
- * first matching piece — multi-piece picker is a follow-up. If no record is
- * bound to this user, we send them to /atlas/claim.
+ * bearer token to load every piece bound to this user. Stewards with more
+ * than one piece get a picker; edits always apply to the selected piece.
+ * If no record is bound to this user, we send them to /atlas/claim.
+ *
+ * Retro-consent (M2): a steward bound before consent capture existed sees
+ * the ConsentRings step once — the same Phase B POST as the claim flow —
+ * before the edit UI. From then on the visibility toggle below IS the
+ * Ring 2 control (the server keeps consent.ring2MapPresence + the audit
+ * history in sync on every flip).
+ *
+ * The place picker offers cities and "country only" centroids — picking a
+ * country places the public dot at the country's geographic center.
  */
 
 type ClaimResponse = {
   ok: boolean;
-  claimed: Array<{ steward: StewardRecord; piece: PieceRecord | null }>;
+  claimed: Array<{
+    steward: StewardRecord;
+    piece: PieceRecord | null;
+    needsConsent?: boolean;
+  }>;
 };
 
 type UpdateResponse = {
@@ -35,6 +53,7 @@ const cityMatches = (city: CityCentroid, query: string): boolean => {
 };
 
 const formatCityLabel = (city: CityCentroid): string => {
+  if (isCountryPlace(city)) return `${city.country} — country only`;
   return city.region
     ? `${city.city}, ${city.region}, ${city.country}`
     : `${city.city}, ${city.country}`;
@@ -42,15 +61,15 @@ const formatCityLabel = (city: CityCentroid): string => {
 
 const StewardEdit: React.FC = () => {
   const navigate = useNavigate();
-  const { isLoaded, isSignedIn, getToken } = useAuth();
-  const { signOut } = useClerk();
-  const [piece, setPiece] = useState<PieceRecord | null>(null);
-  const [stewardRecord, setStewardRecord] = useState<StewardRecord | null>(null);
-  const [multiPiece, setMultiPiece] = useState(false);
+  const { isLoaded, isSignedIn, fetchAuthed } = useAccount();
+  const [entries, setEntries] = useState<ClaimResponse['claimed']>([]);
+  const [selectedIdx, setSelectedIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [consentSubmitting, setConsentSubmitting] = useState(false);
+  const [consentError, setConsentError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const savedTimerRef = useRef<number | null>(null);
 
@@ -69,12 +88,10 @@ const StewardEdit: React.FC = () => {
     let cancelled = false;
     const load = async () => {
       try {
-        const token = await getToken();
-        const res = await fetch('/api/atlas/steward/claim', {
+        const res = await fetchAuthed('/api/atlas/steward/claim', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
         if (cancelled) return;
@@ -92,15 +109,13 @@ const StewardEdit: React.FC = () => {
         }
         const data: ClaimResponse = await res.json();
         if (cancelled) return;
-        const entries = data.claimed ?? [];
-        if (entries.length === 0) {
+        const claimed = data.claimed ?? [];
+        if (claimed.length === 0) {
           navigate('/atlas/claim', { replace: true });
           return;
         }
-        setMultiPiece(entries.length > 1);
-        const first = entries[0];
-        setStewardRecord(first.steward);
-        setPiece(first.piece);
+        setEntries(claimed);
+        setSelectedIdx(0);
       } catch {
         if (!cancelled) setLoadError('Could not load your piece. Please try again.');
       } finally {
@@ -112,7 +127,7 @@ const StewardEdit: React.FC = () => {
       cancelled = true;
       if (savedTimerRef.current) window.clearTimeout(savedTimerRef.current);
     };
-  }, [isLoaded, isSignedIn, getToken, navigate]);
+  }, [isLoaded, isSignedIn, fetchAuthed, navigate]);
 
   // Click-outside to close the city combobox
   useEffect(() => {
@@ -126,10 +141,25 @@ const StewardEdit: React.FC = () => {
     return () => document.removeEventListener('mousedown', onDoc);
   }, [cityOpen]);
 
+  // The piece currently being edited. Every update targets this entry.
+  const current = entries[selectedIdx] ?? null;
+  const stewardRecord = current?.steward ?? null;
+  const piece = current?.piece ?? null;
+
   const flashSaved = () => {
     setSavedAt(Date.now());
     if (savedTimerRef.current) window.clearTimeout(savedTimerRef.current);
     savedTimerRef.current = window.setTimeout(() => setSavedAt(null), 2000);
+  };
+
+  // Switch which claimed piece the form edits; clears transient picker state
+  // so the city search and save flash don't leak across pieces.
+  const handlePieceSwitch = (idx: number) => {
+    setSelectedIdx(idx);
+    setCityQuery('');
+    setCityOpen(false);
+    setSaveError(null);
+    setSavedAt(null);
   };
 
   const submitUpdate = async (body: { cityId?: string; isPublic?: boolean }) => {
@@ -137,12 +167,10 @@ const StewardEdit: React.FC = () => {
     setSaving(true);
     setSaveError(null);
     try {
-      const token = await getToken();
-      const res = await fetch('/api/atlas/steward/update', {
+      const res = await fetchAuthed('/api/atlas/steward/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           ...body,
@@ -159,7 +187,9 @@ const StewardEdit: React.FC = () => {
         return;
       }
       const data: UpdateResponse = await res.json();
-      setPiece(data.piece);
+      setEntries(prev =>
+        prev.map((e, i) => (i === selectedIdx ? { ...e, piece: data.piece } : e)),
+      );
       flashSaved();
     } catch {
       setSaveError('Something went wrong, please try again.');
@@ -184,9 +214,93 @@ const StewardEdit: React.FC = () => {
     submitUpdate({ isPublic: !piece.isPublic });
   };
 
+  // Ring 3 — chart presence. Joining the kinship constellation is a consent
+  // flip (mutable, revocable), not a ledger event; the server keeps the audit
+  // history and regenerates the public kinshipEligible flag. We update the
+  // steward record in place so the toggle reflects immediately.
+  const [ring3Saving, setRing3Saving] = useState(false);
+  const ring3On = stewardRecord?.consent?.ring3ChartPresence === true;
+
+  const handleRing3Toggle = async () => {
+    if (!stewardRecord || ring3Saving) return;
+    setRing3Saving(true);
+    setSaveError(null);
+    try {
+      const res = await fetchAuthed('/api/atlas/steward/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pieceId: stewardRecord.pieceId,
+          editionNumber: stewardRecord.editionNumber,
+          ring3ChartPresence: !ring3On,
+        }),
+      });
+      if (res.status === 401) {
+        navigate('/atlas/claim', { replace: true });
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as
+        | { ok?: boolean; steward?: StewardRecord }
+        | null;
+      if (!res.ok || !data?.ok || !data.steward) {
+        setSaveError('Something went wrong, please try again.');
+        return;
+      }
+      const updated = data.steward;
+      setEntries(prev =>
+        prev.map((e, i) => (i === selectedIdx ? { ...e, steward: updated } : e)),
+      );
+      flashSaved();
+    } catch {
+      setSaveError('Something went wrong, please try again.');
+    } finally {
+      setRing3Saving(false);
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/atlas/claim', { replace: true });
+  };
+
+  // Retro-consent: a record bound before M2 has no captured consent — the
+  // ConsentRings step renders once, posting the same Phase B body as the
+  // claim flow. One capture covers every piece this steward holds.
+  const needsConsent = entries.some(e => !e.steward.consent);
+
+  const handleConsentSubmit = async (choice: ConsentChoice) => {
+    setConsentSubmitting(true);
+    setConsentError(null);
+    try {
+      const res = await fetchAuthed('/api/atlas/steward/claim', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          consent: { ring2MapPresence: choice.ring2MapPresence },
+          ...(choice.firstInscription
+            ? { firstInscription: choice.firstInscription }
+            : {}),
+        }),
+      });
+      if (res.status === 401) {
+        navigate('/atlas/claim', { replace: true });
+        return;
+      }
+      if (!res.ok) {
+        setConsentError('Something went wrong. Please try again.');
+        return;
+      }
+      const data: ClaimResponse = await res.json();
+      setEntries(data.claimed ?? []);
+    } catch {
+      setConsentError('Something went wrong. Please try again.');
+    } finally {
+      setConsentSubmitting(false);
+    }
   };
 
   // === Derived view data ===
@@ -202,8 +316,11 @@ const StewardEdit: React.FC = () => {
   }, [piece]);
 
   const filteredCities = useMemo(() => {
-    if (!cityQuery.trim()) return CITIES.slice(0, 12);
-    return CITIES.filter(c => cityMatches(c, cityQuery)).slice(0, 12);
+    // ATLAS_PLACES lists cities first, then country-level centroids — a
+    // country search surfaces its cities followed by the "country only"
+    // option.
+    if (!cityQuery.trim()) return ATLAS_PLACES.slice(0, 12);
+    return ATLAS_PLACES.filter(c => cityMatches(c, cityQuery)).slice(0, 12);
   }, [cityQuery]);
 
   const statusLine = useMemo(() => {
@@ -245,7 +362,7 @@ const StewardEdit: React.FC = () => {
     );
   }
 
-  if (loadError || !piece) {
+  if (loadError || entries.length === 0) {
     return (
       <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6">
         <div className="w-full max-w-md text-center space-y-4">
@@ -263,16 +380,77 @@ const StewardEdit: React.FC = () => {
     );
   }
 
+  if (needsConsent) {
+    const pending = entries.find(e => !e.steward.consent) ?? entries[0];
+    const title = FULL_ARCHIVE.find(a => a.id === pending.steward.pieceId)?.title;
+    return (
+      <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6 py-16">
+        <ConsentRings
+          pieceTitle={title}
+          submitting={consentSubmitting}
+          error={consentError}
+          onSubmit={handleConsentSubmit}
+        />
+      </section>
+    );
+  }
+
   return (
-    <section className="min-h-screen bg-paper-50 px-6 py-16">
+    <section className="min-h-screen bg-paper-50 px-6 py-16 print:bg-white print:py-0">
       <div className="w-full max-w-xl mx-auto">
+        {/* Everything interactive is print-hidden; the LegacyBook below
+            carries its own print-only rendering of the piece's book. */}
+        <div className="print:hidden">
         <h1
           className="font-display text-3xl text-wood-900 font-medium text-center mb-6"
           style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}
         >
-          Your piece
+          {entries.length > 1 ? 'Your pieces' : 'Your piece'}
         </h1>
 
+        {/* Piece picker — only for stewards of more than one piece. The
+            form below always edits the selected piece. */}
+        {entries.length > 1 && (
+          <div className="mb-10">
+            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
+              Choose a piece
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {entries.map((e, i) => {
+                const art = FULL_ARCHIVE.find(a => a.id === e.steward.pieceId);
+                const label =
+                  (art?.title ?? e.steward.pieceId) +
+                  (e.steward.editionNumber != null ? ` · Ed. ${e.steward.editionNumber}` : '');
+                const active = i === selectedIdx;
+                return (
+                  <button
+                    key={`${e.steward.pieceId}:${e.steward.editionNumber ?? ''}`}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => handlePieceSwitch(i)}
+                    className={`min-h-[44px] px-4 py-2 border font-sans text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
+                      active
+                        ? 'bg-bronze-100 border-bronze-500 text-wood-900'
+                        : 'bg-white border-wood-300 text-wood-700 hover:bg-paper-100'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {!piece ? (
+          /* Claimed steward record but no ledger projection yet — nothing to
+             edit until an event exists for this piece. */
+          <p className="font-serif italic text-base text-stone-600 text-center mb-12">
+            This piece doesn't have an atlas record yet. Ask Adrian to seed it
+            and it will appear here.
+          </p>
+        ) : (
+        <>
         {/* Piece details */}
         <div className="text-center mb-12">
           <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700">
@@ -376,6 +554,48 @@ const StewardEdit: React.FC = () => {
           </button>
         </div>
 
+        {/* Ring 3 — chart presence (the kinship constellation) */}
+        <div className="mb-10">
+          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
+            Chart presence
+          </span>
+          <p className="font-serif italic text-sm text-stone-600 mb-4">
+            Turn this on and your piece joins the kinship constellation; arcs
+            may connect it to other consenting pieces that share its trigrams.
+            No name and no birth data are ever shown — only the elemental
+            shape. You can turn it off at any time.
+          </p>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={ring3On}
+            aria-label="Join the kinship constellation"
+            onClick={handleRing3Toggle}
+            disabled={ring3Saving}
+            className="group flex items-center gap-4 min-h-[44px] font-sans text-base text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+          >
+            <span
+              aria-hidden="true"
+              className={`relative inline-block w-11 h-6 border transition-colors ${
+                ring3On
+                  ? 'bg-bronze-400 border-bronze-500'
+                  : 'bg-paper-100 border-wood-300'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white transition-transform ${
+                  ring3On ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </span>
+            <span>
+              {ring3On
+                ? 'Joined the constellation'
+                : 'Join the kinship constellation'}
+            </span>
+          </button>
+        </div>
+
         {/* Confirmation + error region */}
         <div className="h-6 mb-10 text-center">
           {savedAt && (
@@ -391,15 +611,40 @@ const StewardEdit: React.FC = () => {
             <span className="font-serif italic text-base text-stone-600">{saveError}</span>
           )}
         </div>
+        </>
+        )}
+        </div>
 
-        {multiPiece && (
-          <p className="font-serif italic text-sm text-stone-600 text-center pt-4">
-            You steward more than one piece. Editing for additional pieces is coming soon — for now, this page edits the first.
-          </p>
+        {/* Claim requests routed to this holder (M4) — only the current
+            steward can pass the piece on; approving re-binds the record,
+            so we reload from /atlas/claim afterwards. */}
+        {stewardRecord && (
+          <StewardRequests
+            steward={stewardRecord}
+            fetchAuthed={fetchAuthed}
+            onTransferred={() => {
+              navigate('/atlas/claim', { replace: true });
+            }}
+          />
+        )}
+
+        {/* Legacy book — Ring 1 timeline, add-entry, heirs, export (M3).
+            Includes the print-only book rendering. */}
+        {piece && stewardRecord && (
+          <LegacyBook
+            steward={stewardRecord}
+            piece={piece}
+            fetchAuthed={fetchAuthed}
+            onStewardUpdate={(s) =>
+              setEntries(prev =>
+                prev.map((e, i) => (i === selectedIdx ? { ...e, steward: s } : e)),
+              )
+            }
+          />
         )}
 
         {/* Sign out */}
-        <div className="text-center pt-6 border-t border-wood-200">
+        <div className="text-center pt-6 border-t border-wood-200 print:hidden">
           <button
             type="button"
             onClick={handleSignOut}

@@ -13,13 +13,22 @@ The Universal Language oracle — a reading deck of 64 mandalas connecting the I
 
 ```bash
 npm install
-npm run dev      # http://localhost:5555
+npm run dev      # http://localhost:2222
 npm run build    # production build to dist/
 ```
 
+## Writing (Learn library)
+
+Articles live in `content-site/` (Astro + Keystatic) and publish as static
+HTML under `/learn/*`. Run `npm run write` and open
+http://localhost:4321/learn/keystatic to write in a CMS UI; every save is a
+markdown file in `content-site/src/content/articles/`. Commit + push to
+publish. See `content-site/README.md`.
+
 ## Routes
 
-- `/` — gateway (deck entrance)
+- `/` — redirects to `/universal-language` (the QR-arrival gateway lives at `/gateway`, still reachable directly)
+- `/learn` — the Learn library (static articles, RSS, llms.txt, sitemap)
 - `/the-systems` — explainer for I Ching / Gene Keys / Human Design
 - `/universal-language` — deck index, all 64 cards
 - `/universal-language/:n` — individual card reader (1–64)

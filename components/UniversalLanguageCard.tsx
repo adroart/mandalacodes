@@ -5,7 +5,6 @@ import { Home } from 'lucide-react';
 import { ALL_CARDS, CARD_BY_NUMBER } from '../data/oracleData';
 import { getExpandedCard, type ExpandedGeneKeyLevel } from '../data/expandedOracleData';
 import { getSynthesis, getInvocation, type CardSynthesis } from '../data/synthesisData';
-import { FULL_ARCHIVE } from '../data/mockData';
 import { img } from '../utils/cloudinary';
 import { useMetaTags } from '../hooks/useMetaTags';
 import { OracleCardEntrance } from './OracleCardEntrance';
@@ -16,7 +15,11 @@ import ReadingStage, { type ReadingStageHandle } from './oracle/ReadingStage';
 import ImageViewer from './oracle/ImageViewer';
 import BuySheet from './oracle/BuySheet';
 import CoinCast from './oracle/CoinCast';
+import YourPositionCallout from './oracle/YourPositionCallout';
+import { HexagramSVG, TrigramSVG } from './oracle/HexagramGlyph';
 import { castForHexagram, type CastResult } from '../utils/ichingCasting';
+import { ulCardImageUrl, ulCardPublicId, ulPieceForCard } from '../utils/universalLanguage';
+import { useCardPlacement } from '../lib/atlas/state';
 // TEMPLATE: cast persistence (saveCast/loadCast) intentionally not used —
 // each cast is a fresh ritual the reader performs, never restored stale.
 
@@ -84,82 +87,9 @@ const CARD_SHADOW_DEEP = 'shadow-[0_1px_0_rgba(255,255,255,0.05),0_12px_40px_rgb
 const CARD_SHADOW_LIGHT = 'shadow-[0_4px_16px_rgba(60,44,22,0.1),0_1px_3px_rgba(60,44,22,0.06)]';
 
 
-/* ─── Trigram / hexagram SVG - pure vector, no Unicode emoji ─────────────── */
-
-// lines = [top, middle, bottom], true = yang (solid), false = yin (broken)
-const TRIGRAM_LINES: Record<string, [boolean, boolean, boolean]> = {
-  '☰': [true,  true,  true ],  // Heaven
-  '☱': [false, true,  true ],  // Lake
-  '☲': [true,  false, true ],  // Fire
-  '☳': [false, false, true ],  // Thunder
-  '☴': [true,  true,  false],  // Wind
-  '☵': [false, true,  false],  // Water
-  '☶': [true,  false, false],  // Mountain
-  '☷': [false, false, false],  // Earth
-};
-
-const TrigramSVG: React.FC<{
-  symbol: string;
-  color?: string;
-  width?: number;
-  height?: number;
-}> = ({ symbol, color = 'currentColor', width = 64, height = 44 }) => {
-  const lines = TRIGRAM_LINES[symbol];
-  if (!lines) return null;
-  const lh = Math.max(2, Math.round(height * 0.2));
-  const gap = Math.round(width * 0.14);
-  const hw = (width - gap) / 2;
-  const yMid = Math.round((height - lh) / 2);
-  const positions = [0, yMid, height - lh];
-
-  return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} fill="none" aria-hidden="true">
-      {lines.map((solid, i) =>
-        solid ? (
-          <rect key={i} x={0} y={positions[i]} width={width} height={lh} rx={1} fill={color} />
-        ) : (
-          <React.Fragment key={i}>
-            <rect x={0}        y={positions[i]} width={hw} height={lh} rx={1} fill={color} />
-            <rect x={hw + gap} y={positions[i]} width={hw} height={lh} rx={1} fill={color} />
-          </React.Fragment>
-        )
-      )}
-    </svg>
-  );
-};
-
-// Hexagram = 6 lines with uniform spacing (upper trigram lines 1–3, lower lines 4–6)
-const HexagramSVG: React.FC<{
-  upper: string;
-  lower: string;
-  color?: string;
-  width?: number;
-}> = ({ upper, lower, color = 'currentColor', width = 64 }) => {
-  const lh      = Math.max(2, Math.round(width * 0.1));
-  const step    = Math.round(width * 0.18);
-  const totalH  = lh + step * 5;
-  const gap     = Math.round(width * 0.14);
-  const hw      = (width - gap) / 2;
-
-  const allLines = [...(TRIGRAM_LINES[upper] ?? [true, true, true]),
-                    ...(TRIGRAM_LINES[lower] ?? [true, true, true])];
-
-  return (
-    <svg width={width} height={totalH} viewBox={`0 0 ${width} ${totalH}`} fill="none" aria-hidden="true">
-      {allLines.map((solid, i) => {
-        const y = i * step;
-        return solid ? (
-          <rect key={i} x={0} y={y} width={width} height={lh} rx={1} fill={color} />
-        ) : (
-          <React.Fragment key={i}>
-            <rect x={0}        y={y} width={hw} height={lh} rx={1} fill={color} />
-            <rect x={hw + gap} y={y} width={hw} height={lh} rx={1} fill={color} />
-          </React.Fragment>
-        );
-      })}
-    </svg>
-  );
-};
+/* ─── Trigram / hexagram SVG ──────────────────────────────────────────────
+   Shared renderers live in ./oracle/HexagramGlyph (one table, one geometry
+   for the card page, the deck index, the profile graph, and the callout). */
 
 /* ─── Gene Keys dragonfly glyph ─────────────────────────────────────────── */
 /* Heraldic dragonfly silhouette inspired by Japanese kamon "tombo" crests.
@@ -212,32 +142,10 @@ const GateHero: React.FC<{ gate: number; size?: 'sm' | 'lg' }> = ({ gate, size =
 };
 
 /* ─── Image helpers ──────────────────────────────────────────────────────── */
+/* Card number ↔ artwork lookups live in utils/universalLanguage.ts, shared
+ * with the deck index, the atlas, and the cast preview. */
 
-const UL_PIECES = FULL_ARCHIVE.filter(a => a.series === 'Universal Language');
-
-const UL_IMAGE_BY_NUMBER = new Map<number, string>(
-  UL_PIECES
-    .map(a => {
-      const num = parseInt(a.coverImage.split('_')[0], 10);
-      return [num, a.coverImage] as [number, string];
-    })
-    .filter(([num]) => !isNaN(num))
-);
-
-const UL_PIECE_BY_NUMBER = new Map<number, typeof UL_PIECES[number]>(
-  UL_PIECES
-    .map(a => {
-      const num = parseInt(a.coverImage.split('_')[0], 10);
-      return [num, a] as [number, typeof UL_PIECES[number]];
-    })
-    .filter(([num]) => !isNaN(num))
-);
-
-function cardImageUrl(number: number, size: number): string {
-  const publicId = UL_IMAGE_BY_NUMBER.get(number);
-  if (!publicId) return img('adrian-website/placeholders/oracle-card-3', { w: size, h: size });
-  return img(publicId, { w: size, h: size, crop: 'fill', gravity: 'center', format: 'webp' });
-}
+const cardImageUrl = ulCardImageUrl;
 
 /** Spell out a card number 1-64 as one or two uppercase English words.
  *  Used as the system index sitting under the hexagram glyph in the
@@ -290,7 +198,7 @@ async function generateStoryBlob(
   cardName: string,
   keywords: string,
 ): Promise<Blob> {
-  const publicId = UL_IMAGE_BY_NUMBER.get(number);
+  const publicId = ulCardPublicId(number);
   if (!publicId) throw new Error('no image for card ' + number);
 
   // Load fonts explicitly before drawing so Canvas picks them up reliably
@@ -1074,6 +982,11 @@ const UniversalLanguageCard: React.FC = () => {
   // Buy sheet open/closed
   const [buyOpen, setBuyOpen] = useState(false);
 
+  // Where this card's physical piece rests on the atlas (null while loading
+  // or when the piece isn't on the public atlas). Feeds the "On the Atlas"
+  // seat in the Relations panel.
+  const placement = useCardPlacement(cardNum);
+
   // Update URL when chapter changes (no history entry — replaceState semantics)
   const handleChapterChange = useCallback((key: ChapterKey) => {
     setActiveChapter(key);
@@ -1210,8 +1123,8 @@ const UniversalLanguageCard: React.FC = () => {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft'  && prevCardNum !== null) navigate(`/oracle/universal-language/${prevCardNum}`,  { state: { ritual: true } });
-      if (e.key === 'ArrowRight' && nextCardNum !== null) navigate(`/oracle/universal-language/${nextCardNum}`, { state: { ritual: true } });
+      if (e.key === 'ArrowLeft'  && prevCardNum !== null) navigate(`/universal-language/${prevCardNum}`,  { state: { ritual: true } });
+      if (e.key === 'ArrowRight' && nextCardNum !== null) navigate(`/universal-language/${nextCardNum}`, { state: { ritual: true } });
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -1378,7 +1291,7 @@ const UniversalLanguageCard: React.FC = () => {
       ? `${card.iching.hexagram_name} · ${card.gene_keys.shadow} / ${card.gene_keys.gift} / ${card.gene_keys.siddhi}. Universal Language Oracle by Adrian Rasmussen.`
       : undefined,
     image: card
-      ? `https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/${UL_IMAGE_BY_NUMBER.get(cardNum) ?? 'adrian-website/placeholders/oracle-card-3'}`
+      ? `https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/${ulCardPublicId(cardNum) ?? 'adrian-website/placeholders/oracle-card-3'}`
       : undefined,
   });
 
@@ -1388,7 +1301,7 @@ const UniversalLanguageCard: React.FC = () => {
         <div className="text-center max-w-sm">
           <p className="font-serif text-2xl text-wood-600 mb-4">This card has not yet arrived.</p>
           <p className="font-sans text-[15px] text-wood-400 mb-8 leading-[1.9]">The oracle holds 64 expressions. This one may be waiting for you elsewhere.</p>
-          <Link to="/oracle/universal-language" className="font-label text-xs uppercase tracking-[0.2em] text-bronze-600 border-b border-bronze-600/40 pb-px">
+          <Link to="/universal-language" className="font-label text-xs uppercase tracking-[0.2em] text-bronze-600 border-b border-bronze-600/40 pb-px">
             Return to the oracle
           </Link>
         </div>
@@ -1396,10 +1309,24 @@ const UniversalLanguageCard: React.FC = () => {
     );
   }
 
-  const piece    = UL_PIECE_BY_NUMBER.get(card.number);
-  const pairCard = expanded ? CARD_BY_NUMBER.get(expanded.i_ching.hexagrams_in_pairs.pair_hexagram) : undefined;
+  const piece    = ulPieceForCard(card.number);
+  // RELATIONS overlay (oracle/sections/relations/NN.json) is the primary
+  // source for every seat in the Relations panel; the legacy expanded data
+  // remains the fallback until the overlay covers a field.
+  const relations  = synthesis?.relations;
+  const pairNumber = relations?.pair?.number ?? expanded?.i_ching.hexagrams_in_pairs.pair_hexagram;
+  const pairCard   = pairNumber != null ? CARD_BY_NUMBER.get(pairNumber) : undefined;
+  const unityLine  = relations?.unity_line
+    ?? (expanded && pairCard ? expanded.i_ching.hexagrams_in_pairs.context.text : undefined);
+  const inverseCard = relations?.inverse && !relations.inverse.is_self_inverse
+    ? CARD_BY_NUMBER.get(relations.inverse.number)
+    : undefined;
+  const partnerNumber   = relations?.programming_partner?.number ?? expanded?.gene_keys.programming_partner?.number;
+  const partnerTeaching = relations?.programming_partner?.teaching ?? expanded?.gene_keys.programming_partner?.relationship_context;
+  const ringName        = relations?.codon_ring?.name ?? expanded?.gene_keys.codon_ring.name;
+  const ringTeaching    = relations?.codon_ring?.teaching ?? expanded?.gene_keys.codon_ring.relationship_context;
   const siblings = card.codon_ring_siblings;
-  const cardPublicId = UL_IMAGE_BY_NUMBER.get(card.number);
+  const cardPublicId = ulCardPublicId(card.number);
   const imageAlt = `${card.card_name}, Universal Language ${card.number}. Original multi-dimensional wooden sculpture by Adrian Rasmussen.`;
 
   const ichingHighlight = expanded?.i_ching?.reflection?.text ?? card.iching.essence;
@@ -1609,6 +1536,14 @@ const UniversalLanguageCard: React.FC = () => {
             </div>
           </div>
 
+          {/* Profile bridge — when this code holds a position in the
+              visitor's Hologenetic Profile, name it ("This is your
+              Pearl · Line 3"). Renders nothing without a saved profile
+              or when the gate doesn't match — no nag, no upsell. */}
+          <div className="md:max-w-2xl md:mx-auto px-4 flex justify-center">
+            <YourPositionCallout gate={card.number} />
+          </div>
+
           {/* Inline chapter strip — sits between the Acquire/Share
               band and the title card, so the navigation is the first
               thing the reader sees after the action affordances and
@@ -1747,7 +1682,7 @@ const UniversalLanguageCard: React.FC = () => {
               {/* All Cards — the escape to the index of all 64. Quiet,
                   rightmost, doesn't compete with Acquire. */}
               <Link
-                to="/oracle/universal-language"
+                to="/universal-language"
                 aria-label="All 64 cards"
                 className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-600 hover:text-bronze-700 px-2 h-11 flex items-center transition-colors flex-shrink-0"
               >
@@ -2439,14 +2374,13 @@ const UniversalLanguageCard: React.FC = () => {
 
             {/* ── Header band: the pair-as-unity line ─────────────────────
                 The spine of the section. One italic sentence across the
-                full width, bordered top and bottom with a hairline. Uses
-                the paired-hexagram context text as the unity teaching for
-                now; can be replaced with a dedicated "with its pair, this
-                code becomes…" field when written. */}
-            {expanded && pairCard && (
+                full width, bordered top and bottom with a hairline. The
+                RELATIONS overlay's unity_line is the authored teaching;
+                the paired-hexagram context text remains the fallback. */}
+            {unityLine && (
               <div className="border-y border-bronze-600/25 py-6 sm:py-7 mb-10 sm:mb-12">
                 <p className="font-serif text-[18px] sm:text-[20px] text-wood-800 leading-[1.55] text-center max-w-prose mx-auto">
-                  {expanded.i_ching.hexagrams_in_pairs.context.text}
+                  {unityLine}
                 </p>
               </div>
             )}
@@ -2479,7 +2413,7 @@ const UniversalLanguageCard: React.FC = () => {
                   </div>
                   {/* The pair */}
                   <button
-                    onClick={() => navigate(`/oracle/universal-language/${expanded!.i_ching.hexagrams_in_pairs.pair_hexagram}`, { state: { ritual: true } })}
+                    onClick={() => navigate(`/universal-language/${pairCard.number}`, { state: { ritual: true } })}
                     className="group flex flex-col items-center text-center transition-colors focus-visible:outline-none"
                   >
                     <HexagramSVG
@@ -2492,26 +2426,47 @@ const UniversalLanguageCard: React.FC = () => {
                     <p className={`${LABEL_SECTION} text-wood-500 mt-1 group-hover:text-bronze-600 transition-colors`}>Code {pairCard.number}</p>
                   </button>
                 </div>
+                {relations?.pair?.teaching && (
+                  <p className="font-sans text-[16px] text-wood-700 leading-[1.75] sm:leading-[1.8] mt-6 max-w-prose mx-auto">
+                    {relations.pair.teaching}
+                  </p>
+                )}
               </div>
             )}
 
-            {/* ── Inverse plate (placeholder seat) ─────────────────────────
+            {/* ── Inverse plate ────────────────────────────────────────────
                 The same hexagram turned upside down. Smaller, dimmer than
-                the pair plate. Glyph + name + one-line teaching.
-                Data not yet wired — placeholder until inverse-hexagram
-                field is added. */}
+                the pair plate. RELATIONS overlay names the inverse code
+                (clickable) or marks the hexagram self-inverse; the glyph
+                stays a dimmed placeholder until the overlay exists. */}
             <div className="mb-12 sm:mb-14 flex flex-col items-center text-center">
               <p className={`${LABEL_SECTION} text-wood-500/80 mb-4`}>The Inverse</p>
-              <div className="opacity-50">
-                <HexagramSVG
-                  upper={card.iching.lower_trigram.symbol}
-                  lower={card.iching.upper_trigram.symbol}
-                  color="#8a6f3d"
-                  width={40}
-                />
-              </div>
-              <p className="font-serif text-[14px] italic text-wood-500 mt-3 max-w-prose">
-                The same lines turned, the situation seen from the other side. To be written.
+              {inverseCard ? (
+                <button
+                  onClick={() => navigate(`/universal-language/${inverseCard.number}`, { state: { ritual: true } })}
+                  className="group flex flex-col items-center text-center transition-colors focus-visible:outline-none"
+                >
+                  <HexagramSVG
+                    upper={inverseCard.iching.upper_trigram.symbol}
+                    lower={inverseCard.iching.lower_trigram.symbol}
+                    color="#8a6f3d"
+                    width={40}
+                  />
+                  <p className="font-serif text-[15px] text-wood-900 leading-[1.3] mt-3 group-hover:text-bronze-700 transition-colors">{inverseCard.iching.hexagram_name}</p>
+                  <p className={`${LABEL_SECTION} text-wood-500 mt-1 group-hover:text-bronze-600 transition-colors`}>Code {inverseCard.number}</p>
+                </button>
+              ) : (
+                <div className="opacity-50">
+                  <HexagramSVG
+                    upper={relations?.inverse?.is_self_inverse ? card.iching.upper_trigram.symbol : card.iching.lower_trigram.symbol}
+                    lower={relations?.inverse?.is_self_inverse ? card.iching.lower_trigram.symbol : card.iching.upper_trigram.symbol}
+                    color="#8a6f3d"
+                    width={40}
+                  />
+                </div>
+              )}
+              <p className={`font-serif text-[14px] ${relations?.inverse?.teaching ? 'text-wood-700 leading-[1.7]' : 'italic text-wood-500'} mt-3 max-w-prose`}>
+                {relations?.inverse?.teaching ?? 'The same lines turned, the situation seen from the other side. To be written.'}
               </p>
             </div>
 
@@ -2525,14 +2480,16 @@ const UniversalLanguageCard: React.FC = () => {
               <p className={`${LABEL_SECTION} text-bronze-700/80 text-center mb-6`}>The Kin</p>
 
               {/* Programming Partner */}
-              {expanded?.gene_keys.programming_partner ? (
+              {partnerNumber != null ? (
                 <div className="border-t border-wood-200/50 py-6 sm:py-7">
                   <p className={`${LABEL_SECTION} text-bronze-700/80 mb-3`}>Programming Partner</p>
                   <CardLink
-                    number={expanded.gene_keys.programming_partner.number}
-                    onClick={() => navigate(`/oracle/universal-language/${expanded.gene_keys.programming_partner!.number}`, { state: { ritual: true } })}
+                    number={partnerNumber}
+                    onClick={() => navigate(`/universal-language/${partnerNumber}`, { state: { ritual: true } })}
                   />
-                  <p className="font-sans text-[16px] text-wood-700 leading-[1.75] sm:leading-[1.8] mt-4">{expanded.gene_keys.programming_partner.relationship_context}</p>
+                  {partnerTeaching && (
+                    <p className="font-sans text-[16px] text-wood-700 leading-[1.75] sm:leading-[1.8] mt-4">{partnerTeaching}</p>
+                  )}
                 </div>
               ) : (
                 <div className="border-t border-wood-200/50 py-6 sm:py-7">
@@ -2542,24 +2499,26 @@ const UniversalLanguageCard: React.FC = () => {
               )}
 
               {/* Codon Ring — ring name + every sibling as a full CardLink */}
-              {expanded ? (
+              {ringName ? (
                 <div className="border-t border-wood-200/50 py-6 sm:py-7">
                   <p className={`${LABEL_SECTION} text-bronze-700/80 mb-3`}>Codon Ring</p>
-                  <p className="font-serif text-[18px] sm:text-[19px] text-wood-900 leading-[1.25]">{expanded.gene_keys.codon_ring.name}</p>
+                  <p className="font-serif text-[18px] sm:text-[19px] text-wood-900 leading-[1.25]">{ringName}</p>
                   {siblings.length > 0 ? (
                     <div className="divide-y divide-wood-200/40 mt-3">
                       {siblings.map(n => (
                         <CardLink
                           key={n}
                           number={n}
-                          onClick={() => navigate(`/oracle/universal-language/${n}`, { state: { ritual: true } })}
+                          onClick={() => navigate(`/universal-language/${n}`, { state: { ritual: true } })}
                         />
                       ))}
                     </div>
                   ) : (
                     <p className="font-serif text-[14px] italic text-wood-500 mt-2">This code stands alone in its ring.</p>
                   )}
-                  <p className="font-sans text-[16px] text-wood-700 leading-[1.75] sm:leading-[1.8] mt-4">{expanded.gene_keys.codon_ring.relationship_context}</p>
+                  {ringTeaching && (
+                    <p className="font-sans text-[16px] text-wood-700 leading-[1.75] sm:leading-[1.8] mt-4">{ringTeaching}</p>
+                  )}
                 </div>
               ) : (
                 <div className="border-t border-wood-200/50 py-6 sm:py-7">
@@ -2569,11 +2528,11 @@ const UniversalLanguageCard: React.FC = () => {
               )}
 
               {/* Tarot Resonance — textual, no card to navigate to */}
-              {synthesis ? (
+              {(relations?.tarot || synthesis) ? (
                 <div className="border-t border-wood-200/50 py-6 sm:py-7">
                   <p className={`${LABEL_SECTION} text-bronze-700/80 mb-3`}>Tarot Resonance</p>
-                  <p className="font-serif text-[18px] sm:text-[19px] text-wood-900 leading-[1.25]">{synthesis.reference?.tarot_card ?? card.ring_tarot}</p>
-                  <p className="font-sans text-[16px] text-wood-700 leading-[1.75] sm:leading-[1.8] mt-4">{synthesis.synthesis.tarot.tarot_resonance}</p>
+                  <p className="font-serif text-[18px] sm:text-[19px] text-wood-900 leading-[1.25]">{relations?.tarot?.card ?? synthesis?.reference?.tarot_card ?? card.ring_tarot}</p>
+                  <p className="font-sans text-[16px] text-wood-700 leading-[1.75] sm:leading-[1.8] mt-4">{relations?.tarot?.teaching ?? synthesis?.synthesis.tarot.tarot_resonance}</p>
                 </div>
               ) : (
                 <div className="border-t border-wood-200/50 py-6 sm:py-7">
@@ -2582,6 +2541,32 @@ const UniversalLanguageCard: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* ── On the Atlas: where the physical piece rests ─────────────
+                The bridge from the reading to the geography. Only renders
+                when this code's original is on the public atlas — placed
+                in a city or still seeking ground. Deep-links into /atlas
+                with the piece preselected. */}
+            {placement && (
+              <div className="mb-12 sm:mb-14">
+                <p className={`${LABEL_SECTION} text-bronze-700/80 text-center mb-6`}>On the Atlas</p>
+                <div className="border-y border-wood-200/50 py-6 sm:py-7 text-center">
+                  <p className="font-serif text-[18px] sm:text-[19px] text-wood-900 leading-[1.4]">
+                    {placement.status === 'placed' && placement.cityLabel
+                      ? <>The original rests in {placement.cityLabel}.</>
+                      : 'The original is still seeking its ground.'}
+                  </p>
+                  <Link
+                    to={`/atlas?piece=${encodeURIComponent(
+                      placement.editionNumber != null ? `${placement.pieceId}:${placement.editionNumber}` : placement.pieceId,
+                    )}`}
+                    className="inline-block font-label text-[12px] uppercase tracking-[0.2em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors mt-4 pb-1 border-b border-bronze-600/40 hover:border-bronze-500/70"
+                  >
+                    See it on the Atlas
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* ── Correspondence grid (2×2): trigrams / zodiac / immortal /
                 hebrew letter ──────────────────────────────────────────────
@@ -2606,10 +2591,10 @@ const UniversalLanguageCard: React.FC = () => {
                 {/* Zodiac */}
                 <div className="bg-paper p-5 sm:p-6">
                   <p className={`${LABEL_SECTION} text-wood-500 mb-2.5`}>Zodiac</p>
-                  {synthesis?.reference?.astrology ? (
+                  {(relations?.sky || synthesis?.reference?.astrology) ? (
                     <>
-                      <p className="font-serif text-[16px] text-wood-900 leading-[1.3]">{synthesis.reference.astrology}</p>
-                      <p className="font-serif text-[14px] italic text-wood-500 mt-2 leading-[1.55]">The slice of the wheel this code sits in.</p>
+                      <p className="font-serif text-[16px] text-wood-900 leading-[1.3]">{relations?.sky?.value ?? synthesis?.reference?.astrology}</p>
+                      <p className="font-serif text-[14px] italic text-wood-500 mt-2 leading-[1.55]">{relations?.sky?.teaching ?? 'The slice of the wheel this code sits in.'}</p>
                     </>
                   ) : (
                     <p className="font-serif text-[14px] italic text-wood-500">To be written.</p>
@@ -2619,20 +2604,33 @@ const UniversalLanguageCard: React.FC = () => {
                 {/* Immortal */}
                 <div className="bg-paper p-5 sm:p-6">
                   <p className={`${LABEL_SECTION} text-wood-500 mb-2.5`}>The Immortal</p>
-                  <p className="font-serif text-[14px] italic text-wood-500">To be written.</p>
+                  {relations?.immortals ? (
+                    <>
+                      <p className="font-serif text-[16px] text-wood-900 leading-[1.3]">
+                        {relations.immortals.same_trigram
+                          ? relations.immortals.upper.name
+                          : <>{relations.immortals.upper.name}<span className="text-wood-500"> · </span>{relations.immortals.lower.name}</>}
+                      </p>
+                      <p className="font-serif text-[14px] italic text-wood-500 mt-2 leading-[1.55]">{relations.immortals.teaching}</p>
+                    </>
+                  ) : (
+                    <p className="font-serif text-[14px] italic text-wood-500">To be written.</p>
+                  )}
                 </div>
 
                 {/* Hebrew Letter */}
                 <div className="bg-paper p-5 sm:p-6">
                   <p className={`${LABEL_SECTION} text-wood-500 mb-2.5`}>Hebrew Letter</p>
-                  {synthesis?.reference?.hebrew_letter ? (
+                  {(relations?.hebrew_letter || synthesis?.reference?.hebrew_letter) ? (
                     <>
                       <p className="font-serif text-[16px] text-wood-900 leading-[1.3]">
-                        {synthesis.reference.hebrew_letter}
-                        {synthesis.reference.hebrew_meaning ? <span className="text-wood-500"> · {synthesis.reference.hebrew_meaning}</span> : null}
+                        {relations?.hebrew_letter?.letter ?? synthesis?.reference?.hebrew_letter}
+                        {(relations?.hebrew_letter?.meaning ?? synthesis?.reference?.hebrew_meaning)
+                          ? <span className="text-wood-500"> · {relations?.hebrew_letter?.meaning ?? synthesis?.reference?.hebrew_meaning}</span>
+                          : null}
                       </p>
-                      {synthesis.reference.path_connects ? (
-                        <p className="font-serif text-[14px] italic text-wood-500 mt-2 leading-[1.55]">{synthesis.reference.path_connects}</p>
+                      {(relations?.hebrew_letter?.teaching ?? synthesis?.reference?.path_connects) ? (
+                        <p className="font-serif text-[14px] italic text-wood-500 mt-2 leading-[1.55]">{relations?.hebrew_letter?.teaching ?? synthesis?.reference?.path_connects}</p>
                       ) : (
                         <p className="font-serif text-[14px] italic text-wood-500 mt-2 leading-[1.55]">The letter this code carries on the Tree.</p>
                       )}
@@ -2669,7 +2667,7 @@ const UniversalLanguageCard: React.FC = () => {
             const c = CARD_BY_NUMBER.get(prevCardNum);
             return (
               <Link
-                to={`/oracle/universal-language/${prevCardNum}`}
+                to={`/universal-language/${prevCardNum}`}
                 state={{ ritual: true }}
                 className="flex items-center gap-2 px-2.5 flex-1 min-w-0 hover:bg-wood-50 transition-colors"
               >
@@ -2687,7 +2685,7 @@ const UniversalLanguageCard: React.FC = () => {
           })() : <div className="flex-1" />}
 
           <Link
-            to="/oracle/universal-language"
+            to="/universal-language"
             className="flex flex-col items-center justify-center px-3.5 border-x border-wood-200 flex-shrink-0 hover:bg-wood-50 transition-colors"
           >
             <span className="font-serif text-[17px] font-semibold text-wood-700 leading-none">{card.number}</span>
@@ -2699,7 +2697,7 @@ const UniversalLanguageCard: React.FC = () => {
             const c = CARD_BY_NUMBER.get(nextCardNum);
             return (
               <Link
-                to={`/oracle/universal-language/${nextCardNum}`}
+                to={`/universal-language/${nextCardNum}`}
                 state={{ ritual: true }}
                 className="flex items-center justify-end gap-2 px-2.5 flex-1 min-w-0 hover:bg-wood-50 transition-colors"
               >

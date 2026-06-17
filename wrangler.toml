@@ -1,5 +1,7 @@
 name = "mandalacodes"
 compatibility_date = "2024-09-23"
+# Better Auth (self-owned login) uses node:crypto, exposed only behind this flag.
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
 # R2 bucket for the Atlas ledger (city-level world map of where every UL piece lives).
@@ -12,15 +14,18 @@ pages_build_output_dir = "dist"
 binding = "ATLAS_BUCKET"
 bucket_name = "mandalacodes-atlas"
 
-# D1 database — provisioned 2026-05-23 via `wrangler d1 create mandalacodes-oracle`.
-# Region: APAC. Backs the accounts work (Phase 1b — Clerk + birthdate energy
-# panels): users + profiles + collections.
-# Schema lives in migrations/001_init.sql. Apply to the remote DB with:
-#   wrangler d1 migrations apply mandalacodes-oracle --remote
+# D1 database — SHARED with adrianrasmussen.com as of 2026-06-09.
+# Both sites run self-owned Better Auth against this one user database, so a
+# collector who signs in on either domain is the same identity on both. The
+# canonical schema is the SUPERSET held in the Adrian-Website repo
+# (migrations/001_init.sql + 002_invoices.sql): users + profiles + collections
+# (used here) plus orders/cart/invoices (used only on adrianrasmussen.com).
+# Apply/evolve the schema from the Adrian-Website repo, NOT from here, so the
+# two never diverge. The old mandalacodes-oracle DB (c8d07902…) is retired.
 # The public oracle reader is stateless; only the /api/{auth,profile,collections}
-# Functions and the Clerk webhook query this DB.
+# Functions and the atlas rate-limiter query this DB.
 [[d1_databases]]
 binding = "DB"
-database_name = "mandalacodes-oracle"
-database_id = "c8d07902-f80a-4c84-a82e-7d70dad34672"
+database_name = "adrian-website"
+database_id = "d0e93f04-203c-4dbd-945a-e14a9a364dd5"
 migrations_dir = "migrations"

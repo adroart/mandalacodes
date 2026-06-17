@@ -25,8 +25,10 @@ export const DarkModeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const root = document.documentElement;
         if (isDarkMode) {
             root.classList.add('dark');
+            root.classList.remove('light-mode');
         } else {
             root.classList.remove('dark');
+            root.classList.add('light-mode');
         }
         localStorage.setItem('dark-mode', String(isDarkMode));
 

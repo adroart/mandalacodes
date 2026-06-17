@@ -67,7 +67,11 @@ html {
   text-rendering: optimizeLegibility;
   font-kerning: normal;
   font-variant-numeric: lining-nums;
+  /* Default the document background to dark so there is never a white frame
+     before body/React paint. Light mode opts back out below. */
+  background-color: #171310;
 }
+html:not(.dark) { background-color: #f5f4f0; }
 
 /* Smooth scroll globally — respects reduced-motion preference */
 @media (prefers-reduced-motion: no-preference) {
@@ -826,3 +830,40 @@ html, body {
 }
 .chapter-scroll::-webkit-scrollbar { display: none; } /* WebKit */
 
+
+/* ─── Atlas immersive panel (dark slide-over) ──────────────────────────────
+ * PieceSidePanel and the birth-place panel were authored for the paper
+ * background (dark wood text, light wood dividers). On the Atlas globe they
+ * sit on a translucent-dark stage, so recolor text to light, soften dividers
+ * to a faint bronze, and tighten the over-airy section rhythm. */
+.atlas-panel-dark :is(h1, h2, h3, h4) { color: rgb(242, 238, 230); }
+.atlas-panel-dark p,
+.atlas-panel-dark li,
+.atlas-panel-dark button:not([class*='bronze']) { color: rgb(196, 186, 170); }
+.atlas-panel-dark .text-wood-900 { color: rgb(242, 238, 230) \!important; }
+.atlas-panel-dark .text-wood-700,
+.atlas-panel-dark .text-wood-600,
+.atlas-panel-dark .text-wood-500 { color: rgb(176, 166, 150) \!important; }
+.atlas-panel-dark :is(.border-wood-200, .border-wood-300, .border-t) {
+  border-color: rgba(196, 170, 124, 0.18) \!important;
+}
+/* Tighten the section rhythm: the paper version uses pt-5 mt-5 between every
+ * block, which reads too airy on the focused dark panel. */
+.atlas-panel-dark .mt-5 { margin-top: 0.9rem \!important; }
+.atlas-panel-dark .pt-5 { padding-top: 0.9rem \!important; }
+.atlas-panel-dark .mb-5 { margin-bottom: 0.85rem \!important; }
+
+/* Filter panel reuses the same dark recolor. */
+.atlas-filters-dark :is(label, span, button, select, option) {
+  color: rgb(196, 186, 170);
+}
+.atlas-filters-dark select {
+  background-color: rgba(15, 13, 11, 0.6);
+  border-color: rgba(196, 170, 124, 0.25);
+}
+
+/* ─── Atlas piece HUD entry ────────────────────────────────────────────── */
+@keyframes hud-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -1,5 +1,12 @@
 # Atlas Ledger, Architecture Decisions
 
+> **Partially superseded (2026-06-10).** The "Why steward keys instead of
+> accounts" section below describes the pre-Clerk recovery model; recovery
+> is now account-based (Clerk), and the current consent/privacy/PII rules
+> live in [todo/plans/living-art-legacy.md](../todo/plans/living-art-legacy.md)
+> — in particular the chain content invariant (no personal data in the
+> hashed payload, ever). The hash-chain rationale below still stands.
+
 A short record of the choices behind the ledger and the reasoning that
 led to each one. The intent is that a future contributor (or a future
 Adrian) can read this and understand why the system looks the way it

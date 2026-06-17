@@ -8,9 +8,11 @@ const OracleSystems = lazy(() => import('./components/OracleSystems'));
 const AtlasPage = lazy(() => import('./components/AtlasPage'));
 const AdminLogin = lazy(() => import('./components/AdminLogin'));
 const AdminAtlas = lazy(() => import('./components/AdminAtlas'));
+const PiecePage = lazy(() => import('./components/PiecePage'));
 const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
 const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
 const OracleProfile = lazy(() => import('./components/OracleProfile'));
+const SharedProfile = lazy(() => import('./components/SharedProfile'));
 const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
 const CollectionsManager = lazy(() => import('./components/account/CollectionsManager'));
 const NotFound = lazy(() => import('./components/NotFound'));
@@ -102,6 +104,13 @@ const AppInner: React.FC = () => {
                 {/* Atlas — globe of placed Universal Language pieces with kinship arcs */}
                 <Route path="/atlas" element={<AtlasPage />} />
                 <Route path="/atlas/claim" element={<StewardClaim />} />
+
+                {/* Public piece page — the QR-arrival surface. Pre-auth; shows
+                    the artwork, story, edition, Founding Lights ordinal, and
+                    the public history spine. `/piece/:pieceId` resolves via the
+                    `:0` no-edition fallback; `/piece/:pieceId/:edition` pins one. */}
+                <Route path="/piece/:pieceId" element={<PiecePage />} />
+                <Route path="/piece/:pieceId/:edition" element={<PiecePage />} />
                 <Route path="/atlas/edit" element={<StewardEdit />} />
 
                 {/* Admin — atlas ledger + steward key issuance */}
@@ -111,6 +120,7 @@ const AppInner: React.FC = () => {
 
                 {/* Hologenetic Profile (local-first, optionally synced when signed in) */}
                 <Route path="/profile" element={<OracleProfile />} />
+                <Route path="/profile/shared/:data" element={<SharedProfile />} />
 
                 {/* Account dashboard + collections (only reachable when accounts flag is on) */}
                 <Route path="/account" element={<AccountDashboard />} />
@@ -147,11 +157,13 @@ const DesignerRedirect: React.FC = () => {
   return <div className="min-h-screen bg-wood-900" />;
 };
 
-// Preserve the :number param when redirecting from the legacy /oracle/universal-language/:n path.
+// Preserve the :number param — and the navigation state (the ritual-entrance
+// flag rides on it) — when redirecting from the legacy
+// /oracle/universal-language/:n path.
 const RedirectToFlatCard: React.FC = () => {
   const location = useLocation();
   const num = location.pathname.split('/').pop();
-  return <Navigate to={`/universal-language/${num}${location.search}`} replace />;
+  return <Navigate to={`/universal-language/${num}${location.search}`} state={location.state} replace />;
 };
 
 const App: React.FC = () => (

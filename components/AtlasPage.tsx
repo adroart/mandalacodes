@@ -1,17 +1,53 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
-import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
-import PieceSidePanel, { type KinEntry, type SelectedPiece } from './atlas/PieceSidePanel';
+import { type AtlasStatusFilter } from './atlas/AtlasFilters';
+import AtlasFiltersDark from './atlas/AtlasFiltersDark';
+import PieceSidePanel, {
+  type KinEntry,
+  type SelectedPiece,
+  type HolderChartSummary,
+} from './atlas/PieceSidePanel';
 import SeekingGround, { type SeekingPiece } from './atlas/SeekingGround';
 import KinshipLayer from './atlas/KinshipLayer';
+import { useIdleFade } from './atlas/useIdleFade';
+import { seriesColor } from './atlas/GlobeGL';
+import PieceHUD from './atlas/PieceHUD';
 import { FULL_ARCHIVE } from '../data/mockData';
-import { CITIES_BY_ID } from '../data/cities';
-import { buildSeedAtlasState } from '../data/atlasSeed';
-import { buildKinshipIndex, MAX_KINSHIP_ARCS } from '../utils/kinship';
+import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
+import { loadAtlasState } from '../lib/atlas/state';
+import { useProfile } from '../lib/profile/context';
+import { ulCardNumber } from '../utils/universalLanguage';
+import { buildKinshipIndex, greatCircleDistance, MAX_KINSHIP_ARCS } from '../utils/kinship';
+import { SIZE_BANDS, sizeBandFor, type SizeBand } from '../utils/sizeBands';
 import type { PublicAtlasState } from '../types';
 
+/* The Three.js globe loads as its own chunk so the page paints immediately;
+   browsers without WebGL keep the cobe globe + SVG kinship overlay. */
+const Globe3D = lazy(() => import('./atlas/three/Globe3D'));
+const GlobeGL = lazy(() => import('./atlas/GlobeGL'));
+// Library-backed globe (react-globe.gl) is the default; ?oldglobe falls back
+// to the custom Three.js one for comparison.
+const USE_GL_GLOBE =
+  typeof window === 'undefined' || !window.location.search.includes('oldglobe');
+
+function webglAvailable(): boolean {
+  if (typeof document === 'undefined') return false;
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch {
+    return false;
+  }
+}
+
 const MAX_KIN_PER_PIECE = 6;
+
+/* Selection key for the visitor's own birth place (from their Hologenetic
+   Profile) — a globe node that is not a piece. */
+const BIRTH_KEY = '__birth-place__';
+
+const EARTH_RADIUS_KM = 6371;
 
 /* ─── State machine ────────────────────────────────────────────────────────── */
 type FetchState =
@@ -25,8 +61,10 @@ type EnrichedPiece = PublicAtlasState['pieces'][number] & {
 };
 
 /* ─── Helpers ──────────────────────────────────────────────────────────────── */
+/* Same key convention as the ledger (groupChains / projectAll) and the
+   kinship index: pieces with no editionNumber use `0`. */
 function makeKey(pieceId: string, editionNumber?: number): string {
-  return `${pieceId}:${editionNumber ?? ''}`;
+  return `${pieceId}:${editionNumber ?? 0}`;
 }
 
 function titleFor(pieceId: string): string {
@@ -42,42 +80,121 @@ function cityLabelFor(cityId: string | null | undefined): string | undefined {
   if (!cityId) return undefined;
   const c = CITIES_BY_ID.get(cityId);
   if (!c) return undefined;
-  return `${c.city}, ${c.country}`;
+  return formatPlaceLabel(c);
+}
+
+/** Universal Language card number for a piece, when it has one (1–64). */
+function cardNumberFor(pieceId: string): number | undefined {
+  const a = FULL_ARCHIVE.find((art) => art.id === pieceId);
+  if (!a || a.series !== 'Universal Language') return undefined;
+  return ulCardNumber(a.coverImage) ?? undefined;
 }
 
 /* ─── Component ────────────────────────────────────────────────────────────── */
 const AtlasPage: React.FC = () => {
   const [state, setState] = useState<FetchState>({ kind: 'loading' });
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [selectedSeries, setSelectedSeries] = useState<string>('all');
-  const [status, setStatus] = useState<AtlasStatusFilter>('all');
+  // ?piece=<pieceId[:edition]> deep-links to a selection — card pages use it
+  // for their "See it on the Atlas" bridge, and selections stay shareable.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedKey, setSelectedKeyState] = useState<string | null>(null);
+  /* Filters initialize from the URL so filtered views are shareable
+     (e.g. /atlas?series=Universal+Language&size=large). */
+  const [selectedSeries, setSelectedSeriesState] = useState<string>(
+    () => searchParams.get('series') ?? 'all',
+  );
+  const [status, setStatusState] = useState<AtlasStatusFilter>(() => {
+    const s = searchParams.get('status');
+    return s === 'placed' || s === 'seeking' ? s : 'all';
+  });
+  const [selectedCategory, setSelectedCategoryState] = useState<string>(
+    () => searchParams.get('category') ?? 'all',
+  );
+  const [selectedSize, setSelectedSizeState] = useState<SizeBand | 'all'>(() => {
+    const s = searchParams.get('size');
+    return s && (SIZE_BANDS as readonly string[]).includes(s) ? (s as SizeBand) : 'all';
+  });
   const [kinshipVisible, setKinshipVisible] = useState<boolean>(true);
+  const [mandala, setMandala] = useState<boolean>(false);
+  const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
+  const [markerScreenPos, setMarkerScreenPos] = useState<{ x: number; y: number } | null>(null);
+  // Corner chrome fades when the visitor stops interacting, leaving only the
+  // turning world. A selected piece or open filters keep the chrome awake.
+  const idle = useIdleFade(4000) && !selectedKey && !filtersOpen;
+
+  // Esc releases the locked piece.
+  useEffect(() => {
+    if (!selectedKey) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedKeyState(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedKey]);
+  const [use3D] = useState<boolean>(webglAvailable);
+
+  /* Mirror a filter into the URL; 'all' clears the param. */
+  const setFilterParam = (key: string, value: string) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value === 'all') next.delete(key);
+        else next.set(key, value);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+  const setSelectedSeries = (v: string) => {
+    setSelectedSeriesState(v);
+    setFilterParam('series', v);
+  };
+  const setStatus = (v: AtlasStatusFilter) => {
+    setStatusState(v);
+    setFilterParam('status', v);
+  };
+  const setSelectedCategory = (v: string) => {
+    setSelectedCategoryState(v);
+    setFilterParam('category', v);
+  };
+  const setSelectedSize = (v: SizeBand | 'all') => {
+    setSelectedSizeState(v);
+    setFilterParam('size', v);
+  };
+
+  /* The visitor's saved birth place (Hologenetic Profile, local-first).
+     When present it appears as a sage marker on the globe — the bridge
+     between the birthday map and the geography of the placed pieces. */
+  const { profile } = useProfile();
+  const birthPlace = profile?.inputs.place ?? null;
+
+  /* Selection setter that mirrors the choice into the URL (replace, so
+     browsing pieces doesn't pile up history entries). */
+  const setSelectedKey = (key: string | null) => {
+    setSelectedKeyState(key);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (key) next.set('piece', key.replace(/:0$/, ''));
+        else next.delete('piece');
+        return next;
+      },
+      { replace: true },
+    );
+  };
 
   /* Globe container size — KinshipLayer needs CSS pixels to render the SVG
      overlay at the same dimensions cobe is drawing into. */
   const globeBoxRef = useRef<HTMLDivElement | null>(null);
   const [globeSize, setGlobeSize] = useState({ width: 0, height: 0 });
 
-  /* Fetch the live atlas from /api/atlas. On any failure (dev server with
-     no Functions runtime, ledger not yet seeded, network blip), fall back
-     to the local seed so the page always renders something. */
+  /* Fetch the live atlas via the shared loader (falls back to the local
+     seed on any failure so the page always renders something). The card
+     page's "On the Atlas" seat reads the same cached state. */
   useEffect(() => {
     let active = true;
-    fetch('/api/atlas')
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`atlas ${res.status}`);
-        const body = await res.json();
-        if (!body || body.ok !== true || !body.state) {
-          throw new Error('atlas malformed');
-        }
-        return body.state as PublicAtlasState;
-      })
-      .then((data) => {
-        if (active) setState({ kind: 'ready', data });
-      })
-      .catch(() => {
-        if (active) setState({ kind: 'ready', data: buildSeedAtlasState() });
-      });
+    loadAtlasState().then((data) => {
+      if (active) setState({ kind: 'ready', data });
+    });
     return () => {
       active = false;
     };
@@ -101,11 +218,56 @@ const AtlasPage: React.FC = () => {
     return Array.from(set).sort();
   }, [enriched]);
 
-  /* Apply series filter to derive what the rest of the page sees. */
+  /* Apply the ?piece= deep link once the atlas is loaded. Accepts both
+     "UL-122" and "UL-122:2" (piece keys without an edition end in ":0"),
+     plus the birth-place key when the visitor has a saved profile. */
+  useEffect(() => {
+    if (enriched.length === 0) return;
+    const param = searchParams.get('piece');
+    if (!param) return;
+    if (param === BIRTH_KEY) {
+      if (birthPlace) setSelectedKeyState(BIRTH_KEY);
+      return;
+    }
+    const match = enriched.find((p) => p.key === param || p.key === `${param}:0`);
+    if (match) setSelectedKeyState(match.key);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enriched]);
+
+  /* Category and size-band lookups come from the archive, keyed by pieceId. */
+  const categoriesAvailable: string[] = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of enriched) {
+      const c = p.category ?? categoryFor(p.pieceId);
+      if (c) set.add(c);
+    }
+    return Array.from(set).sort();
+  }, [enriched]);
+
+  const sizeBandByPiece = useMemo(() => {
+    const map = new Map<string, SizeBand | null>();
+    for (const art of FULL_ARCHIVE) map.set(art.id, sizeBandFor(art));
+    return map;
+  }, []);
+
+  const availableSizes: SizeBand[] = useMemo(
+    () => SIZE_BANDS.filter((b) => enriched.some((p) => sizeBandByPiece.get(p.pieceId) === b)),
+    [enriched, sizeBandByPiece],
+  );
+
+  /* Apply series, category and size filters to derive what the rest of the
+     page sees. Status stays separate so the counts read pre-status. */
   const seriesFiltered: EnrichedPiece[] = useMemo(() => {
-    if (selectedSeries === 'all') return enriched;
-    return enriched.filter((p) => p.series === selectedSeries);
-  }, [enriched, selectedSeries]);
+    return enriched.filter((p) => {
+      if (selectedSeries !== 'all' && p.series !== selectedSeries) return false;
+      if (selectedCategory !== 'all') {
+        const c = p.category ?? categoryFor(p.pieceId);
+        if (c !== selectedCategory) return false;
+      }
+      if (selectedSize !== 'all' && sizeBandByPiece.get(p.pieceId) !== selectedSize) return false;
+      return true;
+    });
+  }, [enriched, selectedSeries, selectedCategory, selectedSize, sizeBandByPiece]);
 
   /* Counts for filter chrome — based on the series filter, before status filter. */
   const placedCount = useMemo(
@@ -117,12 +279,23 @@ const AtlasPage: React.FC = () => {
     [seriesFiltered],
   );
 
+  /* Low-density framing: this is Adrian's body of work, not a constellation
+     of strangers. A "light" is a claimed piece (carries an ordinal); the
+     collective framing earns its place as density grows. */
+  const totalCount = enriched.length;
+  const lightsLit = useMemo(
+    () => enriched.filter((p) => typeof p.claimOrdinal === 'number').length,
+    [enriched],
+  );
+
   /* Pieces visible on the globe respect both filters; status=seeking is shown
      in the seeking section, never on the globe (no coords to plot). */
   const globeNodes: GlobeNode[] = useMemo(() => {
     const visible = seriesFiltered.filter((p) => {
       if (status === 'seeking') return false; // seeking-only filter hides globe markers
-      if (p.status !== 'placed') return false;
+      // Both lit ('placed') and sold-but-unclaimed ('unawakened') pieces have
+      // a city and belong on the globe; only the truly unplaced are hidden.
+      if (p.status !== 'placed' && p.status !== 'unawakened') return false;
       if (!p.cityId) return false;
       return true;
     });
@@ -134,12 +307,25 @@ const AtlasPage: React.FC = () => {
         id: p.key,
         lat: c.lat,
         lng: c.lng,
-        status: 'placed',
+        status: p.status === 'unawakened' ? 'unawakened' : 'placed',
         label: p.title,
+        pieceType: p.pieceType,
+        series: p.series,
+      });
+    }
+    // The visitor's birth place rides along regardless of filters — it is
+    // not a piece, it is where they entered the map.
+    if (birthPlace) {
+      nodes.push({
+        id: BIRTH_KEY,
+        lat: birthPlace.lat,
+        lng: birthPlace.lng,
+        status: 'origin',
+        label: 'Your birth place',
       });
     }
     return nodes;
-  }, [seriesFiltered, status]);
+  }, [seriesFiltered, status, birthPlace]);
 
   /* Seeking section honors filters — when status=placed, the section hides. */
   const seekingPieces: SeekingPiece[] = useMemo(() => {
@@ -168,16 +354,39 @@ const AtlasPage: React.FC = () => {
       status: match.status,
       cityLabel: cityLabelFor(match.cityId),
       placedAt: match.placedAt,
+      cardNumber: cardNumberFor(match.pieceId),
+      claimOrdinal: match.claimOrdinal,
     };
   }, [selectedKey, seriesFiltered]);
 
   /* If the selected piece falls outside the current filters, drop selection
-     silently so the side panel doesn't show stale info. */
+     silently so the side panel doesn't show stale info. The birth place is
+     not a piece and is never filtered out. */
   useEffect(() => {
-    if (!selectedKey) return;
+    if (!selectedKey || selectedKey === BIRTH_KEY) return;
     const stillVisible = seriesFiltered.some((p) => p.key === selectedKey);
     if (!stillVisible) setSelectedKey(null);
   }, [selectedKey, seriesFiltered]);
+
+  /* The placed pieces nearest the visitor's birth place — the "what of this
+     language lives near where I began" list in the birth-place panel. */
+  const nearestToBirth = useMemo(() => {
+    if (!birthPlace) return [];
+    const out: Array<{ key: string; title: string; cityLabel: string; km: number }> = [];
+    for (const p of enriched) {
+      if (p.status !== 'placed' || !p.cityId) continue;
+      const c = CITIES_BY_ID.get(p.cityId);
+      if (!c) continue;
+      const rad = greatCircleDistance(birthPlace.lat, birthPlace.lng, c.lat, c.lng);
+      out.push({
+        key: p.key,
+        title: p.title,
+        cityLabel: formatPlaceLabel(c),
+        km: Math.round(rad * EARTH_RADIUS_KM),
+      });
+    }
+    return out.sort((a, b) => a.km - b.km).slice(0, 3);
+  }, [birthPlace, enriched]);
 
   /* Mirror cobe's square sizing — Globe sets width=height=min(box.w,box.h). The
      SVG overlay reads the same dimensions so arcs land on the canvas pixels. */
@@ -212,6 +421,20 @@ const AtlasPage: React.FC = () => {
     }
   }, [kinshipIndex]);
 
+  /* First placed location per hexagram (1–64) — feeds the hexagram ring's
+     city-to-glyph threads. Built from the raw ledger, never the filters. */
+  const placedByCard = useMemo(() => {
+    const map = new Map<number, { lat: number; lng: number }>();
+    for (const p of enriched) {
+      if (p.status !== 'placed' || !p.cityId) continue;
+      const num = cardNumberFor(p.pieceId);
+      if (num == null || map.has(num)) continue;
+      const c = CITIES_BY_ID.get(p.cityId);
+      if (c) map.set(num, { lat: c.lat, lng: c.lng });
+    }
+    return map;
+  }, [enriched]);
+
   /* Kin list for the selected piece — only for UL pieces with kindred peers. */
   const kinForSelected: KinEntry[] = useMemo(() => {
     if (!selectedKey || !kinshipIndex) return [];
@@ -229,37 +452,331 @@ const AtlasPage: React.FC = () => {
       });
   }, [selectedKey, kinshipIndex]);
 
+  /* Holder chart (M5) — "held by a chart of…". Derived, non-identifying
+     fields only; the endpoint returns chart: null unless the steward opted
+     into Ring 3 and has a profile. Fetched per selected piece; cleared
+     between selections so one piece's chart never bleeds onto another. */
+  const [holderChart, setHolderChart] = useState<HolderChartSummary | null>(null);
+  useEffect(() => {
+    setHolderChart(null);
+    if (!selectedPiece || selectedPiece.status !== 'placed') return;
+    let active = true;
+    const params = new URLSearchParams({ pieceId: selectedPiece.pieceId });
+    if (typeof selectedPiece.editionNumber === 'number') {
+      params.set('editionNumber', String(selectedPiece.editionNumber));
+    }
+    fetch(`/api/atlas/holder-chart?${params.toString()}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { chart?: HolderChartSummary | null } | null) => {
+        if (active && data?.chart) setHolderChart(data.chart);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [selectedPiece]);
+
   /* ─── Render ─────────────────────────────────────────────────────────────── */
+  // Which series currently have placed pieces on the map — drives the legend.
+  const legendSeries: string[] = useMemo(() => {
+    const set = new Set<string>();
+    for (const n of globeNodes) {
+      if (n.status === 'origin') continue;
+      set.add(n.series ?? 'Universal Language');
+    }
+    return Array.from(set).sort();
+  }, [globeNodes]);
+
+  const hasBirthOrigin = globeNodes.some((n) => n.status === 'origin');
+
+  // Coordinate of the selected marker, for the HUD's lat-long readout.
+  const selectedCoord = useMemo(() => {
+    if (!selectedKey) return null;
+    const n = globeNodes.find((node) => node.id === selectedKey);
+    return n ? { lat: n.lat, lng: n.lng } : null;
+  }, [selectedKey, globeNodes]);
+
+  // Chrome opacity easing — one class drives every corner overlay together.
+  const chromeOpacity = idle ? 'opacity-25' : 'opacity-100';
+
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div className="px-6 pb-10 max-w-7xl mx-auto pt-[calc(var(--nav-height)+3rem)] sm:pt-[calc(var(--nav-height)+4rem)]">
-        <nav
-          aria-label="Breadcrumb"
-          className="flex flex-wrap items-center gap-2 gap-y-1 font-label text-[11px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.2em] text-wood-700 mb-8 sm:mb-12"
+      {/* ── Immersive globe stage ─────────────────────────────────────────── */}
+      {state.kind === 'ready' && use3D && (
+        <section
+          ref={globeBoxRef}
+          aria-label="Atlas globe"
+          className="relative w-full overflow-hidden bg-[rgb(15,13,11)] block"
+          style={{
+            height: 'calc(100svh - var(--nav-height))',
+            minHeight: 'min(560px, calc(100svh - var(--nav-height)))',
+            marginBottom: 0,
+            // HUD and corner chrome anchor below the fixed nav using this.
+            ['--hud-top' as string]: 'calc(var(--nav-height) + 1rem)',
+          }}
         >
-          <Link to="/" className="hover:text-wood-900 transition-colors">
-            Home
-          </Link>
-          <span aria-hidden className="text-wood-400">
-            /
-          </span>
-          <span className="text-wood-900">Atlas</span>
-        </nav>
+          {/* The world, full-bleed. */}
+          <div className="absolute inset-0">
+            <Suspense
+              fallback={
+                <div
+                  aria-hidden
+                  className="w-full h-full"
+                  style={{
+                    background:
+                      'radial-gradient(circle at 50% 50%, rgb(28, 25, 21) 0%, rgb(15, 13, 11) 62%)',
+                  }}
+                />
+              }
+            >
+              {USE_GL_GLOBE ? (
+                <GlobeGL
+                  nodes={globeNodes}
+                  selectedId={selectedKey}
+                  onSelect={(id) => setSelectedKey(id)}
+                  kinship={kinshipIndex}
+                  kinshipVisible={kinshipVisible}
+                  placedByCard={placedByCard}
+                  mandala={mandala}
+                  mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed`}
+                  onMarkerScreenPos={setMarkerScreenPos}
+                  onBackgroundClick={() => setSelectedKey(null)}
+                  className="w-full h-full"
+                />
+              ) : (
+                <Globe3D
+                  nodes={globeNodes}
+                  selectedId={selectedKey}
+                  onSelect={(id) => setSelectedKey(id)}
+                  kinship={kinshipIndex}
+                  kinshipVisible={kinshipVisible}
+                  placedByCard={placedByCard}
+                  mandala={mandala}
+                  mandalaCaption={`The mandala so far — ${placedByCard.size} of 64 placed`}
+                  className="w-full h-full"
+                />
+              )}
+            </Suspense>
+          </div>
 
-        <h1
-          className="font-serif text-5xl md:text-7xl lg:text-8xl text-wood-900 font-medium leading-[0.93] mb-6"
-          style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.04em' }}
-        >
-          Atlas
-        </h1>
-        <p className="font-serif text-xl md:text-2xl text-wood-700 max-w-2xl leading-[1.6]">
-          Every piece, wherever it has come to rest. City-level only, never an address.
-        </p>
-      </div>
+          {/* ── Corner chrome (fades when idle) ─────────────────────────────── */}
+          <div
+            className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${chromeOpacity}`}
+          >
+            {/* Top-left: breadcrumb + title */}
+            <div className="pointer-events-auto absolute left-5 sm:left-8 top-[calc(var(--nav-height)+1rem)]">
+              <nav
+                aria-label="Breadcrumb"
+                className="flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/60 mb-3"
+              >
+                <Link to="/" className="hover:text-bronze-400 transition-colors">
+                  Home
+                </Link>
+                <span aria-hidden>/</span>
+                <span className="text-bronze-400/90">Atlas</span>
+              </nav>
+              <h1
+                className="text-3xl sm:text-5xl text-bronze-300 font-medium leading-none"
+                style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}
+              >
+                Atlas
+              </h1>
+            </div>
 
-      {/* ── Body ──────────────────────────────────────────────────────────── */}
-      <div className="px-6 pb-32 max-w-7xl mx-auto">
+            {/* Top-right: legend */}
+            {legendSeries.length > 0 && (
+              <div className="pointer-events-auto absolute right-5 sm:right-8 top-[calc(var(--nav-height)+1rem)] text-right">
+                {legendSeries.map((s) => (
+                  <div
+                    key={s}
+                    className="font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed"
+                  >
+                    {s}
+                    <span aria-hidden style={{ color: seriesColor(s) }}>
+                      {' '}·
+                    </span>
+                  </div>
+                ))}
+                {hasBirthOrigin && (
+                  <div className="font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed">
+                    your origin
+                    <span aria-hidden style={{ color: '#9caa87' }}>
+                      {' '}·
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Bottom-left: the quiet stat caption */}
+            {totalCount > 0 && (
+              <p className="pointer-events-none absolute left-5 sm:left-8 bottom-6 font-label text-[11px] uppercase tracking-[0.2em] text-bronze-400/70">
+                {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
+                <span aria-hidden className="mx-2 text-wood-500">·</span>
+                {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
+              </p>
+            )}
+
+            {/* Bottom gutter: threads · filter · mandala */}
+            <div className="pointer-events-auto absolute right-5 sm:right-8 bottom-6 flex items-center gap-4 sm:gap-6">
+              <button
+                type="button"
+                aria-pressed={kinshipVisible}
+                onClick={() => setKinshipVisible((v) => !v)}
+                className={`font-label text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                  kinshipVisible
+                    ? 'text-bronze-400'
+                    : 'text-wood-400 hover:text-bronze-400/80'
+                }`}
+              >
+                threads
+              </button>
+              <button
+                type="button"
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen((o) => !o)}
+                className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-300 hover:text-bronze-400 transition-colors"
+              >
+                filter
+                {(selectedSeries !== 'all' ||
+                  status !== 'all' ||
+                  selectedCategory !== 'all' ||
+                  selectedSize !== 'all') && (
+                  <span className="text-bronze-400"> · ·</span>
+                )}
+              </button>
+              <button
+                type="button"
+                aria-pressed={mandala}
+                onClick={() => setMandala((m) => !m)}
+                className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/80 hover:text-bronze-400 transition-colors"
+              >
+                {mandala ? 'return' : 'mandala'}
+              </button>
+              {selectedKey && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedKey(null)}
+                  className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-300 hover:text-bronze-200 transition-colors"
+                >
+                  release
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* ── Filter slide-up (bottom-left), dark translucent ─────────────── */}
+          {filtersOpen && (
+            <div className="absolute inset-x-4 bottom-20 z-30 sm:inset-x-auto sm:left-8 sm:bottom-16 sm:w-[400px]">
+              <div
+                className="border border-bronze-400/15 p-6 sm:p-7 shadow-2xl"
+                style={{
+                  background:
+                    'linear-gradient(160deg, rgba(28,23,18,0.95) 0%, rgba(17,14,11,0.96) 100%)',
+                  backdropFilter: 'blur(16px)',
+                  boxShadow: '0 20px 60px -12px rgba(0,0,0,0.7)',
+                }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <span className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-400/70">
+                    Refine the map
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setFiltersOpen(false)}
+                    className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors"
+                  >
+                    close
+                  </button>
+                </div>
+                <AtlasFiltersDark
+                  series={availableSeries}
+                  selectedSeries={selectedSeries}
+                  onSeriesChange={setSelectedSeries}
+                  status={status}
+                  onStatusChange={setStatus}
+                  categories={categoriesAvailable}
+                  selectedCategory={selectedCategory}
+                  onCategoryChange={setSelectedCategory}
+                  availableSizes={availableSizes}
+                  selectedSize={selectedSize}
+                  onSizeChange={setSelectedSize}
+                  placedCount={placedCount}
+                  seekingCount={seekingCount}
+                  kinshipVisible={kinshipVisible}
+                  onKinshipChange={setKinshipVisible}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* ── Leader-line: a hairline from the marker to the HUD card ──────── */}
+          {selectedKey && markerScreenPos && globeBoxRef.current && (
+            <svg
+              className="pointer-events-none absolute inset-0 z-20 hidden sm:block"
+              width="100%"
+              height="100%"
+            >
+              <line
+                x1={markerScreenPos.x}
+                y1={markerScreenPos.y}
+                x2={globeBoxRef.current.clientWidth - 412}
+                y2={Math.min(
+                  Math.max(markerScreenPos.y, 120),
+                  globeBoxRef.current.clientHeight - 160,
+                )}
+                stroke={selectedKey === BIRTH_KEY ? 'rgba(156,170,135,0.5)' : 'rgba(196,170,124,0.45)'}
+                strokeWidth={1}
+              />
+              <circle
+                cx={markerScreenPos.x}
+                cy={markerScreenPos.y}
+                r={2.5}
+                fill={selectedKey === BIRTH_KEY ? '#9caa87' : '#c4aa7c'}
+              />
+            </svg>
+          )}
+
+          {/* ── Piece HUD: instrument readout in the cleared space ───────────── */}
+          {selectedKey && (
+            <div
+              className="absolute z-30 animate-[hud-in_400ms_ease-out]
+                inset-x-3 bottom-3 max-h-[52%]
+                sm:inset-x-auto sm:right-8 sm:bottom-auto sm:left-auto sm:w-[380px]"
+              style={{ top: 'var(--hud-top)' }}
+            >
+              {selectedKey === BIRTH_KEY && birthPlace ? (
+                <PieceHUD
+                  isOrigin
+                  piece={{
+                    pieceId: 'origin',
+                    title: birthPlace.label,
+                    status: 'placed',
+                    cityLabel: birthPlace.label,
+                    category: 'Your birth place',
+                  }}
+                  coord={selectedCoord}
+                  kin={nearestToBirth.map((n) => ({ key: n.key, title: `${n.title} · ${n.cityLabel}` }))}
+                  onSelectKin={(key) => setSelectedKey(key)}
+                  onRelease={() => setSelectedKey(null)}
+                />
+              ) : selectedPiece ? (
+                <PieceHUD
+                  piece={selectedPiece}
+                  coord={selectedCoord}
+                  kin={kinForSelected}
+                  onSelectKin={(key) => setSelectedKey(key)}
+                  holderChart={holderChart}
+                  onRelease={() => setSelectedKey(null)}
+                />
+              ) : null}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── Body (below the fold): loading/error + seeking ground ──────────── */}
+      <div className="px-6 pb-32 max-w-7xl mx-auto pt-16">
         {state.kind === 'loading' && (
           <p
             className="font-serif italic text-lg text-wood-700 py-24 text-center"
@@ -280,56 +797,8 @@ const AtlasPage: React.FC = () => {
 
         {state.kind === 'ready' && (
           <>
-            {/* Filters */}
-            <div className="border-t border-wood-200 pt-6 pb-8">
-              <AtlasFilters
-                series={availableSeries}
-                selectedSeries={selectedSeries}
-                onSeriesChange={setSelectedSeries}
-                status={status}
-                onStatusChange={setStatus}
-                placedCount={placedCount}
-                seekingCount={seekingCount}
-                kinshipVisible={kinshipVisible}
-                onKinshipChange={setKinshipVisible}
-              />
-            </div>
-
-            {/* Globe + side panel.
-                Globe takes ~60vh; side panel sits beside on lg+, below on smaller. */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-              <div
-                ref={globeBoxRef}
-                className="lg:col-span-2 w-full max-w-full overflow-hidden relative"
-                style={{ height: '60vh', minHeight: 360 }}
-              >
-                <Globe
-                  nodes={globeNodes}
-                  selectedId={selectedKey}
-                  onSelect={(id) => setSelectedKey(id)}
-                  className="w-full h-full"
-                />
-                {kinshipIndex && (
-                  <KinshipLayer
-                    index={kinshipIndex}
-                    width={globeSize.width}
-                    height={globeSize.height}
-                    selectedId={selectedKey}
-                    visible={kinshipVisible}
-                  />
-                )}
-              </div>
-              <div className="lg:col-span-1">
-                <PieceSidePanel
-                  piece={selectedPiece}
-                  kin={kinForSelected}
-                  onSelectKin={(key) => setSelectedKey(key)}
-                />
-              </div>
-            </div>
-
             {/* Seeking ground */}
-            <div className="mt-16">
+            <div className="mt-4">
               <SeekingGround
                 seekingPieces={seekingPieces}
                 totalPieces={seriesFiltered.length}

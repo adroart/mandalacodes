@@ -21,7 +21,7 @@ export type ProfileKey =
   | 'iq'
   | 'eq'
   | 'sq'
-  | 'core'
+  | 'core'       // Pearl 'Vocation' (legacy key name)
   | 'culture'
   | 'pearl';
 

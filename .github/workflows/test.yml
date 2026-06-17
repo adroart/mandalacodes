@@ -1,0 +1,25 @@
+# Minimal CI: typecheck + unit tests on every push and PR.
+# The Playwright e2e suite is not run here — it needs a built site and
+# browsers; this workflow guards the pure logic (ledger, projection,
+# kinship, privacy) that the Atlas depends on.
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # The MCP oracle server is its own package; the root typecheck
+      # includes mcp/oracle-server/src, so its deps must be present.
+      - run: npm ci --prefix mcp/oracle-server
+      - run: npm run typecheck
+      - run: npm run test:unit
