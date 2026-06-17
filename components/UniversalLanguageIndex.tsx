@@ -339,11 +339,8 @@ const UniversalLanguageIndex: React.FC = () => {
     return () => { live = false; };
   }, []);
 
-  /* ── First-run onboarding + keyboard + deep link ────────────────────────── */
+  /* ── Deep link (how-to-read only opens when the ? is tapped) ─────────────── */
   useEffect(() => {
-    try {
-      if (!localStorage.getItem('ul-onboarded')) setOnboarding(true);
-    } catch {}
     try {
       const cn = parseInt(new URLSearchParams(location.search).get('card') || '', 10);
       if (cn >= 1 && cn <= 64) {
@@ -571,7 +568,6 @@ const UniversalLanguageIndex: React.FC = () => {
 
           <div className="font-serif italic text-base leading-[1.6] text-wood-800 flex flex-col gap-[11px] max-w-[30em]">
             <p className="m-0">
-              <span aria-hidden className="not-italic text-bronze-600 mr-1.5">❧</span>
               Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.
             </p>
             <p className="m-0">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
@@ -642,7 +638,7 @@ const UniversalLanguageIndex: React.FC = () => {
             })}
           </div>
 
-          <p className="m-0 pt-3.5 font-label text-[11px] uppercase tracking-[0.18em] text-wood-500" aria-live="polite">
+          <p className="m-0 pt-4 font-serif italic text-[clamp(17px,2.2vw,21px)] leading-snug text-wood-700" aria-live="polite">
             {instruction}
           </p>
 
