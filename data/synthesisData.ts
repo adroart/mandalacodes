@@ -1,3 +1,13 @@
+import {
+  getParsedCard,
+  hasCardMarkdown,
+  mapCode,
+  mapKeys,
+  mapDesign,
+  mapIching,
+  mapBody,
+} from './cardMarkdown';
+
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
 export interface SynthesisReference {
@@ -246,21 +256,50 @@ export async function getSynthesis(cardNumber: number): Promise<CardSynthesis | 
     synthesis: { ...base.synthesis },
   };
 
-  // KEYS overlay
-  const keysPath = `../oracle/sections/keys/${pad2(cardNumber)}.json`;
-  const keysLoader = keysModules[keysPath];
-  if (keysLoader) {
-    const keys = (await keysLoader()).default;
+  /* DUAL-PATH SAFETY. When `oracle/cards/NN.md` exists, that Markdown is the
+   * single source of truth and each section is fed from it. When it does not,
+   * the existing per-section JSON overlays are used exactly as before, so the
+   * other cards keep rendering through the migration. The Markdown is parsed
+   * once here and each section block prefers the MD-mapped object. */
+  const md = hasCardMarkdown(cardNumber) ? await getParsedCard(cardNumber) : undefined;
+
+  // CODE overlay (the opening face) — MD first, JSON fallback. The `## CODE`
+  // section feeds the hero keywords (`merged.keywords`) and "The Reading" panel
+  // (`merged.essence`). When the card has no `## CODE` block the existing base
+  // values from synthesis/key_N.json are kept untouched.
+  const mdCode = md ? mapCode(md) : undefined;
+  if (mdCode) {
+    if (mdCode.keywords.length > 0) merged.keywords = mdCode.keywords;
+    if (mdCode.reading) merged.essence = mdCode.reading;
+  }
+
+  // KEYS overlay — MD first, JSON fallback.
+  const mdKeys = md ? mapKeys(md) : undefined;
+  if (mdKeys) {
     merged.synthesis.gene_keys = {
-      shadow: keys.shadow,
-      repressive: keys.repressive,
-      reactive: keys.reactive,
-      gift: keys.gift,
-      siddhi: keys.siddhi,
-      // programming_partner comes from the old synthesis for now; RELATIONS
-      // will replace it when that section is bridge-rewritten.
+      shadow: mdKeys.shadow,
+      repressive: mdKeys.repressive,
+      reactive: mdKeys.reactive,
+      gift: mdKeys.gift,
+      siddhi: mdKeys.siddhi,
       programming_partner: base.synthesis.gene_keys?.programming_partner ?? '',
     };
+  } else {
+    const keysPath = `../oracle/sections/keys/${pad2(cardNumber)}.json`;
+    const keysLoader = keysModules[keysPath];
+    if (keysLoader) {
+      const keys = (await keysLoader()).default;
+      merged.synthesis.gene_keys = {
+        shadow: keys.shadow,
+        repressive: keys.repressive,
+        reactive: keys.reactive,
+        gift: keys.gift,
+        siddhi: keys.siddhi,
+        // programming_partner comes from the old synthesis for now; RELATIONS
+        // will replace it when that section is bridge-rewritten.
+        programming_partner: base.synthesis.gene_keys?.programming_partner ?? '',
+      };
+    }
   }
 
   // DESIGN overlay. Bridge schema (gate / centre_field / channel) maps to the
@@ -269,40 +308,68 @@ export async function getSynthesis(cardNumber: number): Promise<CardSynthesis | 
   //   Plate 2 "The Centre"  ← bridge.centre_field (where it lives)
   //   Plate 3 "The Channel" ← bridge.channel      (what it reaches for)
   // The card UI labels were updated from "Gate / Channel / Circuit" to match.
-  const designPath = `../oracle/sections/design/${pad2(cardNumber)}.json`;
-  const designLoader = designModules[designPath];
-  if (designLoader) {
-    const design = (await designLoader()).default;
+  const mdDesign = md ? mapDesign(md) : undefined;
+  if (mdDesign) {
     merged.synthesis.human_design = {
-      gate: design.gate,
-      channel: design.centre_field,  // plate 2 slot
-      circuit: design.channel,        // plate 3 slot
+      gate: mdDesign.gate,
+      channel: mdDesign.centre_field, // plate 2 slot
+      circuit: mdDesign.channel,       // plate 3 slot
     };
+  } else {
+    const designPath = `../oracle/sections/design/${pad2(cardNumber)}.json`;
+    const designLoader = designModules[designPath];
+    if (designLoader) {
+      const design = (await designLoader()).default;
+      merged.synthesis.human_design = {
+        gate: design.gate,
+        channel: design.centre_field, // plate 2 slot
+        circuit: design.channel,       // plate 3 slot
+      };
+    }
   }
 
-  // ICHING overlay. Prefers `*.deep.json` when present (pilot deep pass),
-  // falls back to the scaffold `*.json`. Section file provides combination
-  // + reading + judgement_lines + image_lines + six moving lines.
-  const ichingLoader = pickSection(ichingModules, 'iching', cardNumber);
-  if (ichingLoader) {
-    const iching = (await ichingLoader()).default;
+  // ICHING overlay. MD first; else prefers `*.deep.json` then scaffold `*.json`.
+  // Section provides combination + reading + judgement_lines + image_lines +
+  // six moving lines (preserved on `iching_extended` for future use).
+  const mdIching = md ? mapIching(md) : undefined;
+  if (mdIching) {
     merged.synthesis.iching = {
-      trigram_combination: iching.combination,
-      reading: iching.reading,
-      judgement_lines: iching.judgement_lines ?? [],
-      image_lines: iching.image_lines ?? [],
+      trigram_combination: mdIching.combination,
+      reading: mdIching.reading,
+      judgement_lines: mdIching.judgement_lines ?? [],
+      image_lines: mdIching.image_lines ?? [],
     };
-    (merged as unknown as Record<string, unknown>).iching_extended = iching;
+    (merged as unknown as Record<string, unknown>).iching_extended = mdIching;
+  } else {
+    const ichingLoader = pickSection(ichingModules, 'iching', cardNumber);
+    if (ichingLoader) {
+      const iching = (await ichingLoader()).default;
+      merged.synthesis.iching = {
+        trigram_combination: iching.combination,
+        reading: iching.reading,
+        judgement_lines: iching.judgement_lines ?? [],
+        image_lines: iching.image_lines ?? [],
+      };
+      (merged as unknown as Record<string, unknown>).iching_extended = iching;
+    }
   }
 
-  // BODY overlay. Prefers `*.deep.json` when present, falls back to scaffold.
-  const bodyLoader = pickSection(bodyModules, 'body', cardNumber);
-  if (bodyLoader) {
-    const body = (await bodyLoader()).default;
+  // BODY overlay. MD first; else prefers `*.deep.json` then scaffold.
+  const mdBody = md ? mapBody(md) : undefined;
+  if (mdBody) {
     merged.synthesis.body = {
-      physiology: body.physiology,
-      amino_acid: body.amino_acid,
+      physiology: mdBody.physiology,
+      amino_acid: mdBody.amino_acid,
     };
+  } else {
+    const bodyLoader = pickSection(bodyModules, 'body', cardNumber);
+    if (bodyLoader) {
+      const body = (await bodyLoader()).default;
+      merged.synthesis.body = {
+        physiology: body.physiology,
+        amino_acid: body.amino_acid,
+      };
+    }
   }
 
   // RELATIONS overlay. Feeds every seat of the card's Relations panel:

@@ -1,5 +1,12 @@
 # RELATIONS section brief
 
+> **AGENT: load `oracle/WRITE.md` FIRST.** It carries the gate, the precedence
+> rule, the voice + copyright + terms spine, and the BATCH-AGENT HARDENING (glob
+> vault files, card 3 = worked reference at `sections/relations/03.json`, output
+> a verification block incl. the fact_check, stay in your lane). Kin links are
+> "UL N" never "Code N". This brief is section-specific only; the universal rules
+> live in WRITE.md.
+
 The Universal Language Oracle weaves I Ching, Gene Keys, Human Design, and
 Tarot. The first four sections of each card teach the code *internally* —
 its hexagram, its shadow/gift/siddhi, its drive in the body, the body
@@ -12,6 +19,107 @@ where the code is woven into the larger field. The cards it pairs with.
 The card it programmes with. The codon ring it sits inside. The Tarot face
 it carries. The Daoist Immortals who personify its forces. The Tree-of-Life
 path it stands on. The sky-attribution its ring carries.
+
+## THE FIDELITY RULES (hardened 2026-06-09 from the card 3 pass)
+
+RELATIONS is mostly FACTS (pair, partner, ring siblings, immortals, Tarot,
+Hebrew letter, sky). A wrong fact here is worse than weak prose — it teaches
+something false. Two checks caught card 3's scaffold; run both before final.
+
+1. **Verify every correspondence against `_hexagram-NN.md` (and the immortal/
+   trigram source files).** Do NOT trust the scaffold's names. Card 3's scaffold
+   had the WRONG upper immortal — it said Lü Dongbin and built a "sword of
+   discernment" teaching on him, but the source says the Water/Kan trigram
+   carries **Li Tie Guai**. Check: paired hexagram, programming partner, the
+   five-or-six ring siblings, both immortals (upper trigram + lower trigram),
+   the Tarot Arcana, the Hebrew letter. Each must match the vault index.
+
+2. **Kin links are "UL N", NEVER "Code N".** (VISION.md — "UL N" everywhere:
+   bar slot, kin links, URLs.) Card 3's scaffold used "Code 4 / Code 50";
+   corrected to "UL 4 / UL 50". Grep the finished file for "Code [0-9]" before
+   final — there should be zero.
+
+Note on terms: inside RELATIONS, "code" as the general synthesis word IS allowed
+(this is the outward/synthesis layer, not a single lineage) — e.g. "this code
+stands as the moment of arrival" is fine. The ban is only on "Code N" as a kin
+LABEL, which must be "UL N". (Contrast ICHING, where "code" is banned entirely
+in favour of "hexagram".)
+
+3. **Mythological detail (immortal attributes, etc.) may use established lore**
+   if it serves the card's theme, but the NAME must be source-verified and you
+   flag to Adrian when a detail is general lore vs. this-vault. Card 3: Li Tie
+   Guai's iron crutch + gourd of medicine is real Eight Immortals lore, kept
+   because it serves the Death / Ring-of-Life-and-Death theme.
+
+## SOURCE PRECEDENCE + THE ESOTERIC-FIELD RULE (hardened 2026-06-09 from the proving run)
+
+The 3-card proving run (UL 4/5/6) exposed two source problems. Both rules below
+are mandatory.
+
+**1. The vault index `_hexagram-NN.md` ALWAYS WINS over `_per_card_reference.json`.**
+`_per_card_reference.json` is an OLDER precomputed file and carries scaffold-era
+ERRORS (the run found it lists wrong ring Arcana like "The Sun" for UL 5, and
+wrong immortals). It is convenient for the pair/partner NUMBERS, but on ANY
+conflict the live vault index `_hexagram-NN.md` is authoritative. Never take a
+correspondence (ring Arcana, immortal, sky, letter) from `_per_card_reference.json`
+when `_hexagram-NN.md` says otherwise. When they disagree, follow the index and
+note the conflict in meta.fact_check.
+
+**2. `sky` and `hebrew_letter` DERIVE FROM THE RING ARCANA — re-derive or flag.**
+These two fields come from the codon ring's Tarot Arcana via its Golden Dawn
+attribution (the Arcana's own `metaphysical_correspondence:` and
+`golden_dawn_attribution:` in its `tarot-*.md` file). So:
+- First fix the ring Arcana against `_hexagram-NN.md`.
+- Then DERIVE sky + hebrew_letter from THAT Arcana's tarot file (read its
+  `metaphysical_correspondence` for sky, `golden_dawn_attribution` for the
+  Hebrew letter). If they disagree with the scaffold's sky/letter, the scaffold
+  was stale (because its ring Arcana was wrong) — correct them.
+- If the needed source is an EMPTY STUB (the run found `tarot-codon-rings-mapping.md`
+  and `tarot-keywords-full-reference.md` are frontmatter-only stubs), DO NOT
+  invent: leave the field, set its value to null, and flag in meta.fact_check as
+  "unsourced — stub file empty, needs Adrian/research pass." Never ship a guessed
+  esoteric correspondence as fact.
+
+The proving run's UL 5 is the worked example of this failure: ring Arcana
+corrected The Sun -> The Star, which made the scaffold's sky (Sun) and letter
+(Resh) stale, but the files needed to re-derive were empty stubs — so they were
+flagged, not guessed.
+
+## THE TAROT GRAMMAR (hardened 2026-06-09 — the Tarot is a three-axis web, not one card)
+
+The scaffold collapsed the Tarot to the single ring-Arcana. That is too thin —
+the Tarot connects to a hexagram on THREE axes, and the connection IS the
+teaching. Build all three for every card. The grammar is source-encoded: each
+Tarot file in `hexagrams/NN/tarot-*.md` carries an `i_ching_trigram:` field
+that says which trigram it links to.
+
+**The three axes:**
+1. **Ring Arcana** — the one Major the codon ring carries (via the ring's
+   Scorpio/Nun-style attribution). Card 3: Death (Ring of Life and Death).
+2. **Upper-trigram Majors** — the Tarot cards whose `i_ching_trigram` matches
+   this hexagram's UPPER trigram. Card 3 upper = Water → High Priestess
+   (Perceive/Listen), Hanged Man (Pause for Perspective).
+3. **Lower-trigram Majors** — same for the LOWER trigram. Card 3 lower =
+   Thunder → The Tower (Shock/Upheaval), Judgement (Salvation/Renewal).
+
+**How to build it (per card):**
+- Read every `tarot-*.md` in the card's folder. Group by `i_ching_trigram`.
+- Take the MAJOR Arcana keyed to each of the two trigrams (usually 1–3 per
+  trigram). Use each card's real `upright_keyword` + `archetype` from its file.
+- The minor Arcana (Cups/Wands/etc.) are suit-level overflow — DO NOT include
+  them. Majors only. This keeps the web meaningful, not a pile of 18 cards.
+- Write a one-line teaching per card: how that Arcana's face mirrors that
+  trigram's force in THIS hexagram. Then one synthesis line tying the two axes
+  (ring + trigrams) into the card's whole motion.
+
+**JSON shape:** `tarot: { ring_arcana: {card,keyword,teaching}, upper_trigram:
+{trigram, cards:[...]}, lower_trigram: {trigram, cards:[...]}, teaching }`.
+See `sections/relations/03.json` for the worked reference.
+
+This generalizes to all 64 because every hexagram IS two trigrams + a ring —
+the same three seats every time. Trigram-level and nuclear-hexagram kin are NOT
+needed (Adrian, 2026-06-09); line-change targets live in ICHING (the cast), not
+here.
 
 ## The shape of the section
 

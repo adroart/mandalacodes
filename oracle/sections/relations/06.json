@@ -4,7 +4,7 @@
   "status": "scaffold",
   "card_name": "Harmonious Mirage",
 
-  "unity_line": "Held next to Code 5, this becomes the long art of waiting before a thing is forced, conflict softened by the patience that precedes it.",
+  "unity_line": "Held next to UL 5, this becomes the long art of waiting before a thing is forced, conflict softened by the patience that precedes it.",
 
   "pair": {
     "number": 5,
@@ -18,13 +18,13 @@
     "card_name": "The Space Between Time",
     "hexagram_name": "Waiting (Hsu)",
     "is_self_inverse": false,
-    "teaching": "Flipped end over end, the lines become Code 5 again, The Space Between Time. The pair and the inverse are the same card here, which is its own teaching. Waiting and conflict are two ends of one line, read up or down."
+    "teaching": "Flipped end over end, the lines become UL 5 again, The Space Between Time. The pair and the inverse are the same card here, which is its own teaching. Waiting and conflict are two ends of one line, read up or down."
   },
 
   "programming_partner": {
     "number": 36,
     "card_name": "Crystal Creation",
-    "teaching": "Through the genetic code, this pairing runs with Code 36, Crystal Creation. The friction that arises when something is out of place is held by the code that knows how to find a new pattern through crisis. Together they know that conflict is the body searching for a better arrangement."
+    "teaching": "Through the genetic code, this pairing runs with UL 36, Crystal Creation. The friction that arises when something is out of place is held by the code that knows how to find a new pattern through crisis. Together they know that conflict is the body searching for a better arrangement."
   },
 
   "codon_ring": {
@@ -35,8 +35,26 @@
   },
 
   "tarot": {
-    "card": "I · The Magician",
-    "teaching": "The Magician stands at a table with the four tools of the elements laid before him, working only with what is already there. Conflict, read at its highest, is exactly that work. The harsh material on the table is the start of the operation, not the end of it."
+    "ring_arcana": {
+      "card": "I · The Magician",
+      "keyword": "Manifestation",
+      "teaching": "Through the Ring of Alchemy, this code carries the Arcana of the Magician, who stands at a table with the four tools laid before him and works only with what is already there. The harsh material on the table is the start of the operation, not the end of it."
+    },
+    "upper_trigram": {
+      "trigram": "Heaven",
+      "cards": [
+        { "card": "0 · The Fool", "keyword": "New Beginning", "teaching": "The Heaven above this hexagram wears the face of the Fool, who steps off the edge into open sky with nothing decided yet. The bright force overhead is the same readiness to begin again that no quarrel can talk out of him." },
+        { "card": "III · The Empress", "keyword": "Abundance, Nurture", "teaching": "Heaven also carries the Empress, the fullness that wants to feed and grow. The creative force above is generous, and the conflict below is partly the cost of that abundance pressing against what cannot yet hold it." }
+      ]
+    },
+    "lower_trigram": {
+      "trigram": "Water",
+      "cards": [
+        { "card": "II · The High Priestess", "keyword": "Perceive, Listen", "teaching": "The Water at the root wears the High Priestess, who does not argue but perceives, who sits at the threshold and listens to what the dispute is really about. The danger below is also a depth to be read before a word is spoken." },
+        { "card": "XII · The Hanged Man", "keyword": "Pause for Perspective", "teaching": "Water also carries the Hanged Man, suspended and seeing the whole thing upside down because pushing forward will only harden the fight. The held moment that refuses the easy reaction is his teaching too." }
+      ]
+    },
+    "teaching": "The Tarot meets this hexagram on two axes. The codon ring gives one Arcana, the Magician, the worker who transmutes what is on the table. The two trigrams each give their own faces: Heaven above as the Fool and the Empress, the open beginning and the pressing abundance; Water below as the High Priestess and the Hanged Man, the listening depth and the patient suspension. Read together they are the whole motion of the card, a friction that asks to be worked rather than won, perceived rather than forced."
   },
 
   "trigrams": {
@@ -54,16 +72,16 @@
   "immortals": {
     "upper": {
       "trigram": "Heaven",
-      "name": "Zhongli Quan",
-      "virtue": "The retired general who turned to the way"
+      "name": "Han Xiangzi",
+      "virtue": "The flute-player whose music brings growth and reconciliation"
     },
     "lower": {
       "trigram": "Water",
-      "name": "Lü Dongbin",
-      "virtue": "The scholar-warrior who carries the sword of discernment"
+      "name": "Li Tie Guai",
+      "virtue": "The crippled healer whose iron crutch and gourd of medicine pass through suffering"
     },
     "same_trigram": false,
-    "teaching": "Above sits Zhongli Quan, the general who stopped fighting and turned his strength inward; below moves Lü Dongbin with his sword of discernment. Together they teach that conflict is resolved by the one who has already laid down arms and the one who still knows where to cut."
+    "teaching": "Above sits Han Xiangzi, whose flute coaxes flowers open and quarrels quiet, and below moves Li Tie Guai, the healer who came back through his own death carrying medicine in a gourd. Together they teach that conflict is met by the one who plays the harmonising note and the one who has already passed through loss and returned with the cure."
   },
 
   "hebrew_letter": {
@@ -76,6 +94,20 @@
 
   "meta": {
     "source": "relations v1, scaffold UL 6",
-    "generated": "relations-v1"
+    "generated": "relations-v1",
+    "sourcing_log": {
+      "ring_arcana The Magician": "hexagrams/06/tarot-01-the-magician.md (upright_keyword Manifestation, archetype The Creator); ring identity confirmed in _hexagram-06.md (codon ring carries Major Arcana The Magician)",
+      "upper_trigram The Fool": "hexagrams/06/tarot-00-the-fool.md (i_ching_trigram Heaven, upright_keyword New Beginning, archetype The Wanderlust)",
+      "upper_trigram The Empress": "hexagrams/06/tarot-03-the-empress.md (i_ching_trigram Heaven, upright_keyword Abundance; Nurture, archetype The Nurturer)",
+      "lower_trigram The High Priestess": "hexagrams/06/tarot-02-high-priestess.md (i_ching_trigram Water, upright_keyword Perceive; Listen, archetype The Oracle)",
+      "lower_trigram The Hanged Man": "hexagrams/06/tarot-12-hanged-man.md (i_ching_trigram Water, upright_keyword Pause for Perspective, archetype The Sacrifice)",
+      "immortal upper Han Xiangzi": "hexagrams/06/_hexagram-06.md (Eight Immortals: Heaven/Qian carries Han Xiangzi). Flute/growth detail is general Eight Immortals lore, not this-vault; immortal file at systems/eight-immortals/immortal-han-xiangzi.md is empty.",
+      "immortal lower Li Tie Guai": "hexagrams/06/_hexagram-06.md (Eight Immortals: Water/Kan carries Li Tie Guai). Iron crutch + gourd of medicine is general Eight Immortals lore, not this-vault; immortal file at systems/eight-immortals/immortal-li-tie-guai.md is empty. Consistent with card 3's Water immortal.",
+      "trigrams Heaven over Water": "hexagrams/06/_hexagram-06.md (upper Heaven/Qian, lower Water/Kan)",
+      "codon ring Ring of Alchemy + siblings 40,47,64": "hexagrams/06/_hexagram-06.md (Codon Ring of Alchemy, Glycine; shares ring with 40, 47, 64)",
+      "pair/inverse 5 Waiting": "hexagrams/06/_hexagram-06.md (inverse_hexagram 5)",
+      "programming partner 36": "hexagrams/06/_hexagram-06.md (opposite_hexagram 36)"
+    },
+    "fact_check": "Verified against _hexagram-06.md. Pair/inverse = 5 Waiting (inverse_hexagram: 5). Programming partner = 36 Crystal Creation (opposite_hexagram: 36). Codon ring = Ring of Alchemy, siblings 40, 47, 64. Both immortals CORRECTED from scaffold: upper Heaven/Qian = Han Xiangzi (scaffold wrongly had Zhongli Quan), lower Water/Kan = Li Tie Guai (scaffold wrongly had Lu Dongbin). Tarot ring Arcana = The Magician (confirmed in _hexagram-06.md Tarot section). Trigram Majors grouped by i_ching_trigram field: Heaven = The Fool + The Empress; Water = The High Priestess + The Hanged Man. The Magician's i_ching_trigram is [Xuan], so it is ring_arcana only, not a trigram card. Minor Arcana (Cups/Swords) excluded per Majors-only rule. Hebrew letter = Beth, path 12 (Kether to Binah). All Code N kin labels changed to UL N."
   }
 }

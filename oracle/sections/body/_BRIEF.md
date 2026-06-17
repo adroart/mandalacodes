@@ -1,5 +1,12 @@
 # BODY section — generation brief
 
+> **AGENT: load `oracle/WRITE.md` FIRST.** It carries the gate, the precedence
+> rule, the voice + copyright + terms spine, and the BATCH-AGENT HARDENING (glob
+> vault files, card 3 = worked reference at `sections/body/03.deep.json` [the
+> `.deep` is canonical], output a verification block, stay in your lane, poetic
+> not a biology lesson). This brief is section-specific only; the universal rules
+> live in WRITE.md.
+
 You are writing the **BODY section** for one card of the Universal Language
 Oracle, a 64-card deck. BODY is the biological layer: the codon, the codon
 ring as living chemistry, where the code is seated in the physical body.

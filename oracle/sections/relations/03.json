@@ -1,10 +1,10 @@
 {
   "number": 3,
   "section": "relations",
-  "status": "scaffold",
+  "status": "final",
   "card_name": "Messengers of the Infinite",
 
-  "unity_line": "Read alongside Code 4, this is the whole arc of first arrival, the breakthrough and the long apprenticeship that comes after.",
+  "unity_line": "Read alongside UL 4, this is the whole arc of first arrival, the breakthrough and the long apprenticeship that comes after.",
 
   "pair": {
     "number": 4,
@@ -18,13 +18,13 @@
     "card_name": "Veils of Knowledge",
     "hexagram_name": "Youthful Folly (Meng)",
     "is_self_inverse": false,
-    "teaching": "Turn the lines and you find Code 4, Veils of Knowledge. The same difficulty read from the other end becomes the confusion of the receiver rather than the strain of the one breaking through."
+    "teaching": "Turn the lines and you find UL 4, Veils of Knowledge. The same difficulty read from the other end becomes the confusion of the receiver rather than the strain of the one breaking through."
   },
 
   "programming_partner": {
     "number": 50,
     "card_name": "Melt Into Perfection",
-    "teaching": "Across the genetic code, this pairing runs with Code 50, Melt Into Perfection. The messenger that arrives in difficulty is held by the keeper of inherited form, and what they know together is that every new transmission must pass through what was already cooking, or it dissolves."
+    "teaching": "Across the genetic code, this pairing runs with UL 50, Melt Into Perfection. The messenger that arrives in difficulty is held by the keeper of inherited form, and what they know together is that every new transmission must pass through what was already cooking, or it dissolves."
   },
 
   "codon_ring": {
@@ -35,8 +35,26 @@
   },
 
   "tarot": {
-    "card": "XIII · Death",
-    "teaching": "The Tarot card here is XIII Death, and the resonance is exact in a way that surprises. The card is not ending but passage, the threshold every new thing crosses to enter the world. This code is what is being born on the other side of that crossing."
+    "ring_arcana": {
+      "card": "XIII · Death",
+      "keyword": "Metamorphosis",
+      "teaching": "Through the Ring of Life and Death, this code carries the Arcana of Death. Not ending but passage, the threshold every new thing crosses to enter the world. This is the code being born on the far side of the crossing."
+    },
+    "upper_trigram": {
+      "trigram": "Water",
+      "cards": [
+        { "card": "II · The High Priestess", "keyword": "Perceive, Listen", "teaching": "The Water above this hexagram wears the face of the High Priestess, who does not act but perceives, who waits at the threshold and listens to what has not yet spoken. The danger overhead is also a depth to be read." },
+        { "card": "XII · The Hanged Man", "keyword": "Pause for Perspective", "teaching": "Water also carries the Hanged Man, suspended, seeing the situation upside down because forcing it forward will not work yet. The held moment of the difficult beginning is his teaching too." }
+      ]
+    },
+    "lower_trigram": {
+      "trigram": "Thunder",
+      "cards": [
+        { "card": "XVI · The Tower", "keyword": "Shock, Upheaval", "teaching": "The Thunder at the root wears the Tower, the sudden shock that breaks the old structure open. The first crack of arousing force is the same lightning that frees what was walled in." },
+        { "card": "XX · Judgement", "keyword": "Salvation, Renewal", "teaching": "Thunder also carries Judgement, the trumpet that calls the new life up out of the ground. The arousing force is a waking, the buried thing answering a sound it cannot refuse." }
+      ]
+    },
+    "teaching": "The Tarot meets this hexagram on two axes. The codon ring gives one Arcana, Death, the passage. The two trigrams each give their own faces: Water above as the High Priestess and the Hanged Man, the perceiving and the patient pause; Thunder below as the Tower and Judgement, the shock that breaks open and the call that wakes. Read together they are the whole motion of the card, a breaking and a waking that cross a threshold into new form."
   },
 
   "trigrams": {
@@ -54,8 +72,8 @@
   "immortals": {
     "upper": {
       "trigram": "Water",
-      "name": "Lü Dongbin",
-      "virtue": "The scholar-warrior who carries the sword of discernment"
+      "name": "Li Tie Guai",
+      "virtue": "The crippled healer whose iron crutch and gourd of medicine pass through suffering"
     },
     "lower": {
       "trigram": "Thunder",
@@ -63,7 +81,7 @@
       "virtue": "The noble who renounced the court for the way"
     },
     "same_trigram": false,
-    "teaching": "Lü Dongbin stands above with his sword of discernment, Cao Guojiu below having walked away from the inherited court. Together they teach that a true messenger cuts illusion and renounces borrowed authority before what arrives can be trusted."
+    "teaching": "Li Tie Guai stands above, the healer who came back through his own death and carries medicine in a gourd, and Cao Guojiu below, who walked away from the inherited court. Together they teach that what arrives in difficulty is held by one who has passed through loss and one who has let go of borrowed authority."
   },
 
   "hebrew_letter": {

@@ -113,6 +113,44 @@ needing a per-system quota.
 
 ---
 
+## 3b. THE STRANGER TEST (run on every keyword before showing Adrian)
+
+This is the mechanical gate. The "plain, no decoding" rule above is the
+principle; this is how you actually check it. Run EVERY keyword through this
+before it is presented. Added 2026-06-09 after a keyword pass repeatedly shipped
+words that failed the plain-language rule ("Primordial Space", "The Long Root",
+"Patient Order") — the principle was stated but not operationalized, so it kept
+slipping. This converts it into a pass/fail test.
+
+**The test.** Imagine the keyword printed alone under the art, seen by someone
+who has never heard of this deck, the I-Ching, the Gene Keys, or Human Design.
+**Do they know what energy it points at in under one second, with no thought?**
+
+- They get it cold → PASS.
+- They pause, decode, or need the card's image/story to get it → **FAIL.
+  Rewrite in plainer words that hold the same energy.**
+
+**Auto-fail list — any keyword that does one of these is out, no judgment call:**
+
+1. **Contains a word you would not use in ordinary speech.** "Primordial",
+   "patient order", "syntropy", "liminal" — if it is not a word said at a
+   kitchen table, it fails.
+2. **Only makes sense if you have read the card.** "The Long Root", "First
+   Sprout", "The Held Storm" — these lean on the card's own imagery. A keyword
+   may not depend on the reading to be understood. (An everyday image is fine —
+   "New Life" — but not one that requires THIS card's picture.)
+3. **Names the shadow, not the energy.** "Chaos", "Crooked Beginning",
+   "Clinging", "Entropy". Keywords name the card's gift/energy. The shadow has
+   its home in the KEYS description, never in the keyword line. (Adrian's rule,
+   2026-06-09.)
+4. **Is an instruction or counsel, not the energy.** "Sorting the Threads",
+   "Wait and See". Keywords name what the code IS, not what to do about it.
+
+A keyword survives only if a stranger gets it cold AND it trips none of the four
+auto-fails. When in doubt, it fails — reach for the plainer word.
+
+---
+
 ## 4. Worked example — Card 1, "Earth's Breath" (a real fix)
 
 This is an actual card, corrected — not an invented illustration.
@@ -154,6 +192,9 @@ not yet held. The test was only ever: does it hold the energy of the card?
 ## 5. Per-card keyword checklist
 
 - [ ] 5 to 7 keywords, each brief (one word or a 2–3 word phrase).
+- [ ] **Every keyword passed the Stranger Test (§3b)** — a stranger gets it cold
+      in under a second, and it trips none of the four auto-fails (no rare word,
+      no card-image dependence, no shadow word, no instruction).
 - [ ] Every keyword is plain enough to land instantly — no decoding required.
 - [ ] No jargon: nothing from any system's vocabulary that needs the framework
       to be understood, and no coined or myth-dependent terms.

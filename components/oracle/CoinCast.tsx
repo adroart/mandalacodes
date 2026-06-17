@@ -24,6 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import type { CastResult } from '../../utils/ichingCasting';
 import { CARD_BY_NUMBER, type OracleCard } from '../../data/oracleData';
 import { getLineText } from '../../data/ichingLines';
+import { getMarkdownLineText } from '../../data/cardMarkdown';
 import { ulCardImageUrl } from '../../utils/universalLanguage';
 
 /* ─── Hexagram glyph ─────────────────────────────────────────────────────── */
@@ -524,7 +525,7 @@ const CoinCast: React.FC<{
                 style={{ animation: reduceMotion ? undefined : 'ul-cast-soft-in 420ms ease-out both' }}
               >
                 {movingPositions.map((pos) => {
-                  const text = getLineText(primaryNumber, pos);
+                  const text = getMarkdownLineText(primaryNumber, pos) || getLineText(primaryNumber, pos);
                   return (
                     <p key={pos} className="font-sans text-[16px] text-stone-200 leading-[1.7]">
                       <span className="font-label text-[11px] uppercase tracking-[0.14em] font-semibold text-bronze-400/80 mr-2">

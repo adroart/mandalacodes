@@ -4,7 +4,7 @@
   "status": "scaffold",
   "card_name": "The Space Between Time",
 
-  "unity_line": "Beside Code 6, this is the patience that knows what is coming and the trust that lets it ripen at its own speed.",
+  "unity_line": "Beside UL 6, this is the patience that knows what is coming and the trust that lets it ripen at its own speed.",
 
   "pair": {
     "number": 6,
@@ -18,25 +18,43 @@
     "card_name": "Harmonious Mirage",
     "hexagram_name": "Conflict (Sung)",
     "is_self_inverse": false,
-    "teaching": "Flipped end for end, this code becomes Conflict, Code 6, Harmonious Mirage. The patience held inside the waiting turns into the friction that surfaces when waiting alone has gone on too long, the other end of the same pressure."
+    "teaching": "Flipped end for end, this code becomes Conflict, UL 6, Harmonious Mirage. The patience held inside the waiting turns into the friction that surfaces when waiting alone has gone on too long, the other end of the same pressure."
   },
 
   "programming_partner": {
     "number": 35,
     "card_name": "Navigational Star",
-    "teaching": "In the genetic code, this code's programming partner is 35, Navigational Star. Patient waiting is held by the one who has crossed many thresholds and knows the route, and together they teach that the right move arrives only when the inner clock and the outer way line up."
+    "teaching": "In the genetic code, this code's programming partner is UL 35, Navigational Star. Patient waiting is held by the one who has crossed many thresholds and knows the route, and together they teach that the right move arrives only when the inner clock and the outer way line up."
   },
 
   "codon_ring": {
     "name": "Ring of Light",
-    "tarot": "19 - The Sun",
+    "tarot": "17 - The Star",
     "siblings": [9, 11, 26],
-    "teaching": "This code sits inside the Ring of Light with Codes 9, 11, and 26. The family is lit by the sun principle, each card a different way of carrying steady illumination. This one is the patience of the light, the willingness to wait for the right moment to shine."
+    "teaching": "This code sits inside the Ring of Light with UL 9, UL 11, and UL 26. The family carries steady illumination, each card a different way of holding the light. This one is the patience of the light, the willingness to wait for the right moment before anything is forced to shine."
   },
 
   "tarot": {
-    "card": "XIX · The Sun",
-    "teaching": "The Tarot face here is XIX The Sun, the open daylight under which children play and growing things grow. The card carries the certainty that nourishment is on the way, and this code carries the same certainty, holding the field bright while what is becoming finishes becoming."
+    "ring_arcana": {
+      "card": "XVII · The Star",
+      "keyword": "Hope, Healing",
+      "teaching": "Through the Ring of Light, this code carries the Arcana of the Star, the quiet hope that stays lit after the storm. Not the noon sun but the steady night-light that tells you the season is turning even when nothing has arrived yet. This is the code waiting under that one held point of light."
+    },
+    "upper_trigram": {
+      "trigram": "Water",
+      "cards": [
+        { "card": "II · The High Priestess", "keyword": "Perceive, Listen", "teaching": "The Water above this hexagram wears the face of the High Priestess, who does not act but reads the depth and waits at the threshold for what has not yet spoken. The danger overhead is also a stillness to be listened to." },
+        { "card": "XII · The Hanged Man", "keyword": "Pause for Perspective", "teaching": "Water also carries the Hanged Man, suspended on purpose because pushing forward will not work yet. His willing stillness is the discipline of the one who waits, seeing the moment from a held angle instead of forcing it." }
+      ]
+    },
+    "lower_trigram": {
+      "trigram": "Heaven",
+      "cards": [
+        { "card": "0 · The Fool", "keyword": "New Beginning", "teaching": "The Heaven at the root wears the Fool, the creative force about to step out into open air. His readiness is the strength held under the waiting, the new thing already in motion before the right moment to release it has come." },
+        { "card": "III · The Empress", "keyword": "Abundance, Nurture", "teaching": "Heaven also carries the Empress, the fertile ground in which things ripen on their own schedule. Her certainty that the harvest is coming is the trust this code waits inside, nourishment on its way and not to be hurried." }
+      ]
+    },
+    "teaching": "The Tarot meets this hexagram on three seats. The Ring of Light gives the Star, the held point of hope that stays lit through the dark. The two trigrams give their own faces: Water above as the High Priestess and the Hanged Man, the perceiving and the willing pause; Heaven below as the Fool and the Empress, the creative force ready to step and the ground where things ripen. Read together they are the whole motion of waiting well, a strength held still under a steady light until the season turns."
   },
 
   "trigrams": {
@@ -54,16 +72,16 @@
   "immortals": {
     "upper": {
       "trigram": "Water",
-      "name": "Lü Dongbin",
-      "virtue": "The scholar-warrior who carries the sword of discernment"
+      "name": "Li Tie Guai",
+      "virtue": "The crippled healer whose iron crutch and gourd of medicine pass through suffering"
     },
     "lower": {
       "trigram": "Heaven",
-      "name": "Zhongli Quan",
-      "virtue": "The retired general who turned to the way"
+      "name": "Han Xiangzi",
+      "virtue": "The flute player who makes flowers bloom out of season"
     },
     "same_trigram": false,
-    "teaching": "Above the line stands Lü Dongbin with his sword of discernment, and below sits Zhongli Quan with the strength of the general who has stopped fighting. Together they teach that waiting well is an active discipline, cutting false urgency and refining the force that remains."
+    "teaching": "Li Tie Guai stands above, the healer who came back through his own death and carries medicine in a gourd, and Han Xiangzi below, who plays the flute that coaxes flowers to open in their own time. Together they teach that waiting is not idleness, it is the patience of one who has passed through the worst and one who never hurries what is growing."
   },
 
   "hebrew_letter": {
@@ -76,6 +94,18 @@
 
   "meta": {
     "source": "relations v1, scaffold UL 5",
-    "generated": "relations-v1"
+    "generated": "relations-v1",
+    "sourcing_log": {
+      "ring_arcana_the_star": "_hexagram-05.md (Tarot: codon ring carries Major Arcana The Star); keyword 'Hope & Healing' + archetype 'The Visionary' from hexagrams/10/tarot-17-the-star.md (Star file not present in hex 05 folder; canonical Star file used)",
+      "upper_trigram_high_priestess": "hexagrams/05/tarot-02-high-priestess.md (i_ching_trigram: Water; upright_keyword: Perceive; Listen; archetype: The Oracle)",
+      "upper_trigram_hanged_man": "hexagrams/05/tarot-12-hanged-man.md (i_ching_trigram: Water; upright_keyword: Pause for Perspective; archetype: The Sacrifice)",
+      "lower_trigram_the_fool": "hexagrams/05/tarot-00-the-fool.md (i_ching_trigram: Heaven; upright_keyword: New Beginning; archetype: The Wanderlust)",
+      "lower_trigram_the_empress": "hexagrams/05/tarot-03-the-empress.md (i_ching_trigram: Heaven; upright_keyword: Abundance; Nurture; archetype: The Nurturer)",
+      "tarot_19_the_sun_excluded": "hexagrams/05/tarot-19-the-sun.md is i_ching_trigram: Fire, which is neither this hexagram's upper (Water) nor lower (Heaven) trigram, so excluded from the trigram axes",
+      "immortal_upper_li_tie_guai": "_hexagram-05.md (Upper trigram Water/Kan carries Li Tie Guai); attributes (iron crutch, gourd of medicine, death-and-return) are established Eight Immortals lore, immortal-li-tie-guai.md is an empty stub",
+      "immortal_lower_han_xiangzi": "_hexagram-05.md (Lower trigram Heaven/Qian carries Han Xiangzi); attributes (flute, flowers blooming out of season) are established Eight Immortals lore, immortal-han-xiangzi.md is an empty stub",
+      "trigrams_pair_partner_ring": "_hexagram-05.md (upper Water/Kan, lower Heaven/Qian; inverse 6; opposite/partner 35; Ring of Light siblings 9, 11, 26)"
+    },
+    "fact_check": "Verified against _hexagram-05.md. Paired/inverse hexagram = 6 Conflict (Harmonious Mirage), confirmed. Programming partner = 35 Progress (Navigational Star), confirmed (opposite_hexagram: 35). Codon Ring of Light siblings = 9, 11, 26, confirmed. Both immortals corrected from the scaffold: upper Water/Kan = Li Tie Guai (scaffold wrongly had Lü Dongbin), lower Heaven/Qian = Han Xiangzi (scaffold wrongly had Zhongli Quan), both confirmed against _hexagram-05.md. Ring Arcana corrected from the scaffold: the index states the codon ring carries The Star (scaffold wrongly had The Sun); ring_arcana set to XVII The Star. Trigram-axis Majors verified by each tarot file's i_ching_trigram field: upper Water = High Priestess + Hanged Man; lower Heaven = The Fool + The Empress; The Sun (Fire) excluded. NOTE: because the Ring Arcana corrected to The Star, the sky (Sun/planet) and Hebrew letter (Resh, path 30) fields, which derive from the ring's Golden Dawn correspondence, are likely stale (The Star's Golden Dawn sky is Aquarius, letter Tzaddi). The vault reference files tarot-codon-rings-mapping.md and tarot-keywords-full-reference.md are empty stubs, so a verified replacement could not be sourced; sky and hebrew_letter left as the pre-computed scaffold values pending Adrian's review. Status kept 'scaffold' for Adrian to finalize."
   }
 }
