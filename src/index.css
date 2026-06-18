@@ -454,6 +454,32 @@ html.dark.oracle-card-page body {
   background-color: #211c16;   /* Nightfall surface (--l-bg) */
 }
 
+/* ─── Earth's Breath reading — scoped palette (verbatim from the template) ──
+   The reading uses the template's own CSS-var system so it matches the import
+   exactly. --l-* is the main paper surface; --d-* is the feature-panel recess
+   (I Ching, Human Design); --accent is the antique gold. Day Book is the
+   default; Nightfall is the .dark override. Scoped to .eb-reading so the rest
+   of the site keeps the Tailwind token system. */
+.eb-reading {
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Karla', -apple-system, system-ui, sans-serif;
+  --cjk: 'Noto Serif TC', 'Songti SC', 'Noto Serif SC', 'Cormorant Garamond', serif;
+  /* Day Book — light */
+  --l-bg: #F3EFE7; --l-1: #272219; --l-2: #6B6253; --l-3: #A39A89;
+  --l-rule: rgba(39,34,25,0.14); --l-soft: #EAE4D7;
+  --d-bg: #E6DDC9; --d-1: #2A2419; --d-2: #6F6552; --d-3: #9C917A;
+  --d-rule: rgba(39,34,25,0.16); --d-soft: #DDD3BD;
+  --accent: #A37B38; --accent-d: #956E2A;
+}
+.dark .eb-reading {
+  /* Nightfall — dark */
+  --l-bg: #211C16; --l-1: #F3ECDE; --l-2: #C8BEAA; --l-3: #9A907C;
+  --l-rule: rgba(238,230,215,0.18); --l-soft: #191510;
+  --d-bg: #100D09; --d-1: #F4EDDE; --d-2: #C2B8A2; --d-3: #928871;
+  --d-rule: rgba(240,232,217,0.17); --d-soft: #171309;
+  --accent: #CDA45E; --accent-d: #DEBC7E;
+}
+
 /* ─── Earth's Breath paper grain ────────────────────────────────────────────
    A fine fractal-noise texture laid over the whole reading as a fixed,
    pointer-transparent material layer — the template's defining "of paper, not
@@ -472,6 +498,20 @@ html.dark.oracle-card-page body {
 .dark .eb-grain::after { opacity: 0.30; }
 @media (prefers-reduced-motion: reduce) {
   .eb-grain::after { opacity: 0.3; }
+}
+
+/* ─── Earth's Breath reading — motion + helpers (from the template) ───────── */
+@keyframes ulRise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ulFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ulOverlay { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: scale(1); } }
+@keyframes ulPulse { 0%,100% { opacity: 0.35; } 50% { opacity: 0.8; } }
+.eb-reading .ul-dropcap {
+  float: left; font-family: var(--serif); font-weight: 500; font-size: 3.34em;
+  line-height: 0.74; padding: 0.06em 0.12em 0 0; color: var(--accent);
+}
+.eb-reading .ul-stage::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .eb-reading [style*="animation"] { animation: none !important; }
 }
 
 /* Placeholder text — slightly brighter in dark mode */
