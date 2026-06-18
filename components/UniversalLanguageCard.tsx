@@ -5,7 +5,7 @@ import { getExpandedCard } from '../data/expandedOracleData';
 import { getSynthesis, getInvocation, type CardSynthesis } from '../data/synthesisData';
 import { img } from '../utils/cloudinary';
 import { useMetaTags } from '../hooks/useMetaTags';
-import { OracleCardEntrance } from './OracleCardEntrance';
+import EBEntrance from './oracle/eb/EBEntrance';
 import SystemOverlay, { type SystemKey } from './SystemOverlay';
 import { HEXAGRAM_CHINESE } from '../data/hexagramChinese';
 import ImageViewer from './oracle/ImageViewer';
@@ -17,6 +17,8 @@ import { SERIF, SANS, CJK } from './oracle/eb/ebStyle';
 import {
   ULPanel, IChingPanel, GeneKeysPanel, HumanDesignPanel, BodyPanel, RelationsPanel,
 } from './oracle/eb/EBPanels';
+import { useDarkMode } from '../DarkModeContext';
+import './oracle/eb/eb-template.css';
 
 /* ════════════════════════════════════════════════════════════════════════════
    EARTH'S BREATH READING
@@ -49,6 +51,8 @@ const CHAPTERS: { key: ChapterKey; label: string; two?: [string, string] }[] = [
 const UniversalLanguageCard: React.FC = () => {
   const { number } = useParams<{ number: string }>();
   const navigate = useNavigate();
+  const { isDarkMode } = useDarkMode();
+  const palette = isDarkMode ? 'nightfall' : 'daybook';
   const cardNum = parseInt(number ?? '', 10);
   const card = CARD_BY_NUMBER.get(cardNum);
   const expanded = getExpandedCard(cardNum);
@@ -180,9 +184,9 @@ const UniversalLanguageCard: React.FC = () => {
   const openLightbox = (rect: DOMRect | null) => { setLightboxOrigin(rect); setLightboxOpen(true); };
 
   return (
-    <div className="eb-reading eb-grain" style={{ minHeight: '100vh', background: 'var(--l-bg)', color: 'var(--l-1)', fontFamily: SANS, position: 'relative' }}>
+    <div className="eb-reading eb-grain" data-palette={palette} style={{ minHeight: '100vh', background: 'var(--l-bg)', color: 'var(--l-1)', fontFamily: SANS, position: 'relative' }}>
 
-      {showEntrance && <OracleCardEntrance card={card} onDone={() => setShowEntrance(false)} />}
+      {showEntrance && <EBEntrance card={card} keywords={keywords} palette={palette} onDone={() => setShowEntrance(false)} />}
 
       <ImageViewer open={lightboxOpen} src={ulCardImageUrl(card.number, 1200)} alt={imageAlt} originRect={lightboxOrigin} onClose={() => setLightboxOpen(false)} />
       <BuySheet open={buyOpen} onClose={() => setBuyOpen(false)} piece={piece ?? null} imageUrl={ulCardImageUrl(card.number, 360)} imageAlt={imageAlt} cardName={card.card_name} cardNumber={card.number} />

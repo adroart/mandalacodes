@@ -216,22 +216,32 @@ export const IChingPanel: React.FC<{
   );
 };
 
-/* cast hexagram — six bars, moving lines brightened */
+/* cast hexagram — the template's castBar: lines build from the bottom up with a
+   staggered ulLineCast, moving lines drawn brighter and glowing. */
 const CastHexagram: React.FC<{ cast: CastResult }> = ({ cast }) => {
-  // lines index 0 = bottom; render top-down (5..0)
-  const rows = [5, 4, 3, 2, 1, 0];
+  const motionOn = typeof window === 'undefined' || !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const H = 7, W = 92, GAP = 10;
+  const seg = (W - GAP) / 2;
+  // render top row (line 6) first; build delay counts from the bottom (line 1)
+  const rows = [6, 5, 4, 3, 2, 1];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 9, alignItems: 'center' }}>
-      {rows.map(i => {
-        const ln = cast.lines[i];
-        const moving = cast.movingPositions.includes(i + 1);
+      {rows.map(lineNum => {
+        const ln = cast.lines[lineNum - 1];
+        const moving = cast.movingPositions.includes(lineNum);
         const yang = ln?.value === 7 || ln?.value === 9;
-        const color = moving ? 'var(--accent-d)' : 'var(--d-3)';
+        const color = moving ? 'var(--accent)' : 'var(--accent-d)';
+        const glow = moving ? '0 0 10px 1px var(--accent)' : 'none';
+        const delay = motionOn ? (lineNum - 1) * 130 : 0;
+        const anim = motionOn ? `ulLineCast 520ms cubic-bezier(.16,1,.3,1) ${delay}ms both` : 'none';
         return (
-          <span key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <span key={lineNum} style={{ width: W, height: H, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transformOrigin: 'center', animation: anim }}>
             {yang
-              ? <span style={{ width: 64, height: 6, background: color }} />
-              : <><span style={{ width: 28, height: 6, background: color }} /><span style={{ width: 28, height: 6, background: color }} /></>}
+              ? <span style={{ width: W, height: H, background: color, display: 'block', boxShadow: glow }} />
+              : <span style={{ display: 'flex', gap: GAP, width: W }}>
+                  <span style={{ width: seg, height: H, background: color, display: 'block', boxShadow: glow }} />
+                  <span style={{ width: seg, height: H, background: color, display: 'block', boxShadow: glow }} />
+                </span>}
           </span>
         );
       })}
