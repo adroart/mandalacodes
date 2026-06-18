@@ -260,7 +260,8 @@ a, button, [role='button'], .lp-row, .lp-rel-card { -webkit-tap-highlight-color:
   border-bottom: 1px solid var(--rule); font-family: 'Karla', sans-serif; font-size: 11px;
   letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint);
 }
-.lp-read-topbar .back { color: var(--acc); text-decoration: none; }
+.lp-read-topbar .back { color: var(--faint); text-decoration: none; transition: color 0.3s; }
+.lp-read-topbar .back:hover { color: var(--acc); }
 .lp-read-topbar .mark { font-family: 'Cinzel', serif; letter-spacing: 0.14em; color: var(--ink); font-size: 12px; opacity: 0.7; }
 
 .lp-read-pad { max-width: 960px; margin: 0 auto; padding: 70px 36px 76px; }

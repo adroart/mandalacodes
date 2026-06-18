@@ -167,19 +167,32 @@ const FlipTile: React.FC<{
   // it (no reserved strip — that's why the number stays close to the glyph).
   // Revealed: the square painting with a Back · Read strip below, so the card
   // grows taller and pushes its neighbours down instead of overlapping them.
+  // Both states share the SAME shape: a square top + a 38px strip below. The
+  // closed strip holds the card number; the revealed strip holds Back · Read.
+  // Because the height is identical, revealing swaps in place and never grows
+  // or pushes its neighbours down.
   if (!flipped) {
     return (
       <button
         type="button"
         onClick={onFlip}
         aria-label={`Reveal Card ${card.number}: ${card.iching.hexagram_name}`}
-        className="flex flex-col items-center justify-center gap-1.5 bg-transparent cursor-pointer focus-visible:outline-2 focus-visible:outline-bronze-700 focus-visible:outline-offset-[-2px]"
-        style={{ aspectRatio: '1 / 1' }}
+        className="relative z-0 flex flex-col bg-transparent cursor-pointer focus-visible:outline-2 focus-visible:outline-bronze-700 focus-visible:outline-offset-[-2px]"
       >
-        <CardHex card={card} width={42} color="var(--text-2, #d8c9b0)" />
-        <span className="font-label text-[11px] font-bold tracking-[0.12em] text-wood-500 leading-none">
-          {String(card.number).padStart(2, '0')}
+        {/* Square top holds the glyph with its number tucked right beneath it.
+            The glyph scales with the cell (wider cards = bigger glyph), and the
+            number grows at the wider breakpoints. The 38px strip below matches
+            a revealed card's Back/Read strip exactly, so the cell is the same
+            total height in both states and flipping never shifts the row. */}
+        <span className="flex flex-col items-center justify-center gap-2" style={{ aspectRatio: '1 / 1' }}>
+          <span className="w-[44%] [&>svg]:w-full [&>svg]:h-auto">
+            <CardHex card={card} width={64} color="var(--text-2, #d8c9b0)" />
+          </span>
+          <span className="font-label text-[15px] xl:text-[17px] 2xl:text-[19px] font-bold tracking-[0.08em] text-wood-500 leading-none">
+            {card.number}
+          </span>
         </span>
+        <span aria-hidden className="h-[38px] flex-shrink-0" />
       </button>
     );
   }
@@ -619,7 +632,7 @@ const UniversalLanguageIndex: React.FC = () => {
           {/* I CHING flip wall */}
           {view === 'iching' && filtered.length > 0 && (
             <div className="pt-1">
-              <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-x-3 gap-y-5 items-start">
+              <div className="grid grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-x-3 gap-y-5 items-start">
                 {filtered.map((c) => (
                   <FlipTile key={c.number} card={c} flipped={flipped.has(c.number)} onFlip={() => flip(c.number)} onBack={() => flipBack(c.number)} onRead={() => goCardPage(c)} />
                 ))}
