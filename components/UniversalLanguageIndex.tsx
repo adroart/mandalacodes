@@ -90,16 +90,16 @@ const FeatTile: React.FC<{ eyebrow: string; date: string; card: OracleCard; onRe
     type="button"
     onClick={onRead}
     aria-label={`See the ${eyebrow} card`}
-    className="group flex items-center gap-3 min-w-0 text-left bg-transparent border-none p-0 cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+    className="group flex items-center gap-3 min-w-0 text-left bg-transparent border-none px-4 py-3.5 cursor-pointer hover:bg-paper-100/60 transition-colors focus-visible:outline-2 focus-visible:outline-bronze-700 focus-visible:outline-offset-[-2px]"
   >
-    <span className="leading-none flex-shrink-0 text-wood-800 group-hover:text-bronze-600 transition-colors">
-      <CardHex card={card} width={30} />
+    <span className="leading-none flex-shrink-0 text-wood-700 group-hover:text-bronze-600 transition-colors">
+      <CardHex card={card} width={28} color="var(--text-2, #c9b89a)" />
     </span>
-    <span className="flex flex-col gap-0.5 min-w-0">
-      <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-wood-500 truncate">
+    <span className="flex flex-col gap-1 min-w-0">
+      <span className="font-label text-[9.5px] font-bold uppercase tracking-[0.16em] text-wood-400 truncate leading-none">
         {eyebrow}
       </span>
-      <span className="font-label text-[11px] font-semibold uppercase tracking-[0.1em] text-bronze-600 group-hover:text-wood-900 transition-colors truncate">
+      <span className="font-label text-[11px] font-semibold uppercase tracking-[0.1em] text-bronze-600 group-hover:text-wood-900 transition-colors truncate leading-none">
         {date}
       </span>
     </span>
@@ -173,11 +173,11 @@ const FlipTile: React.FC<{
         type="button"
         onClick={onFlip}
         aria-label={`Reveal Card ${card.number}: ${card.iching.hexagram_name}`}
-        className="flex flex-col items-center justify-center gap-2 bg-transparent cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
+        className="flex flex-col items-center justify-center gap-1.5 bg-transparent cursor-pointer focus-visible:outline-2 focus-visible:outline-bronze-700 focus-visible:outline-offset-[-2px]"
         style={{ aspectRatio: '1 / 1' }}
       >
         <CardHex card={card} width={42} color="var(--text-2, #d8c9b0)" />
-        <span className="font-label text-[12px] font-bold tracking-[0.1em] text-wood-500 leading-none">
+        <span className="font-label text-[11px] font-bold tracking-[0.12em] text-wood-500 leading-none">
           {String(card.number).padStart(2, '0')}
         </span>
       </button>
@@ -483,20 +483,20 @@ const UniversalLanguageIndex: React.FC = () => {
 
   // Tabs: a quiet underline switch (not form buttons)
   const tabBase =
-    'font-label text-[11px] font-semibold uppercase tracking-[0.14em] pb-1.5 border-b-2 transition-colors cursor-pointer whitespace-nowrap focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
+    'font-label text-[11px] font-semibold uppercase tracking-[0.14em] pb-2 border-b transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-bronze-700 focus-visible:outline-offset-2';
   const tabActive = 'text-wood-900 border-bronze-600';
   const tabIdle = 'text-wood-400 border-transparent hover:text-wood-700';
 
-  // Element filters: text-only, the active one carries a dot
+  // Element filters: text-only, the active one carries a filled dot
   const chipBase =
-    'font-label text-[9.5px] font-bold uppercase tracking-[0.1em] transition-colors cursor-pointer inline-flex items-center gap-1.5 leading-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
+    'font-label text-[9.5px] font-bold uppercase tracking-[0.1em] transition-colors cursor-pointer inline-flex items-center gap-1.5 leading-none focus-visible:outline-2 focus-visible:outline-bronze-700 focus-visible:outline-offset-2';
 
   return (
-    <div className="min-h-screen bg-paper-50 text-wood-900">
+    <div className="min-h-screen bg-paper-50 text-wood-900 pt-[var(--nav-height)]">
 
       {/* ── Quiet action row (not a second bar) — sits just under the site nav,
-          borderless so it reads as part of it; Draw is the one accent ──────── */}
-      <div className="max-w-[1180px] mx-auto px-6 pt-3 flex items-center justify-end gap-5">
+          borderless so it reads as part of it ──────────────────────────────── */}
+      <div className="max-w-[1180px] mx-auto px-6 pt-4 flex items-center justify-end gap-5">
         <button
           type="button"
           onClick={() => setJournalOpen(true)}
@@ -521,33 +521,30 @@ const UniversalLanguageIndex: React.FC = () => {
       </div>
 
       {/* ── Opening — centered title + the invocation as the featured anchor ── */}
-      <div className="max-w-[1180px] mx-auto px-6 pt-5 text-center">
+      <div className="max-w-[1180px] mx-auto px-6 pt-3 text-center">
         <h1 className="font-serif font-medium text-wood-900 leading-[0.98] tracking-[-0.01em] m-0 text-[clamp(40px,6.5vw,68px)]">
           Universal Language
         </h1>
-        <div className="font-serif text-wood-900 max-w-[34em] mx-auto mt-6 flex flex-col gap-4 text-[clamp(20px,3vw,30px)] leading-[1.3] [text-wrap:balance]">
-          <p className="m-0">Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.</p>
-          <p className="m-0">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
-          <p className="m-0">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
+        <div className="font-serif text-[#e7dcc8] max-w-[36em] mx-auto mt-7 flex flex-col gap-[1.1em] text-[clamp(20px,3vw,30px)] leading-[1.42] [text-wrap:balance]">
+          <p className="m-0">Let this oracle be an instrument of attunement to the light within,<br className="hidden sm:block" /> as we move through the unfolding of this mystery.</p>
+          <p className="m-0">Let it nurture harmony, clarity, and compassion<br className="hidden sm:block" /> in thought, word, and action.</p>
+          <p className="m-0">Let us move beyond thoughts and in through the heart,<br className="hidden sm:block" /> in devotion and celebration of the perfection of this moment.</p>
         </div>
       </div>
 
       <div className="max-w-[1180px] mx-auto px-6 pt-7 pb-2 grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-x-12 gap-y-4 items-start">
 
-        {/* LEFT RAIL */}
+        {/* LEFT RAIL — one quiet grouped card: day/year, then the two links */}
         <aside className="min-w-0 lg:sticky lg:top-[calc(var(--nav-height)+24px)]">
-          {/* Card of the Day + Card of the Year — evenly spaced, baseline-aligned */}
-          <div className="grid grid-cols-2 gap-3">
-            <FeatTile eyebrow="Today" date={now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} card={today} onRead={() => openReading(today)} />
-            <FeatTile eyebrow="This year" date={String(now.getFullYear())} card={year} onRead={() => openReading(year)} />
-          </div>
-
-          {/* Sign in + New here — slim lines, one quiet hairline between */}
-          <div className="flex flex-col mt-5">
+          <div className="border border-wood-200 divide-y divide-wood-200">
+            <div className="grid grid-cols-2 divide-x divide-wood-200">
+              <FeatTile eyebrow="Today" date={now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} card={today} onRead={() => openReading(today)} />
+              <FeatTile eyebrow="This year" date={String(now.getFullYear())} card={year} onRead={() => openReading(year)} />
+            </div>
             <button
               type="button"
               onClick={() => setGridOpen(true)}
-              className="group flex items-center justify-between gap-3 w-full py-2.5 text-left transition-colors"
+              className="group flex items-center justify-between gap-3 w-full px-4 py-3 text-left transition-colors"
             >
               <span className="font-sans text-[13px] text-wood-600 group-hover:text-wood-900 transition-colors">
                 <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-wood-900 mr-2">{grid && grid.length > 0 ? 'Your codes' : 'Sign in'}</span>
@@ -555,11 +552,10 @@ const UniversalLanguageIndex: React.FC = () => {
               </span>
               <span aria-hidden className="font-label text-[13px] text-bronze-600 flex-shrink-0 group-hover:translate-x-0.5 transition-transform">→</span>
             </button>
-            <span aria-hidden className="h-px bg-wood-200/70" />
             <button
               type="button"
               onClick={() => setSystemsOpen(true)}
-              className="group flex items-center justify-between gap-3 w-full py-2.5 text-left transition-colors"
+              className="group flex items-center justify-between gap-3 w-full px-4 py-3 text-left transition-colors"
             >
               <span className="font-sans text-[13px] text-wood-600 group-hover:text-wood-900 transition-colors">
                 <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-wood-900 mr-2">New here?</span>
@@ -582,7 +578,15 @@ const UniversalLanguageIndex: React.FC = () => {
               ))}
             </div>
             <div role="group" aria-label="Filter by element" className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
-              {(['All', ...ELEMENTS] as Array<Element | 'All'>).map((e) => {
+              <button
+                type="button"
+                onClick={() => setElFilter('All')}
+                className={`${chipBase} ${elFilter === 'All' ? 'text-wood-900' : 'text-wood-400 hover:text-wood-700'}`}
+              >
+                All
+              </button>
+              <span aria-hidden className="w-px h-3 bg-wood-300 mx-0.5" />
+              {ELEMENTS.map((e) => {
                 const active = elFilter === e;
                 return (
                   <button
@@ -591,7 +595,7 @@ const UniversalLanguageIndex: React.FC = () => {
                     onClick={() => setElFilter(e)}
                     className={`${chipBase} ${active ? 'text-wood-900' : 'text-wood-400 hover:text-wood-700'}`}
                   >
-                    {e !== 'All' && <span aria-hidden className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: active ? ELEMENT_DOT[e] : 'transparent', boxShadow: active ? 'none' : `inset 0 0 0 1px ${ELEMENT_DOT[e]}` }} />}
+                    <span aria-hidden className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all" style={{ background: active ? ELEMENT_DOT[e] : 'transparent', boxShadow: active ? 'none' : `inset 0 0 0 1px ${ELEMENT_DOT[e]}` }} />
                     {e}
                   </button>
                 );
@@ -599,16 +603,16 @@ const UniversalLanguageIndex: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col items-center gap-3 pt-5 pb-3">
+          <div className="flex flex-col items-center gap-2.5 pt-5 pb-4">
             <button
               type="button"
               onClick={drawRandom}
-              className="font-label text-[12px] font-bold uppercase tracking-[0.18em] text-paper-50 bg-bronze-600 px-8 py-3 hover:bg-wood-900 transition-colors whitespace-nowrap shadow-[0_2px_8px_rgba(38,35,33,0.18)]"
+              className="group font-label text-[11.5px] font-bold uppercase tracking-[0.22em] text-bronze-700 border border-bronze-600/70 px-9 py-3 hover:bg-bronze-600 hover:text-paper-50 transition-colors whitespace-nowrap"
             >
               Draw a Card
             </button>
-            <p className="m-0 font-serif italic text-[14px] leading-snug text-wood-500" aria-live="polite">
-              {elFiltered ? `${total} of 64 shown` : instruction}
+            <p className="m-0 font-serif italic text-[13.5px] leading-snug text-wood-400" aria-live="polite">
+              {elFiltered ? `${total} of 64 shown` : 'or choose one below'}
             </p>
           </div>
 
