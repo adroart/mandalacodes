@@ -525,7 +525,7 @@ const UniversalLanguageIndex: React.FC = () => {
         <h1 className="font-serif font-medium text-wood-900 leading-[0.98] tracking-[-0.01em] m-0 text-[clamp(40px,6.5vw,68px)]">
           Universal Language
         </h1>
-        <div className="font-serif text-wood-900 max-w-[22em] mx-auto mt-6 flex flex-col gap-3 text-[clamp(22px,3.4vw,34px)] leading-[1.25]">
+        <div className="font-serif text-wood-900 max-w-[34em] mx-auto mt-6 flex flex-col gap-4 text-[clamp(20px,3vw,30px)] leading-[1.3] [text-wrap:balance]">
           <p className="m-0">Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.</p>
           <p className="m-0">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
           <p className="m-0">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
