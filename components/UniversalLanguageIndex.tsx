@@ -527,13 +527,12 @@ const UniversalLanguageIndex: React.FC = () => {
         </button>
       </div>
 
-      {/* ── Opening — left-aligned so it agrees with everything below ───────── */}
+      {/* ── Opening — title, then the invocation as the featured anchor ─────── */}
       <div className="max-w-[1180px] mx-auto px-6 pt-5">
         <h1 className="font-serif font-medium text-wood-900 leading-[0.98] tracking-[-0.01em] m-0 text-[clamp(40px,6.5vw,68px)]">
           Universal Language
         </h1>
-        <p className="font-serif italic text-bronze-600 mt-1.5 text-[clamp(17px,2.2vw,22px)]">Sixty-Four Expressions</p>
-        <div className="font-serif italic text-[clamp(15px,1.9vw,19px)] leading-[1.5] text-wood-600 max-w-[42em] mt-4 flex flex-col gap-2">
+        <div className="font-serif text-wood-900 max-w-[20em] mt-6 flex flex-col gap-3 text-[clamp(22px,3.4vw,34px)] leading-[1.25]">
           <p className="m-0">Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.</p>
           <p className="m-0">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
           <p className="m-0">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
@@ -607,9 +606,18 @@ const UniversalLanguageIndex: React.FC = () => {
             </div>
           </div>
 
-          <p className="m-0 pt-3 pb-1 font-serif italic text-[15px] leading-snug text-wood-500" aria-live="polite">
-            {elFiltered ? `${total} of 64 shown` : instruction}
-          </p>
+          <div className="flex items-center justify-between gap-4 pt-3 pb-2 flex-wrap">
+            <p className="m-0 font-serif italic text-[15px] leading-snug text-wood-500" aria-live="polite">
+              {elFiltered ? `${total} of 64 shown` : instruction}
+            </p>
+            <button
+              type="button"
+              onClick={drawRandom}
+              className="font-label text-[11px] font-bold uppercase tracking-[0.16em] text-paper-50 bg-bronze-600 px-5 py-2.5 hover:bg-wood-900 transition-colors whitespace-nowrap"
+            >
+              Draw a Card
+            </button>
+          </div>
 
           {/* I CHING flip wall */}
           {view === 'iching' && filtered.length > 0 && (
