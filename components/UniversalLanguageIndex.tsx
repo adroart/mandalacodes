@@ -176,8 +176,8 @@ const FlipTile: React.FC<{
         className="flex flex-col items-center justify-center gap-2 bg-transparent cursor-pointer focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px]"
         style={{ aspectRatio: '1 / 1' }}
       >
-        <CardHex card={card} width={42} />
-        <span className="font-label text-[13px] font-bold tracking-[0.1em] text-wood-700 leading-none">
+        <CardHex card={card} width={42} color="var(--text-2, #d8c9b0)" />
+        <span className="font-label text-[12px] font-bold tracking-[0.1em] text-wood-500 leading-none">
           {String(card.number).padStart(2, '0')}
         </span>
       </button>
@@ -494,97 +494,86 @@ const UniversalLanguageIndex: React.FC = () => {
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
 
-      {/* ── Masthead ─────────────────────────────────────────────────────── */}
-      <header className="sticky top-[var(--nav-height)] z-40 bg-paper-50/95 [backdrop-filter:blur(8px)] border-b border-wood-200">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-[58px] flex items-center justify-between gap-2 sm:gap-4">
-          <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-2.5 font-label text-[11px] uppercase tracking-[0.2em] text-wood-400 min-w-0">
-            <Link to="/" className="text-wood-500 hover:text-wood-900 transition-colors">Mandala Codes</Link>
-            <span aria-hidden>/</span>
-            <span className="text-wood-900 font-semibold whitespace-nowrap">Universal Language</span>
-          </nav>
-          {/* On narrow screens the global nav already names the page; drop the
-              breadcrumb entirely so the action cluster never collides with it.
-              A spacer keeps the actions right-aligned. */}
-          <span aria-hidden className="md:hidden flex-1" />
-          <div className="flex items-center gap-4 sm:gap-5 flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => setJournalOpen(true)}
-              className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-wood-600 hover:text-bronze-600 transition-colors flex items-center gap-1.5 whitespace-nowrap"
-            >
-              Journal
-              {journal.length > 0 && (
-                <span className="text-[9px] font-bold text-paper-50 bg-bronze-600 rounded-[9px] min-w-[16px] h-4 inline-flex items-center justify-center px-1">
-                  {journal.length}
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => setOnboarding(true)}
-              aria-label="How to read a card"
-              title="How to read a card"
-              className="font-label text-xs font-bold w-[24px] h-[24px] rounded-full text-wood-500 border border-wood-300 hover:bg-paper-100 hover:border-bronze-600 transition-colors flex-shrink-0"
-            >
-              ?
-            </button>
-            <button
-              type="button"
-              onClick={drawRandom}
-              className="font-label text-[12px] font-bold uppercase tracking-[0.18em] text-paper-50 bg-bronze-600 px-6 py-3 hover:bg-wood-900 transition-colors whitespace-nowrap shadow-[0_2px_8px_rgba(38,35,33,0.18)]"
-            >
-              Draw a Card
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* ── Quiet action row (not a second bar) — sits just under the site nav,
+          borderless so it reads as part of it; Draw is the one accent ──────── */}
+      <div className="max-w-[1180px] mx-auto px-6 pt-3 flex items-center justify-end gap-5">
+        <button
+          type="button"
+          onClick={() => setJournalOpen(true)}
+          className="font-label text-[10.5px] font-semibold uppercase tracking-[0.18em] text-wood-500 hover:text-bronze-600 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+        >
+          Journal
+          {journal.length > 0 && (
+            <span className="text-[9px] font-bold text-paper-50 bg-bronze-600 rounded-[9px] min-w-[16px] h-4 inline-flex items-center justify-center px-1">
+              {journal.length}
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOnboarding(true)}
+          aria-label="How to read a card"
+          title="How to read a card"
+          className="font-label text-xs font-bold w-[22px] h-[22px] rounded-full text-wood-500 border border-wood-300 hover:bg-paper-100 hover:border-bronze-600 transition-colors flex-shrink-0"
+        >
+          ?
+        </button>
+        <button
+          type="button"
+          onClick={drawRandom}
+          className="font-label text-[11px] font-bold uppercase tracking-[0.16em] text-bronze-700 border border-bronze-600/60 px-4 py-2 hover:bg-bronze-600 hover:text-paper-50 transition-colors whitespace-nowrap"
+        >
+          Draw a Card
+        </button>
+      </div>
 
-      {/* ── Centered hero: big title, subtitle, one-line invocation ─────────── */}
-      <div className="max-w-[800px] mx-auto px-6 pt-12 lg:pt-14 text-center">
-        <h1 className="font-serif font-medium text-wood-900 leading-[0.98] tracking-[-0.01em] m-0 text-[clamp(44px,7vw,72px)]">
+      {/* ── Opening — left-aligned so it agrees with everything below ───────── */}
+      <div className="max-w-[1180px] mx-auto px-6 pt-5">
+        <h1 className="font-serif font-medium text-wood-900 leading-[0.98] tracking-[-0.01em] m-0 text-[clamp(40px,6.5vw,68px)]">
           Universal Language
         </h1>
-        <p className="font-serif italic text-bronze-600 mt-2 text-[clamp(18px,2.4vw,24px)]">Sixty-Four Expressions</p>
-        <div className="font-serif italic text-[clamp(16px,2vw,20px)] leading-[1.55] text-wood-700 max-w-[40em] mx-auto mt-5 flex flex-col gap-2.5">
+        <p className="font-serif italic text-bronze-600 mt-1.5 text-[clamp(17px,2.2vw,22px)]">Sixty-Four Expressions</p>
+        <div className="font-serif italic text-[clamp(15px,1.9vw,19px)] leading-[1.5] text-wood-600 max-w-[42em] mt-4 flex flex-col gap-2">
           <p className="m-0">Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.</p>
           <p className="m-0">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
           <p className="m-0">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
         </div>
       </div>
 
-      <div className="max-w-[1280px] mx-auto px-6 pt-6 pb-2 grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] gap-x-12 gap-y-4 items-start">
+      <div className="max-w-[1180px] mx-auto px-6 pt-7 pb-2 grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-x-12 gap-y-4 items-start">
 
         {/* LEFT RAIL */}
-        <aside className="min-w-0 lg:sticky lg:top-[calc(var(--nav-height)+58px+24px)]">
-          {/* Card of the Day + Card of the Year — tiny art, side by side */}
-          <div className="flex items-center gap-5">
-            <FeatTile eyebrow="Day" date={now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} card={today} onRead={() => openReading(today)} />
-            <FeatTile eyebrow="Year" date={String(now.getFullYear())} card={year} onRead={() => openReading(year)} />
+        <aside className="min-w-0 lg:sticky lg:top-[calc(var(--nav-height)+24px)]">
+          {/* Card of the Day + Card of the Year — evenly spaced, baseline-aligned */}
+          <div className="grid grid-cols-2 gap-3">
+            <FeatTile eyebrow="Today" date={now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} card={today} onRead={() => openReading(today)} />
+            <FeatTile eyebrow="This year" date={String(now.getFullYear())} card={year} onRead={() => openReading(year)} />
           </div>
 
-          {/* Sign in + New here — slim single lines, both quiet */}
-          <div className="flex flex-col mt-3.5 border-t border-wood-200">
+          {/* Sign in + New here — slim lines, one quiet hairline between */}
+          <div className="flex flex-col mt-5">
             <button
               type="button"
               onClick={() => setGridOpen(true)}
-              className="group flex items-center justify-between gap-3 w-full py-2.5 border-b border-wood-200 text-left hover:text-bronze-600 transition-colors"
+              className="group flex items-center justify-between gap-3 w-full py-2.5 text-left transition-colors"
             >
-              <span className="font-sans text-[12.5px] text-wood-700 group-hover:text-bronze-600">
+              <span className="font-sans text-[13px] text-wood-600 group-hover:text-wood-900 transition-colors">
                 <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-wood-900 mr-2">{grid && grid.length > 0 ? 'Your codes' : 'Sign in'}</span>
-                find your own cards in every reading
+                Find your own cards in every reading
               </span>
-              <span aria-hidden className="font-label text-[13px] text-bronze-600 flex-shrink-0">→</span>
+              <span aria-hidden className="font-label text-[13px] text-bronze-600 flex-shrink-0 group-hover:translate-x-0.5 transition-transform">→</span>
             </button>
+            <span aria-hidden className="h-px bg-wood-200/70" />
             <button
               type="button"
               onClick={() => setSystemsOpen(true)}
-              className="group flex items-center justify-between gap-3 w-full py-2.5 border-b border-wood-200 text-left hover:text-bronze-600 transition-colors"
+              className="group flex items-center justify-between gap-3 w-full py-2.5 text-left transition-colors"
             >
-              <span className="font-sans text-[12.5px] text-wood-700 group-hover:text-bronze-600">
+              <span className="font-sans text-[13px] text-wood-600 group-hover:text-wood-900 transition-colors">
                 <span className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-wood-900 mr-2">New here?</span>
-                how the four systems connect
+                How the four systems connect
               </span>
-              <span aria-hidden className="font-label text-[13px] text-bronze-600 flex-shrink-0">→</span>
+              <span aria-hidden className="font-label text-[13px] text-bronze-600 flex-shrink-0 group-hover:translate-x-0.5 transition-transform">→</span>
             </button>
           </div>
         </aside>
@@ -592,7 +581,7 @@ const UniversalLanguageIndex: React.FC = () => {
         {/* RIGHT — the deck */}
         <main id="ul-main" className="min-w-0">
           {/* Controls — view switch + element filters on one quiet row */}
-          <div className="sticky top-[calc(var(--nav-height)+58px)] z-20 bg-paper-50 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-1 pb-3 border-b border-wood-200">
+          <div className="sticky top-[var(--nav-height)] z-20 bg-paper-50 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-1 pb-3 border-b border-wood-200">
             <div role="group" aria-label="View mode" className="flex items-end gap-5 flex-shrink-0">
               {viewTabs.map((t) => (
                 <button key={t.v} type="button" onClick={() => setView(t.v)} className={`${tabBase} ${view === t.v ? tabActive : tabIdle}`}>
@@ -618,14 +607,14 @@ const UniversalLanguageIndex: React.FC = () => {
             </div>
           </div>
 
-          <p className="m-0 pt-3.5 font-serif italic text-[15px] leading-snug text-wood-500" aria-live="polite">
+          <p className="m-0 pt-3 pb-1 font-serif italic text-[15px] leading-snug text-wood-500" aria-live="polite">
             {elFiltered ? `${total} of 64 shown` : instruction}
           </p>
 
           {/* I CHING flip wall */}
           {view === 'iching' && filtered.length > 0 && (
-            <div className="pt-3.5">
-              <div className="grid grid-cols-4 gap-1 items-start">
+            <div className="pt-1">
+              <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-x-3 gap-y-5 items-start">
                 {filtered.map((c) => (
                   <FlipTile key={c.number} card={c} flipped={flipped.has(c.number)} onFlip={() => flip(c.number)} onBack={() => flipBack(c.number)} onRead={() => goCardPage(c)} />
                 ))}
