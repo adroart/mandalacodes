@@ -48,36 +48,42 @@ type Screen = 'field' | 'ul' | 'iching' | 'genekeys' | 'humandesign' | 'connecti
 
 /* ─── Per-section palette ─────────────────────────────────────────────────── */
 
-// FIELD (hero, above the chapter strip) keeps its original light paper.
-// The six panels below the strip carry a subtle deepening in the same
-// dusty warm-grey family — warm enough to feel of-the-brand, desaturated
-// enough that no panel reads as muddy brown. Each step is a quiet
-// progression, not a saturation push.
+// EARTH'S BREATH surfaces. The reading is ONE coherent surface that flips
+// wholesale with the theme (Day Book light / Nightfall dark) via the token
+// system. Two surface roles only:
+//   · paper  — the main reading surface (UL, Gene Keys, Body, Relations)
+//   · recess — a warm sandstone deepening of the SAME paper, holding the two
+//              "feature" systems (I Ching, Human Design). Never black; in
+//              Nightfall it is a deeper near-black, in Day Book a deeper sand.
+// This replaces the old per-section progressive darkening + forced-dark
+// (.dark-preserve) treatment, which fought the theme.
 const SCREEN_BG: Record<Screen, string> = {
   field:       'bg-paper-50',
-  ul:          'bg-[#151311]',  // start: warm near-black
-  iching:      'bg-[#1c1a17]',
-  genekeys:    'bg-[#22201d]',
-  humandesign: 'bg-[#2a2724]',
-  connections: 'bg-[#33302c]',  // end: dusty warm grey
+  ul:          'bg-paper-50',
+  iching:      'bg-recess',
+  genekeys:    'bg-paper-50',
+  humandesign: 'bg-recess',
+  connections: 'bg-paper-50',
 };
 
-const DARK_SECTIONS: Screen[] = ['iching', 'humandesign'];
+// The two feature panels sit in the recess; they use the `stone` token scale
+// (tuned for the recess in both themes). Everything else uses `wood` on paper.
+const RECESS_SECTIONS: Screen[] = ['iching', 'humandesign'];
 
-function isDarkSection(s: Screen): boolean {
-  return DARK_SECTIONS.includes(s);
+function isRecessSection(s: Screen): boolean {
+  return RECESS_SECTIONS.includes(s);
 }
 
 function screenText(screen: Screen, tier: 'primary' | 'secondary' | 'label' | 'muted'): string {
-  if (!isDarkSection(screen)) {
+  if (!isRecessSection(screen)) {
     return { primary: 'text-wood-900', secondary: 'text-wood-700', label: 'text-wood-500', muted: 'text-wood-400' }[tier];
   }
-  return { primary: 'text-stone-100', secondary: 'text-stone-300', label: 'text-stone-400', muted: 'text-stone-400' }[tier];
+  return { primary: 'text-stone-900', secondary: 'text-stone-600', label: 'text-stone-500', muted: 'text-stone-400' }[tier];
 }
 
 function screenBorder(screen: Screen): string {
-  if (!isDarkSection(screen)) return 'border-wood-200';
-  return 'border-stone-700';
+  if (!isRecessSection(screen)) return 'border-wood-200';
+  return 'border-stone-300';
 }
 
 // Dark-section card shadows (I Ching) - 1px white top edge simulates light source
@@ -441,18 +447,21 @@ const ExpandBridge: React.FC<{ bind: (ctx: ExpandContextValue) => void }> = ({ b
    stone-900 backgrounds; 'light' on paper. */
 
 const PLATE_TYPE = {
+  // 'dark' = the recess-panel variant (I Ching, Human Design). Tokens use the
+  // `stone` scale, which inverts with the theme, so the same classes read as
+  // ink-on-sand in Day Book and cream-on-near-black in Nightfall.
   dark: {
-    border:    'border-stone-700/60',
-    rule:      'border-stone-700/40',
-    label:     'text-bronze-400',
-    caption:   'text-stone-400',
-    primary:   'text-stone-100',
-    body:      'text-stone-300',
-    bodyOpen:  'text-stone-200',
+    border:    'border-stone-300/60',
+    rule:      'border-stone-300/40',
+    label:     'text-bronze-600',
+    caption:   'text-stone-500',
+    primary:   'text-stone-900',
+    body:      'text-stone-700',
+    bodyOpen:  'text-stone-800',
     chevron:   'text-stone-500',
-    chevronOn: 'text-bronze-400',
-    rowHover:  'hover:bg-white/[0.025]',
-    rowFocus:  'focus-visible:bg-white/[0.04]',
+    chevronOn: 'text-bronze-600',
+    rowHover:  'hover:bg-stone-500/[0.05]',
+    rowFocus:  'focus-visible:bg-stone-500/[0.07]',
     maskGrad:  'linear-gradient(to bottom, black 55%, transparent 100%)',
   },
   light: {
@@ -1374,8 +1383,9 @@ const UniversalLanguageCard: React.FC = () => {
 
       {/* ── Single scrolling page ─────────────────────────────────────────
           Top padding follows the live nav height; +32px buffer gives the
-          hero image breathing room below the nav. */}
-      <div style={{ paddingTop: 'calc(var(--nav-height, 72px) + 32px)' }}>
+          hero image breathing room below the nav. The eb-grain class lays the
+          Earth's Breath paper texture over the whole reading. */}
+      <div className="eb-grain" style={{ paddingTop: 'calc(var(--nav-height, 72px) + 32px)' }}>
 
         {/* ════════════ FIELD ════════════════════════════════════════════ */}
         <section id="field" className={`${SCREEN_BG.field} scroll-mt-16`}>
@@ -1787,9 +1797,10 @@ const UniversalLanguageCard: React.FC = () => {
           </div>
 
           {/* ────────── I CHING ────────── */}
-          {/* dark-preserve: intentionally-dark panel stays dark in dark mode
-              (without it, bg-stone-900 would remap to a light tone). */}
-          <div className={`${SCREEN_BG.iching} dark-preserve min-h-screen`} style={{ touchAction: 'pan-y' }}>
+          {/* Feature panel: sits in the warm sandstone recess, following the
+              theme (deeper sand in Day Book, deeper near-black in Nightfall).
+              Text uses the `stone` token scale, which inverts with the theme. */}
+          <div className={`${SCREEN_BG.iching} min-h-screen`} style={{ touchAction: 'pan-y' }}>
           <div className="max-w-2xl mx-auto px-4 sm:px-7 pt-12 sm:pt-16 pb-16 sm:pb-20">
 
             {/* Plate header — hexagram glyph is the trigger to the system overlay */}
@@ -1797,29 +1808,29 @@ const UniversalLanguageCard: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSystemOverlay('iching')}
-                className="group flex flex-col items-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-bronze-500/50 focus-visible:ring-offset-8 focus-visible:ring-offset-stone-900 rounded-sm"
+                className="group flex flex-col items-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-bronze-500/50 focus-visible:ring-offset-8 focus-visible:ring-offset-recess rounded-sm"
                 aria-label="About the I Ching"
               >
                 <span
-                  className="font-chinese-serif text-[64px] sm:text-[72px] leading-none text-bronze-400/85 group-hover:text-bronze-300 transition-colors mb-5 sm:mb-6"
+                  className="font-chinese-serif text-[64px] sm:text-[72px] leading-none text-bronze-600 group-hover:text-bronze-400 transition-colors mb-5 sm:mb-6"
                   title={HEXAGRAM_CHINESE[card.number]?.pinyin}
                 >
                   {HEXAGRAM_CHINESE[card.number]?.char ?? card.number}
                 </span>
-                <p className={`${LABEL_PANEL} text-bronze-400/90 group-hover:text-bronze-300 transition-colors pb-1.5 border-b border-bronze-500/30 group-hover:border-bronze-400/60`}>
+                <p className={`${LABEL_PANEL} text-bronze-600 group-hover:text-bronze-400 transition-colors pb-1.5 border-b border-bronze-500/30 group-hover:border-bronze-400/60`}>
                   I Ching
                 </p>
               </button>
             </header>
 
             {/* Interactive hexagram + trigram selector — open hairline rows, no card */}
-            <div ref={ichingRef} className="border-t border-stone-700/60 -mx-4 sm:-mx-7">
+            <div ref={ichingRef} className="border-t border-stone-300/60 -mx-4 sm:-mx-7">
               {/* HEX row — matches the UPPER/LOWER format below but taller:
                     label · hexagram glyph · name + formula (two lines) · meta */}
               <button
                 type="button"
                 onClick={() => setIchingOpen('hex')}
-                className={`group flex sm:grid sm:grid-cols-[88px_1fr_auto] sm:gap-x-5 items-center gap-3 w-full text-left py-5 sm:py-6 px-4 sm:px-7 border-b border-stone-700/60 transition-colors focus-visible:outline-none focus-visible:bg-bronze-500/[0.08] ${ichingOpen === 'hex' ? 'bg-bronze-500/[0.06]' : 'hover:bg-white/[0.025]'}`}
+                className={`group flex sm:grid sm:grid-cols-[88px_1fr_auto] sm:gap-x-5 items-center gap-3 w-full text-left py-5 sm:py-6 px-4 sm:px-7 border-b border-stone-300/60 transition-colors focus-visible:outline-none focus-visible:bg-bronze-500/[0.08] ${ichingOpen === 'hex' ? 'bg-bronze-500/[0.06]' : 'hover:bg-stone-500/[0.05]'}`}
                 aria-pressed={ichingOpen === 'hex'}
                 aria-label={`Read ${card.iching.hexagram_name}, ${card.iching.upper_trigram.name} over ${card.iching.lower_trigram.name}`}
               >
@@ -1832,10 +1843,10 @@ const UniversalLanguageCard: React.FC = () => {
                     width={32}
                   />
                   <div className="flex flex-col min-w-0">
-                    <span className={`font-serif text-[18px] leading-[1.25] tracking-[-0.005em] truncate transition-colors ${ichingOpen === 'hex' ? 'text-stone-100' : 'text-stone-300 group-hover:text-stone-100'}`}>
+                    <span className={`font-serif text-[18px] leading-[1.25] tracking-[-0.005em] truncate transition-colors ${ichingOpen === 'hex' ? 'text-stone-900' : 'text-stone-700 group-hover:text-stone-900'}`}>
                       {card.iching.hexagram_name}
                     </span>
-                    <span className={`font-serif text-[14px] leading-[1.35] mt-0.5 truncate transition-colors ${ichingOpen === 'hex' ? 'text-stone-400' : 'text-stone-500 group-hover:text-stone-400'}`}>
+                    <span className={`font-serif text-[14px] leading-[1.35] mt-0.5 truncate transition-colors ${ichingOpen === 'hex' ? 'text-stone-500' : 'text-stone-500 group-hover:text-stone-500'}`}>
                       {card.iching.upper_trigram.name.replace(/\s*\([^)]*\)\s*/g, '').trim()} over {card.iching.lower_trigram.name.replace(/\s*\([^)]*\)\s*/g, '').trim()}
                     </span>
                   </div>
@@ -1846,13 +1857,13 @@ const UniversalLanguageCard: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIchingOpen('upper')}
-                className={`group flex sm:grid sm:grid-cols-[88px_1fr_auto] sm:gap-x-5 items-center gap-3 w-full text-left py-3.5 sm:py-4 px-4 sm:px-7 border-b border-stone-700/60 transition-colors focus-visible:outline-none focus-visible:bg-bronze-500/[0.08] ${ichingOpen === 'upper' ? 'bg-bronze-500/[0.06]' : 'hover:bg-white/[0.025]'}`}
+                className={`group flex sm:grid sm:grid-cols-[88px_1fr_auto] sm:gap-x-5 items-center gap-3 w-full text-left py-3.5 sm:py-4 px-4 sm:px-7 border-b border-stone-300/60 transition-colors focus-visible:outline-none focus-visible:bg-bronze-500/[0.08] ${ichingOpen === 'upper' ? 'bg-bronze-500/[0.06]' : 'hover:bg-stone-500/[0.05]'}`}
                 aria-pressed={ichingOpen === 'upper'}
               >
                 <span className={`${LABEL_SECTION} text-stone-500 sm:self-center flex-shrink-0`}>Upper</span>
                 <div className="min-w-0 flex-1 flex items-center gap-3 sm:gap-4">
                   <TrigramSVG symbol={card.iching.upper_trigram.symbol} color={ichingOpen === 'upper' ? '#c9a05a' : '#6b5a40'} width={24} height={16} />
-                  <span className={`font-serif text-[17px] leading-[1.3] truncate transition-colors ${ichingOpen === 'upper' ? 'text-stone-100' : 'text-stone-300 group-hover:text-stone-100'}`}>{card.iching.upper_trigram.name}</span>
+                  <span className={`font-serif text-[17px] leading-[1.3] truncate transition-colors ${ichingOpen === 'upper' ? 'text-stone-900' : 'text-stone-700 group-hover:text-stone-900'}`}>{card.iching.upper_trigram.name}</span>
                 </div>
                 <span className={`${LABEL_SECTION} text-stone-500 flex-shrink-0`}>Trigram</span>
               </button>
@@ -1860,28 +1871,28 @@ const UniversalLanguageCard: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIchingOpen('lower')}
-                className={`group flex sm:grid sm:grid-cols-[88px_1fr_auto] sm:gap-x-5 items-center gap-3 w-full text-left py-3.5 sm:py-4 px-4 sm:px-7 border-b border-stone-700/60 transition-colors focus-visible:outline-none focus-visible:bg-bronze-500/[0.08] ${ichingOpen === 'lower' ? 'bg-bronze-500/[0.06]' : 'hover:bg-white/[0.025]'}`}
+                className={`group flex sm:grid sm:grid-cols-[88px_1fr_auto] sm:gap-x-5 items-center gap-3 w-full text-left py-3.5 sm:py-4 px-4 sm:px-7 border-b border-stone-300/60 transition-colors focus-visible:outline-none focus-visible:bg-bronze-500/[0.08] ${ichingOpen === 'lower' ? 'bg-bronze-500/[0.06]' : 'hover:bg-stone-500/[0.05]'}`}
                 aria-pressed={ichingOpen === 'lower'}
               >
                 <span className={`${LABEL_SECTION} text-stone-500 sm:self-center flex-shrink-0`}>Lower</span>
                 <div className="min-w-0 flex-1 flex items-center gap-3 sm:gap-4">
                   <TrigramSVG symbol={card.iching.lower_trigram.symbol} color={ichingOpen === 'lower' ? '#c9a05a' : '#6b5a40'} width={24} height={16} />
-                  <span className={`font-serif text-[17px] leading-[1.3] truncate transition-colors ${ichingOpen === 'lower' ? 'text-stone-100' : 'text-stone-300 group-hover:text-stone-100'}`}>{card.iching.lower_trigram.name}</span>
+                  <span className={`font-serif text-[17px] leading-[1.3] truncate transition-colors ${ichingOpen === 'lower' ? 'text-stone-900' : 'text-stone-700 group-hover:text-stone-900'}`}>{card.iching.lower_trigram.name}</span>
                 </div>
                 <span className={`${LABEL_SECTION} text-stone-500 flex-shrink-0`}>Trigram</span>
               </button>
 
               {/* Reading zone — updates on tap. TEMPLATE FIX: label above
                   the reading (was an 88px side column that overlapped). */}
-              <div className="py-6 sm:py-7 px-4 sm:px-7 border-b border-stone-700/60">
-                <p className={`${LABEL_SECTION} text-bronze-400/80 mb-2.5`}>
+              <div className="py-6 sm:py-7 px-4 sm:px-7 border-b border-stone-300/60">
+                <p className={`${LABEL_SECTION} text-bronze-600 mb-2.5`}>
                   {ichingOpen === 'hex'
                     ? 'Combination'
                     : ichingOpen === 'upper'
                     ? 'Upper nature'
                     : 'Lower nature'}
                 </p>
-                <p className="font-sans text-[16px] text-stone-200 leading-[1.75] sm:leading-[1.8]">
+                <p className="font-sans text-[16px] text-stone-800 leading-[1.75] sm:leading-[1.8]">
                   {ichingOpen === 'hex'
                     ? (synthesis?.synthesis.iching.trigram_combination ?? card.iching.essence)
                     : ichingOpen === 'upper'
@@ -1914,7 +1925,7 @@ const UniversalLanguageCard: React.FC = () => {
                   preview={synthesis.synthesis.iching.reading.split('\n\n').filter(Boolean)[0] ?? ''}
                 >
                   {synthesis.synthesis.iching.reading.split('\n\n').filter(Boolean).map((p, i) => (
-                    <p key={i} className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{p}</p>
+                    <p key={i} className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{p}</p>
                   ))}
                 </PlateExpand>
 
@@ -1930,22 +1941,22 @@ const UniversalLanguageCard: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-7">
                       {synthesis.synthesis.iching.judgement_lines.length > 0 && (
                         <div>
-                          <p className={`${LABEL_SECTION} text-bronze-400 mb-1`}>The Judgement</p>
-                          <p className="font-sans text-[14px] sm:text-[15px] text-stone-400 leading-[1.45] mt-1 mb-3">the oracle's reading of this moment</p>
+                          <p className={`${LABEL_SECTION} text-bronze-600 mb-1`}>The Judgement</p>
+                          <p className="font-sans text-[14px] sm:text-[15px] text-stone-500 leading-[1.45] mt-1 mb-3">the oracle's reading of this moment</p>
                           <div className="space-y-2">
                             {synthesis.synthesis.iching.judgement_lines.map((line, i) => (
-                              <p key={i} className="font-sans text-[15px] text-stone-200 leading-[1.7] sm:leading-[1.75]">{line}</p>
+                              <p key={i} className="font-sans text-[15px] text-stone-800 leading-[1.7] sm:leading-[1.75]">{line}</p>
                             ))}
                           </div>
                         </div>
                       )}
                       {synthesis.synthesis.iching.image_lines.length > 0 && (
                         <div>
-                          <p className={`${LABEL_SECTION} text-bronze-400 mb-1`}>The Image</p>
-                          <p className="font-sans text-[14px] sm:text-[15px] text-stone-400 leading-[1.45] mt-1 mb-3">a picture from nature that mirrors the energy</p>
+                          <p className={`${LABEL_SECTION} text-bronze-600 mb-1`}>The Image</p>
+                          <p className="font-sans text-[14px] sm:text-[15px] text-stone-500 leading-[1.45] mt-1 mb-3">a picture from nature that mirrors the energy</p>
                           <div className="space-y-2">
                             {synthesis.synthesis.iching.image_lines.map((line, i) => (
-                              <p key={i} className="font-sans text-[15px] text-stone-200 leading-[1.7] sm:leading-[1.75]">{line}</p>
+                              <p key={i} className="font-sans text-[15px] text-stone-800 leading-[1.7] sm:leading-[1.75]">{line}</p>
                             ))}
                           </div>
                         </div>
@@ -1969,15 +1980,15 @@ const UniversalLanguageCard: React.FC = () => {
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
                     <div>
-                      <p className={`${LABEL_SECTION} text-bronze-400 mb-2`}>Outer</p>
-                      <p className="font-sans text-[16px] text-stone-200 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.trigrams.outer.context.text}</p>
+                      <p className={`${LABEL_SECTION} text-bronze-600 mb-2`}>Outer</p>
+                      <p className="font-sans text-[16px] text-stone-800 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.trigrams.outer.context.text}</p>
                     </div>
                     <div>
-                      <p className={`${LABEL_SECTION} text-bronze-400 mb-2`}>Inner</p>
-                      <p className="font-sans text-[16px] text-stone-200 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.trigrams.inner.context.text}</p>
+                      <p className={`${LABEL_SECTION} text-bronze-600 mb-2`}>Inner</p>
+                      <p className="font-sans text-[16px] text-stone-800 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.trigrams.inner.context.text}</p>
                     </div>
                   </div>
-                  <p className="font-sans text-[16px] text-stone-200 leading-[1.75] sm:leading-[1.8] mt-2">
+                  <p className="font-sans text-[16px] text-stone-800 leading-[1.75] sm:leading-[1.8] mt-2">
                     {expanded.i_ching.trigrams.family_dynamic.text}
                   </p>
                 </PlateExpand>
@@ -1996,21 +2007,21 @@ const UniversalLanguageCard: React.FC = () => {
                     const stages = lines[1]?.replace(/\.$/, '').split(',').map(s => s.trim()).filter(Boolean) ?? [];
                     return (
                       <>
-                        {headline && <p className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{headline}</p>}
+                        {headline && <p className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{headline}</p>}
                         {stages.length > 0 && (
                           <div>
-                            <p className={`${LABEL_SECTION} text-bronze-400 mb-3`}>Four stages of the time cycle</p>
+                            <p className={`${LABEL_SECTION} text-bronze-600 mb-3`}>Four stages of the time cycle</p>
                             <div className="flex gap-x-6 gap-y-1 flex-wrap">
                               {stages.map((s, i) => (
-                                <span key={i} className="font-serif text-[17px] text-stone-200">{s}</span>
+                                <span key={i} className="font-serif text-[17px] text-stone-800">{s}</span>
                               ))}
                             </div>
                           </div>
                         )}
-                        <p className="font-sans text-[16px] text-stone-200 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.image_of_the_situation.fields_of_meaning}</p>
-                        <div className="pt-5 border-t border-stone-700/40 space-y-2">
+                        <p className="font-sans text-[16px] text-stone-800 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.image_of_the_situation.fields_of_meaning}</p>
+                        <div className="pt-5 border-t border-stone-300/40 space-y-2">
                           {expanded.i_ching.image_tradition.text.split('\n').filter(Boolean).map((line, i) => (
-                            <p key={i} className="font-sans text-[15px] text-stone-300 leading-[1.7]">{line}</p>
+                            <p key={i} className="font-sans text-[15px] text-stone-700 leading-[1.7]">{line}</p>
                           ))}
                         </div>
                       </>
@@ -2025,9 +2036,9 @@ const UniversalLanguageCard: React.FC = () => {
                   label="Patterns of Wisdom"
                   preview={expanded.i_ching.patterns_of_wisdom.nature_image}
                 >
-                  <p className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.patterns_of_wisdom.nature_image}</p>
-                  <p className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.patterns_of_wisdom.guidance}</p>
-                  <p className="font-sans text-[16px] text-stone-200 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.patterns_of_wisdom.context.text}</p>
+                  <p className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.patterns_of_wisdom.nature_image}</p>
+                  <p className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.patterns_of_wisdom.guidance}</p>
+                  <p className="font-sans text-[16px] text-stone-800 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.patterns_of_wisdom.context.text}</p>
                 </PlateExpand>
               </>
             )}
@@ -2035,16 +2046,16 @@ const UniversalLanguageCard: React.FC = () => {
             {/* Reflection (only when no synthesis) */}
             {!synthesis && expanded && (
               <div className="border-t border-bronze-700/40 py-6 sm:py-7 mt-2">
-                <p className={`${LABEL_SECTION} text-bronze-400 mb-2.5`}>Reflection</p>
-                <p className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.reflection.text}</p>
+                <p className={`${LABEL_SECTION} text-bronze-600 mb-2.5`}>Reflection</p>
+                <p className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{expanded.i_ching.reflection.text}</p>
               </div>
             )}
 
             {/* Fallback if no expanded data */}
             {!expanded && (
-              <div className="border-t border-stone-700/60 py-6 sm:py-7">
-                <p className={`${LABEL_SECTION} text-bronze-400 mb-2.5`}>Essence</p>
-                <p className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{card.iching.essence}</p>
+              <div className="border-t border-stone-300/60 py-6 sm:py-7">
+                <p className={`${LABEL_SECTION} text-bronze-600 mb-2.5`}>Essence</p>
+                <p className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{card.iching.essence}</p>
               </div>
             )}
 
@@ -2143,8 +2154,9 @@ const UniversalLanguageCard: React.FC = () => {
         </div>
 
         {/* ────────── HUMAN DESIGN ────────── */}
-        {/* dark-preserve: intentionally-dark panel stays dark in dark mode. */}
-        <div className={`${SCREEN_BG.humandesign} dark-preserve min-h-screen`} style={{ touchAction: 'pan-y' }}>
+        {/* Feature panel: sits in the warm sandstone recess, following the
+            theme. Text uses the `stone` token scale, which inverts with theme. */}
+        <div className={`${SCREEN_BG.humandesign} min-h-screen`} style={{ touchAction: 'pan-y' }}>
           <div className="max-w-2xl mx-auto px-4 sm:px-7 pt-12 sm:pt-16 pb-16 sm:pb-20">
 
             {/* Plate header — hexagram glyph is the trigger to the system overlay */}
@@ -2152,17 +2164,17 @@ const UniversalLanguageCard: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSystemOverlay('humandesign')}
-                className="group flex flex-col items-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-bronze-500/50 focus-visible:ring-offset-8 focus-visible:ring-offset-stone-900 rounded-sm"
+                className="group flex flex-col items-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-bronze-500/50 focus-visible:ring-offset-8 focus-visible:ring-offset-recess rounded-sm"
                 aria-label={`About Human Design, Gate ${card.human_design.gate}`}
               >
-                <div className="text-bronze-400/95 group-hover:text-bronze-300 transition-colors mb-5">
+                <div className="text-bronze-600 group-hover:text-bronze-400 transition-colors mb-5">
                   <GateHero gate={card.human_design.gate} size="sm" />
                 </div>
-                <p className={`${LABEL_PANEL} text-bronze-400/90 group-hover:text-bronze-300 transition-colors pb-1.5 border-b border-bronze-500/30 group-hover:border-bronze-400/60`}>
+                <p className={`${LABEL_PANEL} text-bronze-600 group-hover:text-bronze-400 transition-colors pb-1.5 border-b border-bronze-500/30 group-hover:border-bronze-400/60`}>
                   Human Design
                 </p>
               </button>
-              <h2 className="font-serif text-[28px] sm:text-[32px] leading-[1.1] sm:leading-[1.15] text-stone-100 tracking-[-0.005em] mt-7 sm:mt-8">{card.human_design.keyword}</h2>
+              <h2 className="font-serif text-[28px] sm:text-[32px] leading-[1.1] sm:leading-[1.15] text-stone-900 tracking-[-0.005em] mt-7 sm:mt-8">{card.human_design.keyword}</h2>
             </header>
 
             {/* Description (only when no synthesis) */}
@@ -2179,7 +2191,7 @@ const UniversalLanguageCard: React.FC = () => {
                   preview={paragraphs[0] ?? ''}
                 >
                   {paragraphs.map((p, i) => (
-                    <p key={i} className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{p}</p>
+                    <p key={i} className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{p}</p>
                   ))}
                 </PlateExpand>
               );
@@ -2201,7 +2213,7 @@ const UniversalLanguageCard: React.FC = () => {
                       preview={paragraphs[0] ?? ''}
                     >
                       {paragraphs.map((p, i) => (
-                        <p key={i} className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{p}</p>
+                        <p key={i} className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{p}</p>
                       ))}
                     </PlateExpand>
                   );
@@ -2219,7 +2231,7 @@ const UniversalLanguageCard: React.FC = () => {
                       preview={paragraphs[0] ?? ''}
                     >
                       {paragraphs.map((p, i) => (
-                        <p key={i} className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{p}</p>
+                        <p key={i} className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{p}</p>
                       ))}
                     </PlateExpand>
                   );
@@ -2238,7 +2250,7 @@ const UniversalLanguageCard: React.FC = () => {
                       preview={paragraphs[0] ?? ''}
                     >
                       {paragraphs.map((p, i) => (
-                        <p key={i} className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{p}</p>
+                        <p key={i} className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{p}</p>
                       ))}
                     </PlateExpand>
                   );
@@ -2259,7 +2271,7 @@ const UniversalLanguageCard: React.FC = () => {
                   preview={paragraphs[0] ?? ''}
                 >
                   {paragraphs.map((p, i) => (
-                    <p key={i} className="font-sans text-[16px] text-stone-100 leading-[1.75] sm:leading-[1.8]">{p}</p>
+                    <p key={i} className="font-sans text-[16px] text-stone-900 leading-[1.75] sm:leading-[1.8]">{p}</p>
                   ))}
                 </PlateExpand>
               );
