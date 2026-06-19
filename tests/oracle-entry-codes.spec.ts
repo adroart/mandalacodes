@@ -45,3 +45,14 @@ test('birth moment set: rail confirms, the profile cards glow', async ({ page })
 
   await page.screenshot({ path: 'test-results/oracle-entry-codes-glow.png', fullPage: false });
 });
+
+test('linked "Your codes" tile routes to the Atlas', async ({ page }) => {
+  const profile = makeProfile();
+  await page.addInitScript(([key, val]) => {
+    window.localStorage.setItem(key as string, val as string);
+  }, [KEY, JSON.stringify(profile)] as const);
+
+  await page.goto('/universal-language');
+  await page.getByText('Your codes are linked', { exact: false }).click();
+  await expect(page).toHaveURL(/\/atlas$/);
+});

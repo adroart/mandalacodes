@@ -169,7 +169,12 @@ const OracleEntryPage: React.FC = () => {
         onEnterReading={onEnterReading}
         onCardOpened={onCardOpened}
         onOpenSystems={() => setSystemsOpen(true)}
-        onOpenGrid={() => setGridOpen(true)}
+        onOpenGrid={() => {
+          // Linked → go to the Atlas (their codes placed on the globe).
+          // Not linked yet → open the sign-in / birth-moment overlay.
+          if (hasCodes) navigate('/atlas');
+          else setGridOpen(true);
+        }}
       />
 
       {/* Systems overlay (kept from the previous index — the rail links target it) */}

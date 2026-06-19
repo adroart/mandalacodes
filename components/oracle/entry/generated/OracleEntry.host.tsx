@@ -18,6 +18,14 @@ import React from 'react';
 import { OracleEntryMarkup } from './OracleEntry.generated';
 import { ensureDcHexagramElement } from './dc-hexagram-element';
 
+/* Register the <dc-import> custom element at MODULE LOAD, before React ever
+   renders the grid. If registration is deferred to componentDidMount, every
+   <dc-import> is created as an undefined element first; React sets the `lines`
+   property on it, then the later upgrade shadows the accessor and every tile
+   renders the default hexagram. Defining the element up front means each
+   `lines` assignment flows through the live accessor and each glyph is its own. */
+ensureDcHexagramElement();
+
 /* The lightweight card shape the design's renderVals expects. The adapter maps
    each real OracleCard into one of these so the verbatim logic is untouched. */
 export interface EntryCard {
