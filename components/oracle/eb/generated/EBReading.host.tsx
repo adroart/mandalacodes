@@ -601,7 +601,8 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const palette = this.props.palette ?? 'daybook';
     const motion = this.props.reduceMotion ? 'off' : 'on';
     return (
-      <div className="eb-reading" data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
+      <div className="eb-reading" data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}
+        style={{ paddingTop: 'var(--nav-height, 64px)' }}>
         <EBReadingMarkup vals={this.renderVals()} />
       </div>
     );

@@ -128,7 +128,7 @@ const Navigation: React.FC = () => {
     : 'bg-paper-50/85 backdrop-blur-md border-b border-wood-200/50';
   // On phones the bar stays slim so it reads as a compact top strip above the
   // page chrome (e.g. the card's chapter band); desktop keeps a generous bar.
-  const pad = isScrolled ? 'py-1.5 md:py-2' : 'py-2 md:py-4';
+  const pad = isScrolled ? 'py-1.5 md:py-2' : 'py-2 md:py-2.5';
 
   return (
     <nav
