@@ -119,15 +119,6 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </div>
       </>
     ) : null}
-    <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: "18px", marginTop: "clamp(30px,4vw,48px)" }}>
-      {(vals.heroDots ?? []).map((hd, hdIdx) => (
-        <React.Fragment key={hdIdx}>
-          <button type="button" onClick={hd.onClick} aria-label={hd.aria} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: "'Cormorant Garamond',serif", fontSize: "16px", letterSpacing: ".1em", padding: "4px 8px", color: `${hd.color ?? ""}`, borderBottom: `1.5px solid ${hd.border ?? ""}`, lineHeight: "1" }}>
-          {hd.label}
-          </button>
-        </React.Fragment>
-      ))}
-    </div>
   </header>
   <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "clamp(14px,2vw,24px) 18px 0", display: "flex", flexDirection: "column", gap: "clamp(12px,1.5vw,20px)" }}>
     <aside style={{ width: "100%", minWidth: "0" }}>
@@ -248,13 +239,13 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                     {(c.closed) ? (
                       <>
                         <span data-oe="trigline" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: ".35em", maxWidth: "100%", overflow: "hidden" }}>
-                          <span data-oe="trigtext" style={{ fontFamily: "'Karla',sans-serif", fontWeight: "600", letterSpacing: ".04em", textTransform: "uppercase", color: "var(--faint,#a89070)", lineHeight: "1.25", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: "0" }}>
+                          <span data-oe="trigtext" style={{ fontFamily: "'Karla',sans-serif", fontWeight: "600", letterSpacing: ".04em", color: "var(--faint,#a89070)", lineHeight: "1.25", whiteSpace: "nowrap", minWidth: "0" }}>
                           {c.upperTrigram}
                           </span>
                           <span data-oe="trigsep" aria-hidden="true" style={{ flexShrink: "0", color: "var(--faint,#a89070)", lineHeight: "1" }}>
                           ·
                           </span>
-                          <span data-oe="trigtext" style={{ fontFamily: "'Karla',sans-serif", fontWeight: "600", letterSpacing: ".04em", textTransform: "uppercase", color: "var(--faint,#a89070)", lineHeight: "1.25", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: "0" }}>
+                          <span data-oe="trigtext" style={{ fontFamily: "'Karla',sans-serif", fontWeight: "600", letterSpacing: ".04em", color: "var(--faint,#a89070)", lineHeight: "1.25", whiteSpace: "nowrap", minWidth: "0" }}>
                           {c.lowerTrigram}
                           </span>
                         </span>

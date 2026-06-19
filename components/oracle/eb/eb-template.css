@@ -71,6 +71,18 @@
 
 .eb-reading .ul-title-desktop { display: none; }
 .eb-reading .ul-title-mobile { display: block; }
+/* The I Ching hexagram + trigram rows are full-bleed (100vw) on mobile, which
+   reads well on a narrow screen. On wider browsers that stretch is too wide and
+   breaks out of the reading's content column, so above the column width it snaps
+   back to sit inside the column like the rest of the panel. */
+@media (min-width: 720px) {
+  .eb-reading .ul-iching-rows {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: auto !important;
+  }
+}
+
 @media (min-width: 720px) {
   .eb-reading .ul-title-desktop { display: block; }
   .eb-reading .ul-title-mobile { display: none; }

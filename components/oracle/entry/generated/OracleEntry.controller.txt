@@ -6,8 +6,8 @@ class Component extends DCLogic {
     import('./oracle-cards.js').then((m) => this.setState({ mod: m }));
   }
 
-  get theme() { return this.state.themeOverride || this.props.theme || 'light'; }
-  get inv() { return this.state.invOverride || this.props.invocationStyle || 'altar'; }
+  get theme() { return this.state.themeOverride || this.props.theme || 'dark'; }
+  get inv() { return 'altar'; }
 
   renderVals() {
     const m = this.state.mod;

@@ -283,7 +283,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </div>
           </>
         ) : null}
-        <div style={{ borderTop: "1px solid var(--d-rule)", marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)", width: "100vw" }}>
+        <div className="ul-iching-rows" style={{ borderTop: "1px solid var(--d-rule)", marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)", width: "100vw" }}>
           <button data-iv="hex" ref={vals.registerIv} onClick={vals.selHex} style={{ width: "100%", display: "flex", alignItems: "center", gap: "16px", textAlign: "left", background: "rgba(199,160,91,0.06)", border: "none", borderBottom: "1px solid var(--d-rule)", cursor: "pointer", padding: "20px clamp(22px,5vw,76px)", color: "inherit" }}>
             <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--d-3)", width: "64px", flexShrink: "0" }}>
             {vals.ichingGua}
@@ -498,15 +498,19 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                       {ml.n}
                       </span>
                       <div>
-                        <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "16px", color: "var(--d-2)", margin: "0 0 7px" }}>
-                        {ml.image}
-                        </p>
+                        {ml.image ? (
+                          <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "16px", color: "var(--d-2)", margin: "0 0 7px" }}>
+                          {ml.image}
+                          </p>
+                        ) : null}
                         <p style={{ fontFamily: "var(--sans)", fontSize: "15px", lineHeight: "1.7", color: "var(--d-2)", margin: "0 0 9px" }}>
                         {ml.text}
                         </p>
-                        <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--d-3)", margin: "0" }}>
-                        Moving → {ml.becomes}
-                        </p>
+                        {ml.becomes ? (
+                          <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--d-3)", margin: "0" }}>
+                          Moving → {ml.becomes}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   </React.Fragment>
@@ -993,24 +997,6 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       </div>
     </section>
   </div>
-  <footer style={{ borderTop: "1px solid var(--l-rule)", background: "var(--l-bg)" }}>
-    <div style={{ maxWidth: "1180px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "18px", padding: "26px 24px" }}>
-      <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", opacity: "0.5", cursor: "default" }}>
-      ← Code 64
-      </span>
-      <div style={{ textAlign: "center" }}>
-        <p style={{ fontFamily: "var(--serif)", fontSize: "18px", color: "var(--l-1)", margin: "0" }}>
-        {vals.cardName}
-        </p>
-        <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-3)", margin: "3px 0 0" }}>
-        Code 01 of 64
-        </p>
-      </div>
-      <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-2)", cursor: "default" }}>
-      Code 02 →
-      </span>
-    </div>
-  </footer>
   {(vals.lightboxOpen) ? (
     <>
       <div onClick={vals.closeLightbox} role="dialog" aria-modal="true" aria-label="Artwork" style={{ position: "fixed", inset: "0", zIndex: "300", background: "rgba(10,8,5,0.94)", display: "flex", alignItems: "center", justifyContent: "center", padding: "28px", cursor: "zoom-out", animation: "ulFadeIn 300ms ease both" }}>

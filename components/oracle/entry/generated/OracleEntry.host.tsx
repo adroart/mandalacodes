@@ -84,10 +84,10 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
 
   // ── verbatim getters ──
   get theme() {
-    return this.state.themeOverride || this.props.theme || 'light';
+    return this.state.themeOverride || this.props.theme || 'dark';
   }
   get inv() {
-    return this.state.invOverride || this.props.invocationStyle || 'altar';
+    return 'altar';
   }
 
   renderVals() {
@@ -101,20 +101,6 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
       label,
       color: i === 0 ? 'var(--ink,#262321)' : 'var(--ink3,#8a7a5e)',
       border: i === 0 ? 'var(--accent,#8a744e)' : 'transparent',
-    }));
-
-    // hero treatment switcher
-    const styles = [
-      { key: 'illuminated', label: 'I', aria: 'Illuminated invocation' },
-      { key: 'altar', label: 'II', aria: 'Altar invocation' },
-      { key: 'constellation', label: 'III', aria: 'Constellation invocation' },
-    ];
-    const heroDots = styles.map((s) => ({
-      label: s.label,
-      aria: s.aria,
-      onClick: () => this.setState({ invOverride: s.key }),
-      color: inv === s.key ? 'var(--accent,#8a744e)' : 'var(--faint,#a89070)',
-      border: inv === s.key ? 'var(--accent,#8a744e)' : 'transparent',
     }));
 
     // constellation ticks
@@ -218,7 +204,6 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
       isC: inv === 'constellation',
       heroLines,
       ringTicks,
-      heroDots,
       navLinks,
       feats,
       tabs,
@@ -267,9 +252,12 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     });
   }
   openReading(c: EntryCard) {
+    // Go straight into the full reading (the EBReading page + its entrance
+    // animation). The design's preview lightbox is intentionally skipped — a
+    // card click loads the reading directly.
     this.props.onCardOpened?.(c.n);
-    this.props.onOpenCard?.(c.n);
-    this.setState({ reading: c });
+    if (this.props.onEnterReading) this.props.onEnterReading(c.n);
+    else this.setState({ reading: c });
   }
 
   render() {

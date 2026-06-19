@@ -29,6 +29,12 @@ function hashTo64(seed: string): number {
   return (Math.abs(h) % 64) + 1;
 }
 
+/* Trigram names carry a parenthetical Chinese name ("Heaven (Ch'ien)"); the deck
+   tiles want the plain element word only — "Heaven". Strip the parenthetical. */
+function plainTrigram(name: string): string {
+  return name.replace(/\s*\(.*\)\s*$/, '').trim();
+}
+
 /* ── map a real OracleCard → the design's EntryCard ─────────────────────────── */
 function toEntryCard(c: OracleCard): EntryCard {
   return {
@@ -36,8 +42,8 @@ function toEntryCard(c: OracleCard): EntryCard {
     name: c.card_name,
     u: c.iching.upper_trigram.symbol,
     l: c.iching.lower_trigram.symbol,
-    un: c.iching.upper_trigram.name,
-    ln: c.iching.lower_trigram.name,
+    un: plainTrigram(c.iching.upper_trigram.name),
+    ln: plainTrigram(c.iching.lower_trigram.name),
     hx: c.iching.hexagram_name,
     el: c.element,
   };
@@ -105,7 +111,8 @@ const OracleEntryPage: React.FC = () => {
   const onEnterReading = useCallback(
     (n: number) => {
       const c = CARD_BY_NUMBER.get(n);
-      navigate(`/universal-language/${n}`, { state: { ritual: true } });
+      // No `quiet` state → the reading plays its full entrance (fresh arrival).
+      navigate(`/universal-language/${n}`);
       return c;
     },
     [navigate],

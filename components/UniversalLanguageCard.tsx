@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { ALL_CARDS, CARD_BY_NUMBER } from '../data/oracleData';
 import { HexagramSVG } from './oracle/HexagramGlyph';
 import { getExpandedCard } from '../data/expandedOracleData';
 import { getSynthesis, getInvocation, type CardSynthesis } from '../data/synthesisData';
 import { getLineText } from '../data/ichingLines';
+import { getParsedCard, mapIching, type MdIchingLine } from '../data/cardMarkdown';
 import { HEXAGRAM_CHINESE } from '../data/hexagramChinese';
 import { ulCardImageUrl, ulCardPublicId } from '../utils/universalLanguage';
 import { useMetaTags } from '../hooks/useMetaTags';
@@ -25,18 +26,23 @@ function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
-const seen = new Set<number>();
-
 const UniversalLanguageCard: React.FC = () => {
   const { number } = useParams<{ number: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isDarkMode } = useDarkMode();
   const cardNum = parseInt(number ?? '', 10);
   const card = CARD_BY_NUMBER.get(cardNum);
   const expanded = getExpandedCard(cardNum);
   const [synthesis, setSynthesis] = useState<CardSynthesis | undefined>(undefined);
   const [invocation, setInvocation] = useState<string | undefined>(undefined);
-  const [showEntrance] = useState(() => { const s = !seen.has(cardNum); if (s) seen.add(cardNum); return s; });
+  const [ichingLines, setIchingLines] = useState<MdIchingLine[]>([]);
+  /* The full entrance (veil + ring/center build) plays only on a FRESH arrival —
+     from the deck, a shared link, or a reload. Prev/Next pass state.quiet so the
+     ceremony is skipped; the new card's panels still glide in via the host's
+     scroll-reveal (it remounts per card via the key below). */
+  const arrivedQuiet = (location.state as { quiet?: boolean } | null)?.quiet === true;
+  const showEntrance = !arrivedQuiet;
   const [buyOpen, setBuyOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
@@ -48,6 +54,9 @@ const UniversalLanguageCard: React.FC = () => {
     let cancelled = false;
     getSynthesis(cardNum).then(d => { if (!cancelled) setSynthesis(d); }).catch(() => {});
     getInvocation(cardNum).then(v => { if (!cancelled) setInvocation(v); }).catch(() => {});
+    getParsedCard(cardNum)
+      .then(p => { if (!cancelled) setIchingLines(p ? (mapIching(p)?.lines ?? []) : []); })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [cardNum]);
 
@@ -81,8 +90,23 @@ const UniversalLanguageCard: React.FC = () => {
     keywords,
     shareUrl: typeof window !== 'undefined' ? window.location.href : `https://mandalacodes.com/universal-language/${card.number}`,
     shareText: `${card.card_name} · Code ${card.number} · Universal Language Oracle by Adrian Rasmussen`,
-    // moving lines: the six line texts for this hexagram
-    moving: [1, 2, 3, 4, 5, 6].map(n => ({ n, image: '', becomes: '', text: getLineText(card.number, n) })),
+    // moving lines: the six line readings for this hexagram. The authored source
+    // is the parsed card markdown (image + reading + becomes); fall back to the
+    // ichingLines stub for text, and leave a quiet placeholder when nothing is
+    // written yet so a moving line never renders as a blank row.
+    moving: [1, 2, 3, 4, 5, 6].map(n => {
+      const md = ichingLines.find(l => l.line === n);
+      const text = (md?.reading || getLineText(card.number, n) || '').trim();
+      const becomes = md?.becomes?.hexagram
+        ? `Hexagram ${md.becomes.hexagram}${md.becomes.name ? ` · ${md.becomes.name}` : ''}`
+        : '';
+      return {
+        n,
+        image: md?.image ?? '',
+        becomes,
+        text: text || 'This line’s reading is being written.',
+      };
+    }),
     // relations data (pair/codon/tarot/etc.) — minimal live mapping; bodies fall back to synthesis
     reldata: buildReldata(card, synthesis, expanded),
     kin: buildKin(card, synthesis, expanded),
@@ -192,7 +216,7 @@ const UniversalLanguageCard: React.FC = () => {
       <div className="eb-reading" data-palette={palette} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, background: 'color-mix(in oklab, var(--l-bg) 92%, transparent)', borderTop: '1px solid var(--l-rule)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
         <div style={{ display: 'flex', alignItems: 'stretch', height: 44, maxWidth: 1180, margin: '0 auto' }}>
           {prevCardNum !== null ? (() => { const c = CARD_BY_NUMBER.get(prevCardNum)!; return (
-            <Link to={`/universal-language/${prevCardNum}`} state={{ ritual: true }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
+            <Link to={`/universal-language/${prevCardNum}`} state={{ quiet: true }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
               <HexagramSVG upper={c.iching.upper_trigram.symbol} lower={c.iching.lower_trigram.symbol} color="var(--accent)" width={26} />
               <div style={{ minWidth: 0 }}>
                 <p style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', lineHeight: 1, margin: 0 }}>← Code {c.number}</p>
@@ -205,7 +229,7 @@ const UniversalLanguageCard: React.FC = () => {
             <span style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', marginTop: 3 }}>All 64</span>
           </Link>
           {nextCardNum !== null ? (() => { const c = CARD_BY_NUMBER.get(nextCardNum)!; return (
-            <Link to={`/universal-language/${nextCardNum}`} state={{ ritual: true }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, padding: '0 12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
+            <Link to={`/universal-language/${nextCardNum}`} state={{ quiet: true }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, padding: '0 12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
               <div style={{ minWidth: 0, textAlign: 'right' }}>
                 <p style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', lineHeight: 1, margin: 0 }}>Code {c.number} →</p>
                 <p style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--l-2)', lineHeight: 1.1, margin: '3px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.card_name}</p>

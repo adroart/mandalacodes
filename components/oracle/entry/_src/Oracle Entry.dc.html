@@ -117,12 +117,6 @@
     </div>
     </sc-if>
 
-    <!-- treatment switcher (roman numerals, doubles as page mark) -->
-    <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:18px;margin-top:clamp(30px,4vw,48px)">
-      <sc-for list="{{ heroDots }}" as="hd" hint-placeholder-count="3">
-        <button type="button" onClick="{{ hd.onClick }}" aria-label="{{ hd.aria }}" style="background:transparent;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:16px;letter-spacing:.1em;padding:4px 8px;color:{{ hd.color }};border-bottom:1.5px solid {{ hd.border }};line-height:1">{{ hd.label }}</button>
-      </sc-for>
-    </div>
   </header>
 
   <!-- ── Body: rail + deck ───────────────────────────────── -->
@@ -208,9 +202,9 @@
               </sc-if>
               <sc-if value="{{ c.closed }}" hint-placeholder-val="{{ true }}">
                 <span data-oe="trigline" style="display:flex;flex-direction:row;align-items:center;gap:.35em;max-width:100%;overflow:hidden">
-                  <span data-oe="trigtext" style="font-family:'Karla',sans-serif;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint,#a89070);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ c.upperTrigram }}</span>
+                  <span data-oe="trigtext" style="font-family:'Karla',sans-serif;font-weight:600;letter-spacing:.04em;color:var(--faint,#a89070);line-height:1.25;white-space:nowrap;min-width:0">{{ c.upperTrigram }}</span>
                   <span data-oe="trigsep" aria-hidden="true" style="flex-shrink:0;color:var(--faint,#a89070);line-height:1">·</span>
-                  <span data-oe="trigtext" style="font-family:'Karla',sans-serif;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint,#a89070);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ c.lowerTrigram }}</span>
+                  <span data-oe="trigtext" style="font-family:'Karla',sans-serif;font-weight:600;letter-spacing:.04em;color:var(--faint,#a89070);line-height:1.25;white-space:nowrap;min-width:0">{{ c.lowerTrigram }}</span>
                 </span>
               </sc-if>
             </span>
@@ -280,8 +274,8 @@ class Component extends DCLogic {
     import('./oracle-cards.js').then((m) => this.setState({ mod: m }));
   }
 
-  get theme() { return this.state.themeOverride || this.props.theme || 'light'; }
-  get inv() { return this.state.invOverride || this.props.invocationStyle || 'altar'; }
+  get theme() { return this.state.themeOverride || this.props.theme || 'dark'; }
+  get inv() { return 'altar'; }
 
   renderVals() {
     const m = this.state.mod;

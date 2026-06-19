@@ -6,7 +6,6 @@
     "c.name",
     "f.aria",
     "f.lines",
-    "hd.aria",
     "heroLines",
     "query",
     "readingArtBig",
@@ -28,7 +27,6 @@
     "e.onClick",
     "enterReading",
     "f.onClick",
-    "hd.onClick",
     "onQuery",
     "openGrid",
     "openSystems",
@@ -41,7 +39,6 @@
     "elChips as e",
     "feats as f",
     "gridCards as c",
-    "heroDots as hd",
     "ringTicks as t",
     "tabs as t"
   ],
