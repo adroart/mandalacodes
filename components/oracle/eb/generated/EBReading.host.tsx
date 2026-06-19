@@ -578,7 +578,18 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   }
 
   render() {
-    return <EBReadingMarkup vals={this.renderVals()} />;
+    // Establish the template's CSS-variable scope. The design file's tokens
+    // (--l-bg, --serif, --accent, the daybook/nightfall palette) are defined on
+    // `.eb-reading[data-palette=…]`; this wrapper carries BOTH so every var()
+    // in the generated markup resolves and inherits down. Without it the page
+    // renders unstyled (the root cause of the "looks nothing like it" bug).
+    const palette = this.props.palette ?? 'daybook';
+    const motion = this.props.reduceMotion ? 'off' : 'on';
+    return (
+      <div className="eb-reading" data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
+        <EBReadingMarkup vals={this.renderVals()} />
+      </div>
+    );
   }
 }
 

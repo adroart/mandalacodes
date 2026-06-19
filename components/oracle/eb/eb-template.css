@@ -10,7 +10,7 @@
 .eb-reading, .eb-entrance {
   --serif: 'Cormorant Garamond', Georgia, serif;
   --sans: 'Karla', -apple-system, system-ui, sans-serif;
-  --cjk: 'Songti SC', 'Noto Serif SC', 'Cormorant Garamond', serif;
+  --cjk: 'Noto Serif TC', 'Songti SC', 'Noto Serif SC', 'Songti TC', 'Cormorant Garamond', serif;
   /* light surface */
   --l-bg: #F3EFE7; --l-1: #272219; --l-2: #6B6253; --l-3: #A39A89; --l-rule: rgba(39,34,25,0.14); --l-soft: #EAE4D7;
   /* feature panels (I Ching, Human Design) = a warm sandstone recess of the paper, not black */
