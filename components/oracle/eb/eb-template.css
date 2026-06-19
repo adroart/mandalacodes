@@ -64,6 +64,11 @@
    template's own "Universal Language" top bar is hidden to avoid two bars. */
 .eb-reading .ul-topbar { display: none; }
 
+/* The template's hardcoded "In your chart · Gate 1, Line 3" placeholder is hidden;
+   the real profile-aware callout (YourPositionCallout) is rendered instead, which
+   only appears when the card actually matches the visitor's saved profile. */
+.eb-reading .ul-chartprompt { display: none; }
+
 .eb-reading .ul-title-desktop { display: none; }
 .eb-reading .ul-title-mobile { display: block; }
 @media (min-width: 720px) {

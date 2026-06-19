@@ -1162,5 +1162,8 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     </>
   ) : null}
 </div>
+<div style={{ marginTop: "16px" }}>
+{vals.chartSlot}
+</div>
   </>
 );

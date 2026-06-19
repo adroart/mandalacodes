@@ -1,7 +1,7 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
-const UniversalLanguageIndex = lazy(() => import('./components/UniversalLanguageIndex'));
+const UniversalLanguageIndex = lazy(() => import('./components/oracle/entry/OracleEntryPage'));
 const UniversalLanguageCard = lazy(() => import('./components/UniversalLanguageCard'));
 const OracleGateway = lazy(() => import('./components/OracleGateway'));
 const OracleSystems = lazy(() => import('./components/OracleSystems'));

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Karla:wght@400;500;600;700&family=Cinzel:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0}
+  [data-theme="light"]{
+    --bg:#f3f1ec; --bg2:#ffffff; --surface:#faf9f6; --ink:#262321; --ink2:#524330;
+    --ink3:#8a7a5e; --faint:#a89070; --line:#e3ddd1; --line2:#d2c7b4;
+    --accent:#8a744e; --accentDeep:#6d5a3c; --onAccent:#f7f5f1;
+    --glow:rgba(196,170,124,0.16);
+    --heroWash:radial-gradient(135% 80% at 50% -8%, rgba(196,170,124,0.16), transparent 60%);
+  }
+  [data-theme="dark"]{
+    --bg:#15110e; --bg2:#1d1813; --surface:#241e17; --ink:#f0ece4; --ink2:#cfc7b8;
+    --ink3:#a99a82; --faint:#8a7c66; --line:rgba(196,170,124,0.16); --line2:rgba(196,170,124,0.30);
+    --accent:#dabd8b; --accentDeep:#c4a878; --onAccent:#15110e;
+    --glow:rgba(217,189,140,0.22);
+    --heroWash:radial-gradient(135% 82% at 50% -8%, rgba(217,189,140,0.18), transparent 62%);
+  }
+  @keyframes oe-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  @keyframes oe-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes oe-fade{from{opacity:0}to{opacity:1}}
+  @keyframes oe-glow{0%,100%{opacity:.5}50%{opacity:.95}}
+  @keyframes oe-sheen{from{transform:translateX(-120%) skewX(-18deg)}to{transform:translateX(220%) skewX(-18deg)}}
+  @media(max-width:760px){ [data-oe="rail"]{max-width:none !important} }
+  @media(min-width:980px){ [data-oe="ichgrid"],[data-oe="artgrid"]{grid-template-columns:repeat(8,minmax(0,1fr)) !important} }
+  @media(max-width:520px){
+    [data-oe="trigline"]{flex-direction:column !important; gap:1px !important; align-items:center !important}
+    [data-oe="trigsep"]{display:none !important}
+  }
+  /* 4-wide: larger text to match bigger tiles */
+  [data-oe="trigtext"]{font-size:clamp(11px,1.8vw,17px)}
+  [data-oe="trigsep"]{font-size:clamp(11px,1.8vw,17px)}
+  [data-oe="cardnum"]{font-size:clamp(11px,1.6vw,16px)}
+  @media(min-width:980px){
+    [data-oe="trigtext"]{font-size:clamp(9px,1.1vw,13px) !important}
+    [data-oe="trigsep"]{font-size:clamp(9px,1.1vw,13px) !important}
+    [data-oe="cardnum"]{font-size:clamp(10px,1.2vw,14px) !important}
+  }
+</style>
+</helmet>
+
+<div data-theme="{{ theme }}" style="min-height:100vh;background:var(--bg,#f3f1ec);color:var(--ink,#262321);font-family:'Karla',system-ui,sans-serif;transition:background .5s ease,color .5s ease;overflow-x:hidden">
+
+  <!-- ── Top nav ─────────────────────────────────────────── -->
+  <button type="button" onClick="{{ toggleTheme }}" aria-label="Toggle light and dark" style="position:fixed;bottom:18px;right:18px;z-index:60;display:inline-flex;align-items:center;gap:7px;background:var(--bg2,#fff);border:1px solid var(--line2,#d2c7b4);color:var(--ink3,#8a7a5e);font-family:'Karla',sans-serif;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:9px 13px;border-radius:999px;cursor:pointer;box-shadow:0 6px 18px rgba(20,16,12,.14)">
+    <span aria-hidden="true" style="font-size:12px;line-height:1">{{ themeIcon }}</span>{{ themeLabel }}
+  </button>
+
+  <!-- ── Opening / Invocation hero ───────────────────────── -->
+  <header style="position:relative;background:var(--heroWash);padding:clamp(40px,7vw,84px) 18px clamp(34px,5vw,56px)">
+
+    <!-- A · Illuminated -->
+    <sc-if value="{{ isA }}" hint-placeholder-val="{{ true }}">
+    <div style="position:relative;max-width:880px;margin:0 auto;text-align:center">
+      <div aria-hidden="true" style="position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:min(64vw,420px);height:min(64vw,420px);opacity:.06;pointer-events:none">
+        <dc-import name="Hexagram" lines="{{ heroLines }}" color="var(--accent,#8a744e)" hint-size="100%,100%" style="width:100%;height:100%"></dc-import>
+      </div>
+      <p style="position:relative;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.34em;text-transform:uppercase;color:var(--accent,#8a744e);margin:0 0 18px">The Invocation</p>
+      <h1 style="position:relative;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(40px,8vw,76px);line-height:.98;letter-spacing:-.01em;margin:0 0 clamp(22px,3vw,34px);color:var(--ink,#262321)">Universal Language</h1>
+      <div style="position:relative;width:46px;height:1px;background:var(--accent,#8a744e);margin:0 auto clamp(24px,3vw,36px);opacity:.7"></div>
+      <div style="position:relative;max-width:18em;margin:0 auto;display:flex;flex-direction:column;gap:clamp(18px,2.4vw,30px)">
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(23px,3.6vw,34px);line-height:1.34;color:var(--ink,#262321);text-wrap:balance"><span style="float:left;font-family:'Cinzel',serif;font-weight:600;font-size:clamp(54px,8vw,82px);line-height:.74;padding:6px 14px 0 0;color:var(--accent,#8a744e)">L</span>et this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.</p>
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(23px,3.6vw,34px);line-height:1.34;color:var(--ink,#262321);text-wrap:balance">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(23px,3.6vw,34px);line-height:1.34;color:var(--ink,#262321);text-wrap:balance">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- B · Altar -->
+    <sc-if value="{{ isB }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width:1040px;margin:0 auto">
+      <h1 style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(38px,7.5vw,70px);line-height:1;letter-spacing:-.01em;margin:0 0 clamp(26px,3.4vw,40px);color:var(--ink,#262321);text-align:center">Universal Language</h1>
+      <div style="display:flex;gap:clamp(20px,4vw,40px);align-items:stretch">
+        <div aria-hidden="true" style="flex-shrink:0;width:2px;background:linear-gradient(var(--accent,#8a744e),transparent);border-radius:2px"></div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:clamp(20px,2.6vw,30px)">
+          <p style="margin:0;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--accent,#8a744e)">The Invocation</p>
+          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.9vw,34px);line-height:1.3;color:var(--ink,#262321)">Let this oracle be an instrument of attunement to the light within,<br>as we move through the unfolding of this mystery.</p>
+          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.9vw,34px);line-height:1.3;color:var(--ink2,#524330)">Let it nurture harmony, clarity, and compassion<br>in thought, word, and action.</p>
+          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.9vw,34px);line-height:1.3;color:var(--ink,#262321)">Let us move beyond thoughts and in through the heart,<br>in devotion and celebration of the perfection of this moment.</p>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- C · Constellation -->
+    <sc-if value="{{ isC }}" hint-placeholder-val="{{ true }}">
+    <div style="position:relative;max-width:820px;margin:0 auto;text-align:center;padding:clamp(10px,3vw,30px) 0">
+      <svg viewBox="0 0 600 600" aria-hidden="true" style="position:absolute;left:50%;top:46%;width:min(126vw,820px);height:min(126vw,820px);transform:translate(-50%,-50%);pointer-events:none;animation:oe-spin 160s linear infinite">
+        <circle cx="300" cy="300" r="232" fill="none" stroke="var(--accent,#8a744e)" stroke-width="1" opacity=".16"></circle>
+        <circle cx="300" cy="300" r="186" fill="none" stroke="var(--accent,#8a744e)" stroke-width="1" opacity=".10"></circle>
+        <sc-for list="{{ ringTicks }}" as="t" hint-placeholder-count="48">
+          <rect x="{{ t.x }}" y="{{ t.y }}" width="2.4" height="9" rx="1" fill="var(--accent,#8a744e)" opacity="{{ t.op }}" transform="rotate({{ t.rot }} {{ t.cx }} {{ t.cy }})"></rect>
+        </sc-for>
+      </svg>
+      <div style="position:relative">
+        <p style="font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.36em;text-transform:uppercase;color:var(--accent,#8a744e);margin:0 0 16px">Universal Language</p>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:clamp(16px,2.2vw,26px);max-width:17em;margin:0 auto">
+          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:clamp(24px,4.2vw,38px);line-height:1.36;color:var(--ink,#262321);text-wrap:balance">Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.</p>
+          <span aria-hidden="true" style="color:var(--accent,#8a744e);font-size:13px;opacity:.7">◆</span>
+          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:clamp(24px,4.2vw,38px);line-height:1.36;color:var(--ink,#262321);text-wrap:balance">Let it nurture harmony, clarity, and compassion in thought, word, and action.</p>
+          <span aria-hidden="true" style="color:var(--accent,#8a744e);font-size:13px;opacity:.7">◆</span>
+          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:clamp(24px,4.2vw,38px);line-height:1.36;color:var(--ink,#262321);text-wrap:balance">Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.</p>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- treatment switcher (roman numerals, doubles as page mark) -->
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:18px;margin-top:clamp(30px,4vw,48px)">
+      <sc-for list="{{ heroDots }}" as="hd" hint-placeholder-count="3">
+        <button type="button" onClick="{{ hd.onClick }}" aria-label="{{ hd.aria }}" style="background:transparent;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:16px;letter-spacing:.1em;padding:4px 8px;color:{{ hd.color }};border-bottom:1.5px solid {{ hd.border }};line-height:1">{{ hd.label }}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <!-- ── Body: rail + deck ───────────────────────────────── -->
+  <div style="max-width:1180px;margin:0 auto;padding:clamp(14px,2vw,24px) 18px 0;display:flex;flex-direction:column;gap:clamp(12px,1.5vw,20px)">
+
+    <!-- RAIL -->
+    <aside style="width:100%;min-width:0">
+      <div style="display:flex;flex-wrap:wrap;border:1px solid var(--line,#e3ddd1);background:var(--bg2,#fff);border-radius:14px;overflow:hidden">
+        <sc-for list="{{ feats }}" as="f" hint-placeholder-count="2">
+          <button type="button" onClick="{{ f.onClick }}" aria-label="{{ f.aria }}" style="display:flex;align-items:center;gap:11px;text-align:left;background:transparent;border:none;border-right:1px solid var(--line,#e3ddd1);flex:1 1 140px;padding:14px;cursor:pointer;min-width:0">
+            <span style="flex-shrink:0;width:26px;height:30px">
+              <dc-import name="Hexagram" lines="{{ f.lines }}" color="var(--ink3,#8a7a5e)" hint-size="26px,30px" style="width:26px;height:30px"></dc-import>
+            </span>
+            <span style="display:flex;flex-direction:column;gap:5px;min-width:0">
+              <span style="font-family:'Karla',sans-serif;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint,#a89070);line-height:1;white-space:nowrap">{{ f.eyebrow }}</span>
+              <span style="font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent,#8a744e);line-height:1">{{ f.date }}</span>
+            </span>
+          </button>
+        </sc-for>
+        <button type="button" onClick="{{ openSystems }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1 1 200px;text-align:left;background:transparent;border:none;border-right:1px solid var(--line,#e3ddd1);padding:14px;cursor:pointer;min-width:0">
+          <span style="font-family:'Karla',sans-serif;font-size:12.5px;color:var(--ink2,#524330);line-height:1.4;min-width:0"><span style="font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px;color:var(--ink,#262321);margin-right:7px">New here</span>How the four systems connect</span>
+          <span aria-hidden="true" style="color:var(--accent,#8a744e);flex-shrink:0">→</span>
+        </button>
+        <button type="button" onClick="{{ openGrid }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1 1 200px;text-align:left;background:transparent;border:none;padding:14px;cursor:pointer;min-width:0">
+          <span style="font-family:'Karla',sans-serif;font-size:12.5px;color:var(--ink2,#524330);line-height:1.4;min-width:0"><span style="font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px;color:var(--ink,#262321);margin-right:7px">Your codes</span>Find your own cards in every reading</span>
+          <span aria-hidden="true" style="color:var(--accent,#8a744e);flex-shrink:0">→</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- DECK -->
+    <main style="width:100%;min-width:0">
+      <!-- controls -->
+      <div style="position:sticky;top:0;z-index:30;background:var(--bg,#f3f1ec);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 20px;padding:14px 0;border-bottom:1px solid var(--line,#e3ddd1)">
+        <div role="group" aria-label="View" style="display:flex;align-items:center;gap:22px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+            <button type="button" onClick="{{ t.onClick }}" style="background:transparent;border:none;cursor:pointer;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;color:{{ t.color }};border-bottom:2px solid {{ t.border }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <div style="position:relative;flex:1 1 180px;max-width:240px;min-width:150px">
+          <span aria-hidden="true" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--faint,#a89070);font-size:13px">⌕</span>
+          <input id="oe-search" value="{{ query }}" onInput="{{ onQuery }}" placeholder="Search the sixty-four" style="width:100%;background:var(--bg2,#fff);border:1px solid var(--line,#e3ddd1);border-radius:999px;padding:9px 14px 9px 30px;font-family:'Karla',sans-serif;font-size:12.5px;color:var(--ink,#262321);outline:none"></input>
+        </div>
+      </div>
+
+      <!-- element filters -->
+      <div role="group" aria-label="Filter by element" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:16px 0 4px">
+        <sc-for list="{{ elChips }}" as="e" hint-placeholder-count="6">
+          <button type="button" onClick="{{ e.onClick }}" style="display:inline-flex;align-items:center;gap:7px;background:transparent;border:none;cursor:pointer;font-family:'Karla',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;line-height:1;color:{{ e.color }}">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:{{ e.dotBg }};box-shadow:{{ e.dotRing }}"></span>{{ e.name }}
+          </button>
+        </sc-for>
+      </div>
+
+      <p style="margin:18px 0 0;font-family:'Karla',sans-serif;font-size:12px;letter-spacing:.04em;color:var(--ink3,#8a7a5e)">{{ instruction }}</p>
+
+      <!-- I CHING flip wall -->
+      <sc-if value="{{ isIChing }}" hint-placeholder-val="{{ true }}">
+      <div data-oe="ichgrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,1.6vw,16px) clamp(8px,1.4vw,14px);padding:18px 0 8px">
+        <sc-for list="{{ gridCards }}" as="c" hint-placeholder-count="24">
+          <div style="display:flex;flex-direction:column">
+            <button type="button" onClick="{{ c.onTile }}" aria-label="{{ c.aria }}" style="all:unset;cursor:pointer;display:block;perspective:760px">
+              <span style="position:relative;display:block;width:100%;aspect-ratio:1/1;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.85,.3,1),filter .3s ease;transform:{{ c.flipTransform }}">
+                <span style="position:absolute;inset:0;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;border:1px solid var(--line,#e3ddd1);border-radius:11px;background:var(--surface,#faf9f6)">
+                  <span style="width:48%;color:var(--ink3,#8a7a5e)">
+                    <dc-import name="Hexagram" lines="{{ c.lines }}" color="var(--ink3,#8a7a5e)" hint-size="100%,100%" style="width:100%;height:100%"></dc-import>
+                  </span>
+                  <span data-oe="cardnum" style="position:absolute;bottom:15%;left:0;right:0;text-align:center;font-family:'Karla',sans-serif;font-weight:700;letter-spacing:.06em;color:var(--ink3,#8a7a5e);line-height:1">{{ c.cardNum }}</span>
+                </span>
+                <span style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);border-radius:11px;overflow:hidden;box-shadow:0 6px 18px var(--glow,rgba(196,170,124,.2))">
+                  <span style="position:absolute;inset:0;background:{{ c.grad }}"></span>
+                  <img src="{{ c.art }}" alt="{{ c.name }}" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.08) brightness(1.03)"></img>
+                </span>
+              </span>
+            </button>
+            <span style="display:flex;align-items:center;justify-content:center;min-height:28px;padding:2px 4px">
+              <sc-if value="{{ c.flipped }}" hint-placeholder-val="{{ false }}">
+                <span style="display:flex;align-items:center;gap:7px;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em">
+                  <button type="button" onClick="{{ c.onBack }}" style="background:transparent;border:none;cursor:pointer;color:var(--ink3,#8a7a5e);font:inherit">Back</button>
+                  <span aria-hidden="true" style="width:1px;height:10px;background:var(--line2,#d2c7b4)"></span>
+                  <button type="button" onClick="{{ c.onRead }}" style="background:transparent;border:none;cursor:pointer;color:var(--accent,#8a744e);font:inherit">Read</button>
+                </span>
+              </sc-if>
+              <sc-if value="{{ c.closed }}" hint-placeholder-val="{{ true }}">
+                <span data-oe="trigline" style="display:flex;flex-direction:row;align-items:center;gap:.35em;max-width:100%;overflow:hidden">
+                  <span data-oe="trigtext" style="font-family:'Karla',sans-serif;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint,#a89070);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ c.upperTrigram }}</span>
+                  <span data-oe="trigsep" aria-hidden="true" style="flex-shrink:0;color:var(--faint,#a89070);line-height:1">·</span>
+                  <span data-oe="trigtext" style="font-family:'Karla',sans-serif;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint,#a89070);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ c.lowerTrigram }}</span>
+                </span>
+              </sc-if>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <!-- ARTWORK grid -->
+      <sc-if value="{{ isArtwork }}" hint-placeholder-val="{{ true }}">
+      <div data-oe="artgrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:18px 0 8px">
+        <sc-for list="{{ gridCards }}" as="c" hint-placeholder-count="24">
+          <button type="button" onClick="{{ c.onRead }}" aria-label="{{ c.aria }}" style="all:unset;cursor:pointer;position:relative;display:block;width:100%;aspect-ratio:1/1;overflow:hidden">
+            <span style="position:absolute;inset:0;background:{{ c.grad }}"></span>
+            <img src="{{ c.art }}" alt="{{ c.name }}" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.08) brightness(1.03);transition:transform .5s ease"></img>
+            <span style="position:absolute;left:0;right:0;bottom:0;top:50%;background:linear-gradient(transparent,rgba(20,16,12,.78));opacity:0;transition:opacity .3s ease" class="oe-art-scrim"></span>
+            <span style="position:absolute;left:9px;right:9px;bottom:8px;display:flex;flex-direction:column;gap:1px;opacity:0;transition:opacity .3s ease" class="oe-art-name">
+              <span style="font-family:'Karla',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--accent,#dabd8b)">{{ c.num2 }}</span>
+              <span style="font-family:'Cormorant Garamond',serif;font-size:14px;line-height:1.02;color:#f5efe4">{{ c.name }}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <p style="font-family:'Karla',sans-serif;font-size:13px;line-height:1.7;color:var(--ink3,#8a7a5e);margin:34px 0 0;max-width:60ch">Each card carries a hexagram from the I Ching, a Gene Key, and a gate from Human Design. Nothing needs to be understood to speak with them.</p>
+    </main>
+  </div>
+
+  <!-- ── Footer ──────────────────────────────────────────── -->
+  <footer style="border-top:1px solid var(--line,#e3ddd1);margin-top:clamp(40px,6vw,72px)">
+    <div style="max-width:1180px;margin:0 auto;padding:26px 18px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between">
+      <button type="button" onClick="{{ openSystems }}" style="background:transparent;border:none;cursor:pointer;font-family:'Karla',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3,#8a7a5e)">The Systems &amp; Connections →</button>
+      <button type="button" onClick="{{ drawRandom }}" style="background:transparent;border:none;cursor:pointer;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent,#8a744e)">Draw at Random →</button>
+    </div>
+  </footer>
+
+  <!-- ── Reading lightbox ────────────────────────────────── -->
+  <sc-if value="{{ reading }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeReading }}" style="position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(22,18,14,.6);backdrop-filter:blur(5px);animation:oe-fade .25s ease both">
+    <div onClick="{{ stop }}" style="width:min(380px,94vw);background:var(--bg2,#fff);border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(22,18,14,.4);animation:oe-rise .4s cubic-bezier(.2,.85,.3,1) both">
+      <div style="position:relative;aspect-ratio:1/1;overflow:hidden">
+        <span style="position:absolute;inset:0;background:{{ readingGrad }}"></span>
+        <img src="{{ readingArtBig }}" alt="{{ readingName }}" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></img>
+        <span style="position:absolute;left:0;right:0;bottom:0;top:40%;background:linear-gradient(transparent,rgba(20,16,12,.72))"></span>
+        <span style="position:absolute;left:18px;bottom:14px;font-family:'Karla',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,239,228,.85)">Universal Language · {{ readingNum2 }}</span>
+      </div>
+      <div style="padding:24px 24px 26px;text-align:center">
+        <h2 style="margin:0 0 4px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:30px;line-height:1.06;color:var(--ink,#262321)">{{ readingName }}</h2>
+        <p style="margin:0 0 18px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:var(--ink3,#8a7a5e)">{{ readingHx }}</p>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button type="button" onClick="{{ closeReading }}" style="font-family:'Karla',sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink2,#524330);background:transparent;border:1px solid var(--line2,#d2c7b4);border-radius:10px;padding:12px 18px;cursor:pointer">Close</button>
+          <button type="button" onClick="{{ enterReading }}" style="font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--onAccent,#f7f5f1);background:var(--accent,#8a744e);border:none;border-radius:10px;padding:12px 20px;cursor:pointer">Enter the reading</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},&quot;invocationStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;altar&quot;,&quot;illuminated&quot;,&quot;constellation&quot;],&quot;default&quot;:&quot;altar&quot;,&quot;tsType&quot;:&quot;'altar'|'illuminated'|'constellation'&quot;}}">
+class Component extends DCLogic {
+  state = { mod: null, view: 'iching', query: '', elFilter: 'All', flipped: {}, reading: null, themeOverride: null, invOverride: null };
+
+  componentDidMount() {
+    import('./oracle-cards.js').then((m) => this.setState({ mod: m }));
+  }
+
+  get theme() { return this.state.themeOverride || this.props.theme || 'light'; }
+  get inv() { return this.state.invOverride || this.props.invocationStyle || 'altar'; }
+
+  renderVals() {
+    const m = this.state.mod;
+    const theme = this.theme;
+    const inv = this.inv;
+    const ELEMENT_DOT = m ? m.ELEMENT_DOT : {};
+    const ELEMENTS = m ? m.ELEMENTS : ['Fire','Water','Earth','Metal','Wood'];
+
+    const navLinks = ['Universal','I Ching','Gene Keys','Human Design','Body','Relations'].map((label, i) => ({
+      label,
+      color: i === 0 ? 'var(--ink,#262321)' : 'var(--ink3,#8a7a5e)',
+      border: i === 0 ? 'var(--accent,#8a744e)' : 'transparent',
+    }));
+
+    // hero treatment switcher
+    const styles = [
+      { key: 'illuminated', label: 'I', aria: 'Illuminated invocation' },
+      { key: 'altar', label: 'II', aria: 'Altar invocation' },
+      { key: 'constellation', label: 'III', aria: 'Constellation invocation' },
+    ];
+    const heroDots = styles.map((s) => ({
+      label: s.label, aria: s.aria,
+      onClick: () => this.setState({ invOverride: s.key }),
+      color: inv === s.key ? 'var(--accent,#8a744e)' : 'var(--faint,#a89070)',
+      border: inv === s.key ? 'var(--accent,#8a744e)' : 'transparent',
+    }));
+
+    // constellation ticks
+    const ringTicks = [];
+    for (let i = 0; i < 64; i++) {
+      const ang = (i / 64) * 2 * Math.PI - Math.PI / 2;
+      const r = 210, cx = 300, cy = 300;
+      const x = cx + Math.cos(ang) * r, y = cy + Math.sin(ang) * r;
+      ringTicks.push({ x: (x - 1.2).toFixed(1), y: (y - 4.5).toFixed(1), cx, cy, rot: ((i / 64) * 360 + 90).toFixed(1), op: (0.18 + 0.5 * (i % 4 === 0 ? 1 : 0)).toFixed(2) });
+    }
+
+    const lines = (c) => m ? m.hexLines(c.u, c.l) : [true,true,true,false,false,false];
+    const today = m ? m.cardForToday() : null;
+    const year = m ? m.cardForYear() : null;
+    const now = new Date();
+    const heroLines = today ? lines(today) : [true,true,true,true,true,true];
+
+    const feats = [
+      today && { eyebrow: 'Today', date: now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), lines: lines(today), rightBorder: '1px solid var(--line,#e3ddd1)', aria: 'See today’s card', onClick: () => this.openReading(today) },
+      year && { eyebrow: 'This year', date: String(now.getFullYear()), lines: lines(year), rightBorder: 'none', aria: 'See this year’s card', onClick: () => this.openReading(year) },
+    ].filter(Boolean);
+
+    // tabs
+    const tabDefs = [ { v: 'iching', label: 'I Ching' }, { v: 'artwork', label: 'Artwork' } ];
+    const tabs = tabDefs.map((t) => ({
+      label: t.label,
+      onClick: () => this.setState({ view: t.v }),
+      color: this.state.view === t.v ? 'var(--ink,#262321)' : 'var(--faint,#a89070)',
+      border: this.state.view === t.v ? 'var(--accent,#8a744e)' : 'transparent',
+    }));
+
+    // element chips
+    const elChips = [{ name: 'All', el: 'All' }, ...ELEMENTS.map((e) => ({ name: e, el: e }))].map((e) => {
+      const active = this.state.elFilter === e.el;
+      const dot = e.el === 'All' ? 'var(--accent,#8a744e)' : (ELEMENT_DOT[e.el] || 'var(--accent)');
+      return {
+        name: e.name,
+        onClick: () => this.setState({ elFilter: e.el }),
+        color: active ? 'var(--ink,#262321)' : 'var(--faint,#a89070)',
+        dotBg: active ? dot : 'transparent',
+        dotRing: active ? 'none' : ('inset 0 0 0 1px ' + dot),
+      };
+    });
+
+    // filter cards
+    const all = m ? m.CARDS : [];
+    const q = this.state.query.trim().toLowerCase();
+    const elOk = (c) => this.state.elFilter === 'All' || (m && m.primaryElement(c.el) === this.state.elFilter);
+    const qOk = (c) => !q || c.name.toLowerCase().includes(q) || c.hx.toLowerCase().includes(q) || String(c.n) === q;
+    const filtered = all.filter((c) => elOk(c) && qOk(c));
+
+    const gridCards = filtered.map((c) => {
+      const tint = m ? m.tintFor(c) : ['#9d7c48','#65502f'];
+      const flipped = !!this.state.flipped[c.n];
+      return {
+        n: c.n, name: c.name, hx: c.hx,
+        num2: String(c.n).padStart(2, '0'),
+        lines: lines(c),
+        art: m ? m.cardImg(c, 320) : '',
+        grad: 'linear-gradient(150deg,' + tint[0] + ',' + tint[1] + ')',
+        flipped, closed: !flipped,
+        flipTransform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        cardNum: String(c.n),
+        upperTrigram: c.un || '',
+        lowerTrigram: c.ln || '',
+        aria: 'Card ' + c.n + ': ' + c.name,
+        onTile: flipped ? () => this.openReading(c) : () => this.flip(c.n),
+        onBack: () => this.flipBack(c.n),
+        onRead: () => this.openReading(c),
+      };
+    });
+
+    const filtering = q || this.state.elFilter !== 'All';
+    const instruction = filtering
+      ? (filtered.length + ' of 64 shown')
+      : (this.state.view === 'iching' ? 'Sixty-four hexagrams · tap one to reveal it' : 'Sixty-four paintings · tap one to enter');
+
+    // reading vm
+    let reading = null;
+    if (this.state.reading) {
+      const c = this.state.reading;
+      const tint = m ? m.tintFor(c) : ['#9d7c48','#65502f'];
+      reading = { name: c.name, hx: c.hx, num2: String(c.n).padStart(2, '0'),
+        grad: 'linear-gradient(150deg,' + tint[0] + ',' + tint[1] + ')',
+        artBig: m ? m.cardImg(c, 760) : '' };
+    }
+
+    return {
+      theme,
+      isA: inv === 'illuminated', isB: inv === 'altar', isC: inv === 'constellation',
+      heroLines, ringTicks, heroDots, navLinks, feats, tabs, elChips, gridCards,
+      isIChing: this.state.view === 'iching', isArtwork: this.state.view === 'artwork',
+      query: this.state.query, instruction,
+      drawHint: filtering ? (filtered.length + ' of 64 shown') : 'or choose one below',
+      reading,
+      readingArtBig: reading ? reading.artBig : 'data:,',
+      readingName: reading ? reading.name : '',
+      readingHx: reading ? reading.hx : '',
+      readingNum2: reading ? reading.num2 : '',
+      readingGrad: reading ? reading.grad : 'transparent',
+      themeIcon: theme === 'dark' ? '☽' : '☀',
+      themeLabel: theme === 'dark' ? 'Light' : 'Dark',
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      toggleTheme: () => this.setState({ themeOverride: this.theme === 'dark' ? 'light' : 'dark' }),
+      drawRandom: () => { const c = all[Math.floor(Math.random() * all.length)]; if (c) this.openReading(c); },
+      openSystems: () => {}, openGrid: () => {},
+      closeReading: () => this.setState({ reading: null }),
+      enterReading: () => this.setState({ reading: null }),
+      stop: (e) => e.stopPropagation(),
+    };
+  }
+
+  flip(n) { this.setState((s) => ({ flipped: { ...s.flipped, [n]: true } })); }
+  flipBack(n) { this.setState((s) => { const f = { ...s.flipped }; delete f[n]; return { flipped: f }; }); }
+  openReading(c) { this.setState({ reading: c }); }
+}
+</script>
+</body>
+</html>

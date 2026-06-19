@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { CARD_BY_NUMBER } from '../data/oracleData';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ALL_CARDS, CARD_BY_NUMBER } from '../data/oracleData';
+import { HexagramSVG } from './oracle/HexagramGlyph';
 import { getExpandedCard } from '../data/expandedOracleData';
 import { getSynthesis, getInvocation, type CardSynthesis } from '../data/synthesisData';
 import { getLineText } from '../data/ichingLines';
@@ -11,6 +12,7 @@ import { useDarkMode } from '../DarkModeContext';
 import { EBReadingHost, type EBData } from './oracle/eb/generated/EBReading.host';
 import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
+import YourPositionCallout from './oracle/YourPositionCallout';
 import { ulPieceForCard } from '../utils/universalLanguage';
 import './oracle/eb/eb-template.css';
 
@@ -151,6 +153,11 @@ const UniversalLanguageCard: React.FC = () => {
   };
 
   const piece = ulPieceForCard(card.number);
+  const sortedNums = ALL_CARDS.map(c => c.number);
+  const idx = sortedNums.indexOf(card.number);
+  const prevCardNum = idx > 0 ? sortedNums[idx - 1] : null;
+  const nextCardNum = idx < sortedNums.length - 1 ? sortedNums[idx + 1] : null;
+  const palette = isDarkMode ? 'nightfall' : 'daybook';
   return (
     <>
       <EBReadingHost
@@ -162,6 +169,7 @@ const UniversalLanguageCard: React.FC = () => {
         showEntrance={showEntrance}
         onAcquire={() => setBuyOpen(true)}
         onShare={() => setShareOpen(true)}
+        chartSlot={<YourPositionCallout gate={card.number} />}
       />
       <BuySheet
         open={buyOpen}
@@ -179,6 +187,34 @@ const UniversalLanguageCard: React.FC = () => {
         cardNumber={card.number}
         keywords={keywords}
       />
+
+      {/* Sticky bottom nav — prev / All 64 / next, as on the previous version. */}
+      <div className="eb-reading" data-palette={palette} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, background: 'color-mix(in oklab, var(--l-bg) 92%, transparent)', borderTop: '1px solid var(--l-rule)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
+        <div style={{ display: 'flex', alignItems: 'stretch', height: 44, maxWidth: 1180, margin: '0 auto' }}>
+          {prevCardNum !== null ? (() => { const c = CARD_BY_NUMBER.get(prevCardNum)!; return (
+            <Link to={`/universal-language/${prevCardNum}`} state={{ ritual: true }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
+              <HexagramSVG upper={c.iching.upper_trigram.symbol} lower={c.iching.lower_trigram.symbol} color="var(--accent)" width={26} />
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', lineHeight: 1, margin: 0 }}>← Code {c.number}</p>
+                <p style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--l-2)', lineHeight: 1.1, margin: '3px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.card_name}</p>
+              </div>
+            </Link>
+          ); })() : <div style={{ flex: 1 }} />}
+          <Link to="/universal-language" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 16px', borderLeft: '1px solid var(--l-rule)', borderRight: '1px solid var(--l-rule)', flexShrink: 0, textDecoration: 'none' }}>
+            <span style={{ fontFamily: 'var(--serif)', fontSize: 17, color: 'var(--l-1)', lineHeight: 1 }}>{card.number}</span>
+            <span style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', marginTop: 3 }}>All 64</span>
+          </Link>
+          {nextCardNum !== null ? (() => { const c = CARD_BY_NUMBER.get(nextCardNum)!; return (
+            <Link to={`/universal-language/${nextCardNum}`} state={{ ritual: true }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, padding: '0 12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
+              <div style={{ minWidth: 0, textAlign: 'right' }}>
+                <p style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', lineHeight: 1, margin: 0 }}>Code {c.number} →</p>
+                <p style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--l-2)', lineHeight: 1.1, margin: '3px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.card_name}</p>
+              </div>
+              <HexagramSVG upper={c.iching.upper_trigram.symbol} lower={c.iching.lower_trigram.symbol} color="var(--accent)" width={26} />
+            </Link>
+          ); })() : <div style={{ flex: 1 }} />}
+        </div>
+      </div>
     </>
   );
 };

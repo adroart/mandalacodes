@@ -30,6 +30,7 @@ interface HostProps {
   showEntrance?: boolean;
   onAcquire?: () => void;     // bridge to the app BuySheet (the previous Acquire panel)
   onShare?: () => void;       // bridge to the app share sheet (the previous Share panel)
+  chartSlot?: React.ReactNode; // the real profile-aware "in your chart" callout
 }
 
 export class EBReadingHost extends React.Component<HostProps, any> {
@@ -575,8 +576,11 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       closeIndex: this.closeIndex,
       indexRing: this.state.index ? this.buildIndexRing(this.state.indexFocus) : null,
       indexCenter: this.state.index ? this.buildIndexCenter(this.state.indexFocus) : null,
-      chartPreview: this.state.chartPreview,
-      chartShowPrompt: !this.state.chartPreview,
+      // The template's built-in chart preview + prompt are disabled — the real
+      // profile-aware callout is injected via chartSlot instead, which shows
+      // nothing unless the card matches the visitor's saved profile.
+      chartPreview: false,
+      chartShowPrompt: false,
       chartToggleLabel: this.state.chartPreview ? 'Hide example' : 'See an example',
       toggleChartPreview: this.toggleChartPreview,
       submitChart: this.submitChart,
@@ -589,6 +593,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       kinName: rel.name,
       kinBodyParas: rel.body,
       stop: (e: any) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      chartSlot: this.props.chartSlot ?? null,
     };
   }
 
@@ -602,7 +607,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const motion = this.props.reduceMotion ? 'off' : 'on';
     return (
       <div className="eb-reading" data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}
-        style={{ paddingTop: 'var(--nav-height, 64px)' }}>
+        style={{ paddingTop: 'var(--nav-height, 64px)', paddingBottom: 44 }}>
         <EBReadingMarkup vals={this.renderVals()} />
       </div>
     );
