@@ -1,7 +1,7 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
-const UniversalLanguageIndex = lazy(() => import('./components/UniversalLanguageIndex'));
+const UniversalLanguageIndex = lazy(() => import('./components/oracle/entry/OracleEntryPage'));
 const UniversalLanguageCard = lazy(() => import('./components/UniversalLanguageCard'));
 const OracleGateway = lazy(() => import('./components/OracleGateway'));
 const OracleSystems = lazy(() => import('./components/OracleSystems'));
@@ -58,7 +58,8 @@ const AppInner: React.FC = () => {
   }, [location.pathname]);
 
   // The Gateway is a fullscreen orbit-arrival screen with its own chrome; the
-  // global top bar belongs on every other oracle page. LED host never shows it.
+  // global top bar (the original MANDALA CODES nav) belongs on every other
+  // oracle page, including the card reading. LED host never shows it.
   const showNav = !ledHost && location.pathname !== '/gateway';
 
   return (

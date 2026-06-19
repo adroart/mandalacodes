@@ -182,9 +182,11 @@ blockquote {
 }
 
 @theme {
-  /* Font families */
+  /* Font families — Earth's Breath: Cormorant Garamond (serif) + Karla (sans).
+     The reading template sets all body/description copy in Karla, not Lora, so
+     the page reads as one warm editorial voice; Lora is retired here. */
   --font-serif: "Cormorant Garamond", serif;
-  --font-sans: "Lora", serif;
+  --font-sans: "Karla", -apple-system, system-ui, sans-serif;
   --font-mono: "Karla", sans-serif;          /* kept for backward compat */
   --font-label: "Karla", sans-serif;         /* semantic alias — use font-label in new code */
   --font-display: "Cormorant Garamond", serif; /* structural titles: brand name, page headings */
@@ -193,60 +195,73 @@ blockquote {
   --color-taupe: #453d39;
   --color-taupe-light: #594e48;
 
+  /* ─── EARTH'S BREATH palette — Day Book (light) ───────────────────────────
+     The reading template's "daybook" surface, mapped onto the site's existing
+     token scale. Warm paper, deep ink-brown, sandstone feature recess, and a
+     deeper antique-gold accent than the old bronze. Dark mode ("nightfall")
+     overrides these in the .dark block below; the .dark-preserve sandstone
+     recess for feature panels (I Ching, Human Design) is handled there too. */
+
   /* Colors: cream */
   --color-cream: #f2efe9;
   --color-cream-dark: #e6e2d8;
 
-  /* Colors: warm-gold */
-  --color-warm-gold: #b0966b;
-  --color-warm-gold-hover: #9e8459;
+  /* Colors: warm-gold (Earth's Breath antique gold) */
+  --color-warm-gold: #a37b38;
+  --color-warm-gold-hover: #956e2a;
 
-  /* Colors: paper */
-  --color-paper-50: #f5f4f0;
-  --color-paper-100: #ebe8e1;
-  --color-paper-200: #e0dbcf;
-  --color-paper-300: #cfc6b5;
+  /* Colors: paper — daybook surface (--l-bg) → soft (--l-soft) → deeper */
+  --color-paper-50: #f3efe7;
+  --color-paper-100: #eae4d7;
+  --color-paper-200: #e0d8c6;
+  --color-paper-300: #cfc4ad;
 
-  /* Colors: wood */
-  --color-wood-50: #faf9f7;
-  --color-wood-100: #f0ece5;
-  --color-wood-200: #e0d8cc;
-  --color-wood-300: #c8bda8;
-  --color-wood-400: #a89070;
-  --color-wood-500: #8f7a5b;
-  --color-wood-600: #736046;
-  --color-wood-700: #524330;
-  --color-wood-800: #3d3226;
-  --color-wood-900: #262321;
+  /* Colors: feature-panel recess — the warm sandstone the I Ching and
+     Human Design panels sit in (--d-bg / --d-soft in the template). A deeper
+     tone of the same paper, never black. */
+  --color-recess: #e6ddc9;
+  --color-recess-soft: #ddd3bd;
 
-  /* Colors: stone */
-  --color-stone-50: #f7f6f4;
-  --color-stone-100: #ebe9e6;
-  --color-stone-200: #dcd9d4;
-  --color-stone-300: #c2beb8;
-  --color-stone-400: #8a857c;
-  --color-stone-500: #6f6a62;
-  --color-stone-600: #6b665f;
-  --color-stone-700: #524e49;
-  --color-stone-800: #3d3a36;
-  --color-stone-900: #2b2926;
-  --color-stone-950: #23201e;
+  /* Colors: wood — low end = light surfaces, high end = ink text */
+  --color-wood-50: #faf7f0;
+  --color-wood-100: #f1ece0;
+  --color-wood-200: #ded5c2;
+  --color-wood-300: #c6bca6;
+  --color-wood-400: #a39a89;   /* --l-3 */
+  --color-wood-500: #8a8070;
+  --color-wood-600: #6b6253;   /* --l-2 */
+  --color-wood-700: #51493b;
+  --color-wood-800: #3a342a;
+  --color-wood-900: #272219;   /* --l-1 ink */
+
+  /* Colors: stone — neutral warm grey, used by the dark feature panels */
+  --color-stone-50: #f5f1e8;
+  --color-stone-100: #e9e2d2;
+  --color-stone-200: #d8cfba;
+  --color-stone-300: #beb39a;
+  --color-stone-400: #9c917a;   /* --d-3 */
+  --color-stone-500: #837962;
+  --color-stone-600: #6f6552;   /* --d-2 */
+  --color-stone-700: #564d3d;
+  --color-stone-800: #3c352a;
+  --color-stone-900: #2a2419;   /* --d-1 */
+  --color-stone-950: #211c14;
 
   /* Colors: availability states */
   --color-avail-ready: #1A1A1A;
   --color-avail-order: #666666;
   --color-avail-sold: #7a6a5e;
 
-  /* Colors: bronze */
-  --color-bronze-50: #faf6f0;
-  --color-bronze-100: #f0e8d8;
-  --color-bronze-200: #e6d9c3;
-  --color-bronze-300: #d5c1a0;
-  --color-bronze-400: #c4aa7c;
-  --color-bronze-500: #ab9266;
-  --color-bronze-600: #8a744e;
-  --color-bronze-700: #6d5a3c;
-  --color-bronze-900: #453825;
+  /* Colors: bronze — the antique-gold accent family (--accent #A37B38) */
+  --color-bronze-50: #f7f1e6;
+  --color-bronze-100: #efe4cf;
+  --color-bronze-200: #e2d0b0;
+  --color-bronze-300: #ccac78;
+  --color-bronze-400: #b0913c;   /* daybook bright accent */
+  --color-bronze-500: #a37b38;   /* --accent */
+  --color-bronze-600: #956e2a;   /* --accent-d */
+  --color-bronze-700: #7a5a22;
+  --color-bronze-900: #4a3614;
 
   /* Animations */
   --animate-spin-slow: spin 20s linear infinite;
@@ -297,64 +312,74 @@ blockquote {
 .dark {
   color-scheme: dark;
 
-  /* Paper: light surfaces → warm darks (wider spread for separation) */
-  --color-paper-50: #171310;
-  --color-paper-100: #1f1a15;
-  --color-paper-200: #29231c;
-  --color-paper-300: #362f26;
+  /* ─── EARTH'S BREATH palette — Nightfall (dark) ─────────────────────────
+     The reading template's "nightfall" surface. Warm near-black paper, cream
+     text, a still-deeper feature recess for I Ching / Human Design, and a
+     brighter antique gold so the accent holds on dark. */
+
+  /* Paper: nightfall surface (--l-bg) → soft (--l-soft) → deeper */
+  --color-paper-50: #211c16;
+  --color-paper-100: #191510;
+  --color-paper-200: #2a241b;
+  --color-paper-300: #362f24;
+
+  /* Feature-panel recess — nightfall sandstone (--d-bg / --d-soft):
+     a deeper near-black the I Ching and Human Design panels sink into. */
+  --color-recess: #100d09;
+  --color-recess-soft: #171309;
 
   /* Wood: dark → light  (low end = dark surfaces, high end = light text) */
-  --color-wood-50: #181614;
-  --color-wood-100: #1f1d1a;
-  --color-wood-200: #3a3630;
-  --color-wood-300: #504a42;
-  --color-wood-400: #c4beb4;
-  --color-wood-500: #d4cec4;
-  --color-wood-600: #ddd8cf;
-  --color-wood-700: #d0cabe;
-  --color-wood-800: #dedad0;
-  --color-wood-900: #ede9e2;
+  --color-wood-50: #1a160f;
+  --color-wood-100: #221d15;
+  --color-wood-200: #3a342a;
+  --color-wood-300: #514a3c;
+  --color-wood-400: #9a907c;   /* --l-3 */
+  --color-wood-500: #b3a892;
+  --color-wood-600: #c8beaa;   /* --l-2 */
+  --color-wood-700: #ddd4c2;
+  --color-wood-800: #e9e1d2;
+  --color-wood-900: #f3ecde;   /* --l-1 cream text */
 
-  /* Stone: inverted gray scale */
-  --color-stone-50: #141210;
-  --color-stone-100: #1c1a17;
-  --color-stone-200: #2e2b26;
-  --color-stone-300: #4a453e;
-  --color-stone-400: #b0aaa0;
-  --color-stone-500: #c0bab0;
-  --color-stone-600: #ccc5bc;
-  --color-stone-700: #d4cec4;
-  --color-stone-800: #dfdbd3;
-  --color-stone-900: #ece8e1;
-  --color-stone-950: #f2efe9;
+  /* Stone: nightfall feature-panel scale (--d-* in the template) */
+  --color-stone-50: #100d09;
+  --color-stone-100: #171309;
+  --color-stone-200: #221c12;
+  --color-stone-300: #3a3225;
+  --color-stone-400: #928871;   /* --d-3 */
+  --color-stone-500: #a89e87;
+  --color-stone-600: #c2b8a2;   /* --d-2 */
+  --color-stone-700: #d6ccb8;
+  --color-stone-800: #e6ddcc;
+  --color-stone-900: #f4edde;   /* --d-1 cream text */
+  --color-stone-950: #f8f2e6;
 
   /* Cream → warm darks */
-  --color-cream: #1a1816;
-  --color-cream-dark: #222018;
+  --color-cream: #1a1610;
+  --color-cream-dark: #221d14;
 
   /* Taupe → light taupe */
-  --color-taupe: #c5beb8;
-  --color-taupe-light: #b0a89f;
+  --color-taupe: #c8beaa;
+  --color-taupe-light: #b3a892;
 
-  /* Warm gold: brighten for dark backgrounds */
-  --color-warm-gold: #c8a878;
-  --color-warm-gold-hover: #b89868;
+  /* Warm gold: brighten for dark backgrounds (--accent nightfall) */
+  --color-warm-gold: #cda45e;
+  --color-warm-gold-hover: #debc7e;
 
-  /* Bronze: brighten accents for dark backgrounds */
-  --color-bronze-50: #2a2418;
-  --color-bronze-100: #3a3020;
-  --color-bronze-200: #5a4a30;
-  --color-bronze-300: #7a6848;
-  --color-bronze-400: #d4b88a;
-  --color-bronze-500: #c4a878;
-  --color-bronze-600: #d4b88a;
-  --color-bronze-700: #9a8058;
-  --color-bronze-900: #3a2e1a;
+  /* Bronze: antique gold, brightened for nightfall */
+  --color-bronze-50: #2a2114;
+  --color-bronze-100: #3a2e1a;
+  --color-bronze-200: #574326;
+  --color-bronze-300: #7a6038;
+  --color-bronze-400: #debc7e;   /* --accent-d */
+  --color-bronze-500: #cda45e;   /* --accent */
+  --color-bronze-600: #debc7e;
+  --color-bronze-700: #b08f54;
+  --color-bronze-900: #3a2c16;
 
   /* Availability: invert for dark-bg readability */
   --color-avail-ready: #e0e0e0;
   --color-avail-order: #a0a0a0;
-  --color-avail-sold: #9a8a7e;
+  --color-avail-sold: #b3a892;
 }
 
 /* ─── dark-preserve: restores original light-mode colors ────────────────── */
@@ -414,14 +439,50 @@ blockquote {
 body { transition: background-color 0.5s ease; }
 html.dark body { background-color: #171310; }
 
-/* On the oracle card page only, force the page (html + body) to the
-   dark warm background so chapter swipes don't briefly flash white when
-   one panel slides off and the next slides on. The body default is
-   normally light; the .oracle-card-page class is added by the card
-   component when mounted and removed on unmount. */
+/* On the oracle card page, hold the page (html + body) to the active
+   reading surface so chapter swipes don't flash a mismatched colour when
+   one panel slides off and the next slides on. Earth's Breath: this now
+   FOLLOWS the theme — warm paper in Day Book, warm near-black in Nightfall —
+   instead of forcing dark in both. The .oracle-card-page class is added by
+   the card component on mount and removed on unmount. */
 html.oracle-card-page,
 html.oracle-card-page body {
-  background-color: #171310;
+  background-color: #f3efe7;   /* Day Book paper (--l-bg) */
+}
+html.dark.oracle-card-page,
+html.dark.oracle-card-page body {
+  background-color: #211c16;   /* Nightfall surface (--l-bg) */
+}
+
+/* Earth's Breath reading palette + keyframes live verbatim in
+   components/oracle/eb/eb-template.css (imported by the reading component), so
+   the colours and motion are the template file's own values, never retyped. */
+
+/* ─── Earth's Breath paper grain ────────────────────────────────────────────
+   A fine fractal-noise texture laid over the whole reading as a fixed,
+   pointer-transparent material layer — the template's defining "of paper, not
+   of screen" feel. soft-light keeps it a texture, not a tint, in both themes. */
+.eb-grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.42;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+.dark .eb-grain::after { opacity: 0.30; }
+@media (prefers-reduced-motion: reduce) {
+  .eb-grain::after { opacity: 0.3; }
+}
+
+/* Earth's Breath reading keyframes + helpers live in
+   components/oracle/eb/eb-template.css (verbatim from the template file). This
+   extra guard disables the component's inline animations under reduced-motion. */
+@media (prefers-reduced-motion: reduce) {
+  .eb-reading [style*="animation"], .eb-entrance [style*="animation"] { animation: none !important; }
 }
 
 /* Placeholder text — slightly brighter in dark mode */

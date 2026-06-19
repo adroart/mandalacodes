@@ -1,0 +1,37 @@
+
+  *{box-sizing:border-box}
+  body{margin:0}
+  [data-theme="light"]{
+    --bg:#f3f1ec; --bg2:#ffffff; --surface:#faf9f6; --ink:#262321; --ink2:#524330;
+    --ink3:#8a7a5e; --faint:#a89070; --line:#e3ddd1; --line2:#d2c7b4;
+    --accent:#8a744e; --accentDeep:#6d5a3c; --onAccent:#f7f5f1;
+    --glow:rgba(196,170,124,0.16);
+    --heroWash:radial-gradient(135% 80% at 50% -8%, rgba(196,170,124,0.16), transparent 60%);
+  }
+  [data-theme="dark"]{
+    --bg:#15110e; --bg2:#1d1813; --surface:#241e17; --ink:#f0ece4; --ink2:#cfc7b8;
+    --ink3:#a99a82; --faint:#8a7c66; --line:rgba(196,170,124,0.16); --line2:rgba(196,170,124,0.30);
+    --accent:#dabd8b; --accentDeep:#c4a878; --onAccent:#15110e;
+    --glow:rgba(217,189,140,0.22);
+    --heroWash:radial-gradient(135% 82% at 50% -8%, rgba(217,189,140,0.18), transparent 62%);
+  }
+  @keyframes oe-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  @keyframes oe-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes oe-fade{from{opacity:0}to{opacity:1}}
+  @keyframes oe-glow{0%,100%{opacity:.5}50%{opacity:.95}}
+  @keyframes oe-sheen{from{transform:translateX(-120%) skewX(-18deg)}to{transform:translateX(220%) skewX(-18deg)}}
+  @media(max-width:760px){ [data-oe="rail"]{max-width:none !important} }
+  @media(min-width:980px){ [data-oe="ichgrid"],[data-oe="artgrid"]{grid-template-columns:repeat(8,minmax(0,1fr)) !important} }
+  @media(max-width:520px){
+    [data-oe="trigline"]{flex-direction:column !important; gap:1px !important; align-items:center !important}
+    [data-oe="trigsep"]{display:none !important}
+  }
+  /* 4-wide: larger text to match bigger tiles */
+  [data-oe="trigtext"]{font-size:clamp(11px,1.8vw,17px)}
+  [data-oe="trigsep"]{font-size:clamp(11px,1.8vw,17px)}
+  [data-oe="cardnum"]{font-size:clamp(11px,1.6vw,16px)}
+  @media(min-width:980px){
+    [data-oe="trigtext"]{font-size:clamp(9px,1.1vw,13px) !important}
+    [data-oe="trigsep"]{font-size:clamp(9px,1.1vw,13px) !important}
+    [data-oe="cardnum"]{font-size:clamp(10px,1.2vw,14px) !important}
+  }

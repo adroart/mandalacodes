@@ -1,0 +1,89 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   Earth's Breath reading — VERBATIM from the imported template's <style> block.
+   The only change from the original is scoping the :root tokens to .eb-reading /
+   .eb-entrance (so the rest of the site is untouched) and reading the palette
+   from the [data-palette] attribute set by the component (daybook = light,
+   nightfall = dark). Colors, fonts, and keyframes are the file's own values —
+   do not hand-edit; re-extract from the .dc.html if the template changes.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.eb-reading, .eb-entrance {
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Karla', -apple-system, system-ui, sans-serif;
+  --cjk: 'Noto Serif TC', 'Songti SC', 'Noto Serif SC', 'Songti TC', 'Cormorant Garamond', serif;
+  /* light surface */
+  --l-bg: #F3EFE7; --l-1: #272219; --l-2: #6B6253; --l-3: #A39A89; --l-rule: rgba(39,34,25,0.14); --l-soft: #EAE4D7;
+  /* feature panels (I Ching, Human Design) = a warm sandstone recess of the paper, not black */
+  --d-bg: #E6DDC9; --d-1: #2A2419; --d-2: #6F6552; --d-3: #9C917A; --d-rule: rgba(39,34,25,0.16); --d-soft: #DDD3BD;
+  --accent: #A37B38; --accent-d: #956E2A;
+}
+.eb-reading[data-palette="nightfall"], .eb-entrance[data-palette="nightfall"] {
+  --l-bg: #211C16; --l-1: #F3ECDE; --l-2: #C8BEAA; --l-3: #9A907C; --l-rule: rgba(238,230,215,0.18); --l-soft: #191510;
+  --d-bg: #100D09; --d-1: #F4EDDE; --d-2: #C2B8A2; --d-3: #928871; --d-rule: rgba(240,232,217,0.17); --d-soft: #171309;
+  --accent: #CDA45E; --accent-d: #DEBC7E;
+}
+.eb-reading[data-palette="stone"], .eb-entrance[data-palette="stone"] {
+  --l-bg: #EAE8E1; --l-1: #2B2A26; --l-2: #6C6A63; --l-3: #9C9A92; --l-rule: rgba(43,42,38,0.13); --l-soft: #E1DFD6;
+  --d-bg: #D6D0C3; --d-1: #2C2B26; --d-2: #5E5C53; --d-3: #85837A; --d-rule: rgba(43,42,38,0.17); --d-soft: #CDC7B9;
+  --accent: #8F7A54; --accent-d: #8A7344;
+}
+
+.eb-reading h1, .eb-reading h2, .eb-reading h3 { font-variant-ligatures: discretionary-ligatures common-ligatures; }
+.eb-reading .ul-stage::-webkit-scrollbar, .eb-entrance .ul-stage::-webkit-scrollbar { display: none; }
+.eb-reading[data-motion="off"] *, .eb-entrance[data-motion="off"] * { animation: none !important; transition: none !important; }
+
+.eb-reading .ul-dropcap, .eb-entrance .ul-dropcap {
+  float: left; font-family: var(--serif); font-weight: 500; font-size: 3.34em;
+  line-height: 0.74; padding: 0.06em 0.12em 0 0; color: var(--accent);
+}
+
+@keyframes ulRise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ulFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ulRingBloom { from { opacity: 0; transform: scale(0.45); } to { opacity: 1; transform: scale(1); } }
+@keyframes ulRingSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes ulDraw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes ulPulse { 0%,100% { opacity: 0.35; } 50% { opacity: 0.8; } }
+@keyframes ulCoin { 0% { transform: rotateX(0) scale(0.9); opacity: 0; } 55% { transform: rotateX(900deg) scale(1.05); opacity: 1; } 100% { transform: rotateX(1080deg) scale(1); opacity: 1; } }
+@keyframes ulCoinTumble { 0% { transform: translateY(-14px) rotateX(0) scale(0.92); opacity: 0.2; } 30% { opacity: 1; } 60% { transform: translateY(3px) rotateX(1080deg) scale(1.06); } 80% { transform: translateY(-1px) rotateX(1260deg) scale(0.99); } 100% { transform: translateY(0) rotateX(1440deg) scale(1); opacity: 1; } }
+@keyframes ulVeil { 0% { opacity: 0; } 38% { opacity: 0.85; } 100% { opacity: 0; } }
+@keyframes ulLineUp { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
+@keyframes ulLineCast { 0% { opacity: 0; transform: translateY(10px) scaleX(0.6); } 60% { opacity: 1; } 100% { opacity: 1; transform: translateY(0) scaleX(1); } }
+@keyframes ulOverlay { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: scale(1); } }
+
+.eb-reading .ul-tab2, .eb-entrance .ul-tab2 { flex-direction: row !important; gap: 0.42em; }
+@media (max-width: 600px) {
+  .eb-reading .ul-keywords { justify-content: center !important; border-top: none !important; padding-top: 0 !important; }
+  .eb-reading .ul-tab2, .eb-entrance .ul-tab2 { flex-direction: column !important; gap: 0; }
+}
+
+/* Title placement: on desktop the title sits in the right column above the
+   keywords (to the right of the artwork — per the design photo); on mobile it
+   sits centered at the very top above the artwork. Two copies, one shown per
+   breakpoint. The hero grid collapses to one column under ~720px. */
+/* The site's original global nav (MANDALA CODES) sits above the reading, so the
+   template's own "Universal Language" top bar is hidden to avoid two bars. */
+.eb-reading .ul-topbar { display: none; }
+
+/* The template's hardcoded "In your chart · Gate 1, Line 3" placeholder is hidden;
+   the real profile-aware callout (YourPositionCallout) is rendered instead, which
+   only appears when the card actually matches the visitor's saved profile. */
+.eb-reading .ul-chartprompt { display: none; }
+
+.eb-reading .ul-title-desktop { display: none; }
+.eb-reading .ul-title-mobile { display: block; }
+/* The I Ching hexagram + trigram rows are full-bleed (100vw) on mobile, which
+   reads well on a narrow screen. On wider browsers that stretch is too wide and
+   breaks out of the reading's content column, so above the column width it snaps
+   back to sit inside the column like the rest of the panel. */
+@media (min-width: 720px) {
+  .eb-reading .ul-iching-rows {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: auto !important;
+  }
+}
+
+@media (min-width: 720px) {
+  .eb-reading .ul-title-desktop { display: block; }
+  .eb-reading .ul-title-mobile { display: none; }
+}

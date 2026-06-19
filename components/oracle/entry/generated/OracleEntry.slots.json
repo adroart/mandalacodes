@@ -1,0 +1,55 @@
+{
+  "placeholders": [
+    "c.aria",
+    "c.art",
+    "c.lines",
+    "c.name",
+    "f.aria",
+    "f.lines",
+    "heroLines",
+    "query",
+    "readingArtBig",
+    "readingName",
+    "t.cx",
+    "t.cy",
+    "t.op",
+    "t.rot",
+    "t.x",
+    "t.y",
+    "theme"
+  ],
+  "handlers": [
+    "c.onBack",
+    "c.onRead",
+    "c.onTile",
+    "closeReading",
+    "drawRandom",
+    "e.onClick",
+    "enterReading",
+    "f.onClick",
+    "onQuery",
+    "openGrid",
+    "openSystems",
+    "stop",
+    "t.onClick",
+    "toggleTheme"
+  ],
+  "refs": [],
+  "loops": [
+    "elChips as e",
+    "feats as f",
+    "gridCards as c",
+    "ringTicks as t",
+    "tabs as t"
+  ],
+  "conditionals": [
+    "c.closed",
+    "c.flipped",
+    "isA",
+    "isArtwork",
+    "isB",
+    "isC",
+    "isIChing",
+    "reading"
+  ]
+}

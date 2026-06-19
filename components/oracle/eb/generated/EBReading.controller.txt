@@ -1,0 +1,662 @@
+
+class Component extends DCLogic {
+  state = {
+    entranceDismissed: false,
+    active: 'ul',
+    cast: null,
+    lightbox: false,
+    share: false,
+    buy: false,
+    overlay: null,
+    copied: false,
+    storyLabel: 'Instagram Story',
+    chartPreview: false,
+    chartSubmitted: false,
+    index: false,
+    indexFocus: 1,
+    relSel: 'pair',
+  };
+
+  openIndex = () => this.setState({ index: true, indexFocus: 1, share: false });
+  closeIndex = () => this.setState({ index: false });
+  setIndexFocus = (n) => this.setState({ indexFocus: n });
+
+  toggleChartPreview = () => this.setState({ chartPreview: !this.state.chartPreview });
+  submitChart = (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ chartSubmitted: true }); };
+  registerChartInput = (el) => { this.chartInputEl = el; };
+  registerRoot = (el) => { this.rootEl = el; };
+  registerVeil = (el) => { this.veilEl = el; };
+  registerNavInd = (el) => { this.navIndEl = el; };
+  registerNavScroll = (el) => { this.navScrollEl = el; };
+  registerTrigram = (el) => { this.trigramEl = el; };
+
+  navEls = new Map();
+  gkEls = new Map();
+  scrollGK = (k) => {
+    const el = this.gkEls.get(k);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 96;
+    const se = document.scrollingElement || document.documentElement;
+    se.scrollTop = top;
+    window.scrollTo(0, top);
+  };
+  panelEls = new Map();
+  ivEls = new Map();
+  ivcEls = new Map();
+
+  MOVING = [
+    { n: 1, image: 'The dragon still hidden under the water.', becomes: 'Hexagram 44 · Coming to Meet', text: 'The power is real, but the season has not come. This is not failure. It is the deep, the kindling before the spark, the held charge in something the world has not yet noticed. Build strength where no one is watching. Do not move yet. The waiting is its own work.' },
+    { n: 2, image: 'The dragon appearing in the field.', becomes: 'Hexagram 13 · Fellowship', text: 'What was hidden now shows. The gift has stepped out into the open where others can see it. This is the moment to seek out someone who has walked further, and let their seeing steady yours. Visibility is its own kind of work.' },
+    { n: 3, image: 'Working by day, wary by night.', becomes: 'Hexagram 10 · Treading', text: 'The position is exposed and the work is real. Labor fully through the day, and stay awake to the danger through the night. The error this place invites is the error of forgetting that strength alone is not enough. Care, not force, holds the line. No mistake.' },
+    { n: 4, image: 'Leaping from the abyss, or staying in it.', becomes: 'Hexagram 9 · Small Taming', text: 'A real fork. Rise into the open, or remain a while longer in the deep. Either is allowed here. The mistake is to act from certainty you do not have. Act from care. Test the water. The leap that is honest about being a leap brings no harm.' },
+    { n: 5, image: 'The dragon on the wing in the open sky.', becomes: 'Hexagram 14 · Great Possession', text: 'The force has reached its proper flight. This is the line of arrival, the height the whole hexagram has been climbing toward. From here it is favorable to meet a great person: like meets like, influence meets influence. You are at the centre of your own power now.' },
+    { n: 6, image: 'The proud dragon, one step too high.', becomes: 'Hexagram 43 · Breakthrough', text: 'The force has gone past its limit. What was originating power becomes arrogance the moment it forgets it was only ever carrying the fire, not making it. There will be cause for repentance. This line is the hexagram\u2019s warning to itself: even heaven has a top.' },
+  ];
+
+  KEYWORDS = ['Freshness', 'Inner Fire', 'The Low Season', 'Pure Beginning', 'Aliveness', 'Creating', 'Letting Go'];
+
+  KIN = [
+    { key: 'pair',     x: 24,   y: 50,   kind: 'kin',  glyph: '\u4DC1',       font: 'var(--cjk)',   size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: 'UL 2 \u00b7 Receptive' },
+    { key: 'ring14',   x: 76,   y: 50,   kind: 'kin',  glyph: '\u4DCD',       font: 'var(--cjk)',   size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: 'UL 14 \u00b7 Ring of Fire' },
+    { key: 'sky',      x: 21.7, y: 21.7, kind: 'corr', glyph: '\u2650\uFE0E', font: 'var(--serif)', size: 'clamp(22px,5.6vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: 'Sagittarius' },
+    { key: 'tarot',    x: 78.3, y: 21.7, kind: 'corr', glyph: 'XIV',         font: 'var(--serif)', size: 'clamp(15px,4vw,19px)',   dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: 'The Art' },
+    { key: 'hebrew',   x: 21.7, y: 78.3, kind: 'corr', glyph: '\u05E1',      font: 'var(--serif)', size: 'clamp(23px,6vw,30px)',   dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: 'Samech' },
+    { key: 'immortal', x: 78.3, y: 78.3, kind: 'corr', glyph: '\u7B1B',      font: 'var(--cjk)',   size: 'clamp(22px,5.8vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: 'Han Xiangzi' },
+  ];
+
+  RELDATA = {
+    self: { kicker: 'Inverse \u00b7 Its Own Reflection', kind: 'Itself', name: 'Its Own Reflection', body: ['Turn this code upside down and you find it unchanged. It is one of only eight in the deck that meets its own reflection, and the meaning is exactly that. Pure creative force does not have a back side. There is no other angle from which to read it.'] },
+    pair: { kicker: 'The Pair \u00b7 Programming Partner', kind: 'Complement', name: 'UL 2 \u00b7 The Receptive', body: ['These two are the deck\u2019s first pair, the oldest pair in the I Ching, and they teach the same thing from opposite ends. One is pure creative force; the other is pure receptive ground. Nothing in the world is made by either alone. Everything in the world is what happens when the two meet.', 'The same pairing runs through the genetic code, where these two are the codes that programme each other. What one does, the other holds. What one initiates, the other receives and ripens. The partnership is biological, not just symbolic.'] },
+    ring14: { kicker: 'Codon Ring \u00b7 Ring of Fire', kind: 'Codon kin', name: 'UL 14 \u00b7 Ring of Fire', body: ['This code shares its ring with one other, UL 14, the abundance that follows fire\u2019s spark. The ring is small because the teaching is exact. Pure creative force, met by the patient labour that turns the spark into a life, is the whole of what this family carries.'] },
+    tarot: { kicker: 'Tarot \u00b7 XIV', kind: 'Arcana', name: 'Temperance \u00b7 The Art', body: ['The Tarot meets this hexagram through its codon ring. The Ring of Fire carries one Major Arcana, Temperance, named The Art in the Thoth deck, and the older name fits this code better. The image is alchemical mixing, two forces blended into a third thing that neither was before. This code is what does the mixing, the originating spark held to its true proportion until the moment is right.'] },
+    immortal: { kicker: 'The Eight Immortals', kind: 'Daoist', name: 'Han Xiangzi', body: ['Heaven doubled carries a single Daoist Immortal, Han Xiangzi, whose flute revitalises life and brings abundance, the creative breath made audible. Doubled, his presence speaks of a force that does not perform itself outward but sounds its own true note, and in sounding it, quickens everything around it.'] },
+    hebrew: { kicker: 'Hebrew Letter \u00b7 Samech', kind: 'The Prop', name: 'Samech, the Prop', body: ['The spine, the staff that steadies the ascending. The letter teaches that even pure creative force needs something to lean on as it descends into form. The ring\u2019s path runs from the heart of the Tree toward the foundation.'] },
+    sky: { kicker: 'The Sky \u00b7 Sagittarius', kind: 'Astrology', name: 'Sagittarius', body: ['The mutable fire of the arrow flying outward, and this code is the bow that releases it.'] },
+  };
+
+  selectKin = (k) => this.setState({ relSel: k });
+
+  buildKinLines() {
+    const sel = this.state.relSel;
+    const E = React.createElement;
+    const els = [];
+    const ACC = 'var(--accent)', RULE = 'var(--l-rule)', SOFT = 'var(--l-3)';
+    // two orbits — inner = deck kin, outer = correspondences
+    els.push(E('circle', { key: 'ro', cx: 50, cy: 50, r: 40, fill: 'none', stroke: RULE, strokeWidth: 0.3, opacity: 0.9 }));
+    els.push(E('circle', { key: 'ri', cx: 50, cy: 50, r: 26, fill: 'none', stroke: RULE, strokeWidth: 0.3, opacity: 0.65 }));
+    // dial ticks around the outer orbit
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * 2 * Math.PI;
+      const r2 = i % 2 === 0 ? 38.3 : 39.1;
+      els.push(E('line', { key: 't' + i, x1: 50 + 40 * Math.cos(a), y1: 50 + 40 * Math.sin(a), x2: 50 + r2 * Math.cos(a), y2: 50 + r2 * Math.sin(a), stroke: SOFT, strokeWidth: 0.22, opacity: 0.3 }));
+    }
+    // radial connectors to each node
+    this.KIN.forEach((n) => {
+      const on = sel === n.key;
+      const isKin = n.kind === 'kin';
+      els.push(E('line', {
+        key: 'l-' + n.key, x1: 50, y1: 50, x2: n.x, y2: n.y,
+        stroke: on || isKin ? ACC : SOFT,
+        strokeWidth: on ? 0.85 : (isKin ? 0.5 : 0.32),
+        strokeDasharray: isKin ? 'none' : '1.3 1.7',
+        opacity: on ? 1 : (isKin ? 0.5 : 0.26),
+        strokeLinecap: 'round',
+      }));
+    });
+    // selection emphasis drawn behind the node
+    const selNode = this.KIN.find((n) => n.key === sel);
+    if (selNode) {
+      els.push(E('circle', { key: 'sg', cx: selNode.x, cy: selNode.y, r: selNode.svgR + 3, fill: ACC, opacity: 0.12 }));
+      els.push(E('circle', { key: 'sr', cx: selNode.x, cy: selNode.y, r: selNode.svgR + 2, fill: 'none', stroke: ACC, strokeWidth: 0.5, opacity: 0.85 }));
+    }
+    if (sel === 'self') els.push(E('circle', { key: 'hls', cx: 50, cy: 50, r: 12.5, fill: 'none', stroke: ACC, strokeWidth: 0.5, strokeDasharray: '1.2 1.5', opacity: 0.85 }));
+    return E('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'xMidYMid meet', style: { position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, overflow: 'visible', pointerEvents: 'none' } }, els);
+  }
+
+  // King Wen order: number, name, bits bottom→top (1 = solid/yang)
+  KINGWEN = [
+    [1,'The Creative','111111'],[2,'The Receptive','000000'],[3,'Difficulty at the Beginning','100010'],[4,'Youthful Folly','010001'],
+    [5,'Waiting','111010'],[6,'Conflict','010111'],[7,'The Army','010000'],[8,'Holding Together','000010'],
+    [9,'Small Taming','111011'],[10,'Treading','110111'],[11,'Peace','111000'],[12,'Standstill','000111'],
+    [13,'Fellowship','101111'],[14,'Great Possession','111101'],[15,'Modesty','001000'],[16,'Enthusiasm','000100'],
+    [17,'Following','100110'],[18,'Work on the Decayed','011001'],[19,'Approach','110000'],[20,'Contemplation','000011'],
+    [21,'Biting Through','100101'],[22,'Grace','101001'],[23,'Splitting Apart','000001'],[24,'Return','100000'],
+    [25,'Innocence','100111'],[26,'Great Taming','111001'],[27,'Nourishment','100001'],[28,'Great Preponderance','011110'],
+    [29,'The Abysmal','010010'],[30,'The Clinging','101101'],[31,'Influence','001110'],[32,'Duration','011100'],
+    [33,'Retreat','001111'],[34,'Great Power','111100'],[35,'Progress','000101'],[36,'Darkening of the Light','101000'],
+    [37,'The Family','101011'],[38,'Opposition','110101'],[39,'Obstruction','001010'],[40,'Deliverance','010100'],
+    [41,'Decrease','110001'],[42,'Increase','100011'],[43,'Breakthrough','111110'],[44,'Coming to Meet','011111'],
+    [45,'Gathering Together','000110'],[46,'Pushing Upward','011000'],[47,'Oppression','010110'],[48,'The Well','011010'],
+    [49,'Revolution','101110'],[50,'The Cauldron','011101'],[51,'The Arousing','100100'],[52,'Keeping Still','001001'],
+    [53,'Development','001011'],[54,'The Marrying Maiden','110100'],[55,'Abundance','101100'],[56,'The Wanderer','001101'],
+    [57,'The Gentle','011011'],[58,'The Joyous','110110'],[59,'Dispersion','010011'],[60,'Limitation','110010'],
+    [61,'Inner Truth','110011'],[62,'Small Preponderance','001100'],[63,'After Completion','101010'],[64,'Before Completion','010101'],
+  ];
+  CURRENT_CODE = 1;
+
+  OVERLAYS = {
+    iching: {
+      kicker: 'The Book of Changes',
+      title: 'I Ching',
+      sub: 'attributed to Fu Xi, King Wen, the Duke of Zhou, and Confucius',
+      gratitude: 'Richard Wilhelm and Cary F. Baynes',
+      paras: [
+        'The I Ching is the oldest text in active spiritual use anywhere in the world. Its earliest layers are attributed to the legendary Fu Xi, who is said to have seen, in eight three-line figures, the structure of the cosmos. The symbols came to encode a way of reading change as it moves through any moment.',
+        'King Wen of Zhou ordered the sixty-four hexagrams and named each one. His son, the Duke of Zhou, wrote the line statements. Confucius and his school added the Ten Wings, turning the oracle into a philosophical text.',
+        'The translation that opens the I Ching to the modern imagination is Richard Wilhelm\u2019s, carried into English by Cary F. Baynes in 1950 with a foreword by Carl Jung. Almost every Western reader who has touched the I Ching since has touched it through their hands.',
+      ],
+    },
+    genekeys: {
+      kicker: 'A contemplative path',
+      title: 'Gene Keys',
+      sub: 'transmitted by Richard Rudd, 2002 onward',
+      gratitude: 'Richard Rudd',
+      paras: [
+        'The Gene Keys are the youngest of the three systems. Richard Rudd received the transmission over a long, contemplative period beginning in the early 2000s, after years of training in Human Design and a lifetime of reading the I Ching.',
+        'Each of the sixty-four keys names three frequencies of the same archetype: the Shadow, a habitual pattern under stress; the Gift, what opens when the Shadow is met with awareness; and the Siddhi, the highest expression, often glimpsed before it is lived.',
+        'The sixty-four Gene Keys correspond directly to the sixty-four hexagrams of the I Ching and to the sixty-four codons of human DNA. Rudd\u2019s contribution is the Shadow\u2013Gift\u2013Siddhi spectrum, and the practice of holding all three as one continuous teaching.',
+      ],
+    },
+    humandesign: {
+      kicker: 'A map of energy',
+      title: 'Human Design',
+      sub: 'received by Ra Uru Hu, Ibiza, January 1987',
+      gratitude: 'Ra Uru Hu',
+      paras: [
+        'Human Design enters the world through Ra Uru Hu, who in January of 1987 reports an eight-day-and-night encounter with a voice he calls the Voice. What he transcribes becomes the system.',
+        'It is a synthesis of the I Ching, Western astrology, the Hindu chakra system, the Kabbalistic Tree of Life, and the science of the neutrino, woven into a single chart called the bodygraph.',
+        'The bodygraph names which centres in a person are defined and which are open, and locates sixty-four gates against the calendar of the sun and the moment of birth \u2014 a practical instruction for making decisions in alignment with one\u2019s own design.',
+      ],
+    },
+  };
+
+  SHARE_URL = 'https://adrianrasmussen.com/oracle/1';
+  SHARE_TEXT = 'Earth\u2019s Breath \u00b7 Code 1 \u00b7 Universal Language Oracle by Adrian Rasmussen';
+
+  componentDidMount() {
+    this.entranceOn = (this.props.showEntrance ?? true) && !this.state.entranceDismissed;
+    this.setBodyLock(this.isLocked());
+    this.updateNav(this.state.active);
+
+    this.onKey = (e) => {
+      if (e.key === 'Escape') {
+        if (this.state.index) return this.setState({ index: false });
+        if (this.state.lightbox) return this.setState({ lightbox: false });
+        if (this.state.share) return this.setState({ share: false });
+        if (this.state.buy) return this.setState({ buy: false });
+        if (this.state.overlay) return this.setState({ overlay: null });
+        if (this.entranceActive()) return this.dismissEntrance();
+      }
+      if (this.entranceActive() && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); this.dismissEntrance(); }
+    };
+    window.addEventListener('keydown', this.onKey);
+
+    if (this.stageEl) {
+      this.observer = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          const key = en.target.dataset.chapter;
+          this.visibility = this.visibility || {};
+          this.visibility[key] = en.intersectionRatio;
+        });
+        let best = null, bestR = 0;
+        Object.keys(this.visibility || {}).forEach((k) => { if (this.visibility[k] > bestR) { bestR = this.visibility[k]; best = k; } });
+        if (best && bestR > 0.5 && best !== this.state.active) {
+          this.setState({ active: best });
+          this.updateNav(best);
+        }
+      }, { root: this.stageEl, threshold: [0, 0.25, 0.5, 0.75, 1] });
+      this.panelEls.forEach((el) => { if (el) this.observer.observe(el); });
+    }
+
+    // #3 scroll reveal + #2 glyph wipe
+    const reduce = !!this.props.reduceMotion;
+    if (this.rootEl && !reduce) {
+      const groups = new Map();
+      this.revealObs = new IntersectionObserver((ents) => {
+        ents.forEach((en) => {
+          if (en.isIntersecting) { const el = en.target; el.style.opacity = '1'; el.style.transform = 'none'; this.revealObs.unobserve(el); }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
+      this.rootEl.querySelectorAll('section[data-chapter] > div > *').forEach((el) => {
+        const p = el.parentElement; const i = groups.get(p) || 0; groups.set(p, i + 1);
+        el.style.opacity = '0'; el.style.transform = 'translateY(16px)';
+        el.style.transition = 'opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1)';
+        el.style.transitionDelay = Math.min(i, 6) * 65 + 'ms';
+        this.revealObs.observe(el);
+      });
+      this.glyphObs = new IntersectionObserver((ents) => {
+        ents.forEach((en) => {
+          if (en.isIntersecting) { const el = en.target; el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; this.glyphObs.unobserve(el); }
+        });
+      }, { threshold: 0.3 });
+      this.rootEl.querySelectorAll('[data-glyph]').forEach((el) => {
+        el.style.clipPath = 'inset(0 0 100% 0)'; el.style.opacity = '0';
+        el.style.transition = 'clip-path .9s cubic-bezier(.16,1,.3,1), opacity .6s ease';
+        this.glyphObs.observe(el);
+      });
+    }
+
+    // init nav indicator + trigram highlight, keep indicator aligned on resize/font load
+    this.repositionNav = () => this.updateNav(this.state.active);
+    window.addEventListener('resize', this.repositionNav);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => this.repositionNav()).catch(() => {});
+    requestAnimationFrame(() => { this.updateNav(this.state.active); this.selectIv('hex'); });
+  }
+
+  componentDidUpdate() { this.setBodyLock(this.isLocked()); }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.onKey);
+    if (this.observer) this.observer.disconnect();
+    if (this.revealObs) this.revealObs.disconnect();
+    if (this.glyphObs) this.glyphObs.disconnect();
+    if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
+    this.setBodyLock(false);
+  }
+
+  entranceActive() { return (this.props.showEntrance ?? true) && !this.state.entranceDismissed; }
+  isLocked() { return this.entranceActive() || this.state.lightbox || this.state.share || this.state.buy || !!this.state.overlay || this.state.index; }
+  setBodyLock(on) { try { document.body.style.overflow = on ? 'hidden' : ''; } catch (e) {} }
+
+  dismissEntrance = () => this.setState({ entranceDismissed: true });
+
+  go = (key) => {
+    this.flashVeil(key);
+    this.setState({ active: key });
+    this.updateNav(key);
+    const panel = this.panelEls.get(key);
+    if (this.stageEl && panel) {
+      this.stageEl.scrollTo({ left: panel.offsetLeft, behavior: this.props.reduceMotion ? 'auto' : 'smooth' });
+      const y = this.stageEl.getBoundingClientRect().top + window.scrollY - 76;
+      const target = Math.max(0, y);
+      const se = document.scrollingElement || document.documentElement;
+      se.scrollTop = target;
+      window.scrollTo(0, target);
+    }
+  };
+
+  flashVeil(key) {
+    if (this.props.reduceMotion || !this.veilEl) return;
+    const dark = key === 'iching' || key === 'humandesign';
+    const tone = dark ? 'var(--d-bg)' : (key === 'relations' ? 'var(--l-soft)' : 'var(--l-bg)');
+    this.veilEl.style.background = tone;
+    this.veilEl.style.animation = 'none';
+    void this.veilEl.offsetWidth;
+    this.veilEl.style.animation = 'ulVeil 560ms ease both';
+  }
+
+  updateNav(active) {
+    this.navEls.forEach((el, key) => {
+      if (!el) return;
+      const on = key === active;
+      el.style.color = on ? 'var(--l-1)' : 'var(--l-3)';
+      el.style.borderBottomColor = 'transparent';
+      el.style.fontWeight = on ? '600' : '500';
+    });
+    const activeEl = this.navEls.get(active);
+    if (this.navIndEl && activeEl) {
+      this.navIndEl.style.opacity = '1';
+      this.navIndEl.style.width = activeEl.offsetWidth + 'px';
+      this.navIndEl.style.transform = 'translate(' + activeEl.offsetLeft + 'px,' + (activeEl.offsetTop + activeEl.offsetHeight - 2) + 'px)';
+    }
+    const sc = this.navScrollEl;
+    if (sc && activeEl && sc.scrollWidth > sc.clientWidth + 2) {
+      const target = activeEl.offsetLeft - (sc.clientWidth - activeEl.offsetWidth) / 2;
+      const max = sc.scrollWidth - sc.clientWidth;
+      sc.scrollTo({ left: Math.max(0, Math.min(target, max)), behavior: this.props.reduceMotion ? 'auto' : 'smooth' });
+    }
+  }
+
+  selectIv(view) {
+    this.ivEls.forEach((el, k) => {
+      if (!el) return;
+      el.style.background = k === view ? 'rgba(199,160,91,0.06)' : 'none';
+    });
+    this.ivcEls.forEach((el, k) => { if (el) el.style.display = k === view ? 'block' : 'none'; });
+    if (this.ivLabelEl) this.ivLabelEl.textContent = view === 'hex' ? 'Combination' : view === 'upper' ? 'Upper nature' : 'Lower nature';
+    if (this.trigramEl) {
+      this.trigramEl.querySelectorAll('[data-line]').forEach((b) => {
+        const n = parseInt(b.dataset.line, 10);
+        let on = true;
+        if (view === 'upper') on = n >= 4;
+        else if (view === 'lower') on = n <= 3;
+        b.style.opacity = on ? '1' : '0.18';
+        b.style.transform = on ? 'scaleX(1)' : 'scaleX(0.82)';
+      });
+    }
+  }
+
+  doCast = () => {
+    const lines = [];
+    for (let i = 0; i < 6; i++) {
+      let sum = 0; for (let c = 0; c < 3; c++) sum += (Math.random() < 0.5 ? 2 : 3);
+      lines.push({ yang: sum === 7 || sum === 9, moving: sum === 6 || sum === 9 });
+    }
+    this.setState({ cast: { lines } });
+    if (this.coinsEl && !this.props.reduceMotion) {
+      Array.from(this.coinsEl.children).forEach((c, i) => {
+        c.style.animation = 'none';
+        void c.offsetWidth;
+        c.style.animation = `ulCoinTumble 720ms cubic-bezier(.2,.7,.2,1) ${i * 90}ms both`;
+      });
+    }
+  };
+
+  copyLink = () => {
+    try { navigator.clipboard.writeText(this.SHARE_URL); } catch (e) {}
+    this.setState({ copied: true });
+    setTimeout(() => this.setState({ copied: false }), 1800);
+    setTimeout(() => this.setState({ share: false, copied: false }), 1600);
+  };
+
+  generateStory = async () => {
+    this.setState({ storyLabel: 'Saving\u2026' });
+    try {
+      await Promise.all([
+        document.fonts.load('400 88px "Cormorant Garamond"'),
+        document.fonts.load('400 32px "Karla"'),
+      ]).catch(() => {});
+      const cardImg = await new Promise((res, rej) => {
+        const im = new Image();
+        im.crossOrigin = 'anonymous';
+        im.onload = () => res(im); im.onerror = rej;
+        im.src = 'https://res.cloudinary.com/dobbosnda/image/upload/f_jpg,q_auto,w_1080,h_1080,c_fill,g_center/1_o8tafh';
+      });
+      const W = 1080, H = 1920;
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#16130E'; ctx.fillRect(0, 0, W, H);
+      ctx.drawImage(cardImg, 0, 80, W, W);
+      const g = ctx.createLinearGradient(0, 940, 0, 1180);
+      g.addColorStop(0, 'rgba(22,19,14,0)'); g.addColorStop(1, 'rgba(22,19,14,1)');
+      ctx.fillStyle = g; ctx.fillRect(0, 940, W, 240);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#C7A05B'; ctx.font = '400 26px "Karla", sans-serif';
+      ctx.fillText('UNIVERSAL LANGUAGE ORACLE', W / 2, 1240);
+      ctx.fillStyle = '#ECE4D5'; ctx.font = '400 84px "Cormorant Garamond", serif';
+      ctx.fillText('Earth\u2019s Breath', W / 2, 1345);
+      ctx.fillStyle = '#7A7160'; ctx.font = '400 30px "Karla", sans-serif';
+      ctx.fillText('Code 01', W / 2, 1418);
+      ctx.fillStyle = '#ABA08C'; ctx.font = '400 30px "Karla", sans-serif';
+      ctx.fillText('Entropy \u00b7 Freshness \u00b7 Beauty', W / 2, 1492);
+      ctx.strokeStyle = '#3a342b'; ctx.beginPath(); ctx.moveTo(390, 1556); ctx.lineTo(690, 1556); ctx.stroke();
+      ctx.fillStyle = '#7A7160'; ctx.font = 'italic 400 30px "Cormorant Garamond", serif';
+      ctx.fillText('Open the reading and receive what it holds.', W / 2, 1620);
+      const blob = await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.92));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'universal-language-code-01.jpg';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    } catch (e) {}
+    this.setState({ storyLabel: 'Instagram Story', share: false });
+  };
+
+  renderVals() {
+    const motionOff = this.props.reduceMotion ? 'off' : 'on';
+    const cast = this.state.cast;
+    const lines = cast ? cast.lines : null;
+    const movingNums = lines ? lines.map((l, i) => (l.moving ? i + 1 : 0)).filter(Boolean) : [];
+    const hexGlyph = (num) => String.fromCodePoint(0x4DC0 + num - 1);
+    const hexLook = (bits) => { const e = this.KINGWEN.find((x) => x[2] === bits); return e ? { num: e[0], name: e[1], glyph: hexGlyph(e[0]) } : null; };
+    let primaryHex = null, relatingHex = null;
+    if (cast && lines) {
+      primaryHex = hexLook(lines.map((l) => (l.yang ? '1' : '0')).join(''));
+      if (movingNums.length) relatingHex = hexLook(lines.map((l) => ((l.moving ? !l.yang : l.yang) ? '1' : '0')).join(''));
+    }
+    const centerHex = relatingHex || primaryHex;
+    const castDisplay = lines ? this.buildCastDisplay(lines) : [];
+    let castSummary;
+    if (!cast) castSummary = '';
+    else if (movingNums.length === 0) castSummary = (primaryHex ? primaryHex.name : 'The hexagram') + ' stands whole \u2014 no lines are moving.';
+    else castSummary = (movingNums.length === 1 ? 'Line ' : 'Lines ') + movingNums.join(', ') + (movingNums.length === 1 ? ' is moving' : ' are moving') + ' \u2014 ' + (primaryHex ? primaryHex.name : 'this hexagram') + ' is turning toward ' + (relatingHex ? relatingHex.name : 'another hexagram') + '.';
+
+    const ov = this.state.overlay ? this.OVERLAYS[this.state.overlay] : null;
+    const rel = this.RELDATA[this.state.relSel] || this.RELDATA.pair;
+
+    const enc = encodeURIComponent;
+
+    const movingShown = (cast && movingNums.length) ? this.MOVING.filter((m) => movingNums.includes(m.n)) : this.MOVING;
+    const movingHeading = (cast && movingNums.length) ? 'Your Moving Lines' : 'The Six Moving Lines';
+    const movingSub = (cast && movingNums.length) ? 'The places this hexagram is already turning into another \u2014 the lines your throw set in motion.' : 'The dragon\u2019s arc, from the deep to one step too high.';
+
+    return {
+      palette: this.props.palette ?? 'daybook',
+      accent: this.props.accent ?? 'bronze',
+      motion: motionOff,
+      keywords: this.KEYWORDS,
+      movingLines: movingShown,
+      movingHeading,
+      movingSub,
+      showMovingLines: !!(cast && movingNums.length),
+      castHexKicker: relatingHex ? 'Moving toward' : 'Your cast',
+      castHexGlyph: centerHex ? centerHex.glyph : '',
+      castHexLabel: centerHex ? ('Hexagram ' + centerHex.num + ' \u00b7 ' + centerHex.name) : '',
+      castMoving: !!relatingHex,
+      openRelating: () => { if (centerHex) this.setState({ index: true, indexFocus: centerHex.num, share: false }); },
+
+      entranceActive: this.entranceActive(),
+      dismissEntrance: this.dismissEntrance,
+      entranceRing: this.buildRing(),
+      entranceCenter: this.buildCenter(),
+
+      registerRoot: this.registerRoot,
+      registerVeil: this.registerVeil,
+      registerNavInd: this.registerNavInd,
+      registerNavScroll: this.registerNavScroll,
+      registerTrigram: this.registerTrigram,
+
+      registerNav: (el) => { if (el) this.navEls.set(el.dataset.key, el); },
+      registerGK: (el) => { if (el) this.gkEls.set(el.dataset.gk, el); },
+      jumpShadow: () => this.scrollGK('shadow'),
+      jumpGift: () => this.scrollGK('gift'),
+      jumpSiddhi: () => this.scrollGK('siddhi'),
+      registerStage: (el) => { this.stageEl = el; },
+      registerPanel: (el) => { if (el) this.panelEls.set(el.dataset.chapter, el); },
+      registerIv: (el) => { if (el) this.ivEls.set(el.dataset.iv, el); },
+      registerIvc: (el) => { if (el) this.ivcEls.set(el.dataset.ivc, el); },
+      registerIvLabel: (el) => { this.ivLabelEl = el; },
+      registerCoins: (el) => { this.coinsEl = el; },
+
+      goUL: () => this.go('ul'),
+      goIching: () => this.go('iching'),
+      goGenekeys: () => this.go('genekeys'),
+      goHumandesign: () => this.go('humandesign'),
+      goBody: () => this.go('body'),
+      goRelations: () => this.go('relations'),
+
+      selHex: () => this.selectIv('hex'),
+      selUpper: () => this.selectIv('upper'),
+      selLower: () => this.selectIv('lower'),
+
+      doCast: this.doCast,
+      hasCast: !!this.state.cast,
+      noCast: !this.state.cast,
+      castDisplay,
+      castSummary,
+
+      openLightbox: () => this.setState({ lightbox: true }),
+      closeLightbox: () => this.setState({ lightbox: false }),
+      lightboxOpen: this.state.lightbox,
+      onImgError: (e) => { if (e && e.currentTarget) e.currentTarget.style.opacity = '0'; },
+
+      toggleShare: () => this.setState({ share: !this.state.share }),
+      closeShare: () => this.setState({ share: false }),
+      shareOpen: this.state.share,
+      copyLink: this.copyLink,
+      copyLabel: this.state.copied ? 'Copied!' : 'Copy link',
+      copyColor: this.state.copied ? 'var(--accent)' : 'var(--l-2)',
+      storyLabel: this.state.storyLabel,
+      generateStory: this.generateStory,
+      waHref: 'https://wa.me/?text=' + enc(this.SHARE_TEXT + '\n' + this.SHARE_URL),
+      tgHref: 'https://t.me/share/url?url=' + enc(this.SHARE_URL) + '&text=' + enc(this.SHARE_TEXT),
+      twHref: 'https://twitter.com/intent/tweet?text=' + enc(this.SHARE_TEXT) + '&url=' + enc(this.SHARE_URL),
+      mailHref: 'mailto:?subject=' + enc(this.SHARE_TEXT) + '&body=' + enc('I wanted to share this oracle card with you:\n\n' + this.SHARE_URL),
+
+      openBuy: () => this.setState({ buy: true, share: false }),
+      closeBuy: () => this.setState({ buy: false }),
+      buyOpen: this.state.buy,
+
+      openOverlayIching: () => this.setState({ overlay: 'iching' }),
+      openOverlayGK: () => this.setState({ overlay: 'genekeys' }),
+      openOverlayHD: () => this.setState({ overlay: 'humandesign' }),
+      closeOverlay: () => this.setState({ overlay: null }),
+      overlayOpen: !!this.state.overlay,
+      overlayKicker: ov ? ov.kicker : '',
+      overlayTitle: ov ? ov.title : '',
+      overlaySub: ov ? ov.sub : '',
+      overlayParas: ov ? ov.paras : [],
+      overlayGratitude: ov ? ov.gratitude : '',
+
+      indexOpen: this.state.index,
+      openIndex: this.openIndex,
+      closeIndex: this.closeIndex,
+      indexRing: this.state.index ? this.buildIndexRing(this.state.indexFocus) : null,
+      indexCenter: this.state.index ? this.buildIndexCenter(this.state.indexFocus) : null,
+
+      chartPreview: this.state.chartPreview,
+      chartShowPrompt: !this.state.chartPreview,
+      chartToggleLabel: this.state.chartPreview ? 'Hide example' : 'See an example',
+      toggleChartPreview: this.toggleChartPreview,
+      submitChart: this.submitChart,
+      registerChartInput: this.registerChartInput,
+
+      kinLines: this.buildKinLines(),
+      kinNodes: this.KIN.map((n) => ({ key: n.key, x: n.x + '%', y: n.y + '%', glyph: n.glyph, font: n.font, size: n.size, dim: n.dim, glyphColor: n.kind === 'kin' ? 'var(--accent)' : 'var(--l-1)', border: n.kind === 'kin' ? 'var(--accent)' : 'var(--l-rule)', label: n.label, name: (this.RELDATA[n.key] || {}).name || n.label, onSelect: () => this.selectKin(n.key) })),
+      selectKinSelf: () => this.selectKin('self'),
+      kinKicker: rel.kicker,
+      kinKind: rel.kind,
+      kinName: rel.name,
+      kinBodyParas: rel.body,
+
+      stop: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+    };
+  }
+
+  buildRing() {
+    const CX = 550, CY = 550, R = 452, HEXW = 34, lineH = 4.5, gap = 2.4, brokenGap = 8;
+    const HEXH = 5 * (lineH + gap) + lineH;
+    const half = (HEXW - brokenGap) / 2;
+    const motionOn = !this.props.reduceMotion;
+    const items = [];
+    for (let i = 0; i < 64; i++) {
+      const ang = (i / 64) * 2 * Math.PI - Math.PI / 2;
+      const x = CX + Math.cos(ang) * R, y = CY + Math.sin(ang) * R;
+      const rot = (i / 64) * 360 + 180;
+      const current = i === 0;
+      const lines = [];
+      for (let li = 0; li < 6; li++) lines.push(current ? true : (((i >> li) & 1) === 1));
+      const fill = current ? 'var(--accent)' : 'var(--l-3)';
+      const op = current ? 0.95 : 0.3;
+      const lineEls = lines.map((solid, li) => {
+        const ly = li * (lineH + gap);
+        if (solid) return React.createElement('rect', { key: li, x: 0, y: ly, width: HEXW, height: lineH, fill, opacity: op });
+        return React.createElement('g', { key: li },
+          React.createElement('rect', { x: 0, y: ly, width: half, height: lineH, fill, opacity: op }),
+          React.createElement('rect', { x: half + brokenGap, y: ly, width: half, height: lineH, fill, opacity: op }));
+      });
+      items.push(React.createElement('g', { key: i, transform: `translate(${x},${y}) rotate(${rot}) translate(${-HEXW / 2},${-HEXH / 2})` }, lineEls));
+    }
+    return React.createElement('svg', {
+      viewBox: '0 0 1100 1100', 'aria-hidden': true,
+      style: { position: 'absolute', inset: 0, width: '100%', height: '100%', animation: motionOn ? 'ulRingBloom 1400ms cubic-bezier(.16,1,.3,1) both' : 'none' },
+    },
+      React.createElement('circle', { cx: CX, cy: CY, r: R, fill: 'none', stroke: 'var(--l-rule)', strokeWidth: 1 }),
+      React.createElement('g', { style: { transformOrigin: '550px 550px', animation: motionOn ? 'ulRingSpin 120s linear infinite' : 'none' } }, items));
+  }
+
+  buildCastDisplay(lines) {
+    const motionOn = !this.props.reduceMotion;
+    const out = [];
+    for (let dom = 0; dom < 6; dom++) {
+      const lineNum = 6 - dom;        // top row = line 6
+      const lo = lines[lineNum - 1];  // lines[0] = line 1, the bottom
+      const delay = motionOn ? (lineNum - 1) * 130 : 0; // build from the bottom up
+      out.push({ key: lineNum, tag: lo.moving ? 'moving' : '', bar: this.castBar(lo, delay, motionOn) });
+    }
+    return out;
+  }
+
+  castBar(lo, delay, motionOn) {
+    const H = 7, W = 92, GAP = 10;
+    const color = lo.moving ? 'var(--accent)' : 'var(--accent-d)';
+    const glow = lo.moving ? '0 0 10px 1px var(--accent)' : 'none';
+    const anim = motionOn ? `ulLineCast 520ms cubic-bezier(.16,1,.3,1) ${delay}ms both` : 'none';
+    const wrap = { width: W + 'px', height: H + 'px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transformOrigin: 'center', animation: anim };
+    let shape;
+    if (lo.yang) {
+      shape = React.createElement('span', { style: { width: W + 'px', height: H + 'px', background: color, display: 'block', boxShadow: glow } });
+    } else {
+      const seg = (W - GAP) / 2;
+      shape = React.createElement('span', { style: { display: 'flex', gap: GAP + 'px', width: W + 'px' } },
+        React.createElement('span', { style: { width: seg + 'px', height: H + 'px', background: color, display: 'block', boxShadow: glow } }),
+        React.createElement('span', { style: { width: seg + 'px', height: H + 'px', background: color, display: 'block', boxShadow: glow } }));
+    }
+    return React.createElement('span', { style: wrap }, shape);
+  }
+
+  buildIndexRing(focus) {
+    const motionOn = !this.props.reduceMotion;
+    const CX = 300, CY = 300, R = 250, HEXW = 20, lineH = 2.6, gap = 1.8;
+    const HEXH = 5 * (lineH + gap) + lineH;
+    const items = this.KINGWEN.map((hx, k) => {
+      const num = hx[0], bits = hx[2];
+      const ang = (k / 64) * 2 * Math.PI - Math.PI / 2;
+      const x = CX + Math.cos(ang) * R, y = CY + Math.sin(ang) * R;
+      const rot = (k / 64) * 360 + 180;
+      const isCurrent = num === this.CURRENT_CODE;
+      const isFocus = num === focus;
+      const fill = isCurrent ? 'var(--accent)' : (isFocus ? 'var(--accent-d)' : 'rgba(236,228,213,0.85)');
+      const op = isCurrent || isFocus ? 1 : 0.32;
+      const bars = [];
+      for (let li = 0; li < 6; li++) {
+        const ly = li * (lineH + gap);
+        const solid = bits[5 - li] === '1';
+        if (solid) bars.push(React.createElement('rect', { key: li, x: 0, y: ly, width: HEXW, height: lineH, fill, opacity: op }));
+        else {
+          const seg = (HEXW - 5) / 2;
+          bars.push(React.createElement('g', { key: li },
+            React.createElement('rect', { x: 0, y: ly, width: seg, height: lineH, fill, opacity: op }),
+            React.createElement('rect', { x: seg + 5, y: ly, width: seg, height: lineH, fill, opacity: op })));
+        }
+      }
+      const inner = [
+        React.createElement('rect', { key: 'hit', x: -7, y: -7, width: HEXW + 14, height: HEXH + 14, fill: 'transparent' }),
+        ...bars,
+      ];
+      if (isFocus && !isCurrent) inner.unshift(React.createElement('circle', { key: 'fr', cx: HEXW / 2, cy: HEXH / 2, r: 17, fill: 'none', stroke: 'var(--accent-d)', strokeWidth: 0.8, opacity: 0.6 }));
+      if (isCurrent) inner.unshift(React.createElement('circle', { key: 'cr', cx: HEXW / 2, cy: HEXH / 2, r: 17, fill: 'none', stroke: 'var(--accent)', strokeWidth: 1, opacity: 0.85 }));
+      return React.createElement('g', {
+        key: num, transform: `translate(${x},${y}) rotate(${rot}) translate(${-HEXW / 2},${-HEXH / 2})`,
+        style: { cursor: 'pointer' }, onClick: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setIndexFocus(num); },
+      }, inner);
+    });
+    return React.createElement('svg', { viewBox: '0 0 600 600', style: { position: 'absolute', inset: 0, width: '100%', height: '100%' } },
+      React.createElement('circle', { cx: CX, cy: CY, r: R, fill: 'none', stroke: 'rgba(236,228,213,0.12)', strokeWidth: 1 }),
+      React.createElement('g', { style: { transformOrigin: '300px 300px', animation: motionOn ? 'ulRingSpin 220s linear infinite' : 'none' } }, items));
+  }
+
+  buildIndexCenter(focus) {
+    const hx = this.KINGWEN[focus - 1];
+    const isCurrent = focus === this.CURRENT_CODE;
+    const action = isCurrent
+      ? React.createElement('button', { onClick: () => { this.setState({ index: false }); this.go('iching'); }, style: { pointerEvents: 'auto', marginTop: '8px', fontFamily: 'var(--sans)', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#16130E', background: 'var(--accent-d)', border: 'none', cursor: 'pointer', padding: '9px 16px' } }, 'Open the reading')
+      : React.createElement('div', { style: { pointerEvents: 'none', marginTop: '6px', fontFamily: 'var(--sans)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(236,228,213,0.42)' } }, 'Reading coming soon');
+    return React.createElement('div', { style: { textAlign: 'center', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', maxWidth: '150px' } },
+      React.createElement('div', { style: { fontFamily: 'var(--sans)', fontSize: '9px', letterSpacing: '0.24em', textTransform: 'uppercase', color: 'var(--accent-d)' } }, isCurrent ? 'This card' : 'Code ' + focus),
+      React.createElement('div', { style: { fontFamily: 'var(--serif)', fontSize: '44px', lineHeight: 1, color: '#ECE4D5' } }, String(focus)),
+      React.createElement('div', { style: { fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '17px', lineHeight: 1.2, color: 'rgba(236,228,213,0.8)' } }, hx[1]),
+      action);
+  }
+
+  buildCenter() {
+    const motionOn = !this.props.reduceMotion;
+    const rects = [];
+    for (let i = 0; i < 6; i++) {
+      const y = i * 13;
+      rects.push(React.createElement('rect', {
+        key: i, x: 4, y, width: 72, height: 9, fill: 'var(--l-1)',
+        style: { transformBox: 'fill-box', transformOrigin: 'left center', animation: motionOn ? `ulDraw 280ms ease-out ${560 + i * 110}ms both` : 'none' },
+      }));
+    }
+    return React.createElement('svg', { width: 68, height: 80, viewBox: '0 0 80 80', 'aria-hidden': true }, rects);
+  }
+}

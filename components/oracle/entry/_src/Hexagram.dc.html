@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="display:block;overflow:visible">
+  <sc-for list="{{ rects }}" as="r" hint-placeholder-count="9">
+    <rect x="{{ r.x }}" y="{{ r.y }}" width="{{ r.w }}" height="{{ r.h }}" rx="0.6" fill="{{ color }}" opacity="{{ r.op }}"></rect>
+  </sc-for>
+</svg>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:120,&quot;height&quot;:120},&quot;lines&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean[]&quot;},&quot;color&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#262321&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const lines = this.props.lines || [true,true,true,false,false,false];
+    const color = this.props.color || 'var(--ink, #262321)';
+    const LH = 9.6, GAP = 6.2;           // line height + gap
+    const total = 6 * LH + 5 * GAP;       // 90.4
+    const y0 = (100 - total) / 2;
+    const FULL_X = 8, FULL_W = 84;
+    const HALF_W = 34, GAP_X = 16;
+    const rects = [];
+    lines.forEach((solid, i) => {
+      const y = y0 + i * (LH + GAP);
+      if (solid) {
+        rects.push({ x: FULL_X, y, w: FULL_W, h: LH, op: 1 });
+      } else {
+        rects.push({ x: FULL_X, y, w: HALF_W, h: LH, op: 1 });
+        rects.push({ x: FULL_X + HALF_W + GAP_X, y, w: HALF_W, h: LH, op: 1 });
+      }
+    });
+    return { rects, color };
+  }
+}
+</script>
+</body>
+</html>
