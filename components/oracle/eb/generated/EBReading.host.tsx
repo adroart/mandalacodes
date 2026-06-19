@@ -28,7 +28,8 @@ interface HostProps {
   accent?: string;
   reduceMotion?: boolean;
   showEntrance?: boolean;
-  onAcquire?: () => void;     // bridge to the app BuySheet (optional)
+  onAcquire?: () => void;     // bridge to the app BuySheet (the previous Acquire panel)
+  onShare?: () => void;       // bridge to the app share sheet (the previous Share panel)
 }
 
 export class EBReadingHost extends React.Component<HostProps, any> {
@@ -544,7 +545,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       closeLightbox: () => this.setState({ lightbox: false }),
       lightboxOpen: this.state.lightbox,
       onImgError: (e: any) => { if (e && e.currentTarget) e.currentTarget.style.opacity = '0'; },
-      toggleShare: () => this.setState({ share: !this.state.share }),
+      toggleShare: () => { if (this.props.onShare) { this.props.onShare(); } else this.setState({ share: !this.state.share }); },
       closeShare: () => this.setState({ share: false }),
       shareOpen: this.state.share,
       copyLink: this.copyLink,

@@ -9,6 +9,9 @@ import { ulCardImageUrl, ulCardPublicId } from '../utils/universalLanguage';
 import { useMetaTags } from '../hooks/useMetaTags';
 import { useDarkMode } from '../DarkModeContext';
 import { EBReadingHost, type EBData } from './oracle/eb/generated/EBReading.host';
+import BuySheet from './oracle/BuySheet';
+import OracleShareSheet from './oracle/OracleShareSheet';
+import { ulPieceForCard } from '../utils/universalLanguage';
 import './oracle/eb/eb-template.css';
 
 /* Earth's Breath card reading. The visible component is GENERATED from the
@@ -32,6 +35,8 @@ const UniversalLanguageCard: React.FC = () => {
   const [synthesis, setSynthesis] = useState<CardSynthesis | undefined>(undefined);
   const [invocation, setInvocation] = useState<string | undefined>(undefined);
   const [showEntrance] = useState(() => { const s = !seen.has(cardNum); if (s) seen.add(cardNum); return s; });
+  const [buyOpen, setBuyOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.add('oracle-card-page');
@@ -91,7 +96,9 @@ const UniversalLanguageCard: React.FC = () => {
         heroImage: cloud('f_auto,q_auto,w_1100,c_fill,g_center'),
         lightboxImage: cloud('f_auto,q_auto,w_1600,c_fit'),
         buyImage: cloud('f_auto,q_auto,w_700,c_fill,g_center'),
-        heroGlyph: hexChar,
+        // hero uses the HEXAGRAM SYMBOL glyph (䷀ U+4DC0+n-1), like the file —
+        // not the Chinese name character. The I Ching header keeps the name char.
+        heroGlyph: String.fromCodePoint(0x4DBF + card.number),
         ichingGlyph: hexChar,
         code2: String(card.number).padStart(2, '0'),
         ichingHexName: card.iching.hexagram_name,
@@ -143,15 +150,36 @@ const UniversalLanguageCard: React.FC = () => {
     })(),
   };
 
+  const piece = ulPieceForCard(card.number);
   return (
-    <EBReadingHost
-      key={card.number}
-      data={data}
-      palette={isDarkMode ? 'nightfall' : 'daybook'}
-      accent="bronze"
-      reduceMotion={prefersReducedMotion()}
-      showEntrance={showEntrance}
-    />
+    <>
+      <EBReadingHost
+        key={card.number}
+        data={data}
+        palette={isDarkMode ? 'nightfall' : 'daybook'}
+        accent="bronze"
+        reduceMotion={prefersReducedMotion()}
+        showEntrance={showEntrance}
+        onAcquire={() => setBuyOpen(true)}
+        onShare={() => setShareOpen(true)}
+      />
+      <BuySheet
+        open={buyOpen}
+        onClose={() => setBuyOpen(false)}
+        piece={piece ?? null}
+        imageUrl={`https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_700,c_fill,g_center/${ulCardPublicId(card.number) ?? ''}`}
+        imageAlt={`${card.card_name}, Universal Language ${card.number}.`}
+        cardName={card.card_name}
+        cardNumber={card.number}
+      />
+      <OracleShareSheet
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        cardName={card.card_name}
+        cardNumber={card.number}
+        keywords={keywords}
+      />
+    </>
   );
 };
 
