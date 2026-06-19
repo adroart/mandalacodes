@@ -170,10 +170,15 @@ export class EBReadingHost extends React.Component<HostProps, any> {
 
     const reduce = !!this.props.reduceMotion;
     if (this.rootEl && !reduce) {
+      // The reading is a horizontal swipe stage: off-screen panels never
+      // vertically intersect the viewport, so a viewport-rooted observer would
+      // strand panels 2-6 at opacity 0 forever. Root the observers to the STAGE
+      // so a panel reveals when it scrolls into the stage horizontally.
+      const obsRoot = this.stageEl || null;
       const groups = new Map();
       this.revealObs = new IntersectionObserver((ents) => {
         ents.forEach((en: any) => { if (en.isIntersecting) { const el = en.target; el.style.opacity = '1'; el.style.transform = 'none'; this.revealObs.unobserve(el); } });
-      }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
+      }, { root: obsRoot, threshold: 0.08 });
       this.rootEl.querySelectorAll('section[data-chapter] > div > *').forEach((el: any) => {
         const p = el.parentElement; const i = groups.get(p) || 0; groups.set(p, i + 1);
         el.style.opacity = '0'; el.style.transform = 'translateY(16px)';
@@ -183,12 +188,21 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       });
       this.glyphObs = new IntersectionObserver((ents) => {
         ents.forEach((en: any) => { if (en.isIntersecting) { const el = en.target; el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; this.glyphObs.unobserve(el); } });
-      }, { threshold: 0.3 });
+      }, { root: obsRoot, threshold: 0.2 });
       this.rootEl.querySelectorAll('[data-glyph]').forEach((el: any) => {
         el.style.clipPath = 'inset(0 0 100% 0)'; el.style.opacity = '0';
         el.style.transition = 'clip-path .9s cubic-bezier(.16,1,.3,1), opacity .6s ease';
         this.glyphObs.observe(el);
       });
+      // Safety net: if the stage observer never fires for a panel (some browsers
+      // don't observe horizontally-scrolled descendants reliably), reveal
+      // everything after a short grace period so nothing stays blank.
+      setTimeout(() => {
+        try {
+          this.rootEl.querySelectorAll('section[data-chapter] > div > *').forEach((el: any) => { el.style.opacity = '1'; el.style.transform = 'none'; });
+          this.rootEl.querySelectorAll('[data-glyph]').forEach((el: any) => { el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; });
+        } catch (e) {}
+      }, 1600);
     }
 
     this.repositionNav = () => this.updateNav(this.state.active);

@@ -65,7 +65,15 @@
     "registerVeil"
   ],
   "loops": [
+    "bodyAminoParas as para",
+    "bodyPhysParas as para",
     "castDisplay as ln",
+    "gkGiftParas as para",
+    "gkShadowParas as para",
+    "gkSiddhiParas as para",
+    "hdCentreParas as para",
+    "hdChannelParas as para",
+    "hdDriveParas as para",
     "ichingReading as para",
     "keywords as kw",
     "kinBodyParas as para",

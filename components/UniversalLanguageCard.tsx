@@ -81,6 +81,7 @@ const UniversalLanguageCard: React.FC = () => {
     kin: buildKin(card, synthesis, expanded),
     overlays: OVERLAYS,
     text: (() => {
+      const P = (s?: string): string[] => (s ?? '').split('\n\n').map(x => x.trim()).filter(Boolean);
       const ulP = (synthesis?.essence ?? expanded?.creator_voice?.personal_reading ?? '').split('\n\n').map(s => s.trim()).filter(Boolean);
       const first = ulP[0] ?? '';
       const pid = ulCardPublicId(card.number) ?? '';
@@ -107,6 +108,37 @@ const UniversalLanguageCard: React.FC = () => {
         ichingReading: (synthesis?.synthesis.iching.reading ?? '').split('\n\n').map(s => s.trim()).filter(Boolean),
         ichingJudgement: (synthesis?.synthesis.iching.judgement_lines ?? []).join('\n'),
         ichingImage: (synthesis?.synthesis.iching.image_lines ?? []).join('\n'),
+
+        // Gene Keys — names from the card, prose from synthesis (fallback to expanded)
+        gkShadowName: card.gene_keys.shadow,
+        gkGiftName: card.gene_keys.gift,
+        gkSiddhiName: card.gene_keys.siddhi,
+        gkShadowName2: card.gene_keys.shadow,
+        gkGiftName2: card.gene_keys.gift,
+        gkSiddhiName2: card.gene_keys.siddhi,
+        gkShadowSub: expanded?.gene_keys.shadow?.contemplation_title ?? '',
+        gkGiftSub: expanded?.gene_keys.gift?.contemplation_title ?? '',
+        gkSiddhiSub: expanded?.gene_keys.siddhi?.contemplation_title ?? '',
+        gkShadowParas: P(synthesis?.synthesis.gene_keys.shadow ?? expanded?.gene_keys.shadow?.expanded?.text ?? card.gene_keys.description),
+        gkGiftParas: P(synthesis?.synthesis.gene_keys.gift ?? expanded?.gene_keys.gift?.expanded?.text),
+        gkSiddhiParas: P(synthesis?.synthesis.gene_keys.siddhi ?? expanded?.gene_keys.siddhi?.expanded?.text),
+
+        // Human Design
+        hdDriveName: `Gate ${card.human_design.gate} · ${synthesis?.reference?.hd_keyword ?? card.human_design.keyword}`,
+        hdCentreName: synthesis?.reference?.hd_center ?? 'Where it lives',
+        hdChannelName: synthesis?.reference?.hd_harmonic_gate ? `Channel · Gate ${card.human_design.gate}–${synthesis.reference.hd_harmonic_gate}` : 'What completes it',
+        hdDriveParas: P(synthesis?.synthesis.human_design.gate ?? card.human_design.description),
+        hdCentreParas: P(synthesis?.synthesis.human_design.channel),
+        hdChannelParas: P(synthesis?.synthesis.human_design.circuit),
+
+        // Body
+        bodyOrganChip: synthesis?.reference?.body_physiology ? `Organ · ${synthesis.reference.body_physiology}` : 'The Body',
+        bodyAminoChip: synthesis?.reference?.body_amino_acid ? `Amino acid · ${synthesis.reference.body_amino_acid}` : '',
+        bodyPhysParas: P(synthesis?.synthesis.body.physiology),
+        bodyAminoParas: P(synthesis?.synthesis.body.amino_acid),
+
+        // Relations intro
+        relationsIntro: synthesis?.relations?.unity_line ?? (expanded ? expanded.i_ching.hexagrams_in_pairs.context.text : ''),
       };
     })(),
   };

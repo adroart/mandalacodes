@@ -566,7 +566,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Shadow
             </p>
             <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0" }}>
-            Entropy
+            {vals.gkShadowName}
             </p>
             <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--l-3)", marginTop: "8px" }}>
             Read ↓
@@ -577,7 +577,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Gift
             </p>
             <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--accent)", margin: "0" }}>
-            Freshness
+            {vals.gkGiftName}
             </p>
             <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--accent)", marginTop: "8px" }}>
             Read ↓
@@ -588,7 +588,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Siddhi
             </p>
             <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0" }}>
-            Beauty
+            {vals.gkSiddhiName}
             </p>
             <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--l-3)", marginTop: "8px" }}>
             Read ↓
@@ -600,21 +600,19 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Shadow
           </p>
           <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0 0 2px" }}>
-          Entropy
+          {vals.gkShadowName2}
           </p>
           <p style={{ fontFamily: "var(--sans)", fontSize: "14px", color: "var(--l-3)", margin: "0 0 16px" }}>
-          The Dance of Shiva
+          {vals.gkShadowSub}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            Things run down. The coffee goes cold. The room you cleaned does not stay clean. Nobody is surprised by this, it is just how the world is, and a life is not exempt from it. In a person it shows up as numbness.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            Numbness is quieter than sadness. Sadness has a reason and a shape. This does not. It is more like a slow loss of colour. You keep doing the things, and you do them more or less right, and one day you notice you have not actually felt any of them in a while. The work happens at a small distance. So does the food, the talk, the morning.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            Most people treat this as a fault and try to get rid of it. That is the mistake. A low fire is not a dead fire. Something is happening down in the coals that the bright flame could never do, and it needs the dark to do it. The numb season is not the end of your creative life. It is the part of it that grows roots. You do not break out of it. You wait it out, and you trust it while you wait, which is harder.
-            </p>
+            {(vals.gkShadowParas ?? []).map((para, paraIdx) => (
+              <React.Fragment key={paraIdx}>
+                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                {para}
+                </p>
+              </React.Fragment>
+            ))}
           </div>
           <details style={{ marginTop: "18px", borderTop: "1px solid var(--l-rule)", paddingTop: "14px" }}>
             <summary style={{ cursor: "pointer", listStyle: "none", fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", display: "flex", alignItems: "center", gap: "8px" }}>
@@ -648,18 +646,19 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Gift
           </p>
           <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0 0 2px" }}>
-          Freshness
+          {vals.gkGiftName2}
           </p>
           <p style={{ fontFamily: "var(--sans)", fontSize: "14px", color: "var(--l-3)", margin: "0 0 16px" }}>
-          The Beauty of Melancholy
+          {vals.gkGiftSub}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            Something turns when a person stops fighting the flat season. The numbness they were braced against opens, and what is on the other side of it is the nerve to start something before they are ready. That nerve is freshness. It is being willing to do the thing badly rather than not do it. It is taking a step onto ground you have not tested, because you have worked out, somewhere below thinking, that the roads you envy were all made by people walking who did not know where they were headed either.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            It is not optimism. Optimism makes up its mind early that things will go well, and it flinches when they do not. Freshness has not made up its mind about anything. It starts, it gets things wrong quickly, it stays curious about what it does not know yet. That last part matters more than it sounds. The not knowing is not a gap to be filled. It is the only place a genuinely new thing has ever come from. And each time a person begins like this, without clutching at the outcome, the beginning does something back to them. It works on them. The maker gets made.
-            </p>
+            {(vals.gkGiftParas ?? []).map((para, paraIdx) => (
+              <React.Fragment key={paraIdx}>
+                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                {para}
+                </p>
+              </React.Fragment>
+            ))}
           </div>
         </div>
         <div ref={vals.registerGK} data-gk="siddhi" style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
@@ -667,18 +666,19 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Siddhi
           </p>
           <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0 0 2px" }}>
-          Beauty
+          {vals.gkSiddhiName2}
           </p>
           <p style={{ fontFamily: "var(--sans)", fontSize: "14px", color: "var(--l-3)", margin: "0 0 16px" }}>
-          The Promethean Fire
+          {vals.gkSiddhiSub}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            Far enough along, this stops being a thing a person does and becomes a thing a person is. The one who used to stand over the work, checking it, asking if it was good enough, is just not there anymore. There is the making, and there is the life it runs through, and you cannot find the seam between them.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            A life lived that way comes out beautiful. Not pretty, not polished for looking at. Beautiful the way fire is, or a tide, by being completely the thing it is and nothing else. From here a person can look back down the whole road. The numbness at the start, the long colourless stretch that felt like failing, was not failing. It was the floor. It was the dark the rest of it grew up from.
-            </p>
+            {(vals.gkSiddhiParas ?? []).map((para, paraIdx) => (
+              <React.Fragment key={paraIdx}>
+                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                {para}
+                </p>
+              </React.Fragment>
+            ))}
           </div>
         </div>
         <p style={{ fontFamily: "var(--sans)", fontSize: "13px", color: "var(--l-3)", margin: "18px 0 0", borderTop: "1px solid var(--l-rule)", paddingTop: "16px" }}>
@@ -738,15 +738,16 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           The Drive
           </p>
           <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--d-1)", margin: "0 0 16px" }}>
-          Gate 1 · Self-Expression
+          {vals.hdDriveName}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
-            There is a pressure in some people to put what is genuinely theirs into the world. Not originality strained for, not difference performed, but the simple outward movement of something that is already, particularly, inside them. The thing wants out, in its own form. A person carrying this code feels it as an itch toward expression, and the itch will not be content to stay unspoken or to come out as a copy of someone else’s voice.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
-            The misread is to call this ego, or attention-seeking, or a need to be original. It is none of those. It is the creative force trying to show up in the only shape it can, which is the particular one it was always going to take.
-            </p>
+            {(vals.hdDriveParas ?? []).map((para, paraIdx) => (
+              <React.Fragment key={paraIdx}>
+                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
+                {para}
+                </p>
+              </React.Fragment>
+            ))}
           </div>
         </div>
         <div style={{ borderTop: "1px solid var(--d-rule)", padding: "26px 0" }}>
@@ -754,15 +755,16 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Where It Lives
           </p>
           <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--d-1)", margin: "0 0 16px" }}>
-          The Identity Center · the G
+          {vals.hdCentreName}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
-            This drive is wired to the part of you that holds who you are and which direction your life faces. That is the whole teaching. The creative force here is not a free-floating talent you could aim anywhere. It is bound to the sense of self.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
-            To express this code is to articulate who you actually are, which means the creativity and the identity are not two things. They are one movement, and the expression falters the moment it tries to come from somewhere else, somewhere borrowed, somewhere safer. The expression has to come from the real you, or it does not really express. That sounds simple. It is the work of a life.
-            </p>
+            {(vals.hdCentreParas ?? []).map((para, paraIdx) => (
+              <React.Fragment key={paraIdx}>
+                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
+                {para}
+                </p>
+              </React.Fragment>
+            ))}
           </div>
         </div>
         <div style={{ borderTop: "1px solid var(--d-rule)", padding: "26px 0" }}>
@@ -770,15 +772,16 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           What Completes It
           </p>
           <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--d-1)", margin: "0 0 16px" }}>
-          The Channel of Inspiration · 1–8
+          {vals.hdChannelName}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
-            Creative force on its own has no way to land. It is an impulse with no delivery. It can burn bright inside a person and still leave nothing in the world to show for it. What this code needs, and was always built to need, is a partner energy that knows how to carry the offering across to other people, that can shape the raw inner fire into something a listener can actually receive.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
-            When the two connect, what was private becomes shared. The lineage calls this connection the channel of inspiration, and the name fits. Alone, this code is a fire in a closed room. Joined, it becomes inspiration, a thing that lights other rooms. The code is built to need its other half, and the lack is not a flaw. It is the design.
-            </p>
+            {(vals.hdChannelParas ?? []).map((para, paraIdx) => (
+              <React.Fragment key={paraIdx}>
+                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
+                {para}
+                </p>
+              </React.Fragment>
+            ))}
           </div>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "24px" }}>
@@ -833,10 +836,10 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         ) : null}
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px", marginBottom: "clamp(32px,4vw,48px)" }}>
           <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
-          Organ · Liver
+          {vals.bodyOrganChip}
           </span>
           <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
-          Amino acid · Lysine
+          {vals.bodyAminoChip}
           </span>
           <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
           Ring of Fire
@@ -847,15 +850,13 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Physiology · The Liver
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            The traditions seat this code in the liver, the body’s hidden forge, the organ that takes what is finished with and makes it usable again. Out of sight, while you are doing other things, it is breaking down and rebuilding. Beginning, ending, beginning. It is fitting that the first code of all the sixty-four sits in the organ that quietly does the work of starting over.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            The shadow has its bodily floor here. When the days go grey and the colour leaks, the body feels it as heaviness behind the ribs, a fire kept low, a slowness that no amount of caffeine will lift. Long stretches of numbness leave a residue, and the liver is where the residue sits. The body is telling the truth about what the mind has been carrying.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            The climb out is also bodily. Warmth returns to the centre first. Appetite comes back. The wish to move arrives before the reason for moving does. These are not signs that the work is done, they are the work doing itself, lower down than thinking. The code is metabolic. It runs in the part of you that renews itself while you sleep, and it asks only that you stop interfering with what it is already trying to do.
-            </p>
+            {(vals.bodyPhysParas ?? []).map((para, paraIdx) => (
+              <React.Fragment key={paraIdx}>
+                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                {para}
+                </p>
+              </React.Fragment>
+            ))}
           </div>
         </div>
         <div style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
@@ -863,15 +864,13 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Amino Acid · Lysine
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            Deeper than the organ, this code answers to a single amino acid, Lysine. Lysine belongs to the small group the body cannot make for itself. It must be taken in. Brought across the line of the mouth from somewhere outside, broken down, and only then put to use.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            There is a teaching in that, and it is the quiet shock of this card. The very first code, the origin every other code unfolds from, is built on an element that does not originate within. Even pure creative force, the thing that looks most like it comes from inside a person, has to be received before it can do anything. The fire is fed before it is lit.
-            </p>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
-            This is why the card keeps returning to the same instruction in different voices. Carry the fire, do not claim to have made it. The chemistry says the same thing, lower down than any teaching. The code runs all the way to this: a creation that must be fed before it creates.
-            </p>
+            {(vals.bodyAminoParas ?? []).map((para, paraIdx) => (
+              <React.Fragment key={paraIdx}>
+                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                {para}
+                </p>
+              </React.Fragment>
+            ))}
           </div>
         </div>
         <div style={{ marginTop: "clamp(36px,5vw,56px)", display: "flex", justifyContent: "center" }}>
@@ -900,7 +899,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         Its Kin
         </h2>
         <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "clamp(18px,2.2vw,22px)", lineHeight: "1.55", color: "var(--l-2)", textAlign: "center", maxWidth: "46ch", margin: "0 auto clamp(36px,5vw,52px)" }}>
-        Met by UL 2, this is the world coming into form — the creative force and the field that receives it, moving as one.
+        {vals.relationsIntro}
         </p>
         {(vals.chartPreview) ? (
           <>
