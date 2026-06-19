@@ -1,0 +1,55 @@
+
+  :root{
+    --serif:'Cormorant Garamond',Georgia,serif;
+    --sans:'Karla',-apple-system,system-ui,sans-serif;
+    --cjk:'Songti SC','Noto Serif SC','Cormorant Garamond',serif;
+    /* light surface */
+    --l-bg:#F3EFE7; --l-1:#272219; --l-2:#6B6253; --l-3:#A39A89; --l-rule:rgba(39,34,25,0.14); --l-soft:#EAE4D7;
+    /* dark surface */
+    /* feature panels (I Ching, Human Design) = a warm sandstone recess of the paper, not black */
+    --d-bg:#E6DDC9; --d-1:#2A2419; --d-2:#6F6552; --d-3:#9C917A; --d-rule:rgba(39,34,25,0.16); --d-soft:#DDD3BD;
+    /* accent */
+    --accent:#A37B38; --accent-d:#956E2A;
+  }
+  [data-palette="nightfall"]{
+    --l-bg:#211C16; --l-1:#F3ECDE; --l-2:#C8BEAA; --l-3:#9A907C; --l-rule:rgba(238,230,215,0.18); --l-soft:#191510;
+    --d-bg:#100D09; --d-1:#F4EDDE; --d-2:#C2B8A2; --d-3:#928871; --d-rule:rgba(240,232,217,0.17); --d-soft:#171309;
+    --accent:#CDA45E; --accent-d:#DEBC7E;
+  }
+  [data-palette="nightfall"][data-accent="gold"]{ --accent:#D9B978; --accent-d:#E8CD95; }
+  [data-palette="nightfall"][data-accent="clay"]{ --accent:#D1A380; --accent-d:#E0B79D; }
+  [data-palette="stone"]{
+    --l-bg:#EAE8E1; --l-1:#2B2A26; --l-2:#6C6A63; --l-3:#9C9A92; --l-rule:rgba(43,42,38,0.13); --l-soft:#E1DFD6;
+    /* feature panels stay in-palette: a warm sandstone recess, not black */
+    --d-bg:#D6D0C3; --d-1:#2C2B26; --d-2:#5E5C53; --d-3:#85837A; --d-rule:rgba(43,42,38,0.17); --d-soft:#CDC7B9;
+    --accent:#8F7A54; --accent-d:#8A7344;
+  }
+  [data-accent="gold"]{ --accent:#B0913C; --accent-d:#D8B776; }
+  [data-accent="clay"]{ --accent:#A06A49; --accent-d:#CA9A78; }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#16130E;}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-feature-settings:"liga" 1,"calt" 1,"kern" 1;font-variant-ligatures:common-ligatures contextual;hanging-punctuation:first allow-end last;}
+  :root{font-optical-sizing:auto;}
+  h1,h2,h3{font-variant-ligatures:discretionary-ligatures common-ligatures;}
+  .ul-stage::-webkit-scrollbar{display:none;}
+  [data-motion="off"] *{animation:none!important;transition:none!important;}
+  [data-motion="off"] [data-reveal]{opacity:1!important;transform:none!important;}
+  [data-motion="off"] [data-glyph]{clip-path:none!important;opacity:1!important;}
+  .ul-dropcap{float:left;font-family:var(--serif);font-weight:500;font-size:3.34em;line-height:0.74;padding:0.06em 0.12em 0 0;color:var(--accent);}
+  @keyframes ulRise{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes ulFadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes ulRingBloom{from{opacity:0;transform:scale(0.45);}to{opacity:1;transform:scale(1);}}
+  @keyframes ulRingSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  @keyframes ulDraw{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+  @keyframes ulPulse{0%,100%{opacity:0.35;}50%{opacity:0.8;}}
+  @keyframes ulCoin{0%{transform:rotateX(0) scale(0.9);opacity:0;}55%{transform:rotateX(900deg) scale(1.05);opacity:1;}100%{transform:rotateX(1080deg) scale(1);opacity:1;}}
+  @keyframes ulCoinTumble{0%{transform:translateY(-14px) rotateX(0) scale(0.92);opacity:0.2;}30%{opacity:1;}60%{transform:translateY(3px) rotateX(1080deg) scale(1.06);}80%{transform:translateY(-1px) rotateX(1260deg) scale(0.99);}100%{transform:translateY(0) rotateX(1440deg) scale(1);opacity:1;}}
+  @keyframes ulVeil{0%{opacity:0;}38%{opacity:0.85;}100%{opacity:0;}}
+  @keyframes ulLineUp{from{opacity:0;transform:scaleX(0);}to{opacity:1;transform:scaleX(1);}}
+  @keyframes ulLineCast{0%{opacity:0;transform:translateY(10px) scaleX(0.6);}60%{opacity:1;}100%{opacity:1;transform:translateY(0) scaleX(1);}}
+  @keyframes ulOverlay{from{opacity:0;transform:scale(0.985);}to{opacity:1;transform:scale(1);}}
+  .ul-tab2{flex-direction:row!important;gap:0.42em;}
+  @media (max-width:600px){
+    .ul-keywords{justify-content:center!important;border-top:none!important;padding-top:0!important;}
+    .ul-tab2{flex-direction:column!important;gap:0;}
+  }
