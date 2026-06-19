@@ -69,7 +69,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     </div>
   </header>
   <section style={{ maxWidth: "1180px", margin: "0 auto", padding: "clamp(30px,4.5vw,64px) 22px clamp(28px,4vw,52px)" }}>
-    <header style={{ textAlign: "center", margin: "0 auto clamp(22px,3vw,40px)", maxWidth: "34ch" }}>
+    <header className="ul-title-mobile" style={{ textAlign: "center", margin: "0 auto clamp(22px,3vw,40px)", maxWidth: "34ch" }}>
       <h1 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(34px,7vw,54px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 10px", textWrap: "balance" }}>
       {vals.cardName}
       </h1>
@@ -82,6 +82,9 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <img crossOrigin="anonymous" src={vals.heroImage} alt="Earth's Breath, Universal Language 1. Original multidimensional wooden sculpture by Adrian Rasmussen." onError={vals.onImgError} loading="eager" decoding="async" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover" }} />
       </figure>
       <div style={{ textAlign: "left" }}>
+        <h1 className="ul-title-desktop" style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(34px,4.4vw,54px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 18px", textWrap: "balance" }}>
+        {vals.cardName}
+        </h1>
         <div className="ul-keywords" onClick={vals.goGenekeys} title="Read the Gene Keys" style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", borderTop: "1px solid var(--l-rule)", borderBottom: "1px solid var(--l-rule)", padding: "16px 0", marginBottom: "28px", cursor: "pointer" }}>
           {(vals.keywords ?? []).map((kw, kwIdx) => (
             <React.Fragment key={kwIdx}>

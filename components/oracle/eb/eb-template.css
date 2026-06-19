@@ -55,3 +55,14 @@
   .eb-reading .ul-keywords { justify-content: center !important; border-top: none !important; padding-top: 0 !important; }
   .eb-reading .ul-tab2, .eb-entrance .ul-tab2 { flex-direction: column !important; gap: 0; }
 }
+
+/* Title placement: on desktop the title sits in the right column above the
+   keywords (to the right of the artwork — per the design photo); on mobile it
+   sits centered at the very top above the artwork. Two copies, one shown per
+   breakpoint. The hero grid collapses to one column under ~720px. */
+.eb-reading .ul-title-desktop { display: none; }
+.eb-reading .ul-title-mobile { display: block; }
+@media (min-width: 720px) {
+  .eb-reading .ul-title-desktop { display: block; }
+  .eb-reading .ul-title-mobile { display: none; }
+}
