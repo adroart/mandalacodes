@@ -58,12 +58,9 @@ const AppInner: React.FC = () => {
   }, [location.pathname]);
 
   // The Gateway is a fullscreen orbit-arrival screen with its own chrome; the
-  // global top bar belongs on every other oracle page. LED host never shows it.
-  // The Earth's Breath card reading carries its own "Universal Language" top
-  // bar (the imported template's), so the global nav is suppressed there to
-  // avoid two stacked bars.
-  const isCardReading = /^\/universal-language\/\d+/.test(location.pathname);
-  const showNav = !ledHost && location.pathname !== '/gateway' && !isCardReading;
+  // global top bar (the original MANDALA CODES nav) belongs on every other
+  // oracle page, including the card reading. LED host never shows it.
+  const showNav = !ledHost && location.pathname !== '/gateway';
 
   return (
     <Suspense fallback={<div className="min-h-screen bg-wood-900" />}>

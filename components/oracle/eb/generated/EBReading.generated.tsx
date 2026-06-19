@@ -38,7 +38,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       </div>
     </>
   ) : null}
-  <header style={{ position: "sticky", top: "0", zIndex: "90", background: "color-mix(in oklab,var(--l-bg) 88%,transparent)", backdropFilter: "saturate(1.1) blur(10px)", WebkitBackdropFilter: "saturate(1.1) blur(10px)", borderBottom: "1px solid var(--l-rule)" }}>
+  <header className="ul-topbar" style={{ position: "sticky", top: "0", zIndex: "90", background: "color-mix(in oklab,var(--l-bg) 88%,transparent)", backdropFilter: "saturate(1.1) blur(10px)", WebkitBackdropFilter: "saturate(1.1) blur(10px)", borderBottom: "1px solid var(--l-rule)" }}>
     <div style={{ maxWidth: "1180px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "18px", padding: "8px 22px" }}>
       <span style={{ fontFamily: "var(--serif)", fontSize: "16px", letterSpacing: "0.04em", color: "var(--l-1)" }}>
       Universal Language

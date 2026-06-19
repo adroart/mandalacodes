@@ -60,6 +60,10 @@
    keywords (to the right of the artwork — per the design photo); on mobile it
    sits centered at the very top above the artwork. Two copies, one shown per
    breakpoint. The hero grid collapses to one column under ~720px. */
+/* The site's original global nav (MANDALA CODES) sits above the reading, so the
+   template's own "Universal Language" top bar is hidden to avoid two bars. */
+.eb-reading .ul-topbar { display: none; }
+
 .eb-reading .ul-title-desktop { display: none; }
 .eb-reading .ul-title-mobile { display: block; }
 @media (min-width: 720px) {
