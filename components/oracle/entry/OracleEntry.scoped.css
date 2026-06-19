@@ -57,6 +57,25 @@
   .oe-root [data-oe="cardnum"]{font-size:clamp(10px,1.2vw,14px) !important}
 }
 
+/* "Your codes" glow: cards whose number matches the visitor's saved birth
+   profile get a soft bronze halo + a thin accent ring, marking them as theirs.
+   Static (no pulse), legible in both themes via the --glow / --accent tokens.
+   The halo lives on the OUTER tile wrapper (not the 3D-transformed flip face),
+   so it stays visible whether the I Ching card is showing its hexagram or its
+   art. The Artwork tile is flat, so its ring sits on the button itself. */
+.oe-root [data-oe="ichgrid"] [data-oe-yours="1"] > button {
+  border-radius: 11px;
+  box-shadow:
+    0 0 0 1px var(--accent, #8a744e),
+    0 4px 20px 1px var(--glow, rgba(196, 170, 124, 0.16)),
+    0 0 24px 3px var(--glow, rgba(196, 170, 124, 0.16));
+}
+.oe-root [data-oe="artgrid"] button[data-oe-yours="1"] {
+  box-shadow:
+    inset 0 0 0 1px var(--accent, #8a744e),
+    0 0 22px 3px var(--glow, rgba(196, 170, 124, 0.16));
+}
+
 /* Artwork hover: the design marks the scrim + name with these classes at
    opacity:0; reveal them on hover so the painting names surface (faithful to
    the design's evident intent — the inline opacity:0 + transition were already

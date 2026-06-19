@@ -9,6 +9,7 @@
    Everything visible is the generated design; this file is the wiring. */
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDarkMode } from '../../../DarkModeContext';
 import { ALL_CARDS, CARD_BY_NUMBER, type OracleCard } from '../../../data/oracleData';
 import { ulCardImageUrl } from '../../../utils/universalLanguage';
 import {
@@ -19,6 +20,9 @@ import {
   primaryElement as appPrimaryElement,
 } from '../../../lib/oracle/elements';
 import { useJournal } from '../../../lib/oracle/journal';
+import { useProfile } from '../../../lib/profile/context';
+import { POSITION_KEYS } from '../../../data/profilePositions';
+import { LAUNCH_FLAGS } from '../../../launchFlags';
 import { OracleEntryHost, type EntryCard, type EntryAdapter } from './generated/OracleEntry.host';
 import './OracleEntry.scoped.css';
 
@@ -77,9 +81,26 @@ const Overlay: React.FC<{ onClose: () => void; width: string; children: React.Re
 
 const OracleEntryPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isDarkMode } = useDarkMode();
   const { record: recordJournal } = useJournal();
+  const { profile } = useProfile();
   const [systemsOpen, setSystemsOpen] = useState(false);
   const [gridOpen, setGridOpen] = useState(false);
+
+  /* The visitor's own codes: the set of card numbers (gate == card number) drawn
+     from the 11 hologenetic positions of their saved profile. Empty until a birth
+     moment is entered. Drives both the rail's "Your codes" state and the deck glow.
+     Gated by the same launch flag as YourPositionCallout. */
+  const yourCodes = useMemo(() => {
+    if (!LAUNCH_FLAGS.hologeneticProfile || !profile) return new Set<number>();
+    const set = new Set<number>();
+    for (const key of POSITION_KEYS) {
+      const gl = profile.computed[key];
+      if (gl?.gate) set.add(gl.gate);
+    }
+    return set;
+  }, [profile]);
+  const hasCodes = yourCodes.size > 0;
 
   /* Build the adapter once. All 64 real cards, real images, real element model. */
   const entryCards = useMemo(() => ALL_CARDS.map(toEntryCard), []);
@@ -142,6 +163,9 @@ const OracleEntryPage: React.FC = () => {
     <div className="oe-root pt-[var(--nav-height)]">
       <OracleEntryHost
         adapter={adapter}
+        theme={isDarkMode ? 'dark' : 'light'}
+        yourCodes={yourCodes}
+        hasCodes={hasCodes}
         onEnterReading={onEnterReading}
         onCardOpened={onCardOpened}
         onOpenSystems={() => setSystemsOpen(true)}

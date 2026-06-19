@@ -54,9 +54,8 @@
 <div data-theme="{{ theme }}" style="min-height:100vh;background:var(--bg,#f3f1ec);color:var(--ink,#262321);font-family:'Karla',system-ui,sans-serif;transition:background .5s ease,color .5s ease;overflow-x:hidden">
 
   <!-- ── Top nav ─────────────────────────────────────────── -->
-  <button type="button" onClick="{{ toggleTheme }}" aria-label="Toggle light and dark" style="position:fixed;bottom:18px;right:18px;z-index:60;display:inline-flex;align-items:center;gap:7px;background:var(--bg2,#fff);border:1px solid var(--line2,#d2c7b4);color:var(--ink3,#8a7a5e);font-family:'Karla',sans-serif;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:9px 13px;border-radius:999px;cursor:pointer;box-shadow:0 6px 18px rgba(20,16,12,.14)">
-    <span aria-hidden="true" style="font-size:12px;line-height:1">{{ themeIcon }}</span>{{ themeLabel }}
-  </button>
+  <!-- Floating theme toggle removed — the global site nav owns a single icon
+       light/dark toggle; this page's theme comes from props.theme. -->
 
   <!-- ── Opening / Invocation hero ───────────────────────── -->
   <header style="position:relative;background:var(--heroWash);padding:clamp(40px,7vw,84px) 18px clamp(34px,5vw,56px)">
@@ -80,16 +79,13 @@
 
     <!-- B · Altar -->
     <sc-if value="{{ isB }}" hint-placeholder-val="{{ true }}">
-    <div style="max-width:1040px;margin:0 auto">
-      <h1 style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(38px,7.5vw,70px);line-height:1;letter-spacing:-.01em;margin:0 0 clamp(26px,3.4vw,40px);color:var(--ink,#262321);text-align:center">Universal Language</h1>
-      <div style="display:flex;gap:clamp(20px,4vw,40px);align-items:stretch">
-        <div aria-hidden="true" style="flex-shrink:0;width:2px;background:linear-gradient(var(--accent,#8a744e),transparent);border-radius:2px"></div>
-        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:clamp(20px,2.6vw,30px)">
-          <p style="margin:0;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--accent,#8a744e)">The Invocation</p>
-          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.9vw,34px);line-height:1.3;color:var(--ink,#262321)">Let this oracle be an instrument of attunement to the light within,<br>as we move through the unfolding of this mystery.</p>
-          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.9vw,34px);line-height:1.3;color:var(--ink2,#524330)">Let it nurture harmony, clarity, and compassion<br>in thought, word, and action.</p>
-          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.9vw,34px);line-height:1.3;color:var(--ink,#262321)">Let us move beyond thoughts and in through the heart,<br>in devotion and celebration of the perfection of this moment.</p>
-        </div>
+    <div style="max-width:1040px;margin:0 auto;text-align:center">
+      <h1 style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(30px,5.2vw,48px);line-height:1.04;letter-spacing:-.01em;margin:0 0 8px;color:var(--ink,#262321)">Universal Language</h1>
+      <p style="margin:0 0 clamp(30px,4vw,48px);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(16px,2.1vw,22px);line-height:1.3;color:var(--accent,#8a744e)">exploring the sixty-four</p>
+      <div style="max-width:min(94vw,640px);margin:0 auto;display:flex;flex-direction:column;gap:clamp(18px,2.4vw,28px)">
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.2vw,26px);line-height:1.42;color:var(--ink,#262321)">An instrument of attunement within<br>through the cycles of change.</p>
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.2vw,26px);line-height:1.42;color:var(--ink2,#524330)">Bringing clarity, compassion, and harmony<br>in our thoughts, words, and actions.</p>
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.2vw,26px);line-height:1.42;color:var(--ink,#262321)">Beyond the head in through the heart<br>devoted to the perfection this moment.</p>
       </div>
     </div>
     </sc-if>
@@ -122,62 +118,50 @@
   <!-- ── Body: rail + deck ───────────────────────────────── -->
   <div style="max-width:1180px;margin:0 auto;padding:clamp(14px,2vw,24px) 18px 0;display:flex;flex-direction:column;gap:clamp(12px,1.5vw,20px)">
 
-    <!-- RAIL -->
-    <aside style="width:100%;min-width:0">
-      <div style="display:flex;flex-wrap:wrap;border:1px solid var(--line,#e3ddd1);background:var(--bg2,#fff);border-radius:14px;overflow:hidden">
-        <sc-for list="{{ feats }}" as="f" hint-placeholder-count="2">
-          <button type="button" onClick="{{ f.onClick }}" aria-label="{{ f.aria }}" style="display:flex;align-items:center;gap:11px;text-align:left;background:transparent;border:none;border-right:1px solid var(--line,#e3ddd1);flex:1 1 140px;padding:14px;cursor:pointer;min-width:0">
-            <span style="flex-shrink:0;width:26px;height:30px">
-              <dc-import name="Hexagram" lines="{{ f.lines }}" color="var(--ink3,#8a7a5e)" hint-size="26px,30px" style="width:26px;height:30px"></dc-import>
+    <!-- RAIL — two groups: the moment (Today+Year) | the doors (Systems / Your codes) -->
+    <aside data-oe="rail" style="width:100%;min-width:0">
+      <div data-oe="railrow" style="display:flex;flex-wrap:wrap;gap:clamp(10px,1.4vw,16px);align-items:stretch">
+        <!-- Group 1 · The moment -->
+        <div data-oe="momentgroup" style="display:flex;flex:1 1 280px;min-width:0;border:1px solid var(--line,#e3ddd1);background:var(--bg2,#fff);border-radius:14px;overflow:hidden">
+          <sc-for list="{{ feats }}" as="f" hint-placeholder-count="2">
+            <button type="button" onClick="{{ f.onClick }}" aria-label="{{ f.aria }}" style="display:flex;align-items:center;gap:11px;text-align:left;background:transparent;border:none;border-right:1px solid var(--line,#e3ddd1);flex:1 1 0;padding:16px 14px;cursor:pointer;min-width:0">
+              <span style="flex-shrink:0;width:26px;height:30px">
+                <dc-import name="Hexagram" lines="{{ f.lines }}" color="var(--ink3,#8a7a5e)" hint-size="26px,30px" style="width:26px;height:30px"></dc-import>
+              </span>
+              <span style="display:flex;flex-direction:column;gap:5px;min-width:0">
+                <span style="font-family:'Karla',sans-serif;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint,#a89070);line-height:1;white-space:nowrap">{{ f.eyebrow }}</span>
+                <span style="font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent,#8a744e);line-height:1">{{ f.date }}</span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+        <!-- Group 2 · The doors (stacked) -->
+        <div data-oe="doorgroup" style="display:flex;flex-direction:column;flex:1 1 280px;min-width:0;border:1px solid var(--line,#e3ddd1);background:var(--bg2,#fff);border-radius:14px;overflow:hidden">
+          <button type="button" onClick="{{ openSystems }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;text-align:left;background:transparent;border:none;border-bottom:1px solid var(--line,#e3ddd1);padding:13px 14px;cursor:pointer;min-width:0">
+            <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+              <span style="font-family:'Karla',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px;color:var(--ink,#262321);line-height:1.2">{{ systemsTile.eyebrow }}</span>
+              <span style="font-family:'Karla',sans-serif;font-size:12.5px;color:var(--ink2,#524330);line-height:1.4">{{ systemsTile.body }}</span>
             </span>
-            <span style="display:flex;flex-direction:column;gap:5px;min-width:0">
-              <span style="font-family:'Karla',sans-serif;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint,#a89070);line-height:1;white-space:nowrap">{{ f.eyebrow }}</span>
-              <span style="font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent,#8a744e);line-height:1">{{ f.date }}</span>
-            </span>
+            <span aria-hidden="true" style="color:var(--accent,#8a744e);flex-shrink:0;padding-top:2px">→</span>
           </button>
-        </sc-for>
-        <button type="button" onClick="{{ openSystems }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1 1 200px;text-align:left;background:transparent;border:none;border-right:1px solid var(--line,#e3ddd1);padding:14px;cursor:pointer;min-width:0">
-          <span style="font-family:'Karla',sans-serif;font-size:12.5px;color:var(--ink2,#524330);line-height:1.4;min-width:0"><span style="font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px;color:var(--ink,#262321);margin-right:7px">New here</span>How the four systems connect</span>
-          <span aria-hidden="true" style="color:var(--accent,#8a744e);flex-shrink:0">→</span>
-        </button>
-        <button type="button" onClick="{{ openGrid }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1 1 200px;text-align:left;background:transparent;border:none;padding:14px;cursor:pointer;min-width:0">
-          <span style="font-family:'Karla',sans-serif;font-size:12.5px;color:var(--ink2,#524330);line-height:1.4;min-width:0"><span style="font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px;color:var(--ink,#262321);margin-right:7px">Your codes</span>Find your own cards in every reading</span>
-          <span aria-hidden="true" style="color:var(--accent,#8a744e);flex-shrink:0">→</span>
-        </button>
+          <button type="button" onClick="{{ openGrid }}" data-oe-done="{{ codesTile.done }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;text-align:left;background:transparent;border:none;padding:13px 14px;cursor:pointer;min-width:0">
+            <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+              <span style="font-family:'Karla',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px;color:var(--ink,#262321);line-height:1.2">{{ codesTile.eyebrow }}</span>
+              <span style="font-family:'Karla',sans-serif;font-size:12.5px;color:var(--ink2,#524330);line-height:1.4">{{ codesTile.body }}</span>
+            </span>
+            <span aria-hidden="true" style="color:var(--accent,#8a744e);flex-shrink:0;padding-top:2px">→</span>
+          </button>
+        </div>
       </div>
     </aside>
 
     <!-- DECK -->
     <main style="width:100%;min-width:0">
-      <!-- controls -->
-      <div style="position:sticky;top:0;z-index:30;background:var(--bg,#f3f1ec);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 20px;padding:14px 0;border-bottom:1px solid var(--line,#e3ddd1)">
-        <div role="group" aria-label="View" style="display:flex;align-items:center;gap:22px">
-          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
-            <button type="button" onClick="{{ t.onClick }}" style="background:transparent;border:none;cursor:pointer;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;color:{{ t.color }};border-bottom:2px solid {{ t.border }}">{{ t.label }}</button>
-          </sc-for>
-        </div>
-        <div style="position:relative;flex:1 1 180px;max-width:240px;min-width:150px">
-          <span aria-hidden="true" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--faint,#a89070);font-size:13px">⌕</span>
-          <input id="oe-search" value="{{ query }}" onInput="{{ onQuery }}" placeholder="Search the sixty-four" style="width:100%;background:var(--bg2,#fff);border:1px solid var(--line,#e3ddd1);border-radius:999px;padding:9px 14px 9px 30px;font-family:'Karla',sans-serif;font-size:12.5px;color:var(--ink,#262321);outline:none"></input>
-        </div>
-      </div>
-
-      <!-- element filters -->
-      <div role="group" aria-label="Filter by element" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:16px 0 4px">
-        <sc-for list="{{ elChips }}" as="e" hint-placeholder-count="6">
-          <button type="button" onClick="{{ e.onClick }}" style="display:inline-flex;align-items:center;gap:7px;background:transparent;border:none;cursor:pointer;font-family:'Karla',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;line-height:1;color:{{ e.color }}">
-            <span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:{{ e.dotBg }};box-shadow:{{ e.dotRing }}"></span>{{ e.name }}
-          </button>
-        </sc-for>
-      </div>
-
-      <p style="margin:18px 0 0;font-family:'Karla',sans-serif;font-size:12px;letter-spacing:.04em;color:var(--ink3,#8a7a5e)">{{ instruction }}</p>
-
       <!-- I CHING flip wall -->
       <sc-if value="{{ isIChing }}" hint-placeholder-val="{{ true }}">
       <div data-oe="ichgrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,1.6vw,16px) clamp(8px,1.4vw,14px);padding:18px 0 8px">
         <sc-for list="{{ gridCards }}" as="c" hint-placeholder-count="24">
-          <div style="display:flex;flex-direction:column">
+          <div data-oe-yours="{{ c.yours }}" style="display:flex;flex-direction:column">
             <button type="button" onClick="{{ c.onTile }}" aria-label="{{ c.aria }}" style="all:unset;cursor:pointer;display:block;perspective:760px">
               <span style="position:relative;display:block;width:100%;aspect-ratio:1/1;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.85,.3,1),filter .3s ease;transform:{{ c.flipTransform }}">
                 <span style="position:absolute;inset:0;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;border:1px solid var(--line,#e3ddd1);border-radius:11px;background:var(--surface,#faf9f6)">
@@ -217,7 +201,7 @@
       <sc-if value="{{ isArtwork }}" hint-placeholder-val="{{ true }}">
       <div data-oe="artgrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:18px 0 8px">
         <sc-for list="{{ gridCards }}" as="c" hint-placeholder-count="24">
-          <button type="button" onClick="{{ c.onRead }}" aria-label="{{ c.aria }}" style="all:unset;cursor:pointer;position:relative;display:block;width:100%;aspect-ratio:1/1;overflow:hidden">
+          <button type="button" onClick="{{ c.onRead }}" aria-label="{{ c.aria }}" data-oe-yours="{{ c.yours }}" style="all:unset;cursor:pointer;position:relative;display:block;width:100%;aspect-ratio:1/1;overflow:hidden">
             <span style="position:absolute;inset:0;background:{{ c.grad }}"></span>
             <img src="{{ c.art }}" alt="{{ c.name }}" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.08) brightness(1.03);transition:transform .5s ease"></img>
             <span style="position:absolute;left:0;right:0;bottom:0;top:50%;background:linear-gradient(transparent,rgba(20,16,12,.78));opacity:0;transition:opacity .3s ease" class="oe-art-scrim"></span>
@@ -361,6 +345,7 @@ class Component extends DCLogic {
         lines: lines(c),
         art: m ? m.cardImg(c, 320) : '',
         grad: 'linear-gradient(150deg,' + tint[0] + ',' + tint[1] + ')',
+        yours: false,
         flipped, closed: !flipped,
         flipTransform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         cardNum: String(c.n),
@@ -374,9 +359,8 @@ class Component extends DCLogic {
     });
 
     const filtering = q || this.state.elFilter !== 'All';
-    const instruction = filtering
-      ? (filtered.length + ' of 64 shown')
-      : (this.state.view === 'iching' ? 'Sixty-four hexagrams · tap one to reveal it' : 'Sixty-four paintings · tap one to enter');
+    // Idle instruction line removed by request; only the filter-count feedback remains.
+    const instruction = filtering ? (filtered.length + ' of 64 shown') : '';
 
     // reading vm
     let reading = null;
@@ -392,6 +376,8 @@ class Component extends DCLogic {
       theme,
       isA: inv === 'illuminated', isB: inv === 'altar', isC: inv === 'constellation',
       heroLines, ringTicks, heroDots, navLinks, feats, tabs, elChips, gridCards,
+      systemsTile: { eyebrow: 'The sixty-four', body: 'What the cards are, and the four systems they speak' },
+      codesTile: { done: false, eyebrow: 'Your codes', body: 'Add your birth moment and your cards light up in every reading' },
       isIChing: this.state.view === 'iching', isArtwork: this.state.view === 'artwork',
       query: this.state.query, instruction,
       drawHint: filtering ? (filtered.length + ' of 64 shown') : 'or choose one below',

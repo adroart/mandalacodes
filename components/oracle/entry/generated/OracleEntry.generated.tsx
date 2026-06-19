@@ -7,12 +7,8 @@ import React from 'react';
 export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   <>
 <div data-theme={vals.theme} style={{ minHeight: "100vh", background: "var(--bg,#f3f1ec)", color: "var(--ink,#262321)", fontFamily: "'Karla',system-ui,sans-serif", transition: "background .5s ease,color .5s ease", overflowX: "hidden" }}>
-  <button type="button" onClick={vals.toggleTheme} aria-label="Toggle light and dark" style={{ position: "fixed", bottom: "18px", right: "18px", zIndex: "60", display: "inline-flex", alignItems: "center", gap: "7px", background: "var(--bg2,#fff)", border: "1px solid var(--line2,#d2c7b4)", color: "var(--ink3,#8a7a5e)", fontFamily: "'Karla',sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: ".16em", textTransform: "uppercase", padding: "9px 13px", borderRadius: "999px", cursor: "pointer", boxShadow: "0 6px 18px rgba(20,16,12,.14)" }}>
-    <span aria-hidden="true" style={{ fontSize: "12px", lineHeight: "1" }}>
-    {vals.themeIcon}
-    </span>
-  {vals.themeLabel}
-  </button>
+  {/* Floating theme toggle removed — the single icon toggle in the global nav now
+      owns light/dark; this page's theme is driven by props.theme (global dark mode). */}
   <header style={{ position: "relative", background: "var(--heroWash)", padding: "clamp(40px,7vw,84px) 18px clamp(34px,5vw,56px)" }}>
     {(vals.isA) ? (
       <>
@@ -48,33 +44,29 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     ) : null}
     {(vals.isB) ? (
       <>
-        <div style={{ maxWidth: "1040px", margin: "0 auto" }}>
-          <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "clamp(38px,7.5vw,70px)", lineHeight: "1", letterSpacing: "-.01em", margin: "0 0 clamp(26px,3.4vw,40px)", color: "var(--ink,#262321)", textAlign: "center" }}>
+        <div style={{ maxWidth: "1040px", margin: "0 auto", textAlign: "center" }}>
+          <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "clamp(30px,5.2vw,48px)", lineHeight: "1.04", letterSpacing: "-.01em", margin: "0 0 8px", color: "var(--ink,#262321)" }}>
           Universal Language
           </h1>
-          <div style={{ display: "flex", gap: "clamp(20px,4vw,40px)", alignItems: "stretch" }}>
-            <div aria-hidden="true" style={{ flexShrink: "0", width: "2px", background: "linear-gradient(var(--accent,#8a744e),transparent)", borderRadius: "2px" }}>
-            </div>
-            <div style={{ flex: "1", minWidth: "0", display: "flex", flexDirection: "column", gap: "clamp(20px,2.6vw,30px)" }}>
-              <p style={{ margin: "0", fontFamily: "'Karla',sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: ".3em", textTransform: "uppercase", color: "var(--accent,#8a744e)" }}>
-              The Invocation
-              </p>
-              <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(22px,2.9vw,34px)", lineHeight: "1.3", color: "var(--ink,#262321)" }}>
-                Let this oracle be an instrument of attunement to the light within,
-                <br />
-              as we move through the unfolding of this mystery.
-              </p>
-              <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(22px,2.9vw,34px)", lineHeight: "1.3", color: "var(--ink2,#524330)" }}>
-                Let it nurture harmony, clarity, and compassion
-                <br />
-              in thought, word, and action.
-              </p>
-              <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(22px,2.9vw,34px)", lineHeight: "1.3", color: "var(--ink,#262321)" }}>
-                Let us move beyond thoughts and in through the heart,
-                <br />
-              in devotion and celebration of the perfection of this moment.
-              </p>
-            </div>
+          <p style={{ margin: "0 0 clamp(30px,4vw,48px)", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "clamp(16px,2.1vw,22px)", lineHeight: "1.3", color: "var(--accent,#8a744e)" }}>
+          exploring the sixty-four
+          </p>
+          <div style={{ maxWidth: "min(94vw,640px)", margin: "0 auto", display: "flex", flexDirection: "column", gap: "clamp(18px,2.4vw,28px)" }}>
+            <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink,#262321)" }}>
+              An instrument of attunement within
+              <br />
+            through the cycles of change.
+            </p>
+            <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink2,#524330)" }}>
+              Bringing clarity, compassion, and harmony
+              <br />
+            in our thoughts, words, and actions.
+            </p>
+            <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink,#262321)" }}>
+              Beyond the head in through the heart
+              <br />
+            devoted to the perfection this moment.
+            </p>
           </div>
         </div>
       </>
@@ -121,89 +113,68 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     ) : null}
   </header>
   <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "clamp(14px,2vw,24px) 18px 0", display: "flex", flexDirection: "column", gap: "clamp(12px,1.5vw,20px)" }}>
-    <aside style={{ width: "100%", minWidth: "0" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", border: "1px solid var(--line,#e3ddd1)", background: "var(--bg2,#fff)", borderRadius: "14px", overflow: "hidden" }}>
-        {(vals.feats ?? []).map((f, fIdx) => (
-          <React.Fragment key={fIdx}>
-            <button type="button" onClick={f.onClick} aria-label={f.aria} style={{ display: "flex", alignItems: "center", gap: "11px", textAlign: "left", background: "transparent", border: "none", borderRight: "1px solid var(--line,#e3ddd1)", flex: "1 1 140px", padding: "14px", cursor: "pointer", minWidth: "0" }}>
-              <span style={{ flexShrink: "0", width: "26px", height: "30px" }}>
-                <dc-import name="Hexagram" lines={f.lines} color="var(--ink3,#8a7a5e)" hintSize="26px,30px" style={{ width: "26px", height: "30px" }}>
-                </dc-import>
-              </span>
-              <span style={{ display: "flex", flexDirection: "column", gap: "5px", minWidth: "0" }}>
-                <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "9px", fontWeight: "700", letterSpacing: ".16em", textTransform: "uppercase", color: "var(--faint,#a89070)", lineHeight: "1", whiteSpace: "nowrap" }}>
-                {f.eyebrow}
+    <aside data-oe="rail" style={{ width: "100%", minWidth: "0" }}>
+      <div data-oe="railrow" style={{ display: "flex", flexWrap: "wrap", gap: "clamp(10px,1.4vw,16px)", alignItems: "stretch" }}>
+        {/* ── Group 1 · The moment (Today + This year, one cluster) ── */}
+        <div data-oe="momentgroup" style={{ display: "flex", flex: "1 1 280px", minWidth: "0", border: "1px solid var(--line,#e3ddd1)", background: "var(--bg2,#fff)", borderRadius: "14px", overflow: "hidden" }}>
+          {(vals.feats ?? []).map((f, fIdx) => (
+            <React.Fragment key={fIdx}>
+              <button type="button" onClick={f.onClick} aria-label={f.aria} style={{ display: "flex", alignItems: "center", gap: "11px", textAlign: "left", background: "transparent", border: "none", borderRight: fIdx === 0 ? "1px solid var(--line,#e3ddd1)" : "none", flex: "1 1 0", padding: "16px 14px", cursor: "pointer", minWidth: "0" }}>
+                <span style={{ flexShrink: "0", width: "26px", height: "30px" }}>
+                  <dc-import name="Hexagram" lines={f.lines} color="var(--ink3,#8a7a5e)" hintSize="26px,30px" style={{ width: "26px", height: "30px" }}>
+                  </dc-import>
                 </span>
-                <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--accent,#8a744e)", lineHeight: "1" }}>
-                {f.date}
+                <span style={{ display: "flex", flexDirection: "column", gap: "5px", minWidth: "0" }}>
+                  <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "9px", fontWeight: "700", letterSpacing: ".16em", textTransform: "uppercase", color: "var(--faint,#a89070)", lineHeight: "1", whiteSpace: "nowrap" }}>
+                  {f.eyebrow}
+                  </span>
+                  <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--accent,#8a744e)", lineHeight: "1" }}>
+                  {f.date}
+                  </span>
                 </span>
-              </span>
-            </button>
-          </React.Fragment>
-        ))}
-        <button type="button" onClick={vals.openSystems} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", flex: "1 1 200px", textAlign: "left", background: "transparent", border: "none", borderRight: "1px solid var(--line,#e3ddd1)", padding: "14px", cursor: "pointer", minWidth: "0" }}>
-          <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "12.5px", color: "var(--ink2,#524330)", lineHeight: "1.4", minWidth: "0" }}>
-            <span style={{ fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", fontSize: "10px", color: "var(--ink,#262321)", marginRight: "7px" }}>
-            New here
-            </span>
-          How the four systems connect
-          </span>
-          <span aria-hidden="true" style={{ color: "var(--accent,#8a744e)", flexShrink: "0" }}>
-          →
-          </span>
-        </button>
-        <button type="button" onClick={vals.openGrid} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", flex: "1 1 200px", textAlign: "left", background: "transparent", border: "none", padding: "14px", cursor: "pointer", minWidth: "0" }}>
-          <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "12.5px", color: "var(--ink2,#524330)", lineHeight: "1.4", minWidth: "0" }}>
-            <span style={{ fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", fontSize: "10px", color: "var(--ink,#262321)", marginRight: "7px" }}>
-            Your codes
-            </span>
-          Find your own cards in every reading
-          </span>
-          <span aria-hidden="true" style={{ color: "var(--accent,#8a744e)", flexShrink: "0" }}>
-          →
-          </span>
-        </button>
-      </div>
-    </aside>
-    <main style={{ width: "100%", minWidth: "0" }}>
-      <div style={{ position: "sticky", top: "0", zIndex: "30", background: "var(--bg,#f3f1ec)", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "14px 20px", padding: "14px 0", borderBottom: "1px solid var(--line,#e3ddd1)" }}>
-        <div role="group" aria-label="View" style={{ display: "flex", alignItems: "center", gap: "22px" }}>
-          {(vals.tabs ?? []).map((t, tIdx) => (
-            <React.Fragment key={tIdx}>
-              <button type="button" onClick={t.onClick} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: "'Karla',sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: ".14em", textTransform: "uppercase", paddingBottom: "8px", color: `${t.color ?? ""}`, borderBottom: `2px solid ${t.border ?? ""}` }}>
-              {t.label}
               </button>
             </React.Fragment>
           ))}
         </div>
-        <div style={{ position: "relative", flex: "1 1 180px", maxWidth: "240px", minWidth: "150px" }}>
-          <span aria-hidden="true" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--faint,#a89070)", fontSize: "13px" }}>
-          ⌕
-          </span>
-          <input id="oe-search" value={vals.query} onInput={vals.onQuery} placeholder="Search the sixty-four" style={{ width: "100%", background: "var(--bg2,#fff)", border: "1px solid var(--line,#e3ddd1)", borderRadius: "999px", padding: "9px 14px 9px 30px", fontFamily: "'Karla',sans-serif", fontSize: "12.5px", color: "var(--ink,#262321)", outline: "none" }} />
+        {/* ── Group 2 · The doors (Systems over Your codes, stacked) ── */}
+        <div data-oe="doorgroup" style={{ display: "flex", flexDirection: "column", flex: "1 1 280px", minWidth: "0", border: "1px solid var(--line,#e3ddd1)", background: "var(--bg2,#fff)", borderRadius: "14px", overflow: "hidden" }}>
+          <button type="button" onClick={vals.openSystems} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "10px", textAlign: "left", background: "transparent", border: "none", borderBottom: "1px solid var(--line,#e3ddd1)", padding: "13px 14px", cursor: "pointer", minWidth: "0" }}>
+            <span style={{ display: "flex", flexDirection: "column", gap: "3px", minWidth: "0" }}>
+              <span style={{ fontFamily: "'Karla',sans-serif", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", fontSize: "10px", color: "var(--ink,#262321)", lineHeight: "1.2" }}>
+              {vals.systemsTile?.eyebrow}
+              </span>
+              <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "12.5px", color: "var(--ink2,#524330)", lineHeight: "1.4" }}>
+              {vals.systemsTile?.body}
+              </span>
+            </span>
+            <span aria-hidden="true" style={{ color: "var(--accent,#8a744e)", flexShrink: "0", paddingTop: "2px" }}>
+            →
+            </span>
+          </button>
+          <button type="button" onClick={vals.openGrid} data-oe-done={vals.codesTile?.done ? "1" : undefined} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "10px", textAlign: "left", background: vals.codesTile?.done ? "var(--glow,rgba(196,170,124,.16))" : "transparent", border: "none", padding: "13px 14px", cursor: "pointer", minWidth: "0" }}>
+            <span style={{ display: "flex", flexDirection: "column", gap: "3px", minWidth: "0" }}>
+              <span style={{ fontFamily: "'Karla',sans-serif", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", fontSize: "10px", color: vals.codesTile?.done ? "var(--accent,#8a744e)" : "var(--ink,#262321)", lineHeight: "1.2" }}>
+              {vals.codesTile?.done ? "✓ " : ""}{vals.codesTile?.eyebrow}
+              </span>
+              <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "12.5px", color: "var(--ink2,#524330)", lineHeight: "1.4" }}>
+              {vals.codesTile?.body}
+              </span>
+            </span>
+            <span aria-hidden="true" style={{ color: "var(--accent,#8a744e)", flexShrink: "0", paddingTop: "2px" }}>
+            →
+            </span>
+          </button>
         </div>
       </div>
-      <div role="group" aria-label="Filter by element" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px 16px", padding: "16px 0 4px" }}>
-        {(vals.elChips ?? []).map((e, eIdx) => (
-          <React.Fragment key={eIdx}>
-            <button type="button" onClick={e.onClick} style={{ display: "inline-flex", alignItems: "center", gap: "7px", background: "transparent", border: "none", cursor: "pointer", fontFamily: "'Karla',sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: ".12em", textTransform: "uppercase", lineHeight: "1", color: `${e.color ?? ""}` }}>
-              <span aria-hidden="true" style={{ width: "7px", height: "7px", borderRadius: "50%", background: `${e.dotBg ?? ""}`, boxShadow: `${e.dotRing ?? ""}` }}>
-              </span>
-            {e.name}
-            </button>
-          </React.Fragment>
-        ))}
-      </div>
-      <p style={{ margin: "18px 0 0", fontFamily: "'Karla',sans-serif", fontSize: "12px", letterSpacing: ".04em", color: "var(--ink3,#8a7a5e)" }}>
-      {vals.instruction}
-      </p>
+    </aside>
+    <main style={{ width: "100%", minWidth: "0" }}>
       {(vals.isIChing) ? (
         <>
           <div data-oe="ichgrid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "clamp(10px,1.6vw,16px) clamp(8px,1.4vw,14px)", padding: "18px 0 8px" }}>
             {(vals.gridCards ?? []).map((c, cIdx) => (
               <React.Fragment key={cIdx}>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <button type="button" onClick={c.onTile} aria-label={c.aria} style={{ all: "unset", cursor: "pointer", display: "block", perspective: "760px" }}>
+                <div data-oe-yours={c.yours ? "1" : undefined} style={{ display: "flex", flexDirection: "column" }}>
+                  <button type="button" onClick={c.onTile} aria-label={c.yours ? c.aria + " — one of your codes" : c.aria} style={{ all: "unset", cursor: "pointer", display: "block", perspective: "760px" }}>
                     <span style={{ position: "relative", display: "block", width: "100%", aspectRatio: "1/1", transformStyle: "preserve-3d", transition: "transform .7s cubic-bezier(.2,.85,.3,1),filter .3s ease", transform: `${c.flipTransform ?? ""}` }}>
                       <span style={{ position: "absolute", inset: "0", backfaceVisibility: "hidden", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--line,#e3ddd1)", borderRadius: "11px", background: "var(--surface,#faf9f6)" }}>
                         <span style={{ width: "48%", color: "var(--ink3,#8a7a5e)" }}>
@@ -263,7 +234,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <div data-oe="artgrid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "6px", padding: "18px 0 8px" }}>
             {(vals.gridCards ?? []).map((c, cIdx) => (
               <React.Fragment key={cIdx}>
-                <button type="button" onClick={c.onRead} aria-label={c.aria} style={{ all: "unset", cursor: "pointer", position: "relative", display: "block", width: "100%", aspectRatio: "1/1", overflow: "hidden" }}>
+                <button type="button" onClick={c.onRead} aria-label={c.yours ? c.aria + " — one of your codes" : c.aria} data-oe-yours={c.yours ? "1" : undefined} style={{ all: "unset", cursor: "pointer", position: "relative", display: "block", width: "100%", aspectRatio: "1/1", overflow: "hidden" }}>
                   <span style={{ position: "absolute", inset: "0", background: `${c.grad ?? ""}` }}>
                   </span>
                   <img src={c.art} alt={c.name} loading="lazy" decoding="async" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", filter: "saturate(1.08) brightness(1.03)", transition: "transform .5s ease" }} />

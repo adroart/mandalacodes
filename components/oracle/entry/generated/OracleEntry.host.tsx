@@ -49,6 +49,12 @@ interface HostProps {
   adapter: EntryAdapter;
   theme?: 'light' | 'dark';
   invocationStyle?: 'altar' | 'illuminated' | 'constellation';
+  /** The visitor's own card numbers (from their saved birth profile). Cards in
+   *  this set glow in the deck. Empty when no birth moment has been entered. */
+  yourCodes?: Set<number>;
+  /** Whether a birth moment has been entered (yourCodes is non-empty). Switches
+   *  the rail's "Your codes" tile from invitation to confirmation. */
+  hasCodes?: boolean;
   /** Open a card (the design's openReading lightbox stays; "Enter the reading"
    *  and the flipped Read action route to the full card page through these). */
   onOpenCard?: (n: number) => void; // open the design's own lightbox preview
@@ -158,9 +164,11 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     const qOk = (c: EntryCard) => !q || c.name.toLowerCase().includes(q) || c.hx.toLowerCase().includes(q) || String(c.n) === q;
     const filtered = all.filter((c) => elOk(c) && qOk(c));
 
+    const yourCodes = this.props.yourCodes;
     const gridCards = filtered.map((c) => {
       const tint = m ? m.tintFor(c) : ['#9d7c48', '#65502f'];
       const flipped = !!this.state.flipped[c.n];
+      const yours = !!yourCodes && yourCodes.has(c.n);
       return {
         n: c.n,
         name: c.name,
@@ -169,6 +177,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
         lines: lines(c),
         art: m ? m.cardImg(c, 320) : '',
         grad: 'linear-gradient(150deg,' + tint[0] + ',' + tint[1] + ')',
+        yours,
         flipped,
         closed: !flipped,
         flipTransform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -183,11 +192,8 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     });
 
     const filtering = q || this.state.elFilter !== 'All';
-    const instruction = filtering
-      ? filtered.length + ' of 64 shown'
-      : this.state.view === 'iching'
-      ? 'Sixty-four hexagrams · tap one to reveal it'
-      : 'Sixty-four paintings · tap one to enter';
+    // Idle instruction line removed by request; only the filter-count feedback remains.
+    const instruction = filtering ? filtered.length + ' of 64 shown' : '';
 
     // reading vm
     let reading: any = null;
@@ -206,6 +212,24 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
       ringTicks,
       navLinks,
       feats,
+      // Right-hand door tiles, stacked. "Learn" opens the Systems overlay
+      // (what the 64 are, the four systems they speak). "Your codes" switches
+      // on whether a birth moment has been entered.
+      systemsTile: {
+        eyebrow: 'The sixty-four',
+        body: 'What the cards are, and the four systems they speak',
+      },
+      codesTile: this.props.hasCodes
+        ? {
+            done: true,
+            eyebrow: 'Your codes are linked',
+            body: 'They glow in the deck below when one of yours appears',
+          }
+        : {
+            done: false,
+            eyebrow: 'Your codes',
+            body: 'Add your birth moment and your cards light up in every reading',
+          },
       tabs,
       elChips,
       gridCards,
