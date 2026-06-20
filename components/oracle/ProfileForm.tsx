@@ -124,6 +124,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          /* Tab from the date jumps straight to birth time, skipping the native
+             calendar button's internal tab stop. */
+          onKeyDown={(e) => {
+            if (e.key === 'Tab' && !e.shiftKey) {
+              e.preventDefault();
+              document.getElementById('profile-time')?.focus();
+            }
+          }}
           className="profile-form__input"
           required
           autoComplete="bday"

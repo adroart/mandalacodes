@@ -64,6 +64,11 @@ function fold(s: string): string {
 export async function searchPlaces(query: string, limit = 8): Promise<Place[]> {
   const q = fold(query.trim());
   if (q.length < 2) return [];
+  // Split into words so "Santa Cruz, California" matches a row whose city is
+  // "Santa Cruz" and whose admin is "California" — the old whole-string match
+  // failed because the comma is never a substring of "santa cruz california".
+  // Commas and extra spaces are just separators.
+  const tokens = q.split(/[\s,]+/).filter(Boolean);
   const idx = await loadCitiesIndex();
 
   type Scored = { place: Place; score: number; order: number };
@@ -73,15 +78,25 @@ export async function searchPlaces(query: string, limit = 8): Promise<Place[]> {
     const c = idx[i];
     const name = fold(c.name);
     const full = fold(`${c.name} ${c.admin ?? ''} ${c.country}`);
-    if (!full.includes(q)) continue;
+    // Every word the visitor typed must appear somewhere in the row.
+    if (!tokens.every((t) => full.includes(t))) continue;
 
     // Higher score = better match. City name beats incidental admin/country
-    // hits; exact and prefix matches beat mid-word substring matches.
+    // hits; exact and prefix matches beat mid-word substring matches. Scored
+    // on the FIRST token (the city the visitor leads with).
+    const first = tokens[0];
     let score = 0;
-    if (name === q) score = 100;            // exact city name
-    else if (name.startsWith(q)) score = 80; // "santa cr" -> Santa Cruz
-    else if (name.includes(q)) score = 60;   // query inside the city name
-    else score = 20;                         // matched only via admin/country
+    if (name === q) score = 100;                // exact full city name
+    else if (name === first) score = 95;        // exact city, plus region typed
+    else if (name.startsWith(first)) score = 80; // "santa cr" -> Santa Cruz
+    else if (name.includes(first)) score = 60;   // query inside the city name
+    else score = 20;                            // matched only via admin/country
+    // A second token that lands in the admin/country (the region) is a strong
+    // signal the visitor disambiguated — lift those above same-named rivals.
+    if (tokens.length > 1) {
+      const rest = fold(`${c.admin ?? ''} ${c.country}`);
+      if (tokens.slice(1).every((t) => rest.includes(t))) score += 15;
+    }
 
     scored.push({
       place: {

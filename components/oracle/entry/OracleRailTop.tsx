@@ -33,6 +33,8 @@ interface OracleRailTopProps {
   onSignOut: () => void;
 }
 
+// The profile link. Quiet by default — an outlined accent button, not a gold
+// slab — so the surface reads minimal and subtle.
 const BRIGHT_CTA: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
@@ -40,19 +42,17 @@ const BRIGHT_CTA: React.CSSProperties = {
   gap: '8px',
   width: '100%',
   padding: '13px',
-  border: 'none',
+  border: '1px solid var(--accent,#8a744e)',
   borderRadius: '10px',
-  background: 'linear-gradient(135deg, var(--accent,#a98a55), var(--accentDeep,#7d6638))',
-  color: 'var(--onAccent,#fff8ec)',
+  background: 'transparent',
+  color: 'var(--accent,#8a744e)',
   fontFamily: "'Karla',sans-serif",
-  fontSize: '12px',
+  fontSize: '11px',
   fontWeight: 700,
-  letterSpacing: '.1em',
+  letterSpacing: '.12em',
   textTransform: 'uppercase',
   textDecoration: 'none',
   cursor: 'pointer',
-  boxShadow:
-    '0 0 0 1px rgba(138,116,78,.4), 0 6px 22px -4px rgba(138,116,78,.5), 0 0 26px -2px var(--glow,rgba(196,170,124,.55))',
 };
 
 /* The account only carries an email, so derive a friendly name from it: the
@@ -146,7 +146,7 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
             See your full Hologenetic profile →
           </Link>
           {accountsAvailable && (
-            <div style={{ marginTop: '14px' }}>
+            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--line,#e3ddd1)' }}>
               <p style={sellLeadStyle}>Save your reading by signing in.</p>
               <ul style={sellListStyle}>
                 <li>Go deeper on what your codes mean for you, kept as you learn.</li>
@@ -213,10 +213,10 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
 
 /* ── shared inline styles ── */
 const litCardStyle: React.CSSProperties = {
-  background: 'var(--glow,rgba(196,170,124,.16))',
-  border: '1px solid var(--accent,#8a744e)',
+  background: 'var(--bg2,#fff)',
+  border: '1px solid var(--line2,#d2c7b4)',
   borderRadius: '12px',
-  padding: '16px',
+  padding: '18px 16px',
 };
 const leadStyle: React.CSSProperties = {
   margin: '0 0 14px',
@@ -230,26 +230,30 @@ const sellLeadStyle: React.CSSProperties = {
   textAlign: 'center',
   fontFamily: "'Cormorant Garamond',serif",
   fontSize: '15px',
-  color: 'var(--ink,#262321)',
+  color: 'var(--ink2,#524330)',
 };
 const sellListStyle: React.CSSProperties = {
   margin: '0 0 14px',
-  padding: '0 0 0 18px',
+  padding: '0',
+  listStyle: 'none',
   display: 'flex',
   flexDirection: 'column',
-  gap: '5px',
+  gap: '6px',
+  textAlign: 'center',
   fontFamily: "'Karla',sans-serif",
   fontSize: '12px',
   lineHeight: 1.45,
-  color: 'var(--ink2,#524330)',
+  color: 'var(--ink3,#8a7a5e)',
 };
+// "Save my reading" is the one real action here, so it carries the gentle
+// accent fill; the profile link stays a quiet outline above it.
 const keepBtnStyle: React.CSSProperties = {
   width: '100%',
   padding: '11px',
-  border: '1px solid var(--accent,#8a744e)',
+  border: 'none',
   borderRadius: '10px',
-  background: 'transparent',
-  color: 'var(--ink,#262321)',
+  background: 'var(--accent,#8a744e)',
+  color: 'var(--onAccent,#f7f5f1)',
   fontFamily: "'Karla',sans-serif",
   fontSize: '11px',
   fontWeight: 700,
