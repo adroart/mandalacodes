@@ -39,6 +39,104 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
   const [filter, setFilter] = useState<Filter>('all');
   const wrapRef = useRef<HTMLDivElement>(null);
 
+  // ── Zoom + pan ──────────────────────────────────────────────────────
+  // The chart now renders at every width (scaled to fit), so when it shrinks
+  // on a phone we let the visitor pinch to zoom and drag to pan around it.
+  // Pure pointer math, no library: a {scale, x, y} transform on a wrapper.
+  const MIN_Z = 1, MAX_Z = 4;
+  const [zoom, setZoom] = useState({ s: 1, x: 0, y: 0 });
+  const viewportRef = useRef<HTMLDivElement>(null);
+  // Active pointers (for pinch) and the last single-pointer position (for pan).
+  const ptrs = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const pinchStart = useRef<{ dist: number; s: number; cx: number; cy: number } | null>(null);
+  const panStart = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
+  const didDrag = useRef(false);
+
+  const clampZoom = (z: { s: number; x: number; y: number }) => {
+    const s = Math.min(MAX_Z, Math.max(MIN_Z, z.s));
+    const vp = viewportRef.current;
+    if (!vp || s <= 1) return { s, x: 0, y: 0 };
+    // Keep the (scaled) content from panning past its own edges.
+    const w = vp.clientWidth, h = vp.clientHeight;
+    const maxX = (w * (s - 1)) / 2, maxY = (h * (s - 1)) / 2;
+    return { s, x: Math.min(maxX, Math.max(-maxX, z.x)), y: Math.min(maxY, Math.max(-maxY, z.y)) };
+  };
+
+  const zoomAt = (factor: number, cx: number, cy: number) => {
+    setZoom((z) => {
+      const vp = viewportRef.current;
+      if (!vp) return z;
+      const rect = vp.getBoundingClientRect();
+      // Point under the cursor, relative to viewport centre.
+      const px = cx - rect.left - rect.width / 2;
+      const py = cy - rect.top - rect.height / 2;
+      const ns = Math.min(MAX_Z, Math.max(MIN_Z, z.s * factor));
+      const k = ns / z.s;
+      // Zoom toward the cursor: new offset keeps that point stationary.
+      return clampZoom({ s: ns, x: px - (px - z.x) * k, y: py - (py - z.y) * k });
+    });
+  };
+
+  const onWheel = (e: React.WheelEvent) => {
+    if (!e.ctrlKey && !e.metaKey && zoom.s <= 1) return; // let the page scroll when not zoomed
+    e.preventDefault();
+    zoomAt(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX, e.clientY);
+  };
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    didDrag.current = false;
+    if (ptrs.current.size === 2) {
+      const [a, b] = [...ptrs.current.values()];
+      pinchStart.current = {
+        dist: Math.hypot(a.x - b.x, a.y - b.y),
+        s: zoom.s,
+        cx: (a.x + b.x) / 2,
+        cy: (a.y + b.y) / 2,
+      };
+      panStart.current = null;
+    } else if (ptrs.current.size === 1 && zoom.s > 1) {
+      panStart.current = { x: e.clientX, y: e.clientY, ox: zoom.x, oy: zoom.y };
+    }
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!ptrs.current.has(e.pointerId)) return;
+    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrs.current.size === 2 && pinchStart.current) {
+      const [a, b] = [...ptrs.current.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      const ps = pinchStart.current;
+      const ns = Math.min(MAX_Z, Math.max(MIN_Z, ps.s * (dist / ps.dist)));
+      setZoom((z) => {
+        const vp = viewportRef.current;
+        if (!vp) return z;
+        const rect = vp.getBoundingClientRect();
+        const px = ps.cx - rect.left - rect.width / 2;
+        const py = ps.cy - rect.top - rect.height / 2;
+        const k = ns / z.s;
+        return clampZoom({ s: ns, x: px - (px - z.x) * k, y: py - (py - z.y) * k });
+      });
+      didDrag.current = true;
+    } else if (ptrs.current.size === 1 && panStart.current) {
+      const dx = e.clientX - panStart.current.x;
+      const dy = e.clientY - panStart.current.y;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
+      setZoom((z) => clampZoom({ s: z.s, x: panStart.current!.ox + dx, y: panStart.current!.oy + dy }));
+    }
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    ptrs.current.delete(e.pointerId);
+    if (ptrs.current.size < 2) pinchStart.current = null;
+    if (ptrs.current.size === 0) panStart.current = null;
+  };
+
+  const resetZoom = () => setZoom({ s: 1, x: 0, y: 0 });
+  // Swallow an orb click that was actually the end of a drag/pinch.
+  const guard = (fn: () => void) => () => { if (didDrag.current) { didDrag.current = false; return; } fn(); };
+
   // Dismiss the card on Escape or a click outside the chart/card.
   useEffect(() => {
     if (!selected) return;
@@ -148,6 +246,24 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
 
         {/* Canvas: the mandala fills the centre */}
         <div className={`pg__canvas${hasFocus ? ' has-focus' : ''}`}>
+          {/* Zoom controls — visible whenever the chart can be explored. */}
+          <div className="pg__zoom" role="group" aria-label="Zoom the chart">
+            <button type="button" className="pg__zoom-btn" aria-label="Zoom out"
+              onClick={() => { const vp = viewportRef.current; const r = vp?.getBoundingClientRect(); zoomAt(1 / 1.3, (r?.left ?? 0) + (r?.width ?? 0) / 2, (r?.top ?? 0) + (r?.height ?? 0) / 2); }}>−</button>
+            <button type="button" className="pg__zoom-btn" aria-label="Reset zoom" onClick={resetZoom} disabled={zoom.s === 1}>{Math.round(zoom.s * 100)}%</button>
+            <button type="button" className="pg__zoom-btn" aria-label="Zoom in"
+              onClick={() => { const vp = viewportRef.current; const r = vp?.getBoundingClientRect(); zoomAt(1.3, (r?.left ?? 0) + (r?.width ?? 0) / 2, (r?.top ?? 0) + (r?.height ?? 0) / 2); }}>+</button>
+          </div>
+          <div
+            className={`pg__viewport${zoom.s > 1 ? ' is-zoomed' : ''}`}
+            ref={viewportRef}
+            onWheel={onWheel}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+          >
+          <div className="pg__pan" style={{ transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})` }}>
           <svg viewBox={`-70 8 860 660`} className="pg__svg" preserveAspectRatio="xMidYMid meet">
             <defs>
               {SEQ_ORDER.map((seq) => (
@@ -230,7 +346,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                     onMouseLeave={() => setHovered((c) => (c === meta.key ? null : c))}
                     onFocus={() => setHovered(meta.key)}
                     onBlur={() => setHovered((c) => (c === meta.key ? null : c))}
-                    onClick={() => open(meta.key)}
+                    onClick={guard(() => open(meta.key))}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(meta.key); } }}
                   >
                     <circle r={R + 4} className="pg__ring" />
@@ -241,6 +357,8 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
               );
             })}
           </svg>
+          </div>{/* .pg__pan */}
+          </div>{/* .pg__viewport */}
 
           {/* Anchored card: opens beside the selected sphere */}
           {selected && (() => {
@@ -317,9 +435,9 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
       <style>{`
         .pg { display: block; }
 
-        /* ── top bar ── */
-        .pg__topbar { display: none; }
-        .pg__filter { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid color-mix(in oklab, var(--color-wood-600) 16%, transparent); border-radius: 999px; }
+        /* ── top bar (sequence filter — shown at every width now) ── */
+        .pg__topbar { display: flex; justify-content: center; margin-bottom: 20px; }
+        .pg__filter { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid color-mix(in oklab, var(--color-wood-600) 16%, transparent); border-radius: 999px; max-width: 100%; flex-wrap: wrap; justify-content: center; }
         .pg__filter-btn {
           font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
           padding: 7px 16px; border: 0; border-radius: 999px; background: transparent; color: var(--color-wood-700); cursor: pointer;
@@ -353,40 +471,77 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .pg__gk--gift   { color: var(--color-wood-800); }
         .pg__gk--shadow { color: color-mix(in oklab, #a04a32 80%, var(--color-wood-700)); }
 
-        /* ── desktop workspace ── */
-        .pg__work { display: none; }
-        .pg__svg { width: 100%; height: auto; overflow: visible; }
+        /* ── workspace (rail + canvas) — shown at every width ──
+           Narrow: single column, rail stacked above the chart.
+           Wide (≥880px): two columns, rail beside the chart. */
+        .pg__work {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          max-width: 1500px;
+          margin: 0 auto;
+        }
+        .pg__svg { width: 100%; height: auto; overflow: visible; display: block; }
+
+        /* Zoom + pan viewport. The chart scales to fit the column width; pinch
+           or the +/− controls magnify it, drag pans around when zoomed. */
+        .pg__canvas { position: relative; }
+        .pg__viewport {
+          position: relative;
+          overflow: hidden;
+          touch-action: pan-y;
+          border-radius: 10px;
+        }
+        .pg__viewport.is-zoomed { cursor: grab; touch-action: none; }
+        .pg__viewport.is-zoomed:active { cursor: grabbing; }
+        .pg__pan { transform-origin: center center; will-change: transform; }
+        .pg__zoom {
+          position: absolute; z-index: 15; top: 6px; right: 6px;
+          display: inline-flex; gap: 2px; padding: 3px;
+          background: color-mix(in oklab, var(--color-paper-50) 86%, transparent);
+          border: 1px solid color-mix(in oklab, var(--color-wood-600) 16%, transparent);
+          border-radius: 999px; backdrop-filter: blur(4px);
+        }
+        .pg__zoom-btn {
+          min-width: 30px; height: 26px; padding: 0 8px; border: 0; border-radius: 999px;
+          background: transparent; cursor: pointer;
+          font-family: 'Lato', Helvetica, sans-serif; font-size: 12px; font-weight: 600;
+          letter-spacing: 0.04em; color: var(--color-wood-700);
+          display: inline-flex; align-items: center; justify-content: center;
+        }
+        .pg__zoom-btn:hover:not(:disabled) { background: color-mix(in oklab, var(--color-bronze-400) 16%, transparent); color: var(--color-wood-900); }
+        .pg__zoom-btn:disabled { opacity: 0.55; cursor: default; }
+
+        /* Rail: a flowing list of the 11 positions above the chart on narrow. */
+        .pg__rail { align-self: start; }
+        .pg__rail-title { font-family: Cinzel, Palatino, serif; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 12px; }
+        .pg__rail-list { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1px; }
+        .pg__rail-row {
+          display: flex; align-items: baseline; gap: 10px; width: 100%;
+          padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; text-align: left;
+          transition: background 0.18s;
+        }
+        .pg__rail-row:hover, .pg__rail-row.is-on { background: color-mix(in oklab, var(--color-bronze-400) 12%, transparent); }
+        .pg__rail-dot { width: 11px; height: 11px; border-radius: 50%; flex: none; align-self: center; }
+        .pg__rail-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--color-wood-900); flex: 1; }
+        .pg__rail-gate { font-family: 'Lato', Helvetica, sans-serif; font-size: 10px; letter-spacing: 0.12em; color: var(--color-bronze-600); }
+        .pg__legend { display: flex; flex-wrap: wrap; gap: 8px 18px; padding-top: 14px; border-top: 1px solid color-mix(in oklab, var(--color-wood-600) 14%, transparent); }
+        .pg__legend span { display: flex; align-items: center; gap: 9px; font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; letter-spacing: 0.08em; color: var(--color-wood-700); }
+        .pg__legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+        .pg__legend-split { background: linear-gradient(90deg, #3f8f4e 0 50%, #3f7fb5 50% 100%); }
 
         @media (min-width: 880px) {
-          .pg__topbar { display: flex; justify-content: center; margin-bottom: 20px; }
           .pg__work {
             display: grid;
             grid-template-columns: 220px minmax(0, 1fr);
             gap: 32px;
             align-items: center;
-            max-width: 1500px;
-            margin: 0 auto;
           }
-          .pg__list-view { display: none; }
 
-          .pg__rail { align-self: start; padding-top: 10px; }
-          .pg__rail-title { font-family: Cinzel, Palatino, serif; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 14px; }
-          .pg__rail-list { list-style: none; margin: 0 0 22px; padding: 0; display: flex; flex-direction: column; gap: 1px; }
-          .pg__rail-row {
-            display: flex; align-items: baseline; gap: 10px; width: 100%;
-            padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; text-align: left;
-            transition: background 0.18s;
-          }
-          .pg__rail-row:hover, .pg__rail-row.is-on { background: color-mix(in oklab, var(--color-bronze-400) 12%, transparent); }
-          .pg__rail-dot { width: 11px; height: 11px; border-radius: 50%; flex: none; align-self: center; }
-          .pg__rail-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--color-wood-900); flex: 1; }
-          .pg__rail-gate { font-family: 'Lato', Helvetica, sans-serif; font-size: 10px; letter-spacing: 0.12em; color: var(--color-bronze-600); }
-          .pg__legend { display: flex; flex-direction: column; gap: 8px; padding-top: 18px; border-top: 1px solid color-mix(in oklab, var(--color-wood-600) 14%, transparent); }
-          .pg__legend span { display: flex; align-items: center; gap: 9px; font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; letter-spacing: 0.08em; color: var(--color-wood-700); }
-          .pg__legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
-          .pg__legend-split { background: linear-gradient(90deg, #3f8f4e 0 50%, #3f7fb5 50% 100%); }
-
-          .pg__canvas { position: relative; }
+          /* Rail returns to a single vertical column beside the chart. */
+          .pg__rail { padding-top: 10px; }
+          .pg__rail-list { display: flex; flex-direction: column; gap: 1px; margin-bottom: 22px; }
+          .pg__legend { flex-direction: column; gap: 8px; padding-top: 18px; }
 
           /* anchored card */
           .pg__card {
@@ -409,8 +564,29 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
           .pg__card-open:hover { color: var(--color-bronze-700, var(--color-bronze-600)); }
         }
 
-        /* ── mobile list fallback ── */
-        .pg__list-view { display: flex; flex-direction: column; gap: 36px; }
+        /* ── Narrow-screen anchored card: a bottom sheet, not a floating box.
+           The same card markup renders under 880px; here it's pinned to the
+           bottom of the viewport so a tapped orb has a legible detail panel. */
+        .pg__card {
+          position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 40;
+          width: auto; max-width: 460px; margin: 0 auto;
+          background: var(--color-paper-50);
+          border: 1px solid color-mix(in oklab, var(--color-wood-600) 22%, transparent);
+          border-radius: 12px; padding: 18px 20px;
+          box-shadow: 0 -8px 40px -10px rgba(0,0,0,0.45);
+        }
+        .pg__card-close { position: absolute; top: 8px; right: 12px; border: 0; background: transparent; font-size: 22px; line-height: 1; color: var(--color-wood-600); cursor: pointer; }
+        .pg__card-seq { font-family: Cinzel, Palatino, serif; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 8px; }
+        .pg__card-head { display: flex; align-items: baseline; gap: 10px; }
+        .pg__card-name { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: var(--color-wood-900); }
+        .pg__card-gate { font-family: 'Lato', Helvetica, sans-serif; font-size: 12px; letter-spacing: 0.16em; color: var(--color-bronze-600); }
+        .pg__card-art { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 17px; color: var(--color-wood-700); margin-top: 3px; }
+        .pg__card-triad { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; font-family: 'Lato', Helvetica, sans-serif; font-size: 11.5px; letter-spacing: 0.04em; }
+        .pg__card-role { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; line-height: 1.5; color: var(--color-wood-700); margin: 12px 0 0; }
+        .pg__card-open { margin-top: 14px; border: 0; background: transparent; padding: 0; cursor: pointer; font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-bronze-600); }
+
+        /* ── grouped list (always shown, beneath the chart) ── */
+        .pg__list-view { display: flex; flex-direction: column; gap: 36px; margin-top: 48px; padding-top: 40px; border-top: 1px solid color-mix(in oklab, var(--color-wood-600) 12%, transparent); }
         .pg__band-label { font-family: Cinzel, Palatino, serif; font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--color-bronze-600); margin: 0 0 12px; }
         .pg__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
         .pg__row { display: grid; grid-template-columns: 16px 1fr; align-items: start; gap: 14px; padding: 12px 14px; border: 1px solid color-mix(in oklab, var(--color-wood-600) 12%, transparent); border-radius: 3px; text-decoration: none; color: inherit; transition: border-color 0.2s, background 0.2s; }
