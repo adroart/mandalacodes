@@ -86,9 +86,9 @@
       <h1 style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(30px,5.2vw,48px);line-height:1.04;letter-spacing:-.01em;margin:0 0 8px;color:var(--ink,#262321)">Universal Language</h1>
       <p style="margin:0 0 clamp(30px,4vw,48px);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(16px,2.1vw,22px);line-height:1.3;color:var(--accent,#8a744e)">exploring the sixty-four</p>
       <div style="max-width:min(94vw,640px);margin:0 auto;display:flex;flex-direction:column;gap:clamp(18px,2.4vw,28px)">
-        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.2vw,26px);line-height:1.42;color:var(--ink,#262321)">An instrument of attunement within<br>through the cycles of change.</p>
-        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.2vw,26px);line-height:1.42;color:var(--ink2,#524330)">Bringing clarity, compassion, and harmony<br>in our thoughts, words, and actions.</p>
-        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.2vw,26px);line-height:1.42;color:var(--ink,#262321)">Beyond the head in through the heart<br>devoted to the perfection this moment.</p>
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.2vw,26px);line-height:1.42;color:var(--ink,#262321)">An instrument of attunement<br>through the cycles of change.</p>
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.2vw,26px);line-height:1.42;color:var(--ink2,#524330)">For clarity, compassion, and harmony<br>in our thoughts, words, and actions.</p>
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.2vw,26px);line-height:1.42;color:var(--ink,#262321)">Beyond the head in through the heart<br>devoted to the perfection of this moment.</p>
       </div>
     </div>
     </sc-if>
@@ -121,11 +121,24 @@
   <!-- ── Body: rail + deck ───────────────────────────────── -->
   <div style="max-width:1180px;margin:0 auto;padding:clamp(14px,2vw,24px) 18px 0;display:flex;flex-direction:column;gap:clamp(12px,1.5vw,20px)">
 
-    <!-- RAIL — slim moment strip: energy band (today+year) over the three actions -->
+    <!-- RAIL — slim moment strip: invite (birth time) over the energy band over draw -->
     <aside data-oe="rail" style="width:100%;min-width:0">
       <div data-oe="railrow" style="display:flex;flex-direction:column;gap:10px;max-width:480px;margin:0 auto">
-        <!-- The energy band: today + this year, slim, side by side -->
-        <div data-oe="energyband" style="display:flex;gap:8px">
+        <!-- The invitation: centered birth-time button, expands an inline dropdown
+             (the app's date/time/place form) in React; collapses to a confirmation
+             once a birth moment is saved. Top of the rail — first thing to do. -->
+        <sc-if test="{{ invite }}">
+        <div data-oe="invitewrap" style="display:flex;flex-direction:column;border:1px solid var(--line2,#d2c7b4);border-radius:12px;overflow:hidden;background:var(--bg2,#fff)">
+          <button type="button" data-oe="invite" onClick="{{ invite.onClick }}" aria-label="{{ invite.aria }}" data-oe-invite-done="{{ invite.done }}" style="display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;width:100%;cursor:pointer;padding:14px 16px;background:transparent;border:none">
+            <span style="display:flex;flex-direction:column;gap:4px;min-width:0;align-items:center">
+              <span style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;line-height:1.1;color:var(--ink,#262321)">{{ invite.title }}</span>
+              <span style="font-family:'Karla',sans-serif;font-size:12px;line-height:1.45;color:var(--ink3,#8a7a5e)">{{ invite.sub }}</span>
+            </span>
+          </button>
+        </div>
+        </sc-if>
+        <!-- The energy band: today + this year, slim, centered middle third -->
+        <div data-oe="energyband" style="display:flex;gap:8px;width:min(100%,320px);margin:0 auto">
           <sc-for list="{{ energy }}" as="e" hint-placeholder-count="2">
             <button type="button" onClick="{{ e.onOpen }}" aria-label="{{ e.aria }}" style="display:flex;align-items:center;gap:11px;text-align:left;flex:1 1 0;min-width:0;background:var(--bg2,#fff);border:1px solid var(--line,#e3ddd1);border-radius:12px;padding:11px 13px;cursor:pointer;transition:border-color .25s ease,background .25s ease">
               <span style="flex-shrink:0;width:26px;height:30px;display:flex;align-items:center;justify-content:center">
@@ -141,22 +154,12 @@
             </button>
           </sc-for>
         </div>
-        <!-- Two compact actions: the systems · draw a card -->
+        <!-- Action: draw a card. Bottom of the rail. -->
         <div data-oe="actionrow" style="display:flex;gap:8px">
           <sc-for list="{{ actions }}" as="a" hint-placeholder-count="2">
             <button type="button" onClick="{{ a.onClick }}" aria-label="{{ a.aria }}" style="flex:1 1 0;min-width:0;cursor:pointer;font-family:'Karla',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;line-height:1.2;padding:12px 10px;border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .25s ease,border-color .25s ease,color .25s ease;background:{{ a.bg }};border:{{ a.border }};color:{{ a.fg }}">{{ a.label }}</button>
           </sc-for>
         </div>
-        <!-- The invitation: full-width, title + subtitle, teaches the offer -->
-        <sc-if test="{{ invite }}">
-        <button type="button" data-oe="invite" onClick="{{ invite.onClick }}" aria-label="{{ invite.aria }}" data-oe-invite-done="{{ invite.done }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;width:100%;cursor:pointer;padding:14px 16px;border-radius:12px;transition:background .25s ease,border-color .25s ease;background:{{ invite.bg }};border:{{ invite.border }}">
-          <span style="display:flex;flex-direction:column;gap:4px;min-width:0">
-            <span style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;line-height:1.1;color:var(--ink,#262321)">{{ invite.title }}</span>
-            <span style="font-family:'Karla',sans-serif;font-size:12px;line-height:1.45;color:var(--ink3,#8a7a5e)">{{ invite.sub }}</span>
-          </span>
-          <span aria-hidden="true" style="flex-shrink:0;font-family:'Karla',sans-serif;font-size:16px;color:var(--accent,#8a744e)">{{ invite.mark }}</span>
-        </button>
-        </sc-if>
       </div>
     </aside>
 

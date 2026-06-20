@@ -69,6 +69,11 @@ interface HostProps {
   onEnterReading?: (n: number) => void; // route to the full card reading page
   onOpenSystems?: () => void; // app Systems overlay / page
   onOpenGrid?: () => void; // app "your codes" grid / sign-in
+  /** Open the visitor's Hologenetic profile (shown once a birth moment is saved). */
+  onOpenProfile?: () => void;
+  /** The birth-date/time/place form, rendered inline when the invite expands.
+   *  Supplied by the page so it can own profile context + post-save behaviour. */
+  inviteForm?: React.ReactNode;
   /** Notify the app each time a card preview is opened (e.g. journal record). */
   onCardOpened?: (n: number) => void;
 }
@@ -84,6 +89,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     reading: null as EntryCard | null,
     themeOverride: null as string | null,
     invOverride: null as string | null,
+    inviteExpanded: false,
   };
 
   componentDidMount() {
@@ -178,27 +184,28 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
       { key: 'draw', label: 'Draw a card', emphasis: true, bg: fillBg, border: fillBorder, fg: fillFg, aria: 'Draw a random card', onClick: () => { const c = all[Math.floor(Math.random() * all.length)]; if (c) this.openReading(c); } },
     ];
 
-    // The invitation: title + subtitle, full width. Linked → quiet confirmation.
+    // The invitation. Until a birth moment is saved it's a centered button that
+    // expands an inline dropdown (the app's birth-date/time/place form, passed in
+    // as props.inviteForm). Once saved (hasCodes) it collapses to a quiet
+    // confirmation that points to the Hologenetic profile.
     const invite = this.props.hasCodes
       ? {
           done: true,
-          title: 'Your codes are lit',
-          sub: 'The cards connected to your birth moment glow wherever they appear.',
-          aria: 'Your codes are lit across the oracle',
-          mark: '✓',
-          bg: 'var(--glow,rgba(196,170,124,.16))',
-          border: '1px solid var(--accent,#8a744e)',
-          onClick: () => this.props.onOpenGrid?.(),
+          expanded: false,
+          form: null,
+          title: 'Your placement is illuminated',
+          sub: 'Throughout the sixty-four. See your full Hologenetic profile.',
+          aria: 'Your placement is illuminated throughout the sixty-four. Open your Hologenetic profile.',
+          onClick: () => this.props.onOpenProfile?.(),
         }
       : {
           done: false,
-          title: 'Which codes are yours?',
-          sub: 'Enter your details and discover which of these are connected to your birth moment — lit throughout the oracle.',
-          aria: 'Enter your birth moment to discover which codes are yours, lit throughout the oracle',
-          mark: '→',
-          bg: 'var(--bg2,#fff)',
-          border: '1px solid var(--line2,#d2c7b4)',
-          onClick: () => this.props.onOpenGrid?.(),
+          expanded: this.state.inviteExpanded,
+          form: this.props.inviteForm,
+          title: 'Enter your birth time',
+          sub: 'See which cards are most relevant to you, lit throughout the oracle.',
+          aria: 'Enter your birth time to see which cards are most relevant to you',
+          onClick: () => this.setState((s: any) => ({ inviteExpanded: !s.inviteExpanded })),
         };
 
     // tabs

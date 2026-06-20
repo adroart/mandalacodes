@@ -53,19 +53,19 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </p>
           <div style={{ maxWidth: "min(94vw,640px)", margin: "0 auto", display: "flex", flexDirection: "column", gap: "clamp(18px,2.4vw,28px)" }}>
             <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink,#262321)" }}>
-              An instrument of attunement within
+              An instrument of attunement
               <br />
             through the cycles of change.
             </p>
             <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink2,#524330)" }}>
-              Bringing clarity, compassion, and harmony
+              For clarity, compassion, and harmony
               <br />
             in our thoughts, words, and actions.
             </p>
             <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink,#262321)" }}>
               Beyond the head in through the heart
               <br />
-            devoted to the perfection this moment.
+            devoted to the perfection of this moment.
             </p>
           </div>
         </div>
@@ -115,8 +115,35 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "clamp(14px,2vw,24px) 18px 0", display: "flex", flexDirection: "column", gap: "clamp(12px,1.5vw,20px)" }}>
     <aside data-oe="rail" style={{ width: "100%", minWidth: "0" }}>
       <div data-oe="railrow" style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "480px", margin: "0 auto" }}>
-        {/* ── The energy band: today + this year, slim, side by side ── */}
-        <div data-oe="energyband" style={{ display: "flex", gap: "8px" }}>
+        {/* ── The invitation: title + subtitle, teaches the offer. Top of the
+              rail — it's the first thing to do. Click expands the birth-moment
+              dropdown (vals.invite.expanded); save collapses to confirmation. ── */}
+        {(vals.invite) ? (
+          <div data-oe="invitewrap" style={{ display: "flex", flexDirection: "column", gap: "0", background: vals.invite.done ? "var(--glow,rgba(196,170,124,.16))" : "var(--bg2,#fff)", border: vals.invite.done ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", borderRadius: "12px", overflow: "hidden" }}>
+            <button type="button" data-oe="invite" onClick={vals.invite.onClick} aria-label={vals.invite.aria} aria-expanded={vals.invite.expanded ? "true" : "false"} data-oe-invite-done={vals.invite.done ? "1" : undefined} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", textAlign: "center", width: "100%", cursor: "pointer", padding: "14px 16px", background: "transparent", border: "none", transition: "background .25s ease" }}>
+              <span style={{ display: "flex", flexDirection: "column", gap: "4px", minWidth: "0", alignItems: "center" }}>
+                <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "18px", fontWeight: "500", lineHeight: "1.1", color: "var(--ink,#262321)" }}>
+                {vals.invite.title}
+                </span>
+                <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "12px", lineHeight: "1.45", color: "var(--ink3,#8a7a5e)" }}>
+                {vals.invite.sub}
+                </span>
+              </span>
+              {vals.invite.done ? (
+                <span aria-hidden="true" style={{ flexShrink: "0", fontFamily: "'Karla',sans-serif", fontSize: "16px", color: "var(--accent,#8a744e)" }}>
+                ✓
+                </span>
+              ) : null}
+            </button>
+            {vals.invite.expanded ? (
+              <div data-oe="invitedrop" style={{ padding: "4px 16px 18px", borderTop: "1px solid var(--line2,#d2c7b4)" }}>
+                {vals.invite.form}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+        {/* ── The energy band: today + this year, slim, centered middle third. ── */}
+        <div data-oe="energyband" style={{ display: "flex", gap: "8px", width: "min(100%,320px)", margin: "0 auto" }}>
           {(vals.energy ?? []).map((e, eIdx) => (
             <React.Fragment key={eIdx}>
               <button type="button" onClick={e.onOpen} aria-label={e.aria} style={{ display: "flex", alignItems: "center", gap: "11px", textAlign: "left", flex: "1 1 0", minWidth: "0", background: "var(--bg2,#fff)", border: "1px solid var(--line,#e3ddd1)", borderRadius: "12px", padding: "11px 13px", cursor: "pointer", transition: "border-color .25s ease,background .25s ease" }}>
@@ -141,7 +168,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </React.Fragment>
           ))}
         </div>
-        {/* ── Two compact actions: the systems · draw a card ── */}
+        {/* ── Action: draw a card. Bottom of the rail. ── */}
         <div data-oe="actionrow" style={{ display: "flex", gap: "8px" }}>
           {(vals.actions ?? []).map((a, aIdx) => (
             <React.Fragment key={aIdx}>
@@ -151,22 +178,6 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </React.Fragment>
           ))}
         </div>
-        {/* ── The invitation: full-width, title + subtitle, teaches the offer ── */}
-        {(vals.invite) ? (
-          <button type="button" data-oe="invite" onClick={vals.invite.onClick} aria-label={vals.invite.aria} data-oe-invite-done={vals.invite.done ? "1" : undefined} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px", textAlign: "left", width: "100%", cursor: "pointer", padding: "14px 16px", borderRadius: "12px", transition: "background .25s ease,border-color .25s ease", background: vals.invite.done ? "var(--glow,rgba(196,170,124,.16))" : "var(--bg2,#fff)", border: vals.invite.done ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)" }}>
-            <span style={{ display: "flex", flexDirection: "column", gap: "4px", minWidth: "0" }}>
-              <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "18px", fontWeight: "500", lineHeight: "1.1", color: "var(--ink,#262321)" }}>
-              {vals.invite.title}
-              </span>
-              <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "12px", lineHeight: "1.45", color: "var(--ink3,#8a7a5e)" }}>
-              {vals.invite.sub}
-              </span>
-            </span>
-            <span aria-hidden="true" style={{ flexShrink: "0", fontFamily: "'Karla',sans-serif", fontSize: "16px", color: "var(--accent,#8a744e)" }}>
-            {vals.invite.done ? "✓" : "→"}
-            </span>
-          </button>
-        ) : null}
       </div>
     </aside>
     <main style={{ width: "100%", minWidth: "0" }}>

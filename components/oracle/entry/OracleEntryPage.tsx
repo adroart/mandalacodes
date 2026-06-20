@@ -21,10 +21,10 @@ import {
 } from '../../../lib/oracle/elements';
 import { useJournal } from '../../../lib/oracle/journal';
 import { useProfile } from '../../../lib/profile/context';
-import { useAccount } from '../../../lib/account/useAccount';
 import { POSITION_KEYS } from '../../../data/profilePositions';
 import { LAUNCH_FLAGS } from '../../../launchFlags';
 import { OracleEntryHost, type EntryCard, type EntryAdapter } from './generated/OracleEntry.host';
+import ProfileForm from '../ProfileForm';
 import './OracleEntry.scoped.css';
 
 /* ── deterministic Card-of-Day / Year (same hash as the previous index) ─────── */
@@ -85,7 +85,6 @@ const OracleEntryPage: React.FC = () => {
   const { isDarkMode } = useDarkMode();
   const { record: recordJournal } = useJournal();
   const { profile } = useProfile();
-  const account = useAccount();
   const [systemsOpen, setSystemsOpen] = useState(false);
   const [gridOpen, setGridOpen] = useState(false);
 
@@ -93,22 +92,21 @@ const OracleEntryPage: React.FC = () => {
      from the 11 hologenetic positions of their saved profile. Empty until a birth
      moment is entered. Drives both the rail's "Your codes" state and the deck glow.
 
-     The codes are ACCOUNT-BOUND: the birth moment is stored on the account, so a
-     signed-out visitor must see no data. When accounts are available we require
-     a live session before surfacing any codes — otherwise a stale local profile
-     would keep the deck "lit" after sign-out. When accounts aren't configured
-     (guest-only build), fall back to the local profile so the guest isn't stranded.
+     The codes light from whatever profile is present. A visitor can enter their
+     birth moment right here in the rail (no account required) and their codes
+     illuminate immediately from the local profile; the confirmation then invites
+     them to keep it as an account. The profile context clears the local profile
+     on sign-out, so a signed-out visitor with no profile sees no data.
      Gated by the same launch flag as YourPositionCallout. */
-  const accountGateOk = !account.available || account.isSignedIn;
   const yourCodes = useMemo(() => {
-    if (!LAUNCH_FLAGS.hologeneticProfile || !profile || !accountGateOk) return new Set<number>();
+    if (!LAUNCH_FLAGS.hologeneticProfile || !profile) return new Set<number>();
     const set = new Set<number>();
     for (const key of POSITION_KEYS) {
       const gl = profile.computed[key];
       if (gl?.gate) set.add(gl.gate);
     }
     return set;
-  }, [profile, accountGateOk]);
+  }, [profile]);
   const hasCodes = yourCodes.size > 0;
 
   /* Build the adapter once. All 64 real cards, real images, real element model. */
@@ -184,6 +182,13 @@ const OracleEntryPage: React.FC = () => {
           // across the chart. (Was wrongly routing the linked state to /atlas.)
           setGridOpen(true);
         }}
+        // Once a birth moment is saved, the invite collapses to its illuminated
+        // confirmation and points here — the full Hologenetic profile.
+        onOpenProfile={() => navigate('/profile')}
+        // The inline birth-moment dropdown: the real date/time/place form. Saving
+        // lights the codes immediately (local profile); the rail then flips to the
+        // illuminated confirmation on the next render via hasCodes.
+        inviteForm={<ProfileForm initial={profile?.inputs ?? null} />}
       />
 
       {/* Systems overlay (kept from the previous index — the rail links target it) */}
