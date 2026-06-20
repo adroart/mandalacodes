@@ -10,25 +10,53 @@
 
 const TAG = 'dc-import';
 
+const DEFAULT_LINES: boolean[] = [true, true, true, false, false, false];
+
 class DcImportHexagram extends HTMLElement {
-  private _lines: boolean[] = [true, true, true, false, false, false];
+  private _lines: boolean[] | null = null;
 
   static get observedAttributes() {
-    return ['name', 'color'];
+    // `lines` MUST be observed: React renders <dc-import lines={boolean[]}> by
+    // SERIALIZING the array to an attribute string ("true,false,…"), not by
+    // assigning a JS property — so without observing the attribute, every tile
+    // kept the default glyph. We parse the CSV in render().
+    return ['name', 'color', 'lines'];
   }
 
-  // React assigns array/object props to the element as JS properties.
+  // React may also assign array props directly as a JS property in some paths;
+  // honor that too, preferring it over the attribute when present.
   set lines(v: boolean[]) {
     this._lines = Array.isArray(v) ? v : this._lines;
     this.render();
   }
   get lines() {
-    return this._lines;
+    return this._lines ?? this._linesFromAttr();
+  }
+
+  /* Parse the `lines` attribute ("true,false,true,…") into a boolean[]. */
+  private _linesFromAttr(): boolean[] {
+    const raw = this.getAttribute('lines');
+    if (!raw) return DEFAULT_LINES;
+    const parsed = raw.split(',').map((s) => s.trim() === 'true');
+    return parsed.length === 6 ? parsed : DEFAULT_LINES;
   }
 
   connectedCallback() {
+    // Upgrade-safe: if React assigned the `lines` property BEFORE this custom
+    // element was defined/upgraded, the value landed as a plain own-property that
+    // now shadows the class accessor — so the setter never ran and every tile
+    // kept the default glyph. Lift that own-property back through the accessor.
+    this._upgradeProperty('lines');
     this.style.display = this.style.display || 'block';
     this.render();
+  }
+
+  private _upgradeProperty(prop: 'lines') {
+    if (Object.prototype.hasOwnProperty.call(this, prop)) {
+      const value = (this as any)[prop];
+      delete (this as any)[prop];
+      (this as any)[prop] = value;
+    }
   }
 
   attributeChangedCallback() {
@@ -37,7 +65,7 @@ class DcImportHexagram extends HTMLElement {
 
   private render() {
     const color = this.getAttribute('color') || 'var(--ink, #262321)';
-    const lines = this._lines || [true, true, true, false, false, false];
+    const lines = this._lines ?? this._linesFromAttr();
 
     // Geometry copied verbatim from Hexagram.dc.html renderVals().
     const LH = 9.6,

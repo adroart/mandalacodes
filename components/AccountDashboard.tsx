@@ -32,6 +32,22 @@ const AccountDashboard: React.FC = () => {
         </Link>
 
         <Link
+          to="/atlas/edit"
+          className="block p-6 border border-wood-200 rounded hover:border-bronze-500/60 transition-colors"
+        >
+          <div className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
+            Your pieces
+          </div>
+          <div className="font-display text-xl text-wood-900 mb-1">
+            The artwork you hold
+          </div>
+          <p className="font-serif text-sm text-wood-700">
+            Record where your piece rests, set your intention, and tend its
+            living book.
+          </p>
+        </Link>
+
+        <Link
           to="/account/collections"
           className="block p-6 border border-wood-200 rounded hover:border-bronze-500/60 transition-colors"
         >

@@ -114,57 +114,59 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   </header>
   <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "clamp(14px,2vw,24px) 18px 0", display: "flex", flexDirection: "column", gap: "clamp(12px,1.5vw,20px)" }}>
     <aside data-oe="rail" style={{ width: "100%", minWidth: "0" }}>
-      <div data-oe="railrow" style={{ display: "flex", flexWrap: "wrap", gap: "clamp(10px,1.4vw,16px)", alignItems: "stretch" }}>
-        {/* ── Group 1 · The moment (Today + This year, one cluster) ── */}
-        <div data-oe="momentgroup" style={{ display: "flex", flex: "1 1 280px", minWidth: "0", border: "1px solid var(--line,#e3ddd1)", background: "var(--bg2,#fff)", borderRadius: "14px", overflow: "hidden" }}>
-          {(vals.feats ?? []).map((f, fIdx) => (
-            <React.Fragment key={fIdx}>
-              <button type="button" onClick={f.onClick} aria-label={f.aria} style={{ display: "flex", alignItems: "center", gap: "11px", textAlign: "left", background: "transparent", border: "none", borderRight: fIdx === 0 ? "1px solid var(--line,#e3ddd1)" : "none", flex: "1 1 0", padding: "16px 14px", cursor: "pointer", minWidth: "0" }}>
-                <span style={{ flexShrink: "0", width: "26px", height: "30px" }}>
-                  <dc-import name="Hexagram" lines={f.lines} color="var(--ink3,#8a7a5e)" hintSize="26px,30px" style={{ width: "26px", height: "30px" }}>
+      <div data-oe="railrow" style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "480px", margin: "0 auto" }}>
+        {/* ── The energy band: today + this year, slim, side by side ── */}
+        <div data-oe="energyband" style={{ display: "flex", gap: "8px" }}>
+          {(vals.energy ?? []).map((e, eIdx) => (
+            <React.Fragment key={eIdx}>
+              <button type="button" onClick={e.onOpen} aria-label={e.aria} style={{ display: "flex", alignItems: "center", gap: "11px", textAlign: "left", flex: "1 1 0", minWidth: "0", background: "var(--bg2,#fff)", border: "1px solid var(--line,#e3ddd1)", borderRadius: "12px", padding: "11px 13px", cursor: "pointer", transition: "border-color .25s ease,background .25s ease" }}>
+                <span style={{ flexShrink: "0", width: "26px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <dc-import name="Hexagram" lines={e.lines} color="var(--accent,#8a744e)" hintSize="26px,30px" style={{ width: "100%", height: "100%" }}>
                   </dc-import>
                 </span>
-                <span style={{ display: "flex", flexDirection: "column", gap: "5px", minWidth: "0" }}>
-                  <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "9px", fontWeight: "700", letterSpacing: ".16em", textTransform: "uppercase", color: "var(--faint,#a89070)", lineHeight: "1", whiteSpace: "nowrap" }}>
-                  {f.eyebrow}
+                <span style={{ display: "flex", flexDirection: "column", gap: "4px", minWidth: "0" }}>
+                  <span style={{ display: "flex", alignItems: "baseline", gap: "6px", minWidth: "0" }}>
+                    <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "8.5px", fontWeight: "700", letterSpacing: ".16em", textTransform: "uppercase", color: "var(--faint,#a89070)", lineHeight: "1", whiteSpace: "nowrap" }}>
+                    {e.eyebrow}
+                    </span>
+                    <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "8.5px", fontWeight: "700", letterSpacing: ".06em", color: "var(--accent,#8a744e)", lineHeight: "1", whiteSpace: "nowrap" }}>
+                    {e.cardNum}
+                    </span>
                   </span>
-                  <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--accent,#8a744e)", lineHeight: "1" }}>
-                  {f.date}
+                  <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "15px", fontWeight: "500", lineHeight: "1", color: "var(--ink,#262321)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {e.cardName}
                   </span>
                 </span>
               </button>
             </React.Fragment>
           ))}
         </div>
-        {/* ── Group 2 · The doors (Systems over Your codes, stacked) ── */}
-        <div data-oe="doorgroup" style={{ display: "flex", flexDirection: "column", flex: "1 1 280px", minWidth: "0", border: "1px solid var(--line,#e3ddd1)", background: "var(--bg2,#fff)", borderRadius: "14px", overflow: "hidden" }}>
-          <button type="button" onClick={vals.openSystems} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "10px", textAlign: "left", background: "transparent", border: "none", borderBottom: "1px solid var(--line,#e3ddd1)", padding: "13px 14px", cursor: "pointer", minWidth: "0" }}>
-            <span style={{ display: "flex", flexDirection: "column", gap: "3px", minWidth: "0" }}>
-              <span style={{ fontFamily: "'Karla',sans-serif", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", fontSize: "10px", color: "var(--ink,#262321)", lineHeight: "1.2" }}>
-              {vals.systemsTile?.eyebrow}
-              </span>
-              <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "12.5px", color: "var(--ink2,#524330)", lineHeight: "1.4" }}>
-              {vals.systemsTile?.body}
-              </span>
-            </span>
-            <span aria-hidden="true" style={{ color: "var(--accent,#8a744e)", flexShrink: "0", paddingTop: "2px" }}>
-            →
-            </span>
-          </button>
-          <button type="button" onClick={vals.openGrid} data-oe-done={vals.codesTile?.done ? "1" : undefined} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "10px", textAlign: "left", background: vals.codesTile?.done ? "var(--glow,rgba(196,170,124,.16))" : "transparent", border: "none", padding: "13px 14px", cursor: "pointer", minWidth: "0" }}>
-            <span style={{ display: "flex", flexDirection: "column", gap: "3px", minWidth: "0" }}>
-              <span style={{ fontFamily: "'Karla',sans-serif", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", fontSize: "10px", color: vals.codesTile?.done ? "var(--accent,#8a744e)" : "var(--ink,#262321)", lineHeight: "1.2" }}>
-              {vals.codesTile?.done ? "✓ " : ""}{vals.codesTile?.eyebrow}
-              </span>
-              <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "12.5px", color: "var(--ink2,#524330)", lineHeight: "1.4" }}>
-              {vals.codesTile?.body}
-              </span>
-            </span>
-            <span aria-hidden="true" style={{ color: "var(--accent,#8a744e)", flexShrink: "0", paddingTop: "2px" }}>
-            →
-            </span>
-          </button>
+        {/* ── Two compact actions: the systems · draw a card ── */}
+        <div data-oe="actionrow" style={{ display: "flex", gap: "8px" }}>
+          {(vals.actions ?? []).map((a, aIdx) => (
+            <React.Fragment key={aIdx}>
+              <button type="button" onClick={a.onClick} aria-label={a.aria} style={{ flex: "1 1 0", minWidth: "0", cursor: "pointer", fontFamily: "'Karla',sans-serif", fontSize: "10.5px", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", lineHeight: "1.2", padding: "12px 10px", borderRadius: "12px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "background .25s ease,border-color .25s ease,color .25s ease", background: a.emphasis ? "var(--accent,#8a744e)" : "transparent", border: a.emphasis ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", color: a.emphasis ? "var(--onAccent,#f7f5f1)" : "var(--ink2,#524330)" }}>
+              {a.label}
+              </button>
+            </React.Fragment>
+          ))}
         </div>
+        {/* ── The invitation: full-width, title + subtitle, teaches the offer ── */}
+        {(vals.invite) ? (
+          <button type="button" data-oe="invite" onClick={vals.invite.onClick} aria-label={vals.invite.aria} data-oe-invite-done={vals.invite.done ? "1" : undefined} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px", textAlign: "left", width: "100%", cursor: "pointer", padding: "14px 16px", borderRadius: "12px", transition: "background .25s ease,border-color .25s ease", background: vals.invite.done ? "var(--glow,rgba(196,170,124,.16))" : "var(--bg2,#fff)", border: vals.invite.done ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)" }}>
+            <span style={{ display: "flex", flexDirection: "column", gap: "4px", minWidth: "0" }}>
+              <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "18px", fontWeight: "500", lineHeight: "1.1", color: "var(--ink,#262321)" }}>
+              {vals.invite.title}
+              </span>
+              <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "12px", lineHeight: "1.45", color: "var(--ink3,#8a7a5e)" }}>
+              {vals.invite.sub}
+              </span>
+            </span>
+            <span aria-hidden="true" style={{ flexShrink: "0", fontFamily: "'Karla',sans-serif", fontSize: "16px", color: "var(--accent,#8a744e)" }}>
+            {vals.invite.done ? "✓" : "→"}
+            </span>
+          </button>
+        ) : null}
       </div>
     </aside>
     <main style={{ width: "100%", minWidth: "0" }}>
@@ -173,21 +175,19 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <div data-oe="ichgrid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "clamp(10px,1.6vw,16px) clamp(8px,1.4vw,14px)", padding: "18px 0 8px" }}>
             {(vals.gridCards ?? []).map((c, cIdx) => (
               <React.Fragment key={cIdx}>
-                <div data-oe-yours={c.yours ? "1" : undefined} style={{ display: "flex", flexDirection: "column" }}>
+                <div data-oe-yours={c.yours ? "1" : undefined} data-oe-num={c.cardNum} style={{ display: "flex", flexDirection: "column" }}>
                   <button type="button" onClick={c.onTile} aria-label={c.yours ? c.aria + " — one of your codes" : c.aria} style={{ all: "unset", cursor: "pointer", display: "block", perspective: "760px" }}>
                     <span style={{ position: "relative", display: "block", width: "100%", aspectRatio: "1/1", transformStyle: "preserve-3d", transition: "transform .7s cubic-bezier(.2,.85,.3,1),filter .3s ease", transform: `${c.flipTransform ?? ""}` }}>
-                      <span style={{ position: "absolute", inset: "0", backfaceVisibility: "hidden", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--line,#e3ddd1)", borderRadius: "11px", background: "var(--surface,#faf9f6)" }}>
+                      <span style={{ position: "absolute", inset: "0", backfaceVisibility: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "clamp(5px,0.7vw,9px)" }}>
                         <span style={{ width: "48%", color: "var(--ink3,#8a7a5e)" }}>
                           <dc-import name="Hexagram" lines={c.lines} color="var(--ink3,#8a7a5e)" hintSize="100%,100%" style={{ width: "100%", height: "100%" }}>
                           </dc-import>
                         </span>
-                        <span data-oe="cardnum" style={{ position: "absolute", bottom: "15%", left: "0", right: "0", textAlign: "center", fontFamily: "'Karla',sans-serif", fontWeight: "700", letterSpacing: ".06em", color: "var(--ink3,#8a7a5e)", lineHeight: "1" }}>
+                        <span data-oe="cardnum" style={{ textAlign: "center", fontFamily: "'Karla',sans-serif", fontWeight: "700", letterSpacing: ".06em", color: "var(--ink3,#8a7a5e)", lineHeight: "1" }}>
                         {c.cardNum}
                         </span>
                       </span>
-                      <span style={{ position: "absolute", inset: "0", backfaceVisibility: "hidden", transform: "rotateY(180deg)", borderRadius: "11px", overflow: "hidden", boxShadow: "0 6px 18px var(--glow,rgba(196,170,124,.2))" }}>
-                        <span style={{ position: "absolute", inset: "0", background: `${c.grad ?? ""}` }}>
-                        </span>
+                      <span style={{ position: "absolute", inset: "0", backfaceVisibility: "hidden", transform: "rotateY(180deg)", overflow: "hidden" }}>
                         <img src={c.art} alt={c.name} loading="lazy" decoding="async" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", filter: "saturate(1.08) brightness(1.03)" }} />
                       </span>
                     </span>
@@ -204,21 +204,6 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                           <button type="button" onClick={c.onRead} style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--accent,#8a744e)", font: "inherit" }}>
                           Read
                           </button>
-                        </span>
-                      </>
-                    ) : null}
-                    {(c.closed) ? (
-                      <>
-                        <span data-oe="trigline" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: ".35em", maxWidth: "100%", overflow: "hidden" }}>
-                          <span data-oe="trigtext" style={{ fontFamily: "'Karla',sans-serif", fontWeight: "600", letterSpacing: ".04em", color: "var(--faint,#a89070)", lineHeight: "1.25", whiteSpace: "nowrap", minWidth: "0" }}>
-                          {c.upperTrigram}
-                          </span>
-                          <span data-oe="trigsep" aria-hidden="true" style={{ flexShrink: "0", color: "var(--faint,#a89070)", lineHeight: "1" }}>
-                          ·
-                          </span>
-                          <span data-oe="trigtext" style={{ fontFamily: "'Karla',sans-serif", fontWeight: "600", letterSpacing: ".04em", color: "var(--faint,#a89070)", lineHeight: "1.25", whiteSpace: "nowrap", minWidth: "0" }}>
-                          {c.lowerTrigram}
-                          </span>
                         </span>
                       </>
                     ) : null}

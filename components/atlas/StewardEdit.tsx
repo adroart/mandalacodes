@@ -9,6 +9,7 @@ import ConsentRings from './ConsentRings';
 import type { ConsentChoice } from './ConsentRings';
 import LegacyBook from './LegacyBook';
 import StewardRequests from './StewardRequests';
+import AccountLayout from '../account/AccountLayout';
 
 /**
  * Steward edit page. Rendered at `/atlas/edit`.
@@ -354,18 +355,18 @@ const StewardEdit: React.FC = () => {
 
   if (loading) {
     return (
-      <section className="min-h-screen bg-paper-50 flex items-center justify-center">
+      <AccountLayout title="Your pieces">
         <p className="font-serif italic text-base text-stone-600">
           loading your piece
         </p>
-      </section>
+      </AccountLayout>
     );
   }
 
   if (loadError || entries.length === 0) {
     return (
-      <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6">
-        <div className="w-full max-w-md text-center space-y-4">
+      <AccountLayout title="Your pieces">
+        <div className="max-w-md space-y-4">
           <p className="font-serif italic text-base text-stone-600">
             {loadError ?? 'Could not load your piece.'}
           </p>
@@ -376,7 +377,7 @@ const StewardEdit: React.FC = () => {
             Return to claim
           </button>
         </div>
-      </section>
+      </AccountLayout>
     );
   }
 
@@ -384,30 +385,23 @@ const StewardEdit: React.FC = () => {
     const pending = entries.find(e => !e.steward.consent) ?? entries[0];
     const title = FULL_ARCHIVE.find(a => a.id === pending.steward.pieceId)?.title;
     return (
-      <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6 py-16">
+      <AccountLayout title="Your pieces">
         <ConsentRings
           pieceTitle={title}
           submitting={consentSubmitting}
           error={consentError}
           onSubmit={handleConsentSubmit}
         />
-      </section>
+      </AccountLayout>
     );
   }
 
   return (
-    <section className="min-h-screen bg-paper-50 px-6 py-16 print:bg-white print:py-0">
-      <div className="w-full max-w-xl mx-auto">
+    <AccountLayout title="Your pieces">
+      <div className="w-full max-w-xl">
         {/* Everything interactive is print-hidden; the LegacyBook below
             carries its own print-only rendering of the piece's book. */}
         <div className="print:hidden">
-        <h1
-          className="font-display text-3xl text-wood-900 font-medium text-center mb-6"
-          style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}
-        >
-          {entries.length > 1 ? 'Your pieces' : 'Your piece'}
-        </h1>
-
         {/* Piece picker — only for stewards of more than one piece. The
             form below always edits the selected piece. */}
         {entries.length > 1 && (
@@ -654,7 +648,7 @@ const StewardEdit: React.FC = () => {
           </button>
         </div>
       </div>
-    </section>
+    </AccountLayout>
   );
 };
 

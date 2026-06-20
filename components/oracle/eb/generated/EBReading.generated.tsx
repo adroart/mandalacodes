@@ -156,7 +156,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       </div>
     </div>
   </section>
-  <nav aria-label="Reading by system" style={{ position: "sticky", top: "40px", zIndex: "80", background: "color-mix(in oklab,var(--l-bg) 92%,transparent)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", borderTop: "1px solid var(--l-rule)", borderBottom: "1px solid var(--l-rule)" }}>
+  <nav aria-label="Reading by system" style={{ position: "sticky", top: "var(--nav-height, 56px)", zIndex: "80", background: "color-mix(in oklab,var(--l-bg) 92%,transparent)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", borderTop: "1px solid var(--l-rule)", borderBottom: "1px solid var(--l-rule)" }}>
     <div ref={vals.registerNavScroll} className="ul-stage" style={{ maxWidth: "1180px", margin: "0 auto", overflowX: "auto", textAlign: "center", WebkitOverflowScrolling: "touch" }}>
       <div style={{ display: "inline-flex", minWidth: "100%", justifyContent: "center", position: "relative", verticalAlign: "top" }}>
         <span ref={vals.registerNavInd} aria-hidden="true" style={{ position: "absolute", left: "0", top: "0", height: "2px", width: "0", background: "var(--accent)", transition: "transform .42s cubic-bezier(.16,1,.3,1),width .42s cubic-bezier(.16,1,.3,1),opacity .3s", opacity: "0", pointerEvents: "none" }}>
@@ -230,6 +230,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </React.Fragment>
           ))}
         </div>
+        {(vals.invocation && String(vals.invocation).trim()) ? (
         <div style={{ marginTop: "clamp(48px,6vw,72px)" }}>
           <h3 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(26px,3.2vw,32px)", color: "var(--accent)", textAlign: "center", margin: "0 0 28px" }}>
           Invocation
@@ -240,6 +241,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </p>
           </div>
         </div>
+        ) : null}
         <div style={{ marginTop: "clamp(44px,6vw,68px)", display: "flex", justifyContent: "center" }}>
           <button onClick={vals.goIching} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ display: "flex", alignItems: "center", gap: "26px", minWidth: "240px", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", padding: "16px 24px", textAlign: "left", transition: "border-color .25s" }}>
             <span style={{ flex: "1" }}>
@@ -352,21 +354,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Trigram
             </span>
           </button>
-          <div style={{ padding: "26px clamp(22px,5vw,76px) 8px", display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap" }}>
-            <div ref={vals.registerTrigram} aria-hidden="true" style={{ display: "flex", flexDirection: "column", gap: "7px", flexShrink: "0", paddingTop: "3px" }}>
-              <span data-line="6" style={{ display: "block", width: "56px", height: "6px", background: "var(--accent-d)", transformOrigin: "left center", transition: "opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1)" }}>
-              </span>
-              <span data-line="5" style={{ display: "block", width: "56px", height: "6px", background: "var(--accent-d)", transformOrigin: "left center", transition: "opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1)" }}>
-              </span>
-              <span data-line="4" style={{ display: "block", width: "56px", height: "6px", background: "var(--accent-d)", transformOrigin: "left center", transition: "opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1)" }}>
-              </span>
-              <span data-line="3" style={{ display: "block", width: "56px", height: "6px", background: "var(--accent-d)", transformOrigin: "left center", transition: "opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1)" }}>
-              </span>
-              <span data-line="2" style={{ display: "block", width: "56px", height: "6px", background: "var(--accent-d)", transformOrigin: "left center", transition: "opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1)" }}>
-              </span>
-              <span data-line="1" style={{ display: "block", width: "56px", height: "6px", background: "var(--accent-d)", transformOrigin: "left center", transition: "opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1)" }}>
-              </span>
-            </div>
+          <div style={{ padding: "26px 0 8px", display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap" }}>
             <div style={{ flex: "1", minWidth: "240px" }}>
               <p ref={vals.registerIvLabel} style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 12px" }}>
               Combination

@@ -89,6 +89,21 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [account]);
 
+  // Sign-out clears the local snapshot. The birth moment lives ON the account,
+  // so a signed-out visitor must hold no data — otherwise the stale localStorage
+  // copy keeps the deck "lit" after logout. Only acts when accounts are actually
+  // available (a guest-only build has no session concept and keeps its local copy).
+  useEffect(() => {
+    if (!account.available || !account.isLoaded) return;
+    if (!account.isSignedIn) {
+      lastSyncedFor.current = null;
+      if (loadProfile()) {
+        clearProfile();
+        setProfile(null);
+      }
+    }
+  }, [account.available, account.isLoaded, account.isSignedIn]);
+
   const save = useCallback(
     async (inputs: ProfileInputs) => {
       const utcBirth = placeToUtc(inputs.date, inputs.time, inputs.place.tzId);

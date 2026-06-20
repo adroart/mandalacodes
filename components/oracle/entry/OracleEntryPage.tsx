@@ -21,6 +21,7 @@ import {
 } from '../../../lib/oracle/elements';
 import { useJournal } from '../../../lib/oracle/journal';
 import { useProfile } from '../../../lib/profile/context';
+import { useAccount } from '../../../lib/account/useAccount';
 import { POSITION_KEYS } from '../../../data/profilePositions';
 import { LAUNCH_FLAGS } from '../../../launchFlags';
 import { OracleEntryHost, type EntryCard, type EntryAdapter } from './generated/OracleEntry.host';
@@ -84,22 +85,30 @@ const OracleEntryPage: React.FC = () => {
   const { isDarkMode } = useDarkMode();
   const { record: recordJournal } = useJournal();
   const { profile } = useProfile();
+  const account = useAccount();
   const [systemsOpen, setSystemsOpen] = useState(false);
   const [gridOpen, setGridOpen] = useState(false);
 
   /* The visitor's own codes: the set of card numbers (gate == card number) drawn
      from the 11 hologenetic positions of their saved profile. Empty until a birth
      moment is entered. Drives both the rail's "Your codes" state and the deck glow.
+
+     The codes are ACCOUNT-BOUND: the birth moment is stored on the account, so a
+     signed-out visitor must see no data. When accounts are available we require
+     a live session before surfacing any codes — otherwise a stale local profile
+     would keep the deck "lit" after sign-out. When accounts aren't configured
+     (guest-only build), fall back to the local profile so the guest isn't stranded.
      Gated by the same launch flag as YourPositionCallout. */
+  const accountGateOk = !account.available || account.isSignedIn;
   const yourCodes = useMemo(() => {
-    if (!LAUNCH_FLAGS.hologeneticProfile || !profile) return new Set<number>();
+    if (!LAUNCH_FLAGS.hologeneticProfile || !profile || !accountGateOk) return new Set<number>();
     const set = new Set<number>();
     for (const key of POSITION_KEYS) {
       const gl = profile.computed[key];
       if (gl?.gate) set.add(gl.gate);
     }
     return set;
-  }, [profile]);
+  }, [profile, accountGateOk]);
   const hasCodes = yourCodes.size > 0;
 
   /* Build the adapter once. All 64 real cards, real images, real element model. */
@@ -170,10 +179,10 @@ const OracleEntryPage: React.FC = () => {
         onCardOpened={onCardOpened}
         onOpenSystems={() => setSystemsOpen(true)}
         onOpenGrid={() => {
-          // Linked → go to the Atlas (their codes placed on the globe).
-          // Not linked yet → open the sign-in / birth-moment overlay.
-          if (hasCodes) navigate('/atlas');
-          else setGridOpen(true);
+          // Always open the sign-in / birth-moment overlay: this is where you
+          // enter your birthday and sign in so all four of your codes light up
+          // across the chart. (Was wrongly routing the linked state to /atlas.)
+          setGridOpen(true);
         }}
       />
 

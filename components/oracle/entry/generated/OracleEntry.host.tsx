@@ -135,10 +135,71 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     const now = new Date();
     const heroLines = today ? lines(today) : [true, true, true, true, true, true];
 
-    const feats = [
-      today && { eyebrow: 'Today', date: now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), lines: lines(today), rightBorder: '1px solid var(--line,#e3ddd1)', aria: 'See today’s card', onClick: () => this.openReading(today) },
-      year && { eyebrow: 'This year', date: String(now.getFullYear()), lines: lines(year), rightBorder: 'none', aria: 'See this year’s card', onClick: () => this.openReading(year) },
+    // ── The energy band: today + this year shown together, slim ──
+    // Two compact chips, each a hexagram glyph + a tight TODAY/THIS YEAR · №.
+    // Whole chip opens that card's reading. No slab, no serif, no sentence —
+    // a ledger line that reads in one glance and barely costs vertical room.
+    const energy = [
+      today && {
+        key: 'today',
+        eyebrow: 'Today',
+        sub: now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        lines: lines(today),
+        cardNum: String(today.n),
+        cardName: today.name,
+        aria: 'Open today’s card, ' + today.name,
+        onOpen: () => this.openReading(today),
+      },
+      year && {
+        key: 'year',
+        eyebrow: 'This year',
+        sub: String(now.getFullYear()),
+        lines: lines(year),
+        cardNum: String(year.n),
+        cardName: year.name,
+        aria: 'Open this year’s card, ' + year.name,
+        onOpen: () => this.openReading(year),
+      },
     ].filter(Boolean) as any[];
+
+    // ── The three actions, as real buttons (the page's existing actions,
+    //    pulled up into one slim row above the deck): learn / draw / birth. ──
+    // Two compact utility buttons stay as a pair; "enter your birthday" graduates
+    // to its own full-width invitation bar (below) because it has to TEACH the
+    // offer, not just label it — a first-timer doesn't know what "your codes" are.
+    const ghostBg = 'transparent';
+    const ghostBorder = '1px solid var(--line2,#d2c7b4)';
+    const ghostFg = 'var(--ink2,#524330)';
+    const fillBg = 'var(--accent,#8a744e)';
+    const fillBorder = '1px solid var(--accent,#8a744e)';
+    const fillFg = 'var(--onAccent,#f7f5f1)';
+    const actions = [
+      { key: 'systems', label: 'The systems', emphasis: false, bg: ghostBg, border: ghostBorder, fg: ghostFg, aria: 'Open the systems overlay', onClick: () => this.props.onOpenSystems?.() },
+      { key: 'draw', label: 'Draw a card', emphasis: true, bg: fillBg, border: fillBorder, fg: fillFg, aria: 'Draw a random card', onClick: () => { const c = all[Math.floor(Math.random() * all.length)]; if (c) this.openReading(c); } },
+    ];
+
+    // The invitation: title + subtitle, full width. Linked → quiet confirmation.
+    const invite = this.props.hasCodes
+      ? {
+          done: true,
+          title: 'Your codes are lit',
+          sub: 'The cards connected to your birth moment glow wherever they appear.',
+          aria: 'Your codes are lit across the oracle',
+          mark: '✓',
+          bg: 'var(--glow,rgba(196,170,124,.16))',
+          border: '1px solid var(--accent,#8a744e)',
+          onClick: () => this.props.onOpenGrid?.(),
+        }
+      : {
+          done: false,
+          title: 'Which codes are yours?',
+          sub: 'Enter your details and discover which of these are connected to your birth moment — lit throughout the oracle.',
+          aria: 'Enter your birth moment to discover which codes are yours, lit throughout the oracle',
+          mark: '→',
+          bg: 'var(--bg2,#fff)',
+          border: '1px solid var(--line2,#d2c7b4)',
+          onClick: () => this.props.onOpenGrid?.(),
+        };
 
     // tabs
     const tabDefs = [
@@ -219,7 +280,9 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
       heroLines,
       ringTicks,
       navLinks,
-      feats,
+      energy,
+      actions,
+      invite,
       // Right-hand door tiles, stacked. "Learn" opens the Systems overlay
       // (what the 64 are, the four systems they speak). "Your codes" switches
       // on whether a birth moment has been entered.

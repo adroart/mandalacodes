@@ -29,9 +29,11 @@
   /* 4-wide: larger text to match bigger tiles */
   [data-oe="trigtext"]{font-size:clamp(11px,1.8vw,17px)}
   [data-oe="trigsep"]{font-size:clamp(11px,1.8vw,17px)}
-  [data-oe="cardnum"]{font-size:clamp(11px,1.6vw,16px)}
+  [data-oe="cardnum"]{font-size:clamp(13px,1.94vw,20px)}
   @media(min-width:980px){
     [data-oe="trigtext"]{font-size:clamp(9px,1.1vw,13px) !important}
     [data-oe="trigsep"]{font-size:clamp(9px,1.1vw,13px) !important}
-    [data-oe="cardnum"]{font-size:clamp(10px,1.2vw,14px) !important}
+    [data-oe="cardnum"]{font-size:clamp(12px,1.45vw,17px) !important}
   }
+  /* Per-card image crop: card 22 has a lingering white edge — enlarge 2px each side. */
+  [data-oe="ichgrid"] [data-oe-num="22"] img{inset:auto !important;top:-2px !important;left:-2px !important;right:auto !important;bottom:auto !important;width:calc(100% + 4px) !important;height:calc(100% + 4px) !important;object-position:center !important}

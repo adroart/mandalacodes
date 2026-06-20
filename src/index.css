@@ -767,6 +767,17 @@ html, body {
   overflow-x: hidden;
 }
 
+/* The card reading (Earth's Breath) pins its top bar and the system sub-nav
+   with position: sticky. A non-visible overflow on html/body turns the
+   document root into the sticky scroll-context and the sub-nav scrolls away
+   instead of nesting under the top bar. That page contains its own horizontal
+   overflow inside the reading stage, so the root clip isn't needed here —
+   restore visible overflow so sticky resolves against the viewport. */
+html.oracle-card-page,
+html.oracle-card-page body {
+  overflow-x: visible;
+}
+
 /* Varied reveal animations */
 .reveal-block {
   opacity: 0;

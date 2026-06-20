@@ -42,12 +42,15 @@
   /* 4-wide: larger text to match bigger tiles */
   [data-oe="trigtext"]{font-size:clamp(11px,1.8vw,17px)}
   [data-oe="trigsep"]{font-size:clamp(11px,1.8vw,17px)}
-  [data-oe="cardnum"]{font-size:clamp(11px,1.6vw,16px)}
+  [data-oe="cardnum"]{font-size:clamp(13px,1.94vw,20px)}
   @media(min-width:980px){
     [data-oe="trigtext"]{font-size:clamp(9px,1.1vw,13px) !important}
     [data-oe="trigsep"]{font-size:clamp(9px,1.1vw,13px) !important}
-    [data-oe="cardnum"]{font-size:clamp(10px,1.2vw,14px) !important}
+    [data-oe="cardnum"]{font-size:clamp(12px,1.45vw,17px) !important}
   }
+  /* Per-card image crop: card 22 has a lingering white edge — enlarge 2px each
+     side so the parent's overflow:hidden clips the border away. */
+  [data-oe="ichgrid"] [data-oe-num="22"] img{inset:auto !important;top:-2px !important;left:-2px !important;right:auto !important;bottom:auto !important;width:calc(100% + 4px) !important;height:calc(100% + 4px) !important;object-position:center !important}
 </style>
 </helmet>
 
@@ -118,40 +121,42 @@
   <!-- ── Body: rail + deck ───────────────────────────────── -->
   <div style="max-width:1180px;margin:0 auto;padding:clamp(14px,2vw,24px) 18px 0;display:flex;flex-direction:column;gap:clamp(12px,1.5vw,20px)">
 
-    <!-- RAIL — two groups: the moment (Today+Year) | the doors (Systems / Your codes) -->
+    <!-- RAIL — slim moment strip: energy band (today+year) over the three actions -->
     <aside data-oe="rail" style="width:100%;min-width:0">
-      <div data-oe="railrow" style="display:flex;flex-wrap:wrap;gap:clamp(10px,1.4vw,16px);align-items:stretch">
-        <!-- Group 1 · The moment -->
-        <div data-oe="momentgroup" style="display:flex;flex:1 1 280px;min-width:0;border:1px solid var(--line,#e3ddd1);background:var(--bg2,#fff);border-radius:14px;overflow:hidden">
-          <sc-for list="{{ feats }}" as="f" hint-placeholder-count="2">
-            <button type="button" onClick="{{ f.onClick }}" aria-label="{{ f.aria }}" style="display:flex;align-items:center;gap:11px;text-align:left;background:transparent;border:none;border-right:1px solid var(--line,#e3ddd1);flex:1 1 0;padding:16px 14px;cursor:pointer;min-width:0">
-              <span style="flex-shrink:0;width:26px;height:30px">
-                <dc-import name="Hexagram" lines="{{ f.lines }}" color="var(--ink3,#8a7a5e)" hint-size="26px,30px" style="width:26px;height:30px"></dc-import>
+      <div data-oe="railrow" style="display:flex;flex-direction:column;gap:10px;max-width:480px;margin:0 auto">
+        <!-- The energy band: today + this year, slim, side by side -->
+        <div data-oe="energyband" style="display:flex;gap:8px">
+          <sc-for list="{{ energy }}" as="e" hint-placeholder-count="2">
+            <button type="button" onClick="{{ e.onOpen }}" aria-label="{{ e.aria }}" style="display:flex;align-items:center;gap:11px;text-align:left;flex:1 1 0;min-width:0;background:var(--bg2,#fff);border:1px solid var(--line,#e3ddd1);border-radius:12px;padding:11px 13px;cursor:pointer;transition:border-color .25s ease,background .25s ease">
+              <span style="flex-shrink:0;width:26px;height:30px;display:flex;align-items:center;justify-content:center">
+                <dc-import name="Hexagram" lines="{{ e.lines }}" color="var(--accent,#8a744e)" hint-size="26px,30px" style="width:100%;height:100%"></dc-import>
               </span>
-              <span style="display:flex;flex-direction:column;gap:5px;min-width:0">
-                <span style="font-family:'Karla',sans-serif;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint,#a89070);line-height:1;white-space:nowrap">{{ f.eyebrow }}</span>
-                <span style="font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent,#8a744e);line-height:1">{{ f.date }}</span>
+              <span style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                <span style="display:flex;align-items:baseline;gap:6px;min-width:0">
+                  <span style="font-family:'Karla',sans-serif;font-size:8.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint,#a89070);line-height:1;white-space:nowrap">{{ e.eyebrow }}</span>
+                  <span style="font-family:'Karla',sans-serif;font-size:8.5px;font-weight:700;letter-spacing:.06em;color:var(--accent,#8a744e);line-height:1;white-space:nowrap">{{ e.cardNum }}</span>
+                </span>
+                <span style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:500;line-height:1;color:var(--ink,#262321);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ e.cardName }}</span>
               </span>
             </button>
           </sc-for>
         </div>
-        <!-- Group 2 · The doors (stacked) -->
-        <div data-oe="doorgroup" style="display:flex;flex-direction:column;flex:1 1 280px;min-width:0;border:1px solid var(--line,#e3ddd1);background:var(--bg2,#fff);border-radius:14px;overflow:hidden">
-          <button type="button" onClick="{{ openSystems }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;text-align:left;background:transparent;border:none;border-bottom:1px solid var(--line,#e3ddd1);padding:13px 14px;cursor:pointer;min-width:0">
-            <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
-              <span style="font-family:'Karla',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px;color:var(--ink,#262321);line-height:1.2">{{ systemsTile.eyebrow }}</span>
-              <span style="font-family:'Karla',sans-serif;font-size:12.5px;color:var(--ink2,#524330);line-height:1.4">{{ systemsTile.body }}</span>
-            </span>
-            <span aria-hidden="true" style="color:var(--accent,#8a744e);flex-shrink:0;padding-top:2px">→</span>
-          </button>
-          <button type="button" onClick="{{ openGrid }}" data-oe-done="{{ codesTile.done }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;text-align:left;background:transparent;border:none;padding:13px 14px;cursor:pointer;min-width:0">
-            <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
-              <span style="font-family:'Karla',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px;color:var(--ink,#262321);line-height:1.2">{{ codesTile.eyebrow }}</span>
-              <span style="font-family:'Karla',sans-serif;font-size:12.5px;color:var(--ink2,#524330);line-height:1.4">{{ codesTile.body }}</span>
-            </span>
-            <span aria-hidden="true" style="color:var(--accent,#8a744e);flex-shrink:0;padding-top:2px">→</span>
-          </button>
+        <!-- Two compact actions: the systems · draw a card -->
+        <div data-oe="actionrow" style="display:flex;gap:8px">
+          <sc-for list="{{ actions }}" as="a" hint-placeholder-count="2">
+            <button type="button" onClick="{{ a.onClick }}" aria-label="{{ a.aria }}" style="flex:1 1 0;min-width:0;cursor:pointer;font-family:'Karla',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;line-height:1.2;padding:12px 10px;border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .25s ease,border-color .25s ease,color .25s ease;background:{{ a.bg }};border:{{ a.border }};color:{{ a.fg }}">{{ a.label }}</button>
+          </sc-for>
         </div>
+        <!-- The invitation: full-width, title + subtitle, teaches the offer -->
+        <sc-if test="{{ invite }}">
+        <button type="button" data-oe="invite" onClick="{{ invite.onClick }}" aria-label="{{ invite.aria }}" data-oe-invite-done="{{ invite.done }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;width:100%;cursor:pointer;padding:14px 16px;border-radius:12px;transition:background .25s ease,border-color .25s ease;background:{{ invite.bg }};border:{{ invite.border }}">
+          <span style="display:flex;flex-direction:column;gap:4px;min-width:0">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;line-height:1.1;color:var(--ink,#262321)">{{ invite.title }}</span>
+            <span style="font-family:'Karla',sans-serif;font-size:12px;line-height:1.45;color:var(--ink3,#8a7a5e)">{{ invite.sub }}</span>
+          </span>
+          <span aria-hidden="true" style="flex-shrink:0;font-family:'Karla',sans-serif;font-size:16px;color:var(--accent,#8a744e)">{{ invite.mark }}</span>
+        </button>
+        </sc-if>
       </div>
     </aside>
 
@@ -161,17 +166,16 @@
       <sc-if value="{{ isIChing }}" hint-placeholder-val="{{ true }}">
       <div data-oe="ichgrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,1.6vw,16px) clamp(8px,1.4vw,14px);padding:18px 0 8px">
         <sc-for list="{{ gridCards }}" as="c" hint-placeholder-count="24">
-          <div data-oe-yours="{{ c.yours }}" style="display:flex;flex-direction:column">
+          <div data-oe-yours="{{ c.yours }}" data-oe-num="{{ c.cardNum }}" style="display:flex;flex-direction:column">
             <button type="button" onClick="{{ c.onTile }}" aria-label="{{ c.aria }}" style="all:unset;cursor:pointer;display:block;perspective:760px">
               <span style="position:relative;display:block;width:100%;aspect-ratio:1/1;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.85,.3,1),filter .3s ease;transform:{{ c.flipTransform }}">
-                <span style="position:absolute;inset:0;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;border:1px solid var(--line,#e3ddd1);border-radius:11px;background:var(--surface,#faf9f6)">
+                <span style="position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(5px,0.7vw,9px)">
                   <span style="width:48%;color:var(--ink3,#8a7a5e)">
                     <dc-import name="Hexagram" lines="{{ c.lines }}" color="var(--ink3,#8a7a5e)" hint-size="100%,100%" style="width:100%;height:100%"></dc-import>
                   </span>
-                  <span data-oe="cardnum" style="position:absolute;bottom:15%;left:0;right:0;text-align:center;font-family:'Karla',sans-serif;font-weight:700;letter-spacing:.06em;color:var(--ink3,#8a7a5e);line-height:1">{{ c.cardNum }}</span>
+                  <span data-oe="cardnum" style="text-align:center;font-family:'Karla',sans-serif;font-weight:700;letter-spacing:.06em;color:var(--ink3,#8a7a5e);line-height:1">{{ c.cardNum }}</span>
                 </span>
-                <span style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);border-radius:11px;overflow:hidden;box-shadow:0 6px 18px var(--glow,rgba(196,170,124,.2))">
-                  <span style="position:absolute;inset:0;background:{{ c.grad }}"></span>
+                <span style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);overflow:hidden">
                   <img src="{{ c.art }}" alt="{{ c.name }}" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.08) brightness(1.03)"></img>
                 </span>
               </span>
@@ -182,13 +186,6 @@
                   <button type="button" onClick="{{ c.onBack }}" style="background:transparent;border:none;cursor:pointer;color:var(--ink3,#8a7a5e);font:inherit">Back</button>
                   <span aria-hidden="true" style="width:1px;height:10px;background:var(--line2,#d2c7b4)"></span>
                   <button type="button" onClick="{{ c.onRead }}" style="background:transparent;border:none;cursor:pointer;color:var(--accent,#8a744e);font:inherit">Read</button>
-                </span>
-              </sc-if>
-              <sc-if value="{{ c.closed }}" hint-placeholder-val="{{ true }}">
-                <span data-oe="trigline" style="display:flex;flex-direction:row;align-items:center;gap:.35em;max-width:100%;overflow:hidden">
-                  <span data-oe="trigtext" style="font-family:'Karla',sans-serif;font-weight:600;letter-spacing:.04em;color:var(--faint,#a89070);line-height:1.25;white-space:nowrap;min-width:0">{{ c.upperTrigram }}</span>
-                  <span data-oe="trigsep" aria-hidden="true" style="flex-shrink:0;color:var(--faint,#a89070);line-height:1">·</span>
-                  <span data-oe="trigtext" style="font-family:'Karla',sans-serif;font-weight:600;letter-spacing:.04em;color:var(--faint,#a89070);line-height:1.25;white-space:nowrap;min-width:0">{{ c.lowerTrigram }}</span>
                 </span>
               </sc-if>
             </span>

@@ -42,6 +42,19 @@
 @keyframes oe-sheen{from{transform:translateX(-120%) skewX(-18deg)}to{transform:translateX(220%) skewX(-18deg)}}
 
 @media(max-width:760px){ .oe-root [data-oe="rail"]{max-width:none !important} }
+
+/* ── Energy band + action row (the slim moment strip above the deck) ── */
+/* Hover lift on the two energy chips and the three action buttons. */
+.oe-root [data-oe="energyband"] > button:hover{ border-color:var(--accent,#8a744e) !important; background:var(--surface,#faf9f6) !important }
+.oe-root [data-oe="actionrow"] > button:hover{ border-color:var(--accent,#8a744e) !important }
+.oe-root [data-oe="actionrow"] > button[style*="onAccent"]:hover{ background:var(--accentDeep,#6d5a3c) !important }
+/* The full-width invitation bar (enter-your-birthday) lifts on hover. */
+.oe-root [data-oe="invite"]:hover{ border-color:var(--accent,#8a744e) !important; background:var(--surface,#faf9f6) !important }
+/* Narrow screens: keep the strip from ever forcing horizontal scroll. */
+@media(max-width:430px){
+  .oe-root [data-oe="energyband"] > button{ padding:9px 10px !important; gap:9px !important }
+  .oe-root [data-oe="energyband"] [style*="Cormorant"]{ font-size:13px !important }
+}
 @media(min-width:980px){ .oe-root [data-oe="ichgrid"], .oe-root [data-oe="artgrid"]{grid-template-columns:repeat(8,minmax(0,1fr)) !important} }
 @media(max-width:520px){
   .oe-root [data-oe="trigline"]{flex-direction:column !important; gap:1px !important; align-items:center !important}
@@ -50,11 +63,11 @@
 /* 4-wide: larger text to match bigger tiles */
 .oe-root [data-oe="trigtext"]{font-size:clamp(11px,1.8vw,17px)}
 .oe-root [data-oe="trigsep"]{font-size:clamp(11px,1.8vw,17px)}
-.oe-root [data-oe="cardnum"]{font-size:clamp(11px,1.6vw,16px)}
+.oe-root [data-oe="cardnum"]{font-size:clamp(13px,1.94vw,20px)}
 @media(min-width:980px){
   .oe-root [data-oe="trigtext"]{font-size:clamp(9px,1.1vw,13px) !important}
   .oe-root [data-oe="trigsep"]{font-size:clamp(9px,1.1vw,13px) !important}
-  .oe-root [data-oe="cardnum"]{font-size:clamp(10px,1.2vw,14px) !important}
+  .oe-root [data-oe="cardnum"]{font-size:clamp(12px,1.45vw,17px) !important}
 }
 
 /* "Your codes" glow: cards whose number matches the visitor's saved birth
@@ -87,3 +100,95 @@
 .oe-root [data-oe="artgrid"] button:hover .oe-art-name,
 .oe-root [data-oe="artgrid"] button:focus-visible .oe-art-name { opacity: 1 !important; }
 .oe-root [data-oe="artgrid"] button:hover img { transform: scale(1.05); }
+
+/* Per-card image crop: card 22's artwork has a lingering white edge — enlarge it
+   2px on every side so the parent's overflow:hidden clips the border away. */
+.oe-root [data-oe="ichgrid"] [data-oe-num="22"] img {
+  inset: auto !important;
+  top: -2px !important;
+  left: -2px !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: calc(100% + 4px) !important;
+  height: calc(100% + 4px) !important;
+  object-position: center !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Entrance reveal — the premium "rise & settle" the imported template carries.
+   The Oracle Entry design only defined oe-rise/oe-fade but never applied them,
+   so the invocation hero + card wall snapped in flat (felt less premium than
+   the Earth's Breath reading, which reveals on arrival). This restores that
+   reveal with pure on-load CSS — no JS, no edits to the generated markup —
+   staggered against the generated DOM structure. The three invocation styles
+   (illuminated / altar / constellation) are mutually exclusive, so one set of
+   header-scoped rules covers whichever is active.
+
+   Easing + `both` fill match the EB template (cubic-bezier(.16,1,.3,1)): each
+   element starts hidden (opacity 0, lifted) and holds its settled state.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* The hero's content wrapper (one direct <div> under <header>, per variant)
+   carries the spinning constellation ring etc.; fade the whole block in gently
+   so its backdrop wash + decorative layers arrive softly. */
+.oe-root header > div {
+  animation: oe-fade 900ms ease both;
+}
+
+/* The hero's foreground lines — eyebrow, title, hairline rule, subtitle, and the
+   invocation paragraphs — rise in sequence. These are the direct children of the
+   content wrapper (illuminated/altar), or the inner relative block (constellation).
+   A positional stagger gives the settling cadence without per-variant counting. */
+.oe-root header > div > *,
+.oe-root header > div > div[style*="position: relative"] > * {
+  animation: oe-rise 820ms cubic-bezier(.16,1,.3,1) both;
+}
+.oe-root header > div > *:nth-child(1),
+.oe-root header > div > div[style*="position: relative"] > *:nth-child(1) { animation-delay: 60ms; }
+.oe-root header > div > *:nth-child(2),
+.oe-root header > div > div[style*="position: relative"] > *:nth-child(2) { animation-delay: 160ms; }
+.oe-root header > div > *:nth-child(3),
+.oe-root header > div > div[style*="position: relative"] > *:nth-child(3) { animation-delay: 260ms; }
+.oe-root header > div > *:nth-child(4),
+.oe-root header > div > div[style*="position: relative"] > *:nth-child(4) { animation-delay: 360ms; }
+
+/* The invocation paragraph column (the last flex-column <div> in each variant)
+   holds the verse lines the visitor actually reads — give its children their own
+   deeper stagger so the verse lands line by line, the page's signature beat. */
+.oe-root header > div > div[style*="flex-direction: column"] > *,
+.oe-root header > div > div[style*="position: relative"] > div[style*="flex-direction: column"] > * {
+  animation: oe-rise 860ms cubic-bezier(.16,1,.3,1) both;
+}
+.oe-root header > div > div[style*="flex-direction: column"] > *:nth-child(1),
+.oe-root header > div > div[style*="position: relative"] > div[style*="flex-direction: column"] > *:nth-child(1) { animation-delay: 420ms; }
+.oe-root header > div > div[style*="flex-direction: column"] > *:nth-child(2),
+.oe-root header > div > div[style*="position: relative"] > div[style*="flex-direction: column"] > *:nth-child(2) { animation-delay: 540ms; }
+.oe-root header > div > div[style*="flex-direction: column"] > *:nth-child(3),
+.oe-root header > div > div[style*="position: relative"] > div[style*="flex-direction: column"] > *:nth-child(3) { animation-delay: 660ms; }
+.oe-root header > div > div[style*="flex-direction: column"] > *:nth-child(4),
+.oe-root header > div > div[style*="position: relative"] > div[style*="flex-direction: column"] > *:nth-child(4) { animation-delay: 780ms; }
+.oe-root header > div > div[style*="flex-direction: column"] > *:nth-child(5),
+.oe-root header > div > div[style*="position: relative"] > div[style*="flex-direction: column"] > *:nth-child(5) { animation-delay: 900ms; }
+
+/* The card wall breathes in beneath the hero — a single soft fade (not a per-tile
+   storm) so it reads premium, not busy. */
+.oe-root [data-oe="ichgrid"],
+.oe-root [data-oe="artgrid"] {
+  animation: oe-rise 900ms cubic-bezier(.16,1,.3,1) 520ms both;
+}
+
+/* Honor reduced-motion: everything appears instantly, fully legible. Matches the
+   EB template's [data-motion="off"] discipline (which the entry lacked). */
+@media (prefers-reduced-motion: reduce) {
+  .oe-root header > div,
+  .oe-root header > div > *,
+  .oe-root header > div > div[style*="position: relative"] > *,
+  .oe-root header > div > div[style*="flex-direction: column"] > *,
+  .oe-root header > div > div[style*="position: relative"] > div[style*="flex-direction: column"] > *,
+  .oe-root [data-oe="ichgrid"],
+  .oe-root [data-oe="artgrid"] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
