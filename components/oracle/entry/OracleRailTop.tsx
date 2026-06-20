@@ -64,7 +64,6 @@ function friendlyName(email: string | null): string | null {
   return local.charAt(0).toUpperCase() + local.slice(1);
 }
 
-const initial = (name: string | null) => (name ? name.trim().charAt(0).toUpperCase() : '?');
 
 const OracleRailTop: React.FC<OracleRailTopProps> = ({
   hasCodes,
@@ -79,65 +78,35 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
   const [sellOpen, setSellOpen] = useState(false);
   const name = friendlyName(displayName);
 
-  // The account switcher. Shown once a birth moment exists. Single-session auth,
-  // so "switch" = sign out then sign in as the other; "Add" opens sign-in.
-  const switcher = accountsAvailable && hasCodes && (
-    <div
-      style={{
-        background: 'var(--bg2,#fff)',
-        border: '1px solid var(--line2,#d2c7b4)',
-        borderRadius: '12px',
-        padding: '10px 12px',
-      }}
-    >
-      <p
-        style={{
-          margin: '0 0 9px',
-          fontFamily: "'Karla',sans-serif",
-          fontSize: '9.5px',
-          fontWeight: 700,
-          letterSpacing: '.18em',
-          textTransform: 'uppercase',
-          color: 'var(--faint,#a89070)',
-        }}
-      >
-        Reading as
-      </p>
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        {isSignedIn && (
-          <span style={faceStyle(true)}>
-            <span style={dotStyle}>{initial(name)}</span>
-            {name || 'You'}
-          </span>
-        )}
-        <button type="button" onClick={() => (isSignedIn ? onSignOut() : setSignInOpen(true))} style={faceStyle(false)}>
-          <span style={{ ...dotStyle, background: 'transparent', color: 'var(--accent,#8a744e)', border: '1px dashed var(--line2,#d2c7b4)' }}>
-            {isSignedIn ? '↻' : '+'}
-          </span>
-          {isSignedIn ? 'Switch' : 'Sign in'}
-        </button>
-      </div>
+  // A single quiet account line, folded INTO the card under a hairline. Signed
+  // in: "Reading as <name>" with one Switch action (single-session auth, so
+  // switch = sign out then sign in as the other). No separate box, no pills.
+  const accountLine = accountsAvailable && hasCodes && isSignedIn && (
+    <div style={accountRowStyle}>
+      <span style={readingAsStyle}>
+        Reading as <b style={{ color: 'var(--ink,#262321)', fontWeight: 600 }}>{name || 'you'}</b>
+      </span>
+      <button type="button" onClick={() => onSignOut()} style={accountActionStyle}>
+        Switch
+      </button>
     </div>
   );
 
-  // Rung 4: signed in — a special welcome over the bright profile link, the
-  // switcher sits below.
+  // Rung 4: signed in — welcome, profile link, then the one account line below.
   if (hasCodes && isSignedIn) {
     return (
-      <>
-        <div style={litCardStyle}>
-          <p style={leadStyle}>Welcome back{name ? `, ${name}` : ''}</p>
-          <Link to="/profile" style={BRIGHT_CTA}>
-            Your profile, pieces &amp; grid →
-          </Link>
-        </div>
-        {switcher}
-      </>
+      <div style={litCardStyle}>
+        <p style={leadStyle}>Welcome back{name ? `, ${name}` : ''}</p>
+        <Link to="/profile" style={BRIGHT_CTA}>
+          Your profile, pieces &amp; grid →
+        </Link>
+        {accountLine}
+      </div>
     );
   }
 
   // Rung 2+3: codes lit, no account — confirmation + bright link, then the
-  // reason to stay, then the switcher below.
+  // collapsed save pitch. Sign-in lives in that pitch; no separate switcher.
   if (hasCodes) {
     return (
       <>
@@ -167,7 +136,6 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
             )
           )}
         </div>
-        {switcher}
         {signInOpen && <SignInModal onClose={() => setSignInOpen(false)} onSignedIn={() => setSignInOpen(false)} />}
       </>
     );
@@ -277,33 +245,32 @@ const keepBtnStyle: React.CSSProperties = {
   textTransform: 'uppercase',
   cursor: 'pointer',
 };
-const dotStyle: React.CSSProperties = {
-  width: '22px',
-  height: '22px',
-  borderRadius: '50%',
+// The single in-card account line: name on the left, one action on the right,
+// divided from the card above by a hairline.
+const accountRowStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'space-between',
+  gap: '12px',
+  marginTop: '14px',
+  paddingTop: '12px',
+  borderTop: '1px solid var(--line,#e3ddd1)',
+};
+const readingAsStyle: React.CSSProperties = {
+  fontFamily: "'Karla',sans-serif",
+  fontSize: '12px',
+  color: 'var(--ink3,#8a7a5e)',
+};
+const accountActionStyle: React.CSSProperties = {
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  fontFamily: "'Karla',sans-serif",
   fontSize: '11px',
   fontWeight: 700,
-  color: 'var(--onAccent,#fff8ec)',
-  background: 'linear-gradient(135deg, var(--accent,#a98a55), var(--accentDeep,#7d6638))',
+  letterSpacing: '.1em',
+  textTransform: 'uppercase',
+  color: 'var(--accent,#8a744e)',
 };
-function faceStyle(active: boolean): React.CSSProperties {
-  return {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '7px 12px 7px 8px',
-    border: active ? '1px solid var(--accent,#8a744e)' : '1px solid var(--line2,#d2c7b4)',
-    borderRadius: '999px',
-    background: active ? 'var(--glow,rgba(196,170,124,.16))' : 'var(--bg2,#fff)',
-    color: active ? 'var(--ink,#262321)' : 'var(--ink2,#524330)',
-    boxShadow: active ? '0 0 0 1px var(--accent,#8a744e), 0 0 18px -4px var(--glow,rgba(196,170,124,.7))' : 'none',
-    fontFamily: "'Karla',sans-serif",
-    fontSize: '13px',
-    cursor: 'pointer',
-  };
-}
 
 export default OracleRailTop;
