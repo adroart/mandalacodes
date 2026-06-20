@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useDarkMode } from '../../DarkModeContext';
 import {
   sendSignInCode,
   verifySignInCode,
@@ -13,19 +14,19 @@ import {
  *   - Continue with Google (shown when configured)
  *   - Email + password (create account / log in)
  *   - Email me a code instead (no password)
- * Styled in the site's paper / wood / bronze system with colors pinned so it
- * reads correctly in dark mode.
+ * Styled in the site's paper / wood / bronze system, and theme-aware: it
+ * follows the active light/dark mode rather than forcing a light card.
  */
 
-// Pinned light surface so the card never inverts in dark mode.
-const C = {
-  surface: '#f5f4f0',   // paper-50 (light)
-  border: '#e0d8cc',    // wood-200
-  ink: '#262321',       // wood-900
-  sub: '#8f7a5b',       // wood-500
-  bronze: '#8a744e',    // bronze-600
-  bronzeInk: '#6d5a3c', // bronze-700
-  fieldBorder: '#c8bda8', // wood-300
+// Palette per theme. The modal follows the active mode so a dark-mode visitor
+// gets a dark card (the old pinned-light surface read as a white box in dark).
+const LIGHT = {
+  surface: '#f5f4f0', field: '#ffffff', border: '#e0d8cc', ink: '#262321',
+  sub: '#8f7a5b', bronze: '#8a744e', fieldBorder: '#c8bda8',
+};
+const DARK = {
+  surface: '#1d1813', field: '#241e17', border: 'rgba(196,170,124,0.30)', ink: '#f0ece4',
+  sub: '#a99a82', bronze: '#dabd8b', fieldBorder: 'rgba(196,170,124,0.34)',
 };
 
 type Mode = 'login' | 'signup' | 'code-email' | 'code-verify';
@@ -34,6 +35,8 @@ const SignInModal: React.FC<{ onClose: () => void; onSignedIn?: () => void }> = 
   onClose,
   onSignedIn,
 }) => {
+  const { isDarkMode } = useDarkMode();
+  const C = isDarkMode ? DARK : LIGHT;
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -101,7 +104,7 @@ const SignInModal: React.FC<{ onClose: () => void; onSignedIn?: () => void }> = 
     textTransform: 'uppercase', color: C.sub, fontWeight: 600,
   };
   const inputStyle: React.CSSProperties = {
-    width: '100%', border: `1px solid ${C.fieldBorder}`, background: '#fff',
+    width: '100%', border: `1px solid ${C.fieldBorder}`, background: C.field,
     padding: '12px 16px', fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 16, color: C.ink,
   };
   const primaryStyle: React.CSSProperties = {
@@ -156,8 +159,10 @@ const SignInModal: React.FC<{ onClose: () => void; onSignedIn?: () => void }> = 
 
         {error && (
           <div style={{
-            marginBottom: 16, padding: '8px 12px', border: '1px solid #d99',
-            background: '#fbeaea', color: '#8a2a2a', fontFamily: 'Lato, sans-serif', fontSize: 13,
+            marginBottom: 16, padding: '8px 12px',
+            border: `1px solid ${isDarkMode ? 'rgba(220,150,150,0.4)' : '#d99'}`,
+            background: isDarkMode ? 'rgba(138,42,42,0.18)' : '#fbeaea',
+            color: isDarkMode ? '#e6a6a6' : '#8a2a2a', fontFamily: 'Lato, sans-serif', fontSize: 13,
           }}>
             {error}
           </div>

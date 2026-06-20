@@ -119,44 +119,47 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
     </div>
   );
 
-  // Rung 4: signed in — a special welcome over the bright profile link.
+  // Rung 4: signed in — a special welcome over the bright profile link, the
+  // switcher sits below.
   if (hasCodes && isSignedIn) {
     return (
       <>
-        {switcher}
         <div style={litCardStyle}>
           <p style={leadStyle}>Welcome back{name ? `, ${name}` : ''}</p>
-          <p style={metaStyle}>Your placement is illuminated throughout the sixty-four.</p>
           <Link to="/profile" style={BRIGHT_CTA}>
             Your profile, pieces &amp; grid →
           </Link>
         </div>
+        {switcher}
       </>
     );
   }
 
-  // Rung 2+3: codes lit, no account — confirmation + bright link + keep-this.
+  // Rung 2+3: codes lit, no account — confirmation + bright link, then the
+  // reason to stay, then the switcher below.
   if (hasCodes) {
     return (
       <>
-        {switcher}
         <div style={litCardStyle}>
           <p style={leadStyle}>Your placement is illuminated</p>
-          <p style={metaStyle}>Throughout the sixty-four.</p>
           <Link to="/profile" style={BRIGHT_CTA}>
             See your full Hologenetic profile →
           </Link>
           {accountsAvailable && (
-            <div style={{ marginTop: '12px', textAlign: 'center' }}>
-              <p style={{ margin: '0 0 6px', fontFamily: "'Karla',sans-serif", fontSize: '12px', color: 'var(--ink3,#8a7a5e)' }}>
-                Want to keep this? <b style={{ color: 'var(--ink2,#524330)' }}>Add an email so it’s always here.</b>
-              </p>
-              <button type="button" onClick={() => setSignInOpen(true)} style={ghostLinkStyle}>
-                Keep my reading →
+            <div style={{ marginTop: '14px' }}>
+              <p style={sellLeadStyle}>Save your reading by signing in.</p>
+              <ul style={sellListStyle}>
+                <li>Go deeper on what your codes mean for you, kept as you learn.</li>
+                <li>Your cards light up wherever they appear, on every page.</li>
+                <li>Join the living oracle: claim a piece, place it, share your grid.</li>
+              </ul>
+              <button type="button" onClick={() => setSignInOpen(true)} style={keepBtnStyle}>
+                Save my reading
               </button>
             </div>
           )}
         </div>
+        {switcher}
         {signInOpen && <SignInModal onClose={() => setSignInOpen(false)} onSignedIn={() => setSignInOpen(false)} />}
       </>
     );
@@ -216,27 +219,43 @@ const litCardStyle: React.CSSProperties = {
   padding: '16px',
 };
 const leadStyle: React.CSSProperties = {
-  margin: '0 0 4px',
+  margin: '0 0 14px',
   fontFamily: "'Cormorant Garamond',serif",
   fontSize: '18px',
   textAlign: 'center',
   color: 'var(--ink,#262321)',
 };
-const metaStyle: React.CSSProperties = {
-  margin: '0 0 14px',
+const sellLeadStyle: React.CSSProperties = {
+  margin: '0 0 8px',
   textAlign: 'center',
+  fontFamily: "'Cormorant Garamond',serif",
+  fontSize: '15px',
+  color: 'var(--ink,#262321)',
+};
+const sellListStyle: React.CSSProperties = {
+  margin: '0 0 14px',
+  padding: '0 0 0 18px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '5px',
   fontFamily: "'Karla',sans-serif",
   fontSize: '12px',
-  color: 'var(--ink3,#8a7a5e)',
+  lineHeight: 1.45,
+  color: 'var(--ink2,#524330)',
 };
-const ghostLinkStyle: React.CSSProperties = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
+const keepBtnStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '11px',
+  border: '1px solid var(--accent,#8a744e)',
+  borderRadius: '10px',
+  background: 'transparent',
+  color: 'var(--ink,#262321)',
   fontFamily: "'Karla',sans-serif",
   fontSize: '11px',
-  letterSpacing: '.06em',
-  color: 'var(--ink3,#8a7a5e)',
+  fontWeight: 700,
+  letterSpacing: '.12em',
+  textTransform: 'uppercase',
+  cursor: 'pointer',
 };
 const dotStyle: React.CSSProperties = {
   width: '22px',
