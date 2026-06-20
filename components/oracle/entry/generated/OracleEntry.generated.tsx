@@ -116,7 +116,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     <aside data-oe="rail" style={{ width: "100%", minWidth: "0" }}>
       <div data-oe="railrow" style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "480px", margin: "0 auto" }}>
         {/* ── The invitation: title + subtitle, teaches the offer. Top of the
-              rail — it's the first thing to do. Click expands the birth-moment
+              rail, the first thing to do. Click expands the birth-moment
               dropdown (vals.invite.expanded); save collapses to confirmation. ── */}
         {(vals.invite) ? (
           <div data-oe="invitewrap" style={{ display: "flex", flexDirection: "column", gap: "0", background: vals.invite.done ? "var(--glow,rgba(196,170,124,.16))" : "var(--bg2,#fff)", border: vals.invite.done ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", borderRadius: "12px", overflow: "hidden" }}>
@@ -142,8 +142,8 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             ) : null}
           </div>
         ) : null}
-        {/* ── The energy band: today + this year, slim, centered middle third. ── */}
-        <div data-oe="energyband" style={{ display: "flex", gap: "8px", width: "min(100%,320px)", margin: "0 auto" }}>
+        {/* ── The energy band: today + this year, full rail width. ── */}
+        <div data-oe="energyband" style={{ display: "flex", gap: "8px", width: "100%" }}>
           {(vals.energy ?? []).map((e, eIdx) => (
             <React.Fragment key={eIdx}>
               <button type="button" onClick={e.onOpen} aria-label={e.aria} style={{ display: "flex", alignItems: "center", gap: "11px", textAlign: "left", flex: "1 1 0", minWidth: "0", background: "var(--bg2,#fff)", border: "1px solid var(--line,#e3ddd1)", borderRadius: "12px", padding: "11px 13px", cursor: "pointer", transition: "border-color .25s ease,background .25s ease" }}>
@@ -168,11 +168,11 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </React.Fragment>
           ))}
         </div>
-        {/* ── Action: draw a card. Bottom of the rail. ── */}
-        <div data-oe="actionrow" style={{ display: "flex", gap: "8px" }}>
+        {/* ── Action: draw a card. Bottom of the rail, narrow + centered. ── */}
+        <div data-oe="actionrow" style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
           {(vals.actions ?? []).map((a, aIdx) => (
             <React.Fragment key={aIdx}>
-              <button type="button" onClick={a.onClick} aria-label={a.aria} style={{ flex: "1 1 0", minWidth: "0", cursor: "pointer", fontFamily: "'Karla',sans-serif", fontSize: "10.5px", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", lineHeight: "1.2", padding: "12px 10px", borderRadius: "12px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "background .25s ease,border-color .25s ease,color .25s ease", background: a.emphasis ? "var(--accent,#8a744e)" : "transparent", border: a.emphasis ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", color: a.emphasis ? "var(--onAccent,#f7f5f1)" : "var(--ink2,#524330)" }}>
+              <button type="button" onClick={a.onClick} aria-label={a.aria} style={{ minWidth: "0", cursor: "pointer", fontFamily: "'Karla',sans-serif", fontSize: "10.5px", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", lineHeight: "1.2", padding: "12px 28px", borderRadius: "12px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "background .25s ease,border-color .25s ease,color .25s ease", background: a.emphasis ? "var(--accent,#8a744e)" : "transparent", border: a.emphasis ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", color: a.emphasis ? "var(--onAccent,#f7f5f1)" : "var(--ink2,#524330)" }}>
               {a.label}
               </button>
             </React.Fragment>

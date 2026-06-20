@@ -121,12 +121,12 @@
   <!-- ── Body: rail + deck ───────────────────────────────── -->
   <div style="max-width:1180px;margin:0 auto;padding:clamp(14px,2vw,24px) 18px 0;display:flex;flex-direction:column;gap:clamp(12px,1.5vw,20px)">
 
-    <!-- RAIL — slim moment strip: invite (birth time) over the energy band over draw -->
+    <!-- RAIL: slim moment strip, invite (birth time) over the energy band over draw -->
     <aside data-oe="rail" style="width:100%;min-width:0">
       <div data-oe="railrow" style="display:flex;flex-direction:column;gap:10px;max-width:480px;margin:0 auto">
         <!-- The invitation: centered birth-time button, expands an inline dropdown
              (the app's date/time/place form) in React; collapses to a confirmation
-             once a birth moment is saved. Top of the rail — first thing to do. -->
+             once a birth moment is saved. Top of the rail, the first thing to do. -->
         <sc-if test="{{ invite }}">
         <div data-oe="invitewrap" style="display:flex;flex-direction:column;border:1px solid var(--line2,#d2c7b4);border-radius:12px;overflow:hidden;background:var(--bg2,#fff)">
           <button type="button" data-oe="invite" onClick="{{ invite.onClick }}" aria-label="{{ invite.aria }}" data-oe-invite-done="{{ invite.done }}" style="display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;width:100%;cursor:pointer;padding:14px 16px;background:transparent;border:none">
@@ -137,8 +137,8 @@
           </button>
         </div>
         </sc-if>
-        <!-- The energy band: today + this year, slim, centered middle third -->
-        <div data-oe="energyband" style="display:flex;gap:8px;width:min(100%,320px);margin:0 auto">
+        <!-- The energy band: today + this year, full rail width -->
+        <div data-oe="energyband" style="display:flex;gap:8px;width:100%">
           <sc-for list="{{ energy }}" as="e" hint-placeholder-count="2">
             <button type="button" onClick="{{ e.onOpen }}" aria-label="{{ e.aria }}" style="display:flex;align-items:center;gap:11px;text-align:left;flex:1 1 0;min-width:0;background:var(--bg2,#fff);border:1px solid var(--line,#e3ddd1);border-radius:12px;padding:11px 13px;cursor:pointer;transition:border-color .25s ease,background .25s ease">
               <span style="flex-shrink:0;width:26px;height:30px;display:flex;align-items:center;justify-content:center">
@@ -154,10 +154,10 @@
             </button>
           </sc-for>
         </div>
-        <!-- Action: draw a card. Bottom of the rail. -->
-        <div data-oe="actionrow" style="display:flex;gap:8px">
+        <!-- Action: draw a card. Bottom of the rail, narrow + centered. -->
+        <div data-oe="actionrow" style="display:flex;gap:8px;justify-content:center">
           <sc-for list="{{ actions }}" as="a" hint-placeholder-count="2">
-            <button type="button" onClick="{{ a.onClick }}" aria-label="{{ a.aria }}" style="flex:1 1 0;min-width:0;cursor:pointer;font-family:'Karla',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;line-height:1.2;padding:12px 10px;border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .25s ease,border-color .25s ease,color .25s ease;background:{{ a.bg }};border:{{ a.border }};color:{{ a.fg }}">{{ a.label }}</button>
+            <button type="button" onClick="{{ a.onClick }}" aria-label="{{ a.aria }}" style="min-width:0;cursor:pointer;font-family:'Karla',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;line-height:1.2;padding:12px 28px;border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .25s ease,border-color .25s ease,color .25s ease;background:{{ a.bg }};border:{{ a.border }};color:{{ a.fg }}">{{ a.label }}</button>
           </sc-for>
         </div>
       </div>

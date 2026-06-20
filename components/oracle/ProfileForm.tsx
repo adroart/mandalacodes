@@ -92,9 +92,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           onChange={(e) => setTime(e.target.value)}
           className="profile-form__input"
           required
+          /* Force 24-hour (military) time. type=time follows the browser's
+             locale for AM/PM vs 24h; a 24-hour lang pins it to the latter. */
+          lang="en-GB"
+          step={60}
         />
         <p className="profile-form__help">
-          As exact as possible. Every minute matters for the moving positions.
+          24-hour time, as exact as possible. Every minute matters for the moving positions.
         </p>
       </div>
 

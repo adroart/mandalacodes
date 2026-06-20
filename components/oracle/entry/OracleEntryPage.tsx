@@ -183,7 +183,7 @@ const OracleEntryPage: React.FC = () => {
           setGridOpen(true);
         }}
         // Once a birth moment is saved, the invite collapses to its illuminated
-        // confirmation and points here — the full Hologenetic profile.
+        // confirmation and points here: the full Hologenetic profile.
         onOpenProfile={() => navigate('/profile')}
         // The inline birth-moment dropdown: the real date/time/place form. Saving
         // lights the codes immediately (local profile); the rail then flips to the
