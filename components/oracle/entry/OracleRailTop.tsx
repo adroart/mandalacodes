@@ -76,6 +76,7 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
+  const [sellOpen, setSellOpen] = useState(false);
   const name = friendlyName(displayName);
 
   // The account switcher. Shown once a birth moment exists. Single-session auth,
@@ -146,17 +147,24 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
             See your full Hologenetic profile →
           </Link>
           {accountsAvailable && (
-            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--line,#e3ddd1)' }}>
-              <p style={sellLeadStyle}>Save your reading by signing in.</p>
-              <ul style={sellListStyle}>
-                <li>Go deeper on what your codes mean for you, kept as you learn.</li>
-                <li>Your cards light up wherever they appear, on every page.</li>
-                <li>Join the living oracle: claim a piece, place it, share your grid.</li>
-              </ul>
-              <button type="button" onClick={() => setSignInOpen(true)} style={keepBtnStyle}>
-                Save my reading
+            sellOpen ? (
+              // Reached for — now show the why and the real action.
+              <div style={{ marginTop: '12px' }}>
+                <ul style={sellListStyle}>
+                  <li>Go deeper on your codes, kept as you learn.</li>
+                  <li>Your cards light up on every page.</li>
+                  <li>Join the living oracle: claim a piece, share your grid.</li>
+                </ul>
+                <button type="button" onClick={() => setSignInOpen(true)} style={keepBtnStyle}>
+                  Save my reading
+                </button>
+              </div>
+            ) : (
+              // Collapsed by default — one quiet line, no height.
+              <button type="button" onClick={() => setSellOpen(true)} style={saveLinkStyle}>
+                Save your reading →
               </button>
-            </div>
+            )
           )}
         </div>
         {switcher}
@@ -225,12 +233,20 @@ const leadStyle: React.CSSProperties = {
   textAlign: 'center',
   color: 'var(--ink,#262321)',
 };
-const sellLeadStyle: React.CSSProperties = {
-  margin: '0 0 8px',
+// Collapsed default: one quiet centered text link, near-zero height.
+const saveLinkStyle: React.CSSProperties = {
+  display: 'block',
+  width: '100%',
+  marginTop: '10px',
+  padding: 0,
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
   textAlign: 'center',
-  fontFamily: "'Cormorant Garamond',serif",
-  fontSize: '15px',
-  color: 'var(--ink2,#524330)',
+  fontFamily: "'Karla',sans-serif",
+  fontSize: '11px',
+  letterSpacing: '.08em',
+  color: 'var(--ink3,#8a7a5e)',
 };
 const sellListStyle: React.CSSProperties = {
   margin: '0 0 14px',
