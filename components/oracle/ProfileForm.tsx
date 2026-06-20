@@ -8,6 +8,24 @@ interface ProfileFormProps {
   onSaved?: () => void;
 }
 
+/* 24-hour time entry as plain text. Strip non-digits, cap at 4 digits, and
+   insert the colon after the hour so typing "2345" becomes "23:45" and "9" can
+   grow into "09:00". No coercion while typing — the value only settles when the
+   user has entered it, so typing "23" never jumps to "02". */
+function formatTimeInput(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
+function isValidTime(value: string): boolean {
+  const m = /^(\d{2}):(\d{2})$/.exec(value);
+  if (!m) return false;
+  const h = Number(m[1]);
+  const min = Number(m[2]);
+  return h >= 0 && h <= 23 && min >= 0 && min <= 59;
+}
+
 const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
   const { save } = useProfile();
   const [date, setDate] = useState<string>(initial?.date ?? '');
@@ -36,7 +54,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
     };
   }, [placeQuery, place]);
 
-  const canSubmit = !!date && !!time && !!place && !submitting;
+  const canSubmit = !!date && isValidTime(time) && !!place && !submitting;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,20 +103,25 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
         <label htmlFor="profile-time" className="profile-form__label">
           Birth time
         </label>
+        {/* Plain text field rather than type=time: the native picker fights
+           free 24-hour typing (typing "23" in the hour column gets coerced).
+           This accepts digits, auto-inserts the colon, and keeps the same
+           HH:MM string the rest of the pipeline expects. */}
         <input
           id="profile-time"
-          type="time"
+          type="text"
+          inputMode="numeric"
           value={time}
-          onChange={(e) => setTime(e.target.value)}
+          onChange={(e) => setTime(formatTimeInput(e.target.value))}
           className="profile-form__input"
+          placeholder="HH:MM"
+          maxLength={5}
+          autoComplete="off"
           required
-          /* Force 24-hour (military) time. type=time follows the browser's
-             locale for AM/PM vs 24h; a 24-hour lang pins it to the latter. */
-          lang="en-GB"
-          step={60}
+          aria-invalid={!!time && !isValidTime(time)}
         />
         <p className="profile-form__help">
-          24-hour time, as exact as possible. Every minute matters for the moving positions.
+          24-hour time, e.g. 23:45. As exact as possible: every minute matters for the moving positions.
         </p>
       </div>
 
@@ -193,6 +216,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
         .profile-form__input:focus-visible {
           outline-color: var(--color-bronze-500);
           border-color: var(--color-bronze-500);
+        }
+        .profile-form__input[aria-invalid='true'] {
+          border-color: #a04040;
         }
         .profile-form__help {
           font-family: 'Lato', Helvetica, sans-serif;
