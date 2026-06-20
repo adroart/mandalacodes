@@ -115,10 +115,11 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "clamp(14px,2vw,24px) 18px 0", display: "flex", flexDirection: "column", gap: "clamp(12px,1.5vw,20px)" }}>
     <aside data-oe="rail" style={{ width: "100%", minWidth: "0" }}>
       <div data-oe="railrow" style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "480px", margin: "0 auto" }}>
-        {/* ── The invitation: title + subtitle, teaches the offer. Top of the
-              rail, the first thing to do. Click expands the birth-moment
-              dropdown (vals.invite.expanded); save collapses to confirmation. ── */}
-        {(vals.invite) ? (
+        {/* ── Rail-top. The page can supply a rich identity slot (switcher +
+              welcome + keep-this); otherwise the built-in invite renders. ── */}
+        {(vals.inviteSlot) ? (
+          vals.inviteSlot
+        ) : (vals.invite) ? (
           <div data-oe="invitewrap" style={{ position: "relative", display: "flex", flexDirection: "column", gap: "0", background: vals.invite.done ? "var(--glow,rgba(196,170,124,.16))" : "var(--bg2,#fff)", border: vals.invite.done ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", borderRadius: "12px", overflow: vals.invite.expanded ? "visible" : "hidden" }}>
             <button type="button" data-oe="invite" onClick={vals.invite.onClick} aria-label={vals.invite.aria} aria-expanded={vals.invite.expanded ? "true" : "false"} data-oe-invite-done={vals.invite.done ? "1" : undefined} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", textAlign: "center", width: "100%", cursor: "pointer", padding: "14px 16px", background: "transparent", border: "none", transition: "background .25s ease" }}>
               <span style={{ display: "flex", flexDirection: "column", gap: "4px", minWidth: "0", alignItems: "center" }}>
@@ -187,11 +188,12 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             {(vals.gridCards ?? []).map((c, cIdx) => (
               <React.Fragment key={cIdx}>
                 <div data-oe-yours={c.yours ? "1" : undefined} data-oe-num={c.cardNum} style={{ display: "flex", flexDirection: "column" }}>
-                  {(c.codeLabel) ? (
-                    <span data-oe="codelabel" style={{ display: "block", textAlign: "center", padding: "0 2px 6px", fontFamily: "'Karla',sans-serif", fontSize: "9.5px", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--accent,#8a744e)", lineHeight: "1.2", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {c.codeLabel}
-                    </span>
-                  ) : null}
+                  {/* Uniform label band on EVERY card (empty when not yours) so all
+                      cells stay identical height — your cards name the connection
+                      right above the glyph, others keep the same spacing. */}
+                  <span data-oe="codelabel" style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", textAlign: "center", minHeight: "26px", paddingBottom: "4px", fontFamily: "'Karla',sans-serif", fontSize: "9px", fontWeight: "700", letterSpacing: ".09em", textTransform: "uppercase", color: "var(--accent,#8a744e)", lineHeight: "1.15", pointerEvents: "none" }}>
+                  {c.codeLabel || ""}
+                  </span>
                   <button type="button" onClick={c.onTile} aria-label={c.yours ? c.aria + " — your " + c.codeLabel : c.aria} style={{ all: "unset", cursor: "pointer", display: "block", perspective: "760px" }}>
                     <span style={{ position: "relative", display: "block", width: "100%", aspectRatio: "1/1", transformStyle: "preserve-3d", transition: "transform .7s cubic-bezier(.2,.85,.3,1),filter .3s ease", transform: `${c.flipTransform ?? ""}` }}>
                       <span style={{ position: "absolute", inset: "0", backfaceVisibility: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "clamp(5px,0.7vw,9px)" }}>

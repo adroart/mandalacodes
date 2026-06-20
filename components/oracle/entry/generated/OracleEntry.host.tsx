@@ -78,6 +78,9 @@ interface HostProps {
   /** The birth-date/time/place form, rendered inline when the invite expands.
    *  Supplied by the page so it can own profile context + post-save behaviour. */
   inviteForm?: React.ReactNode;
+  /** Full rail-top slot. When provided it replaces the built-in invite — the
+   *  page composes the identity ladder (switcher + welcome + keep-this) here. */
+  inviteSlot?: React.ReactNode;
   /** Notify the app each time a card preview is opened (e.g. journal record). */
   onCardOpened?: (n: number) => void;
 }
@@ -295,6 +298,10 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
       energy,
       actions,
       invite,
+      // When the page supplies a rich rail-top (account switcher + welcome +
+      // keep-this), render it INSTEAD of the built-in invite. Keeps all the
+      // account/sign-in logic in the page where the hooks live.
+      inviteSlot: this.props.inviteSlot ?? null,
       // Right-hand door tiles, stacked. "Learn" opens the Systems overlay
       // (what the 64 are, the four systems they speak). "Your codes" switches
       // on whether a birth moment has been entered.

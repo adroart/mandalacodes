@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oracle identity ladder — mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f1ec; --bg2:#ffffff; --ink:#262321; --ink2:#524330; --ink3:#8a7a5e;
+    --faint:#a89070; --line:#e3ddd1; --line2:#d2c7b4; --accent:#8a744e;
+    --onAccent:#f7f5f1; --glow:rgba(196,170,124,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#e7e3da;font-family:'Karla',system-ui,sans-serif;color:var(--ink);padding:32px 16px}
+  h1.page{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:26px;text-align:center;margin:0 0 4px}
+  p.page{text-align:center;color:var(--ink3);font-size:13px;margin:0 0 28px}
+  .stage{max-width:420px;margin:0 auto 26px;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:18px 16px 22px}
+  .rung{font-family:'Karla';font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);text-align:center;margin:0 0 14px}
+  .rail{display:flex;flex-direction:column;gap:10px;max-width:340px;margin:0 auto}
+
+  /* invite / card shells */
+  .invite{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;overflow:hidden}
+  .invite.lit{background:var(--glow);border-color:var(--accent)}
+  .invite-btn{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;padding:14px 16px;background:transparent;border:none;cursor:pointer;text-align:center}
+  .invite-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--ink)}
+  .invite-sub{font-size:12px;color:var(--ink3)}
+  .drop{padding:6px 16px 16px;border-top:1px solid var(--line2)}
+  .field{display:flex;flex-direction:column;gap:5px;margin-top:12px}
+  .field label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2)}
+  .field input{font-family:'Cormorant Garamond',serif;font-size:16px;padding:9px 11px;border:1px solid var(--line2);border-radius:4px;background:var(--bg2)}
+  .primary{margin-top:14px;width:100%;padding:11px;border:none;border-radius:8px;background:var(--accent);color:var(--onAccent);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+  .ghostlink{display:block;text-align:center;margin-top:10px;font-size:11px;letter-spacing:.06em;color:var(--ink3);background:none;border:none;cursor:pointer}
+
+  /* lit confirmation with the BRIGHT profile cta (ask 1) */
+  .conf{padding:16px}
+  .conf .lead{font-family:'Cormorant Garamond',serif;font-size:18px;text-align:center;color:var(--ink);margin:0 0 4px}
+  .conf .meta{text-align:center;font-size:12px;color:var(--ink3);margin:0 0 14px}
+  .cta-bright{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border:none;border-radius:10px;
+    background:linear-gradient(135deg,#a98a55,#7d6638);color:#fff8ec;font-family:'Karla';font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+    box-shadow:0 0 0 1px rgba(138,116,78,.4),0 6px 22px -4px rgba(138,116,78,.6),0 0 26px -2px rgba(196,170,124,.55)}
+  .keep{margin-top:12px;text-align:center;font-size:12px;color:var(--ink3)}
+  .keep b{color:var(--ink2)}
+
+  /* account switcher (Google-style, ask 2) */
+  .switcher{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:10px 12px}
+  .switcher-h{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin:0 0 9px}
+  .faces{display:flex;gap:8px;flex-wrap:wrap}
+  .face{display:flex;align-items:center;gap:8px;padding:7px 12px 7px 8px;border:1px solid var(--line2);border-radius:999px;background:var(--bg2);cursor:pointer;font-size:13px;color:var(--ink2)}
+  .face.active{border-color:var(--accent);background:var(--glow);color:var(--ink);box-shadow:0 0 0 1px var(--accent),0 0 18px -4px rgba(196,170,124,.7)}
+  .dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff8ec;background:linear-gradient(135deg,#a98a55,#7d6638)}
+  .face.add{color:var(--ink3)}
+  .face.add .dot{background:transparent;color:var(--accent);border:1px dashed var(--line2)}
+
+  /* deck preview */
+  .deck{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:14px}
+  .card{aspect-ratio:1;border-radius:9px;background:#d8cdb8;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond';font-size:13px;color:#8a7a5e}
+  .card.mine{background:linear-gradient(135deg,#caa86a,#9c7e44);color:#fff8ec;box-shadow:0 0 0 1px rgba(138,116,78,.45),0 0 20px -3px rgba(196,170,124,.8)}
+
+  .note{max-width:420px;margin:6px auto 0;font-size:11px;line-height:1.5;color:#6b6256;text-align:center}
+  .arrow{text-align:center;color:var(--accent);font-size:18px;margin:2px 0 -8px}
+</style>
+</head>
+<body>
+
+<h1 class="page">The identity ladder</h1>
+<p class="page">Four rungs, each gives before it asks. Tappable.</p>
+
+<!-- RUNG 1: LIGHT -->
+<div class="stage">
+  <p class="rung">Rung 1 · Light</p>
+  <div class="rail">
+    <div class="invite" id="inv1">
+      <button class="invite-btn" onclick="document.getElementById('drop1').style.display = document.getElementById('drop1').style.display==='block'?'none':'block'">
+        <span class="invite-title">Enter your birth time</span>
+        <span class="invite-sub">See which cards are most relevant to you.</span>
+      </button>
+      <div class="drop" id="drop1" style="display:none">
+        <div class="field"><label>Birth date</label><input value="1990-04-12"></div>
+        <div class="field"><label>Birth time (24h)</label><input value="23:45"></div>
+        <div class="field"><label>Birth place</label><input value="Denpasar, Bali, Indonesia"></div>
+        <button class="primary" onclick="document.getElementById('deck1').style.display='grid'">Light my cards</button>
+      </div>
+    </div>
+    <div class="deck" id="deck1" style="display:none">
+      <div class="card">01</div><div class="card mine">41</div><div class="card">19</div><div class="card mine">13</div>
+      <div class="card">22</div><div class="card">36</div><div class="card mine">25</div><div class="card">44</div>
+    </div>
+  </div>
+</div>
+<p class="note">No account. A stranger just felt something. The lit cards are theirs.</p>
+
+<div class="arrow">↓</div>
+
+<!-- RUNG 2+3: KEEP (the account is born here, not at rung 1) -->
+<div class="stage">
+  <p class="rung">Rung 2 + 3 · Keep — the account quietly begins</p>
+  <div class="rail">
+    <div class="conf invite lit">
+      <p class="lead">Your placement is illuminated</p>
+      <p class="meta">Throughout the sixty-four.</p>
+      <button class="cta-bright">See your full Hologenetic profile →</button>
+      <div class="keep">
+        Want to keep this? <b>Add an email so it’s always here.</b><br>
+        <button class="ghostlink" onclick="document.getElementById('keepbox').style.display='block'">Keep my reading →</button>
+      </div>
+      <div id="keepbox" style="display:none">
+        <div class="field" style="margin-top:14px"><label>Your name</label><input value="Maya"></div>
+        <div class="field"><label>Email</label><input value="maya@example.com"></div>
+        <button class="primary">Send me a code</button>
+        <button class="ghostlink">Not now — keep browsing</button>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="note">The email is asked HERE, one rung up — when “don’t lose this” is a real feeling. Never at the birth-time box.</p>
+
+<div class="arrow">↓</div>
+
+<!-- RUNG 4: SIGNED IN — the switcher + special state -->
+<div class="stage">
+  <p class="rung">Rung 4 · Signed in — switch accounts, own pieces</p>
+  <div class="rail">
+    <div class="switcher">
+      <p class="switcher-h">Reading as</p>
+      <div class="faces">
+        <button class="face active"><span class="dot">M</span>Maya</button>
+        <button class="face"><span class="dot">A</span>Adrian</button>
+        <button class="face add"><span class="dot">+</span>Add</button>
+      </div>
+    </div>
+    <div class="conf invite lit" style="margin-top:2px">
+      <p class="lead">Welcome back, Maya</p>
+      <p class="meta">2 pieces yours · 1 mapped on the Atlas</p>
+      <button class="cta-bright">Your profile, pieces &amp; grid →</button>
+    </div>
+    <div class="deck">
+      <div class="card">01</div><div class="card mine">41</div><div class="card">19</div><div class="card mine">13</div>
+      <div class="card">22</div><div class="card">36</div><div class="card mine">25</div><div class="card">44</div>
+    </div>
+  </div>
+</div>
+<p class="note">Signed-in = something special: a greeting, your pieces, your map. Tap a face to switch partners — each carries their own pieces and grid.</p>
+
+</body>
+</html>

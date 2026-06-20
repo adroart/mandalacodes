@@ -21,10 +21,12 @@ import {
 } from '../../../lib/oracle/elements';
 import { useJournal } from '../../../lib/oracle/journal';
 import { useProfile } from '../../../lib/profile/context';
+import { useAccount } from '../../../lib/account/useAccount';
+import { signOut } from '../../../lib/account/authClient';
 import { POSITION_KEYS, PROFILE_POSITIONS } from '../../../data/profilePositions';
 import { LAUNCH_FLAGS } from '../../../launchFlags';
 import { OracleEntryHost, type EntryCard, type EntryAdapter } from './generated/OracleEntry.host';
-import ProfileForm from '../ProfileForm';
+import OracleRailTop from './OracleRailTop';
 import './OracleEntry.scoped.css';
 
 /* ── deterministic Card-of-Day / Year (same hash as the previous index) ─────── */
@@ -85,6 +87,7 @@ const OracleEntryPage: React.FC = () => {
   const { isDarkMode } = useDarkMode();
   const { record: recordJournal } = useJournal();
   const { profile } = useProfile();
+  const account = useAccount();
   const [systemsOpen, setSystemsOpen] = useState(false);
   const [gridOpen, setGridOpen] = useState(false);
 
@@ -116,11 +119,15 @@ const OracleEntryPage: React.FC = () => {
   const codeLabels = useMemo(() => {
     const map = new Map<number, string[]>();
     if (!LAUNCH_FLAGS.hologeneticProfile || !profile) return map;
+    // The mandala graph uses terse tags ("SQ"); the deck caption spells them out
+    // so a card's connection reads in plain words above it. Only the deck label
+    // expands — the canonical position label stays short for the graph.
+    const expand: Record<string, string> = { SQ: 'Spiritual Quality' };
     for (const pos of PROFILE_POSITIONS) {
       const gate = profile.computed[pos.key]?.gate;
       if (!gate) continue;
       const list = map.get(gate) ?? [];
-      list.push(pos.label);
+      list.push(expand[pos.label] ?? pos.label);
       map.set(gate, list);
     }
     return map;
@@ -203,10 +210,18 @@ const OracleEntryPage: React.FC = () => {
         // Once a birth moment is saved, the invite collapses to its illuminated
         // confirmation and points here: the full Hologenetic profile.
         onOpenProfile={() => navigate('/profile')}
-        // The inline birth-moment dropdown: the real date/time/place form. Saving
-        // lights the codes immediately (local profile); the rail then flips to the
-        // illuminated confirmation on the next render via hasCodes.
-        inviteForm={<ProfileForm initial={profile?.inputs ?? null} />}
+        // The full rail-top: the identity ladder (birth-time entry -> lit
+        // confirmation + keep-this -> signed-in welcome + account switcher).
+        inviteSlot={
+          <OracleRailTop
+            hasCodes={hasCodes}
+            isSignedIn={account.available && account.isSignedIn}
+            accountsAvailable={account.available}
+            displayName={account.email}
+            initialInputs={profile?.inputs ?? null}
+            onSignOut={() => { void signOut(); }}
+          />
+        }
       />
 
       {/* Systems overlay (kept from the previous index — the rail links target it) */}
