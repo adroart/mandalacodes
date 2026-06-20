@@ -119,7 +119,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               rail, the first thing to do. Click expands the birth-moment
               dropdown (vals.invite.expanded); save collapses to confirmation. ── */}
         {(vals.invite) ? (
-          <div data-oe="invitewrap" style={{ display: "flex", flexDirection: "column", gap: "0", background: vals.invite.done ? "var(--glow,rgba(196,170,124,.16))" : "var(--bg2,#fff)", border: vals.invite.done ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", borderRadius: "12px", overflow: "hidden" }}>
+          <div data-oe="invitewrap" style={{ position: "relative", display: "flex", flexDirection: "column", gap: "0", background: vals.invite.done ? "var(--glow,rgba(196,170,124,.16))" : "var(--bg2,#fff)", border: vals.invite.done ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", borderRadius: "12px", overflow: vals.invite.expanded ? "visible" : "hidden" }}>
             <button type="button" data-oe="invite" onClick={vals.invite.onClick} aria-label={vals.invite.aria} aria-expanded={vals.invite.expanded ? "true" : "false"} data-oe-invite-done={vals.invite.done ? "1" : undefined} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", textAlign: "center", width: "100%", cursor: "pointer", padding: "14px 16px", background: "transparent", border: "none", transition: "background .25s ease" }}>
               <span style={{ display: "flex", flexDirection: "column", gap: "4px", minWidth: "0", alignItems: "center" }}>
                 <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "18px", fontWeight: "500", lineHeight: "1.1", color: "var(--ink,#262321)" }}>
@@ -187,7 +187,12 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             {(vals.gridCards ?? []).map((c, cIdx) => (
               <React.Fragment key={cIdx}>
                 <div data-oe-yours={c.yours ? "1" : undefined} data-oe-num={c.cardNum} style={{ display: "flex", flexDirection: "column" }}>
-                  <button type="button" onClick={c.onTile} aria-label={c.yours ? c.aria + " — one of your codes" : c.aria} style={{ all: "unset", cursor: "pointer", display: "block", perspective: "760px" }}>
+                  {(c.codeLabel) ? (
+                    <span data-oe="codelabel" style={{ display: "block", textAlign: "center", padding: "0 2px 6px", fontFamily: "'Karla',sans-serif", fontSize: "9.5px", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--accent,#8a744e)", lineHeight: "1.2", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {c.codeLabel}
+                    </span>
+                  ) : null}
+                  <button type="button" onClick={c.onTile} aria-label={c.yours ? c.aria + " — your " + c.codeLabel : c.aria} style={{ all: "unset", cursor: "pointer", display: "block", perspective: "760px" }}>
                     <span style={{ position: "relative", display: "block", width: "100%", aspectRatio: "1/1", transformStyle: "preserve-3d", transition: "transform .7s cubic-bezier(.2,.85,.3,1),filter .3s ease", transform: `${c.flipTransform ?? ""}` }}>
                       <span style={{ position: "absolute", inset: "0", backfaceVisibility: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "clamp(5px,0.7vw,9px)" }}>
                         <span style={{ width: "48%", color: "var(--ink3,#8a7a5e)" }}>

@@ -93,7 +93,7 @@ export function cleanEventInput(e: unknown): CleanEventInput | null {
   }
 
   // 'transferred' — opaque refs + kind, all three REQUIRED. Never an email
-  // or a name: refs are Clerk userIds or other opaque identifiers. The new
+  // or a name: refs are auth userIds or other opaque identifiers. The new
   // steward's email travels in the request body's `rebind`, OUTSIDE the
   // hashed payload.
   if (obj.type === 'transferred') {
@@ -202,7 +202,7 @@ export async function onRequestPost(
       );
     }
 
-    // Attribution: stamp the admin's opaque Clerk userId, overriding any
+    // Attribution: stamp the admin's opaque auth userId, overriding any
     // client-supplied value. Never an email or name.
     const fullEvent = await appendEvent(chain, {
       ...incoming,

@@ -21,7 +21,7 @@ import {
 } from '../../../lib/oracle/elements';
 import { useJournal } from '../../../lib/oracle/journal';
 import { useProfile } from '../../../lib/profile/context';
-import { POSITION_KEYS } from '../../../data/profilePositions';
+import { POSITION_KEYS, PROFILE_POSITIONS } from '../../../data/profilePositions';
 import { LAUNCH_FLAGS } from '../../../launchFlags';
 import { OracleEntryHost, type EntryCard, type EntryAdapter } from './generated/OracleEntry.host';
 import ProfileForm from '../ProfileForm';
@@ -109,6 +109,23 @@ const OracleEntryPage: React.FC = () => {
   }, [profile]);
   const hasCodes = yourCodes.size > 0;
 
+  /* Which connection each of your cards IS: a map from card number → the
+     position name(s) that landed on it ("Life's Work", "Evolution", …). A
+     single card can carry more than one position, so the value is a list.
+     Drives the small label that sits above each of your cards in the deck. */
+  const codeLabels = useMemo(() => {
+    const map = new Map<number, string[]>();
+    if (!LAUNCH_FLAGS.hologeneticProfile || !profile) return map;
+    for (const pos of PROFILE_POSITIONS) {
+      const gate = profile.computed[pos.key]?.gate;
+      if (!gate) continue;
+      const list = map.get(gate) ?? [];
+      list.push(pos.label);
+      map.set(gate, list);
+    }
+    return map;
+  }, [profile]);
+
   /* Build the adapter once. All 64 real cards, real images, real element model. */
   const entryCards = useMemo(() => ALL_CARDS.map(toEntryCard), []);
   const byNumber = useMemo(() => new Map(entryCards.map((c) => [c.n, c])), [entryCards]);
@@ -172,6 +189,7 @@ const OracleEntryPage: React.FC = () => {
         adapter={adapter}
         theme={isDarkMode ? 'dark' : 'light'}
         yourCodes={yourCodes}
+        codeLabels={codeLabels}
         hasCodes={hasCodes}
         onEnterReading={onEnterReading}
         onCardOpened={onCardOpened}

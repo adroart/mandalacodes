@@ -238,7 +238,7 @@ export interface LedgerEvent {
    *  from steward-facing responses. Never put names/emails/free prose here. */
   note?: string;
   actor: 'admin' | 'steward' | 'heir';
-  /** Opaque actor reference (Clerk userId today) — never an email or name.
+  /** Opaque actor reference (auth userId today) — never an email or name.
    *  Optional and additive: the canonicalizer drops undefined, so events
    *  written before this field existed keep their original hashes. */
   actorRef?: string;
@@ -320,7 +320,7 @@ export interface ConsentState {
   version: number;
   /** ISO timestamp, stamped server-side at capture. */
   capturedAt: string;
-  /** Opaque Clerk userId of the consenting steward, stamped server-side. */
+  /** Opaque auth userId of the consenting steward, stamped server-side. */
   capturedBy: string;
   /** Ring 2 — "Place your piece as a light on the world map?" */
   ring2MapPresence: boolean;
@@ -342,7 +342,7 @@ export interface HeirRegistration {
   name?: string;
   /** ISO timestamp, stamped server-side at registration. */
   registeredAt: string;
-  /** Opaque Clerk userId of the steward who registered the heir. */
+  /** Opaque auth userId of the steward who registered the heir. */
   registeredBy: string;
   /** 'pending' on registration; 'active'/'revoked' via later edits.
    *  Status is informational only — no value ever grants access. */
@@ -363,7 +363,7 @@ export interface ClaimRequest {
   id: string;
   pieceId: string;
   editionNumber?: number;
-  /** Opaque Clerk userId of the requester. */
+  /** Opaque auth userId of the requester. */
   requesterRef: string;
   /** Requester's email from the verified JWT — needed to seed the steward
    *  record on approval. Mutable storage only, never the chain. */
@@ -375,7 +375,7 @@ export interface ClaimRequest {
   /** 'holder' when the piece has a bound steward (the CURRENT holder
    *  decides — anti-takeover); 'admin' otherwise. */
   routedTo: 'admin' | 'holder';
-  /** Stamped on resolution. resolvedBy is an opaque Clerk userId. */
+  /** Stamped on resolution. resolvedBy is an opaque auth userId. */
   resolvedAt?: string;
   resolvedBy?: string;
 }
@@ -415,7 +415,7 @@ export interface AtlasLetter {
 }
 
 /**
- * Steward record — binds a piece to a Clerk user identity.
+ * Steward record — binds a piece to an auth user identity.
  *
  * Admin creates the record with the collector's `email`. On first sign-in
  * matching that email, the steward `claim` Function fills `clerkUserId`.

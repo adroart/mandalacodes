@@ -14,7 +14,7 @@ import AccountLayout from '../account/AccountLayout';
 /**
  * Steward edit page. Rendered at `/atlas/edit`.
  *
- * Requires Clerk auth. On mount we POST /api/atlas/steward/claim with the
+ * Requires auth. On mount we POST /api/atlas/steward/claim with the
  * bearer token to load every piece bound to this user. Stewards with more
  * than one piece get a picker; edits always apply to the selected piece.
  * If no record is bound to this user, we send them to /atlas/claim.
@@ -79,7 +79,7 @@ const StewardEdit: React.FC = () => {
   const [cityOpen, setCityOpen] = useState(false);
   const comboRef = useRef<HTMLDivElement>(null);
 
-  // Load claimed pieces via Clerk-authed claim call.
+  // Load claimed pieces via authed claim call.
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn) {

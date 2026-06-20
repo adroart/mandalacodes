@@ -48,7 +48,7 @@ light at a time, starting with the artist's own.
    question becomes a prominent, celebrated, *unticked* choice at claim.
    (REVISES v1 settled decision #4.)
 3. **The QR must land on a beautiful zero-signup piece page, not a login
-   wall.** Today `/atlas/claim` is a bare Clerk form. The story, the art, the
+   wall.** Today `/atlas/claim` is a bare sign-in form. The story, the art, the
    edition, and the public spine of the piece's history are viewable with no
    account; claiming is the upgrade for people who want to *write into* the
    record. (Product + strategy findings — this was the single biggest
@@ -97,7 +97,7 @@ storage layer; the corrected state:
   can't join — the v1 "mandala-only charts" default is enforced by accident).
 - **Steward system** — `functions/api/atlas/steward/{claim,update}.ts`,
   `stewards/issue.ts`. Email-pre-binding: admin issues a record, collector
-  signs in via Clerk, claim binds `clerkUserId`. `outreachStatus:
+  signs in, claim binds `clerkUserId`. `outreachStatus:
   no-contact → invited → claimed → declined`. The claim endpoint takes **no
   body** — consent capture requires reworking it.
 - **Public/private split** — `toPublicState` strips private data
@@ -133,11 +133,11 @@ page (`WorksPage.tsx`). The QR is a *pointer*, never a credential.
    accounts DB.
 
 2. **Lost-code recovery: the account is the key — with hardening.** First
-   claim binds the piece to the collector's Clerk account; losing the printed
+   claim binds the piece to the collector's account; losing the printed
    code doesn't matter. Additions from review:
-   - The chain references holders only by **opaque IDs** (`actorRef` = Clerk
-     userId today); a mutable holder registry maps opaque ID → current auth
-     identity, so migrating off Clerk is a registry update, never a chain
+   - The chain references holders only by **opaque IDs** (`actorRef` = auth
+     userId); a mutable holder registry maps opaque ID → current auth
+     identity, so changing auth provider is a registry update, never a chain
      rewrite.
    - **Re-binding a claimed piece is impossible** except via an audited
      `transferred` event (server-enforced, not just the issuance dup-check).
@@ -257,7 +257,7 @@ page (`WorksPage.tsx`). The QR is a *pointer*, never a credential.
   tip (or move to explicit sequence numbers).
 - **Leak — admin notes**: `claim.ts` returns `StewardRecord.notes` and event
   `note`s to stewards. Strip from all non-admin responses.
-- **Attribution**: add `actorRef` (Clerk userId) to every event written from
+- **Attribution**: add `actorRef` (auth userId) to every event written from
   now on; alert the bound steward email on any admin action touching their
   piece.
 - **First tests** (none exist): `verifyChain` round-trip, projection rules,
@@ -326,7 +326,7 @@ their book.
   auto-binding credentials**; activation is always a mediated `transferred`
   event).
 - **Holder export**: signed JSON + print-styled PDF of the full book.
-- Clerk `user.deleted` webhook → unbind steward records (piece reverts to
+- Account-deletion hook → unbind steward records (piece reverts to
   artist root-of-trust; chain intact). **Inscriptions are NOT erased** —
   the history lives with the piece forever (ratified); the erasure endpoint
   is reserved for explicit legal demands only.
@@ -423,7 +423,7 @@ export type LedgerEventType =
 export interface LedgerEvent {
   // ...existing fields unchanged...
   actor: 'admin' | 'steward' | 'heir';
-  actorRef?: string;            // opaque (Clerk userId today) — never email/name
+  actorRef?: string;            // opaque (auth userId) — never email/name
   inscriptionId?: string;       // 'inscribed' only
   contentHash?: string;         // SHA-256(salt || body); salt lives in D1
   inscriptionKind?: 'intention' | 'story' | 'dedication';
@@ -467,9 +467,10 @@ Storage placement (the PII table):
   Additive only; D1 has no down-migrations.
 - Secrets: new `SALE_WEBHOOK_SECRET` (32+ random bytes) on both Pages
   projects; enable `GITHUB_MIRROR_*` (mirror becomes load-bearing per
-  Continuity); existing `CLERK_SECRET_KEY` / `ADMIN_EMAILS` /
-  `CLERK_WEBHOOK_SECRET` per `docs/secrets-sync.md`. Production Clerk
-  instance per `todo/plans/clerk-launch.md` is a prerequisite for M2.
+  Continuity); existing `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL` /
+  `ADMIN_EMAILS` / `GOOGLE_*` / `RESEND_*` per `docs/secrets-sync.md`. Auth is
+  self-owned Better Auth and already live, so no auth provisioning is a
+  prerequisite for M2.
 - Rollback: code rollback is safe (old projector ignores new event types);
   data rollback = restore the backed-up R2 objects. Run `verifyChain` after
   every write once stewards can author events; refuse writes on a broken

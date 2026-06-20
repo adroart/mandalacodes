@@ -3,7 +3,7 @@
  * (M4). One mechanism for secondary sale, auction, gift, retroactive
  * collector, and inheritance: anyone signed in may ASK; a human resolves.
  *
- * Clerk-authenticated (any user). Body: { pieceId, editionNumber?, note? }
+ * Authenticated (any user). Body: { pieceId, editionNumber?, note? }
  * — the note is optional evidence (≤500 chars, e.g. "bought at the Vienna
  * auction, lot 12") and lives ONLY in the mutable request record.
  *

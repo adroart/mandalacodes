@@ -34,9 +34,39 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
   const [place, setPlace] = useState<Place | null>(initial?.place ?? null);
   const [suggestions, setSuggestions] = useState<Place[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const listRef = useRef<HTMLUListElement | null>(null);
+
+  const hasQuery = placeQuery.trim().length >= 2 && placeQuery !== place?.label;
+
+  // Keep the keyboard-highlighted row scrolled into view inside the list.
+  useEffect(() => {
+    if (activeIndex < 0 || !listRef.current) return;
+    const el = listRef.current.querySelector<HTMLElement>(`#profile-place-opt-${activeIndex}`);
+    el?.scrollIntoView({ block: 'nearest' });
+  }, [activeIndex]);
+
+  const onPlaceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((i) => (i + 1) % suggestions.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+    } else if (e.key === 'Enter') {
+      if (activeIndex >= 0) {
+        e.preventDefault();
+        selectPlace(suggestions[activeIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+      setActiveIndex(-1);
+    }
+  };
 
   // Debounced place lookup as the user types.
   useEffect(() => {
@@ -46,8 +76,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
       return;
     }
     debounceRef.current = setTimeout(async () => {
-      const results = await searchPlaces(placeQuery, 8);
+      const results = await searchPlaces(placeQuery, 24);
       setSuggestions(results);
+      setActiveIndex(-1);
     }, 180);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -140,33 +171,51 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           }}
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => window.setTimeout(() => setShowSuggestions(false), 150)}
+          onKeyDown={onPlaceKeyDown}
           className="profile-form__input"
-          placeholder="City, region or country"
+          placeholder="Type a city, then pick from the list"
           autoComplete="off"
+          role="combobox"
+          aria-expanded={showSuggestions && suggestions.length > 0}
+          aria-controls="profile-place-list"
+          aria-activedescendant={activeIndex >= 0 ? `profile-place-opt-${activeIndex}` : undefined}
           required
         />
-        {showSuggestions && suggestions.length > 0 && (
-          <ul className="profile-form__suggestions" role="listbox">
-            {suggestions.map((s) => (
-              <li
-                key={`${s.lat}_${s.lng}_${s.tzId}`}
-                role="option"
-                aria-selected={place?.label === s.label}
-              >
-                <button
-                  type="button"
-                  className="profile-form__suggestion"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    selectPlace(s);
-                  }}
+        {showSuggestions && hasQuery && (
+          suggestions.length > 0 ? (
+            <ul
+              id="profile-place-list"
+              ref={listRef}
+              className="profile-form__suggestions"
+              role="listbox"
+            >
+              {suggestions.map((s, i) => (
+                <li
+                  key={`${s.lat}_${s.lng}_${s.tzId}`}
+                  id={`profile-place-opt-${i}`}
+                  role="option"
+                  aria-selected={i === activeIndex}
                 >
-                  <span className="profile-form__suggestion-label">{s.label}</span>
-                  <span className="profile-form__suggestion-tz">{s.tzId}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <button
+                    type="button"
+                    className={`profile-form__suggestion${i === activeIndex ? ' is-active' : ''}`}
+                    onMouseEnter={() => setActiveIndex(i)}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      selectPlace(s);
+                    }}
+                  >
+                    <span className="profile-form__suggestion-label">{s.label}</span>
+                    <span className="profile-form__suggestion-tz">{s.tzId}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="profile-form__suggestions-empty">
+              No match yet. Try the nearest larger city or town.
+            </p>
+          )
         )}
         {place && (
           <p className="profile-form__help">
@@ -235,41 +284,65 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           top: 100%;
           left: 0;
           right: 0;
-          z-index: 5;
+          z-index: 20;
           background: var(--color-paper-50);
-          border: 1px solid color-mix(in oklab, var(--color-wood-600) 18%, transparent);
-          border-radius: 3px;
-          margin: 4px 0 0;
-          padding: 4px 0;
+          border: 1px solid color-mix(in oklab, var(--color-wood-600) 28%, transparent);
+          border-radius: 6px;
+          margin: 6px 0 0;
+          padding: 4px;
           list-style: none;
-          max-height: 260px;
+          /* Tall enough to show ~9 rows; the index returns up to 24 so the
+             list scrolls. min() keeps it inside short viewports (mobile). */
+          max-height: min(60vh, 420px);
           overflow-y: auto;
-          box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.15);
+          overscroll-behavior: contain;
+          box-shadow: 0 14px 38px -10px rgba(0, 0, 0, 0.32);
         }
         .profile-form__suggestion {
           display: flex;
-          align-items: baseline;
-          justify-content: space-between;
-          gap: 12px;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 2px;
           width: 100%;
-          padding: 8px 12px;
+          padding: 11px 14px;
           background: transparent;
           border: 0;
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 15px;
-          color: var(--color-wood-900);
+          border-radius: 4px;
           text-align: left;
           cursor: pointer;
-          transition: background 0.15s;
+          transition: background 0.12s;
         }
-        .profile-form__suggestion:hover {
-          background: color-mix(in oklab, var(--color-bronze-400) 8%, transparent);
+        .profile-form__suggestion:hover,
+        .profile-form__suggestion.is-active {
+          background: color-mix(in oklab, var(--color-bronze-400) 16%, transparent);
+        }
+        .profile-form__suggestion-label {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 17px;
+          line-height: 1.2;
+          color: var(--color-wood-900);
         }
         .profile-form__suggestion-tz {
           font-family: 'Lato', Helvetica, sans-serif;
           font-size: 10px;
           color: var(--color-wood-600);
           letter-spacing: 0.1em;
+        }
+        .profile-form__suggestions-empty {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          z-index: 20;
+          margin: 6px 0 0;
+          padding: 12px 14px;
+          background: var(--color-paper-50);
+          border: 1px solid color-mix(in oklab, var(--color-wood-600) 28%, transparent);
+          border-radius: 6px;
+          box-shadow: 0 14px 38px -10px rgba(0, 0, 0, 0.32);
+          font-family: 'Lato', Helvetica, sans-serif;
+          font-size: 12px;
+          color: var(--color-wood-600);
         }
         .profile-form__submit {
           align-self: flex-start;

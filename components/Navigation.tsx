@@ -15,7 +15,7 @@ interface NavItem {
    * navigation instead of asking the router for a route that does not exist.
    */
   external?: boolean;
-  /** Only render when accounts are available (Clerk/Better Auth configured
+  /** Only render when accounts are available (auth configured
    *  and the launch flag on). Account is a real menu item, not a side control. */
   accountAware?: boolean;
 }

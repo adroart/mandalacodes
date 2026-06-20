@@ -95,7 +95,7 @@ export function genRequestId(): string {
 
 export interface PlanClaimRequestOptions {
   input: ClaimRequestInput;
-  /** Opaque Clerk userId of the requester (from the verified token). */
+  /** Opaque auth userId of the requester (from the verified token). */
   requesterRef: string;
   /** Requester's email from the verified JWT. */
   requesterEmail: string;

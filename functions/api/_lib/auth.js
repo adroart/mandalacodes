@@ -5,8 +5,9 @@
  * `{ userId, email, emailVerified, session, user }` or a 401 Response.
  *
  * `userId` is the Better Auth user id; the D1 users row stores it in the
- * `clerk_user_id` column (kept as the generic external-auth-id), so
- * `getUserByClerkId(env.DB, auth.userId)` keeps working without a rename.
+ * `clerk_user_id` column — a legacy column name still scheduled for rename,
+ * now holding the Better Auth id as the generic external-auth-id, so
+ * `getUserByClerkId(env.DB, auth.userId)` keeps working until that rename.
  */
 
 import { createAuth } from '../../../lib/account/auth.server.js';

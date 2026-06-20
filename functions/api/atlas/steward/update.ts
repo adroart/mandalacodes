@@ -1,8 +1,8 @@
 /**
  * POST /api/atlas/steward/update
  *
- * Clerk-authenticated. Body specifies which piece the steward is editing
- * (since one Clerk user can steward multiple pieces). We verify a steward
+ * Authenticated. Body specifies which piece the steward is editing
+ * (since one user can steward multiple pieces). We verify a steward
  * record exists for (pieceId, editionNumber) AND its clerkUserId matches
  * the bearer token's user.
  *
@@ -22,7 +22,7 @@
  * — the "country only" option is just a country centroid in the catalog);
  * notes are admin-only and ignored.
  * Ledger and steward writes go through the conditional-put mutators, and
- * every appended event carries the steward's opaque Clerk userId as
+ * every appended event carries the steward's opaque auth userId as
  * `actorRef`. Responses strip admin-authored event notes.
  */
 
@@ -101,7 +101,7 @@ export async function onRequestPost(
     typeof body.editionNumber === 'number' ? body.editionNumber : undefined;
 
   // Authorize: steward record must exist for this piece AND be bound to
-  // this Clerk user.
+  // this user.
   const stewards = await readStewards(env);
   const record = stewards.find(
     (s) =>

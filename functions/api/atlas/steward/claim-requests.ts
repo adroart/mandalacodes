@@ -2,8 +2,8 @@
  * GET /api/atlas/steward/claim-requests — pending stewardship requests
  * routed to the CALLER as current holder (M4).
  *
- * Clerk-authenticated. Returns every pending request with routedTo
- * 'holder' whose piece is bound to the caller's Clerk userId. The holder
+ * Authenticated. Returns every pending request with routedTo
+ * 'holder' whose piece is bound to the caller's auth userId. The holder
  * sees the requester's email and evidence note (they must be able to
  * recognize "yes, that's the person I sold it to") but never the opaque
  * requesterRef or anyone else's requests.

@@ -133,7 +133,7 @@ export function nextRing3ConsentState(
 // ---------- Steward record transitions ----------
 
 /**
- * Phase A bind: attach the Clerk userId (first match only) and bump
+ * Phase A bind: attach the auth userId (first match only) and bump
  * activity. Deliberately does NOT touch outreachStatus — 'claimed' gates on
  * consent capture (Phase B), not on the bind.
  */
@@ -189,7 +189,7 @@ export function genEventId(): string {
 export interface ClaimChainOptions {
   pieceId: string;
   editionNumber?: number;
-  /** Opaque Clerk userId — stamped server-side, never an email or name. */
+  /** Opaque auth userId — stamped server-side, never an email or name. */
   actorRef: string;
   /** ISO now. appendEvent rejects anything before the chain tip. */
   now: string;

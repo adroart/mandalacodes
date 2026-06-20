@@ -1,7 +1,7 @@
 /**
  * GET /api/atlas/steward/inscriptions?pieceId=…&editionNumber=…
  *
- * Clerk-authenticated; the steward record for the piece must be bound to
+ * Authenticated; the steward record for the piece must be bound to
  * the bearer's userId. Returns ALL inscriptions for the piece — ratified
  * erasure semantics: the history lives with the piece forever, so the
  * CURRENT steward (and every future one) reads the whole book, whoever

@@ -2,7 +2,7 @@
  * POST /api/atlas/steward/resolve-claim-request — the current holder
  * decides a stewardship request routed to them (M4).
  *
- * Clerk-authenticated. Body: { requestId, approve, transferKind? } —
+ * Authenticated. Body: { requestId, approve, transferKind? } —
  * transferKind ('sale' | 'gift', the holder's call) is required on
  * approval.
  *

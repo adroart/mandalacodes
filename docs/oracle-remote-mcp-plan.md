@@ -269,7 +269,7 @@ is **public, read-only**:
   script) and put the same token in Claude's connector config. Leave it unset
   for public access.
 
-- **Clerk** is already wired (`functions/api/_lib/clerk.ts`) if you ever want
+- **Session auth** is already wired (`functions/api/_lib/auth.js`) if you ever want
   per-user gating, but it's overkill for read-only published content.
 
 **Authoring tools never go remote.** `compose_reading` and the scaffolder remain

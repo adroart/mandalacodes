@@ -134,7 +134,7 @@ export async function onRequestPost(
   let transferEvent: LedgerEvent | null = null;
   if (existing?.clerkUserId) {
     // Case 3 — secondary sale of a CLAIMED piece: the audited transferred +
-    // rebind path. The buyer has no Clerk userId yet; the chain records the
+    // rebind path. The buyer has no auth userId yet; the chain records the
     // opaque sale ref (see pendingTransferRef) and the rebound record binds
     // their identity on first sign-in via the normal claim flow.
     const outcome = await executeTransfer(env, {

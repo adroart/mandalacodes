@@ -11,7 +11,7 @@ import type { ConsentChoice } from './ConsentRings';
  * Steward claim — rendered at /atlas/claim. Two-phase since M2.
  *
  * Flow:
- *   1. Collector signs in to mandalacodes with Clerk using the email Adrian
+ *   1. Collector signs in to mandalacodes using the email Adrian
  *      added them with.
  *   2. Phase A: the page POSTs to /api/atlas/steward/claim (no consent in
  *      the body — identity comes from the bearer token). Server binds the

@@ -44,7 +44,7 @@ const SIGNED_OUT_FEATURES: Array<{
 
 /**
  * Shared chrome for every /account/* page. Redirects guests to home when
- * accounts are unavailable (Clerk not configured or flag off); shows a
+ * accounts are unavailable (auth not configured or flag off); shows a
  * brief sign-in prompt when signed out but configured.
  */
 const AccountLayout: React.FC<AccountLayoutProps> = ({ title, children }) => {

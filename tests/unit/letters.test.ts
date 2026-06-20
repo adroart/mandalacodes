@@ -6,7 +6,7 @@
  *     ring2-public, ring3-eligible holder ONLY; a private (absent-from-public)
  *     piece neither receives nor is referenced; sibling editions never self-
  *     notify; a private claim is silent,
- *   - PII discipline: no letter body contains an email, a Clerk userId, or any
+ *   - PII discipline: no letter body contains an email, a auth userId, or any
  *     opaque ref — and a kin body never names a ring2-private piece's location,
  *   - anniversary derivation: idempotent, one letter per year, only on/after
  *     the anniversary,

@@ -128,7 +128,7 @@
              (the app's date/time/place form) in React; collapses to a confirmation
              once a birth moment is saved. Top of the rail, the first thing to do. -->
         <sc-if test="{{ invite }}">
-        <div data-oe="invitewrap" style="display:flex;flex-direction:column;border:1px solid var(--line2,#d2c7b4);border-radius:12px;overflow:hidden;background:var(--bg2,#fff)">
+        <div data-oe="invitewrap" style="position:relative;display:flex;flex-direction:column;border:1px solid var(--line2,#d2c7b4);border-radius:12px;overflow:hidden;background:var(--bg2,#fff)">
           <button type="button" data-oe="invite" onClick="{{ invite.onClick }}" aria-label="{{ invite.aria }}" data-oe-invite-done="{{ invite.done }}" style="display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;width:100%;cursor:pointer;padding:14px 16px;background:transparent;border:none">
             <span style="display:flex;flex-direction:column;gap:4px;min-width:0;align-items:center">
               <span style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;line-height:1.1;color:var(--ink,#262321)">{{ invite.title }}</span>
@@ -170,6 +170,9 @@
       <div data-oe="ichgrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,1.6vw,16px) clamp(8px,1.4vw,14px);padding:18px 0 8px">
         <sc-for list="{{ gridCards }}" as="c" hint-placeholder-count="24">
           <div data-oe-yours="{{ c.yours }}" data-oe-num="{{ c.cardNum }}" style="display:flex;flex-direction:column">
+            <sc-if test="{{ c.codeLabel }}">
+            <span data-oe="codelabel" style="display:block;text-align:center;padding:0 2px 6px;font-family:'Karla',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent,#8a744e);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.codeLabel }}</span>
+            </sc-if>
             <button type="button" onClick="{{ c.onTile }}" aria-label="{{ c.aria }}" style="all:unset;cursor:pointer;display:block;perspective:760px">
               <span style="position:relative;display:block;width:100%;aspect-ratio:1/1;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.85,.3,1),filter .3s ease;transform:{{ c.flipTransform }}">
                 <span style="position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(5px,0.7vw,9px)">

@@ -1,7 +1,7 @@
 /**
  * POST /api/atlas/sale — the sale → ledger bridge webhook (M4).
  *
- * Machine auth, no Clerk: adrianrasmussen.com calls this on checkout
+ * Machine auth, no user session: adrianrasmussen.com calls this on checkout
  * success with
  *   X-Sale-Timestamp: unix seconds
  *   X-Sale-Signature: hex(HMAC-SHA256(SALE_WEBHOOK_SECRET, ts + "." + rawBody))

@@ -242,12 +242,12 @@ export interface TransferredDraftOptions {
   /** 'admin' for sale-queue confirmations / admin adjudications; 'steward'
    *  when the current holder approves a claim request themselves. */
   actor: 'admin' | 'steward';
-  /** Opaque Clerk userId of whoever performs the transfer. */
+  /** Opaque auth userId of whoever performs the transfer. */
   actorRef: string;
-  /** Opaque ref of the OUTGOING steward (their bound Clerk userId). */
+  /** Opaque ref of the OUTGOING steward (their bound auth userId). */
   fromRef: string;
   /**
-   * Opaque ref of the INCOMING steward. When the buyer already has a Clerk
+   * Opaque ref of the INCOMING steward. When the buyer already has an
    * account (claim-request approval) this is their userId. For a confirmed
    * sale whose buyer hasn't signed in yet, callers pass
    * `pendingTransferRef(saleId)` — see that function's doc for why the
@@ -292,7 +292,7 @@ export function buildTransferredDraft(
  * What fromRef/toRef mean pre-claim: the chain is immutable, but per
  * settled decision #2 the chain only ever carries OPAQUE refs — a mutable
  * registry (the steward record) maps refs to live identities. When a sale
- * is confirmed before the buyer's first sign-in there is no Clerk userId to
+ * is confirmed before the buyer's first sign-in there is no auth userId to
  * point at, so the transfer's toRef is this deterministic, non-personal
  * sale reference instead. It permanently records WHICH sale moved the
  * piece (dispute evidence lives in atlas_sale_events under the same id)
@@ -309,7 +309,7 @@ export function pendingTransferRef(saleId: string): string {
 export interface GenesisDraftOptions {
   pieceId: string;
   editionNumber?: number;
-  /** Opaque Clerk userId of the confirming admin. */
+  /** Opaque auth userId of the confirming admin. */
   actorRef: string;
   pieceType?: 'mandala' | 'other';
   /** ISO now — the genesis records when the LEDGER learned of the piece,

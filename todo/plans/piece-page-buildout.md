@@ -48,7 +48,7 @@ This is intertwined: the richer page's fields should match what the editor can w
 - Palette: paper / wood / stone / bronze; bronze `#c4aa7c` accents, sage `#9caa87`
 - Fonts: Cormorant Garamond (serif), Cinzel (titles), Lato (labels)
 - NO em dashes; minimal, mystical-but-not-prescriptive; middle-dot (·) separators
-- Admin is Clerk-gated (stewards/admin) — see how `AdminAtlas.tsx` and `/atlas/claim` use Clerk
+- Admin is auth-gated (stewards/admin) — see how `AdminAtlas.tsx` and `/atlas/claim` use the session auth
 - Adrian has an oracle-card writing system already (see workspace memory `project_mandala_oracle_writing_system`) — the piece stories may want a similar drafting flow
 
 ## First moves for the new session

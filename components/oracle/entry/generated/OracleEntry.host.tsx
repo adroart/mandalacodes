@@ -60,6 +60,10 @@ interface HostProps {
   /** The visitor's own card numbers (from their saved birth profile). Cards in
    *  this set glow in the deck. Empty when no birth moment has been entered. */
   yourCodes?: Set<number>;
+  /** For each of the visitor's cards, the connection name(s) it carries —
+   *  "Life's Work", "Evolution", … — so the deck can label each lit card with
+   *  what it IS in their chart. Keyed by card number; a card may hold several. */
+  codeLabels?: Map<number, string[]>;
   /** Whether a birth moment has been entered (yourCodes is non-empty). Switches
    *  the rail's "Your codes" tile from invitation to confirmation. */
   hasCodes?: boolean;
@@ -173,14 +177,10 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     // Two compact utility buttons stay as a pair; "enter your birthday" graduates
     // to its own full-width invitation bar (below) because it has to TEACH the
     // offer, not just label it — a first-timer doesn't know what "your codes" are.
-    const ghostBg = 'transparent';
-    const ghostBorder = '1px solid var(--line2,#d2c7b4)';
-    const ghostFg = 'var(--ink2,#524330)';
     const fillBg = 'var(--accent,#8a744e)';
     const fillBorder = '1px solid var(--accent,#8a744e)';
     const fillFg = 'var(--onAccent,#f7f5f1)';
     const actions = [
-      { key: 'systems', label: 'The systems', emphasis: false, bg: ghostBg, border: ghostBorder, fg: ghostFg, aria: 'Open the systems overlay', onClick: () => this.props.onOpenSystems?.() },
       { key: 'draw', label: 'Draw a card', emphasis: true, bg: fillBg, border: fillBorder, fg: fillFg, aria: 'Draw a random card', onClick: () => { const c = all[Math.floor(Math.random() * all.length)]; if (c) this.openReading(c); } },
     ];
 
@@ -241,10 +241,14 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     const filtered = all.filter((c) => elOk(c) && qOk(c));
 
     const yourCodes = this.props.yourCodes;
+    const codeLabels = this.props.codeLabels;
     const gridCards = filtered.map((c) => {
       const tint = m ? m.tintFor(c) : ['#9d7c48', '#65502f'];
       const flipped = !!this.state.flipped[c.n];
       const yours = !!yourCodes && yourCodes.has(c.n);
+      // The connection name(s) this card carries in the visitor's chart. Joined
+      // with a thin separator when a card holds more than one position.
+      const codeLabel = yours && codeLabels ? (codeLabels.get(c.n) ?? []).join(' · ') : '';
       return {
         n: c.n,
         name: c.name,
@@ -254,6 +258,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
         art: m ? m.cardImg(c, 320) : '',
         grad: 'linear-gradient(150deg,' + tint[0] + ',' + tint[1] + ')',
         yours,
+        codeLabel,
         flipped,
         closed: !flipped,
         flipTransform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',

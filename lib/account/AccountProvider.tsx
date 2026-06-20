@@ -10,8 +10,8 @@ import { authClient } from './authClient';
  * accounts launch flag is off, it provides quiet "not available" stubs so the
  * site renders quest UI without special-casing elsewhere.
  *
- * Replaces the previous Clerk integration. Sessions are cookies, so there is
- * no provider component to mount and `fetchAuthed` just includes credentials.
+ * Sessions are cookies, so there is no provider component to mount and
+ * `fetchAuthed` just includes credentials.
  */
 export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({
   children,

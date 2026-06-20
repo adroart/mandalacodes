@@ -68,12 +68,12 @@ from that checkout with `wrangler d1 migrations apply adrian-website --remote`.
 need to understand the code to keep the system running; you only need to know
 where things are.
 
-**Clerk (authentication)** — collector accounts and admin sign-in both use
-Clerk. The admin allowlist is the `ADMIN_EMAILS` environment variable: a
-comma-separated list of email addresses that have full atlas admin access. To
-add a new admin, add their email to this variable and redeploy. To remove one,
-remove them and redeploy. No Clerk dashboard change is needed for admin access
-specifically.
+**Authentication (Better Auth)** — collector accounts and admin sign-in both use
+the site's self-owned Better Auth (Google + email/password + email code). The
+admin allowlist is the `ADMIN_EMAILS` environment variable: a comma-separated
+list of email addresses that have full atlas admin access. To add a new admin,
+add their email to this variable and redeploy. To remove one, remove them and
+redeploy. No auth-provider change is needed for admin access specifically.
 
 ---
 
@@ -120,7 +120,7 @@ Names, email addresses, free text, birth dates, photos — none of these may
 appear in any field that is included in a `LedgerEvent`'s hash. The chain
 carries only:
 
-- opaque IDs (`pieceId`, `actorRef` = a Clerk userId, `inscriptionId`)
+- opaque IDs (`pieceId`, `actorRef` = an auth userId, `inscriptionId`)
 - event types and dates
 - city IDs (from a curated ~99-city centroid catalog — never GPS coordinates)
 - salted content commitments (`SHA-256(salt + body)`, where the salt is stored
@@ -147,7 +147,7 @@ storage (steward record, D1 table), not in the chain.
 
 **Stewards** are collectors who have claimed a piece. Each steward record in
 `stewards.json` holds their email (from the pre-issued admin record), their
-bound Clerk userId (set at first claim), consent history, heir hints, and
+bound auth userId (set at first claim), consent history, heir hints, and
 outreach status. The outreach status follows a path:
 `no-contact → invited → claimed → declined`.
 
@@ -167,7 +167,7 @@ an automatic step.
 
 **Transfers** are the only legitimate way to move a bound piece from one
 steward to another. Every transfer is recorded as a `transferred` event in the
-chain, carrying opaque `fromRef` and `toRef` Clerk userIds (or a deterministic
+chain, carrying opaque `fromRef` and `toRef` auth userIds (or a deterministic
 `sale:{saleId}` ref when the buyer hasn't signed in yet). The chain carries no
 name, no email, no price. Price and buyer identity live in `atlas_sale_events`
 in D1 only.
@@ -225,9 +225,11 @@ collector contact information.
 
 | Secret | Where | What it does |
 |---|---|---|
-| `CLERK_SECRET_KEY` | Cloudflare Pages env, encrypted | Verifies Clerk JWTs in every authenticated Function |
+| `BETTER_AUTH_SECRET` | Cloudflare Pages env, encrypted | Signs and verifies the self-owned session in every authenticated Function |
+| `BETTER_AUTH_URL` | Cloudflare Pages env, plaintext | Deployed origin used for session cookies and OAuth callbacks |
 | `ADMIN_EMAILS` | Cloudflare Pages env, plaintext | Comma-separated list of admin email addresses |
-| `CLERK_WEBHOOK_SECRET` | Cloudflare Pages env, encrypted | Svix verification for `/api/clerk/webhook` (user lifecycle events) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Cloudflare Pages env, encrypted | Google OAuth sign-in |
+| `RESEND_API_KEY` | Cloudflare Pages env, encrypted | Sends the email sign-in code |
 | `SALE_WEBHOOK_SECRET` | Cloudflare Pages env, encrypted, **both projects** | HMAC-SHA256 verification for the adrianrasmussen.com sale webhook |
 | `GITHUB_MIRROR_TOKEN` | Cloudflare Pages env, encrypted | Fine-grained PAT with Contents: Read/Write on the mirror repo |
 | `GITHUB_MIRROR_REPO` | Cloudflare Pages env, plaintext | `owner/repo` of the public mirror repository |
@@ -264,10 +266,11 @@ Here are the steps, in order:
    only when you are confident in the handover. A broken or missing `ADMIN_EMAILS`
    value locks you out of the admin interface immediately.
 
-4. **Update Clerk.** The Clerk application controls who can sign in. If Adrian
-   created a production Clerk instance (per `todo/plans/clerk-launch.md`), you
-   will need access to that Clerk dashboard to manage the OAuth application and,
-   eventually, to transfer or recreate the instance.
+4. **Update the auth config.** Sign-in is self-owned Better Auth, configured by
+   the `BETTER_AUTH_*`, `GOOGLE_*`, and `RESEND_*` environment variables on the
+   Cloudflare Pages project (no third-party auth dashboard). To manage Google
+   sign-in you need access to the Google Cloud OAuth client; everything else is
+   controlled by those Pages env vars.
 
 5. **Check the GitHub mirror.** If `GITHUB_MIRROR_*` is set, confirm the mirror
    repository is still public. Do not delete it. As long as it is public, the

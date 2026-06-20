@@ -1,9 +1,9 @@
 /**
  * GET /api/atlas/stewards
  *
- * Admin-only. Returns the steward roster. No HMAC hashes anymore — Clerk
- * holds the user identity — but `clerkUserId` is still useful context for
- * the admin dashboard.
+ * Admin-only. Returns the steward roster. No HMAC hashes anymore — the auth
+ * layer holds the user identity — but `clerkUserId` is still useful context
+ * for the admin dashboard.
  */
 
 import type { PagesContext } from '../_helpers';

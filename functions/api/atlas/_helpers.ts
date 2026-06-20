@@ -422,7 +422,7 @@ export async function regeneratePublicState(
   return state;
 }
 
-// ---------- Steward lookup by Clerk identity ----------
+// ---------- Steward lookup by auth identity ----------
 
 /**
  * Find a steward record matching either the auth user id (preferred) or

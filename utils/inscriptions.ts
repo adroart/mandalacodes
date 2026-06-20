@@ -174,7 +174,7 @@ export function genInscriptionId(): string {
  *  author): a piece that changes hands can carry one ritual answer per
  *  steward, and without the author in the id a second steward's answer
  *  would collide with the first steward's converted row and be silently
- *  dropped. authorRef is the opaque Clerk userId — already on the chain
+ *  dropped. authorRef is the opaque auth userId — already on the chain
  *  as the event's actorRef, so the id leaks nothing new. */
 export function pendingInscriptionId(
   pieceId: string,
@@ -189,7 +189,7 @@ export function pendingInscriptionId(
 export interface InscribedDraftOptions {
   pieceId: string;
   editionNumber?: number;
-  /** Opaque Clerk userId — never an email or name. */
+  /** Opaque auth userId — never an email or name. */
   actorRef: string;
   /** ISO now — the event date is when the commitment lands on the chain,
    *  not necessarily when the entry was authored (migrated entries keep

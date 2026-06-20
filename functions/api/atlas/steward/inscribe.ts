@@ -1,7 +1,7 @@
 /**
  * POST /api/atlas/steward/inscribe — write a Ring 1 legacy entry (M3).
  *
- * Clerk-authenticated; the steward record for (pieceId, editionNumber)
+ * Authenticated; the steward record for (pieceId, editionNumber)
  * must be bound to the bearer's userId (same auth pattern as update.ts).
  *
  * Body: { pieceId, editionNumber?, kind, body, sealedUntil? | sealUntilTransfer? }
@@ -89,7 +89,7 @@ export async function onRequestPost(
   const input = parseInscriptionInput(inscriptionFields);
   if (!input.ok) return json({ ok: false, error: input.error }, 400);
 
-  // Authorize: steward record for this piece, bound to this Clerk user.
+  // Authorize: steward record for this piece, bound to this user.
   const stewards = await readStewards(env);
   const record = stewards.find(
     (s) =>

@@ -3,12 +3,12 @@
  *
  * Admin-only. Add a steward record binding a piece to a collector's email.
  *
- * The collector signs in to mandalacodes with Clerk using this email. The
- * first signed-in /atlas/claim hit matching the email writes their Clerk
- * user id into the record. From then on the record looks them up by user id.
+ * The collector signs in to mandalacodes using this email. The first
+ * signed-in /atlas/claim hit matching the email writes their user id into
+ * the record. From then on the record looks them up by user id.
  *
- * No one-shot keys, no HMAC. Auth is "signed in to Clerk AND email matches
- * a steward record."
+ * No one-shot keys, no HMAC. Auth is "signed in AND email matches a steward
+ * record."
  */
 
 import type { PagesContext } from '../_helpers';
@@ -24,7 +24,7 @@ interface IssueBody {
 }
 
 function isValidEmail(s: string): boolean {
-  // Cheap surface-level shape check. Clerk does the real validation on sign-in.
+  // Cheap surface-level shape check. Auth does the real validation on sign-in.
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 }
 

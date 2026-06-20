@@ -122,24 +122,7 @@ Until all three vars are set the mirror silently no-ops; nothing breaks.
 
 ---
 
-## f) Production Clerk (if not done)
-
-The site currently uses a shared dev Clerk instance. For production, follow:
-
-```
-todo/plans/clerk-launch.md
-```
-
-This covers: creating a free production Clerk instance with its own domain and
-DNS, setting up Google OAuth, and pointing it at the shared `adrian-website` D1
-while collectors stay unified.
-
-This is a prerequisite for the full public accounts surface, but the atlas
-admin and steward claim flow work today with the dev instance.
-
----
-
-## g) Take a baseline backup
+## f) Take a baseline backup
 
 Before any real collector data lands:
 
@@ -159,7 +142,7 @@ seconds and costs nothing.
 
 ---
 
-## h) Claim light #1 — the ignition moment
+## g) Claim light #1 — the ignition moment
 
 This is the launch:
 
@@ -180,7 +163,7 @@ Adrian is light #1. Nobody can ever take that.
 
 ---
 
-## i) Begin the collector outreach campaign
+## h) Begin the collector outreach campaign
 
 With light #1 lit:
 
@@ -215,4 +198,4 @@ the QR, sign in, and request stewardship; you approve from the admin queue.
 | Sale webhook queue | Merge + D1 migration (step b) + SALE_WEBHOOK_SECRET (step c) |
 | Sale queue admin UI | Merge + D1 migration (step b) |
 | External tamper evidence | GitHub mirror activated (step e) |
-| Full public accounts surface | Production Clerk (step f) |
+| Full public accounts surface | Sign-up UI ported from Adrian-Website (auth itself is live) |

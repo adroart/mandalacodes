@@ -4,12 +4,8 @@ The accounts and birthdate-energy work lives on a branch in Adrian-Website (`ori
 
 ## What is ready
 
-The database is already provisioned (`mandalacodes-oracle`, APAC region) and wired in `wrangler.toml`, waiting for the schema.
-
-## What is needed
-
-A fresh Clerk instance for the mandalacodes domain, because Clerk publishable keys are locked to a domain. This is separate from the admin sign-in Clerk app.
+Account sign-in is already live on mandalacodes.com via self-owned Better Auth, sharing the `adrian-website` collector database. No additional auth provisioning is needed — the remaining work is porting the sign-up UI and the energy panels.
 
 ## Order
 
-This is Phase 1b. The basic admin sign-in (see clerk-launch.md) lands first; this accounts work comes after.
+This is Phase 1b. Sign-in already landed; this accounts UI work comes after.

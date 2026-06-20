@@ -76,13 +76,14 @@
    The halo lives on the OUTER tile wrapper (not the 3D-transformed flip face),
    so it stays visible whether the I Ching card is showing its hexagram or its
    art. The Artwork tile is flat, so its ring sits on the button itself. */
+/* Your I Ching cards glow GENTLY from behind — a soft bloom, no hard ring.
+   The hexagram reads as lit from within its own field, not boxed by a border. */
 .oe-root [data-oe="ichgrid"] [data-oe-yours="1"] > button {
   border-radius: 11px;
   box-shadow:
-    0 0 0 2px var(--accent, #8a744e),
-    0 0 0 5px color-mix(in oklab, var(--accent, #8a744e) 26%, transparent),
-    0 6px 26px 3px color-mix(in oklab, var(--accent, #8a744e) 40%, transparent),
-    0 0 34px 6px color-mix(in oklab, var(--accent, #8a744e) 30%, transparent);
+    0 0 0 1px color-mix(in oklab, var(--accent, #8a744e) 38%, transparent),
+    0 0 22px 2px color-mix(in oklab, var(--accent, #8a744e) 30%, transparent),
+    0 0 44px 10px color-mix(in oklab, var(--accent, #8a744e) 18%, transparent);
 }
 .oe-root [data-oe="artgrid"] button[data-oe-yours="1"] {
   box-shadow:

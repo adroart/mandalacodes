@@ -2,7 +2,7 @@
  * GET  /api/atlas/steward/letters?pieceId=…&editionNumber=…
  * POST /api/atlas/steward/letters   { pieceId, editionNumber?, markRead: true }
  *
- * The piece's letters (M5) — "the piece writes back." Clerk-authenticated;
+ * The piece's letters (M5) — "the piece writes back." Authenticated;
  * the steward record for the piece must be bound to the bearer's userId, and
  * letters are addressed to the PIECE (recipientKey), so a transferred piece
  * carries its unread letters to whoever now holds it.

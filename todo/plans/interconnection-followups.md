@@ -86,5 +86,4 @@ checks only. Click through once:
 
 - Chart→art lookbook into the site — TODO "Oracle MCP, search &
   personalization".
-- Sign-in to production Clerk — TODO Phase 1b.
 - Whole-deck content review before launch — `oracle/TODO.md`.

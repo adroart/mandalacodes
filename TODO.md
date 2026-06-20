@@ -34,25 +34,13 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 - [ ] Decide whether to commit the full deep-pass rewrite for the remaining 61 I Ching and Body cards   → Plan: [oracle/TODO.md](oracle/TODO.md) _(band: you-required)_ _(effort: moderate)_
 
-- [ ] Flip `LAUNCH_FLAGS.accounts` and `LAUNCH_FLAGS.hologeneticProfile` to true once the infra above is live, then verify sign-up → D1 row, profile round-trip, and `user.deleted` cascade   → File: [launchFlags.ts](launchFlags.ts) _(band: you-required)_ _(effort: moderate)_
-
-- [ ] Register the Clerk webhook endpoint `https://mandalacodes.com/api/clerk/webhook` for `user.created` / `user.updated` / `user.deleted` _(band: you-required)_ _(effort: moderate)_
-
-- [ ] Set the Clerk env vars on Cloudflare Pages, including `CLERK_WEBHOOK_SECRET` (now wired into the secrets-sync script + doc)   → Plan: [docs/secrets-sync.md](docs/secrets-sync.md) _(band: you-required)_ _(effort: moderate)_
-
-- [ ] Apply the D1 schema to the remote database: `wrangler d1 migrations apply mandalacodes-oracle --remote` (until then every account Function returns `503 db_not_configured`)   → Schema: [migrations/001_init.sql](migrations/001_init.sql) _(band: you-required)_ _(effort: moderate)_
-
-- [ ] Take mandalacodes login to production with its OWN free Clerk instance (own domain + DNS + Google OAuth), still pointed at the shared `adrian-website` D1 so collectors stay unified. NO paid satellite.   → Plan: [clerk-production-launch.md](../Adrian-Website/todo/plans/clerk-production-launch.md) § D _(band: you-required)_ _(effort: moderate)_
-
 - [ ] Start writing the 384 changing-line texts for the oracle via `/cast-content`   → PR: [#6](https://github.com/technicianofthesacred/mandalacodes/pull/6) _(band: you-required)_ _(effort: moderate)_
 
-- [ ] Decide what to do with the leftover local atlas/Clerk work branch and its uncommitted files _(band: you-required)_ _(effort: moderate)_
+- [ ] Decide what to do with the leftover local atlas work branch and its uncommitted files _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Pick the canonical web address: redirect www to the bare domain for SEO _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Close Adrian-Website PR #110 in favour of the newer PR #113   → PRs: [#110](https://github.com/technicianofthesacred/Adrian-Website/pull/110), [#113](https://github.com/technicianofthesacred/Adrian-Website/pull/113) _(band: you-required)_ _(effort: moderate)_
-
-- [ ] Launch sign-in on the live Mandala Codes site   → Plan: [clerk-launch.md](todo/plans/clerk-launch.md) _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Reprint the physical cards so the QR codes point at the new mandalacodes.com domain _(band: you-required)_ _(effort: moderate)_
 
@@ -61,8 +49,6 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 - [ ] Deploy the hosted oracle Functions (`/api/oracle/{search,card,mcp,recommendation}`) by merging to main; optionally set `ORACLE_MCP_TOKEN` / `ORACLE_API_TOKEN` to gate the remote MCP and the recommendation API   → Plan: [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md) _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Bring sign-up and the energy panels over from Adrian-Website   → Plan: [accounts-branch.md](todo/plans/accounts-branch.md) _(band: you-required)_ _(effort: moderate)_
-
-- [ ] Provision Clerk for the accounts surface and decide one-app-vs-two: `accounts-branch.md` implies a fresh instance separate from admin sign-in, but the code reads a single key set (`VITE_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY`)   → Plan: [accounts-branch.md](todo/plans/accounts-branch.md) _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Do the Phase 2 personal pass on the 63 scaffold RELATIONS files — they now render live on every card's Relations panel   → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Content _(band: you-required)_ _(effort: moderate)_
 
@@ -95,34 +81,10 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 ## Phase 1b: Accounts
 
-**Status update 2026-06-15:** login moved OFF Clerk to self-owned Better Auth (Google + email/password + email code), live on mandalacodes.com, sharing the `adrian-website` collector database with the art site. Everything below about Clerk/production-Clerk is SUPERSEDED — kept only for history. Live secrets set (BETTER_AUTH_SECRET, BETTER_AUTH_URL, RESEND, GOOGLE_*, ADMIN_EMAILS).
+**Status update 2026-06-15:** account sign-in is live on mandalacodes.com via self-owned Better Auth (Google + email/password + email code), same-origin, sharing the `adrian-website` collector database with the art site. (Historically this replaced an earlier login attempt; that older plan is superseded.) Live secrets set (BETTER_AUTH_SECRET, BETTER_AUTH_URL, RESEND, GOOGLE_*, ADMIN_EMAILS).
 
-- [ ] **Remove old login reference from the pieces admin file** — `components/AdminPieces.tsx` still imports the retired Clerk library; it lives on a separate in-progress branch (not main), so the auth switch left it untouched. Clean it when that branch lands. _(agent · quick)_
+- [ ] **Remove old login reference from the pieces admin file** — `components/AdminPieces.tsx` still imports a retired auth library; it lives on a separate in-progress branch (not main), so the auth switch left it untouched. Clean it when that branch lands. _(agent · quick)_
 
-**Status update 2026-06-09 (superseded by the 2026-06-15 note above):** shared dev login is now LIVE. accounts flag is on, the D1 binding points at the shared `adrian-website` database (the old `mandalacodes-oracle` DB is retired), and the dev Clerk app is shared with adrianrasmussen.com. The remaining provisioning items below are superseded by the production launch item.
-
-- [ ] **Production login** — take mandalacodes login to production with its OWN free Clerk instance (own domain + DNS + Google OAuth), still pointed at the shared `adrian-website` D1 so collectors stay unified. NO paid satellite. _(you · deep)_ → Plan: [clerk-production-launch.md](../Adrian-Website/todo/plans/clerk-production-launch.md) § D _(routed → Backlog)_
-  The shared dev login works but production needs its own Clerk instance while keeping one unified collector database. Done when a free production Clerk instance with its own domain/DNS/OAuth is live against the shared `adrian-website` D1. See [clerk-production-launch.md](../Adrian-Website/todo/plans/clerk-production-launch.md) § D.
-
-> ⚠️ **OBSOLETE — do not execute.** The steps below provision *Clerk*, which has
-> been fully removed. Auth is self-owned Better Auth (live); the
-> `/api/clerk/webhook` endpoint named below no longer exists (deleted), the
-> `mandalacodes-oracle` DB is retired, and `VITE_CLERK_PUBLISHABLE_KEY` /
-> `CLERK_SECRET_KEY` / `CLERK_WEBHOOK_SECRET` are gone from the secrets-sync
-> script. Kept only as a record of the original plan.
-
-The original provisioning steps (kept for history only — see warning above):
-
-- [ ] **Apply D1 schema** — apply the schema to the remote database: `wrangler d1 migrations apply mandalacodes-oracle --remote` (until then every account Function returns `503 db_not_configured`) _(you · quick)_ → Schema: [migrations/001_init.sql](migrations/001_init.sql) _(routed → Backlog)_
-  Account Functions return `503 db_not_configured` until the tables exist on the remote DB. Done when the migration is applied and account Functions stop returning 503. See [migrations/001_init.sql](migrations/001_init.sql).
-- [ ] **Provision Clerk** — set up Clerk for the accounts surface and decide one-app-vs-two: `accounts-branch.md` implies a fresh instance separate from admin sign-in, but the code reads a single key set (`VITE_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY`) _(you · moderate)_ → Plan: [accounts-branch.md](todo/plans/accounts-branch.md) _(routed → Backlog)_
-  The plan and the code disagree on whether accounts and admin share one Clerk app, so the structure has to be decided before provisioning. Done when the Clerk instance(s) are provisioned and the one-app-vs-two question is resolved. See [accounts-branch.md](todo/plans/accounts-branch.md).
-- [ ] **Clerk env vars** — set the Clerk env vars on Cloudflare Pages, including `CLERK_WEBHOOK_SECRET` (now wired into the secrets-sync script + doc) _(you · quick)_ → Plan: [docs/secrets-sync.md](docs/secrets-sync.md) _(routed → Backlog)_
-  Clerk can't run on the deployed site without its keys and webhook secret set in Pages. Done when all Clerk env vars including `CLERK_WEBHOOK_SECRET` are set on Cloudflare Pages. See [docs/secrets-sync.md](docs/secrets-sync.md).
-- [ ] **Register webhook** — register the Clerk webhook endpoint `https://mandalacodes.com/api/clerk/webhook` for `user.created` / `user.updated` / `user.deleted` _(you · quick)_ _(routed → Backlog)_
-  Without the webhook, Clerk user changes never sync into the D1 collector rows. Done when the endpoint is registered in Clerk and fires for the three user events.
-- [ ] **Flip launch flags** — flip `LAUNCH_FLAGS.accounts` and `LAUNCH_FLAGS.hologeneticProfile` to true once the infra above is live, then verify sign-up → D1 row, profile round-trip, and `user.deleted` cascade _(you · moderate)_ → File: [launchFlags.ts](launchFlags.ts) _(routed → Backlog)_
-  The public accounts surface stays hidden behind these flags until the infra is proven end to end. Done when both flags are true and sign-up, profile round-trip, and delete-cascade all verify. See [launchFlags.ts](launchFlags.ts).
 - [ ] **Port sign-up UI** — bring sign-up and the energy panels over from Adrian-Website _(you · deep)_ → Plan: [accounts-branch.md](todo/plans/accounts-branch.md) _(routed → Backlog)_
   The account UI already exists on the art site and needs to be migrated rather than rebuilt. Done when sign-up and the energy panels render on mandalacodes. See [accounts-branch.md](todo/plans/accounts-branch.md).
 

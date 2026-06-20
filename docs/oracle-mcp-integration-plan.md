@@ -41,7 +41,7 @@ server now, a hosted one later that also powers on-site search).
 
 **Stack.** Vite + React SPA on Cloudflare Pages. Backend is Pages Functions
 (`functions/api/*`). State in D1 (`mandalacodes-oracle`) + R2 (Atlas ledger).
-Auth via Clerk. The public oracle reader is otherwise static JSON.
+Auth via self-owned Better Auth. The public oracle reader is otherwise static JSON.
 
 **Oracle data is fragmented across four shapes** — this is the first thing to
 fix, because search and MCP both need one source:
@@ -266,7 +266,7 @@ Cloudflare Worker. Two endpoints from one codebase:
   website (§7.1). Reuses the existing Functions + `_routes.json` pattern.
 - **A remote MCP endpoint** (HTTP/SSE) — the oracle as a *hosted* MCP server,
   callable from Claude anywhere, not just your laptop. Cloudflare supports
-  remote MCP on Workers; auth can reuse Clerk or a scoped key.
+  remote MCP on Workers; auth can reuse the session auth or a scoped key.
 
 **Semantic search.** Replace/augment keyword rank with embeddings so "art about
 creation and new beginnings" matches Code 1 even with zero shared words.
@@ -315,7 +315,7 @@ primitives already provisioned (Functions, D1, R2) plus Vectorize.
   small cost) vs local model (free, offline, slightly weaker). The query layer
   is provider-agnostic; this is swappable later. Keyword search ships first
   regardless.
-- **Remote MCP auth.** Public read-only, or gated behind Clerk / a scoped key?
+- **Remote MCP auth.** Public read-only, or gated behind the session auth / a scoped key?
   Recommend public read-only for `search`/`get_card` (it's published deck
   content) and keep `compose_reading`/authoring tools local-only.
 - **Scope of "info".** This plan covers the oracle corpus + artworks. If "the
