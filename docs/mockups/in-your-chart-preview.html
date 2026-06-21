@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>In your chart — ribbon held in the page's own box</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* dark reading palette (the live reading header) */
+  :root{
+    --l-bg:#2A241D; --l-1:#ECE4D5; --l-2:#C9BDA9; --l-3:#8C7F6B;
+    --l-rule:rgba(180,150,110,0.22); --accent:#C99A5B;
+    --serif:'Cormorant Garamond',serif; --sans:'Karla',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#1E1914;color:var(--l-1);font-family:var(--sans);padding:36px 16px 90px;
+       display:flex;flex-direction:column;align-items:center;gap:14px}
+  h1.pg{font-family:var(--serif);font-weight:500;font-size:26px;text-align:center;margin:0;color:var(--l-1)}
+  p.lede{font-family:var(--sans);font-size:11px;color:var(--l-3);text-align:center;margin:0 0 24px;max-width:520px;line-height:1.6}
+  .cap{font-family:var(--sans);font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--l-3);margin:18px 0 8px;text-align:center}
+
+  .col{width:min(620px,100%);background:var(--l-bg);border:1px solid var(--l-rule);border-radius:4px;padding:26px 26px 24px}
+  .phone{width:390px;max-width:100%}
+  .title{font-family:var(--serif);font-weight:500;font-size:42px;line-height:1;margin:0 0 14px;color:var(--l-1)}
+  .kwrule{border:0;border-top:1px solid var(--l-rule);margin:0 0 16px}
+  .kw{font-family:var(--serif);font-size:18px;color:var(--l-2);line-height:1.45;margin:0 0 20px}
+  .kw span{white-space:nowrap;margin-right:16px}
+
+  /* ===== the EXISTING on-page row — untouched, copied verbatim from EBReading ===== */
+  .row{display:flex;align-items:stretch;gap:10px}
+  .cell{flex:1;text-align:left;background:none;border:1px solid var(--l-rule);cursor:pointer;padding:14px 18px;transition:border-color .25s,background .25s}
+  .cell .big{display:block;font-family:var(--serif);font-size:18px;color:var(--l-1);line-height:1.1}
+  .cell .sub{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--l-3);margin-top:3px}
+  .glyph{flex-shrink:0;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--accent)}
+  .glyph .hexbig{font-size:46px;line-height:1;letter-spacing:2px}
+  .glyph .n{font-family:var(--sans);font-size:10px;letter-spacing:.2em}
+
+  /* ===== THE CHART BOX — built from the same 1px var(--l-rule) box as Acquire/Share.
+     Holds the ribbon interior. No keyline in front. The bronze lives as an inset
+     accent: a hairline bronze underline seated inside the box's bottom edge. ===== */
+  .chart{margin-top:16px}
+  .chartbox{position:relative;display:flex;align-items:center;gap:14px;width:100%;text-align:left;cursor:pointer;
+    background:none;border:1px solid var(--l-rule);padding:14px 18px;overflow:hidden;transition:border-color .25s,background .25s}
+  .chartbox:hover{border-color:color-mix(in oklab,var(--accent) 55%,var(--l-rule))}
+  /* the unique hold: a bronze hairline seated along the inside bottom edge of the box */
+  .chartbox::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+    background:linear-gradient(to right,var(--accent),color-mix(in oklab,var(--accent) 25%,transparent));
+    transform:scaleX(1);transform-origin:left;transition:opacity .25s}
+  .chartbox--out::after{opacity:.32}
+  .chartbox--in::after{opacity:1}
+
+  .chartbox .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+  .chartbox .ey{font-family:var(--sans);font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);line-height:1}
+  .chartbox .t{font-family:var(--serif);font-size:20px;font-weight:500;line-height:1.04;color:var(--l-1)}
+  .chartbox--out .t{font-size:18px;font-weight:400;color:var(--l-2)}
+  .chartbox .go{flex-shrink:0;font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+
+  .legend{width:min(680px,100%);margin:34px auto 0;font-family:var(--sans);font-size:12px;line-height:1.7;color:#9b8f7b}
+  .legend b{color:var(--l-1)} .legend i{color:var(--l-2)}
+</style>
+</head>
+<body>
+
+<h1 class="pg">The ribbon interior, held in the page's own box</h1>
+<p class="lede">The Acquire / Share / code row is the real on-page row, untouched. Below it, the chart box is built from the SAME 1px hairline box, holding the ribbon content. No keyline in front: the bronze is an inset hairline along the box's bottom edge.</p>
+
+<!-- LOGGED OUT · desktop width -->
+<p class="cap">Logged out · desktop</p>
+<div class="col">
+  <h2 class="title">Earth's Breath</h2>
+  <hr class="kwrule" />
+  <p class="kw"><span>Freshness</span><span>Inner Fire</span><span>The Low Season</span><span>Pure Beginning</span><span>Aliveness</span><span>Creating</span><span>Letting Go</span></p>
+  <div class="row">
+    <button class="cell"><span class="big">Acquire</span><span class="sub">The original · available</span></button>
+    <span class="glyph"><span class="hexbig">&#9776;&#9783;</span><span class="n">01</span></span>
+    <button class="cell"><span class="big">Share</span><span class="sub">Send a code</span></button>
+  </div>
+  <div class="chart">
+    <button class="chartbox chartbox--out">
+      <span class="mid"><span class="t">See this card in your chart</span></span>
+      <span class="go">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- LOGGED IN, MATCHED · desktop width -->
+<p class="cap">Logged in · in your chart · desktop</p>
+<div class="col">
+  <h2 class="title">Earth's Breath</h2>
+  <hr class="kwrule" />
+  <p class="kw"><span>Freshness</span><span>Inner Fire</span><span>The Low Season</span><span>Pure Beginning</span><span>Aliveness</span><span>Creating</span><span>Letting Go</span></p>
+  <div class="row">
+    <button class="cell"><span class="big">Acquire</span><span class="sub">The original · available</span></button>
+    <span class="glyph"><span class="hexbig">&#9776;&#9783;</span><span class="n">01</span></span>
+    <button class="cell"><span class="big">Share</span><span class="sub">Send a code</span></button>
+  </div>
+  <div class="chart">
+    <button class="chartbox chartbox--in">
+      <span class="mid">
+        <span class="ey">In your chart</span>
+        <span class="t">Your Pearl · Line 3</span>
+      </span>
+      <span class="go">Read →</span>
+    </button>
+  </div>
+</div>
+
+<!-- MOBILE 390 · matched -->
+<p class="cap">Logged in · in your chart · mobile 390</p>
+<div class="col phone">
+  <h2 class="title" style="font-size:34px">Earth's Breath</h2>
+  <hr class="kwrule" />
+  <p class="kw" style="font-size:17px"><span>Freshness</span><span>Inner Fire</span><span>The Low Season</span><span>Pure Beginning</span><span>Aliveness</span><span>Creating</span><span>Letting Go</span></p>
+  <div class="row">
+    <button class="cell"><span class="big">Acquire</span><span class="sub">The original · available</span></button>
+    <span class="glyph"><span class="hexbig" style="font-size:38px">&#9776;&#9783;</span><span class="n">01</span></span>
+    <button class="cell"><span class="big">Share</span><span class="sub">Send a code</span></button>
+  </div>
+  <div class="chart">
+    <button class="chartbox chartbox--in">
+      <span class="mid">
+        <span class="ey">In your chart</span>
+        <span class="t">Your Pearl · Line 3</span>
+      </span>
+      <span class="go">Read →</span>
+    </button>
+  </div>
+</div>
+
+<div class="legend">
+  <p><b>The hold.</b> The chart box is the page's own hairline box (same <i>1px var(--l-rule)</i>, same padding as Acquire / Share), so it belongs to the row rather than floating as a foreign widget. The bronze that used to be a keyline in front now sits as a <b>thin bronze hairline seated along the inside bottom edge</b> of the box: faint when logged out, full and lit when the card is in your chart. The interior is the ribbon you liked: a Karla caps eyebrow, the serif position · line, and a quiet "Read →".</p>
+  <p><b>States share one footprint</b>, so the header doesn't jump on sign-in: logged-out is the same box with a quieter line and a faint bronze edge; matched lights the edge and adds the eyebrow.</p>
+</div>
+
+</body>
+</html>

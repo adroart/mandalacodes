@@ -9,28 +9,28 @@
 .oe-root [data-theme="light"] {
   --bg:#f3f1ec; --bg2:#ffffff; --surface:#faf9f6; --ink:#262321; --ink2:#524330;
   --ink3:#8a7a5e; --faint:#a89070; --line:#e3ddd1; --line2:#d2c7b4;
-  --accent:#8a744e; --accentDeep:#6d5a3c; --onAccent:#f7f5f1;
+  --accent:#8a744e; --accentDeep:#6d5a3c; --onAccent:#f7f5f1; --codeLabel:#a8843f;
   --glow:rgba(196,170,124,0.16);
   --heroWash:radial-gradient(135% 80% at 50% -8%, rgba(196,170,124,0.16), transparent 60%);
 }
 .oe-root[data-theme="light"], .oe-root.oe-light {
   --bg:#f3f1ec; --bg2:#ffffff; --surface:#faf9f6; --ink:#262321; --ink2:#524330;
   --ink3:#8a7a5e; --faint:#a89070; --line:#e3ddd1; --line2:#d2c7b4;
-  --accent:#8a744e; --accentDeep:#6d5a3c; --onAccent:#f7f5f1;
+  --accent:#8a744e; --accentDeep:#6d5a3c; --onAccent:#f7f5f1; --codeLabel:#a8843f;
   --glow:rgba(196,170,124,0.16);
   --heroWash:radial-gradient(135% 80% at 50% -8%, rgba(196,170,124,0.16), transparent 60%);
 }
 .oe-root [data-theme="dark"] {
   --bg:#15110e; --bg2:#1d1813; --surface:#241e17; --ink:#f0ece4; --ink2:#cfc7b8;
   --ink3:#a99a82; --faint:#8a7c66; --line:rgba(196,170,124,0.16); --line2:rgba(196,170,124,0.30);
-  --accent:#dabd8b; --accentDeep:#c4a878; --onAccent:#15110e;
+  --accent:#dabd8b; --accentDeep:#c4a878; --onAccent:#15110e; --codeLabel:#e7c98e;
   --glow:rgba(217,189,140,0.22);
   --heroWash:radial-gradient(135% 82% at 50% -8%, rgba(217,189,140,0.18), transparent 62%);
 }
 .oe-root[data-theme="dark"], .oe-root.oe-dark {
   --bg:#15110e; --bg2:#1d1813; --surface:#241e17; --ink:#f0ece4; --ink2:#cfc7b8;
   --ink3:#a99a82; --faint:#8a7c66; --line:rgba(196,170,124,0.16); --line2:rgba(196,170,124,0.30);
-  --accent:#dabd8b; --accentDeep:#c4a878; --onAccent:#15110e;
+  --accent:#dabd8b; --accentDeep:#c4a878; --onAccent:#15110e; --codeLabel:#e7c98e;
   --glow:rgba(217,189,140,0.22);
   --heroWash:radial-gradient(135% 82% at 50% -8%, rgba(217,189,140,0.18), transparent 62%);
 }
@@ -84,6 +84,13 @@
     0 0 0 1px color-mix(in oklab, var(--accent, #8a744e) 38%, transparent),
     0 0 22px 2px color-mix(in oklab, var(--accent, #8a744e) 30%, transparent),
     0 0 44px 10px color-mix(in oklab, var(--accent, #8a744e) 18%, transparent);
+}
+/* And the hexagram glyph ITSELF carries a slight outer glow — the lines look
+   lit, not just the tile behind them. drop-shadow follows the bars' shape. */
+.oe-root [data-oe="ichgrid"] [data-oe-yours="1"] dc-import {
+  filter:
+    drop-shadow(0 0 3px color-mix(in oklab, var(--accent, #8a744e) 55%, transparent))
+    drop-shadow(0 0 8px color-mix(in oklab, var(--accent, #8a744e) 35%, transparent));
 }
 .oe-root [data-oe="artgrid"] button[data-oe-yours="1"] {
   box-shadow:

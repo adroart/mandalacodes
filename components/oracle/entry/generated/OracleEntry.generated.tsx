@@ -184,17 +184,20 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     <main style={{ width: "100%", minWidth: "0" }}>
       {(vals.isIChing) ? (
         <>
-          <div data-oe="ichgrid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "clamp(10px,1.6vw,16px) clamp(8px,1.4vw,14px)", padding: "18px 0 8px" }}>
+          <div data-oe="ichgrid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "clamp(22px,2.4vw,30px) clamp(8px,1.4vw,14px)", padding: "32px 0 8px" }}>
             {(vals.gridCards ?? []).map((c, cIdx) => (
               <React.Fragment key={cIdx}>
-                <div data-oe-yours={c.yours ? "1" : undefined} data-oe-num={c.cardNum} style={{ display: "flex", flexDirection: "column" }}>
-                  {/* Uniform label band on EVERY card (empty when not yours) so all
-                      cells stay identical height — your cards name the connection
-                      right above the glyph, others keep the same spacing. */}
-                  <span data-oe="codelabel" style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", textAlign: "center", minHeight: "26px", paddingBottom: "4px", fontFamily: "'Karla',sans-serif", fontSize: "9px", fontWeight: "700", letterSpacing: ".09em", textTransform: "uppercase", color: "var(--accent,#8a744e)", lineHeight: "1.15", pointerEvents: "none" }}>
-                  {c.codeLabel || ""}
-                  </span>
+                <div data-oe-yours={c.yours ? "1" : undefined} data-oe-num={c.cardNum} style={{ position: "relative", display: "flex", flexDirection: "column" }}>
                   <button type="button" onClick={c.onTile} aria-label={c.yours ? c.aria + " — your " + c.codeLabel : c.aria} style={{ all: "unset", cursor: "pointer", display: "block", perspective: "760px" }}>
+                    {/* Connection label — sits ~5px above the top of the hexagram
+                        bars (the glyph is centered in the square; its top edge is
+                        ~21% down). Absolute so it never shifts the grid; a paler
+                        accent so it reads as a caption, not part of the glyph. */}
+                    {(c.codeLabel) ? (
+                      <span data-oe="codelabel" style={{ position: "absolute", left: "-6px", right: "-6px", bottom: "calc(79% + 5px)", textAlign: "center", fontFamily: "'Karla',sans-serif", fontSize: "9px", fontWeight: "700", letterSpacing: ".09em", textTransform: "uppercase", color: "var(--codeLabel,#c9a45f)", lineHeight: "1.15", pointerEvents: "none" }}>
+                      {c.codeLabel}
+                      </span>
+                    ) : null}
                     <span style={{ position: "relative", display: "block", width: "100%", aspectRatio: "1/1", transformStyle: "preserve-3d", transition: "transform .7s cubic-bezier(.2,.85,.3,1),filter .3s ease", transform: `${c.flipTransform ?? ""}` }}>
                       <span style={{ position: "absolute", inset: "0", backfaceVisibility: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "clamp(5px,0.7vw,9px)" }}>
                         <span style={{ width: "48%", color: "var(--ink3,#8a7a5e)" }}>

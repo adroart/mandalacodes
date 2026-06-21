@@ -75,7 +75,6 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
-  const [sellOpen, setSellOpen] = useState(false);
   const name = friendlyName(displayName);
 
   // A single quiet account line, folded INTO the card under a hairline. Signed
@@ -116,27 +115,14 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
             See your full Hologenetic profile →
           </Link>
           {accountsAvailable && (
-            sellOpen ? (
-              // Reached for — now show the why and the real action.
-              <div style={{ marginTop: '12px' }}>
-                <ul style={sellListStyle}>
-                  <li>Go deeper on your codes, kept as you learn.</li>
-                  <li>Your cards light up on every page.</li>
-                  <li>Join the living oracle: claim a piece, share your grid.</li>
-                </ul>
-                <button type="button" onClick={() => setSignInOpen(true)} style={keepBtnStyle}>
-                  Save my reading
-                </button>
-              </div>
-            ) : (
-              // Collapsed by default — one quiet line, no height.
-              <button type="button" onClick={() => setSellOpen(true)} style={saveLinkStyle}>
-                Save your reading →
-              </button>
-            )
+            // The click already says "yes, keep it" — go straight to the modal,
+            // which carries the why. No intermediate expand-the-pitch step.
+            <button type="button" onClick={() => setSignInOpen(true)} style={saveLinkStyle}>
+              Save your reading →
+            </button>
           )}
         </div>
-        {signInOpen && <SignInModal onClose={() => setSignInOpen(false)} onSignedIn={() => setSignInOpen(false)} />}
+        {signInOpen && <SignInModal context="reading" onClose={() => setSignInOpen(false)} onSignedIn={() => setSignInOpen(false)} />}
       </>
     );
   }

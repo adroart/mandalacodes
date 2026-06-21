@@ -31,10 +31,21 @@ const DARK = {
 
 type Mode = 'login' | 'signup' | 'code-email' | 'code-verify';
 
-const SignInModal: React.FC<{ onClose: () => void; onSignedIn?: () => void }> = ({
-  onClose,
-  onSignedIn,
-}) => {
+/**
+ * `context` reframes the same modal for where it was opened from:
+ *   - 'reading' → opened from "save my reading" (a card is on screen): keep it.
+ *   - 'codes'   → opened from the deck picker (no single card): light your codes.
+ *   - 'default' → generic account sign-in.
+ * The auth controls are identical; only the header + one benefit line change, so
+ * the moment reads as claiming something, not logging in.
+ */
+type SignInContext = 'reading' | 'codes' | 'default';
+
+const SignInModal: React.FC<{
+  onClose: () => void;
+  onSignedIn?: () => void;
+  context?: SignInContext;
+}> = ({ onClose, onSignedIn, context = 'default' }) => {
   const { isDarkMode } = useDarkMode();
   const C = isDarkMode ? DARK : LIGHT;
   const [mode, setMode] = useState<Mode>('login');
@@ -118,17 +129,30 @@ const SignInModal: React.FC<{ onClose: () => void; onSignedIn?: () => void }> = 
     textTransform: 'uppercase', fontWeight: 600, padding: '6px 0',
   };
 
+  // Context-framed header for the entry modes (login/signup). Code steps keep
+  // their literal titles since they're mid-flow.
+  const ctxTitle =
+    context === 'reading' ? 'Keep this reading'
+    : context === 'codes' ? 'See your codes light up'
+    : 'Sign in';
+  const ctxSubtitle =
+    context === 'reading' ? 'Sign in and your reading is kept — your codes stay lit across every visit.'
+    : context === 'codes' ? 'Sign in and your codes light up across all sixty-four, kept for every visit.'
+    : 'Welcome back.';
+
   const title =
     mode === 'signup' ? 'Create your account'
     : mode === 'code-email' ? 'Sign in with a code'
     : mode === 'code-verify' ? 'Enter your code'
-    : 'Sign in';
+    : ctxTitle;
 
   const subtitle =
-    mode === 'signup' ? 'Save pieces to collections and find your orders.'
+    mode === 'signup' ? 'Your reading and your codes, kept across every visit.'
     : mode === 'code-email' ? 'We will email you a one-time code. No password.'
     : mode === 'code-verify' ? `We sent a code to ${email}.`
-    : 'Welcome back.';
+    : ctxSubtitle;
+
+  const brandLine = context === 'default' ? 'Adrian Rasmussen Art' : 'Mandala Codes';
 
   return createPortal(
     <div
@@ -148,7 +172,7 @@ const SignInModal: React.FC<{ onClose: () => void; onSignedIn?: () => void }> = 
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <p style={{ ...labelStyle, color: C.bronze, marginBottom: 8 }}>Adrian Rasmussen Art</p>
+          <p style={{ ...labelStyle, color: C.bronze, marginBottom: 8 }}>{brandLine}</p>
           <h2 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 26, color: C.ink, fontWeight: 500, margin: 0 }}>
             {title}
           </h2>
@@ -171,12 +195,24 @@ const SignInModal: React.FC<{ onClose: () => void; onSignedIn?: () => void }> = 
         {/* Password modes (login / signup) */}
         {(mode === 'login' || mode === 'signup') && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <button type="button" onClick={doGoogle} disabled={busy} style={{
-              ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: 10, cursor: 'pointer', fontWeight: 600, letterSpacing: '0.05em',
-            }}>
-              <GoogleMark /> Continue with Google
-            </button>
+            {/* Compact two-up: one tap with Google, or get a code by email. The
+                fast paths sit small and side by side, the way Cloudflare's does. */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" onClick={doGoogle} disabled={busy} style={{
+                ...inputStyle, flex: 1, minWidth: 0, display: 'flex', alignItems: 'center',
+                justifyContent: 'center', gap: 8, cursor: 'pointer', fontWeight: 600,
+                fontSize: 13, padding: '11px 12px',
+              }}>
+                <GoogleMark /> Google
+              </button>
+              <button type="button" onClick={() => { setError(null); setMode('code-email'); }} disabled={busy} style={{
+                ...inputStyle, flex: 1, minWidth: 0, display: 'flex', alignItems: 'center',
+                justifyContent: 'center', gap: 8, cursor: 'pointer', fontWeight: 600,
+                fontSize: 13, padding: '11px 12px',
+              }}>
+                Email me a code
+              </button>
+            </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: C.sub }}>
               <span style={{ flex: 1, height: 1, background: C.border }} />
@@ -209,12 +245,9 @@ const SignInModal: React.FC<{ onClose: () => void; onSignedIn?: () => void }> = 
               {busy ? 'Please wait...' : mode === 'signup' ? 'Create account' : 'Sign in'}
             </button>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
               <button type="button" style={linkStyle} onClick={() => { setError(null); setMode(mode === 'signup' ? 'login' : 'signup'); }}>
                 {mode === 'signup' ? 'Have an account? Sign in' : 'Create an account'}
-              </button>
-              <button type="button" style={{ ...linkStyle, color: C.sub }} onClick={() => { setError(null); setMode('code-email'); }}>
-                Email me a code
               </button>
             </div>
           </div>

@@ -193,7 +193,7 @@ const UniversalLanguageCard: React.FC = () => {
         showEntrance={showEntrance}
         onAcquire={() => setBuyOpen(true)}
         onShare={() => setShareOpen(true)}
-        chartSlot={<YourPositionCallout gate={card.number} />}
+        headerChartSlot={<YourPositionCallout gate={card.number} />}
       />
       <BuySheet
         open={buyOpen}

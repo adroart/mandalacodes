@@ -120,39 +120,11 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </span>
           </button>
         </div>
-        <div style={{ marginTop: "16px" }}>
-          {(vals.chartPreview) ? (
-            <>
-              <a href="#" style={{ display: "flex", alignItems: "center", gap: "11px", padding: "11px 14px", background: "var(--l-soft)", border: "1px solid var(--l-rule)", textDecoration: "none" }}>
-                <span aria-hidden="true" style={{ width: "7px", height: "7px", borderRadius: "50%", background: "var(--accent)", flexShrink: "0" }}>
-                </span>
-                <span style={{ flex: "1", minWidth: "0", fontFamily: "var(--sans)", fontSize: "13px", color: "var(--l-2)" }}>
-                  <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--accent)" }}>
-                  In your chart
-                  </span>
-                  <span style={{ fontFamily: "var(--serif)", fontSize: "15px", color: "var(--l-1)" }}>
-                  Your Pearl · Gate 1, Line 3
-                  </span>
-                </span>
-                <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", whiteSpace: "nowrap", flexShrink: "0" }}>
-                Profile →
-                </span>
-              </a>
-            </>
-          ) : null}
-          {(vals.chartShowPrompt) ? (
-            <>
-              <button onClick={vals.toggleChartPreview} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", padding: "13px 16px", transition: "border-color .25s" }}>
-                <span style={{ fontFamily: "var(--serif)", fontSize: "16px", color: "var(--l-1)", lineHeight: "1.25", textAlign: "center" }}>
-                Check the placement of this card in your chart
-                </span>
-                <span aria-hidden="true" style={{ fontFamily: "var(--serif)", fontSize: "18px", color: "var(--accent)", flexShrink: "0" }}>
-                →
-                </span>
-              </button>
-            </>
-          ) : null}
-        </div>
+        {(vals.headerChartSlot) ? (
+          <div style={{ marginTop: "16px" }}>
+          {vals.headerChartSlot}
+          </div>
+        ) : null}
       </div>
     </div>
   </section>
