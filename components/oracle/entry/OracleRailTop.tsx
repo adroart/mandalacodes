@@ -13,8 +13,8 @@
         out then in), "Add" opens sign-in for another person. Shown whenever a
         birth moment exists, so partners on one phone can swap. */
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import ProfileForm from '../ProfileForm';
+import { Link, useNavigate } from 'react-router-dom';
+import BirthTimeModal from '../BirthTimeModal';
 import SignInModal from '../../account/SignInModal';
 import type { ProfileInputs } from '../../../lib/profile/storage';
 
@@ -73,7 +73,8 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
   initialInputs,
   onSignOut,
 }) => {
-  const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
+  const [formOpen, setFormOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const name = friendlyName(displayName);
 
@@ -127,23 +128,13 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
     );
   }
 
-  // Rung 1: guest, no codes — the birth-time button + inline form.
+  // Rung 1: guest, no codes — the birth-time button opens the popup. On save,
+  // the second screen offers to keep it (the Welcome sign-in).
   return (
-    <div
-      style={{
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'var(--bg2,#fff)',
-        border: '1px solid var(--line2,#d2c7b4)',
-        borderRadius: '12px',
-        overflow: expanded ? 'visible' : 'hidden',
-      }}
-    >
+    <>
       <button
         type="button"
-        onClick={() => setExpanded((v) => !v)}
-        aria-expanded={expanded}
+        onClick={() => setFormOpen(true)}
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -151,8 +142,9 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
           gap: '4px',
           width: '100%',
           padding: '14px 16px',
-          background: 'transparent',
-          border: 'none',
+          background: 'var(--bg2,#fff)',
+          border: '1px solid var(--line2,#d2c7b4)',
+          borderRadius: '12px',
           cursor: 'pointer',
           textAlign: 'center',
         }}
@@ -164,12 +156,21 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
           See which cards are most relevant to you, lit throughout the oracle.
         </span>
       </button>
-      {expanded && (
-        <div style={{ padding: '4px 16px 18px', borderTop: '1px solid var(--line2,#d2c7b4)' }}>
-          <ProfileForm initial={initialInputs} />
-        </div>
+
+      {formOpen && (
+        <BirthTimeModal
+          initial={initialInputs}
+          onClose={() => setFormOpen(false)}
+          onLogIn={accountsAvailable ? () => { setFormOpen(false); setSignInOpen(true); } : undefined}
+          onSeeChart={() => { setFormOpen(false); navigate('/profile'); }}
+          onSave={accountsAvailable ? () => { setFormOpen(false); setSignInOpen(true); } : undefined}
+        />
       )}
-    </div>
+
+      {signInOpen && (
+        <SignInModal context="reading" onClose={() => setSignInOpen(false)} onSignedIn={() => setSignInOpen(false)} />
+      )}
+    </>
   );
 };
 

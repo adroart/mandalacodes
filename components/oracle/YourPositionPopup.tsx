@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { POSITIONS_BY_KEY, SEQUENCE_LABEL } from '../../data/profilePositions';
 import { PLACEMENT_DESCRIPTIONS } from '../../data/placementDescriptions';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
 import type { ProfileKey } from '../../lib/astrology/types';
+import SignInModal from '../account/SignInModal';
 
 export interface PopupMatch {
   key: ProfileKey;
@@ -15,6 +16,8 @@ interface Props {
   gate: number;
   /** Every position in the visitor's profile this card lands on. */
   matches: PopupMatch[];
+  /** When true, the chart is local-only: show the offer to save it (sign in). */
+  canSave?: boolean;
   onClose: () => void;
 }
 
@@ -23,8 +26,13 @@ interface Props {
  * One block per matched position: the position name + line, two or three
  * sentences from data/placementDescriptions.ts, the card's Gene Keys triad,
  * and a single link out to the full chart. Sized to read in a few seconds.
+ *
+ * When the chart is local-only (`canSave`), a quiet "Save your chart" offer
+ * sits at the foot, opening the Welcome sign-in. The save pitch lands here,
+ * after the placement is seen, not before.
  */
-const YourPositionPopup: React.FC<Props> = ({ gate, matches, onClose }) => {
+const YourPositionPopup: React.FC<Props> = ({ gate, matches, canSave = false, onClose }) => {
+  const [saveOpen, setSaveOpen] = useState(false);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -93,10 +101,28 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, onClose }) => {
           </div>
         )}
 
-        <Link to="/profile" className="ypp__full" onClick={onClose}>
-          See it in your full chart →
-        </Link>
+        {canSave ? (
+          <button type="button" className="ypp__save" onClick={() => setSaveOpen(true)}>
+            <span className="ypp__save-t">Save your chart</span>
+            <span className="ypp__save-s">Keep it across every visit, lit on every card.</span>
+          </button>
+        ) : (
+          <Link to="/profile" className="ypp__full" onClick={onClose}>
+            See it in your full chart →
+          </Link>
+        )}
       </div>
+
+      {saveOpen && (
+        <SignInModal
+          context="reading"
+          onClose={() => setSaveOpen(false)}
+          onSignedIn={() => {
+            setSaveOpen(false);
+            onClose();
+          }}
+        />
+      )}
 
       <style>{`
         .ypp__scrim {
@@ -207,6 +233,37 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, onClose }) => {
           text-transform: uppercase;
           color: var(--color-bronze-600, #C99A5B);
           text-decoration: none;
+        }
+        .ypp__save {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          width: 100%;
+          text-align: left;
+          margin-top: 16px;
+          padding: 13px 15px;
+          cursor: pointer;
+          border: 1px solid color-mix(in oklab, var(--color-bronze-600, #C99A5B) 40%, var(--l-rule, rgba(180,150,110,0.20)));
+          border-radius: 12px;
+          background: color-mix(in oklab, var(--color-bronze-600, #C99A5B) 10%, transparent);
+          transition: background .2s, border-color .2s;
+        }
+        .ypp__save:hover {
+          background: color-mix(in oklab, var(--color-bronze-600, #C99A5B) 18%, transparent);
+          border-color: var(--color-bronze-600, #C99A5B);
+        }
+        .ypp__save-t {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 18px;
+          font-weight: 500;
+          line-height: 1.1;
+          color: var(--l-1, #ECE4D5);
+        }
+        .ypp__save-s {
+          font-family: 'Lato', Helvetica, sans-serif;
+          font-size: 11.5px;
+          line-height: 1.4;
+          color: var(--l-2, #C9BDA9);
         }
       `}</style>
     </div>

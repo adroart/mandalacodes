@@ -10,35 +10,40 @@ import {
 } from '../../lib/account/authClient';
 
 /**
- * Self-owned sign-in modal. Three ways in:
- *   - Continue with Google (shown when configured)
- *   - Email + password (create account / log in)
- *   - Email me a code instead (no password)
- * Styled in the site's paper / wood / bronze system, and theme-aware: it
- * follows the active light/dark mode rather than forcing a light card.
+ * The "Welcome" sign-in modal.
+ *
+ * How the auth really works (and why this UI is shaped the way it is):
+ *   - Continue with Google      → logs in an existing Google member OR creates.
+ *   - Email me a code           → logs in OR creates on first verify.
+ *   - Email + password          → the one door where create and log in differ,
+ *                                 so it carries an explicit toggle.
+ * The server links all three to ONE account by email (auth.server.js →
+ * account.accountLinking), so the same person using Google one day and a code
+ * the next is a single account, not two. That means there is no "new vs
+ * returning" fork at the top: every door serves both. The only choice that
+ * matters is whether you want a password, and that lives inside the password
+ * panel.
+ *
+ *   welcome  → the three doors: Google, email code, "use email and password".
+ *   password → email + password, defaulting to Log in, with a New-here toggle
+ *              to create, and "email me a code instead" as the no-dead-end out.
+ *   code     → enter the six-digit code.
+ *
+ * Theme-aware: follows the active light/dark mode.
  */
 
-// Palette per theme. The modal follows the active mode so a dark-mode visitor
-// gets a dark card (the old pinned-light surface read as a white box in dark).
 const LIGHT = {
-  surface: '#f5f4f0', field: '#ffffff', border: '#e0d8cc', ink: '#262321',
-  sub: '#8f7a5b', bronze: '#8a744e', fieldBorder: '#c8bda8',
+  surface: '#ffffff', field: '#f3f1ec', border: '#e3ddd1', ink: '#262321',
+  sub: '#8a7a5e', bronze: '#8a744e', onBronze: '#f7f5f1', fieldBorder: '#d2c7b4',
+  faint: '#a89070', line: '#e3ddd1', glow: 'rgba(196,170,124,0.18)',
 };
 const DARK = {
-  surface: '#1d1813', field: '#241e17', border: 'rgba(196,170,124,0.30)', ink: '#f0ece4',
-  sub: '#a99a82', bronze: '#dabd8b', fieldBorder: 'rgba(196,170,124,0.34)',
+  surface: '#241e17', field: '#1d1813', border: 'rgba(196,170,124,0.26)', ink: '#f0ece4',
+  sub: '#a99a82', bronze: '#dabd8b', onBronze: '#241e17', fieldBorder: 'rgba(196,170,124,0.30)',
+  faint: '#8c7f6b', line: 'rgba(196,170,124,0.18)', glow: 'rgba(196,170,124,0.16)',
 };
 
-type Mode = 'login' | 'signup' | 'code-email' | 'code-verify';
-
-/**
- * `context` reframes the same modal for where it was opened from:
- *   - 'reading' → opened from "save my reading" (a card is on screen): keep it.
- *   - 'codes'   → opened from the deck picker (no single card): light your codes.
- *   - 'default' → generic account sign-in.
- * The auth controls are identical; only the header + one benefit line change, so
- * the moment reads as claiming something, not logging in.
- */
+type Mode = 'welcome' | 'email' | 'password' | 'code';
 type SignInContext = 'reading' | 'codes' | 'default';
 
 const SignInModal: React.FC<{
@@ -48,7 +53,8 @@ const SignInModal: React.FC<{
 }> = ({ onClose, onSignedIn, context = 'default' }) => {
   const { isDarkMode } = useDarkMode();
   const C = isDarkMode ? DARK : LIGHT;
-  const [mode, setMode] = useState<Mode>('login');
+  const [mode, setMode] = useState<Mode>('welcome');
+  const [createNew, setCreateNew] = useState(false); // password panel: create vs log in
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -63,10 +69,9 @@ const SignInModal: React.FC<{
     setError(null);
     try {
       await signInWithGoogle('/');
-      // Redirects away; nothing more to do here.
     } catch {
       setBusy(false);
-      setError('Could not start Google sign-in. Try another way below.');
+      setError('Could not start Google sign-in. Try a code or password below.');
     }
   };
 
@@ -74,85 +79,116 @@ const SignInModal: React.FC<{
     if (!email.trim() || !password) return;
     setBusy(true);
     setError(null);
-    const { error } = mode === 'signup'
-      ? await signUpWithPassword(email.trim(), password, name.trim())
-      : await signInWithPassword(email.trim(), password);
-    setBusy(false);
-    if (error) {
-      setError(
-        mode === 'signup'
-          ? 'Could not create the account. The email may already be in use, or the password is too short (8+ characters).'
-          : 'Email or password did not match. Try again, or create an account.',
-      );
-      return;
+    try {
+      const { error } = createNew
+        ? await signUpWithPassword(email.trim(), password, name.trim())
+        : await signInWithPassword(email.trim(), password);
+      setBusy(false);
+      if (error) {
+        setError(
+          createNew
+            ? 'Could not create the account. The email may already be in use (try Log in), or the password is under 8 characters.'
+            : 'Email or password did not match. Try again, create an account, or get a code instead.',
+        );
+        return;
+      }
+      done();
+    } catch {
+      setBusy(false);
+      setError('Could not reach the server. Check your connection and try again.');
     }
-    done();
   };
 
   const sendCode = async () => {
-    if (!email.trim()) return;
+    if (!email.trim()) { setMode('email'); return; }
     setBusy(true);
     setError(null);
-    const { error } = await sendSignInCode(email.trim());
-    setBusy(false);
-    if (error) { setError('Could not send the code. Check the email and try again.'); return; }
-    setMode('code-verify');
+    try {
+      // One path for new and returning: the code logs in or creates on verify.
+      const { error } = await sendSignInCode(email.trim());
+      setBusy(false);
+      if (error) { setError('Could not send the code. Check the email and try again.'); return; }
+      setMode('code');
+    } catch {
+      setBusy(false);
+      setError('Could not reach the server. Check your connection and try again.');
+    }
   };
 
   const verify = async () => {
     if (!code.trim()) return;
     setBusy(true);
     setError(null);
-    const { error } = await verifySignInCode(email.trim(), code.trim());
-    setBusy(false);
-    if (error) { setError('That code did not match. Try again, or request a new one.'); return; }
-    done();
+    try {
+      const { error } = await verifySignInCode(email.trim(), code.trim());
+      setBusy(false);
+      if (error) { setError('That code did not match. Try again, or request a new one.'); return; }
+      done();
+    } catch {
+      setBusy(false);
+      setError('Could not reach the server. Check your connection and try again.');
+    }
   };
 
-  const labelCls = 'block mb-2';
-  const labelStyle: React.CSSProperties = {
-    fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 11, letterSpacing: '0.15em',
-    textTransform: 'uppercase', color: C.sub, fontWeight: 600,
+  // ── styles ──
+  const fieldLabel: React.CSSProperties = {
+    display: 'block', textAlign: 'left',
+    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 10, fontWeight: 700,
+    letterSpacing: '0.14em', textTransform: 'uppercase', color: C.sub, margin: '0 0 6px',
   };
-  const inputStyle: React.CSSProperties = {
+  const fieldStyle: React.CSSProperties = {
     width: '100%', border: `1px solid ${C.fieldBorder}`, background: C.field,
-    padding: '12px 16px', fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 16, color: C.ink,
+    borderRadius: 12, padding: '13px 15px',
+    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 16, color: C.ink, marginBottom: 14,
   };
   const primaryStyle: React.CSSProperties = {
-    width: '100%', background: C.ink, color: C.surface,
-    fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 11, letterSpacing: '0.2em',
-    textTransform: 'uppercase', fontWeight: 600, padding: '12px', cursor: 'pointer', border: 0,
+    width: '100%', cursor: 'pointer', background: C.bronze, color: C.onBronze, border: 'none',
+    borderRadius: 12, padding: 14,
+    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 13, fontWeight: 700,
+    letterSpacing: '0.12em', textTransform: 'uppercase',
   };
-  const linkStyle: React.CSSProperties = {
-    background: 'transparent', border: 0, cursor: 'pointer', color: C.bronze,
-    fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 11, letterSpacing: '0.12em',
-    textTransform: 'uppercase', fontWeight: 600, padding: '6px 0',
+  const pillPrimary: React.CSSProperties = {
+    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+    cursor: 'pointer', background: C.bronze, color: C.onBronze, border: 'none',
+    borderRadius: 999, padding: 14,
+    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 14, fontWeight: 700, marginBottom: 10,
+  };
+  const pillSecondary: React.CSSProperties = {
+    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+    cursor: 'pointer', background: C.surface, color: C.ink, border: `1px solid ${C.fieldBorder}`,
+    borderRadius: 999, padding: 13,
+    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 14, fontWeight: 500, marginBottom: 10,
+  };
+  const backBtn: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: 'none',
+    border: 'none', padding: 0, margin: '0 auto 16px',
+    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 11, fontWeight: 700,
+    letterSpacing: '0.12em', textTransform: 'uppercase', color: C.bronze,
+  };
+  const altLine: React.CSSProperties = {
+    marginTop: 14, fontFamily: "'Karla', system-ui, sans-serif", fontSize: 12, color: C.sub,
+  };
+  const altLink: React.CSSProperties = {
+    color: C.bronze, textDecoration: 'none', fontWeight: 700, background: 'none', border: 'none',
+    cursor: 'pointer', font: 'inherit', padding: 0,
   };
 
-  // Context-framed header for the entry modes (login/signup). Code steps keep
-  // their literal titles since they're mid-flow.
-  const ctxTitle =
-    context === 'reading' ? 'Keep this reading'
-    : context === 'codes' ? 'See your codes light up'
-    : 'Sign in';
-  const ctxSubtitle =
-    context === 'reading' ? 'Sign in and your reading is kept — your codes stay lit across every visit.'
-    : context === 'codes' ? 'Sign in and your codes light up across all sixty-four, kept for every visit.'
-    : 'Welcome back.';
+  const headline =
+    mode === 'password' ? (createNew ? 'Create your account' : 'Welcome back')
+    : mode === 'email' ? 'Sign in with a code'
+    : mode === 'code' ? 'Check your email'
+    : 'Keep your chart';
 
-  const title =
-    mode === 'signup' ? 'Create your account'
-    : mode === 'code-email' ? 'Sign in with a code'
-    : mode === 'code-verify' ? 'Enter your code'
-    : ctxTitle;
-
-  const subtitle =
-    mode === 'signup' ? 'Your reading and your codes, kept across every visit.'
-    : mode === 'code-email' ? 'We will email you a one-time code. No password.'
-    : mode === 'code-verify' ? `We sent a code to ${email}.`
-    : ctxSubtitle;
-
-  const brandLine = context === 'default' ? 'Adrian Rasmussen Art' : 'Mandala Codes';
+  const subline =
+    mode === 'password'
+      ? (createNew
+          ? 'Choose a password and your chart is kept across every visit.'
+          : 'Log in to find your chart where you left it.')
+    : mode === 'email' ? "Enter your email and we'll send a six-digit code. No password needed."
+    : mode === 'code' ? `We sent a six-digit code to ${email || 'your email'}.`
+    : context === 'reading'
+      ? 'Your placement, kept across every visit and lit on every card.'
+      : 'Your placement, lit across all sixty-four and kept for every visit.';
 
   return createPortal(
     <div
@@ -165,133 +201,156 @@ const SignInModal: React.FC<{
     >
       <div
         style={{
-          width: '100%', maxWidth: 384, background: C.surface,
-          border: `1px solid ${C.border}`, boxShadow: '0 20px 50px -20px rgba(0,0,0,0.4)',
-          padding: 32, color: C.ink,
+          width: '100%', maxWidth: 340, background: C.surface,
+          borderRadius: 20, boxShadow: '0 24px 60px -20px rgba(0,0,0,0.45)',
+          padding: '30px 26px', color: C.ink, textAlign: 'center',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <p style={{ ...labelStyle, color: C.bronze, marginBottom: 8 }}>{brandLine}</p>
-          <h2 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 26, color: C.ink, fontWeight: 500, margin: 0 }}>
-            {title}
-          </h2>
-          <p style={{ fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 14, color: C.sub, marginTop: 8 }}>
-            {subtitle}
-          </p>
-        </div>
+        {mode !== 'welcome' && (
+          <button type="button" style={backBtn} onClick={() => { setError(null); setMode('welcome'); }}>
+            ← Back
+          </button>
+        )}
+
+        {mode === 'welcome' && (
+          <div style={{
+            width: 54, height: 54, margin: '0 auto 16px', borderRadius: '50%',
+            border: `1.5px solid ${C.bronze}`, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', background: C.glow,
+          }}>
+            <span style={{ width: 18, height: 18, borderRadius: '50%', border: `1.5px solid ${C.bronze}` }} />
+          </div>
+        )}
+
+        <p style={{
+          fontFamily: "'Karla', system-ui, sans-serif", fontSize: 10, fontWeight: 700,
+          letterSpacing: '0.24em', textTransform: 'uppercase', color: C.bronze, margin: '0 0 10px',
+        }}>
+          Mandala Codes
+        </p>
+        <h2 style={{
+          fontFamily: '"Cormorant Garamond", serif', fontWeight: 500, fontSize: 28,
+          lineHeight: 1.05, color: C.ink, margin: '0 0 6px',
+        }}>
+          {headline}
+        </h2>
+        <p style={{
+          fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: 17,
+          color: C.sub, lineHeight: 1.35, margin: '0 0 22px',
+        }}>
+          {subline}
+        </p>
 
         {error && (
           <div style={{
-            marginBottom: 16, padding: '8px 12px',
-            border: `1px solid ${isDarkMode ? 'rgba(220,150,150,0.4)' : '#d99'}`,
+            marginBottom: 16, padding: '8px 12px', borderRadius: 10, textAlign: 'left',
+            border: `1px solid ${isDarkMode ? 'rgba(220,150,150,0.4)' : '#e0b3b3'}`,
             background: isDarkMode ? 'rgba(138,42,42,0.18)' : '#fbeaea',
-            color: isDarkMode ? '#e6a6a6' : '#8a2a2a', fontFamily: 'Lato, sans-serif', fontSize: 13,
+            color: isDarkMode ? '#e6a6a6' : '#8a2a2a',
+            fontFamily: "'Karla', sans-serif", fontSize: 13,
           }}>
             {error}
           </div>
         )}
 
-        {/* Password modes (login / signup) */}
-        {(mode === 'login' || mode === 'signup') && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* Compact two-up: one tap with Google, or get a code by email. The
-                fast paths sit small and side by side, the way Cloudflare's does. */}
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" onClick={doGoogle} disabled={busy} style={{
-                ...inputStyle, flex: 1, minWidth: 0, display: 'flex', alignItems: 'center',
-                justifyContent: 'center', gap: 8, cursor: 'pointer', fontWeight: 600,
-                fontSize: 13, padding: '11px 12px',
-              }}>
-                <GoogleMark /> Google
-              </button>
-              <button type="button" onClick={() => { setError(null); setMode('code-email'); }} disabled={busy} style={{
-                ...inputStyle, flex: 1, minWidth: 0, display: 'flex', alignItems: 'center',
-                justifyContent: 'center', gap: 8, cursor: 'pointer', fontWeight: 600,
-                fontSize: 13, padding: '11px 12px',
-              }}>
-                Email me a code
-              </button>
-            </div>
+        {/* ── Welcome: three doors, each logs in OR creates ── */}
+        {mode === 'welcome' && (
+          <>
+            <button type="button" onClick={doGoogle} disabled={busy} style={pillPrimary}>
+              <GoogleMark /> Continue with Google
+            </button>
+            <button type="button" onClick={() => { setError(null); setMode('email'); }} disabled={busy} style={pillSecondary}>
+              Email me a sign-in code
+            </button>
+            <button
+              type="button"
+              onClick={() => { setError(null); setCreateNew(false); setMode('password'); }}
+              style={pillSecondary}
+            >
+              Use email and password
+            </button>
+            <p style={{
+              marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.line}`,
+              fontFamily: "'Karla', system-ui, sans-serif", fontSize: 13, color: C.sub,
+            }}>
+              Every option signs you in or sets you up. One account, however you return.
+            </p>
+          </>
+        )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: C.sub }}>
-              <span style={{ flex: 1, height: 1, background: C.border }} />
-              <span style={{ fontFamily: 'Lato, sans-serif', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.15em' }}>or</span>
-              <span style={{ flex: 1, height: 1, background: C.border }} />
-            </div>
-
-            {mode === 'signup' && (
-              <div>
-                <label className={labelCls} style={labelStyle}>Name (optional)</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder="Your name" />
-              </div>
+        {/* ── Password: explicit log-in vs create (the one door where they differ) ── */}
+        {mode === 'password' && (
+          <>
+            {createNew && (
+              <>
+                <label style={fieldLabel}>Name (optional)</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} style={fieldStyle} placeholder="Your name" />
+              </>
             )}
-            <div>
-              <label className={labelCls} style={labelStyle}>Email</label>
-              <input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} placeholder="you@example.com" />
-            </div>
-            <div>
-              <label className={labelCls} style={labelStyle}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && doPassword()}
-                style={inputStyle}
-                placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'}
-              />
-            </div>
+            <label style={fieldLabel}>Email</label>
+            <input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} style={fieldStyle} placeholder="you@example.com" />
+            <label style={fieldLabel}>Password</label>
+            <input
+              type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && doPassword()} style={fieldStyle}
+              placeholder={createNew ? 'At least 8 characters' : 'Your password'}
+            />
             <button type="button" onClick={doPassword} disabled={busy || !email.trim() || !password} style={primaryStyle}>
-              {busy ? 'Please wait...' : mode === 'signup' ? 'Create account' : 'Sign in'}
+              {busy ? 'Please wait…' : createNew ? 'Create account' : 'Log in'}
             </button>
-
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
-              <button type="button" style={linkStyle} onClick={() => { setError(null); setMode(mode === 'signup' ? 'login' : 'signup'); }}>
-                {mode === 'signup' ? 'Have an account? Sign in' : 'Create an account'}
+            <p style={altLine}>
+              {createNew ? (
+                <>Already have an account?{' '}
+                  <button type="button" style={altLink} onClick={() => { setError(null); setCreateNew(false); }}>Log in</button>
+                </>
+              ) : (
+                <>New here?{' '}
+                  <button type="button" style={altLink} onClick={() => { setError(null); setCreateNew(true); }}>Create an account</button>
+                </>
+              )}
+            </p>
+            <p style={{ ...altLine, marginTop: 6 }}>
+              <button type="button" style={altLink} onClick={() => { setError(null); sendCode(); }} disabled={busy || !email.trim()}>
+                Email me a code instead
               </button>
-            </div>
-          </div>
+            </p>
+          </>
         )}
 
-        {/* Code request */}
-        {mode === 'code-email' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div>
-              <label className={labelCls} style={labelStyle}>Email</label>
-              <input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendCode()} style={inputStyle} placeholder="you@example.com" />
-            </div>
+        {/* ── Email entry for the code path ── */}
+        {mode === 'email' && (
+          <>
+            <label style={fieldLabel}>Email</label>
+            <input
+              type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendCode()} style={fieldStyle} placeholder="you@example.com"
+            />
             <button type="button" onClick={sendCode} disabled={busy || !email.trim()} style={primaryStyle}>
-              {busy ? 'Sending...' : 'Send code'}
+              {busy ? 'Sending…' : 'Email me a code'}
             </button>
-            <button type="button" style={linkStyle} onClick={() => { setError(null); setMode('login'); }}>
-              Back to sign in
-            </button>
-          </div>
+          </>
         )}
 
-        {/* Code verify */}
-        {mode === 'code-verify' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div>
-              <label className={labelCls} style={labelStyle}>6-digit code</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                autoFocus
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                onKeyDown={(e) => e.key === 'Enter' && verify()}
-                style={{ ...inputStyle, textAlign: 'center', letterSpacing: '0.3em' }}
-                placeholder="123456"
-              />
-            </div>
+        {/* ── Code verify ── */}
+        {mode === 'code' && (
+          <>
+            <label style={fieldLabel}>Six-digit code</label>
+            <input
+              type="text" inputMode="numeric" autoFocus value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onKeyDown={(e) => e.key === 'Enter' && verify()}
+              style={{ ...fieldStyle, textAlign: 'center', letterSpacing: '0.3em' }} placeholder="123456"
+            />
             <button type="button" onClick={verify} disabled={busy || code.length < 6} style={primaryStyle}>
-              {busy ? 'Verifying...' : 'Sign in'}
+              {busy ? 'Verifying…' : 'Continue'}
             </button>
-            <button type="button" style={linkStyle} onClick={() => { setError(null); setCode(''); setMode('code-email'); }}>
-              Use a different email
-            </button>
-          </div>
+            <p style={altLine}>
+              <button type="button" style={altLink} onClick={() => { setError(null); setCode(''); setMode('welcome'); }}>
+                Use a different way in
+              </button>
+            </p>
+          </>
         )}
       </div>
     </div>,
@@ -300,7 +359,7 @@ const SignInModal: React.FC<{
 };
 
 const GoogleMark: React.FC = () => (
-  <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+  <svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true">
     <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.3 17.7 9.5 24 9.5z" />
     <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.8-9.8 6.8-17.4z" />
     <path fill="#FBBC05" d="M10.4 28.3c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.8-6.1C.9 16.1 0 19.9 0 23.7s.9 7.6 2.6 10.7l7.8-6.1z" />
