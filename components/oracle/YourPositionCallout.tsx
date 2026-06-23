@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProfile } from '../../lib/profile/context';
 import { useAccount } from '../../lib/account/useAccount';
-import SignInTrigger from '../account/SignInTrigger';
 import {
   POSITIONS_BY_KEY,
   POSITION_KEYS,
@@ -9,6 +9,8 @@ import {
 import type { ProfileKey } from '../../lib/astrology/types';
 import { LAUNCH_FLAGS } from '../../launchFlags';
 import YourPositionPopup, { type PopupMatch } from './YourPositionPopup';
+import BirthTimeModal from './BirthTimeModal';
+import SignInModal from '../account/SignInModal';
 
 interface Props {
   /** The card's Human Design gate (1..64). */
@@ -16,22 +18,29 @@ interface Props {
 }
 
 /**
- * The in-your-chart box that sits in the reading header, under Acquire / Share.
- * It is built from the same hairline box as those two actions, so it belongs to
- * the row rather than floating as a separate widget. A thin bronze hairline is
- * seated along the box's inside bottom edge: faint when signed out, lit when the
- * card is in your chart. Three states:
+ * The in-your-chart box in the reading header, under Acquire / Share. It is
+ * built from the same hairline box as those actions, with a bronze hairline
+ * seated along the inside bottom edge: faint before a chart exists, lit once the
+ * card is in your chart.
  *
- *   - Signed out: "See this card in your chart," which opens the soft sign-in.
- *   - Signed in and this card sits in your profile: "Your Pearl · Line 3,"
- *     which opens a short popup with what that placement means.
- *   - Signed in but this card is not in your chart (or accounts are off):
- *     renders nothing. No nag, no upsell.
+ * The flow is birthday-first, then save:
+ *
+ *   1. No birthday yet → "See this card in your chart." Opens the birth-time
+ *      form inline; the chart computes locally, no account needed.
+ *   2. Birthday entered and this card is in your chart → "Your Pearl · Line 3."
+ *      Opens a short popup with what the placement means; the popup carries the
+ *      offer to save (sign in) when the chart is not yet saved to an account.
+ *   3. Birthday entered but this card is not in your chart → renders nothing.
+ *
+ * Accounts being off, or the launch flag being off, hides everything.
  */
 const YourPositionCallout: React.FC<Props> = ({ gate }) => {
+  const navigate = useNavigate();
   const { profile } = useProfile();
   const { available, isSignedIn } = useAccount();
-  const [open, setOpen] = useState(false);
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
 
   const matches = useMemo<PopupMatch[]>(() => {
     if (!profile) return [];
@@ -45,32 +54,52 @@ const YourPositionCallout: React.FC<Props> = ({ gate }) => {
 
   if (!LAUNCH_FLAGS.hologeneticProfile || !available) return null;
 
-  // Signed out: invite them through the soft sign-in to discover the placement.
-  if (!isSignedIn) {
+  // ── No chart yet: invite the birthday. Opens the birth-time popup; on save,
+  //    the second screen offers to keep it (the Welcome sign-in). No account is
+  //    asked for to compute the chart, only to save it. ──
+  if (!profile) {
     return (
-      <>
-        <SignInTrigger>
-          <button
-            type="button"
-            className="ypc ypc--out"
-            aria-label="See this card in your chart"
-          >
-            <span className="ypc__mid">
-              <span className="ypc__title ypc__title--out">
-                See this card in your chart
-              </span>
+      <div className="ypc-wrap">
+        <button
+          type="button"
+          className="ypc ypc--out"
+          onClick={() => setFormOpen(true)}
+        >
+          <span className="ypc__mid">
+            <span className="ypc__title ypc__title--out">
+              See this card in your chart
             </span>
-            <span aria-hidden="true" className="ypc__go">
-              →
-            </span>
-          </button>
-        </SignInTrigger>
+          </span>
+          <span aria-hidden="true" className="ypc__go">
+            →
+          </span>
+        </button>
+
+        {formOpen && (
+          <BirthTimeModal
+            showCardOption
+            onClose={() => setFormOpen(false)}
+            onLogIn={() => { setFormOpen(false); setSaveOpen(true); }}
+            onSeeChart={() => { setFormOpen(false); navigate('/profile'); }}
+            onBackToCard={() => setFormOpen(false)}
+            onSave={() => { setFormOpen(false); setSaveOpen(true); }}
+          />
+        )}
+
+        {saveOpen && (
+          <SignInModal
+            context="reading"
+            onClose={() => setSaveOpen(false)}
+            onSignedIn={() => setSaveOpen(false)}
+          />
+        )}
+
         <Styles />
-      </>
+      </div>
     );
   }
 
-  // Signed in but this card isn't in their chart: stay quiet.
+  // Signed in or out, but this card isn't in their chart: stay quiet.
   if (matches.length === 0) return null;
 
   const primary = matches[0];
@@ -81,11 +110,11 @@ const YourPositionCallout: React.FC<Props> = ({ gate }) => {
       : `Your ${meta.label} · Line ${primary.line}`;
 
   return (
-    <>
+    <div className="ypc-wrap">
       <button
         type="button"
         className="ypc ypc--in"
-        onClick={() => setOpen(true)}
+        onClick={() => setPopupOpen(true)}
         aria-label={`This card is in your chart: ${titleText}. Read what it means.`}
       >
         <span className="ypc__mid">
@@ -97,21 +126,23 @@ const YourPositionCallout: React.FC<Props> = ({ gate }) => {
         </span>
       </button>
 
-      {open && (
+      {popupOpen && (
         <YourPositionPopup
           gate={gate}
           matches={matches}
-          onClose={() => setOpen(false)}
+          canSave={!isSignedIn}
+          onClose={() => setPopupOpen(false)}
         />
       )}
 
       <Styles />
-    </>
+    </div>
   );
 };
 
 const Styles: React.FC = () => (
   <style>{`
+    .ypc-wrap { width: 100%; }
     .ypc {
       position: relative;
       display: flex;
