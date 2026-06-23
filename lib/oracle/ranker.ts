@@ -116,7 +116,7 @@ function stem(t: string): string {
 }
 
 function tokenize(text: string): string[] {
-  return (text.toLowerCase().match(/[a-z0-9']+/g) ?? []).filter((t) => t.length > 1);
+  return (text.toLowerCase().match(/[a-z0-9']+/g) ?? ([] as string[])).filter((t) => t.length > 1);
 }
 
 export function queryTerms(query: string): string[] {

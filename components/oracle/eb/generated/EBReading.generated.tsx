@@ -75,7 +75,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       </h1>
     </header>
     <div className="ul-hero-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: "clamp(26px,4vw,52px)", alignItems: "center" }}>
-      <figure onClick={vals.openLightbox} role="button" tabIndex="0" aria-label="Enlarge artwork" style={{ margin: "0", position: "relative", aspectRatio: "1/1", cursor: "zoom-in", overflow: "hidden", background: "var(--l-soft)", boxShadow: "0 1px 0 rgba(255,255,255,0.04),0 30px 80px -30px rgba(20,15,8,0.5)" }}>
+      <figure onClick={vals.openLightbox} role="button" tabIndex={0} aria-label="Enlarge artwork" style={{ margin: "0", position: "relative", aspectRatio: "1/1", cursor: "zoom-in", overflow: "hidden", background: "var(--l-soft)", boxShadow: "0 1px 0 rgba(255,255,255,0.04),0 30px 80px -30px rgba(20,15,8,0.5)" }}>
         <div aria-hidden="true" style={{ position: "absolute", inset: "0", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--serif)", fontStyle: "italic", color: "var(--l-3)", fontSize: "16px" }}>
         {vals.cardName}
         </div>
