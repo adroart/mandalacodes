@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { ALL_CARDS, CARD_BY_NUMBER } from '../data/oracleData';
-import { HexagramSVG } from './oracle/HexagramGlyph';
+import { HexagramSVG, hexagramLineBooleans } from './oracle/HexagramGlyph';
 import { getExpandedCard } from '../data/expandedOracleData';
 import { getSynthesis, getInvocation, type CardSynthesis } from '../data/synthesisData';
 import { getLineText } from '../data/ichingLines';
@@ -77,6 +77,10 @@ const UniversalLanguageCard: React.FC = () => {
   }
 
   const cleanTrig = (s: string) => s.replace(/\s*\([^)]*\)\s*/g, '').trim();
+  // "Heaven (Ch'ien)" → "Heaven · Ch'ien" — keep the romanisation, lose the parens.
+  const trigName = (s: string) => s.replace(/\s*\(([^)]+)\)\s*$/, ' · $1').trim();
+  // Six hexagram lines top→bottom for the I Ching glyph; matches the printed plaque.
+  const hexLines = hexagramLineBooleans(card.iching.upper_trigram.symbol, card.iching.lower_trigram.symbol);
   const keywords = synthesis?.keywords ?? expanded?.keywords ?? [];
   const hexChar = HEXAGRAM_CHINESE[card.number]?.char ?? String(card.number);
   const imageUrl = `https://res.cloudinary.com/dobbosnda/image/upload/f_jpg,q_auto,w_1080,h_1080,c_fill,g_center/${ulCardPublicId(card.number) ?? ''}`;
@@ -129,6 +133,11 @@ const UniversalLanguageCard: React.FC = () => {
         code2: String(card.number).padStart(2, '0'),
         ichingHexName: card.iching.hexagram_name,
         ichingHexFormula: `${cleanTrig(card.iching.upper_trigram.name)} over ${cleanTrig(card.iching.lower_trigram.name)}`,
+        // The actual hexagram glyph (broken/solid lines) + trigram names, so the
+        // I Ching panel draws THIS card's hexagram rather than a hardcoded one.
+        hexLines,
+        ichingUpperName: trigName(card.iching.upper_trigram.name),
+        ichingLowerName: trigName(card.iching.lower_trigram.name),
         ichingGua: `Guà ${card.number}`,
         ulDropcap: first.charAt(0),
         ulReadingFirst: first.slice(1),
