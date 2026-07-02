@@ -1,5 +1,5 @@
 /**
- * Cloudflare Pages Function — /oracle/universal-language/[number]
+ * Cloudflare Pages Function — /universal-language/[number]
  *
  * Rewrites Open Graph meta tags in index.html before serving so that
  * social platforms (WhatsApp, Telegram, X, iMessage, etc.) display the
