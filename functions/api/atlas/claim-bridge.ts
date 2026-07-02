@@ -7,9 +7,26 @@
  * living keeper, Adrian-Website validates the requester's session on its
  * side, then calls THIS endpoint so the contested claim lands in the ONE
  * claim-request store (R2 atlas/claimRequests.json) and the existing routing,
- * dedupe, rate-limit, and patient escalation (utils/claimWindow.ts + the
- * steward resolve endpoints) Just Work. No claim machinery is duplicated on
- * the Adrian side; this is the single source of truth.
+ * dedupe, and rate-limit guards (utils/claimRequests.ts + the steward
+ * resolve endpoints) apply exactly as they do to a self-serve request.
+ *
+ * The claim-block ESCALATION (utils/claimWindow.ts — the 30-day window,
+ * four warnings, and grace period) is DORMANT: nothing in this repo calls
+ * evaluateClaimWindow. Wiring it up for real requires an out-of-band
+ * notification channel that can actually DELIVER a warning to the keeper
+ * (none exists yet — email/push is unbuilt), per the living-art-legacy.md
+ * plan amendment dated 2026-07-02, which also names the other activation
+ * preconditions. Until then, a contested request from this bridge simply
+ * lands in the queue like any other — a human (the current holder, or
+ * admin) resolves it by hand. No claim machinery is duplicated on the
+ * Adrian side; this is the single source of truth.
+ *
+ * Identity from this bridge is a SERVER assertion, never a verified one:
+ * requests it creates are stamped `source: 'bridge'` and
+ * `requesterEmailVerified: false` (see utils/claimRequests.ts) so a holder
+ * resolving the request sees plainly that the email was relayed, not
+ * independently proven by this server — asserted identity must never be
+ * presented as verified.
  *
  * Why a machine endpoint and not the user-facing request-claim: the Better
  * Auth session cookie is per-domain and cannot be forwarded from
@@ -56,7 +73,7 @@ interface BridgeEnv {
   CLAIM_BRIDGE_SECRET?: string;
 }
 
-interface BridgeInput {
+export interface BridgeInput {
   input: ClaimRequestInput;
   requesterRef: string;
   requesterEmail: string;
@@ -77,8 +94,13 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * accepted; anything else is rejected; the receiver, not the sender, decides
  * what a ClaimRequest contains. Signature verification runs BEFORE this, so
  * validation errors may carry detail.
+ *
+ * Exported for the unit suite (tests/unit/claimBridge.test.ts) — this is the
+ * only piece of request-building logic in this Function that's pure enough
+ * to test without a Workers runtime; the HMAC verification and the R2 calls
+ * around it are not.
  */
-function parseBridgeBody(value: unknown): { ok: true; value: BridgeInput } | { ok: false; error: string } {
+export function parseBridgeBody(value: unknown): { ok: true; value: BridgeInput } | { ok: false; error: string } {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return { ok: false, error: 'Body must be a JSON object' };
   }
@@ -174,23 +196,33 @@ export async function onRequestPost(
   if (parsed.ok === false) return json({ ok: false, error: parsed.error }, 400);
   const { input, requesterRef, requesterEmail } = parsed.value;
 
-  // Routing looks at the piece's CURRENT steward record; a bound piece routes
-  // to its holder (anti-takeover); unbound or unknown routes to admin.
-  const stewards = await readStewards(env);
-  const steward = stewards.find(
-    (s) =>
-      s.pieceId === input.pieceId &&
-      (s.editionNumber ?? undefined) === (input.editionNumber ?? undefined),
-  );
-
   const now = new Date().toISOString();
-  const outcome = await mutateClaimRequests<BridgeResult>(env, (requests) => {
+  const outcome = await mutateClaimRequests<BridgeResult>(env, async (requests) => {
+    // Routing looks at the piece's CURRENT steward record; a bound piece
+    // routes to its holder (anti-takeover); unbound or unknown routes to
+    // admin. Read it INSIDE the mutator, not before it: mutateClaimRequests
+    // re-runs this whole closure on an etag retry, so reading stewards here
+    // keeps routing computed against the freshest snapshot available in the
+    // SAME attempt — a steward bind landing between an outer read and a
+    // retried write could otherwise route a contested claim to the wrong
+    // queue even though the request-list snapshot itself was fresh.
+    const stewards = await readStewards(env);
+    const steward = stewards.find(
+      (s) =>
+        s.pieceId === input.pieceId &&
+        (s.editionNumber ?? undefined) === (input.editionNumber ?? undefined),
+    );
+
     const plan = planClaimRequest(requests, {
       input,
       requesterRef,
       requesterEmail,
       steward,
       now,
+      // Machine-asserted identity, never independently verified by this
+      // server — see the module doc comment and utils/claimRequests.ts.
+      source: 'bridge',
+      requesterEmailVerified: false,
     });
     if (plan.ok === false) {
       // Dedupe and rate-limit are not failures of the bridge: the requester is

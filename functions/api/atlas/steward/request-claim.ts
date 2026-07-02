@@ -53,24 +53,32 @@ export async function onRequestPost(
   const input = parseClaimRequestInput(body);
   if (!input.ok) return json({ ok: false, error: input.error }, 400);
 
-  // Routing looks at the piece's CURRENT steward record. Read once here —
-  // a racing bind between this read and the write below only affects which
-  // queue sees the request, never whether anything binds.
-  const stewards = await readStewards(env);
-  const steward = stewards.find(
-    (s) =>
-      s.pieceId === input.value.pieceId &&
-      (s.editionNumber ?? undefined) === (input.value.editionNumber ?? undefined),
-  );
-
   const now = new Date().toISOString();
-  const outcome = await mutateClaimRequests(env, (requests) => {
+  const outcome = await mutateClaimRequests(env, async (requests) => {
+    // Routing looks at the piece's CURRENT steward record. Read it INSIDE
+    // the mutator, not before it: mutateClaimRequests re-runs this whole
+    // closure on an etag retry, so reading stewards here keeps routing
+    // computed against the freshest snapshot available in the SAME
+    // attempt — a racing bind between an outer read and a retried write
+    // could otherwise route this request against a stale steward snapshot
+    // even though the request-list snapshot itself was fresh.
+    const stewards = await readStewards(env);
+    const steward = stewards.find(
+      (s) =>
+        s.pieceId === input.value.pieceId &&
+        (s.editionNumber ?? undefined) === (input.value.editionNumber ?? undefined),
+    );
+
     const plan = planClaimRequest(requests, {
       input: input.value,
       requesterRef: userId,
       requesterEmail: email,
       steward,
       now,
+      // The ordinary self-serve path: both refs are backed by this
+      // request's own verified Better Auth session.
+      source: 'user',
+      requesterEmailVerified: true,
     });
     if (!plan.ok) {
       const status = plan.error.includes('at most') ? 429 : 409;
