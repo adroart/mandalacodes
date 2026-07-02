@@ -119,11 +119,21 @@ describe('planClaimRequest routing', () => {
     if (r.ok) {
       expect(r.value.status).toBe('pending');
       // The plan's output is ONLY a queue row: no steward fields, no
-      // binding data beyond the requester's own identity.
+      // binding data beyond the requester's own identity plus the
+      // server-stamped provenance fields (source, requesterEmailVerified).
       expect(Object.keys(r.value).sort()).toEqual([
-        'createdAt', 'id', 'pieceId', 'requesterEmail',
-        'requesterRef', 'routedTo', 'status',
+        'createdAt', 'id', 'pieceId', 'requesterEmail', 'requesterEmailVerified',
+        'requesterRef', 'routedTo', 'source', 'status',
       ]);
+    }
+  });
+
+  it('defaults provenance to source "user" and requesterEmailVerified true when the caller does not specify them', () => {
+    const r = plan([], undefined);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.source).toBe('user');
+      expect(r.value.requesterEmailVerified).toBe(true);
     }
   });
 
@@ -187,5 +197,28 @@ describe('toHolderRequestView', () => {
     expect(JSON.stringify(view)).not.toContain('user_requester');
     expect('requesterRef' in view).toBe(false);
     expect('status' in view).toBe(false);
+  });
+
+  it('exposes requesterEmailVerified and source so the holder UI can label a machine-asserted email', () => {
+    const bridged = toHolderRequestView(
+      req({ pieceId: 'UL-7', source: 'bridge', requesterEmailVerified: false }),
+    );
+    expect(bridged.source).toBe('bridge');
+    expect(bridged.requesterEmailVerified).toBe(false);
+
+    const ordinary = toHolderRequestView(
+      req({ pieceId: 'UL-7', source: 'user', requesterEmailVerified: true }),
+    );
+    expect(ordinary.source).toBe('user');
+    expect(ordinary.requesterEmailVerified).toBe(true);
+  });
+
+  it('omits requesterEmailVerified/source entirely for a legacy row that never had them', () => {
+    const legacy = req({ pieceId: 'UL-7' });
+    delete (legacy as Partial<ClaimRequest>).source;
+    delete (legacy as Partial<ClaimRequest>).requesterEmailVerified;
+    const view = toHolderRequestView(legacy);
+    expect('source' in view).toBe(false);
+    expect('requesterEmailVerified' in view).toBe(false);
   });
 });

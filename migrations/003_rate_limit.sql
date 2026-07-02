@@ -9,7 +9,12 @@
 -- window comparison; an occasional cleanup of old rows is optional, not
 -- required for correctness.
 --
--- Apply via: wrangler d1 migrations apply adrian-website --remote
+-- Applying this migration touches the shared `adrian-website` D1 database,
+-- which the Adrian-Website repo also has migrations against — see
+-- docs/d1-migrations.md before running `wrangler d1 migrations apply
+-- adrian-website --remote` from this checkout, and check
+-- `wrangler d1 migrations list adrian-website --remote` from BOTH repos
+-- first so this filename doesn't collide with one already used there.
 -- Until applied, the limiter fails OPEN (allows requests) — never locks anyone
 -- out — so this migration can land before or after the code deploy.
 

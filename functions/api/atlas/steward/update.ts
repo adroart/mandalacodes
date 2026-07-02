@@ -44,6 +44,7 @@ import {
   toStewardView,
 } from '../_helpers';
 import { requireUser, isAuthResponse } from '../../_lib/auth';
+import { checkRateLimit, tooManyRequests } from '../../_lib/rate-limit.js';
 
 interface UpdateBody {
   pieceId?: unknown;
@@ -85,6 +86,14 @@ export async function onRequestPost(
   // Captured by the mutator closure below — TS doesn't carry the narrowing
   // of `auth` into nested function declarations.
   const actorUserId = auth.userId;
+
+  // Fail-open D1 limiter, per-user — see functions/api/_lib/rate-limit.js.
+  const { ok: withinLimit, retryAfterSec } = await checkRateLimit(
+    env,
+    `atlas:steward-update:${actorUserId}`,
+    { limit: 30, windowMs: 60 * 60 * 1000 },
+  );
+  if (!withinLimit) return tooManyRequests(retryAfterSec);
 
   let body: UpdateBody;
   try {

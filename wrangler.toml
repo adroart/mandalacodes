@@ -22,6 +22,9 @@ bucket_name = "mandalacodes-atlas"
 # (used here) plus orders/cart/invoices (used only on adrianrasmussen.com).
 # Apply/evolve the schema from the Adrian-Website repo, NOT from here, so the
 # two never diverge. The old mandalacodes-oracle DB (c8d07902…) is retired.
+# In practice this repo's migrations/ dir also targets this DB (see
+# docs/d1-migrations.md for the resulting filename-collision hazard and the
+# safe-apply rules before running any migration here).
 # The public oracle reader is stateless; only the /api/{auth,profile,collections}
 # Functions and the atlas rate-limiter query this DB.
 [[d1_databases]]

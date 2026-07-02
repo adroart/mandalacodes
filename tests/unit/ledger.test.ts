@@ -15,6 +15,7 @@ import {
   groupChains,
   verifyChain,
 } from '../../utils/ledger';
+import { chainHasClaimedEvent } from '../../functions/api/atlas/event';
 import type { LedgerEvent } from '../../types';
 
 type Draft = Omit<LedgerEvent, 'hash' | 'prevHash'>;
@@ -133,5 +134,28 @@ describe('groupChains', () => {
     const b = await buildChain([draft({ pieceId: 'UL-2', editionNumber: 2 })]);
     const groups = groupChains([...a, ...b]);
     expect(Array.from(groups.keys()).sort()).toEqual(['UL-1:0', 'UL-2:2']);
+  });
+});
+
+describe('chainHasClaimedEvent — the admin duplicate-claimed guard (event.ts)', () => {
+  it('is false for a chain with no claimed event', async () => {
+    const chain = await buildChain([
+      draft({ type: 'created' }),
+      draft({ type: 'placed', cityId: 'lisbon-pt' }),
+    ]);
+    expect(chainHasClaimedEvent(chain)).toBe(false);
+  });
+
+  it('is true once a claimed event has landed, regardless of position', async () => {
+    const chain = await buildChain([
+      draft({ type: 'created' }),
+      draft({ type: 'claimed', actor: 'steward' }),
+      draft({ type: 'placed', cityId: 'lisbon-pt' }),
+    ]);
+    expect(chainHasClaimedEvent(chain)).toBe(true);
+  });
+
+  it('is false for an empty chain', () => {
+    expect(chainHasClaimedEvent([])).toBe(false);
   });
 });

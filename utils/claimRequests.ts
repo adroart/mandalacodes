@@ -103,6 +103,20 @@ export interface PlanClaimRequestOptions {
   steward: StewardRecord | undefined;
   now: string;
   requestId?: string;
+  /** Where this request originates. Defaults to 'user' — the ordinary
+   *  self-serve path (request-claim.ts), whose own verified session backs
+   *  both requesterRef and requesterEmail. The machine-authenticated
+   *  claim-bridge (claim-bridge.ts) passes 'bridge' explicitly: neither ref
+   *  there is verified by this server, only by Adrian-Website's
+   *  HMAC-authenticated call. */
+  source?: 'user' | 'bridge';
+  /** Was requesterEmail proven by a verified session at request time?
+   *  Defaults to true — the ordinary user path always carries a verified
+   *  Better Auth JWT email. The bridge passes false explicitly: the email
+   *  is a SERVER-asserted claim relayed from Adrian-Website, never
+   *  independently verified here. Per the plan, asserted identity must
+   *  never be presented as verified. */
+  requesterEmailVerified?: boolean;
 }
 
 /**
@@ -118,22 +132,38 @@ export interface PlanClaimRequestOptions {
  *     are a pending row a human later resolves.
  *   - Dedupe: one open request per (requester, piece, edition).
  *   - Rate limit: at most MAX_OPEN_REQUESTS_PER_REQUESTER pending requests
- *     per requester.
+ *     per requester REF, and the same cap again per requester EMAIL
+ *     (lowercased). The email-keyed cap matters because the claim-bridge
+ *     asserts requesterRef itself — nothing here has verified it — so a
+ *     hostile sender could otherwise mint a fresh ref per call and blow
+ *     past the ref-keyed cap while reusing one mailbox to spam holders.
+ *   - Provenance: every planned request records `source` and
+ *     `requesterEmailVerified` (see PlanClaimRequestOptions) so a holder
+ *     resolving a bridge-asserted claim can see the email was never
+ *     independently verified.
  */
 export function planClaimRequest(
   requests: readonly ClaimRequest[],
   opts: PlanClaimRequestOptions,
 ): ParseResult<ClaimRequest> {
-  const { input, requesterRef, requesterEmail, steward, now } = opts;
+  const {
+    input,
+    requesterRef,
+    requesterEmail,
+    steward,
+    now,
+    source = 'user',
+    requesterEmailVerified = true,
+  } = opts;
 
   if (steward?.clerkUserId === requesterRef) {
     return { ok: false, error: 'You already steward this piece.' };
   }
 
-  const open = requests.filter(
+  const openByRef = requests.filter(
     (r) => r.status === 'pending' && r.requesterRef === requesterRef,
   );
-  const duplicate = open.find(
+  const duplicate = openByRef.find(
     (r) =>
       r.pieceId === input.pieceId &&
       (r.editionNumber ?? undefined) === (input.editionNumber ?? undefined),
@@ -144,7 +174,22 @@ export function planClaimRequest(
       error: 'You already have an open request for this piece.',
     };
   }
-  if (open.length >= MAX_OPEN_REQUESTS_PER_REQUESTER) {
+  if (openByRef.length >= MAX_OPEN_REQUESTS_PER_REQUESTER) {
+    return {
+      ok: false,
+      error: `You can have at most ${MAX_OPEN_REQUESTS_PER_REQUESTER} open requests.`,
+    };
+  }
+
+  // Bridge abuse cap (see doc comment above): cap by EMAIL too, the one
+  // identity constant across a spray of forged requesterRefs.
+  const normalizedEmail = requesterEmail.trim().toLowerCase();
+  const openByEmail = requests.filter(
+    (r) =>
+      r.status === 'pending' &&
+      r.requesterEmail.trim().toLowerCase() === normalizedEmail,
+  );
+  if (openByEmail.length >= MAX_OPEN_REQUESTS_PER_REQUESTER) {
     return {
       ok: false,
       error: `You can have at most ${MAX_OPEN_REQUESTS_PER_REQUESTER} open requests.`,
@@ -165,6 +210,8 @@ export function planClaimRequest(
         : {}),
       requesterRef,
       requesterEmail,
+      requesterEmailVerified,
+      source,
       ...(input.note !== undefined ? { note: input.note } : {}),
       createdAt: now,
       status: 'pending',
@@ -195,12 +242,23 @@ export function resolveRequest(
  * the requester's email (they must be able to recognize "yes, that's the
  * person I sold it to") — but never the opaque requesterRef or another
  * requester's records. The admin queue sees full records instead.
+ *
+ * `requesterEmailVerified` and `source` ride along so the holder UI can
+ * label a machine-asserted email distinctly from an ordinary self-serve
+ * request — per the plan, asserted identity must never be presented as
+ * verified.
  */
 export interface HolderRequestView {
   id: string;
   pieceId: string;
   editionNumber?: number;
   requesterEmail: string;
+  /** False when the email came from the machine-authenticated claim-bridge
+   *  (never independently verified by this server). Absent on legacy rows
+   *  reads as true. */
+  requesterEmailVerified?: boolean;
+  /** 'bridge' = claim-bridge.ts (machine auth); absent reads as 'user'. */
+  source?: 'user' | 'bridge';
   note?: string;
   createdAt: string;
 }
@@ -213,6 +271,10 @@ export function toHolderRequestView(request: ClaimRequest): HolderRequestView {
       ? { editionNumber: request.editionNumber }
       : {}),
     requesterEmail: request.requesterEmail,
+    ...(request.requesterEmailVerified !== undefined
+      ? { requesterEmailVerified: request.requesterEmailVerified }
+      : {}),
+    ...(request.source !== undefined ? { source: request.source } : {}),
     ...(request.note !== undefined ? { note: request.note } : {}),
     createdAt: request.createdAt,
   };

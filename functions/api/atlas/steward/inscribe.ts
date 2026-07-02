@@ -54,6 +54,7 @@ import {
   selectInscription,
 } from '../_inscriptions';
 import { requireUser, isAuthResponse } from '../../_lib/auth';
+import { checkRateLimit, tooManyRequests } from '../../_lib/rate-limit.js';
 
 export async function onRequestPost(
   context: PagesContext,
@@ -63,6 +64,14 @@ export async function onRequestPost(
   const auth = await requireUser(request, env);
   if (isAuthResponse(auth)) return auth;
   const userId = auth.userId;
+
+  // Fail-open D1 limiter, per-user — see functions/api/_lib/rate-limit.js.
+  const { ok: withinLimit, retryAfterSec } = await checkRateLimit(
+    env,
+    `atlas:inscribe:${userId}`,
+    { limit: 30, windowMs: 60 * 60 * 1000 },
+  );
+  if (!withinLimit) return tooManyRequests(retryAfterSec);
 
   if (!env.DB) return migrationNotApplied();
   const db = env.DB;
