@@ -15,6 +15,10 @@ Check items off here as they are completed, so this file stays a source of
 truth instead of a stale plan. As of 2026-07-02: step a (the merge) is done;
 the repo shows no evidence steps b through g were done.
 
+The consolidated command-by-command version of the remaining steps
+(including the newer `CLAIM_BRIDGE_SECRET` and the notification-channel and
+piece-content decision records) lives in [GO-LIVE-RUNBOOK.md](GO-LIVE-RUNBOOK.md).
+
 - [x] a) Review and merge the branch — done, `claude/gallant-faraday-kb2y28` is on `main`
 - [ ] b) Apply the D1 migration
 - [ ] c) Generate and set `SALE_WEBHOOK_SECRET`
