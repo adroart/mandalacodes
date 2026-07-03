@@ -75,6 +75,10 @@ export interface Globe3DProps {
   mandala?: boolean;
   /** Caption shown while the Mandala View is engaged. */
   mandalaCaption?: string;
+  /** Reports the selected marker's screen position each frame (leader line). */
+  onMarkerScreenPos?: (pos: { x: number; y: number }) => void;
+  /** A click that lands on no marker while something is selected. */
+  onBackgroundClick?: () => void;
   className?: string;
 }
 
@@ -89,13 +93,28 @@ export default function Globe3D({
   placedByCard = EMPTY_PLACED,
   mandala = false,
   mandalaCaption,
+  onMarkerScreenPos,
+  onBackgroundClick,
   className,
 }: Globe3DProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  // The canvas lives in its own box so it can slide aside for the HUD while
+  // the wrapper (and its pointer handlers) stay put. Pick math and the leader
+  // line project through this box's live rect, so the slide never desyncs them.
+  const canvasBoxRef = useRef<HTMLDivElement | null>(null);
   const rig = useMemo<Rig>(() => createRig(detectLowTier()), []);
 
   const [inView, setInView] = useState(true);
   const [mandalaOn, setMandalaOn] = useState(false);
+
+  // Dev-only window handle for inspecting the live rig from the console.
+  useEffect(() => {
+    if (import.meta.env.DEV) (window as unknown as { __atlasRig?: Rig }).__atlasRig = rig;
+  }, [rig]);
+  // Thread travel: caption naming the thread while the camera flies it.
+  const [travelCaption, setTravelCaption] = useState<string | null>(null);
+  const travelTimer = useRef<number>(0);
+  const prevSelected = useRef<string | null>(null);
 
   // Mutable interaction state (never React state — read inside handlers).
   const drag = useRef<{ x: number; y: number; moved: boolean; active: boolean }>({
@@ -147,8 +166,12 @@ export default function Globe3D({
     return () => window.clearInterval(id);
   }, [mandala, inView, engageMandala]);
 
-  /* Selection: tween the globe to face the piece (same feel as before). */
+  /* Selection: tween the globe to face the piece. Moving between two kindred
+     pieces becomes a thread travel: a longer flight, the camera lifting off
+     the surface mid-arc, and a caption naming the thread being flown. */
   useEffect(() => {
+    const prev = prevSelected.current;
+    prevSelected.current = selectedId ?? null;
     selectedRef.current = selectedId ?? null;
     if (!selectedId) {
       if (!hoverRef.current && rig.mandalaTarget === 0) rig.paused = false;
@@ -157,6 +180,15 @@ export default function Globe3D({
     const target = nodes.find((n) => n.id === selectedId);
     if (!target) return;
     engageMandala(false);
+
+    const trigram = prev && prev !== selectedId ? sharedTrigram(kinship, prev, selectedId) : null;
+    const traveling = trigram != null;
+    if (traveling) {
+      setTravelCaption(`traveling the ${trigram} thread`);
+      window.clearTimeout(travelTimer.current);
+      travelTimer.current = window.setTimeout(() => setTravelCaption(null), 2600);
+    }
+
     const toPhi = (target.lng * Math.PI) / 180;
     const toTheta = (target.lat * Math.PI) / 180;
     rig.tween = {
@@ -165,10 +197,44 @@ export default function Globe3D({
       fromTheta: rig.theta,
       toTheta,
       startedAt: performance.now(),
-      duration: SELECT_ANIM_MS,
+      duration: traveling ? 1700 : SELECT_ANIM_MS,
+      dollyAmp: traveling ? 1.15 : undefined,
     };
     rig.paused = true;
-  }, [selectedId, nodes, rig, engageMandala]);
+  }, [selectedId, nodes, rig, engageMandala, kinship]);
+
+  useEffect(() => () => window.clearTimeout(travelTimer.current), []);
+
+  /* Leader line: project the selected marker through the live rig each frame
+     so the page can pin its hairline to the moving light. */
+  useEffect(() => {
+    if (!selectedId || !onMarkerScreenPos) return;
+    let raf = 0;
+    const v = new THREE.Vector3();
+    const update = () => {
+      const inner = canvasBoxRef.current;
+      const wrapper = wrapperRef.current;
+      const camera = rig.camera;
+      const n = nodes.find((node) => node.id === selectedId);
+      if (inner && wrapper && camera && n) {
+        latLngToVec3(n.lat, n.lng, 1.012, v);
+        v.applyAxisAngle(Y_AXIS, -rig.phi);
+        v.applyAxisAngle(X_AXIS, rig.theta);
+        if (v.z > 0.05) {
+          const r = inner.getBoundingClientRect();
+          const w = wrapper.getBoundingClientRect();
+          v.project(camera);
+          onMarkerScreenPos({
+            x: (v.x * 0.5 + 0.5) * r.width + (r.left - w.left),
+            y: (1 - (v.y * 0.5 + 0.5)) * r.height + (r.top - w.top),
+          });
+        }
+      }
+      raf = requestAnimationFrame(update);
+    };
+    raf = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(raf);
+  }, [selectedId, nodes, onMarkerScreenPos, rig]);
 
   /* Frameloop gating — stop rendering entirely when scrolled away. */
   useEffect(() => {
@@ -184,11 +250,11 @@ export default function Globe3D({
 
   /* ─── Pointer handling: drag-to-rotate + click-to-pick ─────────────────── */
   const pick = useCallback(
-    (clientX: number, clientY: number) => {
-      if (!onSelect || nodes.length === 0) return;
-      const el = wrapperRef.current;
+    (clientX: number, clientY: number): boolean => {
+      if (!onSelect || nodes.length === 0) return false;
+      const el = canvasBoxRef.current ?? wrapperRef.current;
       const camera = rig.camera;
-      if (!el || !camera) return;
+      if (!el || !camera) return false;
       const rect = el.getBoundingClientRect();
       const cx = clientX - rect.left;
       const cy = clientY - rect.top;
@@ -209,6 +275,7 @@ export default function Globe3D({
         }
       }
       if (best) onSelect(best.id);
+      return best !== null;
     },
     [nodes, onSelect, rig],
   );
@@ -245,12 +312,16 @@ export default function Globe3D({
     (e: React.PointerEvent) => {
       const d = drag.current;
       d.active = false;
-      if (!d.moved) pick(e.clientX, e.clientY);
+      if (!d.moved) {
+        const hit = pick(e.clientX, e.clientY);
+        // A click into open space releases the held piece.
+        if (!hit && selectedRef.current && onBackgroundClick) onBackgroundClick();
+      }
       if (!hoverRef.current && !selectedRef.current && rig.mandalaTarget === 0) {
         rig.paused = false;
       }
     },
-    [pick, rig],
+    [pick, rig, onBackgroundClick],
   );
 
   const onPointerEnter = useCallback(() => {
@@ -287,6 +358,22 @@ export default function Globe3D({
       aria-label="Interactive globe showing where Adrian Rasmussen's artworks are placed in the world."
       role="img"
     >
+      <div
+        ref={canvasBoxRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          // A held piece slides the world aside to clear space for the HUD
+          // (left on wide screens, up on phones). Pick + leader-line math read
+          // this box's live rect, so they follow the slide exactly.
+          transform: selectedId
+            ? typeof window !== 'undefined' && window.innerWidth < 768
+              ? 'translateY(-14%)'
+              : 'translateX(-14%)'
+            : 'translate(0,0)',
+          transition: 'transform 900ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }}
+      >
       <RigContext.Provider value={rig}>
         <Canvas
           frameloop={inView ? 'always' : 'never'}
@@ -315,6 +402,29 @@ export default function Globe3D({
           />
         </Canvas>
       </RigContext.Provider>
+      </div>
+
+      {/* Thread travel caption — names the thread while the camera flies it. */}
+      <div
+        aria-hidden={!travelCaption}
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 52,
+          textAlign: 'center',
+          pointerEvents: 'none',
+          opacity: travelCaption ? 1 : 0,
+          transition: 'opacity 700ms ease',
+          fontFamily: '"Cormorant Garamond", serif',
+          fontStyle: 'italic',
+          fontSize: 15,
+          letterSpacing: '0.06em',
+          color: 'rgba(196, 170, 124, 0.85)',
+        }}
+      >
+        {travelCaption ?? ''}
+      </div>
 
       {/* Mandala View caption — fades with the mode. */}
       <div
@@ -343,3 +453,18 @@ export default function Globe3D({
 
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 const X_AXIS = new THREE.Vector3(1, 0, 0);
+
+/** The trigram two kindred pieces share, or null when they are not kin. */
+function sharedTrigram(
+  kinship: KinshipIndex | null | undefined,
+  aKey: string,
+  bKey: string,
+): string | null {
+  const a = kinship?.nodes.get(aKey);
+  const b = kinship?.nodes.get(bKey);
+  if (!a || !b || a.pieceId === b.pieceId) return null;
+  const bT = new Set([b.upperTrigram, b.lowerTrigram]);
+  if (bT.has(a.upperTrigram)) return a.upperTrigram;
+  if (bT.has(a.lowerTrigram)) return a.lowerTrigram;
+  return null;
+}

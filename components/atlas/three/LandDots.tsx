@@ -24,7 +24,7 @@ const VERT = /* glsl */ `
   void main() {
     vPhase = aPhase;
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = uSize * uPixelRatio * (3.4 / -mv.z);
+    gl_PointSize = uSize * uPixelRatio * (4.9 / -mv.z);
     gl_Position = projectionMatrix * mv;
   }
 `;
@@ -96,7 +96,7 @@ export default function LandDots() {
           uBreath: { value: 0.5 },
           uDim: { value: 0 },
           uPixelRatio: { value: 1 },
-          uSize: { value: 1.9 },
+          uSize: { value: 2.5 },
         },
         transparent: true,
         depthWrite: false,

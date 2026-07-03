@@ -53,9 +53,16 @@ export default function GlobeScene({
     stepRig(rig, Math.min(delta, 0.1));
     if (spinRef.current) spinRef.current.rotation.y = -rig.phi;
     if (tiltRef.current) tiltRef.current.rotation.x = rig.theta;
-    // Mandala view pulls the camera back to show the whole weave.
+    // Mandala view pulls the camera back until the whole weave and the full
+    // hexagram ring fit the frame — narrow viewports push further back. A
+    // thread-travel flight adds its own mid-flight lift on top.
+    const persp = camera as THREE.PerspectiveCamera;
+    const halfV = (persp.fov * Math.PI) / 360;
+    const halfMin = Math.min(halfV, Math.atan(Math.tan(halfV) * (persp.aspect || 1)));
+    const ringFit = 1.58 / Math.tan(halfMin) + 0.4;
+    const farDist = Math.max(CAMERA_FAR_DIST, ringFit);
     const e = easeInOutCubic(rig.mandala);
-    camera.position.z = CAMERA_NEAR_DIST + (CAMERA_FAR_DIST - CAMERA_NEAR_DIST) * e;
+    camera.position.z = CAMERA_NEAR_DIST + (farDist - CAMERA_NEAR_DIST) * e + rig.travelDolly;
   }, -1);
 
   return (

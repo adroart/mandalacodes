@@ -46,9 +46,10 @@ const FRAG = /* glsl */ `
     float shade = 0.85 + 0.15 * dot(vWorldNormal, normalize(vec3(-0.4, 0.7, 0.6)));
     vec3 col = uBase * shade;
 
-    // Warm fresnel rim — the limb catches a low bronze light.
-    float fres = pow(1.0 - max(dot(vWorldNormal, vViewDir), 0.0), 2.6);
-    col += uRim * fres * (0.85 + 0.3 * uBreath);
+    // Warm fresnel rim — the limb catches a low bronze light, kept tight so
+    // the face of the world stays deep stone rather than washing out.
+    float fres = pow(1.0 - max(dot(vWorldNormal, vViewDir), 0.0), 3.4);
+    col += uRim * fres * (0.55 + 0.2 * uBreath);
 
     // Cymatic ripples: angular distance from each placed piece drives a slow
     // ring; rings decay with distance and sum where they overlap.
@@ -57,11 +58,11 @@ const FRAG = /* glsl */ `
     for (int i = 0; i < ${MAX_RIPPLES}; i++) {
       if (i >= uRippleCount) break;
       float d = acos(clamp(dot(n, uRippleCenters[i]), -1.0, 1.0));
-      float wave = sin(d * 26.0 - uTime * 1.1);
+      float wave = sin(d * 40.0 - uTime * 1.1);
       float ring = smoothstep(0.25, 1.0, wave);
-      ripple += ring * exp(-d * 5.5);
+      ripple += ring * exp(-d * 7.0);
     }
-    col += uRipple * min(ripple, 1.2) * 0.045;
+    col += uRipple * min(ripple, 1.2) * 0.028;
 
     gl_FragColor = vec4(col, 1.0);
     #include <tonemapping_fragment>
@@ -83,7 +84,7 @@ export default function GlobeSphere({ rippleSources }: GlobeSphereProps) {
         vertexShader: VERT,
         fragmentShader: FRAG,
         uniforms: {
-          uBase: { value: COLOR_BG.clone().multiplyScalar(1.55) },
+          uBase: { value: COLOR_BG.clone().multiplyScalar(1.12) },
           uRim: { value: COLOR_RIM.clone() },
           uRipple: { value: COLOR_BRONZE.clone() },
           uTime: { value: 0 },

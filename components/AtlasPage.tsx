@@ -11,7 +11,7 @@ import PieceSidePanel, {
 import SeekingGround, { type SeekingPiece } from './atlas/SeekingGround';
 import KinshipLayer from './atlas/KinshipLayer';
 import { useIdleFade } from './atlas/useIdleFade';
-import { seriesColor } from './atlas/GlobeGL';
+import { seriesColor } from './atlas/seriesColor';
 import PieceHUD from './atlas/PieceHUD';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
@@ -26,10 +26,11 @@ import type { PublicAtlasState } from '../types';
    browsers without WebGL keep the cobe globe + SVG kinship overlay. */
 const Globe3D = lazy(() => import('./atlas/three/Globe3D'));
 const GlobeGL = lazy(() => import('./atlas/GlobeGL'));
-// Library-backed globe (react-globe.gl) is the default; ?oldglobe falls back
-// to the custom Three.js one for comparison.
+// The hand-built globe (hexagram ring, kinship arcs, ignition opening,
+// mandala view) is the default; ?libglobe falls back to the library-backed
+// one for comparison.
 const USE_GL_GLOBE =
-  typeof window === 'undefined' || !window.location.search.includes('oldglobe');
+  typeof window !== 'undefined' && window.location.search.includes('libglobe');
 
 function webglAvailable(): boolean {
   if (typeof document === 'undefined') return false;
@@ -311,6 +312,7 @@ const AtlasPage: React.FC = () => {
         label: p.title,
         pieceType: p.pieceType,
         series: p.series,
+        ordinal: p.claimOrdinal,
       });
     }
     // The visitor's birth place rides along regardless of filters — it is
@@ -552,7 +554,9 @@ const AtlasPage: React.FC = () => {
                   kinshipVisible={kinshipVisible}
                   placedByCard={placedByCard}
                   mandala={mandala}
-                  mandalaCaption={`The mandala so far — ${placedByCard.size} of 64 placed`}
+                  mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed`}
+                  onMarkerScreenPos={setMarkerScreenPos}
+                  onBackgroundClick={() => setSelectedKey(null)}
                   className="w-full h-full"
                 />
               )}

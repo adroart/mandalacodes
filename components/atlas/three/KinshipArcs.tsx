@@ -189,12 +189,17 @@ export default function KinshipArcs({ index, selectedId, visible }: KinshipArcsP
     const cur = material.uniforms.uOpacity.value as number;
     material.uniforms.uOpacity.value = cur + (target - cur) * Math.min(1, delta * 4);
 
-    // Mandala draw-in: sweep from 0 once the view engages; fully drawn otherwise.
+    // Mandala draw-in: sweep from 0 once the view engages. Otherwise the arcs
+    // hold back through the ignition opening, then weave themselves in once
+    // the last light has come up.
     if (rig.mandalaTarget === 1) {
       const since = (performance.now() - rig.mandalaStartedAt) / 1000;
       material.uniforms.uDraw.value = Math.min(2, (since / MANDALA_DRAW_SECONDS) * 1.9);
+    } else if (rig.introAt > 0) {
+      const since = (performance.now() - rig.introAt) / 1000 - rig.introArcDelay;
+      material.uniforms.uDraw.value = Math.max(0, Math.min(2, (since / 3.2) * 2));
     } else {
-      material.uniforms.uDraw.value = 2;
+      material.uniforms.uDraw.value = 0;
     }
   });
 
