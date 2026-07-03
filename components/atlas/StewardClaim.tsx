@@ -9,13 +9,13 @@ import type { ConsentChoice } from './ConsentRings';
 import ClaimCeremony from './ClaimCeremony';
 
 /**
- * Steward claim — rendered at /atlas/claim. Two-phase since M2.
+ * Steward claim: rendered at /atlas/claim. Two-phase since M2.
  *
  * Flow:
  *   1. Collector signs in to mandalacodes using the email Adrian
  *      added them with.
  *   2. Phase A: the page POSTs to /api/atlas/steward/claim (no consent in
- *      the body — identity comes from the bearer token). Server binds the
+ *      the body: identity comes from the bearer token). Server binds the
  *      userId and answers with the claimed pieces + needsConsent flags.
  *   3. If consent is already captured we redirect straight to /atlas/edit.
  *      Otherwise the consent step renders here (ConsentRings): the one
@@ -55,7 +55,7 @@ const StewardClaim: React.FC = () => {
      happens below, after every hook, so hook order stays stable.) */
   const rehearse = import.meta.env.DEV ? searchParams.get('ceremony') : null;
 
-  // Phase A — bind on arrival.
+  // Phase A: bind on arrival.
   useEffect(() => {
     if (!isLoaded || !isSignedIn || status !== 'idle') return;
     let cancelled = false;
@@ -74,7 +74,7 @@ const StewardClaim: React.FC = () => {
           if (cancelled) return;
           const claimed = data.claimed ?? [];
           if (claimed.some(c => c.needsConsent)) {
-            // The consent moment happens here — no redirect.
+            // The consent moment happens here: no redirect.
             setEntries(claimed);
             setStatus('consent');
             return;
@@ -96,7 +96,7 @@ const StewardClaim: React.FC = () => {
     };
   }, [isLoaded, isSignedIn, fetchAuthed, navigate, status]);
 
-  // Phase B — consent capture.
+  // Phase B: consent capture.
   const handleConsentSubmit = async (choice: ConsentChoice) => {
     setSubmitting(true);
     setConsentError(null);
@@ -117,7 +117,7 @@ const StewardClaim: React.FC = () => {
         setConsentError('Something went wrong. Please try again.');
         return;
       }
-      // The consent landed — now the ceremony: the founding lights replay
+      // The consent landed: now the ceremony: the founding lights replay
       // and this piece's light ignites last, with its ordinal spoken.
       setStatus('ceremony');
     } catch {
@@ -134,7 +134,7 @@ const StewardClaim: React.FC = () => {
     }
   }, [status, entries.length, navigate]);
 
-  // Title of the (first) piece awaiting consent — for the heading copy.
+  // Title of the (first) piece awaiting consent: for the heading copy.
   const consentPieceTitle = (() => {
     const entry = entries.find(e => e.needsConsent) ?? entries[0];
     if (!entry) return undefined;
@@ -181,7 +181,7 @@ const StewardClaim: React.FC = () => {
               If you hold one of Adrian Rasmussen's pieces, sign in with the email Adrian used when he added you. Only your city will appear publicly, never an address. You can switch to private at any time.
             </p>
             {/* Self-owned sign-in. Once signed in, the Phase A effect above
-                fires automatically (isSignedIn flips) and binds the piece —
+                fires automatically (isSignedIn flips) and binds the piece :
                 no redirect needed; the claim happens in place. */}
             <SignInModal
               onClose={() => navigate('/atlas', { replace: true })}

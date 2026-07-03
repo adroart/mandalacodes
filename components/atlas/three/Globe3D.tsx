@@ -1,5 +1,5 @@
 /**
- * The Three.js Atlas globe — public wrapper.
+ * The Three.js Atlas globe: public wrapper.
  *
  * Drop-in successor to the cobe Globe: same node/selection contract, plus
  * the kinship index (arcs render in-scene now, not as an SVG overlay), the
@@ -16,8 +16,8 @@
  *
  * Render loop runs only while the globe is on screen (IntersectionObserver
  * gates the frameloop). DPR capped at 2. Low-tier devices skip bloom and
- * ripples and thin the dot field. WebGL support is the caller's check —
- * see `supportsWebGL()` — so the page can fall back to the cobe globe.
+ * ripples and thin the dot field. WebGL support is the caller's check :
+ * see `supportsWebGL()`: so the page can fall back to the cobe globe.
  */
 
 import { Canvas } from '@react-three/fiber';
@@ -80,7 +80,7 @@ export interface Globe3DProps {
   /** A click that lands on no marker while something is selected. */
   onBackgroundClick?: () => void;
   /** Slide the world aside when a piece is held, clearing room for the HUD.
-      The claim ceremony turns this off — it has no side card. */
+      The claim ceremony turns this off: it has no side card. */
   clearForHud?: boolean;
   className?: string;
 }
@@ -120,7 +120,7 @@ export default function Globe3D({
   const travelTimer = useRef<number>(0);
   const prevSelected = useRef<string | null>(null);
 
-  // Mutable interaction state (never React state — read inside handlers).
+  // Mutable interaction state (never React state: read inside handlers).
   const drag = useRef<{ x: number; y: number; moved: boolean; active: boolean }>({
     x: 0,
     y: 0,
@@ -157,7 +157,7 @@ export default function Globe3D({
     if (!mandala) engageMandala(false);
   }, [mandala, engageMandala]);
 
-  /* Idle watcher — engages the Mandala View after stillness. */
+  /* Idle watcher: engages the Mandala View after stillness. */
   useEffect(() => {
     const id = window.setInterval(() => {
       if (mandala) return; // already engaged manually
@@ -240,7 +240,7 @@ export default function Globe3D({
     return () => cancelAnimationFrame(raf);
   }, [selectedId, nodes, onMarkerScreenPos, rig]);
 
-  /* Frameloop gating — stop rendering entirely when scrolled away. */
+  /* Frameloop gating: stop rendering entirely when scrolled away. */
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') return;
@@ -367,7 +367,7 @@ export default function Globe3D({
         style={{
           position: 'absolute',
           // The canvas overhangs the wrapper on every side so the slide-aside
-          // never exposes a seam — there is always world behind the edge.
+          // never exposes a seam: there is always world behind the edge.
           inset: '-14%',
           // A held piece slides the world aside to clear space for the HUD
           // (left on wide screens, up on phones). Pick + leader-line math read
@@ -394,7 +394,7 @@ export default function Globe3D({
           // additive rim + additive atmosphere + bright markers) into range.
           // The bloom EffectComposer used to own output and kept this in check;
           // with it gone the globe blew out to near-white and the small per-
-          // frame brightness swings crossed the clip point — read as flicker.
+          // frame brightness swings crossed the clip point: read as flicker.
           // ACES Filmic brings back the warm dark stone and pulls the whole
           // image away from clipping, so it sits steady instead of shimmering.
           onCreated={({ gl }) => {
@@ -414,7 +414,7 @@ export default function Globe3D({
       </RigContext.Provider>
       </div>
 
-      {/* Thread travel caption — names the thread while the camera flies it. */}
+      {/* Thread travel caption: names the thread while the camera flies it. */}
       <div
         aria-hidden={!travelCaption}
         style={{
@@ -436,7 +436,7 @@ export default function Globe3D({
         {travelCaption ?? ''}
       </div>
 
-      {/* Mandala View caption — fades with the mode. */}
+      {/* Mandala View caption: fades with the mode. */}
       <div
         aria-hidden={!mandalaOn}
         style={{

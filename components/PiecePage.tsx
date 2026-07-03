@@ -17,21 +17,21 @@ import {
 import type { Artwork } from '../types';
 
 /**
- * Public piece page — the QR-arrival surface.
+ * Public piece page: the QR-arrival surface.
  *
  * Route: /piece/:pieceId  (or /piece/:pieceId/:edition)
  *
  * Pre-auth, zero-signup. Shows what a collector sees when they scan the QR on
  * the back of their piece: the artwork, Adrian's story, the edition, the
  * Founding Lights ordinal once claimed, the hexagram for Universal Language
- * pieces, and the *public* history spine — derived only from the public atlas
+ * pieces, and the *public* history spine: derived only from the public atlas
  * state ("Created 2024 · Placed, Lisbon 2025"). It NEVER shows private events,
  * notes, holder identity, or anything beyond the public projection: the public
  * piece is fetched from /api/atlas with the same seed fallback AtlasPage uses,
  * so a slightly-stale cache still renders.
  *
  * The page's job is to communicate "your piece already has a story; signing in
- * lets you add to it" — so the single CTA opens the existing /atlas/claim flow.
+ * lets you add to it": so the single CTA opens the existing /atlas/claim flow.
  */
 
 type LoadState =
@@ -58,7 +58,7 @@ function yearOf(iso?: string): string | undefined {
 }
 
 /**
- * The public history spine — built only from public state + archive metadata.
+ * The public history spine: built only from public state + archive metadata.
  * Three honest beats at most: created, placed (or awaiting), claimed. No
  * private events, no notes, no holder. This is the public mirror of the book,
  * not the book itself.
@@ -89,10 +89,10 @@ function buildSpine(piece: PublicPiece, art: Artwork): SpineEntry[] {
 }
 
 /**
- * "Request stewardship" (M4) — the self-serve path for whoever holds the
+ * "Request stewardship" (M4): the self-serve path for whoever holds the
  * physical piece without a pre-issued record: secondary buyers, auction
  * winners, gift recipients, heirs. Signed-in visitors send a request (with
- * an optional evidence note) into the queue — the admin decides for
+ * an optional evidence note) into the queue: the admin decides for
  * unclaimed pieces, the current holder for claimed ones; nothing binds
  * automatically. Anonymous visitors get a sign-in prompt into the
  * self-owned sign-in modal, staying on this piece.
@@ -139,7 +139,7 @@ const RequestStewardship: React.FC<{
   if (sent) {
     return (
       <p className="font-serif italic text-base text-stone-700 mt-4 leading-[1.6]">
-        Your request is in. The piece's current keeper — or Adrian — will
+        Your request is in. The piece's current keeper, or Adrian, will
         review it, and the book opens to you once they approve.
       </p>
     );
@@ -150,11 +150,11 @@ const RequestStewardship: React.FC<{
       {!isSignedIn && (
         /* A secondary owner (auction, gift, inheritance) is NOT pre-bound by
            Adrian, so the email-based /atlas/claim flow 404s for them. Sign in
-           in place with a modal and stay on this piece — once signed in the
+           in place with a modal and stay on this piece: once signed in the
            signed-in branch below shows the request-stewardship form, which is
            the right path for them. Never send them to /atlas/claim. */
         <p className="font-serif text-sm text-wood-600 leading-[1.6]">
-          Hold this piece but arrived another way — an auction, a gift, an
+          Hold this piece but arrived another way: an auction, a gift, an
           inheritance?{' '}
           <SignInTrigger>
             <button
@@ -329,18 +329,40 @@ const PiecePage: React.FC = () => {
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
-          {/* ── The artwork ─────────────────────────────────────────────── */}
-          <div className="w-full">
-            <div className="bg-[#151311] p-4 sm:p-6 overflow-hidden">
-              <img
-                src={heroImage}
-                alt={`${cleanTitle}${
-                  cardNumber != null ? `, Universal Language ${cardNumber}` : ''
-                }. Original work by Adrian Rasmussen.`}
-                className="w-full h-auto block"
-                loading="eager"
-              />
+          {/* ── The artwork, as the certificate's plate ─────────────────── */}
+          <div className="w-full lg:sticky lg:top-[calc(var(--nav-height)+2rem)]">
+            <div className="relative border border-wood-300 p-2.5 sm:p-3">
+              {/* Corner marks: the certificate's quiet engraving. */}
+              {(['top-0 left-0 border-t border-l', 'top-0 right-0 border-t border-r',
+                 'bottom-0 left-0 border-b border-l', 'bottom-0 right-0 border-b border-r'] as const).map((pos) => (
+                <span
+                  key={pos}
+                  aria-hidden
+                  className={`absolute w-4 h-4 border-bronze-700/70 ${pos}`}
+                  style={{ margin: '-1px' }}
+                />
+              ))}
+              <div className="bg-[#151311] p-4 sm:p-7 overflow-hidden">
+                <img
+                  src={heroImage}
+                  alt={`${cleanTitle}${
+                    cardNumber != null ? `, Universal Language ${cardNumber}` : ''
+                  }. Original work by Adrian Rasmussen.`}
+                  className="w-full h-auto block"
+                  loading="eager"
+                />
+              </div>
+              {/* Plate caption: set like an engraving beneath the work. */}
+              <div className="pt-3 pb-1 text-center">
+                <p className="font-label text-[10px] uppercase tracking-[0.3em] text-wood-700">
+                  {[cleanTitle, piece.series, editionLine].filter(Boolean).join('  ·  ')}
+                </p>
+              </div>
             </div>
+            <p className="font-serif italic text-sm text-wood-500 text-center mt-4 leading-relaxed">
+              This page is the certificate of the physical work: page one of a
+              book that never closes.
+            </p>
           </div>
 
           {/* ── The story ───────────────────────────────────────────────── */}
@@ -358,7 +380,7 @@ const PiecePage: React.FC = () => {
               {cleanTitle}
             </h1>
 
-            {/* Founding light — the artifact. */}
+            {/* Founding light: the artifact. */}
             {typeof piece.claimOrdinal === 'number' && (
               <p className="font-serif italic text-xl text-bronze-700 mb-6">
                 The {ordinalLabel(piece.claimOrdinal)} light
@@ -389,7 +411,7 @@ const PiecePage: React.FC = () => {
               </p>
             )}
 
-            {/* Hexagram — Universal Language pieces only. */}
+            {/* Hexagram: Universal Language pieces only. */}
             {card && cardNumber != null && (
               <div className="border-t border-wood-200 pt-6 mb-8 flex items-start gap-5">
                 <div className="shrink-0 text-bronze-700">
@@ -417,17 +439,18 @@ const PiecePage: React.FC = () => {
               </div>
             )}
 
-            {/* ── The public history spine ──────────────────────────────── */}
+            {/* ── The public history spine: the book's open pages ──────── */}
             <div className="border-t border-wood-200 pt-6 mb-10">
-              <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-4">
+              <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-5">
                 Its story so far
               </p>
-              <ol className="space-y-3">
+              <ol className="relative ml-[3px] border-l border-wood-300 space-y-5 pb-1">
                 {spine.map((entry, i) => (
-                  <li key={i} className="flex items-baseline gap-3">
+                  <li key={i} className="relative pl-6">
                     <span
                       aria-hidden
-                      className="shrink-0 mt-2 w-1.5 h-1.5 rounded-full bg-bronze-400"
+                      className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
+                      style={{ transform: 'translateX(-4px)' }}
                     />
                     <span className="font-serif text-lg text-wood-900 leading-snug">
                       {entry.label}
@@ -437,17 +460,60 @@ const PiecePage: React.FC = () => {
                     </span>
                   </li>
                 ))}
+                <li className="relative pl-6">
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
+                    style={{ transform: 'translateX(-4px)' }}
+                  />
+                  <span className="font-serif italic text-lg text-wood-500 leading-snug">
+                    The next page is unwritten
+                  </span>
+                </li>
               </ol>
-              <p className="font-serif italic text-sm text-wood-500 mt-4 leading-relaxed">
-                This is the public page of the piece's book — only what the holder
-                has chosen to show. The full record lives with the piece.
-              </p>
+
+              {/* The ledger seal: quiet, and it goes somewhere. */}
+              <div className="mt-7 border border-wood-200 bg-paper-100/60 px-5 py-4 flex items-center gap-4">
+                <span
+                  aria-hidden
+                  className="shrink-0 w-9 h-9 rounded-full border border-bronze-700/50 flex items-center justify-center"
+                >
+                  <span
+                    className="font-serif text-sm text-bronze-700"
+                    style={{ fontFamily: 'Cinzel, serif' }}
+                  >
+                    {typeof piece.claimOrdinal === 'number' ? piece.claimOrdinal : '·'}
+                  </span>
+                </span>
+                <span className="font-serif text-sm text-wood-700 leading-snug">
+                  Recorded in the living ledger. Each page is sealed against the
+                  one before it, and the holder can always carry the whole book
+                  away.
+                  {piece.status === 'placed' && (
+                    <>
+                      {' '}
+                      <Link
+                        to={`/atlas?piece=${encodeURIComponent(
+                          `${piece.pieceId}${
+                            typeof piece.editionNumber === 'number'
+                              ? `:${piece.editionNumber}`
+                              : ''
+                          }`,
+                        )}`}
+                        className="font-label text-[10px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors whitespace-nowrap"
+                      >
+                        See it among the others →
+                      </Link>
+                    </>
+                  )}
+                </span>
+              </div>
             </div>
 
             {/* ── CTA ───────────────────────────────────────────────────── */}
             <div className="bg-paper-100 border border-wood-200 p-6 sm:p-7">
               <p className="font-serif text-lg text-wood-800 leading-[1.6] mb-5">
-                Your piece already has a story. Signing in lets you add to it —
+                Your piece already has a story. Signing in lets you add to it :
                 place it on the map, write its intentions, pass it on.
               </p>
               <Link

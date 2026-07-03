@@ -9,8 +9,8 @@
  *   so a point is centred in view when phi = lngRad and theta = latRad.
  *
  * The rig object is a mutable bag of refs shared by every scene component via
- * React context. It is mutated inside useFrame and event handlers — never via
- * React state — so the render loop stays allocation-free.
+ * React context. It is mutated inside useFrame and event handlers: never via
+ * React state: so the render loop stays allocation-free.
  */
 
 import { createContext, useContext } from 'react';
@@ -20,7 +20,7 @@ export const GLOBE_RADIUS = 1;
 
 /** Camera distance at rest and pulled back for the Mandala View. At fov 26°
     the resting sphere fills ~88% of the viewport height (commanding, never
-    cropped); the mandala distance is a floor — GlobeScene pushes further back
+    cropped); the mandala distance is a floor: GlobeScene pushes further back
     on narrow viewports until the full hexagram ring fits. */
 export const CAMERA_NEAR_DIST = 5.15;
 export const CAMERA_FAR_DIST = 7.6;
@@ -28,7 +28,7 @@ export const CAMERA_FAR_DIST = 7.6;
 /** Auto-rotation, radians per second (cobe used 0.005/frame ≈ 0.3/s). */
 export const ROTATION_SPEED = 0.3;
 
-/** Selection tween duration, ms — matches the cobe globe. */
+/** Selection tween duration, ms: matches the cobe globe. */
 export const SELECT_ANIM_MS = 800;
 
 /** How long the mandala arcs take to weave themselves in, seconds. */
@@ -93,7 +93,7 @@ export interface Rig {
   mandalaStartedAt: number;
   /** Low-tier devices skip bloom + ripples and thin the dot field. */
   lowTier: boolean;
-  /** Live scene camera, set by GlobeScene — the wrapper picks markers through it. */
+  /** Live scene camera, set by GlobeScene: the wrapper picks markers through it. */
   camera: THREE.Camera | null;
   /** Extra camera distance this frame from a thread-travel flight (eased in stepRig). */
   travelDolly: number;
@@ -133,7 +133,7 @@ export function stepRig(rig: Rig, deltaSeconds: number): void {
     rig.phi = tween.fromPhi + (tween.toPhi - tween.fromPhi) * e;
     rig.theta = tween.fromTheta + (tween.toTheta - tween.fromTheta) * e;
     // Thread travel: the camera lifts off the surface mid-flight and settles
-    // back down as it arrives — sin(π·t) is 0 at both ends, peaks midway.
+    // back down as it arrives: sin(π·t) is 0 at both ends, peaks midway.
     if (tween.dollyAmp) rig.travelDolly = tween.dollyAmp * Math.sin(Math.PI * t);
     if (t >= 1) rig.tween = null;
   } else if (!rig.paused) {

@@ -1,5 +1,5 @@
 /**
- * Piece markers — one draw call of point sprites with a bright core and a
+ * Piece markers: one draw call of point sprites with a bright core and a
  * soft halo. Bronze = placed, dim bronze = seeking ground, sage = the
  * visitor's birth place.
  *
@@ -7,7 +7,7 @@
  * list keeps exiting markers around while their alpha eases to zero and
  * fades new ones in, so filter changes read as the globe responding rather
  * than blinking. The list lives in a ref and the geometry attributes are
- * mutated in useFrame — React state never touches the render loop.
+ * mutated in useFrame: React state never touches the render loop.
  */
 
 import { useFrame } from '@react-three/fiber';

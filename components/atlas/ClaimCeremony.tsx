@@ -1,5 +1,5 @@
 /**
- * The claim ceremony — shown once, right after a steward's consent is
+ * The claim ceremony: shown once, right after a steward's consent is
  * captured. The whole founding sequence replays on the globe: every light
  * that came before ignites in claim order, and because the new steward's
  * piece carries the highest ordinal, their light ignites last. The camera
@@ -24,7 +24,7 @@ export interface ClaimCeremonyProps {
   /** The claimed piece (first of the batch when several bound at once). */
   pieceId: string;
   editionNumber?: number;
-  /** Leave the ceremony — lands in the piece's book. */
+  /** Leave the ceremony: lands in the piece's book. */
   onDone: () => void;
 }
 
@@ -50,8 +50,8 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
   const key = `${pieceId}:${editionNumber ?? 0}`;
 
   // Fresh fetch first (the claim just changed the record), falling back to
-  // the shared loader (session cache or local seed) if it is unreachable —
-  // the ordinal may then be missing, and the copy degrades gracefully.
+  // the shared loader (session cache or local seed) if it is unreachable.
+  // The ordinal may then be missing, and the copy degrades gracefully.
   useEffect(() => {
     let active = true;
     fetch('/api/atlas')
@@ -75,7 +75,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
     };
   }, []);
 
-  // The ceremony is a gift, not a gate — if the state never arrives, move on.
+  // The ceremony is a gift, not a gate: if the state never arrives, move on.
   useEffect(() => {
     if (failed) onDone();
   }, [failed, onDone]);
@@ -175,7 +175,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
         />
       </Suspense>
 
-      {/* The words — held until the last light has come up. */}
+      {/* The words: held until the last light has come up. */}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-[14%] text-center px-6"
         style={{
@@ -204,7 +204,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
         </p>
       </div>
 
-      {/* The way onward — appears after the reveal has landed. */}
+      {/* The way onward: appears after the reveal has landed. */}
       <div
         className="absolute inset-x-0 bottom-[5%] flex items-center justify-center gap-8"
         style={{
@@ -222,7 +222,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
         </button>
       </div>
 
-      {/* Quiet exit for the impatient — always available, never highlighted. */}
+      {/* Quiet exit for the impatient: always available, never highlighted. */}
       <button
         type="button"
         onClick={onDone}

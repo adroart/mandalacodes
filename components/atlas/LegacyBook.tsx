@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   AtlasLetter,
   HeirRegistration,
@@ -203,6 +203,19 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
     setUnread(0);
     loadLetters();
   }, [loadLetters]);
+
+  /* Unread letters open themselves on arrival: a new steward should meet
+     "the piece writes back" without having to discover a collapsed button.
+     Opening marks them read, same as a click would. */
+  const autoOpened = useRef(false);
+  useEffect(() => {
+    if (autoOpened.current || lettersOpen) return;
+    if (letters !== null && unread > 0) {
+      autoOpened.current = true;
+      handleOpenLetters();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [letters, unread, lettersOpen]);
 
   const handleOpenLetters = useCallback(async () => {
     setLettersOpen(true);

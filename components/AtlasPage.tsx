@@ -612,13 +612,20 @@ const AtlasPage: React.FC = () => {
               </div>
             )}
 
-            {/* Bottom-left: the quiet stat caption */}
+            {/* Bottom-left: the quiet stat caption, with the vocabulary
+                explained in place so the map never reads as silent jargon. */}
             {totalCount > 0 && (
-              <p className="pointer-events-none absolute left-5 sm:left-8 bottom-6 font-label text-[11px] uppercase tracking-[0.2em] text-bronze-400/70">
-                {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
-                <span aria-hidden className="mx-2 text-wood-500">·</span>
-                {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
-              </p>
+              <div className="pointer-events-none absolute left-5 sm:left-8 bottom-6">
+                <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-400/70">
+                  {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
+                  <span aria-hidden className="mx-2 text-wood-500">·</span>
+                  {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
+                </p>
+                <p className="mt-1.5 font-serif italic text-[12px] tracking-[0.03em] text-wood-400/80">
+                  a light is a piece claimed by its keeper · threads join pieces
+                  that share a code
+                </p>
+              </div>
             )}
 
             {/* Bottom gutter: threads · filter · mandala */}
@@ -627,6 +634,7 @@ const AtlasPage: React.FC = () => {
                 type="button"
                 aria-pressed={kinshipVisible}
                 onClick={() => setKinshipVisible((v) => !v)}
+                title="Threads join pieces whose hexagrams share a trigram"
                 className={`font-label text-[10px] uppercase tracking-[0.2em] transition-colors ${
                   kinshipVisible
                     ? 'text-bronze-400'
@@ -653,6 +661,7 @@ const AtlasPage: React.FC = () => {
                 type="button"
                 aria-pressed={mandala}
                 onClick={() => setMandala((m) => !m)}
+                title="Pull back to see the whole weave at once"
                 className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/80 hover:text-bronze-400 transition-colors"
               >
                 {mandala ? 'return' : 'mandala'}

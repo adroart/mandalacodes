@@ -10,7 +10,7 @@ mkdirSync(dir, { recursive: true });
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 
-// Find a placed piece that has kin — load the same state the app loads
+// Find a placed piece that has kin: load the same state the app loads
 // (dev server has no API; the app falls back to its seed).
 await page.goto('http://localhost:2222/atlas', { waitUntil: 'domcontentloaded' });
 const placed = await page.evaluate(async () => {

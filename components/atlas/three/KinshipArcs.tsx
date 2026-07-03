@@ -1,5 +1,5 @@
 /**
- * Kinship arcs in true 3D — replaces the SVG overlay's per-frame projection
+ * Kinship arcs in true 3D: replaces the SVG overlay's per-frame projection
  * mirroring. Each pair becomes a quadratic Bézier lifted off the surface;
  * because the arcs live inside the spin group they rotate with the globe and
  * are occluded by the sphere for free.

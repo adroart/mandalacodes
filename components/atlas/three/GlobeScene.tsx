@@ -54,7 +54,7 @@ export default function GlobeScene({
     if (spinRef.current) spinRef.current.rotation.y = -rig.phi;
     if (tiltRef.current) tiltRef.current.rotation.x = rig.theta;
     // Mandala view pulls the camera back until the whole weave and the full
-    // hexagram ring fit the frame — narrow viewports push further back. A
+    // hexagram ring fit the frame: narrow viewports push further back. A
     // thread-travel flight adds its own mid-flight lift on top.
     const persp = camera as THREE.PerspectiveCamera;
     const halfV = (persp.fov * Math.PI) / 360;

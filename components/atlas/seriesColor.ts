@@ -9,7 +9,7 @@
  */
 
 const SERIES_COLORS: Record<string, string> = {
-  'Universal Language': '#c4aa7c', // bronze — the founding series
+  'Universal Language': '#c4aa7c', // bronze: the founding series
   Mandala: '#b98a6e',              // warm terracotta
   'Light Codes': '#d6c38a',        // pale gold
 };
@@ -19,7 +19,7 @@ const SERIES_COLORS: Record<string, string> = {
 function autoSeriesColor(series: string): string {
   let h = 0;
   for (let i = 0; i < series.length; i++) h = (h * 31 + series.charCodeAt(i)) % 360;
-  const hue = 28 + (h % 40); // 28..68° — amber/gold/bronze band only
+  const hue = 28 + (h % 40); // 28..68°: amber/gold/bronze band only
   return `hsl(${hue}, 46%, 62%)`;
 }
 

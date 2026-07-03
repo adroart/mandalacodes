@@ -445,10 +445,28 @@ const StewardEdit: React.FC = () => {
           </p>
         ) : (
         <>
-        {/* Piece details */}
+        {/* The keeper's welcome: this page is a book, not a settings panel.
+            One quiet next step, chosen from the piece's actual state, so a
+            fresh owner is walked in rather than dropped on a wall of toggles. */}
         <div className="text-center mb-12">
-          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700">
+          <h2
+            className="font-serif text-2xl sm:text-[1.7rem] text-wood-900 font-medium mb-2"
+            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.04em' }}
+          >
+            You keep {artwork?.title ?? 'this piece'}
+          </h2>
+          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 mb-4">
             {detailParts.join(' · ')}
+          </p>
+          <p className="font-serif italic text-[15px] leading-relaxed text-stone-600 max-w-md mx-auto">
+            This is the piece&apos;s book. Place it in the world, choose what
+            the atlas shows, write into its pages, and one day pass it on.
+            {' '}
+            {!piece.currentCityId
+              ? 'A good first page: choose where it rests, just below.'
+              : !piece.isPublic
+                ? 'It has a place. When you are ready, let it shine on the atlas.'
+                : 'Its pages and letters continue below.'}
           </p>
         </div>
 
