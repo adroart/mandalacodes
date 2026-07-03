@@ -450,7 +450,20 @@ const AtlasPage: React.FC = () => {
       .map((pair) => {
         const otherKey = pair.aKey === selectedKey ? pair.bKey : pair.aKey;
         const other = kinshipIndex.nodes.get(otherKey);
-        return { key: otherKey, title: other?.title ?? otherKey };
+        // Name the thread that joins them, so following it reads as meaning
+        // rather than navigation. "Heaven (Ch'ien)" shortens to "Heaven".
+        const self = kinshipIndex.nodes.get(selectedKey);
+        let thread = '';
+        if (self && other) {
+          const otherTrigrams = new Set([other.upperTrigram, other.lowerTrigram]);
+          const shared = otherTrigrams.has(self.upperTrigram)
+            ? self.upperTrigram
+            : otherTrigrams.has(self.lowerTrigram)
+              ? self.lowerTrigram
+              : null;
+          if (shared) thread = ` · ${shared.replace(/\s*\(.*\)$/, '')} thread`;
+        }
+        return { key: otherKey, title: `${other?.title ?? otherKey}${thread}` };
       });
   }, [selectedKey, kinshipIndex]);
 
@@ -615,13 +628,13 @@ const AtlasPage: React.FC = () => {
             {/* Bottom-left: the quiet stat caption, with the vocabulary
                 explained in place so the map never reads as silent jargon. */}
             {totalCount > 0 && (
-              <div className="pointer-events-none absolute left-5 sm:left-8 bottom-6">
+              <div className="pointer-events-none absolute left-5 sm:left-8 bottom-6 max-w-[48vw] sm:max-w-sm">
                 <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-400/70">
                   {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
                   <span aria-hidden className="mx-2 text-wood-500">·</span>
                   {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
                 </p>
-                <p className="mt-1.5 font-serif italic text-[12px] tracking-[0.03em] text-wood-400/80">
+                <p className="mt-1.5 font-serif italic text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
                   a light is a piece claimed by its keeper · threads join pieces
                   that share a code
                 </p>

@@ -2,6 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
+  // tests/unit is vitest territory; importing vitest under the playwright
+  // runner crashes the whole suite.
+  testIgnore: ['**/unit/**'],
   fullyParallel: false,
   retries: 0,
   reporter: 'list',

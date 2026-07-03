@@ -194,7 +194,9 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
           className="text-3xl sm:text-5xl"
           style={{
             fontFamily: 'Cinzel, serif',
-            letterSpacing: '0.08em',
+            // The line arrives wide and settles, like a breath released.
+            letterSpacing: phase === 'igniting' ? '0.22em' : '0.08em',
+            transition: 'letter-spacing 2.4s cubic-bezier(0.22, 1, 0.36, 1)',
             color: '#c4aa7c',
           }}
         >
@@ -202,6 +204,17 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
             ? `You are the ${ordinalWord(myOrdinal)} light.`
             : 'Your piece has joined the record.'}
         </p>
+        {/* A hairline draws itself beneath the words. */}
+        <div
+          aria-hidden
+          className="mx-auto mt-5 h-px"
+          style={{
+            width: phase === 'igniting' ? 0 : 140,
+            background:
+              'linear-gradient(90deg, rgba(196,170,124,0) 0%, rgba(196,170,124,0.7) 50%, rgba(196,170,124,0) 100%)',
+            transition: 'width 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.4s',
+          }}
+        />
       </div>
 
       {/* The way onward: appears after the reveal has landed. */}

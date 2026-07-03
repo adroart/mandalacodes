@@ -57,13 +57,16 @@ const FRAG = /* glsl */ `
     float head = fract(uTime * 0.06 + vStagger);
     float pulse = smoothstep(0.10, 0.0, abs(vT - head)) * 0.5;
 
+    // Light gathers where the thread meets its pieces.
+    float endGlow = pow(1.0 - min(vT, 1.0 - vT) * 2.0, 3.0) * 0.22;
+
     // Selection: kin arcs brighten, the rest recede.
     float selBoost = vHighlight * (0.55 + 0.25 * sin(uTime * 2.2));
     float selFade = uSelMode * (1.0 - vHighlight) * 0.75;
 
-    float alpha = (base + pulse + selBoost) * (1.0 - selFade) * reveal * uOpacity;
+    float alpha = (base + pulse + endGlow + selBoost) * (1.0 - selFade) * reveal * uOpacity;
     if (alpha <= 0.004) discard;
-    vec3 col = uColor * (1.0 + vHighlight * 0.5 + pulse * 0.8);
+    vec3 col = uColor * (1.0 + vHighlight * 0.5 + pulse * 0.8 + endGlow * 0.8);
     gl_FragColor = vec4(col, alpha);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>

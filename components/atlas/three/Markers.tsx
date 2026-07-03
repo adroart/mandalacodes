@@ -64,6 +64,7 @@ const VERT = /* glsl */ `
 `;
 
 const FRAG = /* glsl */ `
+  uniform float uTime;
   varying vec3 vColor;
   varying float vAlpha;
   varying float vSelected;
@@ -77,9 +78,17 @@ const FRAG = /* glsl */ `
     // placed pieces still read as luminous on their own.
     float core = smoothstep(0.42, 0.0, d);
     float halo = exp(-d * 1.9) * 0.8;
-    // Selected markers carry a thin ring just outside the core.
-    float ring = vSelected * smoothstep(0.08, 0.0, abs(d - 0.62)) * 0.9;
-    float energy = (core * 1.7 + halo + ring) * (1.0 + vFlash * 1.3);
+    // A faint four-point flare: the signature of a light, not clipart.
+    float ax = abs(c.x) * 2.0;
+    float ay = abs(c.y) * 2.0;
+    float flare = (smoothstep(0.85, 0.0, ax) * smoothstep(0.14, 0.0, ay)
+                 + smoothstep(0.85, 0.0, ay) * smoothstep(0.14, 0.0, ax)) * 0.3;
+    // Selected markers carry a thin ring just outside the core; it breathes.
+    float ringR = 0.62 + 0.05 * sin(uTime * 1.6);
+    float ring = vSelected * smoothstep(0.09, 0.0, abs(d - ringR)) * 0.9;
+    // Ignition shockwave: a ring that expands outward as the flash decays.
+    float wave = smoothstep(0.10, 0.0, abs(d - (1.0 - vFlash) * 0.9)) * vFlash * 1.2;
+    float energy = (core * 1.7 + halo + flare + ring + wave) * (1.0 + vFlash * 1.3);
     gl_FragColor = vec4(vColor * energy, vAlpha * min(energy, 1.0));
     #include <tonemapping_fragment>
     #include <colorspace_fragment>

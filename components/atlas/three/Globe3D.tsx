@@ -414,6 +414,18 @@ export default function Globe3D({
       </RigContext.Provider>
       </div>
 
+      {/* Corner vignette: pulls the eye to the lit world, hides nothing. */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          background:
+            'radial-gradient(ellipse 82% 78% at 50% 46%, rgba(0,0,0,0) 58%, rgba(4,3,2,0.5) 100%)',
+        }}
+      />
+
       {/* Thread travel caption: names the thread while the camera flies it. */}
       <div
         aria-hidden={!travelCaption}

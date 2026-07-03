@@ -4,6 +4,8 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 ## Soon
 
+- [ ] Fix the five pre-existing flaky mobile tests (card-page theme walk times out on networkidle; the three oracle entry-codes checks fail the same way on main) _(band: agent-runnable)_ _(effort: quick)_
+
 - [ ] Make Mandala Codes the go-to mandala authority site (multi-phase content, outreach, and press campaign)   → Plan: [mandala-authority.md](todo/plans/mandala-authority.md) _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Add more decks beyond Universal Language and Light Codes as they emerge _(band: you-required)_ _(effort: moderate)_
