@@ -96,7 +96,7 @@ export default function LandDots() {
           uBreath: { value: 0.5 },
           uDim: { value: 0 },
           uPixelRatio: { value: 1 },
-          uSize: { value: 2.5 },
+          uSize: { value: 3.2 },
         },
         transparent: true,
         depthWrite: false,

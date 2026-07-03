@@ -45,7 +45,7 @@ export default function Starfield() {
           uniform float uPixelRatio;
           void main() {
             vec4 mv = modelViewMatrix * vec4(position, 1.0);
-            gl_PointSize = aSize * 1.6 * uPixelRatio;
+            gl_PointSize = aSize * 2.0 * uPixelRatio;
             gl_Position = projectionMatrix * mv;
           }
         `,

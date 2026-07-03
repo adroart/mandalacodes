@@ -79,6 +79,9 @@ export interface Globe3DProps {
   onMarkerScreenPos?: (pos: { x: number; y: number }) => void;
   /** A click that lands on no marker while something is selected. */
   onBackgroundClick?: () => void;
+  /** Slide the world aside when a piece is held, clearing room for the HUD.
+      The claim ceremony turns this off — it has no side card. */
+  clearForHud?: boolean;
   className?: string;
 }
 
@@ -95,6 +98,7 @@ export default function Globe3D({
   mandalaCaption,
   onMarkerScreenPos,
   onBackgroundClick,
+  clearForHud = true,
   className,
 }: Globe3DProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -362,15 +366,19 @@ export default function Globe3D({
         ref={canvasBoxRef}
         style={{
           position: 'absolute',
-          inset: 0,
+          // The canvas overhangs the wrapper on every side so the slide-aside
+          // never exposes a seam — there is always world behind the edge.
+          inset: '-14%',
           // A held piece slides the world aside to clear space for the HUD
           // (left on wide screens, up on phones). Pick + leader-line math read
           // this box's live rect, so they follow the slide exactly.
-          transform: selectedId
-            ? typeof window !== 'undefined' && window.innerWidth < 768
-              ? 'translateY(-14%)'
-              : 'translateX(-14%)'
-            : 'translate(0,0)',
+          // 10.94% of the 128%-wide box = 14% of the viewport.
+          transform:
+            selectedId && clearForHud
+              ? typeof window !== 'undefined' && window.innerWidth < 768
+                ? 'translateY(-10.94%)'
+                : 'translateX(-10.94%)'
+              : 'translate(0,0)',
           transition: 'transform 900ms cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
@@ -378,7 +386,9 @@ export default function Globe3D({
         <Canvas
           frameloop={inView ? 'always' : 'never'}
           dpr={[1, 2]}
-          camera={{ fov: 26, near: 0.1, far: 60, position: [0, 0, CAMERA_NEAR_DIST] }}
+          // fov compensates the 128% canvas overhang: the viewport-visible
+          // slice spans the same 26° the composition was tuned for.
+          camera={{ fov: 32.9, near: 0.1, far: 60, position: [0, 0, CAMERA_NEAR_DIST] }}
           gl={{ antialias: true, alpha: false }}
           // Tone mapping clamps the scene's stacked bright values (sphere base +
           // additive rim + additive atmosphere + bright markers) into range.

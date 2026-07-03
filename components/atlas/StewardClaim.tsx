@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccount } from '../../lib/account/useAccount';
 import SignInModal from '../account/SignInModal';
 import type { PieceRecord, StewardRecord } from '../../types';
 import { FULL_ARCHIVE } from '../../data/mockData';
 import ConsentRings from './ConsentRings';
 import type { ConsentChoice } from './ConsentRings';
+import ClaimCeremony from './ClaimCeremony';
 
 /**
  * Steward claim — rendered at /atlas/claim. Two-phase since M2.
@@ -41,12 +42,18 @@ type ClaimResponse = {
 const StewardClaim: React.FC = () => {
   const { isLoaded, isSignedIn, email, fetchAuthed } = useAccount();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<
-    'idle' | 'claiming' | 'consent' | 'no-record' | 'error'
+    'idle' | 'claiming' | 'consent' | 'ceremony' | 'no-record' | 'error'
   >('idle');
   const [entries, setEntries] = useState<ClaimEntry[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [consentError, setConsentError] = useState<string | null>(null);
+
+  /* Dev-only rehearsal: /atlas/claim?ceremony=<pieceId[:edition]> renders the
+     ceremony directly so it can be tuned without a live claim. (The return
+     happens below, after every hook, so hook order stays stable.) */
+  const rehearse = import.meta.env.DEV ? searchParams.get('ceremony') : null;
 
   // Phase A — bind on arrival.
   useEffect(() => {
@@ -110,7 +117,9 @@ const StewardClaim: React.FC = () => {
         setConsentError('Something went wrong. Please try again.');
         return;
       }
-      navigate('/atlas/edit', { replace: true });
+      // The consent landed — now the ceremony: the founding lights replay
+      // and this piece's light ignites last, with its ordinal spoken.
+      setStatus('ceremony');
     } catch {
       setConsentError('Something went wrong. Please try again.');
     } finally {
@@ -118,12 +127,41 @@ const StewardClaim: React.FC = () => {
     }
   };
 
+  // If the ceremony ever renders with nothing claimed, fall through quietly.
+  useEffect(() => {
+    if (status === 'ceremony' && entries.length === 0) {
+      navigate('/atlas/edit', { replace: true });
+    }
+  }, [status, entries.length, navigate]);
+
   // Title of the (first) piece awaiting consent — for the heading copy.
   const consentPieceTitle = (() => {
     const entry = entries.find(e => e.needsConsent) ?? entries[0];
     if (!entry) return undefined;
     return FULL_ARCHIVE.find(a => a.id === entry.steward.pieceId)?.title;
   })();
+
+  if (rehearse) {
+    const [rid, redition] = rehearse.split(':');
+    return (
+      <ClaimCeremony
+        pieceId={rid}
+        editionNumber={redition ? Number(redition) : undefined}
+        onDone={() => navigate('/atlas/edit', { replace: true })}
+      />
+    );
+  }
+
+  if (status === 'ceremony') {
+    const entry = entries.find((e) => e.needsConsent) ?? entries[0];
+    return entry ? (
+      <ClaimCeremony
+        pieceId={entry.steward.pieceId}
+        editionNumber={entry.steward.editionNumber}
+        onDone={() => navigate('/atlas/edit', { replace: true })}
+      />
+    ) : null;
+  }
 
   return (
     <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6 py-16">

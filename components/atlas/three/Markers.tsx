@@ -100,7 +100,7 @@ function colorFor(status: GlobeNode['status']): THREE.Color {
 }
 
 function sizeFor(status: GlobeNode['status']): number {
-  return status === 'origin' ? 14 : status === 'seeking' ? 10.5 : 16.5;
+  return status === 'origin' ? 18 : status === 'seeking' ? 13.5 : 21;
 }
 
 export interface MarkersProps {
