@@ -638,9 +638,16 @@ Critical findings:
   framing does the editorial work: it asks for the dream held for the
   piece, names what does not belong in that space, and offers the right
   home for everything else.
-- **Reactive removal replaces proactive review.** Admin keeps an
-  after-the-fact remove power (the erasure path already exists) for the
-  rare entry that lands wrong. Nothing waits on Adrian to appear.
+- **The tending surface (REFINED 2026-07-04): quality assurance after
+  publication, never a gate before it.** Shared words appear on the map
+  immediately. The admin atlas gains a tending queue: every newly public
+  entry lands there (and all public words stay reachable), each with three
+  one-click actions: keep (clears it from the queue), re-home (the words
+  move to their right field, or back to the piece's private book when the
+  right field is not open yet; the keeper is told by a letter from the
+  piece, with the reason in plain words), and withdraw (the erasure path,
+  rare). The map never waits on Adrian; he sweeps the garden when he
+  chooses. This is QA on a public display, not curation of dreams.
 - **Anonymity is fragile at city scale.** "For my bakery in Ubud" names a
   person; under the sorting model that text is business, not dream, and
   the flow routes it out of the anonymous layer. The consent copy still
@@ -707,8 +714,10 @@ Two different matches hide here; they must ship separately:
 1. **No approval gate on dreams.** Approving someone's dream demotes the
    project. Protection is structural: the sharing flow sorts words into
    the right space (a dream to the dream layer; business, location, or
-   identity to their own fields) and admin keeps only an after-the-fact
-   removal power.
+   identity to their own fields), and quality assurance happens after
+   publication through the tending queue (keep / re-home / withdraw, with
+   the keeper informed by a letter from the piece when words move). It is
+   less about gating and more about keeping the public display right.
 2. **No "unmade code" state.** Every code has at least one made piece in
    a real location, one of a numbered edition in its series. An unlit
    glyph opens the code's pieces: where each rests, and for a seeking
