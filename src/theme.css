@@ -207,3 +207,20 @@
   --color-avail-order: #a0a0a0;
   --color-avail-sold: #b3a892;
 }
+
+/* ─── Cross-surface seamlessness ──────────────────────────────────────────
+   Both surfaces (the app and the static /learn library) compile this file,
+   so declaring the cross-document view transition HERE opts BOTH sides in:
+   navigating between them crossfades instead of hard-cutting, and the site
+   bar — which carries the same transition name on both surfaces — is held
+   in place across the swap instead of fading with the page. Browsers
+   without support simply navigate normally (the pre-paint background rules
+   in each document's head prevent any white frame either way). */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+.site-bar-root {
+  view-transition-name: site-bar;
+}

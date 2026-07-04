@@ -25,6 +25,14 @@ const base = import.meta.env.BASE_URL
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    {/* Paint the document in-theme before ANY external CSS loads, so there is
+        never a white frame when crossing between the app and the library.
+        The no-flash script below sets `.dark` before first paint, so these
+        two rules resolve correctly for either theme. */}
+    <style>
+      html { background-color: #14110d; }
+      html:not(.dark) { background-color: #f4f0e7; }
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />

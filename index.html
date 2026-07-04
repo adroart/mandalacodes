@@ -9,6 +9,19 @@
       html { background-color: #171310; }
       html.light-mode { background-color: #f5f4f0; }
     </style>
+    <!-- Apply the saved theme before first paint. Without this, a visitor in
+         light mode gets a dark frame on every arrival (e.g. crossing back from
+         /learn) until React mounts and flips the class. Same storage key as
+         DarkModeContext and the /learn no-flash script. -->
+    <script>
+      try {
+        if (localStorage.getItem('dark-mode') === 'false') {
+          document.documentElement.classList.add('light-mode');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Mandala Codes · Universal Language Oracle</title>
 

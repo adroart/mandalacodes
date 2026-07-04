@@ -244,7 +244,7 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
   return (
     <nav
       ref={navRef}
-      className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ease-in-out ${surface} ${pad}`}
+      className={`site-bar-root fixed top-0 left-0 w-full z-[100] transition-all duration-500 ease-in-out ${surface} ${pad}`}
     >
       <div ref={rowRef} className="max-w-[1800px] mx-auto px-6 md:px-12 flex justify-between items-center relative z-[120]">
         <LinkComponent ref={wordmarkRef} to="/" className="group flex flex-col items-stretch leading-none py-2 -my-2 shrink-0" aria-label="Mandala Codes home">
