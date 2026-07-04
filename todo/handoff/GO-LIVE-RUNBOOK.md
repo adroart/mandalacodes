@@ -18,7 +18,7 @@ ledger as you go.
 
 ---
 
-## 0. After PR #61 merges
+## 0. Baseline (PRs #61 and #64 are merged)
 
 ```bash
 git checkout main && git pull origin main
@@ -27,7 +27,7 @@ git checkout main && git pull origin main
 Cloudflare Pages auto-deploys main; wait for the build to go green before
 step 2 onward.
 
-## 1. D1 migration (MORNING-AFTER step b) — read the hazard doc first
+## 1. D1 migrations (MORNING-AFTER step b) — read the hazard doc first
 
 Before touching the shared database, read `docs/d1-migrations.md` (new):
 both repos hold migrations for the same `adrian-website` DB and D1 journals
@@ -37,13 +37,16 @@ by FILENAME, with a `001_init.sql` collision between the repos.
 # From BOTH checkouts, see what the journal already contains:
 npx wrangler d1 migrations list adrian-website --remote
 
-# Then, from the Adrian-Website checkout only:
+# Then, from the Adrian-Website checkout only (two files now):
 cp <mandalacodes>/todo/handoff/adrian-website/003_atlas_legacy.sql migrations/
+cp <mandalacodes>/todo/handoff/adrian-website/004_piece_content.sql migrations/
 npx wrangler d1 migrations apply adrian-website --remote
-# Expect two CREATE TABLE statements (atlas_inscriptions, atlas_sale_events).
+# Expect three CREATE TABLE statements
+# (atlas_inscriptions, atlas_sale_events, atlas_piece_content).
 ```
 
-Unblocks: inscriptions, holder export, erasure, the whole sale queue.
+Unblocks: inscriptions, holder export, erasure, the whole sale queue, and
+the piece-content editor at /admin/piece-content.
 
 ## 2. Secrets (MORNING-AFTER step c, plus the new bridge secret)
 
@@ -88,25 +91,25 @@ they don't exist yet the script errors (exit 1) rather than skipping. That
 is expected before any steward has been issued. Move the output offline;
 `stewards.json` and `claimRequests.json` contain collector contact info.
 
-## 5. Adrian-Website senders (MORNING-AFTER step d) — other repo
+## 5. Adrian-Website senders (MORNING-AFTER step d) — other repo, now copy-paste
 
-Out of scope for the mandalacodes session (no access to that repo). Two
-senders to implement there, both HMAC-SHA256 over `timestamp + "." + rawBody`,
-hex, unix seconds, ±5-minute window:
+The sender is written and lives in this folder as a drop-in module:
+`todo/handoff/adrian-website/notify-mandalacodes.ts` (zero dependencies,
+Web Crypto, runs unchanged in Pages Functions). To install:
 
-- **Sale webhook** → `POST https://mandalacodes.com/api/atlas/sale`, signed
-  with `SALE_WEBHOOK_SECRET`. Full contract + worked example + curl test:
-  `todo/handoff/adrian-website/sale-webhook-spec.md`.
-- **Claim bridge** (optional, for contested binds on the art site) →
-  `POST https://mandalacodes.com/api/atlas/claim-bridge`, signed with
-  `CLAIM_BRIDGE_SECRET`. Same signing scheme; body carries
-  `{pieceId, editionNumber?, requesterRef, requesterEmail, note?}`. The
-  receiving side stamps these requests as machine-asserted
-  (`requesterEmailVerified: false`) and only ever opens a pending request.
+1. Copy `notify-mandalacodes.ts` into the Adrian-Website repo (e.g.
+   `functions/_lib/`).
+2. From the checkout-success path (Stripe webhook handler), call:
+   `context.waitUntil(notifyMandalacodesOfSale(env, sale))` with the
+   payload fields from `sale-webhook-spec.md`.
+3. Optional: on a contested bind, call
+   `notifyMandalacodesOfContestedClaim(env, {...})` — it only ever opens a
+   pending, holder-routed, machine-asserted request.
 
-Retries: re-sign with a fresh timestamp each attempt; idempotent on saleId /
-dedupe on the request side; if all retries fail, log and move on (manual
-issuance remains the source of truth).
+The module handles signing (`X-Sale-*` / `X-Claim-*` headers), the
+±5-minute window with fresh re-signing on each of 3 backoff retries,
+never-retry on 400, and never throws. Contract + worked example + curl
+test: `sale-webhook-spec.md` in the same folder.
 
 ## 6. Claim light #1 (MORNING-AFTER step g) — the ignition, not delegable
 
