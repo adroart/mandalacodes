@@ -10,7 +10,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Set the webhook secrets** — generate distinct `SALE_WEBHOOK_SECRET` and `CLAIM_BRIDGE_SECRET`, set on BOTH Pages projects, redeploy _(you · quick)_
 - [ ] **Activate the GitHub mirror** — public repo + fine-grained PAT + the three `GITHUB_MIRROR_*` vars; this is the external tamper evidence _(you · quick)_
 - [ ] **Baseline backup** — `wrangler login` then `npm run backup:atlas`; move output offline _(you · quick)_
-- [ ] **Adrian-Website senders** — implement the sale webhook (and optionally the claim-bridge sender) in that repo per [todo/handoff/adrian-website/sale-webhook-spec.md](todo/handoff/adrian-website/sale-webhook-spec.md) _(you or an agent session scoped to that repo · moderate)_
+- [ ] **Adrian-Website senders** — copy the drop-in module [todo/handoff/adrian-website/notify-mandalacodes.ts](todo/handoff/adrian-website/notify-mandalacodes.ts) into that repo and call it from checkout success; contract in [sale-webhook-spec.md](todo/handoff/adrian-website/sale-webhook-spec.md) _(you or an agent session scoped to that repo · quick)_
 - [ ] **Claim light #1** — the ignition ritual: your own steward record, the map yes, the first inscription. Not delegable _(you · quick)_
 - [ ] **Collector outreach** — the roster funnel in AdminAtlas is the dashboard; validation gate: ~3 of the first ~10 must claim and inscribe before deepening Ring 1 _(you · ongoing)_
 - [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
