@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
 import { useDarkMode } from '../DarkModeContext';
 import { useAccount } from '../lib/account/useAccount';
 
@@ -307,7 +307,9 @@ const Navigation: React.FC = () => {
             className="inline-flex items-center justify-center text-wood-700 hover:text-bronze-600 transition-colors h-9 w-9"
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            <span aria-hidden="true" className="text-[17px] leading-none">{isDarkMode ? '☀' : '☾'}</span>
+            {isDarkMode
+              ? <Sun aria-hidden="true" size={17} strokeWidth={1.75} />
+              : <Moon aria-hidden="true" size={17} strokeWidth={1.75} />}
           </button>
 
           <button

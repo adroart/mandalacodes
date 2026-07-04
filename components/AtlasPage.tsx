@@ -179,7 +179,7 @@ const AtlasPage: React.FC = () => {
      "your codes" lens is a comparison done entirely in the browser. */
   const yourGates = useMemo(() => {
     const set = new Set<number>();
-    const computed = profile?.computed as
+    const computed = profile?.computed as unknown as
       | Record<string, { gate?: number } | undefined>
       | undefined;
     if (computed) {

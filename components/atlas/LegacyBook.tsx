@@ -55,6 +55,7 @@ const LETTER_KIND_LABELS: Record<AtlasLetter['kind'], string> = {
   'kin-claim': 'A kin came to light',
   anniversary: 'An anniversary',
   transfer: 'A change of hands',
+  tending: 'A word about its words',
 };
 
 const formatDate = (iso: string): string => {

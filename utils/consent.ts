@@ -108,6 +108,26 @@ export function nextConsentState(
 }
 
 /**
+ * True when two ConsentStates are identical in every field EXCEPT
+ * `capturedAt`. Used to detect a Phase B claim retry: consent is stamped
+ * (via mutateStewards) BEFORE the ledger append that follows it, so if that
+ * append fails and the client resubmits the identical choice, nextConsentState
+ * recomputes a state that differs only by the new "now" timestamp. Comparing
+ * with everything but capturedAt stripped catches that retry regardless of
+ * how ring3ChartPresence/ring4 are shaped (object or 'deferred') — same key
+ * order on both sides (both built by nextConsentState/nextRing3ConsentState),
+ * so a JSON.stringify comparison is exact and needs no field-by-field diff.
+ */
+export function isSameConsentIgnoringCapturedAt(
+  a: ConsentState,
+  b: ConsentState,
+): boolean {
+  const { capturedAt: _a, ...restA } = a;
+  const { capturedAt: _b, ...restB } = b;
+  return JSON.stringify(restA) === JSON.stringify(restB);
+}
+
+/**
  * Build the next ConsentState for a Ring 3 (chart presence) flip — M5.
  * Carries Ring 2 and Ring 4 forward unchanged, moves only ring3ChartPresence
  * and the server stamp. A steward toggles this from their book to join (or
@@ -154,17 +174,29 @@ export function bindStewardOnClaim(
  * outreachStatus to 'claimed', and (once) store the optional first
  * inscription. An existing pendingFirstInscription is never overwritten —
  * the ritual answer is the FIRST one.
+ *
+ * Idempotent on retry: consent is stamped here BEFORE the Phase B ledger
+ * append that follows in claim.ts. If that append fails and the client
+ * retries the identical choice, `consent` recomputes to a state that's the
+ * same as the last consentHistory entry in everything but capturedAt. In
+ * that case we skip appending a duplicate — consentHistory stays exactly as
+ * it was, and the existing `consent` is kept as-is rather than replaced with
+ * a freshly-stamped (but otherwise identical) copy.
  */
 export function applyConsentToSteward(
   record: StewardRecord,
   consent: ConsentState,
   firstInscription?: string,
 ): StewardRecord {
+  const history = record.consentHistory ?? [];
+  const last = history[history.length - 1];
+  const isRetry =
+    last !== undefined && isSameConsentIgnoringCapturedAt(last, consent);
   const next: StewardRecord = {
     ...record,
     clerkUserId: record.clerkUserId ?? consent.capturedBy,
-    consent,
-    consentHistory: [...(record.consentHistory ?? []), consent],
+    consent: isRetry ? record.consent ?? consent : consent,
+    consentHistory: isRetry ? history : [...history, consent],
     outreachStatus: 'claimed',
     lastClaimAt: consent.capturedAt,
   };

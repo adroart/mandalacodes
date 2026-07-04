@@ -2,7 +2,7 @@
 name: living-art-legacy
 status: built-pending-ops
 created: 2026-06-10
-last_updated: 2026-06-10
+last_updated: 2026-07-02
 owner: mandalacodes
 also_touches: adrian-website
 source_conversation: 2026-06-10 — "item ledgers and certificates" → became the living-history legacy + planetary atlas vision. The piece carries an ever-growing record; the planet is the global mandala; holders place pieces on a map, opt into charts/identity, and a future social gallery of art owners forms.
@@ -559,6 +559,9 @@ six commits:
 | `21fb27b` | M5 — Ring 3 chart presence + the piece writes back | Ring 3 consent gate on kinship, kin-claim letters, anniversary letters, transfer letters, `utils/letters.ts`, `atlas/letters.json` R2 key |
 
 **Final test count: 159 unit tests across 9 test files** (`tests/unit/`).
+*(Correction 2026-07-02: the commit hashes above no longer resolve — the branch
+landed via a squash merge, so the table is provenance narrative only. The suite
+has since grown; see the amendment below for the current count.)*
 
 Final review pass (same date): per-piece chain-tip hashes now ride in
 `public.json` (`chainTips`, visible pieces only — hashes only, additive, no
@@ -725,3 +728,65 @@ Two different matches hide here; they must ship separately:
    bridge.
 
 M6 is ratified and buildable in the sequenced order above.
+## Amendment 2026-07-02 — claim window + claim bridge, ratified as hardened
+
+Two features shipped after this plan's last update (PR #57, 2026-06-23) without
+a plan amendment: the **claim-block window** (`utils/claimWindow.ts`, a pure
+state machine for escalating a contested claim against an unresponsive keeper)
+and the **claim-bridge** (`POST /api/atlas/claim-bridge`, an HMAC-authenticated
+server-to-server endpoint letting adrianrasmussen.com open a holder-routed
+claim request when a bind attempt there hits an already-held piece). A full
+review (`docs/reviews/2026-07-02-registration-legacy-review.md`) found both
+well-built but in conflict with settled decisions #1 and #2. Adrian's ruling:
+**keep, but harden.** The following is now ratified policy:
+
+1. **Heirs never auto-bind — reaffirmed and enforced in code.** An email match
+   against an active heir is informational only (`heirEmailMatch` on the
+   evaluation result) and never returns `overridden`. `overridden` is reserved
+   for explicit keeper approval. This closes the gap where knowing an heir's
+   email address granted instant-transfer status.
+
+2. **The window may free a piece only with a real grace period.**
+   `frees-to-requester` requires all of: 30 days elapsed, all four warnings
+   *delivered*, and the final warning delivered at least
+   `FINAL_WARNING_GRACE_DAYS` (7) before evaluation. Warning deliveries are
+   persisted on the `ClaimRequest` (`warnings[]` with ordinal + timestamp);
+   `holderRespondedAt` records an explicit keeper action, never mere account
+   activity.
+
+3. **Activation is gated on an out-of-band notification channel.** In-product
+   letters do not count as delivery — a keeper who never visits never sees
+   them. No code path may invoke `evaluateClaimWindow` against live claim
+   requests until warning emails (or an equivalent channel the keeper actually
+   receives) exist and are wired to the `warnings[]` record. Until then the
+   module stays dormant by design, and a contested claim resolves only by a
+   human through the existing endpoints.
+
+4. **A freed piece still moves only via the audited `transferred` event.** The
+   window decides *eligibility*; the rebind itself remains the existing
+   transfer path with full attribution. A request never binds anything.
+
+5. **Bridge identity is machine-asserted and must look like it.** Requests the
+   bridge creates carry `source: 'bridge'` and `requesterEmailVerified: false`;
+   every holder-facing view labels the email as unverified so the "I recognize
+   my buyer's email" trust signal cannot be forged with a leaked
+   `CLAIM_BRIDGE_SECRET`. The per-requester open-request cap is keyed by
+   email as well as requesterRef (the bridge asserts the latter).
+
+6. **Ops**: `CLAIM_BRIDGE_SECRET` (32+ random bytes) joins the secret set on
+   both Pages projects, synced via `scripts/sync-secrets-to-cloudflare.sh` and
+   documented in `docs/secrets-sync.md`. The endpoint returns 503 until set.
+
+New slop tests (reject a proposal if):
+
+- It lets heir data grant access of any kind. → Heirs are hints for the
+  executor; activation is always a mediated `transferred` event.
+- It presents machine-asserted identity (bridge, webhook, import) as verified
+  to a human who will act on it. → Provenance must be visible at the point of
+  decision.
+- It wires the claim window to live requests before an out-of-band warning
+  channel exists. → Silence a keeper never heard is not consent.
+
+Status note: as of 2026-07-02 the suite is 177+ unit tests across 10+ files;
+M0–M5 are merged to main (the "pending merge" TODO status was stale), with the
+MORNING-AFTER ops steps tracked in that file's new status ledger.

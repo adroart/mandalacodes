@@ -40,6 +40,11 @@ ENCRYPTED_VARS=(
   # the SAME value must be set on that Pages project too (this script only
   # syncs mandalacodes; see todo/handoff/adrian-website/sale-webhook-spec.md).
   "SALE_WEBHOOK_SECRET"
+  # Contested-claim bridge (M4 hardening, functions/api/atlas/claim-bridge.ts):
+  # HMAC secret shared with adrianrasmussen.com — the SAME value must be set
+  # on that Pages project too (this script only syncs mandalacodes). Distinct
+  # from SALE_WEBHOOK_SECRET. See docs/secrets-sync.md.
+  "CLAIM_BRIDGE_SECRET"
   # Fine-grained GitHub PAT for the public-state mirror (_mirror.ts).
   "GITHUB_MIRROR_TOKEN"
   # Optional bearer token gating /api/oracle/recommendation.

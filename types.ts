@@ -373,6 +373,22 @@ export interface ClaimRequest {
   /** Requester's email from the verified JWT — needed to seed the steward
    *  record on approval. Mutable storage only, never the chain. */
   requesterEmail: string;
+  /** Was requesterEmail proven by a verified session at request time? The
+   *  self-serve path (request-claim.ts) always records this true — its own
+   *  Better Auth session backs the email. The machine-authenticated
+   *  claim-bridge (claim-bridge.ts) records it false: the email arrives as a
+   *  SERVER claim relayed from Adrian-Website, never independently verified
+   *  by this server. Per the plan, asserted identity must never be
+   *  presented as verified — the holder UI reads this flag to label
+   *  bridge-asserted emails accordingly. Absent means true (every row
+   *  created before this field existed came from the always-verified user
+   *  path). */
+  requesterEmailVerified?: boolean;
+  /** Where the request originated. 'bridge' = the machine-authenticated
+   *  functions/api/atlas/claim-bridge.ts (no user session); absent means
+   *  'user' — the ordinary signed-in self-serve request-claim path — for
+   *  every row created before this field existed. */
+  source?: 'user' | 'bridge';
   /** Optional evidence ("bought at the Vienna auction, lot 12"). ≤500 chars. */
   note?: string;
   createdAt: string;
@@ -383,6 +399,18 @@ export interface ClaimRequest {
   /** Stamped on resolution. resolvedBy is an opaque auth userId. */
   resolvedAt?: string;
   resolvedBy?: string;
+  /** Claim-block warning deliveries (utils/claimWindow.ts), oldest first.
+   *  Ordinals are 1-based, matching that module's CLAIM_WARNING_DAYS order.
+   *  Populated only once the claim-block escalation is wired to a real
+   *  notification channel — currently DORMANT, see that module's header.
+   *  Absent/empty means no warning has been recorded as delivered. */
+  warnings?: Array<{ ordinal: number; sentAt: string }>;
+  /** ISO timestamp of the current holder's most recent explicit response to
+   *  the claim-block escalation — an acknowledgement short of a decision
+   *  (decisions are `status` + `resolvedAt`/`resolvedBy`). Feeds
+   *  evaluateClaimWindow's `holderResponded` flag. Absent = no response
+   *  recorded. */
+  holderRespondedAt?: string;
 }
 
 /* ─── Letters — the piece writes back (M5) ─────────────────────────────────

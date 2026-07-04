@@ -53,6 +53,19 @@ export const TrigramSVG: React.FC<{
   );
 };
 
+/**
+ * Six hexagram lines in render order (top → bottom): upper trigram top-to-bottom,
+ * then lower trigram top-to-bottom. true = yang (solid), false = yin (broken).
+ * Shared by HexagramSVG and the card reading's I Ching glyph so a hexagram is
+ * drawn from one source of truth. Unknown symbols fall back to all-yang.
+ */
+export function hexagramLineBooleans(upper: string, lower: string): boolean[] {
+  return [
+    ...(TRIGRAM_LINES[upper] ?? [true, true, true]),
+    ...(TRIGRAM_LINES[lower] ?? [true, true, true]),
+  ];
+}
+
 // Hexagram = 6 lines with uniform spacing (upper trigram lines 1–3, lower lines 4–6)
 export const HexagramSVG: React.FC<{
   upper: string;
@@ -67,8 +80,7 @@ export const HexagramSVG: React.FC<{
   const gap     = Math.round(width * 0.14);
   const hw      = (width - gap) / 2;
 
-  const allLines = [...(TRIGRAM_LINES[upper] ?? [true, true, true]),
-                    ...(TRIGRAM_LINES[lower] ?? [true, true, true])];
+  const allLines = hexagramLineBooleans(upper, lower);
 
   return (
     <svg

@@ -2,6 +2,19 @@
 
 Living list of what's outstanding on the oracle. Loose priority order, top items block more than bottom items.
 
+## Go-live ops (you-required — needs your credentials, nothing here is agent-doable)
+
+Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO-LIVE-RUNBOOK.md). Check them off in [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md)'s status ledger as you go.
+
+- [ ] **Apply the D1 migrations** from the Adrian-Website checkout (003_atlas_legacy + the new 004_piece_content) — read [docs/d1-migrations.md](docs/d1-migrations.md) first, the cross-repo filename collision is real _(you · quick)_
+- [ ] **Set the webhook secrets** — generate distinct `SALE_WEBHOOK_SECRET` and `CLAIM_BRIDGE_SECRET`, set on BOTH Pages projects, redeploy _(you · quick)_
+- [ ] **Activate the GitHub mirror** — public repo + fine-grained PAT + the three `GITHUB_MIRROR_*` vars; this is the external tamper evidence _(you · quick)_
+- [ ] **Baseline backup** — `wrangler login` then `npm run backup:atlas`; move output offline _(you · quick)_
+- [ ] **Adrian-Website senders** — implement the sale webhook (and optionally the claim-bridge sender) in that repo per [todo/handoff/adrian-website/sale-webhook-spec.md](todo/handoff/adrian-website/sale-webhook-spec.md) _(you or an agent session scoped to that repo · moderate)_
+- [ ] **Claim light #1** — the ignition ritual: your own steward record, the map yes, the first inscription. Not delegable _(you · quick)_
+- [ ] **Collector outreach** — the roster funnel in AdminAtlas is the dashboard; validation gate: ~3 of the first ~10 must claim and inscribe before deepening Ring 1 _(you · ongoing)_
+- [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
+
 ## Soon
 
 - [ ] Finish The Field: the procession (guided founding-story tour) and the piece's yearly ask about its shared words; the three lenses, dream share flow, and tending queue shipped 2026-07-04 on the globe branch _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) § M6
@@ -172,15 +185,15 @@ Framework built on branch `claude/oracle-mcp-artwork-readings-MMa1k` (pending me
 
 ### Living art legacy (the piece carries an ever-growing history; the planet is the global mandala)
 
-- [ ] **M0 — ledger hardening** — concurrency-safe R2 writes, multi-piece claim-binding fix, edition-key unification, backdated-event guard, admin-notes leak fix, actorRef attribution, first tests _(agent · moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10 — pending merge + ops, see [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md))_
+- [x] **M0 — ledger hardening** — concurrency-safe R2 writes, multi-piece claim-binding fix, edition-key unification, backdated-event guard, admin-notes leak fix, actorRef attribution, first tests _(agent · moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10, merged to main — only ops steps in [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md) may remain)_
   The review found writes can silently drop ledger events and a collector can never bind a second piece — fatal for an append-only promise. Done when the M0 checklist in the plan is green and the privacy/verifyChain tests run on CI.
-- [ ] **M1 — public piece page + Founding Lights** — zero-signup QR landing page per piece, `claimed` event + permanent claim-order ordinal (Adrian is light #1), pieceType color, unawakened dots _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10 — pending merge + ops, see [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md))_
+- [x] **M1 — public piece page + Founding Lights** — zero-signup QR landing page per piece, `claimed` event + permanent claim-order ordinal (Adrian is light #1), pieceType color, unawakened dots _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10, merged to main — only ops steps in [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md) may remain)_
   The QR must land on the piece's story, not a login wall, and claim order turns the sparse early map into the launch story. Done when a scan shows the piece's book cover and Adrian's claim ignites light #1.
-- [ ] **M2 + M3 — consent capture + Ring 1 legacy entries** — two-phase claim with one active map question (active opt-in, Rings 3-4 recorded deferred), then holder-authored `inscribed` entries with bodies in D1 (salted commitments on chain), time capsules, heir hints, holder export _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10 — pending merge + ops, see [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md))_
+- [ ] **M2 + M3 — consent capture + Ring 1 legacy entries** — two-phase claim with one active map question (active opt-in, Rings 3-4 recorded deferred), then holder-authored `inscribed` entries with bodies in D1 (salted commitments on chain), time capsules, heir hints, holder export _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10, merged to main — Ring 1 inscriptions still blocked on the D1 migration in [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md))_
   Consent is captured once at claim; free text never enters the hashed payload so erasure stays possible. Done when a steward writes an intention, the chain verifies, erasure tombstones cleanly, and the book exports as signed JSON + PDF.
-- [ ] **M4 — sale bridge + claim requests** — HMAC webhook from adrianrasmussen.com into an admin-confirmed queue, plus self-serve stewardship requests for secondary sales/gifts/inheritance _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10 — pending merge + ops, see [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md))_
+- [ ] **M4 — sale bridge + claim requests** — HMAC webhook from adrianrasmussen.com into an admin-confirmed queue, plus self-serve stewardship requests for secondary sales/gifts/inheritance _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10, merged to main — sale webhook still blocked on ops steps in [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md))_
   A forged sale must never grant ownership, and buyers Adrian didn't pre-register need a path in. Done when a test checkout produces a pending sale Adrian confirms in one click and the buyer's QR claim works end to end.
-- [ ] **M5 — Ring 3 chart presence + the piece writes back** — consent-gated kinship/chart attach, kin-claim notifications in the piece's voice _(agent · moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10 — pending merge + ops, see [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md))_
+- [x] **M5 — Ring 3 chart presence + the piece writes back** — consent-gated kinship/chart attach, kin-claim notifications in the piece's voice _(agent · moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10, merged to main — only ops steps in [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md) may remain)_
   The notification is the return loop that brings holders back. Done when arcs only draw for consenting holders and a kin claim sends the letter. Ring 4's gallery surface is density-gated (≥25 opt-ins) and stays off the roadmap until then.
 
 - [ ] **Light Codes deck** — integrate the Light Codes deck (route is reserved, content lives in the archive) _(agent · deep)_ _(routed → Backlog)_

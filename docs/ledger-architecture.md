@@ -2,7 +2,8 @@
 
 > **Partially superseded (2026-06-10).** The "Why steward keys instead of
 > accounts" section below describes the pre-Clerk recovery model; recovery
-> is now account-based (Clerk), and the current consent/privacy/PII rules
+> is now account-based (self-owned Better Auth, since 2026-06-15, replacing
+> Clerk), and the current consent/privacy/PII rules
 > live in [todo/plans/living-art-legacy.md](../todo/plans/living-art-legacy.md)
 > — in particular the chain content invariant (no personal data in the
 > hashed payload, ever). The hash-chain rationale below still stands.

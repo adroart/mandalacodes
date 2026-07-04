@@ -15,6 +15,7 @@ import { json, mutateLedger, regeneratePublicState } from './_helpers';
 import { applyRebind, cleanRebindInput } from './_transfer';
 import type { RebindInput } from './_transfer';
 import { requireAdmin, isAuthResponse } from '../_lib/auth';
+import { checkRateLimit, tooManyRequests } from '../_lib/rate-limit.js';
 
 const VALID_TYPES: ReadonlySet<LedgerEventType> = new Set<LedgerEventType>([
   'created',
@@ -34,6 +35,17 @@ const VALID_TYPES: ReadonlySet<LedgerEventType> = new Set<LedgerEventType>([
 ]);
 
 const TRANSFER_KINDS = new Set(['sale', 'gift', 'inheritance', 'artist-rebind']);
+
+// `note` rides into the hashed chain payload, so once written it can never
+// be edited or deleted — only tombstoned by a future moderator-redaction
+// path, not by this endpoint. Per the plan's chain content invariant (see
+// todo/plans/living-art-legacy.md, decision #6: "The existing
+// LedgerEvent.note field is restricted to non-personal operational text
+// from now on"), a note must be non-personal operational text ONLY — never
+// a name, email, or free prose about a person. The length cap keeps it that
+// way structurally: 280 characters is enough for an operational line
+// ("shipped via courier, tracking on file") and too short to hold a story.
+const NOTE_MAX_LENGTH = 280;
 
 type CleanEventInput = Omit<LedgerEvent, 'hash' | 'prevHash'>;
 
@@ -66,7 +78,10 @@ export function cleanEventInput(e: unknown): CleanEventInput | null {
   if (obj.editionNumber !== undefined && typeof obj.editionNumber !== 'number') {
     return null;
   }
-  if (obj.note !== undefined && typeof obj.note !== 'string') return null;
+  if (obj.note !== undefined) {
+    if (typeof obj.note !== 'string') return null;
+    if (obj.note.length > NOTE_MAX_LENGTH) return null;
+  }
   if (
     obj.pieceType !== undefined &&
     obj.pieceType !== 'mandala' &&
@@ -130,6 +145,19 @@ export function cleanEventInput(e: unknown): CleanEventInput | null {
   return clean;
 }
 
+/**
+ * True when a chain already carries a `claimed` event. Mirrors the genesis
+ * ('created') guard below: a chain may only ever originate one Founding
+ * Lights ordinal, so a second admin-submitted 'claimed' event must be
+ * rejected rather than silently accepted (the steward claim flow's own
+ * planClaimChainEvents already skips repeats for its own path — this is the
+ * same invariant enforced on the admin path). Pure and exported for the unit
+ * suite.
+ */
+export function chainHasClaimedEvent(chain: readonly LedgerEvent[]): boolean {
+  return chain.some((e) => e.type === 'claimed');
+}
+
 export async function onRequestPost(
   context: PagesContext,
 ): Promise<Response> {
@@ -137,6 +165,16 @@ export async function onRequestPost(
 
   const auth = await requireAdmin(request, env);
   if (isAuthResponse(auth)) return auth;
+
+  // Fail-open D1-backed limiter (see functions/api/_lib/rate-limit.js) —
+  // admin is a single trusted actor, but this still bounds a runaway script
+  // or a compromised session from hammering the ledger.
+  const { ok: withinLimit, retryAfterSec } = await checkRateLimit(
+    env,
+    `atlas:admin-event:${auth.userId}`,
+    { limit: 60, windowMs: 60 * 60 * 1000 },
+  );
+  if (!withinLimit) return tooManyRequests(retryAfterSec);
 
   let body: unknown;
   try {
@@ -185,6 +223,16 @@ export async function onRequestPost(
     if (incoming.type === 'created' && chain.length > 0) {
       return json(
         { ok: false, error: 'Genesis event already exists for this piece' },
+        409,
+      );
+    }
+
+    // Claimed guard: a chain may only ever carry one 'claimed' event — it is
+    // the Founding Lights ordinal source, and a second one would corrupt the
+    // claim-order projection. Mirrors the genesis guard above.
+    if (incoming.type === 'claimed' && chainHasClaimedEvent(chain)) {
+      return json(
+        { ok: false, error: 'A claimed event already exists for this piece' },
         409,
       );
     }

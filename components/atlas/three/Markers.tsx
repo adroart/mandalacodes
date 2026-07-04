@@ -244,6 +244,7 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
     const phase = geometry.getAttribute('aPhase') as THREE.BufferAttribute;
     const sel = geometry.getAttribute('aSelected') as THREE.BufferAttribute;
     const flash = geometry.getAttribute('aFlash') as THREE.BufferAttribute;
+    const yours = geometry.getAttribute('aYours') as THREE.BufferAttribute;
 
     const now = performance.now();
     const lensActive = !!focusSeries || !!yoursMode;
@@ -291,6 +292,7 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
     phase.needsUpdate = true;
     sel.needsUpdate = true;
     flash.needsUpdate = true;
+    yours.needsUpdate = true;
   });
 
   return <points geometry={geometry} material={material} renderOrder={3} />;

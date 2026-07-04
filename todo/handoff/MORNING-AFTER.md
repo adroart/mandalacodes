@@ -9,13 +9,34 @@ Nothing breaks if you leave them overnight — they just stay dormant.
 
 ---
 
+## Status ledger
+
+Check items off here as they are completed, so this file stays a source of
+truth instead of a stale plan. As of 2026-07-02: step a (the merge) is done;
+the repo shows no evidence steps b through g were done.
+
+The consolidated command-by-command version of the remaining steps
+(including the newer `CLAIM_BRIDGE_SECRET` and the notification-channel and
+piece-content decision records) lives in [GO-LIVE-RUNBOOK.md](GO-LIVE-RUNBOOK.md).
+
+- [x] a) Review and merge the branch — done, `claude/gallant-faraday-kb2y28` is on `main`
+- [ ] b) Apply the D1 migration
+- [ ] c) Generate and set `SALE_WEBHOOK_SECRET`
+- [ ] d) Implement the webhook sender on Adrian-Website
+- [ ] e) Activate the GitHub mirror
+- [ ] f) Take a baseline backup
+- [ ] g) Claim light #1 — the ignition moment
+- [ ] h) Begin the collector outreach campaign
+
+---
+
 ## a) Review and merge the branch
 
 Review the PR for branch `claude/gallant-faraday-kb2y28` and merge it to
 `main`. Cloudflare Pages auto-deploys on push to main; wait for the build to
 succeed before continuing.
 
-All 157 unit tests pass. TypeScript check is clean.
+All 177 unit tests (10 files) pass. TypeScript check is clean.
 
 ---
 
@@ -132,8 +153,11 @@ npm run backup:atlas
 
 This pulls all five atlas objects (`ledger.json`, `stewards.json`,
 `public.json`, `claimRequests.json`, `letters.json`) from the production
-bucket into a gitignored `backups/atlas-<timestamp>/` folder — keys that
-don't exist yet are skipped with a note. Move the output to offline storage.
+bucket into a gitignored `backups/atlas-<timestamp>/` folder. `ledger.json`
+and `stewards.json` are required, a missing one is an ERROR and a non-zero
+exit; `public.json`, `claimRequests.json`, and `letters.json` are optional
+and are skipped with a note if they don't exist yet. Move the output to
+offline storage.
 `stewards.json` and `claimRequests.json` contain collector contact
 information; keep them private.
 

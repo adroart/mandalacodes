@@ -210,9 +210,11 @@ npm run backup:atlas
 This fetches all five atlas objects (`ledger.json`, `stewards.json`,
 `public.json`, `claimRequests.json`, `letters.json`) from the production
 `mandalacodes-atlas` bucket into a gitignored `backups/atlas-<timestamp>/`
-directory via `wrangler r2 object get --remote`; keys not yet created are
-skipped with a note. You need a wrangler login with access to the bucket
-first (`npx wrangler login`).
+directory via `wrangler r2 object get --remote`; `ledger.json` and
+`stewards.json` are required (a missing one errors out the script),
+the other three are optional and skipped with a note if not yet created.
+You need a wrangler login with access to the bucket first (`npx wrangler
+login`).
 
 Run this before any structural change ships. Move long-term copies to
 artist-controlled offline storage — the `backups/` folder is gitignored and

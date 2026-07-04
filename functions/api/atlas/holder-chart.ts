@@ -31,6 +31,7 @@ import {
   json,
   readStewards,
 } from './_helpers';
+import { checkRateLimit, clientIp, tooManyRequests } from '../_lib/rate-limit.js';
 
 interface ProfileRow {
   computed_json: string;
@@ -44,6 +45,17 @@ interface HolderChartSummary {
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
   const { request, env } = context;
+
+  // Public and unauthenticated — fail-open D1 limiter keyed by IP so a
+  // scraper can't grind through every (pieceId, editionNumber) pair looking
+  // for opted-in charts. See functions/api/_lib/rate-limit.js.
+  const { ok: withinLimit, retryAfterSec } = await checkRateLimit(
+    env,
+    `atlas:holder-chart:${clientIp(request)}`,
+    { limit: 60, windowMs: 60 * 60 * 1000 },
+  );
+  if (!withinLimit) return tooManyRequests(retryAfterSec);
+
   const url = new URL(request.url);
   const pieceId = url.searchParams.get('pieceId') ?? '';
   if (!pieceId) return json({ ok: false, error: 'Missing pieceId' }, 400);

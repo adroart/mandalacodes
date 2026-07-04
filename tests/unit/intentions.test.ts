@@ -27,6 +27,7 @@ import {
   SHARED_INTENTION_DISPLAY_MAX,
   toDisplayText,
 } from '../../utils/intentions';
+import type { ShareEligibilityFailure } from '../../utils/intentions';
 import type { InscriptionRow } from '../../utils/inscriptions';
 import { projectAll, toPublicState } from '../../utils/ledgerProjection';
 
@@ -75,19 +76,19 @@ describe('checkShareEligibility', () => {
   it('rejects when the row is missing', () => {
     const result = checkShareEligibility(null, AUTHOR, [], NOW);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('not-found');
+    expect((result as ShareEligibilityFailure).error).toBe('not-found');
   });
 
   it('rejects a non-intention kind — words about a business/place/name are not sortable here', () => {
     const result = checkShareEligibility(row({ kind: 'story' }), AUTHOR, [], NOW);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('wrong-kind');
+    expect((result as ShareEligibilityFailure).error).toBe('wrong-kind');
   });
 
   it('rejects when the requester did not author the entry', () => {
     const result = checkShareEligibility(row(), OTHER, [], NOW);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('not-author');
+    expect((result as ShareEligibilityFailure).error).toBe('not-author');
   });
 
   it('rejects an erased entry', () => {
@@ -98,7 +99,7 @@ describe('checkShareEligibility', () => {
       NOW,
     );
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('erased');
+    expect((result as ShareEligibilityFailure).error).toBe('erased');
   });
 
   it('rejects a date-sealed entry still closed', () => {
@@ -109,7 +110,7 @@ describe('checkShareEligibility', () => {
       NOW,
     );
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('sealed');
+    expect((result as ShareEligibilityFailure).error).toBe('sealed');
   });
 
   it('accepts a date-sealed entry once the seal date has passed', () => {
@@ -126,7 +127,7 @@ describe('checkShareEligibility', () => {
     const sealedRow = row({ sealed_until: 'transfer' });
     const result = checkShareEligibility(sealedRow, AUTHOR, [], NOW);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('sealed');
+    expect((result as ShareEligibilityFailure).error).toBe('sealed');
   });
 });
 

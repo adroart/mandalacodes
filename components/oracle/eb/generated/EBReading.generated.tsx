@@ -262,19 +262,19 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--d-3)", width: "64px", flexShrink: "0" }}>
             {vals.ichingGua}
             </span>
-            <span aria-hidden="true" style={{ display: "inline-flex", flexDirection: "column", gap: "3px", flexShrink: "0" }}>
-              <span style={{ display: "block", width: "34px", height: "4px", background: "var(--accent-d)" }}>
-              </span>
-              <span style={{ display: "block", width: "34px", height: "4px", background: "var(--accent-d)" }}>
-              </span>
-              <span style={{ display: "block", width: "34px", height: "4px", background: "var(--accent-d)" }}>
-              </span>
-              <span style={{ display: "block", width: "34px", height: "4px", background: "var(--accent-d)" }}>
-              </span>
-              <span style={{ display: "block", width: "34px", height: "4px", background: "var(--accent-d)" }}>
-              </span>
-              <span style={{ display: "block", width: "34px", height: "4px", background: "var(--accent-d)" }}>
-              </span>
+            <span ref={vals.registerTrigram} aria-hidden="true" style={{ display: "inline-flex", flexDirection: "column", gap: "3px", flexShrink: "0" }}>
+              {(vals.hexLines ?? [true, true, true, true, true, true]).map((yang: boolean, i: number) => (
+                <span key={i} data-line={6 - i} style={{ display: "flex", gap: "4px", transition: "opacity .25s, transform .25s" }}>
+                  {yang ? (
+                    <span style={{ display: "block", width: "34px", height: "4px", background: "var(--accent-d)" }}></span>
+                  ) : (
+                    <>
+                      <span style={{ display: "block", width: "15px", height: "4px", background: "var(--accent-d)" }}></span>
+                      <span style={{ display: "block", width: "15px", height: "4px", background: "var(--accent-d)" }}></span>
+                    </>
+                  )}
+                </span>
+              ))}
             </span>
             <span style={{ flex: "1", minWidth: "0" }}>
               <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "19px", color: "var(--d-1)", lineHeight: "1.2" }}>
@@ -293,15 +293,21 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Upper
             </span>
             <span aria-hidden="true" style={{ display: "inline-flex", flexDirection: "column", gap: "3px", flexShrink: "0" }}>
-              <span style={{ display: "block", width: "30px", height: "4px", background: "var(--d-3)" }}>
-              </span>
-              <span style={{ display: "block", width: "30px", height: "4px", background: "var(--d-3)" }}>
-              </span>
-              <span style={{ display: "block", width: "30px", height: "4px", background: "var(--d-3)" }}>
-              </span>
+              {(vals.hexLines ?? [true, true, true, true, true, true]).slice(0, 3).map((yang: boolean, i: number) => (
+                <span key={i} style={{ display: "flex", gap: "4px" }}>
+                  {yang ? (
+                    <span style={{ display: "block", width: "30px", height: "4px", background: "var(--d-3)" }}></span>
+                  ) : (
+                    <>
+                      <span style={{ display: "block", width: "13px", height: "4px", background: "var(--d-3)" }}></span>
+                      <span style={{ display: "block", width: "13px", height: "4px", background: "var(--d-3)" }}></span>
+                    </>
+                  )}
+                </span>
+              ))}
             </span>
             <span style={{ flex: "1", fontFamily: "var(--serif)", fontSize: "17px", color: "var(--d-2)" }}>
-            Heaven · Qián
+            {vals.ichingUpperName}
             </span>
             <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--d-3)", flexShrink: "0" }}>
             Trigram
@@ -312,15 +318,21 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Lower
             </span>
             <span aria-hidden="true" style={{ display: "inline-flex", flexDirection: "column", gap: "3px", flexShrink: "0" }}>
-              <span style={{ display: "block", width: "30px", height: "4px", background: "var(--d-3)" }}>
-              </span>
-              <span style={{ display: "block", width: "30px", height: "4px", background: "var(--d-3)" }}>
-              </span>
-              <span style={{ display: "block", width: "30px", height: "4px", background: "var(--d-3)" }}>
-              </span>
+              {(vals.hexLines ?? [true, true, true, true, true, true]).slice(3, 6).map((yang: boolean, i: number) => (
+                <span key={i} style={{ display: "flex", gap: "4px" }}>
+                  {yang ? (
+                    <span style={{ display: "block", width: "30px", height: "4px", background: "var(--d-3)" }}></span>
+                  ) : (
+                    <>
+                      <span style={{ display: "block", width: "13px", height: "4px", background: "var(--d-3)" }}></span>
+                      <span style={{ display: "block", width: "13px", height: "4px", background: "var(--d-3)" }}></span>
+                    </>
+                  )}
+                </span>
+              ))}
             </span>
             <span style={{ flex: "1", fontFamily: "var(--serif)", fontSize: "17px", color: "var(--d-2)" }}>
-            Heaven · Qián
+            {vals.ichingLowerName}
             </span>
             <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--d-3)", flexShrink: "0" }}>
             Trigram

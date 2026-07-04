@@ -14,6 +14,7 @@ import {
   findPublicPiece,
   type PublicPiece,
 } from '../lib/atlas/state';
+import type { PieceContent } from '../utils/pieceContent';
 import type { Artwork } from '../types';
 
 /**
@@ -55,6 +56,26 @@ function yearOf(iso?: string): string | undefined {
   if (!iso) return undefined;
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? undefined : String(d.getUTCFullYear());
+}
+
+/**
+ * Fetch the piece's editorial content (story, gallery, materials,
+ * provenance): the mutable layer an admin writes via the editor. Public,
+ * no auth, and fails silently: a network error or a pre-migration 503 must
+ * never break the piece page, it just renders without the extra content
+ * (today's behavior).
+ */
+async function loadPieceContent(pieceId: string): Promise<PieceContent | null> {
+  try {
+    const res = await fetch(
+      `/api/atlas/piece-content?pieceId=${encodeURIComponent(pieceId)}`,
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.ok && data.content ? (data.content as PieceContent) : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -216,6 +237,21 @@ const RequestStewardship: React.FC<{
 const PiecePage: React.FC = () => {
   const { pieceId, edition } = useParams<{ pieceId: string; edition?: string }>();
   const [load, setLoad] = useState<LoadState>({ kind: 'loading' });
+  // Editorial content (story/gallery/materials/provenance) loads independently
+  // of the archive + atlas state above — it's an enrichment layer, never a
+  // blocker, so it starts null and simply fills in once (if) it arrives.
+  const [content, setContent] = useState<PieceContent | null>(null);
+
+  useEffect(() => {
+    if (!pieceId) return;
+    let active = true;
+    loadPieceContent(pieceId).then((c) => {
+      if (active) setContent(c);
+    });
+    return () => {
+      active = false;
+    };
+  }, [pieceId]);
 
   useEffect(() => {
     let active = true;
@@ -294,9 +330,11 @@ const PiecePage: React.FC = () => {
   const card = cardNumber != null ? CARD_BY_NUMBER.get(cardNumber) : undefined;
   const spine = buildSpine(piece, art);
 
-  // Adrian's description: prefer the long form, fall back to the short one.
-  const description = art.longDescription || art.description || undefined;
+  // Adrian's description: the editor's story (when written) replaces the
+  // placeholder — prefer it, then the long form, then the short one.
+  const description = content?.story || art.longDescription || art.description || undefined;
   const cleanTitle = art.title.replace(/\s*-\s*\d+$/, '');
+  const galleryImages = content?.images ?? [];
 
   const editionLine =
     typeof piece.editionNumber === 'number'
@@ -359,6 +397,30 @@ const PiecePage: React.FC = () => {
                 </p>
               </div>
             </div>
+
+            {/* Photo gallery: extra images Adrian has added via the admin
+                editor. Absent for most pieces today; renders nothing when
+                empty, so the page looks exactly as it does now. */}
+            {galleryImages.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {galleryImages.map((publicId, i) => (
+                  <a
+                    key={publicId}
+                    href={img(publicId, { w: 1600, crop: 'fit' })}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block bg-[#151311] overflow-hidden"
+                  >
+                    <img
+                      src={img(publicId, { w: 400, h: 400, crop: 'fill' })}
+                      alt={`${cleanTitle}, additional view ${i + 1}`}
+                      className="w-full h-full object-cover block"
+                      loading="lazy"
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
             <p className="font-serif italic text-sm text-wood-500 text-center mt-4 leading-relaxed">
               This page is the certificate of the physical work: page one of a
               book that never closes.
@@ -409,6 +471,33 @@ const PiecePage: React.FC = () => {
               <p className="font-serif text-lg text-wood-800 leading-[1.7] mb-8 whitespace-pre-line">
                 {description}
               </p>
+            )}
+
+            {/* Materials · provenance: the editor's expanded notes, shown
+                only when Adrian has written them. */}
+            {(content?.materials || content?.provenance) && (
+              <div className="border-t border-wood-200 pt-6 mb-8 space-y-5">
+                {content?.materials && (
+                  <div>
+                    <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-1">
+                      Materials
+                    </p>
+                    <p className="font-serif text-base text-wood-800 leading-[1.6] whitespace-pre-line">
+                      {content.materials}
+                    </p>
+                  </div>
+                )}
+                {content?.provenance && (
+                  <div>
+                    <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-1">
+                      Provenance
+                    </p>
+                    <p className="font-serif text-base text-wood-800 leading-[1.6] whitespace-pre-line">
+                      {content.provenance}
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Hexagram: Universal Language pieces only. */}

@@ -25,6 +25,7 @@ import type {
 import {
   applyConsentToSteward,
   bindStewardOnClaim,
+  isSameConsentIgnoringCapturedAt,
   nextConsentState,
   nextRing3ConsentState,
   parseConsentInput,
@@ -263,6 +264,69 @@ describe('claim phases — outreachStatus gating', () => {
   it('leaves pendingFirstInscription absent when the prompt was skipped', () => {
     const next = applyConsentToSteward(steward(), consentState());
     expect(next.pendingFirstInscription).toBeUndefined();
+  });
+});
+
+// ---------- idempotent consent stamping (Phase B retry) ----------
+
+describe('isSameConsentIgnoringCapturedAt', () => {
+  it('treats two states as the same when only capturedAt differs', () => {
+    const a = consentState({ capturedAt: NOW });
+    const b = consentState({ capturedAt: '2026-07-01T00:00:00.000Z' });
+    expect(isSameConsentIgnoringCapturedAt(a, b)).toBe(true);
+  });
+
+  it('treats states as different when any other field differs', () => {
+    const base = consentState();
+    expect(
+      isSameConsentIgnoringCapturedAt(base, { ...base, ring2MapPresence: false }),
+    ).toBe(false);
+    expect(
+      isSameConsentIgnoringCapturedAt(base, { ...base, capturedBy: 'someone_else' }),
+    ).toBe(false);
+    expect(
+      isSameConsentIgnoringCapturedAt(base, { ...base, ring3ChartPresence: true }),
+    ).toBe(false);
+    expect(
+      isSameConsentIgnoringCapturedAt(base, {
+        ...base,
+        ring4: { face: true, name: false, intention: false, business: false, mission: false },
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('applyConsentToSteward — idempotent on a Phase B retry', () => {
+  it('does not grow consentHistory when the resubmitted consent only differs by capturedAt', () => {
+    const first = consentState({ capturedAt: NOW });
+    const afterFirst = applyConsentToSteward(steward(), first);
+    expect(afterFirst.consentHistory).toEqual([first]);
+
+    // Simulate the retry: the ledger append after the first stamp failed,
+    // the client resubmitted the identical choice, and nextConsentState
+    // recomputed a state identical to `first` except for a later "now".
+    const retryConsent = consentState({ capturedAt: '2026-06-10T12:00:05.000Z' });
+    const afterRetry = applyConsentToSteward(afterFirst, retryConsent);
+
+    expect(afterRetry.consentHistory).toEqual([first]); // no duplicate appended
+    expect(afterRetry.consent).toEqual(first); // kept as-is, not replaced
+  });
+
+  it('still appends when a genuinely different choice follows (not a retry)', () => {
+    const first = consentState({ ring2MapPresence: false, capturedAt: NOW });
+    const afterFirst = applyConsentToSteward(steward(), first);
+    const second = consentState({
+      ring2MapPresence: true,
+      capturedAt: '2026-07-01T00:00:00.000Z',
+    });
+    const afterSecond = applyConsentToSteward(afterFirst, second);
+    expect(afterSecond.consentHistory).toEqual([first, second]);
+    expect(afterSecond.consent).toEqual(second);
+  });
+
+  it('a first-ever capture (no prior history) is never treated as a retry', () => {
+    const next = applyConsentToSteward(steward(), consentState());
+    expect(next.consentHistory).toHaveLength(1);
   });
 });
 

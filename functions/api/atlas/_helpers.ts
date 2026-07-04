@@ -438,6 +438,23 @@ export async function regeneratePublicState(
   // placements resolve to a glowing dot like any city.
   const state = toPublicState(records, meta, ATLAS_PLACES, ring3ByKey, intentionsByKey);
   const jsonBody = JSON.stringify(state, null, 2);
+  // Deliberately a plain (unconditional) put, not a conditional one. Every
+  // caller here (event.ts, claim.ts, steward/update.ts, sales/confirm.ts,
+  // _transfer.ts…) already derives `events`/`state` from the freshest ledger
+  // it JUST wrote via mutateLedger's own conditional put — the ledger itself
+  // can never silently drop a write. What's left is a much narrower race:
+  // two regenerations landing back-to-back can commit their PUTs to
+  // public.json out of order, so a slightly-behind write can briefly
+  // clobber a fresher one. That state is self-healing — the very next ledger
+  // write (by anyone) recomputes public.json from scratch off the full,
+  // intact ledger, so the staleness never survives more than one write. A
+  // conditional put here would need a prior GET of public.json to have
+  // anything to condition on, and the etag it captured would only tell us
+  // "did someone else write since my GET," not "is their write newer than
+  // mine" — so it can't actually guarantee ordering, only add a GET to every
+  // regeneration for a race that already self-corrects. Given that, and that
+  // the plan explicitly defers building a re-read retry loop here, this is
+  // left as a plain put with the race consciously accepted.
   await env.ATLAS_BUCKET.put(KEY_PUBLIC, jsonBody, {
     httpMetadata: { contentType: 'application/json' },
   });
