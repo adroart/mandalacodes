@@ -573,7 +573,7 @@ atlas keys; `scripts/sync-secrets-to-cloudflare.sh` knows
 **Operations required before features are fully live:** see
 `todo/handoff/MORNING-AFTER.md`.
 
-## Addendum (2026-07-04) — globe elevation shipped
+## Addendum (2026-07-04): globe elevation shipped
 
 PR #62 (`claude/globe-legacy-elevation`): the hand-built globe became the
 default atlas (hexagram ring, kinship threads, mandala view), plus the
@@ -583,14 +583,14 @@ travel (camera flies a kinship arc, trigram named), the claim ceremony
 certificate treatment on the piece page, in-place vocabulary explainers,
 the keeper's guided arrival, and letters auto-opening when unread.
 
-## M6 — The Field: three lenses (drafted 2026-07-04 · critical pass done · AWAITING RATIFICATION)
+## M6: The Field: three lenses (drafted 2026-07-04 · critical pass done · AWAITING RATIFICATION)
 
 The atlas surfaces ~2% of what the system stores. The reframe: the globe
 currently maps pieces; the designed-but-dormant half of the schema maps
 people and meaning. M6 gives the one globe three lenses. Nothing here adds
 a new store; every lens surfaces data (or consent flags) that already exist.
 
-### Lens 1 — By work (all the art)
+### Lens 1: By work (all the art)
 
 Series become touchable constellations: tapping a series in the legend
 brightens that family and recedes the rest. The hexagram ring becomes the
@@ -609,20 +609,20 @@ Critical findings:
   piece exists and seeks its keeper (→ artwork page, inquire path); piece
   exists and is kept privately (→ artwork page, no location, no CTA
   pressure); piece not yet made (→ the code's card + "this code has not
-  yet been made", optionally capturing interest — a demand signal for which
+  yet been made", optionally capturing interest: a demand signal for which
   codes Adrian makes next, never a commission promise).
 
-### Lens 2 — By meaning (the map of dreams) — the flagship
+### Lens 2: By meaning (the map of dreams): the flagship
 
 Open exactly one Ring 4 field, alone: `intention`. A keeper may choose to
-let their piece carry its intention publicly — words with no name, shown
+let their piece carry its intention publicly: words with no name, shown
 when the light is touched. The map becomes a record of what is being held
 around the world, which no other art registry has.
 
 Critical findings:
 - **Curation gate, not moderation queue.** Public free text is a content
   risk even anonymous (PII, noise, brand damage). The fix matches the
-  studio's ethos: sharing is a two-step — the keeper offers the words, and
+  studio's ethos: sharing is a two-step: the keeper offers the words, and
   Adrian approves before they go live. The map remains a curated artwork;
   the gate doubles as quality control and legal shield. At current scale
   the cost is minutes per month.
@@ -644,29 +644,29 @@ Critical findings:
 - **Deferred**: theme/word filtering of intentions (needs volume), any
   feed or browse-all-intentions surface (that is the gallery, still gated).
 
-### Lens 3 — By resonance (astrology in the field)
+### Lens 3: By resonance (astrology in the field)
 
 Two different matches hide here; they must ship separately:
-- **Phase A — visitor ↔ pieces (build now).** A visitor with a profile
+- **Phase A: visitor ↔ pieces (build now).** A visitor with a profile
   filters the field through their own eleven positions: lights whose codes
   match their gates glow "yours". Computed entirely on their device from
   already-public piece codes; zero new consent, zero new exposure. This is
   the deck's "your codes" highlighting arriving on the planet, and the
   strongest reading → map → piece → acquire line for potential collectors.
-  UL-only by nature (only UL pieces carry codes) — consistent with the
+  UL-only by nature (only UL pieces carry codes): consistent with the
   ratified mandala-only rule, which this lens does not reopen.
-- **Phase B — visitor ↔ keepers (density-gated, do not build).** Matching
+- **Phase B: visitor ↔ keepers (density-gated, do not build).** Matching
   people to people via holder charts requires Ring 3 opt-in volume that
   does not exist (today: ~0–2). Ship at ≥15 Ring 3 opt-ins or it is a
   matchmaking service with no members.
 
 ### Sequencing (cheapest honest order)
 
-1. Lens 1 + Lens 3 Phase A — frontend only, no consent surfaces, no new
+1. Lens 1 + Lens 3 Phase A: frontend only, no consent surfaces, no new
    endpoints beyond what public state already carries.
-2. Lens 2 — the flagship: per-entry share flow in the keeper's book, the
+2. Lens 2: the flagship: per-entry share flow in the keeper's book, the
    admin approval queue, `intention` in public state, the yearly letter.
-3. Lens 3 Phase B + the Ring 4 gallery — density-gated, untouched until
+3. Lens 3 Phase B + the Ring 4 gallery: density-gated, untouched until
    real opt-in numbers exist.
 4. The procession (guided founding-story tour) rides alongside as the
    low-density engagement engine: it narrates instead of aggregates, so it
@@ -685,7 +685,7 @@ Two different matches hide here; they must ship separately:
 ### Open questions for Adrian (M6 ratification)
 
 1. **The curation gate**: every public intention passes through you before
-   it appears. Recommended yes — it keeps the map a curated artwork.
+   it appears. Recommended yes: it keeps the map a curated artwork.
 2. **Interest capture on unmade codes** (lens 1, third state): quiet
    "leave your name" or nothing at all? Nothing is the safer default until
    the shop posture is settled.
