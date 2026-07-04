@@ -4,7 +4,7 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 ## Soon
 
-- [ ] Build M6 "The Field": three lenses on the atlas (series constellations + tappable ring, curated public intentions, your-codes resonance) _(band: agent-runnable)_ _(effort: deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) § M6 _(ratified 2026-07-04; ready to build)_
+- [ ] Finish The Field: the procession (guided founding-story tour) and the piece's yearly ask about its shared words; the three lenses, dream share flow, and tending queue shipped 2026-07-04 on the globe branch _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) § M6
 
 - [ ] Fix the five pre-existing flaky mobile tests (card-page theme walk times out on networkidle; the three oracle entry-codes checks fail the same way on main) _(band: agent-runnable)_ _(effort: quick)_
 
