@@ -605,12 +605,20 @@ Critical findings:
   mandala view (pulled back, ring fully framed) with generous hit areas; at
   rest the ring stays atmosphere. A flat "all 64 codes" list surface is the
   accessible twin.
-- **An unlit glyph has three honest states** and the tap must handle all:
-  piece exists and seeks its keeper (→ artwork page, inquire path); piece
-  exists and is kept privately (→ artwork page, no location, no CTA
-  pressure); piece not yet made (→ the code's card + "this code has not
-  yet been made", optionally capturing interest: a demand signal for which
-  codes Adrian makes next, never a commission promise).
+- **Every code exists physically (CORRECTED 2026-07-04).** At least one
+  piece of every code is already made, each one of a numbered edition in
+  its series, sitting in a real location. So an unlit glyph never means
+  "not yet made"; the tap opens the code's pieces with their honest
+  states: claimed and lit (travel to its light), seeking its keeper
+  (artwork page shows where it rests plus the acquire path), or kept
+  privately (artwork page, no location, no pressure). A code with several
+  editions lists them: "Earth's Breath · 1 of 3 · Bali, kept · Berlin,
+  seeking."
+- **Purchase rides the existing sale bridge.** Acquire links lead to the
+  piece on adrianrasmussen.com (inquire until the shop flag flips); a
+  completed sale already flows webhook → admin confirm → steward record →
+  buyer's claim → ceremony. Nothing new to build on the money side; the
+  atlas only needs to open the door.
 
 ### Lens 2: By meaning (the map of dreams): the flagship
 
@@ -620,16 +628,24 @@ when the light is touched. The map becomes a record of what is being held
 around the world, which no other art registry has.
 
 Critical findings:
-- **Curation gate, not moderation queue.** Public free text is a content
-  risk even anonymous (PII, noise, brand damage). The fix matches the
-  studio's ethos: sharing is a two-step: the keeper offers the words, and
-  Adrian approves before they go live. The map remains a curated artwork;
-  the gate doubles as quality control and legal shield. At current scale
-  the cost is minutes per month.
+- **Sorting, not approval (RATIFIED 2026-07-04, revises the drafted
+  curation gate).** Adrian: an approval step on someone's dream demotes
+  the potency of the project. The dream space is protected structurally
+  instead: words are TYPED at the moment of sharing. A dream lives in the
+  dream layer; words about a business, a place, or a person belong to
+  their own fields (Ring 4 business, Ring 2 location, Ring 4 name) and the
+  sharing flow routes them there rather than rejecting them. The form's
+  framing does the editorial work: it asks for the dream held for the
+  piece, names what does not belong in that space, and offers the right
+  home for everything else.
+- **Reactive removal replaces proactive review.** Admin keeps an
+  after-the-fact remove power (the erasure path already exists) for the
+  rare entry that lands wrong. Nothing waits on Adrian to appear.
 - **Anonymity is fragile at city scale.** "For my bakery in Ubud" names a
-  person. The approval gate catches this; the consent copy must say plainly
-  that words which could identify the writer wait until the writer chooses
-  to be named (full Ring 4 name flag, still density-gated).
+  person; under the sorting model that text is business, not dream, and
+  the flow routes it out of the anonymous layer. The consent copy still
+  says plainly that words which could identify the writer belong with the
+  named fields (density-gated) rather than the anonymous dream space.
 - **Consent is per-entry and revocable**: chosen per inscription, never a
   blanket switch; withdrawal regenerates the public cache; the chain is
   untouched (bodies stay in D1, commitments already hash-safe). Minors'
@@ -676,16 +692,27 @@ Two different matches hide here; they must ship separately:
 
 - A filter that can empty the visible map at current density → recede,
   never remove.
-- Any surface that shows a keeper's words publicly without both the
-  keeper's per-entry choice AND Adrian's approval → violates the curation
-  gate.
+- Any proposal that puts an approval step between a keeper and their
+  shared dream → demotes the project's potency (Adrian, 2026-07-04). The
+  dream space is protected by sorting words into their right fields at
+  share time, plus reactive removal; never by review-before-publish.
+- Words about a business, a place, or a person appearing in the anonymous
+  dream layer → mis-sorted; they belong to their own (named, density-
+  gated) fields.
 - People-to-people matching before Ring 3 has real membership → ghost-town
   feature; density-gate it.
 
-### Open questions for Adrian (M6 ratification)
+### M6 ratification (2026-07-04, Adrian's answers)
 
-1. **The curation gate**: every public intention passes through you before
-   it appears. Recommended yes: it keeps the map a curated artwork.
-2. **Interest capture on unmade codes** (lens 1, third state): quiet
-   "leave your name" or nothing at all? Nothing is the safer default until
-   the shop posture is settled.
+1. **No approval gate on dreams.** Approving someone's dream demotes the
+   project. Protection is structural: the sharing flow sorts words into
+   the right space (a dream to the dream layer; business, location, or
+   identity to their own fields) and admin keeps only an after-the-fact
+   removal power.
+2. **No "unmade code" state.** Every code has at least one made piece in
+   a real location, one of a numbered edition in its series. An unlit
+   glyph opens the code's pieces: where each rests, and for a seeking
+   piece, the path to claim and purchase it through the existing sale
+   bridge.
+
+M6 is ratified and buildable in the sequenced order above.
