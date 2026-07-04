@@ -1,5 +1,17 @@
 # Piece-page build-out — handoff brief
 
+> **Status (2026-07-02):** the "where does editable content live" question
+> below is resolved and built — a new D1 table `atlas_piece_content` (see
+> `todo/handoff/adrian-website/004_piece_content.sql`), a public read endpoint
+> (`GET /api/atlas/piece-content`) that `PiecePage.tsx` merges over
+> `FULL_ARCHIVE`, and an admin-gated editor at `/admin/piece-content`
+> (`components/AdminPieceContent.tsx`) writing through
+> `POST /api/atlas/admin/piece-content`. See the "Piece-page content"
+> decision record in `todo/handoff/GO-LIVE-RUNBOOK.md` for the rationale.
+> Writing the 64 stories themselves remains with Adrian — the editor is
+> ready whenever he wants to use it. The globe marker-clustering sibling task
+> below remains open.
+
 **Goal (Adrian's words):** "Build out" the piece's book page — option 3: a **richer page** AND an **admin editor** so Adrian can write each piece's page himself without touching code.
 
 ## Where things stand (context this came from)
