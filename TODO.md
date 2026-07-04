@@ -4,6 +4,8 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 ## Soon
 
+- [ ] Build M6 "The Field": three lenses on the atlas (series constellations + tappable ring, curated public intentions, your-codes resonance) _(band: agent-runnable)_ _(effort: deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) § M6 _(awaiting Adrian's ratification of the two open questions)_
+
 - [ ] Fix the five pre-existing flaky mobile tests (card-page theme walk times out on networkidle; the three oracle entry-codes checks fail the same way on main) _(band: agent-runnable)_ _(effort: quick)_
 
 - [ ] Make Mandala Codes the go-to mandala authority site (multi-phase content, outreach, and press campaign)   → Plan: [mandala-authority.md](todo/plans/mandala-authority.md) _(band: you-required)_ _(effort: moderate)_
