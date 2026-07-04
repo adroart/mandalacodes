@@ -20,6 +20,11 @@
  * Also runs the idempotent pendingFirstInscription conversion (M2 → M3),
  * so the claim-ritual answer surfaces as the book's first intention the
  * first time the steward opens their legacy view.
+ *
+ * Each projected entry also carries `shared: boolean` (M6, Lens 2) — true
+ * when a LIVE shared-intention entry currently mirrors that inscription, so
+ * the keeper's book can render its share toggle as already-on after a page
+ * reload without a second round trip.
  */
 
 import { groupChains } from '../../../../utils/ledger';
@@ -30,6 +35,7 @@ import {
   json,
   migrationNotApplied,
   readLedger,
+  readSharedIntentions,
   readStewards,
 } from '../_helpers';
 import {
@@ -94,8 +100,12 @@ export async function onRequestGet(
   }
 
   const now = new Date().toISOString();
+  const sharedIntentions = await readSharedIntentions(env);
+  const liveSharedInscriptionIds = new Set(
+    sharedIntentions.filter((e) => e.status === 'live').map((e) => e.inscriptionId),
+  );
   const inscriptions = rows.map((row) =>
-    projectInscription(row, userId, chain, now),
+    projectInscription(row, userId, chain, now, liveSharedInscriptionIds),
   );
 
   return json({ ok: true, inscriptions });

@@ -196,6 +196,11 @@ export interface PublicAtlasState {
      *  for backward compatibility with schemaVersion-2 consumers. Carries no
      *  holder data: it answers only "draw arcs to this piece?" */
     kinshipEligible?: boolean;
+    /** M6, Lens 2 — the piece's shared dream, when the keeper has chosen to
+     *  let it ride publicly and the piece itself is otherwise visible here.
+     *  No name, no city tie-in beyond what's already public. Absent = no
+     *  live shared intention (the default for almost every piece). */
+    intention?: string;
   }>;
   cities: CityCentroid[];
   /** Per-piece chain-tip hashes, keyed `pieceId:editionNumber ?? 0` → the
@@ -396,7 +401,7 @@ export interface ClaimRequest {
  * person even if it leaked.
  * ──────────────────────────────────────────────────────────────────────── */
 
-export type LetterKind = 'kin-claim' | 'anniversary' | 'transfer';
+export type LetterKind = 'kin-claim' | 'anniversary' | 'transfer' | 'tending';
 
 export interface AtlasLetter {
   id: string;
@@ -412,6 +417,36 @@ export interface AtlasLetter {
   body: string;
   /** ISO timestamp the recipient opened it, when read. Absent = unread. */
   readAt?: string;
+}
+
+/* ─── Shared intentions — the map of dreams (M6, Lens 2) ───────────────────
+ * A steward may let one intention-kind inscription ride publicly on the
+ * globe, alone: no name, no city, no chart, just the words. Entries live in
+ * mutable R2 (atlas/sharedIntentions.json) — never the chain. Sharing is
+ * NOT approval-gated (Adrian, 2026-07-04: an approval step on someone's
+ * dream demotes the project); it is sorted at share time (only kind
+ * 'intention' inscriptions qualify) and quality-assured afterward through
+ * the admin tending queue (keep / re-home / withdraw).
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export interface SharedIntention {
+  id: string;
+  pieceId: string;
+  editionNumber?: number;
+  /** The D1 atlas_inscriptions row this entry mirrors — the source of
+   *  truth for the text stays the inscription; this is display-only. */
+  inscriptionId: string;
+  /** First 280 chars of the inscription body, captured at share time. */
+  text: string;
+  sharedAt: string;
+  /** 'live' — shown on the map. 'rehomed' — moved to its right field (or
+   *  back to the private book) by the tending queue. 'withdrawn' — the
+   *  keeper took it back, or the tending queue erased it. */
+  status: 'live' | 'rehomed' | 'withdrawn';
+  /** Set once an admin has reviewed the entry via the tending queue. An
+   *  entry may be tended more than once (e.g. re-shared after withdrawal). */
+  tended?: boolean;
+  tendedAt?: string;
 }
 
 /**

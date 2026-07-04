@@ -320,6 +320,49 @@ describe('sealed-entry visibility', () => {
   });
 });
 
+// ---------- shared flag (M6, Lens 2 — the map of dreams) ----------
+
+describe('projectInscription — shared flag', () => {
+  it('defaults to shared: false when no set is passed', async () => {
+    const chain = await buildChain([{ type: 'created' }]);
+    const view = projectInscription(row(), STEWARD_A, chain, NOW);
+    expect(view.shared).toBe(false);
+  });
+
+  it('defaults to shared: false when the set is passed but empty', async () => {
+    const chain = await buildChain([{ type: 'created' }]);
+    const view = projectInscription(row(), STEWARD_A, chain, NOW, new Set());
+    expect(view.shared).toBe(false);
+  });
+
+  it('is true when the inscription id is in the live-shared set', async () => {
+    const chain = await buildChain([{ type: 'created' }]);
+    const entry = row({ id: 'ins-shared' });
+    const view = projectInscription(entry, STEWARD_A, chain, NOW, new Set(['ins-shared']));
+    expect(view.shared).toBe(true);
+  });
+
+  it('is false for a different inscription id even when others are live-shared', async () => {
+    const chain = await buildChain([{ type: 'created' }]);
+    const entry = row({ id: 'ins-not-shared' });
+    const view = projectInscription(entry, STEWARD_A, chain, NOW, new Set(['ins-other']));
+    expect(view.shared).toBe(false);
+  });
+
+  it('reflects shared: true even on a tombstoned/erased row — the flag is independent of readability', async () => {
+    const chain = await buildChain([{ type: 'created' }]);
+    const erased = row({
+      id: 'ins-erased-shared',
+      body: null,
+      content_salt: null,
+      erased_at: '2026-05-01T00:00:00.000Z',
+    });
+    const view = projectInscription(erased, STEWARD_A, chain, NOW, new Set(['ins-erased-shared']));
+    expect(view.state).toBe('erased');
+    expect(view.shared).toBe(true);
+  });
+});
+
 // ---------- attribution (role + generation, never names) ----------
 
 describe('role + generation attribution', () => {
