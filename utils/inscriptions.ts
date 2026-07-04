@@ -359,6 +359,12 @@ export interface InscriptionView {
   /** "sealed until 2030-06-01" / "sealed until the piece is passed on". */
   sealedLabel?: string;
   contentHash: string;
+  /** True when a LIVE shared-intention entry (M6, Lens 2 — the map of
+   *  dreams; see utils/intentions.ts) currently mirrors this inscription.
+   *  Lets the keeper's book render its share toggle as already-on after a
+   *  reload, without a second round trip. Always present (never undefined)
+   *  so callers can rely on the field rather than an optional check. */
+  shared: boolean;
 }
 
 /**
@@ -368,12 +374,18 @@ export interface InscriptionView {
  *   - closed seals → label without the body, unless the viewer authored it,
  *   - everything else → readable. The history lives with the piece: every
  *     current steward reads all open entries, whoever wrote them.
+ *
+ * @param liveSharedInscriptionIds  Optional set of inscription ids that
+ *   currently have a LIVE shared-intention entry (M6, Lens 2). Absent set =
+ *   every row projects shared: false — callers that don't pass it (or don't
+ *   care) get the same behavior as before this field existed.
  */
 export function projectInscription(
   row: InscriptionRow,
   viewerRef: string,
   chain: readonly LedgerEvent[],
   nowIso: string,
+  liveSharedInscriptionIds?: ReadonlySet<string>,
 ): InscriptionView {
   const kind = (INSCRIPTION_KINDS as readonly string[]).includes(row.kind)
     ? (row.kind as InscriptionKind)
@@ -386,6 +398,7 @@ export function projectInscription(
     attribution: attributionFor(row.author_clerk_id, viewerRef, chain),
     authoredByYou,
     contentHash: row.body_hash,
+    shared: liveSharedInscriptionIds?.has(row.id) ?? false,
   };
 
   if (row.erased_at || row.body === null) {

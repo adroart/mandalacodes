@@ -63,6 +63,10 @@ export interface PieceHUDProps {
   holderChart?: HolderChartSummary | null;
   onRelease: () => void;
   isOrigin?: boolean;
+  /** True when this piece carries one of the visitor's own codes. */
+  carriesYourCode?: boolean;
+  /** The dream this piece publicly carries, when its keeper shares one. */
+  intention?: string | null;
 }
 
 const PieceHUD: React.FC<PieceHUDProps> = ({
@@ -73,6 +77,8 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   holderChart,
   onRelease,
   isOrigin = false,
+  carriesYourCode = false,
+  intention,
 }) => {
   const accent = isOrigin ? SAGE : BRONZE;
   const reduce =
@@ -213,6 +219,30 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
               The {ordinalLabel(piece.claimOrdinal)} light
             </p>
           </>
+        )}
+
+        {/* The dream the piece carries, when its keeper shares one. */}
+        {intention && (
+          <>
+            <Rule />
+            <Label>Held with a dream</Label>
+            <p
+              className="font-serif italic text-lg leading-snug"
+              style={{ color: '#f6f1e8' }}
+            >
+              {intention}
+            </p>
+          </>
+        )}
+
+        {/* Your codes: computed on the visitor's own device, never sent. */}
+        {carriesYourCode && (
+          <p
+            className="mt-3 font-serif italic text-[15px] leading-snug"
+            style={{ color: '#9caa87' }}
+          >
+            It carries one of your codes.
+          </p>
         )}
 
         {/* Holder chart */}

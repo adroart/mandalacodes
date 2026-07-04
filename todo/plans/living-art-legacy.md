@@ -576,6 +576,158 @@ atlas keys; `scripts/sync-secrets-to-cloudflare.sh` knows
 **Operations required before features are fully live:** see
 `todo/handoff/MORNING-AFTER.md`.
 
+## Addendum (2026-07-04): globe elevation shipped
+
+PR #62 (`claude/globe-legacy-elevation`): the hand-built globe became the
+default atlas (hexagram ring, kinship threads, mandala view), plus the
+ignition opening (lights ignite in Founding Lights order on load), thread
+travel (camera flies a kinship arc, trigram named), the claim ceremony
+(founding replay ending on the new steward's light + ordinal reveal), the
+certificate treatment on the piece page, in-place vocabulary explainers,
+the keeper's guided arrival, and letters auto-opening when unread.
+
+## M6: The Field: three lenses (drafted 2026-07-04 · critical pass done · AWAITING RATIFICATION)
+
+The atlas surfaces ~2% of what the system stores. The reframe: the globe
+currently maps pieces; the designed-but-dormant half of the schema maps
+people and meaning. M6 gives the one globe three lenses. Nothing here adds
+a new store; every lens surfaces data (or consent flags) that already exist.
+
+### Lens 1: By work (all the art)
+
+Series become touchable constellations: tapping a series in the legend
+brightens that family and recedes the rest. The hexagram ring becomes the
+Universal Language index: every glyph tappable.
+
+Critical findings:
+- **Recede, never remove.** At current density (7 lights), isolating a
+  series by hiding others produces an empty planet. Filtering dims, it
+  never empties. Series isolation earns richer treatment as density grows.
+- **The ring is unreadable at rest** (glyphs small, ellipse cropped) and 64
+  tiny tap targets fail on phones. Ring interaction therefore lives in the
+  mandala view (pulled back, ring fully framed) with generous hit areas; at
+  rest the ring stays atmosphere. A flat "all 64 codes" list surface is the
+  accessible twin.
+- **Every code exists physically (CORRECTED 2026-07-04).** At least one
+  piece of every code is already made, each one of a numbered edition in
+  its series, sitting in a real location. So an unlit glyph never means
+  "not yet made"; the tap opens the code's pieces with their honest
+  states: claimed and lit (travel to its light), seeking its keeper
+  (artwork page shows where it rests plus the acquire path), or kept
+  privately (artwork page, no location, no pressure). A code with several
+  editions lists them: "Earth's Breath · 1 of 3 · Bali, kept · Berlin,
+  seeking."
+- **Purchase rides the existing sale bridge.** Acquire links lead to the
+  piece on adrianrasmussen.com (inquire until the shop flag flips); a
+  completed sale already flows webhook → admin confirm → steward record →
+  buyer's claim → ceremony. Nothing new to build on the money side; the
+  atlas only needs to open the door.
+
+### Lens 2: By meaning (the map of dreams): the flagship
+
+Open exactly one Ring 4 field, alone: `intention`. A keeper may choose to
+let their piece carry its intention publicly: words with no name, shown
+when the light is touched. The map becomes a record of what is being held
+around the world, which no other art registry has.
+
+Critical findings:
+- **Sorting, not approval (RATIFIED 2026-07-04, revises the drafted
+  curation gate).** Adrian: an approval step on someone's dream demotes
+  the potency of the project. The dream space is protected structurally
+  instead: words are TYPED at the moment of sharing. A dream lives in the
+  dream layer; words about a business, a place, or a person belong to
+  their own fields (Ring 4 business, Ring 2 location, Ring 4 name) and the
+  sharing flow routes them there rather than rejecting them. The form's
+  framing does the editorial work: it asks for the dream held for the
+  piece, names what does not belong in that space, and offers the right
+  home for everything else.
+- **The tending surface (REFINED 2026-07-04): quality assurance after
+  publication, never a gate before it.** Shared words appear on the map
+  immediately. The admin atlas gains a tending queue: every newly public
+  entry lands there (and all public words stay reachable), each with three
+  one-click actions: keep (clears it from the queue), re-home (the words
+  move to their right field, or back to the piece's private book when the
+  right field is not open yet; the keeper is told by a letter from the
+  piece, with the reason in plain words), and withdraw (the erasure path,
+  rare). The map never waits on Adrian; he sweeps the garden when he
+  chooses. This is QA on a public display, not curation of dreams.
+- **Anonymity is fragile at city scale.** "For my bakery in Ubud" names a
+  person; under the sorting model that text is business, not dream, and
+  the flow routes it out of the anonymous layer. The consent copy still
+  says plainly that words which could identify the writer belong with the
+  named fields (density-gated) rather than the anonymous dream space.
+- **Consent is per-entry and revocable**: chosen per inscription, never a
+  blanket switch; withdrawal regenerates the public cache; the chain is
+  untouched (bodies stay in D1, commitments already hash-safe). Minors'
+  entries stay hard-locked private, no exceptions.
+- **The piece asks yearly.** The plan's annual reconfirmation for identity
+  fields is kept, delivered as a letter from the piece: "shall I keep
+  carrying these words?" On-brand, and consent stays living.
+- **Why the ≥25 density gate doesn't apply**: that gate exists because a
+  seven-face gallery reads as a ghost town. A single intention on a single
+  touched light needs no crowd; one is already moving. The gallery surface
+  stays gated as ratified.
+- **Deferred**: theme/word filtering of intentions (needs volume), any
+  feed or browse-all-intentions surface (that is the gallery, still gated).
+
+### Lens 3: By resonance (astrology in the field)
+
+Two different matches hide here; they must ship separately:
+- **Phase A: visitor ↔ pieces (build now).** A visitor with a profile
+  filters the field through their own eleven positions: lights whose codes
+  match their gates glow "yours". Computed entirely on their device from
+  already-public piece codes; zero new consent, zero new exposure. This is
+  the deck's "your codes" highlighting arriving on the planet, and the
+  strongest reading → map → piece → acquire line for potential collectors.
+  UL-only by nature (only UL pieces carry codes): consistent with the
+  ratified mandala-only rule, which this lens does not reopen.
+- **Phase B: visitor ↔ keepers (density-gated, do not build).** Matching
+  people to people via holder charts requires Ring 3 opt-in volume that
+  does not exist (today: ~0–2). Ship at ≥15 Ring 3 opt-ins or it is a
+  matchmaking service with no members.
+
+### Sequencing (cheapest honest order)
+
+1. Lens 1 + Lens 3 Phase A: frontend only, no consent surfaces, no new
+   endpoints beyond what public state already carries.
+2. Lens 2: the flagship: per-entry share flow in the keeper's book, the
+   admin approval queue, `intention` in public state, the yearly letter.
+3. Lens 3 Phase B + the Ring 4 gallery: density-gated, untouched until
+   real opt-in numbers exist.
+4. The procession (guided founding-story tour) rides alongside as the
+   low-density engagement engine: it narrates instead of aggregates, so it
+   works with seven lights.
+
+### New slop tests (additive)
+
+- A filter that can empty the visible map at current density → recede,
+  never remove.
+- Any proposal that puts an approval step between a keeper and their
+  shared dream → demotes the project's potency (Adrian, 2026-07-04). The
+  dream space is protected by sorting words into their right fields at
+  share time, plus reactive removal; never by review-before-publish.
+- Words about a business, a place, or a person appearing in the anonymous
+  dream layer → mis-sorted; they belong to their own (named, density-
+  gated) fields.
+- People-to-people matching before Ring 3 has real membership → ghost-town
+  feature; density-gate it.
+
+### M6 ratification (2026-07-04, Adrian's answers)
+
+1. **No approval gate on dreams.** Approving someone's dream demotes the
+   project. Protection is structural: the sharing flow sorts words into
+   the right space (a dream to the dream layer; business, location, or
+   identity to their own fields), and quality assurance happens after
+   publication through the tending queue (keep / re-home / withdraw, with
+   the keeper informed by a letter from the piece when words move). It is
+   less about gating and more about keeping the public display right.
+2. **No "unmade code" state.** Every code has at least one made piece in
+   a real location, one of a numbered edition in its series. An unlit
+   glyph opens the code's pieces: where each rests, and for a seeking
+   piece, the path to claim and purchase it through the existing sale
+   bridge.
+
+M6 is ratified and buildable in the sequenced order above.
 ## Amendment 2026-07-02 — claim window + claim bridge, ratified as hardened
 
 Two features shipped after this plan's last update (PR #57, 2026-06-23) without

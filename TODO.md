@@ -17,6 +17,10 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 ## Soon
 
+- [ ] Finish The Field: the procession (guided founding-story tour) and the piece's yearly ask about its shared words; the three lenses, dream share flow, and tending queue shipped 2026-07-04 on the globe branch _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) § M6
+
+- [ ] Fix the five pre-existing flaky mobile tests (card-page theme walk times out on networkidle; the three oracle entry-codes checks fail the same way on main) _(band: agent-runnable)_ _(effort: quick)_
+
 - [ ] Make Mandala Codes the go-to mandala authority site (multi-phase content, outreach, and press campaign)   → Plan: [mandala-authority.md](todo/plans/mandala-authority.md) _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Add more decks beyond Universal Language and Light Codes as they emerge _(band: you-required)_ _(effort: moderate)_
@@ -65,7 +69,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 - [ ] Do the Phase 2 personal pass on the 63 scaffold RELATIONS files — they now render live on every card's Relations panel   → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Content _(band: you-required)_ _(effort: moderate)_
 
-- [ ] Click through the interconnection branch on a preview deploy (card Relations seats, atlas deep links, birth-place marker, steward picker) before merging   → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify _(band: you-required)_ _(effort: moderate)_
+- [ ] Click through the interconnection branch on a preview deploy (card Relations seats, atlas deep links, birth-place marker, steward picker, signed-in "your codes" lens on the atlas, dream share + tending round trip) before merging   → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Publish the Phase 2 editorial-depth articles and the Phase 3 symbolism glossary   → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(band: you-required)_ _(effort: moderate)_
 

@@ -45,6 +45,12 @@ export interface GlobeNode {
   // Art series this piece belongs to (e.g. 'Universal Language'). Drives the
   // marker hue so each series reads as its own constellation on the map.
   series?: string;
+  // Founding Lights claim order (1 = Adrian's first light). Drives the
+  // ignition opening: lights ignite in claim order when the atlas loads.
+  ordinal?: number;
+  // True when this piece carries one of the visitor's own codes (computed
+  // locally from their profile; never sent anywhere).
+  yours?: boolean;
 }
 
 export interface GlobeProps {

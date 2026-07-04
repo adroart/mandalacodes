@@ -19,10 +19,12 @@ import type {
   AtlasLetter,
   ClaimRequest,
   LedgerEvent,
+  SharedIntention,
   StewardRecord,
   PublicAtlasState,
 } from '../../../types';
 import { projectAll, toPublicState } from '../../../utils/ledgerProjection';
+import { liveIntentionsByKey } from '../../../utils/intentions';
 import { ATLAS_PLACES } from '../../../data/cities';
 import { FULL_ARCHIVE } from '../../../data/mockData';
 import { mirrorPublicState } from './_mirror';
@@ -36,6 +38,7 @@ export const KEY_STEWARDS = 'atlas/stewards.json';
 export const KEY_PUBLIC = 'atlas/public.json';
 export const KEY_CLAIM_REQUESTS = 'atlas/claimRequests.json';
 export const KEY_LETTERS = 'atlas/letters.json';
+export const KEY_SHARED_INTENTIONS = 'atlas/sharedIntentions.json';
 
 // ---------- Env typing ----------
 
@@ -172,6 +175,10 @@ export async function readLetters(env: AtlasEnv): Promise<AtlasLetter[]> {
   return readJsonArray<AtlasLetter>(env, KEY_LETTERS);
 }
 
+export async function readSharedIntentions(env: AtlasEnv): Promise<SharedIntention[]> {
+  return readJsonArray<SharedIntention>(env, KEY_SHARED_INTENTIONS);
+}
+
 // NOTE: there are deliberately no bare writeLedger/writeStewards helpers.
 // Every mutation of those two objects must go through mutateLedger /
 // mutateStewards below so concurrent writes can never silently drop data.
@@ -294,6 +301,16 @@ export function mutateLetters<R>(
   return mutateJsonArray<AtlasLetter, R>(env, KEY_LETTERS, mutate);
 }
 
+/** Concurrency-safe mutation of atlas/sharedIntentions.json (M6, Lens 2).
+ *  The map-of-dreams entries are mutable R2 — never chain events, and never
+ *  a mirror of the D1 inscription body beyond the 280-char display cut. */
+export function mutateSharedIntentions<R>(
+  env: AtlasEnv,
+  mutate: Mutator<SharedIntention, R>,
+): Promise<MutateSuccess<SharedIntention, R> | Response> {
+  return mutateJsonArray<SharedIntention, R>(env, KEY_SHARED_INTENTIONS, mutate);
+}
+
 // ---------- Steward issuance (shared by issue.ts + the sale queue) ----------
 
 export interface IssueStewardInput {
@@ -402,6 +419,10 @@ function buildRing3ByKey(
  * Reads the steward records too — but ONLY to lift each piece's Ring 3
  * boolean for the kinshipEligible flag (M5). No consent object, email, name,
  * or any other steward field ever reaches the public projection.
+ *
+ * Also reads the shared-intentions store to attach each qualifying piece's
+ * live dream text (M6, Lens 2) — display text only, already cut to 280
+ * characters at share time; never the private inscription body.
  */
 export async function regeneratePublicState(
   env: AtlasEnv,
@@ -411,9 +432,11 @@ export async function regeneratePublicState(
   const meta = buildArtworkMeta();
   const stewards = await readStewards(env);
   const ring3ByKey = buildRing3ByKey(stewards);
+  const intentions = await readSharedIntentions(env);
+  const intentionsByKey = liveIntentionsByKey(intentions);
   // ATLAS_PLACES = cities + country-level centroids, so "country only"
   // placements resolve to a glowing dot like any city.
-  const state = toPublicState(records, meta, ATLAS_PLACES, ring3ByKey);
+  const state = toPublicState(records, meta, ATLAS_PLACES, ring3ByKey, intentionsByKey);
   const jsonBody = JSON.stringify(state, null, 2);
   // Deliberately a plain (unconditional) put, not a conditional one. Every
   // caller here (event.ts, claim.ts, steward/update.ts, sales/confirm.ts,

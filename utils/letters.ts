@@ -286,6 +286,18 @@ export function composeTransferBody(ctx: TransferContext): string {
   return templates[idx];
 }
 
+// ---------- Tending letters (M6, Lens 2) ----------
+
+/**
+ * The one fixed body for a 'tending' letter — written when the admin
+ * tending queue re-homes a shared intention off the map. Deliberately not
+ * templated/seeded like the other kinds: this is a single, specific event
+ * (this exact entry was returned), not a recurring one that needs prose
+ * variety to avoid feeling canned.
+ */
+export const TENDING_REHOME_BODY =
+  'The words I was carrying on the map have been returned to my book, so they can find their right place. They are safe here.';
+
 // ---------- Letter construction ----------
 
 export interface BuildLetterInput {

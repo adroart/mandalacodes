@@ -9,8 +9,8 @@
  *   so a point is centred in view when phi = lngRad and theta = latRad.
  *
  * The rig object is a mutable bag of refs shared by every scene component via
- * React context. It is mutated inside useFrame and event handlers — never via
- * React state — so the render loop stays allocation-free.
+ * React context. It is mutated inside useFrame and event handlers: never via
+ * React state: so the render loop stays allocation-free.
  */
 
 import { createContext, useContext } from 'react';
@@ -18,14 +18,17 @@ import * as THREE from 'three';
 
 export const GLOBE_RADIUS = 1;
 
-/** Camera distance at rest and pulled back for the Mandala View. */
-export const CAMERA_NEAR_DIST = 3.4;
-export const CAMERA_FAR_DIST = 5.1;
+/** Camera distance at rest and pulled back for the Mandala View. At fov 26°
+    the resting sphere fills ~88% of the viewport height (commanding, never
+    cropped); the mandala distance is a floor: GlobeScene pushes further back
+    on narrow viewports until the full hexagram ring fits. */
+export const CAMERA_NEAR_DIST = 5.15;
+export const CAMERA_FAR_DIST = 7.6;
 
 /** Auto-rotation, radians per second (cobe used 0.005/frame ≈ 0.3/s). */
 export const ROTATION_SPEED = 0.3;
 
-/** Selection tween duration, ms — matches the cobe globe. */
+/** Selection tween duration, ms: matches the cobe globe. */
 export const SELECT_ANIM_MS = 800;
 
 /** How long the mandala arcs take to weave themselves in, seconds. */
@@ -33,7 +36,7 @@ export const MANDALA_DRAW_SECONDS = 5;
 
 // ─── Palette (normalized RGB, derived from the atlas style notes) ──────────
 export const COLOR_BG = new THREE.Color(15 / 255, 13 / 255, 11 / 255);
-export const COLOR_LAND = new THREE.Color(0.42, 0.4, 0.36);
+export const COLOR_LAND = new THREE.Color(0.56, 0.53, 0.47);
 export const COLOR_BRONZE = new THREE.Color(0.77, 0.67, 0.49);
 export const COLOR_BRONZE_DIM = new THREE.Color(0.55, 0.48, 0.36);
 export const COLOR_SAGE = new THREE.Color(0.61, 0.67, 0.53);
@@ -69,6 +72,9 @@ export interface RigTween {
   toTheta: number;
   startedAt: number; // performance.now()
   duration: number;
+  /** Thread travel: how far the camera pulls back mid-flight (world units).
+      0/undefined = an ordinary selection tween. */
+  dollyAmp?: number;
 }
 
 /**
@@ -87,8 +93,14 @@ export interface Rig {
   mandalaStartedAt: number;
   /** Low-tier devices skip bloom + ripples and thin the dot field. */
   lowTier: boolean;
-  /** Live scene camera, set by GlobeScene — the wrapper picks markers through it. */
+  /** Live scene camera, set by GlobeScene: the wrapper picks markers through it. */
   camera: THREE.Camera | null;
+  /** Extra camera distance this frame from a thread-travel flight (eased in stepRig). */
+  travelDolly: number;
+  /** performance.now() when the ignition opening began; 0 = not yet started. */
+  introAt: number;
+  /** Seconds after introAt when the kinship arcs begin weaving in. */
+  introArcDelay: number;
 }
 
 export function createRig(lowTier: boolean): Rig {
@@ -102,6 +114,9 @@ export function createRig(lowTier: boolean): Rig {
     mandalaStartedAt: 0,
     lowTier,
     camera: null,
+    travelDolly: 0,
+    introAt: 0,
+    introArcDelay: 2.4,
   };
 }
 
@@ -117,9 +132,17 @@ export function stepRig(rig: Rig, deltaSeconds: number): void {
     const e = easeInOutCubic(t);
     rig.phi = tween.fromPhi + (tween.toPhi - tween.fromPhi) * e;
     rig.theta = tween.fromTheta + (tween.toTheta - tween.fromTheta) * e;
+    // Thread travel: the camera lifts off the surface mid-flight and settles
+    // back down as it arrives: sin(π·t) is 0 at both ends, peaks midway.
+    if (tween.dollyAmp) rig.travelDolly = tween.dollyAmp * Math.sin(Math.PI * t);
     if (t >= 1) rig.tween = null;
   } else if (!rig.paused) {
     rig.phi += ROTATION_SPEED * deltaSeconds;
+  }
+  // Outside a travel tween the dolly eases home.
+  if (!tween || !tween.dollyAmp) {
+    rig.travelDolly += (0 - rig.travelDolly) * Math.min(1, deltaSeconds * 4);
+    if (Math.abs(rig.travelDolly) < 0.001) rig.travelDolly = 0;
   }
 
   // Ease the mandala blend toward its target with a bounded exponential, so a

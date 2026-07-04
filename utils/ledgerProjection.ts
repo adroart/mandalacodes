@@ -220,12 +220,20 @@ export function isKinshipEligible(
  *                  derive the kinshipEligible boolean — the consent object
  *                  itself never reaches this projection. Absent map = every
  *                  claimed piece is treated as not-opted-in (fail-closed).
+ * @param liveIntentionsByKey  Optional map of chain key → the piece's shared
+ *                  dream text (M6, Lens 2). Attached to a piece's public
+ *                  entry ONLY when that piece already qualifies for the
+ *                  pieces array below — sharing a dream never grants a
+ *                  private piece a public surface. Absent map = no piece
+ *                  carries an intention (the default before any keeper
+ *                  shares one).
  */
 export function toPublicState(
   records: Map<string, PieceRecord>,
   artworks: Map<string, { series?: string; category?: string }>,
   cities: CityCentroid[],
   ring3ByKey?: Map<string, boolean | 'deferred'>,
+  liveIntentionsByKey?: Map<string, string>,
 ): PublicAtlasState {
   const referencedCityIds = new Set<string>();
   const pieces: PublicAtlasState['pieces'] = [];
@@ -271,6 +279,8 @@ export function toPublicState(
 
     if (record.currentCityId) referencedCityIds.add(record.currentCityId);
 
+    const intention = liveIntentionsByKey?.get(key);
+
     pieces.push({
       pieceId: record.pieceId,
       editionNumber: record.editionNumber,
@@ -282,6 +292,7 @@ export function toPublicState(
       pieceType: derivePieceType(record, meta?.series),
       claimOrdinal: ordinals.get(key),
       kinshipEligible: isKinshipEligible(record, ring3ByKey?.get(key)),
+      ...(intention !== undefined ? { intention } : {}),
     });
 
     // The chain tip: history is in date order (projectAll sorts it), so the

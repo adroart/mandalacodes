@@ -27,8 +27,8 @@ const FRAG = /* glsl */ `
     // Back faces: the normal points away from the camera, so flip it. The glow
     // peaks just off the limb and falls away outward.
     float facing = dot(normalize(-vWorldNormal), normalize(vViewDir));
-    float glow = pow(clamp(facing, 0.0, 1.0), 3.2);
-    gl_FragColor = vec4(uColor * glow * 1.6, 1.0);
+    float glow = pow(clamp(facing, 0.0, 1.0), 5.0);
+    gl_FragColor = vec4(uColor * glow * 1.15, 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
   }
@@ -51,7 +51,7 @@ export default function Atmosphere() {
   useEffect(() => () => material.dispose(), [material]);
 
   return (
-    <mesh material={material} renderOrder={1} scale={1.22}>
+    <mesh material={material} renderOrder={1} scale={1.13}>
       <sphereGeometry args={[GLOBE_RADIUS, 64, 64]} />
     </mesh>
   );

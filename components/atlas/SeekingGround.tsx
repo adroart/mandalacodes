@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export interface SeekingPiece {
   pieceId: string;
@@ -56,9 +57,18 @@ const SeekingGround: React.FC<SeekingGroundProps> = ({
       >
         Seeking ground
       </h2>
-      <p className="font-sans text-sm text-wood-700 leading-[1.7] max-w-prose mb-6">
+      <p className="font-sans text-sm text-wood-700 leading-[1.7] max-w-prose mb-2">
         {count} of {totalPieces} {totalPieces === 1 ? 'piece' : 'pieces'} seeking ground.
-        Made, not yet placed.
+        Made, not yet placed on the map.
+      </p>
+      <p className="font-serif text-sm text-wood-600 leading-[1.7] max-w-prose mb-6">
+        Hold one of these?{' '}
+        <Link
+          to="/atlas/claim"
+          className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+        >
+          Open its book →
+        </Link>
       </p>
 
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">

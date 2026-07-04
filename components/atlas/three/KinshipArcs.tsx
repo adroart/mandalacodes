@@ -1,5 +1,5 @@
 /**
- * Kinship arcs in true 3D — replaces the SVG overlay's per-frame projection
+ * Kinship arcs in true 3D: replaces the SVG overlay's per-frame projection
  * mirroring. Each pair becomes a quadratic Bézier lifted off the surface;
  * because the arcs live inside the spin group they rotate with the globe and
  * are occluded by the sphere for free.
@@ -57,13 +57,16 @@ const FRAG = /* glsl */ `
     float head = fract(uTime * 0.06 + vStagger);
     float pulse = smoothstep(0.10, 0.0, abs(vT - head)) * 0.5;
 
+    // Light gathers where the thread meets its pieces.
+    float endGlow = pow(1.0 - min(vT, 1.0 - vT) * 2.0, 3.0) * 0.22;
+
     // Selection: kin arcs brighten, the rest recede.
     float selBoost = vHighlight * (0.55 + 0.25 * sin(uTime * 2.2));
     float selFade = uSelMode * (1.0 - vHighlight) * 0.75;
 
-    float alpha = (base + pulse + selBoost) * (1.0 - selFade) * reveal * uOpacity;
+    float alpha = (base + pulse + endGlow + selBoost) * (1.0 - selFade) * reveal * uOpacity;
     if (alpha <= 0.004) discard;
-    vec3 col = uColor * (1.0 + vHighlight * 0.5 + pulse * 0.8);
+    vec3 col = uColor * (1.0 + vHighlight * 0.5 + pulse * 0.8 + endGlow * 0.8);
     gl_FragColor = vec4(col, alpha);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -189,12 +192,17 @@ export default function KinshipArcs({ index, selectedId, visible }: KinshipArcsP
     const cur = material.uniforms.uOpacity.value as number;
     material.uniforms.uOpacity.value = cur + (target - cur) * Math.min(1, delta * 4);
 
-    // Mandala draw-in: sweep from 0 once the view engages; fully drawn otherwise.
+    // Mandala draw-in: sweep from 0 once the view engages. Otherwise the arcs
+    // hold back through the ignition opening, then weave themselves in once
+    // the last light has come up.
     if (rig.mandalaTarget === 1) {
       const since = (performance.now() - rig.mandalaStartedAt) / 1000;
       material.uniforms.uDraw.value = Math.min(2, (since / MANDALA_DRAW_SECONDS) * 1.9);
+    } else if (rig.introAt > 0) {
+      const since = (performance.now() - rig.introAt) / 1000 - rig.introArcDelay;
+      material.uniforms.uDraw.value = Math.max(0, Math.min(2, (since / 3.2) * 2));
     } else {
-      material.uniforms.uDraw.value = 2;
+      material.uniforms.uDraw.value = 0;
     }
   });
 

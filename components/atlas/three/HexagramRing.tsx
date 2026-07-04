@@ -55,11 +55,15 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   uniform vec3 uColor;
   uniform float uMandala;
+  uniform float uTime;
   varying float vAlpha;
   void main() {
-    float alpha = vAlpha * (0.75 + uMandala * 0.9);
+    // Placed glyphs (the brighter class) carry a slow candle-like shimmer.
+    float lit = step(0.3, vAlpha);
+    float shimmer = 1.0 + lit * 0.14 * sin(uTime * 0.9);
+    float alpha = vAlpha * (0.75 + uMandala * 0.9) * shimmer;
     if (alpha <= 0.004) discard;
-    gl_FragColor = vec4(uColor, alpha);
+    gl_FragColor = vec4(uColor * (1.0 + lit * 0.15), alpha);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
   }
@@ -106,7 +110,7 @@ export default function HexagramRing({ placedByCard }: HexagramRingProps) {
       const tx = cz;
       const tz = -sx;
       const placed = placedByCard.get(n);
-      const glyphAlpha = placed ? 0.5 : 0.14;
+      const glyphAlpha = placed ? 0.62 : 0.12;
 
       for (let li = 0; li < 6; li++) {
         const y = (li - 2.5) * LINE_GAP;
@@ -133,7 +137,7 @@ export default function HexagramRing({ placedByCard }: HexagramRingProps) {
       // Thread from the glyph down to the city where the piece rests.
       if (placed) {
         latLngToVec3(placed.lat, placed.lng, GLOBE_RADIUS * 1.002, city);
-        push(city.x, city.y, city.z, px, (-2.5 - 1) * LINE_GAP, pz, 0.09);
+        push(city.x, city.y, city.z, px, (-2.5 - 1) * LINE_GAP, pz, 0.12);
       }
     }
 
@@ -151,6 +155,7 @@ export default function HexagramRing({ placedByCard }: HexagramRingProps) {
         uniforms: {
           uColor: { value: COLOR_BRONZE.clone() },
           uMandala: { value: 0 },
+          uTime: { value: 0 },
         },
         transparent: true,
         depthWrite: false,
@@ -164,8 +169,9 @@ export default function HexagramRing({ placedByCard }: HexagramRingProps) {
     material.dispose();
   }, [geometry, material]);
 
-  useFrame(() => {
+  useFrame(({ clock }) => {
     material.uniforms.uMandala.value = rig.mandala;
+    material.uniforms.uTime.value = clock.elapsedTime;
   });
 
   return <lineSegments geometry={geometry} material={material} renderOrder={4} />;
