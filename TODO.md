@@ -56,7 +56,7 @@ Living list of what's outstanding on the oracle. Loose priority order, top items
 
 - [ ] Do the Phase 2 personal pass on the 63 scaffold RELATIONS files — they now render live on every card's Relations panel   → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Content _(band: you-required)_ _(effort: moderate)_
 
-- [ ] Click through the interconnection branch on a preview deploy (card Relations seats, atlas deep links, birth-place marker, steward picker) before merging   → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify _(band: you-required)_ _(effort: moderate)_
+- [ ] Click through the interconnection branch on a preview deploy (card Relations seats, atlas deep links, birth-place marker, steward picker, signed-in "your codes" lens on the atlas, dream share + tending round trip) before merging   → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Publish the Phase 2 editorial-depth articles and the Phase 3 symbolism glossary   → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(band: you-required)_ _(effort: moderate)_
 

@@ -42,17 +42,20 @@ const VERT = /* glsl */ `
   attribute float aPhase;
   attribute float aSelected;
   attribute float aFlash;
+  attribute float aYours;
   uniform float uPixelRatio;
   uniform float uTime;
   varying vec3 vColor;
   varying float vAlpha;
   varying float vSelected;
   varying float vFlash;
+  varying float vYours;
   void main() {
     vColor = aColor;
     vAlpha = aAlpha;
     vSelected = aSelected;
     vFlash = aFlash;
+    vYours = aYours;
     float pulse = 1.0 + 0.10 * sin(uTime * 1.8 + aPhase * 6.2831);
     float sel = 1.0 + aSelected * 0.55;
     // Ignition flash: a newborn light blooms half again as large, then settles.
@@ -69,6 +72,7 @@ const FRAG = /* glsl */ `
   varying float vAlpha;
   varying float vSelected;
   varying float vFlash;
+  varying float vYours;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
     float d = length(c) * 2.0;
@@ -88,8 +92,13 @@ const FRAG = /* glsl */ `
     float ring = vSelected * smoothstep(0.09, 0.0, abs(d - ringR)) * 0.9;
     // Ignition shockwave: a ring that expands outward as the flash decays.
     float wave = smoothstep(0.10, 0.0, abs(d - (1.0 - vFlash) * 0.9)) * vFlash * 1.2;
-    float energy = (core * 1.7 + halo + flare + ring + wave) * (1.0 + vFlash * 1.3);
-    gl_FragColor = vec4(vColor * energy, vAlpha * min(energy, 1.0));
+    // Your-codes resonance: a slow-breathing sage ring around lights that
+    // carry one of the visitor's own codes.
+    float yr = 0.78 + 0.05 * sin(uTime * 1.1);
+    float yring = vYours * smoothstep(0.07, 0.0, abs(d - yr)) * 0.75;
+    float energy = (core * 1.7 + halo + flare + ring + wave + yring) * (1.0 + vFlash * 1.3);
+    vec3 col = mix(vColor, vec3(0.61, 0.67, 0.53), clamp(yring * 1.4, 0.0, 0.8));
+    gl_FragColor = vec4(col * energy, vAlpha * min(energy, 1.0));
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
   }
@@ -115,9 +124,16 @@ function sizeFor(status: GlobeNode['status']): number {
 export interface MarkersProps {
   nodes: GlobeNode[];
   selectedId?: string | null;
+  /** Lens focus: when set, lights outside it recede (never vanish). */
+  focusSeries?: string | null;
+  /** Your-codes lens: recede lights that do not carry the visitor's codes. */
+  yoursMode?: boolean;
 }
 
-export default function Markers({ nodes, selectedId }: MarkersProps) {
+/* Recede, never remove: how far a light dims when a lens excludes it. */
+const RECEDE_ALPHA = 0.2;
+
+export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: MarkersProps) {
   const rig = useRig();
   const listRef = useRef<DisplayEntry[]>([]);
   const selectedRef = useRef<string | null>(null);
@@ -131,6 +147,7 @@ export default function Markers({ nodes, selectedId }: MarkersProps) {
     geo.setAttribute('aPhase', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
     geo.setAttribute('aSelected', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
     geo.setAttribute('aFlash', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
+    geo.setAttribute('aYours', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
     geo.setDrawRange(0, 0);
     // Points have no real bounds; the cloud hugs the unit sphere.
     geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), GLOBE_RADIUS * 1.1);
@@ -229,11 +246,19 @@ export default function Markers({ nodes, selectedId }: MarkersProps) {
     const flash = geometry.getAttribute('aFlash') as THREE.BufferAttribute;
 
     const now = performance.now();
+    const lensActive = !!focusSeries || !!yoursMode;
     let write = 0;
     for (const entry of list) {
       // An unborn light waits in the dark for its turn in the ignition order.
       const ageS = (now - entry.bornAt) / 1000;
-      const target = entry.target === 1 && ageS < 0 ? 0 : entry.target;
+      let target = entry.target === 1 && ageS < 0 ? 0 : entry.target;
+      // Lens focus: excluded lights recede, they never vanish. The visitor's
+      // own origin marker is never receded.
+      if (lensActive && target === 1 && entry.node.status !== 'origin') {
+        const inSeries = !focusSeries || entry.node.series === focusSeries;
+        const inYours = !yoursMode || entry.node.yours === true;
+        if (!(inSeries && inYours)) target = RECEDE_ALPHA;
+      }
       const step = FADE_PER_SECOND * delta;
       entry.alpha += target > entry.alpha ? Math.min(step, target - entry.alpha)
         : -Math.min(step, entry.alpha - target);
@@ -250,6 +275,7 @@ export default function Markers({ nodes, selectedId }: MarkersProps) {
       sel.setX(write, n.id === selectedRef.current ? 1 : 0);
       // Ignition flash: bright at birth, gone in about two seconds.
       flash.setX(write, entry.bornAt > 0 && ageS >= 0 ? Math.exp(-ageS * 2.2) : 0);
+      yours.setX(write, yoursMode && n.yours ? 1 : 0);
       write++;
     }
     // Prune fully exited entries occasionally.

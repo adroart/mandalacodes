@@ -466,7 +466,10 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       view.state === 'readable' &&
       view.kind === 'intention' &&
       view.authoredByYou;
-    const isShared = shared[view.id] === true;
+    // Session toggles win; otherwise the server's word on whether these
+    // words already ride the map (the `shared` flag on the listing).
+    const isShared =
+      shared[view.id] ?? (view as { shared?: boolean }).shared ?? false;
     return (
       <li key={view.id} className="py-3">
         <span className={dateCls}>

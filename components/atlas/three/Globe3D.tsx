@@ -82,6 +82,12 @@ export interface Globe3DProps {
   /** Slide the world aside when a piece is held, clearing room for the HUD.
       The claim ceremony turns this off: it has no side card. */
   clearForHud?: boolean;
+  /** Lens focus: lights outside this series recede. */
+  focusSeries?: string | null;
+  /** Your-codes lens: lights without the visitor's codes recede. */
+  yoursMode?: boolean;
+  /** Mandala view only: a tap on one of the 64 ring glyphs. */
+  onRingTap?: (cardNumber: number) => void;
   className?: string;
 }
 
@@ -99,6 +105,9 @@ export default function Globe3D({
   onMarkerScreenPos,
   onBackgroundClick,
   clearForHud = true,
+  focusSeries,
+  yoursMode,
+  onRingTap,
   className,
 }: Globe3DProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -284,6 +293,40 @@ export default function Globe3D({
     [nodes, onSelect, rig],
   );
 
+  /* Ring tap: in the mandala view the 64 glyphs become touchable. Anchors sit
+     on the equatorial ring inside the spin/tilt groups, so they project with
+     the same two rotations the markers use. Only active once the pull-back
+     has mostly landed, so a resting-view tap can never hit an invisible ring. */
+  const pickRing = useCallback(
+    (clientX: number, clientY: number): boolean => {
+      if (!onRingTap || rig.mandala < 0.6) return false;
+      const el = canvasBoxRef.current ?? wrapperRef.current;
+      const camera = rig.camera;
+      if (!el || !camera) return false;
+      const rect = el.getBoundingClientRect();
+      const cx = clientX - rect.left;
+      const cy = clientY - rect.top;
+
+      const v = new THREE.Vector3();
+      let best: { n: number; dist: number } | null = null;
+      for (let n = 1; n <= 64; n++) {
+        const theta = ((n - 1) / 64) * Math.PI * 2;
+        v.set(Math.sin(theta) * 1.52, 0, Math.cos(theta) * 1.52);
+        v.applyAxisAngle(Y_AXIS, -rig.phi);
+        v.applyAxisAngle(X_AXIS, rig.theta);
+        v.project(camera);
+        if (v.z > 1) continue; // behind the camera
+        const px = (v.x * 0.5 + 0.5) * rect.width;
+        const py = (1 - (v.y * 0.5 + 0.5)) * rect.height;
+        const d = Math.hypot(px - cx, py - cy);
+        if (d < 22 && (best === null || d < best.dist)) best = { n, dist: d };
+      }
+      if (best) onRingTap(best.n);
+      return best !== null;
+    },
+    [onRingTap, rig],
+  );
+
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
       noteInteraction();
@@ -317,7 +360,7 @@ export default function Globe3D({
       const d = drag.current;
       d.active = false;
       if (!d.moved) {
-        const hit = pick(e.clientX, e.clientY);
+        const hit = pick(e.clientX, e.clientY) || pickRing(e.clientX, e.clientY);
         // A click into open space releases the held piece.
         if (!hit && selectedRef.current && onBackgroundClick) onBackgroundClick();
       }
@@ -325,7 +368,7 @@ export default function Globe3D({
         rig.paused = false;
       }
     },
-    [pick, rig, onBackgroundClick],
+    [pick, pickRing, rig, onBackgroundClick],
   );
 
   const onPointerEnter = useCallback(() => {
@@ -409,6 +452,8 @@ export default function Globe3D({
             kinship={kinship}
             kinshipVisible={kinshipVisible}
             placedByCard={placedByCard}
+            focusSeries={focusSeries}
+            yoursMode={yoursMode}
           />
         </Canvas>
       </RigContext.Provider>

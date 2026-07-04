@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
 import { type AtlasStatusFilter } from './atlas/AtlasFilters';
 import AtlasFiltersDark from './atlas/AtlasFiltersDark';
@@ -117,6 +117,11 @@ const AtlasPage: React.FC = () => {
   const [kinshipVisible, setKinshipVisible] = useState<boolean>(true);
   const [mandala, setMandala] = useState<boolean>(false);
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
+  /* Lenses (M6): tapping a series in the legend focuses its constellation;
+     "your codes" recedes every light that does not carry one of the
+     visitor's own codes. Recede, never remove. */
+  const [focusSeries, setFocusSeries] = useState<string | null>(null);
+  const [yoursMode, setYoursMode] = useState<boolean>(false);
   const [markerScreenPos, setMarkerScreenPos] = useState<{ x: number; y: number } | null>(null);
   // Corner chrome fades when the visitor stops interacting, leaving only the
   // turning world. A selected piece or open filters keep the chrome awake.
@@ -167,6 +172,23 @@ const AtlasPage: React.FC = () => {
      between the birthday map and the geography of the placed pieces. */
   const { profile } = useProfile();
   const birthPlace = profile?.inputs.place ?? null;
+  const navigate = useNavigate();
+
+  /* The visitor's own codes: the gates of all eleven profile positions,
+     computed locally. Nothing about the profile leaves the device; the
+     "your codes" lens is a comparison done entirely in the browser. */
+  const yourGates = useMemo(() => {
+    const set = new Set<number>();
+    const computed = profile?.computed as
+      | Record<string, { gate?: number } | undefined>
+      | undefined;
+    if (computed) {
+      for (const v of Object.values(computed)) {
+        if (v && typeof v.gate === 'number') set.add(v.gate);
+      }
+    }
+    return set;
+  }, [profile]);
 
   /* Selection setter that mirrors the choice into the URL (replace, so
      browsing pieces doesn't pile up history entries). */
@@ -304,6 +326,7 @@ const AtlasPage: React.FC = () => {
     for (const p of visible) {
       const c = p.cityId ? CITIES_BY_ID.get(p.cityId) : undefined;
       if (!c) continue;
+      const num = cardNumberFor(p.pieceId);
       nodes.push({
         id: p.key,
         lat: c.lat,
@@ -313,6 +336,7 @@ const AtlasPage: React.FC = () => {
         pieceType: p.pieceType,
         series: p.series,
         ordinal: p.claimOrdinal,
+        yours: num != null && yourGates.has(num),
       });
     }
     // The visitor's birth place rides along regardless of filters — it is
@@ -327,7 +351,21 @@ const AtlasPage: React.FC = () => {
       });
     }
     return nodes;
-  }, [seriesFiltered, status, birthPlace]);
+  }, [seriesFiltered, status, birthPlace, yourGates]);
+
+  /* Ring tap (mandala view): a lit code travels to its piece in the world;
+     an unlit code opens the code itself, where its pieces and the acquire
+     path live. */
+  const handleRingTap = (n: number) => {
+    const match = seriesFiltered.find(
+      (p) =>
+        cardNumberFor(p.pieceId) === n &&
+        (p.status === 'placed' || p.status === 'unawakened') &&
+        p.cityId,
+    );
+    if (match) setSelectedKey(match.key);
+    else navigate(`/universal-language/${n}`);
+  };
 
   /* Seeking section honors filters — when status=placed, the section hides. */
   const seekingPieces: SeekingPiece[] = useMemo(() => {
@@ -359,6 +397,16 @@ const AtlasPage: React.FC = () => {
       cardNumber: cardNumberFor(match.pieceId),
       claimOrdinal: match.claimOrdinal,
     };
+  }, [selectedKey, seriesFiltered]);
+
+  /* The dream the selected piece publicly carries (present in the public
+     state only for live, keeper-shared entries on mapped pieces). */
+  const selectedIntention = useMemo(() => {
+    if (!selectedKey) return null;
+    const match = seriesFiltered.find((p) => p.key === selectedKey) as
+      | (EnrichedPiece & { intention?: string })
+      | undefined;
+    return match?.intention ?? null;
   }, [selectedKey, seriesFiltered]);
 
   /* If the selected piece falls outside the current filters, drop selection
@@ -567,9 +615,12 @@ const AtlasPage: React.FC = () => {
                   kinshipVisible={kinshipVisible}
                   placedByCard={placedByCard}
                   mandala={mandala}
-                  mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed`}
+                  mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed · touch a code to visit it`}
                   onMarkerScreenPos={setMarkerScreenPos}
                   onBackgroundClick={() => setSelectedKey(null)}
+                  focusSeries={focusSeries}
+                  yoursMode={yoursMode}
+                  onRingTap={handleRingTap}
                   className="w-full h-full"
                 />
               )}
@@ -600,19 +651,29 @@ const AtlasPage: React.FC = () => {
               </h1>
             </div>
 
-            {/* Top-right: legend */}
+            {/* Top-right: legend. Each series is a lens: tap to focus its
+                constellation; the rest of the lights recede, never vanish. */}
             {legendSeries.length > 0 && (
               <div className="pointer-events-auto absolute right-5 sm:right-8 top-[calc(var(--nav-height)+1rem)] text-right">
                 {legendSeries.map((s) => (
-                  <div
+                  <button
                     key={s}
-                    className="font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed"
+                    type="button"
+                    aria-pressed={focusSeries === s}
+                    onClick={() => setFocusSeries((cur) => (cur === s ? null : s))}
+                    className={`block w-full text-right font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] leading-relaxed transition-colors ${
+                      focusSeries === s
+                        ? 'text-bronze-300'
+                        : focusSeries
+                          ? 'text-wood-500 hover:text-wood-300'
+                          : 'text-wood-300/80 hover:text-bronze-300/90'
+                    }`}
                   >
                     {s}
                     <span aria-hidden style={{ color: seriesColor(s) }}>
                       {' '}·
                     </span>
-                  </div>
+                  </button>
                 ))}
                 {hasBirthOrigin && (
                   <div className="font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed">
@@ -643,6 +704,19 @@ const AtlasPage: React.FC = () => {
 
             {/* Bottom gutter: threads · filter · mandala */}
             <div className="pointer-events-auto absolute right-5 sm:right-8 bottom-6 flex items-center gap-4 sm:gap-6">
+              {yourGates.size > 0 && (
+                <button
+                  type="button"
+                  aria-pressed={yoursMode}
+                  onClick={() => setYoursMode((v) => !v)}
+                  title="Lights carrying one of your own codes"
+                  className={`font-label text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                    yoursMode ? 'text-[#9caa87]' : 'text-wood-400 hover:text-[#9caa87]'
+                  }`}
+                >
+                  your codes
+                </button>
+              )}
               <button
                 type="button"
                 aria-pressed={kinshipVisible}
@@ -794,6 +868,11 @@ const AtlasPage: React.FC = () => {
                   onSelectKin={(key) => setSelectedKey(key)}
                   holderChart={holderChart}
                   onRelease={() => setSelectedKey(null)}
+                  carriesYourCode={
+                    selectedPiece.cardNumber != null &&
+                    yourGates.has(selectedPiece.cardNumber)
+                  }
+                  intention={selectedIntention}
                 />
               ) : null}
             </div>

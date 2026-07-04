@@ -48,6 +48,9 @@ export interface GlobeNode {
   // Founding Lights claim order (1 = Adrian's first light). Drives the
   // ignition opening: lights ignite in claim order when the atlas loads.
   ordinal?: number;
+  // True when this piece carries one of the visitor's own codes (computed
+  // locally from their profile; never sent anywhere).
+  yours?: boolean;
 }
 
 export interface GlobeProps {

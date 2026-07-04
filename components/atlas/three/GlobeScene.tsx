@@ -23,6 +23,10 @@ export interface GlobeSceneProps {
   kinship?: KinshipIndex | null;
   kinshipVisible: boolean;
   placedByCard: ReadonlyMap<number, { lat: number; lng: number }>;
+  /** Lens focus: lights outside this series recede. */
+  focusSeries?: string | null;
+  /** Your-codes lens: lights without the visitor's codes recede. */
+  yoursMode?: boolean;
 }
 
 export default function GlobeScene({
@@ -31,6 +35,8 @@ export default function GlobeScene({
   kinship,
   kinshipVisible,
   placedByCard,
+  focusSeries,
+  yoursMode,
 }: GlobeSceneProps) {
   const rig = useRig();
   const tiltRef = useRef<THREE.Group>(null);
@@ -73,7 +79,12 @@ export default function GlobeScene({
         <group ref={spinRef}>
           <GlobeSphere rippleSources={rippleSources} />
           <LandDots />
-          <Markers nodes={nodes} selectedId={selectedId} />
+          <Markers
+            nodes={nodes}
+            selectedId={selectedId}
+            focusSeries={focusSeries}
+            yoursMode={yoursMode}
+          />
           {kinship && kinship.pairs.length > 0 && (
             <KinshipArcs index={kinship} selectedId={selectedId} visible={kinshipVisible} />
           )}
