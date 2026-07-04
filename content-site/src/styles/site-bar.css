@@ -1,0 +1,46 @@
+/* ─── THE site bar, compiled for the static /learn library ──────────────────
+ * The bar itself is the app's own component (components/NavigationCore.tsx),
+ * rendered by Base.astro via NavigationStatic. This file compiles exactly the
+ * Tailwind that bar needs, from the SAME shared theme contract the app uses
+ * (src/theme.css) — so a token or bar change lands on both surfaces at the
+ * next build, by construction.
+ *
+ * source(none) + explicit @source: only the bar's classes are generated, and
+ * Tailwind's global preflight reset is NOT imported, so the library's own
+ * lp-* reading styles stay byte-for-byte untouched.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@import 'tailwindcss/theme.css' layer(theme) source(none);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@import '../../../src/theme.css';
+@source '../../../components/NavigationCore.tsx';
+
+/* Minimal, bar-scoped stand-in for the preflight we deliberately skip. Layered
+   under `base` so the bar's own utilities always win. */
+@layer base {
+  .mc-site-bar a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .mc-site-bar button {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  .mc-site-bar svg {
+    display: block;
+  }
+}
+
+/* The bar is fixed (exactly as in the app); the library page reserves its
+   space. 64px matches the app's first-paint fallback — after hydration the
+   bar keeps --nav-height tracking its real rendered height. */
+:root {
+  --nav-height: 64px;
+}
+.lp-page {
+  padding-top: var(--nav-height);
+}

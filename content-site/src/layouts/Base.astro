@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css'
+import '../styles/site-bar.css'
+import NavigationStatic from '../../../components/NavigationStatic'
 
 interface Props {
   title: string
@@ -7,13 +9,11 @@ interface Props {
   /** Extra JSON-LD blocks to inject (Article, BreadcrumbList, …) */
   jsonLd?: Record<string, unknown>[]
   ogType?: string
-  /** Which top-nav item to mark active. */
-  activeNav?: 'learn' | null
   /** Field name to tint this page's accent (per-essay tint on article pages). */
   accent?: string
 }
 
-const { title, description, jsonLd = [], ogType = 'website', activeNav = 'learn', accent } = Astro.props
+const { title, description, jsonLd = [], ogType = 'website', accent } = Astro.props
 
 const canonical = new URL(Astro.url.pathname, Astro.site)
 const ogImage =
@@ -60,86 +60,55 @@ const base = import.meta.env.BASE_URL
       <script type="application/ld+json" set:html={JSON.stringify(block)} />
     ))}
 
-    {/* No-flash theme: apply the saved/system theme before paint. */}
+    {/* No-flash theme, shared with the app: one localStorage key (`dark-mode`),
+        applied before paint as BOTH the app's `.dark` class (drives the site
+        bar) and `data-theme` (drives the library's reading styles). Migrates
+        the library's old `lp-theme` key so nobody's saved choice is lost. */}
     <script is:inline>
       (function () {
         try {
-          var saved = localStorage.getItem('lp-theme')
-          var dark = saved
-            ? saved === 'dark'
-            : !window.matchMedia('(prefers-color-scheme: light)').matches
-          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+          var stored = localStorage.getItem('dark-mode')
+          if (stored === null) {
+            var legacy = localStorage.getItem('lp-theme')
+            if (legacy) {
+              stored = String(legacy === 'dark')
+              localStorage.setItem('dark-mode', stored)
+            }
+          }
+          // Default dark for new visitors — same default as the app.
+          var dark = stored === null ? true : stored === 'true'
+          var root = document.documentElement
+          root.classList.toggle('dark', dark)
+          root.setAttribute('data-theme', dark ? 'dark' : 'light')
         } catch (e) {
+          document.documentElement.classList.add('dark')
           document.documentElement.setAttribute('data-theme', 'dark')
         }
       })()
     </script>
   </head>
   <body>
+    {/* THE site bar — the app's own component, hydrated here. Markup, styling
+        and behavior live in components/NavigationCore.tsx; this island is the
+        only header either surface has, so the two can never drift. The
+        .mc-site-bar wrapper scopes the bar's mini-reset (site-bar.css). */}
+    <div class="mc-site-bar">
+      <NavigationStatic client:load />
+    </div>
+
     <div class="lp-page" data-r="page" data-motion="on" style={accent ? `--acc: ${accent}` : undefined}>
       <div class="lp-grain" data-r="grain"></div>
-
-      <header class="lp-topbar" data-r="topbar">
-        <a class="lp-wordmark" href="https://mandalacodes.com/">MANDALA CODES</a>
-        <div class="lp-topbar-right">
-          <nav class="lp-nav" data-r="nav">
-            <a href={`${base}/`} class={activeNav === 'learn' ? 'is-active' : undefined}>Learn</a>
-            <a href="https://mandalacodes.com/universal-language">The Deck</a>
-            <a href="https://mandalacodes.com/the-systems">The Systems</a>
-            <a href="https://mandalacodes.com/atlas">Atlas</a>
-          </nav>
-          <button class="lp-toggle" type="button" data-theme-toggle aria-label="Toggle light or dark theme">
-            <span data-theme-glyph>☀</span> <span class="label" data-theme-label>Light</span>
-          </button>
-          <button class="lp-menu" type="button" data-theme-toggle aria-label="Toggle light or dark theme">≡</button>
-        </div>
-      </header>
 
       <slot />
 
       <footer class="lp-site-footer">
-        Part of the <a href="https://mandalacodes.com/universal-language">Universal Language</a> ·
+        Part of the <a href="/universal-language">Universal Language</a> ·
         64 mandalas · <a href={`${base}/rss.xml`}>RSS</a>
       </footer>
     </div>
 
     <script is:inline>
       (function () {
-        function syncLabels() {
-          var dark = document.documentElement.getAttribute('data-theme') !== 'light'
-          document.querySelectorAll('[data-theme-glyph]').forEach(function (el) {
-            el.textContent = dark ? '☀' : '☾'
-          })
-          document.querySelectorAll('[data-theme-label]').forEach(function (el) {
-            el.textContent = dark ? 'Light' : 'Dark'
-          })
-        }
-        syncLabels()
-
-        function flip() {
-          var dark = document.documentElement.getAttribute('data-theme') !== 'light'
-          var next = dark ? 'light' : 'dark'
-          document.documentElement.setAttribute('data-theme', next)
-          try { localStorage.setItem('lp-theme', next) } catch (e) {}
-          syncLabels()
-        }
-
-        document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
-          btn.addEventListener('click', function (e) {
-            var root = document.documentElement
-            if (e && e.clientX != null) {
-              root.style.setProperty('--vt-x', e.clientX + 'px')
-              root.style.setProperty('--vt-y', e.clientY + 'px')
-            }
-            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-            if (document.startViewTransition && !reduce) {
-              document.startViewTransition(flip)
-            } else {
-              flip()
-            }
-          })
-        })
-
         // Reveal-on-scroll: additive only. Mark the page so CSS hides reveal
         // targets, then unhide each as it enters. If anything is already in
         // view (or below the fold but the observer never fires), the fallback
