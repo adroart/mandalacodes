@@ -107,6 +107,15 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
   const [inscriptions, setInscriptions] = useState<InscriptionView[] | null>(null);
   const [loadNote, setLoadNote] = useState<string | null>(null);
 
+  // Share on the map (M6, Lens 2): inscriptionId → shared. Seeded lazily
+  // (nothing fetched for this on load); the toggle trusts the endpoint's
+  // own response for the next state. No indication yet whether an entry
+  // already rides the map until the steward acts on it here.
+  const [shared, setShared] = useState<Record<string, boolean>>({});
+  const [shareBusy, setShareBusy] = useState<string | null>(null);
+  const [shareError, setShareError] = useState<Record<string, string>>({});
+  const [everShared, setEverShared] = useState(false);
+
   // Add-entry form
   const [kind, setKind] = useState<InscriptionKind>('intention');
   const [body, setBody] = useState('');
@@ -307,6 +316,49 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
     }
   };
 
+  // === Share on the map ===
+
+  const handleToggleShare = async (view: InscriptionView, nextShare: boolean) => {
+    if (shareBusy) return;
+    setShareBusy(view.id);
+    setShareError((prev) => {
+      const { [view.id]: _drop, ...rest } = prev;
+      return rest;
+    });
+    try {
+      const res = await authedFetch('/api/atlas/steward/share-intention', {
+        method: 'POST',
+        body: JSON.stringify({
+          pieceId: steward.pieceId,
+          ...(steward.editionNumber != null
+            ? { editionNumber: steward.editionNumber }
+            : {}),
+          inscriptionId: view.id,
+          share: nextShare,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { ok?: boolean; shared?: boolean; error?: string }
+        | null;
+      if (!res.ok || !data?.ok) {
+        setShareError((prev) => ({
+          ...prev,
+          [view.id]: data?.error ?? 'Something went wrong, please try again.',
+        }));
+        return;
+      }
+      setShared((prev) => ({ ...prev, [view.id]: data.shared ?? nextShare }));
+      if (data.shared ?? nextShare) setEverShared(true);
+    } catch {
+      setShareError((prev) => ({
+        ...prev,
+        [view.id]: 'Something went wrong, please try again.',
+      }));
+    } finally {
+      setShareBusy(null);
+    }
+  };
+
   // === Heirs ===
 
   const activeHeirs = (steward.heirs ?? []).filter((h) => h.status !== 'revoked');
@@ -409,6 +461,12 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       );
     }
     const { view } = item;
+    const canShare =
+      !print &&
+      view.state === 'readable' &&
+      view.kind === 'intention' &&
+      view.authoredByYou;
+    const isShared = shared[view.id] === true;
     return (
       <li key={view.id} className="py-3">
         <span className={dateCls}>
@@ -432,6 +490,43 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           <p className="font-serif italic text-base text-stone-500">
             {view.sealedLabel ?? 'sealed'}
           </p>
+        )}
+        {canShare && (
+          <div className="mt-2">
+            {!isShared && !everShared && (
+              <p className="font-serif italic text-sm text-stone-500 mb-1">
+                The map carries dreams. Words about a business, a place, or a
+                name have their own homes and will not live in this space.
+              </p>
+            )}
+            {isShared ? (
+              <p className="font-sans text-sm text-wood-700">
+                The piece carries these words on the map.{' '}
+                <button
+                  type="button"
+                  onClick={() => handleToggleShare(view, false)}
+                  disabled={shareBusy === view.id}
+                  className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                >
+                  take them back
+                </button>
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleToggleShare(view, true)}
+                disabled={shareBusy === view.id}
+                className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+              >
+                Let the piece carry these words on the map
+              </button>
+            )}
+            {shareError[view.id] && (
+              <p className="font-serif italic text-sm text-stone-500 mt-1">
+                {shareError[view.id]}
+              </p>
+            )}
+          </div>
         )}
       </li>
     );

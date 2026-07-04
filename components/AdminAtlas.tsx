@@ -828,6 +828,177 @@ const PendingSalesSection: React.FC = () => {
 };
 
 // ───────────────────────────────────────────────────────────────────────────
+// Tending (M6, Lens 2: the map of dreams queue)
+// ───────────────────────────────────────────────────────────────────────────
+
+interface AdminIntention {
+    id: string;
+    pieceId: string;
+    editionNumber?: number;
+    inscriptionId: string;
+    text: string;
+    sharedAt: string;
+    status: 'live' | 'rehomed' | 'withdrawn';
+    tended?: boolean;
+}
+
+type TendAction = 'keep' | 'rehome' | 'withdraw';
+
+const TendingSection: React.FC = () => {
+    const [intentions, setIntentions] = useState<AdminIntention[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [busyId, setBusyId] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
+
+    const load = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await adminFetch('/api/atlas/intentions');
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                setIntentions(data.intentions || []);
+            } else {
+                setError(data?.error || 'Could not load the map of dreams.');
+            }
+        } catch {
+            setError('Could not load the map of dreams.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const tend = async (id: string, action: TendAction) => {
+        setBusyId(id);
+        setError(null);
+        try {
+            const res = await adminFetch('/api/atlas/intentions/tend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, action }),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                await load();
+            } else {
+                setError(data?.error || 'Could not tend the entry.');
+            }
+        } catch {
+            setError('Network error. Check your connection.');
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const live = intentions.filter((i) => i.status === 'live');
+    const untended = live.filter((i) => !i.tended);
+    const tended = live.filter((i) => i.tended);
+    const settled = intentions.filter((i) => i.status !== 'live').slice(0, 8);
+
+    const renderLiveRow = (i: AdminIntention, untendedRow: boolean) => (
+        <div
+            key={i.id}
+            className={`border p-5 mb-4 ${
+                untendedRow
+                    ? 'border-bronze-400 bg-bronze-50'
+                    : 'border-wood-200'
+            }`}
+        >
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+                <span className="font-serif text-base text-wood-900">
+                    {resolvePieceTitle(i.pieceId, i.editionNumber)}
+                </span>
+                <span className="font-sans text-sm text-wood-500">
+                    {formatRelative(i.sharedAt)}
+                </span>
+                {untendedRow && (
+                    <span className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold">
+                        untended
+                    </span>
+                )}
+            </div>
+            <p className="font-serif italic text-base text-wood-700 mb-4">
+                “{i.text}”
+            </p>
+            <div className="flex gap-3">
+                <button
+                    onClick={() => tend(i.id, 'keep')}
+                    disabled={busyId === i.id}
+                    className="font-label text-xs uppercase tracking-[0.15em] text-wood-700 font-semibold hover:text-bronze-700 transition-colors disabled:opacity-40"
+                >
+                    Keep
+                </button>
+                <button
+                    onClick={() => tend(i.id, 'rehome')}
+                    disabled={busyId === i.id}
+                    className="font-label text-xs uppercase tracking-[0.15em] text-wood-700 font-semibold hover:text-bronze-700 transition-colors disabled:opacity-40"
+                >
+                    Re-home
+                </button>
+                <button
+                    onClick={() => tend(i.id, 'withdraw')}
+                    disabled={busyId === i.id}
+                    className="font-label text-xs uppercase tracking-[0.15em] text-wood-700 font-semibold hover:text-bronze-700 transition-colors disabled:opacity-40"
+                >
+                    Withdraw
+                </button>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="bg-white border border-wood-200 p-8 mb-10">
+            <h2 className={sectionTitle}>Tending</h2>
+            <p className={sectionLead}>
+                Entries a steward has let ride the map of dreams. Sorting, not
+                approval: a live entry is already public, and tending is
+                quality assurance afterward, not a gate.
+            </p>
+
+            {error && (
+                <p className="font-serif italic text-sm text-stone-600 mb-4">{error}</p>
+            )}
+            {loading && <p className="font-sans text-sm text-wood-400">Loading...</p>}
+            {!loading && !error && live.length === 0 && (
+                <p className="font-sans text-sm text-wood-400">Nothing live on the map right now.</p>
+            )}
+
+            {!loading && untended.map((i) => renderLiveRow(i, true))}
+            {!loading && tended.map((i) => renderLiveRow(i, false))}
+
+            {!loading && settled.length > 0 && (
+                <div className="mt-6 border-t border-wood-100 pt-4">
+                    <p className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold mb-2">
+                        Recently settled
+                    </p>
+                    <ul className="space-y-1">
+                        {settled.map((i) => (
+                            <li key={i.id} className="font-sans text-sm text-wood-500">
+                                {i.status} · {resolvePieceTitle(i.pieceId, i.editionNumber)}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ───────────────────────────────────────────────────────────────────────────
 // Claim Requests (M4 — self-serve stewardship requests)
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -1131,6 +1302,7 @@ const AdminAtlas: React.FC = () => {
 
                     <SeedEventSection />
                     <PendingSalesSection />
+                    <TendingSection />
                     <ClaimRequestsSection />
                     <IssueStewardKeySection onIssued={loadStewards} />
                     <StewardRoster
