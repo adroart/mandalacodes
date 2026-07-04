@@ -2,6 +2,19 @@
 
 Living list of what's outstanding on the oracle. Loose priority order, top items block more than bottom items.
 
+## Go-live ops (you-required — needs your credentials, nothing here is agent-doable)
+
+Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO-LIVE-RUNBOOK.md). Check them off in [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md)'s status ledger as you go.
+
+- [ ] **Apply the D1 migrations** from the Adrian-Website checkout (003_atlas_legacy + the new 004_piece_content) — read [docs/d1-migrations.md](docs/d1-migrations.md) first, the cross-repo filename collision is real _(you · quick)_
+- [ ] **Set the webhook secrets** — generate distinct `SALE_WEBHOOK_SECRET` and `CLAIM_BRIDGE_SECRET`, set on BOTH Pages projects, redeploy _(you · quick)_
+- [ ] **Activate the GitHub mirror** — public repo + fine-grained PAT + the three `GITHUB_MIRROR_*` vars; this is the external tamper evidence _(you · quick)_
+- [ ] **Baseline backup** — `wrangler login` then `npm run backup:atlas`; move output offline _(you · quick)_
+- [ ] **Adrian-Website senders** — implement the sale webhook (and optionally the claim-bridge sender) in that repo per [todo/handoff/adrian-website/sale-webhook-spec.md](todo/handoff/adrian-website/sale-webhook-spec.md) _(you or an agent session scoped to that repo · moderate)_
+- [ ] **Claim light #1** — the ignition ritual: your own steward record, the map yes, the first inscription. Not delegable _(you · quick)_
+- [ ] **Collector outreach** — the roster funnel in AdminAtlas is the dashboard; validation gate: ~3 of the first ~10 must claim and inscribe before deepening Ring 1 _(you · ongoing)_
+- [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
+
 ## Soon
 
 - [ ] Make Mandala Codes the go-to mandala authority site (multi-phase content, outreach, and press campaign)   → Plan: [mandala-authority.md](todo/plans/mandala-authority.md) _(band: you-required)_ _(effort: moderate)_

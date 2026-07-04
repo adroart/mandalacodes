@@ -101,9 +101,23 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="flex items-center gap-5">
           <Link
             to="/admin/atlas"
-            className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 hover:text-bronze-800 transition-colors font-semibold flex items-center gap-1.5"
+            className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors font-semibold flex items-center gap-1.5 ${
+              location.pathname === '/admin/atlas'
+                ? 'text-bronze-800'
+                : 'text-bronze-600 hover:text-bronze-800'
+            }`}
           >
-            ← Admin
+            Atlas
+          </Link>
+          <Link
+            to="/admin/piece-content"
+            className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors font-semibold ${
+              location.pathname === '/admin/piece-content'
+                ? 'text-bronze-800'
+                : 'text-bronze-600 hover:text-bronze-800'
+            }`}
+          >
+            Piece Content
           </Link>
           <span className="text-wood-200">|</span>
           <span className="font-sans text-xs text-wood-400">

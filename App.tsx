@@ -8,6 +8,7 @@ const OracleSystems = lazy(() => import('./components/OracleSystems'));
 const AtlasPage = lazy(() => import('./components/AtlasPage'));
 const AdminLogin = lazy(() => import('./components/AdminLogin'));
 const AdminAtlas = lazy(() => import('./components/AdminAtlas'));
+const AdminPieceContent = lazy(() => import('./components/AdminPieceContent'));
 const PiecePage = lazy(() => import('./components/PiecePage'));
 const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
 const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
@@ -118,6 +119,7 @@ const AppInner: React.FC = () => {
                 <Route path="/admin" element={<Navigate to="/admin/atlas" replace />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/atlas" element={<AdminAtlas />} />
+                <Route path="/admin/piece-content" element={<AdminPieceContent />} />
 
                 {/* Hologenetic Profile (local-first, optionally synced when signed in) */}
                 <Route path="/profile" element={<OracleProfile />} />

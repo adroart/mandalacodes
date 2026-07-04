@@ -21,7 +21,9 @@ import { formatPlaceLabel } from '../../../data/cities';
 import { letterRecipientKey, planKinClaimLetters } from '../../../utils/letters';
 import type { KinPieceFact } from '../../../utils/letters';
 import type { AtlasEnv } from './_helpers';
-import { mutateLetters } from './_helpers';
+import { mutateLetters, readStewards } from './_helpers';
+import { letterEmailBody, letterEmailSubject, sendLetterEmail } from './_email';
+import type { LetterEmailEnv } from './_email';
 
 const archiveById = new Map(FULL_ARCHIVE.map((a) => [a.id, a]));
 
@@ -96,4 +98,30 @@ export async function generateKinClaimLetters(
     next: [...current, ...letters],
     result: undefined,
   }));
+
+  // Courtesy email copy (decision record, GO-LIVE-RUNBOOK.md 2026-07-02):
+  // fire-and-forget, sent only to each recipient piece's own bound steward
+  // email — never a third party. sendLetterEmail no-ops silently when
+  // RESEND_API_KEY is unset (AtlasEnv doesn't declare that secret by name —
+  // it's typed locally in _email.ts — so the check lives inside the helper
+  // rather than here).
+  const stewards = await readStewards(env);
+  const stewardByKey = new Map(
+    stewards.map((s) => [letterRecipientKey(s.pieceId, s.editionNumber), s]),
+  );
+  for (const letter of letters) {
+    const steward = stewardByKey.get(letter.recipientKey);
+    if (!steward?.email) continue;
+    // AtlasEnv (declared in _helpers.ts) doesn't name RESEND_* by design —
+    // those secrets are typed locally in _email.ts (LetterEmailEnv) so this
+    // module never depends on lib/account/auth.server.js's env shape. The
+    // two interfaces share no property names, so TS's weak-type check needs
+    // an explicit unknown-cast here; the real Cloudflare env object carries
+    // both sets of fields at runtime regardless of which TS type names them.
+    void sendLetterEmail(env as unknown as LetterEmailEnv, {
+      to: steward.email,
+      subject: letterEmailSubject(letter.kind),
+      body: letterEmailBody(letter.body),
+    }).catch(() => undefined);
+  }
 }
