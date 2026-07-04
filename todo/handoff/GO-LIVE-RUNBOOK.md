@@ -137,13 +137,23 @@ production). Decision: wire atlas letters and, later, claim-window warnings
 to Resend email using the existing secret set — no new vendor, no new
 account. Build order:
 
-1. A small `sendLetterEmail` helper beside the letters code, using the same
-   Resend key Better Auth uses, addressed to the steward's bound email.
-2. Kin-claim / anniversary / transfer letters get an email copy on write
-   (the in-product letter stays the canonical record).
-3. Only after that ships and delivery lands in `ClaimRequest.warnings[]`
-   may the claim window be wired up, per the plan amendment's activation
-   preconditions.
+1. **DONE 2026-07-02.** A small `sendLetterEmail` helper beside the letters
+   code (`functions/api/atlas/_email.ts`), using the same Resend key/fetch
+   pattern Better Auth uses for sign-in codes, addressed to the steward's
+   bound email. Fire-and-forget: every failure mode is swallowed inside the
+   helper (console.warn at most, no retries); silent no-op when
+   `RESEND_API_KEY` is unset.
+2. **DONE 2026-07-02.** Kin-claim letters (`functions/api/atlas/_letters.ts`
+   `generateKinClaimLetters`) and anniversary/transfer letters
+   (`functions/api/atlas/steward/letters.ts` `onRequestGet`, the derived-on-
+   read generation) get an email copy on write — the in-product letter
+   stays the canonical record, no delivery state is persisted, and each
+   email goes only to that piece's own bound steward, never a third party.
+   Unit coverage: `tests/unit/letterEmail.test.ts`.
+3. **NOT DONE.** Only after delivery lands in `ClaimRequest.warnings[]` may
+   the claim window be wired up, per the plan amendment's activation
+   preconditions. Claim-window warning emails are a separate, not-yet-built
+   sender — step 1/2 above cover only atlas letters.
 
 ### Piece-page content: D1 editorial table + admin editor
 

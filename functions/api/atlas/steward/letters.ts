@@ -35,7 +35,7 @@ import {
   lettersForRecipient,
   unreadCount,
 } from '../../../../utils/letters';
-import type { AtlasLetter } from '../../../../types';
+import type { AtlasLetter, StewardRecord } from '../../../../types';
 import { getCityById, formatPlaceLabel } from '../../../../data/cities';
 import type { PagesContext } from '../_helpers';
 import {
@@ -45,6 +45,8 @@ import {
   readLetters,
   readStewards,
 } from '../_helpers';
+import { letterEmailBody, letterEmailSubject, sendLetterEmail } from '../_email';
+import type { LetterEmailEnv } from '../_email';
 import { requireUser, isAuthResponse } from '../../_lib/auth';
 
 interface RouteArgs {
@@ -63,11 +65,20 @@ function parsePieceFromQuery(url: URL): RouteArgs | Response {
   return { pieceId, editionNumber };
 }
 
+type AuthorizeResult =
+  | { ok: true; record: StewardRecord }
+  | { ok: false; response: Response };
+
+/**
+ * Confirms the bearer owns the steward record for this piece and returns it
+ * (the caller needs the bound email for the courtesy letter-email copy —
+ * see onRequestGet below).
+ */
 async function authorize(
   env: PagesContext['env'],
   userId: string,
   args: RouteArgs,
-): Promise<Response | null> {
+): Promise<AuthorizeResult> {
   const stewards = await readStewards(env);
   const record = stewards.find(
     (s) =>
@@ -75,9 +86,9 @@ async function authorize(
       (s.editionNumber ?? undefined) === (args.editionNumber ?? undefined),
   );
   if (!record || record.clerkUserId !== userId) {
-    return json({ ok: false, error: 'forbidden' }, 403);
+    return { ok: false, response: json({ ok: false, error: 'forbidden' }, 403) };
   }
-  return null;
+  return { ok: true, record };
 }
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
@@ -89,8 +100,9 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
   const args = parsePieceFromQuery(new URL(request.url));
   if (args instanceof Response) return args;
 
-  const forbidden = await authorize(env, userId, args);
-  if (forbidden) return forbidden;
+  const auth2 = await authorize(env, userId, args);
+  if (!auth2.ok) return auth2.response;
+  const stewardRecord = auth2.record;
 
   const recipientKey = letterRecipientKey(args.pieceId, args.editionNumber);
   const now = new Date().toISOString();
@@ -123,8 +135,11 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
     const arrivedByTransfer = chain.some((e) => e.type === 'transferred');
 
     // Generate the due derived letters in one mutator pass so the existing-
-    // letters checks (idempotency) read fresh, concurrent-safe state.
-    await mutateLetters(env, (current) => {
+    // letters checks (idempotency) read fresh, concurrent-safe state. The
+    // mutator may retry on a write conflict, so the generated list is
+    // threaded out through `result` rather than emailed from inside the
+    // closure — a retry must never send a duplicate courtesy email.
+    const genOutcome = await mutateLetters(env, (current) => {
       const mine = current.filter((l) => l.recipientKey === recipientKey);
       const toAppend: AtlasLetter[] = [];
 
@@ -154,9 +169,33 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
         );
       }
 
-      if (toAppend.length === 0) return { next: current, result: undefined };
-      return { next: [...current, ...toAppend], result: undefined };
+      if (toAppend.length === 0) return { next: current, result: toAppend };
+      return { next: [...current, ...toAppend], result: toAppend };
     });
+
+    // Courtesy email copy (decision record, GO-LIVE-RUNBOOK.md 2026-07-02):
+    // fire-and-forget, sent only to this piece's own bound steward email —
+    // the authorized viewer themselves, never a third party. Never blocks or
+    // fails the response. Prefer context.waitUntil when the runtime exposes
+    // it (PagesContext doesn't declare the field, so it's read defensively);
+    // otherwise a detached promise with .catch, same as the public-state
+    // GitHub mirror side-effect elsewhere in this API.
+    const newLetters = genOutcome instanceof Response ? [] : genOutcome.result;
+    if (newLetters.length > 0 && stewardRecord.email) {
+      const waitUntil = (context as unknown as {
+        waitUntil?: (p: Promise<unknown>) => void;
+      }).waitUntil;
+      for (const letter of newLetters) {
+        // See functions/api/atlas/_letters.ts for why this cast is needed:
+        // AtlasEnv and LetterEmailEnv share no property names by design.
+        const send = sendLetterEmail(env as unknown as LetterEmailEnv, {
+          to: stewardRecord.email,
+          subject: letterEmailSubject(letter.kind),
+          body: letterEmailBody(letter.body),
+        }).catch(() => undefined);
+        if (typeof waitUntil === 'function') waitUntil.call(context, send);
+      }
+    }
   }
 
   const letters = await readLetters(env);
@@ -196,8 +235,8 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   const editionNumber =
     typeof body.editionNumber === 'number' ? body.editionNumber : undefined;
 
-  const forbidden = await authorize(env, userId, { pieceId, editionNumber });
-  if (forbidden) return forbidden;
+  const auth2 = await authorize(env, userId, { pieceId, editionNumber });
+  if (!auth2.ok) return auth2.response;
 
   const recipientKey = letterRecipientKey(pieceId, editionNumber);
   const now = new Date().toISOString();
