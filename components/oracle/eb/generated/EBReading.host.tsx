@@ -356,15 +356,18 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const HEXH = 5 * (lineH + gap) + lineH;
     const half = (HEXW - brokenGap) / 2;
     const motionOn = !this.props.reduceMotion;
-    const curBits = (this.KINGWEN[this.props.data.code - 1] || this.KINGWEN[0])[2];
     const items: any[] = [];
     for (let i = 0; i < 64; i++) {
       const ang = (i / 64) * 2 * Math.PI - Math.PI / 2;
       const x = CX + Math.cos(ang) * R, y = CY + Math.sin(ang) * R;
       const rot = (i / 64) * 360 + 180;
-      const current = i === 0;
+      // Each ring position draws the REAL King Wen hexagram for that seat
+      // (number i+1), not a raw binary count — so all 64 are true hexagrams.
+      // KINGWEN bits are bottom-to-top; render top-to-bottom via bits[5 - li].
+      const bits = this.KINGWEN[i][2];
+      const current = this.KINGWEN[i][0] === this.props.data.code;
       const lines: boolean[] = [];
-      for (let li = 0; li < 6; li++) lines.push(current ? (curBits[5 - li] === '1') : (((i >> li) & 1) === 1));
+      for (let li = 0; li < 6; li++) lines.push(bits[5 - li] === '1');
       const fill = current ? 'var(--accent)' : 'var(--l-3)';
       const op = current ? 0.95 : 0.3;
       const lineEls = lines.map((solid, li) => {
