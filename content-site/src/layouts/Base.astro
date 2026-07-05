@@ -68,6 +68,32 @@ const base = import.meta.env.BASE_URL
       <script type="application/ld+json" set:html={JSON.stringify(block)} />
     ))}
 
+    {/* Speculative prerender, mirror of the app's rule: hovering any bar link
+        (or another essay) renders the destination in the background so the
+        click lands on a finished page. This matters most for SEO visitors who
+        arrive here first — their hop into the app is the heavy one, and this
+        makes it instant. Hover-intent only; unsupported browsers ignore it. */}
+    <script
+      type="speculationrules"
+      set:html={JSON.stringify({
+        prerender: [
+          {
+            where: {
+              href_matches: [
+                '/',
+                '/universal-language*',
+                '/the-systems*',
+                '/atlas*',
+                '/account*',
+                '/learn/*',
+              ],
+            },
+            eagerness: 'moderate',
+          },
+        ],
+      })}
+    />
+
     {/* No-flash theme, shared with the app: one localStorage key (`dark-mode`),
         applied before paint as BOTH the app's `.dark` class (drives the site
         bar) and `data-theme` (drives the library's reading styles). Migrates

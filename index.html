@@ -60,6 +60,23 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="/site.webmanifest" />
 
+    <!-- Speculative prerender: when the visitor hovers/touches the Learn link,
+         the browser fully renders /learn in the background, so the actual
+         click swaps to a finished page — near-instant, and the cross-document
+         transition plays over it. "moderate" = only on hover intent, so no
+         bandwidth is spent speculatively on page load. Browsers without
+         support ignore this block entirely. -->
+    <script type="speculationrules">
+      {
+        "prerender": [
+          {
+            "where": { "href_matches": "/learn*" },
+            "eagerness": "moderate"
+          }
+        ]
+      }
+    </script>
+
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
