@@ -4,35 +4,39 @@
    Ported from the Claude Design "Learn Library v3" prototype.
    ========================================================================== */
 
-/* ── Theme tokens ───────────────────────────────────────────────────────── */
+/* ── Theme tokens ─────────────────────────────────────────────────────────
+   Grounds, ink, and gold are LITERAL TWINS of the app's palette (theme.css:
+   paper-50 / wood-900 / bronze-500-400), so crossing between the surfaces
+   changes the page, never the world. The library keeps its own supporting
+   tones (body copy, rules, mats); only the felt anchors are shared. */
 :root,
 [data-theme='dark'] {
-  --bg: #14110d;
-  --bg-2: #1b1610;
-  --bg-3: #0f0c09;
-  --ink: #f2ebdd;
+  --bg: #211c16;      /* app dark paper-50 */
+  --bg-2: #2a241b;    /* app dark paper-200 */
+  --bg-3: #191510;    /* app dark paper-100 */
+  --ink: #f3ecde;     /* app dark wood-900 cream */
   --body: #a89c86;
   --body-strong: #d8cfbe;
   --faint: #9a8e78;
-  --rule: rgba(196, 168, 116, 0.16);
-  --rule-2: rgba(196, 168, 116, 0.1);
-  --acc: #c4a878;
-  --frame: rgba(212, 173, 116, 0.3);
-  --mat: rgba(196, 168, 116, 0.26);
+  --rule: rgba(205, 164, 94, 0.16);
+  --rule-2: rgba(205, 164, 94, 0.1);
+  --acc: #cda45e;     /* app dark bronze-500 */
+  --frame: rgba(222, 188, 126, 0.3);
+  --mat: rgba(205, 164, 94, 0.26);
 }
 
 [data-theme='light'] {
-  --bg: #f4f0e7;
-  --bg-2: #ece6d9;
+  --bg: #f3efe7;      /* app paper-50 */
+  --bg-2: #eae4d7;    /* app paper-100 */
   --bg-3: #fffdf8;
-  --ink: #221d17;
+  --ink: #272219;     /* app wood-900 ink */
   --body: #6b6357;
   --body-strong: #2f2a23;
   --faint: #8a8175;
-  --rule: #e2dbcd;
+  --rule: #ded5c2;    /* app wood-200 */
   --rule-2: #e9e2d3;
-  --acc: #8a744e;
-  --frame: rgba(138, 116, 78, 0.28);
+  --acc: #a37b38;     /* app bronze-500 */
+  --frame: rgba(163, 123, 56, 0.28);
   --mat: #e6e0d2;
 }
 

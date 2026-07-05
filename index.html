@@ -24,19 +24,6 @@
         outline: 2px solid #c4aa7c;
       }
     </style>
-    <!-- Apply the saved theme before first paint. Without this, a visitor in
-         light mode gets a dark frame on every arrival (e.g. crossing back from
-         /learn) until React mounts and flips the class. Same storage key as
-         DarkModeContext and the /learn no-flash script. -->
-    <script>
-      try {
-        if (localStorage.getItem('dark-mode') === 'false') {
-          document.documentElement.classList.add('light-mode');
-        } else {
-          document.documentElement.classList.add('dark');
-        }
-      } catch (e) {}
-    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Mandala Codes · Universal Language Oracle</title>
 
@@ -78,9 +65,14 @@
     </script>
 
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+    <!-- Cormorant Garamond, Cinzel, and Karla are self-hosted (see the
+         @font-face block appended to src/theme.css) so this surface and the
+         /learn library reference identical /fonts/... URLs and never repaint
+         on crossing. Noto Serif TC stays on Google Fonts — CJK subsetting is
+         impractical to self-host, and it's only used here, never in /learn. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Cinzel:wght@400;500;600&family=Karla:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet" />
 
     <script type="application/ld+json">
 {

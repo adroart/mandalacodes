@@ -30,8 +30,8 @@ const base = import.meta.env.BASE_URL
         The no-flash script below sets `.dark` before first paint, so these
         two rules resolve correctly for either theme. */}
     <style>
-      html { background-color: #14110d; }
-      html:not(.dark) { background-color: #f4f0e7; }
+      html { background-color: #211c16; }
+      html:not(.dark) { background-color: #f3efe7; }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
@@ -46,12 +46,11 @@ const base = import.meta.env.BASE_URL
     />
     <link rel="sitemap" href={`${base}/sitemap-index.xml`} />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Karla:wght@400;500;600;700&family=Cinzel:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    {/* Cormorant Garamond, Lora, Karla, and Cinzel are self-hosted (see the
+        @font-face block appended to src/theme.css, pulled in by this layout's
+        site-bar.css import via `@import '../../../src/theme.css'`) — the
+        library uses only these four self-hosted families, so no Google Fonts
+        link or preconnect is needed here at all. */}
 
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content="Mandala Codes" />
@@ -114,6 +113,12 @@ const base = import.meta.env.BASE_URL
           var root = document.documentElement
           root.classList.toggle('dark', dark)
           root.setAttribute('data-theme', dark ? 'dark' : 'light')
+          // Tint the mobile browser chrome exactly as the app does, so the
+          // frame around the page holds its color across the crossing.
+          var meta = document.createElement('meta')
+          meta.name = 'theme-color'
+          meta.content = dark ? '#141210' : '#f5f4f0'
+          document.head.appendChild(meta)
         } catch (e) {
           document.documentElement.classList.add('dark')
           document.documentElement.setAttribute('data-theme', 'dark')
