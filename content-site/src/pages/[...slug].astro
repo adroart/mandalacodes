@@ -58,7 +58,6 @@ const jsonLd = [
   description={article.data.description}
   jsonLd={jsonLd}
   ogType="article"
-  activeNav={null}
   accent={view.tint}
 >
   <article class="lp-read-section" data-r="readSection">
@@ -151,7 +150,7 @@ const jsonLd = [
           class="lp-cta"
           data-magnetic
           style="color: var(--acc); border-color: var(--mat);"
-          href={`https://mandalacodes.com/universal-language/${article.data.relatedCard}`}
+          href={`/universal-language/${article.data.relatedCard}`}
         >
           Explore Card {article.data.relatedCard} in the deck <span class="arrow">→</span>
         </a>

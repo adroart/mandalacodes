@@ -1,0 +1,469 @@
+/* ─── Shared theme contract ──────────────────────────────────────────────────
+ * The design tokens (fonts, full color scale, dark-mode remap) for the whole
+ * site, extracted so BOTH surfaces compile from the same source:
+ *   - src/index.css        (the React app)
+ *   - content-site         (the static /learn library — see styles/site-bar.css)
+ * Change a token here and both surfaces pick it up on their next build.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Font families — Earth's Breath: Cormorant Garamond (serif) + Karla (sans).
+     The reading template sets all body/description copy in Karla, not Lora, so
+     the page reads as one warm editorial voice; Lora is retired here. */
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Karla", -apple-system, system-ui, sans-serif;
+  --font-mono: "Karla", sans-serif;          /* kept for backward compat */
+  --font-label: "Karla", sans-serif;         /* semantic alias — use font-label in new code */
+  --font-display: "Cormorant Garamond", serif; /* structural titles: brand name, page headings */
+
+  /* Colors: taupe */
+  --color-taupe: #453d39;
+  --color-taupe-light: #594e48;
+
+  /* ─── EARTH'S BREATH palette — Day Book (light) ───────────────────────────
+     The reading template's "daybook" surface, mapped onto the site's existing
+     token scale. Warm paper, deep ink-brown, sandstone feature recess, and a
+     deeper antique-gold accent than the old bronze. Dark mode ("nightfall")
+     overrides these in the .dark block below; the .dark-preserve sandstone
+     recess for feature panels (I Ching, Human Design) is handled there too. */
+
+  /* Colors: cream */
+  --color-cream: #f2efe9;
+  --color-cream-dark: #e6e2d8;
+
+  /* Colors: warm-gold (Earth's Breath antique gold) */
+  --color-warm-gold: #a37b38;
+  --color-warm-gold-hover: #956e2a;
+
+  /* Colors: paper — daybook surface (--l-bg) → soft (--l-soft) → deeper */
+  --color-paper-50: #f3efe7;
+  --color-paper-100: #eae4d7;
+  --color-paper-200: #e0d8c6;
+  --color-paper-300: #cfc4ad;
+
+  /* Colors: feature-panel recess — the warm sandstone the I Ching and
+     Human Design panels sit in (--d-bg / --d-soft in the template). A deeper
+     tone of the same paper, never black. */
+  --color-recess: #e6ddc9;
+  --color-recess-soft: #ddd3bd;
+
+  /* Colors: wood — low end = light surfaces, high end = ink text */
+  --color-wood-50: #faf7f0;
+  --color-wood-100: #f1ece0;
+  --color-wood-200: #ded5c2;
+  --color-wood-300: #c6bca6;
+  --color-wood-400: #a39a89;   /* --l-3 */
+  --color-wood-500: #8a8070;
+  --color-wood-600: #6b6253;   /* --l-2 */
+  --color-wood-700: #51493b;
+  --color-wood-800: #3a342a;
+  --color-wood-900: #272219;   /* --l-1 ink */
+
+  /* Colors: stone — neutral warm grey, used by the dark feature panels */
+  --color-stone-50: #f5f1e8;
+  --color-stone-100: #e9e2d2;
+  --color-stone-200: #d8cfba;
+  --color-stone-300: #beb39a;
+  --color-stone-400: #9c917a;   /* --d-3 */
+  --color-stone-500: #837962;
+  --color-stone-600: #6f6552;   /* --d-2 */
+  --color-stone-700: #564d3d;
+  --color-stone-800: #3c352a;
+  --color-stone-900: #2a2419;   /* --d-1 */
+  --color-stone-950: #211c14;
+
+  /* Colors: availability states */
+  --color-avail-ready: #1A1A1A;
+  --color-avail-order: #666666;
+  --color-avail-sold: #7a6a5e;
+
+  /* Colors: bronze — the antique-gold accent family (--accent #A37B38) */
+  --color-bronze-50: #f7f1e6;
+  --color-bronze-100: #efe4cf;
+  --color-bronze-200: #e2d0b0;
+  --color-bronze-300: #ccac78;
+  --color-bronze-400: #b0913c;   /* daybook bright accent */
+  --color-bronze-500: #a37b38;   /* --accent */
+  --color-bronze-600: #956e2a;   /* --accent-d */
+  --color-bronze-700: #7a5a22;
+  --color-bronze-900: #4a3614;
+
+  /* Animations */
+  --animate-spin-slow: spin 20s linear infinite;
+  --animate-spin-reverse-slow: spinReverse 25s linear infinite;
+  --animate-draw: draw 2s ease-out forwards;
+  --animate-fade-in: fadeIn 0.8s ease-out forwards;
+  --animate-slide-up: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-marquee: marquee 25s linear infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-ripple: ripple 0.6s linear forwards;
+
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-100%); }
+  }
+  @keyframes spinReverse {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+  }
+  @keyframes draw {
+    0% { stroke-dashoffset: 1000; }
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes slideUp {
+    0% { transform: translateY(40px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes ripple {
+    0% { transform: scale(0); opacity: 1; }
+    100% { transform: scale(4); opacity: 0; }
+  }
+  @keyframes heroBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
+  --animate-hero-bounce: heroBounce 2.5s ease-in-out infinite;
+}
+
+/* ─── Dark Mode: CSS Variable Remapping ─────────────────────────────────── */
+/* Overrides color tokens so all Tailwind utilities adapt automatically.
+   Intentionally dark sections use .dark-preserve to keep original colors. */
+
+.dark {
+  color-scheme: dark;
+
+  /* ─── EARTH'S BREATH palette — Nightfall (dark) ─────────────────────────
+     The reading template's "nightfall" surface. Warm near-black paper, cream
+     text, a still-deeper feature recess for I Ching / Human Design, and a
+     brighter antique gold so the accent holds on dark. */
+
+  /* Paper: nightfall surface (--l-bg) → soft (--l-soft) → deeper */
+  --color-paper-50: #211c16;
+  --color-paper-100: #191510;
+  --color-paper-200: #2a241b;
+  --color-paper-300: #362f24;
+
+  /* Feature-panel recess — nightfall sandstone (--d-bg / --d-soft):
+     a deeper near-black the I Ching and Human Design panels sink into. */
+  --color-recess: #100d09;
+  --color-recess-soft: #171309;
+
+  /* Wood: dark → light  (low end = dark surfaces, high end = light text) */
+  --color-wood-50: #1a160f;
+  --color-wood-100: #221d15;
+  --color-wood-200: #3a342a;
+  --color-wood-300: #514a3c;
+  --color-wood-400: #9a907c;   /* --l-3 */
+  --color-wood-500: #b3a892;
+  --color-wood-600: #c8beaa;   /* --l-2 */
+  --color-wood-700: #ddd4c2;
+  --color-wood-800: #e9e1d2;
+  --color-wood-900: #f3ecde;   /* --l-1 cream text */
+
+  /* Stone: nightfall feature-panel scale (--d-* in the template) */
+  --color-stone-50: #100d09;
+  --color-stone-100: #171309;
+  --color-stone-200: #221c12;
+  --color-stone-300: #3a3225;
+  --color-stone-400: #928871;   /* --d-3 */
+  --color-stone-500: #a89e87;
+  --color-stone-600: #c2b8a2;   /* --d-2 */
+  --color-stone-700: #d6ccb8;
+  --color-stone-800: #e6ddcc;
+  --color-stone-900: #f4edde;   /* --d-1 cream text */
+  --color-stone-950: #f8f2e6;
+
+  /* Cream → warm darks */
+  --color-cream: #1a1610;
+  --color-cream-dark: #221d14;
+
+  /* Taupe → light taupe */
+  --color-taupe: #c8beaa;
+  --color-taupe-light: #b3a892;
+
+  /* Warm gold: brighten for dark backgrounds (--accent nightfall) */
+  --color-warm-gold: #cda45e;
+  --color-warm-gold-hover: #debc7e;
+
+  /* Bronze: antique gold, brightened for nightfall */
+  --color-bronze-50: #2a2114;
+  --color-bronze-100: #3a2e1a;
+  --color-bronze-200: #574326;
+  --color-bronze-300: #7a6038;
+  --color-bronze-400: #debc7e;   /* --accent-d */
+  --color-bronze-500: #cda45e;   /* --accent */
+  --color-bronze-600: #debc7e;
+  --color-bronze-700: #b08f54;
+  --color-bronze-900: #3a2c16;
+
+  /* Availability: invert for dark-bg readability */
+  --color-avail-ready: #e0e0e0;
+  --color-avail-order: #a0a0a0;
+  --color-avail-sold: #b3a892;
+}
+
+/* ─── Cross-surface seamlessness ──────────────────────────────────────────
+   Both surfaces (the app and the static /learn library) compile this file,
+   so declaring the cross-document view transition HERE opts BOTH sides in:
+   navigating between them crossfades instead of hard-cutting, and the site
+   bar — which carries the same transition name on both surfaces — is held
+   in place across the swap instead of fading with the page. Browsers
+   without support simply navigate normally (the pre-paint background rules
+   in each document's head prevent any white frame either way). */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+.site-bar-root {
+  view-transition-name: site-bar;
+}
+
+/* ─── Designed crossing ───────────────────────────────────────────────────
+   Replaces the browser's stock quarter-second flat crossfade between the
+   two surfaces with an authored one: the old page slips away quickly, the
+   new one rises a few pixels as it settles — the same easing family as the
+   app's own slideUp. The site bar is named out of the transition above, so
+   it holds perfectly still while the page changes underneath it. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: vt-page-out 0.26s cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-page-in 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes vt-page-out {
+    to { opacity: 0; }
+  }
+  @keyframes vt-page-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+/* ─── Self-hosted fonts (Cormorant Garamond, Cinzel, Karla, Lora) ───────────
+ * Declared ONCE here so both surfaces that compile this stylesheet — the
+ * Vite React app (src/index.css imports theme.css) and the static Astro
+ * library under /learn (content-site imports theme.css too) — reference
+ * IDENTICAL /fonts/... URLs. Previously each surface pulled its own
+ * <link> to Google Fonts, so crossing from the app into /learn (or back)
+ * re-fetched and re-swapped the font files, causing a text repaint even
+ * though the two surfaces used the same families. Self-hosting under one
+ * URL means the second surface always finds the fonts already cached —
+ * no repaint, no flash, no duplicate download.
+ *
+ * Files live in public/fonts/, copied from the @fontsource packages
+ * (latin subset, woff2 only — see step 2 of the font self-host task for
+ * the exact file list). Re-copy from node_modules/@fontsource/<pkg>/files/
+ * if a new weight/style is ever needed.
+ *
+ * Noto Serif TC intentionally STAYS on Google Fonts (index.html only) —
+ * CJK subsetting is impractical to self-host (the full charset is huge,
+ * and Google's edge-negotiated subsetting is the practical option here).
+ * It is only used by the app (hexagram glyphs), never by /learn, so it
+ * doesn't need to be shared between surfaces the way these four do.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-latin-300-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-latin-300-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-latin-400-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-latin-500-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-latin-500-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-latin-600-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-latin-600-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/cinzel-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/cinzel-latin-500-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/cinzel-latin-600-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Karla";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/karla-latin-300-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Karla";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/karla-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Karla";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/karla-latin-500-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Karla";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/karla-latin-600-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Karla";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/karla-latin-700-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/lora-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/lora-latin-400-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/lora-latin-500-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/lora-latin-500-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/lora-latin-600-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/lora-latin-600-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}

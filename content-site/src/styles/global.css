@@ -4,35 +4,39 @@
    Ported from the Claude Design "Learn Library v3" prototype.
    ========================================================================== */
 
-/* ── Theme tokens ───────────────────────────────────────────────────────── */
+/* ── Theme tokens ─────────────────────────────────────────────────────────
+   Grounds, ink, and gold are LITERAL TWINS of the app's palette (theme.css:
+   paper-50 / wood-900 / bronze-500-400), so crossing between the surfaces
+   changes the page, never the world. The library keeps its own supporting
+   tones (body copy, rules, mats); only the felt anchors are shared. */
 :root,
 [data-theme='dark'] {
-  --bg: #14110d;
-  --bg-2: #1b1610;
-  --bg-3: #0f0c09;
-  --ink: #f2ebdd;
+  --bg: #211c16;      /* app dark paper-50 */
+  --bg-2: #2a241b;    /* app dark paper-200 */
+  --bg-3: #191510;    /* app dark paper-100 */
+  --ink: #f3ecde;     /* app dark wood-900 cream */
   --body: #a89c86;
   --body-strong: #d8cfbe;
   --faint: #9a8e78;
-  --rule: rgba(196, 168, 116, 0.16);
-  --rule-2: rgba(196, 168, 116, 0.1);
-  --acc: #c4a878;
-  --frame: rgba(212, 173, 116, 0.3);
-  --mat: rgba(196, 168, 116, 0.26);
+  --rule: rgba(205, 164, 94, 0.16);
+  --rule-2: rgba(205, 164, 94, 0.1);
+  --acc: #cda45e;     /* app dark bronze-500 */
+  --frame: rgba(222, 188, 126, 0.3);
+  --mat: rgba(205, 164, 94, 0.26);
 }
 
 [data-theme='light'] {
-  --bg: #f4f0e7;
-  --bg-2: #ece6d9;
+  --bg: #f3efe7;      /* app paper-50 */
+  --bg-2: #eae4d7;    /* app paper-100 */
   --bg-3: #fffdf8;
-  --ink: #221d17;
+  --ink: #272219;     /* app wood-900 ink */
   --body: #6b6357;
   --body-strong: #2f2a23;
   --faint: #8a8175;
-  --rule: #e2dbcd;
+  --rule: #ded5c2;    /* app wood-200 */
   --rule-2: #e9e2d3;
-  --acc: #8a744e;
-  --frame: rgba(138, 116, 78, 0.28);
+  --acc: #a37b38;     /* app bronze-500 */
+  --frame: rgba(163, 123, 56, 0.28);
   --mat: #e6e0d2;
 }
 
@@ -125,36 +129,9 @@ a, button, [role='button'], .lp-row, .lp-rel-card { -webkit-tap-highlight-color:
 }
 
 /* ── Top bar ────────────────────────────────────────────────────────────── */
-.lp-topbar {
-  position: relative; z-index: 5;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 22px 44px; border-bottom: 1px solid var(--rule);
-}
-.lp-wordmark {
-  font-family: 'Cinzel', serif; font-size: 15px; letter-spacing: 0.16em;
-  color: var(--ink); text-decoration: none;
-}
-.lp-topbar-right { display: flex; align-items: center; gap: 22px; }
-.lp-nav {
-  display: flex; gap: 26px; font-family: 'Karla', sans-serif; font-size: 11px;
-  letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint); white-space: nowrap;
-}
-.lp-nav a { color: var(--faint); text-decoration: none; transition: color 0.3s; padding-bottom: 4px; }
-.lp-nav a:hover { color: var(--ink); }
-.lp-nav a.is-active { color: var(--acc); border-bottom: 1px solid var(--acc); }
-
-.lp-toggle {
-  display: inline-flex; align-items: center; gap: 8px; background: transparent;
-  border: 1px solid var(--rule); color: var(--faint); font-family: 'Karla', sans-serif;
-  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
-  padding: 9px 15px; border-radius: 999px; cursor: pointer; transition: all 0.3s;
-}
-.lp-toggle:hover { border-color: var(--acc); color: var(--acc); }
-.lp-menu {
-  display: none; align-items: center; justify-content: center; width: 40px; height: 40px;
-  background: transparent; border: 1px solid var(--rule); color: var(--faint);
-  font-size: 16px; border-radius: 8px; cursor: pointer;
-}
+/* The library has NO bar of its own. The app's site bar (components/
+   NavigationCore.tsx) is rendered by Base.astro and styled by site-bar.css,
+   compiled from the same shared theme contract — one bar, both surfaces. */
 
 /* ── Hero ───────────────────────────────────────────────────────────────── */
 .lp-hero { position: relative; height: 620px; overflow: hidden; }
@@ -347,11 +324,6 @@ a, button, [role='button'], .lp-row, .lp-rel-card { -webkit-tap-highlight-color:
 
 /* ── Responsive: container queries (mobile reflow + medallion) ──────────── */
 @container (max-width: 720px) {
-  .lp-topbar { padding-left: 22px; padding-right: 22px; }
-  .lp-nav { display: none; }
-  .lp-menu { display: inline-flex; }
-  .lp-toggle .label { display: none; }
-
   .lp-hero { height: auto; }
   .lp-hero-img { position: relative; inset: auto; width: 100%; height: auto; aspect-ratio: 1 / 1; }
   .lp-hero-scrim-side { display: none; }

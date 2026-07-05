@@ -22,7 +22,8 @@
     "test": "npx playwright test",
     "test:mobile": "npx playwright test --project='Mobile Chrome' --reporter=list",
     "test:unit": "vitest run",
-    "backup:atlas": "tsx scripts/backup-atlas.ts"
+    "backup:atlas": "tsx scripts/backup-atlas.ts",
+    "postbuild": "node scripts/build-csp-headers.mjs"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",
@@ -43,6 +44,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260528.1",
+    "@fontsource/cinzel": "^5.2.8",
     "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/d3-geo": "^3.1.0",
