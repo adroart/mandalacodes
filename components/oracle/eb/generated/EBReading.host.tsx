@@ -356,15 +356,18 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const HEXH = 5 * (lineH + gap) + lineH;
     const half = (HEXW - brokenGap) / 2;
     const motionOn = !this.props.reduceMotion;
-    const curBits = (this.KINGWEN[this.props.data.code - 1] || this.KINGWEN[0])[2];
     const items: any[] = [];
     for (let i = 0; i < 64; i++) {
       const ang = (i / 64) * 2 * Math.PI - Math.PI / 2;
       const x = CX + Math.cos(ang) * R, y = CY + Math.sin(ang) * R;
       const rot = (i / 64) * 360 + 180;
-      const current = i === 0;
+      // Each ring position draws the REAL King Wen hexagram for that seat
+      // (number i+1), not a raw binary count — so all 64 are true hexagrams.
+      // KINGWEN bits are bottom-to-top; render top-to-bottom via bits[5 - li].
+      const bits = this.KINGWEN[i][2];
+      const current = this.KINGWEN[i][0] === this.props.data.code;
       const lines: boolean[] = [];
-      for (let li = 0; li < 6; li++) lines.push(current ? (curBits[5 - li] === '1') : (((i >> li) & 1) === 1));
+      for (let li = 0; li < 6; li++) lines.push(bits[5 - li] === '1');
       const fill = current ? 'var(--accent)' : 'var(--l-3)';
       const op = current ? 0.95 : 0.3;
       const lineEls = lines.map((solid, li) => {
@@ -461,10 +464,22 @@ export class EBReadingHost extends React.Component<HostProps, any> {
 
   buildCenter() {
     const motionOn = !this.props.reduceMotion;
+    // THIS card's actual hexagram — the original prototype drew six solid
+    // bars (hexagram 1) as a placeholder for every card. KINGWEN bits are
+    // stored bottom-to-top ('1' = yang), same convention as the ring glyphs:
+    // row i renders top-to-bottom, so line i reads bits[5 - i]. Broken (yin)
+    // lines are two half-bars with the center gap.
+    const bits = (this.KINGWEN[this.CURRENT_CODE - 1] || this.KINGWEN[0])[2];
     const rects: any[] = [];
     for (let i = 0; i < 6; i++) {
       const y = i * 13;
-      rects.push(React.createElement('rect', { key: i, x: 4, y, width: 72, height: 9, fill: 'var(--l-1)', style: { transformBox: 'fill-box', transformOrigin: 'left center', animation: motionOn ? `ulDraw 280ms ease-out ${560 + i * 110}ms both` : 'none' } }));
+      const anim = motionOn ? `ulDraw 280ms ease-out ${560 + i * 110}ms both` : 'none';
+      if (bits[5 - i] === '1') {
+        rects.push(React.createElement('rect', { key: i, x: 4, y, width: 72, height: 9, fill: 'var(--l-1)', style: { transformBox: 'fill-box', transformOrigin: 'left center', animation: anim } }));
+      } else {
+        rects.push(React.createElement('rect', { key: `${i}a`, x: 4, y, width: 30, height: 9, fill: 'var(--l-1)', style: { transformBox: 'fill-box', transformOrigin: 'left center', animation: anim } }));
+        rects.push(React.createElement('rect', { key: `${i}b`, x: 46, y, width: 30, height: 9, fill: 'var(--l-1)', style: { transformBox: 'fill-box', transformOrigin: 'right center', animation: anim } }));
+      }
     }
     return React.createElement('svg', { width: 68, height: 80, viewBox: '0 0 80 80', 'aria-hidden': true }, rects);
   }
