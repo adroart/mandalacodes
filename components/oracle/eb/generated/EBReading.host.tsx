@@ -461,10 +461,22 @@ export class EBReadingHost extends React.Component<HostProps, any> {
 
   buildCenter() {
     const motionOn = !this.props.reduceMotion;
+    // THIS card's actual hexagram — the original prototype drew six solid
+    // bars (hexagram 1) as a placeholder for every card. KINGWEN bits are
+    // stored bottom-to-top ('1' = yang), same convention as the ring glyphs:
+    // row i renders top-to-bottom, so line i reads bits[5 - i]. Broken (yin)
+    // lines are two half-bars with the center gap.
+    const bits = (this.KINGWEN[this.CURRENT_CODE - 1] || this.KINGWEN[0])[2];
     const rects: any[] = [];
     for (let i = 0; i < 6; i++) {
       const y = i * 13;
-      rects.push(React.createElement('rect', { key: i, x: 4, y, width: 72, height: 9, fill: 'var(--l-1)', style: { transformBox: 'fill-box', transformOrigin: 'left center', animation: motionOn ? `ulDraw 280ms ease-out ${560 + i * 110}ms both` : 'none' } }));
+      const anim = motionOn ? `ulDraw 280ms ease-out ${560 + i * 110}ms both` : 'none';
+      if (bits[5 - i] === '1') {
+        rects.push(React.createElement('rect', { key: i, x: 4, y, width: 72, height: 9, fill: 'var(--l-1)', style: { transformBox: 'fill-box', transformOrigin: 'left center', animation: anim } }));
+      } else {
+        rects.push(React.createElement('rect', { key: `${i}a`, x: 4, y, width: 30, height: 9, fill: 'var(--l-1)', style: { transformBox: 'fill-box', transformOrigin: 'left center', animation: anim } }));
+        rects.push(React.createElement('rect', { key: `${i}b`, x: 46, y, width: 30, height: 9, fill: 'var(--l-1)', style: { transformBox: 'fill-box', transformOrigin: 'right center', animation: anim } }));
+      }
     }
     return React.createElement('svg', { width: 68, height: 80, viewBox: '0 0 80 80', 'aria-hidden': true }, rects);
   }
