@@ -31,17 +31,25 @@ The reading is the CODE itself — the one energy — spoken plainly. The tradit
 
 All source material still exists, together, in the Obsidian vault: `~/Documents/Obsidian Vault/oracle/hexagrams/NN/` (Eranos philology, Gene Keys chapter + reference sheet, Wilhelm, Practical Guide, Quantum Way gate file, tarot files, line files). The vault is the anti-invention floor; nothing is invented.
 
-**Step A — Distillation sheet (one per card, before any prose).** A short working artifact holding:
-- The one-breath truth: ONE sentence naming what all four lenses are looking at. Specific, not vague. When lineages genuinely diverge, pick a lead lineage and log why (master guide §5.3 procedure).
-- Four lens lines: one image or angle per tradition (I Ching natural image, Gene Keys arc, HD body-feel, Tarot gesture) that CONFIRMS the center — these are checks, not ingredients.
+**Step A — Distillation sheet (one per card, before any prose).** The synthesis model (Adrian, 2026-07-05): each tradition answers a DIFFERENT question about the SAME energy — that is what "lenses on one thing" means operationally:
+- **I Ching → the situation.** When this energy arrives in a life; what season it is; what the world looks like while it happens.
+- **Human Design → the body.** Where it is physically felt (belly yes, tight chest, drawn bow's held charge).
+- **Gene Keys → the arc.** The same energy collapsed vs ripened. One energy, two altitudes — never two energies.
+- **Tarot → the face.** The one figure/gesture that carries the whole thing.
+
+The sheet holds:
+- The one-breath truth: ONE sentence naming the energy such that all four answers obviously click around it. THE TEST that it's real, not mush: if the sentence is right, situation + body-feel + arc + face snap into place without forcing. If any answer has to be bent to fit, the sentence is wrong. When lineages genuinely diverge, pick a lead and log why (master guide §5.3).
+- The four answers, one line each, each traced to a vault file.
 - Tone note: where the lift lands in this card.
+
+**Why this makes a card HIT (the design goal):** the "how did this card know that" feeling is built from exactly these four dimensions — a moment the reader was just in this week (situation), where it sits in their body (felt sense), what it's trying to become (arc), delivered in one coherent voice wearing one face. The current readings fail because they answer only the arc question, in borrowed words.
 
 **Step B — Adrian ratifies the sheet.** Fast pass: approve or strike the one-breath truth. This is the only step needing him per card, and it is the whole ballgame.
 
-**Step C — Write the reading FROM the center sentence alone.** Amended shape, four beats in three paragraphs (~200–260 words):
-1. The force, lit — what it feels like awake in a person. Always lit, even on dark codes.
-2. The other face — the same force in its low season. Felt, not diagnosed, never the Gene Keys Shadow text recompressed.
-3. The turn AND the ask together — the reading ends risen. The "no neat bow" rule is amended: end plain and a beat early, but end UP. "Descent and a return" (01_DESCRIPTION_SPEC arc) becomes the reading's law too.
+**Step C — Write the reading FROM the center sentence alone.** Amended shape, four beats in three paragraphs (~200–260 words), braiding the four dimensions into ONE voice (never four voices in sequence):
+1. The force, lit — what it feels like awake in a person, anchored in the body (HD's answer) and in a lived moment (I Ching's answer). Always lit, even on dark codes.
+2. The other face — the same force in its low season (the arc's low altitude). Felt, not diagnosed, never the Gene Keys Shadow text recompressed.
+3. The turn AND the ask together — the reading ends risen. The "no neat bow" rule is amended: end plain and a beat early, but end UP. "Descent and a return" (01_DESCRIPTION_SPEC arc) becomes the reading's law too. The Tarot face may quietly govern the closing image.
 
 **Step D — Lens validation (after writing, per card).** Four questions: would someone who knows only the I Ching recognize this reading as hexagram N? Only Gene Keys? Only HD? Only Tarot? All four must say yes; none may say "this is mine." Plus: no phrase duplicated from the card's own KEYS/ICHING sections; voice rules (no em dashes, no source naming, no borrowed prose) hold.
 
