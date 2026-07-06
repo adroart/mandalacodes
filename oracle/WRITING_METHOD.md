@@ -1,5 +1,15 @@
 # Universal Language Oracle — The Writing Method
 
+> **⚠ SUPERSESSION NOTICE (2026-07-06): §1.4b and §3 SECTION 1 — the opening
+> reading's three-movement shape (lit face → other face → the ask) and the
+> "end a beat early, no neat bow" rule AS APPLIED TO THE READING — are
+> superseded by `../todo/plans/reading-rewrite.md`.** The old shape produced
+> 64 downer readings that recompressed Gene Keys. The reading now follows the
+> four-questions synthesis (I Ching = situation, HD = body, GK = arc, Tarot =
+> face) and ENDS RISEN. Do not write, revise, or imitate a `## CODE` reading
+> from this file — including the locked Hexagram 1 sample in §3, which models
+> the superseded arc. Everything else in this file still holds.
+
 > The field-by-field standard for writing a card. Designed with Adrian from the
 > real Hexagram 1 source material (Stage A2). This document is **canonical**: it
 > defines every text slot a card has, what each slot does, how long it runs,

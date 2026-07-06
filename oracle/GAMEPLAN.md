@@ -199,16 +199,22 @@ conversion (they had existing JSON worth keeping). Recorded in WRITE.md.
 
 ## NEXT MOVE (resume here if we stop)
 
+> **⚠ SUPERSEDED (2026-07-06).** JOB A already ran (June 2026) and produced the
+> downer readings. The current next move for the opening readings is
+> `../todo/plans/reading-rewrite.md`: amend the spec, pilot 5 cards, Adrian
+> ratifies center sentences, THEN batch in waves. Do not relaunch JOB A and do
+> not imitate card 3's reading — card 3 is one of the rewrite pilots.
+
 Card 3 is now COMPLETE across all six sections (the locked reference card).
 Card 3's own invocation is still null — Adrian writes invocations himself.
 
-Two things gate the cheap batch (JOB A in `BATCH_PLAN.md`):
+The old gating notes below are kept for history only:
 1. **Wire the `sections/code/NN.json` overlay into `data/synthesisData.ts`** so
    the card UI renders Section 1 (one-time code change, parallels how keys/
    design overlays load). Until then card 3's new opening face won't show in
    the live card.
-2. **Launch JOB A** — Sonnet batch, one agent per card, Section 1 for the other
-   63, imitating card 3. See `BATCH_PLAN.md`.
+2. ~~**Launch JOB A** — Sonnet batch, one agent per card, Section 1 for the other
+   63, imitating card 3. See `BATCH_PLAN.md`.~~ **Superseded — see banner above.**
 
 Then optionally JOB B (deep-pass iching+body for the other 61), then Adrian's
 Phase 2 review (scaffold → final).

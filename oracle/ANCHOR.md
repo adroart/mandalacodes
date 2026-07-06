@@ -1,5 +1,10 @@
 # Universal Language Oracle — Anchor & Hand-off
 
+> **⚠ Note (2026-07-06):** the opening reading's "2–3 clusters" shape called
+> "decided/locked" below is superseded by `../todo/plans/reading-rewrite.md`
+> (four-questions synthesis, ends risen, pilot gate). The rest of this record
+> stands.
+
 The honest, current record of where the work stands. Read this with
 `VISION.md` (the *intent* — what the deck is for and the six-section card
 structure) and `WRITING_METHOD.md` (the *method* — every text slot, locked

@@ -1,5 +1,19 @@
 # WRITE.md — the enforced loader for all oracle card writing
 
+> **⚠ SUPERSESSION NOTICE (2026-07-06) — the OPENING READING spec below is
+> superseded.** The three-movement reading shape (lit face → other face → the
+> ask, "end a beat early") in `WRITING_METHOD.md` §1.4b/§3 and
+> `sections/_TEMPLATE_01_CODE_N.md` §4.3 produced 64 readings that read as
+> downers and recompressed Gene Keys instead of synthesizing the whole code.
+> **Before writing, rewriting, reviewing, or batching ANY card's opening
+> reading (`## CODE`), you MUST load `../todo/plans/reading-rewrite.md` and
+> `CONCEPT.md` §4. The plan wins over every reading-shape instruction in this
+> file and its spine.** Its non-negotiables: four-questions synthesis (I Ching
+> = situation, Human Design = body, Gene Keys = arc, Tarot = face), one
+> ratified center sentence per card, the reading ends RISEN, pilot-of-5 gate
+> before any batch. All other sections (ICHING, KEYS, DESIGN, BODY, RELATIONS)
+> still follow this file as written.
+
 > **This is the single entry point for writing or revising ANY card text.**
 > Adrian points here. You (the agent) load from here. Nothing about the writing
 > voice lives in this file — it is the *manifest* that guarantees every rule
@@ -25,7 +39,8 @@ name.** If you have not read them this session, STOP and read them now. Writing
 card text from a subset of the notes is the exact failure this file prevents.
 
 When you finish loading, say: "Loaded: [list every file]. Precedence: WRITING_METHOD
-wins on structure; 00 + 05 + 06 win on voice/copyright/keywords/relations.
+wins on structure; 00 + 05 + 06 win on voice/copyright/keywords/relations;
+**reading-rewrite plan + CONCEPT §4 win on the opening reading's shape and arc.**
 Ready to write [section] of Card [N]." Only then write.
 
 ---
@@ -62,6 +77,11 @@ status → 00 + 05.
 ## LOAD ORDER (read top to bottom, every writing session)
 
 ### Always — the spine (read all of these before any section)
+0. `../todo/plans/reading-rewrite.md` + `CONCEPT.md` §4 — **REQUIRED whenever the
+   opening reading (`## CODE`) is in scope.** The plan supersedes every
+   reading-shape rule below; CONCEPT §4 holds the synthesis law ("drawing the
+   threads of all the systems together without naming them"). This slot exists
+   because the June 2026 batch failed for lack of it.
 1. `VISION.md` — what the deck is for; the six-section intent; the
    non-negotiables of the writing (human, no inherited templates).
 2. `00_MASTER_WRITING_GUIDE.md` — **the voice + copyright + terms + status

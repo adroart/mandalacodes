@@ -1,5 +1,15 @@
 # TEMPLATE — Section 1 · Code N (the opening face)
 
+> **⚠ SUPERSESSION NOTICE (2026-07-06): §4.3 (`code.reading`) is superseded by
+> `../../todo/plans/reading-rewrite.md`.** The three-movement shape (lit face →
+> other face → the ask), the "end on the ask, a beat early" rule, the checklist
+> line enforcing it, AND all three worked reading samples in §4.3 model the
+> arc that produced 64 downer readings. Do not write or imitate a reading from
+> this file. The reading now follows the four-questions synthesis (I Ching =
+> situation, HD = body, GK = arc, Tarot = face) and ends risen. §4.1
+> (card_name), §4.2 (keywords), §4.4 (invocation), and the voice/cut rules in
+> §1–§2 still hold.
+
 > Draft for Adrian's review. Not yet locked. This is the first of six section
 > templates that will replace the older `00`–`06` guide set and the thin
 > per-section `_BRIEF.md` files. Sign-off here sets the shape for the other

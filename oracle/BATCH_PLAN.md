@@ -1,5 +1,15 @@
 # BATCH_PLAN.md — how to write the 64 cards cost-effectively
 
+> **⚠ DO NOT LAUNCH JOB A (2026-07-06).** This batch ran in June 2026 and is
+> the documented failure mode: all 64 opening readings came out as Gene Keys
+> recompression with no lift, because the batch imitated card 3 and never saw
+> the synthesis rule. The opening reading is now governed by
+> `../todo/plans/reading-rewrite.md` — method A–E, Adrian ratifies each card's
+> center sentence, and a PILOT-OF-5 GATE blocks any batch until he approves
+> the pilots on the live page. Card 3 is NOT the model for the reading; it is
+> one of the cards to be rewritten. This file remains useful only for its
+> cost/model routing ideas.
+
 > The execution plan for filling the deck without paying Opus-interactive rates
 > 64 times. Pairs with `WRITE.md` (the rules + loader) and `GAMEPLAN.md` (where
 > we are). This file is the *how to run it cheaply at scale*.

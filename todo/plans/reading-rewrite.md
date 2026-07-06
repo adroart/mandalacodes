@@ -58,10 +58,24 @@ The sheet holds:
 ## Sequence
 
 1. **Spec amendment first.** Update WRITING_METHOD.md §1.4b + sections/_TEMPLATE_01_CODE_N.md §4.3 with the amended shape and the lens-validation test; add CONCEPT.md to WRITE.md's load order; require the CODE sourcing_log entry. One spec must win — resolve the precedence contradiction explicitly.
-2. **Pilot: 5 cards.** One bright code (1 or 14), one dark code (47), one where lineages diverge, one body-led (52), one Adrian picks. Full method A–E on each.
+2. **Pilot: 5 cards.** Card 3 MUST be one of them (it is the "locked reference" the old batch imitated — until its reading is rewritten it silently re-teaches the old arc). Plus one bright code (1 or 14), one dark code (47), one body-led (52), one Adrian picks. Full method A–E on each.
 3. **Gate: Adrian reads the 5 on the live page** (not in markdown). If the felt experience is right — pulled up, whole-code, not any one tradition — lock the spec. If not, iterate here; do NOT proceed.
 4. **Batch the remaining 59** in ratify-then-write waves (sheets in batches of ~10 for Adrian's ratification, prose follows each ratified batch). Never all 59 blind in one day — that was the June failure mode.
 5. **Ship with a sweep**: re-run the tone sweep (first/last paragraph of all 64) and the lens validation before merge.
+
+## System wiring — done 2026-07-06 (the "cannot get lost again" pass)
+
+An Opus sweep found every path a future session could take to the old spec. All are now cut:
+- **WRITE.md** (the enforced loader): supersession banner at top, this plan + CONCEPT.md added as load-order slot 0, precedence rule amended (this plan wins on the reading's shape), gate confirmation line updated.
+- **WRITING_METHOD.md**: banner — §1.4b/§3 reading shape + the Hexagram 1 locked sample superseded.
+- **sections/_TEMPLATE_01_CODE_N.md**: banner — §4.3 spec + all three worked samples superseded.
+- **BATCH_PLAN.md**: DO-NOT-LAUNCH banner on Job A (it already ran and is the failure mode).
+- **GAMEPLAN.md**: NEXT MOVE superseded — points here; "imitate card 3" struck.
+- **ANCHOR.md**: note that the "2–3 clusters decided" claim is superseded.
+- **Project memory**: pinned entry (`project_reading_rewrite_plan.md` in the auto-memory dir) so every future session loads the pointer.
+- **Root TODO.md**: two entries at top of Soon, both linking here.
+
+Still live and deliberately untouched: `oracle/generated/01.json` is imported by `data/synthesisData.ts` (import.meta.glob overlay) and feeds card 1's rendered reading today — retire it during the rewrite, not before, or card 1's page changes unreviewed.
 
 ## Related but separate (do not fold into this rewrite)
 
