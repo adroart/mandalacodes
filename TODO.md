@@ -19,7 +19,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 - [ ] Rewrite the 64 opening readings so each speaks the whole code (all traditions as lenses on one energy) and ends lifting, not heavy _(band: you-required)_ _(effort: deep)_ → Plan: [reading-rewrite.md](todo/plans/reading-rewrite.md)
 
-- [ ] Fix the card page to show the newer Gene Keys text instead of the old data that names sources it must not name _(band: agent-runnable)_ _(effort: quick)_ → Plan: [reading-rewrite.md](todo/plans/reading-rewrite.md) § Related but separate
+- [ ] Scrub the remaining soft source-name phrases in card prose ("the lineage calls this", "the text calls this", "the Eranos source calls this" on cards 1, 4, 5, 6, 13, 40, 60) — your call, since "the lineage" may read as acceptable in-world voice _(band: you-required)_ _(effort: quick)_
 
 - [ ] Finish The Field: the procession (guided founding-story tour) and the piece's yearly ask about its shared words; the three lenses, dream share flow, and tending queue shipped 2026-07-04 on the globe branch _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) § M6
 
