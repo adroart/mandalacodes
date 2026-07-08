@@ -16,6 +16,12 @@ docs sync, and PR #61 itself.
 Work through this top to bottom. Check items off in MORNING-AFTER's status
 ledger as you go.
 
+> **Shortcut:** `bash scripts/go-live.sh` runs steps 1-6 below interactively
+> and idempotently (wrangler check, migration apply, secret set on both
+> projects, live verification, backup), then prints the three manual
+> browser/other-repo steps. Safe to re-run; it only acts where you confirm.
+> The prose below is the reference the script automates.
+
 ---
 
 ## 0. Baseline (PRs #61 and #64 are merged)
