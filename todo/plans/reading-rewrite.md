@@ -2,6 +2,8 @@
 
 Status: planned, waiting for Adrian to be home. Do not start writing cards until the pilot gate (step 3) passes.
 
+> **↑ In-OS home (2026-07-06).** This is the CONTENT spec (what a reading must be). The MACHINERY that will hold and enforce it lives in i64os: **WordForge**, whose master plan is `i64os/todo/plans/wordforge-metabolism.md` (detail spec `oracle-cards-guided-templates.md`). The oracle deck is WordForge's declared *expression proving series*. The failure this rewrite exists to fix — "the writing guide sat beside the process, nothing in the machinery held it, so it got thrown out" — is the SAME failure WordForge's *machine-held constitution* is being built to solve (both diagnosed 2026-07-05). So: the four-questions synthesis + "ends risen" + the lens-validation rubric in this file BECOME the oracle expression template's overarching guide + CODE-section acceptance rubric inside WordForge (workstreams M0 author-the-constitution, M8 the oracle series + Gate 23 first). Develop the reading INSIDE WordForge (a living template + the card-set pillar body accreting), not as a one-shot markdown rewrite. Do not run a parallel hand-writing track that bypasses the constitution — that bypass is exactly what failed in June.
+
 ## What this is
 
 The opening reading on every card page (the three paragraphs under "The Reading") must be rewritten for all 64 cards. Diagnosis from the 2026-07-05 session:
