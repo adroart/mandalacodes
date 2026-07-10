@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccount } from '../../lib/account/useAccount';
 import SignInModal from '../account/SignInModal';
@@ -71,9 +71,17 @@ const StewardClaim: React.FC = () => {
     return { pieceId: pid, editionNumber };
   })();
 
-  // Phase A: bind on arrival.
+  // Phase A: bind on arrival. Fired exactly once per signed-in arrival,
+  // guarded by a ref rather than `status`: with `status` in the dependency
+  // array, the effect's own setStatus('claiming') re-triggered the cleanup
+  // and flipped `cancelled` before the response landed, so every response
+  // path (ok, 404, error) was dead and the page hung on "Looking up your
+  // piece...". The ref keeps the single-fire guarantee; `cancelled` now
+  // means what it says: the component unmounted mid-flight.
+  const claimFired = useRef(false);
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || status !== 'idle') return;
+    if (!isLoaded || !isSignedIn || claimFired.current) return;
+    claimFired.current = true;
     let cancelled = false;
     (async () => {
       setStatus('claiming');
@@ -110,7 +118,7 @@ const StewardClaim: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn, fetchAuthed, navigate, status]);
+  }, [isLoaded, isSignedIn, fetchAuthed, navigate]);
 
   // Phase B: consent capture.
   const handleConsentSubmit = async (choice: ConsentChoice) => {
