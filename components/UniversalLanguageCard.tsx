@@ -16,6 +16,7 @@ import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
 import SaveToCollectionButton from './account/SaveToCollectionButton';
 import { ulPieceForCard } from '../utils/universalLanguage';
+import { useCardPlacement } from '../lib/atlas/state';
 import './oracle/eb/eb-template.css';
 
 /* Earth's Breath card reading. The visible component is GENERATED from the
@@ -46,6 +47,25 @@ const UniversalLanguageCard: React.FC = () => {
   const showEntrance = !arrivedQuiet;
   const [buyOpen, setBuyOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  /* Where this card's physical piece sits on the public atlas (cached shared
+     load). Null while loading or when the piece isn't in the public ledger.
+     The "On the Atlas" link only renders when the piece is actually mapped
+     (placed or unawakened with a city); a deep link to an unmapped piece
+     lands on an unselected globe and reads as a broken link. */
+  const placement = useCardPlacement(cardNum);
+  const placementOnGlobe =
+    placement != null &&
+    (placement.status === 'placed' || placement.status === 'unawakened') &&
+    placement.cityLabel != null;
+  const atlasHref = placementOnGlobe
+    ? `/atlas?piece=${encodeURIComponent(
+        `${placement.pieceId}${
+          typeof placement.editionNumber === 'number' && placement.editionNumber !== 0
+            ? `:${placement.editionNumber}`
+            : ''
+        }`,
+      )}`
+    : null;
 
   useEffect(() => {
     document.documentElement.classList.add('oracle-card-page');
@@ -215,12 +235,14 @@ const UniversalLanguageCard: React.FC = () => {
                 >
                   See the piece: {piece.title}
                 </Link>
-                <Link
-                  to={`/atlas?piece=${piece.id}`}
-                  style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', textDecoration: 'none', borderBottom: '1px solid var(--l-rule)', paddingBottom: 2 }}
-                >
-                  On the Atlas
-                </Link>
+                {atlasHref && (
+                  <Link
+                    to={atlasHref}
+                    style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', textDecoration: 'none', borderBottom: '1px solid var(--l-rule)', paddingBottom: 2 }}
+                  >
+                    On the Atlas
+                  </Link>
+                )}
               </div>
             )}
           </div>
