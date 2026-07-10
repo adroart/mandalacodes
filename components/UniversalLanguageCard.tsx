@@ -14,6 +14,7 @@ import { EBReadingHost, type EBData } from './oracle/eb/generated/EBReading.host
 import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
+import SaveToCollectionButton from './account/SaveToCollectionButton';
 import { ulPieceForCard } from '../utils/universalLanguage';
 import './oracle/eb/eb-template.css';
 
@@ -202,7 +203,12 @@ const UniversalLanguageCard: React.FC = () => {
         showEntrance={showEntrance}
         onAcquire={() => setBuyOpen(true)}
         onShare={() => setShareOpen(true)}
-        headerChartSlot={<YourPositionCallout gate={card.number} />}
+        headerChartSlot={
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12 }}>
+            <YourPositionCallout gate={card.number} />
+            <SaveToCollectionButton kind="card" itemRef={String(card.number)} label="Save this card" />
+          </div>
+        }
       />
       <BuySheet
         open={buyOpen}
