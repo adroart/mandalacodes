@@ -224,28 +224,19 @@ const UniversalLanguageCard: React.FC = () => {
         onAcquire={() => setBuyOpen(true)}
         onShare={() => setShareOpen(true)}
         headerChartSlot={
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12 }}>
+          /* One quiet, low-contrast row of small-label actions under the
+             chart callout: save, the physical piece, its place on the map.
+             No borders, no boxes; the same muted type as the header's small
+             labels, so the reading keeps its minimal rhythm. */
+          <>
             <YourPositionCallout gate={card.number} />
-            <SaveToCollectionButton kind="card" itemRef={String(card.number)} label="Save this card" />
-            {piece && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: 18, rowGap: 6 }}>
-                <Link
-                  to={`/piece/${piece.id}`}
-                  style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', textDecoration: 'none', borderBottom: '1px solid var(--l-rule)', paddingBottom: 2 }}
-                >
-                  See the piece: {piece.title}
-                </Link>
-                {atlasHref && (
-                  <Link
-                    to={atlasHref}
-                    style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', textDecoration: 'none', borderBottom: '1px solid var(--l-rule)', paddingBottom: 2 }}
-                  >
-                    On the Atlas
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
+            <div className="ul-slot-quiet-row">
+              <SaveToCollectionButton kind="card" itemRef={String(card.number)} label="Save this card" />
+              {piece && <Link to={`/piece/${piece.id}`}>See the piece</Link>}
+              {atlasHref && <Link to={atlasHref}>On the Atlas</Link>}
+            </div>
+            <style>{quietRowStyles}</style>
+          </>
         }
       />
       <BuySheet
@@ -295,6 +286,45 @@ const UniversalLanguageCard: React.FC = () => {
     </>
   );
 };
+
+/* The quiet actions row in the header slot. Palette-aware through the EB
+   reading's own variables (--l-3 muted ink, --accent bronze), so it holds in
+   both Day Book and Nightfall. The save button is SaveToCollectionButton's
+   own markup, restyled here to plain label text: the override selector is
+   more specific than the component's .stc__btn rules. */
+const quietRowStyles = `
+  .ul-slot-quiet-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 26px;
+    row-gap: 8px;
+    margin-top: 14px;
+  }
+  .ul-slot-quiet-row a {
+    font-family: var(--sans);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--l-3);
+    text-decoration: none;
+    transition: color 0.25s;
+  }
+  .ul-slot-quiet-row a:hover { color: var(--accent); }
+  .ul-slot-quiet-row .stc__btn {
+    font-family: var(--sans);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--l-3);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    transition: color 0.25s;
+  }
+  .ul-slot-quiet-row .stc__btn:hover { color: var(--accent); background: transparent; }
+`;
 
 /* ── light data mappers (live, with graceful fallback) ── */
 function buildReldata(card: any, syn?: CardSynthesis, exp?: any): EBData['reldata'] {
