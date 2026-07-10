@@ -232,7 +232,7 @@ const UniversalLanguageCard: React.FC = () => {
             <YourPositionCallout gate={card.number} />
             <div className="ul-slot-quiet-row">
               <SaveToCollectionButton kind="card" itemRef={String(card.number)} label="Save this card" />
-              {piece && <Link to={`/piece/${piece.id}`}>See the piece</Link>}
+              {piece && <Link to={`/piece/${piece.id}`}>View the Artwork</Link>}
               {atlasHref && <Link to={atlasHref}>On the Atlas</Link>}
             </div>
             <style>{quietRowStyles}</style>
