@@ -14,6 +14,12 @@
  *   - Transfer letters: when the CURRENT holder arrived via a `transferred`
  *     event (their userId is a toRef on the chain) and no 'transfer' letter
  *     exists yet, generate one for their first visit.
+ *   - Words-anniversary letters (Phase 2 item D): when the piece has a
+ *     `status: 'live'` shared intention (atlas/sharedIntentions.json) and a
+ *     year has passed since it went live since the last 'words-anniversary'
+ *     letter, generate one (idempotent via wordsAnniversaryYearDue, the same
+ *     rule as the claim anniversary, keyed off `sharedAt`). Rehomed and
+ *     withdrawn intentions never generate this ask.
  * Then returns every letter for the piece, newest first, with the unread
  * count.
  *
@@ -31,10 +37,14 @@ import {
   buildLetter,
   composeAnniversaryBody,
   composeTransferBody,
+  composeWordsAnniversaryBody,
   letterRecipientKey,
   lettersForRecipient,
   unreadCount,
+  wordsAnniversaryYearDue,
+  wordsExcerpt,
 } from '../../../../utils/letters';
+import { intentionChainKey } from '../../../../utils/intentions';
 import type { AtlasLetter, StewardRecord } from '../../../../types';
 import { getCityById, formatPlaceLabel } from '../../../../data/cities';
 import type { PagesContext } from '../_helpers';
@@ -43,6 +53,7 @@ import {
   mutateLetters,
   readLedger,
   readLetters,
+  readSharedIntentions,
   readStewards,
 } from '../_helpers';
 import { letterEmailBody, letterEmailSubject, sendLetterEmail } from '../_email';
@@ -101,7 +112,7 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
   if (args instanceof Response) return args;
 
   const auth2 = await authorize(env, userId, args);
-  if (!auth2.ok) return auth2.response;
+  if (auth2.ok === false) return auth2.response;
   const stewardRecord = auth2.record;
 
   const recipientKey = letterRecipientKey(args.pieceId, args.editionNumber);
@@ -133,6 +144,19 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
     // `sale:<saleId>` (not a userId) until the buyer claims, and the buyer's
     // Phase B consent — not a new event — is their return signal (M4 fact).
     const arrivedByTransfer = chain.some((e) => e.type === 'transferred');
+
+    // The one live shared-intention entry for this piece (M6, Lens 2's
+    // "map of dreams"), if any. This is the only thing that can make a
+    // words-anniversary letter due. Read once, before the mutator, so the
+    // idempotency check inside it reads consistent state; only a 'live'
+    // entry qualifies. Rehomed and withdrawn intentions never generate
+    // this ask.
+    const sharedIntentions = await readSharedIntentions(env);
+    const liveIntention = sharedIntentions.find(
+      (si) =>
+        si.status === 'live' &&
+        intentionChainKey(si.pieceId, si.editionNumber) === recipientKey,
+    );
 
     // Generate the due derived letters in one mutator pass so the existing-
     // letters checks (idempotency) read fresh, concurrent-safe state. The
@@ -167,6 +191,29 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
             body: composeTransferBody({ seed: recipientKey }),
           }),
         );
+      }
+
+      if (liveIntention) {
+        const priorWordsLetters = mine.filter((l) => l.kind === 'words-anniversary');
+        const wordsYearDue = wordsAnniversaryYearDue(
+          liveIntention.sharedAt,
+          priorWordsLetters,
+          now,
+        );
+        if (wordsYearDue !== null) {
+          toAppend.push(
+            buildLetter({
+              recipientKey,
+              kind: 'words-anniversary',
+              createdAt: now,
+              body: composeWordsAnniversaryBody({
+                years: wordsYearDue,
+                excerpt: wordsExcerpt(liveIntention.text),
+                seed: recipientKey,
+              }),
+            }),
+          );
+        }
       }
 
       if (toAppend.length === 0) return { next: current, result: toAppend };
@@ -236,7 +283,7 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
     typeof body.editionNumber === 'number' ? body.editionNumber : undefined;
 
   const auth2 = await authorize(env, userId, { pieceId, editionNumber });
-  if (!auth2.ok) return auth2.response;
+  if (auth2.ok === false) return auth2.response;
 
   const recipientKey = letterRecipientKey(pieceId, editionNumber);
   const now = new Date().toISOString();

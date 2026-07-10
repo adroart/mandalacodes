@@ -383,3 +383,77 @@ export function anniversaryYearDue(
   if (alreadyWritten >= years) return null;
   return alreadyWritten + 1;
 }
+
+// ---------- Words-anniversary letters (Phase 2 item D, "shall I keep
+// carrying these words?") ----------
+
+/**
+ * Decide which words-anniversary letter (if any) is due now, given the date
+ * a steward's intention entry first went live on the map. A thin, faithful
+ * twin of `anniversaryYearDue`: the same idempotent, one-per-year,
+ * gap-catch-up rule, just keyed off `sharedAt` instead of the claim date and
+ * off the piece's prior `words-anniversary` letters instead of its
+ * `anniversary` ones. The caller (functions/api/atlas/steward/letters.ts
+ * GET) is responsible for only calling this while the intention's `status`
+ * is `'live'`. A rehomed or withdrawn entry must never generate this ask.
+ */
+export function wordsAnniversaryYearDue(
+  sharedAt: string,
+  existingWordsLetters: readonly AtlasLetter[],
+  nowIso: string,
+): number | null {
+  return anniversaryYearDue(sharedAt, existingWordsLetters, nowIso);
+}
+
+/** A short, already-public fragment of the shared words for the letter to
+ *  quote back. The map itself already shows this text (`SharedIntention.
+ *  text`, cut to 280 chars at share time), so quoting a shorter fragment
+ *  here reveals nothing that isn't already public. Never touches the
+ *  private book body beyond what is already live on the map. */
+export function wordsExcerpt(text: string, max = 60): string {
+  const trimmed = text.trim();
+  if (trimmed.length <= max) return trimmed;
+  return `${trimmed.slice(0, max).trimEnd()}...`;
+}
+
+export interface WordsAnniversaryContext {
+  /** Whole years since the words were shared onto the map. ≥1. */
+  years: number;
+  /** A short, already-public excerpt of the shared words. See
+   *  `wordsExcerpt`. Quote nothing beyond it. */
+  excerpt: string;
+  /** Stable seed (the recipient key) for deterministic template choice. */
+  seed: string;
+}
+
+/**
+ * 4–6 templates, in the piece's own voice, asking whether it should keep
+ * carrying a steward's shared words on the map for another year. The
+ * excerpt is the only quoted material and it is already public (it rides
+ * the map itself); nothing else from the private book ever enters this
+ * body. Warm, elemental, unhurried, an honest question rather than a
+ * pressure toward either answer.
+ */
+export function composeWordsAnniversaryBody(ctx: WordsAnniversaryContext): string {
+  const yearWord = ctx.years === 1 ? 'a year' : `${ctx.years} years`;
+  const capYearWord = yearWord.charAt(0).toUpperCase() + yearWord.slice(1);
+  const excerpt = ctx.excerpt;
+
+  const templates: string[] = [
+    `For ${yearWord} now I have carried these words out where anyone might find them: ` +
+      `"${excerpt}" They were always yours before they were the map's. ` +
+      `Shall I keep carrying them, or shall I bring them home to the book?`,
+    `It has been ${yearWord} since you let me speak these words to whoever passes: ` +
+      `"${excerpt}" I am glad to keep saying them. Only say the word, and I will bring them home instead.`,
+    `${capYearWord} ago you let these words ride out into the open: ` +
+      `"${excerpt}" I have carried them ever since, unnamed and unafraid. ` +
+      `Keep me carrying them, or call them home. Either is yours to choose.`,
+    `${capYearWord} of these words on the map now: "${excerpt}" ` +
+      `and I am still saying them, still unnamed. Tell me whether to keep carrying them, or to hold them privately instead.`,
+    `These words have ridden the map for ${yearWord} now: "${excerpt}" ` +
+      `I would keep carrying them gladly, but they were always yours first. Shall I keep carrying them, or bring them home?`,
+  ];
+
+  const idx = seedIndex(`${ctx.seed}:${ctx.years}`, templates.length);
+  return templates[idx];
+}

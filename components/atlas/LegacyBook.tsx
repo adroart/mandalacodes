@@ -56,6 +56,7 @@ const LETTER_KIND_LABELS: Record<AtlasLetter['kind'], string> = {
   anniversary: 'An anniversary',
   transfer: 'A change of hands',
   tending: 'A word about its words',
+  'words-anniversary': 'Its words, a year on',
 };
 
 const formatDate = (iso: string): string => {
@@ -116,6 +117,13 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
   const [shareBusy, setShareBusy] = useState<string | null>(null);
   const [shareError, setShareError] = useState<Record<string, string>>({});
   const [everShared, setEverShared] = useState(false);
+
+  // Words-anniversary letters (Phase 2 item D): local, per-letter
+  // acknowledgment for "keep carrying them". Reading the letter is already
+  // the consent (readAt, no new endpoint), so this is a quiet UI dismissal,
+  // never a network call. "return them to the book" reuses the same
+  // share-intention withdraw path as the timeline's own toggle below.
+  const [wordsLetterAck, setWordsLetterAck] = useState<Record<string, boolean>>({});
 
   // Add-entry form
   const [kind, setKind] = useState<InscriptionKind>('intention');
@@ -360,6 +368,28 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
     }
   };
 
+  // The one live shared-intention entry currently riding the map for this
+  // piece, if any. This is what a words-anniversary letter's "return them
+  // to the book" action withdraws. Mirrors the same shared-state-wins rule
+  // `renderEntry` uses per row, just resolved once across the whole
+  // inscriptions list (only one entry can be live per piece).
+  const liveSharedView = useMemo(
+    () =>
+      inscriptions?.find(
+        (v) =>
+          v.kind === 'intention' &&
+          (shared[v.id] ?? (v as { shared?: boolean }).shared ?? false),
+      ) ?? null,
+    [inscriptions, shared],
+  );
+
+  // "Keep carrying them" is a quiet local acknowledgment, never a network
+  // call: reading the letter (readAt, already set on open) is itself the
+  // consent to keep carrying the words for another year. No new endpoint.
+  const handleKeepWords = (letterId: string) => {
+    setWordsLetterAck((prev) => ({ ...prev, [letterId]: true }));
+  };
+
   // === Heirs ===
 
   const activeHeirs = (steward.heirs ?? []).filter((h) => h.status !== 'revoked');
@@ -574,6 +604,42 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                     <p className="font-serif text-[1.0625rem] leading-[1.7] text-wood-900 italic mt-1 whitespace-pre-line">
                       {letter.body}
                     </p>
+                    {letter.kind === 'words-anniversary' && (
+                      <div className="mt-2">
+                        {wordsLetterAck[letter.id] ? (
+                          <p className="font-serif italic text-sm text-stone-500">
+                            The words stay. Thank you for reading.
+                          </p>
+                        ) : liveSharedView ? (
+                          <div className="flex flex-wrap gap-4">
+                            <button
+                              type="button"
+                              onClick={() => handleKeepWords(letter.id)}
+                              className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                            >
+                              keep carrying them
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleShare(liveSharedView, false)}
+                              disabled={shareBusy === liveSharedView.id}
+                              className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                            >
+                              return them to the book
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="font-serif italic text-sm text-stone-500">
+                            These words already rest back in the book.
+                          </p>
+                        )}
+                        {liveSharedView && shareError[liveSharedView.id] && (
+                          <p className="font-serif italic text-sm text-stone-500 mt-1">
+                            {shareError[liveSharedView.id]}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
