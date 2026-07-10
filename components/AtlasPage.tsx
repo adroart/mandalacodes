@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
-import { type AtlasStatusFilter } from './atlas/AtlasFilters';
+import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
 import AtlasFiltersDark from './atlas/AtlasFiltersDark';
 import PieceSidePanel, {
   type KinEntry,
@@ -453,7 +453,9 @@ const AtlasPage: React.FC = () => {
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+    // Re-attach once the globe section actually renders: the box only exists
+    // after the atlas state is ready (and its host differs by 3D support).
+  }, [state.kind, use3D]);
 
   /* Kinship index — built off the raw atlas state, never the filtered slice.
      The map shows kinship as a property of the ledger, not of UI filters. */
@@ -874,6 +876,84 @@ const AtlasPage: React.FC = () => {
               ) : null}
             </div>
           )}
+        </section>
+      )}
+
+      {/* ── Fallback globe (no WebGL): the simpler cobe globe, the SVG kinship
+             overlay, filters, and the side panel, in light chrome. ──────────── */}
+      {state.kind === 'ready' && !use3D && (
+        <section
+          aria-label="Atlas globe"
+          className="px-6 pt-10 max-w-7xl mx-auto"
+        >
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] text-wood-600 mb-3"
+          >
+            <Link to="/" className="hover:text-bronze-700 transition-colors">
+              Home
+            </Link>
+            <span aria-hidden>/</span>
+            <span className="text-wood-900">Atlas</span>
+          </nav>
+          <h1
+            className="text-3xl sm:text-5xl text-wood-900 font-medium leading-none"
+            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}
+          >
+            Atlas
+          </h1>
+
+          <div className="flex flex-col lg:flex-row gap-10 mt-8">
+            <div className="flex-1 min-w-0">
+              <div ref={globeBoxRef} className="relative w-full aspect-square">
+                <Globe
+                  nodes={globeNodes}
+                  selectedId={selectedKey}
+                  onSelect={(id) => setSelectedKey(id)}
+                  className="w-full h-full"
+                />
+                {kinshipIndex && (
+                  <KinshipLayer
+                    index={kinshipIndex}
+                    width={globeSize.width}
+                    height={globeSize.height}
+                    selectedId={selectedKey}
+                    visible={kinshipVisible}
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="w-full lg:w-[360px] shrink-0">
+              <AtlasFilters
+                series={availableSeries}
+                selectedSeries={selectedSeries}
+                onSeriesChange={setSelectedSeries}
+                status={status}
+                onStatusChange={setStatus}
+                categories={categoriesAvailable}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                availableSizes={availableSizes}
+                selectedSize={selectedSize}
+                onSizeChange={setSelectedSize}
+                placedCount={placedCount}
+                seekingCount={seekingCount}
+                kinshipVisible={kinshipVisible}
+                onKinshipChange={setKinshipVisible}
+                threadsShown={kinshipIndex?.pairs.length}
+                threadsTotal={kinshipIndex?.totalPairs}
+              />
+              <div className="mt-8">
+                <PieceSidePanel
+                  piece={selectedPiece}
+                  kin={kinForSelected}
+                  onSelectKin={(key) => setSelectedKey(key)}
+                  holderChart={holderChart}
+                />
+              </div>
+            </div>
+          </div>
         </section>
       )}
 
