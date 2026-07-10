@@ -207,6 +207,22 @@ const UniversalLanguageCard: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12 }}>
             <YourPositionCallout gate={card.number} />
             <SaveToCollectionButton kind="card" itemRef={String(card.number)} label="Save this card" />
+            {piece && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: 18, rowGap: 6 }}>
+                <Link
+                  to={`/piece/${piece.id}`}
+                  style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', textDecoration: 'none', borderBottom: '1px solid var(--l-rule)', paddingBottom: 2 }}
+                >
+                  See the piece: {piece.title}
+                </Link>
+                <Link
+                  to={`/atlas?piece=${piece.id}`}
+                  style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', textDecoration: 'none', borderBottom: '1px solid var(--l-rule)', paddingBottom: 2 }}
+                >
+                  On the Atlas
+                </Link>
+              </div>
+            )}
           </div>
         }
       />
