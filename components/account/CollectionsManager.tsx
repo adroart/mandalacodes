@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AccountLayout from './AccountLayout';
 import { useCollections, type CollectionItem } from '../../lib/collections/context';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
 import { Link } from 'react-router-dom';
+import { loadAtlasState, findPlacementForCard, type CardPlacement } from '../../lib/atlas/state';
+import type { PublicAtlasState } from '../../types';
 
 const itemLabel = (item: CollectionItem): string => {
   if (item.kind === 'card') {
@@ -19,12 +21,69 @@ const itemLink = (item: CollectionItem): string => {
   return `/universal-language/${item.ref}`;
 };
 
+/* Where a saved card's physical piece rests, in the same quiet phrasing as
+ * the card page's "On the Atlas" seat and the piece HUD's "Where it rests"
+ * line. Only card items resolve to a placement; other kinds and cards with
+ * no matching piece return null and render no join line at all. */
+const placementLine = (placement: CardPlacement | null): string | null => {
+  if (!placement) return null;
+  if (placement.status === 'seeking') return 'seeking ground';
+  if (placement.status === 'unawakened') {
+    return placement.cityLabel
+      ? `at rest in ${placement.cityLabel}, awaiting its keeper`
+      : 'awaiting its keeper';
+  }
+  return placement.cityLabel ? `rests in ${placement.cityLabel}` : null;
+};
+
+/* The atlas link only makes sense once a piece is actually mapped to a city
+ * (placed or unawakened-but-placed) — mirrors the card page's
+ * `placementOnGlobe` gate exactly, so a link from either surface always
+ * lands on a selected piece rather than an empty globe. */
+const atlasHrefFor = (placement: CardPlacement | null): string | null => {
+  if (!placement || !placement.cityLabel) return null;
+  if (placement.status !== 'placed' && placement.status !== 'unawakened') return null;
+  return `/atlas?piece=${encodeURIComponent(
+    `${placement.pieceId}${
+      typeof placement.editionNumber === 'number' && placement.editionNumber !== 0
+        ? `:${placement.editionNumber}`
+        : ''
+    }`,
+  )}`;
+};
+
 const CollectionsManagerInner: React.FC = () => {
   const { collections, isLoading, createCollection, deleteCollection, removeItem, renameCollection } =
     useCollections();
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState('');
+  /* Loaded once per mount and reused across every collection/item below —
+   * 64 cards max, so a synchronous map over items is simpler than a hook
+   * per item. If it fails, atlasState stays null and every join line is
+   * simply absent; the rest of the page renders exactly as today. */
+  const [atlasState, setAtlasState] = useState<PublicAtlasState | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    loadAtlasState()
+      .then((state) => {
+        if (active) setAtlasState(state);
+      })
+      .catch(() => {
+        /* Leave atlasState null; join lines stay absent. */
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const placementForItem = (item: CollectionItem): CardPlacement | null => {
+    if (!atlasState || item.kind !== 'card') return null;
+    const cardNumber = Number(item.ref);
+    if (!Number.isFinite(cardNumber)) return null;
+    return findPlacementForCard(atlasState, cardNumber);
+  };
 
   if (isLoading) {
     return <p className="font-serif text-wood-700">Loading…</p>;
@@ -118,25 +177,62 @@ const CollectionsManagerInner: React.FC = () => {
               {c.items.length === 0 ? (
                 <p className="font-serif text-sm text-wood-600 italic">No items yet.</p>
               ) : (
-                <ul className="grid sm:grid-cols-2 gap-2">
-                  {c.items.map((item) => (
-                    <li key={`${item.kind}_${item.ref}`} className="flex items-center justify-between gap-3 text-sm">
-                      <Link
-                        to={itemLink(item)}
-                        className="font-serif text-wood-800 hover:text-bronze-600 truncate"
-                      >
-                        {itemLabel(item)}
-                      </Link>
-                      <button
-                        type="button"
-                        className="font-label text-[10px] uppercase tracking-[0.16em] text-wood-500 hover:text-wood-900 flex-shrink-0"
-                        onClick={() => removeItem(c.id, item)}
-                      >
-                        Remove
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  {(() => {
+                    const liveCount = c.items.filter((item) => atlasHrefFor(placementForItem(item))).length;
+                    if (liveCount === 0) return null;
+                    return (
+                      <p className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 mb-3">
+                        {liveCount} of {c.items.length} of these live on the map
+                      </p>
+                    );
+                  })()}
+                  <ul className="grid sm:grid-cols-2 gap-2">
+                    {c.items.map((item) => {
+                      const placement = placementForItem(item);
+                      const line = placementLine(placement);
+                      const atlasHref = atlasHrefFor(placement);
+                      return (
+                        <li
+                          key={`${item.kind}_${item.ref}`}
+                          className="flex items-start justify-between gap-3 text-sm"
+                        >
+                          <div className="min-w-0">
+                            <Link
+                              to={itemLink(item)}
+                              className="font-serif text-wood-800 hover:text-bronze-600 truncate block"
+                            >
+                              {itemLabel(item)}
+                            </Link>
+                            {line && (
+                              <p className="font-serif text-xs italic text-wood-500 truncate">
+                                {line}
+                                {atlasHref && (
+                                  <>
+                                    {' · '}
+                                    <Link
+                                      to={atlasHref}
+                                      className="not-italic font-label text-[10px] uppercase tracking-[0.14em] text-bronze-600 hover:text-bronze-700"
+                                    >
+                                      On the Atlas
+                                    </Link>
+                                  </>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            className="font-label text-[10px] uppercase tracking-[0.16em] text-wood-500 hover:text-wood-900 flex-shrink-0"
+                            onClick={() => removeItem(c.id, item)}
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
               )}
             </li>
           ))}
