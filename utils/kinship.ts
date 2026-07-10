@@ -47,6 +47,8 @@ export interface KinshipIndex {
   pairsByKey: Map<string, KinshipPair[]>;
   /** True if the raw pair list exceeded MAX_KINSHIP_ARCS and was truncated. */
   capped: boolean;
+  /** The raw pair count before any cap, so the UI can say "showing X of Y". */
+  totalPairs: number;
 }
 
 /**
@@ -173,7 +175,7 @@ export function buildKinshipIndex(
     pairsByKey.set(pair.bKey, arrB);
   }
 
-  return { nodes, pairs, pairsByKey, capped };
+  return { nodes, pairs, pairsByKey, capped, totalPairs: rawPairs.length };
 }
 
 /* ─── Projection mirroring `components/atlas/Globe.tsx` ─────────────────── */

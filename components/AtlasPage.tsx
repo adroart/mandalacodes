@@ -806,6 +806,8 @@ const AtlasPage: React.FC = () => {
                   seekingCount={seekingCount}
                   kinshipVisible={kinshipVisible}
                   onKinshipChange={setKinshipVisible}
+                  threadsShown={kinshipIndex?.pairs.length}
+                  threadsTotal={kinshipIndex?.totalPairs}
                 />
               </div>
             </div>
