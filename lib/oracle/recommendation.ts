@@ -13,21 +13,39 @@
 import { img } from '../../utils/cloudinary';
 import type { CanonicalCard } from './types';
 import type { HologeneticProfile, ProfileKey, GateLine } from '../astrology/types';
+import { PROFILE_KEYS } from '../../data/profileKeys.js';
+
+/**
+ * Label, role prose, and displayed sequence name for each sphere, local to
+ * this surface (the recommendation engine and lookbook). Deliberately not
+ * shared with data/profilePositions.ts: the label differs on purpose for
+ * `core` ("Core" here vs "Vocation" there), and the displayed `sequence`
+ * word for `core` here is "Venus" while data/profilePositions.ts's
+ * structural sequence membership for `core` is "pearl" (its channel lines
+ * connect core/culture/pearl as the Pearl Sequence). That is a pre-existing
+ * discrepancy between the two surfaces, preserved here as-is per the
+ * phase-2g refactor's render-unchanged requirement; this refactor shares
+ * only the ordered key list (PROFILE_KEYS), not this table's values. Flag
+ * for Adrian: worth a follow-up decision on which is correct.
+ */
+const SPHERE_COPY: Record<ProfileKey, { label: string; role: string; sequence: string }> = {
+  lifesWork:  { label: "Life's Work", role: 'Your genius — how you are here to shine outwardly.',         sequence: 'Activation' },
+  evolution:  { label: 'Evolution',   role: 'The core challenge that grows you; your central lesson.',     sequence: 'Activation' },
+  radiance:   { label: 'Radiance',    role: 'Your vitality and health — how you light up when aligned.',   sequence: 'Activation' },
+  purpose:    { label: 'Purpose',     role: 'The deeper purpose your life quietly serves.',                sequence: 'Activation' },
+  attraction: { label: 'Attraction',  role: 'What magnetises relationship and love toward you.',           sequence: 'Venus' },
+  iq:         { label: 'IQ',          role: 'Your mental intelligence — how you think and know.',          sequence: 'Venus' },
+  eq:         { label: 'EQ',          role: 'Your emotional intelligence — how you feel and relate.',       sequence: 'Venus' },
+  sq:         { label: 'SQ',          role: 'Your spiritual intelligence — how you sense the whole.',       sequence: 'Venus' },
+  core:       { label: 'Core',        role: 'The core wound, and the gift hidden inside it.',              sequence: 'Venus' },
+  culture:    { label: 'Culture',     role: 'How your gifts move out into community and the world.',        sequence: 'Pearl' },
+  pearl:      { label: 'Pearl',       role: 'Your prosperity and right livelihood.',                       sequence: 'Pearl' },
+};
 
 /** The spheres, in reading order, with the role each plays in a chart. */
-export const SPHERES: { key: ProfileKey; label: string; role: string; sequence: string }[] = [
-  { key: 'lifesWork',  label: "Life's Work", role: 'Your genius — how you are here to shine outwardly.',         sequence: 'Activation' },
-  { key: 'evolution',  label: 'Evolution',   role: 'The core challenge that grows you; your central lesson.',     sequence: 'Activation' },
-  { key: 'radiance',   label: 'Radiance',    role: 'Your vitality and health — how you light up when aligned.',   sequence: 'Activation' },
-  { key: 'purpose',    label: 'Purpose',     role: 'The deeper purpose your life quietly serves.',                sequence: 'Activation' },
-  { key: 'attraction', label: 'Attraction',  role: 'What magnetises relationship and love toward you.',           sequence: 'Venus' },
-  { key: 'iq',         label: 'IQ',          role: 'Your mental intelligence — how you think and know.',          sequence: 'Venus' },
-  { key: 'eq',         label: 'EQ',          role: 'Your emotional intelligence — how you feel and relate.',       sequence: 'Venus' },
-  { key: 'sq',         label: 'SQ',          role: 'Your spiritual intelligence — how you sense the whole.',       sequence: 'Venus' },
-  { key: 'core',       label: 'Core',        role: 'The core wound, and the gift hidden inside it.',              sequence: 'Venus' },
-  { key: 'culture',    label: 'Culture',     role: 'How your gifts move out into community and the world.',        sequence: 'Pearl' },
-  { key: 'pearl',      label: 'Pearl',       role: 'Your prosperity and right livelihood.',                       sequence: 'Pearl' },
-];
+export const SPHERES: { key: ProfileKey; label: string; role: string; sequence: string }[] = PROFILE_KEYS.map(
+  (key) => ({ key, ...SPHERE_COPY[key] }),
+);
 
 export interface LookbookPiece {
   sphere: string;

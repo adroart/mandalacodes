@@ -10,6 +10,7 @@
 
 import { requireUser, jsonResponse } from '../_lib/auth.js';
 import { getUserByClerkId } from '../_lib/db.js';
+import { PROFILE_KEYS } from '../../../data/profileKeys.js';
 
 function validInputs(x) {
   if (!x || typeof x !== 'object') return false;
@@ -25,8 +26,7 @@ function validInputs(x) {
 
 function validComputed(c) {
   if (!c || typeof c !== 'object') return false;
-  const keys = ['lifesWork', 'evolution', 'radiance', 'purpose', 'attraction', 'iq', 'eq', 'sq', 'core', 'culture', 'pearl'];
-  for (const k of keys) {
+  for (const k of PROFILE_KEYS) {
     const gl = c[k];
     if (!gl || typeof gl.gate !== 'number' || typeof gl.line !== 'number') return false;
     if (gl.gate < 1 || gl.gate > 64 || gl.line < 1 || gl.line > 6) return false;

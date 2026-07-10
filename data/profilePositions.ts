@@ -1,4 +1,5 @@
 import type { ProfileKey, ProfileSequence } from '../lib/astrology/types';
+import { PROFILE_SPHERES } from './profileKeys.js';
 
 export interface ProfilePositionMeta {
   key: ProfileKey;
@@ -28,86 +29,119 @@ export interface ProfilePositionMeta {
 }
 
 /**
- * The eleven positions in display order: Activation Sequence first, then
- * Venus, then Pearl. The order is meaningful — ProfileGraph and
- * YourPositionCallout rely on it.
+ * Per-key layout and copy, local to this surface (label, role prose, body,
+ * and x/y/labelSide are NOT shared: see the header note on
+ * data/profileKeys.js). Keyed by `ProfileKey` so TypeScript enforces that
+ * every key in the `ProfileKey` union (lib/astrology/types.ts) has an entry
+ * here and no extra keys exist: if that union gains or drops a member
+ * without this map being updated, this object literal fails to typecheck.
+ * (This does NOT, by itself, catch data/profileKeys.js drifting out of
+ * sync with `ProfileKey`: that plain-JS file is checked separately via its
+ * own `// @ts-check` pragma, plus the runtime length assert below.)
  *
- * Position copy drafts here for review by Adrian; the `body` field is left
- * empty intentionally so anatomical anchors can be added later without a
- * schema change. The label vocabulary follows the Gene Keys synthesis by
- * Richard Rudd (Activation / Venus / Pearl Sequences). Attribution lives
- * on the OracleProfile page footer.
+ * The label vocabulary follows the Gene Keys synthesis by Richard Rudd
+ * (Activation / Venus / Pearl Sequences). Attribution lives on the
+ * OracleProfile page footer. The `body` field is left empty intentionally
+ * so anatomical anchors can be added later without a schema change.
  */
-export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = [
-  {
-    key: 'lifesWork', sequence: 'activation', label: "Life's Work",
+type ProfilePositionCopy = Omit<ProfilePositionMeta, 'key' | 'sequence'>;
+
+const POSITION_COPY: Record<ProfileKey, ProfilePositionCopy> = {
+  lifesWork: {
+    label: "Life's Work",
     planet: 'sun', side: 'persona', body: '',
     role: 'Your core vocation, the work you came here to express.',
     x: 0.50, y: 0.13, labelSide: 'top',
   },
-  {
-    key: 'evolution', sequence: 'activation', label: 'Evolution',
+  evolution: {
+    label: 'Evolution',
     planet: 'earth', side: 'persona', body: '',
     role: 'The contrast that shapes you, what you learn by living against.',
     x: 0.73, y: 0.46, labelSide: 'right',
   },
-  {
-    key: 'radiance', sequence: 'activation', label: 'Radiance',
+  radiance: {
+    label: 'Radiance',
     planet: 'sun', side: 'design', body: '',
     role: 'The light you carry into the world, felt before it is named.',
     x: 0.27, y: 0.46, labelSide: 'left',
   },
-  {
-    key: 'purpose', sequence: 'activation', label: 'Purpose',
+  purpose: {
+    label: 'Purpose',
     planet: 'earth', side: 'design', body: '',
     role: 'The current beneath your work, the reason it bends toward meaning.',
     x: 0.50, y: 0.78, labelSide: 'bottom',
   },
-
-  {
-    key: 'attraction', sequence: 'venus', label: 'Attraction',
+  attraction: {
+    label: 'Attraction',
     planet: 'moon', side: 'design', body: '',
     role: 'How others first feel you, the quality that draws them close.',
     x: 0.50, y: 0.64, labelSide: 'right',
   },
-  {
-    key: 'iq', sequence: 'venus', label: 'IQ',
+  iq: {
+    label: 'IQ',
     planet: 'venus', side: 'persona', body: '',
     role: 'How your mind moves, the shape of your thinking.',
     x: 0.40, y: 0.55, labelSide: 'left',
   },
-  {
-    key: 'eq', sequence: 'venus', label: 'EQ',
+  eq: {
+    label: 'EQ',
     planet: 'mars', side: 'persona', body: '',
     role: 'How you meet feeling, your way through what is felt and unsaid.',
     x: 0.60, y: 0.55, labelSide: 'right',
   },
-  {
-    key: 'sq', sequence: 'venus', label: 'SQ',
+  sq: {
+    label: 'SQ',
     planet: 'venus', side: 'design', body: '',
     role: 'How spirit speaks through you, the quiet intelligence beneath.',
     x: 0.50, y: 0.46, labelSide: 'top',
   },
-
-  {
-    key: 'core', sequence: 'pearl', label: 'Vocation',
+  core: {
+    label: 'Vocation',
     planet: 'mars', side: 'design', body: '',
     role: 'The work that carries you, where your gifts meet the world.',
     x: 0.40, y: 0.38, labelSide: 'left',
   },
-  {
-    key: 'culture', sequence: 'pearl', label: 'Culture',
+  culture: {
+    label: 'Culture',
     planet: 'jupiter', side: 'design', body: '',
     role: 'The field you came from, the inheritance you are reweaving.',
     x: 0.60, y: 0.38, labelSide: 'right',
   },
-  {
-    key: 'pearl', sequence: 'pearl', label: 'Pearl',
+  pearl: {
+    label: 'Pearl',
     planet: 'jupiter', side: 'persona', body: '',
     role: 'The synthesis, where vocation and gift meet your daily choices.',
     x: 0.50, y: 0.30, labelSide: 'top',
   },
-];
+};
+
+/**
+ * Exhaustiveness check for the plain-JS shared list: PROFILE_SPHERES
+ * (data/profileKeys.js, not typechecked itself beyond its own
+ * `// @ts-check` pragma) must name exactly the same keys as POSITION_COPY
+ * above (which the TypeScript compiler DOES hold to exactly the 11-member
+ * `ProfileKey` union). A key silently dropped from data/profileKeys.js
+ * would not otherwise be caught at compile time, so this throws at module
+ * load instead: "breaks loudly" at import time rather than staying quiet.
+ */
+if (PROFILE_SPHERES.length !== Object.keys(POSITION_COPY).length) {
+  throw new Error(
+    `data/profileKeys.js (PROFILE_SPHERES, ${PROFILE_SPHERES.length} keys) and ` +
+      `data/profilePositions.ts (POSITION_COPY, ${Object.keys(POSITION_COPY).length} keys) ` +
+      'have drifted out of sync. Update both to the same 11 profile keys.',
+  );
+}
+
+/**
+ * The eleven positions in display order: Activation Sequence first, then
+ * Venus, then Pearl. The order is meaningful — ProfileGraph and
+ * YourPositionCallout rely on it. Order and sequence membership are derived
+ * from the shared `PROFILE_SPHERES` list (data/profileKeys.js); layout and
+ * copy come from `POSITION_COPY` above.
+ */
+export const PROFILE_POSITIONS: readonly ProfilePositionMeta[] = PROFILE_SPHERES.map(
+  ({ key, sequence }) => ({ key, sequence, ...POSITION_COPY[key] }),
+);
 
 export interface ProfileChannel {
   from: ProfileKey;
