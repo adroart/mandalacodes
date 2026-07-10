@@ -25,6 +25,10 @@ export interface AtlasFiltersProps {
   /** Kinship arcs visible. Only meaningful when at least one UL piece is placed. */
   kinshipVisible: boolean;
   onKinshipChange: (next: boolean) => void;
+  /** Kinship arcs currently rendered (after any cap). */
+  threadsShown?: number;
+  /** Total kinship pairs before the cap. */
+  threadsTotal?: number;
 }
 
 const btnBase =
@@ -55,6 +59,8 @@ const AtlasFilters: React.FC<AtlasFiltersProps> = ({
   seekingCount,
   kinshipVisible,
   onKinshipChange,
+  threadsShown,
+  threadsTotal,
 }) => {
   const total = placedCount + seekingCount;
 
@@ -203,6 +209,13 @@ const AtlasFilters: React.FC<AtlasFiltersProps> = ({
           {kinshipVisible ? 'On' : 'Off'}
         </button>
       </div>
+      {typeof threadsShown === 'number' && typeof threadsTotal === 'number' && (
+        <p className="font-label text-[10px] uppercase tracking-[0.16em] text-wood-500 text-right">
+          {threadsShown === threadsTotal
+            ? `${threadsShown} ${threadsShown === 1 ? 'thread' : 'threads'}`
+            : `showing ${threadsShown} of ${threadsTotal} threads`}
+        </p>
+      )}
     </div>
   );
 };

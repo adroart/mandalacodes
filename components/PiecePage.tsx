@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
@@ -13,8 +13,9 @@ import {
   findPublicPiece,
   type PublicPiece,
 } from '../lib/atlas/state';
+import { buildKinshipIndex } from '../utils/kinship';
 import type { PieceContent } from '../utils/pieceContent';
-import type { Artwork } from '../types';
+import type { Artwork, PublicAtlasState } from '../types';
 
 /**
  * Public piece page: the QR-arrival surface.
@@ -115,6 +116,9 @@ const PiecePage: React.FC = () => {
   // of the archive + atlas state above — it's an enrichment layer, never a
   // blocker, so it starts null and simply fills in once (if) it arrives.
   const [content, setContent] = useState<PieceContent | null>(null);
+  // The full public atlas state, kept for the kin constellation below. Same
+  // load the piece itself comes from; no extra fetch.
+  const [atlasState, setAtlasState] = useState<PublicAtlasState | null>(null);
 
   useEffect(() => {
     if (!pieceId) return;
@@ -139,6 +143,7 @@ const PiecePage: React.FC = () => {
 
     loadAtlasState().then((state) => {
       if (!active) return;
+      setAtlasState(state);
       const piece = findPublicPiece(state, pieceId, editionNumber);
       // The page leans on archive metadata for the art; if the piece isn't in
       // the archive there's nothing meaningful to show.
@@ -164,6 +169,59 @@ const PiecePage: React.FC = () => {
       active = false;
     };
   }, [pieceId, edition]);
+
+  /* Kin constellation: what the globe shows for this piece, on its own page.
+     Built from the already-loaded public state; same index the atlas builds. */
+  const kinEntries = useMemo(() => {
+    if (!atlasState || !pieceId) return [];
+    const editionNumber =
+      edition !== undefined && /^\d+$/.test(edition) ? parseInt(edition, 10) : undefined;
+    const selfKey = `${pieceId}:${editionNumber ?? 0}`;
+    const index = buildKinshipIndex(atlasState, CITIES_BY_ID, FULL_ARCHIVE);
+    const pairs = index.pairsByKey.get(selfKey) ?? [];
+    return pairs
+      .slice()
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 6)
+      .map((pair) => {
+        const otherKey = pair.aKey === selfKey ? pair.bKey : pair.aKey;
+        const other = index.nodes.get(otherKey);
+        // Same thread naming as the atlas HUD: "Heaven (Ch'ien)" → "Heaven".
+        const thread = pair.sharedTrigram
+          ? `${pair.sharedTrigram.replace(/\s*\(.*\)$/, '')} thread`
+          : '';
+        return {
+          key: otherKey,
+          title: other?.title ?? otherKey,
+          thread,
+          atlasParam: otherKey.replace(/:0$/, ''),
+        };
+      });
+  }, [atlasState, pieceId, edition]);
+
+  /* Holder's chart element (M5) — the same public endpoint the atlas HUD
+     uses; returns chart: null unless the steward opted into Ring 3. */
+  const [holderElement, setHolderElement] = useState<string | null>(null);
+  useEffect(() => {
+    setHolderElement(null);
+    if (load.kind !== 'ready' || load.piece.status !== 'placed') return;
+    let active = true;
+    const params = new URLSearchParams({ pieceId: load.piece.pieceId });
+    if (typeof load.piece.editionNumber === 'number') {
+      params.set('editionNumber', String(load.piece.editionNumber));
+    }
+    fetch(`/api/atlas/holder-chart?${params.toString()}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { chart?: { element?: string } | null } | null) => {
+        if (active) setHolderElement(data?.chart?.element ?? null);
+      })
+      .catch(() => {
+        /* quiet: the line simply doesn't render */
+      });
+    return () => {
+      active = false;
+    };
+  }, [load]);
 
   if (load.kind === 'loading') {
     return (
@@ -318,9 +376,14 @@ const PiecePage: React.FC = () => {
 
             {/* Founding light: the artifact. */}
             {typeof piece.claimOrdinal === 'number' && (
-              <p className="font-serif italic text-xl text-bronze-700 mb-6">
-                The {ordinalLabel(piece.claimOrdinal)} light
-              </p>
+              <div className="mb-6">
+                <p className="font-serif italic text-xl text-bronze-700">
+                  The {ordinalLabel(piece.claimOrdinal)} light
+                </p>
+                <p className="font-serif italic text-sm text-wood-600 leading-snug mt-1">
+                  A founding light marks the order in which a piece was claimed by its keeper.
+                </p>
+              </div>
             )}
 
             {/* Inline metadata row */}
@@ -399,6 +462,54 @@ const PiecePage: React.FC = () => {
                     Read Code {cardNumber} →
                   </Link>
                 </div>
+              </div>
+            )}
+
+            {/* ── The dream the piece carries (keeper-shared, public) ───── */}
+            {piece.intention && (
+              <div className="border-t border-wood-200 pt-6 mb-8">
+                <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-1">
+                  Held with a dream
+                </p>
+                <p className="font-serif italic text-lg text-wood-800 leading-[1.6]">
+                  {piece.intention}
+                </p>
+              </div>
+            )}
+
+            {/* ── Kin constellation: what the globe shows for this piece ── */}
+            {kinEntries.length > 0 && (
+              <div className="border-t border-wood-200 pt-6 mb-8">
+                <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-3">
+                  Its kin on the map
+                </p>
+                <ul className="space-y-2">
+                  {kinEntries.map((k) => (
+                    <li key={k.key}>
+                      <Link
+                        to={`/atlas?piece=${encodeURIComponent(k.atlasParam)}`}
+                        className="font-serif text-lg text-wood-900 leading-snug hover:text-bronze-700 transition-colors"
+                      >
+                        {k.title}
+                        {k.thread && (
+                          <span className="text-wood-600"> · {k.thread}</span>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* ── Holder's chart element (Ring 3, derived, non-identifying) ── */}
+            {holderElement && piece.status === 'placed' && (
+              <div className="border-t border-wood-200 pt-6 mb-8">
+                <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-1">
+                  The hands it rests in
+                </p>
+                <p className="font-serif text-lg text-wood-900 leading-snug">
+                  Held by a chart of {holderElement}
+                </p>
               </div>
             )}
 

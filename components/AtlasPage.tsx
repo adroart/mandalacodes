@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
-import { type AtlasStatusFilter } from './atlas/AtlasFilters';
+import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
 import AtlasFiltersDark from './atlas/AtlasFiltersDark';
 import PieceSidePanel, {
   type KinEntry,
@@ -17,6 +17,8 @@ import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
 import { useProfile } from '../lib/profile/context';
+import { useAccount } from '../lib/account/useAccount';
+import { useCollections } from '../lib/collections/context';
 import { ulCardNumber } from '../utils/universalLanguage';
 import { buildKinshipIndex, greatCircleDistance, MAX_KINSHIP_ARCS } from '../utils/kinship';
 import { SIZE_BANDS, sizeBandFor, type SizeBand } from '../utils/sizeBands';
@@ -190,6 +192,63 @@ const AtlasPage: React.FC = () => {
     return set;
   }, [profile]);
 
+  /* Signed-in personalization: the pieces you steward and the cards you
+     saved. Own pieces come from the idempotent Phase A bind call, the same
+     one StewardEdit makes on mount; saved cards ride the collections
+     context. Signed out (or accounts unconfigured), no fetch fires and both
+     stay empty, so the globe is unchanged. */
+  const { available: accountAvailable, isLoaded, isSignedIn, fetchAuthed } = useAccount();
+  const [ownedKeys, setOwnedKeys] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    if (!accountAvailable || !isLoaded || !isSignedIn) {
+      setOwnedKeys((prev) => (prev.size === 0 ? prev : new Set()));
+      return;
+    }
+    let cancelled = false;
+    fetchAuthed('/api/atlas/steward/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then(
+        (
+          data: {
+            claimed?: Array<{
+              steward: { pieceId: string; editionNumber?: number | null };
+            }>;
+          } | null,
+        ) => {
+          if (cancelled || !data?.claimed) return;
+          setOwnedKeys(
+            new Set(
+              data.claimed.map((c) =>
+                makeKey(c.steward.pieceId, c.steward.editionNumber ?? undefined),
+              ),
+            ),
+          );
+        },
+      )
+      .catch(() => {
+        /* quiet: personalization only */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accountAvailable, isLoaded, isSignedIn, fetchAuthed]);
+
+  const { collections } = useCollections();
+  const savedCards = useMemo(() => {
+    const set = new Set<number>();
+    for (const c of collections) {
+      for (const item of c.items) {
+        if (item.kind !== 'card') continue;
+        const n = parseInt(item.ref, 10);
+        if (Number.isFinite(n)) set.add(n);
+      }
+    }
+    return set;
+  }, [collections]);
+
   /* Selection setter that mirrors the choice into the URL (replace, so
      browsing pieces doesn't pile up history entries). */
   const setSelectedKey = (key: string | null) => {
@@ -336,7 +395,10 @@ const AtlasPage: React.FC = () => {
         pieceType: p.pieceType,
         series: p.series,
         ordinal: p.claimOrdinal,
-        yours: num != null && yourGates.has(num),
+        // "Your codes" lights pieces whose gate sits in your profile OR whose
+        // card you saved to a collection; "owned" marks pieces you steward.
+        yours: num != null && (yourGates.has(num) || savedCards.has(num)),
+        owned: ownedKeys.has(p.key),
       });
     }
     // The visitor's birth place rides along regardless of filters — it is
@@ -351,7 +413,7 @@ const AtlasPage: React.FC = () => {
       });
     }
     return nodes;
-  }, [seriesFiltered, status, birthPlace, yourGates]);
+  }, [seriesFiltered, status, birthPlace, yourGates, savedCards, ownedKeys]);
 
   /* Ring tap (mandala view): a lit code travels to its piece in the world;
      an unlit code opens the code itself, where its pieces and the acquire
@@ -377,6 +439,7 @@ const AtlasPage: React.FC = () => {
         editionNumber: p.editionNumber,
         title: p.title,
         series: p.series,
+        cardNumber: cardNumberFor(p.pieceId),
       }));
   }, [seriesFiltered, status]);
 
@@ -452,7 +515,9 @@ const AtlasPage: React.FC = () => {
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+    // Re-attach once the globe section actually renders: the box only exists
+    // after the atlas state is ready (and its host differs by 3D support).
+  }, [state.kind, use3D]);
 
   /* Kinship index — built off the raw atlas state, never the filtered slice.
      The map shows kinship as a property of the ledger, not of UI filters. */
@@ -500,18 +565,12 @@ const AtlasPage: React.FC = () => {
         const other = kinshipIndex.nodes.get(otherKey);
         // Name the thread that joins them, so following it reads as meaning
         // rather than navigation. "Heaven (Ch'ien)" shortens to "Heaven".
-        const self = kinshipIndex.nodes.get(selectedKey);
-        let thread = '';
-        if (self && other) {
-          const otherTrigrams = new Set([other.upperTrigram, other.lowerTrigram]);
-          const shared = otherTrigrams.has(self.upperTrigram)
-            ? self.upperTrigram
-            : otherTrigrams.has(self.lowerTrigram)
-              ? self.lowerTrigram
-              : null;
-          if (shared) thread = ` · ${shared.replace(/\s*\(.*\)$/, '')} thread`;
-        }
-        return { key: otherKey, title: `${other?.title ?? otherKey}${thread}` };
+        // The shared trigram now sits on the pair itself.
+        const thread = pair.sharedTrigram
+          ? ` · ${pair.sharedTrigram.replace(/\s*\(.*\)$/, '')} thread`
+          : '';
+        const km = ` · ${Math.round(pair.distance * EARTH_RADIUS_KM).toLocaleString('en-US')} km`;
+        return { key: otherKey, title: `${other?.title ?? otherKey}${thread}${km}` };
       });
   }, [selectedKey, kinshipIndex]);
 
@@ -805,6 +864,8 @@ const AtlasPage: React.FC = () => {
                   seekingCount={seekingCount}
                   kinshipVisible={kinshipVisible}
                   onKinshipChange={setKinshipVisible}
+                  threadsShown={kinshipIndex?.pairs.length}
+                  threadsTotal={kinshipIndex?.totalPairs}
                 />
               </div>
             </div>
@@ -877,6 +938,84 @@ const AtlasPage: React.FC = () => {
               ) : null}
             </div>
           )}
+        </section>
+      )}
+
+      {/* ── Fallback globe (no WebGL): the simpler cobe globe, the SVG kinship
+             overlay, filters, and the side panel, in light chrome. ──────────── */}
+      {state.kind === 'ready' && !use3D && (
+        <section
+          aria-label="Atlas globe"
+          className="px-6 pt-10 max-w-7xl mx-auto"
+        >
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] text-wood-600 mb-3"
+          >
+            <Link to="/" className="hover:text-bronze-700 transition-colors">
+              Home
+            </Link>
+            <span aria-hidden>/</span>
+            <span className="text-wood-900">Atlas</span>
+          </nav>
+          <h1
+            className="text-3xl sm:text-5xl text-wood-900 font-medium leading-none"
+            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}
+          >
+            Atlas
+          </h1>
+
+          <div className="flex flex-col lg:flex-row gap-10 mt-8">
+            <div className="flex-1 min-w-0">
+              <div ref={globeBoxRef} className="relative w-full aspect-square">
+                <Globe
+                  nodes={globeNodes}
+                  selectedId={selectedKey}
+                  onSelect={(id) => setSelectedKey(id)}
+                  className="w-full h-full"
+                />
+                {kinshipIndex && (
+                  <KinshipLayer
+                    index={kinshipIndex}
+                    width={globeSize.width}
+                    height={globeSize.height}
+                    selectedId={selectedKey}
+                    visible={kinshipVisible}
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="w-full lg:w-[360px] shrink-0">
+              <AtlasFilters
+                series={availableSeries}
+                selectedSeries={selectedSeries}
+                onSeriesChange={setSelectedSeries}
+                status={status}
+                onStatusChange={setStatus}
+                categories={categoriesAvailable}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                availableSizes={availableSizes}
+                selectedSize={selectedSize}
+                onSizeChange={setSelectedSize}
+                placedCount={placedCount}
+                seekingCount={seekingCount}
+                kinshipVisible={kinshipVisible}
+                onKinshipChange={setKinshipVisible}
+                threadsShown={kinshipIndex?.pairs.length}
+                threadsTotal={kinshipIndex?.totalPairs}
+              />
+              <div className="mt-8">
+                <PieceSidePanel
+                  piece={selectedPiece}
+                  kin={kinForSelected}
+                  onSelectKin={(key) => setSelectedKey(key)}
+                  holderChart={holderChart}
+                />
+              </div>
+            </div>
+          </div>
         </section>
       )}
 

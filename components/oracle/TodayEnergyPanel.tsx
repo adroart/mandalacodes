@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { todaysEnergy } from '../../lib/astrology/today';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
 import { ulCardImageUrl } from '../../utils/universalLanguage';
+import './ul-energy-panel.css';
 
 /**
  * "Today's energy" — the gate the Sun is currently transiting, rendered as

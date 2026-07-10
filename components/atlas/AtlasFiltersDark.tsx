@@ -76,6 +76,8 @@ const AtlasFiltersDark: React.FC<AtlasFiltersProps> = ({
   seekingCount,
   kinshipVisible,
   onKinshipChange,
+  threadsShown,
+  threadsTotal,
 }) => {
   const total = placedCount + seekingCount;
 
@@ -137,6 +139,13 @@ const AtlasFiltersDark: React.FC<AtlasFiltersProps> = ({
             }}
           />
         </button>
+        {typeof threadsShown === 'number' && typeof threadsTotal === 'number' && (
+          <span className="font-label text-[10px] uppercase tracking-[0.16em] text-wood-500">
+            {threadsShown === threadsTotal
+              ? `${threadsShown} ${threadsShown === 1 ? 'thread' : 'threads'}`
+              : `showing ${threadsShown} of ${threadsTotal} threads`}
+          </span>
+        )}
       </div>
 
       <p className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 pt-1" aria-live="polite">

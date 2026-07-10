@@ -25,16 +25,10 @@ import { useAccount } from '../../../lib/account/useAccount';
 import { signOut } from '../../../lib/account/authClient';
 import { POSITION_KEYS, PROFILE_POSITIONS } from '../../../data/profilePositions';
 import { LAUNCH_FLAGS } from '../../../launchFlags';
+import { todaysEnergy, yearsEnergy } from '../../../lib/astrology/today';
 import { OracleEntryHost, type EntryCard, type EntryAdapter } from './generated/OracleEntry.host';
 import OracleRailTop from './OracleRailTop';
 import './OracleEntry.scoped.css';
-
-/* ── deterministic Card-of-Day / Year (same hash as the previous index) ─────── */
-function hashTo64(seed: string): number {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
-  return (Math.abs(h) % 64) + 1;
-}
 
 /* Trigram names carry a parenthetical Chinese name ("Heaven (Ch'ien)"); the deck
    tiles want the plain element word only — "Heaven". Strip the parenthetical. */
@@ -149,14 +143,10 @@ const OracleEntryPage: React.FC = () => {
       primaryElement: (prose: string) => appPrimaryElement(prose),
       tintFor: (card: EntryCard) => tintForCard(card.n),
       cardImg: (card: EntryCard, size: number) => ulCardImageUrl(card.n, size),
-      cardForToday: () => {
-        const now = new Date();
-        const y = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        return byNumber.get(hashTo64(`day:${y}-${mm}-${d}`));
-      },
-      cardForYear: () => byNumber.get(hashTo64(`year:${new Date().getFullYear()}`)),
+      // The real Sun-transit engine: gate 1-64 equals the card number. The year
+      // gate is Gate 41 by definition of the Human Design year, not a bug.
+      cardForToday: () => byNumber.get(todaysEnergy().gate),
+      cardForYear: () => byNumber.get(yearsEnergy().gate),
     };
   }, [entryCards, byNumber]);
 

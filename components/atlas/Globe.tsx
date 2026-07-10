@@ -51,6 +51,9 @@ export interface GlobeNode {
   // True when this piece carries one of the visitor's own codes (computed
   // locally from their profile; never sent anywhere).
   yours?: boolean;
+  // True when the signed-in visitor stewards this piece (from the idempotent
+  // bind call). Owned lights render with a brighter warm treatment.
+  owned?: boolean;
 }
 
 export interface GlobeProps {
@@ -86,6 +89,11 @@ const OTHER_COLOR: [number, number, number] = [0.49, 0.58, 0.52];
 // Sold-but-unclaimed pieces — a dim ember, present but not yet lit. Dimmer
 // and smaller than a placed light, distinct from the cooler seeking dots.
 const UNAWAKENED_COLOR: [number, number, number] = [0.34, 0.29, 0.21];
+
+// The signed-in visitor's own stewarded pieces: a brighter, warmer gold
+// bronze, slightly larger, so your own light reads as yours at a glance.
+const OWNED_COLOR: [number, number, number] = [0.93, 0.79, 0.51];
+const OWNED_SIZE = 0.052;
 
 // Auto-rotation in radians per frame; ~0.005 reads as a slow, quiet drift.
 const ROTATION_SPEED = 0.005;
@@ -205,17 +213,20 @@ export default function Globe({
       nodes.map(n => ({
         location: [n.lat, n.lng] as [number, number],
         size:
-          n.status === 'placed' ? PLACED_SIZE
+          n.owned && n.status !== 'origin' ? OWNED_SIZE
+          : n.status === 'placed' ? PLACED_SIZE
           : n.status === 'unawakened' ? UNAWAKENED_SIZE
           : n.status === 'origin' ? ORIGIN_SIZE
           : SEEKING_SIZE,
         // Per-marker color overrides the global markerColor (the warm bronze
-        // used for lit Universal Language lights). Order matters: status
-        // (origin/seeking/unawakened) wins, then a placed non-mandala piece
+        // used for lit Universal Language lights). Order matters: origin wins,
+        // then the visitor's own stewarded pieces take the bright gold bronze,
+        // then status (seeking/unawakened), then a placed non-mandala piece
         // takes the cooler verdigris; a placed mandala falls through to the
         // default bronze.
         color:
           n.status === 'origin' ? ORIGIN_COLOR
+          : n.owned ? OWNED_COLOR
           : n.status === 'seeking' ? SEEKING_COLOR
           : n.status === 'unawakened' ? UNAWAKENED_COLOR
           : n.pieceType === 'other' ? OTHER_COLOR

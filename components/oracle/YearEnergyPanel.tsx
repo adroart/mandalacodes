@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { yearsEnergy } from '../../lib/astrology/today';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
 import { ulCardImageUrl } from '../../utils/universalLanguage';
+import './ul-energy-panel.css';
 
 /**
  * "Year's keynote" — the gate the Sun sits in at the Human Design new year

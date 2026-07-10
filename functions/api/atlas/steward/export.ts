@@ -42,8 +42,11 @@ import {
   isMissingTableError,
   json,
   readLedger,
+  readLetters,
   readStewards,
 } from '../_helpers';
+import { letterRecipientKey, lettersForRecipient } from '../../../../utils/letters';
+import type { AtlasLetter } from '../../../../types';
 import { chainKey, selectInscriptionsForPiece } from '../_inscriptions';
 import { requireUser, isAuthResponse } from '../../_lib/auth';
 
@@ -177,6 +180,21 @@ export async function onRequestGet(
   const ordinals = deriveClaimOrdinals(projectAll(events));
   const claimOrdinal = ordinals.get(chainKey(pieceId, editionNumber));
 
+  // Letters addressed to this piece — read what exists, never regenerate
+  // anniversary/transfer letters here. Degrades to an empty list plus a note
+  // if the letters store is unavailable, mirroring how inscriptions degrade.
+  let letters: AtlasLetter[] = [];
+  let lettersNote: string | undefined;
+  try {
+    const allLetters = await readLetters(env);
+    letters = lettersForRecipient(
+      allLetters,
+      letterRecipientKey(pieceId, editionNumber),
+    );
+  } catch {
+    lettersNote = 'Letters store not available; letters omitted from this export.';
+  }
+
   const artwork = FULL_ARCHIVE.find((a) => a.id === pieceId);
 
   const book = {
@@ -204,6 +222,11 @@ export async function onRequestGet(
     // Confirmed sale records (date + price only) — the current steward's
     // ratified view; never public, never in any hashed payload.
     sales,
+    // Letters and heirs are mutable records, never hashed; they sit outside
+    // the verification section by design.
+    letters,
+    ...(lettersNote ? { lettersNote } : {}),
+    heirs: record.heirs ?? [],
     consent: record.consent ?? null,
   };
 
