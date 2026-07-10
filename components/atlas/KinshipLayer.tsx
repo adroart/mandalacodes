@@ -22,7 +22,7 @@
  */
 
 import { useEffect, useMemo, useRef } from 'react';
-import { projectArc, type KinshipIndex } from '../../utils/kinship';
+import { projectArc, trigramThreadColor, type KinshipIndex } from '../../utils/kinship';
 
 /* ─── Constants — must match Globe.tsx ───────────────────────────────────── */
 const ROTATION_SPEED = 0.005;
@@ -30,9 +30,8 @@ const SELECT_ANIM_MS = 800;
 const INITIAL_THETA = 0.2;
 
 /* ─── Visual tokens ──────────────────────────────────────────────────────── */
-// Bronze, kept dim. Matches the bronze-400 marker color used by Globe but
-// expressed as a CSS rgb() string so SVG stroke can consume it directly.
-const ARC_STROKE = 'rgb(196, 170, 124)';
+// Each arc takes its stroke from the pair's shared trigram via
+// trigramThreadColor (warm earth palette, shared with the 3D arcs), kept dim.
 const OPACITY_DEFAULT = 0.15;
 const OPACITY_SELECTED = 0.6;
 const OPACITY_FADED = 0.05;
@@ -44,6 +43,8 @@ interface PairKey {
   bKey: string;
   /** Pair identifier built once: `${aKey}|${bKey}`. Used as the React key. */
   id: string;
+  /** Stroke color resolved from the pair's shared trigram. */
+  color: string;
 }
 
 export interface KinshipLayerProps {
@@ -77,6 +78,7 @@ export default function KinshipLayer({
         aKey: p.aKey,
         bKey: p.bKey,
         id: `${p.aKey}|${p.bKey}`,
+        color: trigramThreadColor(p.sharedTrigram),
       })),
     [index.pairs],
   );
@@ -236,7 +238,7 @@ export default function KinshipLayer({
           }}
           d=""
           fill="none"
-          stroke={ARC_STROKE}
+          stroke={pair.color}
           strokeWidth={STROKE_DEFAULT}
           strokeLinecap="round"
           opacity={OPACITY_DEFAULT}

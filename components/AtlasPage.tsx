@@ -501,18 +501,12 @@ const AtlasPage: React.FC = () => {
         const other = kinshipIndex.nodes.get(otherKey);
         // Name the thread that joins them, so following it reads as meaning
         // rather than navigation. "Heaven (Ch'ien)" shortens to "Heaven".
-        const self = kinshipIndex.nodes.get(selectedKey);
-        let thread = '';
-        if (self && other) {
-          const otherTrigrams = new Set([other.upperTrigram, other.lowerTrigram]);
-          const shared = otherTrigrams.has(self.upperTrigram)
-            ? self.upperTrigram
-            : otherTrigrams.has(self.lowerTrigram)
-              ? self.lowerTrigram
-              : null;
-          if (shared) thread = ` · ${shared.replace(/\s*\(.*\)$/, '')} thread`;
-        }
-        return { key: otherKey, title: `${other?.title ?? otherKey}${thread}` };
+        // The shared trigram now sits on the pair itself.
+        const thread = pair.sharedTrigram
+          ? ` · ${pair.sharedTrigram.replace(/\s*\(.*\)$/, '')} thread`
+          : '';
+        const km = ` · ${Math.round(pair.distance * EARTH_RADIUS_KM).toLocaleString('en-US')} km`;
+        return { key: otherKey, title: `${other?.title ?? otherKey}${thread}${km}` };
       });
   }, [selectedKey, kinshipIndex]);
 
