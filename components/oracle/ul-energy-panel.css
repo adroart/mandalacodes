@@ -1,0 +1,66 @@
+/* The Today / Year energy panels: a compact horizontal Link card.
+   The class names are the ones TodayEnergyPanel and YearEnergyPanel already
+   use; the port from the art site dropped these styles, so they are written
+   here once and imported by both panel components. Colors ride the site's
+   CSS variables, which the .dark class swaps, so dark mode needs no extra
+   rules. */
+
+.ul-energy-panel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  min-width: 240px;
+  flex: 1 1 260px;
+  max-width: 420px;
+  text-decoration: none;
+  background: color-mix(in oklab, var(--color-paper-50) 92%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-wood-600) 18%, transparent);
+  border-radius: 3px;
+  transition: border-color 0.25s, background 0.25s;
+}
+
+.ul-energy-panel:hover {
+  border-color: color-mix(in oklab, var(--color-bronze-600) 55%, transparent);
+  background: color-mix(in oklab, var(--color-bronze-400) 7%, var(--color-paper-50));
+}
+
+.ul-energy-panel__label {
+  font-family: 'Lato', Helvetica, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-bronze-600);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.ul-energy-panel__thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
+  border: 1px solid color-mix(in oklab, var(--color-wood-600) 14%, transparent);
+}
+
+.ul-energy-panel__body {
+  min-width: 0;
+}
+
+.ul-energy-panel__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px;
+  line-height: 1.15;
+  color: var(--color-wood-900);
+}
+
+.ul-energy-panel__meta {
+  font-family: 'Lato', Helvetica, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--color-wood-600);
+  margin-top: 5px;
+}
