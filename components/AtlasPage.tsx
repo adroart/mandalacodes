@@ -377,6 +377,7 @@ const AtlasPage: React.FC = () => {
         editionNumber: p.editionNumber,
         title: p.title,
         series: p.series,
+        cardNumber: cardNumberFor(p.pieceId),
       }));
   }, [seriesFiltered, status]);
 
