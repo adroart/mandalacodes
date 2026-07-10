@@ -28,6 +28,13 @@ import { resolveRequest } from '../../../../utils/claimRequests';
 import type { PagesContext } from '../_helpers';
 import { json, mutateClaimRequests, readClaimRequests, readStewards } from '../_helpers';
 import { executeTransfer } from '../_transfer';
+import {
+  claimInviteEmailBody,
+  claimInviteEmailSubject,
+  sendLetterEmail,
+} from '../_email';
+import type { LetterEmailEnv } from '../_email';
+import { FULL_ARCHIVE } from '../../../../data/mockData';
 import { requireUser, isAuthResponse } from '../../_lib/auth';
 
 interface ResolveBody {
@@ -137,6 +144,18 @@ export async function onRequestPost(
       }));
       return outcome;
     }
+
+    // The transfer landed: invite the approved requester to complete the
+    // claim. Fire-and-forget, same pattern as _letters.ts: never awaited on
+    // the response path, every failure swallowed inside the helper. Declines
+    // send nothing.
+    const pieceTitle = FULL_ARCHIVE.find((a) => a.id === claimRequest.pieceId)
+      ?.title.replace(/\s*-\s*\d+$/, '');
+    void sendLetterEmail(env as unknown as LetterEmailEnv, {
+      to: claimRequest.requesterEmail,
+      subject: claimInviteEmailSubject('request-approved'),
+      body: claimInviteEmailBody('request-approved', pieceTitle),
+    }).catch(() => undefined);
   }
 
   return json({ ok: true, request: stamped.result });
