@@ -758,6 +758,11 @@ const AtlasPage: React.FC = () => {
                   a light is a piece claimed by its keeper · threads join pieces
                   that share a code
                 </p>
+                {!USE_GL_GLOBE && !mandala && (
+                  <p className="mt-1 font-serif italic text-[12px] leading-snug tracking-[0.03em] text-wood-400/60">
+                    touch a code on the ring to visit it
+                  </p>
+                )}
               </div>
             )}
 

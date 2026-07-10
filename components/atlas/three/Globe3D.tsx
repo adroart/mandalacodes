@@ -46,6 +46,8 @@ const BACKGROUND_RGB = '15, 13, 11';
 const PICK_THRESHOLD_PX = 18;
 const CLICK_SLOP_PX = 6;
 const IDLE_MANDALA_MS = 25_000;
+const RING_TAP_PX = 22;
+const RING_HOVER_PX = 34;
 
 export function supportsWebGL(): boolean {
   try {
@@ -293,16 +295,17 @@ export default function Globe3D({
     [nodes, onSelect, rig],
   );
 
-  /* Ring tap: in the mandala view the 64 glyphs become touchable. Anchors sit
-     on the equatorial ring inside the spin/tilt groups, so they project with
-     the same two rotations the markers use. Only active once the pull-back
-     has mostly landed, so a resting-view tap can never hit an invisible ring. */
-  const pickRing = useCallback(
-    (clientX: number, clientY: number): boolean => {
-      if (!onRingTap || rig.mandala < 0.6) return false;
+  /* Ring tap: the 64 glyphs are touchable in the resting view and the
+     mandala view alike. Anchors sit on the equatorial ring inside the
+     spin/tilt groups, so they project with the same two rotations the
+     markers use, through the live camera at whatever distance it currently
+     sits (near at rest, pulled back in the mandala view): the projection
+     needs no gate to be correct at either distance. */
+  const nearestRingGlyph = useCallback(
+    (clientX: number, clientY: number): { n: number; dist: number } | null => {
       const el = canvasBoxRef.current ?? wrapperRef.current;
       const camera = rig.camera;
-      if (!el || !camera) return false;
+      if (!el || !camera) return null;
       const rect = el.getBoundingClientRect();
       const cx = clientX - rect.left;
       const cy = clientY - rect.top;
@@ -319,12 +322,36 @@ export default function Globe3D({
         const px = (v.x * 0.5 + 0.5) * rect.width;
         const py = (1 - (v.y * 0.5 + 0.5)) * rect.height;
         const d = Math.hypot(px - cx, py - cy);
-        if (d < 22 && (best === null || d < best.dist)) best = { n, dist: d };
+        if (best === null || d < best.dist) best = { n, dist: d };
       }
-      if (best) onRingTap(best.n);
-      return best !== null;
+      return best;
     },
-    [onRingTap, rig],
+    [rig],
+  );
+
+  const pickRing = useCallback(
+    (clientX: number, clientY: number): boolean => {
+      if (!onRingTap) return false;
+      const hit = nearestRingGlyph(clientX, clientY);
+      if (!hit || hit.dist >= RING_TAP_PX) return false;
+      onRingTap(hit.n);
+      return true;
+    },
+    [onRingTap, nearestRingGlyph],
+  );
+
+  /* Ring hover: a cheap discoverability affordance. The ring reads as
+     atmosphere at rest (glyph alpha 0.12), so a pointer resting near the
+     band brightens the whole ring slightly via one uniform (HexagramRing
+     reads rig.ringHover). Mouse-only (no hover on touch), but harmless
+     either way: the tap itself works regardless. */
+  const updateRingHover = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!onRingTap) return;
+      const hit = nearestRingGlyph(clientX, clientY);
+      rig.ringHoverTarget = !!hit && hit.dist < RING_HOVER_PX;
+    },
+    [onRingTap, nearestRingGlyph, rig],
   );
 
   const onPointerDown = useCallback(
@@ -341,6 +368,7 @@ export default function Globe3D({
   const onPointerMove = useCallback(
     (e: React.PointerEvent) => {
       noteInteraction();
+      updateRingHover(e.clientX, e.clientY);
       const d = drag.current;
       if (!d.active) return;
       const dx = e.clientX - d.x;
@@ -352,7 +380,7 @@ export default function Globe3D({
       rig.phi -= dx * 0.005;
       rig.theta = Math.max(-1.1, Math.min(1.1, rig.theta + dy * 0.004));
     },
-    [rig, noteInteraction],
+    [rig, noteInteraction, updateRingHover],
   );
 
   const onPointerUp = useCallback(
@@ -379,6 +407,7 @@ export default function Globe3D({
   const onPointerLeave = useCallback(() => {
     hoverRef.current = false;
     drag.current.active = false;
+    rig.ringHoverTarget = false;
     if (!selectedRef.current && rig.mandalaTarget === 0) rig.paused = false;
   }, [rig]);
 
