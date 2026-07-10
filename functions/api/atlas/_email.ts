@@ -27,6 +27,7 @@ import type { LetterKind } from '../../../types';
 
 const DEFAULT_FROM = 'noreply@mandalacodes.com';
 const STEWARD_PAGE_URL = 'https://mandalacodes.com/atlas/edit';
+const CLAIM_PAGE_URL = 'https://mandalacodes.com/atlas/claim';
 
 /** The env fields this helper needs, typed locally (AuthEnv-style) so this
  *  module never imports from lib/account/auth.server.js or
@@ -74,6 +75,62 @@ export function letterEmailBody(letterBody: string): string {
     `·\n\n` +
     `Read this letter, and everything else your piece has written, at\n` +
     `${STEWARD_PAGE_URL}`
+  );
+}
+
+/**
+ * The two hand-off moments that invite someone to /atlas/claim:
+ *   'sale': Adrian confirmed a sale; the buyer's email now seeds the
+ *           piece's steward record and Phase A will match it.
+ *   'request-approved': a holder or admin approved a stewardship request;
+ *           the record is bound to the requester already.
+ */
+export type ClaimInviteKind = 'sale' | 'request-approved';
+
+/**
+ * Subject line per invite kind. Same conventions as letterEmailSubject:
+ * the site's voice, no em dashes, a middle-dot separator.
+ */
+export function claimInviteEmailSubject(kind: ClaimInviteKind): string {
+  switch (kind) {
+    case 'sale':
+      return 'Your piece has a living book · come claim it';
+    case 'request-approved':
+      return 'Your stewardship request was approved · the book opens to you';
+  }
+}
+
+/**
+ * Plain-text invite body: what the book is, the one link that opens it, and
+ * the privacy promise. No HTML, no unsubscribe link, no delivery tracking.
+ * Copy is DRAFT pending Adrian's voice sign-off.
+ */
+export function claimInviteEmailBody(
+  kind: ClaimInviteKind,
+  pieceTitle?: string,
+): string {
+  if (kind === 'sale') {
+    const title = pieceTitle ?? 'your piece';
+    return (
+      `The piece you now hold, ${title}, keeps a living book: its story,\n` +
+      `its place on the map, the words it will carry forward.\n\n` +
+      `That book is yours to open. Sign in with this email address, the one your piece was\n` +
+      `registered to, and it will know you:\n\n` +
+      `${CLAIM_PAGE_URL}\n\n` +
+      `Only your city ever appears publicly, never an address, and you can keep the piece\n` +
+      `entirely private. The book waits either way.\n\n` +
+      `Adrian Rasmussen`
+    );
+  }
+  const title = pieceTitle ?? 'this piece';
+  return (
+    `Your request to steward ${title} was approved. The book is open\n` +
+    `to you now.\n\n` +
+    `Sign in with this email address to complete the claim:\n\n` +
+    `${CLAIM_PAGE_URL}\n\n` +
+    `You will be asked one question about whether the piece appears on the public map.\n` +
+    `Only your city ever shows, never an address, and private is always an answer.\n\n` +
+    `Adrian Rasmussen`
   );
 }
 

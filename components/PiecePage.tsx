@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useAccount } from '../lib/account/useAccount';
-import SignInTrigger from './account/SignInTrigger';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { CARD_BY_NUMBER } from '../data/oracleData';
@@ -9,6 +7,7 @@ import { img } from '../utils/cloudinary';
 import { ulCardNumber } from '../utils/universalLanguage';
 import { HexagramSVG } from './oracle/HexagramGlyph';
 import { ordinalLabel } from './atlas/PieceSidePanel';
+import RequestStewardship from './atlas/RequestStewardship';
 import {
   loadAtlasState,
   findPublicPiece,
@@ -108,131 +107,6 @@ function buildSpine(piece: PublicPiece, art: Artwork): SpineEntry[] {
 
   return spine;
 }
-
-/**
- * "Request stewardship" (M4): the self-serve path for whoever holds the
- * physical piece without a pre-issued record: secondary buyers, auction
- * winners, gift recipients, heirs. Signed-in visitors send a request (with
- * an optional evidence note) into the queue: the admin decides for
- * unclaimed pieces, the current holder for claimed ones; nothing binds
- * automatically. Anonymous visitors get a sign-in prompt into the
- * self-owned sign-in modal, staying on this piece.
- */
-const RequestStewardship: React.FC<{
-  pieceId: string;
-  editionNumber?: number;
-}> = ({ pieceId, editionNumber }) => {
-  const { isSignedIn, fetchAuthed } = useAccount();
-  const [open, setOpen] = useState(false);
-  const [note, setNote] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
-
-  const submit = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetchAuthed('/api/atlas/steward/request-claim', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          pieceId,
-          ...(editionNumber !== undefined ? { editionNumber } : {}),
-          ...(note.trim() ? { note: note.trim() } : {}),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data?.ok) {
-        setError(data?.error ?? 'Something went wrong. Please try again.');
-        return;
-      }
-      setSent(true);
-    } catch {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (sent) {
-    return (
-      <p className="font-serif italic text-base text-stone-700 mt-4 leading-[1.6]">
-        Your request is in. The piece's current keeper, or Adrian, will
-        review it, and the book opens to you once they approve.
-      </p>
-    );
-  }
-
-  return (
-    <div className="mt-4">
-      {!isSignedIn && (
-        /* A secondary owner (auction, gift, inheritance) is NOT pre-bound by
-           Adrian, so the email-based /atlas/claim flow 404s for them. Sign in
-           in place with a modal and stay on this piece: once signed in the
-           signed-in branch below shows the request-stewardship form, which is
-           the right path for them. Never send them to /atlas/claim. */
-        <p className="font-serif text-sm text-wood-600 leading-[1.6]">
-          Hold this piece but arrived another way: an auction, a gift, an
-          inheritance?{' '}
-          <SignInTrigger>
-            <button
-              type="button"
-              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
-            >
-              Sign in to request stewardship →
-            </button>
-          </SignInTrigger>
-        </p>
-      )}
-      {isSignedIn && (
-        !open ? (
-          <p className="font-serif text-sm text-wood-600 leading-[1.6]">
-            Hold this piece but arrived another way?{' '}
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
-            >
-              Request stewardship →
-            </button>
-          </p>
-        ) : (
-          <div className="space-y-3">
-            <label
-              htmlFor="request-note"
-              className="block font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 font-semibold"
-            >
-              How did it come to you? (optional)
-            </label>
-            <textarea
-              id="request-note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={500}
-              rows={3}
-              placeholder="Bought at the Vienna auction, lot 12…"
-              className="w-full border border-wood-300 bg-white px-4 py-3 font-serif text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 resize-y"
-            />
-            {error && (
-              <p className="font-serif italic text-sm text-stone-600">{error}</p>
-            )}
-            <button
-              type="button"
-              onClick={submit}
-              disabled={busy}
-              className="inline-block font-label text-xs uppercase tracking-[0.18em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3 disabled:opacity-40"
-            >
-              {busy ? 'Sending...' : 'Send request'}
-            </button>
-          </div>
-        )
-      )}
-    </div>
-  );
-};
 
 const PiecePage: React.FC = () => {
   const { pieceId, edition } = useParams<{ pieceId: string; edition?: string }>();
@@ -605,16 +479,32 @@ const PiecePage: React.FC = () => {
                 Your piece already has a story. Signing in lets you add to it :
                 place it on the map, write its intentions, pass it on.
               </p>
+              {/* The loud button carries the piece: an unregistered visitor
+                  who clicks it lands on the recovery form in StewardClaim's
+                  no-record branch, not a dead-end. */}
               <Link
-                to="/atlas/claim"
+                to={`/atlas/claim?piece=${encodeURIComponent(piece.pieceId)}${
+                  typeof piece.editionNumber === 'number'
+                    ? `:${piece.editionNumber}`
+                    : ''
+                }`}
                 className="inline-block font-label text-xs uppercase tracking-[0.18em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3"
               >
                 Open this piece's book
               </Link>
-              <RequestStewardship
-                pieceId={piece.pieceId}
-                editionNumber={piece.editionNumber}
-              />
+              <p className="font-serif text-sm text-wood-600 mt-3 leading-[1.6]">
+                Sign in with the email your piece was registered to.
+              </p>
+              {/* The second path, visible as a labeled alternative rather
+                  than a footnote: for the holder who was never
+                  pre-registered. */}
+              <div className="mt-5 pt-4 border-t border-wood-200">
+                <RequestStewardship
+                  pieceId={piece.pieceId}
+                  editionNumber={piece.editionNumber}
+                  leadIn="Came to it another way? An auction, a gift, an inheritance:"
+                />
+              </div>
             </div>
           </div>
         </div>
