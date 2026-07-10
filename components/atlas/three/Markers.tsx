@@ -43,6 +43,7 @@ const VERT = /* glsl */ `
   attribute float aSelected;
   attribute float aFlash;
   attribute float aYours;
+  attribute float aOwned;
   uniform float uPixelRatio;
   uniform float uTime;
   varying vec3 vColor;
@@ -50,18 +51,22 @@ const VERT = /* glsl */ `
   varying float vSelected;
   varying float vFlash;
   varying float vYours;
+  varying float vOwned;
   void main() {
     vColor = aColor;
     vAlpha = aAlpha;
     vSelected = aSelected;
     vFlash = aFlash;
     vYours = aYours;
+    vOwned = aOwned;
     float pulse = 1.0 + 0.10 * sin(uTime * 1.8 + aPhase * 6.2831);
     float sel = 1.0 + aSelected * 0.55;
     // Ignition flash: a newborn light blooms half again as large, then settles.
     float flash = 1.0 + aFlash * 1.5;
+    // Your own stewarded piece sits a touch larger than its neighbors.
+    float own = 1.0 + aOwned * 0.25;
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = aSize * pulse * sel * flash * uPixelRatio * (4.9 / -mv.z);
+    gl_PointSize = aSize * pulse * sel * flash * own * uPixelRatio * (4.9 / -mv.z);
     gl_Position = projectionMatrix * mv;
   }
 `;
@@ -73,6 +78,7 @@ const FRAG = /* glsl */ `
   varying float vSelected;
   varying float vFlash;
   varying float vYours;
+  varying float vOwned;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
     float d = length(c) * 2.0;
@@ -96,8 +102,13 @@ const FRAG = /* glsl */ `
     // carry one of the visitor's own codes.
     float yr = 0.78 + 0.05 * sin(uTime * 1.1);
     float yring = vYours * smoothstep(0.07, 0.0, abs(d - yr)) * 0.75;
-    float energy = (core * 1.7 + halo + flare + ring + wave + yring) * (1.0 + vFlash * 1.3);
+    // Owned resonance: a steady inner ring and a brighter warm-gold pulse on
+    // the pieces the signed-in visitor stewards. Warm earth family only.
+    float orr = 0.66 + 0.04 * sin(uTime * 1.4);
+    float oring = vOwned * smoothstep(0.08, 0.0, abs(d - orr)) * 0.85;
+    float energy = (core * 1.7 + halo + flare + ring + wave + yring + oring) * (1.0 + vFlash * 1.3 + vOwned * 0.25);
     vec3 col = mix(vColor, vec3(0.61, 0.67, 0.53), clamp(yring * 1.4, 0.0, 0.8));
+    col = mix(col, vec3(0.93, 0.79, 0.51), clamp(vOwned * 0.45, 0.0, 0.45));
     gl_FragColor = vec4(col * energy, vAlpha * min(energy, 1.0));
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -148,6 +159,7 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
     geo.setAttribute('aSelected', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
     geo.setAttribute('aFlash', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
     geo.setAttribute('aYours', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
+    geo.setAttribute('aOwned', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
     geo.setDrawRange(0, 0);
     // Points have no real bounds; the cloud hugs the unit sphere.
     geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), GLOBE_RADIUS * 1.1);
@@ -245,6 +257,7 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
     const sel = geometry.getAttribute('aSelected') as THREE.BufferAttribute;
     const flash = geometry.getAttribute('aFlash') as THREE.BufferAttribute;
     const yours = geometry.getAttribute('aYours') as THREE.BufferAttribute;
+    const owned = geometry.getAttribute('aOwned') as THREE.BufferAttribute;
 
     const now = performance.now();
     const lensActive = !!focusSeries || !!yoursMode;
@@ -277,6 +290,7 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
       // Ignition flash: bright at birth, gone in about two seconds.
       flash.setX(write, entry.bornAt > 0 && ageS >= 0 ? Math.exp(-ageS * 2.2) : 0);
       yours.setX(write, yoursMode && n.yours ? 1 : 0);
+      owned.setX(write, n.owned ? 1 : 0);
       write++;
     }
     // Prune fully exited entries occasionally.
@@ -293,6 +307,7 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
     sel.needsUpdate = true;
     flash.needsUpdate = true;
     yours.needsUpdate = true;
+    owned.needsUpdate = true;
   });
 
   return <points geometry={geometry} material={material} renderOrder={3} />;

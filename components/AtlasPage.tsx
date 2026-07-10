@@ -17,6 +17,8 @@ import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
 import { useProfile } from '../lib/profile/context';
+import { useAccount } from '../lib/account/useAccount';
+import { useCollections } from '../lib/collections/context';
 import { ulCardNumber } from '../utils/universalLanguage';
 import { buildKinshipIndex, greatCircleDistance, MAX_KINSHIP_ARCS } from '../utils/kinship';
 import { SIZE_BANDS, sizeBandFor, type SizeBand } from '../utils/sizeBands';
@@ -190,6 +192,63 @@ const AtlasPage: React.FC = () => {
     return set;
   }, [profile]);
 
+  /* Signed-in personalization: the pieces you steward and the cards you
+     saved. Own pieces come from the idempotent Phase A bind call, the same
+     one StewardEdit makes on mount; saved cards ride the collections
+     context. Signed out (or accounts unconfigured), no fetch fires and both
+     stay empty, so the globe is unchanged. */
+  const { available: accountAvailable, isLoaded, isSignedIn, fetchAuthed } = useAccount();
+  const [ownedKeys, setOwnedKeys] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    if (!accountAvailable || !isLoaded || !isSignedIn) {
+      setOwnedKeys((prev) => (prev.size === 0 ? prev : new Set()));
+      return;
+    }
+    let cancelled = false;
+    fetchAuthed('/api/atlas/steward/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then(
+        (
+          data: {
+            claimed?: Array<{
+              steward: { pieceId: string; editionNumber?: number | null };
+            }>;
+          } | null,
+        ) => {
+          if (cancelled || !data?.claimed) return;
+          setOwnedKeys(
+            new Set(
+              data.claimed.map((c) =>
+                makeKey(c.steward.pieceId, c.steward.editionNumber ?? undefined),
+              ),
+            ),
+          );
+        },
+      )
+      .catch(() => {
+        /* quiet: personalization only */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accountAvailable, isLoaded, isSignedIn, fetchAuthed]);
+
+  const { collections } = useCollections();
+  const savedCards = useMemo(() => {
+    const set = new Set<number>();
+    for (const c of collections) {
+      for (const item of c.items) {
+        if (item.kind !== 'card') continue;
+        const n = parseInt(item.ref, 10);
+        if (Number.isFinite(n)) set.add(n);
+      }
+    }
+    return set;
+  }, [collections]);
+
   /* Selection setter that mirrors the choice into the URL (replace, so
      browsing pieces doesn't pile up history entries). */
   const setSelectedKey = (key: string | null) => {
@@ -336,7 +395,10 @@ const AtlasPage: React.FC = () => {
         pieceType: p.pieceType,
         series: p.series,
         ordinal: p.claimOrdinal,
-        yours: num != null && yourGates.has(num),
+        // "Your codes" lights pieces whose gate sits in your profile OR whose
+        // card you saved to a collection; "owned" marks pieces you steward.
+        yours: num != null && (yourGates.has(num) || savedCards.has(num)),
+        owned: ownedKeys.has(p.key),
       });
     }
     // The visitor's birth place rides along regardless of filters — it is
@@ -351,7 +413,7 @@ const AtlasPage: React.FC = () => {
       });
     }
     return nodes;
-  }, [seriesFiltered, status, birthPlace, yourGates]);
+  }, [seriesFiltered, status, birthPlace, yourGates, savedCards, ownedKeys]);
 
   /* Ring tap (mandala view): a lit code travels to its piece in the world;
      an unlit code opens the code itself, where its pieces and the acquire
