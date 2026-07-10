@@ -62,6 +62,9 @@ export interface PieceHUDProps {
   onSelectKin?: (key: string) => void;
   holderChart?: HolderChartSummary | null;
   onRelease: () => void;
+  /** When this piece was reached through a multi-piece city, a back control
+      returns to that city's list instead of releasing the selection. */
+  onBack?: () => void;
   isOrigin?: boolean;
   /** True when this piece carries one of the visitor's own codes. */
   carriesYourCode?: boolean;
@@ -76,6 +79,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   onSelectKin,
   holderChart,
   onRelease,
+  onBack,
   isOrigin = false,
   carriesYourCode = false,
   intention,
@@ -160,6 +164,18 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
       ))}
 
       <div className="p-6 sm:p-7 max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto">
+        {/* Back to the city list, when this piece was reached through one. */}
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="mb-3 font-label text-[10px] uppercase tracking-[0.2em] transition-colors"
+            style={{ color: accent }}
+          >
+            ← the city
+          </button>
+        )}
+
         {/* Series + category */}
         <Label>{piece.category ?? 'Selected piece'}</Label>
         {inlineBits.length > 0 && (

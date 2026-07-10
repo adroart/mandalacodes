@@ -54,6 +54,20 @@ export interface GlobeNode {
   // True when the signed-in visitor stewards this piece (from the idempotent
   // bind call). Owned lights render with a brighter warm treatment.
   owned?: boolean;
+  // ─── City-cluster fields (Phase 2A) ──────────────────────────────────────
+  // A node may be a single piece (the default, every field above) OR a city
+  // cluster carrying several pieces at one lat/lng. Single-piece cities keep
+  // the piece's own key as `id` so they behave pixel-identically to before;
+  // multi-piece cities use a synthetic `city:<cityId>` id and set `count > 1`.
+  /** The city this node sits in (absent for the birth-place origin node). */
+  cityId?: string;
+  /** How many pieces this node represents. Absent or 1 = a single piece. */
+  count?: number;
+  /** The per-piece selection keys gathered into this cluster. */
+  memberKeys?: string[];
+  /** Every distinct series among the cluster's members (drives the lens: a
+      cluster stays lit under a series focus if ANY member is in that series). */
+  seriesList?: string[];
 }
 
 export interface GlobeProps {

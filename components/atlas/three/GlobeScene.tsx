@@ -19,7 +19,12 @@ import { CAMERA_FAR_DIST, CAMERA_NEAR_DIST, easeInOutCubic, stepRig, useRig } fr
 
 export interface GlobeSceneProps {
   nodes: GlobeNode[];
+  /** The selected marker (a city cluster id): drives the marker highlight. */
   selectedId?: string | null;
+  /** The selected piece key: drives the kinship-arc highlight, which keys off
+      per-piece node keys, not cluster ids. Usually equals selectedId, but for
+      a multi-piece city the cluster id and the chosen piece key differ. */
+  kinSelectedId?: string | null;
   kinship?: KinshipIndex | null;
   kinshipVisible: boolean;
   placedByCard: ReadonlyMap<number, { lat: number; lng: number }>;
@@ -32,6 +37,7 @@ export interface GlobeSceneProps {
 export default function GlobeScene({
   nodes,
   selectedId,
+  kinSelectedId,
   kinship,
   kinshipVisible,
   placedByCard,
@@ -86,7 +92,11 @@ export default function GlobeScene({
             yoursMode={yoursMode}
           />
           {kinship && kinship.pairs.length > 0 && (
-            <KinshipArcs index={kinship} selectedId={selectedId} visible={kinshipVisible} />
+            <KinshipArcs
+              index={kinship}
+              selectedId={kinSelectedId ?? selectedId}
+              visible={kinshipVisible}
+            />
           )}
           <HexagramRing placedByCard={placedByCard} />
         </group>
