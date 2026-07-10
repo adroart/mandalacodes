@@ -101,6 +101,12 @@ export interface Rig {
   introAt: number;
   /** Seconds after introAt when the kinship arcs begin weaving in. */
   introArcDelay: number;
+  /** Ring hover: raw pointer state, set every pointermove by the wrapper
+      (true when the cursor sits near the hexagram ring band). */
+  ringHoverTarget: boolean;
+  /** Ring hover: eased 0 to 1 value HexagramRing reads to brighten the band
+      on pointer-over, the resting view's discoverability affordance. */
+  ringHover: number;
 }
 
 export function createRig(lowTier: boolean): Rig {
@@ -117,6 +123,8 @@ export function createRig(lowTier: boolean): Rig {
     travelDolly: 0,
     introAt: 0,
     introArcDelay: 2.4,
+    ringHoverTarget: false,
+    ringHover: 0,
   };
 }
 
@@ -152,6 +160,13 @@ export function stepRig(rig: Rig, deltaSeconds: number): void {
   const k = 1 - Math.exp(-Math.max(0, deltaSeconds) * 2);
   rig.mandala += (want - rig.mandala) * k;
   if (Math.abs(rig.mandala - want) < 0.002) rig.mandala = want;
+
+  // Ring hover: the same bounded-exponential ease, snappier so the
+  // brighten-on-pointer-over affordance feels responsive.
+  const hoverWant = rig.ringHoverTarget ? 1 : 0;
+  const hk = 1 - Math.exp(-Math.max(0, deltaSeconds) * 10);
+  rig.ringHover += (hoverWant - rig.ringHover) * hk;
+  if (Math.abs(rig.ringHover - hoverWant) < 0.002) rig.ringHover = hoverWant;
 }
 
 export const RigContext = createContext<Rig | null>(null);
