@@ -148,6 +148,9 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
           <p className="font-serif text-lg text-wood-900 leading-snug">
             The {ordinalLabel(piece.claimOrdinal)} light
           </p>
+          <p className="font-serif italic text-sm text-wood-600 leading-snug mt-1">
+            A founding light marks the order in which a piece was claimed by its keeper.
+          </p>
         </div>
       )}
 

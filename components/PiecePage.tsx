@@ -444,9 +444,14 @@ const PiecePage: React.FC = () => {
 
             {/* Founding light: the artifact. */}
             {typeof piece.claimOrdinal === 'number' && (
-              <p className="font-serif italic text-xl text-bronze-700 mb-6">
-                The {ordinalLabel(piece.claimOrdinal)} light
-              </p>
+              <div className="mb-6">
+                <p className="font-serif italic text-xl text-bronze-700">
+                  The {ordinalLabel(piece.claimOrdinal)} light
+                </p>
+                <p className="font-serif italic text-sm text-wood-600 leading-snug mt-1">
+                  A founding light marks the order in which a piece was claimed by its keeper.
+                </p>
+              </div>
             )}
 
             {/* Inline metadata row */}
