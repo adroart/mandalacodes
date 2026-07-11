@@ -1,7 +1,7 @@
 /**
  * Trigram line patterns and hexagram composition helpers.
  *
- * Each trigram is stored top-to-bottom as [top, middle, bottom].
+ * Each trigram is stored bottom-to-top as [bottom, middle, top].
  * `true` = yang (solid line), `false` = yin (broken line).
  *
  * Used by OracleCardEntrance and OracleQREntrance to render the six-line

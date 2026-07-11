@@ -36,6 +36,36 @@ export interface KinshipPair {
   bKey: string;
   /** Great-circle distance in radians (0..π). Lets the side panel rank "nearest kin". */
   distance: number;
+  /** The first matching trigram name, as stored on the nodes (e.g. "Heaven (Ch'ien)"). */
+  sharedTrigram: string;
+}
+
+/**
+ * Thread colors per trigram family. Warm earth tones only, a locked visual
+ * rule for globe visuals: browns, bronzes, ochres, muted golds. Never blue
+ * or cold gray (Water is a dark coffee brown here on purpose). Keyed by the
+ * plain trigram name, parenthetical romanisation stripped. Exported so the
+ * 3D arcs and the SVG fallback agree on every hue.
+ */
+export const TRIGRAM_THREAD_COLORS: Record<string, string> = {
+  Heaven: '#d5b878',   // muted gold
+  Earth: '#8a6a4a',    // deep umber
+  Thunder: '#b5763c',  // burnt ochre
+  Wind: '#cfc09a',     // pale sand
+  Water: '#6e5a41',    // dark coffee brown
+  Fire: '#c98a4b',     // amber
+  Mountain: '#9c8563', // warm stone
+  Lake: '#d9a878',     // warm peach bronze
+};
+
+/** Fallback thread color: the bronze the arcs used before per-trigram hues. */
+export const DEFAULT_THREAD_COLOR = '#c4aa7c';
+
+/** Resolve a trigram name (with or without its parenthetical) to its thread color. */
+export function trigramThreadColor(trigram: string | undefined): string {
+  if (!trigram) return DEFAULT_THREAD_COLOR;
+  const plain = trigram.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  return TRIGRAM_THREAD_COLORS[plain] ?? DEFAULT_THREAD_COLOR;
 }
 
 export interface KinshipIndex {
@@ -47,6 +77,8 @@ export interface KinshipIndex {
   pairsByKey: Map<string, KinshipPair[]>;
   /** True if the raw pair list exceeded MAX_KINSHIP_ARCS and was truncated. */
   capped: boolean;
+  /** The raw pair count before any cap, so the UI can say "showing X of Y". */
+  totalPairs: number;
 }
 
 /**
@@ -151,10 +183,17 @@ export function buildKinshipIndex(
       // aKey < bKey for stable ordering. nodeList is index-ordered so i < j
       // already gives a deterministic pairing, but sort to be explicit.
       const [aKey, bKey] = a.key < b.key ? [a.key, b.key] : [b.key, a.key];
+      // isKin passed, so at least one of a's trigrams sits on b; record the
+      // first match as the pair's shared thread.
+      const bTrigrams = new Set([b.upperTrigram, b.lowerTrigram]);
+      const sharedTrigram = bTrigrams.has(a.upperTrigram)
+        ? a.upperTrigram
+        : a.lowerTrigram;
       rawPairs.push({
         aKey,
         bKey,
         distance: greatCircleDistance(a.lat, a.lng, b.lat, b.lng),
+        sharedTrigram,
       });
     }
   }
@@ -173,7 +212,7 @@ export function buildKinshipIndex(
     pairsByKey.set(pair.bKey, arrB);
   }
 
-  return { nodes, pairs, pairsByKey, capped };
+  return { nodes, pairs, pairsByKey, capped, totalPairs: rawPairs.length };
 }
 
 /* ─── Projection mirroring `components/atlas/Globe.tsx` ─────────────────── */

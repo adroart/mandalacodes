@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccount } from '../../lib/account/useAccount';
 import SignInModal from '../account/SignInModal';
 import type { PieceRecord, StewardRecord } from '../../types';
@@ -7,6 +7,7 @@ import { FULL_ARCHIVE } from '../../data/mockData';
 import ConsentRings from './ConsentRings';
 import type { ConsentChoice } from './ConsentRings';
 import ClaimCeremony from './ClaimCeremony';
+import RequestStewardship from './RequestStewardship';
 
 /**
  * Steward claim: rendered at /atlas/claim. Two-phase since M2.
@@ -55,9 +56,32 @@ const StewardClaim: React.FC = () => {
      happens below, after every hook, so hook order stays stable.) */
   const rehearse = import.meta.env.DEV ? searchParams.get('ceremony') : null;
 
-  // Phase A: bind on arrival.
+  /* Piece context: /atlas/claim?piece=<pieceId[:edition]>, set by the piece
+     page's primary CTA. Read ONLY by the no-record branch below (a 404 from
+     Phase A), where it turns the dead-end into the request-stewardship form
+     for that piece. Every other branch, including the ?ceremony= rehearsal
+     above, ignores it. */
+  const pieceContext = (() => {
+    const raw = searchParams.get('piece');
+    if (!raw) return null;
+    const [pid, ped] = raw.split(':');
+    if (!pid) return null;
+    const editionNumber =
+      ped !== undefined && /^\d+$/.test(ped) ? parseInt(ped, 10) : undefined;
+    return { pieceId: pid, editionNumber };
+  })();
+
+  // Phase A: bind on arrival. Fired exactly once per signed-in arrival,
+  // guarded by a ref rather than `status`: with `status` in the dependency
+  // array, the effect's own setStatus('claiming') re-triggered the cleanup
+  // and flipped `cancelled` before the response landed, so every response
+  // path (ok, 404, error) was dead and the page hung on "Looking up your
+  // piece...". The ref keeps the single-fire guarantee; `cancelled` now
+  // means what it says: the component unmounted mid-flight.
+  const claimFired = useRef(false);
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || status !== 'idle') return;
+    if (!isLoaded || !isSignedIn || claimFired.current) return;
+    claimFired.current = true;
     let cancelled = false;
     (async () => {
       setStatus('claiming');
@@ -94,7 +118,7 @@ const StewardClaim: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn, fetchAuthed, navigate, status]);
+  }, [isLoaded, isSignedIn, fetchAuthed, navigate]);
 
   // Phase B: consent capture.
   const handleConsentSubmit = async (choice: ConsentChoice) => {
@@ -216,9 +240,39 @@ const StewardClaim: React.FC = () => {
                 </span>{' '}
                 yet.
               </p>
-              <p className="font-serif italic text-sm text-stone-600">
-                If you hold one of Adrian's pieces, send him a note and he'll add you with this email address.
-              </p>
+              {pieceContext ? (
+                /* Piece context from ?piece=: the recovery path. The visitor
+                   arrived from a piece's own page, so offer the self-serve
+                   stewardship request for that piece instead of a wall. */
+                <div className="text-left">
+                  <p className="font-serif italic text-sm text-stone-600">
+                    If this piece came to you another way, an auction, a gift,
+                    an inheritance, request stewardship here and the current
+                    keeper, or Adrian, will approve it.
+                  </p>
+                  <RequestStewardship
+                    pieceId={pieceContext.pieceId}
+                    editionNumber={pieceContext.editionNumber}
+                    leadIn={null}
+                  />
+                </div>
+              ) : (
+                /* No piece context: a request needs a pieceId, so give real
+                   directions to a piece's own page instead of a dead-end. */
+                <>
+                  <p className="font-serif italic text-sm text-stone-600 mb-5">
+                    If you hold one of Adrian's pieces, scan the code on its
+                    back, or find it on the map, and request stewardship from
+                    the piece's own page.
+                  </p>
+                  <Link
+                    to="/atlas"
+                    className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+                  >
+                    Find it on the map →
+                  </Link>
+                </>
+              )}
             </div>
           )}
           {status === 'error' && (

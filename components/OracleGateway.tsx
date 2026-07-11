@@ -208,6 +208,7 @@ const OracleGateway: React.FC = () => {
           </p>
 
           <Link to="/universal-language" className="og-link">Get a Reading</Link>
+          <Link to="/profile" className="og-link">Your Birth Chart</Link>
           {/* Artwork sales + inquiries live on adrianrasmussen.com, not on
               this domain — internal Links here would land on the 404 page. */}
           <a href="https://adrianrasmussen.com/creations/multidimensional-art/universal-language" className="og-link">View the Artwork</a>

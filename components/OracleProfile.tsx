@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useProfile } from '../lib/profile/context';
 import ProfileForm from './oracle/ProfileForm';
 import ProfileGraph from './oracle/ProfileGraph';
+import TodayEnergyPanel from './oracle/TodayEnergyPanel';
+import YearEnergyPanel from './oracle/YearEnergyPanel';
 import { encodeSharedProfile } from '../lib/profile/share';
 import { useMetaTags } from '../hooks/useMetaTags';
 
@@ -158,6 +160,27 @@ const OracleProfile: React.FC = () => {
           <ProfileGraph profile={profile!.computed} />
         </>
       )}
+
+      {/* The sky right now: today's Sun-transit gate and the year's keynote.
+          Rendered in both branches; the panels need no profile. */}
+      <section aria-label="The sky right now" style={{ marginTop: 48 }}>
+        <p
+          style={{
+            fontFamily: 'Cinzel, Palatino, serif',
+            fontSize: 10,
+            letterSpacing: '0.32em',
+            textTransform: 'uppercase',
+            color: 'var(--color-bronze-600)',
+            marginBottom: 14,
+          }}
+        >
+          The sky right now
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+          <TodayEnergyPanel />
+          <YearEnergyPanel />
+        </div>
+      </section>
 
       <footer
         style={{

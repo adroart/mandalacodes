@@ -218,6 +218,9 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
             <p className="font-serif text-lg leading-snug" style={{ color: "#f6f1e8" }}>
               The {ordinalLabel(piece.claimOrdinal)} light
             </p>
+            <p className="font-serif italic text-xs leading-snug mt-1" style={{ color: '#cbbfa8' }}>
+              A founding light marks the order in which a piece was claimed by its keeper.
+            </p>
           </>
         )}
 

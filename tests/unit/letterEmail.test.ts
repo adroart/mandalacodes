@@ -20,6 +20,8 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  claimInviteEmailBody,
+  claimInviteEmailSubject,
   letterEmailBody,
   letterEmailSubject,
   sendLetterEmail,
@@ -55,6 +57,58 @@ describe('letterEmailBody', () => {
   it('never contains an em dash', () => {
     const body = letterEmailBody('A year ago today you set me alight.');
     expect(body).not.toMatch(/—/);
+  });
+});
+
+describe('claimInviteEmailSubject', () => {
+  it('reads like the hand-off moment, in the site voice', () => {
+    expect(claimInviteEmailSubject('sale')).toBe(
+      'Your piece has a living book · come claim it',
+    );
+    expect(claimInviteEmailSubject('request-approved')).toBe(
+      'Your stewardship request was approved · the book opens to you',
+    );
+  });
+
+  it('never contains an em dash', () => {
+    for (const kind of ['sale', 'request-approved'] as const) {
+      expect(claimInviteEmailSubject(kind)).not.toMatch(/\u2014/);
+    }
+  });
+});
+
+describe('claimInviteEmailBody', () => {
+  it('names the piece and links the claim page (sale, with a title)', () => {
+    const body = claimInviteEmailBody('sale', 'Emergence');
+    expect(body).toContain('The piece you now hold, Emergence, keeps a living book');
+    expect(body).toContain('https://mandalacodes.com/atlas/claim');
+    expect(body).toContain('Adrian Rasmussen');
+  });
+
+  it('falls back gracefully when no title resolves (sale)', () => {
+    const body = claimInviteEmailBody('sale');
+    expect(body).toContain('The piece you now hold, your piece, keeps a living book');
+    expect(body).toContain('https://mandalacodes.com/atlas/claim');
+  });
+
+  it('names the piece and links the claim page (request-approved, with a title)', () => {
+    const body = claimInviteEmailBody('request-approved', 'Emergence');
+    expect(body).toContain('Your request to steward Emergence was approved.');
+    expect(body).toContain('https://mandalacodes.com/atlas/claim');
+    expect(body).toContain('Adrian Rasmussen');
+  });
+
+  it('falls back gracefully when no title resolves (request-approved)', () => {
+    const body = claimInviteEmailBody('request-approved');
+    expect(body).toContain('Your request to steward this piece was approved.');
+    expect(body).toContain('https://mandalacodes.com/atlas/claim');
+  });
+
+  it('never contains an em dash, either kind, with or without a title', () => {
+    for (const kind of ['sale', 'request-approved'] as const) {
+      expect(claimInviteEmailBody(kind)).not.toMatch(/\u2014/);
+      expect(claimInviteEmailBody(kind, 'Emergence')).not.toMatch(/\u2014/);
+    }
   });
 });
 

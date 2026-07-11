@@ -56,6 +56,13 @@ import {
   regeneratePublicState,
 } from '../_helpers';
 import { executeTransfer, rebindStewardRecord } from '../_transfer';
+import {
+  claimInviteEmailBody,
+  claimInviteEmailSubject,
+  sendLetterEmail,
+} from '../_email';
+import type { LetterEmailEnv } from '../_email';
+import { FULL_ARCHIVE } from '../../../../data/mockData';
 import { requireAdmin, isAuthResponse } from '../../_lib/auth';
 
 interface ConfirmBody {
@@ -247,6 +254,20 @@ export async function onRequestPost(
     if (isMissingTableError(err)) return migrationNotApplied();
     throw err;
   }
+
+  // Tell the buyer their piece is ready to claim. Fire-and-forget, same
+  // pattern as _letters.ts: never awaited on the response path, and every
+  // failure mode is swallowed inside the helper (the void + catch is belt
+  // and braces). Sent from all three steward branches above. Known
+  // acceptable duplicate: case 2a is a confirm retry, so a retried confirm
+  // re-sends this invite; confirms are rare admin actions, no dedupe state.
+  const pieceTitle = FULL_ARCHIVE.find((a) => a.id === pieceId)
+    ?.title.replace(/\s*-\s*\d+$/, '');
+  void sendLetterEmail(env as unknown as LetterEmailEnv, {
+    to: buyerEmail,
+    subject: claimInviteEmailSubject('sale'),
+    body: claimInviteEmailBody('sale', pieceTitle),
+  }).catch(() => undefined);
 
   return json({
     ok: true,

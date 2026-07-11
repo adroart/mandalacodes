@@ -13,8 +13,8 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import type { KinshipIndex } from '../../../utils/kinship';
-import { COLOR_BRONZE, GLOBE_RADIUS, latLngToVec3, MANDALA_DRAW_SECONDS, useRig } from './rig';
+import { trigramThreadColor, type KinshipIndex } from '../../../utils/kinship';
+import { GLOBE_RADIUS, latLngToVec3, MANDALA_DRAW_SECONDS, useRig } from './rig';
 
 const SAMPLES = 36; // points per arc → SAMPLES-1 segments
 
@@ -22,19 +22,21 @@ const VERT = /* glsl */ `
   attribute float aT;
   attribute float aStagger;
   attribute float aHighlight;
+  attribute vec3 aColor;
   varying float vT;
   varying float vStagger;
   varying float vHighlight;
+  varying vec3 vColor;
   void main() {
     vT = aT;
     vStagger = aStagger;
     vHighlight = aHighlight;
+    vColor = aColor;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
 
 const FRAG = /* glsl */ `
-  uniform vec3 uColor;
   uniform float uTime;
   uniform float uOpacity;    // global visibility (kinship toggle), eased
   uniform float uDraw;       // draw-in progress; >1.4 means fully drawn
@@ -43,6 +45,7 @@ const FRAG = /* glsl */ `
   varying float vT;
   varying float vStagger;
   varying float vHighlight;
+  varying vec3 vColor;       // per-arc trigram thread color (warm earth family)
 
   void main() {
     // Mandala draw-in: each arc begins once the sweep passes its stagger and
@@ -66,7 +69,7 @@ const FRAG = /* glsl */ `
 
     float alpha = (base + pulse + endGlow + selBoost) * (1.0 - selFade) * reveal * uOpacity;
     if (alpha <= 0.004) discard;
-    vec3 col = uColor * (1.0 + vHighlight * 0.5 + pulse * 0.8 + endGlow * 0.8);
+    vec3 col = vColor * (1.0 + vHighlight * 0.5 + pulse * 0.8 + endGlow * 0.8);
     gl_FragColor = vec4(col, alpha);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -88,6 +91,8 @@ export default function KinshipArcs({ index, selectedId, visible }: KinshipArcsP
     const positions = new Float32Array(pairs.length * segVerts * 3);
     const ts = new Float32Array(pairs.length * segVerts);
     const staggers = new Float32Array(pairs.length * segVerts);
+    const colors = new Float32Array(pairs.length * segVerts * 3);
+    const threadColor = new THREE.Color();
     const a = new THREE.Vector3();
     const b = new THREE.Vector3();
     const ctrl = new THREE.Vector3();
@@ -109,6 +114,8 @@ export default function KinshipArcs({ index, selectedId, visible }: KinshipArcsP
       ctrl.addVectors(a, b).normalize().multiplyScalar(GLOBE_RADIUS * lift);
       // Deterministic per-arc stagger from the pair's geometry.
       const stagger = Math.abs(Math.sin(na.lat * 3.7 + nb.lng * 1.9 + i)) % 1;
+      // Per-arc thread color from the shared trigram (warm earth palette).
+      threadColor.set(trigramThreadColor(pair.sharedTrigram));
 
       const sample = (t: number, out: THREE.Vector3) => {
         const s = 1 - t;
@@ -125,10 +132,12 @@ export default function KinshipArcs({ index, selectedId, visible }: KinshipArcsP
         sample(t0, p0);
         sample(t1, p1);
         positions.set([p0.x, p0.y, p0.z], v * 3);
+        colors.set([threadColor.r, threadColor.g, threadColor.b], v * 3);
         ts[v] = t0;
         staggers[v] = stagger;
         v++;
         positions.set([p1.x, p1.y, p1.z], v * 3);
+        colors.set([threadColor.r, threadColor.g, threadColor.b], v * 3);
         ts[v] = t1;
         staggers[v] = stagger;
         v++;
@@ -139,6 +148,7 @@ export default function KinshipArcs({ index, selectedId, visible }: KinshipArcsP
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geo.setAttribute('aT', new THREE.BufferAttribute(ts, 1));
     geo.setAttribute('aStagger', new THREE.BufferAttribute(staggers, 1));
+    geo.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
     geo.setAttribute('aHighlight', new THREE.BufferAttribute(new Float32Array(ts.length), 1));
     geo.setDrawRange(0, v);
     return { geometry: geo, pairKeys: keys };
@@ -150,7 +160,6 @@ export default function KinshipArcs({ index, selectedId, visible }: KinshipArcsP
         vertexShader: VERT,
         fragmentShader: FRAG,
         uniforms: {
-          uColor: { value: COLOR_BRONZE.clone() },
           uTime: { value: 0 },
           uOpacity: { value: 0 },
           uDraw: { value: 2 },

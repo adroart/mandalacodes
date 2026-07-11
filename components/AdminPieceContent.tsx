@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAccount } from '../lib/account/useAccount';
 import AdminLayout from './AdminLayout';
+import TypeaheadPicker from './shared/TypeaheadPicker';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { img } from '../utils/cloudinary';
 import {
@@ -58,71 +59,43 @@ const pieceOptions: PieceOption[] = FULL_ARCHIVE
     .sort((a, b) => a.label.localeCompare(b.label));
 
 // ───────────────────────────────────────────────────────────────────────────
-// Piece picker — searchable, mirrors CityAutocomplete's pattern in
-// AdminAtlas.tsx (typeahead list, click to pick, blur-to-close).
+// Piece picker: thin wrapper around the shared TypeaheadPicker
+// (components/shared/TypeaheadPicker.tsx, mirrors CityAutocomplete's
+// pattern in AdminAtlas.tsx: both are now call sites of the same combobox).
 // ───────────────────────────────────────────────────────────────────────────
+
+const pieceMatches = (p: PieceOption, query: string): boolean =>
+    `${p.label} ${p.id}`.toLowerCase().includes(query.trim().toLowerCase());
+
+const pieceLabel = (p: PieceOption): string => p.label;
 
 const PiecePicker: React.FC<{
     value: string;
     onChange: (pieceId: string) => void;
 }> = ({ value, onChange }) => {
-    const [query, setQuery] = useState<string>(() => {
-        const p = pieceOptions.find((o) => o.id === value);
-        return p ? p.label : '';
-    });
-    const [open, setOpen] = useState(false);
-
-    const matches = useMemo(() => {
-        const q = query.trim().toLowerCase();
-        if (!q) return pieceOptions.slice(0, 10);
-        return pieceOptions
-            .filter((p) => `${p.label} ${p.id}`.toLowerCase().includes(q))
-            .slice(0, 20);
-    }, [query]);
-
-    const pick = (p: PieceOption) => {
-        onChange(p.id);
-        setQuery(p.label);
-        setOpen(false);
-    };
-
     return (
-        <div className="relative">
-            <input
-                type="text"
-                value={query}
-                onFocus={() => setOpen(true)}
-                onBlur={() => setTimeout(() => setOpen(false), 150)}
-                onChange={(e) => {
-                    setQuery(e.target.value);
-                    onChange('');
-                    setOpen(true);
-                }}
-                placeholder="Search a piece by title, series, or id…"
-                className={fieldInput}
-            />
-            {open && matches.length > 0 && (
-                <ul className="absolute z-10 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-white border border-wood-300 shadow-sm">
-                    {matches.map((p) => (
-                        <li key={p.id}>
-                            <button
-                                type="button"
-                                onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    pick(p);
-                                }}
-                                className="w-full text-left px-4 py-2 font-sans text-sm text-wood-700 hover:bg-paper-100 hover:text-bronze-700"
-                            >
-                                {p.label}
-                                <span className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 ml-2">
-                                    {p.id}
-                                </span>
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+        <TypeaheadPicker<PieceOption>
+            items={pieceOptions}
+            filter={pieceMatches}
+            itemKey={(p) => p.id}
+            itemLabel={pieceLabel}
+            value={value || null}
+            onPick={(p) => onChange(p.id)}
+            onQueryChange={() => onChange('')}
+            placeholder="Search a piece by title, series, or id…"
+            maxResultsEmpty={10}
+            maxResults={20}
+            variant="admin"
+            listMaxHeightClassName="max-h-72"
+            renderItem={(p) => (
+                <>
+                    {p.label}
+                    <span className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 ml-2">
+                        {p.id}
+                    </span>
+                </>
             )}
-        </div>
+        />
     );
 };
 

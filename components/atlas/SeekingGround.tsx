@@ -6,6 +6,7 @@ export interface SeekingPiece {
   editionNumber?: number;
   title: string;
   series?: string;
+  cardNumber?: number;
 }
 
 export interface SeekingGroundProps {
@@ -81,12 +82,12 @@ const SeekingGround: React.FC<SeekingGroundProps> = ({
             inline.push(`Edition ${p.editionNumber}`);
 
           return (
-            <li key={key}>
+            <li key={key} className="border-b border-wood-200 py-2">
               <button
                 type="button"
                 onClick={() => onSelect?.(p.pieceId, p.editionNumber)}
                 aria-pressed={isSelected}
-                className={`w-full text-left py-2 border-b border-wood-200 transition-colors duration-200 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
+                className={`w-full text-left transition-colors duration-200 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                   isSelected
                     ? 'text-bronze-700'
                     : 'text-wood-900 hover:text-bronze-700'
@@ -108,6 +109,29 @@ const SeekingGround: React.FC<SeekingGroundProps> = ({
                   </span>
                 )}
               </button>
+              <p className="mt-1.5">
+                <Link
+                  to={`/piece/${p.pieceId}${
+                    typeof p.editionNumber === 'number' ? `/${p.editionNumber}` : ''
+                  }`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+                >
+                  Its page
+                </Link>
+                {typeof p.cardNumber === 'number' && (
+                  <>
+                    <span aria-hidden className="mx-2 text-wood-400">·</span>
+                    <Link
+                      to={`/universal-language/${p.cardNumber}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+                    >
+                      Code {p.cardNumber}
+                    </Link>
+                  </>
+                )}
+              </p>
             </li>
           );
         })}

@@ -56,12 +56,16 @@ const FRAG = /* glsl */ `
   uniform vec3 uColor;
   uniform float uMandala;
   uniform float uTime;
+  uniform float uHover;
   varying float vAlpha;
   void main() {
     // Placed glyphs (the brighter class) carry a slow candle-like shimmer.
     float lit = step(0.3, vAlpha);
     float shimmer = 1.0 + lit * 0.14 * sin(uTime * 0.9);
-    float alpha = vAlpha * (0.75 + uMandala * 0.9) * shimmer;
+    // Ring hover (resting-view discoverability): a pointer resting near the
+    // band brightens the whole ring slightly, so the glyphs read as more
+    // than atmosphere without the ring being redesigned.
+    float alpha = vAlpha * (0.75 + uMandala * 0.9 + uHover * 0.6) * shimmer;
     if (alpha <= 0.004) discard;
     gl_FragColor = vec4(uColor * (1.0 + lit * 0.15), alpha);
     #include <tonemapping_fragment>
@@ -156,6 +160,7 @@ export default function HexagramRing({ placedByCard }: HexagramRingProps) {
           uColor: { value: COLOR_BRONZE.clone() },
           uMandala: { value: 0 },
           uTime: { value: 0 },
+          uHover: { value: 0 },
         },
         transparent: true,
         depthWrite: false,
@@ -172,6 +177,7 @@ export default function HexagramRing({ placedByCard }: HexagramRingProps) {
   useFrame(({ clock }) => {
     material.uniforms.uMandala.value = rig.mandala;
     material.uniforms.uTime.value = clock.elapsedTime;
+    material.uniforms.uHover.value = rig.ringHover;
   });
 
   return <lineSegments geometry={geometry} material={material} renderOrder={4} />;

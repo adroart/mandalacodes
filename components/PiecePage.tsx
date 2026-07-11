@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useAccount } from '../lib/account/useAccount';
-import SignInTrigger from './account/SignInTrigger';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { CARD_BY_NUMBER } from '../data/oracleData';
@@ -9,13 +7,15 @@ import { img } from '../utils/cloudinary';
 import { ulCardNumber } from '../utils/universalLanguage';
 import { HexagramSVG } from './oracle/HexagramGlyph';
 import { ordinalLabel } from './atlas/PieceSidePanel';
+import RequestStewardship from './atlas/RequestStewardship';
 import {
   loadAtlasState,
   findPublicPiece,
   type PublicPiece,
 } from '../lib/atlas/state';
+import { buildKinshipIndex } from '../utils/kinship';
 import type { PieceContent } from '../utils/pieceContent';
-import type { Artwork } from '../types';
+import type { Artwork, PublicAtlasState } from '../types';
 
 /**
  * Public piece page: the QR-arrival surface.
@@ -121,121 +121,6 @@ function buildSpine(piece: PublicPiece, art: Artwork): SpineEntry[] {
   return spine;
 }
 
-/**
- * "Request stewardship" (M4): the self-serve path for whoever holds the
- * physical piece without a pre-issued record: secondary buyers, auction
- * winners, gift recipients, heirs. Signed-in visitors send a request (with
- * an optional evidence note) into the queue: the admin decides for
- * unclaimed pieces, the current holder for claimed ones; nothing binds
- * automatically. Anonymous visitors get a sign-in prompt into the
- * self-owned sign-in modal, staying on this piece.
- */
-const RequestStewardship: React.FC<{
-  pieceId: string;
-  editionNumber?: number;
-}> = ({ pieceId, editionNumber }) => {
-  const { isSignedIn, fetchAuthed } = useAccount();
-  const [open, setOpen] = useState(false);
-  const [note, setNote] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
-
-  const submit = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetchAuthed('/api/atlas/steward/request-claim', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          pieceId,
-          ...(editionNumber !== undefined ? { editionNumber } : {}),
-          ...(note.trim() ? { note: note.trim() } : {}),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data?.ok) {
-        setError(data?.error ?? 'Something went wrong. Please try again.');
-        return;
-      }
-      setSent(true);
-    } catch {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (sent) {
-    return (
-      <p className="font-serif text-base text-wood-700 mt-4 leading-[1.6]">
-        Your request is in. The piece's current keeper, or Adrian, will
-        review it, and the book opens to you once they approve.
-      </p>
-    );
-  }
-
-  return (
-    <div className="mt-4">
-      {!isSignedIn && (
-        /* A secondary owner (auction, gift, inheritance) is NOT pre-bound by
-           Adrian, so the email-based /atlas/claim flow 404s for them. Sign in
-           in place with a modal and stay on this piece: once signed in the
-           signed-in branch below shows the request-stewardship form, which is
-           the right path for them. Never send them to /atlas/claim. */
-        <p className="font-serif text-sm text-wood-600 leading-[1.6]">
-          Hold this piece but arrived another way: an auction, a gift, an
-          inheritance?{' '}
-          <SignInTrigger>
-            <button type="button" className={LINK}>
-              Sign in to request stewardship →
-            </button>
-          </SignInTrigger>
-        </p>
-      )}
-      {isSignedIn && (
-        !open ? (
-          <p className="font-serif text-sm text-wood-600 leading-[1.6]">
-            Hold this piece but arrived another way?{' '}
-            <button type="button" onClick={() => setOpen(true)} className={LINK}>
-              Request stewardship →
-            </button>
-          </p>
-        ) : (
-          <div className="space-y-3">
-            <label htmlFor="request-note" className={`block ${LABEL} font-semibold`}>
-              How did it come to you? (optional)
-            </label>
-            <textarea
-              id="request-note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={500}
-              rows={3}
-              placeholder="Bought at the Vienna auction, lot 12…"
-              className="w-full border border-wood-300 bg-white px-4 py-3 font-serif text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 resize-y"
-            />
-            {error && (
-              <p className="font-serif text-sm text-red-800">{error}</p>
-            )}
-            <button
-              type="button"
-              onClick={submit}
-              disabled={busy}
-              className="inline-block font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3 disabled:opacity-40"
-            >
-              {busy ? 'Sending...' : 'Send request'}
-            </button>
-          </div>
-        )
-      )}
-    </div>
-  );
-};
-
 const PiecePage: React.FC = () => {
   const { pieceId, edition } = useParams<{ pieceId: string; edition?: string }>();
   const [load, setLoad] = useState<LoadState>({ kind: 'loading' });
@@ -246,6 +131,9 @@ const PiecePage: React.FC = () => {
   // A certificate page must never show raw alt text on a black box: if the
   // plate image fails, we fall back to a warm paper placeholder instead.
   const [heroFailed, setHeroFailed] = useState(false);
+  // The full public atlas state, kept for the kin constellation below. Same
+  // load the piece itself comes from; no extra fetch.
+  const [atlasState, setAtlasState] = useState<PublicAtlasState | null>(null);
 
   useEffect(() => {
     if (!pieceId) return;
@@ -270,6 +158,7 @@ const PiecePage: React.FC = () => {
 
     loadAtlasState().then((state) => {
       if (!active) return;
+      setAtlasState(state);
       const piece = findPublicPiece(state, pieceId, editionNumber);
       // The page leans on archive metadata for the art; if the piece isn't in
       // the archive there's nothing meaningful to show.
@@ -295,6 +184,59 @@ const PiecePage: React.FC = () => {
       active = false;
     };
   }, [pieceId, edition]);
+
+  /* Kin constellation: what the globe shows for this piece, on its own page.
+     Built from the already-loaded public state; same index the atlas builds. */
+  const kinEntries = useMemo(() => {
+    if (!atlasState || !pieceId) return [];
+    const editionNumber =
+      edition !== undefined && /^\d+$/.test(edition) ? parseInt(edition, 10) : undefined;
+    const selfKey = `${pieceId}:${editionNumber ?? 0}`;
+    const index = buildKinshipIndex(atlasState, CITIES_BY_ID, FULL_ARCHIVE);
+    const pairs = index.pairsByKey.get(selfKey) ?? [];
+    return pairs
+      .slice()
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 6)
+      .map((pair) => {
+        const otherKey = pair.aKey === selfKey ? pair.bKey : pair.aKey;
+        const other = index.nodes.get(otherKey);
+        // Same thread naming as the atlas HUD: "Heaven (Ch'ien)" → "Heaven".
+        const thread = pair.sharedTrigram
+          ? `${pair.sharedTrigram.replace(/\s*\(.*\)$/, '')} thread`
+          : '';
+        return {
+          key: otherKey,
+          title: other?.title ?? otherKey,
+          thread,
+          atlasParam: otherKey.replace(/:0$/, ''),
+        };
+      });
+  }, [atlasState, pieceId, edition]);
+
+  /* Holder's chart element (M5) — the same public endpoint the atlas HUD
+     uses; returns chart: null unless the steward opted into Ring 3. */
+  const [holderElement, setHolderElement] = useState<string | null>(null);
+  useEffect(() => {
+    setHolderElement(null);
+    if (load.kind !== 'ready' || load.piece.status !== 'placed') return;
+    let active = true;
+    const params = new URLSearchParams({ pieceId: load.piece.pieceId });
+    if (typeof load.piece.editionNumber === 'number') {
+      params.set('editionNumber', String(load.piece.editionNumber));
+    }
+    fetch(`/api/atlas/holder-chart?${params.toString()}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { chart?: { element?: string } | null } | null) => {
+        if (active) setHolderElement(data?.chart?.element ?? null);
+      })
+      .catch(() => {
+        /* quiet: the line simply doesn't render */
+      });
+    return () => {
+      active = false;
+    };
+  }, [load]);
 
   if (load.kind === 'loading') {
     return (
@@ -343,7 +285,7 @@ const PiecePage: React.FC = () => {
       ? `Edition ${piece.editionNumber}`
       : art.edition || undefined;
 
-  const heroImage = img(art.coverImage, { w: 1200, crop: 'fit' });
+  const heroImage = art.coverImage ? img(art.coverImage, { w: 1200, crop: 'fit' }) : null;
 
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
@@ -383,14 +325,7 @@ const PiecePage: React.FC = () => {
                 />
               ))}
               <div className="bg-[#151311] p-3 sm:p-5 overflow-hidden">
-                {heroFailed ? (
-                  <div className="w-full aspect-square flex flex-col items-center justify-center gap-3 text-center px-6">
-                    <span className={`${LABEL} text-bronze-400`}>The plate</span>
-                    <span className="font-serif text-lg text-paper-200 leading-snug">
-                      {cleanTitle}
-                    </span>
-                  </div>
-                ) : (
+                {heroImage && !heroFailed ? (
                   <img
                     src={heroImage}
                     alt={`${cleanTitle}${
@@ -400,6 +335,15 @@ const PiecePage: React.FC = () => {
                     loading="eager"
                     onError={() => setHeroFailed(true)}
                   />
+                ) : (
+                  // No image id on record, or the plate image failed to load:
+                  // a quiet plate with the title, never raw alt text on black.
+                  <div className="w-full aspect-square flex flex-col items-center justify-center gap-3 text-center px-6">
+                    <span className={`${LABEL} text-bronze-400`}>The plate</span>
+                    <span className="font-serif text-lg text-paper-200 leading-snug">
+                      {cleanTitle}
+                    </span>
+                  </div>
                 )}
               </div>
               {/* Plate engraving: the edition marker only, and only when there
@@ -460,9 +404,14 @@ const PiecePage: React.FC = () => {
 
             {/* Founding light: the artifact. */}
             {typeof piece.claimOrdinal === 'number' && (
-              <p className="font-serif text-xl text-bronze-700 mb-4">
-                The {ordinalLabel(piece.claimOrdinal)} light
-              </p>
+              <div className="mb-6">
+                <p className="font-serif text-xl font-medium tracking-[0.01em] text-bronze-700">
+                  The {ordinalLabel(piece.claimOrdinal)} light
+                </p>
+                <p className="font-serif text-sm text-wood-600 leading-snug mt-1">
+                  A founding light marks the order in which a piece was claimed by its keeper.
+                </p>
+              </div>
             )}
 
             {/* Inline metadata row: kept in the column's serif voice, not a
@@ -545,6 +494,54 @@ const PiecePage: React.FC = () => {
               </div>
             )}
 
+            {/* ── The dream the piece carries (keeper-shared, public) ───── */}
+            {piece.intention && (
+              <div className="border-t border-wood-200 pt-6 mb-8">
+                <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-1">
+                  Held with a dream
+                </p>
+                <p className="font-serif text-lg text-wood-800 leading-[1.6]">
+                  {piece.intention}
+                </p>
+              </div>
+            )}
+
+            {/* ── Kin constellation: what the globe shows for this piece ── */}
+            {kinEntries.length > 0 && (
+              <div className="border-t border-wood-200 pt-6 mb-8">
+                <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-3">
+                  Its kin on the map
+                </p>
+                <ul className="space-y-2">
+                  {kinEntries.map((k) => (
+                    <li key={k.key}>
+                      <Link
+                        to={`/atlas?piece=${encodeURIComponent(k.atlasParam)}`}
+                        className="font-serif text-lg text-wood-900 leading-snug hover:text-bronze-700 transition-colors"
+                      >
+                        {k.title}
+                        {k.thread && (
+                          <span className="text-wood-600"> · {k.thread}</span>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* ── Holder's chart element (Ring 3, derived, non-identifying) ── */}
+            {holderElement && piece.status === 'placed' && (
+              <div className="border-t border-wood-200 pt-6 mb-8">
+                <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-1">
+                  The hands it rests in
+                </p>
+                <p className="font-serif text-lg text-wood-900 leading-snug">
+                  Held by a chart of {holderElement}
+                </p>
+              </div>
+            )}
+
             {/* ── The public history spine: the book's open pages ──────── */}
             <div className="border-t border-wood-200 pt-8 mb-10">
               <p className={`${LABEL} mb-5`}>
@@ -622,16 +619,32 @@ const PiecePage: React.FC = () => {
                 Your piece already has a story. Signing in lets you add to it:
                 place it on the map, write its intentions, pass it on.
               </p>
+              {/* The loud button carries the piece: an unregistered visitor
+                  who clicks it lands on the recovery form in StewardClaim's
+                  no-record branch, not a dead-end. */}
               <Link
-                to="/atlas/claim"
+                to={`/atlas/claim?piece=${encodeURIComponent(piece.pieceId)}${
+                  typeof piece.editionNumber === 'number'
+                    ? `:${piece.editionNumber}`
+                    : ''
+                }`}
                 className="inline-block font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3"
               >
                 Open this piece's book
               </Link>
-              <RequestStewardship
-                pieceId={piece.pieceId}
-                editionNumber={piece.editionNumber}
-              />
+              <p className="font-serif text-sm text-wood-600 mt-3 leading-[1.6]">
+                Sign in with the email your piece was registered to.
+              </p>
+              {/* The second path, visible as a labeled alternative rather
+                  than a footnote: for the holder who was never
+                  pre-registered. */}
+              <div className="mt-5 pt-4 border-t border-wood-200">
+                <RequestStewardship
+                  pieceId={piece.pieceId}
+                  editionNumber={piece.editionNumber}
+                  leadIn="Came to it another way? An auction, a gift, an inheritance:"
+                />
+              </div>
             </div>
           </div>
         </div>
