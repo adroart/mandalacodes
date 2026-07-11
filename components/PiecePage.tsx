@@ -226,7 +226,7 @@ const PiecePage: React.FC = () => {
   if (load.kind === 'loading') {
     return (
       <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6">
-        <p className="font-serif italic text-lg text-wood-700" aria-live="polite">
+        <p className="font-serif text-lg text-wood-700 tracking-[0.02em]" aria-live="polite">
           opening the book
         </p>
       </section>
@@ -366,7 +366,7 @@ const PiecePage: React.FC = () => {
                 ))}
               </div>
             )}
-            <p className="font-serif italic text-sm text-wood-500 text-center mt-4 leading-relaxed">
+            <p className="font-serif text-[15px] text-wood-500 text-center tracking-[0.01em] mt-4 leading-relaxed">
               This page is the certificate of the physical work: page one of a
               book that never closes.
             </p>
@@ -390,10 +390,10 @@ const PiecePage: React.FC = () => {
             {/* Founding light: the artifact. */}
             {typeof piece.claimOrdinal === 'number' && (
               <div className="mb-6">
-                <p className="font-serif italic text-xl text-bronze-700">
+                <p className="font-serif text-xl font-medium tracking-[0.01em] text-bronze-700">
                   The {ordinalLabel(piece.claimOrdinal)} light
                 </p>
-                <p className="font-serif italic text-sm text-wood-600 leading-snug mt-1">
+                <p className="font-serif text-sm text-wood-600 leading-snug mt-1">
                   A founding light marks the order in which a piece was claimed by its keeper.
                 </p>
               </div>
@@ -484,7 +484,7 @@ const PiecePage: React.FC = () => {
                 <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-1">
                   Held with a dream
                 </p>
-                <p className="font-serif italic text-lg text-wood-800 leading-[1.6]">
+                <p className="font-serif text-lg text-wood-800 leading-[1.6]">
                   {piece.intention}
                 </p>
               </div>
@@ -553,7 +553,7 @@ const PiecePage: React.FC = () => {
                     className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
                     style={{ transform: 'translateX(-4px)' }}
                   />
-                  <span className="font-serif italic text-lg text-wood-500 leading-snug">
+                  <span className="font-serif text-lg text-wood-500 tracking-[0.01em] leading-snug">
                     The next page is unwritten
                   </span>
                 </li>
