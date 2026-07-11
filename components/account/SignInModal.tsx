@@ -68,7 +68,21 @@ const SignInModal: React.FC<{
     setBusy(true);
     setError(null);
     try {
-      await signInWithGoogle('/');
+      // Return to the page the modal was opened from (e.g. the card the
+      // visitor was trying to save), not the homepage. Google does a
+      // full-page redirect, so this is the only way that intent survives
+      // the round trip.
+      const returnTo = window.location.pathname + window.location.search;
+      const { error } = await signInWithGoogle(returnTo);
+      if (error) {
+        // Better Auth's client resolves with { error } rather than throwing
+        // (e.g. PROVIDER_NOT_FOUND when Google isn't configured server-side).
+        // Without this check the button silently stayed disabled forever.
+        setBusy(false);
+        setError('Google sign-in is not available right now. Try a code or password below.');
+      }
+      // On success the client redirects the browser to Google; leave busy=true
+      // so the button stays disabled through the navigation.
     } catch {
       setBusy(false);
       setError('Could not start Google sign-in. Try a code or password below.');
