@@ -10,6 +10,7 @@ import type { ConsentChoice } from './ConsentRings';
 import LegacyBook from './LegacyBook';
 import StewardRequests from './StewardRequests';
 import AccountLayout from '../account/AccountLayout';
+import TypeaheadPicker from '../shared/TypeaheadPicker';
 
 /**
  * Steward edit page. Rendered at `/atlas/edit`.
@@ -74,11 +75,6 @@ const StewardEdit: React.FC = () => {
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const savedTimerRef = useRef<number | null>(null);
 
-  // City picker state
-  const [cityQuery, setCityQuery] = useState('');
-  const [cityOpen, setCityOpen] = useState(false);
-  const comboRef = useRef<HTMLDivElement>(null);
-
   // Load claimed pieces via authed claim call.
   useEffect(() => {
     if (!isLoaded) return;
@@ -130,18 +126,6 @@ const StewardEdit: React.FC = () => {
     };
   }, [isLoaded, isSignedIn, fetchAuthed, navigate]);
 
-  // Click-outside to close the city combobox
-  useEffect(() => {
-    if (!cityOpen) return;
-    const onDoc = (e: MouseEvent) => {
-      if (comboRef.current && !comboRef.current.contains(e.target as Node)) {
-        setCityOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, [cityOpen]);
-
   // The piece currently being edited. Every update targets this entry.
   const current = entries[selectedIdx] ?? null;
   const stewardRecord = current?.steward ?? null;
@@ -153,12 +137,12 @@ const StewardEdit: React.FC = () => {
     savedTimerRef.current = window.setTimeout(() => setSavedAt(null), 2000);
   };
 
-  // Switch which claimed piece the form edits; clears transient picker state
-  // so the city search and save flash don't leak across pieces.
+  // Switch which claimed piece the form edits. The city picker below is
+  // keyed on selectedIdx, so it remounts (and its transient query/open
+  // state resets) automatically; here we only clear the save flash/error
+  // so they don't leak across pieces.
   const handlePieceSwitch = (idx: number) => {
     setSelectedIdx(idx);
-    setCityQuery('');
-    setCityOpen(false);
     setSaveError(null);
     setSavedAt(null);
   };
@@ -200,13 +184,8 @@ const StewardEdit: React.FC = () => {
   };
 
   const handleCityPick = (cityId: string) => {
-    setCityQuery('');
-    setCityOpen(false);
-    if (piece && piece.currentCityId === cityId) {
-      // Server will no-op; we still flash "Saved." per UX spec
-      submitUpdate({ cityId });
-      return;
-    }
+    // Server no-ops if this is already the current city; we still flash
+    // "Saved." per UX spec either way, so there is nothing to branch on.
     submitUpdate({ cityId });
   };
 
@@ -315,14 +294,6 @@ const StewardEdit: React.FC = () => {
     if (!piece?.currentCityId) return undefined;
     return getCityById(piece.currentCityId);
   }, [piece]);
-
-  const filteredCities = useMemo(() => {
-    // ATLAS_PLACES lists cities first, then country-level centroids — a
-    // country search surfaces its cities followed by the "country only"
-    // option.
-    if (!cityQuery.trim()) return ATLAS_PLACES.slice(0, 12);
-    return ATLAS_PLACES.filter(c => cityMatches(c, cityQuery)).slice(0, 12);
-  }, [cityQuery]);
 
   const statusLine = useMemo(() => {
     if (!piece) return '';
@@ -473,65 +444,31 @@ const StewardEdit: React.FC = () => {
         {/* City picker */}
         <div className="mb-10">
           <label
-            htmlFor="city-search"
+            htmlFor="city-search-input"
             className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3"
           >
             Where it rests
           </label>
-          <div className="relative" ref={comboRef}>
-            <input
-              id="city-search"
-              type="text"
-              role="combobox"
-              aria-expanded={cityOpen}
-              aria-controls="city-list"
-              autoComplete="off"
-              value={cityQuery}
-              onChange={e => {
-                setCityQuery(e.target.value);
-                setCityOpen(true);
-              }}
-              onFocus={() => setCityOpen(true)}
-              placeholder={currentCity ? formatCityLabel(currentCity) : 'Search a city or country'}
-              className="w-full min-h-[44px] border border-wood-300 bg-white px-4 py-3 font-sans text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400"
-            />
-            {cityOpen && filteredCities.length > 0 && (
-              <ul
-                id="city-list"
-                role="listbox"
-                className="absolute z-10 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-white border border-wood-300 shadow-sm"
-              >
-                {filteredCities.map(c => {
-                  const selected = piece.currentCityId === c.id;
-                  return (
-                    <li
-                      key={c.id}
-                      role="option"
-                      aria-selected={selected}
-                      onClick={() => handleCityPick(c.id)}
-                      className={`px-4 py-2 cursor-pointer font-sans text-sm transition-colors ${
-                        selected
-                          ? 'bg-bronze-100 text-wood-900'
-                          : 'text-wood-700 hover:bg-paper-100'
-                      }`}
-                    >
-                      {formatCityLabel(c)}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            {cityOpen && filteredCities.length === 0 && (
-              <ul
-                role="listbox"
-                className="absolute z-10 left-0 right-0 mt-1 bg-white border border-wood-300 shadow-sm"
-              >
-                <li className="px-4 py-2 font-serif italic text-sm text-stone-600">
-                  No cities match. Try a country name.
-                </li>
-              </ul>
-            )}
-          </div>
+          <TypeaheadPicker<CityCentroid>
+            // Keyed on selectedIdx so switching claimed pieces remounts the
+            // picker, resetting its query/open state exactly as
+            // handlePieceSwitch used to do explicitly.
+            key={selectedIdx}
+            id="city-search"
+            items={ATLAS_PLACES}
+            filter={cityMatches}
+            itemKey={c => c.id}
+            itemLabel={formatCityLabel}
+            value={piece.currentCityId ?? null}
+            seedQueryFromValue={false}
+            clearQueryOnPick
+            onPick={c => handleCityPick(c.id)}
+            placeholder={currentCity ? formatCityLabel(currentCity) : 'Search a city or country'}
+            maxResults={12}
+            emptyMessage="No cities match. Try a country name."
+            variant="book"
+            renderItem={formatCityLabel}
+          />
         </div>
 
         {/* Visibility toggle */}

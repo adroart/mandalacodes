@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAccount } from '../lib/account/useAccount';
 import AdminLayout from './AdminLayout';
+import TypeaheadPicker from './shared/TypeaheadPicker';
 import { CITIES } from '../data/cities';
 import { FULL_ARCHIVE } from '../data/mockData';
 import type { SaleQueueItem } from '../utils/saleBridge';
@@ -98,72 +99,47 @@ const formatRelative = (iso: string | null | undefined): string => {
 };
 
 // ───────────────────────────────────────────────────────────────────────────
-// City autocomplete
+// City autocomplete: thin wrapper around the shared TypeaheadPicker
+// (components/shared/TypeaheadPicker.tsx). City matching and label
+// formatting stay here; the combobox mechanics live in the shared component.
 // ───────────────────────────────────────────────────────────────────────────
+
+const cityMatches = (c: CityCentroid, query: string): boolean => {
+    const q = query.trim().toLowerCase();
+    const hay = `${c.city} ${c.country} ${c.region ?? ''} ${c.id}`.toLowerCase();
+    return hay.includes(q);
+};
+
+const cityLabel = (c: CityCentroid): string => `${c.city}, ${c.country}`;
 
 const CityAutocomplete: React.FC<{
     value: string;
     onChange: (cityId: string) => void;
     placeholder?: string;
 }> = ({ value, onChange, placeholder }) => {
-    const [query, setQuery] = useState<string>(() => {
-        if (!value) return '';
-        const c = CITIES.find((x) => x.id === value);
-        return c ? `${c.city}, ${c.country}` : value;
-    });
-    const [open, setOpen] = useState(false);
-
-    const matches = useMemo<CityCentroid[]>(() => {
-        const q = query.trim().toLowerCase();
-        if (!q) return CITIES.slice(0, 8);
-        return CITIES.filter((c) => {
-            const hay = `${c.city} ${c.country} ${c.region ?? ''} ${c.id}`.toLowerCase();
-            return hay.includes(q);
-        }).slice(0, 12);
-    }, [query]);
-
-    const pick = (c: CityCentroid) => {
-        onChange(c.id);
-        setQuery(`${c.city}, ${c.country}`);
-        setOpen(false);
-    };
-
     return (
-        <div className="relative">
-            <input
-                type="text"
-                value={query}
-                onFocus={() => setOpen(true)}
-                onBlur={() => setTimeout(() => setOpen(false), 150)}
-                onChange={(e) => {
-                    setQuery(e.target.value);
-                    onChange('');
-                    setOpen(true);
-                }}
+        <div>
+            <TypeaheadPicker<CityCentroid>
+                items={CITIES}
+                filter={cityMatches}
+                itemKey={(c) => c.id}
+                itemLabel={cityLabel}
+                value={value || null}
+                onPick={(c) => onChange(c.id)}
+                onQueryChange={() => onChange('')}
                 placeholder={placeholder ?? 'Lisbon, Portugal'}
-                className={fieldInput}
+                maxResultsEmpty={8}
+                maxResults={12}
+                variant="admin"
+                renderItem={(c) => (
+                    <>
+                        {c.city}, {c.country}
+                        <span className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 ml-2">
+                            {c.id}
+                        </span>
+                    </>
+                )}
             />
-            {open && matches.length > 0 && (
-                <ul className="absolute z-10 left-0 right-0 mt-1 max-h-64 overflow-y-auto bg-white border border-wood-300 shadow-sm">
-                    {matches.map((c) => (
-                        <li key={c.id}>
-                            <button
-                                type="button"
-                                onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    pick(c);
-                                }}
-                                className="w-full text-left px-4 py-2 font-sans text-sm text-wood-700 hover:bg-paper-100 hover:text-bronze-700"
-                            >
-                                {c.city}, {c.country}
-                                <span className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 ml-2">
-                                    {c.id}
-                                </span>
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            )}
             {value && (
                 <p className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 mt-1">
                     Selected: {value}
