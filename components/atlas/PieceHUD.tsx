@@ -3,20 +3,28 @@
  *
  * Replaces the visual shell of PieceSidePanel for the immersive Atlas. Reuses
  * the same data (SelectedPiece / KinEntry) and helpers (statusLine, ordinal),
- * redrawn as a bronze instrument card: corner brackets, a lat-long coordinate
- * readout that counts up to the true value, hairline-etched field groups. The
- * globe slides aside so this never overlaps the world; a leader-line (drawn by
- * the parent) joins this card to the marker.
+ * redrawn as a bronze instrument card: corner brackets, hairline-etched field
+ * groups. The globe slides aside so this never overlaps the world; a
+ * leader-line (drawn by the parent) joins this card to the marker.
+ *
+ * Compact form (approved 2026-07-11): no coordinate readout, no explainer
+ * sentences, series and year folded into the title block, kin capped at three
+ * one-line rows with a quiet link to the book when more exist, and no italic
+ * text anywhere (standing project rule: italics are hard to read). The whole
+ * card fits a 375x667 phone viewport without scrolling for a typical piece.
  *
  * Origin (the visitor's birth place) recalibrates every bronze accent to sage.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ordinalLabel, type SelectedPiece, type KinEntry, type HolderChartSummary } from './PieceSidePanel';
 
 const BRONZE = '#c4aa7c';
 const SAGE = '#9caa87';
+
+/** The HUD shows at most this many kin; the rest live in the piece's book. */
+const MAX_HUD_KIN = 3;
 
 function formatPlacedYear(iso?: string): string | null {
   if (!iso) return null;
@@ -24,40 +32,8 @@ function formatPlacedYear(iso?: string): string | null {
   return Number.isNaN(d.getTime()) ? null : String(d.getUTCFullYear());
 }
 
-function formatCoord(lat: number, lng: number): string {
-  const ns = lat >= 0 ? 'N' : 'S';
-  const ew = lng >= 0 ? 'E' : 'W';
-  return `${Math.abs(lat).toFixed(1)}°${ns} · ${Math.abs(lng).toFixed(1)}°${ew}`;
-}
-
-// The coordinate counts up from 0 to its true value — a gauge settling.
-function useCoordCountUp(lat: number, lng: number, reduce: boolean) {
-  const [v, setV] = useState(() => (reduce ? { lat, lng } : { lat: 0, lng: 0 }));
-  const raf = useRef<number | null>(null);
-  useEffect(() => {
-    if (reduce) {
-      setV({ lat, lng });
-      return;
-    }
-    const start = performance.now();
-    const dur = 600;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / dur);
-      const e = 1 - Math.pow(1 - t, 3);
-      setV({ lat: lat * e, lng: lng * e });
-      if (t < 1) raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => {
-      if (raf.current) cancelAnimationFrame(raf.current);
-    };
-  }, [lat, lng, reduce]);
-  return v;
-}
-
 export interface PieceHUDProps {
   piece: SelectedPiece;
-  coord?: { lat: number; lng: number } | null;
   kin?: readonly KinEntry[];
   onSelectKin?: (key: string) => void;
   holderChart?: HolderChartSummary | null;
@@ -74,7 +50,6 @@ export interface PieceHUDProps {
 
 const PieceHUD: React.FC<PieceHUDProps> = ({
   piece,
-  coord,
   kin,
   onSelectKin,
   holderChart,
@@ -85,11 +60,6 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   intention,
 }) => {
   const accent = isOrigin ? SAGE : BRONZE;
-  const reduce =
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
-  const counted = useCoordCountUp(coord?.lat ?? 0, coord?.lng ?? 0, reduce);
 
   const isSeeking = piece.status === 'seeking';
   const isUnawakened = piece.status === 'unawakened';
@@ -114,15 +84,23 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
       ? `${piece.title.replace(/\s*-\s*\d+\s*$/, '')} · ${piece.editionNumber}`
       : piece.title;
 
+  // Kin: at most three one-line rows in the card; the full list lives in the
+  // piece's book, pointed at quietly when more exist.
+  const kinShown = kin ? kin.slice(0, MAX_HUD_KIN) : [];
+  const moreKin = (kin?.length ?? 0) > MAX_HUD_KIN;
+  const bookPath = `/piece/${piece.pieceId}${
+    typeof piece.editionNumber === 'number' ? `/${piece.editionNumber}` : ''
+  }`;
+
   const Rule = () => (
     <div
-      className="my-4 h-px w-full"
+      className="my-3 h-px w-full"
       style={{ backgroundColor: 'rgba(196,170,124,0.14)' }}
     />
   );
   const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <p
-      className="font-label text-[10px] uppercase tracking-[0.2em] mb-1.5"
+      className="font-label text-[10px] uppercase tracking-[0.2em] mb-1"
       style={{ color: isOrigin ? 'rgba(156,170,135,0.75)' : 'rgba(196,170,124,0.65)' }}
     >
       {children}
@@ -163,26 +141,29 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         />
       ))}
 
-      <div className="p-6 sm:p-7 max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto">
+      <div className="p-5 sm:p-6 max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto">
         {/* Back to the city list, when this piece was reached through one. */}
         {onBack && (
           <button
             type="button"
             onClick={onBack}
-            className="mb-3 font-label text-[10px] uppercase tracking-[0.2em] transition-colors"
+            className="mb-2 font-label text-[10px] uppercase tracking-[0.2em] transition-colors"
             style={{ color: accent }}
           >
             ← the city
           </button>
         )}
 
-        {/* Series + category */}
+        {/* Header: category, title, then series · year folded in tight. */}
         <Label>{piece.category ?? 'Selected piece'}</Label>
+        <h3
+          className="font-serif text-2xl sm:text-[1.7rem] font-semibold leading-tight"
+          style={{ color: '#f6f1e8' }}
+        >
+          {title}
+        </h3>
         {inlineBits.length > 0 && (
-          <p
-            className="font-serif text-sm leading-snug mb-3"
-            style={{ color: '#cbbfa8' }}
-          >
+          <p className="mt-1 font-serif text-sm leading-snug" style={{ color: '#cbbfa8' }}>
             {inlineBits.map((b, i) => (
               <React.Fragment key={i}>
                 {i > 0 && <span className="mx-1.5" style={{ color: '#8a7d64' }}>·</span>}
@@ -192,50 +173,24 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           </p>
         )}
 
-        {/* Title */}
-        <h3
-          className="font-serif text-2xl sm:text-[1.7rem] font-semibold leading-tight"
-          style={{ color: '#f6f1e8' }}
-        >
-          {title}
-        </h3>
-
-        {/* Coordinate readout — the instrument's signature line. */}
-        {coord && (
-          <p
-            className="mt-3 font-label text-[12px] tracking-[0.08em]"
-            style={{
-              color: isOrigin ? 'rgba(156,170,135,0.85)' : 'rgba(196,170,124,0.85)',
-              fontVariantNumeric: 'tabular-nums',
-            }}
-          >
-            {formatCoord(counted.lat, counted.lng)}
-          </p>
-        )}
-
         <Rule />
 
         {/* Where it rests */}
         <Label>Where it rests</Label>
         <p
-          className={`font-serif text-lg leading-snug ${
-            isSeeking || isUnawakened ? 'italic' : ''
-          }`}
+          className="font-serif text-lg leading-snug"
           style={{ color: isSeeking || isUnawakened ? '#cbbfa8' : '#f6f1e8' }}
         >
           {statusLine}
         </p>
 
-        {/* Founding light */}
+        {/* Founding light — the value alone; the explainer lives in the book. */}
         {typeof piece.claimOrdinal === 'number' && (
           <>
             <Rule />
             <Label>Founding light</Label>
             <p className="font-serif text-lg leading-snug" style={{ color: "#f6f1e8" }}>
               The {ordinalLabel(piece.claimOrdinal)} light
-            </p>
-            <p className="font-serif italic text-xs leading-snug mt-1" style={{ color: '#cbbfa8' }}>
-              A founding light marks the order in which a piece was claimed by its keeper.
             </p>
           </>
         )}
@@ -245,10 +200,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           <>
             <Rule />
             <Label>Held with a dream</Label>
-            <p
-              className="font-serif italic text-lg leading-snug"
-              style={{ color: '#f6f1e8' }}
-            >
+            <p className="font-serif text-lg leading-snug" style={{ color: '#f6f1e8' }}>
               {intention}
             </p>
           </>
@@ -257,7 +209,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         {/* Your codes: computed on the visitor's own device, never sent. */}
         {carriesYourCode && (
           <p
-            className="mt-3 font-serif italic text-[15px] leading-snug"
+            className="mt-2 font-serif text-[15px] leading-snug"
             style={{ color: '#9caa87' }}
           >
             It carries one of your codes.
@@ -275,35 +227,44 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           </>
         )}
 
-        {/* Kin */}
-        {kin && kin.length > 0 && (
+        {/* Kin: three at most, one line each; the rest live in the book. */}
+        {kinShown.length > 0 && (
           <>
             <Rule />
             <Label>Kin</Label>
-            <ul className="space-y-1.5">
-              {kin.map((k) => (
-                <li key={k.key}>
+            <ul className="space-y-1">
+              {kinShown.map((k) => (
+                <li key={k.key} className="min-w-0">
                   <button
                     type="button"
                     onClick={() => onSelectKin?.(k.key)}
-                    className="font-serif text-base hover:text-bronze-300 transition-colors text-left leading-snug" style={{ color: "#f6f1e8" }}
+                    title={k.title}
+                    className="block w-full max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-serif text-base hover:text-bronze-300 transition-colors text-left leading-snug"
+                    style={{ color: '#f6f1e8' }}
                   >
                     {k.title}
                   </button>
                 </li>
               ))}
             </ul>
+            {moreKin && (
+              <Link
+                to={bookPath}
+                className="mt-1.5 inline-block font-label text-[10px] uppercase tracking-[0.2em] transition-colors"
+                style={{ color: 'rgba(196,170,124,0.7)' }}
+              >
+                more kin in its book →
+              </Link>
+            )}
           </>
         )}
 
         <Rule />
 
         {/* Links — book + code, the instrument's actions. */}
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2">
           <Link
-            to={`/piece/${piece.pieceId}${
-              typeof piece.editionNumber === 'number' ? `/${piece.editionNumber}` : ''
-            }`}
+            to={bookPath}
             className="font-label text-[10px] uppercase tracking-[0.2em] font-semibold transition-colors"
             style={{ color: accent }}
           >

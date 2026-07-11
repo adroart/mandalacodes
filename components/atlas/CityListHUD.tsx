@@ -82,7 +82,7 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
         />
       ))}
 
-      <div className="p-6 sm:p-7 max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto">
+      <div className="p-5 sm:p-6 max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto">
         <Label>
           {members.length} {members.length === 1 ? 'piece rests here' : 'pieces rest here'}
         </Label>
@@ -96,7 +96,7 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
         </h3>
 
         <div
-          className="my-4 h-px w-full"
+          className="my-3 h-px w-full"
           style={{ backgroundColor: 'rgba(196,170,124,0.14)' }}
         />
 

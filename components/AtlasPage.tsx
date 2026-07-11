@@ -757,13 +757,6 @@ const AtlasPage: React.FC = () => {
 
   const hasBirthOrigin = globeNodes.some((n) => n.status === 'origin');
 
-  // Coordinate of the selected marker, for the HUD's lat-long readout.
-  const selectedCoord = useMemo(() => {
-    if (!selectedKey) return null;
-    const n = globeNodes.find((node) => node.id === selectedKey);
-    return n ? { lat: n.lat, lng: n.lng } : null;
-  }, [selectedKey, globeNodes]);
-
   // Chrome opacity easing — one class drives every corner overlay together.
   const chromeOpacity = idle ? 'opacity-25' : 'opacity-100';
 
@@ -1074,7 +1067,6 @@ const AtlasPage: React.FC = () => {
                     cityLabel: birthPlace.label,
                     category: 'Your birth place',
                   }}
-                  coord={selectedCoord}
                   kin={nearestToBirth.map((n) => ({ key: n.key, title: `${n.title} · ${n.cityLabel}` }))}
                   onSelectKin={(key) => setSelectedKey(key)}
                   onRelease={() => setSelectedKey(null)}
@@ -1082,7 +1074,6 @@ const AtlasPage: React.FC = () => {
               ) : selectedKey && selectedPiece ? (
                 <PieceHUD
                   piece={selectedPiece}
-                  coord={selectedCoord}
                   kin={kinForSelected}
                   onSelectKin={(key) => setSelectedKey(key)}
                   holderChart={holderChart}
