@@ -33,6 +33,13 @@ export interface ImgOptions {
  * img('adrian-website/creations/mandala/seed-of-life', { w: 800 })
  * // => "https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_800,c_fill,g_auto/adrian-website/creations/mandala/seed-of-life"
  */
+// Cloudinary only accepts a gravity parameter alongside these crop modes.
+// Pairing g_ with 'fit' or 'scale' makes Cloudinary reject the whole
+// transformation (HTTP 400 "Auto gravity can only be used with crop..."),
+// which the browser then can't render: the <img> falls back to its alt
+// text instead of the artwork.
+const CROPS_SUPPORTING_GRAVITY = new Set(['fill', 'thumb', 'lfill', 'fill_pad', 'auto', 'auto_pad']);
+
 export function img(publicId: string, opts: ImgOptions = {}): string {
   const transforms: string[] = [
     `f_${opts.format ?? 'auto'}`,
@@ -42,8 +49,11 @@ export function img(publicId: string, opts: ImgOptions = {}): string {
   if (opts.w) transforms.push(`w_${opts.w}`);
   if (opts.h) transforms.push(`h_${opts.h}`);
   if (opts.w || opts.h) {
-    transforms.push(`c_${opts.crop ?? 'fill'}`);
-    transforms.push(`g_${opts.gravity ?? 'auto'}`);
+    const crop = opts.crop ?? 'fill';
+    transforms.push(`c_${crop}`);
+    if (CROPS_SUPPORTING_GRAVITY.has(crop)) {
+      transforms.push(`g_${opts.gravity ?? 'auto'}`);
+    }
   }
 
   return `${BASE}/${transforms.join(',')}/${publicId}`;
