@@ -12,9 +12,6 @@ const AdminPieceContent = lazy(() => import('./components/AdminPieceContent'));
 const PiecePage = lazy(() => import('./components/PiecePage'));
 const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
 const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
-const StewardQA = lazy(() => import('./components/dev/StewardQA'));
-const AdminAtlasQA = lazy(() => import('./components/dev/AdminQA').then(m => ({ default: m.AdminAtlasQA })));
-const AdminPieceContentQA = lazy(() => import('./components/dev/AdminQA').then(m => ({ default: m.AdminPieceContentQA })));
 const OracleProfile = lazy(() => import('./components/OracleProfile'));
 const SharedProfile = lazy(() => import('./components/SharedProfile'));
 const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
@@ -117,10 +114,6 @@ const AppInner: React.FC = () => {
                 <Route path="/piece/:pieceId" element={<PiecePage />} />
                 <Route path="/piece/:pieceId/:edition" element={<PiecePage />} />
                 <Route path="/atlas/edit" element={<StewardEdit />} />
-                {/* TEMP visual-QA routes for phase-2h, delete before merge */}
-                <Route path="/dev/steward-qa" element={<StewardQA />} />
-                <Route path="/dev/admin-atlas-qa" element={<AdminAtlasQA />} />
-                <Route path="/dev/admin-piece-content-qa" element={<AdminPieceContentQA />} />
 
                 {/* Admin — atlas ledger + steward key issuance */}
                 <Route path="/admin" element={<Navigate to="/admin/atlas" replace />} />
