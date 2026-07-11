@@ -232,16 +232,27 @@ const UniversalLanguageCard: React.FC = () => {
         onAcquire={() => setBuyOpen(true)}
         onShare={() => setShareOpen(true)}
         headerChartSlot={
-          /* One quiet, low-contrast row of small-label actions under the
-             chart callout: save, the physical piece, its place on the map.
-             No borders, no boxes; the same muted type as the header's small
-             labels, so the reading keeps its minimal rhythm. */
+          /* One quiet, low-contrast strip of small-label actions under the
+             chart callout, always a single line: save the card to your
+             collection, open the physical painting's page, see where it
+             rests in the world. Middle dots join the three so they read as
+             one strip; no borders, no boxes, no italics. */
           <>
             <YourPositionCallout gate={card.number} />
             <div className="ul-slot-quiet-row">
               <SaveToCollectionButton kind="card" itemRef={String(card.number)} label="Save this card" />
-              {piece && <Link to={`/piece/${piece.id}`}>View the Artwork</Link>}
-              {atlasHref && <Link to={atlasHref}>On the Atlas</Link>}
+              {piece && (
+                <>
+                  <span aria-hidden className="ul-slot-quiet-row__dot">·</span>
+                  <Link to={`/piece/${piece.id}`}>See the painting</Link>
+                </>
+              )}
+              {atlasHref && (
+                <>
+                  <span aria-hidden className="ul-slot-quiet-row__dot">·</span>
+                  <Link to={atlasHref}>On the map</Link>
+                </>
+              )}
             </div>
             <style>{quietRowStyles}</style>
           </>
@@ -329,35 +340,53 @@ const UniversalLanguageCard: React.FC = () => {
 const quietRowStyles = `
   .ul-slot-quiet-row {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: baseline;
-    column-gap: 26px;
-    row-gap: 8px;
+    column-gap: 12px;
     margin-top: 14px;
+    white-space: nowrap;
   }
+  .ul-slot-quiet-row__dot {
+    color: var(--l-3);
+    font-family: var(--sans);
+    font-size: 10px;
+    opacity: 0.6;
+  }
+  /* If accounts are off, the save button renders nothing and a dot would
+     lead the strip; hide it. */
+  .ul-slot-quiet-row > .ul-slot-quiet-row__dot:first-child { display: none; }
   .ul-slot-quiet-row a {
     font-family: var(--sans);
     font-size: 10px;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--l-3);
     text-decoration: none;
+    white-space: nowrap;
     transition: color 0.25s;
   }
   .ul-slot-quiet-row a:hover { color: var(--accent); }
   .ul-slot-quiet-row .stc__btn {
     font-family: var(--sans);
     font-size: 10px;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--l-3);
     background: transparent;
     border: 0;
     border-radius: 0;
     padding: 0;
+    white-space: nowrap;
     transition: color 0.25s;
   }
   .ul-slot-quiet-row .stc__btn:hover { color: var(--accent); background: transparent; }
+  /* Narrow phones: tighten so the strip stays one line at 375px. */
+  @media (max-width: 430px) {
+    .ul-slot-quiet-row { column-gap: 8px; }
+    .ul-slot-quiet-row a,
+    .ul-slot-quiet-row .stc__btn { font-size: 9px; letter-spacing: 0.08em; }
+    .ul-slot-quiet-row__dot { font-size: 9px; }
+  }
 `;
 
 /* ── light data mappers (live, with graceful fallback) ── */
