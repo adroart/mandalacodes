@@ -61,6 +61,12 @@ const formatCityLabel = (city: CityCentroid): string => {
     : `${city.city}, ${city.country}`;
 };
 
+// The welcome up top and the at-the-control nudge below both point a fresh
+// keeper toward showing a placed-but-private piece on the atlas. One string,
+// two homes. The repetition at the control is the point.
+const SHINE_SENTENCE =
+  'It has a place. When you are ready, let it shine on the atlas.';
+
 const StewardEdit: React.FC = () => {
   const navigate = useNavigate();
   const { isLoaded, isSignedIn, fetchAuthed } = useAccount();
@@ -74,6 +80,11 @@ const StewardEdit: React.FC = () => {
   const [consentError, setConsentError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const savedTimerRef = useRef<number | null>(null);
+  // At-the-control nudge shown only after a successful placement: 'shine'
+  // points at the visibility toggle (piece placed but still private),
+  // 'below' points down to the book. Cleared on any new save so it never
+  // stacks, lingers across pieces, or shows on error.
+  const [placeNudge, setPlaceNudge] = useState<'shine' | 'below' | null>(null);
 
   // Load claimed pieces via authed claim call.
   useEffect(() => {
@@ -145,12 +156,17 @@ const StewardEdit: React.FC = () => {
     setSelectedIdx(idx);
     setSaveError(null);
     setSavedAt(null);
+    setPlaceNudge(null);
   };
 
   const submitUpdate = async (body: { cityId?: string; isPublic?: boolean }) => {
     if (!stewardRecord) return;
     setSaving(true);
     setSaveError(null);
+    // Clear any prior nudge up front: a fresh save decides the next one, and
+    // a visibility flip (isPublic in the body) simply leaves it cleared,
+    // which is how toggling the atlas on dismisses the shine nudge.
+    setPlaceNudge(null);
     try {
       const res = await fetchAuthed('/api/atlas/steward/update', {
         method: 'POST',
@@ -175,6 +191,11 @@ const StewardEdit: React.FC = () => {
       setEntries(prev =>
         prev.map((e, i) => (i === selectedIdx ? { ...e, piece: data.piece } : e)),
       );
+      // Only a placement (a city save) raises the next-step nudge. A private
+      // piece points at the toggle; an already-public one points to the book.
+      if (body.cityId !== undefined) {
+        setPlaceNudge(data.piece.isPublic ? 'below' : 'shine');
+      }
       flashSaved();
     } catch {
       setSaveError('Something went wrong, please try again.');
@@ -429,14 +450,14 @@ const StewardEdit: React.FC = () => {
           <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 mb-4">
             {detailParts.join(' · ')}
           </p>
-          <p className="font-serif italic text-[15px] leading-relaxed text-stone-600 max-w-md mx-auto">
+          <p className="font-serif text-[15px] leading-relaxed text-stone-600 max-w-md mx-auto">
             This is the piece&apos;s book. Place it in the world, choose what
             the atlas shows, write into its pages, and one day pass it on.
             {' '}
             {!piece.currentCityId
               ? 'A good first page: choose where it rests, just below.'
               : !piece.isPublic
-                ? 'It has a place. When you are ready, let it shine on the atlas.'
+                ? SHINE_SENTENCE
                 : 'Its pages and letters continue below.'}
           </p>
         </div>
@@ -501,6 +522,26 @@ const StewardEdit: React.FC = () => {
             </span>
             <span>{piece.isPublic ? 'Show on the atlas' : 'Keep this private'}</span>
           </button>
+          {/* At-the-control nudge: after a placement, one quiet line pointing
+              to the natural next step. The shine line reuses the welcome
+              sentence and sits right under the toggle it points at; flipping
+              visibility clears it. The public case points down to the book. */}
+          {placeNudge === 'shine' && (
+            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mt-3">
+              {SHINE_SENTENCE}
+            </p>
+          )}
+          {placeNudge === 'below' && (
+            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mt-3">
+              <a
+                href="#piece-book"
+                onClick={() => setPlaceNudge(null)}
+                className="hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              >
+                Its pages continue below.
+              </a>
+            </p>
+          )}
         </div>
 
         {/* Ring 3 — chart presence (the kinship constellation) */}
