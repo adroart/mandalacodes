@@ -62,10 +62,11 @@ const FRAG = /* glsl */ `
     // Placed glyphs (the brighter class) carry a slow candle-like shimmer.
     float lit = step(0.3, vAlpha);
     float shimmer = 1.0 + lit * 0.14 * sin(uTime * 0.9);
-    // Ring hover (resting-view discoverability): a pointer resting near the
-    // band brightens the whole ring slightly, so the glyphs read as more
-    // than atmosphere without the ring being redesigned.
-    float alpha = vAlpha * (0.75 + uMandala * 0.9 + uHover * 0.6) * shimmer;
+    // The ring lives ONLY in the Mandala View (Adrian, 2026-07-11: the
+    // resting globe is just the globe). uMandala gates the whole band to
+    // zero at rest and fades it in as the view engages; uHover still adds a
+    // little presence while the pointer rests near the band in that view.
+    float alpha = vAlpha * uMandala * (1.65 + uHover * 0.6) * shimmer;
     if (alpha <= 0.004) discard;
     gl_FragColor = vec4(uColor * (1.0 + lit * 0.15), alpha);
     #include <tonemapping_fragment>

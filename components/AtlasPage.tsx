@@ -846,7 +846,7 @@ const AtlasPage: React.FC = () => {
                 <span className="text-bronze-400/90">Atlas</span>
               </nav>
               <h1
-                className="text-3xl sm:text-5xl text-bronze-300 font-medium leading-none"
+                className="text-2xl sm:text-5xl text-bronze-300 font-medium leading-none"
                 style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}
               >
                 Atlas
@@ -863,7 +863,7 @@ const AtlasPage: React.FC = () => {
                     type="button"
                     aria-pressed={focusSeries === s}
                     onClick={() => setFocusSeries((cur) => (cur === s ? null : s))}
-                    className={`block w-full text-right font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] leading-relaxed transition-colors ${
+                    className={`block w-full text-right font-label text-[11px] uppercase tracking-[0.18em] leading-relaxed transition-colors ${
                       focusSeries === s
                         ? 'text-bronze-300'
                         : focusSeries
@@ -878,7 +878,7 @@ const AtlasPage: React.FC = () => {
                   </button>
                 ))}
                 {hasBirthOrigin && (
-                  <div className="font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed">
+                  <div className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed">
                     your origin
                     <span aria-hidden style={{ color: '#9caa87' }}>
                       {' '}·
@@ -891,21 +891,16 @@ const AtlasPage: React.FC = () => {
             {/* Bottom-left: the quiet stat caption, with the vocabulary
                 explained in place so the map never reads as silent jargon. */}
             {totalCount > 0 && (
-              <div className="pointer-events-none absolute left-5 sm:left-8 bottom-6 max-w-[48vw] sm:max-w-sm">
-                <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-400/70">
+              <div className="pointer-events-none absolute left-5 sm:left-8 bottom-6 max-w-[60vw] sm:max-w-sm">
+                <p className="font-label text-[12px] uppercase tracking-[0.2em] text-bronze-300/90">
                   {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
-                  <span aria-hidden className="mx-2 text-wood-500">·</span>
+                  <span aria-hidden className="mx-2 text-wood-400">·</span>
                   {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
                 </p>
-                <p className="mt-1.5 font-serif italic text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
+                <p className="mt-1.5 font-serif text-[14px] leading-snug tracking-[0.03em] text-wood-200/90">
                   a light is a piece claimed by its keeper · threads join pieces
                   that share a code
                 </p>
-                {!USE_GL_GLOBE && !mandala && (
-                  <p className="mt-1 font-serif italic text-[12px] leading-snug tracking-[0.03em] text-wood-400/60">
-                    touch a code on the ring to visit it
-                  </p>
-                )}
               </div>
             )}
 
@@ -917,8 +912,8 @@ const AtlasPage: React.FC = () => {
                   aria-pressed={yoursMode}
                   onClick={() => setYoursMode((v) => !v)}
                   title="Lights carrying one of your own codes"
-                  className={`font-label text-[10px] uppercase tracking-[0.2em] transition-colors ${
-                    yoursMode ? 'text-[#9caa87]' : 'text-wood-400 hover:text-[#9caa87]'
+                  className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
+                    yoursMode ? 'text-[#9caa87]' : 'text-wood-300 hover:text-[#9caa87]'
                   }`}
                 >
                   your codes
@@ -929,10 +924,10 @@ const AtlasPage: React.FC = () => {
                 aria-pressed={kinshipVisible}
                 onClick={() => setKinshipVisible((v) => !v)}
                 title="Threads join pieces whose hexagrams share a trigram"
-                className={`font-label text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
                   kinshipVisible
-                    ? 'text-bronze-400'
-                    : 'text-wood-400 hover:text-bronze-400/80'
+                    ? 'text-bronze-300'
+                    : 'text-wood-300 hover:text-bronze-400/80'
                 }`}
               >
                 threads
@@ -941,7 +936,7 @@ const AtlasPage: React.FC = () => {
                 type="button"
                 aria-expanded={filtersOpen}
                 onClick={() => setFiltersOpen((o) => !o)}
-                className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-300 hover:text-bronze-400 transition-colors"
+                className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-200 hover:text-bronze-400 transition-colors"
               >
                 filter
                 {(selectedSeries !== 'all' ||
@@ -956,7 +951,7 @@ const AtlasPage: React.FC = () => {
                 aria-pressed={mandala}
                 onClick={() => setMandala((m) => !m)}
                 title="Pull back to see the whole weave at once"
-                className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/80 hover:text-bronze-400 transition-colors"
+                className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-300/90 hover:text-bronze-300 transition-colors"
               >
                 {mandala ? 'return' : 'mandala'}
               </button>
@@ -967,7 +962,7 @@ const AtlasPage: React.FC = () => {
                     setSelectedKey(null);
                     setSelectedCity(null);
                   }}
-                  className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-300 hover:text-bronze-200 transition-colors"
+                  className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-300 hover:text-bronze-200 transition-colors"
                 >
                   release
                 </button>

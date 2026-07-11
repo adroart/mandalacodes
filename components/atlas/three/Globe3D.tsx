@@ -392,25 +392,31 @@ export default function Globe3D({
     [rig],
   );
 
+  /* The ring is a Mandala View instrument only (Adrian, 2026-07-11: the
+     resting globe is just the globe). Taps and hover are inert until the
+     view is engaged, so the resting view carries no invisible hit targets.
+     The machinery stays; only this gate decides. */
   const pickRing = useCallback(
     (clientX: number, clientY: number): boolean => {
-      if (!onRingTap) return false;
+      if (!onRingTap || rig.mandala < 0.6) return false;
       const hit = nearestRingGlyph(clientX, clientY);
       if (!hit || hit.dist >= RING_TAP_PX) return false;
       onRingTap(hit.n);
       return true;
     },
-    [onRingTap, nearestRingGlyph],
+    [onRingTap, nearestRingGlyph, rig],
   );
 
-  /* Ring hover: a cheap discoverability affordance. The ring reads as
-     atmosphere at rest (glyph alpha 0.12), so a pointer resting near the
-     band brightens the whole ring slightly via one uniform (HexagramRing
-     reads rig.ringHover). Mouse-only (no hover on touch), but harmless
-     either way: the tap itself works regardless. */
+  /* Ring hover: a cheap discoverability affordance while the Mandala View
+     is engaged. A pointer resting near the band brightens the whole ring
+     slightly via one uniform (HexagramRing reads rig.ringHover). Mouse-only
+     (no hover on touch), but harmless either way. */
   const updateRingHover = useCallback(
     (clientX: number, clientY: number) => {
-      if (!onRingTap) return;
+      if (!onRingTap || rig.mandala < 0.6) {
+        rig.ringHoverTarget = false;
+        return;
+      }
       const hit = nearestRingGlyph(clientX, clientY);
       rig.ringHoverTarget = !!hit && hit.dist < RING_HOVER_PX;
     },
@@ -618,10 +624,9 @@ export default function Globe3D({
           opacity: travelCaption ? 1 : 0,
           transition: 'opacity 700ms ease',
           fontFamily: '"Cormorant Garamond", serif',
-          fontStyle: 'italic',
-          fontSize: 15,
+          fontSize: 16,
           letterSpacing: '0.06em',
-          color: 'rgba(196, 170, 124, 0.85)',
+          color: 'rgba(212, 190, 150, 0.95)',
         }}
       >
         {travelCaption ?? ''}
@@ -640,10 +645,9 @@ export default function Globe3D({
           opacity: mandalaOn ? 1 : 0,
           transition: 'opacity 1.4s ease',
           fontFamily: '"Cormorant Garamond", serif',
-          fontStyle: 'italic',
           fontSize: 17,
           letterSpacing: '0.04em',
-          color: 'rgb(196, 170, 124)',
+          color: 'rgb(212, 190, 150)',
         }}
       >
         {mandalaCaption ?? 'The mandala so far'}
