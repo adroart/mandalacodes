@@ -65,7 +65,14 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
     setBusy(true);
     setError(null);
     try {
-      await signInWithGoogle('/account');
+      const { error } = await signInWithGoogle('/account');
+      if (error) {
+        // Better Auth's client resolves with { error } rather than throwing
+        // (e.g. PROVIDER_NOT_FOUND when Google isn't configured server-side).
+        // Without this check the button silently stayed disabled forever.
+        setBusy(false);
+        setError('Google sign-in is not available right now. Try another way below.');
+      }
     } catch {
       setBusy(false);
       setError('Could not start Google sign-in. Try another way below.');
