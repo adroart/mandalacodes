@@ -273,7 +273,7 @@ const PiecePage: React.FC = () => {
       ? `Edition ${piece.editionNumber}`
       : art.edition || undefined;
 
-  const heroImage = img(art.coverImage, { w: 1200, crop: 'fit' });
+  const heroImage = art.coverImage ? img(art.coverImage, { w: 1200, crop: 'fit' }) : null;
 
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
@@ -313,14 +313,27 @@ const PiecePage: React.FC = () => {
                 />
               ))}
               <div className="bg-[#151311] p-4 sm:p-7 overflow-hidden">
-                <img
-                  src={heroImage}
-                  alt={`${cleanTitle}${
-                    cardNumber != null ? `, Universal Language ${cardNumber}` : ''
-                  }. Original work by Adrian Rasmussen.`}
-                  className="w-full h-auto block"
-                  loading="eager"
-                />
+                {heroImage ? (
+                  <img
+                    src={heroImage}
+                    alt={`${cleanTitle}${
+                      cardNumber != null ? `, Universal Language ${cardNumber}` : ''
+                    }. Original work by Adrian Rasmussen.`}
+                    className="w-full h-auto block"
+                    loading="eager"
+                  />
+                ) : (
+                  // No image id on record: a quiet plate with the title,
+                  // never a raw alt-text fallback in a black box.
+                  <div className="aspect-square flex items-center justify-center px-6 text-center">
+                    <p
+                      className="font-serif text-lg text-paper-100/70 tracking-wide"
+                      style={{ fontFamily: 'Cinzel, serif' }}
+                    >
+                      {cleanTitle}
+                    </p>
+                  </div>
+                )}
               </div>
               {/* Plate caption: set like an engraving beneath the work. */}
               <div className="pt-3 pb-1 text-center">
