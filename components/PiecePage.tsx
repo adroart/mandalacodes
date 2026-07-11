@@ -35,6 +35,18 @@ import type { Artwork, PublicAtlasState } from '../types';
  * lets you add to it": so the single CTA opens the existing /atlas/claim flow.
  */
 
+/**
+ * One label style, one card style. Every small-caps section label on this page
+ * shares a single size (11px), tracking (0.2em) and color (wood-600); bronze is
+ * reserved for interactive text and the single series eyebrow. Every quiet
+ * inset panel shares one border + surface. Enforcing these two constants is
+ * what makes the page read as one certificate instead of a stack of fragments.
+ */
+const LABEL = 'font-label text-[11px] uppercase tracking-[0.2em] text-wood-600';
+const LINK =
+  'font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors';
+const CARD = 'border border-wood-200 bg-paper-100/60';
+
 type LoadState =
   | { kind: 'loading' }
   | { kind: 'not-found' }
@@ -94,7 +106,7 @@ function buildSpine(piece: PublicPiece, art: Artwork): SpineEntry[] {
   if (piece.status === 'placed' && place) {
     spine.push({ label: 'Placed', detail: `${place}${yearOf(piece.placedAt) ? ` · ${yearOf(piece.placedAt)}` : ''}` });
   } else if (piece.status === 'unawakened' && place) {
-    spine.push({ label: 'At rest', detail: `${place} · awaiting its keeper` });
+    spine.push({ label: 'On display', detail: place });
   } else {
     spine.push({ label: 'Seeking ground', detail: 'not yet placed in the world' });
   }
@@ -116,6 +128,9 @@ const PiecePage: React.FC = () => {
   // of the archive + atlas state above — it's an enrichment layer, never a
   // blocker, so it starts null and simply fills in once (if) it arrives.
   const [content, setContent] = useState<PieceContent | null>(null);
+  // A certificate page must never show raw alt text on a black box: if the
+  // plate image fails, we fall back to a warm paper placeholder instead.
+  const [heroFailed, setHeroFailed] = useState(false);
   // The full public atlas state, kept for the kin constellation below. Same
   // load the piece itself comes from; no extra fetch.
   const [atlasState, setAtlasState] = useState<PublicAtlasState | null>(null);
@@ -226,8 +241,8 @@ const PiecePage: React.FC = () => {
   if (load.kind === 'loading') {
     return (
       <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6">
-        <p className="font-serif text-lg text-wood-700 tracking-[0.02em]" aria-live="polite">
-          opening the book
+        <p className={`${LABEL} text-wood-500`} aria-live="polite">
+          Opening the book
         </p>
       </section>
     );
@@ -246,10 +261,7 @@ const PiecePage: React.FC = () => {
           The code you scanned doesn't resolve to a known piece. If you hold one
           of Adrian's works, you can still open its book.
         </p>
-        <Link
-          to="/atlas/claim"
-          className="font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
-        >
+        <Link to="/atlas/claim" className={LINK}>
           Open this piece's book →
         </Link>
       </section>
@@ -277,11 +289,11 @@ const PiecePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
-      <div className="px-6 pb-32 max-w-5xl mx-auto pt-[calc(var(--nav-height)+3rem)] sm:pt-[calc(var(--nav-height)+4rem)]">
+      <div className="px-6 pb-32 max-w-5xl mx-auto pt-[calc(var(--nav-height)+1.5rem)] sm:pt-[calc(var(--nav-height)+2rem)]">
         {/* Breadcrumb */}
         <nav
           aria-label="Breadcrumb"
-          className="flex flex-wrap items-center gap-2 gap-y-1 font-label text-[11px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.2em] text-wood-700 mb-10 sm:mb-14"
+          className="flex flex-wrap items-center gap-2 gap-y-1 font-label text-[11px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.2em] text-wood-700 mb-6 sm:mb-8"
         >
           <Link to="/" className="hover:text-wood-900 transition-colors">
             Home
@@ -303,17 +315,17 @@ const PiecePage: React.FC = () => {
           <div className="w-full lg:sticky lg:top-[calc(var(--nav-height)+2rem)]">
             <div className="relative border border-wood-300 p-2.5 sm:p-3">
               {/* Corner marks: the certificate's quiet engraving. */}
-              {(['top-0 left-0 border-t border-l', 'top-0 right-0 border-t border-r',
-                 'bottom-0 left-0 border-b border-l', 'bottom-0 right-0 border-b border-r'] as const).map((pos) => (
+              {(['top-0 left-0 border-t-2 border-l-2', 'top-0 right-0 border-t-2 border-r-2',
+                 'bottom-0 left-0 border-b-2 border-l-2', 'bottom-0 right-0 border-b-2 border-r-2'] as const).map((pos) => (
                 <span
                   key={pos}
                   aria-hidden
-                  className={`absolute w-4 h-4 border-bronze-700/70 ${pos}`}
+                  className={`absolute w-5 h-5 border-bronze-700/70 ${pos}`}
                   style={{ margin: '-1px' }}
                 />
               ))}
-              <div className="bg-[#151311] p-4 sm:p-7 overflow-hidden">
-                {heroImage ? (
+              <div className="bg-[#151311] p-3 sm:p-5 overflow-hidden">
+                {heroImage && !heroFailed ? (
                   <img
                     src={heroImage}
                     alt={`${cleanTitle}${
@@ -321,26 +333,30 @@ const PiecePage: React.FC = () => {
                     }. Original work by Adrian Rasmussen.`}
                     className="w-full h-auto block"
                     loading="eager"
+                    onError={() => setHeroFailed(true)}
                   />
                 ) : (
-                  // No image id on record: a quiet plate with the title,
-                  // never a raw alt-text fallback in a black box.
-                  <div className="aspect-square flex items-center justify-center px-6 text-center">
-                    <p
-                      className="font-serif text-lg text-paper-100/70 tracking-wide"
-                      style={{ fontFamily: 'Cinzel, serif' }}
-                    >
+                  // No image id on record, or the plate image failed to load:
+                  // a quiet plate with the title, never raw alt text on black.
+                  <div className="w-full aspect-square flex flex-col items-center justify-center gap-3 text-center px-6">
+                    <span className={`${LABEL} text-bronze-400`}>The plate</span>
+                    <span className="font-serif text-lg text-paper-200 leading-snug">
                       {cleanTitle}
-                    </p>
+                    </span>
                   </div>
                 )}
               </div>
-              {/* Plate caption: set like an engraving beneath the work. */}
-              <div className="pt-3 pb-1 text-center">
-                <p className="font-label text-[10px] uppercase tracking-[0.3em] text-wood-700">
-                  {[cleanTitle, piece.series, editionLine].filter(Boolean).join('  ·  ')}
-                </p>
-              </div>
+              {/* Plate engraving: the edition marker only, and only when there
+                  is one. The title lives in the H1 below, so repeating it here
+                  just doubled the words; the certificate line beneath the plate
+                  is the plate's subtitle. */}
+              {editionLine && (
+                <div className="pt-3 pb-1 text-center">
+                  <p className="font-label text-[10px] uppercase tracking-[0.3em] text-wood-700">
+                    {editionLine}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Photo gallery: extra images Adrian has added via the admin
@@ -366,22 +382,21 @@ const PiecePage: React.FC = () => {
                 ))}
               </div>
             )}
-            <p className="font-serif text-[15px] text-wood-500 text-center tracking-[0.01em] mt-4 leading-relaxed">
-              This page is the certificate of the physical work: page one of a
-              book that never closes.
+            <p className="font-serif text-base text-wood-500 text-center mt-3 leading-[1.6] max-w-sm mx-auto">
+              This page is the certificate of the physical work.
             </p>
           </div>
 
           {/* ── The story ───────────────────────────────────────────────── */}
           <div className="w-full">
             {piece.series && (
-              <p className="font-label text-[11px] uppercase tracking-[0.28em] text-bronze-700 mb-4">
+              <p className={`${LABEL} text-bronze-700 mb-3`}>
                 {piece.series}
               </p>
             )}
 
             <h1
-              className="font-serif text-4xl sm:text-5xl text-wood-900 font-medium leading-[0.98] mb-4"
+              className="font-serif text-4xl sm:text-5xl text-wood-900 font-medium leading-[1.0] mb-3"
               style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.02em' }}
             >
               {cleanTitle}
@@ -399,15 +414,16 @@ const PiecePage: React.FC = () => {
               </div>
             )}
 
-            {/* Inline metadata row */}
+            {/* Inline metadata row: kept in the column's serif voice, not a
+                foreign sans, so it reads as one caption under the title. */}
             {(editionLine || art.dimensions || art.material) && (
-              <p className="font-sans text-sm text-wood-700 leading-relaxed mb-7">
+              <p className="font-serif text-base text-wood-600 leading-relaxed mb-6">
                 {[editionLine, art.dimensions, art.material]
                   .filter(Boolean)
                   .map((bit, i) => (
                     <React.Fragment key={i}>
                       {i > 0 && (
-                        <span aria-hidden className="mx-1.5 text-wood-400">
+                        <span aria-hidden className="mx-2 text-wood-400">
                           ·
                         </span>
                       )}
@@ -418,7 +434,7 @@ const PiecePage: React.FC = () => {
             )}
 
             {description && (
-              <p className="font-serif text-lg text-wood-800 leading-[1.7] mb-8 whitespace-pre-line">
+              <p className="font-serif text-lg text-wood-800 leading-[1.7] mb-10 whitespace-pre-line">
                 {description}
               </p>
             )}
@@ -426,10 +442,10 @@ const PiecePage: React.FC = () => {
             {/* Materials · provenance: the editor's expanded notes, shown
                 only when Adrian has written them. */}
             {(content?.materials || content?.provenance) && (
-              <div className="border-t border-wood-200 pt-6 mb-8 space-y-5">
+              <div className="border-t border-wood-200 pt-8 mb-10 space-y-5">
                 {content?.materials && (
                   <div>
-                    <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-1">
+                    <p className={`${LABEL} mb-2`}>
                       Materials
                     </p>
                     <p className="font-serif text-base text-wood-800 leading-[1.6] whitespace-pre-line">
@@ -439,7 +455,7 @@ const PiecePage: React.FC = () => {
                 )}
                 {content?.provenance && (
                   <div>
-                    <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-1">
+                    <p className={`${LABEL} mb-2`}>
                       Provenance
                     </p>
                     <p className="font-serif text-base text-wood-800 leading-[1.6] whitespace-pre-line">
@@ -452,7 +468,7 @@ const PiecePage: React.FC = () => {
 
             {/* Hexagram: Universal Language pieces only. */}
             {card && cardNumber != null && (
-              <div className="border-t border-wood-200 pt-6 mb-8 flex items-start gap-5">
+              <div className="border-t border-wood-200 pt-8 mb-10 flex items-start gap-5">
                 <div className="shrink-0 text-bronze-700">
                   <HexagramSVG
                     upper={card.iching.upper_trigram.symbol}
@@ -461,7 +477,7 @@ const PiecePage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-1">
+                  <p className={`${LABEL} mb-2`}>
                     The code it carries
                   </p>
                   <p className="font-serif text-lg text-wood-900 leading-snug">
@@ -470,7 +486,7 @@ const PiecePage: React.FC = () => {
                   <Link
                     to={`/universal-language/${cardNumber}`}
                     state={{ ritual: true }}
-                    className="font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors mt-2 inline-block"
+                    className={`${LINK} mt-3 inline-block`}
                   >
                     Read Code {cardNumber} →
                   </Link>
@@ -527,8 +543,8 @@ const PiecePage: React.FC = () => {
             )}
 
             {/* ── The public history spine: the book's open pages ──────── */}
-            <div className="border-t border-wood-200 pt-6 mb-10">
-              <p className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 mb-5">
+            <div className="border-t border-wood-200 pt-8 mb-10">
+              <p className={`${LABEL} mb-5`}>
                 Its story so far
               </p>
               <ol className="relative ml-[3px] border-l border-wood-300 space-y-5 pb-1">
@@ -553,14 +569,14 @@ const PiecePage: React.FC = () => {
                     className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
                     style={{ transform: 'translateX(-4px)' }}
                   />
-                  <span className="font-serif text-lg text-wood-500 tracking-[0.01em] leading-snug">
-                    The next page is unwritten
+                  <span className="font-serif text-lg text-wood-500 leading-snug">
+                    It is ready for its next keeper
                   </span>
                 </li>
               </ol>
 
               {/* The ledger seal: quiet, and it goes somewhere. */}
-              <div className="mt-7 border border-wood-200 bg-paper-100/60 px-5 py-4 flex items-center gap-4">
+              <div className={`mt-7 ${CARD} px-5 py-4 flex items-center gap-4`}>
                 <span
                   aria-hidden
                   className="shrink-0 w-9 h-9 rounded-full border border-bronze-700/50 flex items-center justify-center"
@@ -587,7 +603,7 @@ const PiecePage: React.FC = () => {
                               : ''
                           }`,
                         )}`}
-                        className="font-label text-[10px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors whitespace-nowrap"
+                        className={`${LINK} whitespace-nowrap`}
                       >
                         See it among the others →
                       </Link>
@@ -598,9 +614,9 @@ const PiecePage: React.FC = () => {
             </div>
 
             {/* ── CTA ───────────────────────────────────────────────────── */}
-            <div className="bg-paper-100 border border-wood-200 p-6 sm:p-7">
+            <div className={`${CARD} p-6 sm:p-7`}>
               <p className="font-serif text-lg text-wood-800 leading-[1.6] mb-5">
-                Your piece already has a story. Signing in lets you add to it :
+                Your piece already has a story. Signing in lets you add to it:
                 place it on the map, write its intentions, pass it on.
               </p>
               {/* The loud button carries the piece: an unregistered visitor
@@ -612,7 +628,7 @@ const PiecePage: React.FC = () => {
                     ? `:${piece.editionNumber}`
                     : ''
                 }`}
-                className="inline-block font-label text-xs uppercase tracking-[0.18em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3"
+                className="inline-block font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3"
               >
                 Open this piece's book
               </Link>
