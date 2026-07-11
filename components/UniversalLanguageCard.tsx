@@ -11,6 +11,8 @@ import { ulCardImageUrl, ulCardPublicId } from '../utils/universalLanguage';
 import { useMetaTags } from '../hooks/useMetaTags';
 import { useDarkMode } from '../DarkModeContext';
 import { EBReadingHost, type EBData } from './oracle/eb/generated/EBReading.host';
+import CoinCast from './oracle/CoinCast';
+import { castForHexagram, type CastResult } from '../utils/ichingCasting';
 import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
@@ -47,6 +49,11 @@ const UniversalLanguageCard: React.FC = () => {
   const showEntrance = !arrivedQuiet;
   const [buyOpen, setBuyOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  /* The coin-cast ritual at the foot of the reading owns its result here so the
+     child stays presentational; it resets whenever the reader moves card to
+     card (prev/next or a fresh arrival), so a new code always opens uncast. */
+  const [cast, setCast] = useState<CastResult | null>(null);
+  const [casting, setCasting] = useState(false);
   /* Where this card's physical piece sits on the public atlas (cached shared
      load). Null while loading or when the piece isn't in the public ledger.
      The "On the Atlas" link only renders when the piece is actually mapped
@@ -80,6 +87,7 @@ const UniversalLanguageCard: React.FC = () => {
       .catch(() => {});
     return () => { cancelled = true; };
   }, [cardNum]);
+  useEffect(() => { setCast(null); setCasting(false); }, [cardNum]);
 
   useMetaTags({
     title: card ? `${card.card_name} · Code ${cardNum} · Universal Language Oracle` : undefined,
@@ -255,6 +263,32 @@ const UniversalLanguageCard: React.FC = () => {
         cardNumber={card.number}
         keywords={keywords}
       />
+
+      {/* The coin-cast ritual, appended at the foot of every reading: cast the
+          changing lines for this code, watch the moving lines flip, and read
+          the hexagram it becomes. Wrapped in the EB reading shell so it inherits
+          the museum-plate variables in both Day Book and Nightfall. */}
+      <div
+        className="eb-reading"
+        data-palette={palette}
+        style={{
+          /* CoinCast is authored as a warm dark museum plate (light stone ink,
+             bronze accents); it holds that same intentional dark ground in both
+             palettes, and the 56px foot clears the fixed prev/next bar. */
+          background: '#1c1917',
+          paddingBottom: 56,
+          maxWidth: 1180,
+          margin: '0 auto',
+        }}
+      >
+        <CoinCast
+          primaryNumber={card.number}
+          cast={cast}
+          casting={casting}
+          onCast={() => { setCast(castForHexagram(card.number)); setCasting(true); }}
+          onCastingDone={() => setCasting(false)}
+        />
+      </div>
 
       {/* Sticky bottom nav — prev / All 64 / next, as on the previous version. */}
       <div className="eb-reading" data-palette={palette} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, background: 'color-mix(in oklab, var(--l-bg) 92%, transparent)', borderTop: '1px solid var(--l-rule)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
