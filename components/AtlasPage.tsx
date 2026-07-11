@@ -9,6 +9,7 @@ import PieceSidePanel, {
   type HolderChartSummary,
 } from './atlas/PieceSidePanel';
 import SeekingGround, { type SeekingPiece } from './atlas/SeekingGround';
+import CodesIndex, { type CodeIndexEntry } from './atlas/CodesIndex';
 import KinshipLayer from './atlas/KinshipLayer';
 import { useIdleFade } from './atlas/useIdleFade';
 import { seriesColor } from './atlas/seriesColor';
@@ -442,6 +443,37 @@ const AtlasPage: React.FC = () => {
         cardNumber: cardNumberFor(p.pieceId),
       }));
   }, [seriesFiltered, status]);
+
+  /* The flat all-64 index reads the FULL atlas state, never the page's active
+     filters: it is a fixed catalogue of the whole language, so its counts stay
+     honest regardless of what the globe above is currently showing. Only UL
+     pieces (those carrying a code number) belong here. */
+  const codeEntries: CodeIndexEntry[] = useMemo(() => {
+    const out: CodeIndexEntry[] = [];
+    for (const p of enriched) {
+      const cardNumber = cardNumberFor(p.pieceId);
+      if (typeof cardNumber !== 'number') continue;
+      out.push({
+        cardNumber,
+        key: p.key,
+        pieceId: p.pieceId,
+        editionNumber: p.editionNumber,
+        title: p.title,
+        status: p.status,
+        cityLabel: cityLabelFor(p.cityId),
+      });
+    }
+    return out;
+  }, [enriched]);
+
+  /* Selecting a piece from the index re-selects it on the globe above and
+     brings the globe back into view (the index lives below the fold). */
+  const selectPieceOnGlobe = (pieceId: string, editionNumber?: number) => {
+    setSelectedKey(makeKey(pieceId, editionNumber));
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   /* Selected piece — falls back to null if the current selection got filtered out. */
   const selectedPiece: SelectedPiece | null = useMemo(() => {
@@ -1056,6 +1088,11 @@ const AtlasPage: React.FC = () => {
                 }
                 selectedKey={selectedKey}
               />
+            </div>
+
+            {/* All 64 codes — the flat, honest index of the whole language. */}
+            <div className="mt-16">
+              <CodesIndex entries={codeEntries} onSelectOnGlobe={selectPieceOnGlobe} />
             </div>
 
             {/* Generated-at footer note. */}
