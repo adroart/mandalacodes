@@ -488,6 +488,15 @@ export interface SharedIntention {
  * `name` and `notes` are admin-only context. `outreachStatus` tracks where
  * the collector is in the bind funnel for the admin dashboard:
  *   no-contact → invited (email sent) → claimed (clerkUserId bound) → declined
+ *
+ * `claimed` is machine-owned: it is set ONLY by the two-phase claim/consent
+ * flow (`functions/api/atlas/steward/claim.ts` Phase B). Every other value
+ * is admin-settable from the roster (`functions/api/atlas/stewards/
+ * outreach.ts`), which rejects a manual write of `claimed` with a 400.
+ * `contacted` and `paused` are PLACEHOLDER manual labels. Adrian names the
+ * final manual states before this ships to steward-facing prose (see
+ * `todo/plans/repair/phase-2-field-features.md` item F); the mechanism and
+ * the type are structurally final, the words are not.
  */
 export interface StewardRecord {
   pieceId: string;
@@ -502,7 +511,13 @@ export interface StewardRecord {
   notes?: string;
   /** When the record was created. */
   issuedAt: string;
-  outreachStatus: 'no-contact' | 'invited' | 'claimed' | 'declined';
+  outreachStatus:
+    | 'no-contact'
+    | 'invited'
+    | 'claimed'
+    | 'declined'
+    | 'contacted'
+    | 'paused';
   /** When the collector most recently exercised the claim or edit flow. */
   lastClaimAt?: string;
   /** Current consent state. Absent on records issued before M2 — the
