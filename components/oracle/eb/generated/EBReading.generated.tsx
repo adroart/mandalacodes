@@ -338,7 +338,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Trigram
             </span>
           </button>
-          <div style={{ padding: "26px 0 8px", display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div style={{ padding: "26px clamp(22px,5vw,76px) 8px", display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap" }}>
             <div style={{ flex: "1", minWidth: "240px" }}>
               <p ref={vals.registerIvLabel} style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 12px" }}>
               Combination
