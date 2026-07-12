@@ -301,6 +301,20 @@ html.dark.oracle-card-page body {
   display: none;
 }
 
+/* The dream well in the atlas piece card: long dreams scroll behind a thin
+   bronze scrollbar, quiet enough not to compete with the words. */
+.dream-well {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 170, 124, 0.3) transparent;
+}
+.dream-well::-webkit-scrollbar {
+  width: 4px;
+}
+.dream-well::-webkit-scrollbar-thumb {
+  background: rgba(196, 170, 124, 0.3);
+  border-radius: 2px;
+}
+
 /* ─── Progressive Disclosure (grid row animation) ──────────────────────── */
 
 .form-reveal {
@@ -741,4 +755,20 @@ html.oracle-card-page body {
 @keyframes hud-in {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* The selection dream settling into the cleared dark space, a carved
+   line easing up and drawing its letter-spacing tight. Reduced motion
+   keeps only the fade (static placement, opacity transitions only). */
+@keyframes dream-inscribe {
+  from { opacity: 0; transform: translateY(10px); letter-spacing: 0.05em; }
+  to   { opacity: 1; transform: translateY(0);    letter-spacing: 0.01em; }
+}
+@keyframes dream-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.dream-inscribe { animation: dream-inscribe 900ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .dream-inscribe { animation: dream-fade 520ms ease both; }
 }

@@ -4,6 +4,7 @@ import Globe, { type GlobeNode } from './atlas/Globe';
 import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
 import AtlasFiltersDark from './atlas/AtlasFiltersDark';
 import PieceSidePanel, {
+  ordinalLabel,
   type KinEntry,
   type SelectedPiece,
   type HolderChartSummary,
@@ -13,6 +14,7 @@ import KinshipLayer from './atlas/KinshipLayer';
 import { useIdleFade } from './atlas/useIdleFade';
 import { seriesColor } from './atlas/seriesColor';
 import PieceHUD from './atlas/PieceHUD';
+import { pieceCode } from '../utils/pieceCode';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
@@ -21,6 +23,7 @@ import { useAccount } from '../lib/account/useAccount';
 import { useCollections } from '../lib/collections/context';
 import { ulCardNumber } from '../utils/universalLanguage';
 import { buildKinshipIndex, greatCircleDistance, MAX_KINSHIP_ARCS } from '../utils/kinship';
+import { buildDreamRoute } from '../utils/dreamStream';
 import { SIZE_BANDS, sizeBandFor, type SizeBand } from '../utils/sizeBands';
 import type { PublicAtlasState } from '../types';
 
@@ -52,6 +55,14 @@ const BIRTH_KEY = '__birth-place__';
 
 const EARTH_RADIUS_KM = 6371;
 
+/* Dream Stream: one gesture equals one hop. The cooldown matches the flight so
+   gestures during a flight are swallowed; the wheel delta threshold keeps a
+   single trackpad flick from firing twice; the swipe threshold ignores small
+   drags of the globe. */
+const STREAM_COOLDOWN_MS = 1500;
+const STREAM_WHEEL_THRESHOLD = 30;
+const STREAM_SWIPE_THRESHOLD = 60;
+
 /* ─── State machine ────────────────────────────────────────────────────────── */
 type FetchState =
   | { kind: 'loading' }
@@ -77,6 +88,10 @@ function titleFor(pieceId: string): string {
 
 function categoryFor(pieceId: string): string | undefined {
   return FULL_ARCHIVE.find((art) => art.id === pieceId)?.category;
+}
+
+function coverImageFor(pieceId: string): string | undefined {
+  return FULL_ARCHIVE.find((art) => art.id === pieceId)?.coverImage;
 }
 
 function cityLabelFor(cityId: string | null | undefined): string | undefined {
@@ -129,15 +144,22 @@ const AtlasPage: React.FC = () => {
   // turning world. A selected piece or open filters keep the chrome awake.
   const idle = useIdleFade(4000) && !selectedKey && !filtersOpen;
 
-  // Esc releases the locked piece.
+  /* Dream Stream: the feed-like drift across the dream-bearing lights. When
+     active, one gesture flies to the next light and opens its vessel. */
+  const [streamActive, setStreamActive] = useState<boolean>(false);
+
+  // Esc releases the locked piece, and while drifting also exits the stream.
   useEffect(() => {
-    if (!selectedKey) return;
+    if (!selectedKey && !streamActive) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedKeyState(null);
+      if (e.key === 'Escape') {
+        setStreamActive(false);
+        setSelectedKeyState(null);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedKey]);
+  }, [selectedKey, streamActive]);
   const [use3D] = useState<boolean>(webglAvailable);
 
   /* Mirror a filter into the URL; 'all' clears the param. */
@@ -395,10 +417,18 @@ const AtlasPage: React.FC = () => {
         pieceType: p.pieceType,
         series: p.series,
         ordinal: p.claimOrdinal,
+        // Potency inputs: the size band drives marker brightness; category
+        // rides along for future lensing. Price stays undefined until it lands
+        // and then flows through untouched.
+        sizeBand: sizeBandByPiece.get(p.pieceId) ?? undefined,
+        category: p.category ?? categoryFor(p.pieceId),
         // "Your codes" lights pieces whose gate sits in your profile OR whose
         // card you saved to a collection; "owned" marks pieces you steward.
         yours: num != null && (yourGates.has(num) || savedCards.has(num)),
         owned: ownedKeys.has(p.key),
+        // The dream rides only on lit ('placed') lights; the sky is written by
+        // the pieces that have come to rest with a keeper.
+        intention: p.status === 'placed' ? p.intention : undefined,
       });
     }
     // The visitor's birth place rides along regardless of filters — it is
@@ -413,7 +443,135 @@ const AtlasPage: React.FC = () => {
       });
     }
     return nodes;
-  }, [seriesFiltered, status, birthPlace, yourGates, savedCards, ownedKeys]);
+  }, [seriesFiltered, status, birthPlace, yourGates, savedCards, ownedKeys, sizeBandByPiece]);
+
+  /* ─── Dream Stream ───────────────────────────────────────────────────────
+     The ordered route across the dream-bearing lights (placed, carrying a
+     public dream, mapped to a city). buildDreamRoute is deterministic: it
+     starts at the artist's first light and hops to the nearest not-yet-visited
+     one. Recomputed as filters change the visible set. */
+  const dreamRoute = useMemo(() => {
+    const stops = globeNodes
+      .filter(
+        (n) =>
+          n.status === 'placed' &&
+          typeof n.intention === 'string' &&
+          n.intention.trim().length > 0,
+      )
+      .map((n) => ({ key: n.id, lat: n.lat, lng: n.lng, claimOrdinal: n.ordinal }));
+    return buildDreamRoute(stops);
+  }, [globeNodes]);
+
+  /* Fresh reads for the imperative input handlers, so the wheel/key/touch
+     listeners never close over a stale route or selection. */
+  const dreamRouteRef = useRef(dreamRoute);
+  dreamRouteRef.current = dreamRoute;
+  const selectedKeyForStreamRef = useRef(selectedKey);
+  selectedKeyForStreamRef.current = selectedKey;
+
+  /* One gesture equals one hop. The cooldown (matching the flight) swallows
+     gestures fired mid-flight; advancing wraps at both ends. Held in a ref and
+     refreshed each render so the listeners can stay subscribed to just
+     `streamActive`. */
+  const streamCooldownRef = useRef(0);
+  const lastInputWasTouchRef = useRef(false);
+  const advanceStreamRef = useRef<(dir: 1 | -1) => void>(() => {});
+  advanceStreamRef.current = (dir: 1 | -1) => {
+    const now =
+      typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (now < streamCooldownRef.current) return;
+    const route = dreamRouteRef.current;
+    if (route.length === 0) return;
+    const cur = selectedKeyForStreamRef.current
+      ? route.indexOf(selectedKeyForStreamRef.current)
+      : -1;
+    const nextIdx =
+      cur === -1
+        ? dir === 1
+          ? 0
+          : route.length - 1
+        : (cur + dir + route.length) % route.length;
+    streamCooldownRef.current = now + STREAM_COOLDOWN_MS;
+    setSelectedKey(route[nextIdx]);
+  };
+
+  const enterStream = () => {
+    if (dreamRoute.length === 0) return;
+    setMandala(false); // leaving mandala view if it was engaged
+    setStreamActive(true);
+    if (!selectedKey || !dreamRoute.includes(selectedKey)) {
+      setSelectedKey(dreamRoute[0]);
+    }
+  };
+  const exitStream = () => setStreamActive(false); // keeps the current selection
+
+  /* If the route empties under a filter change while drifting, leave the
+     stream so the "drift" control never lies about being active. */
+  useEffect(() => {
+    if (streamActive && dreamRoute.length === 0) setStreamActive(false);
+  }, [streamActive, dreamRoute]);
+
+  /* Wheel + touch, scoped to the globe stage. A wheel or swipe originating
+     inside the piece card must scroll the card (data-atlas-hud), never advance
+     the stream. Wheel over the globe is consumed so the page never scrolls out
+     from under the reel. */
+  useEffect(() => {
+    if (!streamActive) return;
+    const el = globeBoxRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && t.closest('[data-atlas-hud]')) return; // card scrolls itself
+      e.preventDefault();
+      if (Math.abs(e.deltaY) < STREAM_WHEEL_THRESHOLD) return;
+      lastInputWasTouchRef.current = false;
+      advanceStreamRef.current(e.deltaY > 0 ? 1 : -1);
+    };
+
+    let touchStartY: number | null = null;
+    let touchInCard = false;
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.target as HTMLElement | null;
+      touchInCard = !!(t && t.closest('[data-atlas-hud]'));
+      touchStartY = e.touches[0]?.clientY ?? null;
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      const startY = touchStartY;
+      touchStartY = null;
+      if (touchInCard || startY == null) return;
+      const endY = e.changedTouches[0]?.clientY ?? startY;
+      const dy = endY - startY;
+      if (Math.abs(dy) < STREAM_SWIPE_THRESHOLD) return;
+      lastInputWasTouchRef.current = true;
+      advanceStreamRef.current(dy < 0 ? 1 : -1); // swipe up = next
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [streamActive]);
+
+  /* Arrow keys advance the stream: right/down onward, left/up back. */
+  useEffect(() => {
+    if (!streamActive) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        lastInputWasTouchRef.current = false;
+        advanceStreamRef.current(1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        lastInputWasTouchRef.current = false;
+        advanceStreamRef.current(-1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [streamActive]);
 
   /* Ring tap (mandala view): a lit code travels to its piece in the world;
      an unlit code opens the code itself, where its pieces and the acquire
@@ -459,6 +617,7 @@ const AtlasPage: React.FC = () => {
       placedAt: match.placedAt,
       cardNumber: cardNumberFor(match.pieceId),
       claimOrdinal: match.claimOrdinal,
+      coverImage: coverImageFor(match.pieceId),
     };
   }, [selectedKey, seriesFiltered]);
 
@@ -470,6 +629,49 @@ const AtlasPage: React.FC = () => {
       | (EnrichedPiece & { intention?: string })
       | undefined;
     return match?.intention ?? null;
+  }, [selectedKey, seriesFiltered]);
+
+  /* MOVE 3 · the code the selection is known by, and the quiet label line
+     carved beneath its dream. City name only (no country), so the line reads
+     "placed in Lisbon" rather than an address-level breadcrumb. */
+  const selectedCode = useMemo(() => {
+    if (!selectedPiece) return null;
+    return pieceCode({
+      pieceId: selectedPiece.pieceId,
+      series: selectedPiece.series,
+      category: selectedPiece.category,
+      cardNumber: selectedPiece.cardNumber,
+    });
+  }, [selectedPiece]);
+
+  const selectedCityName = useMemo(() => {
+    if (!selectedKey) return undefined;
+    const match = seriesFiltered.find((p) => p.key === selectedKey);
+    const c = match?.cityId ? CITIES_BY_ID.get(match.cityId) : undefined;
+    return c?.city;
+  }, [selectedKey, seriesFiltered]);
+
+  /* One city point can hold many lights. The card lists the others resting
+     at the selected piece's point, each one tap away. */
+  const alsoHere = useMemo(() => {
+    if (!selectedKey || selectedKey === BIRTH_KEY) return [];
+    const sel = seriesFiltered.find((p) => p.key === selectedKey);
+    if (!sel?.cityId) return [];
+    return seriesFiltered
+      .filter((p) => p.cityId === sel.cityId && p.key !== selectedKey)
+      .map((p) => {
+        const codeLabel = pieceCode({
+          pieceId: p.pieceId,
+          series: p.series,
+          category: p.category,
+          cardNumber: cardNumberFor(p.pieceId),
+        });
+        const standing =
+          typeof p.claimOrdinal === 'number'
+            ? `${ordinalLabel(p.claimOrdinal)} light`
+            : 'not yet awakened';
+        return { key: p.key, code: codeLabel, standing };
+      });
   }, [selectedKey, seriesFiltered]);
 
   /* If the selected piece falls outside the current filters, drop selection
@@ -570,7 +772,15 @@ const AtlasPage: React.FC = () => {
           ? ` · ${pair.sharedTrigram.replace(/\s*\(.*\)$/, '')} thread`
           : '';
         const km = ` · ${Math.round(pair.distance * EARTH_RADIUS_KM).toLocaleString('en-US')} km`;
-        return { key: otherKey, title: `${other?.title ?? otherKey}${thread}${km}` };
+        // Kin are named by their code, not their long title; titles live in
+        // the book. Kinship is UL-only (threads share a trigram).
+        const otherPieceId = otherKey.split(':')[0];
+        const codeLabel = pieceCode({
+          pieceId: otherPieceId,
+          series: 'Universal Language',
+          cardNumber: cardNumberFor(otherPieceId),
+        });
+        return { key: otherKey, title: `${codeLabel}${thread}${km}` };
       });
   }, [selectedKey, kinshipIndex]);
 
@@ -754,13 +964,22 @@ const AtlasPage: React.FC = () => {
                   <span aria-hidden className="mx-2 text-wood-500">·</span>
                   {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
                 </p>
-                <p className="mt-1.5 font-serif italic text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
+                <p className="mt-1.5 font-serif text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
                   a light is a piece claimed by its keeper · threads join pieces
                   that share a code
                 </p>
-                {!USE_GL_GLOBE && !mandala && (
-                  <p className="mt-1 font-serif italic text-[12px] leading-snug tracking-[0.03em] text-wood-400/60">
+                {!USE_GL_GLOBE && !mandala && !streamActive && (
+                  <p className="mt-1 font-serif text-[12px] leading-snug tracking-[0.03em] text-wood-400/60">
                     touch a code on the ring to visit it
+                  </p>
+                )}
+                {streamActive && dreamRoute.length > 0 && (
+                  <p className="mt-1 font-serif text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
+                    dream {Math.max(1, dreamRoute.indexOf(selectedKey ?? '') + 1)} of{' '}
+                    {dreamRoute.length} ·{' '}
+                    {typeof window !== 'undefined' && 'ontouchstart' in window
+                      ? 'swipe onward'
+                      : 'scroll onward'}
                   </p>
                 )}
               </div>
@@ -779,6 +998,19 @@ const AtlasPage: React.FC = () => {
                   }`}
                 >
                   your codes
+                </button>
+              )}
+              {dreamRoute.length > 0 && (
+                <button
+                  type="button"
+                  aria-pressed={streamActive}
+                  onClick={() => (streamActive ? exitStream() : enterStream())}
+                  title="Drift through the dreams, one gesture to the next"
+                  className={`font-label text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                    streamActive ? 'text-bronze-400' : 'text-wood-400 hover:text-bronze-400/80'
+                  }`}
+                >
+                  drift
                 </button>
               )}
               <button
@@ -811,7 +1043,11 @@ const AtlasPage: React.FC = () => {
               <button
                 type="button"
                 aria-pressed={mandala}
-                onClick={() => setMandala((m) => !m)}
+                onClick={() => {
+                  const next = !mandala;
+                  setMandala(next);
+                  if (next) setStreamActive(false); // mandala view exits the stream
+                }}
                 title="Pull back to see the whole weave at once"
                 className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/80 hover:text-bronze-400 transition-colors"
               >
@@ -903,13 +1139,21 @@ const AtlasPage: React.FC = () => {
             </svg>
           )}
 
-          {/* ── Piece HUD: instrument readout in the cleared space ───────────── */}
+          {/* ── The held piece answers with the instrument card, its dream
+                 leading inside the vessel; never text floating on the world. ── */}
           {selectedKey && (
             <div
-              className="absolute z-30 animate-[hud-in_400ms_ease-out]
-                inset-x-3 bottom-3 max-h-[52%]
-                sm:inset-x-auto sm:right-8 sm:bottom-auto sm:left-auto sm:w-[380px]"
-              style={{ top: 'var(--hud-top)' }}
+              /* data-atlas-hud marks the vessel so stream wheel/swipe scrolls
+                 the card instead of advancing. While drifting, keying by the
+                 selection replays the hud-in entrance on every hop, including
+                 same-point hops with no flight, so each dream reads as a
+                 deliberate page-turn, not a blink. */
+              data-atlas-hud
+              key={streamActive ? selectedKey : 'hud'}
+              className={`absolute z-30 animate-[hud-in_400ms_ease-out]
+                     inset-x-0 bottom-0 top-auto max-h-[76svh]
+                     sm:inset-x-auto sm:right-8 sm:bottom-auto sm:left-auto sm:w-[380px]
+                     sm:top-[var(--hud-top)]`}
             >
               {selectedKey === BIRTH_KEY && birthPlace ? (
                 <PieceHUD
@@ -939,6 +1183,8 @@ const AtlasPage: React.FC = () => {
                     yourGates.has(selectedPiece.cardNumber)
                   }
                   intention={selectedIntention}
+                  code={selectedCode}
+                  alsoHere={alsoHere}
                 />
               ) : null}
             </div>

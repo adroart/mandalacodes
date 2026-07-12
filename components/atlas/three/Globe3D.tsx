@@ -126,6 +126,19 @@ export default function Globe3D({
   useEffect(() => {
     if (import.meta.env.DEV) (window as unknown as { __atlasRig?: Rig }).__atlasRig = rig;
   }, [rig]);
+
+  /* Reduced motion: one shared, live-updating check the whole scene reads off
+     the rig. Toggling the OS setting takes effect without a reload. */
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const apply = () => {
+      rig.reducedMotion = mq.matches;
+    };
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, [rig]);
   // Thread travel: caption naming the thread while the camera flies it.
   const [travelCaption, setTravelCaption] = useState<string | null>(null);
   const travelTimer = useRef<number>(0);
@@ -513,7 +526,6 @@ export default function Globe3D({
           opacity: travelCaption ? 1 : 0,
           transition: 'opacity 700ms ease',
           fontFamily: '"Cormorant Garamond", serif',
-          fontStyle: 'italic',
           fontSize: 15,
           letterSpacing: '0.06em',
           color: 'rgba(196, 170, 124, 0.85)',
@@ -535,7 +547,6 @@ export default function Globe3D({
           opacity: mandalaOn ? 1 : 0,
           transition: 'opacity 1.4s ease',
           fontFamily: '"Cormorant Garamond", serif',
-          fontStyle: 'italic',
           fontSize: 17,
           letterSpacing: '0.04em',
           color: 'rgb(196, 170, 124)',

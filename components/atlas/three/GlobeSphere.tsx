@@ -111,6 +111,12 @@ export default function GlobeSphere({ rippleSources }: GlobeSphereProps) {
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
+    // Reduced motion holds the cymatic rings still and stops the surface
+    // breathing: the pattern stays, the movement goes.
+    if (rig.reducedMotion) {
+      material.uniforms.uBreath.value = 0;
+      return;
+    }
     material.uniforms.uTime.value = t;
     // Same 3.5s breathing cycle the cobe globe used.
     material.uniforms.uBreath.value = Math.sin((t * Math.PI * 2) / 3.5);

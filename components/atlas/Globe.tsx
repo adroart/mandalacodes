@@ -54,6 +54,21 @@ export interface GlobeNode {
   // True when the signed-in visitor stewards this piece (from the idempotent
   // bind call). Owned lights render with a brighter warm treatment.
   owned?: boolean;
+  // Physical potency band (from the piece's dimensions). Drives the marker's
+  // brightness on the Three.js globe: a greater fire for a larger work. Read
+  // as a continuous warm scale, never a discrete tier or a size label.
+  sizeBand?: 'small' | 'medium' | 'large';
+  // Archive category (medium / theme). Passed through for future lensing; the
+  // renderer does not read it yet.
+  category?: string;
+  // Sale price, when it exists. Folds a gentle continuous modifier into the
+  // potency brightness so price reads as depth of fire, never a number.
+  // Undefined until pricing data lands.
+  price?: number;
+  // The public dream this lit light carries, when its keeper shares one. Feeds
+  // the "dreams write the sky" overlay (opening flares + the resting sky). Only
+  // set on lit ('placed') pieces; sealed/absent dreams are never present here.
+  intention?: string;
 }
 
 export interface GlobeProps {
