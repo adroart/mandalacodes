@@ -29,11 +29,17 @@ export default defineConfig({
     //   - ssr.external keeps every react import a bare specifier, resolved by
     //     node at prerender time from THIS package: one CJS instance shared
     //     with @astrojs/react's renderer.
-    //   - noExternal bundles lucide-react (it only exists in the root
-    //     node_modules) so its react import goes through the same rule.
+    //   - noExternal bundles lucide-react so its react import goes through the
+    //     same rule. This package carries its own lucide-react built for react
+    //     19; the root repo carries a different major built for react 18.
     //   - dedupe covers the browser bundle, pinning root-file imports to this
-    //     package's react for hydration.
-    resolve: { dedupe: ['react', 'react-dom'] },
+    //     package's react AND lucide-react. lucide-react is load-bearing here:
+    //     without the dedupe the SSR pass renders this package's icons (react 19)
+    //     while the client bundle resolves the root's older icons, whose SVG
+    //     geometry differs (e.g. Menu: <path> vs <line>) — an irreconcilable
+    //     hydration mismatch that tears the whole site bar down on every /learn
+    //     page. Deduping lucide-react pins both passes to this one copy.
+    resolve: { dedupe: ['react', 'react-dom', 'lucide-react'] },
     ssr: { external: ['react', 'react-dom'], noExternal: ['lucide-react'] },
     server: { fs: { allow: ['..'] } },
   },
