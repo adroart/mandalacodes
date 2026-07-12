@@ -17,13 +17,14 @@ import type { GlobeNode } from '../Globe';
 import {
   COLOR_BRONZE,
   COLOR_BRONZE_DIM,
+  COLOR_EMBER,
   COLOR_SAGE,
   GLOBE_RADIUS,
   latLngToVec3,
   useRig,
 } from './rig';
 
-const CAPACITY = 256;
+const CAPACITY = 1024;
 const MARKER_LIFT = 1.012;
 const FADE_PER_SECOND = 2.2; // full fade in ~450ms
 
@@ -44,14 +45,21 @@ const VERT = /* glsl */ `
   attribute float aFlash;
   attribute float aYours;
   attribute float aOwned;
+  attribute float aBright;
+  attribute float aType;
+  attribute float aEmber;
   uniform float uPixelRatio;
   uniform float uTime;
+  uniform float uReduceMotion;
   varying vec3 vColor;
   varying float vAlpha;
   varying float vSelected;
   varying float vFlash;
   varying float vYours;
   varying float vOwned;
+  varying float vBright;
+  varying float vType;
+  varying float vEmber;
   void main() {
     vColor = aColor;
     vAlpha = aAlpha;
@@ -59,14 +67,23 @@ const VERT = /* glsl */ `
     vFlash = aFlash;
     vYours = aYours;
     vOwned = aOwned;
-    float pulse = 1.0 + 0.10 * sin(uTime * 1.8 + aPhase * 6.2831);
+    vBright = aBright;
+    vType = aType;
+    vEmber = aEmber;
+    // The sleeping ember breathes slower and shallower than a lit piece: alive
+    // but asleep. Reduced motion flattens either breath to near-stillness.
+    float breatheRate = mix(1.8, 0.9, aEmber);
+    float breatheAmp = mix(0.10, 0.05, aEmber) * (1.0 - uReduceMotion);
+    float pulse = 1.0 + breatheAmp * sin(uTime * breatheRate + aPhase * 6.2831);
     float sel = 1.0 + aSelected * 0.55;
     // Ignition flash: a newborn light blooms half again as large, then settles.
     float flash = 1.0 + aFlash * 1.5;
     // Your own stewarded piece sits a touch larger than its neighbors.
     float own = 1.0 + aOwned * 0.25;
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = aSize * pulse * sel * flash * own * uPixelRatio * (4.9 / -mv.z);
+    // aBright is the potency scale (a greater fire): folds the size band and,
+    // later, price into a continuous warm brightness read partly as size.
+    gl_PointSize = aSize * pulse * sel * flash * own * aBright * uPixelRatio * (4.9 / -mv.z);
     gl_Position = projectionMatrix * mv;
   }
 `;
@@ -79,6 +96,9 @@ const FRAG = /* glsl */ `
   varying float vFlash;
   varying float vYours;
   varying float vOwned;
+  varying float vBright;
+  varying float vType;
+  varying float vEmber;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
     float d = length(c) * 2.0;
@@ -88,11 +108,14 @@ const FRAG = /* glsl */ `
     // placed pieces still read as luminous on their own.
     float core = smoothstep(0.42, 0.0, d);
     float halo = exp(-d * 1.9) * 0.8;
-    // A faint four-point flare: the signature of a light, not clipart.
+    // A faint four-point flare: the signature of a mandala light, not clipart.
+    // Suppressed on 'other' art types (vType) and on the sleeping ember
+    // (vEmber): those read as a clean round core with a soft halo, no flare.
     float ax = abs(c.x) * 2.0;
     float ay = abs(c.y) * 2.0;
     float flare = (smoothstep(0.85, 0.0, ax) * smoothstep(0.14, 0.0, ay)
                  + smoothstep(0.85, 0.0, ay) * smoothstep(0.14, 0.0, ax)) * 0.3;
+    flare *= (1.0 - vType) * (1.0 - vEmber);
     // Selected markers carry a thin ring just outside the core; it breathes.
     float ringR = 0.62 + 0.05 * sin(uTime * 1.6);
     float ring = vSelected * smoothstep(0.09, 0.0, abs(d - ringR)) * 0.9;
@@ -107,8 +130,15 @@ const FRAG = /* glsl */ `
     float orr = 0.66 + 0.04 * sin(uTime * 1.4);
     float oring = vOwned * smoothstep(0.08, 0.0, abs(d - orr)) * 0.85;
     float energy = (core * 1.7 + halo + flare + ring + wave + yring + oring) * (1.0 + vFlash * 1.3 + vOwned * 0.25);
+    // Potency (a greater fire): the same continuous scale lifts the fragment
+    // energy. Applied at 75% of the size swing so dense clusters keep their
+    // shape under additive blending instead of stacking to white.
+    energy *= mix(1.0, vBright, 0.75);
     vec3 col = mix(vColor, vec3(0.61, 0.67, 0.53), clamp(yring * 1.4, 0.0, 0.8));
     col = mix(col, vec3(0.93, 0.79, 0.51), clamp(vOwned * 0.45, 0.0, 0.45));
+    // Toward high potency the fire warms from deep ember to a gold-white
+    // heart. Warm family only, never a cold highlight.
+    col = mix(col, vec3(1.0, 0.94, 0.80), clamp((vBright - 1.0) * 0.6, 0.0, 0.3));
     gl_FragColor = vec4(col * energy, vAlpha * min(energy, 1.0));
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -125,11 +155,51 @@ interface DisplayEntry {
 }
 
 function colorFor(status: GlobeNode['status']): THREE.Color {
-  return status === 'origin' ? COLOR_SAGE : status === 'seeking' ? COLOR_BRONZE_DIM : COLOR_BRONZE;
+  return status === 'origin' ? COLOR_SAGE
+    : status === 'seeking' ? COLOR_BRONZE_DIM
+    : status === 'unawakened' ? COLOR_EMBER
+    : COLOR_BRONZE;
 }
 
 function sizeFor(status: GlobeNode['status']): number {
-  return status === 'origin' ? 18 : status === 'seeking' ? 13.5 : 21;
+  return status === 'origin' ? 18
+    : status === 'seeking' ? 13.5
+    : status === 'unawakened' ? 12   // the ember sits smaller than a lit piece
+    : 21;
+}
+
+/* The sleeping ember reads at low alpha: present but not yet lit. Placed and
+   origin lights keep their full presence. */
+const EMBER_ALPHA = 0.5;
+function alphaScaleFor(status: GlobeNode['status']): number {
+  return status === 'unawakened' ? EMBER_ALPHA : 1.0;
+}
+
+/* Potency (a greater fire): the size band sets a base brightness and, when a
+   sale price lands, a gentle logarithmic modifier folds in so two pieces of
+   the same band at different prices read as different depths of fire. Kept
+   tight and continuous so it is a warm scale, never a discrete tier or a
+   readable number. */
+const POTENCY_BY_BAND: Record<NonNullable<GlobeNode['sizeBand']>, number> = {
+  small: 0.9,
+  medium: 1.05,
+  large: 1.25,
+};
+// Soft midpoint price the fold-in references; the span bounds how far price
+// can nudge brightness above or below the band.
+const PRICE_SOFT_REF = 5000;
+const PRICE_POTENCY_SPAN = 0.12;
+// Overall clamp so no single light blows past the tuned bloom headroom.
+const BRIGHT_MIN = 0.8;
+const BRIGHT_MAX = 1.3;
+
+function brightFor(node: GlobeNode): number {
+  let b = node.sizeBand ? POTENCY_BY_BAND[node.sizeBand] : 1.0;
+  if (typeof node.price === 'number' && node.price > 0) {
+    const nudge = Math.max(-1, Math.min(1, Math.log10(node.price / PRICE_SOFT_REF)));
+    b += nudge * PRICE_POTENCY_SPAN;
+  }
+  return Math.max(BRIGHT_MIN, Math.min(BRIGHT_MAX, b));
 }
 
 export interface MarkersProps {
@@ -160,6 +230,9 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
     geo.setAttribute('aFlash', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
     geo.setAttribute('aYours', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
     geo.setAttribute('aOwned', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
+    geo.setAttribute('aBright', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
+    geo.setAttribute('aType', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
+    geo.setAttribute('aEmber', new THREE.BufferAttribute(new Float32Array(CAPACITY), 1));
     geo.setDrawRange(0, 0);
     // Points have no real bounds; the cloud hugs the unit sphere.
     geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), GLOBE_RADIUS * 1.1);
@@ -171,7 +244,11 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
       new THREE.ShaderMaterial({
         vertexShader: VERT,
         fragmentShader: FRAG,
-        uniforms: { uTime: { value: 0 }, uPixelRatio: { value: 1 } },
+        uniforms: {
+          uTime: { value: 0 },
+          uPixelRatio: { value: 1 },
+          uReduceMotion: { value: 0 },
+        },
         transparent: true,
         depthWrite: false,
         depthTest: true,
@@ -196,7 +273,20 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
     for (const entry of listRef.current) {
       const live = incoming.get(entry.node.id);
       if (live) {
-        next.push({ node: live, alpha: entry.alpha, target: 1, bornAt: entry.bornAt });
+        // Live ignition seam: a marker already on the globe whose status turns
+        // to 'placed' (a piece claimed while the atlas is open) comes to light
+        // with the full flash + shockwave rather than a silent swap: its
+        // bornAt is reset to now so the ignition path runs. Reduced motion
+        // keeps the quiet crossfade (no flash): bornAt is left untouched.
+        const becamePlaced =
+          entry.node.status !== 'placed' && live.status === 'placed';
+        const ignite = becamePlaced && !rig.reducedMotion && rig.introAt !== 0;
+        next.push({
+          node: live,
+          alpha: entry.alpha,
+          target: 1,
+          bornAt: ignite ? performance.now() : entry.bornAt,
+        });
         seen.add(live.id);
       } else if (entry.alpha > 0.01) {
         next.push({ ...entry, target: 0 });
@@ -204,7 +294,17 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
     }
 
     const isOpening = rig.introAt === 0 && nodes.length > 0;
-    if (isOpening) {
+    if (isOpening) rig.ignition.clear();
+    if (isOpening && rig.reducedMotion) {
+      // Reduced motion: the opening is a quiet crossfade, not a staggered
+      // ignition. Every entrant fades up together (bornAt 0 means no flash and
+      // no shockwave), and the kinship arcs weave in just after.
+      rig.introAt = performance.now();
+      for (const n of nodes) {
+        if (!seen.has(n.id)) next.push({ node: n, alpha: 0, target: 1, bornAt: 0 });
+      }
+      rig.introArcDelay = 1.0;
+    } else if (isOpening) {
       rig.introAt = performance.now();
       // Ignition order: claimed lights by ordinal, then placed-without-ordinal,
       // then the faint embers (unawakened), then the visitor's own origin.
@@ -221,19 +321,31 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
         Math.min(IGNITION_MAX_STEP_S, IGNITION_SPAN_S / Math.max(1, ordered.length)),
       );
       ordered.forEach((n, i) => {
-        next.push({
-          node: n,
-          alpha: 0,
-          target: 1,
-          bornAt: rig.introAt + (IGNITION_LEAD_S + i * step) * 1000,
-        });
+        const bornAt = rig.introAt + (IGNITION_LEAD_S + i * step) * 1000;
+        next.push({ node: n, alpha: 0, target: 1, bornAt });
+        // Publish the beat so the dream overlay can flare on the same moment
+        // this light ignites.
+        rig.ignition.set(n.id, bornAt);
       });
       // The kinship arcs wait for the last light, then weave in.
       rig.introArcDelay = IGNITION_LEAD_S + ordered.length * step + 0.6;
     } else {
+      // Past the opening. A brand-new light that arrives already 'placed' (a
+      // fresh claim landing on the open globe) ignites with the full flash;
+      // everything else fades in quietly. Reduced motion keeps the crossfade.
+      const nowMs = performance.now();
       for (const n of nodes) {
-        if (!seen.has(n.id)) next.push({ node: n, alpha: 0, target: 1, bornAt: 0 });
+        if (seen.has(n.id)) continue;
+        const ignite = n.status === 'placed' && !rig.reducedMotion;
+        next.push({ node: n, alpha: 0, target: 1, bornAt: ignite ? nowMs : 0 });
       }
+    }
+    // Recede, never silently truncate: name how many lights fall past capacity
+    // so the ceiling is visible in the console rather than a quiet clip.
+    if (next.length > CAPACITY) {
+      console.warn(
+        `[Atlas] Marker capacity ${CAPACITY} exceeded: dropping ${next.length - CAPACITY} of ${next.length} markers.`,
+      );
     }
     listRef.current = next.slice(0, CAPACITY);
   }, [nodes, rig]);
@@ -247,6 +359,7 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
   useFrame(({ gl, clock }, delta) => {
     material.uniforms.uTime.value = clock.elapsedTime;
     material.uniforms.uPixelRatio.value = gl.getPixelRatio();
+    material.uniforms.uReduceMotion.value = rig.reducedMotion ? 1 : 0;
 
     const list = listRef.current;
     const pos = geometry.getAttribute('position') as THREE.BufferAttribute;
@@ -258,6 +371,9 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
     const flash = geometry.getAttribute('aFlash') as THREE.BufferAttribute;
     const yours = geometry.getAttribute('aYours') as THREE.BufferAttribute;
     const owned = geometry.getAttribute('aOwned') as THREE.BufferAttribute;
+    const bright = geometry.getAttribute('aBright') as THREE.BufferAttribute;
+    const typ = geometry.getAttribute('aType') as THREE.BufferAttribute;
+    const ember = geometry.getAttribute('aEmber') as THREE.BufferAttribute;
 
     const now = performance.now();
     const lensActive = !!focusSeries || !!yoursMode;
@@ -279,18 +395,24 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
       if (entry.target === 0 && entry.alpha <= 0.01) continue;
 
       const n = entry.node;
+      const isEmber = n.status === 'unawakened';
       latLngToVec3(n.lat, n.lng, GLOBE_RADIUS * MARKER_LIFT, scratch);
       pos.setXYZ(write, scratch.x, scratch.y, scratch.z);
       const c = colorFor(n.status);
       col.setXYZ(write, c.r, c.g, c.b);
       size.setX(write, sizeFor(n.status));
-      alpha.setX(write, entry.alpha);
+      alpha.setX(write, entry.alpha * alphaScaleFor(n.status));
       phase.setX(write, Math.abs(Math.sin(n.lat * 12.9898 + n.lng * 78.233)) % 1);
       sel.setX(write, n.id === selectedRef.current ? 1 : 0);
-      // Ignition flash: bright at birth, gone in about two seconds.
-      flash.setX(write, entry.bornAt > 0 && ageS >= 0 ? Math.exp(-ageS * 2.2) : 0);
+      // Ignition flash: bright at birth, gone in about two seconds. The
+      // sleeping ember never flashes: it glows into being quietly, no bloom
+      // and no shockwave.
+      flash.setX(write, !isEmber && entry.bornAt > 0 && ageS >= 0 ? Math.exp(-ageS * 2.2) : 0);
       yours.setX(write, yoursMode && n.yours ? 1 : 0);
       owned.setX(write, n.owned ? 1 : 0);
+      bright.setX(write, brightFor(n));
+      typ.setX(write, n.pieceType === 'other' ? 1 : 0);
+      ember.setX(write, isEmber ? 1 : 0);
       write++;
     }
     // Prune fully exited entries occasionally.
@@ -308,6 +430,9 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
     flash.needsUpdate = true;
     yours.needsUpdate = true;
     owned.needsUpdate = true;
+    bright.needsUpdate = true;
+    typ.needsUpdate = true;
+    ember.needsUpdate = true;
   });
 
   return <points geometry={geometry} material={material} renderOrder={3} />;

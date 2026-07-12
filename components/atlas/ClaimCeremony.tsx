@@ -24,6 +24,11 @@ export interface ClaimCeremonyProps {
   /** The claimed piece (first of the batch when several bound at once). */
   pieceId: string;
   editionNumber?: number;
+  /** The creator's message that travelled with this piece, delivered in the
+   *  Phase B claim response. Revealed in the final beat, after the light has
+   *  ignited and the ordinal has settled, never before. Absent in the
+   *  dev rehearsal (?ceremony=) and when the response carried none. */
+  creatorMessage?: string;
   /** Leave the ceremony: lands in the piece's book. */
   onDone: () => void;
 }
@@ -39,9 +44,9 @@ function ordinalWord(n: number): string {
   }
 }
 
-type Phase = 'igniting' | 'reveal' | 'ready';
+type Phase = 'igniting' | 'reveal' | 'ready' | 'message';
 
-const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, onDone }) => {
+const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, creatorMessage, onDone }) => {
   const [state, setState] = useState<PublicAtlasState | null>(null);
   const [failed, setFailed] = useState(false);
   const [phase, setPhase] = useState<Phase>('igniting');
@@ -142,11 +147,38 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
       setPhase('reveal');
     }, introMs + 900);
     const t2 = window.setTimeout(() => setPhase('ready'), introMs + 2600);
+    // The creator's message is the final beat: after the ordinal has settled,
+    // the words cross-fade out and the message crosses in. Only scheduled when
+    // a message travelled with the piece.
+    const t3 = creatorMessage
+      ? window.setTimeout(() => setPhase('message'), introMs + 2600 + 2800)
+      : undefined;
     return () => {
       window.clearTimeout(t1);
       window.clearTimeout(t2);
+      if (t3 !== undefined) window.clearTimeout(t3);
     };
-  }, [state, nodes.length, onGlobe, key]);
+  }, [state, nodes.length, onGlobe, key, creatorMessage]);
+
+  /* Skip jumps forward, never blocks, and never reveals the message before
+     the light is lit: from the ignition it lands on the settled ordinal; from
+     there it reveals the message; from the message it enters the book. With no
+     message it simply enters the book. */
+  const handleSkip = () => {
+    if (!creatorMessage || phase === 'message') {
+      onDone();
+      return;
+    }
+    if (phase === 'igniting') {
+      if (onGlobe) setSelected(key);
+      setPhase('ready');
+      return;
+    }
+    setPhase('message');
+  };
+
+  const wordsVisible = phase === 'reveal' || phase === 'ready';
+  const showExit = (phase === 'ready' && !creatorMessage) || phase === 'message';
 
   if (!state) {
     return (
@@ -175,17 +207,18 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
         />
       </Suspense>
 
-      {/* The words: held until the last light has come up. */}
+      {/* The words: held until the last light has come up, then released when
+          the creator's message takes the stage. */}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-[14%] text-center px-6"
         style={{
-          opacity: phase === 'igniting' ? 0 : 1,
+          opacity: wordsVisible ? 1 : 0,
           transform: phase === 'igniting' ? 'translateY(10px)' : 'translateY(0)',
           transition: 'opacity 1.6s ease, transform 1.6s ease',
         }}
       >
         <p
-          className="font-serif italic text-lg sm:text-xl mb-3"
+          className="font-serif text-lg sm:text-xl mb-3"
           style={{ color: 'rgba(203,191,168,0.9)' }}
         >
           {myTitle} has found its steward.
@@ -217,13 +250,47 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
         />
       </div>
 
-      {/* The way onward: appears after the reveal has landed. */}
+      {/* The creator's message: the final beat. Mounted only once the light is
+          lit and the ordinal has settled, never present in the DOM before
+          ignition. Its words arrive over the same globe, no page-swap. */}
+      {phase === 'message' && creatorMessage && (
+        <div
+          className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center px-8"
+          style={{
+            opacity: 0,
+            transform: 'translateY(-50%)',
+            transition: 'opacity 1.8s ease',
+          }}
+          ref={(el) => {
+            if (el) requestAnimationFrame(() => (el.style.opacity = '1'));
+          }}
+        >
+          <p
+            className="font-label text-[11px] uppercase tracking-[0.25em] mb-6"
+            style={{ color: 'rgba(196,170,124,0.75)' }}
+          >
+            a message traveled with this piece
+          </p>
+          <p
+            className="mx-auto max-w-xl text-2xl sm:text-3xl leading-snug"
+            style={{
+              fontFamily: '"Cormorant Garamond", serif',
+              color: '#e7dcc7',
+            }}
+          >
+            {creatorMessage}
+          </p>
+        </div>
+      )}
+
+      {/* The way onward: appears after the reveal has landed (or with the
+          message, when one travelled with the piece). */}
       <div
         className="absolute inset-x-0 bottom-[5%] flex items-center justify-center gap-8"
         style={{
-          opacity: phase === 'ready' ? 1 : 0,
+          opacity: showExit ? 1 : 0,
           transition: 'opacity 1.2s ease',
-          pointerEvents: phase === 'ready' ? 'auto' : 'none',
+          pointerEvents: showExit ? 'auto' : 'none',
         }}
       >
         <button
@@ -235,10 +302,11 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, o
         </button>
       </div>
 
-      {/* Quiet exit for the impatient: always available, never highlighted. */}
+      {/* Quiet exit for the impatient: always available, never highlighted.
+          It jumps forward a beat rather than abandoning the ceremony. */}
       <button
         type="button"
-        onClick={onDone}
+        onClick={handleSkip}
         className="absolute top-5 right-6 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors"
       >
         skip

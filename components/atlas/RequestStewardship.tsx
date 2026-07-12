@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAccount } from '../../lib/account/useAccount';
 import SignInTrigger from '../account/SignInTrigger';
 
@@ -144,6 +145,19 @@ const RequestStewardship: React.FC<{
           </div>
         )
       )}
+
+      {/* The Homecoming door: for whoever holds a piece the atlas has never
+          heard of, where even a stewardship request has no piece to point at.
+          The one quiet way out of the no-record dead-end. */}
+      <p className="font-serif text-sm text-wood-500 leading-[1.6] mt-6">
+        Holding a piece we do not know?{' '}
+        <Link
+          to="/atlas/homecoming"
+          className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+        >
+          Bring it home →
+        </Link>
+      </p>
     </div>
   );
 };

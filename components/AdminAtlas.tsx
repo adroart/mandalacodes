@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useAccount } from '../lib/account/useAccount';
 import AdminLayout from './AdminLayout';
 import TypeaheadPicker from './shared/TypeaheadPicker';
-import { CITIES } from '../data/cities';
+import { CITIES, getCityById } from '../data/cities';
 import { FULL_ARCHIVE } from '../data/mockData';
 import type { SaleQueueItem } from '../utils/saleBridge';
+import type { HomecomingRequest } from '../lib/atlas/homecoming';
 import type {
     CityCentroid,
     ClaimRequest,
@@ -1129,6 +1130,323 @@ const ClaimRequestsSection: React.FC = () => {
 };
 
 // ───────────────────────────────────────────────────────────────────────────
+// Homecoming (Phase 2.5, pieces the ledger has never heard of)
+// ───────────────────────────────────────────────────────────────────────────
+
+const cityLabelById = (cityId: string): string => {
+    const c = getCityById(cityId);
+    return c ? `${c.city}, ${c.country}` : cityId;
+};
+
+const HomecomingRow: React.FC<{
+    req: HomecomingRequest;
+    onResolved: () => void;
+}> = ({ req, onResolved }) => {
+    // Prefill the piece id sensibly from the request; the admin adjusts it and
+    // the title to whatever the recognized work should carry.
+    const [pieceId, setPieceId] = useState(`hc-${req.id.slice(0, 8)}`);
+    const [title, setTitle] = useState('');
+    const [editionNumber, setEditionNumber] = useState('');
+    const [pieceType, setPieceType] = useState<'' | 'mandala' | 'other'>('');
+    const [confirming, setConfirming] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [boundPath, setBoundPath] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
+
+    const resolve = async (body: Record<string, unknown>) => {
+        setBusy(true);
+        setError(null);
+        try {
+            const res = await adminFetch('/api/atlas/homecoming/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestId: req.id, ...body }),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                if (typeof data.claimPath === 'string') {
+                    setBoundPath(data.claimPath);
+                } else {
+                    onResolved();
+                }
+            } else {
+                setError(data?.error || 'Could not resolve the request.');
+            }
+        } catch {
+            setError('Network error. Check your connection.');
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const bind = () => {
+        if (!pieceId.trim()) {
+            setError('Give the piece an id.');
+            return;
+        }
+        resolve({
+            action: 'bind',
+            pieceId: pieceId.trim(),
+            title: title.trim() || undefined,
+            editionNumber: editionNumber ? Number(editionNumber) : undefined,
+            pieceType: pieceType || undefined,
+        });
+    };
+
+    if (boundPath) {
+        return (
+            <div className="border border-bronze-300 bg-bronze-50 p-5 mb-4">
+                <p className="font-sans text-sm text-bronze-800 mb-2">
+                    Recognized and bound. Send {req.requesterEmail} to the
+                    ceremony:
+                </p>
+                <code className="block font-mono text-xs text-wood-900 break-all mb-3">
+                    {boundPath}
+                </code>
+                <button
+                    type="button"
+                    onClick={onResolved}
+                    className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                >
+                    Done
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="border border-wood-200 p-5 mb-4">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+                <span className="font-serif text-base text-wood-900">
+                    {req.requesterEmail}
+                </span>
+                <span className="font-sans text-sm text-wood-500">
+                    rests in {cityLabelById(req.cityId)}
+                </span>
+                <span className="font-sans text-sm text-wood-500">
+                    {formatRelative(req.createdAt)}
+                </span>
+            </div>
+
+            {/* Photographs, admin-only; never public. */}
+            {req.photoUrls.length > 0 && (
+                <div className="flex flex-wrap gap-3 my-4">
+                    {req.photoUrls.map((url, i) => (
+                        <a
+                            key={i}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block"
+                        >
+                            <img
+                                src={url}
+                                alt={`Piece photo ${i + 1}`}
+                                className="h-28 w-28 object-cover border border-wood-200 bg-paper-100"
+                                loading="lazy"
+                            />
+                        </a>
+                    ))}
+                </div>
+            )}
+
+            <p className="font-serif text-base text-wood-700 leading-[1.7] mb-2">
+                {req.provenance}
+            </p>
+            {req.note && (
+                <p className="font-serif text-sm text-wood-500 leading-[1.6] mb-2">
+                    {req.note}
+                </p>
+            )}
+
+            {error && (
+                <p className="font-serif text-sm text-stone-600 my-3">{error}</p>
+            )}
+
+            {confirming ? (
+                <div className="space-y-3 mt-4 border-t border-wood-100 pt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className={fieldLabel}>Piece id</label>
+                            <input
+                                type="text"
+                                value={pieceId}
+                                onChange={(e) => setPieceId(e.target.value)}
+                                className={fieldInput}
+                            />
+                        </div>
+                        <div>
+                            <label className={fieldLabel}>Title</label>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="What this piece is called"
+                                className={fieldInput}
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className={fieldLabel}>Edition number (optional)</label>
+                            <input
+                                type="number"
+                                min={1}
+                                value={editionNumber}
+                                onChange={(e) => setEditionNumber(e.target.value)}
+                                placeholder="1"
+                                className={fieldInput}
+                            />
+                        </div>
+                        <div>
+                            <label className={fieldLabel}>Piece type</label>
+                            <select
+                                value={pieceType}
+                                onChange={(e) =>
+                                    setPieceType(e.target.value as '' | 'mandala' | 'other')
+                                }
+                                className={fieldInput}
+                            >
+                                <option value="">derive from series</option>
+                                <option value="mandala">mandala</option>
+                                <option value="other">other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p className="font-serif text-sm text-wood-500 leading-[1.6]">
+                        This mints the piece, places it in{' '}
+                        {cityLabelById(req.cityId)}, and binds it to{' '}
+                        {req.requesterEmail}. They walk the ceremony on their next
+                        visit.
+                    </p>
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={bind}
+                            disabled={busy}
+                            className="flex-1 bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                        >
+                            {busy ? 'Binding...' : 'Recognize and bind'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setConfirming(false)}
+                            disabled={busy}
+                            className="flex-1 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <div className="flex gap-3 mt-4">
+                    <button
+                        type="button"
+                        onClick={() => setConfirming(true)}
+                        disabled={busy}
+                        className="flex-1 bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                    >
+                        Recognize and bind
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => resolve({ action: 'decline' })}
+                        disabled={busy}
+                        className="flex-1 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                    >
+                        Not now
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const HomecomingSection: React.FC = () => {
+    const [requests, setRequests] = useState<HomecomingRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
+
+    const load = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await adminFetch('/api/atlas/homecoming');
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                setRequests(data.requests || []);
+            } else {
+                setError(data?.error || 'Could not load homecomings.');
+            }
+        } catch {
+            setError('Could not load homecomings.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const pending = requests.filter((r) => r.status === 'pending');
+    const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
+
+    return (
+        <div className="bg-white border border-wood-200 p-8 mb-10">
+            <h2 className={sectionTitle}>Homecoming</h2>
+            <p className={sectionLead}>
+                People who hold a piece the atlas has never heard of. Recognize
+                the work from the photographs and story, then bind it: this mints
+                the piece, places it where it rests, and sends the keeper into
+                the ceremony. Nothing binds on its own.
+            </p>
+
+            {error && (
+                <p className="font-serif text-sm text-stone-600 mb-4">{error}</p>
+            )}
+            {loading && <p className="font-sans text-sm text-wood-400">Loading...</p>}
+            {!loading && !error && pending.length === 0 && (
+                <p className="font-sans text-sm text-wood-400">No pieces waiting to come home.</p>
+            )}
+
+            {!loading &&
+                pending.map((r) => (
+                    <HomecomingRow key={r.id} req={r} onResolved={load} />
+                ))}
+
+            {!loading && recent.length > 0 && (
+                <div className="mt-6 border-t border-wood-100 pt-4">
+                    <p className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold mb-2">
+                        Recently resolved
+                    </p>
+                    <ul className="space-y-1">
+                        {recent.map((r) => (
+                            <li key={r.id} className="font-sans text-sm text-wood-500">
+                                {r.status} · {r.requesterEmail} ·{' '}
+                                {cityLabelById(r.cityId)}
+                                {r.boundTitle ? ` · ${r.boundTitle}` : ''}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ───────────────────────────────────────────────────────────────────────────
 // Steward Roster
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -1280,6 +1598,7 @@ const AdminAtlas: React.FC = () => {
                     <PendingSalesSection />
                     <TendingSection />
                     <ClaimRequestsSection />
+                    <HomecomingSection />
                     <IssueStewardKeySection onIssued={loadStewards} />
                     <StewardRoster
                         stewards={stewards}

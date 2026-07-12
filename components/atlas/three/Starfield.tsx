@@ -6,11 +6,13 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { useRig } from './rig';
 
 const STAR_COUNT = 950;
 const SHELL_RADIUS = 28;
 
 export default function Starfield() {
+  const rig = useRig();
   const pointsRef = useRef<THREE.Points>(null);
 
   const geometry = useMemo(() => {
@@ -94,6 +96,9 @@ export default function Starfield() {
 
   useFrame(({ gl, clock }, delta) => {
     material.uniforms.uPixelRatio.value = gl.getPixelRatio();
+    // Reduced motion holds the twinkle at its steady midpoint (uTime frozen)
+    // and stops the shell drift: a quiet, still sky.
+    if (rig.reducedMotion) return;
     material.uniforms.uTime.value = clock.elapsedTime;
     if (pointsRef.current) pointsRef.current.rotation.y += delta * 0.004;
   });
