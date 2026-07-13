@@ -227,7 +227,6 @@ const UniversalLanguageCard: React.FC = () => {
           <ChartHeroBox
             hexGlyph={String.fromCodePoint(0x4DBF + card.number)}
             code={card.number}
-            hasChart={!!profile}
             onOpen={() => { if (profile) navigate('/profile'); else setChartFormOpen(true); }}
           />
         }
@@ -291,9 +290,8 @@ const UniversalLanguageCard: React.FC = () => {
 const ChartHeroBox: React.FC<{
   hexGlyph: string;
   code: number;
-  hasChart: boolean;
   onOpen: () => void;
-}> = ({ hexGlyph, code, hasChart, onOpen }) => {
+}> = ({ hexGlyph, code, onOpen }) => {
   const bodyRef = useRef<HTMLSpanElement>(null);
   const [glyphPx, setGlyphPx] = useState(46);
   useEffect(() => {
@@ -315,18 +313,15 @@ const ChartHeroBox: React.FC<{
           <span className="ul-hero-hex__glyph" style={{ fontSize: glyphPx }}>{hexGlyph}</span>
           <span
             className="ul-hero-hex__num"
-            style={{ fontSize: Math.max(9, Math.round(glyphPx * 0.23)), marginTop: Math.round(glyphPx * -0.04) }}
+            style={{ fontSize: Math.max(8, Math.round(glyphPx * 0.18)), marginTop: Math.round(glyphPx * -0.04) }}
           >
             {String(code).padStart(2, '0')}
           </span>
         </span>
         <span className="ul-hero-box__body" ref={bodyRef}>
-          <span className="ul-hero-box__eyebrow">Your chart</span>
-          <span className="ul-hero-box__title">{hasChart ? 'See this code in your chart' : 'Is this code in your chart?'}</span>
+          <span className="ul-hero-box__title">Is this code in your chart?</span>
           <span className="ul-hero-box__line">
-            {hasChart
-              ? 'Open your chart to see where all 64 codes fall across your readings.'
-              : 'Log in to reveal where all 64 codes fall across your readings.'}
+            See your birth chart and understand where all 64 codes land in the Oracle.
           </span>
         </span>
         <style>{heroActionStyles}</style>
@@ -335,9 +330,8 @@ const ChartHeroBox: React.FC<{
   );
 };
 
-/* The two hero action boxes: the physical original, and the chart question.
-   Built from the same hairline box as the old Acquire/Share pair, palette-aware
-   through the EB reading's own variables. Serif line, sans eyebrow, no italics. */
+/* The chart question uses the old action row's hairline box, palette-aware
+   through the EB reading's own variables. Serif copy, no label, no italics. */
 const heroActionStyles = `
   .ul-hero-actions { display: block; }
   /* Horizontal: the hexagram sits on the left (its number centred beneath it),
@@ -395,16 +389,6 @@ const heroActionStyles = `
     flex-direction: column;
     align-items: flex-start;
     min-width: 0;
-  }
-  .ul-hero-box__eyebrow {
-    font-family: var(--sans, system-ui);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--accent, #C99A5B);
-    line-height: 1;
-    margin-bottom: 8px;
   }
   .ul-hero-box__title {
     font-family: var(--serif);

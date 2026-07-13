@@ -72,6 +72,27 @@ test('omits the visible drop cap', async ({ page }) => {
   expect(typography.ownColor).toBe(typography.parentColor);
 });
 
+test('keeps the chart prompt direct and visually subordinate to the hexagram', async ({ page }) => {
+  await openReading(page);
+  const prompt = page.locator('.ul-hero-box--chart');
+  await expect(prompt).toBeVisible();
+  await expect(prompt.locator('.ul-hero-box__eyebrow')).toHaveCount(0);
+  await expect(prompt.locator('.ul-hero-box__title')).toHaveText('Is this code in your chart?');
+  await expect(prompt.locator('.ul-hero-box__line')).toHaveText(
+    'See your birth chart and understand where all 64 codes land in the Oracle.',
+  );
+
+  const typeScale = await prompt.evaluate((element) => {
+    const glyph = element.querySelector<HTMLElement>('.ul-hero-hex__glyph')!;
+    const number = element.querySelector<HTMLElement>('.ul-hero-hex__num')!;
+    return {
+      glyph: parseFloat(getComputedStyle(glyph).fontSize),
+      number: parseFloat(getComputedStyle(number).fontSize),
+    };
+  });
+  expect(typeScale.number).toBeLessThanOrEqual(typeScale.glyph * 0.2);
+});
+
 test('shows one sticky document progress indicator', async ({ page }) => {
   await openReading(page);
   const nav = page.locator('[data-oracle-progress-nav]');
