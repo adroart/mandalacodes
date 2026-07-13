@@ -45,7 +45,7 @@ const OracleBottomNavigation:React.FC<Props> = ({current,previous,next,palette,o
     return <ReflectionRecorderBar hexagramNumber={current.number} recorder={recorder} onInvocationPublished={onInvocationPublished} />;
   }
 
-  return <nav className="eb-reading oracle-bottom-nav" data-palette={palette} aria-label="Hexagram navigation">
+  return <nav className="eb-reading oracle-bottom-nav" data-oracle-neighbor-footer data-palette={palette} aria-label="Neighboring hexagrams">
     <div className="oracle-bottom-nav__inner">
       <div className="oracle-bottom-nav__edge">{previous && <Neighbor card={previous} direction="previous" />}</div>
       <div className="oracle-bottom-nav__constellation">
