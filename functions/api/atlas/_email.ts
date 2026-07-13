@@ -60,6 +60,8 @@ export function letterEmailSubject(kind: LetterKind): string {
       return 'A letter from your piece · an anniversary';
     case 'transfer':
       return 'A letter from your piece · new hands';
+    case 'words-anniversary':
+      return 'A letter from your piece · shall it keep carrying your words';
     default:
       return 'A letter from your piece';
   }

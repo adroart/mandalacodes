@@ -434,7 +434,12 @@ export interface ClaimRequest {
  * person even if it leaked.
  * ──────────────────────────────────────────────────────────────────────── */
 
-export type LetterKind = 'kin-claim' | 'anniversary' | 'transfer' | 'tending';
+export type LetterKind =
+  | 'kin-claim'
+  | 'anniversary'
+  | 'transfer'
+  | 'tending'
+  | 'words-anniversary';
 
 export interface AtlasLetter {
   id: string;

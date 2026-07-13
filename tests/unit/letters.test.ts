@@ -23,9 +23,12 @@ import {
   composeAnniversaryBody,
   composeKinClaimBody,
   composeTransferBody,
+  composeWordsAnniversaryBody,
   planKinClaimLetters,
   sharedTrigram,
   wholeYearsSince,
+  wordsAnniversaryYearDue,
+  wordsExcerpt,
   type KinPieceFact,
 } from '../../utils/letters';
 
@@ -246,5 +249,110 @@ describe('composeAnniversaryBody + composeTransferBody', () => {
       bodies.add(body);
     }
     expect(bodies.size).toBeGreaterThan(1);
+  });
+});
+
+/**
+ * Words-anniversary letters (Phase 2 item D, "shall I keep carrying these
+ * words?") — the yearly reconfirmation ask for a steward who let an
+ * intention ride publicly on the map. `wordsAnniversaryYearDue` is a
+ * faithful thin twin of `anniversaryYearDue`, keyed off a shared
+ * intention's `sharedAt` instead of the piece's claim date; the twin cases
+ * below pin the identical due/idempotent/catch-up behavior.
+ */
+describe('wordsAnniversaryYearDue — idempotency, one per year (twin of anniversaryYearDue)', () => {
+  const SHARED_AT = '2024-06-10T00:00:00.000Z';
+
+  function wordsLetter(createdAt: string): AtlasLetter {
+    return {
+      id: `ltr-${createdAt}`,
+      recipientKey: 'UL-1:0',
+      kind: 'words-anniversary',
+      createdAt,
+      body: 'x',
+    };
+  }
+
+  it('is not due before the first anniversary of sharing', () => {
+    expect(wordsAnniversaryYearDue(SHARED_AT, [], '2024-12-01T00:00:00.000Z')).toBeNull();
+  });
+
+  it('is due at exactly one year, then not due again once the letter is written', () => {
+    const now = '2025-06-10T00:00:00.000Z';
+    expect(wordsAnniversaryYearDue(SHARED_AT, [], now)).toBe(1);
+    // Idempotent: once the year-1 letter exists, the same call yields nothing.
+    expect(
+      wordsAnniversaryYearDue(SHARED_AT, [wordsLetter('2025-06-10T00:00:00.000Z')], now),
+    ).toBeNull();
+  });
+
+  it('catches up exactly one year per call after a gap', () => {
+    const now = '2026-06-10T00:00:00.000Z'; // two anniversaries have passed
+    // No letters yet → catch up year 1 first (one per open, not both at once).
+    expect(wordsAnniversaryYearDue(SHARED_AT, [], now)).toBe(1);
+    // Year 1 written → next call yields year 2.
+    expect(
+      wordsAnniversaryYearDue(SHARED_AT, [wordsLetter('2025-06-10T00:00:00.000Z')], now),
+    ).toBe(2);
+    // Both written → nothing more this far in (idempotent after write).
+    expect(
+      wordsAnniversaryYearDue(
+        SHARED_AT,
+        [wordsLetter('2025-06-10T00:00:00.000Z'), wordsLetter('2026-06-10T00:00:00.000Z')],
+        now,
+      ),
+    ).toBeNull();
+  });
+});
+
+describe('wordsExcerpt', () => {
+  it('returns short text unchanged', () => {
+    expect(wordsExcerpt('a short dream')).toBe('a short dream');
+  });
+
+  it('cuts long text to the max length with a trailing marker, never mid-setup PII', () => {
+    const long = 'x'.repeat(200);
+    const excerpt = wordsExcerpt(long, 60);
+    expect(excerpt.length).toBeLessThanOrEqual(64);
+    expect(excerpt.startsWith('x'.repeat(60))).toBe(true);
+  });
+});
+
+describe('composeWordsAnniversaryBody', () => {
+  it('quotes the excerpt and asks whether to keep carrying the words', () => {
+    const body = composeWordsAnniversaryBody({
+      years: 1,
+      excerpt: 'a dream about open water',
+      seed: 'UL-1:0',
+    });
+    expect(body).toContain('a dream about open water');
+    assertNoPII(body);
+  });
+
+  it('never contains an em dash, across every template', () => {
+    for (let i = 0; i < 20; i++) {
+      const body = composeWordsAnniversaryBody({
+        years: 1,
+        excerpt: 'a dream',
+        seed: `UL-${i}:0`,
+      });
+      expect(body).not.toMatch(/—/);
+    }
+  });
+
+  it('varies the prose by seed and by year (not one canned string)', () => {
+    const bodies = new Set<string>();
+    for (let i = 0; i < 20; i++) {
+      bodies.add(
+        composeWordsAnniversaryBody({ years: 1, excerpt: 'a dream', seed: `UL-${i}:0` }),
+      );
+    }
+    expect(bodies.size).toBeGreaterThan(1);
+  });
+
+  it('reads correctly for a multi-year gap catch-up (e.g. year 2)', () => {
+    const body = composeWordsAnniversaryBody({ years: 2, excerpt: 'a dream', seed: 'UL-1:0' });
+    expect(body).toContain('2 years');
+    assertNoPII(body);
   });
 });
