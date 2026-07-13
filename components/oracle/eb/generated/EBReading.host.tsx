@@ -655,25 +655,24 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const palette = this.props.palette ?? 'daybook';
     const motion = this.props.reduceMotion ? 'off' : 'on';
     const systems = [
-      ['ul', 'Reading'],
-      ['iching', 'I Ching'],
-      ['genekeys', 'Gene Keys'],
-      ['humandesign', 'Human Design'],
-      ['body', 'Body'],
-      ['relations', 'Relations'],
+      ['ul', 'Universal Language', 'UL'],
+      ['iching', 'I Ching', null],
+      ['genekeys', 'Gene Keys', 'Gene Keys'],
+      ['humandesign', 'Human Design', 'Human Design'],
+      ['body', 'Body', 'Body'],
+      ['relations', 'Relations', null],
     ];
     return (
       <div className="eb-reading" data-oracle-reader data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
         <nav className="oracle-reading-progress" data-oracle-progress-nav aria-label="Oracle reading">
-          <div className="oracle-reading-progress__inner">
-            <span className="oracle-reading-progress__code">Code {this.props.data.code}</span>
-            <span className="oracle-reading-progress__title">{this.props.data.cardName}</span>
-            <span className="oracle-reading-progress__section">{this.state.active === 'ul' ? 'The Reading' : this.state.active.replace('genekeys', 'Gene Keys').replace('humandesign', 'Human Design')}</span>
-          </div>
           <div className="oracle-reading-progress__jumps" role="navigation" aria-label="Jump to system">
-            {systems.map(([key, label]) => (
-              <button key={key} type="button" data-active={this.state.active === key ? 'true' : 'false'} onClick={() => this.go(key)}>
-                {label}
+            {systems.map(([key, label, text]) => (
+              <button key={key} type="button" aria-label={label} data-active={this.state.active === key ? 'true' : 'false'} onClick={() => this.go(key)}>
+                {key === 'iching' ? (
+                  <svg data-system-icon="iching" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5.5 9.5-5.5 9.5 5.5 9.5 5.5-3.4 5.5-9.5 5.5S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+                ) : key === 'relations' ? (
+                  <svg data-system-icon="relations" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="7" r="2.2"/><circle cx="18" cy="7" r="2.2"/><circle cx="12" cy="17" r="2.2"/><path d="m7.8 8.3 2.9 6.5m5.5-6.5-2.9 6.5M8.2 7h7.6"/></svg>
+                ) : text}
               </button>
             ))}
           </div>

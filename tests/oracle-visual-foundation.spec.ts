@@ -82,6 +82,10 @@ test('shows one sticky document progress indicator', async ({ page }) => {
   await expect(progress).toHaveAttribute('aria-valuemax', '100');
   const systems = nav.getByRole('navigation', { name: 'Jump to system' });
   await expect(systems).toBeVisible();
+  await expect(nav.locator('.oracle-reading-progress__inner')).toHaveCount(0);
+  await expect(systems.getByRole('button', { name: 'Universal Language' })).toContainText('UL');
+  await expect(systems.getByRole('button', { name: 'I Ching' }).locator('[data-system-icon="iching"]')).toHaveCount(1);
+  await expect(systems.getByRole('button', { name: 'Relations' }).locator('[data-system-icon="relations"]')).toHaveCount(1);
   await systems.getByRole('button', { name: 'Gene Keys' }).click();
   await expect(page.locator('section[data-chapter="genekeys"]')).toBeInViewport();
   await expect(page.getByRole('navigation', { name: 'Reading by system' })).toBeHidden();
