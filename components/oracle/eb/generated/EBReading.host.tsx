@@ -194,7 +194,10 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       // Match Teajia's viewport-rooted reveal. Horizontally off-screen panels
       // remain armed and reveal when navigation brings them into the viewport.
       const prose = this.rootEl.querySelector('section[data-chapter="ul"] > div > div[style*="flex-direction: column"]');
-      if (prose) prose.setAttribute('data-reading-prose', '');
+      if (prose) {
+        prose.setAttribute('data-reading-prose', '');
+        prose.setAttribute('data-oracle-reading-prose', '');
+      }
       const reveal = Array.from(this.rootEl.querySelectorAll('section[data-chapter] > div > :is(p,h2,h3,div,details,figure)')) as HTMLElement[];
       const glyphs = Array.from(this.rootEl.querySelectorAll('[data-glyph]')) as HTMLElement[];
       const showAll = () => {
