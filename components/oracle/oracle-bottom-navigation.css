@@ -1,25 +1,19 @@
 .oracle-bottom-nav { position:fixed; z-index:40; right:0; bottom:0; left:0; color:var(--l-1); background:color-mix(in oklab,var(--l-bg) 94%,transparent); border-top:1px solid var(--l-rule); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding-bottom:env(safe-area-inset-bottom,0px); }
-.oracle-bottom-nav__inner { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:stretch; min-height:56px; max-width:1180px; margin:0 auto; }
-.oracle-bottom-nav__edge { display:flex; min-width:0; }
-.oracle-bottom-nav__edge--next { justify-content:flex-end; }
-.oracle-bottom-nav__neighbor { display:flex; align-items:center; min-width:0; max-width:100%; min-height:44px; padding:0 16px; color:var(--l-3); text-decoration:none; }
-.oracle-bottom-nav__name { overflow:hidden; font-family:var(--font-display); font-size:13px; line-height:1.15; text-overflow:ellipsis; white-space:nowrap; }
-.oracle-bottom-nav__constellation { display:grid; grid-template-columns:44px 66px 44px; align-items:stretch; justify-self:center; }
-.oracle-bottom-nav__glyph-link, .oracle-bottom-nav__current { display:flex; min-width:44px; min-height:44px; align-items:center; justify-content:center; color:inherit; text-decoration:none; }
-.oracle-bottom-nav__current { position:relative; overflow:hidden; flex-direction:column; border-right:1px solid var(--l-rule); border-left:1px solid var(--l-rule); }
+.oracle-bottom-nav__inner { display:flex; justify-content:space-between; align-items:stretch; min-height:44px; max-width:480px; margin:0 auto; padding:0 clamp(14px,5vw,26px); }
+.oracle-bottom-nav__slot { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:44px; padding:0 4px; color:var(--l-3); text-decoration:none; background:none; border:0; cursor:pointer; font:inherit; transition:color .25s; }
+.oracle-bottom-nav__slot:hover { color:var(--accent); }
+.oracle-bottom-nav__slot--muted { color:var(--l-3); opacity:.4; cursor:default; }
+.oracle-bottom-nav__label { font-family:var(--font-ui); font-size:10px; line-height:1; letter-spacing:.16em; text-transform:uppercase; white-space:nowrap; }
+/* Centre anchor: the code number over "All 64", framed by hairlines so it
+   reads as the still point the other four are measured from. */
+.oracle-bottom-nav__current { position:relative; overflow:hidden; gap:3px; border-right:1px solid var(--l-rule); border-left:1px solid var(--l-rule); }
 .oracle-bottom-nav__current::after { position:absolute; right:0; bottom:0; left:0; height:2px; background:var(--accent); content:""; transform:scaleX(0); transform-origin:left; }
 .oracle-bottom-nav__current.is-holding::after { transform:scaleX(1); transition:transform 650ms linear; }
-.oracle-bottom-nav__number { font-family:var(--font-display); font-size:18px; line-height:1; }
-.oracle-bottom-nav__all { margin-top:4px; font-family:var(--font-ui); font-size:9px; line-height:1; letter-spacing:.18em; text-transform:uppercase; }
-@media (max-width:560px) {
-  .oracle-bottom-nav__inner { grid-template-columns:minmax(0,1fr) 154px minmax(0,1fr); }
-  .oracle-bottom-nav__neighbor { padding:0 8px; }
-  .oracle-bottom-nav__name { font-size:11px; }
-}
-@media (max-width:374px) {
-  .oracle-bottom-nav__inner { grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr); }
-  .oracle-bottom-nav__constellation { grid-template-columns:40px 62px 40px; }
-  .oracle-bottom-nav__neighbor { padding-inline:6px; }
-  .oracle-bottom-nav__name { font-size:10px; }
+.oracle-bottom-nav__current .oracle-bottom-nav__label { color:var(--l-3); }
+.oracle-bottom-nav__current:hover .oracle-bottom-nav__label { color:var(--accent); }
+.oracle-bottom-nav__number { font-family:var(--font-display); font-size:15px; line-height:1; color:var(--l-1); }
+@media (max-width:400px) {
+  .oracle-bottom-nav__label { font-size:9px; letter-spacing:.1em; }
+  .oracle-bottom-nav__slot { padding:0 2px; }
 }
 @media (prefers-reduced-motion:reduce) { .oracle-bottom-nav__current.is-holding::after { transition-duration:650ms; } }

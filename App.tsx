@@ -4,6 +4,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 const UniversalLanguageIndex = lazy(() => import('./components/oracle/entry/OracleEntryPage'));
 const UniversalLanguageCard = lazy(() => import('./components/UniversalLanguageCard'));
 const OracleGateway = lazy(() => import('./components/OracleGateway'));
+const FamilyReveal = lazy(() => import('./components/FamilyReveal'));
 const OracleSystems = lazy(() => import('./components/OracleSystems'));
 const AtlasPage = lazy(() => import('./components/AtlasPage'));
 const AdminLogin = lazy(() => import('./components/AdminLogin'));
@@ -96,6 +97,7 @@ const AppInner: React.FC = () => {
 
                 {/* Gateway — the QR-arrival orbit screen, still reachable directly */}
                 <Route path="/gateway" element={<OracleGateway />} />
+                <Route path="/family" element={<FamilyReveal />} />
 
                 {/* The Systems — educational page about I Ching / Gene Keys / Human Design */}
                 <Route path="/the-systems" element={<OracleSystems />} />
