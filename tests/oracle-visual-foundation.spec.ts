@@ -60,3 +60,22 @@ test('reveals content immediately for reduced motion', async ({ page }) => {
   await expect(reveal).toHaveCSS('opacity', '1');
   await expect(reveal).toHaveCSS('transform', 'none');
 });
+
+test('keeps below-fold sections armed until they approach the viewport', async ({ page }) => {
+  await openReading(page);
+  await expect(page.locator('section[data-chapter="ul"]')).toBeVisible();
+  const blocks = page.locator('section[data-chapter="ul"] > div > *');
+  const count = await blocks.count();
+  expect(count).toBeGreaterThan(2);
+  const belowFold = blocks.nth(count - 1);
+
+  await page.waitForTimeout(2100);
+  const before = await belowFold.evaluate((element) => ({
+    opacity: getComputedStyle(element).opacity,
+    top: element.getBoundingClientRect().top,
+    viewport: window.innerHeight,
+  }));
+
+  expect(before.top).toBeGreaterThan(before.viewport);
+  expect(before.opacity).toBe('0');
+});

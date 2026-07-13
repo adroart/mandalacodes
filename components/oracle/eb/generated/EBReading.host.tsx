@@ -43,7 +43,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   panelEls = new Map<string, any>();
   ivEls = new Map<string, any>();
   ivcEls = new Map<string, any>();
-  observer: any; revealObs: any; glyphObs: any; revealFallback: any; repositionNav: any; onKey: any;
+  observer: any; revealObs: any; glyphObs: any; repositionNav: any; onKey: any;
   visibility: any;
 
   state = {
@@ -173,13 +173,10 @@ export class EBReadingHost extends React.Component<HostProps, any> {
 
     const reduce = !!this.props.reduceMotion;
     if (this.rootEl) {
-      // The reading is a horizontal swipe stage: off-screen panels never
-      // vertically intersect the viewport, so a viewport-rooted observer would
-      // strand panels 2-6 at opacity 0 forever. Root the observers to the STAGE
-      // so a panel reveals when it scrolls into the stage horizontally.
+      // Match Teajia's viewport-rooted reveal. Horizontally off-screen panels
+      // remain armed and reveal when navigation brings them into the viewport.
       const prose = this.rootEl.querySelector('section[data-chapter="ul"] > div > div[style*="flex-direction: column"] > p');
       if (prose) prose.setAttribute('data-oracle-reading-prose', '');
-      const obsRoot = this.stageEl || null;
       const reveal = Array.from(this.rootEl.querySelectorAll('section[data-chapter] > div > *')) as HTMLElement[];
       const glyphs = Array.from(this.rootEl.querySelectorAll('[data-glyph]')) as HTMLElement[];
       const showAll = () => {
@@ -189,9 +186,10 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       reveal.forEach((el) => el.setAttribute('data-oracle-reveal', ''));
       if (reduce || typeof IntersectionObserver === 'undefined') showAll();
       else {
+      try {
       this.revealObs = new IntersectionObserver((ents) => {
         ents.forEach((en: any) => { if (en.isIntersecting) { const el = en.target; el.style.opacity = '1'; el.style.transform = 'none'; this.revealObs.unobserve(el); } });
-      }, { root: obsRoot, threshold: 0.08, rootMargin: '0px 0px -7% 0px' });
+      }, { threshold: 0.08, rootMargin: '0px 0px -7% 0px' });
       reveal.forEach((el) => {
         el.style.opacity = '0'; el.style.transform = 'translateY(26px)';
         el.style.transition = 'opacity 900ms cubic-bezier(.22,.61,.36,1), transform 900ms cubic-bezier(.22,.61,.36,1)';
@@ -199,21 +197,13 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       });
       this.glyphObs = new IntersectionObserver((ents) => {
         ents.forEach((en: any) => { if (en.isIntersecting) { const el = en.target; el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; this.glyphObs.unobserve(el); } });
-      }, { root: obsRoot, threshold: 0.2 });
+      }, { threshold: 0.2 });
       glyphs.forEach((el) => {
         el.style.clipPath = 'inset(0 0 100% 0)'; el.style.opacity = '0';
         el.style.transition = 'clip-path 900ms cubic-bezier(.22,.61,.36,1), opacity 600ms ease';
         this.glyphObs.observe(el);
       });
-      // Safety net: if the stage observer never fires for a panel (some browsers
-      // don't observe horizontally-scrolled descendants reliably), reveal
-      // everything after a short grace period so nothing stays blank.
-      this.revealFallback = window.setTimeout(() => {
-        try {
-          this.rootEl.querySelectorAll('section[data-chapter] > div > *').forEach((el: any) => { el.style.opacity = '1'; el.style.transform = 'none'; });
-          this.rootEl.querySelectorAll('[data-glyph]').forEach((el: any) => { el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; });
-        } catch (e) {}
-      }, 1800);
+      } catch (e) { showAll(); }
       }
     }
 
@@ -229,7 +219,6 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     if (this.observer) this.observer.disconnect();
     if (this.revealObs) this.revealObs.disconnect();
     if (this.glyphObs) this.glyphObs.disconnect();
-    if (this.revealFallback) window.clearTimeout(this.revealFallback);
     if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
     this.setBodyLock(false);
   }
