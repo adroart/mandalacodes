@@ -72,6 +72,27 @@ test('omits the visible drop cap', async ({ page }) => {
   expect(typography.ownColor).toBe(typography.parentColor);
 });
 
+test('keeps the chart prompt direct and visually subordinate to the hexagram', async ({ page }) => {
+  await openReading(page);
+  const prompt = page.locator('.ul-hero-box--chart');
+  await expect(prompt).toBeVisible();
+  await expect(prompt.locator('.ul-hero-box__eyebrow')).toHaveCount(0);
+  await expect(prompt.locator('.ul-hero-box__title')).toHaveText('Is this code in your chart?');
+  await expect(prompt.locator('.ul-hero-box__line')).toHaveText(
+    'See your birth chart and understand where all 64 codes land in the Oracle.',
+  );
+
+  const typeScale = await prompt.evaluate((element) => {
+    const glyph = element.querySelector<HTMLElement>('.ul-hero-hex__glyph')!;
+    const number = element.querySelector<HTMLElement>('.ul-hero-hex__num')!;
+    return {
+      glyph: parseFloat(getComputedStyle(glyph).fontSize),
+      number: parseFloat(getComputedStyle(number).fontSize),
+    };
+  });
+  expect(typeScale.number).toBeLessThanOrEqual(typeScale.glyph * 0.2);
+});
+
 test('shows one sticky document progress indicator', async ({ page }) => {
   await openReading(page);
   const nav = page.locator('[data-oracle-progress-nav]');
@@ -91,19 +112,30 @@ test('shows one sticky document progress indicator', async ({ page }) => {
   await expect(page.getByRole('navigation', { name: 'Reading by system' })).toBeHidden();
 });
 
-test('keeps the system rail generous on desktop and fluid on narrow screens', async ({ page }) => {
+test('matches the system rail typography to the primary navigation', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openReading(page);
   const rail = page.locator('.oracle-reading-progress__jumps');
   const ul = rail.getByRole('button', { name: 'Universal Language' });
+  const primaryNavLink = page.locator('.site-bar-root').getByRole('link', { name: 'Deck' });
 
   await expect(rail).toBeVisible();
   const desktop = await ul.evaluate((element) => {
     const styles = getComputedStyle(element);
-    return { width: element.getBoundingClientRect().width, height: element.getBoundingClientRect().height, fontSize: parseFloat(styles.fontSize) };
+    return {
+      width: element.getBoundingClientRect().width,
+      height: element.getBoundingClientRect().height,
+      fontFamily: styles.fontFamily,
+      fontSize: parseFloat(styles.fontSize),
+    };
+  });
+  const primary = await primaryNavLink.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return { fontFamily: styles.fontFamily, fontSize: parseFloat(styles.fontSize) };
   });
   expect(desktop.height).toBeGreaterThanOrEqual(60);
-  expect(desktop.fontSize).toBeGreaterThanOrEqual(15);
+  expect(desktop.fontFamily).toBe(primary.fontFamily);
+  expect(desktop.fontSize).toBeLessThanOrEqual(primary.fontSize);
   const desktopButtonGaps = await rail.getByRole('button').evaluateAll((buttons) => {
     const rects = buttons.map((button) => button.getBoundingClientRect());
     return rects.slice(1).map((rect, index) => Math.round(rect.left - rects[index].right));
