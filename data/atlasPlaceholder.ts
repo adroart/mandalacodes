@@ -38,11 +38,21 @@ interface PlaceholderPlacement {
   cityId: string;
   status: 'placed' | 'unawakened';
   claimOrdinal?: number;
+  /** A shared dream, so the placeholder also shows the map's dream layer.
+   *  Placeholder copy: replace with a real keeper's words at launch. */
+  intention?: string;
 }
 
 const PLACEHOLDER: PlaceholderPlacement[] = [
   { pieceId: 'UL-122', cityId: 'denpasar-id', status: 'placed' },
-  { pieceId: 'UL-114', cityId: 'lisbon-pt', status: 'placed', claimOrdinal: 1 },
+  {
+    pieceId: 'UL-114',
+    cityId: 'lisbon-pt',
+    status: 'placed',
+    claimOrdinal: 1,
+    intention:
+      'That whoever stands before this piece remembers they are allowed to begin again, quietly, without asking anyone for permission.',
+  },
   { pieceId: 'UL-129', cityId: 'tokyo-jp', status: 'unawakened' },
 ];
 
@@ -76,6 +86,7 @@ export function buildPlaceholderAtlasState(): PublicAtlasState {
       status: p.status,
       pieceType: 'mandala' as const,
       claimOrdinal: p.claimOrdinal,
+      intention: p.intention,
     };
   });
 
