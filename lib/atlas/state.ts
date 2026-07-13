@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { PublicAtlasState } from '../../types';
 import { buildSeedAtlasState } from '../../data/atlasSeed';
+// ── TEMPORARY PLACEHOLDER (remove at launch) ── see data/atlasPlaceholder.ts
+import { buildPlaceholderAtlasState } from '../../data/atlasPlaceholder';
 import { CITIES_BY_ID, formatPlaceLabel } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
 import { ulCardNumber } from '../../utils/universalLanguage';
@@ -14,6 +16,18 @@ import { ulCardNumber } from '../../utils/universalLanguage';
 let atlasStatePromise: Promise<PublicAtlasState> | null = null;
 
 export function loadAtlasState(): Promise<PublicAtlasState> {
+  // ── TEMPORARY PLACEHOLDER (remove at launch) ──
+  // Verification override: `?placeholder` on the URL forces the placeholder
+  // state, so Adrian can preview it locally where the dev server otherwise
+  // seeds 20 pieces. Guarded for SSR/no-window. Delete this block at launch.
+  if (
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).has('placeholder')
+  ) {
+    return Promise.resolve(buildPlaceholderAtlasState());
+  }
+  // ── end TEMPORARY PLACEHOLDER ──
+
   if (!atlasStatePromise) {
     atlasStatePromise = fetch('/api/atlas')
       .then(async (res) => {
@@ -22,7 +36,18 @@ export function loadAtlasState(): Promise<PublicAtlasState> {
         if (!body || body.ok !== true || !body.state) {
           throw new Error('atlas malformed');
         }
-        return body.state as PublicAtlasState;
+        const state = body.state as PublicAtlasState;
+        // ── TEMPORARY PLACEHOLDER (remove at launch) ──
+        // The live public mirror is not seeded yet: /api/atlas answers ok:true
+        // with zero pieces, which the error→seed fallback below never catches
+        // (it is a valid, empty body). Show three clearly-marked placeholder
+        // dots ONLY while the live count is exactly 0. This auto-hides the
+        // instant any real piece lands. Delete this block at launch.
+        if (state.pieces.length === 0) {
+          return buildPlaceholderAtlasState();
+        }
+        // ── end TEMPORARY PLACEHOLDER ──
+        return state;
       })
       .catch(() => buildSeedAtlasState());
   }

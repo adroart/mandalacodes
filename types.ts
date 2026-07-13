@@ -203,6 +203,11 @@ export interface PublicAtlasState {
     intention?: string;
   }>;
   cities: CityCentroid[];
+  /** TEMPORARY LAUNCH PLACEHOLDER flag. Set true only by
+   *  buildPlaceholderAtlasState() (see data/atlasPlaceholder.ts) so the HUD can
+   *  show a "these are placeholder pieces" caption. Real ledger/seed state
+   *  never sets this. Remove this field when the placeholder file is deleted. */
+  placeholder?: boolean;
   /** Per-piece chain-tip hashes, keyed `pieceId:editionNumber ?? 0` → the
    *  last event's `hash` on that chain. This is the Continuity plank: the
    *  public GitHub mirror's commit history over these tips is the actual
