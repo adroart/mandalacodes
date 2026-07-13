@@ -16,7 +16,7 @@ export interface EBData {
   shareText: string;
   moving: { n: number; image: string; becomes: string; text: string }[];
   reldata: Record<string, { kicker: string; kind: string; name: string; body: string[] }>;
-  kin: { key: string; x: number; y: number; kind: string; glyph: string; font: string; size: string; dim: string; svgR: number; label: string }[];
+  kin: { key: string; x: number; y: number; kind: string; glyph: React.ReactNode; font: string; size: string; dim: string; svgR: number; label: string }[];
   overlays: Record<string, { kicker: string; title: string; sub: string; gratitude: string; paras: string[] }>;
   // UL panel reading + invocation, I Ching reading/judgement/image/combination, GK, HD, Body — bound text
   text: Record<string, any>;
