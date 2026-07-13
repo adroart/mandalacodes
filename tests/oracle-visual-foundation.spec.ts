@@ -103,8 +103,16 @@ test('keeps the system rail generous on desktop and fluid on narrow screens', as
     return { width: element.getBoundingClientRect().width, height: element.getBoundingClientRect().height, fontSize: parseFloat(styles.fontSize) };
   });
   expect(desktop.width).toBeGreaterThan(175);
-  expect(desktop.height).toBeGreaterThanOrEqual(52);
-  expect(desktop.fontSize).toBeGreaterThanOrEqual(10);
+  expect(desktop.height).toBeGreaterThanOrEqual(60);
+  expect(desktop.fontSize).toBeGreaterThanOrEqual(12);
+
+  const progressTrack = page.locator('.oracle-reading-progress__track');
+  const trackPosition = await progressTrack.evaluate((element) => {
+    const track = element.getBoundingClientRect();
+    const railBounds = element.parentElement!.getBoundingClientRect();
+    return { distanceFromTop: Math.abs(track.top - railBounds.top), distanceFromBottom: Math.abs(track.bottom - railBounds.bottom) };
+  });
+  expect(trackPosition.distanceFromTop).toBeLessThan(trackPosition.distanceFromBottom);
 
   await page.setViewportSize({ width: 320, height: 760 });
   await expect(rail).toBeVisible();
