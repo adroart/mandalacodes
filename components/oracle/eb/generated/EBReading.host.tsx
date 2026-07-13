@@ -45,7 +45,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   panelEls = new Map<string, any>();
   ivEls = new Map<string, any>();
   ivcEls = new Map<string, any>();
-  observer: any; revealObs: any; glyphObs: any; revealFallback: any; repositionNav: any; onKey: any;
+  observer: any; revealObs: any; glyphObs: any; repositionNav: any; updateReadingProgress: any; onKey: any;
   visibility: any;
   invocationMount: HTMLElement | null = null;
   invocationRoot: Root | null = null;
@@ -65,6 +65,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     index: false,
     indexFocus: 1,
     relSel: 'pair',
+    readingProgress: 0,
   };
 
   // Card-specific constants now come from props.data (was hardcoded Card 1).
@@ -174,6 +175,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     }
 
     if (this.stageEl) {
+      this.stageEl.setAttribute('data-oracle-flow', '');
       this.observer = new IntersectionObserver((entries) => {
         entries.forEach((en: any) => {
           const key = en.target.dataset.chapter;
@@ -183,20 +185,20 @@ export class EBReadingHost extends React.Component<HostProps, any> {
         let best: any = null, bestR = 0;
         Object.keys(this.visibility || {}).forEach((k) => { if (this.visibility[k] > bestR) { bestR = this.visibility[k]; best = k; } });
         if (best && bestR > 0.5 && best !== this.state.active) { this.setState({ active: best }); this.updateNav(best); }
-      }, { root: this.stageEl, threshold: [0, 0.25, 0.5, 0.75, 1] });
+      }, { root: null, rootMargin: '-18% 0px -62% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] });
       this.panelEls.forEach((el) => { if (el) this.observer.observe(el); });
     }
 
     const reduce = !!this.props.reduceMotion;
     if (this.rootEl) {
-      // The reading is a horizontal swipe stage: off-screen panels never
-      // vertically intersect the viewport, so a viewport-rooted observer would
-      // strand panels 2-6 at opacity 0 forever. Root the observers to the STAGE
-      // so a panel reveals when it scrolls into the stage horizontally.
-      const prose = this.rootEl.querySelector('section[data-chapter="ul"] > div > div[style*="flex-direction: column"] > p');
-      if (prose) prose.setAttribute('data-oracle-reading-prose', '');
-      const obsRoot = this.stageEl || null;
-      const reveal = Array.from(this.rootEl.querySelectorAll('section[data-chapter] > div > *')) as HTMLElement[];
+      // Match Teajia's viewport-rooted reveal. Horizontally off-screen panels
+      // remain armed and reveal when navigation brings them into the viewport.
+      const prose = this.rootEl.querySelector('section[data-chapter="ul"] > div > div[style*="flex-direction: column"]');
+      if (prose) {
+        prose.setAttribute('data-reading-prose', '');
+        prose.setAttribute('data-oracle-reading-prose', '');
+      }
+      const reveal = Array.from(this.rootEl.querySelectorAll('section[data-chapter] > div > :is(p,h2,h3,div,details,figure)')) as HTMLElement[];
       const glyphs = Array.from(this.rootEl.querySelectorAll('[data-glyph]')) as HTMLElement[];
       const showAll = () => {
         reveal.forEach((el) => { el.style.opacity = '1'; el.style.transform = 'none'; });
@@ -205,9 +207,10 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       reveal.forEach((el) => el.setAttribute('data-oracle-reveal', ''));
       if (reduce || typeof IntersectionObserver === 'undefined') showAll();
       else {
+      try {
       this.revealObs = new IntersectionObserver((ents) => {
         ents.forEach((en: any) => { if (en.isIntersecting) { const el = en.target; el.style.opacity = '1'; el.style.transform = 'none'; this.revealObs.unobserve(el); } });
-      }, { root: obsRoot, threshold: 0.08, rootMargin: '0px 0px -7% 0px' });
+      }, { threshold: 0.08, rootMargin: '0px 0px -7% 0px' });
       reveal.forEach((el) => {
         el.style.opacity = '0'; el.style.transform = 'translateY(26px)';
         el.style.transition = 'opacity 900ms cubic-bezier(.22,.61,.36,1), transform 900ms cubic-bezier(.22,.61,.36,1)';
@@ -215,28 +218,28 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       });
       this.glyphObs = new IntersectionObserver((ents) => {
         ents.forEach((en: any) => { if (en.isIntersecting) { const el = en.target; el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; this.glyphObs.unobserve(el); } });
-      }, { root: obsRoot, threshold: 0.2 });
+      }, { threshold: 0.2 });
       glyphs.forEach((el) => {
         el.style.clipPath = 'inset(0 0 100% 0)'; el.style.opacity = '0';
         el.style.transition = 'clip-path 900ms cubic-bezier(.22,.61,.36,1), opacity 600ms ease';
         this.glyphObs.observe(el);
       });
-      // Safety net: if the stage observer never fires for a panel (some browsers
-      // don't observe horizontally-scrolled descendants reliably), reveal
-      // everything after a short grace period so nothing stays blank.
-      this.revealFallback = window.setTimeout(() => {
-        try {
-          this.rootEl.querySelectorAll('section[data-chapter] > div > *').forEach((el: any) => { el.style.opacity = '1'; el.style.transform = 'none'; });
-          this.rootEl.querySelectorAll('[data-glyph]').forEach((el: any) => { el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; });
-        } catch (e) {}
-      }, 1800);
+      } catch (e) { showAll(); }
       }
     }
 
     this.repositionNav = () => this.updateNav(this.state.active);
     window.addEventListener('resize', this.repositionNav);
+    this.updateReadingProgress = () => {
+      if (!this.rootEl) return;
+      const rect = this.rootEl.getBoundingClientRect();
+      const distance = Math.max(1, rect.height - window.innerHeight);
+      const progress = Math.max(0, Math.min(100, (-rect.top / distance) * 100));
+      if (Math.abs(progress - this.state.readingProgress) > 0.25) this.setState({ readingProgress: progress });
+    };
+    window.addEventListener('scroll', this.updateReadingProgress, { passive: true });
     if (document.fonts && (document.fonts as any).ready) (document.fonts as any).ready.then(() => this.repositionNav()).catch(() => {});
-    requestAnimationFrame(() => { this.updateNav(this.state.active); this.selectIv('hex'); });
+    requestAnimationFrame(() => { this.updateNav(this.state.active); this.updateReadingProgress(); this.selectIv('hex'); });
   }
 
   componentDidUpdate() {
@@ -248,12 +251,12 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     if (this.observer) this.observer.disconnect();
     if (this.revealObs) this.revealObs.disconnect();
     if (this.glyphObs) this.glyphObs.disconnect();
-    if (this.revealFallback) window.clearTimeout(this.revealFallback);
     if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
     this.invocationRoot?.unmount();
     this.invocationRoot = null;
     this.invocationMount?.remove();
     this.invocationMount = null;
+    if (this.updateReadingProgress) window.removeEventListener('scroll', this.updateReadingProgress);
     this.setBodyLock(false);
   }
 
@@ -267,9 +270,8 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     this.setState({ active: key });
     this.updateNav(key);
     const panel = this.panelEls.get(key);
-    if (this.stageEl && panel) {
-      this.stageEl.scrollTo({ left: panel.offsetLeft, behavior: this.props.reduceMotion ? 'auto' : 'smooth' });
-      const y = this.stageEl.getBoundingClientRect().top + window.scrollY - 76;
+    if (panel) {
+      const y = panel.getBoundingClientRect().top + window.scrollY - 112;
       const target = Math.max(0, y);
       const se = document.scrollingElement || document.documentElement;
       se.scrollTop = target; window.scrollTo(0, target);
@@ -655,9 +657,30 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     // renders unstyled (the root cause of the "looks nothing like it" bug).
     const palette = this.props.palette ?? 'daybook';
     const motion = this.props.reduceMotion ? 'off' : 'on';
+    const systems = [
+      ['ul', 'Universal Language', 'UL'],
+      ['iching', 'I Ching', 'I Ching'],
+      ['genekeys', 'Gene Keys', 'Gene Keys'],
+      ['humandesign', 'Human Design', 'Human Design'],
+      ['body', 'Body', 'Body'],
+      ['relations', 'Relations', null],
+    ];
     return (
-      <div className="eb-reading" data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}
-        style={{ paddingTop: 'var(--nav-height, 64px)', paddingBottom: 44 }}>
+      <div className="eb-reading" data-oracle-reader data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
+        <nav className="oracle-reading-progress" data-oracle-progress-nav aria-label="Oracle reading">
+          <div className="oracle-reading-progress__jumps" role="navigation" aria-label="Jump to system">
+            {systems.map(([key, label, text]) => (
+              <button key={key} type="button" aria-label={label} data-active={this.state.active === key ? 'true' : 'false'} onClick={() => this.go(key)}>
+                {key === 'relations' ? (
+                  <svg data-system-icon="connection" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.4 14.6-1.2 1.2a3.4 3.4 0 0 1-4.8-4.8l3.1-3.1a3.4 3.4 0 0 1 4.8 0m3.3 1.5 1.2-1.2a3.4 3.4 0 0 1 4.8 4.8l-3.1 3.1a3.4 3.4 0 0 1-4.8 0M8.8 15.2l6.4-6.4"/></svg>
+                ) : text}
+              </button>
+            ))}
+          </div>
+          <div className="oracle-reading-progress__track" role="progressbar" aria-label="Reading progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(this.state.readingProgress)}>
+            <span data-oracle-progress-fill style={{ transform: `scaleX(${this.state.readingProgress / 100})` }} />
+          </div>
+        </nav>
         <EBReadingMarkup vals={this.renderVals()} />
       </div>
     );

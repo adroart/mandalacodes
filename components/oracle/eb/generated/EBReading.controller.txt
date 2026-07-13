@@ -222,10 +222,10 @@ class Component extends DCLogic {
       reveal.forEach((el) => el.setAttribute('data-oracle-reveal', ''));
       if (reduce || typeof IntersectionObserver === 'undefined') showAll();
       else {
-        const obsRoot = this.stageEl || null;
+        try {
         this.revealObs = new IntersectionObserver((ents) => {
           ents.forEach((en) => { if (en.isIntersecting) { const el = en.target; el.style.opacity = '1'; el.style.transform = 'none'; this.revealObs.unobserve(el); } });
-        }, { root: obsRoot, threshold: 0.08, rootMargin: '0px 0px -7% 0px' });
+        }, { threshold: 0.08, rootMargin: '0px 0px -7% 0px' });
         reveal.forEach((el) => {
           el.style.opacity = '0'; el.style.transform = 'translateY(26px)';
           el.style.transition = 'opacity 900ms cubic-bezier(.22,.61,.36,1), transform 900ms cubic-bezier(.22,.61,.36,1)';
@@ -233,13 +233,13 @@ class Component extends DCLogic {
         });
         this.glyphObs = new IntersectionObserver((ents) => {
           ents.forEach((en) => { if (en.isIntersecting) { const el = en.target; el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; this.glyphObs.unobserve(el); } });
-        }, { root: obsRoot, threshold: 0.2 });
+        }, { threshold: 0.2 });
         glyphs.forEach((el) => {
           el.style.clipPath = 'inset(0 0 100% 0)'; el.style.opacity = '0';
           el.style.transition = 'clip-path 900ms cubic-bezier(.22,.61,.36,1), opacity 600ms ease';
           this.glyphObs.observe(el);
         });
-        this.revealFallback = setTimeout(showAll, 1800);
+        } catch (e) { showAll(); }
       }
     }
 
@@ -257,7 +257,6 @@ class Component extends DCLogic {
     if (this.observer) this.observer.disconnect();
     if (this.revealObs) this.revealObs.disconnect();
     if (this.glyphObs) this.glyphObs.disconnect();
-    if (this.revealFallback) clearTimeout(this.revealFallback);
     if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
     this.setBodyLock(false);
   }
