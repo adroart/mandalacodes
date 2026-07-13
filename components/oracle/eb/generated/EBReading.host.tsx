@@ -490,7 +490,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const isCurrent = focus === this.CURRENT_CODE;
     const action = isCurrent
       ? React.createElement('button', { onClick: () => { this.setState({ index: false }); this.go('iching'); }, style: { pointerEvents: 'auto', marginTop: '8px', fontFamily: 'var(--sans)', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#16130E', background: 'var(--accent-d)', border: 'none', cursor: 'pointer', padding: '9px 16px' } }, 'Open the reading')
-      : React.createElement('a', { href: `/universal-language/${focus}`, style: { pointerEvents: 'auto', marginTop: '6px', fontFamily: 'var(--sans)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(236,228,213,0.6)', textDecoration: 'none' } }, 'Open Code ' + focus);
+      : React.createElement('a', { href: `/universal-language/${focus}?ref=index`, style: { pointerEvents: 'auto', marginTop: '6px', fontFamily: 'var(--sans)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(236,228,213,0.6)', textDecoration: 'none' } }, 'Open Code ' + focus);
     return React.createElement('div', { style: { textAlign: 'center', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', maxWidth: '150px' } },
       React.createElement('div', { style: { fontFamily: 'var(--sans)', fontSize: '9px', letterSpacing: '0.24em', textTransform: 'uppercase', color: 'var(--accent-d)' } }, isCurrent ? 'This card' : 'Code ' + focus),
       React.createElement('div', { style: { fontFamily: 'var(--serif)', fontSize: '44px', lineHeight: 1, color: '#ECE4D5' } }, String(focus)),
