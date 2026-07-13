@@ -18,6 +18,7 @@ import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
 import SaveToCollectionButton from './account/SaveToCollectionButton';
 import { ulPieceForCard } from '../utils/universalLanguage';
+import { hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
 import { useCardPlacement } from '../lib/atlas/state';
 import './oracle/eb/eb-template.css';
 
@@ -412,15 +413,44 @@ function buildKin(card: any, syn?: CardSynthesis, exp?: any): EBData['kin'] {
   const pairCard = pairNum != null ? CARD_BY_NUMBER.get(pairNum) : undefined;
   const sibs = card.codon_ring_siblings ?? [];
   const ringCard = sibs.length ? CARD_BY_NUMBER.get(sibs[0]) : undefined;
-  const glyph = (n?: number) => (n != null ? (HEXAGRAM_CHINESE[n]?.char ?? String(n)) : '·');
+  const pairHexagram = pairCard ? (
+    <HexagramSVG
+      upper={pairCard.iching.upper_trigram.symbol}
+      lower={pairCard.iching.lower_trigram.symbol}
+      color="currentColor"
+      width={27}
+    />
+  ) : '·';
+  const tarotCard = rel?.tarot?.card ?? syn?.reference?.tarot_card ?? card.ring_tarot ?? '';
+  const letterName = rel?.hebrew_letter?.letter ?? syn?.reference?.hebrew_letter ?? '';
+  const letterGlyph = hebrewLetterGlyph(letterName);
   return [
-    { key: 'pair', x: 24, y: 50, kind: 'kin', glyph: glyph(pairCard?.number), font: 'var(--cjk)', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: pairCard ? `UL ${pairCard.number}` : 'Pair' },
-    { key: 'ring14', x: 76, y: 50, kind: 'kin', glyph: glyph(ringCard?.number), font: 'var(--cjk)', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: ringCard ? `UL ${ringCard.number}` : 'Ring' },
+    { key: 'pair', x: 24, y: 50, kind: 'kin', glyph: pairHexagram, font: 'var(--serif)', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: pairCard ? `UL ${pairCard.number}` : 'Pair' },
+    { key: 'ring14', x: 76, y: 50, kind: 'kin', glyph: <CodonRingGlyph />, font: 'var(--serif)', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: ringCard ? `UL ${ringCard.number}` : 'Ring' },
     { key: 'sky', x: 21.7, y: 21.7, kind: 'corr', glyph: '✦', font: 'var(--serif)', size: 'clamp(22px,5.6vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: syn?.reference?.astrology ?? 'Sky' },
-    { key: 'tarot', x: 78.3, y: 21.7, kind: 'corr', glyph: 'XIV', font: 'var(--serif)', size: 'clamp(15px,4vw,19px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: syn?.reference?.tarot_card ?? card.ring_tarot ?? 'Tarot' },
-    { key: 'hebrew', x: 21.7, y: 78.3, kind: 'corr', glyph: syn?.reference?.hebrew_letter ?? 'ס', font: 'var(--serif)', size: 'clamp(23px,6vw,30px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: syn?.reference?.hebrew_letter ?? 'Letter' },
+    { key: 'tarot', x: 78.3, y: 21.7, kind: 'corr', glyph: tarotNumeral(tarotCard) || '·', font: 'var(--serif)', size: 'clamp(15px,4vw,19px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: tarotCard || 'Tarot' },
+    { key: 'hebrew', x: 21.7, y: 78.3, kind: 'corr', glyph: letterGlyph === 'ו' ? <VavGlyph /> : letterGlyph || '·', font: 'var(--serif)', size: 'clamp(23px,6vw,30px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: letterName || 'Letter' },
     { key: 'immortal', x: 78.3, y: 78.3, kind: 'corr', glyph: '笛', font: 'var(--cjk)', size: 'clamp(22px,5.8vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: 'Immortal' },
   ];
+}
+
+function CodonRingGlyph() {
+  return (
+    <svg width="31" height="31" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <circle cx="16" cy="10.5" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="11" cy="19.5" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="21" cy="19.5" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="16" cy="16" r="2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function VavGlyph() {
+  return (
+    <svg width="24" height="34" viewBox="0 0 36 52" fill="none" aria-hidden="true">
+      <path d="M8 6h17c4.42 0 8 3.58 8 8v32h-8V16a2 2 0 0 0-2-2H8V6Z" fill="currentColor" />
+    </svg>
+  );
 }
 
 // System overlays are the same three short essays for every card (about the systems,
