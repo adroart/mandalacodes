@@ -12,6 +12,7 @@ export interface SelectedPiece {
   placedAt?: string;      // ISO of most recent placed/moved event
   cardNumber?: number;    // Universal Language code 1–64, when the piece carries one
   claimOrdinal?: number;  // Founding Lights ordinal (1 = first light) when claimed
+  coverImage?: string;    // Cloudinary public id of the artwork itself
 }
 
 export interface KinEntry {

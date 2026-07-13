@@ -9,7 +9,7 @@ export default defineConfig({
   retries: 0,
   reporter: 'list',
   use: {
-    baseURL: 'http://localhost:2222',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:2222',
     trace: 'off',
   },
   projects: [

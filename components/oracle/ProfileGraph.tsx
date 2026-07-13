@@ -176,10 +176,11 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
 
   const open = (k: ProfileKey) => setSelected((c) => (c === k ? null : k));
   const goCard = (k: ProfileKey) => navigate(`/universal-language/${profile[k].gate}`);
-
-  // Card placement: anchored to the selected sphere, flipped to whichever
-  // side has room. Positions are in % of the chart box (viewBox 0..1-ish).
-  const cardSide = selected ? (POSITIONS_BY_KEY[selected].x < 0.5 ? 'right' : 'left') : 'right';
+  // A click pins the explanation. Hover only previews while nothing is pinned.
+  const detailKey: ProfileKey = selected ?? hovered ?? 'lifesWork';
+  const detailMeta = POSITIONS_BY_KEY[detailKey];
+  const detailGate = profile[detailKey];
+  const detailCard = detailGate ? CARD_BY_NUMBER.get(detailGate.gate) : undefined;
 
   const FILTERS: { key: Filter; label: string }[] = [
     { key: 'all', label: 'All' },
@@ -190,26 +191,9 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
 
   return (
     <div className="pg" ref={wrapRef}>
-      {/* ── Top bar: sequence filter ─────────────────────────────────── */}
-      <div className="pg__topbar">
-        <div className="pg__filter" role="group" aria-label="Focus a sequence">
-          {FILTERS.map((f) => (
-            <button
-              key={f.key}
-              className={`pg__filter-btn${filter === f.key ? ' is-on' : ''}`}
-              style={f.key !== 'all' ? { ['--c' as string]: SEQUENCE_COLOR[f.key as ProfileSequence].edge } : undefined}
-              onClick={() => setFilter(f.key)}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Workspace: rail + canvas ─────────────────────────────────── */}
+      {/* ── Workspace: path + centred chart + connected detail ─────── */}
       <div className="pg__work">
-        {/* Left rail: the 11 spheres + legend */}
-        <aside className="pg__rail">
+        <aside className="pg__rail pg__rail--path">
           <div className="pg__rail-title">The Path</div>
           <ul className="pg__rail-list">
             {PROFILE_POSITIONS.map((meta) => {
@@ -224,6 +208,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                 <li key={meta.key}>
                   <button
                     className={`pg__rail-row${on ? ' is-on' : ''}`}
+                    aria-pressed={selected === meta.key}
                     onClick={() => open(meta.key)}
                     onMouseEnter={() => setHovered(meta.key)}
                     onMouseLeave={() => setHovered((c) => (c === meta.key ? null : c))}
@@ -236,12 +221,6 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
               );
             })}
           </ul>
-          <div className="pg__legend">
-            <span><i style={{ background: SEQUENCE_COLOR.activation.core }} />Activation</span>
-            <span><i style={{ background: SEQUENCE_COLOR.venus.core }} />Venus</span>
-            <span><i style={{ background: SEQUENCE_COLOR.pearl.core }} />Pearl</span>
-            <span><i className="pg__legend-split" />shared</span>
-          </div>
         </aside>
 
         {/* Canvas: the mandala fills the centre */}
@@ -360,38 +339,33 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
           </div>{/* .pg__pan */}
           </div>{/* .pg__viewport */}
 
-          {/* Anchored card: opens beside the selected sphere */}
-          {selected && (() => {
-            const meta = POSITIONS_BY_KEY[selected];
-            const gl = profile[selected];
-            const card = gl ? CARD_BY_NUMBER.get(gl.gate) : undefined;
-            // position in % of the canvas box, from the orb's normalized x/y
-            const topPct = `${meta.y * 100}%`;
-            const style: React.CSSProperties = cardSide === 'right'
-              ? { left: `${meta.x * 100}%`, top: topPct, marginLeft: 36 }
-              : { right: `${(1 - meta.x) * 100}%`, top: topPct, marginRight: 36 };
-            return (
-              <div className={`pg__card pg__card--${cardSide}`} style={style} role="dialog" aria-label={`${meta.label} detail`}>
-                <button className="pg__card-close" onClick={() => setSelected(null)} aria-label="Close">×</button>
-                <div className="pg__card-seq">{SEQUENCE_LABEL[meta.sequence]}</div>
-                <div className="pg__card-head">
-                  <span className="pg__card-name">{meta.label}</span>
-                  {gl && <span className="pg__card-gate">{gl.gate}.{gl.line}</span>}
-                </div>
-                {card && <div className="pg__card-art">{card.card_name}</div>}
-                {card?.gene_keys?.gift && (
-                  <div className="pg__card-triad">
-                    <span className="pg__gk pg__gk--siddhi">{card.gene_keys.siddhi}</span>
-                    <span className="pg__gk pg__gk--gift">{card.gene_keys.gift}</span>
-                    <span className="pg__gk pg__gk--shadow">{card.gene_keys.shadow}</span>
-                  </div>
-                )}
-                <p className="pg__card-role">{meta.role}</p>
-                <button className="pg__card-open" onClick={() => goCard(selected)}>Open the card →</button>
-              </div>
-            );
-          })()}
         </div>
+
+        <aside className="pg__rail pg__rail--detail" aria-live="polite">
+          <div className="pg__filter" role="group" aria-label="Focus a sequence">
+            {FILTERS.map((f) => (
+              <button
+                key={f.key}
+                className={`pg__filter-btn${filter === f.key ? ' is-on' : ''}`}
+                aria-pressed={filter === f.key}
+                style={f.key !== 'all' ? { ['--c' as string]: SEQUENCE_COLOR[f.key as ProfileSequence].edge } : undefined}
+                onClick={() => setFilter(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <div className="pg__detail">
+            <div className="pg__detail-seq">{SEQUENCE_LABEL[detailMeta.sequence]}</div>
+            <div className="pg__detail-head">
+              <h2 className="pg__detail-name">{detailMeta.label}</h2>
+              <span className="pg__detail-gate">{detailGate.gate}.{detailGate.line}</span>
+            </div>
+            {detailCard && <div className="pg__detail-art">{detailCard.card_name}</div>}
+            <p className="pg__detail-role">{detailMeta.role}</p>
+            <button className="pg__detail-open" onClick={() => goCard(detailKey)}>Open the card →</button>
+          </div>
+        </aside>
       </div>
 
       {/* ── Mobile fallback: grouped list ────────────────────────────── */}
@@ -435,16 +409,16 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
       <style>{`
         .pg { display: block; }
 
-        /* ── top bar (sequence filter — shown at every width now) ── */
-        .pg__topbar { display: flex; justify-content: center; margin-bottom: 20px; }
-        .pg__filter { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid color-mix(in oklab, var(--color-wood-600) 16%, transparent); border-radius: 999px; max-width: 100%; flex-wrap: wrap; justify-content: center; }
+        /* ── Sequence controls: part of the right-hand reading rail ── */
+        .pg__filter { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 6px; padding-bottom: 14px; border-bottom: 1px solid color-mix(in oklab, var(--color-wood-600) 14%, transparent); max-width: 100%; }
         .pg__filter-btn {
-          font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
-          padding: 7px 16px; border: 0; border-radius: 999px; background: transparent; color: var(--color-wood-700); cursor: pointer;
+          font-family: 'Lato', Helvetica, sans-serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+          min-height: 28px; padding: 5px 7px; border: 0; border-radius: 999px; background: transparent; color: var(--color-wood-700); cursor: pointer;
           transition: background 0.2s, color 0.2s;
         }
         .pg__filter-btn:hover { color: var(--color-wood-900); }
         .pg__filter-btn.is-on { background: var(--c, var(--color-bronze-600)); color: var(--color-paper-50); }
+        .pg__filter-btn:focus-visible, .pg__rail-row:focus-visible, .pg__detail-open:focus-visible, .pg__zoom-btn:focus-visible { outline: 2px solid var(--color-bronze-400); outline-offset: 2px; }
 
         /* ── orbs / channels (shared by desktop canvas) ── */
         .pg__channel { stroke-width: 1.5; opacity: 0.5; transition: opacity 0.3s, stroke-width 0.3s; }
@@ -471,14 +445,12 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .pg__gk--gift   { color: var(--color-wood-800); }
         .pg__gk--shadow { color: color-mix(in oklab, #a04a32 80%, var(--color-wood-700)); }
 
-        /* ── workspace (rail + canvas) — shown at every width ──
-           Narrow: single column, rail stacked above the chart.
-           Wide (≥880px): two columns, rail beside the chart. */
+        /* ── workspace: balanced rails keep the graph on the page axis ── */
         .pg__work {
           display: flex;
           flex-direction: column;
-          gap: 24px;
-          max-width: 1500px;
+          gap: 20px;
+          max-width: 1320px;
           margin: 0 auto;
         }
         .pg__svg { width: 100%; height: auto; overflow: visible; display: block; }
@@ -513,7 +485,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .pg__zoom-btn:disabled { opacity: 0.55; cursor: default; }
 
         /* Rail: a flowing list of the 11 positions above the chart on narrow. */
-        .pg__rail { align-self: start; }
+        .pg__rail { align-self: start; width: 100%; }
         .pg__rail-title { font-family: Cinzel, Palatino, serif; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 12px; }
         .pg__rail-list { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1px; }
         .pg__rail-row {
@@ -530,60 +502,37 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .pg__legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
         .pg__legend-split { background: linear-gradient(90deg, #3f8f4e 0 50%, #3f7fb5 50% 100%); }
 
+        .pg__detail { padding-top: 16px; }
+        .pg__detail-seq { font-family: Cinzel, Palatino, serif; font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 8px; }
+        .pg__detail-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+        .pg__detail-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; line-height: 1.05; color: var(--color-wood-900); margin: 0; }
+        .pg__detail-gate { font-family: 'Lato', Helvetica, sans-serif; font-size: 10px; letter-spacing: 0.12em; color: var(--color-bronze-600); }
+        .pg__detail-art { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-style: italic; color: var(--color-wood-700); margin-top: 5px; }
+        .pg__detail-role { font-family: 'Cormorant Garamond', serif; font-size: 15px; line-height: 1.45; color: var(--color-wood-700); margin: 13px 0 0; }
+        .pg__detail-open { margin-top: 13px; border: 0; background: transparent; padding: 0; cursor: pointer; font-family: 'Lato', Helvetica, sans-serif; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-bronze-600); }
+        .pg__detail-open:hover { color: var(--color-bronze-700, var(--color-bronze-600)); }
+
+        @media (max-width: 879px) {
+          .pg__filter-btn { min-height: 44px; font-size: 11px; }
+          .pg__rail-row { min-height: 44px; }
+          .pg__detail-open { min-height: 44px; display: inline-flex; align-items: center; }
+        }
+
         @media (min-width: 880px) {
           .pg__work {
             display: grid;
-            grid-template-columns: 220px minmax(0, 1fr);
-            gap: 32px;
-            align-items: center;
+            grid-template-columns: 190px minmax(0, 1fr) 190px;
+            gap: 24px;
+            align-items: start;
           }
 
           /* Rail returns to a single vertical column beside the chart. */
-          .pg__rail { padding-top: 10px; }
+          .pg__rail { padding-top: 0; }
+          .pg__rail--detail { padding-top: 0; }
           .pg__rail-list { display: flex; flex-direction: column; gap: 1px; margin-bottom: 22px; }
           .pg__legend { flex-direction: column; gap: 8px; padding-top: 18px; }
 
-          /* anchored card */
-          .pg__card {
-            position: absolute; z-index: 20; width: 270px; transform: translateY(-50%);
-            background: var(--color-paper-50);
-            border: 1px solid color-mix(in oklab, var(--color-wood-600) 22%, transparent);
-            border-radius: 10px; padding: 20px 22px;
-            box-shadow: 0 18px 50px -12px rgba(0,0,0,0.4);
-          }
-          .pg__card-close { position: absolute; top: 8px; right: 12px; border: 0; background: transparent; font-size: 20px; line-height: 1; color: var(--color-wood-600); cursor: pointer; }
-          .pg__card-close:hover { color: var(--color-wood-900); }
-          .pg__card-seq { font-family: Cinzel, Palatino, serif; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 8px; }
-          .pg__card-head { display: flex; align-items: baseline; gap: 10px; }
-          .pg__card-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; color: var(--color-wood-900); }
-          .pg__card-gate { font-family: 'Lato', Helvetica, sans-serif; font-size: 12px; letter-spacing: 0.16em; color: var(--color-bronze-600); }
-          .pg__card-art { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 17px; color: var(--color-wood-700); margin-top: 3px; }
-          .pg__card-triad { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; font-family: 'Lato', Helvetica, sans-serif; font-size: 11.5px; letter-spacing: 0.04em; }
-          .pg__card-role { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; line-height: 1.5; color: var(--color-wood-700); margin: 14px 0 0; }
-          .pg__card-open { margin-top: 16px; border: 0; background: transparent; padding: 0; cursor: pointer; font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-bronze-600); }
-          .pg__card-open:hover { color: var(--color-bronze-700, var(--color-bronze-600)); }
         }
-
-        /* ── Narrow-screen anchored card: a bottom sheet, not a floating box.
-           The same card markup renders under 880px; here it's pinned to the
-           bottom of the viewport so a tapped orb has a legible detail panel. */
-        .pg__card {
-          position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 40;
-          width: auto; max-width: 460px; margin: 0 auto;
-          background: var(--color-paper-50);
-          border: 1px solid color-mix(in oklab, var(--color-wood-600) 22%, transparent);
-          border-radius: 12px; padding: 18px 20px;
-          box-shadow: 0 -8px 40px -10px rgba(0,0,0,0.45);
-        }
-        .pg__card-close { position: absolute; top: 8px; right: 12px; border: 0; background: transparent; font-size: 22px; line-height: 1; color: var(--color-wood-600); cursor: pointer; }
-        .pg__card-seq { font-family: Cinzel, Palatino, serif; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 8px; }
-        .pg__card-head { display: flex; align-items: baseline; gap: 10px; }
-        .pg__card-name { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: var(--color-wood-900); }
-        .pg__card-gate { font-family: 'Lato', Helvetica, sans-serif; font-size: 12px; letter-spacing: 0.16em; color: var(--color-bronze-600); }
-        .pg__card-art { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 17px; color: var(--color-wood-700); margin-top: 3px; }
-        .pg__card-triad { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; font-family: 'Lato', Helvetica, sans-serif; font-size: 11.5px; letter-spacing: 0.04em; }
-        .pg__card-role { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; line-height: 1.5; color: var(--color-wood-700); margin: 12px 0 0; }
-        .pg__card-open { margin-top: 14px; border: 0; background: transparent; padding: 0; cursor: pointer; font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-bronze-600); }
 
         /* ── grouped list (always shown, beneath the chart) ── */
         .pg__list-view { display: flex; flex-direction: column; gap: 36px; margin-top: 48px; padding-top: 40px; border-top: 1px solid color-mix(in oklab, var(--color-wood-600) 12%, transparent); }

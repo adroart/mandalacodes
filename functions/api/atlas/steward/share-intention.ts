@@ -28,6 +28,7 @@
  */
 
 import type { SharedIntention } from '../../../../types';
+import type { InscriptionRow } from '../../../../utils/inscriptions';
 import { groupChains } from '../../../../utils/ledger';
 import {
   checkShareEligibility,
@@ -36,7 +37,7 @@ import {
   planWithdrawIntention,
   toDisplayText,
 } from '../../../../utils/intentions';
-import type { PagesContext } from '../_helpers';
+import type { AtlasEnv, PagesContext } from '../_helpers';
 import {
   isMissingTableError,
   json,
@@ -48,6 +49,74 @@ import {
 } from '../_helpers';
 import { chainKey, selectInscription } from '../_inscriptions';
 import { requireUser, isAuthResponse } from '../../_lib/auth';
+
+export interface ShareOnMapSuccess {
+  /** The live shared-intention entry after the mutation, or null if the
+   *  mutator produced none (unreachable on the eligible path). */
+  entry: SharedIntention | null;
+  /** True when the regenerated public state shows this piece's intention, so
+   *  the caller can confirm the globe will carry the dream. */
+  livePubliclyMapped: boolean;
+}
+
+/**
+ * Share one eligible inscription onto the map of dreams: the eligibility sort
+ * (utils/intentions.ts checkShareEligibility), the 280-char display cut, the
+ * one-live-entry-per-piece mutation, and the public-state regen: the single
+ * source of truth for "mark a dream shared." The share-intention endpoint's
+ * share:true branch and the claim ceremony's one-request publication
+ * (functions/api/atlas/_firstDream.ts) both compose it, so the two paths can
+ * never drift.
+ *
+ * The caller supplies the already-selected D1 row (a missing or foreign row
+ * arrives as null and fails the eligibility sort). Returns the share result,
+ * or a Response only on a failed eligibility sort (400) or a mutator conflict
+ * (409). The HTTP caller surfaces it verbatim; the best-effort claim caller
+ * treats any Response as "leave the dream pending."
+ */
+export async function shareInscriptionOnMap(
+  env: AtlasEnv,
+  params: {
+    row: InscriptionRow | null;
+    pieceId: string;
+    editionNumber?: number;
+    inscriptionId: string;
+    userId: string;
+    now: string;
+  },
+): Promise<ShareOnMapSuccess | Response> {
+  const { row, pieceId, editionNumber, inscriptionId, userId, now } = params;
+
+  const events = await readLedger(env);
+  const chain = groupChains(events).get(chainKey(pieceId, editionNumber)) ?? [];
+  const eligibility = checkShareEligibility(row, userId, chain, now);
+  if (!eligibility.ok) {
+    return json({ ok: false, error: eligibility.message }, 400);
+  }
+
+  const text = toDisplayText(row!.body as string);
+  const outcome = await mutateSharedIntentions(env, (current) => ({
+    next: planShareIntention(current, { pieceId, editionNumber, inscriptionId, text }, now),
+    result: undefined,
+  }));
+  if (outcome instanceof Response) return outcome;
+
+  const publicState = await regeneratePublicState(env, events);
+
+  const entry: SharedIntention | undefined = outcome.next.find(
+    (e) => e.inscriptionId === inscriptionId && e.status === 'live',
+  );
+
+  return {
+    entry: entry ?? null,
+    livePubliclyMapped: publicState.pieces.some(
+      (p) =>
+        p.pieceId === pieceId &&
+        (p.editionNumber ?? undefined) === (editionNumber ?? undefined) &&
+        p.intention !== undefined,
+    ),
+  };
+}
 
 export async function onRequestPost(
   context: PagesContext,
@@ -118,38 +187,23 @@ export async function onRequestPost(
     return json({ ok: true, shared: false });
   }
 
-  // share:true — check eligibility against the piece's chain (for the seal
-  // check) and the D1 row.
-  const events = await readLedger(env);
-  const chain = groupChains(events).get(chainKey(pieceId, editionNumber)) ?? [];
-  const eligibility = checkShareEligibility(row, userId, chain, now);
-  if (!eligibility.ok) {
-    return json({ ok: false, error: eligibility.message }, 400);
-  }
-
-  const text = toDisplayText(row!.body as string);
-  const outcome = await mutateSharedIntentions(env, (current) => ({
-    next: planShareIntention(current, { pieceId, editionNumber, inscriptionId, text }, now),
-    result: undefined,
-  }));
-  if (outcome instanceof Response) return outcome;
-
-  const publicState = await regeneratePublicState(env, events);
-
-  const entry: SharedIntention | undefined = outcome.next.find(
-    (e) => e.inscriptionId === inscriptionId && e.status === 'live',
-  );
+  // share:true. The eligibility sort, mutation, and regen live in the shared
+  // helper, composed identically by the claim ceremony's one-request path.
+  const shared = await shareInscriptionOnMap(env, {
+    row,
+    pieceId,
+    editionNumber,
+    inscriptionId,
+    userId,
+    now,
+  });
+  if (shared instanceof Response) return shared;
 
   return json({
     ok: true,
     shared: true,
-    entry: entry ?? null,
+    entry: shared.entry,
     // Convenience echo — the caller can confirm the globe will show this.
-    livePubliclyMapped: publicState.pieces.some(
-      (p) =>
-        p.pieceId === pieceId &&
-        (p.editionNumber ?? undefined) === (editionNumber ?? undefined) &&
-        p.intention !== undefined,
-    ),
+    livePubliclyMapped: shared.livePubliclyMapped,
   });
 }

@@ -41,6 +41,10 @@ export const COLOR_BRONZE = new THREE.Color(0.77, 0.67, 0.49);
 export const COLOR_BRONZE_DIM = new THREE.Color(0.55, 0.48, 0.36);
 export const COLOR_SAGE = new THREE.Color(0.61, 0.67, 0.53);
 export const COLOR_RIM = new THREE.Color(0.32, 0.27, 0.19);
+// Sold-but-unclaimed pieces: a deep warm ember, present but asleep. Carried
+// over from the cobe globe's UNAWAKENED_COLOR intent (Globe.tsx) so the two
+// renderers agree on the resting-ember hue. Warm brown-bronze, never cold.
+export const COLOR_EMBER = new THREE.Color(0.34, 0.29, 0.21);
 
 export function latLngToVec3(
   lat: number,
@@ -93,6 +97,10 @@ export interface Rig {
   mandalaStartedAt: number;
   /** Low-tier devices skip bloom + ripples and thin the dot field. */
   lowTier: boolean;
+  /** Honor prefers-reduced-motion: autorotation halts, breathe/pulse fall to
+      near-zero, and the ignition opening becomes a quiet crossfade. Set once
+      at creation and kept live by a matchMedia listener in Globe3D. */
+  reducedMotion: boolean;
   /** Live scene camera, set by GlobeScene: the wrapper picks markers through it. */
   camera: THREE.Camera | null;
   /** Extra camera distance this frame from a thread-travel flight (eased in stepRig). */
@@ -107,6 +115,20 @@ export interface Rig {
   /** Ring hover: eased 0 to 1 value HexagramRing reads to brighten the band
       on pointer-over, the resting view's discoverability affordance. */
   ringHover: number;
+  /** Ignition schedule published by Markers during the opening: node id →
+      performance.now() ms when that light ignites. The dream overlay reads it
+      so an opening flare fires beside a light on the same beat as its marker.
+      Empty until the opening is scheduled; empty in reduced motion. */
+  ignition: Map<string, number>;
+}
+
+/** Read the visitor's reduced-motion preference. Safe when matchMedia is
+    absent (SSR / older engines): defaults to full motion. */
+export function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  );
 }
 
 export function createRig(lowTier: boolean): Rig {
@@ -119,12 +141,14 @@ export function createRig(lowTier: boolean): Rig {
     mandalaTarget: 0,
     mandalaStartedAt: 0,
     lowTier,
+    reducedMotion: prefersReducedMotion(),
     camera: null,
     travelDolly: 0,
     introAt: 0,
     introArcDelay: 2.4,
     ringHoverTarget: false,
     ringHover: 0,
+    ignition: new Map(),
   };
 }
 
@@ -144,7 +168,8 @@ export function stepRig(rig: Rig, deltaSeconds: number): void {
     // back down as it arrives: sin(π·t) is 0 at both ends, peaks midway.
     if (tween.dollyAmp) rig.travelDolly = tween.dollyAmp * Math.sin(Math.PI * t);
     if (t >= 1) rig.tween = null;
-  } else if (!rig.paused) {
+  } else if (!rig.paused && !rig.reducedMotion) {
+    // Reduced motion holds the world still: no idle drift.
     rig.phi += ROTATION_SPEED * deltaSeconds;
   }
   // Outside a travel tween the dolly eases home.

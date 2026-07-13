@@ -40,7 +40,7 @@ const SeekingGround: React.FC<SeekingGroundProps> = ({
         >
           Every piece has found ground
         </h2>
-        <p className="font-serif italic text-base text-wood-700 leading-[1.7] max-w-prose">
+        <p className="font-serif text-base text-wood-700 leading-[1.7] max-w-prose">
           Nothing wandering, for now.
         </p>
       </section>

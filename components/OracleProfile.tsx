@@ -48,78 +48,19 @@ const OracleProfile: React.FC = () => {
   return (
     <main className="min-h-screen pb-24 px-6 mx-auto pt-[calc(var(--nav-height)+3rem)] sm:pt-[calc(var(--nav-height)+4rem)]" style={{ maxWidth: '1560px' }}>
       <header className="mb-10">
-        <p
-          style={{
-            fontFamily: 'Cinzel, Palatino, serif',
-            fontSize: 10,
-            letterSpacing: '0.32em',
-            textTransform: 'uppercase',
-            color: 'var(--color-bronze-600)',
-            marginBottom: 14,
-          }}
-        >
-          Universal Language
-        </p>
-        <h1
-          style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 36,
-            color: 'var(--color-wood-900)',
-            margin: 0,
-          }}
-        >
-          Your Hologenetic Profile
-        </h1>
-        <p
-          style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 17,
-            color: 'var(--color-wood-700)',
-            marginTop: 12,
-            maxWidth: 560,
-            lineHeight: 1.5,
-          }}
-        >
-          Eleven positions calculated from the moment you arrived. Once entered,
-          they follow you through every Universal Language reading, showing
-          which card meets you in which place.
-        </p>
-      </header>
-
-      {showForm ? (
-        <ProfileForm
-          initial={profile?.inputs ?? null}
-          onSaved={() => setEditing(false)}
-        />
-      ) : (
-        <>
-          <div
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 24 }}>
+          <h1
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-              gap: 16,
-              marginBottom: 24,
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 36,
+              color: 'var(--color-wood-900)',
+              margin: 0,
             }}
           >
-            <div
-              style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: 15,
-                color: 'var(--color-wood-700)',
-              }}
-            >
-              {profile!.inputs.date} at {profile!.inputs.time} ·{' '}
-              {/* The birth place is also a sage marker on the Atlas globe;
-                  this deep link preselects it there. */}
-              <Link
-                to="/atlas?piece=__birth-place__"
-                style={{ color: 'var(--color-bronze-600)', textDecoration: 'none' }}
-              >
-                {profile!.inputs.place.label} — on the Atlas →
-              </Link>
-            </div>
-            <div style={{ display: 'flex', gap: 18, alignItems: 'baseline' }}>
+            Your Hologenetic Profile
+          </h1>
+          {!showForm && (
+            <div style={{ display: 'flex', gap: 18, alignItems: 'baseline', flexShrink: 0 }}>
               <button
                 type="button"
                 onClick={shareProfile}
@@ -156,7 +97,56 @@ const OracleProfile: React.FC = () => {
                 Edit
               </button>
             </div>
+          )}
+        </div>
+        {!showForm && (
+          <div
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 15,
+              color: 'var(--color-wood-700)',
+              marginTop: 8,
+            }}
+          >
+            {profile!.inputs.date} at {profile!.inputs.time} ·{' '}
+            <Link
+              to="/atlas?piece=__birth-place__"
+              style={{ color: 'var(--color-bronze-600)', textDecoration: 'none' }}
+            >
+              {profile!.inputs.place.label} — on the Atlas →
+            </Link>
           </div>
+        )}
+        <p
+          data-profile-introduction
+          style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: 17,
+            color: 'var(--color-wood-700)',
+            marginTop: 10,
+            lineHeight: 1.35,
+          }}
+        >
+          This chart connects the elements of your life to the 64 codes, helping
+          you understand their influences more deeply.{' '}
+          <a
+            href="https://genekeys.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--color-bronze-600)', textDecoration: 'none', whiteSpace: 'nowrap' }}
+          >
+            Explore the Gene Keys system to learn more →
+          </a>
+        </p>
+      </header>
+
+      {showForm ? (
+        <ProfileForm
+          initial={profile?.inputs ?? null}
+          onSaved={() => setEditing(false)}
+        />
+      ) : (
+        <>
           <ProfileGraph profile={profile!.computed} />
         </>
       )}

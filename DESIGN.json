@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-13T00:00:00.000Z",
+  "title": "Design System: Mandala Codes",
+  "extensions": {
+    "colorMeta": {
+      "paper": { "role": "neutral", "displayName": "Warm Paper", "canonical": "#f5f4f0" },
+      "deep-wood": { "role": "neutral", "displayName": "Deep Wood", "canonical": "#262321" },
+      "muted-wood": { "role": "neutral", "displayName": "Muted Wood", "canonical": "#736046" },
+      "bronze": { "role": "primary", "displayName": "Aged Bronze", "canonical": "#8a744e" },
+      "bronze-light": { "role": "primary", "displayName": "Lit Bronze", "canonical": "#c4aa7c" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Editorial Display", "purpose": "Profile and card titles." },
+      "body": { "displayName": "Teaching Text", "purpose": "Readings and supporting explanation." },
+      "label": { "displayName": "System Label", "purpose": "Controls, metadata, and compact navigation." }
+    },
+    "breakpoints": [
+      { "name": "profile-wide", "value": "880px" }
+    ]
+  },
+  "components": [],
+  "narrative": {
+    "northStar": "The Quiet Oracle Table",
+    "overview": "A warm, spacious study surface where the oracle object remains central and supporting information stays restrained at the margins.",
+    "keyCharacteristics": ["warm", "editorial", "spatially balanced", "quietly interactive"],
+    "rules": [
+      { "name": "The True Center Rule", "body": "Supporting rails must not displace the primary chart from the page axis.", "section": "components" }
+    ],
+    "dos": ["Keep equal-width rails around a centered chart."],
+    "donts": ["Do not convert supporting information into floating dashboard cards."]
+  }
+}

@@ -42,3 +42,41 @@ test('zoom in magnifies the chart', async ({ page }) => {
   const scale = Number(transform.match(/matrix\(([^,]+)/)?.[1] ?? '1');
   expect(scale).toBeGreaterThan(1);
 });
+
+test('profile introduction leads with birth details and explains the chart in one line', async ({ page }) => {
+  await buildProfile(page);
+
+  const header = page.locator('header');
+  await expect(header.getByText('Universal Language')).toHaveCount(0);
+  await expect(header.getByText(/1990-06-15 at 14:30/)).toBeVisible();
+  await expect(header.getByText(
+    'This chart connects the elements of your life to the 64 codes, helping you understand their influences more deeply.'
+  )).toBeVisible();
+  await expect(header.getByRole('link', { name: 'Explore the Gene Keys system to learn more' })).toBeVisible();
+
+  const headingBox = await header.getByRole('heading', { name: 'Your Hologenetic Profile' }).boundingBox();
+  const birthBox = await header.getByText(/1990-06-15 at 14:30/).boundingBox();
+  expect(birthBox!.y).toBeGreaterThan(headingBox!.y + headingBox!.height);
+
+  const intro = header.locator('[data-profile-introduction]');
+  if ((page.viewportSize()?.width ?? 0) >= 880) {
+    expect(await intro.evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(30);
+  }
+});
+
+test('desktop profile balances the chart between connected path and detail rails', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) < 880, 'desktop layout only');
+  await buildProfile(page);
+
+  const work = page.locator('.pg__work');
+  const columns = await work.evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' '));
+  expect(columns[0]).toBe(columns[2]);
+
+  await expect(page.locator('.pg__rail--path')).toBeVisible();
+  await expect(page.locator('.pg__rail--detail')).toBeVisible();
+  await expect(page.locator('.pg__rail--detail').getByRole('button', { name: 'Activation' })).toBeVisible();
+
+  await page.locator('.pg__rail--path').getByRole('button', { name: /Evolution/ }).click();
+  await expect(page.locator('.pg__rail--detail').getByRole('heading', { name: 'Evolution' })).toBeVisible();
+  await expect(page.locator('.pg__rail--detail')).toContainText('The contrast that shapes you');
+});

@@ -45,6 +45,7 @@ import {
   parseFirstInscription,
   planClaimChainEvents,
 } from '../../../../utils/consent';
+import { publishFirstDreamsOnClaim } from '../_firstDream';
 import type { PagesContext } from '../_helpers';
 import {
   findStewardsForUser,
@@ -59,6 +60,7 @@ import {
 import { requireUser, isAuthResponse } from '../../_lib/auth';
 import { generateKinClaimLetters } from '../_letters';
 import { letterRecipientKey } from '../../../../utils/letters';
+import { creatorMessageFor } from '../_creatorMessages';
 
 interface ClaimedPiece {
   steward: Omit<StewardRecord, 'notes'>;
@@ -93,6 +95,11 @@ function buildClaimedResponse(
   stewards: readonly StewardRecord[],
   events: LedgerEvent[],
   userId: string,
+  /** Phase B only: fold in the creator's message for the primary claimed
+   *  piece so the ceremony can reveal it in its final beat, after ignition.
+   *  Never sent in Phase A: the message is a ceremony payload, not a
+   *  binding fact, and must never surface before the light is lit. */
+  includeCreatorMessage = false,
 ): Response {
   const claimed: ClaimedPiece[] = stewards
     .filter((s) => s.clerkUserId === userId)
@@ -101,10 +108,18 @@ function buildClaimedResponse(
       piece: sanitizePiece(findRecord(events, s.pieceId, s.editionNumber)),
       needsConsent: !s.consent,
     }));
+  // The ceremony shows the first entry awaiting consent (else the first
+  // claimed); key the message to that same piece so the two never diverge.
+  const primary = claimed.find((c) => c.needsConsent) ?? claimed[0];
+  const creatorMessage =
+    includeCreatorMessage && primary
+      ? creatorMessageFor(primary.steward.pieceId)
+      : undefined;
   return json({
     ok: true,
     claimed,
     needsConsent: claimed.some((c) => c.needsConsent),
+    ...(creatorMessage ? { creatorMessage } : {}),
   });
 }
 
@@ -257,5 +272,27 @@ export async function onRequestPost(
     }
   }
 
-  return buildClaimedResponse(stewardOutcome.next, ledgerOutcome.next, userId);
+  // One-request publication (design ruling, 2026-07-12): when the map choice
+  // is public AND the ceremony carried a first dream, the single "Show on the
+  // atlas" choice governs both the light and the dream. Publish the dream in
+  // the same motion (convert it to a real intention and mark it shared) so the
+  // regenerated public state carries it immediately. A private map choice
+  // leaves it pending, exactly as before. Best-effort: the light is the
+  // binding act, and a publish failure never fails the claim.
+  if (ring2MapPresence && inscription.value) {
+    try {
+      await publishFirstDreamsOnClaim(
+        env,
+        stewardOutcome.next,
+        stewardOutcome.result,
+        userId,
+        now,
+      );
+    } catch {
+      // The dream can still be published later from the book. Never fail the
+      // claim over it.
+    }
+  }
+
+  return buildClaimedResponse(stewardOutcome.next, ledgerOutcome.next, userId, true);
 }

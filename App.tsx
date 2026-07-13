@@ -12,6 +12,7 @@ const AdminPieceContent = lazy(() => import('./components/AdminPieceContent'));
 const PiecePage = lazy(() => import('./components/PiecePage'));
 const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
 const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
+const Homecoming = lazy(() => import('./components/atlas/Homecoming'));
 const OracleProfile = lazy(() => import('./components/OracleProfile'));
 const SharedProfile = lazy(() => import('./components/SharedProfile'));
 const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
@@ -106,6 +107,9 @@ const AppInner: React.FC = () => {
                 {/* Atlas — globe of placed Universal Language pieces with kinship arcs */}
                 <Route path="/atlas" element={<AtlasPage />} />
                 <Route path="/atlas/claim" element={<StewardClaim />} />
+                {/* The Homecoming, the way home for a piece the atlas has no
+                    record of (Phase 2.5). */}
+                <Route path="/atlas/homecoming" element={<Homecoming />} />
 
                 {/* Public piece page — the QR-arrival surface. Pre-auth; shows
                     the artwork, story, edition, Founding Lights ordinal, and

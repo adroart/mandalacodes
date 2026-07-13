@@ -338,7 +338,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Trigram
             </span>
           </button>
-          <div style={{ padding: "26px 0 8px", display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div style={{ padding: "26px clamp(22px,5vw,76px) 8px", display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap" }}>
             <div style={{ flex: "1", minWidth: "240px" }}>
               <p ref={vals.registerIvLabel} style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 12px" }}>
               Combination
@@ -897,21 +897,21 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <div className="ul-kin-wrap" style={{ margin: "0 auto clamp(22px,3.5vw,34px)", maxWidth: "540px" }}>
           <div style={{ position: "relative", width: "100%", aspectRatio: "1/1", overflow: "visible" }}>
             {vals.kinLines}
-            <button onClick={vals.selectKinSelf} aria-label={`${vals.cardName ?? ""}, returns to itself`} style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", zIndex: "3", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", padding: "0" }}>
-              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "clamp(72px,18.5vw,94px)", height: "clamp(72px,18.5vw,94px)", borderRadius: "50%", background: "var(--l-bg)", border: "1.5px solid var(--accent)", boxShadow: "0 0 0 7px color-mix(in oklab,var(--accent) 7%,transparent),0 12px 32px -14px rgba(40,34,25,0.55)", fontFamily: "var(--cjk)", fontSize: "clamp(32px,8.5vw,46px)", lineHeight: "1", color: "var(--accent)" }}>
+            <button onClick={vals.selectKinSelf} aria-label={`${vals.cardName ?? ""}, returns to itself`} style={{ position: "absolute", left: "50%", top: "50%", width: "clamp(72px,18.5vw,94px)", height: "clamp(72px,18.5vw,94px)", transform: "translate(-50%,-50%)", zIndex: "3", display: "block", background: "none", border: "none", borderRadius: "50%", cursor: "pointer", padding: "0" }}>
+              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", borderRadius: "50%", background: "var(--l-bg)", border: "1.5px solid var(--accent)", boxShadow: "0 0 0 7px color-mix(in oklab,var(--accent) 7%,transparent),0 12px 32px -14px rgba(40,34,25,0.55)", fontFamily: "var(--cjk)", fontSize: "clamp(32px,8.5vw,46px)", lineHeight: "1", color: "var(--accent)" }}>
               {vals.heroGlyph}
               </span>
-              <span style={{ fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-2)" }}>
+              <span style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", width: "160px", fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", textAlign: "center", color: "var(--l-2)" }}>
               {vals.cardName}
               </span>
             </button>
             {(vals.kinNodes ?? []).map((node, nodeIdx) => (
               <React.Fragment key={nodeIdx}>
-                <button onClick={node.onSelect} aria-label={node.name} style={{ position: "absolute", left: `${node.x ?? ""}`, top: `${node.y ?? ""}`, transform: "translate(-50%,-50%)", zIndex: "3", display: "flex", flexDirection: "column", alignItems: "center", gap: "5px", background: "none", border: "none", cursor: "pointer", width: "88px", padding: "0" }}>
-                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: `${node.dim ?? ""}`, height: `${node.dim ?? ""}`, borderRadius: "50%", background: "var(--l-bg)", border: `1px solid ${node.border ?? ""}`, fontFamily: `${node.font ?? ""}`, fontSize: `${node.size ?? ""}`, lineHeight: "1", color: `${node.glyphColor ?? ""}`, boxShadow: "0 3px 12px -5px rgba(40,34,25,0.4)" }}>
+                <button onClick={node.onSelect} aria-label={node.name} style={{ position: "absolute", left: `${node.x ?? ""}`, top: `${node.y ?? ""}`, width: `${node.dim ?? ""}`, height: `${node.dim ?? ""}`, transform: "translate(-50%,-50%)", zIndex: "3", display: "block", background: "none", border: "none", borderRadius: "50%", cursor: "pointer", padding: "0" }}>
+                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", borderRadius: "50%", background: "var(--l-bg)", border: `1px solid ${node.border ?? ""}`, fontFamily: `${node.font ?? ""}`, fontSize: `${node.size ?? ""}`, lineHeight: "1", color: `${node.glyphColor ?? ""}`, boxShadow: "0 3px 12px -5px rgba(40,34,25,0.4)" }}>
                   {node.glyph}
                   </span>
-                  <span style={{ fontFamily: "var(--sans)", fontSize: "8.5px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--l-3)", lineHeight: "1.3", textAlign: "center" }}>
+                  <span style={{ position: "absolute", top: "calc(100% + 5px)", left: "50%", transform: "translateX(-50%)", width: "96px", fontFamily: "var(--sans)", fontSize: "8.5px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--l-3)", lineHeight: "1.3", textAlign: "center" }}>
                   {node.label}
                   </span>
                 </button>

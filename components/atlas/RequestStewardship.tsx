@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAccount } from '../../lib/account/useAccount';
 import SignInTrigger from '../account/SignInTrigger';
 
@@ -63,7 +64,7 @@ const RequestStewardship: React.FC<{
 
   if (sent) {
     return (
-      <p className="font-serif italic text-base text-stone-700 mt-4 leading-[1.6]">
+      <p className="font-serif text-base text-stone-700 tracking-[0.01em] mt-4 leading-[1.6]">
         Your request is in. The piece's current keeper, or Adrian, will
         review it, and the book opens to you once they approve.
       </p>
@@ -131,7 +132,7 @@ const RequestStewardship: React.FC<{
               className="w-full border border-wood-300 bg-white px-4 py-3 font-serif text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 resize-y"
             />
             {error && (
-              <p className="font-serif italic text-sm text-stone-600">{error}</p>
+              <p className="font-serif font-medium text-sm text-stone-600">{error}</p>
             )}
             <button
               type="button"
@@ -144,6 +145,19 @@ const RequestStewardship: React.FC<{
           </div>
         )
       )}
+
+      {/* The Homecoming door: for whoever holds a piece the atlas has never
+          heard of, where even a stewardship request has no piece to point at.
+          The one quiet way out of the no-record dead-end. */}
+      <p className="font-serif text-sm text-wood-500 leading-[1.6] mt-6">
+        Holding a piece we do not know?{' '}
+        <Link
+          to="/atlas/homecoming"
+          className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+        >
+          Bring it home →
+        </Link>
+      </p>
     </div>
   );
 };
