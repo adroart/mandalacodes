@@ -108,6 +108,18 @@
     }
     .status-dot { width: 7px; height: 7px; border-radius: 50%; }
 
+    .wifi-notice {
+      width: 100%; max-width: 480px; margin: 24px 16px 0;
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .wifi-notice h2 { font-size: 18px; font-weight: 500; }
+    .wifi-notice p  { font-size: 14px; color: var(--text-2); line-height: 1.55; }
+    .wifi-notice a  { color: var(--accent); }
+
     .master-controls {
       width: 100%; max-width: 480px; padding: 0 16px 16px;
       display: flex; flex-direction: column; gap: 10px;
@@ -125,7 +137,7 @@
       font-size: 11px; color: var(--text-2); min-width: 36px; text-align: right; font-variant-numeric: tabular-nums;
     }
   </style>
-  <script type="module" crossorigin src="/design/assets/visitor-CYArkZOb.js"></script>
+  <script type="module" crossorigin src="/design/assets/visitor-c4htjOTJ.js"></script>
   <link rel="modulepreload" crossorigin href="/design/assets/modulepreload-polyfill-B5Qt9EMX.js">
 </head>
 <body>
@@ -133,6 +145,15 @@
     <div class="brand-dot"></div>
     <div class="brand-name">Lightweaver</div>
     <div class="brand-sub">Scene Control</div>
+  </div>
+
+  <div class="wifi-notice" id="wifiNotice" hidden>
+    <h2>Open this from your light's WiFi</h2>
+    <p>This remote talks to your light directly, so it only works when your phone
+       or computer is on the same WiFi as the light.</p>
+    <p>Join your light's WiFi network (it's named <strong>Lightweaver</strong>),
+       then visit <a href="http://lightweaver.local">lightweaver.local</a> —
+       the remote will work from there.</p>
   </div>
 
   <div class="wled-connect">
