@@ -25,6 +25,7 @@ import OracleBottomNavigation from './oracle/OracleBottomNavigation';
 import PublicInvocation from './oracle/invocation/PublicInvocation';
 import { loadLiveInvocation } from '../lib/oracle/invocationApi';
 import type { LiveInvocation } from '../lib/oracle/invocationTypes';
+import { consumeCardEntranceRequest, requestsCardEntrance } from '../lib/oracle/cardEntrance';
 
 /* Earth's Breath card reading. The visible component is GENERATED from the
    imported design file (components/oracle/eb/generated/*) by the dc-import
@@ -47,17 +48,26 @@ const UniversalLanguageCard: React.FC = () => {
   const [liveInvocationState, setLiveInvocationState] = useState<{ cardNum: number; value: LiveInvocation | null }>({ cardNum, value: null });
   const liveInvocation = liveInvocationState.cardNum === cardNum ? liveInvocationState.value : null;
   const [ichingLines, setIchingLines] = useState<MdIchingLine[]>([]);
-  /* The full entrance (veil + ring/center build) plays only on a FRESH arrival —
-     from the deck, a shared link, or a reload. Prev/Next pass state.quiet so the
-     ceremony is skipped; the new card's panels still glide in via the host's
-     scroll-reveal (it remounts per card via the key below). */
-  const arrivedQuiet = (location.state as { quiet?: boolean } | null)?.quiet === true;
-  const showEntrance = !arrivedQuiet;
+  /* The full entrance is opt-in and one-shot. Only the deck index and physical
+     QR redirect request it; the marker is consumed below so reload, browser
+     Back, shared links, Piece/Atlas returns, and every other route stay quiet. */
+  const entranceEntry = useRef({ key: '', show: false });
+  const entranceKey = `${location.key}:${cardNum}`;
+  if (entranceEntry.current.key !== entranceKey) {
+    entranceEntry.current = {
+      key: entranceKey,
+      show: requestsCardEntrance(location.search, location.state),
+    };
+  }
+  const showEntrance = entranceEntry.current.show;
   const [buyOpen, setBuyOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [chartFormOpen, setChartFormOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const { profile } = useProfile();
+  useEffect(() => {
+    if (showEntrance) consumeCardEntranceRequest();
+  }, [entranceKey, showEntrance]);
   useEffect(() => {
     document.documentElement.classList.add('oracle-card-page');
     return () => document.documentElement.classList.remove('oracle-card-page');

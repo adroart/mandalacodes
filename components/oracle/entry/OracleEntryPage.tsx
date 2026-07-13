@@ -153,8 +153,8 @@ const OracleEntryPage: React.FC = () => {
   const onEnterReading = useCallback(
     (n: number) => {
       const c = CARD_BY_NUMBER.get(n);
-      // No `quiet` state → the reading plays its full entrance (fresh arrival).
-      navigate(`/universal-language/${n}`);
+      // Deck selections deliberately receive the one-shot entrance ceremony.
+      navigate(`/universal-language/${n}`, { state: { entrance: true } });
       return c;
     },
     [navigate],
