@@ -208,32 +208,39 @@ class Component extends DCLogic {
       this.panelEls.forEach((el) => { if (el) this.observer.observe(el); });
     }
 
-    // #3 scroll reveal + #2 glyph wipe
+    // Teajia Read reveal: one restrained 26px rise, no decorative stagger.
     const reduce = !!this.props.reduceMotion;
-    if (this.rootEl && !reduce) {
-      const groups = new Map();
-      this.revealObs = new IntersectionObserver((ents) => {
-        ents.forEach((en) => {
-          if (en.isIntersecting) { const el = en.target; el.style.opacity = '1'; el.style.transform = 'none'; this.revealObs.unobserve(el); }
+    if (this.rootEl) {
+      const prose = this.rootEl.querySelector('section[data-chapter="ul"] > div > div[style*="flex-direction: column"] > p');
+      if (prose) prose.setAttribute('data-oracle-reading-prose', '');
+      const reveal = Array.from(this.rootEl.querySelectorAll('section[data-chapter] > div > *'));
+      const glyphs = Array.from(this.rootEl.querySelectorAll('[data-glyph]'));
+      const showAll = () => {
+        reveal.forEach((el) => { el.style.opacity = '1'; el.style.transform = 'none'; });
+        glyphs.forEach((el) => { el.style.clipPath = 'none'; el.style.opacity = '1'; });
+      };
+      reveal.forEach((el) => el.setAttribute('data-oracle-reveal', ''));
+      if (reduce || typeof IntersectionObserver === 'undefined') showAll();
+      else {
+        const obsRoot = this.stageEl || null;
+        this.revealObs = new IntersectionObserver((ents) => {
+          ents.forEach((en) => { if (en.isIntersecting) { const el = en.target; el.style.opacity = '1'; el.style.transform = 'none'; this.revealObs.unobserve(el); } });
+        }, { root: obsRoot, threshold: 0.08, rootMargin: '0px 0px -7% 0px' });
+        reveal.forEach((el) => {
+          el.style.opacity = '0'; el.style.transform = 'translateY(26px)';
+          el.style.transition = 'opacity 900ms cubic-bezier(.22,.61,.36,1), transform 900ms cubic-bezier(.22,.61,.36,1)';
+          this.revealObs.observe(el);
         });
-      }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
-      this.rootEl.querySelectorAll('section[data-chapter] > div > *').forEach((el) => {
-        const p = el.parentElement; const i = groups.get(p) || 0; groups.set(p, i + 1);
-        el.style.opacity = '0'; el.style.transform = 'translateY(16px)';
-        el.style.transition = 'opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1)';
-        el.style.transitionDelay = Math.min(i, 6) * 65 + 'ms';
-        this.revealObs.observe(el);
-      });
-      this.glyphObs = new IntersectionObserver((ents) => {
-        ents.forEach((en) => {
-          if (en.isIntersecting) { const el = en.target; el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; this.glyphObs.unobserve(el); }
+        this.glyphObs = new IntersectionObserver((ents) => {
+          ents.forEach((en) => { if (en.isIntersecting) { const el = en.target; el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; this.glyphObs.unobserve(el); } });
+        }, { root: obsRoot, threshold: 0.2 });
+        glyphs.forEach((el) => {
+          el.style.clipPath = 'inset(0 0 100% 0)'; el.style.opacity = '0';
+          el.style.transition = 'clip-path 900ms cubic-bezier(.22,.61,.36,1), opacity 600ms ease';
+          this.glyphObs.observe(el);
         });
-      }, { threshold: 0.3 });
-      this.rootEl.querySelectorAll('[data-glyph]').forEach((el) => {
-        el.style.clipPath = 'inset(0 0 100% 0)'; el.style.opacity = '0';
-        el.style.transition = 'clip-path .9s cubic-bezier(.16,1,.3,1), opacity .6s ease';
-        this.glyphObs.observe(el);
-      });
+        this.revealFallback = setTimeout(showAll, 1800);
+      }
     }
 
     // init nav indicator + trigram highlight, keep indicator aligned on resize/font load
@@ -250,6 +257,7 @@ class Component extends DCLogic {
     if (this.observer) this.observer.disconnect();
     if (this.revealObs) this.revealObs.disconnect();
     if (this.glyphObs) this.glyphObs.disconnect();
+    if (this.revealFallback) clearTimeout(this.revealFallback);
     if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
     this.setBodyLock(false);
   }

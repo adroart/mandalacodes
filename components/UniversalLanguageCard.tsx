@@ -19,6 +19,8 @@ import { ulPieceForCard } from '../utils/universalLanguage';
 import { hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
 import { useCardPlacement } from '../lib/atlas/state';
 import './oracle/eb/eb-template.css';
+import './oracle/eb/oracle-foundation.css';
+import OracleBottomNavigation from './oracle/OracleBottomNavigation';
 
 /* Earth's Breath card reading. The visible component is GENERATED from the
    imported design file (components/oracle/eb/generated/*) by the dc-import
@@ -211,6 +213,8 @@ const UniversalLanguageCard: React.FC = () => {
   const idx = sortedNums.indexOf(card.number);
   const prevCardNum = idx > 0 ? sortedNums[idx - 1] : null;
   const nextCardNum = idx < sortedNums.length - 1 ? sortedNums[idx + 1] : null;
+  const previousCard = prevCardNum === null ? null : (CARD_BY_NUMBER.get(prevCardNum) ?? null);
+  const nextCard = nextCardNum === null ? null : (CARD_BY_NUMBER.get(nextCardNum) ?? null);
   const palette = isDarkMode ? 'nightfall' : 'daybook';
   return (
     <>
@@ -267,33 +271,7 @@ const UniversalLanguageCard: React.FC = () => {
         keywords={keywords}
       />
 
-      {/* Sticky bottom nav — prev / All 64 / next, as on the previous version. */}
-      <div className="eb-reading" data-palette={palette} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, background: 'color-mix(in oklab, var(--l-bg) 92%, transparent)', borderTop: '1px solid var(--l-rule)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
-        <div style={{ display: 'flex', alignItems: 'stretch', height: 44, maxWidth: 1180, margin: '0 auto' }}>
-          {prevCardNum !== null ? (() => { const c = CARD_BY_NUMBER.get(prevCardNum)!; return (
-            <Link to={`/universal-language/${prevCardNum}`} state={{ quiet: true }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
-              <HexagramSVG upper={c.iching.upper_trigram.symbol} lower={c.iching.lower_trigram.symbol} color="var(--accent)" width={26} />
-              <div style={{ minWidth: 0 }}>
-                <p style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', lineHeight: 1, margin: 0 }}>← Code {c.number}</p>
-                <p style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--l-2)', lineHeight: 1.1, margin: '3px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.card_name}</p>
-              </div>
-            </Link>
-          ); })() : <div style={{ flex: 1 }} />}
-          <Link to="/universal-language" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 16px', borderLeft: '1px solid var(--l-rule)', borderRight: '1px solid var(--l-rule)', flexShrink: 0, textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--serif)', fontSize: 17, color: 'var(--l-1)', lineHeight: 1 }}>{card.number}</span>
-            <span style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', marginTop: 3 }}>All 64</span>
-          </Link>
-          {nextCardNum !== null ? (() => { const c = CARD_BY_NUMBER.get(nextCardNum)!; return (
-            <Link to={`/universal-language/${nextCardNum}`} state={{ quiet: true }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, padding: '0 12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
-              <div style={{ minWidth: 0, textAlign: 'right' }}>
-                <p style={{ fontFamily: 'var(--sans)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--l-3)', lineHeight: 1, margin: 0 }}>Code {c.number} →</p>
-                <p style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--l-2)', lineHeight: 1.1, margin: '3px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.card_name}</p>
-              </div>
-              <HexagramSVG upper={c.iching.upper_trigram.symbol} lower={c.iching.lower_trigram.symbol} color="var(--accent)" width={26} />
-            </Link>
-          ); })() : <div style={{ flex: 1 }} />}
-        </div>
-      </div>
+      <OracleBottomNavigation current={card} previous={previousCard} next={nextCard} palette={palette} />
     </>
   );
 };
