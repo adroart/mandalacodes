@@ -17,7 +17,7 @@ const Neighbor:React.FC<{card:OracleCard;direction:'previous'|'next'}> = ({card,
 );
 
 const OracleBottomNavigation:React.FC<Props> = ({current,previous,next,palette}) => (
-  <nav className="eb-reading oracle-bottom-nav" data-palette={palette} aria-label="Hexagram navigation">
+  <nav className="eb-reading oracle-bottom-nav" data-oracle-neighbor-footer data-palette={palette} aria-label="Neighboring hexagrams">
     <div className="oracle-bottom-nav__inner">
       <div className="oracle-bottom-nav__edge">{previous && <Neighbor card={previous} direction="previous" />}</div>
       <div className="oracle-bottom-nav__constellation">

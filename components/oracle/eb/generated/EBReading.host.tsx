@@ -43,7 +43,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   panelEls = new Map<string, any>();
   ivEls = new Map<string, any>();
   ivcEls = new Map<string, any>();
-  observer: any; revealObs: any; glyphObs: any; repositionNav: any; onKey: any;
+  observer: any; revealObs: any; glyphObs: any; repositionNav: any; updateReadingProgress: any; onKey: any;
   visibility: any;
 
   state = {
@@ -61,6 +61,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     index: false,
     indexFocus: 1,
     relSel: 'pair',
+    readingProgress: 0,
   };
 
   // Card-specific constants now come from props.data (was hardcoded Card 1).
@@ -158,6 +159,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     window.addEventListener('keydown', this.onKey);
 
     if (this.stageEl) {
+      this.stageEl.setAttribute('data-oracle-flow', '');
       this.observer = new IntersectionObserver((entries) => {
         entries.forEach((en: any) => {
           const key = en.target.dataset.chapter;
@@ -167,7 +169,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
         let best: any = null, bestR = 0;
         Object.keys(this.visibility || {}).forEach((k) => { if (this.visibility[k] > bestR) { bestR = this.visibility[k]; best = k; } });
         if (best && bestR > 0.5 && best !== this.state.active) { this.setState({ active: best }); this.updateNav(best); }
-      }, { root: this.stageEl, threshold: [0, 0.25, 0.5, 0.75, 1] });
+      }, { root: null, rootMargin: '-18% 0px -62% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] });
       this.panelEls.forEach((el) => { if (el) this.observer.observe(el); });
     }
 
@@ -175,9 +177,9 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     if (this.rootEl) {
       // Match Teajia's viewport-rooted reveal. Horizontally off-screen panels
       // remain armed and reveal when navigation brings them into the viewport.
-      const prose = this.rootEl.querySelector('section[data-chapter="ul"] > div > div[style*="flex-direction: column"] > p');
-      if (prose) prose.setAttribute('data-oracle-reading-prose', '');
-      const reveal = Array.from(this.rootEl.querySelectorAll('section[data-chapter] > div > *')) as HTMLElement[];
+      const prose = this.rootEl.querySelector('section[data-chapter="ul"] > div > div[style*="flex-direction: column"]');
+      if (prose) prose.setAttribute('data-reading-prose', '');
+      const reveal = Array.from(this.rootEl.querySelectorAll('section[data-chapter] > div > :is(p,h2,h3,div,details,figure)')) as HTMLElement[];
       const glyphs = Array.from(this.rootEl.querySelectorAll('[data-glyph]')) as HTMLElement[];
       const showAll = () => {
         reveal.forEach((el) => { el.style.opacity = '1'; el.style.transform = 'none'; });
@@ -209,8 +211,16 @@ export class EBReadingHost extends React.Component<HostProps, any> {
 
     this.repositionNav = () => this.updateNav(this.state.active);
     window.addEventListener('resize', this.repositionNav);
+    this.updateReadingProgress = () => {
+      if (!this.rootEl) return;
+      const rect = this.rootEl.getBoundingClientRect();
+      const distance = Math.max(1, rect.height - window.innerHeight);
+      const progress = Math.max(0, Math.min(100, (-rect.top / distance) * 100));
+      if (Math.abs(progress - this.state.readingProgress) > 0.25) this.setState({ readingProgress: progress });
+    };
+    window.addEventListener('scroll', this.updateReadingProgress, { passive: true });
     if (document.fonts && (document.fonts as any).ready) (document.fonts as any).ready.then(() => this.repositionNav()).catch(() => {});
-    requestAnimationFrame(() => { this.updateNav(this.state.active); this.selectIv('hex'); });
+    requestAnimationFrame(() => { this.updateNav(this.state.active); this.updateReadingProgress(); this.selectIv('hex'); });
   }
 
   componentDidUpdate() { this.setBodyLock(this.isLocked()); }
@@ -220,6 +230,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     if (this.revealObs) this.revealObs.disconnect();
     if (this.glyphObs) this.glyphObs.disconnect();
     if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
+    if (this.updateReadingProgress) window.removeEventListener('scroll', this.updateReadingProgress);
     this.setBodyLock(false);
   }
 
@@ -233,9 +244,8 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     this.setState({ active: key });
     this.updateNav(key);
     const panel = this.panelEls.get(key);
-    if (this.stageEl && panel) {
-      this.stageEl.scrollTo({ left: panel.offsetLeft, behavior: this.props.reduceMotion ? 'auto' : 'smooth' });
-      const y = this.stageEl.getBoundingClientRect().top + window.scrollY - 76;
+    if (panel) {
+      const y = panel.getBoundingClientRect().top + window.scrollY - 112;
       const target = Math.max(0, y);
       const se = document.scrollingElement || document.documentElement;
       se.scrollTop = target; window.scrollTo(0, target);
@@ -622,8 +632,17 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const palette = this.props.palette ?? 'daybook';
     const motion = this.props.reduceMotion ? 'off' : 'on';
     return (
-      <div className="eb-reading" data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}
-        style={{ paddingTop: 'var(--nav-height, 64px)', paddingBottom: 44 }}>
+      <div className="eb-reading" data-oracle-reader data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
+        <nav className="oracle-reading-progress" data-oracle-progress-nav aria-label="Oracle reading">
+          <div className="oracle-reading-progress__inner">
+            <span className="oracle-reading-progress__code">Code {this.props.data.code}</span>
+            <span className="oracle-reading-progress__title">{this.props.data.cardName}</span>
+            <span className="oracle-reading-progress__section">{this.state.active === 'ul' ? 'The Reading' : this.state.active.replace('genekeys', 'Gene Keys').replace('humandesign', 'Human Design')}</span>
+          </div>
+          <div className="oracle-reading-progress__track" role="progressbar" aria-label="Reading progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(this.state.readingProgress)}>
+            <span data-oracle-progress-fill style={{ transform: `scaleX(${this.state.readingProgress / 100})` }} />
+          </div>
+        </nav>
         <EBReadingMarkup vals={this.renderVals()} />
       </div>
     );

@@ -1,8 +1,9 @@
-.oracle-bottom-nav { position:fixed; z-index:40; right:0; bottom:0; left:0; color:var(--l-1); background:color-mix(in oklab,var(--l-bg) 94%,transparent); border-top:1px solid var(--l-rule); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding-bottom:env(safe-area-inset-bottom,0px); }
-.oracle-bottom-nav__inner { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:stretch; min-height:56px; max-width:1180px; margin:0 auto; }
+.oracle-bottom-nav { position:relative; z-index:1; color:var(--l-1); background:#14100b; border-top:1px solid rgba(168,135,77,.14); padding:clamp(42px,7vw,84px) 0 calc(clamp(42px,7vw,84px) + env(safe-area-inset-bottom,0px)); }
+.oracle-bottom-nav__inner { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:stretch; min-height:56px; max-width:900px; margin:0 auto; }
 .oracle-bottom-nav__edge { display:flex; min-width:0; justify-content:flex-end; }
 .oracle-bottom-nav__edge--next { justify-content:flex-start; }
-.oracle-bottom-nav__neighbor { display:flex; align-items:center; min-width:0; max-width:100%; min-height:44px; padding:0 16px; color:var(--l-3); text-decoration:none; }
+.oracle-bottom-nav__neighbor { display:flex; align-items:center; min-width:0; max-width:100%; min-height:44px; padding:0 24px; color:var(--l-3); text-decoration:none; transition:color 240ms ease; }
+.oracle-bottom-nav__neighbor:hover { color:var(--accent); }
 .oracle-bottom-nav__neighbor--previous { justify-content:flex-end; text-align:right; }
 .oracle-bottom-nav__neighbor--next { justify-content:flex-start; text-align:left; }
 .oracle-bottom-nav__neighbor-copy { display:flex; flex-direction:column; min-width:0; }
@@ -10,7 +11,7 @@
 .oracle-bottom-nav__name { overflow:hidden; margin-top:4px; color:var(--l-2); font-family:var(--font-display); font-size:13px; line-height:1.15; text-overflow:ellipsis; white-space:nowrap; }
 .oracle-bottom-nav__constellation { display:grid; grid-template-columns:44px 66px 44px; align-items:stretch; justify-self:center; }
 .oracle-bottom-nav__glyph-link, .oracle-bottom-nav__current { display:flex; min-width:44px; min-height:44px; align-items:center; justify-content:center; color:inherit; text-decoration:none; }
-.oracle-bottom-nav__current { flex-direction:column; border-right:1px solid var(--l-rule); border-left:1px solid var(--l-rule); }
+.oracle-bottom-nav__current { flex-direction:column; border-right:1px solid rgba(168,135,77,.14); border-left:1px solid rgba(168,135,77,.14); }
 .oracle-bottom-nav__number { font-family:var(--font-display); font-size:18px; line-height:1; }
 .oracle-bottom-nav__all { margin-top:4px; font-family:var(--font-ui); font-size:9px; line-height:1; letter-spacing:.18em; text-transform:uppercase; }
 @media (max-width:560px) {
