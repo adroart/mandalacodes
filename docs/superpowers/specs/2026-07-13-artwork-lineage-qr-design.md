@@ -1,8 +1,22 @@
 # Artwork Lineage QR, recovery, and custodial succession
 
-**Status:** Approved design; immediate QR/Lineage Code implementation is next. Museum succession is designed here but explicitly deferred.
+**Status:** Approved lineage design with canonical-owner amendment. Museum succession is designed here but explicitly deferred.
 
 **Date:** 2026-07-13
+
+## Canonical-owner amendment
+
+The permanent physical artwork identity belongs to **Adrian Rasmussen**, not
+Mandala Codes. New metal plates use
+`https://adrianrasmussen.com/qr/AR-XXXXXXXX`; Adrian-Website owns physical
+instance issuance, the permanent Lineage Code, keeper registration, and the
+fabrication manifest. Mandala Codes may consume the public projection as an
+Atlas/meaning lens, but it does not define what is engraved.
+
+The shipment-critical implementation specification and plan live in the
+Adrian-Website repository under `docs/superpowers/`. Any earlier examples in
+this document that use `mandalacodes.com/qr/piece/...` describe the existing
+Mandala route, not the canonical URL for newly fabricated artwork plates.
 
 ## Purpose
 
