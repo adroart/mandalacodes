@@ -1,6 +1,6 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE oracle_reflection_sessions (
+CREATE TABLE IF NOT EXISTS oracle_reflection_sessions (
   id TEXT PRIMARY KEY,
   owner_user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   hexagram_number INTEGER NOT NULL CHECK (hexagram_number BETWEEN 1 AND 64),
@@ -8,9 +8,9 @@ CREATE TABLE oracle_reflection_sessions (
   updated_at TEXT NOT NULL,
   finished_at TEXT
 );
-CREATE INDEX idx_oracle_reflection_sessions_owner_hexagram ON oracle_reflection_sessions(owner_user_id, hexagram_number, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_oracle_reflection_sessions_owner_hexagram ON oracle_reflection_sessions(owner_user_id, hexagram_number, created_at DESC);
 
-CREATE TABLE oracle_reflection_segments (
+CREATE TABLE IF NOT EXISTS oracle_reflection_segments (
   id TEXT PRIMARY KEY,
   session_id TEXT NOT NULL REFERENCES oracle_reflection_sessions(id) ON DELETE CASCADE,
   owner_user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
@@ -29,5 +29,5 @@ CREATE TABLE oracle_reflection_segments (
   updated_at TEXT NOT NULL,
   UNIQUE(session_id, sequence)
 );
-CREATE INDEX idx_oracle_reflection_segments_session_sequence ON oracle_reflection_segments(session_id, sequence);
-CREATE INDEX idx_oracle_reflection_segments_retry ON oracle_reflection_segments(owner_user_id, transcription_status, updated_at);
+CREATE INDEX IF NOT EXISTS idx_oracle_reflection_segments_session_sequence ON oracle_reflection_segments(session_id, sequence);
+CREATE INDEX IF NOT EXISTS idx_oracle_reflection_segments_retry ON oracle_reflection_segments(owner_user_id, transcription_status, updated_at);
