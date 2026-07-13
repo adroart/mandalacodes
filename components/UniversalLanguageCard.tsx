@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { ALL_CARDS, CARD_BY_NUMBER } from '../data/oracleData';
+import { CARD_BY_NUMBER } from '../data/oracleData';
 import { HexagramSVG, hexagramLineBooleans } from './oracle/HexagramGlyph';
 import { getExpandedCard } from '../data/expandedOracleData';
 import { getSynthesis, type CardSynthesis } from '../data/synthesisData';
@@ -223,12 +223,6 @@ const UniversalLanguageCard: React.FC = () => {
   };
 
   const piece = ulPieceForCard(card.number);
-  const sortedNums = ALL_CARDS.map(c => c.number);
-  const idx = sortedNums.indexOf(card.number);
-  const prevCardNum = idx > 0 ? sortedNums[idx - 1] : null;
-  const nextCardNum = idx < sortedNums.length - 1 ? sortedNums[idx + 1] : null;
-  const previousCard = prevCardNum === null ? null : (CARD_BY_NUMBER.get(prevCardNum) ?? null);
-  const nextCard = nextCardNum === null ? null : (CARD_BY_NUMBER.get(nextCardNum) ?? null);
   const palette = isDarkMode ? 'nightfall' : 'daybook';
   return (
     <>
@@ -286,7 +280,7 @@ const UniversalLanguageCard: React.FC = () => {
         keywords={keywords}
       />
 
-      <OracleBottomNavigation current={card} previous={previousCard} next={nextCard} palette={palette} onInvocationPublished={() => void refreshInvocation()} />
+      <OracleBottomNavigation current={card} palette={palette} pieceId={piece ? String(piece.id) : null} onShare={() => setShareOpen(true)} onInvocationPublished={() => void refreshInvocation()} />
     </>
   );
 };
