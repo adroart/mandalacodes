@@ -19,7 +19,12 @@ import { CAMERA_FAR_DIST, CAMERA_NEAR_DIST, easeInOutCubic, stepRig, useRig } fr
 
 export interface GlobeSceneProps {
   nodes: GlobeNode[];
+  /** The selected marker (a city cluster id): drives the marker highlight. */
   selectedId?: string | null;
+  /** The selected piece key: drives the kinship-arc highlight, which keys off
+      per-piece node keys, not cluster ids. Usually equals selectedId, but for
+      a multi-piece city the cluster id and the chosen piece key differ. */
+  kinSelectedId?: string | null;
   kinship?: KinshipIndex | null;
   kinshipVisible: boolean;
   placedByCard: ReadonlyMap<number, { lat: number; lng: number }>;
@@ -32,6 +37,7 @@ export interface GlobeSceneProps {
 export default function GlobeScene({
   nodes,
   selectedId,
+  kinSelectedId,
   kinship,
   kinshipVisible,
   placedByCard,
@@ -67,8 +73,19 @@ export default function GlobeScene({
     const halfMin = Math.min(halfV, Math.atan(Math.tan(halfV) * (persp.aspect || 1)));
     const ringFit = 1.58 / Math.tan(halfMin) + 0.4;
     const farDist = Math.max(CAMERA_FAR_DIST, ringFit);
+    // Resting distance: on wide screens the tuned CAMERA_NEAR_DIST stands
+    // (sphere fills ~88% of the height). On narrow portrait phones that
+    // distance crops the sphere into a wall of dots, so pull back until the
+    // whole sphere fits the visible viewport with breathing room. The canvas
+    // overhangs the wrapper by 28% (inset -14%), so the on-screen slice sees
+    // only tan(half)/1.28 of the camera's half-angle; a sphere of radius r at
+    // distance d subtends asin(r/d), hence d = r / sin(visible half-angle).
+    const visibleHalf = Math.atan(Math.tan(halfMin) / 1.28);
+    const sphereFit = 1.12 / Math.sin(visibleHalf); // r 1.12: sphere + glow margin
+    const nearDist = Math.max(CAMERA_NEAR_DIST, sphereFit);
     const e = easeInOutCubic(rig.mandala);
-    camera.position.z = CAMERA_NEAR_DIST + (farDist - CAMERA_NEAR_DIST) * e + rig.travelDolly;
+    camera.position.z =
+      nearDist + (Math.max(farDist, nearDist) - nearDist) * e + rig.travelDolly;
   }, -1);
 
   return (
@@ -86,7 +103,11 @@ export default function GlobeScene({
             yoursMode={yoursMode}
           />
           {kinship && kinship.pairs.length > 0 && (
-            <KinshipArcs index={kinship} selectedId={selectedId} visible={kinshipVisible} />
+            <KinshipArcs
+              index={kinship}
+              selectedId={kinSelectedId ?? selectedId}
+              visible={kinshipVisible}
+            />
           )}
           <HexagramRing placedByCard={placedByCard} />
         </group>

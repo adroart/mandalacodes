@@ -202,6 +202,23 @@ function brightFor(node: GlobeNode): number {
   return Math.max(BRIGHT_MIN, Math.min(BRIGHT_MAX, b));
 }
 
+/* City clustering (Phase 2A): a marker grows with the number of pieces resting
+   in its city, in BOTH size and brightness, but under a soft cap so a twenty-
+   piece city never dwarfs the globe (Adrian's answer 2). A single-piece city
+   (count 1) returns 1 on both, so it is pixel-identical to before. The growth
+   is logarithmic: each doubling adds a fixed step, and the cap bites well
+   before the largest cities. */
+const CLUSTER_SIZE_CAP = 3.0;      // never larger than 3x the base marker
+const CLUSTER_BRIGHT_CAP = 1.6;    // never brighter than 1.6x the base color
+function clusterSizeMul(count: number): number {
+  if (count <= 1) return 1;
+  return Math.min(CLUSTER_SIZE_CAP, 1 + 0.6 * Math.log2(count));
+}
+function clusterBrightMul(count: number): number {
+  if (count <= 1) return 1;
+  return Math.min(CLUSTER_BRIGHT_CAP, 1 + 0.25 * Math.log2(count));
+}
+
 export interface MarkersProps {
   nodes: GlobeNode[];
   selectedId?: string | null;
@@ -385,7 +402,14 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
       // Lens focus: excluded lights recede, they never vanish. The visitor's
       // own origin marker is never receded.
       if (lensActive && target === 1 && entry.node.status !== 'origin') {
-        const inSeries = !focusSeries || entry.node.series === focusSeries;
+        // A cluster answers the lens at the cluster level: it stays lit if ANY
+        // member matches (recede only when no member does). seriesList carries
+        // every member's series; `yours` is true when any member is yours.
+        const inSeries =
+          !focusSeries ||
+          (entry.node.seriesList
+            ? entry.node.seriesList.includes(focusSeries)
+            : entry.node.series === focusSeries);
         const inYours = !yoursMode || entry.node.yours === true;
         if (!(inSeries && inYours)) target = RECEDE_ALPHA;
       }
@@ -398,9 +422,17 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
       const isEmber = n.status === 'unawakened';
       latLngToVec3(n.lat, n.lng, GLOBE_RADIUS * MARKER_LIFT, scratch);
       pos.setXYZ(write, scratch.x, scratch.y, scratch.z);
+      // City cluster growth: bigger and brighter with piece count, soft-capped.
+      const count = n.count ?? 1;
+      const clusterBright = clusterBrightMul(count);
       const c = colorFor(n.status);
-      col.setXYZ(write, c.r, c.g, c.b);
-      size.setX(write, sizeFor(n.status));
+      // Dim world (origin/main): base color stays plain; the potency scale rides
+      // aBright below, and the ember dims via alphaScaleFor. Clustering (Phase 2A):
+      // a multi-piece city brightens its base color and grows its size, soft-capped.
+      // count 1 => clusterBright/clusterSizeMul return 1, so single pieces render
+      // pixel-identically to the dim-world baseline.
+      col.setXYZ(write, c.r * clusterBright, c.g * clusterBright, c.b * clusterBright);
+      size.setX(write, sizeFor(n.status) * clusterSizeMul(count));
       alpha.setX(write, entry.alpha * alphaScaleFor(n.status));
       phase.setX(write, Math.abs(Math.sin(n.lat * 12.9898 + n.lng * 78.233)) % 1);
       sel.setX(write, n.id === selectedRef.current ? 1 : 0);

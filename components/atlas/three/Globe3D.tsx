@@ -66,8 +66,15 @@ function detectLowTier(): boolean {
 }
 
 export interface Globe3DProps {
+  /** The rendered marker layer: one node per city cluster (plus the birth
+      origin). Single-piece cities keep the piece's own key as their id. */
   nodes: GlobeNode[];
+  /** The selected marker (a cluster id): drives the tween, leader line and
+      marker highlight. */
   selectedId?: string | null;
+  /** The selected piece key: drives the kinship-arc highlight and the thread-
+      travel flight, which both key off per-piece node keys. */
+  kinSelectedId?: string | null;
   onSelect?: (id: string) => void;
   kinship?: KinshipIndex | null;
   kinshipVisible?: boolean;
@@ -98,6 +105,7 @@ const EMPTY_PLACED: ReadonlyMap<number, { lat: number; lng: number }> = new Map(
 export default function Globe3D({
   nodes,
   selectedId,
+  kinSelectedId,
   onSelect,
   kinship,
   kinshipVisible = true,
@@ -122,6 +130,12 @@ export default function Globe3D({
   const [inView, setInView] = useState(true);
   const [mandalaOn, setMandalaOn] = useState(false);
 
+  // City-cluster count numerals: one absolutely-positioned DOM element per
+  // multi-piece city, projected each frame through the live rig (the same
+  // projection the leader line uses), so the number rides on its marker and
+  // hides on the back hemisphere. DOM, not shader text: cheap and crisp.
+  const numeralRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
   // Dev-only window handle for inspecting the live rig from the console.
   useEffect(() => {
     if (import.meta.env.DEV) (window as unknown as { __atlasRig?: Rig }).__atlasRig = rig;
@@ -143,6 +157,9 @@ export default function Globe3D({
   const [travelCaption, setTravelCaption] = useState<string | null>(null);
   const travelTimer = useRef<number>(0);
   const prevSelected = useRef<string | null>(null);
+  // Thread travel keys off the piece keys, not the cluster ids, so kindred
+  // single-piece cities still fly their shared thread on selection.
+  const prevKinSelected = useRef<string | null>(null);
 
   // Mutable interaction state (never React state: read inside handlers).
   const drag = useRef<{ x: number; y: number; moved: boolean; active: boolean }>({
@@ -198,7 +215,8 @@ export default function Globe3D({
      pieces becomes a thread travel: a longer flight, the camera lifting off
      the surface mid-arc, and a caption naming the thread being flown. */
   useEffect(() => {
-    const prev = prevSelected.current;
+    const prevKin = prevKinSelected.current;
+    prevKinSelected.current = kinSelectedId ?? null;
     prevSelected.current = selectedId ?? null;
     selectedRef.current = selectedId ?? null;
     if (!selectedId) {
@@ -209,7 +227,10 @@ export default function Globe3D({
     if (!target) return;
     engageMandala(false);
 
-    const trigram = prev && prev !== selectedId ? sharedTrigram(kinship, prev, selectedId) : null;
+    const trigram =
+      prevKin && kinSelectedId && prevKin !== kinSelectedId
+        ? sharedTrigram(kinship, prevKin, kinSelectedId)
+        : null;
     const traveling = trigram != null;
     if (traveling) {
       setTravelCaption(`traveling the ${trigram} thread`);
@@ -229,7 +250,7 @@ export default function Globe3D({
       dollyAmp: traveling ? 1.15 : undefined,
     };
     rig.paused = true;
-  }, [selectedId, nodes, rig, engageMandala, kinship]);
+  }, [selectedId, kinSelectedId, nodes, rig, engageMandala, kinship]);
 
   useEffect(() => () => window.clearTimeout(travelTimer.current), []);
 
@@ -263,6 +284,48 @@ export default function Globe3D({
     raf = requestAnimationFrame(update);
     return () => cancelAnimationFrame(raf);
   }, [selectedId, nodes, onMarkerScreenPos, rig]);
+
+  /* City-cluster numerals: project every multi-piece city each frame and pin
+     its number to the marker. Writes DOM transforms directly (no React state)
+     so the label tracks the turning globe without re-rendering. Hidden on the
+     back hemisphere and while the mandala view is engaged (the markers shrink
+     there and fixed-size labels would crowd the weave). */
+  const hasNumerals = useMemo(() => nodes.some((n) => (n.count ?? 1) > 1), [nodes]);
+  useEffect(() => {
+    if (!hasNumerals) return;
+    let raf = 0;
+    const v = new THREE.Vector3();
+    const update = () => {
+      const inner = canvasBoxRef.current;
+      const wrapper = wrapperRef.current;
+      const camera = rig.camera;
+      if (inner && wrapper && camera) {
+        const r = inner.getBoundingClientRect();
+        const w = wrapper.getBoundingClientRect();
+        const hidden = rig.mandala > 0.05;
+        for (const n of nodes) {
+          if ((n.count ?? 1) <= 1) continue;
+          const el = numeralRefs.current.get(n.id);
+          if (!el) continue;
+          latLngToVec3(n.lat, n.lng, 1.012, v);
+          v.applyAxisAngle(Y_AXIS, -rig.phi);
+          v.applyAxisAngle(X_AXIS, rig.theta);
+          if (!hidden && v.z > 0.05) {
+            v.project(camera);
+            const x = (v.x * 0.5 + 0.5) * r.width + (r.left - w.left);
+            const y = (1 - (v.y * 0.5 + 0.5)) * r.height + (r.top - w.top);
+            el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+            el.style.opacity = '1';
+          } else {
+            el.style.opacity = '0';
+          }
+        }
+      }
+      raf = requestAnimationFrame(update);
+    };
+    raf = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(raf);
+  }, [hasNumerals, nodes, rig]);
 
   /* Frameloop gating: stop rendering entirely when scrolled away. */
   useEffect(() => {
@@ -342,25 +405,31 @@ export default function Globe3D({
     [rig],
   );
 
+  /* The ring is a Mandala View instrument only (Adrian, 2026-07-11: the
+     resting globe is just the globe). Taps and hover are inert until the
+     view is engaged, so the resting view carries no invisible hit targets.
+     The machinery stays; only this gate decides. */
   const pickRing = useCallback(
     (clientX: number, clientY: number): boolean => {
-      if (!onRingTap) return false;
+      if (!onRingTap || rig.mandala < 0.6) return false;
       const hit = nearestRingGlyph(clientX, clientY);
       if (!hit || hit.dist >= RING_TAP_PX) return false;
       onRingTap(hit.n);
       return true;
     },
-    [onRingTap, nearestRingGlyph],
+    [onRingTap, nearestRingGlyph, rig],
   );
 
-  /* Ring hover: a cheap discoverability affordance. The ring reads as
-     atmosphere at rest (glyph alpha 0.12), so a pointer resting near the
-     band brightens the whole ring slightly via one uniform (HexagramRing
-     reads rig.ringHover). Mouse-only (no hover on touch), but harmless
-     either way: the tap itself works regardless. */
+  /* Ring hover: a cheap discoverability affordance while the Mandala View
+     is engaged. A pointer resting near the band brightens the whole ring
+     slightly via one uniform (HexagramRing reads rig.ringHover). Mouse-only
+     (no hover on touch), but harmless either way. */
   const updateRingHover = useCallback(
     (clientX: number, clientY: number) => {
-      if (!onRingTap) return;
+      if (!onRingTap || rig.mandala < 0.6) {
+        rig.ringHoverTarget = false;
+        return;
+      }
       const hit = nearestRingGlyph(clientX, clientY);
       rig.ringHoverTarget = !!hit && hit.dist < RING_HOVER_PX;
     },
@@ -491,6 +560,7 @@ export default function Globe3D({
           <GlobeScene
             nodes={nodes}
             selectedId={selectedId}
+            kinSelectedId={kinSelectedId}
             kinship={kinship}
             kinshipVisible={kinshipVisible}
             placedByCard={placedByCard}
@@ -500,6 +570,47 @@ export default function Globe3D({
         </Canvas>
       </RigContext.Provider>
       </div>
+
+      {/* City-cluster count numerals: the number of pieces resting in a city,
+          in the map's label font (Lato caps), riding on its marker. Each is
+          positioned every frame by the projection effect above. */}
+      {hasNumerals && (
+        <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5 }}>
+          {nodes
+            .filter((n) => (n.count ?? 1) > 1)
+            .map((n) => {
+              const count = n.count ?? 1;
+              const fontSize = Math.round(11 + Math.min(6, Math.log2(count) * 2));
+              return (
+                <div
+                  key={n.id}
+                  ref={(el) => {
+                    if (el) numeralRefs.current.set(n.id, el);
+                    else numeralRefs.current.delete(n.id);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    opacity: 0,
+                    willChange: 'transform, opacity',
+                    fontFamily: 'Lato, system-ui, sans-serif',
+                    fontWeight: 700,
+                    fontSize,
+                    lineHeight: 1,
+                    letterSpacing: '0.04em',
+                    color: '#fbf3e3',
+                    textShadow:
+                      '0 0 4px rgba(28,18,8,0.95), 0 1px 2px rgba(0,0,0,0.9)',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {count}
+                </div>
+              );
+            })}
+        </div>
+      )}
 
       {/* Corner vignette: pulls the eye to the lit world, hides nothing. */}
       <div
@@ -528,7 +639,7 @@ export default function Globe3D({
           fontFamily: '"Cormorant Garamond", serif',
           fontSize: 15,
           letterSpacing: '0.06em',
-          color: 'rgba(196, 170, 124, 0.85)',
+          color: 'rgba(212, 190, 150, 0.95)',
         }}
       >
         {travelCaption ?? ''}
@@ -549,7 +660,7 @@ export default function Globe3D({
           fontFamily: '"Cormorant Garamond", serif',
           fontSize: 17,
           letterSpacing: '0.04em',
-          color: 'rgb(196, 170, 124)',
+          color: 'rgb(212, 190, 150)',
         }}
       >
         {mandalaCaption ?? 'The mandala so far'}

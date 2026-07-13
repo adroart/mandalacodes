@@ -14,6 +14,7 @@ import KinshipLayer from './atlas/KinshipLayer';
 import { useIdleFade } from './atlas/useIdleFade';
 import { seriesColor } from './atlas/seriesColor';
 import PieceHUD from './atlas/PieceHUD';
+import CityListHUD, { type CityMember } from './atlas/CityListHUD';
 import { pieceCode } from '../utils/pieceCode';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
@@ -115,6 +116,10 @@ const AtlasPage: React.FC = () => {
   // for their "See it on the Atlas" bridge, and selections stay shareable.
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedKey, setSelectedKeyState] = useState<string | null>(null);
+  /* A multi-piece city opened into its list (Phase 2A). Holds a cityId; the
+     HUD slot shows the city-list panel while it is set. A single-piece city
+     resolves straight to selectedKey and never sets this. */
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
   /* Filters initialize from the URL so filtered views are shareable
      (e.g. /atlas?series=Universal+Language&size=large). */
   const [selectedSeries, setSelectedSeriesState] = useState<string>(
@@ -142,24 +147,25 @@ const AtlasPage: React.FC = () => {
   const [markerScreenPos, setMarkerScreenPos] = useState<{ x: number; y: number } | null>(null);
   // Corner chrome fades when the visitor stops interacting, leaving only the
   // turning world. A selected piece or open filters keep the chrome awake.
-  const idle = useIdleFade(4000) && !selectedKey && !filtersOpen;
+  const idle = useIdleFade(4000) && !selectedKey && !selectedCity && !filtersOpen;
 
   /* Dream Stream: the feed-like drift across the dream-bearing lights. When
      active, one gesture flies to the next light and opens its vessel. */
   const [streamActive, setStreamActive] = useState<boolean>(false);
 
-  // Esc releases the locked piece, and while drifting also exits the stream.
+  // Esc releases the locked piece, any open city list, and exits the stream.
   useEffect(() => {
-    if (!selectedKey && !streamActive) return;
+    if (!selectedKey && !selectedCity && !streamActive) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setStreamActive(false);
         setSelectedKeyState(null);
+        setSelectedCity(null);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedKey, streamActive]);
+  }, [selectedKey, selectedCity, streamActive]);
   const [use3D] = useState<boolean>(webglAvailable);
 
   /* Mirror a filter into the URL; 'all' clears the param. */
@@ -412,6 +418,7 @@ const AtlasPage: React.FC = () => {
         id: p.key,
         lat: c.lat,
         lng: c.lng,
+        cityId: p.cityId,
         status: p.status === 'unawakened' ? 'unawakened' : 'placed',
         label: p.title,
         pieceType: p.pieceType,
@@ -572,6 +579,143 @@ const AtlasPage: React.FC = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [streamActive]);
+
+  /* City clusters (Phase 2A): the rendered marker layer. Group the per-piece
+     globe nodes by city into one marker apiece — the globe draws these, while
+     `globeNodes` stays the per-piece truth for selection, kinship, the HUD and
+     the yours-lens. A single-piece city keeps the piece's own key as its id so
+     it behaves pixel-identically to before; a multi-piece city gets a
+     synthetic `city:<id>` id and count > 1 (which lights the numeral and opens
+     the list). The birth-place origin is its own point and never clusters. */
+  const cityClusters: GlobeNode[] = useMemo(() => {
+    const byCity = new Map<string, GlobeNode[]>();
+    const out: GlobeNode[] = [];
+    for (const n of globeNodes) {
+      // The visitor's birth place is not a piece; it never merges into a city.
+      if (n.status === 'origin' || !n.cityId) {
+        out.push({ ...n, count: 1, memberKeys: [n.id] });
+        continue;
+      }
+      const arr = byCity.get(n.cityId);
+      if (arr) arr.push(n);
+      else byCity.set(n.cityId, [n]);
+    }
+    for (const [cityId, members] of byCity) {
+      if (members.length === 1) {
+        // Pixel-identical to today: the piece's own node, its own key.
+        const m = members[0];
+        out.push({ ...m, count: 1, memberKeys: [m.id] });
+        continue;
+      }
+      const first = members[0];
+      // A mixed placed/unawakened city reads as a lit bronze light if ANY
+      // member is placed (Adrian's answer 4).
+      const anyPlaced = members.some((m) => m.status === 'placed');
+      const seriesList = Array.from(
+        new Set(members.map((m) => m.series).filter((s): s is string => !!s)),
+      );
+      const ordinals = members
+        .map((m) => m.ordinal)
+        .filter((o): o is number => typeof o === 'number');
+      out.push({
+        id: `city:${cityId}`,
+        lat: first.lat,
+        lng: first.lng,
+        cityId,
+        status: anyPlaced ? 'placed' : 'unawakened',
+        label: cityLabelFor(cityId),
+        pieceType: first.pieceType,
+        series: first.series,
+        seriesList,
+        // Ignition order: the city ignites with its earliest-claimed member.
+        ordinal: ordinals.length > 0 ? Math.min(...ordinals) : undefined,
+        // The lens answers at the cluster level: yours/owned if ANY member is.
+        yours: members.some((m) => m.yours === true),
+        owned: members.some((m) => m.owned === true),
+        count: members.length,
+        memberKeys: members.map((m) => m.id),
+      });
+    }
+    return out;
+  }, [globeNodes]);
+
+  /* Which cluster each piece key belongs to (piece key → cluster id). A single
+     piece maps to itself; a member of a multi-piece city maps to `city:<id>`. */
+  const clusterByMember = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const cl of cityClusters) {
+      for (const k of cl.memberKeys ?? []) map.set(k, cl.id);
+    }
+    return map;
+  }, [cityClusters]);
+
+  /* The cluster the globe should tween to and highlight: the selected piece's
+     city, or the opened city list. The piece key still drives kinship. */
+  const activeClusterId = useMemo(() => {
+    if (selectedKey) return clusterByMember.get(selectedKey) ?? selectedKey;
+    if (selectedCity) return `city:${selectedCity}`;
+    return null;
+  }, [selectedKey, selectedCity, clusterByMember]);
+
+  /* Whether the currently selected piece was reached through a multi-piece
+     city (so its HUD offers a back-to-the-list control). */
+  const selectedFromCity =
+    selectedCity != null &&
+    selectedKey != null &&
+    clusterByMember.get(selectedKey) === `city:${selectedCity}`;
+
+  /* A cluster was tapped: count 1 resolves straight to the piece (today's
+     behavior); count > 1 opens the city list in the HUD slot. */
+  const handleClusterSelect = (id: string) => {
+    if (id === BIRTH_KEY) {
+      setSelectedCity(null);
+      setSelectedKey(BIRTH_KEY);
+      return;
+    }
+    const cl = cityClusters.find((c) => c.id === id);
+    if (!cl) {
+      setSelectedKey(id);
+      return;
+    }
+    if ((cl.count ?? 1) <= 1) {
+      setSelectedCity(null);
+      setSelectedKey(cl.memberKeys?.[0] ?? id);
+    } else {
+      setSelectedKey(null); // clears ?piece
+      setSelectedCity(cl.cityId ?? null);
+    }
+  };
+
+  /* The open city's label and member rows for the city-list HUD. */
+  const selectedCityData = useMemo(() => {
+    if (!selectedCity) return null;
+    const members: CityMember[] = seriesFiltered
+      .filter(
+        (p) =>
+          p.cityId === selectedCity &&
+          (p.status === 'placed' || p.status === 'unawakened'),
+      )
+      .sort(
+        (a, b) =>
+          (a.claimOrdinal ?? Number.POSITIVE_INFINITY) -
+            (b.claimOrdinal ?? Number.POSITIVE_INFINITY) ||
+          a.title.localeCompare(b.title),
+      )
+      .map((p) => ({
+        key: p.key,
+        title: p.title,
+        series: p.series,
+        status: p.status,
+        claimOrdinal: p.claimOrdinal,
+      }));
+    if (members.length === 0) return null;
+    return { cityLabel: cityLabelFor(selectedCity) ?? selectedCity, members };
+  }, [selectedCity, seriesFiltered]);
+
+  /* If the open city empties out (filters changed), close the list. */
+  useEffect(() => {
+    if (selectedCity && !selectedCityData) setSelectedCity(null);
+  }, [selectedCity, selectedCityData]);
 
   /* Ring tap (mandala view): a lit code travels to its piece in the world;
      an unlit code opens the code itself, where its pieces and the acquire
@@ -821,13 +965,6 @@ const AtlasPage: React.FC = () => {
 
   const hasBirthOrigin = globeNodes.some((n) => n.status === 'origin');
 
-  // Coordinate of the selected marker, for the HUD's lat-long readout.
-  const selectedCoord = useMemo(() => {
-    if (!selectedKey) return null;
-    const n = globeNodes.find((node) => node.id === selectedKey);
-    return n ? { lat: n.lat, lng: n.lng } : null;
-  }, [selectedKey, globeNodes]);
-
   // Chrome opacity easing — one class drives every corner overlay together.
   const chromeOpacity = idle ? 'opacity-25' : 'opacity-100';
 
@@ -877,16 +1014,20 @@ const AtlasPage: React.FC = () => {
                 />
               ) : (
                 <Globe3D
-                  nodes={globeNodes}
-                  selectedId={selectedKey}
-                  onSelect={(id) => setSelectedKey(id)}
+                  nodes={cityClusters}
+                  selectedId={activeClusterId}
+                  kinSelectedId={selectedKey}
+                  onSelect={handleClusterSelect}
                   kinship={kinshipIndex}
                   kinshipVisible={kinshipVisible}
                   placedByCard={placedByCard}
                   mandala={mandala}
                   mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed · touch a code to visit it`}
                   onMarkerScreenPos={setMarkerScreenPos}
-                  onBackgroundClick={() => setSelectedKey(null)}
+                  onBackgroundClick={() => {
+                    setSelectedKey(null);
+                    setSelectedCity(null);
+                  }}
                   focusSeries={focusSeries}
                   yoursMode={yoursMode}
                   onRingTap={handleRingTap}
@@ -913,7 +1054,7 @@ const AtlasPage: React.FC = () => {
                 <span className="text-bronze-400/90">Atlas</span>
               </nav>
               <h1
-                className="text-3xl sm:text-5xl text-bronze-300 font-medium leading-none"
+                className="text-2xl sm:text-5xl text-bronze-300 font-medium leading-none"
                 style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}
               >
                 Atlas
@@ -930,7 +1071,7 @@ const AtlasPage: React.FC = () => {
                     type="button"
                     aria-pressed={focusSeries === s}
                     onClick={() => setFocusSeries((cur) => (cur === s ? null : s))}
-                    className={`block w-full text-right font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] leading-relaxed transition-colors ${
+                    className={`block w-full text-right font-label text-[11px] uppercase tracking-[0.18em] leading-relaxed transition-colors ${
                       focusSeries === s
                         ? 'text-bronze-300'
                         : focusSeries
@@ -945,7 +1086,7 @@ const AtlasPage: React.FC = () => {
                   </button>
                 ))}
                 {hasBirthOrigin && (
-                  <div className="font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed">
+                  <div className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed">
                     your origin
                     <span aria-hidden style={{ color: '#9caa87' }}>
                       {' '}·
@@ -958,10 +1099,10 @@ const AtlasPage: React.FC = () => {
             {/* Bottom-left: the quiet stat caption, with the vocabulary
                 explained in place so the map never reads as silent jargon. */}
             {totalCount > 0 && (
-              <div className="pointer-events-none absolute left-5 sm:left-8 bottom-6 max-w-[48vw] sm:max-w-sm">
-                <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-400/70">
+              <div className="pointer-events-none absolute left-5 sm:left-8 bottom-6 max-w-[60vw] sm:max-w-sm">
+                <p className="font-label text-[12px] uppercase tracking-[0.2em] text-bronze-300/90">
                   {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
-                  <span aria-hidden className="mx-2 text-wood-500">·</span>
+                  <span aria-hidden className="mx-2 text-wood-400">·</span>
                   {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
                 </p>
                 <p className="mt-1.5 font-serif text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
@@ -993,8 +1134,8 @@ const AtlasPage: React.FC = () => {
                   aria-pressed={yoursMode}
                   onClick={() => setYoursMode((v) => !v)}
                   title="Lights carrying one of your own codes"
-                  className={`font-label text-[10px] uppercase tracking-[0.2em] transition-colors ${
-                    yoursMode ? 'text-[#9caa87]' : 'text-wood-400 hover:text-[#9caa87]'
+                  className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
+                    yoursMode ? 'text-[#9caa87]' : 'text-wood-300 hover:text-[#9caa87]'
                   }`}
                 >
                   your codes
@@ -1018,10 +1159,10 @@ const AtlasPage: React.FC = () => {
                 aria-pressed={kinshipVisible}
                 onClick={() => setKinshipVisible((v) => !v)}
                 title="Threads join pieces whose hexagrams share a trigram"
-                className={`font-label text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
                   kinshipVisible
-                    ? 'text-bronze-400'
-                    : 'text-wood-400 hover:text-bronze-400/80'
+                    ? 'text-bronze-300'
+                    : 'text-wood-300 hover:text-bronze-400/80'
                 }`}
               >
                 threads
@@ -1030,7 +1171,7 @@ const AtlasPage: React.FC = () => {
                 type="button"
                 aria-expanded={filtersOpen}
                 onClick={() => setFiltersOpen((o) => !o)}
-                className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-300 hover:text-bronze-400 transition-colors"
+                className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-200 hover:text-bronze-400 transition-colors"
               >
                 filter
                 {(selectedSeries !== 'all' ||
@@ -1049,15 +1190,18 @@ const AtlasPage: React.FC = () => {
                   if (next) setStreamActive(false); // mandala view exits the stream
                 }}
                 title="Pull back to see the whole weave at once"
-                className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/80 hover:text-bronze-400 transition-colors"
+                className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-300/90 hover:text-bronze-300 transition-colors"
               >
                 {mandala ? 'return' : 'mandala'}
               </button>
-              {selectedKey && (
+              {(selectedKey || selectedCity) && (
                 <button
                   type="button"
-                  onClick={() => setSelectedKey(null)}
-                  className="font-label text-[10px] uppercase tracking-[0.2em] text-bronze-300 hover:text-bronze-200 transition-colors"
+                  onClick={() => {
+                    setSelectedKey(null);
+                    setSelectedCity(null);
+                  }}
+                  className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-300 hover:text-bronze-200 transition-colors"
                 >
                   release
                 </button>
@@ -1113,7 +1257,7 @@ const AtlasPage: React.FC = () => {
           )}
 
           {/* ── Leader-line: a hairline from the marker to the HUD card ──────── */}
-          {selectedKey && markerScreenPos && globeBoxRef.current && (
+          {(selectedKey || selectedCity) && markerScreenPos && globeBoxRef.current && (
             <svg
               className="pointer-events-none absolute inset-0 z-20 hidden sm:block"
               width="100%"
@@ -1140,8 +1284,9 @@ const AtlasPage: React.FC = () => {
           )}
 
           {/* ── The held piece answers with the instrument card, its dream
-                 leading inside the vessel; never text floating on the world. ── */}
-          {selectedKey && (
+                 leading inside the vessel; never text floating on the world.
+                 A multi-piece city instead answers with its list. ─────────── */}
+          {(selectedKey || selectedCity) && (
             <div
               /* data-atlas-hud marks the vessel so stream wheel/swipe scrolls
                  the card instead of advancing. While drifting, keying by the
@@ -1165,19 +1310,21 @@ const AtlasPage: React.FC = () => {
                     cityLabel: birthPlace.label,
                     category: 'Your birth place',
                   }}
-                  coord={selectedCoord}
                   kin={nearestToBirth.map((n) => ({ key: n.key, title: `${n.title} · ${n.cityLabel}` }))}
                   onSelectKin={(key) => setSelectedKey(key)}
                   onRelease={() => setSelectedKey(null)}
                 />
-              ) : selectedPiece ? (
+              ) : selectedKey && selectedPiece ? (
                 <PieceHUD
                   piece={selectedPiece}
-                  coord={selectedCoord}
                   kin={kinForSelected}
                   onSelectKin={(key) => setSelectedKey(key)}
                   holderChart={holderChart}
-                  onRelease={() => setSelectedKey(null)}
+                  onRelease={() => {
+                    setSelectedKey(null);
+                    setSelectedCity(null);
+                  }}
+                  onBack={selectedFromCity ? () => setSelectedKey(null) : undefined}
                   carriesYourCode={
                     selectedPiece.cardNumber != null &&
                     yourGates.has(selectedPiece.cardNumber)
@@ -1185,6 +1332,13 @@ const AtlasPage: React.FC = () => {
                   intention={selectedIntention}
                   code={selectedCode}
                   alsoHere={alsoHere}
+                />
+              ) : selectedCityData ? (
+                <CityListHUD
+                  cityLabel={selectedCityData.cityLabel}
+                  members={selectedCityData.members}
+                  onSelectMember={(key) => setSelectedKey(key)}
+                  onRelease={() => setSelectedCity(null)}
                 />
               ) : null}
             </div>

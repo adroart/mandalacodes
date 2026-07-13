@@ -118,6 +118,9 @@ export interface PieceHUDProps {
   onSelectKin?: (key: string) => void;
   holderChart?: HolderChartSummary | null;
   onRelease: () => void;
+  /** When this piece was reached through a multi-piece city, a back control
+      returns to that city's list instead of releasing the selection. */
+  onBack?: () => void;
   isOrigin?: boolean;
   /** True when this piece carries one of the visitor's own codes. */
   carriesYourCode?: boolean;
@@ -136,6 +139,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   onSelectKin,
   holderChart,
   onRelease,
+  onBack,
   isOrigin = false,
   carriesYourCode = false,
   intention,
@@ -362,8 +366,19 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   // cut content at the sheet edge is the affordance); the dream never scrolls.
   return shell(
     <div className="max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto overscroll-contain scrollbar-hide">
+      {/* Back to the city list, when this piece was reached through one. */}
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="block px-[26px] pt-[18px] font-label text-[10px] uppercase tracking-[0.2em] transition-colors hover:text-bronze-300"
+          style={{ color: BRONZE }}
+        >
+          ← the city
+        </button>
+      )}
       {/* Header: code left, release right. */}
-      <header className="flex items-baseline justify-between px-[26px] pt-[22px] pb-4">
+      <header className={`flex items-baseline justify-between px-[26px] pb-4 ${onBack ? 'pt-3' : 'pt-[22px]'}`}>
         {code ? (
           <CodeText
             text={code}
@@ -385,9 +400,12 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
       </header>
 
       {/* Full-bleed artwork band. Shorter on phones so the dream keeps the
-          room; full height from sm up. */}
-      <div
-        className="relative h-[124px] sm:h-[172px] overflow-hidden"
+          room; full height from sm up. Tapping it opens the piece page, where
+          the full artwork is shown uncropped on its certificate plate. */}
+      <Link
+        to={bookHref}
+        aria-label="See the full artwork"
+        className="group relative block h-[124px] sm:h-[172px] overflow-hidden"
         style={{
           borderTop: '1px solid rgba(196,170,124,0.2)',
           borderBottom: '1px solid rgba(196,170,124,0.2)',
@@ -399,7 +417,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
             src={img(piece.coverImage, { w: 760 })}
             alt=""
             aria-hidden
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             style={{ objectPosition: '50% 50%', filter: 'saturate(0.92) brightness(0.94)' }}
           />
         )}
@@ -411,7 +429,14 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
               'linear-gradient(180deg, rgba(20,17,16,0) 62%, rgba(20,17,16,0.55) 100%)',
           }}
         />
-      </div>
+        {/* Quiet hover cue: this band is a doorway to the whole work. */}
+        <span
+          aria-hidden
+          className="absolute bottom-2 right-3 font-label text-[10px] uppercase tracking-[0.2em] text-paper-100/0 group-hover:text-paper-100/80 transition-colors duration-300"
+        >
+          See the full artwork
+        </span>
+      </Link>
 
       {/* The dream, the hero, or the quiet no-dream note. */}
       {dream ? (
