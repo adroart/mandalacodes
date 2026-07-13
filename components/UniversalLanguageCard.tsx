@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { ALL_CARDS, CARD_BY_NUMBER } from '../data/oracleData';
 import { HexagramSVG, hexagramLineBooleans } from './oracle/HexagramGlyph';
 import { getExpandedCard } from '../data/expandedOracleData';
-import { getSynthesis, getInvocation, type CardSynthesis } from '../data/synthesisData';
+import { getSynthesis, type CardSynthesis } from '../data/synthesisData';
 import { getLineText } from '../data/ichingLines';
 import { getParsedCard, mapIching, type MdIchingLine } from '../data/cardMarkdown';
 import { HEXAGRAM_CHINESE } from '../data/hexagramChinese';
@@ -21,6 +21,9 @@ import { useCardPlacement } from '../lib/atlas/state';
 import './oracle/eb/eb-template.css';
 import './oracle/eb/oracle-foundation.css';
 import OracleBottomNavigation from './oracle/OracleBottomNavigation';
+import PublicInvocation from './oracle/invocation/PublicInvocation';
+import { loadLiveInvocation } from '../lib/oracle/invocationApi';
+import type { LiveInvocation } from '../lib/oracle/invocationTypes';
 
 /* Earth's Breath card reading. The visible component is GENERATED from the
    imported design file (components/oracle/eb/generated/*) by the dc-import
@@ -40,7 +43,8 @@ const UniversalLanguageCard: React.FC = () => {
   const card = CARD_BY_NUMBER.get(cardNum);
   const expanded = getExpandedCard(cardNum);
   const [synthesis, setSynthesis] = useState<CardSynthesis | undefined>(undefined);
-  const [invocation, setInvocation] = useState<string | undefined>(undefined);
+  const [liveInvocationState, setLiveInvocationState] = useState<{ cardNum: number; value: LiveInvocation | null }>({ cardNum, value: null });
+  const liveInvocation = liveInvocationState.cardNum === cardNum ? liveInvocationState.value : null;
   const [ichingLines, setIchingLines] = useState<MdIchingLine[]>([]);
   /* The full entrance (veil + ring/center build) plays only on a FRESH arrival —
      from the deck, a shared link, or a reload. Prev/Next pass state.quiet so the
@@ -77,11 +81,21 @@ const UniversalLanguageCard: React.FC = () => {
   useEffect(() => {
     let cancelled = false;
     getSynthesis(cardNum).then(d => { if (!cancelled) setSynthesis(d); }).catch(() => {});
-    getInvocation(cardNum).then(v => { if (!cancelled) setInvocation(v); }).catch(() => {});
     getParsedCard(cardNum)
       .then(p => { if (!cancelled) setIchingLines(p ? (mapIching(p)?.lines ?? []) : []); })
       .catch(() => {});
     return () => { cancelled = true; };
+  }, [cardNum]);
+  const refreshInvocation = useCallback(async () => {
+    try { setLiveInvocationState({ cardNum, value: await loadLiveInvocation(cardNum, { fresh: true }) }); }
+    catch { /* Keep the last confirmed live version visible; the editor retains retry state. */ }
+  }, [cardNum]);
+  useEffect(() => {
+    const controller = new AbortController();
+    loadLiveInvocation(cardNum, { signal: controller.signal })
+      .then((value) => setLiveInvocationState({ cardNum, value }))
+      .catch(() => { /* A different card never renders this state's value because it is keyed. */ });
+    return () => controller.abort();
   }, [cardNum]);
   useMetaTags({
     title: card ? `${card.card_name} · Code ${cardNum} · Universal Language Oracle` : undefined,
@@ -166,7 +180,7 @@ const UniversalLanguageCard: React.FC = () => {
         ulReadingFirst: first.slice(1),
         ulReadingRest: ulP.slice(1),
         ulReading: ulP,
-        invocation: invocation ?? '',
+        invocation: '',
         ichingCombinationHex: synthesis?.synthesis.iching.trigram_combination ?? card.iching.essence,
         ichingCombinationUpper: card.iching.upper_trigram.nature,
         ichingCombinationLower: card.iching.lower_trigram.nature,
@@ -253,6 +267,7 @@ const UniversalLanguageCard: React.FC = () => {
             <style>{quietRowStyles}</style>
           </>
         }
+        invocationSlot={<PublicInvocation invocation={liveInvocation} />}
       />
       <BuySheet
         open={buyOpen}
@@ -271,7 +286,7 @@ const UniversalLanguageCard: React.FC = () => {
         keywords={keywords}
       />
 
-      <OracleBottomNavigation current={card} previous={previousCard} next={nextCard} palette={palette} />
+      <OracleBottomNavigation current={card} previous={previousCard} next={nextCard} palette={palette} onInvocationPublished={() => void refreshInvocation()} />
     </>
   );
 };

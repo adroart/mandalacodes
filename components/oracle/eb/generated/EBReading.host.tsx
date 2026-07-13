@@ -5,6 +5,7 @@
    SHARE / CURRENT_CODE / image) are injected from `props.data` so all 64 cards
    work. Animation + interaction logic is unchanged from the file. */
 import React from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import { EBReadingMarkup } from './EBReading.generated';
 
 export interface EBData {
@@ -32,6 +33,7 @@ interface HostProps {
   onShare?: () => void;       // bridge to the app share sheet (the previous Share panel)
   chartSlot?: React.ReactNode; // the real profile-aware "in your chart" callout (legacy bottom mount)
   headerChartSlot?: React.ReactNode; // the in-your-chart line in the header, under Acquire/Share
+  invocationSlot?: React.ReactNode; // hand-authored live invocation, mounted immediately after UL prose
 }
 
 export class EBReadingHost extends React.Component<HostProps, any> {
@@ -45,6 +47,8 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   ivcEls = new Map<string, any>();
   observer: any; revealObs: any; glyphObs: any; revealFallback: any; repositionNav: any; onKey: any;
   visibility: any;
+  invocationMount: HTMLElement | null = null;
+  invocationRoot: Root | null = null;
 
   state = {
     entranceDismissed: false,
@@ -157,6 +161,18 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     };
     window.addEventListener('keydown', this.onKey);
 
+    if (this.rootEl) {
+      const prose = this.rootEl.querySelector('section[data-chapter="ul"] > div > div[style*="flex-direction: column"]');
+      if (prose?.parentElement) {
+        this.invocationMount = document.createElement('div');
+        this.invocationMount.className = 'oracle-invocation-mount';
+        this.invocationMount.setAttribute('data-oracle-reveal', '');
+        prose.insertAdjacentElement('afterend', this.invocationMount);
+        this.invocationRoot = createRoot(this.invocationMount);
+        this.invocationRoot.render(this.props.invocationSlot ?? null);
+      }
+    }
+
     if (this.stageEl) {
       this.observer = new IntersectionObserver((entries) => {
         entries.forEach((en: any) => {
@@ -223,7 +239,10 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     requestAnimationFrame(() => { this.updateNav(this.state.active); this.selectIv('hex'); });
   }
 
-  componentDidUpdate() { this.setBodyLock(this.isLocked()); }
+  componentDidUpdate() {
+    this.setBodyLock(this.isLocked());
+    this.invocationRoot?.render(this.props.invocationSlot ?? null);
+  }
   componentWillUnmount() {
     window.removeEventListener('keydown', this.onKey);
     if (this.observer) this.observer.disconnect();
@@ -231,6 +250,10 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     if (this.glyphObs) this.glyphObs.disconnect();
     if (this.revealFallback) window.clearTimeout(this.revealFallback);
     if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
+    this.invocationRoot?.unmount();
+    this.invocationRoot = null;
+    this.invocationMount?.remove();
+    this.invocationMount = null;
     this.setBodyLock(false);
   }
 
