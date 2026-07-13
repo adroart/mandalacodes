@@ -33,6 +33,7 @@ interface HostProps {
   onShare?: () => void;       // bridge to the app share sheet (the previous Share panel)
   chartSlot?: React.ReactNode; // the real profile-aware "in your chart" callout (legacy bottom mount)
   headerChartSlot?: React.ReactNode; // the in-your-chart line in the header, under Acquire/Share
+  headerActionsSlot?: React.ReactNode; // the two hero action boxes (art + chart), replacing the built-in Acquire/Share pair
   invocationSlot?: React.ReactNode; // hand-authored live invocation, mounted immediately after UL prose
 }
 
@@ -646,6 +647,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       stop: (e: any) => { if (e && e.stopPropagation) e.stopPropagation(); },
       chartSlot: this.props.chartSlot ?? null,
       headerChartSlot: this.props.headerChartSlot ?? null,
+      headerActionsSlot: this.props.headerActionsSlot ?? null,
     };
   }
 

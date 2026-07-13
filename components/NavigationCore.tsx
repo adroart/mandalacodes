@@ -295,7 +295,7 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
             const underline = (
               <span
                 aria-hidden="true"
-                className={`absolute -bottom-0 left-3.5 2xl:left-5 right-3.5 2xl:right-5 h-px bg-bronze-500 transition-all duration-300 ease-out ${
+                className={`absolute bottom-2 left-3.5 2xl:left-5 right-3.5 2xl:right-5 h-0.5 bg-bronze-500 transition-all duration-300 ease-out ${
                   isNavActive(item.path) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                 }`}
               />
