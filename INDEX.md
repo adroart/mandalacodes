@@ -37,7 +37,7 @@ components/  (85 files, 25,680 lines)
 │   │   │   ├── generated/  (5 files, 2,591 lines)
 │   │   │   │   └── … 5 files
 │   │   │   ├── eb-template.css  (90 lines)
-│   │   │   └── oracle-foundation.css  (38 lines)
+│   │   │   └── oracle-foundation.css  (42 lines)
 │   │   ├── entry/  (14 files, 3,950 lines)
 │   │   │   ├── _mockups/  (1 files, 149 lines)
 │   │   │   │   └── … 1 files

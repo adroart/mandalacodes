@@ -13,6 +13,8 @@ public/learn/
 .wrangler
 test-results
 playwright-report
+.worktrees/
+.superpowers/
 scripts/output
 scripts/chart-lookbook/clients/
 scripts/chart-lookbook/*-lookbook.html
