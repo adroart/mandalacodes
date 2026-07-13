@@ -20,7 +20,7 @@ html.oracle-card-page, html.oracle-card-page body { background:#14100b !importan
 .oracle-reading-progress { position:sticky; z-index:91; top:var(--nav-height,64px); color:var(--l-1); background:color-mix(in oklab,var(--l-bg) 86%,transparent); border-bottom:1px solid rgba(168,135,77,.14); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
 .oracle-reading-progress__jumps { display:flex; align-items:center; justify-content:center; gap:4px; width:min(100%,1180px); min-height:64px; margin:0 auto; padding:0 clamp(8px,2vw,20px); overflow-x:auto; scrollbar-width:none; }
 .oracle-reading-progress__jumps::-webkit-scrollbar { display:none; }
-.oracle-reading-progress__jumps button { display:flex; flex:0 0 auto; min-width:0; min-height:64px; align-items:center; justify-content:center; padding:0 clamp(10px,1.25vw,18px); border:0; background:none; color:var(--l-3); font-family:var(--font-ui); font-size:clamp(15px,1.25vw,18px); font-weight:500; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; cursor:pointer; transition:color 240ms ease,background-color 240ms ease; }
+.oracle-reading-progress__jumps button { display:flex; flex:0 0 auto; min-width:0; min-height:64px; align-items:center; justify-content:center; padding:0 clamp(10px,1.25vw,18px); border:0; background:none; color:var(--l-3); font-family:var(--font-label); font-size:.8125rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase; white-space:nowrap; cursor:pointer; transition:color 240ms ease,background-color 240ms ease; }
 .oracle-reading-progress__jumps svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.25; }
 .oracle-reading-progress__jumps button:hover,.oracle-reading-progress__jumps button[data-active="true"] { color:var(--accent); }
 .oracle-reading-progress__track { position:absolute; top:-1px; right:0; left:0; height:2px; overflow:hidden; }
@@ -70,11 +70,11 @@ html.oracle-card-page, html.oracle-card-page body { background:#14100b !importan
   .eb-reading :is(h1.ul-title-mobile,h1.ul-title-desktop) { max-width:none !important; white-space:nowrap; }
 }
 @media (min-width:561px) and (max-width:760px) {
-  .oracle-reading-progress__jumps button { padding-inline:9px; font-size:14px; letter-spacing:.05em; }
+  .oracle-reading-progress__jumps button { padding-inline:9px; font-size:.75rem; letter-spacing:.14em; }
 }
 @media (max-width:560px) {
   .oracle-reading-progress__jumps { min-height:48px; justify-content:flex-start; gap:4px; padding-inline:8px; }
-  .oracle-reading-progress__jumps button { flex:0 0 auto; min-width:0; min-height:48px; padding-inline:8px; font-size:13px; letter-spacing:.04em; }
+  .oracle-reading-progress__jumps button { flex:0 0 auto; min-width:0; min-height:48px; padding-inline:8px; font-size:.6875rem; letter-spacing:.1em; }
   .oracle-reading-progress__jumps svg { width:16px; height:16px; }
   .eb-reading section[data-chapter="iching"] .ul-ji > div { width:calc(100% - 16px); }
 }
