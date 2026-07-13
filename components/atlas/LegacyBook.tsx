@@ -124,6 +124,11 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
   const [sealDate, setSealDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  // At-the-control nudge shown only after a successful inscription: 'share'
+  // (a fresh, readable intention that could ride the map) offers the share
+  // control above; 'next' points quietly to the next book section. Cleared
+  // when the pointed-at action is taken, on dismiss, or on the next save.
+  const [inscribeNudge, setInscribeNudge] = useState<'share' | 'next' | null>(null);
 
   // Heir form
   const [heirEmail, setHeirEmail] = useState('');
@@ -283,6 +288,11 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
     }
     setSubmitting(true);
     setFormError(null);
+    setInscribeNudge(null);
+    // A fresh, open (readable) intention is the only entry that can ride the
+    // map; sealed intentions and story/dedication kinds cannot, so they get
+    // the quiet pointer to the next section instead of the share offer.
+    const canRideMap = kind === 'intention' && sealMode === 'none';
     try {
       const res = await authedFetch('/api/atlas/steward/inscribe', {
         method: 'POST',
@@ -310,6 +320,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       setSealMode('none');
       setSealDate('');
       await loadInscriptions();
+      setInscribeNudge(canRideMap ? 'share' : 'next');
     } catch {
       setFormError('Something went wrong, please try again.');
     } finally {
@@ -350,6 +361,8 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       }
       setShared((prev) => ({ ...prev, [view.id]: data.shared ?? nextShare }));
       if (data.shared ?? nextShare) setEverShared(true);
+      // The share nudge points at exactly this control; acting on it clears it.
+      setInscribeNudge(null);
     } catch {
       setShareError((prev) => ({
         ...prev,
@@ -582,7 +595,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
         )}
 
         {/* Legacy timeline */}
-        <div className="mb-10 pt-10 border-t border-wood-200">
+        <div id="piece-book" className="mb-10 pt-10 border-t border-wood-200 scroll-mt-6">
           <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
             Legacy — the piece&apos;s book
           </span>
@@ -678,10 +691,37 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           {formError && (
             <p className="font-serif italic text-base text-stone-600 mt-2">{formError}</p>
           )}
+          {/* At-the-control nudge: one quiet line after a successful entry.
+              A fresh readable intention gets the offer to share it on the map
+              (the control lives on the entry just above); every other kind
+              gets a soft pointer to the next section of the book. */}
+          {!formError && inscribeNudge === 'share' && (
+            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mt-3">
+              These words could ride on the map.{' '}
+              <button
+                type="button"
+                onClick={() => setInscribeNudge(null)}
+                className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              >
+                dismiss
+              </button>
+            </p>
+          )}
+          {!formError && inscribeNudge === 'next' && (
+            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mt-3">
+              <a
+                href="#pass-it-on"
+                onClick={() => setInscribeNudge(null)}
+                className="hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              >
+                Further down, you can name who inherits it.
+              </a>
+            </p>
+          )}
         </form>
 
         {/* Pass it on — heirs */}
-        <div className="mb-10">
+        <div id="pass-it-on" className="mb-10 scroll-mt-6">
           <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
             Pass it on
           </span>
