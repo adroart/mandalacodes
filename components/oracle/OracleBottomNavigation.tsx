@@ -9,7 +9,10 @@ const Neighbor:React.FC<{card:OracleCard;direction:'previous'|'next'}> = ({card,
   <Link className={`oracle-bottom-nav__neighbor oracle-bottom-nav__neighbor--${direction}`} data-neighbor={direction}
     to={`/universal-language/${card.number}`} state={{quiet:true}}
     aria-label={`${direction === 'previous' ? 'Previous' : 'Next'} hexagram: Code ${card.number}, ${card.card_name}`}>
-    <span className="oracle-bottom-nav__name">{card.card_name}</span>
+    <span className="oracle-bottom-nav__neighbor-copy">
+      <span className="oracle-bottom-nav__code">Code {card.number}</span>
+      <span className="oracle-bottom-nav__name">{card.card_name}</span>
+    </span>
   </Link>
 );
 

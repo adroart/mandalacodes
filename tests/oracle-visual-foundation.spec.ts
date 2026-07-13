@@ -52,6 +52,21 @@ test('preserves previous, all 64, and next navigation destinations', async ({ pa
   await expect(page.getByRole('link', { name: 'Next hexagram: Code 23, Beneath the Surface' })).toHaveAttribute('href', '/universal-language/23');
 });
 
+test('labels neighboring codes and aligns both links toward the center', async ({ page }) => {
+  await openReading(page);
+  const previous = page.getByRole('link', { name: 'Previous hexagram: Code 21, Beyond Binary' });
+  const next = page.getByRole('link', { name: 'Next hexagram: Code 23, Beneath the Surface' });
+
+  await expect(previous).toContainText('Code 21');
+  await expect(previous).toContainText('Beyond Binary');
+  await expect(previous).toHaveCSS('justify-content', 'flex-end');
+  await expect(previous).toHaveCSS('text-align', 'right');
+  await expect(next).toContainText('Code 23');
+  await expect(next).toContainText('Beneath the Surface');
+  await expect(next).toHaveCSS('justify-content', 'flex-start');
+  await expect(next).toHaveCSS('text-align', 'left');
+});
+
 test('reveals content immediately for reduced motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openReading(page);
