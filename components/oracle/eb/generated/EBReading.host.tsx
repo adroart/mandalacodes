@@ -656,7 +656,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const motion = this.props.reduceMotion ? 'off' : 'on';
     const systems = [
       ['ul', 'Universal Language', 'UL'],
-      ['iching', 'I Ching', null],
+      ['iching', 'I Ching', 'I Ching'],
       ['genekeys', 'Gene Keys', 'Gene Keys'],
       ['humandesign', 'Human Design', 'Human Design'],
       ['body', 'Body', 'Body'],
@@ -668,10 +668,8 @@ export class EBReadingHost extends React.Component<HostProps, any> {
           <div className="oracle-reading-progress__jumps" role="navigation" aria-label="Jump to system">
             {systems.map(([key, label, text]) => (
               <button key={key} type="button" aria-label={label} data-active={this.state.active === key ? 'true' : 'false'} onClick={() => this.go(key)}>
-                {key === 'iching' ? (
-                  <svg data-system-icon="iching" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5.5 9.5-5.5 9.5 5.5 9.5 5.5-3.4 5.5-9.5 5.5S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
-                ) : key === 'relations' ? (
-                  <svg data-system-icon="relations" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="7" r="2.2"/><circle cx="18" cy="7" r="2.2"/><circle cx="12" cy="17" r="2.2"/><path d="m7.8 8.3 2.9 6.5m5.5-6.5-2.9 6.5M8.2 7h7.6"/></svg>
+                {key === 'relations' ? (
+                  <svg data-system-icon="connection" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.4 14.6-1.2 1.2a3.4 3.4 0 0 1-4.8-4.8l3.1-3.1a3.4 3.4 0 0 1 4.8 0m3.3 1.5 1.2-1.2a3.4 3.4 0 0 1 4.8 4.8l-3.1 3.1a3.4 3.4 0 0 1-4.8 0M8.8 15.2l6.4-6.4"/></svg>
                 ) : text}
               </button>
             ))}
