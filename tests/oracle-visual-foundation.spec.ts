@@ -91,6 +91,57 @@ test('shows one sticky document progress indicator', async ({ page }) => {
   await expect(page.getByRole('navigation', { name: 'Reading by system' })).toBeHidden();
 });
 
+test('keeps the system rail generous on desktop and fluid on narrow screens', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openReading(page);
+  const rail = page.locator('.oracle-reading-progress__jumps');
+  const ul = rail.getByRole('button', { name: 'Universal Language' });
+
+  await expect(rail).toBeVisible();
+  const desktop = await ul.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return { width: element.getBoundingClientRect().width, height: element.getBoundingClientRect().height, fontSize: parseFloat(styles.fontSize) };
+  });
+  expect(desktop.width).toBeGreaterThan(175);
+  expect(desktop.height).toBeGreaterThanOrEqual(52);
+  expect(desktop.fontSize).toBeGreaterThanOrEqual(10);
+
+  await page.setViewportSize({ width: 320, height: 760 });
+  await expect(rail).toBeVisible();
+  expect(await page.locator('html').evaluate((element) => element.scrollWidth)).toBe(320);
+  const mobile = await ul.evaluate((element) => element.getBoundingClientRect().width);
+  expect(mobile).toBeLessThan(desktop.width);
+  const labelsFit = await rail.getByRole('button').evaluateAll((buttons) => buttons.every((button) => button.scrollWidth <= button.clientWidth));
+  expect(labelsFit).toBe(true);
+});
+
+test('uses tonal chapter shifts and inset I Ching editorial panels', async ({ page }) => {
+  await openReading(page);
+  const chapters = page.locator('section[data-chapter]');
+  const backgrounds = await chapters.evaluateAll((elements) => elements.map((element) => getComputedStyle(element).backgroundColor));
+  expect(new Set(backgrounds).size).toBeGreaterThanOrEqual(3);
+
+  const panel = page.locator('section[data-chapter="iching"] .ul-ji > div').first();
+  await panel.scrollIntoViewIfNeeded();
+  const geometry = await panel.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    const parent = element.parentElement!.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
+    return {
+      insetLeft: rect.left - parent.left,
+      insetRight: parent.right - rect.right,
+      paddingLeft: parseFloat(styles.paddingLeft),
+      paddingRight: parseFloat(styles.paddingRight),
+      borderLeft: parseFloat(styles.borderLeftWidth),
+    };
+  });
+  expect(geometry.insetLeft).toBeGreaterThanOrEqual(8);
+  expect(geometry.insetRight).toBeGreaterThanOrEqual(8);
+  expect(geometry.paddingLeft).toBeGreaterThanOrEqual(24);
+  expect(geometry.paddingRight).toBeGreaterThanOrEqual(24);
+  expect(geometry.borderLeft).toBe(1);
+});
+
 test('keeps an inward-aligned previous and next navigator fixed at the bottom', async ({ page }) => {
   await openReading(page);
   const footer = page.locator('[data-oracle-neighbor-footer]');
