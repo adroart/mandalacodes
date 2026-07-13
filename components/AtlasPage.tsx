@@ -393,6 +393,9 @@ const AtlasPage: React.FC = () => {
      of strangers. A "light" is a claimed piece (carries an ordinal); the
      collective framing earns its place as density grows. */
   const totalCount = enriched.length;
+  // ── TEMPORARY PLACEHOLDER caption ── see data/atlasPlaceholder.ts. True only
+  // while the placeholder dots stand in for an unseeded mirror; delete at launch.
+  const isPlaceholder = state.kind === 'ready' && state.data.placeholder === true;
   const lightsLit = useMemo(
     () => enriched.filter((p) => typeof p.claimOrdinal === 'number').length,
     [enriched],
@@ -1109,6 +1112,16 @@ const AtlasPage: React.FC = () => {
                   a light is a piece claimed by its keeper · threads join pieces
                   that share a code
                 </p>
+                {/* ── TEMPORARY PLACEHOLDER caption ── see data/atlasPlaceholder.ts.
+                    Shown only while the placeholder dots stand in for an
+                    unseeded mirror; auto-hides once real pieces arrive. Delete
+                    this block at launch. */}
+                {isPlaceholder && (
+                  <p className="mt-1.5 font-serif text-[12px] leading-snug tracking-[0.03em] text-bronze-400/80">
+                    Placeholder pieces, shown until the first works find their
+                    ground.
+                  </p>
+                )}
                 {!USE_GL_GLOBE && !mandala && !streamActive && (
                   <p className="mt-1 font-serif text-[12px] leading-snug tracking-[0.03em] text-wood-400/60">
                     touch a code on the ring to visit it
