@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 test('card reading has one coin-casting ritual inside the I Ching panel', async ({ page }) => {
-  await page.goto(`${process.env.TEST_BASE_URL ?? ''}/universal-language/22`);
+  const base = process.env.TEST_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? '';
+  await page.goto(`${base}/universal-language/22`);
 
   const entrance = page.getByRole('dialog', { name: 'Card entrance. Tap to begin.' });
   if (await entrance.isVisible()) await entrance.click();

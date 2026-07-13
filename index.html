@@ -65,14 +65,13 @@
     </script>
 
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
-    <!-- Cormorant Garamond, Cinzel, and Karla are self-hosted (see the
+    <link rel="preload" href="/fonts/cormorant-garamond-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/lora-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- The Latin reading families and Oracle CJK roles are self-hosted (see the
          @font-face block appended to src/theme.css) so this surface and the
          /learn library reference identical /fonts/... URLs and never repaint
-         on crossing. Noto Serif TC stays on Google Fonts — CJK subsetting is
-         impractical to self-host, and it's only used here, never in /learn. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet" />
+         on crossing. The bundled CJK subset provides the Oracle's established
+         Chinese role without a runtime dependency on Google Fonts. -->
 
     <script type="application/ld+json">
 {
