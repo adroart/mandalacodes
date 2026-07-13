@@ -69,8 +69,8 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     </div>
   </header>
   <section style={{ maxWidth: "1180px", margin: "0 auto", padding: "clamp(30px,4.5vw,64px) 22px clamp(28px,4vw,52px)" }}>
-    <header className="ul-title-mobile" style={{ textAlign: "center", margin: "0 auto clamp(22px,3vw,40px)", maxWidth: "34ch" }}>
-      <h1 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(34px,7vw,54px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 10px", textWrap: "balance" }}>
+    <header className="ul-title-mobile" style={{ textAlign: "center", margin: "0 auto clamp(22px,3vw,40px)", maxWidth: "none" }}>
+      <h1 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(22px,6vw,46px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 10px", whiteSpace: "nowrap" }}>
       {vals.cardName}
       </h1>
     </header>
@@ -82,7 +82,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <img crossOrigin="anonymous" src={vals.heroImage} alt="Earth's Breath, Universal Language 1. Original multidimensional wooden sculpture by Adrian Rasmussen." onError={vals.onImgError} loading="eager" decoding="async" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover" }} />
       </figure>
       <div style={{ textAlign: "left" }}>
-        <h1 className="ul-title-desktop" style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(34px,4.4vw,54px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 18px", textWrap: "balance" }}>
+        <h1 className="ul-title-desktop" style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(26px,3.4vw,48px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 18px", whiteSpace: "nowrap" }}>
         {vals.cardName}
         </h1>
         <div className="ul-keywords" onClick={vals.goGenekeys} title="Read the Gene Keys" style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", borderTop: "1px solid var(--l-rule)", borderBottom: "1px solid var(--l-rule)", padding: "16px 0", marginBottom: "28px", cursor: "pointer" }}>
@@ -94,6 +94,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </React.Fragment>
           ))}
         </div>
+        {(vals.headerActionsSlot) ? vals.headerActionsSlot : (
         <div style={{ display: "flex", alignItems: "stretch", gap: "10px" }}>
           <button onClick={vals.openBuy} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ flex: "1", textAlign: "left", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", padding: "14px 18px", transition: "border-color .25s,background .25s" }}>
             <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "18px", color: "var(--l-1)", lineHeight: "1.1" }}>
@@ -120,6 +121,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </span>
           </button>
         </div>
+        )}
         {(vals.headerChartSlot) ? (
           <div style={{ marginTop: "16px" }}>
           {vals.headerChartSlot}
@@ -166,9 +168,9 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   </nav>
   <div ref={vals.registerStage} className="ul-stage" style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap", width: "100%", overflowX: "auto", overflowY: "visible", scrollSnapType: "x mandatory", overscrollBehaviorX: "contain", scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
     <section data-chapter="ul" data-screen-label="Universal Language" ref={vals.registerPanel} style={{ flex: "0 0 100%", width: "100%", minWidth: "100%", scrollSnapAlign: "start", scrollSnapStop: "always", background: "var(--l-bg)", color: "var(--l-1)" }}>
-      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) 24px clamp(56px,7vw,104px)" }}>
+      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
         <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", margin: "0 0 10px" }}>
-        One · Universal Language
+        Universal Language
         </p>
         <h2 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(30px,4vw,40px)", lineHeight: "1.1", color: "var(--l-1)", textAlign: "center", margin: "0 0 clamp(36px,5vw,56px)" }}>
         The Reading
@@ -214,32 +216,17 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </div>
         </div>
         ) : null}
-        <div style={{ marginTop: "clamp(44px,6vw,68px)", display: "flex", justifyContent: "center" }}>
-          <button onClick={vals.goIching} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ display: "flex", alignItems: "center", gap: "26px", minWidth: "240px", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", padding: "16px 24px", textAlign: "left", transition: "border-color .25s" }}>
-            <span style={{ flex: "1" }}>
-              <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-3)" }}>
-              Next
-              </span>
-              <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "19px", color: "var(--l-1)" }}>
-              I Ching
-              </span>
-            </span>
-            <span aria-hidden="true" style={{ fontFamily: "var(--serif)", fontSize: "22px", color: "var(--accent)" }}>
-            →
-            </span>
-          </button>
-        </div>
       </div>
     </section>
     <section data-chapter="iching" data-screen-label="I Ching" ref={vals.registerPanel} style={{ flex: "0 0 100%", width: "100%", minWidth: "100%", scrollSnapAlign: "start", scrollSnapStop: "always", background: "var(--d-bg)", color: "var(--d-1)", overflowX: "clip" }}>
-      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) 24px clamp(56px,7vw,104px)" }}>
+      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
         <header style={{ textAlign: "center", marginBottom: "clamp(40px,5vw,60px)" }}>
           <button onClick={vals.openOverlayIching} aria-label="About the I Ching" style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: "18px", color: "inherit" }}>
             <span data-glyph="1" style={{ fontFamily: "var(--cjk)", fontSize: "clamp(60px,9vw,80px)", lineHeight: "1", color: "var(--accent-d)" }}>
             {vals.ichingGlyph}
             </span>
             <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px" }}>
-            Two · I Ching · about ↓
+            I Ching · about
             </span>
           </button>
         </header>
@@ -491,25 +478,10 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </div>
           </>
         ) : null}
-        <div style={{ marginTop: "clamp(40px,5vw,60px)", display: "flex", justifyContent: "center" }}>
-          <button onClick={vals.goGenekeys} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ display: "flex", alignItems: "center", gap: "26px", minWidth: "240px", background: "none", border: "1px solid var(--d-rule)", cursor: "pointer", padding: "16px 24px", textAlign: "left", transition: "border-color .25s" }}>
-            <span style={{ flex: "1" }}>
-              <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--d-3)" }}>
-              Next
-              </span>
-              <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "19px", color: "var(--d-1)" }}>
-              Gene Keys
-              </span>
-            </span>
-            <span aria-hidden="true" style={{ fontFamily: "var(--serif)", fontSize: "22px", color: "var(--accent-d)" }}>
-            →
-            </span>
-          </button>
-        </div>
       </div>
     </section>
     <section data-chapter="genekeys" data-screen-label="Gene Keys" ref={vals.registerPanel} style={{ flex: "0 0 100%", width: "100%", minWidth: "100%", scrollSnapAlign: "start", scrollSnapStop: "always", background: "var(--l-bg)", color: "var(--l-1)" }}>
-      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) 24px clamp(56px,7vw,104px)" }}>
+      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
         <header style={{ textAlign: "center", marginBottom: "clamp(36px,5vw,52px)" }}>
           <button onClick={vals.openOverlayGK} aria-label="About the Gene Keys" style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: "16px", color: "inherit" }}>
             <svg data-glyph="1" width="64" height="64" viewBox="0 0 100 100" fill="var(--accent)" aria-hidden="true">
@@ -521,7 +493,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               <ellipse cx="72" cy="41" rx="20" ry="3.8" transform="rotate(-7 72 41)" />
             </svg>
             <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", borderBottom: "1px solid var(--l-rule)", paddingBottom: "6px" }}>
-            Three · Gene Keys · about ↓
+            Gene Keys · about
             </span>
           </button>
         </header>
@@ -547,9 +519,6 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0" }}>
             {vals.gkShadowName}
             </p>
-            <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--l-3)", marginTop: "8px" }}>
-            Read ↓
-            </span>
           </button>
           <button onClick={vals.jumpGift} style={{ padding: "18px 12px", textAlign: "center", border: "none", borderRight: "1px solid var(--l-rule)", background: "color-mix(in oklab,var(--accent) 8%,transparent)", cursor: "pointer", font: "inherit", color: "inherit", display: "block" }}>
             <p style={{ fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 6px" }}>
@@ -558,9 +527,6 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--accent)", margin: "0" }}>
             {vals.gkGiftName}
             </p>
-            <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--accent)", marginTop: "8px" }}>
-            Read ↓
-            </span>
           </button>
           <button onClick={vals.jumpSiddhi} style={{ padding: "18px 12px", textAlign: "center", border: "none", background: "none", cursor: "pointer", font: "inherit", color: "inherit", display: "block" }}>
             <p style={{ fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", margin: "0 0 6px" }}>
@@ -569,9 +535,6 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0" }}>
             {vals.gkSiddhiName}
             </p>
-            <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--l-3)", marginTop: "8px" }}>
-            Read ↓
-            </span>
           </button>
         </div>
         <div ref={vals.registerGK} data-gk="shadow" style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
@@ -666,25 +629,10 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           genekeys.com
           </a>
         </p>
-        <div style={{ marginTop: "clamp(36px,5vw,56px)", display: "flex", justifyContent: "center" }}>
-          <button onClick={vals.goHumandesign} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ display: "flex", alignItems: "center", gap: "26px", minWidth: "240px", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", padding: "16px 24px", textAlign: "left", transition: "border-color .25s" }}>
-            <span style={{ flex: "1" }}>
-              <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-3)" }}>
-              Next
-              </span>
-              <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "19px", color: "var(--l-1)" }}>
-              Human Design
-              </span>
-            </span>
-            <span aria-hidden="true" style={{ fontFamily: "var(--serif)", fontSize: "22px", color: "var(--accent)" }}>
-            →
-            </span>
-          </button>
-        </div>
       </div>
     </section>
     <section data-chapter="humandesign" data-screen-label="Human Design" ref={vals.registerPanel} style={{ flex: "0 0 100%", width: "100%", minWidth: "100%", scrollSnapAlign: "start", scrollSnapStop: "always", background: "var(--d-bg)", color: "var(--d-1)" }}>
-      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) 24px clamp(56px,7vw,104px)" }}>
+      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
         <header style={{ textAlign: "center", marginBottom: "clamp(38px,5vw,56px)" }}>
           <button onClick={vals.openOverlayHD} aria-label="About Human Design" style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: "8px", color: "inherit" }}>
             <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", opacity: "0.8" }}>
@@ -694,7 +642,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             1
             </span>
             <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px", marginTop: "10px" }}>
-            Four · Human Design · about ↓
+            Human Design · about
             </span>
           </button>
         </header>
@@ -774,27 +722,12 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Channel of Inspiration 1–8
           </span>
         </div>
-        <div style={{ marginTop: "clamp(38px,5vw,58px)", display: "flex", justifyContent: "center" }}>
-          <button onClick={vals.goBody} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ display: "flex", alignItems: "center", gap: "26px", minWidth: "240px", background: "none", border: "1px solid var(--d-rule)", cursor: "pointer", padding: "16px 24px", textAlign: "left", transition: "border-color .25s" }}>
-            <span style={{ flex: "1" }}>
-              <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--d-3)" }}>
-              Next
-              </span>
-              <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "19px", color: "var(--d-1)" }}>
-              Body
-              </span>
-            </span>
-            <span aria-hidden="true" style={{ fontFamily: "var(--serif)", fontSize: "22px", color: "var(--accent-d)" }}>
-            →
-            </span>
-          </button>
-        </div>
       </div>
     </section>
     <section data-chapter="body" data-screen-label="Body" ref={vals.registerPanel} style={{ flex: "0 0 100%", width: "100%", minWidth: "100%", scrollSnapAlign: "start", scrollSnapStop: "always", background: "var(--l-bg)", color: "var(--l-1)" }}>
-      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) 24px clamp(56px,7vw,104px)" }}>
+      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
         <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", margin: "0 0 10px" }}>
-        Five · Body
+        Body
         </p>
         <h2 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(30px,4vw,40px)", lineHeight: "1.1", color: "var(--l-1)", textAlign: "center", margin: "0 0 clamp(34px,5vw,52px)" }}>
         The Body of the Code
@@ -852,27 +785,12 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             ))}
           </div>
         </div>
-        <div style={{ marginTop: "clamp(36px,5vw,56px)", display: "flex", justifyContent: "center" }}>
-          <button onClick={vals.goRelations} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ display: "flex", alignItems: "center", gap: "26px", minWidth: "240px", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", padding: "16px 24px", textAlign: "left", transition: "border-color .25s" }}>
-            <span style={{ flex: "1" }}>
-              <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-3)" }}>
-              Next
-              </span>
-              <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "19px", color: "var(--l-1)" }}>
-              Relations
-              </span>
-            </span>
-            <span aria-hidden="true" style={{ fontFamily: "var(--serif)", fontSize: "22px", color: "var(--accent)" }}>
-            →
-            </span>
-          </button>
-        </div>
       </div>
     </section>
     <section data-chapter="relations" data-screen-label="Relations" ref={vals.registerPanel} style={{ flex: "0 0 100%", width: "100%", minWidth: "100%", scrollSnapAlign: "start", scrollSnapStop: "always", background: "var(--l-soft)", color: "var(--l-1)" }}>
-      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) 24px clamp(56px,7vw,104px)" }}>
+      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
         <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", margin: "0 0 10px" }}>
-        Six · Relations
+        Relations
         </p>
         <h2 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(30px,4vw,40px)", lineHeight: "1.1", color: "var(--l-1)", textAlign: "center", margin: "0 0 24px" }}>
         Its Kin
@@ -950,21 +868,6 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               </p>
             </React.Fragment>
           ))}
-        </div>
-        <div style={{ marginTop: "clamp(40px,5vw,60px)", display: "flex", justifyContent: "center" }}>
-          <button onClick={vals.goUL} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ display: "flex", alignItems: "center", gap: "26px", minWidth: "240px", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", padding: "16px 24px", textAlign: "left", transition: "border-color .25s" }}>
-            <span style={{ flex: "1" }}>
-              <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-3)" }}>
-              Return to
-              </span>
-              <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "19px", color: "var(--l-1)" }}>
-              The Reading
-              </span>
-            </span>
-            <span aria-hidden="true" style={{ fontFamily: "var(--serif)", fontSize: "22px", color: "var(--accent)" }}>
-            ↺
-            </span>
-          </button>
         </div>
       </div>
     </section>

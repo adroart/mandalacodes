@@ -52,7 +52,7 @@
 
 .eb-reading .ul-tab2, .eb-entrance .ul-tab2 { flex-direction: row !important; gap: 0.42em; }
 @media (max-width: 600px) {
-  .eb-reading .ul-keywords { justify-content: center !important; border-top: none !important; padding-top: 0 !important; }
+  .eb-reading .ul-keywords { justify-content: center !important; }
   .eb-reading .ul-tab2, .eb-entrance .ul-tab2 { flex-direction: column !important; gap: 0; }
 }
 
@@ -86,4 +86,19 @@
 @media (min-width: 720px) {
   .eb-reading .ul-title-desktop { display: block; }
   .eb-reading .ul-title-mobile { display: none; }
+}
+
+/* Small and middle sizes: the reading stacks to one column so the artwork sits
+   on top and the title moves BELOW it. The above-image title is retired; the
+   in-column title carries these sizes, centred and larger (it reads too small
+   at middle width otherwise). Above 720 the two-column layout is unchanged. */
+@media (max-width: 719px) {
+  .eb-reading .ul-hero-grid { grid-template-columns: 1fr !important; }
+  .eb-reading .ul-title-mobile { display: none !important; }
+  .eb-reading .ul-title-desktop {
+    display: block !important;
+    text-align: center !important;
+    font-size: clamp(26px, 6.6vw, 46px) !important;
+    margin: 2px 0 20px !important;
+  }
 }

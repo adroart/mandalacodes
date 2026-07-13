@@ -15,6 +15,9 @@ import SignInModal from '../account/SignInModal';
 interface Props {
   /** The card's Human Design gate (1..64). */
   gate: number;
+  /** When true, render only the matched "in your chart" state; suppress the
+      no-chart invite (the header hero box carries that invite instead). */
+  matchOnly?: boolean;
 }
 
 /**
@@ -34,7 +37,7 @@ interface Props {
  *
  * Accounts being off, or the launch flag being off, hides everything.
  */
-const YourPositionCallout: React.FC<Props> = ({ gate }) => {
+const YourPositionCallout: React.FC<Props> = ({ gate, matchOnly = false }) => {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { available, isSignedIn } = useAccount();
@@ -58,6 +61,7 @@ const YourPositionCallout: React.FC<Props> = ({ gate }) => {
   //    the second screen offers to keep it (the Welcome sign-in). No account is
   //    asked for to compute the chart, only to save it. ──
   if (!profile) {
+    if (matchOnly) return null;
     return (
       <div className="ypc-wrap">
         <button

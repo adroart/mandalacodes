@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { CARD_BY_NUMBER } from '../data/oracleData';
 import { HexagramSVG, hexagramLineBooleans } from './oracle/HexagramGlyph';
 import { getExpandedCard } from '../data/expandedOracleData';
@@ -14,10 +14,11 @@ import { EBReadingHost, type EBData } from './oracle/eb/generated/EBReading.host
 import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
-import SaveToCollectionButton from './account/SaveToCollectionButton';
+import BirthTimeModal from './oracle/BirthTimeModal';
+import SignInModal from './account/SignInModal';
+import { useProfile } from '../lib/profile/context';
 import { ulPieceForCard } from '../utils/universalLanguage';
 import { hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
-import { useCardPlacement } from '../lib/atlas/state';
 import './oracle/eb/eb-template.css';
 import './oracle/eb/oracle-foundation.css';
 import OracleBottomNavigation from './oracle/OracleBottomNavigation';
@@ -54,26 +55,9 @@ const UniversalLanguageCard: React.FC = () => {
   const showEntrance = !arrivedQuiet;
   const [buyOpen, setBuyOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  /* Where this card's physical piece sits on the public atlas (cached shared
-     load). Null while loading or when the piece isn't in the public ledger.
-     The "On the Atlas" link only renders when the piece is actually mapped
-     (placed or unawakened with a city); a deep link to an unmapped piece
-     lands on an unselected globe and reads as a broken link. */
-  const placement = useCardPlacement(cardNum);
-  const placementOnGlobe =
-    placement != null &&
-    (placement.status === 'placed' || placement.status === 'unawakened') &&
-    placement.cityLabel != null;
-  const atlasHref = placementOnGlobe
-    ? `/atlas?piece=${encodeURIComponent(
-        `${placement.pieceId}${
-          typeof placement.editionNumber === 'number' && placement.editionNumber !== 0
-            ? `:${placement.editionNumber}`
-            : ''
-        }`,
-      )}`
-    : null;
-
+  const [chartFormOpen, setChartFormOpen] = useState(false);
+  const [signInOpen, setSignInOpen] = useState(false);
+  const { profile } = useProfile();
   useEffect(() => {
     document.documentElement.classList.add('oracle-card-page');
     return () => document.documentElement.classList.remove('oracle-card-page');
@@ -160,8 +144,12 @@ const UniversalLanguageCard: React.FC = () => {
       const cloud = (t: string) => `https://res.cloudinary.com/dobbosnda/image/upload/${t}/${pid}`;
       return {
         cardName: card.card_name,
-        heroImage: cloud('f_auto,q_auto,w_1100,c_fill,g_center'),
-        lightboxImage: cloud('f_auto,q_auto,w_1600,c_fit'),
+        // Use the SAME image source + transform the deck index uses (square
+        // c_fill/g_center from UL_IMAGE_BY_NUMBER via ulCardImageUrl), so the
+        // artwork on the reading is identical to the card on the index, not the
+        // physical piece cover (which was a different image).
+        heroImage: ulCardImageUrl(card.number, 1100),
+        lightboxImage: ulCardImageUrl(card.number, 1600),
         buyImage: cloud('f_auto,q_auto,w_700,c_fill,g_center'),
         // hero uses the HEXAGRAM SYMBOL glyph (䷀ U+4DC0+n-1), like the file —
         // not the Chinese name character. The I Ching header keeps the name char.
@@ -235,31 +223,19 @@ const UniversalLanguageCard: React.FC = () => {
         showEntrance={showEntrance}
         onAcquire={() => setBuyOpen(true)}
         onShare={() => setShareOpen(true)}
+        headerActionsSlot={
+          <ChartHeroBox
+            hexGlyph={String.fromCodePoint(0x4DBF + card.number)}
+            code={card.number}
+            hasChart={!!profile}
+            onOpen={() => { if (profile) navigate('/profile'); else setChartFormOpen(true); }}
+          />
+        }
         headerChartSlot={
-          /* One quiet, low-contrast strip of small-label actions under the
-             chart callout, always a single line: save the card to your
-             collection, open the physical painting's page, see where it
-             rests in the world. Middle dots join the three so they read as
-             one strip; no borders, no boxes, no italics. */
-          <>
-            <YourPositionCallout gate={card.number} />
-            <div className="ul-slot-quiet-row">
-              <SaveToCollectionButton kind="card" itemRef={String(card.number)} label="Save this card" />
-              {piece && (
-                <>
-                  <span aria-hidden className="ul-slot-quiet-row__dot">·</span>
-                  <Link to={`/piece/${piece.id}`}>See the painting</Link>
-                </>
-              )}
-              {atlasHref && (
-                <>
-                  <span aria-hidden className="ul-slot-quiet-row__dot">·</span>
-                  <Link to={atlasHref}>On the map</Link>
-                </>
-              )}
-            </div>
-            <style>{quietRowStyles}</style>
-          </>
+          /* Only the matched "in your chart" line remains here; it shows once a
+             code actually sits in the visitor's chart. The old quiet strip
+             (save, see the painting, on the map) has been removed. */
+          <YourPositionCallout gate={card.number} matchOnly />
         }
         invocationSlot={<PublicInvocation invocation={liveInvocation} />}
       />
@@ -279,6 +255,23 @@ const UniversalLanguageCard: React.FC = () => {
         cardNumber={card.number}
         keywords={keywords}
       />
+      {chartFormOpen && (
+        <BirthTimeModal
+          showCardOption
+          onClose={() => setChartFormOpen(false)}
+          onLogIn={() => { setChartFormOpen(false); setSignInOpen(true); }}
+          onSeeChart={() => { setChartFormOpen(false); navigate('/profile'); }}
+          onBackToCard={() => setChartFormOpen(false)}
+          onSave={() => { setChartFormOpen(false); setSignInOpen(true); }}
+        />
+      )}
+      {signInOpen && (
+        <SignInModal
+          context="reading"
+          onClose={() => setSignInOpen(false)}
+          onSignedIn={() => setSignInOpen(false)}
+        />
+      )}
 
       <OracleBottomNavigation current={card} palette={palette} pieceId={piece ? String(piece.id) : null} onShare={() => setShareOpen(true)} onInvocationPublished={() => void refreshInvocation()} />
     </>
@@ -290,55 +283,141 @@ const UniversalLanguageCard: React.FC = () => {
    both Day Book and Nightfall. The save button is SaveToCollectionButton's
    own markup, restyled here to plain label text: the override selector is
    more specific than the component's .stc__btn rules. */
-const quietRowStyles = `
-  .ul-slot-quiet-row {
+/* The single hero box: the chart question, with THIS code's hexagram as the
+   feature on the left. The glyph + number scale to the HEIGHT of the text block
+   beside them (measured live), so the feature always reads as tall as the copy
+   it sits next to, at any screen size. Opens the birthday/login flow, or the
+   chart itself once one exists. */
+const ChartHeroBox: React.FC<{
+  hexGlyph: string;
+  code: number;
+  hasChart: boolean;
+  onOpen: () => void;
+}> = ({ hexGlyph, code, hasChart, onOpen }) => {
+  const bodyRef = useRef<HTMLSpanElement>(null);
+  const [glyphPx, setGlyphPx] = useState(46);
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => {
+      const h = el.getBoundingClientRect().height;
+      // Glyph sits at roughly three-quarters of the copy-block height, with the
+      // number beneath; clamp so it never gets absurd on very short/tall wraps.
+      setGlyphPx(Math.max(40, Math.min(88, h * 0.78)));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div className="ul-hero-actions">
+      <button type="button" className="ul-hero-box ul-hero-box--chart" onClick={onOpen}>
+        <span className="ul-hero-hex" aria-hidden="true">
+          <span className="ul-hero-hex__glyph" style={{ fontSize: glyphPx }}>{hexGlyph}</span>
+          <span
+            className="ul-hero-hex__num"
+            style={{ fontSize: Math.max(9, Math.round(glyphPx * 0.23)), marginTop: Math.round(glyphPx * -0.04) }}
+          >
+            {String(code).padStart(2, '0')}
+          </span>
+        </span>
+        <span className="ul-hero-box__body" ref={bodyRef}>
+          <span className="ul-hero-box__eyebrow">Your chart</span>
+          <span className="ul-hero-box__title">{hasChart ? 'See this code in your chart' : 'Is this code in your chart?'}</span>
+          <span className="ul-hero-box__line">
+            {hasChart
+              ? 'Open your chart to see where all 64 codes fall across your readings.'
+              : 'Log in to reveal where all 64 codes fall across your readings.'}
+          </span>
+        </span>
+        <style>{heroActionStyles}</style>
+      </button>
+    </div>
+  );
+};
+
+/* The two hero action boxes: the physical original, and the chart question.
+   Built from the same hairline box as the old Acquire/Share pair, palette-aware
+   through the EB reading's own variables. Serif line, sans eyebrow, no italics. */
+const heroActionStyles = `
+  .ul-hero-actions { display: block; }
+  /* Horizontal: the hexagram sits on the left (its number centred beneath it),
+     what the box is sits on the right. The glyph is a quiet mark here, roughly
+     half the previous size, not a billboard. */
+  .ul-hero-box {
     display: flex;
-    flex-wrap: nowrap;
-    align-items: baseline;
-    column-gap: 12px;
-    margin-top: 14px;
-    white-space: nowrap;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: clamp(12px, 3vw, 18px);
+    text-align: left;
+    width: 100%;
+    background: none;
+    border: 1px solid var(--l-rule, rgba(180,150,110,0.22));
+    cursor: pointer;
+    padding: 15px clamp(15px, 3.5vw, 22px);
+    transition: border-color .25s, background .25s;
   }
-  .ul-slot-quiet-row__dot {
-    color: var(--l-3);
-    font-family: var(--sans);
-    font-size: 10px;
-    opacity: 0.6;
+  .ul-hero-box:hover {
+    border-color: color-mix(in oklab, var(--accent, #C99A5B) 55%, var(--l-rule, rgba(180,150,110,0.22)));
   }
-  /* If accounts are off, the save button renders nothing and a dot would
-     lead the strip; hide it. */
-  .ul-slot-quiet-row > .ul-slot-quiet-row__dot:first-child { display: none; }
-  .ul-slot-quiet-row a {
+  .ul-hero-box--chart { position: relative; overflow: hidden; }
+  .ul-hero-box--chart::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--accent, #C99A5B), color-mix(in oklab, var(--accent, #C99A5B) 25%, transparent));
+    opacity: .32;
+  }
+  .ul-hero-hex {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--accent, #C99A5B);
+  }
+  /* Glyph + number sizes are set inline from the measured text-block height
+     (see ChartHeroBox); these are just fallbacks before the measure lands. */
+  .ul-hero-hex__glyph {
+    font-family: var(--cjk, var(--serif));
+    font-size: 46px;
+    line-height: 1;
+  }
+  .ul-hero-hex__num {
     font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    margin-top: 7px;
+    text-indent: 0.12em;
+  }
+  .ul-hero-box__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+  }
+  .ul-hero-box__eyebrow {
+    font-family: var(--sans, system-ui);
     font-size: 10px;
-    letter-spacing: 0.16em;
+    font-weight: 700;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--l-3);
-    text-decoration: none;
-    white-space: nowrap;
-    transition: color 0.25s;
+    color: var(--accent, #C99A5B);
+    line-height: 1;
+    margin-bottom: 8px;
   }
-  .ul-slot-quiet-row a:hover { color: var(--accent); }
-  .ul-slot-quiet-row .stc__btn {
-    font-family: var(--sans);
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--l-3);
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    padding: 0;
-    white-space: nowrap;
-    transition: color 0.25s;
+  .ul-hero-box__title {
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1.12;
+    color: var(--l-1);
+    margin-bottom: 6px;
   }
-  .ul-slot-quiet-row .stc__btn:hover { color: var(--accent); background: transparent; }
-  /* Narrow phones: tighten so the strip stays one line at 375px. */
-  @media (max-width: 430px) {
-    .ul-slot-quiet-row { column-gap: 8px; }
-    .ul-slot-quiet-row a,
-    .ul-slot-quiet-row .stc__btn { font-size: 9px; letter-spacing: 0.08em; }
-    .ul-slot-quiet-row__dot { font-size: 9px; }
+  .ul-hero-box__line {
+    font-family: var(--serif);
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--l-2, #C9BDA9);
   }
 `;
 
