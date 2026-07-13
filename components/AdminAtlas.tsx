@@ -1450,23 +1450,94 @@ const HomecomingSection: React.FC = () => {
 // Steward Roster
 // ───────────────────────────────────────────────────────────────────────────
 
+/** Every outreachStatus an admin may pick from the roster. `claimed` is
+ *  deliberately absent: it is machine-owned, set only by the claim flow,
+ *  and the server rejects a manual write of it with a 400. If a record's
+ *  CURRENT status is `claimed`, it renders as a disabled, non-editable
+ *  option below so the select can still display it. `contacted` and
+ *  `paused` are placeholder labels pending Adrian's naming pass. */
+const MANUAL_OUTREACH_STATUSES: StewardRecord['outreachStatus'][] = [
+    'no-contact',
+    'invited',
+    'contacted',
+    'paused',
+    'declined',
+];
+
+function stewardKey(s: { pieceId: string; editionNumber?: number }): string {
+    return `${s.pieceId}-${s.editionNumber ?? 0}`;
+}
+
 const StewardRoster: React.FC<{
     stewards: StewardRecord[];
     loading: boolean;
     error: string | null;
-}> = ({ stewards, loading, error }) => {
+    setStewards: React.Dispatch<React.SetStateAction<StewardRecord[]>>;
+    onReload: () => Promise<void>;
+}> = ({ stewards, loading, error, setStewards, onReload }) => {
+    const adminFetch = useAdminFetch();
+    const [busyKey, setBusyKey] = useState<string | null>(null);
+    const [rowError, setRowError] = useState<string | null>(null);
+
+    const handleStatusChange = async (
+        s: StewardRecord,
+        next: StewardRecord['outreachStatus'],
+    ) => {
+        const key = stewardKey(s);
+        setRowError(null);
+        setBusyKey(key);
+        // Optimistic update: reload from the server on any failure below.
+        setStewards((prev) =>
+            prev.map((r) =>
+                stewardKey(r) === key ? { ...r, outreachStatus: next } : r,
+            ),
+        );
+        try {
+            const res = await adminFetch('/api/atlas/stewards/outreach', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pieceId: s.pieceId,
+                    editionNumber: s.editionNumber,
+                    outreachStatus: next,
+                }),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (!data?.ok) {
+                setRowError(data?.error || 'Could not update status.');
+                await onReload();
+            }
+        } catch {
+            setRowError('Network error. Check your connection.');
+            await onReload();
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
     return (
         <div className="bg-white border border-wood-200 p-8">
             <h2 className={sectionTitle}>Steward Roster</h2>
             <p className={sectionLead}>
-                Read-only view of bound and pending collectors. Status flips
-                from "invited" to "claimed" on their first signed-in visit to
-                /atlas/claim.
+                Bound and pending collectors. Status flips from "invited" to
+                "claimed" on their first signed-in visit to /atlas/claim;
+                that step is machine-only. Every other status can be set by
+                hand below.
             </p>
 
             {error && (
                 <p className="font-serif italic text-sm text-stone-600">
                     {error}
+                </p>
+            )}
+
+            {rowError && (
+                <p className="font-serif italic text-sm text-stone-600 mb-4">
+                    {rowError}
                 </p>
             )}
 
@@ -1523,8 +1594,37 @@ const StewardRoster: React.FC<{
                                     <td className="font-sans text-sm text-wood-700 py-3 pr-4">
                                         {s.email ?? '-'}
                                     </td>
-                                    <td className="font-sans text-sm text-wood-700 py-3 pr-4">
-                                        {s.outreachStatus}
+                                    <td className="py-3 pr-4">
+                                        <select
+                                            value={s.outreachStatus}
+                                            disabled={
+                                                busyKey === stewardKey(s)
+                                            }
+                                            onChange={(e) =>
+                                                handleStatusChange(
+                                                    s,
+                                                    e.target
+                                                        .value as StewardRecord['outreachStatus'],
+                                                )
+                                            }
+                                            className="font-sans text-sm text-wood-700 border border-wood-300 bg-white px-2 py-1.5 focus:outline-none focus:border-bronze-400 disabled:opacity-40"
+                                        >
+                                            {s.outreachStatus === 'claimed' && (
+                                                <option value="claimed" disabled>
+                                                    claimed (machine-set)
+                                                </option>
+                                            )}
+                                            {MANUAL_OUTREACH_STATUSES.map(
+                                                (status) => (
+                                                    <option
+                                                        key={status}
+                                                        value={status}
+                                                    >
+                                                        {status}
+                                                    </option>
+                                                ),
+                                            )}
+                                        </select>
                                     </td>
                                     <td className="font-sans text-sm text-wood-500 py-3 pr-4">
                                         {formatRelative(s.issuedAt)}
@@ -1604,6 +1704,8 @@ const AdminAtlas: React.FC = () => {
                         stewards={stewards}
                         loading={loading}
                         error={rosterError}
+                        setStewards={setStewards}
+                        onReload={loadStewards}
                     />
                 </div>
             </section>
