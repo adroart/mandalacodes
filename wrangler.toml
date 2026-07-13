@@ -14,6 +14,15 @@ pages_build_output_dir = "dist"
 binding = "ATLAS_BUCKET"
 bucket_name = "mandalacodes-atlas"
 
+# Private Oracle recordings and invocation artifacts. No public development URL/domain.
+[[r2_buckets]]
+binding = "ORACLE_PRIVATE"
+bucket_name = "mandalacodes-oracle-private"
+
+# Server-side transcription only. Model: @cf/openai/whisper-large-v3-turbo.
+[ai]
+binding = "AI"
+
 # D1 database — SHARED with adrianrasmussen.com as of 2026-06-09.
 # Both sites run self-owned Better Auth against this one user database, so a
 # collector who signs in on either domain is the same identity on both. The

@@ -1,0 +1,37 @@
+/* Source-owned Oracle overrides. Generated EB markup remains untouched. */
+.eb-reading, .eb-entrance {
+  --serif: var(--font-display);
+  --sans: var(--font-ui);
+  --cjk: var(--font-cjk);
+  --mono: var(--font-technical);
+}
+html.oracle-card-page, html.oracle-card-page body { overflow-x: clip; }
+.eb-reading[data-palette="nightfall"], .eb-entrance[data-palette="nightfall"] {
+  --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#80735f;
+  --l-rule:rgba(168,135,77,.18); --l-soft:#1b160f;
+  --d-bg:#100d09; --d-1:#f3ead9; --d-2:#cdc0a8; --d-3:#80735f;
+  --d-rule:rgba(168,135,77,.2); --d-soft:#17120c;
+  --accent:#a8874d; --accent-d:#c6a667;
+}
+.eb-reading section[data-chapter] > div {
+  box-sizing:border-box; max-width:728px !important; padding-inline:24px !important;
+}
+.eb-reading section[data-chapter] p { font-family:var(--font-reading) !important; }
+.eb-reading section[data-chapter="ul"] > div > div[style*="flex-direction: column"] > p,
+.eb-reading section[data-chapter="iching"] div[style*="flex-direction: column"] > p,
+.eb-reading section[data-chapter="genekeys"] [data-gk] div[style*="flex-direction: column"] > p,
+.eb-reading section[data-chapter="humandesign"] div[style*="flex-direction: column"] > p,
+.eb-reading section[data-chapter="body"] div[style*="flex-direction: column"] > p,
+.eb-reading section[data-chapter="relations"] div[style*="flex-direction: column"] > p {
+  font-family:var(--font-reading) !important; font-size:clamp(18px,1.7vw,20px) !important;
+  line-height:1.76 !important; text-align:left !important; text-wrap:pretty;
+}
+.eb-reading section[data-chapter] :is(p,span,button,summary)[style*="text-transform: uppercase"] { font-family:var(--font-ui) !important; }
+.eb-reading section[data-chapter] :is(h1,h2,h3), .eb-reading .ul-title-mobile, .eb-reading .ul-title-desktop { font-family:var(--font-display) !important; }
+.eb-reading section[data-chapter] :is(button,details,[data-gk],.ul-ji > div) { border-radius:4px; }
+.eb-reading section[data-chapter] button[style*="border: 1px"] { border-color:color-mix(in oklab,var(--accent) 22%,transparent) !important; }
+.eb-reading [data-oracle-reveal] { will-change:opacity,transform; }
+.eb-reading[data-motion="off"] [data-oracle-reveal], .eb-reading[data-motion="off"] [data-glyph] { opacity:1 !important; transform:none !important; clip-path:none !important; transition:none !important; }
+@media (prefers-reduced-motion:reduce) {
+  .eb-reading [data-oracle-reveal], .eb-reading [data-glyph] { opacity:1 !important; transform:none !important; clip-path:none !important; transition:none !important; }
+}

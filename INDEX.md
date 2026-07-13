@@ -36,7 +36,8 @@ components/  (85 files, 25,680 lines)
 │   │   ├── eb/  (6 files, 2,681 lines)
 │   │   │   ├── generated/  (5 files, 2,591 lines)
 │   │   │   │   └── … 5 files
-│   │   │   └── eb-template.css  (90 lines)
+│   │   │   ├── eb-template.css  (90 lines)
+│   │   │   └── oracle-foundation.css  (42 lines)
 │   │   ├── entry/  (14 files, 3,950 lines)
 │   │   │   ├── _mockups/  (1 files, 149 lines)
 │   │   │   │   └── … 1 files
@@ -52,6 +53,8 @@ components/  (85 files, 25,680 lines)
 │   │   ├── CoinCast.tsx  (630 lines)
 │   │   ├── ContinueRail.tsx  → ContinueRail
 │   │   ├── HexagramGlyph.tsx  → TrigramSVG, hexagramLineBooleans, HexagramSVG
+│   │   ├── oracle-bottom-navigation.css  (23 lines)
+│   │   ├── OracleBottomNavigation.tsx  (30 lines)
 │   │   ├── OracleShareSheet.tsx  → OracleShareSheet
 │   │   ├── ProfileForm.tsx  (382 lines)
 │   │   ├── ProfileGraph.tsx  (560 lines)
