@@ -654,6 +654,14 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     // renders unstyled (the root cause of the "looks nothing like it" bug).
     const palette = this.props.palette ?? 'daybook';
     const motion = this.props.reduceMotion ? 'off' : 'on';
+    const systems = [
+      ['ul', 'Reading'],
+      ['iching', 'I Ching'],
+      ['genekeys', 'Gene Keys'],
+      ['humandesign', 'Human Design'],
+      ['body', 'Body'],
+      ['relations', 'Relations'],
+    ];
     return (
       <div className="eb-reading" data-oracle-reader data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
         <nav className="oracle-reading-progress" data-oracle-progress-nav aria-label="Oracle reading">
@@ -661,6 +669,13 @@ export class EBReadingHost extends React.Component<HostProps, any> {
             <span className="oracle-reading-progress__code">Code {this.props.data.code}</span>
             <span className="oracle-reading-progress__title">{this.props.data.cardName}</span>
             <span className="oracle-reading-progress__section">{this.state.active === 'ul' ? 'The Reading' : this.state.active.replace('genekeys', 'Gene Keys').replace('humandesign', 'Human Design')}</span>
+          </div>
+          <div className="oracle-reading-progress__jumps" role="navigation" aria-label="Jump to system">
+            {systems.map(([key, label]) => (
+              <button key={key} type="button" data-active={this.state.active === key ? 'true' : 'false'} onClick={() => this.go(key)}>
+                {label}
+              </button>
+            ))}
           </div>
           <div className="oracle-reading-progress__track" role="progressbar" aria-label="Reading progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(this.state.readingProgress)}>
             <span data-oracle-progress-fill style={{ transform: `scaleX(${this.state.readingProgress / 100})` }} />

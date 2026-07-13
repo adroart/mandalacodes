@@ -80,17 +80,21 @@ test('shows one sticky document progress indicator', async ({ page }) => {
   await expect(nav).toHaveCSS('position', 'sticky');
   await expect(progress).toHaveAttribute('aria-valuemin', '0');
   await expect(progress).toHaveAttribute('aria-valuemax', '100');
+  const systems = nav.getByRole('navigation', { name: 'Jump to system' });
+  await expect(systems).toBeVisible();
+  await systems.getByRole('button', { name: 'Gene Keys' }).click();
+  await expect(page.locator('section[data-chapter="genekeys"]')).toBeInViewport();
   await expect(page.getByRole('navigation', { name: 'Reading by system' })).toBeHidden();
 });
 
-test('renders an in-flow inward-aligned previous and next footer', async ({ page }) => {
+test('keeps an inward-aligned previous and next navigator fixed at the bottom', async ({ page }) => {
   await openReading(page);
   const footer = page.locator('[data-oracle-neighbor-footer]');
   const previous = footer.getByRole('link', { name: 'Previous hexagram: Code 21, Beyond Binary' });
   const next = footer.getByRole('link', { name: 'Next hexagram: Code 23, Beneath the Surface' });
 
   await expect(footer).toBeAttached();
-  expect(await footer.evaluate((element) => getComputedStyle(element).position)).not.toMatch(/fixed|sticky/);
+  await expect(footer).toHaveCSS('position', 'fixed');
   await expect(previous).toHaveAttribute('href', '/universal-language/21');
   await expect(next).toHaveAttribute('href', '/universal-language/23');
   await expect(previous).toContainText('Code 21');
@@ -102,12 +106,21 @@ test('renders an in-flow inward-aligned previous and next footer', async ({ page
   await expect(next).toHaveCSS('justify-content', 'flex-start');
   await expect(next).toHaveCSS('text-align', 'left');
 
-  const order = await footer.evaluate((element) => {
-    const relations = document.querySelector('section[data-chapter="relations"]');
-    if (!relations) throw new Error('Relations chapter is missing');
-    return element.getBoundingClientRect().top + scrollY >= relations.getBoundingClientRect().bottom + scrollY - 1;
+});
+
+test('keeps the desktop title on one line and prose panels narrow', async ({ page }) => {
+  await openReading(page);
+  await page.setViewportSize({ width: 1148, height: 900 });
+  const title = page.locator('h1.ul-title-desktop');
+  const titleLines = await title.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return element.getBoundingClientRect().height / parseFloat(style.lineHeight);
   });
-  expect(order).toBe(true);
+  expect(titleLines).toBeLessThan(1.2);
+
+  const panel = page.locator('[data-gk]').first();
+  const panelWidth = await panel.evaluate((element) => element.getBoundingClientRect().width);
+  expect(panelWidth).toBeLessThanOrEqual(680);
 });
 
 test('reveals content immediately for reduced motion', async ({ page }) => {

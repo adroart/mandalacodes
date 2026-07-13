@@ -1,4 +1,4 @@
-.oracle-bottom-nav { position:relative; z-index:1; color:var(--l-1); background:#14100b; border-top:1px solid rgba(168,135,77,.14); padding:clamp(42px,7vw,84px) 0 calc(clamp(42px,7vw,84px) + env(safe-area-inset-bottom,0px)); }
+.oracle-bottom-nav { position:fixed; z-index:92; right:0; bottom:0; left:0; color:var(--l-1); background:color-mix(in oklab,#14100b 94%,transparent); border-top:1px solid rgba(168,135,77,.14); padding:0 0 env(safe-area-inset-bottom,0px); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
 .oracle-bottom-nav__inner { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:stretch; min-height:56px; max-width:900px; margin:0 auto; }
 .oracle-bottom-nav__edge { display:flex; min-width:0; justify-content:flex-end; }
 .oracle-bottom-nav__edge--next { justify-content:flex-start; }
