@@ -34,7 +34,7 @@ test('administrator hold replaces only the sticky footer with the compact record
   await mockAdminRecorder(page);
   await page.goto(`${BASE}${CARD}`);
   await dismissEntrance(page);
-  const center = page.getByRole('link', { name: 'All 64 hexagrams' });
+  const center = page.locator('[data-current-hexagram]');
   await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
   await page.waitForTimeout(700);
   await expect(page.getByRole('navigation', { name: 'Private reflection recorder' })).toBeVisible();
@@ -46,8 +46,24 @@ test('a short tap remains ordinary All 64 navigation', async ({ page }) => {
   await mockAdminRecorder(page);
   await page.goto(`${BASE}${CARD}`);
   await dismissEntrance(page);
-  await page.getByRole('link', { name: 'All 64 hexagrams' }).click();
+  await page.locator('[data-current-hexagram]').click();
   await expect(page).toHaveURL(/\/universal-language$/);
+});
+
+test('administrator center hold suppresses the native mobile link menu', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+
+  const contextMenuPrevented = await center.evaluate((element) => {
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    element.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+
+  await expect(center).toHaveCSS('user-select', 'none');
+  expect(contextMenuPrevented).toBe(true);
 });
 
 test('signed-in non-admin visitors receive no recorder disclosure', async ({ page }) => {
@@ -55,7 +71,7 @@ test('signed-in non-admin visitors receive no recorder disclosure', async ({ pag
   await page.goto(`${BASE}${CARD}`);
   await dismissEntrance(page);
   await expect(page.locator('[data-admin-recorder]')).toHaveCount(0);
-  await expect(page.getByRole('navigation', { name: 'Hexagram navigation' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
 });
 
 test('journal shifts arranged segments into the full-screen invocation composer', async ({ page }) => {
@@ -63,7 +79,7 @@ test('journal shifts arranged segments into the full-screen invocation composer'
   await page.route('**/api/oracle/invocations/22/draft**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'draft-22', hexagramNumber: 22, sessionId: 'session-22', title: 'Grace', blocks: [{ id: 'segment:segment-1', kind: 'segment', segmentId: 'segment-1', markdown: 'Let beauty arise.', sortOrder: 0 }], updatedAt: new Date().toISOString() }) }));
   await page.goto(`${BASE}${CARD}`);
   await dismissEntrance(page);
-  const center = page.getByRole('link', { name: 'All 64 hexagrams' });
+  const center = page.locator('[data-current-hexagram]');
   await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
   await page.waitForTimeout(700);
   await page.getByRole('button', { name: 'Journal' }).click();

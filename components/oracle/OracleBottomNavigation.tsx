@@ -88,6 +88,9 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
           onPointerUp={cancelHold}
           onPointerCancel={cancelHold}
           onPointerLeave={cancelHold}
+          onContextMenu={(event) => {
+            if (recorder.isAdmin) event.preventDefault();
+          }}
           onClick={(event) => {
             if (longPressed.current) {
               event.preventDefault();

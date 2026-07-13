@@ -7,6 +7,7 @@
 /* Centre anchor: the code number over "All 64", framed by hairlines so it
    reads as the still point the other four are measured from. */
 .oracle-bottom-nav__current { position:relative; overflow:hidden; gap:3px; border-right:1px solid var(--l-rule); border-left:1px solid var(--l-rule); }
+.oracle-bottom-nav__current[data-admin-recorder="available"] { -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
 .oracle-bottom-nav__current::after { position:absolute; right:0; bottom:0; left:0; height:2px; background:var(--accent); content:""; transform:scaleX(0); transform-origin:left; }
 .oracle-bottom-nav__current.is-holding::after { transform:scaleX(1); transition:transform 650ms linear; }
 .oracle-bottom-nav__current .oracle-bottom-nav__label { color:var(--l-3); }
