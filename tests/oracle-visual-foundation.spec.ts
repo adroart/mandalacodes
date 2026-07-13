@@ -102,9 +102,13 @@ test('keeps the system rail generous on desktop and fluid on narrow screens', as
     const styles = getComputedStyle(element);
     return { width: element.getBoundingClientRect().width, height: element.getBoundingClientRect().height, fontSize: parseFloat(styles.fontSize) };
   });
-  expect(desktop.width).toBeGreaterThan(175);
   expect(desktop.height).toBeGreaterThanOrEqual(60);
-  expect(desktop.fontSize).toBeGreaterThanOrEqual(12);
+  expect(desktop.fontSize).toBeGreaterThanOrEqual(15);
+  const desktopButtonGaps = await rail.getByRole('button').evaluateAll((buttons) => {
+    const rects = buttons.map((button) => button.getBoundingClientRect());
+    return rects.slice(1).map((rect, index) => Math.round(rect.left - rects[index].right));
+  });
+  expect(desktopButtonGaps.every((gap) => gap >= 3 && gap <= 5)).toBe(true);
 
   const progressTrack = page.locator('.oracle-reading-progress__track');
   const trackPosition = await progressTrack.evaluate((element) => {
@@ -121,6 +125,8 @@ test('keeps the system rail generous on desktop and fluid on narrow screens', as
   expect(mobile).toBeLessThan(desktop.width);
   const labelsFit = await rail.getByRole('button').evaluateAll((buttons) => buttons.every((button) => button.scrollWidth <= button.clientWidth));
   expect(labelsFit).toBe(true);
+  const mobileRail = await rail.evaluate((element) => ({ clientWidth: element.clientWidth, scrollWidth: element.scrollWidth }));
+  expect(mobileRail.scrollWidth).toBeGreaterThan(mobileRail.clientWidth);
 });
 
 test('uses tonal chapter shifts and inset I Ching editorial panels', async ({ page }) => {
