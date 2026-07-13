@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDarkMode } from '../../DarkModeContext';
 import type { ProfileInputs } from '../../lib/profile/storage';
@@ -56,16 +56,39 @@ const BirthTimeModal: React.FC<{
   const { isDarkMode } = useDarkMode();
   const C = isDarkMode ? DARK : LIGHT;
   const [step, setStep] = useState<'form' | 'confirm'>('form');
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
+    window.requestAnimationFrame(() => closeRef.current?.focus());
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
+      previousFocusRef.current?.focus();
     };
   }, [onClose]);
+
+  const keepFocusInside = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Tab' || !dialogRef.current) return;
+    const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+    ));
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
 
   const ring = (
     <div style={{
@@ -103,35 +126,57 @@ const BirthTimeModal: React.FC<{
 
   return createPortal(
     <div
+      className="birth-dialog-backdrop"
       style={{
         position: 'fixed', inset: 0, zIndex: 100, display: 'flex',
-        alignItems: 'center', justifyContent: 'center', padding: 24,
+        alignItems: 'center', justifyContent: 'center', padding: 22,
         background: 'rgba(38,35,33,0.45)', backdropFilter: 'blur(3px)',
       }}
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="birth-dialog-title"
+        data-birth-dialog-scroll
+        className="birth-dialog-panel"
         style={{
-          width: '100%', maxWidth: 380, maxHeight: '88vh', overflowY: 'auto',
+          width: '100%', maxWidth: 780, maxHeight: 'calc(100dvh - 44px)', overflowY: 'auto',
           background: C.surface, borderRadius: 20,
           boxShadow: '0 24px 60px -20px rgba(0,0,0,0.45)',
-          padding: '28px 26px', color: C.ink, textAlign: 'center',
+          padding: '36px clamp(24px, 6vw, 76px) 42px', color: C.ink, textAlign: 'center',
         }}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={keepFocusInside}
       >
+        <button
+          ref={closeRef}
+          type="button"
+          aria-label="Close birth profile"
+          onClick={onClose}
+          className="birth-dialog-close"
+          style={{
+            position: 'sticky', top: 0, zIndex: 30, float: 'right', width: 44, height: 44,
+            margin: '-12px -14px -32px 0', borderRadius: '50%', border: `1px solid ${C.fieldBorder}`,
+            background: C.surface, color: C.sub, cursor: 'pointer', fontSize: 23, lineHeight: 1,
+          }}
+        >
+          ×
+        </button>
         {step === 'form' && (
           <>
             {ring}
             {brand}
-            <h2 style={{
+            <h2 id="birth-dialog-title" style={{
               fontFamily: '"Cormorant Garamond", serif', fontWeight: 500, fontSize: 28,
               lineHeight: 1.05, color: C.ink, margin: '0 0 6px',
             }}>
               Enter your birth time
             </h2>
             <p style={{
-              fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: 17,
-              color: C.sub, lineHeight: 1.35, margin: '0 0 18px',
+              fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: 16,
+              color: C.sub, lineHeight: 1.35, margin: '0 auto 24px', maxWidth: 430,
             }}>
               See which cards are most relevant to you, lit throughout the oracle.
             </p>
@@ -158,7 +203,7 @@ const BirthTimeModal: React.FC<{
           <>
             {ring}
             {brand}
-            <h2 style={{
+            <h2 id="birth-dialog-title" style={{
               fontFamily: '"Cormorant Garamond", serif', fontWeight: 500, fontSize: 28,
               lineHeight: 1.05, color: C.ink, margin: '0 0 6px',
             }}>
@@ -186,6 +231,24 @@ const BirthTimeModal: React.FC<{
             )}
           </>
         )}
+        <style>{`
+          @media (max-width: 640px) {
+            .birth-dialog-backdrop {
+              padding: 0 !important;
+              align-items: stretch !important;
+            }
+            .birth-dialog-panel {
+              max-width: none !important;
+              max-height: none !important;
+              height: 100dvh !important;
+              border-radius: 0 !important;
+              padding: max(22px, env(safe-area-inset-top)) 18px max(32px, env(safe-area-inset-bottom)) !important;
+            }
+            .birth-dialog-close {
+              margin: -4px -2px -38px 0 !important;
+            }
+          }
+        `}</style>
       </div>
     </div>,
     document.body,

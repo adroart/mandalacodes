@@ -46,7 +46,15 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
   useEffect(() => {
     if (activeIndex < 0 || !listRef.current) return;
     const el = listRef.current.querySelector<HTMLElement>(`#profile-place-opt-${activeIndex}`);
-    el?.scrollIntoView({ block: 'nearest' });
+    const panel = listRef.current.closest<HTMLElement>('[data-birth-dialog-scroll]');
+    if (!el || !panel) return;
+    const rowRect = el.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
+    if (rowRect.bottom > panelRect.bottom) {
+      panel.scrollTo({ top: panel.scrollTop + rowRect.bottom - panelRect.bottom + 12 });
+    } else if (rowRect.top < panelRect.top) {
+      panel.scrollTo({ top: panel.scrollTop - (panelRect.top - rowRect.top) - 12 });
+    }
   }, [activeIndex]);
 
   const onPlaceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -63,6 +71,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
         selectPlace(suggestions[activeIndex]);
       }
     } else if (e.key === 'Escape') {
+      e.stopPropagation();
       setShowSuggestions(false);
       setActiveIndex(-1);
     }
@@ -160,11 +169,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           aria-invalid={!!time && !isValidTime(time)}
         />
         <p className="profile-form__help">
-          24-hour time, e.g. 23:45. As exact as possible: every minute matters for the moving positions.
+          24-hour time. Every minute matters.
         </p>
       </div>
 
-      <div className="profile-form__field">
+      <div className={`profile-form__field profile-form__place${showSuggestions && hasQuery ? ' is-searching' : ''}`}>
         <label htmlFor="profile-place" className="profile-form__label">
           Birth place
         </label>
@@ -214,7 +223,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
                     }}
                   >
                     <span className="profile-form__suggestion-label">{s.label}</span>
-                    <span className="profile-form__suggestion-tz">{s.tzId}</span>
                   </button>
                 </li>
               ))}
@@ -227,7 +235,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
         )}
         {place && (
           <p className="profile-form__help">
-            {place.tzId} resolved from {place.label}
+            Timezone confirmed
           </p>
         )}
       </div>
@@ -243,7 +251,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           max-width: 460px;
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 18px;
         }
         .profile-form__field {
           display: flex;
@@ -252,20 +260,21 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           position: relative;
         }
         .profile-form__label {
-          font-family: 'Lato', Helvetica, sans-serif;
-          font-size: 11px;
+          font-family: 'Karla', Helvetica, sans-serif;
+          font-size: 10px;
           letter-spacing: 0.22em;
           text-transform: uppercase;
           color: var(--color-wood-700);
         }
         .profile-form__input {
           font-family: 'Cormorant Garamond', serif;
-          font-size: 17px;
+          font-size: 19px;
           color: var(--color-wood-900);
           background: var(--color-paper-50);
           border: 1px solid color-mix(in oklab, var(--color-wood-600) 30%, transparent);
           border-radius: 3px;
-          padding: 10px 12px;
+          min-height: 52px;
+          padding: 10px 14px;
           outline: 2px solid transparent;
           outline-offset: 2px;
           transition: border-color 0.2s, outline-color 0.2s;
@@ -278,33 +287,25 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           border-color: #a04040;
         }
         .profile-form__help {
-          font-family: 'Lato', Helvetica, sans-serif;
-          font-size: 11px;
+          font-family: 'Karla', Helvetica, sans-serif;
+          font-size: 12px;
           color: var(--color-wood-600);
         }
         .profile-form__error {
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: 'Karla', Helvetica, sans-serif;
           font-size: 12px;
           color: #a04040;
         }
         .profile-form__suggestions {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          z-index: 20;
+          position: static;
           background: var(--color-paper-50);
           border: 1px solid color-mix(in oklab, var(--color-wood-600) 28%, transparent);
           border-radius: 6px;
-          margin: 6px 0 0;
-          padding: 4px;
+          margin: 4px 0 0;
+          padding: 0;
           list-style: none;
-          /* Tall enough to show ~9 rows; the index returns up to 24 so the
-             list scrolls. min() keeps it inside short viewports (mobile). */
-          max-height: min(60vh, 420px);
-          overflow-y: auto;
-          overscroll-behavior: contain;
-          box-shadow: 0 14px 38px -10px rgba(0, 0, 0, 0.32);
+          max-height: none;
+          overflow-y: visible;
         }
         .profile-form__suggestion {
           display: flex;
@@ -312,7 +313,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           align-items: flex-start;
           gap: 2px;
           width: 100%;
-          padding: 11px 14px;
+          min-height: 52px;
+          padding: 10px 14px;
           background: transparent;
           border: 0;
           border-radius: 4px;
@@ -326,35 +328,24 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
         }
         .profile-form__suggestion-label {
           font-family: 'Cormorant Garamond', serif;
-          font-size: 17px;
+          font-size: 18px;
           line-height: 1.2;
           color: var(--color-wood-900);
         }
-        .profile-form__suggestion-tz {
-          font-family: 'Lato', Helvetica, sans-serif;
-          font-size: 10px;
-          color: var(--color-wood-600);
-          letter-spacing: 0.1em;
-        }
         .profile-form__suggestions-empty {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          z-index: 20;
           margin: 6px 0 0;
           padding: 12px 14px;
           background: var(--color-paper-50);
           border: 1px solid color-mix(in oklab, var(--color-wood-600) 28%, transparent);
           border-radius: 6px;
           box-shadow: 0 14px 38px -10px rgba(0, 0, 0, 0.32);
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: 'Karla', Helvetica, sans-serif;
           font-size: 12px;
           color: var(--color-wood-600);
         }
         .profile-form__submit {
           align-self: flex-start;
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: 'Karla', Helvetica, sans-serif;
           font-size: 11px;
           letter-spacing: 0.22em;
           text-transform: uppercase;
@@ -372,6 +363,32 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
         .profile-form__submit:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+        }
+        @media (min-width: 641px) {
+          .profile-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            max-width: none;
+          }
+          .profile-form__place,
+          .profile-form__error,
+          .profile-form__submit {
+            grid-column: 1 / -1;
+          }
+        }
+        @media (max-width: 640px) {
+          .profile-form__place.is-searching {
+            position: relative;
+          }
+          .profile-form__place.is-searching > .profile-form__label,
+          .profile-form__place.is-searching > .profile-form__input {
+            position: sticky;
+            z-index: 25;
+            background: var(--color-paper-50);
+          }
+          .profile-form__place.is-searching > .profile-form__label { top: 0; }
+          .profile-form__place.is-searching > .profile-form__input { top: 20px; }
+          .profile-form__submit { width: 100%; min-height: 48px; }
         }
       `}</style>
     </form>
