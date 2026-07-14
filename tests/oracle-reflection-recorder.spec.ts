@@ -18,6 +18,7 @@ async function mockAdminRecorder(page: Page, segment: { transcript?: string; tra
       state = 'inactive'; mimeType = 'audio/webm;codecs=opus'; ondataavailable: ((event: { data: Blob }) => void) | null = null; onstop: (() => void) | null = null;
       constructor(_stream: unknown, options?: { mimeType?: string }) { if (options?.mimeType) this.mimeType = options.mimeType; }
       start() { this.state = 'recording'; }
+      requestData() {}
       stop() { this.ondataavailable?.({ data: new Blob(['voice'], { type: this.mimeType }) }); this.state = 'inactive'; this.onstop?.(); }
     }
     Object.defineProperty(window, 'MediaRecorder', { configurable: true, value: FakeMediaRecorder });
@@ -127,6 +128,14 @@ test('journal is a contained full-screen surface that closes back to the recorde
   const journal = page.getByRole('dialog', { name: 'Journal · 22' });
   await expect(journal).toBeVisible();
   await expect(recorder).toBeHidden();
+  await expect(journal.locator('.reflection-segment').first()).toHaveClass(/is-newest/);
+  await expect(journal.locator('audio.reflection-segment__audio')).toHaveAttribute('src', /\/api\/oracle\/reflections\/segments\/segment-1\/audio/);
+  await expect(journal.getByRole('button', { name: 'Play recording for segment 1' })).toBeVisible();
+  await expect(journal.getByRole('button', { name: 'Record more' })).toBeVisible();
+  await expect(journal.getByRole('button', { name: 'Edit latest transcript' })).toBeVisible();
+  await journal.getByRole('slider', { name: 'Recording position for segment 1' }).focus();
+  await page.keyboard.press('Tab');
+  await expect(journal.getByRole('button', { name: 'Shift to invocation' })).toBeFocused();
   expect(await journal.evaluate((element) => element.parentElement?.tagName)).toBe('BODY');
   await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
 
@@ -144,6 +153,23 @@ test('journal is a contained full-screen surface that closes back to the recorde
   await expect(journal).toHaveCount(0);
   await expect(recorder).toBeVisible();
   await expect(recorder.getByRole('button', { name: 'Journal' })).toBeFocused();
+});
+
+test('finish confirms the saved reflection before restoring ordinary navigation', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+
+  const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
+  await recorder.getByRole('button', { name: 'Finish private reflection' }).click();
+  await expect(
+    recorder.getByRole('button', { name: 'Finish private reflection' }).getByText('Saved', { exact: true }),
+  ).toBeVisible();
+  await expect(recorder).toHaveCount(0, { timeout: 2_000 });
+  await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
 });
 
 test('journal automatically transcribes pending saved audio without requiring Retry', async ({ page }) => {

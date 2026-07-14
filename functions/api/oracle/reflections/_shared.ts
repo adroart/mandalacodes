@@ -72,6 +72,7 @@ export async function transcribeCommittedAudio(
     const form = new FormData();
     form.set('model', 'whisper-large-v3-turbo');
     form.set('response_format', 'json');
+    form.set('prompt', 'A private reflection about the Mandala Codes, I Ching, hexagrams, Gene Keys, Shadow, Gift, Siddhi, Human Design, contemplation, and invocation. Preserve these spellings and natural punctuation.');
     form.set('file', new File([bytes], mimeType.includes('mp4') ? 'reflection.m4a' : 'reflection.webm', { type: mimeType }));
     try {
       const response = await fetcher('https://api.groq.com/openai/v1/audio/transcriptions', {

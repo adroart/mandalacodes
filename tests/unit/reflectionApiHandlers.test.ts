@@ -43,6 +43,8 @@ describe('reflection API boundary', () => {
     }));
     const form = fetcher.mock.calls[0][1].body as FormData;
     expect(form.get('model')).toBe('whisper-large-v3-turbo');
+    expect(form.get('prompt')).toContain('I Ching');
+    expect(form.get('prompt')).toContain('Siddhi');
     expect((form.get('file') as File).type).toBe('audio/mp4;codecs=mp4a.40.2');
     expect(run).not.toHaveBeenCalled();
     expect(result).toEqual({ text: 'Breath.', metadataJson: JSON.stringify({ provider: 'groq', wordCount: 1, duration: 1.2 }) });
@@ -111,5 +113,14 @@ describe('reflection API boundary', () => {
     expect(sequencesAfterNewestInsert([{ id: 'recent', sequence: 0 }, { id: 'older', sequence: 1 }])).toEqual([
       { id: 'recent', sequence: 1 }, { id: 'older', sequence: 2 },
     ]);
+  });
+
+  it('supports Safari media byte ranges, including open-ended and suffix requests', async () => {
+    const { parseAudioRange } = await import('../../functions/api/oracle/reflections/segments/[id]/audio');
+    expect(parseAudioRange('bytes=0-', 100)).toEqual({ start: 0, end: 99 });
+    expect(parseAudioRange('bytes=40-999', 100)).toEqual({ start: 40, end: 99 });
+    expect(parseAudioRange('bytes=-20', 100)).toEqual({ start: 80, end: 99 });
+    expect(parseAudioRange('bytes=100-', 100)).toBeNull();
+    expect(parseAudioRange('bytes=0-1,4-5', 100)).toBeNull();
   });
 });

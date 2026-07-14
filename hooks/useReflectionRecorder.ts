@@ -17,7 +17,7 @@ import {
   removeReflection,
 } from '../lib/oracle/reflectionOutbox';
 
-export type ReflectionRecorderStatus = 'idle' | 'requesting_permission' | 'recording' | 'committing' | 'paused' | 'error';
+export type ReflectionRecorderStatus = 'idle' | 'requesting_permission' | 'recording' | 'committing' | 'paused' | 'finished' | 'error';
 
 export interface ReflectionRecorderState {
   status: ReflectionRecorderStatus;
@@ -40,6 +40,7 @@ export type ReflectionRecorderAction =
   | { type: 'warning'; message: string }
   | { type: 'failed'; message: string }
   | { type: 'unauthorized' }
+  | { type: 'finish_confirmed' }
   | { type: 'finished' };
 
 export const initialReflectionRecorderState: ReflectionRecorderState = {
@@ -61,16 +62,16 @@ export function segmentLimitWarning(durationMs: number, estimatedBytes: number):
   return null;
 }
 
-export async function finishAfterLocalPersistence(
-  startCommit: () => Promise<void> | void,
+export async function finishAfterLocalPersistence<T>(
+  startCommit: () => Promise<T> | T,
   getPersistence: () => Promise<void> | null,
   stopTracks: () => void,
-): Promise<void> {
+): Promise<T> {
   const commit = Promise.resolve(startCommit());
   const persistence = getPersistence();
   if (persistence) await persistence;
   stopTracks();
-  await commit;
+  return await commit;
 }
 
 export function createSingleFlight(operation: () => Promise<void>): () => Promise<void> {
@@ -106,6 +107,7 @@ export function reflectionRecorderReducer(state: ReflectionRecorderState, action
     case 'warning': return state.status === 'recording' ? { ...state, message: action.message } : state;
     case 'failed': return { ...state, status: 'error', message: action.message };
     case 'unauthorized': return { ...initialReflectionRecorderState, status: 'error', message: 'Your administrator session ended. Sign in and try again.' };
+    case 'finish_confirmed': return { ...state, status: 'finished', segmentId: null, message: 'Saved' };
     case 'finished': return initialReflectionRecorderState;
   }
 }
@@ -144,7 +146,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
   const segmentStartedRef = useRef(0);
   const elapsedBeforeSegmentRef = useRef(0);
   const intervalRef = useRef<number | null>(null);
-  const commitPromiseRef = useRef<Promise<void> | null>(null);
+  const commitPromiseRef = useRef<Promise<boolean> | null>(null);
   const persistencePromiseRef = useRef<Promise<void> | null>(null);
   const persistenceResolvedRef = useRef<(() => void) | null>(null);
   const authorizationRevokedRef = useRef(false);
@@ -279,14 +281,15 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
     if (commitPromiseRef.current) return commitPromiseRef.current;
     const recorder = recorderRef.current;
     const current = stateRef.current;
-    if (!recorder || recorder.state === 'inactive' || current.status !== 'recording' || !current.sessionId || !current.segmentId) return;
+    if (!recorder || recorder.state === 'inactive' || current.status !== 'recording' || !current.sessionId || !current.segmentId) return current.status === 'paused';
     dispatch({ type: 'pause_requested', message: boundaryReason === 'duration' ? '20 minute limit reached · saving segment' : boundaryReason === 'size' ? 'Audio size limit near · saving segment' : undefined });
     clearClock();
     const durationMs = Math.max(1, Math.round(performance.now() - segmentStartedRef.current));
     elapsedBeforeSegmentRef.current += durationMs;
     persistencePromiseRef.current = new Promise<void>((resolve) => { persistenceResolvedRef.current = resolve; });
-    const commit = new Promise<void>((resolve) => { recorder.onstop = async () => {
+    const commit = new Promise<boolean>((resolve) => { recorder.onstop = async () => {
       recorderRef.current = null;
+      let locallyPersisted = false;
       try {
         await chunkWriteChainRef.current;
         const pending = await finalizeReflectionDraft(current.segmentId!);
@@ -294,6 +297,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
         if (durationMs > REFLECTION_LIMITS.maxSegmentDurationMs) throw new Error('Segment is longer than 20 minutes. Start a new segment.');
         if (blob.size > REFLECTION_LIMITS.maxSegmentBytes) throw new Error('Segment is larger than 25 MiB. Start a shorter segment.');
         if (!blob.size) throw new Error('No audio was captured. Resume and try again.');
+        locallyPersisted = true;
         persistenceResolvedRef.current?.();
         persistenceResolvedRef.current = null;
         try {
@@ -317,7 +321,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
         persistenceResolvedRef.current?.();
         persistenceResolvedRef.current = null;
       }
-      resolve();
+      resolve(locallyPersisted);
     }; });
     commitPromiseRef.current = commit.finally(() => { commitPromiseRef.current = null; });
     if (recorder.state === 'recording') recorder.requestData();
@@ -327,7 +331,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
 
   autoCommitRef.current = (reason) => { void commitCurrentSegment(reason); };
 
-  const pause = useCallback(() => commitCurrentSegment(), [commitCurrentSegment]);
+  const pause = useCallback(async () => { await commitCurrentSegment(); }, [commitCurrentSegment]);
 
   const resume = useCallback(() => {
     const current = stateRef.current;
@@ -338,13 +342,18 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
 
   const performFinish = useCallback(async () => {
     lifecycleGenerationRef.current += 1;
-    await finishAfterLocalPersistence(
+    const saved = await finishAfterLocalPersistence(
       () => commitCurrentSegment(),
       () => persistencePromiseRef.current,
       stopTracks,
     );
     elapsedBeforeSegmentRef.current = 0;
-    if (!authorizationRevokedRef.current) dispatch({ type: 'finished' });
+    if (!authorizationRevokedRef.current && saved) {
+      dispatch({ type: 'finish_confirmed' });
+      window.setTimeout(() => dispatch({ type: 'finished' }), 650);
+    } else if (!authorizationRevokedRef.current && stateRef.current.status === 'error') {
+      dispatch({ type: 'finished' });
+    }
   }, [commitCurrentSegment, stopTracks]);
   finishOperationRef.current = performFinish;
   const finish = useCallback(() => finishOnceRef.current!(), []);

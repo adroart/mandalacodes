@@ -41,7 +41,9 @@ describe('reflection recorder state machine', () => {
 
   it('returns to idle on finish', () => {
     const recording = { ...initialReflectionRecorderState, status: 'recording' as const, sessionId: 'session-1', segmentId: 'segment-1' };
-    expect(reflectionRecorderReducer(recording, { type: 'finished' })).toEqual(initialReflectionRecorderState);
+    const confirmed = reflectionRecorderReducer(recording, { type: 'finish_confirmed' });
+    expect(confirmed).toMatchObject({ status: 'finished', message: 'Saved' });
+    expect(reflectionRecorderReducer(confirmed, { type: 'finished' })).toEqual(initialReflectionRecorderState);
   });
 
   it('revokes the active recorder state after an unauthorized commit', () => {
@@ -85,6 +87,11 @@ describe('reflection recorder state machine', () => {
     expect(events).toEqual(['stop-recorder', 'stop-tracks']);
     uploaded();
     await finishing;
+  });
+
+  it('returns whether the recording was actually persisted before finish', async () => {
+    await expect(finishAfterLocalPersistence(() => Promise.resolve(false), () => null, () => undefined)).resolves.toBe(false);
+    await expect(finishAfterLocalPersistence(() => Promise.resolve(true), () => null, () => undefined)).resolves.toBe(true);
   });
 
   it('coalesces simultaneous pagehide and visibility cleanup into one operation', async () => {

@@ -35,12 +35,68 @@ interface Props {
   hexagramNumber: number;
   currentSessionId: string | null;
   onClose(): void;
+  onRecordMore?(): void;
   onCompose?(sessionId: string, segments: ReflectionSegment[]): void;
 }
 
 const formatTime = (value: string) => new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(value));
 
-export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSessionId, onClose, onCompose }) => {
+const formatDuration = (seconds: number) => {
+  const safe = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+  return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, '0')}`;
+};
+
+const PrivateAudioPlayer: React.FC<{ segment: ReflectionSegment; index: number }> = ({ segment, index }) => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(segment.durationMs / 1000);
+
+  const toggle = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      try { await audio.play(); } catch { setPlaying(false); }
+    } else {
+      audio.pause();
+    }
+  };
+
+  return <div className="reflection-segment__player">
+    <audio
+      ref={audioRef}
+      className="reflection-segment__audio"
+      preload="metadata"
+      src={`/api/oracle/reflections/segments/${encodeURIComponent(segment.id)}/audio`}
+      onPlay={() => setPlaying(true)}
+      onPause={() => setPlaying(false)}
+      onEnded={() => { setPlaying(false); setCurrentTime(0); }}
+      onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
+      onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+    />
+    <button type="button" className="reflection-segment__play" onClick={() => void toggle()} aria-label={`${playing ? 'Pause' : 'Play'} recording for segment ${index + 1}`}>
+      <span aria-hidden="true">{playing ? 'Ⅱ' : '▶'}</span>
+    </button>
+    <span className="reflection-segment__elapsed">{formatDuration(currentTime)}</span>
+    <input
+      type="range"
+      min="0"
+      max={Math.max(duration, 0.1)}
+      step="0.1"
+      value={Math.min(currentTime, Math.max(duration, 0.1))}
+      aria-label={`Recording position for segment ${index + 1}`}
+      onChange={(event) => {
+        const next = Number(event.currentTarget.value);
+        if (audioRef.current) audioRef.current.currentTime = next;
+        setCurrentTime(next);
+      }}
+    />
+    <span className="reflection-segment__duration">{formatDuration(duration)}</span>
+    <span className="reflection-segment__private">Private audio</span>
+  </div>;
+};
+
+export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSessionId, onClose, onRecordMore, onCompose }) => {
   const [sessions, setSessions] = useState<{ current: ReflectionSession | null; history: ReflectionSession[] }>({ current: null, history: [] });
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(currentSessionId);
   const [segments, setSegments] = useState<ReflectionSegment[]>([]);
@@ -88,7 +144,7 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
     }
     if (event.key !== 'Tab') return;
     const focusable = Array.from(sheetRef.current?.querySelectorAll<HTMLElement>(
-      'button:not(:disabled), textarea:not(:disabled), [href], [tabindex]:not([tabindex="-1"])',
+      'button:not(:disabled), input:not(:disabled), textarea:not(:disabled), [href], [tabindex]:not([tabindex="-1"])',
     ) ?? []).filter((element) => !element.hasAttribute('hidden'));
     if (!focusable.length) return;
     const current = focusable.indexOf(document.activeElement as HTMLElement);
@@ -200,7 +256,7 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
         <div className="reflection-journal__segments" aria-busy={loading}>
           {!loading && segments.length === 0 && <p className="reflection-journal__empty">Pause a recording to add the first segment.</p>}
           {segments.map((segment, index) => <article
-            className="reflection-segment" key={segment.id} draggable
+            className={`reflection-segment${index === 0 ? ' is-newest' : ''}`} key={segment.id} draggable
             onDragStart={() => { draggedId.current = segment.id; }}
             onDragOver={(event) => event.preventDefault()}
             onDrop={() => { if (draggedId.current) void persistOrder(moveReflectionSegment(segments, draggedId.current, segment.id)); draggedId.current = null; }}>
@@ -213,12 +269,25 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
               </span>
               <button className="reflection-segment__edit" type="button" onClick={() => { setEditingId(segment.id); setDraft(segment.transcript); }}>Edit</button>
             </header>
+            <PrivateAudioPlayer segment={segment} index={index} />
             {editingId === segment.id ? <div className="reflection-segment__editor">
               <label htmlFor={`reflection-${segment.id}`}>Transcript</label>
               <textarea id={`reflection-${segment.id}`} value={draft} onChange={(event) => setDraft(event.target.value)} autoFocus />
               <div><button type="button" onClick={() => void saveTranscript(segment)}>Save</button><button type="button" onClick={() => setEditingId(null)}>Cancel</button></div>
             </div> : <div className="reflection-segment__body">
-              {segment.transcript ? <p>{segment.transcript}</p> : <p className="reflection-segment__status">{segment.transcriptionStatus === 'transcribing' ? 'Transcribing…' : 'Audio saved privately · transcription pending'}</p>}
+              {segment.transcript ? <p>{segment.transcript}</p> : <p className="reflection-segment__status">{
+                segment.transcriptionStatus === 'uploading' ? 'Uploading audio…'
+                  : segment.transcriptionStatus === 'transcribing' ? 'Transcribing audio…'
+                    : segment.transcriptionStatus === 'failed' ? 'Transcription needs retry'
+                      : 'Queued for transcription'
+              }</p>}
+              <span className="reflection-segment__transcription-state" data-state={segment.transcriptionStatus}>{
+                segment.transcriptionStatus === 'transcribed' ? 'Ready'
+                  : segment.transcriptionStatus === 'uploading' ? 'Uploading'
+                    : segment.transcriptionStatus === 'transcribing' ? 'Transcribing'
+                      : segment.transcriptionStatus === 'failed' ? 'Needs retry'
+                        : 'Queued'
+              }</span>
               {(segment.transcriptionStatus === 'transcription_pending' || segment.transcriptionStatus === 'failed') && <button type="button" onClick={() => void retry(segment.id)}>Retry</button>}
             </div>}
           </article>)}
@@ -230,6 +299,11 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
             </button>
           </footer>
         )}
+        <footer className="reflection-journal__actions" aria-label="Journal actions">
+          <button type="button" onClick={onRecordMore ?? onClose}>Record more</button>
+          <button type="button" aria-label="Edit latest transcript" disabled={!segments[0]} onClick={() => { if (segments[0]) { setEditingId(segments[0].id); setDraft(segments[0].transcript); } }}>Edit latest</button>
+          <button type="button" onClick={onClose}>Close</button>
+        </footer>
       </div>
     </section>
   );
