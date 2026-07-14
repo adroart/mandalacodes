@@ -92,3 +92,35 @@ test('journal shifts arranged segments into the full-screen invocation composer'
   await composer.getByRole('button', { name: 'Shift to Invocation' }).click();
   await expect(page.locator('.invocation-block textarea')).toHaveValue('Let beauty arise.');
 });
+
+test('journal is a contained full-screen surface that closes back to the recorder', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+
+  const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
+  await recorder.getByRole('button', { name: 'Journal' }).click();
+  const journal = page.getByRole('dialog', { name: 'Journal · 22' });
+  await expect(journal).toBeVisible();
+  await expect(recorder).toBeHidden();
+  expect(await journal.evaluate((element) => element.parentElement?.tagName)).toBe('BODY');
+  await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
+
+  const close = journal.getByRole('button', { name: 'Close journal' });
+  await expect(close).toBeInViewport();
+  await close.click();
+  await expect(journal).toHaveCount(0);
+  await expect(recorder).toBeVisible();
+  await expect(recorder.getByRole('button', { name: 'Journal' })).toBeFocused();
+  await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
+
+  await recorder.getByRole('button', { name: 'Journal' }).click();
+  await expect(journal).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(journal).toHaveCount(0);
+  await expect(recorder).toBeVisible();
+  await expect(recorder.getByRole('button', { name: 'Journal' })).toBeFocused();
+});

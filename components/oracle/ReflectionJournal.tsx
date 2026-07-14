@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { ReflectionSegment, ReflectionSession } from '../../types/oracleReflection';
 import {
   listReflectionSegments,
@@ -52,7 +53,6 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
   const draggedId = useRef<string | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(typeof document === 'undefined' ? null : document.activeElement as HTMLElement | null);
 
   const loadSegments = useCallback(async (sessionId: string, preserveOrder = false) => {
     const rows = await listReflectionSegments(sessionId);
@@ -73,7 +73,11 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
     return () => { live = false; };
   }, [currentSessionId, hexagramNumber, loadSegments]);
 
-  useEffect(() => () => restoreFocusRef.current?.focus(), []);
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, []);
 
   const trapFocus = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Escape') {
@@ -158,7 +162,7 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
     } catch { setMessage('Audio saved privately · retry transcription later'); }
   };
 
-  return (
+  const journal = (
     <section className="reflection-journal" role="dialog" aria-modal="true" aria-labelledby="reflection-journal-title" onKeyDown={trapFocus}>
       <div ref={sheetRef} className="reflection-journal__sheet">
         <header className="reflection-journal__header">
@@ -211,6 +215,8 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
       </div>
     </section>
   );
+
+  return createPortal(journal, document.body);
 };
 
 export default ReflectionJournal;
