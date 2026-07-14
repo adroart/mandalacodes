@@ -36,6 +36,12 @@ function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
+function isAppleMobileDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 const UniversalLanguageCard: React.FC = () => {
   const { number } = useParams<{ number: string }>();
   const navigate = useNavigate();
@@ -60,6 +66,7 @@ const UniversalLanguageCard: React.FC = () => {
     };
   }
   const showEntrance = entranceEntry.current.show;
+  const showSafariHandoff = new URLSearchParams(location.search).get('ref') === 'qr' && isAppleMobileDevice();
   const [buyOpen, setBuyOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [chartFormOpen, setChartFormOpen] = useState(false);
@@ -282,7 +289,7 @@ const UniversalLanguageCard: React.FC = () => {
         />
       )}
 
-      <OracleBottomNavigation current={card} palette={palette} pieceId={piece ? String(piece.id) : null} onShare={() => setShareOpen(true)} onInvocationPublished={() => void refreshInvocation()} />
+      <OracleBottomNavigation current={card} palette={palette} pieceId={piece ? String(piece.id) : null} onShare={() => setShareOpen(true)} onInvocationPublished={() => void refreshInvocation()} showSafariHandoff={showSafariHandoff} />
     </>
   );
 };

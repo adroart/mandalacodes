@@ -27,9 +27,10 @@ interface Props {
   /** Opens the share sheet, owned by the reading page. */
   onShare(): void;
   onInvocationPublished?(): void;
+  showSafariHandoff?: boolean;
 }
 
-const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, onShare, onInvocationPublished }) => {
+const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, onShare, onInvocationPublished, showSafariHandoff = false }) => {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const [birthOpen, setBirthOpen] = useState(false);
@@ -69,6 +70,18 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
 
   return (
     <nav className="eb-reading oracle-bottom-nav" data-palette={palette} aria-label="Reading actions">
+      {showSafariHandoff && (
+        <a
+          className="oracle-bottom-nav__safari-handoff"
+          href={`/universal-language/${current.number}`}
+          target="_blank"
+          rel="external noopener noreferrer"
+          aria-label="Open this reading in Safari"
+        >
+          <span>Open in Safari</span>
+          <small>Full browser</small>
+        </a>
+      )}
       <div className="oracle-bottom-nav__inner">
         <Link className="oracle-bottom-nav__slot" to="/family" aria-label="The family behind these codes">
           <span className="oracle-bottom-nav__label">Family</span>

@@ -25,6 +25,35 @@ test('a QR arrival plays once and is consumed before reload', async ({ page }) =
   await expect(entrance(page)).toHaveCount(0);
 });
 
+test('an iPhone QR arrival offers a one-tap Safari handoff without replacing the reading bar', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148',
+    });
+  });
+  await page.goto(`${CARD}?ref=qr`);
+  await entrance(page).click();
+
+  const handoff = page.getByRole('link', { name: 'Open this reading in Safari' });
+  await expect(handoff).toBeVisible();
+  await expect(handoff).toHaveAttribute('href', CARD);
+  await expect(handoff).toHaveAttribute('target', '_blank');
+  await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
+});
+
+test('a normal iPhone card link does not show the QR Safari handoff', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148',
+    });
+  });
+  await page.goto(CARD);
+  await waitForReading(page);
+  await expect(page.getByRole('link', { name: 'Open this reading in Safari' })).toHaveCount(0);
+});
+
 test('opening from the deck plays once and browser Back returns quietly', async ({ page }) => {
   await page.goto('/universal-language');
   const card = page.locator('[data-oe-num="22"]');

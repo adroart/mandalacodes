@@ -1,5 +1,9 @@
 .oracle-bottom-nav { position:fixed; z-index:40; right:0; bottom:0; left:0; color:var(--l-1); background:color-mix(in oklab,var(--l-bg) 94%,transparent); border-top:1px solid var(--l-rule); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding-bottom:env(safe-area-inset-bottom,0px); }
 .oracle-bottom-nav__inner { display:flex; justify-content:space-between; align-items:stretch; min-height:44px; max-width:480px; margin:0 auto; padding:0 clamp(14px,5vw,26px); }
+.oracle-bottom-nav__safari-handoff { position:absolute; right:14px; bottom:calc(100% + 10px); display:flex; min-height:44px; align-items:center; gap:10px; padding:0 14px; color:var(--l-1); background:var(--l-bg); border:1px solid var(--l-rule); text-decoration:none; }
+.oracle-bottom-nav__safari-handoff span { font:600 10px/1 var(--font-ui); letter-spacing:.14em; text-transform:uppercase; }
+.oracle-bottom-nav__safari-handoff small { color:var(--l-3); font:500 9px/1 var(--font-ui); letter-spacing:.1em; text-transform:uppercase; }
+.oracle-bottom-nav__safari-handoff:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 .oracle-bottom-nav__slot { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:44px; padding:0 4px; color:var(--l-3); text-decoration:none; background:none; border:0; cursor:pointer; font:inherit; transition:color .25s; }
 .oracle-bottom-nav__slot:hover { color:var(--accent); }
 .oracle-bottom-nav__slot--muted { color:var(--l-3); opacity:.4; cursor:default; }
