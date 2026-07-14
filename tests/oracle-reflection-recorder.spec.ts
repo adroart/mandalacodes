@@ -50,11 +50,14 @@ test('a short tap remains ordinary All 64 navigation', async ({ page }) => {
   await expect(page).toHaveURL(/\/universal-language$/);
 });
 
-test('administrator center hold suppresses the native mobile link menu', async ({ page }) => {
+test('administrator center is not a previewable link and suppresses the native mobile menu', async ({ page }) => {
   await mockAdminRecorder(page);
   await page.goto(`${BASE}${CARD}`);
   await dismissEntrance(page);
   const center = page.locator('[data-current-hexagram]');
+
+  await expect(center).toHaveJSProperty('tagName', 'BUTTON');
+  await expect(center).not.toHaveAttribute('href');
 
   const contextMenuPrevented = await center.evaluate((element) => {
     const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });

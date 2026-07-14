@@ -68,7 +68,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       </div>
     </div>
   </header>
-  <section style={{ maxWidth: "1180px", margin: "0 auto", padding: "clamp(30px,4.5vw,64px) 22px clamp(28px,4vw,52px)" }}>
+  <section className="ul-hero-section" style={{ maxWidth: "1180px", margin: "0 auto", padding: "clamp(30px,4.5vw,64px) 22px clamp(28px,4vw,52px)" }}>
     <header className="ul-title-mobile" style={{ textAlign: "center", margin: "0 auto clamp(22px,3vw,40px)", maxWidth: "none" }}>
       <h1 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(22px,6vw,46px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 10px", whiteSpace: "nowrap" }}>
       {vals.cardName}
@@ -511,7 +511,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </div>
           </>
         ) : null}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", border: "1px solid var(--l-rule)", marginBottom: "clamp(32px,4vw,44px)" }}>
+        <div className="ul-gk-spectrum-nav" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", border: "1px solid var(--l-rule)", marginBottom: "clamp(32px,4vw,44px)" }}>
           <button onClick={vals.jumpShadow} style={{ padding: "18px 12px", textAlign: "center", border: "none", borderRight: "1px solid var(--l-rule)", background: "none", cursor: "pointer", font: "inherit", color: "inherit", display: "block" }}>
             <p style={{ fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", margin: "0 0 6px" }}>
             Shadow

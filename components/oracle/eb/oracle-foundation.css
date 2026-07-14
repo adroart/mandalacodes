@@ -33,6 +33,9 @@ html.oracle-card-page, html.oracle-card-page body { background:#14100b !importan
 .eb-reading [data-oracle-flow] > section[data-chapter="humandesign"] { background:#120f0b !important; }
 .eb-reading [data-oracle-flow] > section[data-chapter="body"] { background:#18130d !important; }
 .eb-reading [data-oracle-flow] > section[data-chapter="relations"] { background:#100d09 !important; }
+.eb-reading .ul-hero-section { padding-top:clamp(42px,6vw,72px) !important; }
+.eb-reading .ul-hero-grid > figure { background:var(--l-bg) !important; }
+.eb-reading .ul-gk-spectrum-nav > button { min-width:0; }
 .eb-reading section[data-chapter] > div {
   box-sizing:border-box; max-width:680px !important; padding-inline:clamp(30px,7vw,46px) !important;
 }
