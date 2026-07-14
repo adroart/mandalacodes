@@ -34,8 +34,14 @@ function bytesToBase64(bytes: Uint8Array) {
 }
 
 export async function transcribeCommittedAudio(ai: Ai, bytes: ArrayBuffer): Promise<{ text: string; metadataJson: string }> {
-  const run = ai.run as unknown as (model: string, input: { audio: string }) => Promise<unknown>;
-  const raw = await run('@cf/openai/whisper-large-v3-turbo', { audio: bytesToBase64(new Uint8Array(bytes)) });
+  const run = ai.run as unknown as (model: string, input: { audio: string | number[] }) => Promise<unknown>;
+  const audio = new Uint8Array(bytes);
+  let raw: unknown;
+  try {
+    raw = await run('@cf/openai/whisper-large-v3-turbo', { audio: bytesToBase64(audio) });
+  } catch {
+    raw = await run('@cf/openai/whisper', { audio: Array.from(audio) });
+  }
   const normalized = normalizeTranscript(raw);
   const row = raw && typeof raw === 'object' ? raw as Record<string, unknown> : {};
   return { text: normalized.text, metadataJson: JSON.stringify({ wordCount: normalized.text.split(/\s+/).filter(Boolean).length, duration: typeof row.duration === 'number' ? row.duration : null }) };

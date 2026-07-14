@@ -30,6 +30,19 @@ describe('reflection API boundary', () => {
     expect(result).toEqual({ text: 'Breath.', metadataJson: JSON.stringify({ wordCount: 1, duration: 1.2 }) });
   });
 
+  it('falls back to the active Whisper model when the preferred model is unavailable', async () => {
+    const run = vi.fn()
+      .mockRejectedValueOnce(new Error('model is unavailable'))
+      .mockResolvedValueOnce({ text: '  Returning breath. ', word_count: 2 });
+    const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
+
+    const result = await transcribeCommittedAudio({ run } as never, new Uint8Array([1, 2]).buffer);
+
+    expect(run).toHaveBeenNthCalledWith(1, '@cf/openai/whisper-large-v3-turbo', { audio: 'AQI=' });
+    expect(run).toHaveBeenNthCalledWith(2, '@cf/openai/whisper', { audio: [1, 2] });
+    expect(result).toEqual({ text: 'Returning breath.', metadataJson: JSON.stringify({ wordCount: 2, duration: null }) });
+  });
+
   it('reclaims only expired transcription leases', async () => {
     const { canClaimTranscription } = await import('../../functions/api/oracle/reflections/_shared');
     const now = Date.parse('2026-07-13T01:00:00.000Z');

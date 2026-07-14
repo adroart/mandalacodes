@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { UseReflectionRecorderResult } from '../../hooks/useReflectionRecorder';
 import ReflectionJournal from './ReflectionJournal';
 import InvocationComposer from './invocation/InvocationComposer';
@@ -19,6 +19,8 @@ const elapsed = (milliseconds: number) => {
 export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorder, onInvocationPublished }) => {
   const [journalOpen, setJournalOpen] = useState(false);
   const [composer, setComposer] = useState<{ sessionId: string; segments: RecorderSegment[] } | null>(null);
+  const journalButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreJournalFocus = useRef(false);
   const { state } = recorder;
   if (state.status === 'idle') return null;
   const isRecording = state.status === 'recording';
@@ -30,8 +32,15 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
       ? 'Saved on this device · retrying'
       : state.message ?? (isRecording ? 'Recording privately' : 'Paused');
 
+  useEffect(() => {
+    if (!journalOpen && restoreJournalFocus.current) {
+      restoreJournalFocus.current = false;
+      journalButtonRef.current?.focus();
+    }
+  }, [journalOpen]);
+
   return <>
-    <nav className="reflection-recorder-bar" aria-label="Private reflection recorder">
+    {!journalOpen && <nav className="reflection-recorder-bar" aria-label="Private reflection recorder">
       <div className="reflection-recorder-bar__inner">
         <button className="reflection-recorder-bar__control" type="button"
           disabled={state.status === 'committing' || state.status === 'requesting_permission'}
@@ -46,17 +55,18 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
           <span className="reflection-recorder-bar__elapsed">{elapsed(state.elapsedMs)}</span>
           <span className="reflection-recorder-bar__status" aria-live="polite">{status}</span>
         </div>
-        <button className="reflection-recorder-bar__control" type="button" onClick={() => setJournalOpen(true)} aria-haspopup="dialog">
+        <button ref={journalButtonRef} className="reflection-recorder-bar__control" type="button" onClick={() => { restoreJournalFocus.current = true; setJournalOpen(true); }} aria-haspopup="dialog">
           <span className="reflection-recorder-bar__journal-icon" aria-hidden="true" />
           <span>Journal</span>
         </button>
       </div>
-    </nav>
+    </nav>}
     {journalOpen && <ReflectionJournal
       hexagramNumber={hexagramNumber}
       currentSessionId={state.sessionId}
       onClose={() => setJournalOpen(false)}
       onCompose={(sessionId, segments) => {
+        restoreJournalFocus.current = false;
         setJournalOpen(false);
         setComposer({
           sessionId,
