@@ -3,7 +3,7 @@ export async function onRequestPost({ request, env, params }: ReflectionContext)
   const auth = await admin(request, env); if (isAuthResponse(auth)) return auth;
   const db = requireBinding(env.DB, 'DB'); if (isResponse(db)) return db;
   const bucket = requireBinding(env.ORACLE_PRIVATE, 'ORACLE_PRIVATE'); if (isResponse(bucket)) return bucket;
-  const ai = requireBinding(env.AI, 'AI'); if (isResponse(ai)) return ai;
+  if (!env.GROQ_API_KEY && !env.AI) return json({ ok: false, error: 'transcription provider unavailable' }, 503);
   let row = await db.prepare('SELECT * FROM oracle_reflection_segments WHERE id=?1 AND owner_user_id=?2').bind(params.id, auth.userId).first<Record<string, unknown>>();
   if (!row) return json({ ok: false, error: 'segment not found' }, 404);
   if (row.transcription_status === 'transcribed') return json({ segment: segmentFromRow(row) });
@@ -13,11 +13,18 @@ export async function onRequestPost({ request, env, params }: ReflectionContext)
   if (claim.meta.changes !== 1) { row = await db.prepare('SELECT * FROM oracle_reflection_segments WHERE id=?1 AND owner_user_id=?2').bind(params.id, auth.userId).first<Record<string, unknown>>(); return json({ segment: segmentFromRow(row!) }, 202); }
   try {
     const object = await bucket.get(String(row.object_key)); if (!object) throw new Error('missing object');
-    const result = await transcribeCommittedAudio(ai, await object.arrayBuffer()); const updatedAt = new Date().toISOString();
+    const result = await transcribeCommittedAudio(env, await object.arrayBuffer(), String(row.mime_type)); const updatedAt = new Date().toISOString();
     await db.prepare("UPDATE oracle_reflection_segments SET transcript=?3,transcription_status='transcribed',transcription_error=NULL,transcription_started_at=NULL,provider_metadata_json=?4,updated_at=?5 WHERE id=?1 AND owner_user_id=?2").bind(params.id, auth.userId, result.text, result.metadataJson, updatedAt).run();
     row = await db.prepare('SELECT * FROM oracle_reflection_segments WHERE id=?1 AND owner_user_id=?2').bind(params.id, auth.userId).first<Record<string, unknown>>(); return json({ segment: segmentFromRow(row!) });
   } catch (error) {
-    const message = /quota|allocation/i.test(String((error as Error).message)) ? 'Workers AI daily allocation exhausted; retry later' : 'Workers AI unavailable; retry transcription';
+    const detail = String((error as Error).message);
+    const message = /quota|allocation/i.test(detail)
+      ? 'Transcription allocation exhausted; retry later'
+      : /Groq and Cloudflare/i.test(detail)
+        ? 'Groq and Cloudflare transcription failed; retry later'
+        : /Groq/i.test(detail)
+          ? 'Groq transcription failed; retry later'
+          : 'Cloudflare transcription failed; retry later';
     await db.prepare("UPDATE oracle_reflection_segments SET transcription_status='transcription_pending',transcription_error=?3,transcription_started_at=NULL,updated_at=?4 WHERE id=?1 AND owner_user_id=?2").bind(params.id, auth.userId, message, new Date().toISOString()).run();
     row = await db.prepare('SELECT * FROM oracle_reflection_segments WHERE id=?1 AND owner_user_id=?2').bind(params.id, auth.userId).first<Record<string, unknown>>(); return json({ segment: segmentFromRow(row!) }, 202);
   }

@@ -22,25 +22,71 @@ describe('reflection API boundary', () => {
     expect((await onRequestGet({ request: new Request('https://example.test'), env: { DB: {}, ADMIN_EMAILS: 'a@example.com' }, params: {}, waitUntil: vi.fn() } as never)).status).toBe(401);
   });
 
-  it('normalizes Workers AI output and calls only the approved model', async () => {
-    const run = vi.fn().mockResolvedValue({ text: '  Breath. ', duration: 1.2, private: 'omitted' });
+  it('sends Safari audio to Groq before using Workers AI', async () => {
+    const run = vi.fn();
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ text: '  Breath. ', duration: 1.2 }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }));
     const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
-    const result = await transcribeCommittedAudio({ run } as never, new Uint8Array([1, 2]).buffer);
-    expect(run).toHaveBeenCalledWith('@cf/openai/whisper-large-v3-turbo', { audio: 'AQI=' });
-    expect(result).toEqual({ text: 'Breath.', metadataJson: JSON.stringify({ wordCount: 1, duration: 1.2 }) });
+
+    const result = await transcribeCommittedAudio(
+      { GROQ_API_KEY: 'groq-secret', AI: { run } as never },
+      new Uint8Array([1, 2]).buffer,
+      'audio/mp4;codecs=mp4a.40.2',
+      fetcher,
+    );
+
+    expect(fetcher).toHaveBeenCalledWith('https://api.groq.com/openai/v1/audio/transcriptions', expect.objectContaining({
+      method: 'POST',
+      headers: { Authorization: 'Bearer groq-secret' },
+    }));
+    const form = fetcher.mock.calls[0][1].body as FormData;
+    expect(form.get('model')).toBe('whisper-large-v3-turbo');
+    expect((form.get('file') as File).type).toBe('audio/mp4;codecs=mp4a.40.2');
+    expect(run).not.toHaveBeenCalled();
+    expect(result).toEqual({ text: 'Breath.', metadataJson: JSON.stringify({ provider: 'groq', wordCount: 1, duration: 1.2 }) });
   });
 
-  it('falls back to the active Whisper model when the preferred model is unavailable', async () => {
+  it('uses Workers AI when Groq is not configured', async () => {
+    const run = vi.fn().mockResolvedValue({ text: '  Breath. ', duration: 1.2, private: 'omitted' });
+    const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
+    const result = await transcribeCommittedAudio({ AI: { run } as never }, new Uint8Array([1, 2]).buffer, 'audio/webm');
+    expect(run).toHaveBeenCalledWith('@cf/openai/whisper-large-v3-turbo', { audio: 'AQI=' });
+    expect(result).toEqual({ text: 'Breath.', metadataJson: JSON.stringify({ provider: 'cloudflare', wordCount: 1, duration: 1.2 }) });
+  });
+
+  it('falls back through Groq and both approved Workers AI models', async () => {
     const run = vi.fn()
       .mockRejectedValueOnce(new Error('model is unavailable'))
       .mockResolvedValueOnce({ text: '  Returning breath. ', word_count: 2 });
+    const fetcher = vi.fn().mockResolvedValue(new Response('temporary Groq failure', { status: 503 }));
     const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
 
-    const result = await transcribeCommittedAudio({ run } as never, new Uint8Array([1, 2]).buffer);
+    const result = await transcribeCommittedAudio(
+      { GROQ_API_KEY: 'groq-secret', AI: { run } as never },
+      new Uint8Array([1, 2]).buffer,
+      'audio/webm',
+      fetcher,
+    );
 
+    expect(fetcher).toHaveBeenCalledOnce();
     expect(run).toHaveBeenNthCalledWith(1, '@cf/openai/whisper-large-v3-turbo', { audio: 'AQI=' });
     expect(run).toHaveBeenNthCalledWith(2, '@cf/openai/whisper', { audio: [1, 2] });
-    expect(result).toEqual({ text: 'Returning breath.', metadataJson: JSON.stringify({ wordCount: 2, duration: null }) });
+    expect(result).toEqual({ text: 'Returning breath.', metadataJson: JSON.stringify({ provider: 'cloudflare', wordCount: 2, duration: null }) });
+  });
+
+  it('reports which transcription providers failed without exposing provider response bodies', async () => {
+    const run = vi.fn().mockRejectedValue(new Error('private upstream details'));
+    const fetcher = vi.fn().mockResolvedValue(new Response('private Groq response', { status: 503 }));
+    const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
+
+    await expect(transcribeCommittedAudio(
+      { GROQ_API_KEY: 'groq-secret', AI: { run } as never },
+      new Uint8Array([1, 2]).buffer,
+      'audio/webm',
+      fetcher,
+    )).rejects.toThrow('Groq and Cloudflare transcription failed');
   });
 
   it('reclaims only expired transcription leases', async () => {

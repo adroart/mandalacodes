@@ -53,11 +53,14 @@ test('recorder uses the same compact rail as the ordinary Oracle bottom navigati
   const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
   await expect(recorder).toHaveClass(/oracle-bottom-nav/);
   await expect(recorder.locator('.reflection-recorder-bar__inner')).toHaveClass(/oracle-bottom-nav__inner/);
-  await expect(recorder.locator('.reflection-recorder-bar__control')).toHaveCount(2);
+  await expect(recorder.locator('.reflection-recorder-bar__slot')).toHaveCount(5);
+  await expect(recorder.locator('.reflection-recorder-bar__control')).toHaveCount(3);
   await expect(recorder.locator('.reflection-recorder-bar__control').first()).toHaveClass(/oracle-bottom-nav__slot/);
   expect(await recorder.locator('.reflection-recorder-bar__inner').evaluate((element) => getComputedStyle(element).maxWidth)).toBe('480px');
   expect((await recorder.boundingBox())!.height).toBeLessThanOrEqual(54);
-  await expect(recorder.locator('.reflection-recorder-bar__control-icon, .reflection-recorder-bar__journal-icon')).toHaveCount(0);
+  await expect(recorder).toHaveCSS('backdrop-filter', 'none');
+  await expect(recorder).toHaveCSS('background-color', 'rgb(20, 16, 11)');
+  await expect(recorder.getByRole('button', { name: 'Finish private reflection' })).toBeVisible();
 });
 
 test('a short tap remains ordinary All 64 navigation', async ({ page }) => {
