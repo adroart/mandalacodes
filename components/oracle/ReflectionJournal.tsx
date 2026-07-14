@@ -53,6 +53,7 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
   const draggedId = useRef<string | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const autoTranscriptionRef = useRef(new Set<string>());
 
   const loadSegments = useCallback(async (sessionId: string, preserveOrder = false) => {
     const rows = await listReflectionSegments(sessionId);
@@ -153,14 +154,31 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
     } catch { setMessage('Transcript was not saved. Try again.'); }
   };
 
+  const transcribe = useCallback(async (id: string) => {
+    const saved = await transcribeReflectionSegment(id);
+    setSegments((rows) => rows.map((row) => row.id === saved.id ? saved : row));
+    return saved;
+  }, []);
+
   const retry = async (id: string) => {
     setMessage('Retrying transcription…');
     try {
-      const saved = await transcribeReflectionSegment(id);
-      setSegments((rows) => rows.map((row) => row.id === saved.id ? saved : row));
+      const saved = await transcribe(id);
       setMessage(saved.transcriptionStatus === 'transcribed' ? 'Transcription ready.' : 'Audio saved privately · retry transcription later');
     } catch { setMessage('Audio saved privately · retry transcription later'); }
   };
+
+  useEffect(() => {
+    const pending = segments.filter((segment) =>
+      segment.transcriptionStatus === 'transcription_pending'
+      && !autoTranscriptionRef.current.has(segment.id));
+    if (!pending.length) return;
+    pending.forEach((segment) => autoTranscriptionRef.current.add(segment.id));
+    setMessage(pending.length === 1 ? 'Transcribing saved reflection…' : `Transcribing ${pending.length} saved reflections…`);
+    void Promise.all(pending.map((segment) => transcribe(segment.id)))
+      .then((saved) => setMessage(saved.every((segment) => segment.transcriptionStatus === 'transcribed') ? 'Transcription ready.' : 'Some audio is still waiting for transcription.'))
+      .catch(() => setMessage('Audio saved privately · retry transcription later'));
+  }, [segments, transcribe]);
 
   const journal = (
     <section className="reflection-journal" role="dialog" aria-modal="true" aria-labelledby="reflection-journal-title" onKeyDown={trapFocus}>
