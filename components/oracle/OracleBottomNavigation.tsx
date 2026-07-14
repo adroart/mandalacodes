@@ -43,7 +43,7 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
     holdTimer.current = null;
     setHolding(false);
   }, []);
-  const beginHold = useCallback((event: React.PointerEvent<HTMLAnchorElement>) => {
+  const beginHold = useCallback((event: React.PointerEvent<HTMLButtonElement>) => {
     if (!recorder.capabilityReady || !recorder.isAdmin || recorder.state.status !== 'idle' || event.button !== 0) return;
     longPressed.current = false;
     setHolding(true);
@@ -78,11 +78,11 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
           <span className="oracle-bottom-nav__label">For Me</span>
         </button>
 
-        <Link
+        <button
+          type="button"
           className={`oracle-bottom-nav__slot oracle-bottom-nav__current${holding ? ' is-holding' : ''}`}
           data-current-hexagram
           data-admin-recorder={recorder.isAdmin ? 'available' : undefined}
-          to="/universal-language"
           aria-label="All 64 codes"
           onPointerDown={beginHold}
           onPointerUp={cancelHold}
@@ -95,12 +95,14 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
             if (longPressed.current) {
               event.preventDefault();
               longPressed.current = false;
+              return;
             }
+            navigate('/universal-language');
           }}
         >
           <span className="oracle-bottom-nav__number">{current.number}</span>
           <span className="oracle-bottom-nav__label">All 64</span>
-        </Link>
+        </button>
 
         {pieceId ? (
           <Link className="oracle-bottom-nav__slot" to={`/piece/${pieceId}`} aria-label="The physical piece for this code">

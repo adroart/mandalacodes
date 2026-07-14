@@ -41,14 +41,15 @@ test('renders the six systems as one continuous vertical reading', async ({ page
       snap: getComputedStyle(element).scrollSnapType,
       chapterTops: chapters.map((chapter) => chapter.getBoundingClientRect().top + scrollY),
       chapterCount: chapters.length,
-      fits: element.scrollWidth <= element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      clientWidth: element.clientWidth,
     };
   });
   expect(layout.chapterCount).toBe(6);
   expect(layout.direction).toBe('column');
   expect(layout.overflowX).not.toBe('auto');
   expect(layout.snap).toBe('none');
-  expect(layout.fits).toBe(true);
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
   expect(layout.chapterTops).toEqual([...layout.chapterTops].sort((a, b) => a - b));
 });
 
@@ -57,6 +58,27 @@ test('pins the reading to Teajia espresso', async ({ page }) => {
   await openReading(page);
   const reader = page.locator('.eb-reading').first();
   await expect(reader).toHaveCSS('background-color', 'rgb(20, 16, 11)');
+});
+
+test('keeps the artwork clear of the mobile system rail on the same surface', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openReading(page);
+
+  const rail = page.locator('[data-oracle-progress-nav]');
+  const artwork = page.getByRole('button', { name: 'Enlarge artwork' });
+  const layout = await artwork.evaluate((element) => {
+    const rail = document.querySelector<HTMLElement>('[data-oracle-progress-nav]');
+    if (!rail) throw new Error('System rail is missing');
+    return {
+      gap: element.getBoundingClientRect().top - rail.getBoundingClientRect().bottom,
+      artworkBackground: getComputedStyle(element).backgroundColor,
+      readerBackground: getComputedStyle(document.querySelector<HTMLElement>('[data-oracle-reader]')!).backgroundColor,
+    };
+  });
+
+  await expect(rail).toBeVisible();
+  expect(layout.gap).toBeGreaterThanOrEqual(40);
+  expect(layout.artworkBackground).toBe(layout.readerBackground);
 });
 
 test('omits the visible drop cap', async ({ page }) => {
@@ -188,25 +210,18 @@ test('uses tonal chapter shifts and inset I Ching editorial panels', async ({ pa
   expect(geometry.borderLeft).toBe(1);
 });
 
-test('keeps an inward-aligned previous and next navigator fixed at the bottom', async ({ page }) => {
+test('keeps the reading action bar fixed at the bottom', async ({ page }) => {
   await openReading(page);
-  const footer = page.locator('[data-oracle-neighbor-footer]');
-  const previous = footer.getByRole('link', { name: 'Previous hexagram: Code 21, Beyond Binary' });
-  const next = footer.getByRole('link', { name: 'Next hexagram: Code 23, Beneath the Surface' });
+  const footer = page.getByRole('navigation', { name: 'Reading actions' });
+  const center = footer.locator('[data-current-hexagram]');
 
-  await expect(footer).toBeAttached();
+  await expect(footer).toBeVisible();
   await expect(footer).toHaveCSS('position', 'fixed');
-  await expect(previous).toHaveAttribute('href', '/universal-language/21');
-  await expect(next).toHaveAttribute('href', '/universal-language/23');
-  await expect(previous).toContainText('Code 21');
-  await expect(previous).toContainText('Beyond Binary');
-  await expect(previous).toHaveCSS('justify-content', 'flex-end');
-  await expect(previous).toHaveCSS('text-align', 'right');
-  await expect(next).toContainText('Code 23');
-  await expect(next).toContainText('Beneath the Surface');
-  await expect(next).toHaveCSS('justify-content', 'flex-start');
-  await expect(next).toHaveCSS('text-align', 'left');
-
+  await expect(footer.getByRole('link', { name: 'The family behind these codes' })).toBeVisible();
+  await expect(footer.getByRole('button', { name: 'See the codes in your chart' })).toBeVisible();
+  await expect(center).toContainText('22');
+  await expect(center).toContainText('All 64');
+  await expect(footer.getByRole('button', { name: 'Share this code' })).toBeVisible();
 });
 
 test('keeps the desktop title on one line and prose panels narrow', async ({ page }) => {
