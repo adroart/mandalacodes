@@ -1,16 +1,84 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   commitBoundaryReason,
   createSingleFlight,
   createSegmentStartGuard,
+  failReflectionRecorder,
   finishAfterLocalPersistence,
   initialReflectionRecorderState,
   reflectionRecorderReducer,
   segmentLimitWarning,
 } from '../../hooks/useReflectionRecorder';
 import { REFLECTION_LIMITS } from '../../types/oracleReflection';
+import {
+  formatRecorderSegmentCount,
+  normalizeRecorderAmplitude,
+  startMicrophoneMeter,
+  triggerRecorderHaptic,
+} from '../../lib/oracle/reflectionRecorderFeedback';
 
 describe('reflection recorder state machine', () => {
+  it('formats compact saved-segment badges', () => {
+    expect(formatRecorderSegmentCount(0)).toBeNull();
+    expect(formatRecorderSegmentCount(1)).toBe('1');
+    expect(formatRecorderSegmentCount(9)).toBe('9');
+    expect(formatRecorderSegmentCount(10)).toBe('9+');
+  });
+
+  it('normalizes microphone samples into a restrained zero-to-one level', () => {
+    expect(normalizeRecorderAmplitude(new Uint8Array([128, 128]))).toBe(0);
+    expect(normalizeRecorderAmplitude(new Uint8Array([0, 255]))).toBeGreaterThan(.9);
+  });
+
+  it('uses capability-detected haptic patterns without requiring vibration support', () => {
+    const patterns: Array<number | number[]> = [];
+    triggerRecorderHaptic('press', (pattern) => { patterns.push(pattern); return true; });
+    triggerRecorderHaptic('saved', (pattern) => { patterns.push(pattern); return true; });
+    triggerRecorderHaptic('error', (pattern) => { patterns.push(pattern); return true; });
+    triggerRecorderHaptic('press');
+    expect(patterns).toEqual([8, [8, 40, 8], 20]);
+  });
+
+  it('stops and disconnects microphone metering cleanly', () => {
+    const source = { connect: vi.fn(), disconnect: vi.fn() };
+    const analyser = { fftSize: 0, smoothingTimeConstant: 0, disconnect: vi.fn(), getByteTimeDomainData: vi.fn((samples: Uint8Array) => samples.fill(128)) };
+    const close = vi.fn().mockResolvedValue(undefined);
+    let frameCallback: FrameRequestCallback | null = null;
+    const cancelAnimationFrame = vi.fn();
+    class FakeAudioContext {
+      createMediaStreamSource() { return source; }
+      createAnalyser() { return analyser; }
+      close() { return close(); }
+    }
+    vi.stubGlobal('window', {
+      AudioContext: FakeAudioContext,
+      requestAnimationFrame(callback: FrameRequestCallback) { frameCallback = callback; return 7; },
+      cancelAnimationFrame,
+    });
+    const levels: number[] = [];
+    const stop = startMicrophoneMeter({} as MediaStream, (level) => levels.push(level));
+    expect(source.connect).toHaveBeenCalledWith(analyser);
+    (frameCallback as FrameRequestCallback | null)?.(0);
+    expect(levels).toContain(0);
+    stop();
+    expect(cancelAnimationFrame).toHaveBeenCalled();
+    expect(source.disconnect).toHaveBeenCalled();
+    expect(analyser.disconnect).toHaveBeenCalled();
+    expect(close).toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
+  it('cleans up and signals before reporting recorder failures', () => {
+    const events: string[] = [];
+    failReflectionRecorder(
+      new Error('Draft failed'),
+      () => events.push('cleanup'),
+      () => events.push('haptic'),
+      (message) => events.push(`report:${message}`),
+    );
+    expect(events).toEqual(['cleanup', 'haptic', 'report:Draft failed']);
+  });
+
   it('moves from permission request into recording', () => {
     const requesting = reflectionRecorderReducer(initialReflectionRecorderState, { type: 'request_permission' });
     const recording = reflectionRecorderReducer(requesting, {
@@ -29,6 +97,21 @@ describe('reflection recorder state machine', () => {
     expect(committing.status).toBe('committing');
     expect(paused.status).toBe('paused');
     expect(resumed).toMatchObject({ status: 'recording', segmentId: 'segment-2', sessionId: 'session-1' });
+  });
+
+  it('counts a segment only after local persistence and confirms it after upload', () => {
+    const committing = { ...initialReflectionRecorderState, status: 'committing' as const, sessionId: 'session-1', segmentId: 'segment-1' };
+    const local = reflectionRecorderReducer(committing, { type: 'local_persisted' });
+    expect(local).toMatchObject({ status: 'committing', savedSegmentCount: 1, message: 'Uploading' });
+    const saved = reflectionRecorderReducer(local, { type: 'commit_succeeded' });
+    expect(saved).toMatchObject({ status: 'paused', savedSegmentCount: 1, confirmation: 'saved' });
+    expect(reflectionRecorderReducer(saved, { type: 'clear_confirmation' })).toMatchObject({ confirmation: null, savedSegmentCount: 1 });
+  });
+
+  it('does not count or confirm a segment when persistence fails', () => {
+    const committing = { ...initialReflectionRecorderState, status: 'committing' as const, sessionId: 'session-1', segmentId: 'segment-1' };
+    const failed = reflectionRecorderReducer(committing, { type: 'failed', message: 'No audio was captured.' });
+    expect(failed).toMatchObject({ status: 'error', savedSegmentCount: 0, confirmation: null });
   });
 
   it('keeps an offline commit pending and clears it after retry', () => {

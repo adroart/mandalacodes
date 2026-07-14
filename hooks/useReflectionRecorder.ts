@@ -16,6 +16,7 @@ import {
   listPendingReflections,
   removeReflection,
 } from '../lib/oracle/reflectionOutbox';
+import { startMicrophoneMeter, triggerRecorderHaptic } from '../lib/oracle/reflectionRecorderFeedback';
 
 export type ReflectionRecorderStatus = 'idle' | 'requesting_permission' | 'recording' | 'committing' | 'paused' | 'finished' | 'error';
 
@@ -26,12 +27,15 @@ export interface ReflectionRecorderState {
   elapsedMs: number;
   pendingCount: number;
   message: string | null;
+  confirmation: 'saved' | null;
+  savedSegmentCount: number;
 }
 
 export type ReflectionRecorderAction =
   | { type: 'request_permission' }
   | { type: 'recording_started'; sessionId: string; segmentId: string }
   | { type: 'pause_requested'; message?: string }
+  | { type: 'local_persisted' }
   | { type: 'commit_succeeded' }
   | { type: 'commit_deferred'; pendingCount: number; message?: string }
   | { type: 'resumed'; segmentId: string }
@@ -41,10 +45,11 @@ export type ReflectionRecorderAction =
   | { type: 'failed'; message: string }
   | { type: 'unauthorized' }
   | { type: 'finish_confirmed' }
+  | { type: 'clear_confirmation' }
   | { type: 'finished' };
 
 export const initialReflectionRecorderState: ReflectionRecorderState = {
-  status: 'idle', sessionId: null, segmentId: null, elapsedMs: 0, pendingCount: 0, message: null,
+  status: 'idle', sessionId: null, segmentId: null, elapsedMs: 0, pendingCount: 0, message: null, confirmation: null, savedSegmentCount: 0,
 };
 
 const SEGMENT_DURATION_SAFETY_MS = 1_000;
@@ -96,18 +101,20 @@ export function createSegmentStartGuard<Args extends unknown[]>(operation: (...a
 
 export function reflectionRecorderReducer(state: ReflectionRecorderState, action: ReflectionRecorderAction): ReflectionRecorderState {
   switch (action.type) {
-    case 'request_permission': return { ...state, status: 'requesting_permission', message: null };
-    case 'recording_started': return { ...state, status: 'recording', sessionId: action.sessionId, segmentId: action.segmentId, message: null };
-    case 'pause_requested': return state.status === 'recording' ? { ...state, status: 'committing', message: action.message ?? null } : state;
-    case 'commit_succeeded': return { ...state, status: 'paused', segmentId: null, message: null };
-    case 'commit_deferred': return { ...state, status: 'paused', segmentId: null, pendingCount: action.pendingCount, message: action.message ?? 'Saved on this device · retrying' };
-    case 'resumed': return state.sessionId ? { ...state, status: 'recording', segmentId: action.segmentId, message: null } : state;
+    case 'request_permission': return { ...state, status: 'requesting_permission', message: null, confirmation: null };
+    case 'recording_started': return { ...state, status: 'recording', sessionId: action.sessionId, segmentId: action.segmentId, message: null, confirmation: null };
+    case 'pause_requested': return state.status === 'recording' ? { ...state, status: 'committing', message: action.message ?? 'Saving', confirmation: null } : state;
+    case 'local_persisted': return { ...state, savedSegmentCount: state.savedSegmentCount + 1, message: 'Uploading' };
+    case 'commit_succeeded': return { ...state, status: 'paused', segmentId: null, message: null, confirmation: 'saved' };
+    case 'commit_deferred': return { ...state, status: 'paused', segmentId: null, pendingCount: action.pendingCount, message: action.message ?? 'Saved on device', confirmation: 'saved' };
+    case 'resumed': return state.sessionId ? { ...state, status: 'recording', segmentId: action.segmentId, message: null, confirmation: null } : state;
     case 'elapsed': return { ...state, elapsedMs: action.elapsedMs };
     case 'pending_changed': return { ...state, pendingCount: action.pendingCount, message: action.pendingCount ? state.message : null };
     case 'warning': return state.status === 'recording' ? { ...state, message: action.message } : state;
-    case 'failed': return { ...state, status: 'error', message: action.message };
+    case 'failed': return { ...state, status: 'error', message: action.message, confirmation: null };
     case 'unauthorized': return { ...initialReflectionRecorderState, status: 'error', message: 'Your administrator session ended. Sign in and try again.' };
     case 'finish_confirmed': return { ...state, status: 'finished', segmentId: null, message: 'Saved' };
+    case 'clear_confirmation': return { ...state, confirmation: null };
     case 'finished': return initialReflectionRecorderState;
   }
 }
@@ -124,10 +131,22 @@ function recorderError(error: unknown): string {
   return error instanceof Error ? error.message : 'Recording could not start. Try again.';
 }
 
+export function failReflectionRecorder(
+  error: unknown,
+  cleanup: () => void,
+  haptic: () => void,
+  report: (message: string) => void,
+): void {
+  cleanup();
+  haptic();
+  report(recorderError(error));
+}
+
 export interface UseReflectionRecorderResult {
   isAdmin: boolean;
   capabilityReady: boolean;
   state: ReflectionRecorderState;
+  micLevel: number;
   startRecording(): Promise<void>;
   pause(): Promise<void>;
   resume(): void;
@@ -140,12 +159,15 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
   const [state, dispatch] = useReducer(reflectionRecorderReducer, initialReflectionRecorderState);
   const [isAdmin, setIsAdmin] = useState(false);
   const [capabilityReady, setCapabilityReady] = useState(false);
+  const [micLevel, setMicLevel] = useState(0);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const capturedBytesRef = useRef(0);
   const segmentStartedRef = useRef(0);
   const elapsedBeforeSegmentRef = useRef(0);
   const intervalRef = useRef<number | null>(null);
+  const confirmationTimerRef = useRef<number | null>(null);
+  const meterCleanupRef = useRef<(() => void) | null>(null);
   const commitPromiseRef = useRef<Promise<boolean> | null>(null);
   const persistencePromiseRef = useRef<Promise<void> | null>(null);
   const persistenceResolvedRef = useRef<(() => void) | null>(null);
@@ -171,13 +193,47 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
     intervalRef.current = null;
   }, []);
 
+  const scheduleConfirmationClear = useCallback(() => {
+    if (confirmationTimerRef.current !== null) window.clearTimeout(confirmationTimerRef.current);
+    confirmationTimerRef.current = window.setTimeout(() => {
+      confirmationTimerRef.current = null;
+      dispatch({ type: 'clear_confirmation' });
+    }, 900);
+  }, []);
+
+  const stopMeter = useCallback(() => {
+    meterCleanupRef.current?.();
+    meterCleanupRef.current = null;
+    setMicLevel(0);
+  }, []);
+
+  const startMeter = useCallback((stream: MediaStream) => {
+    stopMeter();
+    meterCleanupRef.current = startMicrophoneMeter(stream, setMicLevel);
+  }, [stopMeter]);
+
   const stopTracks = useCallback(() => {
     clearClock();
+    stopMeter();
+    const activeRecorder = recorderRef.current;
     recorderRef.current = null;
+    if (activeRecorder && activeRecorder.state !== 'inactive') {
+      activeRecorder.onstop = null;
+      try { activeRecorder.stop(); } catch { /* The track may already have ended. */ }
+    }
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     capturedBytesRef.current = 0;
-  }, [clearClock]);
+  }, [clearClock, stopMeter]);
+
+  const failRecorder = useCallback((error: unknown) => {
+    failReflectionRecorder(
+      error,
+      stopTracks,
+      () => triggerRecorderHaptic('error'),
+      (message) => dispatch({ type: 'failed', message }),
+    );
+  }, [stopTracks]);
 
   const retryPending = useCallback(async () => {
     if (!isAdmin) return;
@@ -226,7 +282,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
       const durationMs = performance.now() - segmentStartedRef.current;
       chunkWriteChainRef.current = chunkWriteChainRef.current
         .then(() => appendReflectionChunk(segmentId, index, data, durationMs))
-        .catch((error) => { dispatch({ type: 'failed', message: recorderError(error) }); throw error; });
+        .catch((error) => { failRecorder(error); throw error; });
       const reason = commitBoundaryReason(performance.now() - segmentStartedRef.current, capturedBytesRef.current);
       if (reason && recorder.state === 'recording') autoCommitRef.current(reason);
       else {
@@ -236,6 +292,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
     };
     recorderRef.current = recorder;
     recorder.start(1_000);
+    startMeter(stream);
     dispatch(resumed ? { type: 'resumed', segmentId } : { type: 'recording_started', sessionId, segmentId });
     clearClock();
     intervalRef.current = window.setInterval(() => {
@@ -248,7 +305,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
         if (warning) dispatch({ type: 'warning', message: warning });
       }
     }, 250);
-  }, [clearClock]);
+  }, [clearClock, failRecorder, startMeter]);
   segmentStartOperationRef.current = beginSegment;
   const startSegment = segmentStartGuardRef.current;
 
@@ -272,10 +329,9 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
       }
       await startSegment(stream, sessionId, newId(), false);
     } catch (error) {
-      stopTracks();
-      dispatch({ type: 'failed', message: recorderError(error) });
+      failRecorder(error);
     }
-  }, [hexagramNumber, isAdmin, startSegment, stopTracks]);
+  }, [failRecorder, hexagramNumber, isAdmin, startSegment, stopTracks]);
 
   const commitCurrentSegment = useCallback(async (boundaryReason?: 'duration' | 'size') => {
     if (commitPromiseRef.current) return commitPromiseRef.current;
@@ -284,6 +340,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
     if (!recorder || recorder.state === 'inactive' || current.status !== 'recording' || !current.sessionId || !current.segmentId) return current.status === 'paused';
     dispatch({ type: 'pause_requested', message: boundaryReason === 'duration' ? '20 minute limit reached · saving segment' : boundaryReason === 'size' ? 'Audio size limit near · saving segment' : undefined });
     clearClock();
+    stopMeter();
     const durationMs = Math.max(1, Math.round(performance.now() - segmentStartedRef.current));
     elapsedBeforeSegmentRef.current += durationMs;
     persistencePromiseRef.current = new Promise<void>((resolve) => { persistenceResolvedRef.current = resolve; });
@@ -298,12 +355,15 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
         if (blob.size > REFLECTION_LIMITS.maxSegmentBytes) throw new Error('Segment is larger than 25 MiB. Start a shorter segment.');
         if (!blob.size) throw new Error('No audio was captured. Resume and try again.');
         locallyPersisted = true;
+        dispatch({ type: 'local_persisted' });
+        triggerRecorderHaptic('saved');
         persistenceResolvedRef.current?.();
         persistenceResolvedRef.current = null;
         try {
           await uploadReflectionSegment(pending);
           await removeReflection(pending.id);
           dispatch({ type: 'commit_succeeded' });
+          scheduleConfirmationClear();
           void transcribeReflectionSegment(pending.id).catch(() => undefined);
         } catch (error) {
           if (error instanceof ReflectionApiError && error.status === 401) {
@@ -313,10 +373,11 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
             stopTracks();
           } else {
             dispatch({ type: 'commit_deferred', pendingCount: (await listPendingReflections()).length });
+            scheduleConfirmationClear();
           }
         }
       } catch (error) {
-        dispatch({ type: 'failed', message: recorderError(error) });
+        failRecorder(error);
       } finally {
         persistenceResolvedRef.current?.();
         persistenceResolvedRef.current = null;
@@ -327,7 +388,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
     if (recorder.state === 'recording') recorder.requestData();
     recorder.stop();
     return commitPromiseRef.current;
-  }, [clearClock, hexagramNumber, stopTracks]);
+  }, [clearClock, failRecorder, hexagramNumber, scheduleConfirmationClear, stopMeter, stopTracks]);
 
   autoCommitRef.current = (reason) => { void commitCurrentSegment(reason); };
 
@@ -337,11 +398,17 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
     const current = stateRef.current;
     if (current.status !== 'paused' || !current.sessionId || !streamRef.current) return;
     void startSegment(streamRef.current, current.sessionId, newId(), true)
-      .catch((error) => dispatch({ type: 'failed', message: recorderError(error) }));
-  }, [startSegment]);
+      .catch(failRecorder);
+  }, [failRecorder, startSegment]);
 
   const performFinish = useCallback(async () => {
+    const startingStatus = stateRef.current.status;
     lifecycleGenerationRef.current += 1;
+    if (startingStatus === 'requesting_permission') {
+      stopTracks();
+      dispatch({ type: 'finished' });
+      return;
+    }
     const saved = await finishAfterLocalPersistence(
       () => commitCurrentSegment(),
       () => persistencePromiseRef.current,
@@ -368,6 +435,10 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
     return () => { live = false; };
   }, []);
 
+  useEffect(() => () => {
+    if (confirmationTimerRef.current !== null) window.clearTimeout(confirmationTimerRef.current);
+  }, []);
+
   useEffect(() => { if (isAdmin) void retryPending(); }, [isAdmin, retryPending]);
   useEffect(() => {
     const online = () => void retryPending();
@@ -384,5 +455,5 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
     };
   }, [finish, hexagramNumber, retryPending]);
 
-  return { isAdmin, capabilityReady, state, startRecording, pause, resume, finish, cancel, retryPending };
+  return { isAdmin, capabilityReady, state, micLevel, startRecording, pause, resume, finish, cancel, retryPending };
 }

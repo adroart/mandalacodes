@@ -62,6 +62,65 @@ test('recorder uses the same compact rail as the ordinary Oracle bottom navigati
   await expect(recorder).toHaveCSS('backdrop-filter', 'none');
   await expect(recorder).toHaveCSS('background-color', 'rgb(20, 16, 11)');
   await expect(recorder.getByRole('button', { name: 'Finish private reflection' })).toBeVisible();
+  await expect(recorder.locator('.reflection-recorder-bar__meter')).toBeVisible();
+  await expect(recorder.locator('.reflection-recorder-bar__meter-bar')).toHaveCount(3);
+});
+
+test('saved feedback, Resume emphasis, and Journal count come from local persistence', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+
+  const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
+  await recorder.getByRole('button', { name: 'Pause and save this segment' }).click();
+  await expect(recorder.locator('.reflection-recorder-bar__state').getByText('Saved privately', { exact: true })).toBeVisible();
+  await expect(recorder.getByRole('button', { name: 'Resume recording a new segment' })).toHaveClass(/is-primary/);
+  await expect(recorder.getByRole('button', { name: 'Journal, 1 saved segment' })).toBeVisible();
+  await expect(recorder.locator('.reflection-recorder-bar__badge')).toHaveText('1');
+  await expect(recorder.locator('.reflection-recorder-bar__meter')).toHaveCount(0);
+});
+
+test('reduced motion keeps recorder activity static', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await mockAdminRecorder(page);
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+
+  const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
+  await expect(recorder.locator('.reflection-recorder-bar__state > i')).toHaveCSS('animation-name', 'none');
+  const transitionSeconds = Number.parseFloat(await recorder.locator('.reflection-recorder-bar__meter-bar').first().evaluate((element) => getComputedStyle(element).transitionDuration));
+  expect(transitionSeconds).toBeLessThan(.001);
+});
+
+test('Finish cannot strand the recorder while microphone permission is pending', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: { getUserMedia: () => new Promise(() => undefined) },
+    });
+  });
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+
+  const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
+  await expect(recorder.getByRole('button', { name: 'Finish private reflection' })).toBeDisabled();
+  await expect(recorder.locator('.reflection-recorder-bar__state')).toContainText('Requesting mic');
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect(recorder).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
 });
 
 test('a short tap remains ordinary All 64 navigation', async ({ page }) => {
