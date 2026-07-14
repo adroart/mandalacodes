@@ -40,24 +40,24 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
   }, [journalOpen]);
 
   return <>
-    {!journalOpen && <nav className="reflection-recorder-bar" aria-label="Private reflection recorder">
-      <div className="reflection-recorder-bar__inner">
-        <button className="reflection-recorder-bar__control" type="button"
+    {!journalOpen && <nav className="oracle-bottom-nav reflection-recorder-bar" aria-label="Private reflection recorder">
+      <div className="oracle-bottom-nav__inner reflection-recorder-bar__inner">
+        <button className="oracle-bottom-nav__slot reflection-recorder-bar__control" type="button"
           disabled={state.status === 'committing' || state.status === 'requesting_permission'}
           onClick={state.status === 'error' ? recorder.finish : isRecording ? recorder.pause : recorder.resume}
           aria-label={state.status === 'error' ? 'Dismiss recording error' : isRecording ? 'Pause and save this segment' : 'Resume recording a new segment'}>
-          <span className={`reflection-recorder-bar__control-icon ${isRecording ? 'is-pause' : 'is-resume'}`} aria-hidden="true" />
-          <span>{state.status === 'requesting_permission' ? 'Waiting' : state.status === 'committing' ? 'Saving' : state.status === 'error' ? 'Dismiss' : isRecording ? 'Pause' : 'Resume'}</span>
+          <span className="oracle-bottom-nav__label">{state.status === 'requesting_permission' ? 'Waiting' : state.status === 'committing' ? 'Saving' : state.status === 'error' ? 'Dismiss' : isRecording ? 'Pause' : 'Resume'}</span>
         </button>
-        <div className="reflection-recorder-bar__center">
-          <span className="reflection-recorder-bar__number">{hexagramNumber}</span>
-          <span className={`reflection-recorder-bar__wave ${isRecording ? 'is-live' : ''}`} aria-hidden="true"><i /><i /><i /><i /><i /></span>
-          <span className="reflection-recorder-bar__elapsed">{elapsed(state.elapsedMs)}</span>
+        <div className="oracle-bottom-nav__slot oracle-bottom-nav__current reflection-recorder-bar__center">
+          <span className="reflection-recorder-bar__primary">
+            <span className="reflection-recorder-bar__number">{hexagramNumber}</span>
+            <span className={`reflection-recorder-bar__wave ${isRecording ? 'is-live' : ''}`} aria-hidden="true"><i /><i /><i /></span>
+            <span className="reflection-recorder-bar__elapsed">{elapsed(state.elapsedMs)}</span>
+          </span>
           <span className="reflection-recorder-bar__status" aria-live="polite">{status}</span>
         </div>
-        <button ref={journalButtonRef} className="reflection-recorder-bar__control" type="button" onClick={() => { restoreJournalFocus.current = true; setJournalOpen(true); }} aria-haspopup="dialog">
-          <span className="reflection-recorder-bar__journal-icon" aria-hidden="true" />
-          <span>Journal</span>
+        <button ref={journalButtonRef} className="oracle-bottom-nav__slot reflection-recorder-bar__control" type="button" onClick={() => { restoreJournalFocus.current = true; setJournalOpen(true); }} aria-haspopup="dialog">
+          <span className="oracle-bottom-nav__label">Journal</span>
         </button>
       </div>
     </nav>}

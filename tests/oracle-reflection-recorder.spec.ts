@@ -9,7 +9,7 @@ async function dismissEntrance(page: Page) {
   if (await entrance.isVisible()) await entrance.click();
 }
 
-async function mockAdminRecorder(page: Page) {
+async function mockAdminRecorder(page: Page, segment: { transcript?: string; transcriptionStatus?: string } = {}) {
   await page.addInitScript(() => {
     const track = { stop() {} };
     Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [track] }) } });
@@ -27,7 +27,7 @@ async function mockAdminRecorder(page: Page) {
     if (route.request().method() === 'POST') return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ id: 'session-22', hexagramNumber: 22, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), finishedAt: null }) });
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ current: { id: 'session-22', hexagramNumber: 22, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), finishedAt: null }, history: [] }) });
   });
-  await page.route('**/api/oracle/reflections/segments**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ segments: [{ id: 'segment-1', sessionId: 'session-22', sequence: 0, recordedAt: new Date().toISOString(), durationMs: 12_000, mimeType: 'audio/webm;codecs=opus', byteSize: 5, transcript: 'Let beauty arise.', transcriptionStatus: 'transcribed', transcriptionError: null, updatedAt: new Date().toISOString() }] }) }));
+  await page.route('**/api/oracle/reflections/segments**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ segments: [{ id: 'segment-1', sessionId: 'session-22', sequence: 0, recordedAt: new Date().toISOString(), durationMs: 12_000, mimeType: 'audio/webm;codecs=opus', byteSize: 5, transcript: segment.transcript ?? 'Let beauty arise.', transcriptionStatus: segment.transcriptionStatus ?? 'transcribed', transcriptionError: null, updatedAt: new Date().toISOString() }] }) }));
 }
 
 test('administrator hold replaces only the sticky footer with the compact recorder', async ({ page }) => {
@@ -40,6 +40,24 @@ test('administrator hold replaces only the sticky footer with the compact record
   await expect(page.getByRole('navigation', { name: 'Private reflection recorder' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Hexagram navigation' })).toBeHidden();
   await expect(page.getByText('The work is small', { exact: false })).toBeVisible();
+});
+
+test('recorder uses the same compact rail as the ordinary Oracle bottom navigation', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+
+  const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
+  await expect(recorder).toHaveClass(/oracle-bottom-nav/);
+  await expect(recorder.locator('.reflection-recorder-bar__inner')).toHaveClass(/oracle-bottom-nav__inner/);
+  await expect(recorder.locator('.reflection-recorder-bar__control')).toHaveCount(2);
+  await expect(recorder.locator('.reflection-recorder-bar__control').first()).toHaveClass(/oracle-bottom-nav__slot/);
+  expect(await recorder.locator('.reflection-recorder-bar__inner').evaluate((element) => getComputedStyle(element).maxWidth)).toBe('480px');
+  expect((await recorder.boundingBox())!.height).toBeLessThanOrEqual(54);
+  await expect(recorder.locator('.reflection-recorder-bar__control-icon, .reflection-recorder-bar__journal-icon')).toHaveCount(0);
 });
 
 test('a short tap remains ordinary All 64 navigation', async ({ page }) => {
@@ -123,4 +141,23 @@ test('journal is a contained full-screen surface that closes back to the recorde
   await expect(journal).toHaveCount(0);
   await expect(recorder).toBeVisible();
   await expect(recorder.getByRole('button', { name: 'Journal' })).toBeFocused();
+});
+
+test('journal automatically transcribes pending saved audio without requiring Retry', async ({ page }) => {
+  await mockAdminRecorder(page, { transcript: '', transcriptionStatus: 'transcription_pending' });
+  let transcriptionRequests = 0;
+  await page.route('**/api/oracle/reflections/segments/segment-1/transcribe', route => {
+    transcriptionRequests += 1;
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ segment: { id: 'segment-1', sessionId: 'session-22', sequence: 0, recordedAt: new Date().toISOString(), durationMs: 12_000, mimeType: 'audio/webm;codecs=opus', byteSize: 5, transcript: 'The journal wrote this automatically.', transcriptionStatus: 'transcribed', transcriptionError: null, updatedAt: new Date().toISOString() } }) });
+  });
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+  await page.getByRole('button', { name: 'Journal' }).click();
+
+  await expect(page.getByText('The journal wrote this automatically.')).toBeVisible();
+  expect(transcriptionRequests).toBe(1);
+  await expect(page.getByRole('button', { name: 'Retry' })).toHaveCount(0);
 });
