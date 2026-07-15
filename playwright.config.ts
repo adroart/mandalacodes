@@ -18,6 +18,11 @@ export default defineConfig({
       use: { ...devices['Pixel 5'] },
     },
     {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 13'] },
+      grep: /administrator hold replaces|a short tap remains|native mobile menu|captures the touch pointer/,
+    },
+    {
       name: 'Desktop Chrome',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 900 } },
     },

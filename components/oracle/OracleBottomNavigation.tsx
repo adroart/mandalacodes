@@ -36,6 +36,7 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
   const [birthOpen, setBirthOpen] = useState(false);
   const recorder = useReflectionRecorder(current.number);
   const holdTimer = useRef<number | null>(null);
+  const heldPointer = useRef<{ id: number; target: HTMLButtonElement } | null>(null);
   const longPressed = useRef(false);
   const [holding, setHolding] = useState(false);
 
@@ -43,10 +44,19 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
     if (holdTimer.current !== null) window.clearTimeout(holdTimer.current);
     holdTimer.current = null;
     setHolding(false);
+    const held = heldPointer.current;
+    heldPointer.current = null;
+    if (held?.target.hasPointerCapture?.(held.id)) {
+      try { held.target.releasePointerCapture(held.id); } catch { /* Pointer capture may already have ended. */ }
+    }
   }, []);
   const beginHold = useCallback((event: React.PointerEvent<HTMLButtonElement>) => {
     if (!recorder.capabilityReady || !recorder.isAdmin || recorder.state.status !== 'idle' || event.button !== 0) return;
     longPressed.current = false;
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      heldPointer.current = { id: event.pointerId, target: event.currentTarget };
+    } catch { /* Synthetic events and older browsers may not expose active pointer capture. */ }
     setHolding(true);
     holdTimer.current = window.setTimeout(() => {
       holdTimer.current = null;
@@ -100,7 +110,6 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
           onPointerDown={beginHold}
           onPointerUp={cancelHold}
           onPointerCancel={cancelHold}
-          onPointerLeave={cancelHold}
           onContextMenu={(event) => {
             if (recorder.isAdmin) event.preventDefault();
           }}

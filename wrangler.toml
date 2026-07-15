@@ -19,7 +19,8 @@ bucket_name = "mandalacodes-atlas"
 binding = "ORACLE_PRIVATE"
 bucket_name = "mandalacodes-oracle-private"
 
-# Server-side transcription only. Model: @cf/openai/whisper-large-v3-turbo.
+# Server-side transcription fallback. Primary provider uses the GROQ_API_KEY Pages secret.
+# Fallback model: @cf/openai/whisper-large-v3-turbo.
 [ai]
 binding = "AI"
 

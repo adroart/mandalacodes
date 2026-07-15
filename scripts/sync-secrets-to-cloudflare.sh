@@ -36,6 +36,9 @@ ENCRYPTED_VARS=(
   "BETTER_AUTH_SECRET"
   "RESEND_API_KEY"
   "GOOGLE_CLIENT_SECRET"
+  # Primary private-reflection transcription provider. Workers AI remains the
+  # runtime fallback through the binding in wrangler.toml.
+  "GROQ_API_KEY"
   # Sale → ledger bridge (M4): HMAC secret shared with adrianrasmussen.com —
   # the SAME value must be set on that Pages project too (this script only
   # syncs mandalacodes; see todo/handoff/adrian-website/sale-webhook-spec.md).
@@ -59,7 +62,7 @@ fi
 
 # Ensure we're inside an Infisical-injected process. The exact var names below
 # are required-to-be-set; this catches the "ran without infisical run" mistake.
-if [[ -z "${BETTER_AUTH_SECRET:-}" || -z "${BETTER_AUTH_URL:-}" || -z "${ADMIN_EMAILS:-}" ]]; then
+if [[ -z "${BETTER_AUTH_SECRET:-}" || -z "${BETTER_AUTH_URL:-}" || -z "${ADMIN_EMAILS:-}" || -z "${GROQ_API_KEY:-}" ]]; then
   cat >&2 <<'EOF'
 Missing one of the required env vars in this process.
 

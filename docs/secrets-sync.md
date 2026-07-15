@@ -42,7 +42,7 @@ Edit `scripts/sync-secrets-to-cloudflare.sh` and update the two arrays:
 - `ENCRYPTED_VARS` — true secrets, only read by Cloudflare Functions at
   runtime, never embedded in the client bundle.
 
-Current set (updated 2026-06-16 — auth is self-owned Better Auth, not Clerk):
+Current set (updated 2026-07-15 — auth is self-owned Better Auth, not Clerk):
 
 | Name | Type | Projects | Used by |
 |---|---|---|---|
@@ -52,6 +52,7 @@ Current set (updated 2026-06-16 — auth is self-owned Better Auth, not Clerk):
 | `RESEND_FROM_EMAIL` | plaintext | mandalacodes | Verified sender for the sign-in code email |
 | `GOOGLE_CLIENT_ID` | plaintext | mandalacodes | "Continue with Google" OAuth (public by design) |
 | `GOOGLE_CLIENT_SECRET` | encrypted | mandalacodes | Google OAuth client secret |
+| `GROQ_API_KEY` | encrypted | mandalacodes | Primary server-side transcription for private reflection recordings (`whisper-large-v3-turbo`); Workers AI is the configured fallback |
 | `ORACLE_API_TOKEN` | encrypted | mandalacodes | Optional bearer gating /api/oracle/recommendation (rate-limited when unset) |
 | `ADMIN_EMAILS` | plaintext | mandalacodes | Admin allowlist for /admin/atlas |
 | `SALE_WEBHOOK_SECRET` | encrypted | **both** | HMAC-SHA256 verification of sale webhooks from adrianrasmussen.com; mandalacodes verifies, adrianrasmussen.com signs. Same value on both projects. Generate with `openssl rand -hex 32`. See `todo/handoff/adrian-website/sale-webhook-spec.md`. |
@@ -63,8 +64,9 @@ Current set (updated 2026-06-16 — auth is self-owned Better Auth, not Clerk):
 The sync script `[skip]`s any var with no value in Infisical, so an
 unconfigured optional var (e.g. `ORACLE_API_TOKEN`, `GOOGLE_*` before Google
 sign-in is wired) is simply skipped rather than erroring. The required-vars
-preflight only insists on `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and
-`ADMIN_EMAILS`.
+preflight insists on `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ADMIN_EMAILS`,
+and `GROQ_API_KEY`. Transcription must not deploy with its primary provider
+silently absent.
 
 `ATLAS_BUCKET` and the D1 binding are configured in `wrangler.toml`, not
 via env vars, and need no sync.
