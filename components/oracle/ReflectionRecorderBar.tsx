@@ -35,6 +35,9 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
   const isRecording = state.status === 'recording';
   const isFinished = state.status === 'finished';
   const isSavedConfirmation = state.confirmation === 'saved' && !isFinished;
+  const transcriptionNeedsRetry = state.status === 'paused'
+    && Boolean(state.message)
+    && state.pendingCount === 0;
   const segmentBadge = formatRecorderSegmentCount(state.savedSegmentCount);
   const status = state.status === 'requesting_permission'
     ? 'Requesting microphone permission…'
@@ -42,6 +45,8 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
     ? state.message === 'Uploading' ? 'Uploading private reflection…' : 'Saving private reflection…'
     : state.status === 'error'
       ? state.message ?? 'Recording needs retry'
+    : transcriptionNeedsRetry
+      ? state.message!
     : isSavedConfirmation
       ? 'Saved privately'
     : state.pendingCount > 0
@@ -55,6 +60,8 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
         ? 'Needs retry'
         : isFinished
           ? 'Saved'
+        : transcriptionNeedsRetry
+          ? 'Transcript retry'
         : isSavedConfirmation
           ? 'Saved privately'
         : state.pendingCount > 0
@@ -107,6 +114,10 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
           {segmentBadge && <span className="reflection-recorder-bar__badge" aria-hidden="true">{segmentBadge}</span>}
         </button>
       </div>
+      {transcriptionNeedsRetry && <div className="reflection-recorder-bar__transcription-notice" role="status">
+        <span>Audio saved privately</span>
+        <strong>{state.message}</strong>
+      </div>}
       <span className="reflection-recorder-bar__announcement" aria-live="polite">{status}</span>
     </nav>}
     {journalOpen && <ReflectionJournal

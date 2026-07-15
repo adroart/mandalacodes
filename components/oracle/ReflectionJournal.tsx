@@ -7,6 +7,7 @@ import {
   reorderReflectionSegments,
   transcribeReflectionSegment,
   updateReflectionTranscript,
+  ReflectionApiError,
 } from '../../lib/oracle/reflectionApi';
 
 type OrderedSegment = Pick<ReflectionSegment, 'id' | 'recordedAt' | 'sequence'>;
@@ -29,6 +30,38 @@ export function moveReflectionSegment<T extends { id: string }>(segments: T[], i
 export function cycleJournalFocusIndex(current: number, count: number, direction: 1 | -1): number {
   if (count <= 0) return -1;
   return (current + direction + count) % count;
+}
+
+const TRANSCRIPTION_LEASE_MS = 5 * 60 * 1000;
+const TRANSCRIPTION_POLL_MS = 30_000;
+type TranscriptionPollingWindow = { sessionId: string; expiresAt: number };
+
+export function transcriptionPollingWindow(
+  current: TranscriptionPollingWindow | null,
+  sessionId: string | null,
+  hasTranscribing: boolean,
+  nowMs = Date.now(),
+): TranscriptionPollingWindow | null {
+  if (!sessionId || !hasTranscribing) return null;
+  return current?.sessionId === sessionId
+    ? current
+    : { sessionId, expiresAt: nowMs + TRANSCRIPTION_POLL_MS };
+}
+
+export function shouldAutomaticallyTranscribe(
+  segment: Pick<ReflectionSegment, 'transcriptionStatus' | 'transcriptionStartedAt'>,
+  nowMs = Date.now(),
+): boolean {
+  if (segment.transcriptionStatus === 'transcription_pending') return true;
+  if (segment.transcriptionStatus !== 'transcribing') return false;
+  const started = segment.transcriptionStartedAt ? Date.parse(segment.transcriptionStartedAt) : NaN;
+  return !Number.isFinite(started) || started <= nowMs - TRANSCRIPTION_LEASE_MS;
+}
+
+export function journalTranscriptionFailureMessage(error: unknown): string {
+  return error instanceof ReflectionApiError
+    ? error.message
+    : 'Audio saved privately · retry transcription later';
 }
 
 interface Props {
@@ -110,6 +143,8 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
   const closeRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const autoTranscriptionRef = useRef(new Set<string>());
+  const transcriptionPollingRef = useRef<TranscriptionPollingWindow | null>(null);
+  const hasTranscribing = segments.some((segment) => segment.transcriptionStatus === 'transcribing');
 
   const loadSegments = useCallback(async (sessionId: string, preserveOrder = false) => {
     const rows = await listReflectionSegments(sessionId);
@@ -158,14 +193,15 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
   };
 
   useEffect(() => {
-    if (!segments.some((segment) => segment.transcriptionStatus === 'transcribing') || !selectedSessionId) return;
-    const started = Date.now();
+    const polling = transcriptionPollingWindow(transcriptionPollingRef.current, selectedSessionId, hasTranscribing);
+    transcriptionPollingRef.current = polling;
+    if (!polling || Date.now() >= polling.expiresAt) return;
     const timer = window.setInterval(() => {
-      if (Date.now() - started >= 30_000) return window.clearInterval(timer);
+      if (Date.now() >= polling.expiresAt) return window.clearInterval(timer);
       void loadSegments(selectedSessionId, authoredOrder);
     }, 2_000);
     return () => window.clearInterval(timer);
-  }, [authoredOrder, loadSegments, segments, selectedSessionId]);
+  }, [authoredOrder, hasTranscribing, loadSegments, selectedSessionId]);
 
   const selectSession = async (sessionId: string) => {
     setSelectedSessionId(sessionId);
@@ -221,19 +257,19 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
     try {
       const saved = await transcribe(id);
       setMessage(saved.transcriptionStatus === 'transcribed' ? 'Transcription ready.' : 'Audio saved privately · retry transcription later');
-    } catch { setMessage('Audio saved privately · retry transcription later'); }
+    } catch (error) { setMessage(journalTranscriptionFailureMessage(error)); }
   };
 
   useEffect(() => {
     const pending = segments.filter((segment) =>
-      segment.transcriptionStatus === 'transcription_pending'
+      shouldAutomaticallyTranscribe(segment)
       && !autoTranscriptionRef.current.has(segment.id));
     if (!pending.length) return;
     pending.forEach((segment) => autoTranscriptionRef.current.add(segment.id));
     setMessage(pending.length === 1 ? 'Transcribing saved reflection…' : `Transcribing ${pending.length} saved reflections…`);
     void Promise.all(pending.map((segment) => transcribe(segment.id)))
       .then((saved) => setMessage(saved.every((segment) => segment.transcriptionStatus === 'transcribed') ? 'Transcription ready.' : 'Some audio is still waiting for transcription.'))
-      .catch(() => setMessage('Audio saved privately · retry transcription later'));
+      .catch((error) => setMessage(journalTranscriptionFailureMessage(error)));
   }, [segments, transcribe]);
 
   const journal = (
@@ -288,6 +324,7 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
                       : segment.transcriptionStatus === 'failed' ? 'Needs retry'
                         : 'Queued'
               }</span>
+              {segment.transcriptionError && <p className="reflection-segment__transcription-error">{segment.transcriptionError}</p>}
               {(segment.transcriptionStatus === 'transcription_pending' || segment.transcriptionStatus === 'failed') && <button type="button" onClick={() => void retry(segment.id)}>Retry</button>}
             </div>}
           </article>)}

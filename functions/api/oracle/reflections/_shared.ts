@@ -35,6 +35,23 @@ function bytesToBase64(bytes: Uint8Array) {
 
 type TranscriptionProvider = 'groq' | 'cloudflare';
 type Fetcher = (input: string, init?: RequestInit) => Promise<Response>;
+const LEGACY_CLOUDFLARE_FALLBACK_MAX_BYTES = 4 * 1024 * 1024;
+
+function logTranscriptionFailure(details: {
+  provider: TranscriptionProvider;
+  model: string;
+  status?: number;
+  requestId?: string | null;
+  errorName?: string;
+}) {
+  console.error('[oracle-reflection-transcription]', {
+    provider: details.provider,
+    model: details.model,
+    ...(details.status === undefined ? {} : { status: details.status }),
+    ...(details.requestId ? { requestId: details.requestId.slice(0, 128) } : {}),
+    ...(details.errorName ? { errorName: details.errorName.slice(0, 64) } : {}),
+  });
+}
 
 function transcriptionResult(raw: unknown, provider: TranscriptionProvider) {
   const normalized = normalizeTranscript(raw);
@@ -55,8 +72,15 @@ async function transcribeWithCloudflare(ai: Ai, bytes: ArrayBuffer) {
   let raw: unknown;
   try {
     raw = await run('@cf/openai/whisper-large-v3-turbo', { audio: bytesToBase64(audio) });
-  } catch {
-    raw = await run('@cf/openai/whisper', { audio: Array.from(audio) });
+  } catch (error) {
+    logTranscriptionFailure({ provider: 'cloudflare', model: '@cf/openai/whisper-large-v3-turbo', errorName: error instanceof Error ? error.name : 'UnknownError' });
+    if (audio.byteLength > LEGACY_CLOUDFLARE_FALLBACK_MAX_BYTES) throw error;
+    try {
+      raw = await run('@cf/openai/whisper', { audio: Array.from(audio) });
+    } catch (legacyError) {
+      logTranscriptionFailure({ provider: 'cloudflare', model: '@cf/openai/whisper', errorName: legacyError instanceof Error ? legacyError.name : 'UnknownError' });
+      throw legacyError;
+    }
   }
   return transcriptionResult(raw, 'cloudflare');
 }
@@ -80,10 +104,16 @@ export async function transcribeCommittedAudio(
         headers: { Authorization: `Bearer ${env.GROQ_API_KEY}` },
         body: form,
       });
-      if (!response.ok) throw new Error(`Groq HTTP ${response.status}`);
+      if (!response.ok) {
+        logTranscriptionFailure({ provider: 'groq', model: 'whisper-large-v3-turbo', status: response.status, requestId: response.headers.get('x-request-id') });
+        throw new Error(`Groq HTTP ${response.status}`);
+      }
       return transcriptionResult(await response.json(), 'groq');
     } catch (error) {
       groqFailure = error instanceof Error ? error : new Error('Groq request failed');
+      if (!/^Groq HTTP \d+$/.test(groqFailure.message)) {
+        logTranscriptionFailure({ provider: 'groq', model: 'whisper-large-v3-turbo', errorName: groqFailure.name });
+      }
     }
   }
   if (env.AI) {

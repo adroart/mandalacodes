@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { REFLECTION_LIMITS } from '../types/oracleReflection';
+import { REFLECTION_LIMITS, type ReflectionSegment } from '../types/oracleReflection';
 import { chooseRecorderMimeType } from '../utils/oracleReflection';
 import {
   createReflectionSession,
@@ -42,6 +42,7 @@ export type ReflectionRecorderAction =
   | { type: 'elapsed'; elapsedMs: number }
   | { type: 'pending_changed'; pendingCount: number }
   | { type: 'warning'; message: string }
+  | { type: 'transcription_notice'; message: string }
   | { type: 'failed'; message: string }
   | { type: 'unauthorized' }
   | { type: 'finish_confirmed' }
@@ -63,8 +64,21 @@ export function commitBoundaryReason(durationMs: number, estimatedBytes: number)
 
 export function segmentLimitWarning(durationMs: number, estimatedBytes: number): string | null {
   if (durationMs >= REFLECTION_LIMITS.maxSegmentDurationMs * .9) return 'Approaching the 20 minute segment limit';
-  if (estimatedBytes >= REFLECTION_LIMITS.maxSegmentBytes * .9) return 'Approaching the 25 MiB segment limit';
+  if (estimatedBytes >= REFLECTION_LIMITS.maxSegmentBytes * .9) return 'Approaching the 10 MiB segment limit';
   return null;
+}
+
+export function transcriptionRecorderNotice(
+  segment: Pick<ReflectionSegment, 'transcriptionStatus' | 'transcriptionError'>,
+): string | null {
+  if (segment.transcriptionStatus === 'transcribed') return null;
+  return segment.transcriptionError ?? 'Audio is saved · transcription needs retry in Journal';
+}
+
+export function transcriptionRecorderFailureNotice(error: unknown): string {
+  return error instanceof ReflectionApiError
+    ? error.message
+    : 'Audio is saved · transcription needs retry in Journal';
 }
 
 export async function finishAfterLocalPersistence<T>(
@@ -111,6 +125,7 @@ export function reflectionRecorderReducer(state: ReflectionRecorderState, action
     case 'elapsed': return { ...state, elapsedMs: action.elapsedMs };
     case 'pending_changed': return { ...state, pendingCount: action.pendingCount, message: action.pendingCount ? state.message : null };
     case 'warning': return state.status === 'recording' ? { ...state, message: action.message } : state;
+    case 'transcription_notice': return { ...state, message: action.message };
     case 'failed': return { ...state, status: 'error', message: action.message, confirmation: null };
     case 'unauthorized': return { ...initialReflectionRecorderState, status: 'error', message: 'Your administrator session ended. Sign in and try again.' };
     case 'finish_confirmed': return { ...state, status: 'finished', segmentId: null, message: 'Saved' };
@@ -248,7 +263,12 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
       try {
         await uploadReflectionSegment(row);
         await removeReflection(row.id);
-        void transcribeReflectionSegment(row.id).catch(() => undefined);
+        void transcribeReflectionSegment(row.id)
+          .then((segment) => {
+            const message = transcriptionRecorderNotice(segment);
+            if (message) dispatch({ type: 'transcription_notice', message });
+          })
+          .catch((error) => dispatch({ type: 'transcription_notice', message: transcriptionRecorderFailureNotice(error) }));
       } catch (error) {
         if (error instanceof ReflectionApiError && error.status === 401) {
           setIsAdmin(false);
@@ -352,7 +372,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
         const pending = await finalizeReflectionDraft(current.segmentId!);
         const blob = pending.blob;
         if (durationMs > REFLECTION_LIMITS.maxSegmentDurationMs) throw new Error('Segment is longer than 20 minutes. Start a new segment.');
-        if (blob.size > REFLECTION_LIMITS.maxSegmentBytes) throw new Error('Segment is larger than 25 MiB. Start a shorter segment.');
+        if (blob.size > REFLECTION_LIMITS.maxSegmentBytes) throw new Error('Segment is larger than 10 MiB. Start a shorter segment.');
         if (!blob.size) throw new Error('No audio was captured. Resume and try again.');
         locallyPersisted = true;
         dispatch({ type: 'local_persisted' });
@@ -364,7 +384,12 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
           await removeReflection(pending.id);
           dispatch({ type: 'commit_succeeded' });
           scheduleConfirmationClear();
-          void transcribeReflectionSegment(pending.id).catch(() => undefined);
+          void transcribeReflectionSegment(pending.id)
+            .then((segment) => {
+              const message = transcriptionRecorderNotice(segment);
+              if (message) dispatch({ type: 'transcription_notice', message });
+            })
+            .catch((error) => dispatch({ type: 'transcription_notice', message: transcriptionRecorderFailureNotice(error) }));
         } catch (error) {
           if (error instanceof ReflectionApiError && error.status === 401) {
             setIsAdmin(false);

@@ -8,7 +8,10 @@ import {
   initialReflectionRecorderState,
   reflectionRecorderReducer,
   segmentLimitWarning,
+  transcriptionRecorderNotice,
+  transcriptionRecorderFailureNotice,
 } from '../../hooks/useReflectionRecorder';
+import { ReflectionApiError } from '../../lib/oracle/reflectionApi';
 import { REFLECTION_LIMITS } from '../../types/oracleReflection';
 import {
   formatRecorderSegmentCount,
@@ -148,8 +151,28 @@ describe('reflection recorder state machine', () => {
 
   it('warns live before automatic duration and size boundaries', () => {
     expect(segmentLimitWarning(REFLECTION_LIMITS.maxSegmentDurationMs * .9, 1)).toBe('Approaching the 20 minute segment limit');
-    expect(segmentLimitWarning(1, REFLECTION_LIMITS.maxSegmentBytes * .9)).toBe('Approaching the 25 MiB segment limit');
+    expect(segmentLimitWarning(1, REFLECTION_LIMITS.maxSegmentBytes * .9)).toBe('Approaching the 10 MiB segment limit');
     expect(segmentLimitWarning(1_000, 1_000)).toBeNull();
+  });
+
+  it('keeps saved audio paused while surfacing a transcription failure', () => {
+    const paused = { ...initialReflectionRecorderState, status: 'paused' as const, sessionId: 'session-1', savedSegmentCount: 1 };
+    expect(reflectionRecorderReducer(paused, { type: 'transcription_notice', message: 'Groq transcription failed; retry later' })).toMatchObject({
+      status: 'paused',
+      message: 'Groq transcription failed; retry later',
+      savedSegmentCount: 1,
+    });
+  });
+
+  it('maps non-final transcription outcomes to useful recorder notices', () => {
+    expect(transcriptionRecorderNotice({ transcriptionStatus: 'transcribed', transcriptionError: null })).toBeNull();
+    expect(transcriptionRecorderNotice({ transcriptionStatus: 'failed', transcriptionError: 'Groq transcription failed; retry later' })).toBe('Groq transcription failed; retry later');
+    expect(transcriptionRecorderNotice({ transcriptionStatus: 'transcription_pending', transcriptionError: null })).toBe('Audio is saved · transcription needs retry in Journal');
+  });
+
+  it('preserves the server message when a post-upload transcription request is rejected', () => {
+    expect(transcriptionRecorderFailureNotice(new ReflectionApiError(503, 'Groq rate limit reached; retry later'))).toBe('Groq rate limit reached; retry later');
+    expect(transcriptionRecorderFailureNotice(new Error('network down'))).toBe('Audio is saved · transcription needs retry in Journal');
   });
 
   it('waits for local persistence before stopping tracks but not for upload completion', async () => {
