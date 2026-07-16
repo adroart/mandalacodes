@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hebrewLetterGlyph, tarotNumeral } from '../../utils/relationsDiagram';
+import { astrologyGlyph, hebrewLetterGlyph, tarotNumeral } from '../../utils/relationsDiagram';
 
 describe('tarotNumeral', () => {
   it('reads the authored numeral from comma-separated tarot data', () => {
@@ -16,6 +16,11 @@ describe('tarotNumeral', () => {
 });
 
 describe('hebrewLetterGlyph', () => {
+  it('resolves authored Hebrew letter names to their actual glyphs', () => {
+    expect(hebrewLetterGlyph('Cheth')).toBe('ח');
+    expect(hebrewLetterGlyph('Beth')).toBe('ב');
+  });
+
   it('normalizes both English spellings of Vav to the Hebrew letter', () => {
     expect(hebrewLetterGlyph('Vav')).toBe('ו');
     expect(hebrewLetterGlyph('Vau')).toBe('ו');
@@ -23,5 +28,15 @@ describe('hebrewLetterGlyph', () => {
 
   it('leaves an authored Hebrew glyph unchanged', () => {
     expect(hebrewLetterGlyph('ס')).toBe('ס');
+  });
+});
+
+describe('astrologyGlyph', () => {
+  it('returns the actual zodiac glyph for a named sign', () => {
+    expect(astrologyGlyph('Cancer')).toBe('♋');
+  });
+
+  it('returns the actual planetary glyph for a named planet', () => {
+    expect(astrologyGlyph('Mercury')).toBe('☿');
   });
 });
