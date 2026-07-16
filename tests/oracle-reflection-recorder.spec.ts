@@ -63,8 +63,9 @@ test('recorder uses the same compact rail as the ordinary Oracle bottom navigati
   await expect(recorder.locator('.reflection-recorder-bar__control').first()).toHaveClass(/oracle-bottom-nav__slot/);
   expect(await recorder.locator('.reflection-recorder-bar__inner').evaluate((element) => getComputedStyle(element).maxWidth)).toBe('480px');
   expect((await recorder.boundingBox())!.height).toBeLessThanOrEqual(54);
+  await recorder.evaluate((element) => (element as HTMLElement).style.setProperty('--l-bg', '#f3efe7'));
+  await expect(recorder).not.toHaveCSS('background-color', 'rgb(20, 16, 11)');
   await expect(recorder).toHaveCSS('backdrop-filter', 'none');
-  await expect(recorder).toHaveCSS('background-color', 'rgb(20, 16, 11)');
   await expect(recorder.getByRole('button', { name: 'Finish private reflection' })).toBeVisible();
   await expect(recorder.locator('.reflection-recorder-bar__meter')).toBeVisible();
   await expect(recorder.locator('.reflection-recorder-bar__meter-bar')).toHaveCount(3);
@@ -304,6 +305,26 @@ test('journal automatically transcribes pending saved audio without requiring Re
   await expect(page.getByText('The journal wrote this automatically.')).toBeVisible();
   expect(transcriptionRequests).toBe(1);
   await expect(page.getByRole('button', { name: 'Retry' })).toHaveCount(0);
+});
+
+test('Journal uses the reading palette and editorial transcript typography', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+  await page.locator('.eb-reading').evaluate((element) => (element as HTMLElement).style.setProperty('--l-bg', '#f3efe7'));
+  await page.getByRole('button', { name: 'Journal' }).click();
+
+  const journal = page.getByRole('dialog', { name: 'Journal · 22' });
+  await expect(journal).toHaveCSS('background-color', 'rgb(243, 239, 231)');
+  const transcript = journal.locator('.reflection-segment__transcript').first();
+  await expect(transcript).toBeVisible();
+  expect(await transcript.evaluate((element) => getComputedStyle(element).fontFamily)).toContain('Cormorant');
+  expect(Number.parseFloat(await transcript.evaluate((element) => getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(20);
+  await expect(journal.locator('.reflection-journal__sheet')).toHaveCSS('box-shadow', 'none');
+  await expect(journal.locator('.reflection-journal__actions')).toHaveCSS('border-top-width', '1px');
 });
 
 test('journal shows terminal transcription errors without automatically retrying them', async ({ page }) => {

@@ -12,6 +12,20 @@ interface Props {
   onInvocationPublished?(): void;
 }
 
+type ReflectionThemeStyle = React.CSSProperties & Record<`--${string}`, string>;
+
+const reflectionThemeStyle = (): ReflectionThemeStyle => {
+  if (typeof document === 'undefined') return {} as ReflectionThemeStyle;
+  const source = document.querySelector<HTMLElement>('[data-oracle-reader]') ?? document.documentElement;
+  const computed = getComputedStyle(source);
+  return ['--l-bg', '--l-1', '--l-2', '--l-3', '--l-rule', '--l-soft', '--accent', '--font-display', '--font-ui']
+    .reduce<ReflectionThemeStyle>((theme, property) => {
+      const value = computed.getPropertyValue(property).trim();
+      if (value) theme[property as `--${string}`] = value;
+      return theme;
+    }, {} as ReflectionThemeStyle);
+};
+
 const elapsed = (milliseconds: number) => {
   const seconds = Math.floor(milliseconds / 1000);
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
@@ -28,6 +42,7 @@ const RecorderIcon: React.FC<{ name: 'pause' | 'play' | 'finish' | 'check' | 'jo
 export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorder, onInvocationPublished }) => {
   const [journalOpen, setJournalOpen] = useState(false);
   const [composer, setComposer] = useState<{ sessionId: string; segments: RecorderSegment[] } | null>(null);
+  const [themeStyle, setThemeStyle] = useState<ReflectionThemeStyle>(() => reflectionThemeStyle());
   const journalButtonRef = useRef<HTMLButtonElement>(null);
   const restoreJournalFocus = useRef(false);
   const { state } = recorder;
@@ -77,7 +92,10 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
 
   const openJournalAfterFinish = async () => {
     const saved = await recorder.pause();
-    if (saved) setJournalOpen(true);
+    if (saved) {
+      setThemeStyle(reflectionThemeStyle());
+      setJournalOpen(true);
+    }
   };
 
   const exitReflection = async () => {
@@ -119,7 +137,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
           <RecorderIcon name={isFinished ? 'check' : 'finish'} />
           <span className="oracle-bottom-nav__label">{isFinished ? 'Saved' : 'Finish'}</span>
         </button>
-        <button ref={journalButtonRef} className="oracle-bottom-nav__slot reflection-recorder-bar__slot reflection-recorder-bar__control reflection-recorder-bar__journal" type="button" disabled={isFinished} onPointerDown={() => triggerRecorderHaptic('press')} onClick={() => { restoreJournalFocus.current = true; setJournalOpen(true); }} aria-haspopup="dialog" aria-label={segmentBadge ? `Journal, ${state.savedSegmentCount} saved ${state.savedSegmentCount === 1 ? 'segment' : 'segments'}` : 'Journal'}>
+        <button ref={journalButtonRef} className="oracle-bottom-nav__slot reflection-recorder-bar__slot reflection-recorder-bar__control reflection-recorder-bar__journal" type="button" disabled={isFinished} onPointerDown={() => triggerRecorderHaptic('press')} onClick={() => { restoreJournalFocus.current = true; setThemeStyle(reflectionThemeStyle()); setJournalOpen(true); }} aria-haspopup="dialog" aria-label={segmentBadge ? `Journal, ${state.savedSegmentCount} saved ${state.savedSegmentCount === 1 ? 'segment' : 'segments'}` : 'Journal'}>
           <RecorderIcon name="journal" />
           <span className="oracle-bottom-nav__label">Journal</span>
           {segmentBadge && <span className="reflection-recorder-bar__badge" aria-hidden="true">{segmentBadge}</span>}
@@ -134,6 +152,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
     {journalOpen && <ReflectionJournal
       hexagramNumber={hexagramNumber}
       currentSessionId={state.sessionId}
+      themeStyle={themeStyle}
       onClose={() => void exitReflection()}
       onDone={() => void exitReflection()}
       onRecordMore={() => {
@@ -157,6 +176,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
       hexagramNumber={hexagramNumber}
       sessionId={composer.sessionId}
       segments={composer.segments}
+      themeStyle={themeStyle}
       onClose={() => setComposer(null)}
       onPublished={onInvocationPublished}
     />}
