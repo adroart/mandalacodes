@@ -99,7 +99,8 @@ export async function transcribeCommittedAudio(
   fetcher: Fetcher = (input, init) => globalThis.fetch(input, init),
 ): Promise<{ text: string; metadataJson: string }> {
   let groqFailure: Error | null = null;
-  if (env.GROQ_API_KEY) {
+  const groqApiKey = env.GROQ_API_KEY?.trim();
+  if (groqApiKey) {
     const form = new FormData();
     form.set('model', 'whisper-large-v3-turbo');
     form.set('response_format', 'json');
@@ -108,7 +109,7 @@ export async function transcribeCommittedAudio(
     try {
       const response = await fetcher('https://api.groq.com/openai/v1/audio/transcriptions', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${env.GROQ_API_KEY}` },
+        headers: { Authorization: `Bearer ${groqApiKey}` },
         body: form,
       });
       if (!response.ok) {

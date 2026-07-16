@@ -136,6 +136,22 @@ describe('reflection API boundary', () => {
     expect(result).toEqual({ text: 'Breath.', metadataJson: JSON.stringify({ provider: 'groq', wordCount: 1, duration: 1.2 }) });
   });
 
+  it('trims deployment whitespace from the Groq credential', async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ text: 'Breath.' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }));
+    const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
+
+    await transcribeCommittedAudio(
+      { GROQ_API_KEY: '  groq-secret\n' }, new Uint8Array([1, 2]).buffer, 'audio/mp4', fetcher,
+    );
+
+    expect(fetcher).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+      headers: { Authorization: 'Bearer groq-secret' },
+    }));
+  });
+
   it('uses Workers AI when Groq is not configured', async () => {
     const run = vi.fn().mockResolvedValue({ text: '  Breath. ', duration: 1.2, private: 'omitted' });
     const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
