@@ -144,6 +144,40 @@ describe('reflection API boundary', () => {
     expect(result).toEqual({ text: 'Breath.', metadataJson: JSON.stringify({ provider: 'cloudflare', wordCount: 1, duration: 1.2 }) });
   });
 
+  it('invokes the Workers AI method with its binding as the receiver', async () => {
+    const ai = {
+      async run(this: unknown) {
+        if (this !== ai) throw new TypeError('Illegal invocation');
+        return { text: 'Bound breath.' };
+      },
+    };
+    const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
+
+    await expect(transcribeCommittedAudio(
+      { AI: ai as never }, new Uint8Array([1, 2]).buffer, 'audio/webm',
+    )).resolves.toMatchObject({ text: 'Bound breath.' });
+  });
+
+  it('invokes the worker fetch method with the global receiver', async () => {
+    const previousFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn(function (this: unknown) {
+      if (this !== globalThis) throw new TypeError('Illegal invocation');
+      return Promise.resolve(new Response(JSON.stringify({ text: 'Global breath.' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }));
+    }) as never;
+
+    try {
+      const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
+      await expect(transcribeCommittedAudio(
+        { GROQ_API_KEY: 'groq-secret' }, new Uint8Array([1, 2]).buffer, 'audio/mp4',
+      )).resolves.toMatchObject({ text: 'Global breath.' });
+    } finally {
+      globalThis.fetch = previousFetch;
+    }
+  });
+
   it('falls back through Groq and both approved Workers AI models', async () => {
     const run = vi.fn()
       .mockRejectedValueOnce(new Error('model is unavailable'))
