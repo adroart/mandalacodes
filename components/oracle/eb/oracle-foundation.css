@@ -35,7 +35,17 @@ html.oracle-card-page, html.oracle-card-page body { background:#14100b !importan
 .eb-reading [data-oracle-flow] > section[data-chapter="relations"] { background:#100d09 !important; }
 .eb-reading .ul-hero-section { padding-top:clamp(42px,6vw,72px) !important; }
 .eb-reading .ul-hero-grid > figure { background:var(--l-bg) !important; }
-.eb-reading .ul-gk-spectrum-nav > button { min-width:0; }
+.eb-reading .ul-gk-spectrum-nav > button {
+  min-width: 0;
+  padding-inline: clamp(5px, 1.5vw, 12px) !important;
+}
+.eb-reading .ul-gk-spectrum-nav > button > p:last-child {
+  font-size: clamp(17px, 4.2vw, 21px) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: normal;
+}
 .eb-reading section[data-chapter] > div {
   box-sizing:border-box; max-width:680px !important; padding-inline:clamp(30px,7vw,46px) !important;
 }
@@ -79,6 +89,17 @@ html.oracle-card-page, html.oracle-card-page body { background:#14100b !importan
   .oracle-reading-progress__jumps button { flex:0 0 auto; min-width:0; min-height:48px; padding-inline:8px; font-size:.6875rem; letter-spacing:.1em; }
   .oracle-reading-progress__jumps svg { width:16px; height:16px; }
   .eb-reading section[data-chapter="iching"] .ul-ji > div { width:calc(100% - 16px); }
+  .eb-reading .ul-gk-spectrum-nav { margin-inline: -8px; }
+  .eb-reading .ul-gk-spectrum-nav > button { padding-inline: 4px !important; }
+  .eb-reading .ul-gk-spectrum-nav > button > p:first-child {
+    font-size: 8px !important;
+    letter-spacing: 0.14em !important;
+  }
+  .eb-reading .ul-gk-spectrum-nav > button > p:last-child {
+    font-size: clamp(15px, 4.2vw, 17px) !important;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
 }
 .eb-reading[data-motion="off"] [data-oracle-reveal], .eb-reading[data-motion="off"] [data-glyph] { opacity:1 !important; transform:none !important; clip-path:none !important; transition:none !important; }
 @media (prefers-reduced-motion:reduce) {
