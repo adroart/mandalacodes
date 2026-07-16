@@ -246,6 +246,26 @@ describe('reflection API boundary', () => {
     expect(diagnostic).not.toContain('do-not-log-this');
   });
 
+  it('logs a redacted bounded runtime error message for provider transport failures', async () => {
+    const log = vi.mocked(console.error);
+    log.mockClear();
+    const fetcher = vi.fn().mockRejectedValue(new TypeError(
+      `Failed to execute fetch with Bearer gsk_${'private'.repeat(40)} at https://api.groq.com/private`,
+    ));
+    const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
+
+    await expect(transcribeCommittedAudio(
+      { GROQ_API_KEY: 'do-not-log-this' }, new Uint8Array([1, 2]).buffer, 'audio/webm', fetcher,
+    )).rejects.toThrow('Failed to execute fetch');
+
+    const diagnostic = JSON.stringify(log.mock.calls);
+    expect(diagnostic).toContain('Failed to execute fetch');
+    expect(diagnostic).toContain('[redacted]');
+    expect(diagnostic).not.toContain('gsk_');
+    expect(diagnostic).not.toContain('api.groq.com/private');
+    expect(diagnostic.length).toBeLessThan(800);
+  });
+
   it('manual transcript edits finalize the segment and clear a transcription lease', async () => {
     getSession.mockResolvedValue(adminSession);
     const row = segmentRow({
