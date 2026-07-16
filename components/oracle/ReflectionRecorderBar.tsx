@@ -6,6 +6,8 @@ import type { RecorderSegment } from '../../lib/oracle/invocationTypes';
 import { formatRecorderSegmentCount, triggerRecorderHaptic } from '../../lib/oracle/reflectionRecorderFeedback';
 import './reflection-recorder.css';
 
+const REFLECTION_HISTORY_KEY = '__mandalaReflectionLayer';
+
 interface Props {
   hexagramNumber: number;
   recorder: UseReflectionRecorderResult;
@@ -45,6 +47,8 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
   const [themeStyle, setThemeStyle] = useState<ReflectionThemeStyle>(() => reflectionThemeStyle());
   const journalButtonRef = useRef<HTMLButtonElement>(null);
   const restoreJournalFocus = useRef(false);
+  const historyDepthRef = useRef(0);
+  const ignoreNextPopRef = useRef(false);
   const { state } = recorder;
   if (state.status === 'idle') return null;
   const isRecording = state.status === 'recording';
@@ -90,17 +94,56 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
     }
   }, [journalOpen]);
 
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (ignoreNextPopRef.current) {
+        ignoreNextPopRef.current = false;
+        return;
+      }
+      const layer = (event.state as Record<string, unknown> | null)?.[REFLECTION_HISTORY_KEY];
+      if (layer === 'journal') {
+        historyDepthRef.current = 1;
+        setComposer(null);
+        setJournalOpen(true);
+        return;
+      }
+      historyDepthRef.current = 0;
+      setComposer(null);
+      setJournalOpen(false);
+      void recorder.exit();
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [recorder]);
+
+  const pushReflectionLayer = (layer: 'journal' | 'invocation') => {
+    window.history.pushState({
+      ...(window.history.state as Record<string, unknown> | null),
+      [REFLECTION_HISTORY_KEY]: layer,
+    }, '', window.location.href);
+    historyDepthRef.current += 1;
+  };
+
+  const openJournal = () => {
+    if (!journalOpen) pushReflectionLayer('journal');
+    setThemeStyle(reflectionThemeStyle());
+    setJournalOpen(true);
+  };
+
   const openJournalAfterFinish = async () => {
     const saved = await recorder.pause();
-    if (saved) {
-      setThemeStyle(reflectionThemeStyle());
-      setJournalOpen(true);
-    }
+    if (saved) openJournal();
   };
 
   const exitReflection = async () => {
+    const historyDepth = historyDepthRef.current;
+    historyDepthRef.current = 0;
     setComposer(null);
     setJournalOpen(false);
+    if (historyDepth > 0) {
+      ignoreNextPopRef.current = true;
+      window.history.go(-historyDepth);
+    }
     await recorder.exit();
   };
 
@@ -137,7 +180,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
           <RecorderIcon name={isFinished ? 'check' : 'finish'} />
           <span className="oracle-bottom-nav__label">{isFinished ? 'Saved' : 'Finish'}</span>
         </button>
-        <button ref={journalButtonRef} className="oracle-bottom-nav__slot reflection-recorder-bar__slot reflection-recorder-bar__control reflection-recorder-bar__journal" type="button" disabled={isFinished} onPointerDown={() => triggerRecorderHaptic('press')} onClick={() => { restoreJournalFocus.current = true; setThemeStyle(reflectionThemeStyle()); setJournalOpen(true); }} aria-haspopup="dialog" aria-label={segmentBadge ? `Journal, ${state.savedSegmentCount} saved ${state.savedSegmentCount === 1 ? 'segment' : 'segments'}` : 'Journal'}>
+        <button ref={journalButtonRef} className="oracle-bottom-nav__slot reflection-recorder-bar__slot reflection-recorder-bar__control reflection-recorder-bar__journal" type="button" disabled={isFinished} onPointerDown={() => triggerRecorderHaptic('press')} onClick={() => { restoreJournalFocus.current = true; openJournal(); }} aria-haspopup="dialog" aria-label={segmentBadge ? `Journal, ${state.savedSegmentCount} saved ${state.savedSegmentCount === 1 ? 'segment' : 'segments'}` : 'Journal'}>
           <RecorderIcon name="journal" />
           <span className="oracle-bottom-nav__label">Journal</span>
           {segmentBadge && <span className="reflection-recorder-bar__badge" aria-hidden="true">{segmentBadge}</span>}
@@ -153,14 +196,19 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
       hexagramNumber={hexagramNumber}
       currentSessionId={state.sessionId}
       themeStyle={themeStyle}
+      inactive={Boolean(composer)}
       onClose={() => void exitReflection()}
       onDone={() => void exitReflection()}
       onRecordMore={() => {
+        historyDepthRef.current = Math.max(0, historyDepthRef.current - 1);
+        ignoreNextPopRef.current = true;
+        window.history.back();
         setJournalOpen(false);
         if (state.status === 'paused') recorder.resume();
       }}
       onCompose={(sessionId, segments) => {
         restoreJournalFocus.current = false;
+        pushReflectionLayer('invocation');
         setComposer({
           sessionId,
           segments: segments.map((segment) => ({
@@ -177,7 +225,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
       sessionId={composer.sessionId}
       segments={composer.segments}
       themeStyle={themeStyle}
-      onClose={() => setComposer(null)}
+      onClose={() => window.history.back()}
       onDone={() => void exitReflection()}
       onPublished={onInvocationPublished}
     />}

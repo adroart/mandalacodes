@@ -68,6 +68,7 @@ interface Props {
   hexagramNumber: number;
   currentSessionId: string | null;
   themeStyle?: React.CSSProperties;
+  inactive?: boolean;
   onClose(): void;
   onDone(): void;
   onRecordMore?(): void;
@@ -131,7 +132,7 @@ const PrivateAudioPlayer: React.FC<{ segment: ReflectionSegment; index: number }
   </div>;
 };
 
-export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSessionId, themeStyle, onClose, onDone, onRecordMore, onCompose }) => {
+export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSessionId, themeStyle, inactive = false, onClose, onDone, onRecordMore, onCompose }) => {
   const [sessions, setSessions] = useState<{ current: ReflectionSession | null; history: ReflectionSession[] }>({ current: null, history: [] });
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(currentSessionId);
   const [segments, setSegments] = useState<ReflectionSegment[]>([]);
@@ -275,7 +276,7 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
   }, [segments, transcribe]);
 
   const journal = (
-    <section className="reflection-journal" style={themeStyle} role="dialog" aria-modal="true" aria-labelledby="reflection-journal-title" onKeyDown={trapFocus}>
+    <section className="reflection-journal" style={themeStyle} role="dialog" aria-modal="true" aria-hidden={inactive || undefined} data-inactive={inactive || undefined} aria-labelledby="reflection-journal-title" onKeyDown={trapFocus}>
       <div ref={sheetRef} className="reflection-journal__sheet">
         <header className="reflection-journal__header">
           <div><span className="reflection-journal__eyebrow">Private reflection</span><h2 id="reflection-journal-title">Journal · {hexagramNumber}</h2></div>

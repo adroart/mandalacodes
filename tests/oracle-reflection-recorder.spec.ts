@@ -220,7 +220,9 @@ test('invocation Back returns to the same Journal', async ({ page }) => {
   await expect(page.locator('.invocation-block textarea')).toHaveValue('Let beauty arise.');
   await composer.getByRole('button', { name: 'Back to journal' }).click();
   await expect(composer).toHaveCount(0);
-  await expect(page.getByRole('dialog', { name: 'Journal · 22' })).toBeVisible();
+  const journal = page.getByRole('dialog', { name: 'Journal · 22' });
+  await expect(journal).toBeVisible();
+  await expect(journal.getByRole('button', { name: 'Shift to invocation' })).toBeFocused();
 });
 
 test('Invocation Done publishes and exits the reflection experience', async ({ page }) => {
@@ -344,6 +346,31 @@ test('Done exits Journal and restores the ordinary reading rail', async ({ page 
   await expect(journal).toHaveCount(0);
   await expect(recorder).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
+  await expect(page.locator('[data-current-hexagram]')).toBeFocused();
+  await expect(page.getByRole('dialog', { name: 'Card entrance. Tap to begin.' })).toHaveCount(0);
+});
+
+test('browser Back closes Invocation and Journal one layer at a time', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.route('**/api/oracle/invocations/22/draft**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'draft-22', hexagramNumber: 22, sessionId: 'session-22', title: 'Grace', blocks: [{ id: 'segment:segment-1', kind: 'segment', segmentId: 'segment-1', markdown: 'Let beauty arise.', sortOrder: 0 }], updatedAt: new Date().toISOString() }) }));
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+  await page.getByRole('button', { name: 'Journal' }).click();
+  await page.getByRole('button', { name: 'Shift to invocation' }).click();
+  await expect(page.locator('.reflection-journal')).toHaveAttribute('aria-hidden', 'true');
+
+  await page.goBack();
+  await expect(page.getByRole('dialog', { name: 'Invocation composer' })).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Journal · 22' })).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`${CARD}$`));
+
+  await page.goBack();
+  await expect(page.getByRole('dialog', { name: 'Journal · 22' })).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`${CARD}$`));
   await expect(page.getByRole('dialog', { name: 'Card entrance. Tap to begin.' })).toHaveCount(0);
 });
 
