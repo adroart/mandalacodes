@@ -94,6 +94,7 @@ html.oracle-card-page, html.oracle-card-page body { background:#14100b !importan
   .oracle-reading-progress__jumps button { flex:0 0 auto; min-width:0; min-height:48px; padding-inline:8px; font-size:.6875rem; letter-spacing:.1em; }
   .oracle-reading-progress__jumps svg { width:16px; height:16px; }
   .eb-reading section[data-chapter="iching"] .ul-ji > div { width:calc(100% - 16px); }
+  .eb-reading section[data-chapter] > div { padding-inline:clamp(24px,6vw,30px) !important; }
   .eb-reading .ul-gk-spectrum-nav { margin-inline: -8px; }
   .eb-reading .ul-gk-spectrum-nav > button { padding-inline: 4px !important; }
   .eb-reading .ul-gk-spectrum-nav > button > p:first-child {

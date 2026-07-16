@@ -224,6 +224,29 @@ test('keeps the reading action bar fixed at the bottom', async ({ page }) => {
   await expect(footer.getByRole('button', { name: 'Share this code' })).toBeVisible();
 });
 
+test('uses the full padded reading measure on phones', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openReading(page);
+
+  const prose = page.locator('section[data-chapter="ul"] > div > div[style*="flex-direction: column"] > p').first();
+  const geometry = await prose.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    return {
+      width: bounds.width,
+      insetLeft: bounds.left,
+      insetRight: innerWidth - bounds.right,
+    };
+  });
+
+  expect(geometry.width).toBeGreaterThanOrEqual(338);
+  expect(geometry.width).toBeLessThanOrEqual(344);
+  expect(geometry.insetLeft).toBeGreaterThanOrEqual(20);
+  expect(geometry.insetLeft).toBeLessThanOrEqual(28);
+  expect(geometry.insetRight).toBeGreaterThanOrEqual(20);
+  expect(geometry.insetRight).toBeLessThanOrEqual(28);
+  expect(Math.abs(geometry.insetLeft - geometry.insetRight)).toBeLessThanOrEqual(1);
+});
+
 test('keeps the desktop title on one line and prose panels narrow', async ({ page }) => {
   await openReading(page);
   await page.setViewportSize({ width: 1148, height: 900 });
