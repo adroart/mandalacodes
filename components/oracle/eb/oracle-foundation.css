@@ -69,6 +69,11 @@ html.oracle-card-page, html.oracle-card-page body { background:#14100b !importan
 }
 .eb-reading [data-oracle-reveal] { will-change:opacity,transform; }
 .eb-reading .ul-dropcap { float:none !important; padding:0 !important; color:inherit !important; font:inherit !important; }
+.eb-reading [data-oracle-flow] > section[data-chapter] header [data-glyph] {
+  /* These are orientation marks, not decorative scroll reveals. Keep them
+     present when a section is entered directly or restored from a deep link. */
+  opacity:1 !important; clip-path:none !important; transform:none !important; transition:none !important;
+}
 .eb-reading section[data-chapter] button[style*="min-width: 240px"] { border:0 !important; padding:8px 0 !important; min-width:0 !important; }
 .eb-reading section[data-chapter] button[style*="min-width: 240px"] span[style*="font-size: 19px"] { font-size:16px !important; font-style:italic; }
 .eb-reading section[data-chapter="iching"] .ul-ji { grid-template-columns:1fr !important; gap:clamp(20px,3vw,28px) !important; }

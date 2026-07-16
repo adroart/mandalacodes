@@ -18,7 +18,7 @@ import BirthTimeModal from './oracle/BirthTimeModal';
 import SignInModal from './account/SignInModal';
 import { useProfile } from '../lib/profile/context';
 import { ulPieceForCard } from '../utils/universalLanguage';
-import { hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
+import { astrologyGlyph, hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
 import './oracle/eb/eb-template.css';
 import './oracle/eb/oracle-foundation.css';
 import OracleBottomNavigation from './oracle/OracleBottomNavigation';
@@ -208,6 +208,7 @@ const UniversalLanguageCard: React.FC = () => {
         gkSiddhiParas: P(synthesis?.synthesis.gene_keys.siddhi ?? expanded?.gene_keys.siddhi?.expanded?.text),
 
         // Human Design
+        hdGate: String(card.human_design.gate),
         hdDriveName: `Gate ${card.human_design.gate} · ${synthesis?.reference?.hd_keyword ?? card.human_design.keyword}`,
         hdCentreName: synthesis?.reference?.hd_center ?? 'Where it lives',
         hdChannelName: synthesis?.reference?.hd_harmonic_gate ? `Channel · Gate ${card.human_design.gate}–${synthesis.reference.hd_harmonic_gate}` : 'What completes it',
@@ -456,12 +457,14 @@ function buildKin(card: any, syn?: CardSynthesis, exp?: any): EBData['kin'] {
   const tarotCard = rel?.tarot?.card ?? syn?.reference?.tarot_card ?? card.ring_tarot ?? '';
   const letterName = rel?.hebrew_letter?.letter ?? syn?.reference?.hebrew_letter ?? '';
   const letterGlyph = hebrewLetterGlyph(letterName);
+  const skyValue = rel?.sky?.value ?? syn?.reference?.astrology ?? '';
+  const skyGlyph = astrologyGlyph(skyValue);
   return [
     { key: 'pair', x: 24, y: 50, kind: 'kin', glyph: pairHexagram, font: 'var(--serif)', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: pairCard ? `UL ${pairCard.number}` : 'Pair' },
     { key: 'ring14', x: 76, y: 50, kind: 'kin', glyph: <CodonRingGlyph />, font: 'var(--serif)', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: ringCard ? `UL ${ringCard.number}` : 'Ring' },
-    { key: 'sky', x: 21.7, y: 21.7, kind: 'corr', glyph: '✦', font: 'var(--serif)', size: 'clamp(22px,5.6vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: syn?.reference?.astrology ?? 'Sky' },
+    { key: 'sky', x: 21.7, y: 21.7, kind: 'corr', glyph: skyGlyph ? <AstrologyGlyph value={skyValue} /> : '·', font: 'var(--serif)', size: 'clamp(22px,5.6vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: skyValue || 'Sky' },
     { key: 'tarot', x: 78.3, y: 21.7, kind: 'corr', glyph: tarotNumeral(tarotCard) || '·', font: 'var(--serif)', size: 'clamp(15px,4vw,19px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: tarotCard || 'Tarot' },
-    { key: 'hebrew', x: 21.7, y: 78.3, kind: 'corr', glyph: letterGlyph === 'ו' ? <VavGlyph /> : letterGlyph || '·', font: 'var(--serif)', size: 'clamp(23px,6vw,30px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: letterName || 'Letter' },
+    { key: 'hebrew', x: 21.7, y: 78.3, kind: 'corr', glyph: letterGlyph ? <HebrewGlyph glyph={letterGlyph} /> : '·', font: 'var(--serif)', size: 'clamp(23px,6vw,30px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: letterName || 'Letter' },
     { key: 'immortal', x: 78.3, y: 78.3, kind: 'corr', glyph: '笛', font: 'var(--cjk)', size: 'clamp(22px,5.8vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: 'Immortal' },
   ];
 }
@@ -477,10 +480,23 @@ function CodonRingGlyph() {
   );
 }
 
-function VavGlyph() {
+function HebrewGlyph({ glyph }: { glyph: string }) {
   return (
-    <svg width="24" height="34" viewBox="0 0 36 52" fill="none" aria-hidden="true">
-      <path d="M8 6h17c4.42 0 8 3.58 8 8v32h-8V16a2 2 0 0 0-2-2H8V6Z" fill="currentColor" />
+    <svg width="28" height="32" viewBox="0 0 28 32" fill="none" aria-hidden="true" focusable="false">
+      <text x="14" y="23" textAnchor="middle" direction="rtl" fontFamily="Noto Serif Hebrew, Times New Roman, serif" fontSize="23" fill="currentColor">
+        {glyph}
+      </text>
+    </svg>
+  );
+}
+
+function AstrologyGlyph({ value }: { value: string }) {
+  const glyph = astrologyGlyph(value);
+  return (
+    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true" focusable="false">
+      <text x="15" y="22" textAnchor="middle" fontFamily="Times New Roman, Georgia, serif" fontSize="22" fill="currentColor">
+        {`${glyph}\uFE0E`}
+      </text>
     </svg>
   );
 }

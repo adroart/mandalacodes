@@ -639,7 +639,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Gate
             </span>
             <span data-glyph="1" style={{ fontFamily: "var(--serif)", fontSize: "clamp(58px,8vw,74px)", lineHeight: "0.9", color: "var(--accent-d)" }}>
-            1
+            {vals.hdGate}
             </span>
             <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px", marginTop: "10px" }}>
             Human Design · about
