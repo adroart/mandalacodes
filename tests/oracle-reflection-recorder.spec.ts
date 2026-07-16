@@ -203,7 +203,7 @@ test('signed-in non-admin visitors receive no recorder disclosure', async ({ pag
   await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
 });
 
-test('journal shifts arranged segments into the full-screen invocation composer', async ({ page }) => {
+test('invocation Back returns to the same Journal', async ({ page }) => {
   await mockAdminRecorder(page);
   await page.route('**/api/oracle/invocations/22/draft**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'draft-22', hexagramNumber: 22, sessionId: 'session-22', title: 'Grace', blocks: [{ id: 'segment:segment-1', kind: 'segment', segmentId: 'segment-1', markdown: 'Let beauty arise.', sortOrder: 0 }], updatedAt: new Date().toISOString() }) }));
   await page.goto(`${BASE}${CARD}`);
@@ -217,9 +217,12 @@ test('journal shifts arranged segments into the full-screen invocation composer'
   await expect(composer).toBeVisible();
   await composer.getByRole('button', { name: 'Shift to Invocation' }).click();
   await expect(page.locator('.invocation-block textarea')).toHaveValue('Let beauty arise.');
+  await composer.getByRole('button', { name: 'Back to journal' }).click();
+  await expect(composer).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Journal · 22' })).toBeVisible();
 });
 
-test('journal is a contained full-screen surface that closes back to the recorder', async ({ page }) => {
+test('journal is a contained full-screen surface whose Close exits reflection', async ({ page }) => {
   await mockAdminRecorder(page);
   await page.goto(`${BASE}${CARD}`);
   await dismissEntrance(page);
@@ -236,10 +239,9 @@ test('journal is a contained full-screen surface that closes back to the recorde
   await expect(journal.locator('audio.reflection-segment__audio')).toHaveAttribute('src', /\/api\/oracle\/reflections\/segments\/segment-1\/audio/);
   await expect(journal.getByRole('button', { name: 'Play recording for segment 1' })).toBeVisible();
   await expect(journal.getByRole('button', { name: 'Record more' })).toBeVisible();
-  await expect(journal.getByRole('button', { name: 'Edit latest transcript' })).toBeVisible();
   await journal.getByRole('slider', { name: 'Recording position for segment 1' }).focus();
   await page.keyboard.press('Tab');
-  await expect(journal.getByRole('button', { name: 'Shift to invocation' })).toBeFocused();
+  await expect(journal.getByRole('button', { name: 'Record more' })).toBeFocused();
   expect(await journal.evaluate((element) => element.parentElement?.tagName)).toBe('BODY');
   await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
 
@@ -247,19 +249,12 @@ test('journal is a contained full-screen surface that closes back to the recorde
   await expect(close).toBeInViewport();
   await close.click();
   await expect(journal).toHaveCount(0);
-  await expect(recorder).toBeVisible();
-  await expect(recorder.getByRole('button', { name: 'Journal' })).toBeFocused();
+  await expect(recorder).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
-
-  await recorder.getByRole('button', { name: 'Journal' }).click();
-  await expect(journal).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(journal).toHaveCount(0);
-  await expect(recorder).toBeVisible();
-  await expect(recorder.getByRole('button', { name: 'Journal' })).toBeFocused();
 });
 
-test('finish confirms the saved reflection before restoring ordinary navigation', async ({ page }) => {
+test('Finish saves the segment and opens Journal', async ({ page }) => {
   await mockAdminRecorder(page);
   await page.goto(`${BASE}${CARD}`);
   await dismissEntrance(page);
@@ -269,11 +264,27 @@ test('finish confirms the saved reflection before restoring ordinary navigation'
 
   const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
   await recorder.getByRole('button', { name: 'Finish private reflection' }).click();
-  await expect(
-    recorder.getByRole('button', { name: 'Finish private reflection' }).getByText('Saved', { exact: true }),
-  ).toBeVisible();
-  await expect(recorder).toHaveCount(0, { timeout: 2_000 });
+  await expect(page.getByRole('dialog', { name: 'Journal · 22' })).toBeVisible();
+  await expect(recorder).toBeHidden();
+  await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeHidden();
+});
+
+test('Done exits Journal and restores the ordinary reading rail', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+
+  const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
+  await recorder.getByRole('button', { name: 'Finish private reflection' }).click();
+  const journal = page.getByRole('dialog', { name: 'Journal · 22' });
+  await journal.getByRole('button', { name: 'Done with reflection' }).click();
+  await expect(journal).toHaveCount(0);
+  await expect(recorder).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Card entrance. Tap to begin.' })).toHaveCount(0);
 });
 
 test('journal automatically transcribes pending saved audio without requiring Retry', async ({ page }) => {

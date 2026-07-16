@@ -75,6 +75,17 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
     }
   }, [journalOpen]);
 
+  const openJournalAfterFinish = async () => {
+    const saved = await recorder.pause();
+    if (saved) setJournalOpen(true);
+  };
+
+  const exitReflection = async () => {
+    setComposer(null);
+    setJournalOpen(false);
+    await recorder.exit();
+  };
+
   return <>
     {!journalOpen && <nav className="oracle-bottom-nav reflection-recorder-bar" aria-label="Private reflection recorder">
       <div className="oracle-bottom-nav__inner reflection-recorder-bar__inner">
@@ -104,7 +115,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
           </span>
           <span className="oracle-bottom-nav__label reflection-recorder-bar__state"><i className={isRecording ? 'is-live' : ''} aria-hidden="true" />{shortStatus}</span>
         </div>
-        <button className="oracle-bottom-nav__slot reflection-recorder-bar__slot reflection-recorder-bar__control" type="button" disabled={isFinished || state.status === 'requesting_permission' || state.status === 'committing'} onPointerDown={() => triggerRecorderHaptic('press')} onClick={() => void recorder.finish()} aria-label="Finish private reflection">
+        <button className="oracle-bottom-nav__slot reflection-recorder-bar__slot reflection-recorder-bar__control" type="button" disabled={isFinished || state.status === 'requesting_permission' || state.status === 'committing'} onPointerDown={() => triggerRecorderHaptic('press')} onClick={() => void openJournalAfterFinish()} aria-label="Finish private reflection">
           <RecorderIcon name={isFinished ? 'check' : 'finish'} />
           <span className="oracle-bottom-nav__label">{isFinished ? 'Saved' : 'Finish'}</span>
         </button>
@@ -123,14 +134,14 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
     {journalOpen && <ReflectionJournal
       hexagramNumber={hexagramNumber}
       currentSessionId={state.sessionId}
-      onClose={() => setJournalOpen(false)}
+      onClose={() => void exitReflection()}
+      onDone={() => void exitReflection()}
       onRecordMore={() => {
         setJournalOpen(false);
         if (state.status === 'paused') recorder.resume();
       }}
       onCompose={(sessionId, segments) => {
         restoreJournalFocus.current = false;
-        setJournalOpen(false);
         setComposer({
           sessionId,
           segments: segments.map((segment) => ({

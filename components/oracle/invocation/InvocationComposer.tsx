@@ -91,7 +91,7 @@ export function InvocationComposer({ hexagramNumber, sessionId, segments = [], o
     <div ref={dialogRef} className="invocation-shell" role="dialog" aria-modal="true" aria-labelledby="invocation-title" onKeyDown={onKeyDown}>
       <header className="invocation-toolbar" aria-hidden={composer.conflict ? true : undefined}>
         <div><p className="invocation-kicker">Universal Language {hexagramNumber}</p><h1 id="invocation-title">Invocation composer</h1></div>
-        <button ref={closeRef} type="button" className="invocation-close" onClick={requestClose} aria-label="Close invocation composer">×</button>
+        <button ref={closeRef} type="button" className="invocation-close" onClick={requestClose} aria-label="Back to journal">Back</button>
       </header>
 
       <div className="invocation-primary-surface" aria-hidden={composer.conflict ? true : undefined}>
