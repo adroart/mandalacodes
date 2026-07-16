@@ -67,7 +67,7 @@ function transcriptionResult(raw: unknown, provider: TranscriptionProvider) {
 }
 
 async function transcribeWithCloudflare(ai: Ai, bytes: ArrayBuffer) {
-  const run = ai.run as unknown as (model: string, input: { audio: string | number[] }) => Promise<unknown>;
+  const run = ai.run.bind(ai) as unknown as (model: string, input: { audio: string | number[] }) => Promise<unknown>;
   const audio = new Uint8Array(bytes);
   let raw: unknown;
   try {
@@ -89,7 +89,7 @@ export async function transcribeCommittedAudio(
   env: Pick<ReflectionEnv, 'GROQ_API_KEY' | 'AI'>,
   bytes: ArrayBuffer,
   mimeType: string,
-  fetcher: Fetcher = fetch,
+  fetcher: Fetcher = (input, init) => globalThis.fetch(input, init),
 ): Promise<{ text: string; metadataJson: string }> {
   let groqFailure: Error | null = null;
   if (env.GROQ_API_KEY) {
