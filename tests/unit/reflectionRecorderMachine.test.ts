@@ -3,6 +3,7 @@ import {
   commitBoundaryReason,
   createSingleFlight,
   createSegmentStartGuard,
+  exitAfterFinish,
   failReflectionRecorder,
   finishAfterLocalPersistence,
   initialReflectionRecorderState,
@@ -198,6 +199,15 @@ describe('reflection recorder state machine', () => {
   it('returns whether the recording was actually persisted before finish', async () => {
     await expect(finishAfterLocalPersistence(() => Promise.resolve(false), () => null, () => undefined)).resolves.toBe(false);
     await expect(finishAfterLocalPersistence(() => Promise.resolve(true), () => null, () => undefined)).resolves.toBe(true);
+  });
+
+  it('finishes persisted work before immediately clearing the reflection interface', async () => {
+    const events: string[] = [];
+    await exitAfterFinish(
+      async () => { events.push('finish'); },
+      () => events.push('reset'),
+    );
+    expect(events).toEqual(['finish', 'reset']);
   });
 
   it('coalesces simultaneous pagehide and visibility cleanup into one operation', async () => {

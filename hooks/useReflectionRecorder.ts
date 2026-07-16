@@ -93,6 +93,14 @@ export async function finishAfterLocalPersistence<T>(
   return await commit;
 }
 
+export async function exitAfterFinish(
+  finish: () => Promise<void>,
+  reset: () => void,
+): Promise<void> {
+  await finish();
+  reset();
+}
+
 export function createSingleFlight(operation: () => Promise<void>): () => Promise<void> {
   let active: Promise<void> | null = null;
   return () => {
@@ -163,9 +171,10 @@ export interface UseReflectionRecorderResult {
   state: ReflectionRecorderState;
   micLevel: number;
   startRecording(): Promise<void>;
-  pause(): Promise<void>;
+  pause(): Promise<boolean>;
   resume(): void;
   finish(): Promise<void>;
+  exit(): Promise<void>;
   cancel(): Promise<void>;
   retryPending(): Promise<void>;
 }
@@ -417,7 +426,7 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
 
   autoCommitRef.current = (reason) => { void commitCurrentSegment(reason); };
 
-  const pause = useCallback(async () => { await commitCurrentSegment(); }, [commitCurrentSegment]);
+  const pause = useCallback(() => commitCurrentSegment(), [commitCurrentSegment]);
 
   const resume = useCallback(() => {
     const current = stateRef.current;
@@ -449,7 +458,11 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
   }, [commitCurrentSegment, stopTracks]);
   finishOperationRef.current = performFinish;
   const finish = useCallback(() => finishOnceRef.current!(), []);
-  const cancel = finish;
+  const exit = useCallback(
+    () => exitAfterFinish(finish, () => dispatch({ type: 'finished' })),
+    [finish],
+  );
+  const cancel = exit;
 
   useEffect(() => {
     let live = true;
@@ -467,8 +480,8 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
   useEffect(() => { if (isAdmin) void retryPending(); }, [isAdmin, retryPending]);
   useEffect(() => {
     const online = () => void retryPending();
-    const hide = () => { void finish(); };
-    const visibility = () => { if (document.visibilityState === 'hidden') void finish(); };
+    const hide = () => { void exit(); };
+    const visibility = () => { if (document.visibilityState === 'hidden') void exit(); };
     window.addEventListener('online', online);
     window.addEventListener('pagehide', hide);
     document.addEventListener('visibilitychange', visibility);
@@ -476,9 +489,9 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
       window.removeEventListener('online', online);
       window.removeEventListener('pagehide', hide);
       document.removeEventListener('visibilitychange', visibility);
-      void finish();
+      void exit();
     };
-  }, [finish, hexagramNumber, retryPending]);
+  }, [exit, hexagramNumber, retryPending]);
 
-  return { isAdmin, capabilityReady, state, micLevel, startRecording, pause, resume, finish, cancel, retryPending };
+  return { isAdmin, capabilityReady, state, micLevel, startRecording, pause, resume, finish, exit, cancel, retryPending };
 }

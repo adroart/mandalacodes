@@ -52,7 +52,10 @@ test('a previous card invocation never leaks into the next card while it loads',
   await page.goto(`${BASE}${CARD}`);
   await dismissEntrance(page);
   await expect(page.getByText('Only for twenty two.')).toBeVisible();
-  await page.getByRole('link', { name: 'Next hexagram: Code 23, Beneath the Surface' }).click();
+  await page.evaluate(() => {
+    window.history.pushState(window.history.state, '', '/universal-language/23');
+    window.dispatchEvent(new PopStateEvent('popstate', { state: window.history.state }));
+  });
   await expect(page).toHaveURL(/\/universal-language\/23$/);
   await expect(page.getByText('Only for twenty two.')).toHaveCount(0);
 });

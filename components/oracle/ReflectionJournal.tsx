@@ -67,7 +67,10 @@ export function journalTranscriptionFailureMessage(error: unknown): string {
 interface Props {
   hexagramNumber: number;
   currentSessionId: string | null;
+  themeStyle?: React.CSSProperties;
+  inactive?: boolean;
   onClose(): void;
+  onDone(): void;
   onRecordMore?(): void;
   onCompose?(sessionId: string, segments: ReflectionSegment[]): void;
 }
@@ -129,7 +132,7 @@ const PrivateAudioPlayer: React.FC<{ segment: ReflectionSegment; index: number }
   </div>;
 };
 
-export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSessionId, onClose, onRecordMore, onCompose }) => {
+export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSessionId, themeStyle, inactive = false, onClose, onDone, onRecordMore, onCompose }) => {
   const [sessions, setSessions] = useState<{ current: ReflectionSession | null; history: ReflectionSession[] }>({ current: null, history: [] });
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(currentSessionId);
   const [segments, setSegments] = useState<ReflectionSegment[]>([]);
@@ -273,7 +276,7 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
   }, [segments, transcribe]);
 
   const journal = (
-    <section className="reflection-journal" role="dialog" aria-modal="true" aria-labelledby="reflection-journal-title" onKeyDown={trapFocus}>
+    <section className="reflection-journal" style={themeStyle} role="dialog" aria-modal="true" aria-hidden={inactive || undefined} data-inactive={inactive || undefined} aria-labelledby="reflection-journal-title" onKeyDown={trapFocus}>
       <div ref={sheetRef} className="reflection-journal__sheet">
         <header className="reflection-journal__header">
           <div><span className="reflection-journal__eyebrow">Private reflection</span><h2 id="reflection-journal-title">Journal · {hexagramNumber}</h2></div>
@@ -311,7 +314,7 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
               <textarea id={`reflection-${segment.id}`} value={draft} onChange={(event) => setDraft(event.target.value)} autoFocus />
               <div><button type="button" onClick={() => void saveTranscript(segment)}>Save</button><button type="button" onClick={() => setEditingId(null)}>Cancel</button></div>
             </div> : <div className="reflection-segment__body">
-              {segment.transcript ? <p>{segment.transcript}</p> : <p className="reflection-segment__status">{
+              {segment.transcript ? <p className="reflection-segment__transcript">{segment.transcript}</p> : <p className="reflection-segment__status">{
                 segment.transcriptionStatus === 'uploading' ? 'Uploading audio…'
                   : segment.transcriptionStatus === 'transcribing' ? 'Transcribing audio…'
                     : segment.transcriptionStatus === 'failed' ? 'Transcription needs retry'
@@ -329,17 +332,10 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
             </div>}
           </article>)}
         </div>
-        {selectedSessionId && segments.length > 0 && onCompose && (
-          <footer className="reflection-journal__compose">
-            <button type="button" onClick={() => onCompose(selectedSessionId, segments)}>
-              Shift to invocation
-            </button>
-          </footer>
-        )}
         <footer className="reflection-journal__actions" aria-label="Journal actions">
           <button type="button" onClick={onRecordMore ?? onClose}>Record more</button>
-          <button type="button" aria-label="Edit latest transcript" disabled={!segments[0]} onClick={() => { if (segments[0]) { setEditingId(segments[0].id); setDraft(segments[0].transcript); } }}>Edit latest</button>
-          <button type="button" onClick={onClose}>Close</button>
+          <button type="button" disabled={!selectedSessionId || segments.length === 0 || !onCompose} onClick={() => { if (selectedSessionId && onCompose) onCompose(selectedSessionId, segments); }}>Shift to invocation</button>
+          <button type="button" className="is-primary" onClick={onDone} aria-label="Done with reflection">Done</button>
         </footer>
       </div>
     </section>

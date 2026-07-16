@@ -39,6 +39,16 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
   const heldPointer = useRef<{ id: number; target: HTMLButtonElement } | null>(null);
   const longPressed = useRef(false);
   const [holding, setHolding] = useState(false);
+  const centerButtonRef = useRef<HTMLButtonElement>(null);
+  const previousRecorderStatus = useRef(recorder.state.status);
+
+  useEffect(() => {
+    const previous = previousRecorderStatus.current;
+    previousRecorderStatus.current = recorder.state.status;
+    if (previous !== 'idle' && recorder.state.status === 'idle') {
+      window.requestAnimationFrame(() => centerButtonRef.current?.focus());
+    }
+  }, [recorder.state.status]);
 
   const cancelHold = useCallback(() => {
     if (holdTimer.current !== null) window.clearTimeout(holdTimer.current);
@@ -102,6 +112,7 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
         </button>
 
         <button
+          ref={centerButtonRef}
           type="button"
           className={`oracle-bottom-nav__slot oracle-bottom-nav__current${holding ? ' is-holding' : ''}`}
           data-current-hexagram
