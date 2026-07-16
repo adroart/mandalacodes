@@ -7,10 +7,11 @@
      is built from the REAL app data passed in `props.adapter` (all 64 cards,
      the real Cloudinary images, the real element/tint helpers) so the live page
      IS the design driven by real data.
-   - `openSystems` / `openGrid` / `enterReading` / `onRead` (card open) bridge to
+   - `openSystems` / `openGrid` / `onRead` (card open) bridge to
      the app via `props` (overlays + routing), replacing the design's no-ops.
    - The fixed light/dark toggle, hero treatment switcher, flip wall, search,
-     element filters, and reading lightbox are the file's own logic, unchanged.
+     and element filters are the file's own logic, unchanged. Card selection
+     routes directly to the app's full reading page.
 
    The site's own top nav bar is supplied by the app shell, not this component
    (per the import brief: match the design exactly except for the title nav bar). */
@@ -67,10 +68,8 @@ interface HostProps {
   /** Whether a birth moment has been entered (yourCodes is non-empty). Switches
    *  the rail's "Your codes" tile from invitation to confirmation. */
   hasCodes?: boolean;
-  /** Open a card (the design's openReading lightbox stays; "Enter the reading"
-   *  and the flipped Read action route to the full card page through these). */
-  onOpenCard?: (n: number) => void; // open the design's own lightbox preview
-  onEnterReading?: (n: number) => void; // route to the full card reading page
+  /** Route a selected card to the full reading page. */
+  onEnterReading?: (n: number) => void;
   onOpenSystems?: () => void; // app Systems overlay / page
   onOpenGrid?: () => void; // app "your codes" grid / sign-in
   /** Open the visitor's Hologenetic profile (shown once a birth moment is saved). */
@@ -93,7 +92,6 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     query: '',
     elFilter: 'All',
     flipped: {} as Record<number, boolean>,
-    reading: null as EntryCard | null,
     themeOverride: null as string | null,
     invOverride: null as string | null,
     inviteExpanded: false,
@@ -279,14 +277,6 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     // Idle instruction line removed by request; only the filter-count feedback remains.
     const instruction = filtering ? filtered.length + ' of 64 shown' : '';
 
-    // reading vm
-    let reading: any = null;
-    if (this.state.reading) {
-      const c = this.state.reading;
-      const tint = m ? m.tintFor(c) : ['#9d7c48', '#65502f'];
-      reading = { name: c.name, hx: c.hx, num2: String(c.n).padStart(2, '0'), grad: 'linear-gradient(150deg,' + tint[0] + ',' + tint[1] + ')', artBig: m ? m.cardImg(c, 760) : '' };
-    }
-
     return {
       theme,
       isA: inv === 'illuminated',
@@ -328,12 +318,6 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
       query: this.state.query,
       instruction,
       drawHint: filtering ? filtered.length + ' of 64 shown' : 'or choose one below',
-      reading,
-      readingArtBig: reading ? reading.artBig : 'data:,',
-      readingName: reading ? reading.name : '',
-      readingHx: reading ? reading.hx : '',
-      readingNum2: reading ? reading.num2 : '',
-      readingGrad: reading ? reading.grad : 'transparent',
       themeIcon: theme === 'dark' ? '☽' : '☀',
       themeLabel: theme === 'dark' ? 'Light' : 'Dark',
       onQuery: (e: any) => this.setState({ query: e.target.value }),
@@ -345,13 +329,6 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
       // App bridges (the design's no-ops are replaced with real app actions):
       openSystems: () => this.props.onOpenSystems?.(),
       openGrid: () => this.props.onOpenGrid?.(),
-      closeReading: () => this.setState({ reading: null }),
-      enterReading: () => {
-        const c = this.state.reading;
-        this.setState({ reading: null });
-        if (c) this.props.onEnterReading?.(c.n);
-      },
-      stop: (e: any) => e.stopPropagation(),
     };
   }
 
@@ -370,8 +347,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     // animation). The design's preview lightbox is intentionally skipped — a
     // card click loads the reading directly.
     this.props.onCardOpened?.(c.n);
-    if (this.props.onEnterReading) this.props.onEnterReading(c.n);
-    else this.setState({ reading: c });
+    this.props.onEnterReading?.(c.n);
   }
 
   render() {

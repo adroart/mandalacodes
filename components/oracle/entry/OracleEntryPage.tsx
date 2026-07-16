@@ -3,7 +3,7 @@
      1. maps the real 64 OracleCards into the design's lightweight EntryCard shape,
      2. supplies the real element/tint/image helpers (the design's oracle-cards.js
         equivalents, sourced from the live codebase),
-     3. bridges the design's rail links + "Enter the reading" to the app: Systems
+     3. bridges the design's rail links + card selections to the app: Systems
         and "your codes" open the existing overlays; entering a reading routes to
         the full card page; opening a card is recorded in the journal.
    Everything visible is the generated design; this file is the wiring. */
