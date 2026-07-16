@@ -178,6 +178,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
       segments={composer.segments}
       themeStyle={themeStyle}
       onClose={() => setComposer(null)}
+      onDone={() => void exitReflection()}
       onPublished={onInvocationPublished}
     />}
   </>;

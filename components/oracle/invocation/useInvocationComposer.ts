@@ -95,19 +95,21 @@ export function useInvocationComposer(hexagramNumber: number, sessionId: string,
   }, [conflict, draft, saveDraft, status]);
 
   const publish = useCallback(async () => {
-    if (!draft) return;
+    if (!draft) return false;
     setStatus('saving'); setError('');
     try {
       const saved = dirtyRef.current ? await saveDraft() : draft;
-      if (!saved) return;
+      if (!saved) return false;
       const result = await publishInvocation(saved, crypto.randomUUID());
       dirtyRef.current = false;
       setStatus('saved_and_live');
       setVersions(current => [result.version, ...current.filter(version => version.id !== result.version.id)]);
       options?.onPublished?.();
+      return true;
     } catch (reason) {
-      if (reason instanceof InvocationConflictError) return;
+      if (reason instanceof InvocationConflictError) return false;
       setError(reason instanceof Error ? reason.message : 'Save failed. Your work is still here.'); setStatus('error');
+      return false;
     }
   }, [draft, options, saveDraft]);
 

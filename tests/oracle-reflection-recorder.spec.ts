@@ -223,6 +223,65 @@ test('invocation Back returns to the same Journal', async ({ page }) => {
   await expect(page.getByRole('dialog', { name: 'Journal · 22' })).toBeVisible();
 });
 
+test('Invocation Done publishes and exits the reflection experience', async ({ page }) => {
+  await mockAdminRecorder(page);
+  const draft = { id: 'draft-22', hexagramNumber: 22, sessionId: 'session-22', title: 'Grace', blocks: [{ id: 'segment:segment-1', kind: 'segment', segmentId: 'segment-1', markdown: 'Let beauty arise.', sortOrder: 0 }], updatedAt: new Date().toISOString() };
+  await page.route('**/api/oracle/invocations/22/draft**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(draft) }));
+  await page.route('**/api/oracle/invocations/22/publish', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'saved_and_live', version: { id: 'version-1', invocationId: draft.id, versionNumber: 1, title: draft.title, blocks: draft.blocks, publishedAt: new Date().toISOString() }, liveUpdatedAt: new Date().toISOString() }) }));
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+  await page.getByRole('button', { name: 'Journal' }).click();
+  await page.getByRole('button', { name: 'Shift to invocation' }).click();
+  const composer = page.getByRole('dialog', { name: 'Invocation composer' });
+  await composer.getByRole('button', { name: 'Shift to Invocation' }).click();
+
+  await composer.getByRole('button', { name: 'Done with reflection' }).click();
+  await expect(composer).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Journal · 22' })).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
+});
+
+test('Invocation uses the Journal editorial type and rule system', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.route('**/api/oracle/invocations/22/draft**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'draft-22', hexagramNumber: 22, sessionId: 'session-22', title: 'Grace', blocks: [{ id: 'segment:segment-1', kind: 'segment', segmentId: 'segment-1', markdown: 'Let beauty arise.', sortOrder: 0 }], updatedAt: new Date().toISOString() }) }));
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+  await page.getByRole('button', { name: 'Journal' }).click();
+  await page.getByRole('button', { name: 'Shift to invocation' }).click();
+  const composer = page.getByRole('dialog', { name: 'Invocation composer' });
+  await composer.getByRole('button', { name: 'Shift to Invocation' }).click();
+
+  await expect(composer.locator('.invocation-toolbar')).toHaveCSS('border-bottom-width', '1px');
+  await expect(composer.locator('.invocation-primary-surface')).toHaveCSS('box-shadow', 'none');
+  expect(await composer.locator('.invocation-block textarea').first().evaluate((element) => getComputedStyle(element).fontFamily)).toContain('Cormorant');
+});
+
+test('Invocation Done stays open when publishing fails', async ({ page }) => {
+  await mockAdminRecorder(page);
+  await page.route('**/api/oracle/invocations/22/draft**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'draft-22', hexagramNumber: 22, sessionId: 'session-22', title: 'Grace', blocks: [{ id: 'segment:segment-1', kind: 'segment', segmentId: 'segment-1', markdown: 'Let beauty arise.', sortOrder: 0 }], updatedAt: new Date().toISOString() }) }));
+  await page.route('**/api/oracle/invocations/22/publish', route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Invocation service unavailable' }) }));
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+  await page.getByRole('button', { name: 'Journal' }).click();
+  await page.getByRole('button', { name: 'Shift to invocation' }).click();
+  const composer = page.getByRole('dialog', { name: 'Invocation composer' });
+  await composer.getByRole('button', { name: 'Shift to Invocation' }).click();
+  await composer.getByRole('button', { name: 'Done with reflection' }).click();
+
+  await expect(composer).toBeVisible();
+  await expect(composer.getByRole('status')).toContainText('Invocation service unavailable');
+  await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeHidden();
+});
+
 test('journal is a contained full-screen surface whose Close exits reflection', async ({ page }) => {
   await mockAdminRecorder(page);
   await page.goto(`${BASE}${CARD}`);
