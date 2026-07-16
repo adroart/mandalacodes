@@ -411,6 +411,8 @@ test('Journal uses the reading palette and editorial transcript typography', asy
   expect(Number.parseFloat(await transcript.evaluate((element) => getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(20);
   await expect(journal.locator('.reflection-journal__sheet')).toHaveCSS('box-shadow', 'none');
   await expect(journal.locator('.reflection-journal__actions')).toHaveCSS('border-top-width', '1px');
+  await expect(journal.locator('.reflection-segment').first()).toHaveCSS('animation-name', 'none');
+  expect((await journal.locator('.reflection-segment__header').first().boundingBox())!.height).toBeLessThanOrEqual(60);
 });
 
 test('journal shows terminal transcription errors without automatically retrying them', async ({ page }) => {
