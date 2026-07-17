@@ -184,7 +184,7 @@ function jsxStyleDeclarations(file: string, source: string): FontDeclaration[] {
   const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, scriptKind(file));
   const declarations: FontDeclaration[] = [];
   const visit = (node: ts.Node): void => {
-    if (ts.isJsxAttribute(node) && node.name.text === 'style'
+    if (ts.isJsxAttribute(node) && node.name.getText(sourceFile) === 'style'
       && node.initializer && ts.isJsxExpression(node.initializer)
       && node.initializer.expression && ts.isObjectLiteralExpression(node.initializer.expression)) {
       for (const property of node.initializer.expression.properties) {
