@@ -109,10 +109,10 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
   const [inscriptions, setInscriptions] = useState<InscriptionView[] | null>(null);
   const [loadNote, setLoadNote] = useState<string | null>(null);
 
-  // Share on the map (M6, Lens 2): inscriptionId → shared. Seeded lazily
-  // (nothing fetched for this on load); the toggle trusts the endpoint's
-  // own response for the next state. No indication yet whether an entry
-  // already rides the map until the steward acts on it here.
+  // Share on the map (M6, Lens 2): inscriptionId → shared. The inscriptions
+  // listing already carries each entry's live share state, so the toggle
+  // reflects reality on first paint (see the seed effect below); session
+  // toggles then win over the server's word for the next state.
   const [shared, setShared] = useState<Record<string, boolean>>({});
   const [shareBusy, setShareBusy] = useState<string | null>(null);
   const [shareError, setShareError] = useState<Record<string, string>>({});
@@ -200,6 +200,17 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
     setInscriptions(null);
     loadInscriptions();
   }, [loadInscriptions]);
+
+  /* Reflect the map-share state before first interaction (interface law 6:
+     honest states). The listing tells us which entry, if any, already rides
+     the map; seed everShared from it so the toggle and its one-time hint match
+     reality rather than assuming nothing is shared until the steward acts. */
+  useEffect(() => {
+    if (!inscriptions) return;
+    if (inscriptions.some((v) => v.kind === 'intention' && v.shared)) {
+      setEverShared(true);
+    }
+  }, [inscriptions]);
 
   // === Letters ===
 

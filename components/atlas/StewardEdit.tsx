@@ -527,10 +527,10 @@ const StewardEdit: React.FC = () => {
           )}
         </div>
 
-        {/* Ring 3 — chart presence (the kinship constellation) */}
+        {/* Chart presence — the kinship constellation */}
         <div className="mb-10">
           <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
-            Chart presence
+            Join the constellation
           </span>
           <p className="font-serif italic text-sm text-stone-600 mb-4">
             Turn this on and your piece joins the kinship constellation; arcs

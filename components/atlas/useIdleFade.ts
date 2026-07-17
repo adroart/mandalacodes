@@ -32,6 +32,7 @@ export function useIdleFade(delay = 4000): boolean {
       'wheel',
       'keydown',
       'touchstart',
+      'focusin', // keyboard focus entering any control restores chrome
     ];
     events.forEach((e) => window.addEventListener(e, wake, { passive: true }));
     wake(); // start the countdown

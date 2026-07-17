@@ -124,6 +124,9 @@ export interface PieceHUDProps {
       returns to that city's list instead of releasing the selection. */
   onBack?: () => void;
   isOrigin?: boolean;
+  /** Hosted in the phone half-sheet, which owns the scroll: drop the card's
+      own viewport-height cap so the sheet governs how much shows. */
+  inSheet?: boolean;
   /** True when this piece carries one of the visitor's own codes. */
   carriesYourCode?: boolean;
   /** The dream this piece publicly carries, when its keeper shares one. */
@@ -143,12 +146,18 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   onRelease,
   onBack,
   isOrigin = false,
+  inSheet = false,
   carriesYourCode = false,
   intention,
   code,
   alsoHere,
 }) => {
   const accent = isOrigin ? SAGE : BRONZE;
+  // The scroll viewport: a viewport-height cap when the card floats on its own
+  // (desktop / origin), or full-height with no cap when the phone sheet scrolls.
+  const scrollCap = inSheet
+    ? 'h-full'
+    : 'max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto overscroll-contain scrollbar-hide';
   const reduce =
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -288,7 +297,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   if (isOrigin) {
     return shell(
       <>
-        <div className="p-6 sm:p-7 max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto overscroll-contain scrollbar-hide">
+        <div className={`p-6 sm:p-7 ${scrollCap}`}>
           <Label>{piece.category ?? 'Selected piece'}</Label>
           <h3
             className="font-serif text-2xl sm:text-[1.7rem] font-semibold leading-tight"
@@ -357,7 +366,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           onClick={onRelease}
           className="absolute top-2.5 right-2.5 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors px-2 py-1"
         >
-          release
+          return
         </button>
       </>,
     );
@@ -367,7 +376,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   // One quiet scroll surface: the card scrolls with its scrollbar hidden (the
   // cut content at the sheet edge is the affordance); the dream never scrolls.
   return shell(
-    <div className="max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto overscroll-contain scrollbar-hide">
+    <div className={scrollCap}>
       {/* Back to the city list, when this piece was reached through one. */}
       {onBack && (
         <button
@@ -397,7 +406,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           className="font-label text-[10px] uppercase tracking-[0.2em] transition-colors hover:text-bronze-300"
           style={{ color: 'rgba(203,191,168,0.5)' }}
         >
-          release
+          return
         </button>
       </header>
 
