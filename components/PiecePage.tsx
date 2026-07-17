@@ -419,7 +419,10 @@ const PiecePage: React.FC = () => {
                 {piece.claimOrdinal}
               </p>
               <p className="font-serif text-lg text-wood-600 mt-3">
-                the {ordinalLabel(piece.claimOrdinal as number)} light ever to come to life
+                the {ordinalLabel(piece.claimOrdinal as number)} light of the constellation
+              </p>
+              <p className="font-serif text-sm text-wood-500 mt-1">
+                A founding light marks the order in which a piece was claimed by its keeper.
               </p>
             </div>
           )}
