@@ -45,6 +45,7 @@ const TARGET_AND_LEGACY_FAMILIES = [
 type FontDeclaration = {
   file: string;
   line: number;
+  property: 'font-family' | 'fontFamily';
   value: string;
 };
 
@@ -69,15 +70,29 @@ function activeProductionFiles(): string[] {
 function fontFamilyDeclarations(file: string): FontDeclaration[] {
   const source = readFileSync(file, 'utf8');
   const declarations: FontDeclaration[] = [];
-  const declarationPattern = /font-family\s*:\s*([^;}\n]+)/g;
+  const declarationPatterns = [
+    {
+      property: 'font-family' as const,
+      pattern: /font-family\s*:\s*([^;}\n]+)/g,
+      value: (match: RegExpMatchArray) => match[1],
+    },
+    {
+      property: 'fontFamily' as const,
+      pattern: /fontFamily\s*:\s*(?:(['\"`])((?:\\.|(?!\1)[\s\S])*)\1|([^,}\n]+))/g,
+      value: (match: RegExpMatchArray) => match[1] ? `${match[1]}${match[2]}${match[1]}` : match[3],
+    },
+  ];
 
-  for (const match of source.matchAll(declarationPattern)) {
-    const offset = match.index ?? 0;
-    declarations.push({
-      file: relative(ROOT, file),
-      line: source.slice(0, offset).split('\n').length,
-      value: match[1].trim(),
-    });
+  for (const { property, pattern, value } of declarationPatterns) {
+    for (const match of source.matchAll(pattern)) {
+      const offset = match.index ?? 0;
+      declarations.push({
+        file: relative(ROOT, file),
+        line: source.slice(0, offset).split('\n').length,
+        property,
+        value: value(match).trim(),
+      });
+    }
   }
 
   return declarations;
@@ -85,7 +100,7 @@ function fontFamilyDeclarations(file: string): FontDeclaration[] {
 
 function formatDiagnostics(declarations: FontDeclaration[]): string {
   return declarations
-    .map(({ file, line, value }) => `${file}:${line} hard-codes font-family: ${value}`)
+    .map(({ file, line, property, value }) => `${file}:${line} hard-codes ${property}: ${value}`)
     .join('\n');
 }
 
