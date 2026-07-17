@@ -163,7 +163,12 @@ Every Atlas surface, present and future, obeys these. They are the review
 checklist for any Atlas PR.
 
 1. One primary action per moment. If a screen needs two, it is two moments.
-2. The dream is the largest text on any surface it appears on.
+2. The dream is the largest text on any surface it appears on. And it is
+   always legible: dream text never overlaps the globe's limb, the rim
+   rings, or a light's bloom, and wherever a dream renders on the stage a
+   quiet scrim guarantees its contrast. Legibility is never traded for
+   composition. Adrian's ruling, verbatim: if you can't read the dream it
+   does not exist.
 3. Legibility floor. Chrome may rest, never vanish: orientation chrome (the
    one-line thesis, the primary controls) idles no lower than 0.6 opacity;
    secondary chrome (legend, breadcrumb) no lower than 0.35. Any pointer,
@@ -284,6 +289,13 @@ and `earth-hairline-b` large) makes the line itself do the work:
 - A second hairline ring outside the rim, the fine-instrument border.
 - Light pools slightly tightened from the first sheet so they read as
   radiance, not haze.
+
+RULED 2026-07-17, refined the same day after seeing the first build: with
+the earth, subtlety, less is more. Light pools compress toward warm gold and
+never blow out to white; the land stays visible inside a pool; the rim rings
+stay hairline-quiet; where lights cluster the fire reads as a greater warmth,
+never as overexposure. The earth is the ground of the composition, not its
+loudest voice; the dream text is always the clearest thing on the stage.
 
 RULED 2026-07-17: Adrian chose the hairline family and delegated the final
 call to Fable. The built earth is the elevated hairline with I-b's lifted
