@@ -36,9 +36,11 @@ const HALO_FRAG = /* glsl */ `
     facing = clamp(facing, 0.0, 1.0);
     // Wide soft halo.
     float halo = pow(facing, 6.0);
-    // Crisp rim: a tight bright band hugging the sphere's edge.
+    // Crisp rim: a tight bright band hugging the sphere's edge. Kept crisp
+    // (the high power) but brought down to a whisper (hairline-quiet ruling):
+    // the rim reads as a fine-instrument border, never a bright ring.
     float rim = pow(facing, 46.0);
-    vec3 col = uHalo * halo * 0.6 + uRim * rim * 1.05;
+    vec3 col = uHalo * halo * 0.34 + uRim * rim * 0.5;
     gl_FragColor = vec4(col, 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -54,7 +56,7 @@ const RING_FRAG = /* glsl */ `
     float facing = clamp(dot(normalize(-vWorldNormal), normalize(vViewDir)), 0.0, 1.0);
     // A band that peaks in a thin ring rather than filling the disc.
     float ring = smoothstep(0.0, 0.05, facing) * (1.0 - smoothstep(0.05, 0.18, facing));
-    gl_FragColor = vec4(uRim * ring * 0.7, 1.0);
+    gl_FragColor = vec4(uRim * ring * 0.42, 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
   }
@@ -67,8 +69,8 @@ export default function Atmosphere() {
         vertexShader: VERT,
         fragmentShader: HALO_FRAG,
         uniforms: {
-          uHalo: { value: COLOR_RIM.clone().multiplyScalar(1.5) },
-          uRim: { value: COAST_GOLD.clone().multiplyScalar(0.55) },
+          uHalo: { value: COLOR_RIM.clone().multiplyScalar(1.05) },
+          uRim: { value: COAST_GOLD.clone().multiplyScalar(0.42) },
         },
         side: THREE.BackSide,
         blending: THREE.AdditiveBlending,
@@ -82,7 +84,7 @@ export default function Atmosphere() {
       new THREE.ShaderMaterial({
         vertexShader: VERT,
         fragmentShader: RING_FRAG,
-        uniforms: { uRim: { value: COAST_GOLD.clone().multiplyScalar(0.42) } },
+        uniforms: { uRim: { value: COAST_GOLD.clone().multiplyScalar(0.32) } },
         side: THREE.BackSide,
         blending: THREE.AdditiveBlending,
         transparent: true,

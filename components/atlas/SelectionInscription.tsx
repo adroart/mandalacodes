@@ -5,6 +5,12 @@
  * display, with one line beneath in Karla and exactly one action: open the
  * book. That action reveals the existing full PieceHUD card, unchanged.
  *
+ * Legibility first (law 2, sharpened): the whole block — dream, sub-line and
+ * the `open the book` action — is backed by a quiet local scrim, a soft
+ * elliptical deepening of the night with no card edge, so the display text is
+ * comfortably readable wherever it lands, even over the engraved earth. Seated
+ * on the outer side away from the light, it never sits under a light's bloom.
+ *
  * A piece with no public dream shows the existing "no dream is kept here yet"
  * line at the same dignity. return, Esc and Back keep closing the selection as
  * Phase 2 built them.
@@ -21,6 +27,14 @@ export interface SelectionInscriptionProps {
   onOpenBook: () => void;
 }
 
+/** The scrim: a soft elliptical deepening of the night behind the inscription,
+    biased toward the outer edge (where the block hugs the margin) and falling
+    to nothing before any hard boundary — a deepening, not a panel (law 2). */
+function scrim(awayLeft: boolean): string {
+  const at = awayLeft ? '38% 50%' : '62% 50%';
+  return `radial-gradient(120% 140% at ${at}, rgba(7,5,3,0.68) 0%, rgba(7,5,3,0.52) 40%, rgba(7,5,3,0.28) 64%, rgba(7,5,3,0) 82%)`;
+}
+
 export default function SelectionInscription({
   dream,
   standing,
@@ -32,36 +46,55 @@ export default function SelectionInscription({
       data-atlas-inscription
       className={
         awayLeft
-          ? 'pointer-events-none absolute left-8 top-1/2 -translate-y-1/2 z-30 max-w-[34rem] text-left'
-          : 'pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 z-30 max-w-[34rem] text-right'
+          ? 'pointer-events-none absolute left-8 top-1/2 -translate-y-1/2 z-30 max-w-[27rem] text-left'
+          : 'pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 z-30 max-w-[27rem] text-right'
       }
-      style={{ animation: 'hud-in 500ms ease-out' }}
+      style={{ animation: 'hud-in 500ms ease-out', padding: '1.6rem 1.8rem' }}
     >
+      {/* The scrim, behind the whole block. */}
+      <span
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: '-1.4rem -1.2rem',
+          background: scrim(awayLeft),
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
       <p
         style={{
+          position: 'relative',
+          zIndex: 1,
           fontFamily: '"Cormorant Garamond", serif',
           fontWeight: 400,
-          fontSize: dream ? 'clamp(28px, 2.6vw, 40px)' : 'clamp(28px, 2.4vw, 36px)',
+          fontSize: dream ? 'clamp(26px, 2.3vw, 36px)' : 'clamp(26px, 2.2vw, 33px)',
           lineHeight: 1.28,
           letterSpacing: '0.008em',
-          color: dream ? 'rgba(237, 226, 204, 0.96)' : 'rgba(196, 170, 124, 0.72)',
+          color: dream ? 'rgba(238, 228, 208, 0.98)' : 'rgba(200, 176, 132, 0.78)',
           margin: 0,
-          textShadow: '0 2px 26px rgba(8,6,4,0.92)',
+          textShadow: '0 2px 22px rgba(8,6,4,0.9)',
         }}
       >
         {dream ?? 'no dream is kept here yet.'}
       </p>
       <p
         className="mt-5 font-label uppercase"
-        style={{ fontSize: 12, letterSpacing: '0.18em', color: 'rgba(196,170,124,0.72)' }}
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          fontSize: 12,
+          letterSpacing: '0.18em',
+          color: 'rgba(200,176,132,0.8)',
+        }}
       >
         {standing}
       </p>
       <button
         type="button"
         onClick={onOpenBook}
-        className="pointer-events-auto mt-6 font-label text-[12px] uppercase tracking-[0.24em] text-bronze-300 hover:text-bronze-200 transition-colors"
-        style={{ borderBottom: '1px solid rgba(196,170,124,0.5)', paddingBottom: 3 }}
+        className="pointer-events-auto relative mt-6 font-label text-[12px] uppercase tracking-[0.24em] text-bronze-300 hover:text-bronze-200 transition-colors"
+        style={{ zIndex: 1, borderBottom: '1px solid rgba(196,170,124,0.5)', paddingBottom: 3 }}
       >
         open the book
       </button>

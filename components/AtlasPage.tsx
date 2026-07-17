@@ -409,6 +409,9 @@ const AtlasPage: React.FC = () => {
      overlay at the same dimensions cobe is drawing into. */
   const globeBoxRef = useRef<HTMLDivElement | null>(null);
   const [globeSize, setGlobeSize] = useState({ width: 0, height: 0 });
+  /* The full stage box (not the square globe overlay): the featured dream reads
+     it to place itself off the globe's projected limb. */
+  const [stageDims, setStageDims] = useState({ width: 0, height: 0 });
 
   /* Fetch the live atlas via the shared loader (falls back to the local
      seed on any failure so the page always renders something). The card
@@ -1123,6 +1126,7 @@ const AtlasPage: React.FC = () => {
         const cr = entry.contentRect;
         const d = Math.max(120, Math.min(cr.width, cr.height));
         setGlobeSize({ width: d, height: d });
+        setStageDims({ width: cr.width, height: cr.height });
       }
     });
     ro.observe(el);
@@ -1255,6 +1259,24 @@ const AtlasPage: React.FC = () => {
   const secondaryOpacity = idle ? 0.35 : 1;
   const chromeTierTransition = 'opacity 700ms ease';
 
+  /* The globe's projected screen circle in stage coordinates, so the featured
+     dream can seat itself off the limb (law 2). The camera looks at the origin,
+     so the sphere centres on the stage; at the resting landscape distance it
+     fills ~0.455 of the stage height (measured against the built earth). Phones
+     run in portrait where the camera pulls back, so the featured dream falls
+     back to its bottom-anchored, scrim-backed slot instead of this circle. */
+  const globeCircle = React.useMemo(
+    () =>
+      !isPhone && stageDims.width > 0 && stageDims.height > 0
+        ? {
+            cx: stageDims.width / 2,
+            cy: stageDims.height / 2,
+            r: stageDims.height * 0.455,
+          }
+        : null,
+    [isPhone, stageDims.width, stageDims.height],
+  );
+
   // Keep the last-shown control gloss term so its line can fade out (rather
   // than blank instantly) when useGloss clears the active term after ~6s.
   const lastControlGlossRef = useRef<GlossTerm | null>(null);
@@ -1358,6 +1380,7 @@ const AtlasPage: React.FC = () => {
             <FeaturedDream
               dream={featuredDream}
               screenPos={featuredScreenPos}
+              globe={globeCircle}
               isPhone={isPhone}
               reduced={reduced}
               opacity={orientationOpacity}

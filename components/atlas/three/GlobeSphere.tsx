@@ -101,7 +101,12 @@ const FRAG = /* glsl */ `
 
     // Standing light pools + the coast catch-light term. Chord distance (no
     // acos) keeps the 64-pool loop cheap; a gaussian on it reads as radiance.
-    float catch = 0.0;
+    // Both terms accumulate as SCALARS across every pool, so a cluster's
+    // gaussians add up — then a soft-knee compression (below) folds the sum
+    // back toward a bounded warm gold, so clustered lights read as a greater
+    // warmth, never as overexposure (the "less is more" ruling).
+    float poolAccum = 0.0;
+    float catchAccum = 0.0;
     float breath = 0.94 + 0.06 * uBreath;
     for (int i = 0; i < ${MAX_POOLS}; i++) {
       if (i >= uPoolCount) break;
@@ -109,37 +114,48 @@ const FRAG = /* glsl */ `
       float c = dot(n, uPoolCenters[i]);
       float d2 = max(0.0, 2.0 * (1.0 - c)); // squared chord ~ angular^2
       if (w < 0.0) {
-        // Ember: a very small, dim pool, no catch-light.
+        // Ember: a very small, dim pool, no catch-light. Added straight in;
+        // embers are faint and never cluster into a bloom.
         float s2 = 0.0016;
         float e = exp(-d2 / (2.0 * s2)) * 0.5;
         col += uEmberPool * e;
       } else {
-        // A lit dream: pool radius AND warmth grow with the pieces sharing the
-        // point, so where dreams cluster the land reads visibly warmer (Lisbon,
-        // three lights on one point, casts a plainly larger, brighter pool).
+        // A lit dream: pool radius grows with the pieces sharing the point, so
+        // where dreams cluster the pool is plainly larger (Lisbon, three lights
+        // on one point). The amplitude also grows with the cluster, but only
+        // into the accumulator: the compression downstream keeps the sum warm,
+        // not white.
         float lw = log2(w + 1.0);
-        float sigma = 0.085 * (1.0 + 0.34 * lw);
+        float sigma = 0.079 * (1.0 + 0.30 * lw);
         float s2 = sigma * sigma;
         float e = exp(-d2 / (2.0 * s2));
-        col += uPoolCore * e * (0.5 + 0.14 * lw) * breath;
+        poolAccum += e * (0.5 + 0.14 * lw) * breath;
         // The catch-light gathers tighter than the pool, so the engraving
         // brightens right around the dream, strongest where dreams cluster.
         float cs2 = s2 * 0.4;
-        catch += exp(-d2 / (2.0 * cs2)) * min(w, 4.0);
+        catchAccum += exp(-d2 / (2.0 * cs2)) * min(w, 4.0);
       }
     }
-    catch = clamp(catch, 0.0, 1.0);
+
+    // Soft-knee compression, x/(1+x): maps the unbounded accumulators into
+    // [0,1). A lone light lands near ~0.3, a dense cluster near ~0.7 — clearly
+    // warmer, but the ceiling is uPoolCore (a warm gold, #eec387), never white.
+    // The land engraving underneath is never swallowed because the pool tops
+    // out well short of saturation and the coast is drawn OVER it below.
+    float poolC = poolAccum / (1.0 + poolAccum);
+    float catchC = catchAccum / (1.0 + catchAccum);
+    col += uPoolCore * poolC * 0.85;
 
     // Coast hairline, tinted gold, brightening toward warm white inside a pool
     // (the mockup's masked catch-light pass). Kept a quiet hairline away from
-    // the dreams and lifting sharply within a pool, so a dream visibly lights
-    // up the drawing of the earth around it.
-    vec3 coastCol = mix(uCoast, uCatch, catch);
-    col += coastCol * coastLine * (0.32 + catch * 1.15);
+    // the dreams and lifting within a pool — scaled by the compressed catch so
+    // a dream lights up the drawing of the earth around it without shouting.
+    vec3 coastCol = mix(uCoast, uCatch, catchC);
+    col += coastCol * coastLine * (0.32 + catchC * 0.72);
 
     // Waterline: the luminous halo + carved echo, gold, kept a whisper and
     // gathering a little more where the coast catches the light.
-    col += uCoast * waterline * 0.11 * (1.0 + catch * 0.9);
+    col += uCoast * waterline * 0.11 * (1.0 + catchC * 0.7);
 
     gl_FragColor = vec4(col, 1.0);
     #include <tonemapping_fragment>
