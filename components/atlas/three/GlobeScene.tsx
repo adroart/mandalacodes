@@ -8,6 +8,7 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import type { KinshipIndex } from '../../../utils/kinship';
 import type { GlobeNode } from '../Globe';
+import { ATLAS_NIGHT } from '../stageColors';
 import Atmosphere from './Atmosphere';
 import GlobeSphere from './GlobeSphere';
 import HexagramRing from './HexagramRing';
@@ -109,7 +110,11 @@ export default function GlobeScene({
 
   return (
     <>
-      <color attach="background" args={[15 / 255, 13 / 255, 11 / 255]} />
+      {/* String form, not numeric components: THREE treats numeric args as
+          linear and re-encodes them to sRGB on output, which rendered the
+          intended near-black night as a washed grey. The hex string goes
+          through the correct sRGB-to-linear conversion. */}
+      <color attach="background" args={[ATLAS_NIGHT]} />
       <Starfield />
       <group ref={tiltRef}>
         <group ref={spinRef}>
