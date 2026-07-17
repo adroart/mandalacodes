@@ -86,6 +86,15 @@ export interface Globe3DProps {
   mandalaCaption?: string;
   /** Reports the selected marker's screen position each frame (leader line). */
   onMarkerScreenPos?: (pos: { x: number; y: number }) => void;
+  /** The featured-dream light to track (a rendered node id), for its tether. */
+  featuredId?: string | null;
+  /** Reports the featured light's screen position each frame, or null when it
+      is behind the globe (so the featured-dream tether hides). */
+  onFeaturedScreenPos?: (pos: { x: number; y: number } | null) => void;
+  /** Play the founding-light ignition on first load (a cold visit through the
+      overture). False on returning visits and skipped overtures: the lights
+      fade in quietly onto the resting sky. Captured once at mount. */
+  playIntro?: boolean;
   /** A click that lands on no marker while something is selected. */
   onBackgroundClick?: () => void;
   /** Slide the world aside when a piece is held, clearing room for the HUD.
@@ -113,6 +122,9 @@ export default function Globe3D({
   mandala = false,
   mandalaCaption,
   onMarkerScreenPos,
+  featuredId,
+  onFeaturedScreenPos,
+  playIntro = true,
   onBackgroundClick,
   clearForHud = true,
   focusSeries,
@@ -284,6 +296,47 @@ export default function Globe3D({
     raf = requestAnimationFrame(update);
     return () => cancelAnimationFrame(raf);
   }, [selectedId, nodes, onMarkerScreenPos, rig]);
+
+  /* Featured-dream tether: project the featured light through the live rig each
+     frame so the resting featured dream can pin a hairline to it. Reports null
+     while the light sits on the back hemisphere, so the tether hides there
+     (the featured dream skips the tether when its light is behind the globe). */
+  useEffect(() => {
+    if (!featuredId || !onFeaturedScreenPos) return;
+    let raf = 0;
+    const v = new THREE.Vector3();
+    let lastVisible = true;
+    const update = () => {
+      const inner = canvasBoxRef.current;
+      const wrapper = wrapperRef.current;
+      const camera = rig.camera;
+      const n = nodes.find((node) => node.id === featuredId);
+      if (inner && wrapper && camera && n) {
+        latLngToVec3(n.lat, n.lng, 1.012, v);
+        v.applyAxisAngle(Y_AXIS, -rig.phi);
+        v.applyAxisAngle(X_AXIS, rig.theta);
+        if (v.z > 0.08) {
+          const r = inner.getBoundingClientRect();
+          const w = wrapper.getBoundingClientRect();
+          v.project(camera);
+          onFeaturedScreenPos({
+            x: (v.x * 0.5 + 0.5) * r.width + (r.left - w.left),
+            y: (1 - (v.y * 0.5 + 0.5)) * r.height + (r.top - w.top),
+          });
+          lastVisible = true;
+        } else if (lastVisible) {
+          onFeaturedScreenPos(null);
+          lastVisible = false;
+        }
+      }
+      raf = requestAnimationFrame(update);
+    };
+    raf = requestAnimationFrame(update);
+    return () => {
+      cancelAnimationFrame(raf);
+      onFeaturedScreenPos(null);
+    };
+  }, [featuredId, nodes, onFeaturedScreenPos, rig]);
 
   /* City-cluster numerals: project every multi-piece city each frame and pin
      its number to the marker. Writes DOM transforms directly (no React state)
@@ -566,6 +619,7 @@ export default function Globe3D({
             placedByCard={placedByCard}
             focusSeries={focusSeries}
             yoursMode={yoursMode}
+            suppressIntro={!playIntro}
           />
         </Canvas>
       </RigContext.Provider>

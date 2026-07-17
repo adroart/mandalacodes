@@ -17,6 +17,9 @@ import PieceHUD from './atlas/PieceHUD';
 import CityListHUD, { type CityMember } from './atlas/CityListHUD';
 import PhoneHudSheet from './atlas/PhoneHudSheet';
 import { GLOSS_TEXT, useGloss, type GlossTerm } from './atlas/gloss';
+import AtlasOverture from './atlas/AtlasOverture';
+import FeaturedDream, { type FeaturedDreamData } from './atlas/FeaturedDream';
+import SelectionInscription from './atlas/SelectionInscription';
 import { pieceCode } from '../utils/pieceCode';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
@@ -56,6 +59,10 @@ const MAX_KIN_PER_PIECE = 6;
 /* Selection key for the visitor's own birth place (from their Hologenetic
    Profile) — a globe node that is not a piece. */
 const BIRTH_KEY = '__birth-place__';
+
+/* Stable empty node list handed to the globe while the overture holds the
+   lights in the dark (a fresh [] each render would re-run marker effects). */
+const EMPTY_NODES: GlobeNode[] = [];
 
 const EARTH_RADIUS_KM = 6371;
 
@@ -225,6 +232,43 @@ const AtlasPage: React.FC = () => {
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
   }, []);
+
+  // Reduced motion: the overture never animates, the featured dream swaps
+  // plainly. Tracked live so toggling the OS setting takes effect.
+  const [reduced, setReduced] = useState<boolean>(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const on = () => setReduced(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+
+  /* The overture (build-order item 3): a cold visitor with lights sees the
+     vision speak once, then the earth emerges and the founding lights ignite.
+     Returning visitors (localStorage flag) and empty skies skip straight to the
+     resting sky. `overtureRevealed` gates the marker layer so the lights hold
+     in the dark until the words dissolve; `playIntro` runs the staggered
+     ignition only on a natural cold-visit reveal (a skip lands at rest). */
+  const [overture, setOverture] = useState<'pending' | 'running' | 'done'>('pending');
+  const [overtureRevealed, setOvertureRevealed] = useState(false);
+  const [playIntro, setPlayIntro] = useState(false);
+
+  /* Desktop selection writes as an inscription first; `open the book` reveals
+     the full PieceHUD card. Reset to the inscription whenever the piece
+     changes. Phone keeps its Phase 2 half-sheet, unaffected. */
+  const [bookOpen, setBookOpen] = useState(false);
+
+  /* Featured dream (one voice at a time): the resting sky shows a single dream,
+     cross-fading through the deterministic dream route roughly every 20s. */
+  const [featuredIdx, setFeaturedIdx] = useState(0);
+  const [featuredScreenPos, setFeaturedScreenPos] = useState<{ x: number; y: number } | null>(
+    null,
+  );
 
   // Once-per-visitor glosses for the dreams and threads controls (law 5).
   const { active: controlGloss, fire: fireGloss } = useGloss();
@@ -495,6 +539,44 @@ const AtlasPage: React.FC = () => {
     [enriched],
   );
 
+  /* Decide the overture once the atlas is ready. It plays only for a cold
+     visitor (no localStorage flag) on the WebGL earth when lights exist; every
+     other arrival lands straight on the resting sky. Reduced motion shows the
+     two lines statically over the settled sky, then fades them. */
+  useEffect(() => {
+    if (state.kind !== 'ready' || overture !== 'pending') return;
+    if (typeof window === 'undefined') return;
+    const cold = use3D && !USE_GL_GLOBE && lightsLit > 0;
+    let seen = false;
+    try {
+      seen = window.localStorage.getItem('atlas-overture-v1') === '1';
+    } catch {
+      /* private mode: treat as seen so the overture never traps a visitor */
+      seen = true;
+    }
+    if (!cold || seen) {
+      setOverture('done');
+      setOvertureRevealed(true);
+      setPlayIntro(false);
+      return;
+    }
+    try {
+      window.localStorage.setItem('atlas-overture-v1', '1');
+    } catch {
+      /* ignore */
+    }
+    setOverture('running');
+    if (reduced) {
+      // Static block above the settled sky: the lights are already present.
+      setOvertureRevealed(true);
+      setPlayIntro(false);
+    } else {
+      // The lights hold in the dark until the words dissolve, then ignite.
+      setOvertureRevealed(false);
+      setPlayIntro(true);
+    }
+  }, [state.kind, overture, use3D, lightsLit, reduced]);
+
   /* Pieces visible on the globe respect both filters; status=seeking is shown
      in the seeking section, never on the globe (no coords to plot). */
   const globeNodes: GlobeNode[] = useMemo(() => {
@@ -754,6 +836,61 @@ const AtlasPage: React.FC = () => {
     if (selectedCity) return `city:${selectedCity}`;
     return null;
   }, [selectedKey, selectedCity, clusterByMember]);
+
+  /* ─── Featured dream (one voice at a time) ───────────────────────────────
+     A per-key lookup of the composed dream for the resting featured slot: the
+     complete public dream, and a Karla sub-line naming the piece by its code,
+     its city, and its founding-light ordinal. Built off the dream route so the
+     order matches the deterministic route the `dreams` reel travels. */
+  const featuredByKey = useMemo(() => {
+    const map = new Map<string, FeaturedDreamData>();
+    for (const p of seriesFiltered) {
+      const text = (p as EnrichedPiece & { intention?: string }).intention;
+      if (p.status !== 'placed' || !text || !text.trim()) continue;
+      const code = pieceCode({
+        pieceId: p.pieceId,
+        series: p.series,
+        category: p.category ?? categoryFor(p.pieceId),
+        cardNumber: cardNumberFor(p.pieceId),
+      });
+      const cityName = p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined;
+      const parts = [code];
+      if (cityName) parts.push(`placed in ${cityName}`);
+      if (typeof p.claimOrdinal === 'number') {
+        parts.push(`the ${ordinalLabel(p.claimOrdinal)} light`);
+      }
+      map.set(p.key, { key: p.key, text: text.trim(), standing: parts.join(' · ') });
+    }
+    return map;
+  }, [seriesFiltered]);
+
+  /* The featured dream pauses while a selection is open, the filters are open,
+     or the dream reel is running (interacting), and resumes at rest. It never
+     shows during the overture. */
+  const featuredPaused =
+    !!selectedKey ||
+    !!selectedCity ||
+    filtersOpen ||
+    streamActive ||
+    mandala ||
+    overture !== 'done';
+
+  const featuredKey =
+    dreamRoute.length > 0 ? dreamRoute[featuredIdx % dreamRoute.length] : null;
+  const featuredDream = featuredKey ? featuredByKey.get(featuredKey) ?? null : null;
+  const featuredClusterId = featuredKey ? clusterByMember.get(featuredKey) ?? featuredKey : null;
+
+  /* Cross-fade to the next dream roughly every 20s while at rest. */
+  useEffect(() => {
+    if (featuredPaused || dreamRoute.length <= 1) return;
+    const id = window.setInterval(() => setFeaturedIdx((i) => i + 1), 20_000);
+    return () => window.clearInterval(id);
+  }, [featuredPaused, dreamRoute.length]);
+
+  /* A new selection re-opens as the inscription, never the last card. */
+  useEffect(() => {
+    setBookOpen(false);
+  }, [selectedKey, selectedCity]);
 
   /* Whether the currently selected piece was reached through a multi-piece
      city (so its HUD offers a back-to-the-list control). */
@@ -1123,6 +1260,25 @@ const AtlasPage: React.FC = () => {
   const lastControlGlossRef = useRef<GlossTerm | null>(null);
   if (controlGloss) lastControlGlossRef.current = controlGloss;
 
+  /* Desktop selection reads as an inscription first (build-order item 3), then
+     the full card behind `open the book`. Phone keeps its half-sheet; the
+     birth-place and city selections keep their existing panels. */
+  const showInscription =
+    !isPhone &&
+    !bookOpen &&
+    !!selectedKey &&
+    selectedKey !== BIRTH_KEY &&
+    !!selectedPiece;
+  /* Write the inscription on the side away from the light: when the light sits
+     on the right hemisphere, write on the left. */
+  const inscriptionAwayLeft =
+    markerScreenPos != null && globeBoxRef.current != null
+      ? markerScreenPos.x > globeBoxRef.current.clientWidth / 2
+      : false;
+  /* The featured dream shows only at rest on the WebGL earth. */
+  const showFeatured =
+    use3D && !USE_GL_GLOBE && !featuredPaused && featuredDream != null;
+
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
       {/* ── Immersive globe stage ─────────────────────────────────────────── */}
@@ -1169,7 +1325,9 @@ const AtlasPage: React.FC = () => {
                 />
               ) : (
                 <Globe3D
-                  nodes={cityClusters}
+                  // The overture holds the lights in the dark until the words
+                  // dissolve: the earth renders, the markers arrive at reveal.
+                  nodes={overtureRevealed ? cityClusters : EMPTY_NODES}
                   selectedId={activeClusterId}
                   kinSelectedId={selectedKey}
                   onSelect={handleClusterSelect}
@@ -1179,7 +1337,13 @@ const AtlasPage: React.FC = () => {
                   mandala={mandala}
                   mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed · touch a code to visit it`}
                   onMarkerScreenPos={setMarkerScreenPos}
+                  featuredId={showFeatured ? featuredClusterId : null}
+                  onFeaturedScreenPos={setFeaturedScreenPos}
+                  playIntro={playIntro}
                   onBackgroundClick={closeSelection}
+                  // Inscription keeps the world centred (no side card yet); the
+                  // full card slides it aside as Phase 2 built.
+                  clearForHud={!showInscription}
                   focusSeries={focusSeries}
                   yoursMode={yoursMode}
                   onRingTap={handleRingTap}
@@ -1188,6 +1352,33 @@ const AtlasPage: React.FC = () => {
               )}
             </Suspense>
           </div>
+
+          {/* ── The featured dream: one voice at a time, at rest ──────────────── */}
+          {showFeatured && (
+            <FeaturedDream
+              dream={featuredDream}
+              screenPos={featuredScreenPos}
+              isPhone={isPhone}
+              reduced={reduced}
+              opacity={orientationOpacity}
+              onSelect={(key) => selectPiece(key)}
+            />
+          )}
+
+          {/* ── The overture: the vision speaks once, then the earth emerges ──── */}
+          {overture === 'running' && (
+            <AtlasOverture
+              reduced={reduced}
+              onReveal={() => setOvertureRevealed(true)}
+              onDone={() => setOverture('done')}
+              onSkip={() => {
+                // Skip lands on the resting sky: reveal the lights without the
+                // staggered ignition (they fade in quietly).
+                setPlayIntro(false);
+                setOvertureRevealed(true);
+              }}
+            />
+          )}
 
           {/* ── Corner chrome: two tiers, each with an opacity floor (law 3) ─── */}
           <div className="pointer-events-none absolute inset-0">
@@ -1486,7 +1677,8 @@ const AtlasPage: React.FC = () => {
             </div>
           )}
 
-          {/* ── Leader-line: a hairline from the marker to the HUD card ──────── */}
+          {/* ── Leader-line: a hairline from the marker to the card, or to the
+                 inscription on the side away from the light ─────────────────── */}
           {(selectedKey || selectedCity) && markerScreenPos && globeBoxRef.current && (
             <svg
               className="pointer-events-none absolute inset-0 z-20 hidden sm:block"
@@ -1496,11 +1688,21 @@ const AtlasPage: React.FC = () => {
               <line
                 x1={markerScreenPos.x}
                 y1={markerScreenPos.y}
-                x2={globeBoxRef.current.clientWidth - 412}
-                y2={Math.min(
-                  Math.max(markerScreenPos.y, 120),
-                  globeBoxRef.current.clientHeight - 160,
-                )}
+                x2={
+                  showInscription
+                    ? inscriptionAwayLeft
+                      ? 388
+                      : globeBoxRef.current.clientWidth - 388
+                    : globeBoxRef.current.clientWidth - 412
+                }
+                y2={
+                  showInscription
+                    ? globeBoxRef.current.clientHeight / 2
+                    : Math.min(
+                        Math.max(markerScreenPos.y, 120),
+                        globeBoxRef.current.clientHeight - 160,
+                      )
+                }
                 stroke={selectedKey === BIRTH_KEY ? 'rgba(156,170,135,0.5)' : 'rgba(196,170,124,0.45)'}
                 strokeWidth={1}
               />
@@ -1513,12 +1715,33 @@ const AtlasPage: React.FC = () => {
             </svg>
           )}
 
+          {/* ── Selection as inscription (desktop): the dream writes itself
+                 large across the dark on the side away from the light, with one
+                 action, open the book, that reveals the full card below. ────── */}
+          {showInscription && selectedPiece && (
+            <SelectionInscription
+              dream={selectedIntention}
+              standing={[
+                selectedCode,
+                selectedCityName ? `placed in ${selectedCityName}` : null,
+                typeof selectedPiece.claimOrdinal === 'number'
+                  ? `the ${ordinalLabel(selectedPiece.claimOrdinal)} light`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+              awayLeft={inscriptionAwayLeft}
+              onOpenBook={() => setBookOpen(true)}
+            />
+          )}
+
           {/* ── The held piece answers with the instrument card, its dream
                  leading inside the vessel; never text floating on the world.
                  A multi-piece city instead answers with its list. On phones the
                  card rides a bottom half-sheet so the globe stays visible above
                  (law 4); on wider screens it seats beside the world. ────────── */}
           {(selectedKey || selectedCity) &&
+            !showInscription &&
             (() => {
               const hudContent =
                 selectedKey === BIRTH_KEY && birthPlace ? (

@@ -226,12 +226,22 @@ export interface MarkersProps {
   focusSeries?: string | null;
   /** Your-codes lens: recede lights that do not carry the visitor's codes. */
   yoursMode?: boolean;
+  /** Skip the staggered founding-light ignition on this first load (returning
+      visitor, reduced motion, or a skipped overture): fade every light in
+      quietly instead of igniting them one by one. */
+  suppressIntro?: boolean;
 }
 
 /* Recede, never remove: how far a light dims when a lens excludes it. */
 const RECEDE_ALPHA = 0.2;
 
-export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: MarkersProps) {
+export default function Markers({
+  nodes,
+  selectedId,
+  focusSeries,
+  yoursMode,
+  suppressIntro,
+}: MarkersProps) {
   const rig = useRig();
   const listRef = useRef<DisplayEntry[]>([]);
   const selectedRef = useRef<string | null>(null);
@@ -312,15 +322,16 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
 
     const isOpening = rig.introAt === 0 && nodes.length > 0;
     if (isOpening) rig.ignition.clear();
-    if (isOpening && rig.reducedMotion) {
-      // Reduced motion: the opening is a quiet crossfade, not a staggered
-      // ignition. Every entrant fades up together (bornAt 0 means no flash and
-      // no shockwave), and the kinship arcs weave in just after.
+    if (isOpening && (rig.reducedMotion || suppressIntro)) {
+      // Reduced motion, a returning visitor, or a skipped overture: the opening
+      // is a quiet crossfade, not a staggered ignition. Every entrant fades up
+      // together (bornAt 0 means no flash and no shockwave), and the kinship
+      // arcs weave in just after. Landing on the resting sky, no fanfare.
       rig.introAt = performance.now();
       for (const n of nodes) {
         if (!seen.has(n.id)) next.push({ node: n, alpha: 0, target: 1, bornAt: 0 });
       }
-      rig.introArcDelay = 1.0;
+      rig.introArcDelay = rig.reducedMotion ? 1.0 : 0.6;
     } else if (isOpening) {
       rig.introAt = performance.now();
       // Ignition order: claimed lights by ordinal, then placed-without-ordinal,
@@ -365,7 +376,7 @@ export default function Markers({ nodes, selectedId, focusSeries, yoursMode }: M
       );
     }
     listRef.current = next.slice(0, CAPACITY);
-  }, [nodes, rig]);
+  }, [nodes, rig, suppressIntro]);
 
   useEffect(() => {
     selectedRef.current = selectedId ?? null;
