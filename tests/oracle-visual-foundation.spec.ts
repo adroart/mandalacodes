@@ -257,9 +257,28 @@ test('keeps the desktop title on one line and prose panels narrow', async ({ pag
   });
   expect(titleLines).toBeLessThan(1.2);
 
-  const panel = page.locator('[data-gk]').first();
-  const panelWidth = await panel.evaluate((element) => element.getBoundingClientRect().width);
-  expect(panelWidth).toBeLessThanOrEqual(680);
+  const chapterWidth = await page.locator('section[data-chapter="ul"] > div').first()
+    .evaluate((element) => element.getBoundingClientRect().width);
+  expect(chapterWidth).toBeLessThanOrEqual(680);
+
+  const proseSelectors = [
+    { chapter: 'ul', selector: 'section[data-chapter="ul"] [data-oracle-reading-prose] > p' },
+    { chapter: 'iching', selector: 'section[data-chapter="iching"] div[style*="flex-direction: column"] > p' },
+    { chapter: 'genekeys', selector: 'section[data-chapter="genekeys"] [data-gk] div[style*="flex-direction: column"] > p' },
+    { chapter: 'humandesign', selector: 'section[data-chapter="humandesign"] div[style*="flex-direction: column"] > p' },
+    { chapter: 'body', selector: 'section[data-chapter="body"] div[style*="flex-direction: column"] > p' },
+    { chapter: 'relations', selector: 'section[data-chapter="relations"] > div > div[style*="border-top"] > p[style*="font-style: italic"]' },
+  ];
+
+  for (const { chapter, selector } of proseSelectors) {
+    const paragraphs = page.locator(selector);
+    expect(await paragraphs.count(), `${chapter} should contain long-form prose`).toBeGreaterThan(0);
+    const geometry = await paragraphs.first().evaluate((element) => ({
+      width: element.getBoundingClientRect().width,
+      parentWidth: element.parentElement!.getBoundingClientRect().width,
+    }));
+    expect(geometry.width, `${chapter} prose should fill its direct parent`).toBeGreaterThanOrEqual(geometry.parentWidth * 0.9);
+  }
 });
 
 test('reveals content immediately for reduced motion', async ({ page }) => {

@@ -77,6 +77,8 @@ html.oracle-card-page, html.oracle-card-page body { background:#14100b !importan
 .eb-reading section[data-chapter="relations"] div[style*="flex-direction: column"] > p {
   font-family:var(--font-reading) !important; font-size:clamp(16px,1.5vw,18px) !important;
   line-height:1.8 !important; text-align:left !important; text-wrap:pretty;
+  width:100%; max-width:none; margin-inline:auto;
+  word-break:normal; overflow-wrap:normal; hyphens:none;
 }
 .eb-reading section[data-chapter] :is(p,span,button,summary)[style*="text-transform: uppercase"] { font-family:var(--font-ui) !important; }
 .eb-reading section[data-chapter] :is(h1,h2,h3), .eb-reading .ul-title-mobile, .eb-reading .ul-title-desktop { font-family:var(--font-display) !important; }
