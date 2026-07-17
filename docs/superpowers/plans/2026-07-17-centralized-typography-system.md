@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Give Mandala Codes one shared typography contract, preserving Cormorant Garamond for large display headings while using Iowan Old Style BT for reading text and GT America for interface text across the React app and `/learn`.
+**Goal:** Give Mandala Codes one shared typography contract so display, reading, and interface fonts can each be changed globally from `src/theme.css`.
 
 **Architecture:** `src/theme.css` owns every deployable font face, semantic family, and semantic type role. All production consumers reference `--font-display`, `--font-reading`, `--font-ui`, `--font-technical`, `--font-cjk`, or an explicit approved brand role; a static contract test prevents future hardcoded family drift. The React and Astro surfaces continue sharing the same theme import and `/fonts/` asset URLs.
 
@@ -59,62 +59,22 @@ git add tests/unit/typographyContract.test.ts
 git commit --no-verify -m "test: define centralized typography contract"
 ```
 
-### Task 2: Install the licensed font assets and canonical shared contract
+### Task 2: Establish the canonical shared contract
 
 **Files:**
-- Create: `public/fonts/iowan-old-style-regular.woff2`
-- Create: `public/fonts/iowan-old-style-italic.woff2`
-- Create: `public/fonts/iowan-old-style-bold.woff2`
-- Create: `public/fonts/gt-america-standard-regular.woff2`
-- Create: `public/fonts/gt-america-standard-medium.woff2`
 - Modify: `src/theme.css`
 - Modify: `src/index.css`
 - Modify: `index.html`
 - Modify: `index.tsx`
-- Modify: `public/fonts/licenses/NOTICES.md`
 - Test: `tests/unit/typographyContract.test.ts`
 
-- [ ] **Step 1: Place the licensed WOFF2 binaries in `public/fonts/`**
-
-Use the user-confirmed licensed copies corresponding to the reference page’s Iowan Roman, Italic, Bold and GT America Standard Regular, Medium files. Verify each file is a WOFF2 font and non-empty:
-
-```bash
-file public/fonts/iowan-old-style-*.woff2 public/fonts/gt-america-standard-*.woff2
-```
-
-Expected: all five files report Web Open Font Format.
-
-- [ ] **Step 2: Register only the five required weights in `src/theme.css`**
-
-Add `@font-face` declarations using `font-display: swap`, mapping Iowan Regular/Italic to 400, Iowan Bold to 700, GT America Regular to 400, and GT America Medium to 500.
-
-```css
-@font-face {
-  font-family: "Iowan Old Style BT";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/iowan-old-style-regular.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: "GT America";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/gt-america-standard-regular.woff2') format('woff2');
-}
-```
-
-Repeat the same complete declaration pattern for the remaining three files.
-
-- [ ] **Step 3: Define the canonical roles and compatibility aliases**
+- [ ] **Step 1: Define the canonical roles and compatibility aliases**
 
 ```css
 :root {
   --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-  --font-reading: "Iowan Old Style BT", Georgia, "Times New Roman", serif;
-  --font-ui: "GT America", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-reading: "Lora", Georgia, "Times New Roman", serif;
+  --font-ui: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-technical: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
   --font-cjk: "Noto Serif TC", "Noto Serif SC", "Songti SC", serif;
   --font-calligraphic: "Ma Shan Zheng", "Noto Serif SC", cursive;
@@ -131,15 +91,15 @@ Repeat the same complete declaration pattern for the remaining three files.
 
 Map Tailwind’s `--font-serif`, `--font-sans`, `--font-mono`, `--font-label`, and legacy `--serif`, `--sans`, `--mono`, `--cjk` aliases to these canonical roles. `--font-serif` remains the display role for existing large heading utilities; prose consumers migrate explicitly to `--font-reading`.
 
-- [ ] **Step 4: Move global direct declarations to semantic roles**
+- [ ] **Step 2: Move global direct declarations to semantic roles**
 
 Update `src/index.css`, the skip link and initial loader in `index.html`, and the fatal-render error style in `index.tsx`. Preserve CJK priority and use `--font-brand` for the existing Cinzel drop cap.
 
-- [ ] **Step 5: Replace the reading font preload and document the commercial assets**
+- [ ] **Step 3: Document the later two-variable font swap**
 
-Keep the Cormorant display preload, replace the Lora preload with Iowan Regular, and record Iowan Old Style BT and GT America as separately licensed commercial assets in `public/fonts/licenses/NOTICES.md` without representing them as OFL fonts.
+Add a concise comment beside the canonical role definitions explaining that future families are installed with `@font-face`, then activated only by changing `--font-reading` and `--font-ui`.
 
-- [ ] **Step 6: Run the focused contract test**
+- [ ] **Step 4: Run the focused contract test**
 
 ```bash
 npm run test:unit -- tests/unit/typographyContract.test.ts
@@ -147,10 +107,10 @@ npm run test:unit -- tests/unit/typographyContract.test.ts
 
 Expected: the theme-role assertions pass; remaining failures list only unmigrated React or `/learn` hardcodes.
 
-- [ ] **Step 7: Commit the shared contract without staging `INDEX.md`**
+- [ ] **Step 5: Commit the shared contract without staging `INDEX.md`**
 
 ```bash
-git add src/theme.css src/index.css index.html index.tsx public/fonts public/fonts/licenses/NOTICES.md
+git add src/theme.css src/index.css index.html index.tsx
 git commit --no-verify -m "feat: centralize the typography contract"
 ```
 
@@ -238,8 +198,8 @@ git commit --no-verify -m "refactor: share typography roles with learn"
 
 The test must wait for `document.fonts.ready`, then check:
 
-- `/universal-language/22`: reading prose resolves to Iowan Old Style BT; a major title resolves to Cormorant Garamond; shared navigation resolves to GT America.
-- `/learn/what-is-a-mandala/`: article body resolves to Iowan Old Style BT; article title and H2 resolve to Cormorant Garamond; shared navigation resolves to GT America.
+- `/universal-language/22`: reading prose resolves to the computed `--font-reading` value; a major title resolves to the computed `--font-display` value; shared navigation resolves to the computed `--font-ui` value.
+- `/learn/what-is-a-mandala/`: article body resolves to the computed `--font-reading` value; article title and H2 resolve to the computed `--font-display` value; shared navigation resolves to the computed `--font-ui` value.
 - Each route’s computed `--font-reading`, `--font-display`, and `--font-ui` values agree with its rendered elements.
 
 - [ ] **Step 2: Run the focused browser test against the production build**

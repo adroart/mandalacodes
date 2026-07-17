@@ -2,17 +2,17 @@
 
 ## Purpose
 
-Mandala Codes will adopt the quieter editorial typography used by Thinking Machines Lab beneath its major display headings. Large Mandala Codes headings retain Cormorant Garamond. Reading text adopts Iowan Old Style BT, and interface text adopts GT America.
+Mandala Codes will establish one shared typography source so future font changes are made centrally rather than repeated across components and pages. Large Mandala Codes headings retain Cormorant Garamond during the normalization.
 
-The change will also establish one shared typography source so future font changes are made centrally rather than repeated across components and pages.
+The first production release centralizes the existing licensed families: Lora for reading text and Karla for interface text. Iowan Old Style BT and GT America remain the intended later swap, but are not required to complete the architecture.
 
 ## Design Direction
 
 The hierarchy has three primary voices:
 
 1. **Display:** Cormorant Garamond preserves the existing Mandala Codes character in hero titles, page titles, article titles, and other major headings.
-2. **Reading:** Iowan Old Style BT carries prose, oracle readings, descriptions, quotations, supporting editorial text, and smaller editorial headings.
-3. **Interface:** GT America carries navigation, controls, buttons, filters, form labels, metadata, dates, captions, and compact data.
+2. **Reading:** Lora initially carries prose, oracle readings, descriptions, quotations, supporting editorial text, and smaller editorial headings.
+3. **Interface:** Karla initially carries navigation, controls, buttons, filters, form labels, metadata, dates, captions, and compact data.
 
 Specialized text keeps its purpose-specific typeface:
 
@@ -34,8 +34,8 @@ The shared family contract is:
 
 ```css
 --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
---font-reading: "Iowan Old Style BT", Georgia, "Times New Roman", serif;
---font-ui: "GT America", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+--font-reading: "Lora", Georgia, "Times New Roman", serif;
+--font-ui: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 --font-technical: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 --font-cjk: "Noto Serif SC", "Songti SC", "Noto Serif TC", serif;
 --font-calligraphic: "Ma Shan Zheng", "Noto Serif SC", cursive;
@@ -51,13 +51,13 @@ Large display headings keep their existing responsive sizes unless visual verifi
 |---|---|---:|---:|---:|---:|
 | Display hero | Cormorant Garamond | Existing responsive scale | 500 | Existing | Existing |
 | Display page title | Cormorant Garamond | Existing responsive scale | 500 | Existing | Existing |
-| Editorial section | Iowan Old Style BT | 1.45rem | 600 | 1.4 | Normal |
-| Editorial subheading | Iowan Old Style BT italic | 1.35rem | 400 | 1.4 | Normal |
-| Reading body | Iowan Old Style BT | 1.0625rem | 400 | 1.6 | Normal |
-| Supporting body | Iowan Old Style BT | 0.9375rem | 400 | 1.5 | Normal |
-| Interface body | GT America | 0.9375rem | 400 | 1.4 | -0.01em |
-| Metadata and captions | GT America | 0.8125rem | 400 | 1.4 | Normal |
-| Compact uppercase label | GT America | 0.75rem minimum | 500 | 1.2 | 0.08em to 0.12em |
+| Editorial section | Reading role | 1.45rem | 600 | 1.4 | Normal |
+| Editorial subheading | Reading role italic | 1.35rem | 400 | 1.4 | Normal |
+| Reading body | Reading role | 1.0625rem | 400 | 1.6 | Normal |
+| Supporting body | Reading role | 0.9375rem | 400 | 1.5 | Normal |
+| Interface body | Interface role | 0.9375rem | 400 | 1.4 | -0.01em |
+| Metadata and captions | Interface role | 0.8125rem | 400 | 1.4 | Normal |
+| Compact uppercase label | Interface role | 0.75rem minimum | 500 | 1.2 | 0.08em to 0.12em |
 
 Existing compact labels below 0.75rem are increased when layout permits. Exceptions must be visually verified and remain legible at 200% zoom.
 
@@ -70,7 +70,7 @@ Cormorant Garamond is retained when text functions as a major identity-bearing h
 - Article titles.
 - Major feature or collection titles that currently function at display scale.
 
-Smaller Cormorant Garamond text that functions as prose, description, supporting copy, or a minor heading moves to Iowan Old Style BT. The boundary is semantic, not only numeric, but 1.75rem is the normal lower threshold for display use.
+Smaller Cormorant Garamond text that functions as prose, description, supporting copy, or a minor heading moves to the reading role. The boundary is semantic, not only numeric, but 1.75rem is the normal lower threshold for display use.
 
 ## Surface Coverage
 
@@ -86,8 +86,6 @@ Prototype files, generated artifacts, and archived mockups are not migrated unle
 
 ## Font Assets and Loading
 
-Iowan Old Style BT and GT America require legitimately licensed webfont assets. Implementation must not copy font files from the Thinking Machines Lab website.
-
 The production setup will:
 
 - Self-host WOFF2 files under `public/fonts/`.
@@ -97,7 +95,7 @@ The production setup will:
 - Load only weights and styles used by the final role system.
 - Record applicable font license notices with the existing font notices.
 
-If licensed assets are unavailable, font substitution is a separate visual decision and is not silently introduced during implementation.
+No new commercial font binaries are required for the centralization release. When licensed Iowan Old Style BT and GT America WOFF2 files are later added, only their `@font-face` registrations and the `--font-reading` and `--font-ui` values change.
 
 ## Migration Principle
 
@@ -135,8 +133,8 @@ Visual verification covers representative routes in desktop and mobile layouts, 
 Verification checks:
 
 - Major display headings still render in Cormorant Garamond.
-- Reading and supporting editorial text render in Iowan Old Style BT.
-- Navigation and interface text render in GT America.
+- Reading and supporting editorial text resolve through `--font-reading`.
+- Navigation and interface text resolve through `--font-ui`.
 - Chinese and technical content retain their specialized fonts.
 - Font requests succeed without console or network errors.
 - Navigation, buttons, fields, cards, and diagrams do not clip or overflow.
@@ -154,4 +152,4 @@ Verification checks:
 
 ## Success Criteria
 
-The change succeeds when the website feels like Mandala Codes at headline scale and like the Inkling article beneath it, while all production typography is controlled through one shared theme contract. A future global font change should require editing semantic values in `src/theme.css`, not revisiting individual pages.
+The change succeeds when all production typography is controlled through one shared theme contract. A future global font change should require editing semantic values in `src/theme.css`, not revisiting individual pages.
