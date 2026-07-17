@@ -1,5 +1,10 @@
 # Atlas Style Notes
 
+> SUPERSEDED 2026-07-17 by `todo/plans/atlas-interface-redesign.md`
+> (section "One visual language"). This file references Lato, which the
+> build no longer ships, and predates the atlas token ruling. Kept for
+> history only; do not build from it.
+
 Visual and language conventions for the `/atlas` page and any surface
 that reads from the ledger. Parallel agents building the UI, the
 admin tooling, and the steward claim flow must all follow this.
