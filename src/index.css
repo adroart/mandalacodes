@@ -147,7 +147,7 @@ blockquote {
 /* #10 Drop cap on first paragraph of articles */
 .article-prose > p:first-of-type::first-letter {
   float: left;
-  font-family: "Cinzel", serif;
+  font-family: var(--font-brand);
   font-size: 3.5em;
   line-height: 0.8;
   padding-right: 0.1em;
@@ -369,12 +369,7 @@ html.dark.oracle-card-page body {
  * sharp Mingti rendering across platforms. Falls back to system Song fonts
  * if the network fails. */
 .font-chinese-serif {
-  font-family: "Noto Serif TC", "Source Han Serif TC", "Source Han Serif SC",
-               "Noto Serif SC",
-               "PMingLiU", "MingLiU", "DFKai-SB",
-               "Songti TC", "Songti SC", "STSong",
-               "AR PL UMing TW", "AR PL UMing CN",
-               "宋體", "新細明體", serif;
+  font-family: var(--font-cjk);
   font-weight: 600;
   font-feature-settings: "palt";
   text-rendering: optimizeLegibility;
@@ -613,7 +608,7 @@ html.oracle-card-page body {
 /* Drop caps */
 .drop-cap::first-letter {
   float: left;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-display);
   font-size: 3.6em;
   line-height: 0.78;
   padding-right: 0.07em;
@@ -647,7 +642,7 @@ html.oracle-card-page body {
     position: absolute;
     right: -200px;
     width: 168px;
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-display);
     font-size: 1rem;
     font-style: italic;
     color: var(--color-wood-600);

@@ -8,14 +8,11 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Font families — Earth's Breath: Cormorant Garamond (serif) + Karla (sans).
-     The reading template sets all body/description copy in Karla, not Lora, so
-     the page reads as one warm editorial voice; Lora is retired here. */
-  --font-serif: "Cormorant Garamond", serif;
-  --font-sans: "Karla", -apple-system, system-ui, sans-serif;
-  --font-mono: "Karla", sans-serif;          /* kept for backward compat */
-  --font-label: "Karla", sans-serif;         /* semantic alias — use font-label in new code */
-  --font-display: "Cormorant Garamond", serif; /* structural titles: brand name, page headings */
+  /* Tailwind compatibility aliases. Canonical font roles live in :root below. */
+  --font-serif: var(--font-display);
+  --font-sans: var(--font-reading);
+  --font-mono: var(--font-technical);
+  --font-label: var(--font-ui);
 
   /* Colors: taupe */
   --color-taupe: #453d39;
@@ -476,13 +473,29 @@
   src: url('/fonts/ma-shan-zheng-400-normal-x.woff2') format('woff2');
 }
 
+/* Canonical typography contract. To swap future reading or UI families, add
+   their @font-face declarations above, then change only these two role values. */
 :root {
   --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --font-reading: "Lora", Georgia, "Times New Roman", serif;
-  --font-ui: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-ui: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-technical: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
-  --font-cjk: "Noto Serif SC", "Songti SC", "Noto Serif TC", serif;
+  --font-cjk: "Noto Serif TC", "Noto Serif SC", "Songti SC", serif;
   --font-calligraphic: "Ma Shan Zheng", "Noto Serif SC", cursive;
+  --font-brand: "Cinzel", Palatino, serif;
+
+  /* Compatibility aliases for generated and legacy consumers. */
+  --serif: var(--font-display);
+  --sans: var(--font-reading);
+  --mono: var(--font-technical);
+  --cjk: var(--font-cjk);
+
+  --type-reading-size: 1.0625rem;
+  --type-reading-leading: 1.6;
+  --type-supporting-size: 0.9375rem;
+  --type-ui-size: 0.9375rem;
+  --type-meta-size: 0.8125rem;
+  --type-label-size: 0.75rem;
 }
 
 @font-face {

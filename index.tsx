@@ -95,7 +95,7 @@ const mountApp = () => {
         // stringified error can never be interpreted as HTML (no raw-HTML sink).
         rootElement.replaceChildren();
         const errBox = document.createElement('div');
-        errBox.setAttribute('style', 'padding:40px; color:red; font-family:monospace;');
+        errBox.setAttribute('style', 'padding:40px; color:red; font-family:var(--font-technical, monospace);');
         errBox.textContent = `Fatal: Failed to mount application. ${e}`;
         rootElement.appendChild(errBox);
     }
