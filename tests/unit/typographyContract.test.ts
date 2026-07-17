@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
+import * as ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = resolve(import.meta.dirname, '../..');
@@ -145,28 +146,17 @@ function fontDeclarations(file: string): FontDeclaration[] {
       pattern: /font-family\s*:\s*([^;}\n]+)/g,
       value: (match: RegExpMatchArray) => match[1],
     },
-    {
-      property: 'fontFamily' as const,
-      pattern: /fontFamily\s*:\s*(?:(['"`])((?:\\.|(?!\1)[\s\S])*)\1|([^,}\n]+))/g,
-      value: (match: RegExpMatchArray) => match[1] ? `${match[1]}${match[2]}${match[1]}` : match[3],
-    },
-    {
+    ...(isCssLikeFile ? [{
       property: 'font' as const,
-      pattern: isCssLikeFile
-        ? /\bfont\s*:\s*([^;}\n]+)/g
-        : /\bfont\s*:\s*(?:(['"`])((?:\\.|(?!\1)[\s\S])*)\1|([^,}\n]+))/g,
-      value: (match: RegExpMatchArray) => isCssLikeFile
-        ? match[1]
-        : match[1] ? `${match[1]}${match[2]}${match[1]}` : match[3],
-    },
+      pattern: /\bfont\s*:\s*([^;}\n]+)/g,
+      value: (match: RegExpMatchArray) => match[1],
+    }] : []),
   ];
 
   for (const { property, pattern, value } of declarationPatterns) {
     for (const match of searchableSource.matchAll(pattern)) {
       const offset = match.index ?? 0;
       const declarationValue = value(match).trim();
-      // A TypeScript field type (`font: string`) is not a CSS shorthand.
-      if (property === 'font' && declarationValue === 'string') continue;
       declarations.push({
         file: relative(ROOT, file),
         line: searchableSource.slice(0, offset).split('\n').length,
@@ -176,6 +166,72 @@ function fontDeclarations(file: string): FontDeclaration[] {
     }
   }
 
+  return [...declarations, ...jsxStyleDeclarations(file, source), ...cssInJsFontShorthands(file, source)];
+}
+
+function scriptKind(file: string): ts.ScriptKind {
+  switch (extname(file)) {
+    case '.tsx': return ts.ScriptKind.TSX;
+    case '.jsx': return ts.ScriptKind.JSX;
+    case '.js': return ts.ScriptKind.JS;
+    default: return ts.ScriptKind.TS;
+  }
+}
+
+function jsxStyleDeclarations(file: string, source: string): FontDeclaration[] {
+  if (!['.js', '.jsx', '.ts', '.tsx'].includes(extname(file))) return [];
+
+  const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, scriptKind(file));
+  const declarations: FontDeclaration[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isJsxAttribute(node) && node.name.text === 'style'
+      && node.initializer && ts.isJsxExpression(node.initializer)
+      && node.initializer.expression && ts.isObjectLiteralExpression(node.initializer.expression)) {
+      for (const property of node.initializer.expression.properties) {
+        if (!ts.isPropertyAssignment(property)) continue;
+        const propertyName = property.name.getText(sourceFile);
+        if (propertyName !== 'font' && propertyName !== 'fontFamily') continue;
+        const position = property.getStart(sourceFile);
+        declarations.push({
+          file: relative(ROOT, file),
+          line: sourceFile.getLineAndCharacterOfPosition(position).line + 1,
+          property: propertyName,
+          value: property.initializer.getText(sourceFile),
+        });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
+  return declarations;
+}
+
+function cssInJsFontShorthands(file: string, source: string): FontDeclaration[] {
+  if (!['.js', '.jsx', '.ts', '.tsx'].includes(extname(file))) return [];
+
+  const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, scriptKind(file));
+  const declarations: FontDeclaration[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isTaggedTemplateExpression(node)) {
+      const tag = node.tag.getText(sourceFile);
+      if (/\b(?:css|keyframes)\b|\bstyled\b/.test(tag)) {
+        const template = node.template.getText(sourceFile);
+        for (const match of template.matchAll(/\bfont\s*:\s*([^;}\n]+)/g)) {
+          const offset = node.template.getStart(sourceFile) + (match.index ?? 0);
+          declarations.push({
+            file: relative(ROOT, file),
+            line: sourceFile.getLineAndCharacterOfPosition(offset).line + 1,
+            property: 'font',
+            value: match[1].trim(),
+          });
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
   return declarations;
 }
 
