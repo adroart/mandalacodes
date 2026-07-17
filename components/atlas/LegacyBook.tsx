@@ -152,6 +152,8 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
   const [heirError, setHeirError] = useState<string | null>(null);
 
   const [exportError, setExportError] = useState<string | null>(null);
+  const [cardError, setCardError] = useState<string | null>(null);
+  const [cardBusy, setCardBusy] = useState(false);
 
   // Letters — the piece writes back (M5). Generated on the server lazily on
   // read (anniversary / transfer) and on kin claims elsewhere; here we load,
@@ -509,6 +511,41 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       URL.revokeObjectURL(url);
     } catch {
       setExportError('Could not export the book right now.');
+    }
+  };
+
+  // Download the share card — the certificate that travels, theirs to post,
+  // print, or keep. The endpoint is public and composes from public data only,
+  // so the card a steward downloads carries exactly what a shared link would:
+  // no private dream ever, even for the owner.
+  const handleDownloadCard = async () => {
+    if (cardBusy) return;
+    setCardBusy(true);
+    setCardError(null);
+    try {
+      const path = `/api/atlas/card/${encodeURIComponent(steward.pieceId)}${
+        steward.editionNumber != null ? `/${steward.editionNumber}` : ''
+      }`;
+      const res = await fetch(path);
+      if (!res.ok) {
+        setCardError('Could not make the card right now.');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `piece-card-${steward.pieceId}${
+        steward.editionNumber != null ? `-ed${steward.editionNumber}` : ''
+      }.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setCardError('Could not make the card right now.');
+    } finally {
+      setCardBusy(false);
     }
   };
 
@@ -917,6 +954,21 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           {exportError && (
             <p className="font-serif italic text-base text-stone-600 mt-2">{exportError}</p>
           )}
+          {/* The card that travels: the certificate as an image, theirs to
+              post, print, or keep. Public data only, same as a shared link. */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={handleDownloadCard}
+              disabled={cardBusy}
+              className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+            >
+              {cardBusy ? 'making the card' : 'download the card'}
+            </button>
+            {cardError && (
+              <p className="font-serif text-sm text-stone-600 mt-1">{cardError}</p>
+            )}
+          </div>
           </div>
         </div>
       </div>

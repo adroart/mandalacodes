@@ -1,0 +1,138 @@
+/**
+ * Cloudflare Pages Function — /piece/:pieceId  and  /piece/:pieceId/:edition
+ *
+ * Server-rendered social metadata for piece pages, the same move the oracle's
+ * per-number cards make (functions/universal-language/[number].js): rewrite the
+ * Open Graph / Twitter tags in index.html at the edge so a piece link dropped
+ * in a chat or a story unfurls as the piece's CERTIFICATE, not a generic site
+ * preview. The og:image points at the card image endpoint (/api/atlas/card/*).
+ *
+ * Human traffic is unaffected: the function returns the full index.html shell
+ * (with the tags rewritten), React boots exactly as before and client-routes
+ * /piece/:id. Crawlers, which do not run JS, read the correct tags immediately.
+ *
+ * BINDING RULE (privacy): og:description carries the PUBLIC dream only when one
+ * rides the map (piece.intention, present in the public projection solely after
+ * the steward shares it); otherwise it falls back to the series line. A private
+ * dream is never read here, so it can never appear in a preview.
+ */
+
+import type { AtlasEnv } from '../api/atlas/_helpers';
+import { readPublicState, readLedger, regeneratePublicState } from '../api/atlas/_helpers';
+import { FULL_ARCHIVE } from '../../data/mockData';
+import { pieceCode } from '../../utils/pieceCode';
+import { ulCardNumber } from '../../utils/universalLanguage';
+
+interface PieceMetaEnv extends AtlasEnv {
+  ASSETS: { fetch: (req: Request | string) => Promise<Response> };
+}
+
+interface PagesFn {
+  request: Request;
+  env: PieceMetaEnv;
+  params: { path?: string | string[] };
+}
+
+/** Escape a value for use inside a double-quoted HTML attribute, and collapse
+ *  whitespace so a multi-line dream stays on one meta line. */
+function attr(value: string): string {
+  return value
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function clip(text: string, max = 200): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
+
+export async function onRequestGet(ctx: PagesFn): Promise<Response> {
+  const { env, request, params } = ctx;
+
+  const indexUrl = new URL(request.url);
+  indexUrl.pathname = '/index.html';
+  indexUrl.search = '';
+  const shell = await env.ASSETS.fetch(new Request(indexUrl.toString(), { method: 'GET' }));
+  let html = await shell.text();
+
+  const respond = () =>
+    new Response(html, { headers: { 'content-type': 'text/html;charset=UTF-8' } });
+
+  const segments = Array.isArray(params.path)
+    ? params.path
+    : params.path
+      ? [params.path]
+      : [];
+  const pieceId = (segments[0] || '').trim();
+  const editionRaw = segments[1];
+  const editionNumber =
+    editionRaw !== undefined && /^\d+$/.test(editionRaw) ? parseInt(editionRaw, 10) : undefined;
+
+  const art = pieceId ? FULL_ARCHIVE.find((a) => a.id === pieceId) : undefined;
+  // Unknown piece — hand back the shell unchanged (React renders not-found).
+  if (!art) return respond();
+
+  // Resolve the public projection for the dream + series (fail-soft: a read
+  // error just falls back to the series line, never the private record).
+  let dream: string | undefined;
+  try {
+    let state = await readPublicState(env);
+    if (!state) {
+      const events = await readLedger(env);
+      state = await regeneratePublicState(env, events);
+    }
+    const piece =
+      typeof editionNumber === 'number'
+        ? state.pieces.find((p) => p.pieceId === pieceId && (p.editionNumber ?? 0) === editionNumber)
+        : state.pieces.find((p) => p.pieceId === pieceId);
+    if (piece?.intention && piece.intention.trim()) dream = piece.intention.trim();
+  } catch {
+    /* series line stands */
+  }
+
+  const cardNumber = art.series === 'Universal Language' ? ulCardNumber(art.coverImage) : null;
+  const cleanTitle = art.title.replace(/\s*-\s*\d+$/, '');
+  const sigil = pieceCode({
+    pieceId,
+    series: art.series,
+    category: art.category,
+    cardNumber: cardNumber ?? undefined,
+  });
+
+  const title = `${cleanTitle} · ${sigil}`;
+  const seriesLine =
+    `${art.series}${cardNumber != null ? ` · Code ${cardNumber}` : ''}. ` +
+    `An original work by Adrian Rasmussen.`;
+  const description = clip(dream ?? seriesLine);
+
+  const origin = new URL(request.url).origin;
+  const cardPath = `/api/atlas/card/${encodeURIComponent(pieceId)}${
+    typeof editionNumber === 'number' ? `/${editionNumber}` : ''
+  }`;
+  const image = `${origin}${cardPath}`;
+
+  const t = attr(title);
+  const d = attr(description);
+  const im = attr(image);
+
+  html = html
+    .replace(/<title>[^<]*<\/title>/, `<title>${t}</title>`)
+    .replace(/(<meta\s+name="description"\s+content=")[^"]*"/, `$1${d}"`)
+    .replace(/(<meta\s+property="og:title"\s+content=")[^"]*"/, `$1${t}"`)
+    .replace(/(<meta\s+property="og:description"\s+content=")[^"]*"/, `$1${d}"`)
+    .replace(/(<meta\s+property="og:image"\s+content=")[^"]*"/, `$1${im}"`)
+    .replace(/(<meta\s+property="og:image:width"\s+content=")[^"]*"/, `$11200"`)
+    .replace(/(<meta\s+property="og:image:height"\s+content=")[^"]*"/, `$1630"`)
+    .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*"/, `$1${t}"`)
+    .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*"/, `$1${d}"`)
+    .replace(/(<meta\s+name="twitter:image"\s+content=")[^"]*"/, `$1${im}"`)
+    .replace(/(<meta\s+name="twitter:card"\s+content=")[^"]*"/, `$1summary_large_image"`);
+
+  return respond();
+}
