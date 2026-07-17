@@ -40,6 +40,11 @@ interface LegacyBookProps {
   fetchAuthed: (input: string, init?: RequestInit) => Promise<Response>;
   /** Called with the updated record after a heir add/revoke. */
   onStewardUpdate: (steward: StewardView) => void;
+  /** The keeper's own dream, lifted to the top of the book as its first page.
+   *  Fires (once inscriptions load) with the earliest readable intention the
+   *  keeper may read, or null when there is none. Framing only — StewardEdit
+   *  renders it above the tending chapters; the timeline still carries it. */
+  onFirstDream?: (dream: string | null) => void;
 }
 
 type TimelineItem =
@@ -106,6 +111,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
   piece,
   fetchAuthed,
   onStewardUpdate,
+  onFirstDream,
 }) => {
   const [inscriptions, setInscriptions] = useState<InscriptionView[] | null>(null);
   const [loadNote, setLoadNote] = useState<string | null>(null);
@@ -212,6 +218,18 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       setEverShared(true);
     }
   }, [inscriptions]);
+
+  /* Lift the keeper's own dream to the top of the book (its first page). The
+     earliest readable intention with a body the viewer may read — their own
+     claim words, ordinarily. Framing only: the timeline below is unchanged. */
+  useEffect(() => {
+    if (!onFirstDream) return;
+    if (!inscriptions) return;
+    const first = inscriptions
+      .filter((v) => v.kind === 'intention' && v.state === 'readable' && !!v.body)
+      .sort((a, b) => (a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0))[0];
+    onFirstDream(first?.body ?? null);
+  }, [inscriptions, onFirstDream]);
 
   // === Letters ===
 
@@ -595,100 +613,11 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
     <>
       {/* ─── Interactive (screen only) ─── */}
       <div className="print:hidden">
-        {/* Letters — the piece writes back */}
-        {letters !== null && letters.length > 0 && (
-          <div className="mb-10 pt-10 border-t border-wood-200">
-            <button
-              type="button"
-              onClick={handleOpenLetters}
-              aria-expanded={lettersOpen}
-              className="flex items-center gap-3 font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
-            >
-              <span>Letters from the piece</span>
-              {unread > 0 && (
-                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-bronze-600 text-paper-50 font-sans text-[11px] font-semibold tracking-normal">
-                  {unread}
-                </span>
-              )}
-              <span aria-hidden className="text-wood-400">
-                {lettersOpen ? '–' : '+'}
-              </span>
-            </button>
-            {lettersOpen && (
-              <ul className="mt-5 space-y-6">
-                {letters.map((letter) => (
-                  <li
-                    key={letter.id}
-                    className={`border-l-2 pl-5 py-1 ${
-                      letter.readAt ? 'border-wood-200' : 'border-bronze-400'
-                    }`}
-                  >
-                    <span className="font-label text-[10px] uppercase tracking-[0.2em] text-stone-500">
-                      {formatDate(letter.createdAt)} · {LETTER_KIND_LABELS[letter.kind]}
-                    </span>
-                    <p className="font-serif text-[1.0625rem] leading-[1.7] text-wood-900 italic mt-1 whitespace-pre-line">
-                      {letter.body}
-                    </p>
-                    {letter.kind === 'words-anniversary' && (
-                      <div className="mt-2">
-                        {wordsLetterAck[letter.id] ? (
-                          <p className="font-serif italic text-sm text-stone-500">
-                            The words stay. Thank you for reading.
-                          </p>
-                        ) : liveSharedView ? (
-                          <div className="flex flex-wrap gap-4">
-                            <button
-                              type="button"
-                              onClick={() => handleKeepWords(letter.id)}
-                              className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
-                            >
-                              keep carrying them
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleToggleShare(liveSharedView, false)}
-                              disabled={shareBusy === liveSharedView.id}
-                              className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
-                            >
-                              return them to the book
-                            </button>
-                          </div>
-                        ) : (
-                          <p className="font-serif italic text-sm text-stone-500">
-                            These words already rest back in the book.
-                          </p>
-                        )}
-                        {liveSharedView && shareError[liveSharedView.id] && (
-                          <p className="font-serif italic text-sm text-stone-500 mt-1">
-                            {shareError[liveSharedView.id]}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-
-        {/* Watch the ignition again — a permanent door to the ceremony replay,
-            rendered from this piece's own public founding-light data. */}
-        <div className="mb-10">
-          <Link
-            to={`/atlas/claim?ceremony=${steward.pieceId}${
-              steward.editionNumber != null ? `:${steward.editionNumber}` : ''
-            }`}
-            className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
-          >
-            replay the ignition
-          </Link>
-        </div>
-
-        {/* Legacy timeline */}
+        {/* ═══ Chapter: Write into the record ═══
+            The book's pages, then the tool to add one. */}
         <div id="piece-book" className="mb-10 pt-10 border-t border-wood-200 scroll-mt-6">
-          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
-            Legacy — the piece&apos;s book
+          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-5">
+            Write into the record
           </span>
           {inscriptions === null ? (
             <p className="font-serif italic text-base text-stone-600">
@@ -708,9 +637,6 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
 
         {/* Add an entry */}
         <form onSubmit={handleInscribe} className="mb-10">
-          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
-            Write into the record
-          </span>
           <div className="flex flex-wrap gap-2 mb-3" role="radiogroup" aria-label="Entry kind">
             {(Object.keys(KIND_LABELS) as InscriptionKind[]).map((k) => (
               <button
@@ -811,8 +737,103 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           )}
         </form>
 
-        {/* Pass it on — heirs */}
-        <div id="pass-it-on" className="mb-10 scroll-mt-6">
+        {/* ═══ Chapter: Letters ═══
+            The piece writes back; and the permanent door to the ignition
+            replay lives here (Phase 4). */}
+        <div className="mb-10 pt-10 border-t border-wood-200">
+          {letters !== null && letters.length > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={handleOpenLetters}
+                aria-expanded={lettersOpen}
+                className="flex items-center gap-3 font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              >
+                <span>Letters</span>
+                {unread > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-bronze-600 text-paper-50 font-sans text-[11px] font-semibold tracking-normal">
+                    {unread}
+                  </span>
+                )}
+                <span aria-hidden className="text-wood-400">
+                  {lettersOpen ? '–' : '+'}
+                </span>
+              </button>
+              {lettersOpen && (
+                <ul className="mt-5 space-y-6">
+                  {letters.map((letter) => (
+                    <li
+                      key={letter.id}
+                      className={`border-l-2 pl-5 py-1 ${
+                        letter.readAt ? 'border-wood-200' : 'border-bronze-400'
+                      }`}
+                    >
+                      <span className="font-label text-[10px] uppercase tracking-[0.2em] text-stone-500">
+                        {formatDate(letter.createdAt)} · {LETTER_KIND_LABELS[letter.kind]}
+                      </span>
+                      <p className="font-serif text-[1.0625rem] leading-[1.7] text-wood-900 italic mt-1 whitespace-pre-line">
+                        {letter.body}
+                      </p>
+                      {letter.kind === 'words-anniversary' && (
+                        <div className="mt-2">
+                          {wordsLetterAck[letter.id] ? (
+                            <p className="font-serif italic text-sm text-stone-500">
+                              The words stay. Thank you for reading.
+                            </p>
+                          ) : liveSharedView ? (
+                            <div className="flex flex-wrap gap-4">
+                              <button
+                                type="button"
+                                onClick={() => handleKeepWords(letter.id)}
+                                className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                              >
+                                keep carrying them
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleShare(liveSharedView, false)}
+                                disabled={shareBusy === liveSharedView.id}
+                                className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                              >
+                                return them to the book
+                              </button>
+                            </div>
+                          ) : (
+                            <p className="font-serif italic text-sm text-stone-500">
+                              These words already rest back in the book.
+                            </p>
+                          )}
+                          {liveSharedView && shareError[liveSharedView.id] && (
+                            <p className="font-serif italic text-sm text-stone-500 mt-1">
+                              {shareError[liveSharedView.id]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+          {/* Watch the ignition again — a permanent door to the ceremony
+              replay, rendered from this piece's own public founding-light
+              data. */}
+          <div className={letters !== null && letters.length > 0 ? 'mt-6' : ''}>
+            <Link
+              to={`/atlas/claim?ceremony=${steward.pieceId}${
+                steward.editionNumber != null ? `:${steward.editionNumber}` : ''
+              }`}
+              className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+            >
+              replay the ignition
+            </Link>
+          </div>
+        </div>
+
+        {/* ═══ Chapter: Pass it on ═══
+            Heirs, then the book as a possession you carry away. */}
+        <div id="pass-it-on" className="mb-10 pt-10 border-t border-wood-200 scroll-mt-6">
           <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
             Pass it on
           </span>
@@ -867,18 +888,17 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           {heirError && (
             <p className="font-serif italic text-base text-stone-600 mt-2">{heirError}</p>
           )}
-        </div>
 
-        {/* Export */}
-        <div className="mb-10">
-          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
-            Your book, in your hands
-          </span>
-          <p className="font-serif italic text-sm text-stone-600 mb-4">
-            The record travels with the piece — and you can always hold a copy
-            yourself, independent of any server.
-          </p>
-          <div className="flex flex-wrap gap-3">
+          {/* The book as possession — the continuity promise, stated as
+              ownership. Same mechanics as before: a self-verifying export. */}
+          <div className="mt-10 pt-8 border-t border-wood-100">
+            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
+              Carry it with you
+            </span>
+            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mb-4">
+              This book is yours to carry, independent of us.
+            </p>
+            <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={handleDownload}
@@ -897,6 +917,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           {exportError && (
             <p className="font-serif italic text-base text-stone-600 mt-2">{exportError}</p>
           )}
+          </div>
         </div>
       </div>
 

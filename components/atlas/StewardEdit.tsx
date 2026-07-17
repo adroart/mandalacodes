@@ -1,14 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAccount } from '../../lib/account/useAccount';
 import { signOut } from '../../lib/account/authClient';
 import type { PieceRecord, CityCentroid, StewardRecord } from '../../types';
 import { ATLAS_PLACES, getCityById, isCountryPlace } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
+import { img } from '../../utils/cloudinary';
+import { loadAtlasState, findPublicPiece } from '../../lib/atlas/state';
 import ConsentRings from './ConsentRings';
 import type { ConsentChoice } from './ConsentRings';
 import LegacyBook from './LegacyBook';
 import StewardRequests from './StewardRequests';
+import ArtworkPlate from './ArtworkPlate';
+import BookLightBand from './BookLightBand';
+import { ordinalLabel } from './PieceSidePanel';
 import AccountLayout from '../account/AccountLayout';
 import TypeaheadPicker from '../shared/TypeaheadPicker';
 import Toggle from '../shared/Toggle';
@@ -75,6 +80,16 @@ const StewardEdit: React.FC = () => {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // Signed in, but no piece bound to this account (a 404, or an empty claim).
+  // Not a redirect and not a dead-end: the three-door no-record screen.
+  const [noRecord, setNoRecord] = useState(false);
+  // The keeper's own dream, lifted from the book below to the top page. Set via
+  // LegacyBook's onFirstDream once inscriptions load (framing only).
+  const [firstDream, setFirstDream] = useState<string | null>(null);
+  // The founding-light ordinal for the current piece, from public state (the
+  // book's own PieceRecord does not carry the global rank). Absent for a piece
+  // not visible on the public map (e.g. kept private).
+  const [publicOrdinal, setPublicOrdinal] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [consentSubmitting, setConsentSubmitting] = useState(false);
@@ -109,7 +124,7 @@ const StewardEdit: React.FC = () => {
           return;
         }
         if (res.status === 404) {
-          navigate('/atlas/claim', { replace: true });
+          setNoRecord(true);
           return;
         }
         if (!res.ok) {
@@ -120,7 +135,7 @@ const StewardEdit: React.FC = () => {
         if (cancelled) return;
         const claimed = data.claimed ?? [];
         if (claimed.length === 0) {
-          navigate('/atlas/claim', { replace: true });
+          setNoRecord(true);
           return;
         }
         setEntries(claimed);
@@ -142,6 +157,28 @@ const StewardEdit: React.FC = () => {
   const current = entries[selectedIdx] ?? null;
   const stewardRecord = current?.steward ?? null;
   const piece = current?.piece ?? null;
+
+  // The founding-light ordinal comes from public state (the PieceRecord holds
+  // only the per-piece claim date, not the global rank). One cached fetch; the
+  // dream first-page and the globe band both read this. Reset on piece switch.
+  useEffect(() => {
+    setPublicOrdinal(null);
+    setFirstDream(null);
+    if (!stewardRecord) return;
+    let active = true;
+    loadAtlasState().then((state) => {
+      if (!active) return;
+      const pub = findPublicPiece(
+        state,
+        stewardRecord.pieceId,
+        stewardRecord.editionNumber,
+      );
+      setPublicOrdinal(typeof pub?.claimOrdinal === 'number' ? pub.claimOrdinal : null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [stewardRecord?.pieceId, stewardRecord?.editionNumber, stewardRecord]);
 
   const flashSaved = () => {
     setSavedAt(Date.now());
@@ -267,6 +304,13 @@ const StewardEdit: React.FC = () => {
     navigate('/atlas/claim', { replace: true });
   };
 
+  // The no-record "sign-in switch": sign out so the keeper can come back in
+  // with the email their piece was registered to (the pre-issued path).
+  const handleSignInSwitch = async () => {
+    await signOut();
+    navigate('/atlas/claim', { replace: true });
+  };
+
   // Retro-consent: a record bound before M2 has no captured consent — the
   // ConsentRings step renders once, posting the same Phase B body as the
   // claim flow. One capture covers every piece this steward holds.
@@ -356,6 +400,40 @@ const StewardEdit: React.FC = () => {
     );
   }
 
+  // Signed in, but nothing bound yet — a door, not a wall (interface law 6).
+  if (noRecord) {
+    return (
+      <AccountLayout title="Your pieces">
+        <div className="max-w-md space-y-5">
+          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700">
+            Your account is signed in, but no piece is bound to it yet.
+          </p>
+          <div className="flex flex-col gap-4">
+            <button
+              type="button"
+              onClick={handleSignInSwitch}
+              className="text-left font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
+            >
+              Claim with the email your piece was registered to →
+            </button>
+            <Link
+              to="/atlas"
+              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
+            >
+              Came to it another way? Request stewardship →
+            </Link>
+            <Link
+              to="/atlas/homecoming"
+              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
+            >
+              Holding a piece we do not know? Bring it home →
+            </Link>
+          </div>
+        </div>
+      </AccountLayout>
+    );
+  }
+
   if (loadError || entries.length === 0) {
     return (
       <AccountLayout title="Your pieces">
@@ -438,23 +516,78 @@ const StewardEdit: React.FC = () => {
           </p>
         ) : (
         <>
-        {/* The keeper's welcome: this page is a book, not a settings panel.
-            One quiet next step, chosen from the piece's actual state, so a
-            fresh owner is walked in rather than dropped on a wall of toggles. */}
+        {/* ═══ The treasure chest opens ═══
+            The thread made visible (your light on the world), the plate, the
+            dream as the book's first page, the founding number — and only then
+            the tending controls below. */}
+        {piece.currentCityId && currentCity && (
+          <div className="mb-8">
+            <BookLightBand
+              pieceKey={`${stewardRecord?.pieceId ?? piece.pieceId}${
+                (stewardRecord?.editionNumber ?? piece.editionNumber) != null
+                  ? `:${stewardRecord?.editionNumber ?? piece.editionNumber}`
+                  : ''
+              }`}
+              lat={currentCity.lat}
+              lng={currentCity.lng}
+              cityName={currentCity.city}
+              ordinal={publicOrdinal}
+            />
+          </div>
+        )}
+
         <div className="text-center mb-12">
+          {artwork?.coverImage && (
+            <div className="mx-auto w-full max-w-[12rem] mb-6">
+              <div className="bg-[#151311] p-2.5 shadow-[0_2px_20px_-8px_rgba(0,0,0,0.55)]">
+                <ArtworkPlate
+                  src={img(artwork.coverImage, { w: 700, crop: 'fit' })}
+                  alt={`${artwork.title}. Original work by Adrian Rasmussen.`}
+                  title={artwork.title}
+                  loading="eager"
+                />
+              </div>
+            </div>
+          )}
           <h2
             className="font-serif text-2xl sm:text-[1.7rem] text-wood-900 font-medium mb-2"
             style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.04em' }}
           >
             You keep {artwork?.title ?? 'this piece'}
           </h2>
-          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 mb-4">
+          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700">
             {detailParts.join(' · ')}
           </p>
-          <p className="font-serif text-[15px] leading-relaxed text-stone-600 max-w-md mx-auto">
-            This is the piece&apos;s book. Place it in the world, choose what
-            the atlas shows, write into its pages, and one day pass it on.
-            {' '}
+
+          {/* The dream, framed as the first page of the book (display size). */}
+          {firstDream && (
+            <p
+              className="font-serif text-wood-900 leading-[1.3] mt-7 whitespace-pre-line"
+              style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)' }}
+            >
+              {firstDream}
+            </p>
+          )}
+
+          {/* The founding number. */}
+          {publicOrdinal != null && (
+            <div className="mt-7">
+              <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 mb-1">
+                Founding light
+              </p>
+              <p
+                className="font-serif text-wood-900 font-medium leading-none"
+                style={{ fontFamily: 'Cinzel, serif', fontSize: 'clamp(2.25rem, 9vw, 3.25rem)' }}
+              >
+                {publicOrdinal}
+              </p>
+              <p className="font-serif text-base text-wood-600 mt-2">
+                the {ordinalLabel(publicOrdinal)} light
+              </p>
+            </div>
+          )}
+
+          <p className="font-serif text-[15px] leading-relaxed text-stone-600 max-w-md mx-auto mt-6">
             {!piece.currentCityId
               ? 'A good first page: choose where it rests, just below.'
               : !piece.isPublic
@@ -463,13 +596,13 @@ const StewardEdit: React.FC = () => {
           </p>
         </div>
 
-        {/* City picker */}
+        {/* ═══ Chapter: Place it ═══ */}
         <div className="mb-10">
           <label
             htmlFor="city-search-input"
             className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3"
           >
-            Where it rests
+            Place it
           </label>
           <TypeaheadPicker<CityCentroid>
             // Keyed on selectedIdx so switching claimed pieces remounts the
@@ -493,10 +626,11 @@ const StewardEdit: React.FC = () => {
           />
         </div>
 
-        {/* Visibility toggle */}
+        {/* ═══ Chapter: Let it shine ═══
+            Map presence, then the constellation of keepers beneath it. */}
         <div className="mb-10">
           <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
-            Visibility
+            Let it shine
           </span>
           <Toggle
             checked={piece.isPublic}
@@ -525,26 +659,26 @@ const StewardEdit: React.FC = () => {
               </a>
             </p>
           )}
-        </div>
 
-        {/* Chart presence — the kinship constellation */}
-        <div className="mb-10">
-          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
-            Join the constellation
-          </span>
-          <p className="font-serif italic text-sm text-stone-600 mb-4">
-            Turn this on and your piece joins the kinship constellation; arcs
-            may connect it to other consenting pieces that share its trigrams.
-            No name and no birth data are ever shown — only the elemental
-            shape. You can turn it off at any time.
-          </p>
-          <Toggle
-            checked={ring3On}
-            onChange={handleRing3Toggle}
-            label={ring3On ? 'Joined the constellation' : 'Join the kinship constellation'}
-            ariaLabel="Join the kinship constellation"
-            disabled={ring3Saving}
-          />
+          {/* Chart presence — the constellation of keepers, under Let it shine */}
+          <div className="mt-8 pt-8 border-t border-wood-100">
+            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
+              Join the constellation of keepers
+            </span>
+            <p className="font-serif italic text-sm text-stone-600 mb-4">
+              Turn this on and your piece joins the kinship constellation; arcs
+              may connect it to other consenting pieces that share its trigrams.
+              No name and no birth data are ever shown — only the elemental
+              shape. You can turn it off at any time.
+            </p>
+            <Toggle
+              checked={ring3On}
+              onChange={handleRing3Toggle}
+              label={ring3On ? 'Joined the constellation' : 'Join the kinship constellation'}
+              ariaLabel="Join the kinship constellation"
+              disabled={ring3Saving}
+            />
+          </div>
         </div>
 
         {/* Confirmation + error region */}
@@ -591,6 +725,7 @@ const StewardEdit: React.FC = () => {
                 prev.map((e, i) => (i === selectedIdx ? { ...e, steward: s } : e)),
               )
             }
+            onFirstDream={setFirstDream}
           />
         )}
 
