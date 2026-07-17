@@ -101,26 +101,26 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
       <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
         Requests
       </span>
-      <p className="font-serif text-base text-stone-700 leading-[1.6] mb-4">
+      <p className="font-reading text-base text-stone-700 leading-[1.6] mb-4">
         Someone has asked to become this piece's steward. Only you can pass
         it on — approving hands them the book.
       </p>
 
       {error && (
-        <p className="font-serif italic text-sm text-stone-600 mb-3">{error}</p>
+        <p className="font-reading italic text-sm text-stone-600 mb-3">{error}</p>
       )}
 
       <ul className="space-y-4">
         {forThisPiece.map((r) => (
           <li key={r.id} className="border border-wood-200 bg-white p-5">
-            <p className="font-sans text-sm text-wood-900 mb-1">
+            <p className="font-reading text-sm text-wood-900 mb-1">
               {r.requesterEmail}
             </p>
             <p className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 mb-3">
               {new Date(r.createdAt).toLocaleDateString()}
             </p>
             {r.note && (
-              <p className="font-serif italic text-sm text-wood-700 mb-4">
+              <p className="font-reading italic text-sm text-wood-700 mb-4">
                 “{r.note}”
               </p>
             )}
@@ -138,7 +138,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
                         type="button"
                         aria-pressed={transferKind === kind}
                         onClick={() => setTransferKind(kind)}
-                        className={`min-h-[44px] px-4 py-2 border font-sans text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
+                        className={`min-h-[44px] px-4 py-2 border font-reading text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                           transferKind === kind
                             ? 'bg-bronze-100 border-bronze-500 text-wood-900'
                             : 'bg-white border-wood-300 text-wood-700 hover:bg-paper-100'
@@ -149,7 +149,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
                     ))}
                   </div>
                 </div>
-                <p className="font-serif italic text-sm text-stone-600">
+                <p className="font-reading italic text-sm text-stone-600">
                   This passes the piece — and its book — to them. The record
                   of your time with it stays in the piece's history.
                 </p>

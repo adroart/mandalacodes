@@ -46,7 +46,7 @@ const BRIGHT_CTA: React.CSSProperties = {
   borderRadius: '10px',
   background: 'transparent',
   color: 'var(--accent,#8a744e)',
-  fontFamily: "'Karla',sans-serif",
+  fontFamily: 'var(--font-ui)',
   fontSize: '11px',
   fontWeight: 700,
   letterSpacing: '.12em',
@@ -149,10 +149,10 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
           textAlign: 'center',
         }}
       >
-        <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '18px', fontWeight: 500, lineHeight: 1.1, color: 'var(--ink,#262321)' }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 500, lineHeight: 1.1, color: 'var(--ink,#262321)' }}>
           Enter your birth time
         </span>
-        <span style={{ fontFamily: "'Karla',sans-serif", fontSize: '12px', lineHeight: 1.45, color: 'var(--ink3,#8a7a5e)' }}>
+        <span style={{ fontFamily: 'var(--font-reading)', fontSize: '12px', lineHeight: 1.45, color: 'var(--ink3,#8a7a5e)' }}>
           See which cards are most relevant to you, lit throughout the oracle.
         </span>
       </button>
@@ -183,7 +183,7 @@ const litCardStyle: React.CSSProperties = {
 };
 const leadStyle: React.CSSProperties = {
   margin: '0 0 14px',
-  fontFamily: "'Cormorant Garamond',serif",
+  fontFamily: 'var(--font-reading)',
   fontSize: '18px',
   textAlign: 'center',
   color: 'var(--ink,#262321)',
@@ -198,7 +198,7 @@ const saveLinkStyle: React.CSSProperties = {
   border: 'none',
   cursor: 'pointer',
   textAlign: 'center',
-  fontFamily: "'Karla',sans-serif",
+  fontFamily: 'var(--font-ui)',
   fontSize: '11px',
   letterSpacing: '.08em',
   color: 'var(--ink3,#8a7a5e)',
@@ -211,7 +211,7 @@ const sellListStyle: React.CSSProperties = {
   flexDirection: 'column',
   gap: '6px',
   textAlign: 'center',
-  fontFamily: "'Karla',sans-serif",
+  fontFamily: 'var(--font-ui)',
   fontSize: '12px',
   lineHeight: 1.45,
   color: 'var(--ink3,#8a7a5e)',
@@ -225,7 +225,7 @@ const keepBtnStyle: React.CSSProperties = {
   borderRadius: '10px',
   background: 'var(--accent,#8a744e)',
   color: 'var(--onAccent,#f7f5f1)',
-  fontFamily: "'Karla',sans-serif",
+  fontFamily: 'var(--font-ui)',
   fontSize: '11px',
   fontWeight: 700,
   letterSpacing: '.12em',
@@ -244,7 +244,7 @@ const accountRowStyle: React.CSSProperties = {
   borderTop: '1px solid var(--line,#e3ddd1)',
 };
 const readingAsStyle: React.CSSProperties = {
-  fontFamily: "'Karla',sans-serif",
+  fontFamily: 'var(--font-ui)',
   fontSize: '12px',
   color: 'var(--ink3,#8a7a5e)',
 };
@@ -252,7 +252,7 @@ const accountActionStyle: React.CSSProperties = {
   background: 'none',
   border: 'none',
   cursor: 'pointer',
-  fontFamily: "'Karla',sans-serif",
+  fontFamily: 'var(--font-ui)',
   fontSize: '11px',
   fontWeight: 700,
   letterSpacing: '.1em',

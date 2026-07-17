@@ -307,7 +307,7 @@ const ClaimSignIn: React.FC = () => {
   const primaryBtn =
     'w-full min-h-[48px] font-label text-xs uppercase tracking-[0.18em] font-semibold py-3.5 rounded-xl transition-opacity disabled:opacity-40';
   const doorBtn =
-    'w-full min-h-[48px] flex items-center justify-center gap-2.5 font-sans text-[15px] py-3.5 rounded-full transition-colors disabled:opacity-40';
+    'w-full min-h-[48px] flex items-center justify-center gap-2.5 font-reading text-[15px] py-3.5 rounded-full transition-colors disabled:opacity-40';
 
   const doGoogle = async () => {
     setBusy(true);
@@ -384,7 +384,7 @@ const ClaimSignIn: React.FC = () => {
     <div className="text-center">
       {error && (
         <p
-          className="font-serif text-[15px] mb-5"
+          className="font-display text-[15px] mb-5"
           style={{ color: 'rgba(214,171,138,0.9)' }}
         >
           {error}
@@ -568,7 +568,7 @@ const StageRadio: React.FC<{
       />
     </span>
     <span
-      className="font-serif text-[15px] leading-snug"
+      className="font-display text-[15px] leading-snug"
       style={{ color: selected ? '#ece2cf' : 'rgba(203,191,168,0.72)' }}
     >
       {children}
@@ -587,9 +587,9 @@ const AnchorSettle: React.FC<{ text: string }> = ({ text }) => {
   }, []);
   return (
     <p
-      className="font-serif text-xl sm:text-2xl leading-snug text-center mx-auto whitespace-pre-line"
+      className="font-display text-xl sm:text-2xl leading-snug text-center mx-auto whitespace-pre-line"
       style={{
-        fontFamily: '"Cormorant Garamond", serif',
+        fontFamily: 'var(--font-display)',
         color: '#f0ece4',
         maxWidth: '32rem',
         opacity: settled ? 1 : reduced ? 0 : 0.35,
@@ -796,13 +796,13 @@ const StewardClaim: React.FC = () => {
     return (
       <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-md text-center">
-          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 mb-3">
+          <p className="font-display text-[1.0625rem] leading-relaxed text-stone-700 mb-3">
             We don&apos;t have a piece bound to{' '}
             <span className="text-wood-900">{email ?? 'your email'}</span> yet.
           </p>
           {pieceContext ? (
             <div className="text-left">
-              <p className="font-serif text-sm text-stone-600">
+              <p className="font-display text-sm text-stone-600">
                 If this piece came to you another way, an auction, a gift, an
                 inheritance, request stewardship here and the current keeper, or
                 Adrian, will approve it.
@@ -814,7 +814,7 @@ const StewardClaim: React.FC = () => {
               />
             </div>
           ) : (
-            <p className="font-serif text-sm text-stone-600 mb-5">
+            <p className="font-display text-sm text-stone-600 mb-5">
               If you hold one of Adrian&apos;s pieces, scan the code on its
               back, or find it on the map, and request stewardship from the
               piece&apos;s own page.
@@ -867,7 +867,7 @@ const StewardClaim: React.FC = () => {
       {beat === 'error' && (
         <FadeIn key="error" className="text-center">
           <p
-            className="font-serif text-[1.0625rem] leading-relaxed mb-6"
+            className="font-display text-[1.0625rem] leading-relaxed mb-6"
             style={{ color: 'rgba(203,191,168,0.86)' }}
           >
             Something went wrong reaching your piece. Please try again.
@@ -910,7 +910,7 @@ const StewardClaim: React.FC = () => {
               <h1
                 className="text-3xl sm:text-[2.25rem] leading-tight font-medium mb-4"
                 style={{
-                  fontFamily: '"Cormorant Garamond", serif',
+                  fontFamily: 'var(--font-display)',
                   color: '#ece2cf',
                   letterSpacing: '0.01em',
                 }}
@@ -918,8 +918,8 @@ const StewardClaim: React.FC = () => {
                 You are claiming {contextArt.title.replace(/\s*-\s*\d+\s*$/, '')}.
               </h1>
               <p
-                className="font-serif text-lg sm:text-xl leading-snug mb-10"
-                style={{ color: 'rgba(203,191,168,0.8)', fontFamily: '"Cormorant Garamond", serif' }}
+                className="font-display text-lg sm:text-xl leading-snug mb-10"
+                style={{ color: 'rgba(203,191,168,0.8)', fontFamily: 'var(--font-display)' }}
               >
                 A piece of the world is waiting for you.
               </p>
@@ -928,7 +928,7 @@ const StewardClaim: React.FC = () => {
             <h1
               className="text-3xl sm:text-[2.25rem] leading-tight font-medium mb-10"
               style={{
-                fontFamily: '"Cormorant Garamond", serif',
+                fontFamily: 'var(--font-display)',
                 color: '#ece2cf',
                 letterSpacing: '0.01em',
               }}
@@ -938,7 +938,7 @@ const StewardClaim: React.FC = () => {
           )}
           {arrivalStatus === 'claiming' || isSignedIn || !isLoaded ? (
             <p
-              className="font-serif text-base"
+              className="font-display text-base"
               style={{ color: 'rgba(203,191,168,0.7)' }}
             >
               Finding your piece…
@@ -970,8 +970,8 @@ const StewardClaim: React.FC = () => {
             </p>
           )}
           <p
-            className="font-serif text-xl sm:text-2xl leading-snug mb-10"
-            style={{ color: '#ece2cf', fontFamily: '"Cormorant Garamond", serif' }}
+            className="font-display text-xl sm:text-2xl leading-snug mb-10"
+            style={{ color: '#ece2cf', fontFamily: 'var(--font-display)' }}
           >
             This piece has been waiting to meet you.
           </p>
@@ -1002,13 +1002,13 @@ const StewardClaim: React.FC = () => {
           </p>
           <label
             htmlFor={dreamId}
-            className="block font-serif text-xl sm:text-2xl leading-snug text-center mb-4"
-            style={{ color: '#ece2cf', fontFamily: '"Cormorant Garamond", serif' }}
+            className="block font-display text-xl sm:text-2xl leading-snug text-center mb-4"
+            style={{ color: '#ece2cf', fontFamily: 'var(--font-display)' }}
           >
             What should this piece hold for you?
           </label>
           <p
-            className="font-serif text-[15px] leading-relaxed text-center mb-7"
+            className="font-display text-[15px] leading-relaxed text-center mb-7"
             style={{ color: 'rgba(203,191,168,0.68)' }}
           >
             Not a task. A guiding principle, something that could steer a year or
@@ -1024,18 +1024,18 @@ const StewardClaim: React.FC = () => {
             maxLength={2000}
             disabled={submitting}
             placeholder="Write it here."
-            className="w-full bg-transparent border-b px-1 py-3 font-serif text-lg leading-relaxed focus:outline-none disabled:opacity-60"
+            className="w-full bg-transparent border-b px-1 py-3 font-display text-lg leading-relaxed focus:outline-none disabled:opacity-60"
             style={{
               color: '#f0ece4',
               borderColor: 'rgba(196,170,124,0.4)',
               caretColor: ATLAS_GOLD,
-              fontFamily: '"Cormorant Garamond", serif',
+              fontFamily: 'var(--font-display)',
             }}
           />
 
           {/* Ring 1, one quiet line under the textarea. */}
           <p
-            className="mt-4 text-center font-serif text-[13px] leading-relaxed"
+            className="mt-4 text-center font-display text-[13px] leading-relaxed"
             style={{ color: 'rgba(203,191,168,0.6)' }}
           >
             What you write stays with the piece, and you can always carry the
@@ -1051,8 +1051,8 @@ const StewardClaim: React.FC = () => {
             style={{ borderColor: 'rgba(196,170,124,0.22)' }}
           >
             <p
-              className="font-serif text-lg leading-snug mb-3"
-              style={{ color: '#ece2cf', fontFamily: '"Cormorant Garamond", serif' }}
+              className="font-display text-lg leading-snug mb-3"
+              style={{ color: '#ece2cf', fontFamily: 'var(--font-display)' }}
             >
               Where should this dream live?
             </p>
@@ -1075,7 +1075,7 @@ const StewardClaim: React.FC = () => {
           <div className="h-6 mt-4 text-center" aria-live="polite">
             {dreamError && (
               <span
-                className="font-serif text-sm"
+                className="font-display text-sm"
                 style={{ color: 'rgba(214,171,138,0.9)' }}
               >
                 {dreamError}

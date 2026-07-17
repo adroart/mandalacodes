@@ -66,7 +66,7 @@ export default function SelectionInscription({
         style={{
           position: 'relative',
           zIndex: 1,
-          fontFamily: '"Cormorant Garamond", serif',
+          fontFamily: 'var(--font-display)',
           fontWeight: 400,
           fontSize: dream ? 'clamp(26px, 2.3vw, 36px)' : 'clamp(26px, 2.2vw, 33px)',
           lineHeight: 1.28,

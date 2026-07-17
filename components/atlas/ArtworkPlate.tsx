@@ -73,7 +73,7 @@ const ArtworkPlate: React.FC<ArtworkPlateProps> = ({
           The plate
         </span>
         {fallbackTitle && (
-          <span className="font-serif text-sm text-paper-200 leading-snug">
+          <span className="font-display text-sm text-paper-200 leading-snug">
             {fallbackTitle}
           </span>
         )}
@@ -89,7 +89,7 @@ const ArtworkPlate: React.FC<ArtworkPlateProps> = ({
         The plate
       </span>
       {fallbackTitle && (
-        <span className="font-serif text-lg text-paper-200 leading-snug">
+        <span className="font-display text-lg text-paper-200 leading-snug">
           {fallbackTitle}
         </span>
       )}

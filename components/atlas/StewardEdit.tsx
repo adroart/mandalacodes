@@ -393,7 +393,7 @@ const StewardEdit: React.FC = () => {
   if (loading) {
     return (
       <AccountLayout title="Your pieces">
-        <p className="font-serif italic text-base text-stone-600">
+        <p className="font-display italic text-base text-stone-600">
           loading your piece
         </p>
       </AccountLayout>
@@ -405,7 +405,7 @@ const StewardEdit: React.FC = () => {
     return (
       <AccountLayout title="Your pieces">
         <div className="max-w-md space-y-5">
-          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700">
+          <p className="font-display text-[1.0625rem] leading-relaxed text-stone-700">
             Your account is signed in, but no piece is bound to it yet.
           </p>
           <div className="flex flex-col gap-4">
@@ -438,7 +438,7 @@ const StewardEdit: React.FC = () => {
     return (
       <AccountLayout title="Your pieces">
         <div className="max-w-md space-y-4">
-          <p className="font-serif italic text-base text-stone-600">
+          <p className="font-display italic text-base text-stone-600">
             {loadError ?? 'Could not load your piece.'}
           </p>
           <button
@@ -493,7 +493,7 @@ const StewardEdit: React.FC = () => {
                     type="button"
                     aria-pressed={active}
                     onClick={() => handlePieceSwitch(i)}
-                    className={`min-h-[44px] px-4 py-2 border font-sans text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
+                    className={`min-h-[44px] px-4 py-2 border font-reading text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                       active
                         ? 'bg-bronze-100 border-bronze-500 text-wood-900'
                         : 'bg-white border-wood-300 text-wood-700 hover:bg-paper-100'
@@ -510,7 +510,7 @@ const StewardEdit: React.FC = () => {
         {!piece ? (
           /* Claimed steward record but no ledger projection yet — nothing to
              edit until an event exists for this piece. */
-          <p className="font-serif italic text-base text-stone-600 text-center mb-12">
+          <p className="font-display italic text-base text-stone-600 text-center mb-12">
             This piece doesn't have an atlas record yet. Ask Adrian to seed it
             and it will appear here.
           </p>
@@ -550,19 +550,19 @@ const StewardEdit: React.FC = () => {
             </div>
           )}
           <h2
-            className="font-serif text-2xl sm:text-[1.7rem] text-wood-900 font-medium mb-2"
-            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.04em' }}
+            className="font-display text-2xl sm:text-[1.7rem] text-wood-900 font-medium mb-2"
+            style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
           >
             You keep {artwork?.title ?? 'this piece'}
           </h2>
-          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700">
+          <p className="font-display text-[1.0625rem] leading-relaxed text-stone-700">
             {detailParts.join(' · ')}
           </p>
 
           {/* The dream, framed as the first page of the book (display size). */}
           {firstDream && (
             <p
-              className="font-serif text-wood-900 leading-[1.3] mt-7 whitespace-pre-line"
+              className="font-display text-wood-900 leading-[1.3] mt-7 whitespace-pre-line"
               style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)' }}
             >
               {firstDream}
@@ -576,18 +576,18 @@ const StewardEdit: React.FC = () => {
                 Founding light
               </p>
               <p
-                className="font-serif text-wood-900 font-medium leading-none"
-                style={{ fontFamily: 'Cinzel, serif', fontSize: 'clamp(2.25rem, 9vw, 3.25rem)' }}
+                className="font-display text-wood-900 font-medium leading-none"
+                style={{ fontFamily: 'var(--font-brand)', fontSize: 'clamp(2.25rem, 9vw, 3.25rem)' }}
               >
                 {publicOrdinal}
               </p>
-              <p className="font-serif text-base text-wood-600 mt-2">
+              <p className="font-display text-base text-wood-600 mt-2">
                 the {ordinalLabel(publicOrdinal)} light
               </p>
             </div>
           )}
 
-          <p className="font-serif text-[15px] leading-relaxed text-stone-600 max-w-md mx-auto mt-6">
+          <p className="font-display text-[15px] leading-relaxed text-stone-600 max-w-md mx-auto mt-6">
             {!piece.currentCityId
               ? 'A good first page: choose where it rests, just below.'
               : !piece.isPublic
@@ -644,12 +644,12 @@ const StewardEdit: React.FC = () => {
               sentence and sits right under the toggle it points at; flipping
               visibility clears it. The public case points down to the book. */}
           {placeNudge === 'shine' && (
-            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mt-3">
+            <p className="font-display text-[15px] leading-relaxed text-stone-600 mt-3">
               {SHINE_SENTENCE}
             </p>
           )}
           {placeNudge === 'below' && (
-            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mt-3">
+            <p className="font-display text-[15px] leading-relaxed text-stone-600 mt-3">
               <a
                 href="#piece-book"
                 onClick={() => setPlaceNudge(null)}
@@ -665,7 +665,7 @@ const StewardEdit: React.FC = () => {
             <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
               Join the constellation of keepers
             </span>
-            <p className="font-serif italic text-sm text-stone-600 mb-4">
+            <p className="font-display italic text-sm text-stone-600 mb-4">
               Turn this on and your piece joins the kinship constellation; arcs
               may connect it to other consenting pieces that share its trigrams.
               No name and no birth data are ever shown — only the elemental
@@ -693,7 +693,7 @@ const StewardEdit: React.FC = () => {
             </span>
           )}
           {!savedAt && saveError && (
-            <span className="font-serif italic text-base text-stone-600">{saveError}</span>
+            <span className="font-display italic text-base text-stone-600">{saveError}</span>
           )}
         </div>
         </>

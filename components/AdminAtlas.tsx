@@ -32,11 +32,11 @@ function useAdminFetch(): (input: string, init?: RequestInit) => Promise<Respons
 const fieldLabel =
     'font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold block mb-2';
 const fieldInput =
-    'w-full border border-wood-300 bg-white px-4 py-3 font-sans text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
+    'w-full border border-wood-300 bg-white px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
 const sectionTitle =
     'font-title text-2xl text-wood-900 mb-2 tracking-[0.05em]';
 const sectionLead =
-    'font-sans text-sm text-wood-500 mb-6';
+    'font-reading text-sm text-wood-500 mb-6';
 
 const EVENT_TYPES: LedgerEventType[] = [
     'created',
@@ -238,20 +238,20 @@ const SeedEventSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-serif italic text-sm text-stone-600 mb-4">
+                <p className="font-reading italic text-sm text-stone-600 mb-4">
                     {error}
                 </p>
             )}
 
             {result && (
                 <div className="mb-6 border border-bronze-300 bg-bronze-50 px-4 py-3">
-                    <p className="font-sans text-sm text-bronze-800 mb-2">
+                    <p className="font-reading text-sm text-bronze-800 mb-2">
                         Event appended.
                     </p>
                     <p className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 mb-1">
                         Hash
                     </p>
-                    <code className="block font-mono text-xs text-wood-900 break-all">
+                    <code className="block font-technical text-xs text-wood-900 break-all">
                         {result.hash}
                     </code>
                 </div>
@@ -344,7 +344,7 @@ const SeedEventSection: React.FC = () => {
                         }
                         rows={3}
                         placeholder="From Adrian's notebook, p.42"
-                        className={`${fieldInput} font-serif text-base leading-[1.7] resize-y`}
+                        className={`${fieldInput} font-reading text-base leading-[1.7] resize-y`}
                     />
                 </div>
 
@@ -448,7 +448,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
             </p>
 
             {error && (
-                <p className="font-serif italic text-sm text-stone-600 mb-4">
+                <p className="font-reading italic text-sm text-stone-600 mb-4">
                     {error}
                 </p>
             )}
@@ -458,11 +458,11 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                     <p className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold mb-2">
                         Steward added
                     </p>
-                    <p className="font-serif text-sm text-wood-900 mb-2">
+                    <p className="font-reading text-sm text-wood-900 mb-2">
                         {success.name ? `${success.name} (${success.email})` : success.email}
                     </p>
-                    <p className="font-serif italic text-sm text-stone-700 mb-3">
-                        Send them this link: <code className="font-mono not-italic">/atlas/claim</code>. They sign in with the email above and the record binds to their account.
+                    <p className="font-reading italic text-sm text-stone-700 mb-3">
+                        Send them this link: <code className="font-technical not-italic">/atlas/claim</code>. They sign in with the email above and the record binds to their account.
                     </p>
                     <button
                         type="button"
@@ -630,13 +630,13 @@ const PendingSaleRow: React.FC<{
     return (
         <div className="border border-wood-200 p-5 mb-4">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                <span className="font-serif text-base text-wood-900">
+                <span className="font-reading text-base text-wood-900">
                     {sale.buyerName ? `${sale.buyerName} (${sale.buyerEmail})` : sale.buyerEmail}
                 </span>
-                <span className="font-sans text-sm text-wood-500">
+                <span className="font-reading text-sm text-wood-500">
                     {formatPrice(sale.priceCents, sale.currency)}
                 </span>
-                <span className="font-sans text-sm text-wood-500">
+                <span className="font-reading text-sm text-wood-500">
                     {sale.saleDate.slice(0, 10)}
                 </span>
             </div>
@@ -646,7 +646,7 @@ const PendingSaleRow: React.FC<{
             </p>
 
             {error && (
-                <p className="font-serif italic text-sm text-stone-600 mb-3">{error}</p>
+                <p className="font-reading italic text-sm text-stone-600 mb-3">{error}</p>
             )}
 
             <div className="space-y-3">
@@ -766,11 +766,11 @@ const PendingSalesSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-serif italic text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading italic text-sm text-stone-600 mb-4">{error}</p>
             )}
-            {loading && <p className="font-sans text-sm text-wood-400">Loading...</p>}
+            {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
             {!loading && !error && pending.length === 0 && (
-                <p className="font-sans text-sm text-wood-400">No pending sales.</p>
+                <p className="font-reading text-sm text-wood-400">No pending sales.</p>
             )}
 
             {!loading &&
@@ -787,7 +787,7 @@ const PendingSalesSection: React.FC = () => {
                         {resolved.map((s) => (
                             <li
                                 key={s.saleId}
-                                className="font-sans text-sm text-wood-500"
+                                className="font-reading text-sm text-wood-500"
                             >
                                 {s.status} · {s.buyerEmail} ·{' '}
                                 {formatPrice(s.priceCents, s.currency)}
@@ -896,10 +896,10 @@ const TendingSection: React.FC = () => {
             }`}
         >
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                <span className="font-serif text-base text-wood-900">
+                <span className="font-reading text-base text-wood-900">
                     {resolvePieceTitle(i.pieceId, i.editionNumber)}
                 </span>
-                <span className="font-sans text-sm text-wood-500">
+                <span className="font-reading text-sm text-wood-500">
                     {formatRelative(i.sharedAt)}
                 </span>
                 {untendedRow && (
@@ -908,7 +908,7 @@ const TendingSection: React.FC = () => {
                     </span>
                 )}
             </div>
-            <p className="font-serif italic text-base text-wood-700 mb-4">
+            <p className="font-reading italic text-base text-wood-700 mb-4">
                 “{i.text}”
             </p>
             <div className="flex gap-3">
@@ -947,11 +947,11 @@ const TendingSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-serif italic text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading italic text-sm text-stone-600 mb-4">{error}</p>
             )}
-            {loading && <p className="font-sans text-sm text-wood-400">Loading...</p>}
+            {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
             {!loading && !error && live.length === 0 && (
-                <p className="font-sans text-sm text-wood-400">Nothing live on the map right now.</p>
+                <p className="font-reading text-sm text-wood-400">Nothing live on the map right now.</p>
             )}
 
             {!loading && untended.map((i) => renderLiveRow(i, true))}
@@ -964,7 +964,7 @@ const TendingSection: React.FC = () => {
                     </p>
                     <ul className="space-y-1">
                         {settled.map((i) => (
-                            <li key={i.id} className="font-sans text-sm text-wood-500">
+                            <li key={i.id} className="font-reading text-sm text-wood-500">
                                 {i.status} · {resolvePieceTitle(i.pieceId, i.editionNumber)}
                             </li>
                         ))}
@@ -1054,21 +1054,21 @@ const ClaimRequestsSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-serif italic text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading italic text-sm text-stone-600 mb-4">{error}</p>
             )}
-            {loading && <p className="font-sans text-sm text-wood-400">Loading...</p>}
+            {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
             {!loading && !error && pending.length === 0 && (
-                <p className="font-sans text-sm text-wood-400">No pending requests.</p>
+                <p className="font-reading text-sm text-wood-400">No pending requests.</p>
             )}
 
             {!loading &&
                 pending.map((r) => (
                     <div key={r.id} className="border border-wood-200 p-5 mb-4">
                         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                            <span className="font-serif text-base text-wood-900">
+                            <span className="font-reading text-base text-wood-900">
                                 {resolvePieceTitle(r.pieceId, r.editionNumber)}
                             </span>
-                            <span className="font-sans text-sm text-wood-700">
+                            <span className="font-reading text-sm text-wood-700">
                                 {r.requesterEmail}
                             </span>
                             <span
@@ -1083,11 +1083,11 @@ const ClaimRequestsSection: React.FC = () => {
                                     : 'yours to decide'}
                             </span>
                         </div>
-                        <p className="font-sans text-sm text-wood-500 mb-3">
+                        <p className="font-reading text-sm text-wood-500 mb-3">
                             {formatRelative(r.createdAt)}
                         </p>
                         {r.note && (
-                            <p className="font-serif italic text-sm text-wood-700 mb-4">
+                            <p className="font-reading italic text-sm text-wood-700 mb-4">
                                 “{r.note}”
                             </p>
                         )}
@@ -1117,7 +1117,7 @@ const ClaimRequestsSection: React.FC = () => {
                     </p>
                     <ul className="space-y-1">
                         {recent.map((r) => (
-                            <li key={r.id} className="font-sans text-sm text-wood-500">
+                            <li key={r.id} className="font-reading text-sm text-wood-500">
                                 {r.status} · {resolvePieceTitle(r.pieceId, r.editionNumber)} ·{' '}
                                 {r.requesterEmail}
                             </li>
@@ -1201,11 +1201,11 @@ const HomecomingRow: React.FC<{
     if (boundPath) {
         return (
             <div className="border border-bronze-300 bg-bronze-50 p-5 mb-4">
-                <p className="font-sans text-sm text-bronze-800 mb-2">
+                <p className="font-reading text-sm text-bronze-800 mb-2">
                     Recognized and bound. Send {req.requesterEmail} to the
                     ceremony:
                 </p>
-                <code className="block font-mono text-xs text-wood-900 break-all mb-3">
+                <code className="block font-technical text-xs text-wood-900 break-all mb-3">
                     {boundPath}
                 </code>
                 <button
@@ -1222,13 +1222,13 @@ const HomecomingRow: React.FC<{
     return (
         <div className="border border-wood-200 p-5 mb-4">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                <span className="font-serif text-base text-wood-900">
+                <span className="font-reading text-base text-wood-900">
                     {req.requesterEmail}
                 </span>
-                <span className="font-sans text-sm text-wood-500">
+                <span className="font-reading text-sm text-wood-500">
                     rests in {cityLabelById(req.cityId)}
                 </span>
-                <span className="font-sans text-sm text-wood-500">
+                <span className="font-reading text-sm text-wood-500">
                     {formatRelative(req.createdAt)}
                 </span>
             </div>
@@ -1255,17 +1255,17 @@ const HomecomingRow: React.FC<{
                 </div>
             )}
 
-            <p className="font-serif text-base text-wood-700 leading-[1.7] mb-2">
+            <p className="font-reading text-base text-wood-700 leading-[1.7] mb-2">
                 {req.provenance}
             </p>
             {req.note && (
-                <p className="font-serif text-sm text-wood-500 leading-[1.6] mb-2">
+                <p className="font-reading text-sm text-wood-500 leading-[1.6] mb-2">
                     {req.note}
                 </p>
             )}
 
             {error && (
-                <p className="font-serif text-sm text-stone-600 my-3">{error}</p>
+                <p className="font-reading text-sm text-stone-600 my-3">{error}</p>
             )}
 
             {confirming ? (
@@ -1318,7 +1318,7 @@ const HomecomingRow: React.FC<{
                             </select>
                         </div>
                     </div>
-                    <p className="font-serif text-sm text-wood-500 leading-[1.6]">
+                    <p className="font-reading text-sm text-wood-500 leading-[1.6]">
                         This mints the piece, places it in{' '}
                         {cityLabelById(req.cityId)}, and binds it to{' '}
                         {req.requesterEmail}. They walk the ceremony on their next
@@ -1414,11 +1414,11 @@ const HomecomingSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-serif text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading text-sm text-stone-600 mb-4">{error}</p>
             )}
-            {loading && <p className="font-sans text-sm text-wood-400">Loading...</p>}
+            {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
             {!loading && !error && pending.length === 0 && (
-                <p className="font-sans text-sm text-wood-400">No pieces waiting to come home.</p>
+                <p className="font-reading text-sm text-wood-400">No pieces waiting to come home.</p>
             )}
 
             {!loading &&
@@ -1433,7 +1433,7 @@ const HomecomingSection: React.FC = () => {
                     </p>
                     <ul className="space-y-1">
                         {recent.map((r) => (
-                            <li key={r.id} className="font-sans text-sm text-wood-500">
+                            <li key={r.id} className="font-reading text-sm text-wood-500">
                                 {r.status} · {r.requesterEmail} ·{' '}
                                 {cityLabelById(r.cityId)}
                                 {r.boundTitle ? ` · ${r.boundTitle}` : ''}
@@ -1530,23 +1530,23 @@ const StewardRoster: React.FC<{
             </p>
 
             {error && (
-                <p className="font-serif italic text-sm text-stone-600">
+                <p className="font-reading italic text-sm text-stone-600">
                     {error}
                 </p>
             )}
 
             {rowError && (
-                <p className="font-serif italic text-sm text-stone-600 mb-4">
+                <p className="font-reading italic text-sm text-stone-600 mb-4">
                     {rowError}
                 </p>
             )}
 
             {loading && (
-                <p className="font-sans text-sm text-wood-400">Loading...</p>
+                <p className="font-reading text-sm text-wood-400">Loading...</p>
             )}
 
             {!loading && !error && stewards.length === 0 && (
-                <p className="font-sans text-sm text-wood-400">
+                <p className="font-reading text-sm text-wood-400">
                     No stewards issued yet.
                 </p>
             )}
@@ -1582,16 +1582,16 @@ const StewardRoster: React.FC<{
                                     key={`${s.pieceId}-${s.editionNumber ?? 0}-${i}`}
                                     className="border-b border-wood-100"
                                 >
-                                    <td className="font-serif text-base text-wood-900 py-3 pr-4">
+                                    <td className="font-reading text-base text-wood-900 py-3 pr-4">
                                         {resolvePieceTitle(
                                             s.pieceId,
                                             s.editionNumber,
                                         )}
                                     </td>
-                                    <td className="font-sans text-sm text-wood-700 py-3 pr-4">
+                                    <td className="font-reading text-sm text-wood-700 py-3 pr-4">
                                         {s.name ?? '-'}
                                     </td>
-                                    <td className="font-sans text-sm text-wood-700 py-3 pr-4">
+                                    <td className="font-reading text-sm text-wood-700 py-3 pr-4">
                                         {s.email ?? '-'}
                                     </td>
                                     <td className="py-3 pr-4">
@@ -1607,7 +1607,7 @@ const StewardRoster: React.FC<{
                                                         .value as StewardRecord['outreachStatus'],
                                                 )
                                             }
-                                            className="font-sans text-sm text-wood-700 border border-wood-300 bg-white px-2 py-1.5 focus:outline-none focus:border-bronze-400 disabled:opacity-40"
+                                            className="font-reading text-sm text-wood-700 border border-wood-300 bg-white px-2 py-1.5 focus:outline-none focus:border-bronze-400 disabled:opacity-40"
                                         >
                                             {s.outreachStatus === 'claimed' && (
                                                 <option value="claimed" disabled>
@@ -1626,10 +1626,10 @@ const StewardRoster: React.FC<{
                                             )}
                                         </select>
                                     </td>
-                                    <td className="font-sans text-sm text-wood-500 py-3 pr-4">
+                                    <td className="font-reading text-sm text-wood-500 py-3 pr-4">
                                         {formatRelative(s.issuedAt)}
                                     </td>
-                                    <td className="font-sans text-sm text-wood-500 py-3">
+                                    <td className="font-reading text-sm text-wood-500 py-3">
                                         {s.lastClaimAt
                                             ? formatRelative(s.lastClaimAt)
                                             : '-'}
@@ -1690,7 +1690,7 @@ const AdminAtlas: React.FC = () => {
                     <h1 className="font-title text-4xl text-wood-900 mb-2 tracking-[0.05em]">
                         Atlas
                     </h1>
-                    <p className="font-sans text-sm text-wood-500 mb-12">
+                    <p className="font-reading text-sm text-wood-500 mb-12">
                         Seed ledger events and add stewards for the world map.
                     </p>
 

@@ -147,40 +147,40 @@ const SignInModal: React.FC<{
   // ── styles ──
   const fieldLabel: React.CSSProperties = {
     display: 'block', textAlign: 'left',
-    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 10, fontWeight: 700,
+    fontFamily: 'var(--font-ui)', fontSize: 10, fontWeight: 700,
     letterSpacing: '0.14em', textTransform: 'uppercase', color: C.sub, margin: '0 0 6px',
   };
   const fieldStyle: React.CSSProperties = {
     width: '100%', border: `1px solid ${C.fieldBorder}`, background: C.field,
     borderRadius: 12, padding: '13px 15px',
-    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 16, color: C.ink, marginBottom: 14,
+    fontFamily: 'var(--font-ui)', fontSize: 16, color: C.ink, marginBottom: 14,
   };
   const primaryStyle: React.CSSProperties = {
     width: '100%', cursor: 'pointer', background: C.bronze, color: C.onBronze, border: 'none',
     borderRadius: 12, padding: 14,
-    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 13, fontWeight: 700,
+    fontFamily: 'var(--font-ui)', fontSize: 13, fontWeight: 700,
     letterSpacing: '0.12em', textTransform: 'uppercase',
   };
   const pillPrimary: React.CSSProperties = {
     width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
     cursor: 'pointer', background: C.bronze, color: C.onBronze, border: 'none',
     borderRadius: 999, padding: 14,
-    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 14, fontWeight: 700, marginBottom: 10,
+    fontFamily: 'var(--font-ui)', fontSize: 14, fontWeight: 700, marginBottom: 10,
   };
   const pillSecondary: React.CSSProperties = {
     width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
     cursor: 'pointer', background: C.surface, color: C.ink, border: `1px solid ${C.fieldBorder}`,
     borderRadius: 999, padding: 13,
-    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 14, fontWeight: 500, marginBottom: 10,
+    fontFamily: 'var(--font-ui)', fontSize: 14, fontWeight: 500, marginBottom: 10,
   };
   const backBtn: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: 'none',
     border: 'none', padding: 0, margin: '0 auto 16px',
-    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 11, fontWeight: 700,
+    fontFamily: 'var(--font-ui)', fontSize: 11, fontWeight: 700,
     letterSpacing: '0.12em', textTransform: 'uppercase', color: C.bronze,
   };
   const altLine: React.CSSProperties = {
-    marginTop: 14, fontFamily: "'Karla', system-ui, sans-serif", fontSize: 12, color: C.sub,
+    marginTop: 14, fontFamily: 'var(--font-ui)', fontSize: 12, color: C.sub,
   };
   const altLink: React.CSSProperties = {
     color: C.bronze, textDecoration: 'none', fontWeight: 700, background: 'none', border: 'none',
@@ -238,19 +238,19 @@ const SignInModal: React.FC<{
         )}
 
         <p style={{
-          fontFamily: "'Karla', system-ui, sans-serif", fontSize: 10, fontWeight: 700,
+          fontFamily: 'var(--font-ui)', fontSize: 10, fontWeight: 700,
           letterSpacing: '0.24em', textTransform: 'uppercase', color: C.bronze, margin: '0 0 10px',
         }}>
           Mandala Codes
         </p>
         <h2 style={{
-          fontFamily: '"Cormorant Garamond", serif', fontWeight: 500, fontSize: 28,
+          fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 28,
           lineHeight: 1.05, color: C.ink, margin: '0 0 6px',
         }}>
           {headline}
         </h2>
         <p style={{
-          fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: 17,
+          fontFamily: 'var(--font-reading)', fontStyle: 'italic', fontSize: 17,
           color: C.sub, lineHeight: 1.35, margin: '0 0 22px',
         }}>
           {subline}
@@ -262,7 +262,7 @@ const SignInModal: React.FC<{
             border: `1px solid ${isDarkMode ? 'rgba(220,150,150,0.4)' : '#e0b3b3'}`,
             background: isDarkMode ? 'rgba(138,42,42,0.18)' : '#fbeaea',
             color: isDarkMode ? '#e6a6a6' : '#8a2a2a',
-            fontFamily: "'Karla', sans-serif", fontSize: 13,
+            fontFamily: 'var(--font-ui)', fontSize: 13,
           }}>
             {error}
           </div>
@@ -286,7 +286,7 @@ const SignInModal: React.FC<{
             </button>
             <p style={{
               marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.line}`,
-              fontFamily: "'Karla', system-ui, sans-serif", fontSize: 13, color: C.sub,
+              fontFamily: 'var(--font-ui)', fontSize: 13, color: C.sub,
             }}>
               Every option signs you in or sets you up. One account, however you return.
             </p>

@@ -61,7 +61,7 @@ const Toggle: React.FC<ToggleProps> = ({
       aria-label={ariaLabel}
       onClick={() => onChange(!checked)}
       disabled={disabled}
-      className={`flex items-center gap-4 min-h-[44px] font-sans text-base focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60 ${
+      className={`flex items-center gap-4 min-h-[44px] font-reading text-base focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60 ${
         stage ? '' : 'text-wood-800'
       } ${className}`}
       style={stage ? { color: '#e7dcc7' } : undefined}

@@ -58,8 +58,8 @@ export function InvocationConflictPanel({ conflict, onUseServer, onKeepLocal }: 
   </section>;
 }
 
-export function InvocationComposer({ hexagramNumber, sessionId, segments = [], onClose, onPublished }: {
-  hexagramNumber: number; sessionId: string; segments?: RecorderSegment[]; onClose: () => void; onPublished?: () => void;
+export function InvocationComposer({ hexagramNumber, sessionId, segments = [], themeStyle, onClose, onDone, onPublished }: {
+  hexagramNumber: number; sessionId: string; segments?: RecorderSegment[]; themeStyle?: React.CSSProperties; onClose: () => void; onDone: () => void; onPublished?: () => void;
 }) {
   const composer = useInvocationComposer(hexagramNumber, sessionId, { onPublished });
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -76,6 +76,9 @@ export function InvocationComposer({ hexagramNumber, sessionId, segments = [], o
   const requestClose = () => {
     if (!composer.dirty || window.confirm('Discard unsaved invocation changes?')) onClose();
   };
+  const finishReflection = async () => {
+    if (await composer.publish()) onDone();
+  };
   const onKeyDown = (event: React.KeyboardEvent) => {
     if (composer.conflict) return;
     if (event.key === 'Escape') { event.preventDefault(); requestClose(); return; }
@@ -86,12 +89,13 @@ export function InvocationComposer({ hexagramNumber, sessionId, segments = [], o
     else if (!event.shiftKey && document.activeElement === controls.at(-1)) { event.preventDefault(); controls[0].focus(); }
   };
 
-  if (!composer.draft) return createPortal(<div className="invocation-shell invocation-loading" role="status">Loading invocation…</div>, document.body);
+  if (!composer.draft) return createPortal(<div className="invocation-shell invocation-loading" style={themeStyle} role="status">Loading invocation…</div>, document.body);
   return createPortal(
-    <div ref={dialogRef} className="invocation-shell" role="dialog" aria-modal="true" aria-labelledby="invocation-title" onKeyDown={onKeyDown}>
+    <div ref={dialogRef} className="invocation-shell" style={themeStyle} role="dialog" aria-modal="true" aria-label="Invocation composer" onKeyDown={onKeyDown}>
       <header className="invocation-toolbar" aria-hidden={composer.conflict ? true : undefined}>
-        <div><p className="invocation-kicker">Universal Language {hexagramNumber}</p><h1 id="invocation-title">Invocation composer</h1></div>
-        <button ref={closeRef} type="button" className="invocation-close" onClick={requestClose} aria-label="Close invocation composer">×</button>
+        <button ref={closeRef} type="button" className="invocation-close" onClick={requestClose} aria-label="Back to journal">Back</button>
+        <div><p className="invocation-kicker">Universal Language · Code {hexagramNumber}</p><h1 id="invocation-title">Invocation</h1></div>
+        <span className="invocation-toolbar__balance" aria-hidden="true" />
       </header>
 
       <div className="invocation-primary-surface" aria-hidden={composer.conflict ? true : undefined}>
@@ -112,7 +116,8 @@ export function InvocationComposer({ hexagramNumber, sessionId, segments = [], o
           <footer className="invocation-savebar">
             <span role="status" aria-live="polite">{composer.status === 'saved_and_live' ? 'Saved and live' : ['error', 'conflict'].includes(composer.status) ? composer.error : ''}</span>
             {composer.status === 'error' && <button type="button" onClick={composer.retry}>Retry</button>}
-            <button type="button" className="invocation-primary" disabled={composer.status === 'saving'} onClick={composer.publish}>{composer.status === 'saving' ? 'Saving…' : 'Save Invocation'}</button>
+            <button type="button" disabled={composer.status === 'saving'} onClick={() => void composer.publish()}>{composer.status === 'saving' ? 'Saving…' : 'Save'}</button>
+            <button type="button" className="invocation-primary" disabled={composer.status === 'saving'} onClick={() => void finishReflection()} aria-label="Done with reflection">Done</button>
           </footer>
         </main>
       )}

@@ -99,7 +99,7 @@ export default function AtlasOverture({ reduced, onReveal, onDone, onSkip }: Atl
   }, [reduced]);
 
   const line = (text: string, shown: boolean, delayMs: number): React.CSSProperties => ({
-    fontFamily: '"Cormorant Garamond", serif',
+    fontFamily: 'var(--font-display)',
     fontWeight: 400,
     fontSize: 'clamp(21px, 2.6vw, 34px)',
     lineHeight: 1.32,

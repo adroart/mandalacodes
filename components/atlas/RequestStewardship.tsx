@@ -64,7 +64,7 @@ const RequestStewardship: React.FC<{
 
   if (sent) {
     return (
-      <p className="font-serif text-base text-stone-700 tracking-[0.01em] mt-4 leading-[1.6]">
+      <p className="font-reading text-base text-stone-700 tracking-[0.01em] mt-4 leading-[1.6]">
         Your request is in. The piece's current keeper, or Adrian, will
         review it, and the book opens to you once they approve.
       </p>
@@ -79,7 +79,7 @@ const RequestStewardship: React.FC<{
            in place with a modal and stay on this piece: once signed in the
            signed-in branch below shows the request-stewardship form, which is
            the right path for them. Never send them to /atlas/claim. */
-        <p className="font-serif text-sm text-wood-600 leading-[1.6]">
+        <p className="font-reading text-sm text-wood-600 leading-[1.6]">
           {leadIn === undefined ? (
             <>
               Hold this piece but arrived another way: an auction, a gift, an
@@ -100,7 +100,7 @@ const RequestStewardship: React.FC<{
       )}
       {isSignedIn && (
         !open ? (
-          <p className="font-serif text-sm text-wood-600 leading-[1.6]">
+          <p className="font-reading text-sm text-wood-600 leading-[1.6]">
             {leadIn === undefined ? (
               <>Hold this piece but arrived another way?{' '}</>
             ) : (
@@ -129,10 +129,10 @@ const RequestStewardship: React.FC<{
               maxLength={500}
               rows={3}
               placeholder="Bought at the Vienna auction, lot 12…"
-              className="w-full border border-wood-300 bg-white px-4 py-3 font-serif text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 resize-y"
+              className="w-full border border-wood-300 bg-white px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 resize-y"
             />
             {error && (
-              <p className="font-serif font-medium text-sm text-stone-600">{error}</p>
+              <p className="font-reading font-medium text-sm text-stone-600">{error}</p>
             )}
             <button
               type="button"
@@ -149,7 +149,7 @@ const RequestStewardship: React.FC<{
       {/* The Homecoming door: for whoever holds a piece the atlas has never
           heard of, where even a stewardship request has no piece to point at.
           The one quiet way out of the no-record dead-end. */}
-      <p className="font-serif text-sm text-wood-500 leading-[1.6] mt-6">
+      <p className="font-reading text-sm text-wood-500 leading-[1.6] mt-6">
         Holding a piece we do not know?{' '}
         <Link
           to="/atlas/homecoming"

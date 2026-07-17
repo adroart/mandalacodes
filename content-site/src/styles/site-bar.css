@@ -27,6 +27,7 @@
     background: transparent;
     border: 0;
     font: inherit;
+    font-family: var(--font-ui);
     color: inherit;
     cursor: pointer;
   }

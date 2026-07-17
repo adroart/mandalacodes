@@ -300,7 +300,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         <div className={`p-6 sm:p-7 ${scrollCap}`}>
           <Label>{piece.category ?? 'Selected piece'}</Label>
           <h3
-            className="font-serif text-2xl sm:text-[1.7rem] font-semibold leading-tight"
+            className="font-display text-2xl sm:text-[1.7rem] font-semibold leading-tight"
             style={{ color: PARCHMENT }}
           >
             {title}
@@ -327,7 +327,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
                     <button
                       type="button"
                       onClick={() => onSelectKin?.(k.key)}
-                      className="font-serif text-base transition-colors text-left leading-snug"
+                      className="font-reading text-base transition-colors text-left leading-snug"
                       style={{ color: PARCHMENT }}
                     >
                       {k.title}
@@ -465,14 +465,14 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
             }}
           >
             <p
-              className="font-serif font-medium text-[29px] leading-[1.16]"
+              className="font-display font-medium text-[29px] leading-[1.16]"
               style={{ color: PARCHMENT }}
             >
               {dream.lead}
             </p>
             {dream.rest && (
               <p
-                className="font-serif text-[16.5px] leading-[1.58] mt-4 whitespace-pre-line"
+                className="font-reading text-[16.5px] leading-[1.58] mt-4 whitespace-pre-line"
                 style={{ color: MUTED }}
               >
                 {dream.rest}
@@ -503,10 +503,10 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         </section>
       ) : (
         <section className="px-[26px] pt-[26px] pb-[22px] text-center">
-          <p className="font-serif text-[17px] leading-[1.45]" style={{ color: MUTED }}>
+          <p className="font-reading text-[17px] leading-[1.45]" style={{ color: MUTED }}>
             no dream is kept here yet.
           </p>
-          <p className="font-serif text-[17px] leading-[1.45]" style={{ color: MUTED }}>
+          <p className="font-reading text-[17px] leading-[1.45]" style={{ color: MUTED }}>
             this vessel waits for a keeper.
           </p>
         </section>
@@ -516,7 +516,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
       <div className="px-[26px] pt-1">
         <div>
           <Label>{piece.status === 'placed' ? 'Placed' : 'Standing'}</Label>
-          <p className="font-serif text-[18px] leading-[1.4]" style={{ color: PARCHMENT }}>
+          <p className="font-reading text-[18px] leading-[1.4]" style={{ color: PARCHMENT }}>
             {standingPlace}
             {standingLight && (
               <>
@@ -526,7 +526,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
             )}
           </p>
           {carriesYourCode && (
-            <p className="mt-1.5 font-serif text-[15px] leading-snug" style={{ color: SAGE }}>
+            <p className="mt-1.5 font-reading text-[15px] leading-snug" style={{ color: SAGE }}>
               It carries one of your codes.
             </p>
           )}
@@ -554,7 +554,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
                     text={k.code}
                     base={PARCHMENT}
                     hi={BRONZE}
-                    className="font-serif text-[20px] leading-none"
+                    className="font-display text-[20px] leading-none"
                   />
                   <span
                     className="font-label text-[10px] uppercase tracking-[0.16em] transition-colors group-hover:text-bronze-300"
@@ -571,7 +571,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         {holderChart && (
           <>
             <Rule soft />
-            <p className="font-serif text-[13px] leading-snug" style={{ color: 'rgba(203,191,168,0.6)' }}>
+            <p className="font-reading text-[13px] leading-snug" style={{ color: 'rgba(203,191,168,0.6)' }}>
               held by a chart of{' '}
               <span style={{ color: MUTED }}>{holderChart.element}</span>
             </p>
@@ -588,7 +588,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
                   key={k.key}
                   type="button"
                   onClick={() => onSelectKin?.(k.key)}
-                  className="text-left font-serif text-[13px] leading-snug transition-colors hover:text-bronze-300"
+                  className="text-left font-reading text-[13px] leading-snug transition-colors hover:text-bronze-300"
                   style={{ color: 'rgba(203,191,168,0.52)' }}
                 >
                   {k.title}
@@ -606,7 +606,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
       >
         <Link
           to={bookHref}
-          className="flex items-center justify-between font-serif text-[17px] transition-colors hover:text-bronze-300"
+          className="flex items-center justify-between font-reading text-[17px] transition-colors hover:text-bronze-300"
           style={{ color: PARCHMENT }}
         >
           open this piece's book
@@ -616,7 +616,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           <Link
             to={`/universal-language/${piece.cardNumber}`}
             state={{ ritual: true }}
-            className="flex items-center justify-between font-serif text-[15px] transition-colors hover:text-bronze-300"
+            className="flex items-center justify-between font-reading text-[15px] transition-colors hover:text-bronze-300"
             style={{ color: MUTED }}
           >
             read code {piece.cardNumber}

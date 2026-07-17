@@ -252,14 +252,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           position: relative;
         }
         .profile-form__label {
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 11px;
           letter-spacing: 0.22em;
           text-transform: uppercase;
           color: var(--color-wood-700);
         }
         .profile-form__input {
-          font-family: 'Cormorant Garamond', serif;
+          font-family: var(--font-ui);
           font-size: 17px;
           color: var(--color-wood-900);
           background: var(--color-paper-50);
@@ -278,12 +278,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           border-color: #a04040;
         }
         .profile-form__help {
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 11px;
           color: var(--color-wood-600);
         }
         .profile-form__error {
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 12px;
           color: #a04040;
         }
@@ -325,13 +325,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           background: color-mix(in oklab, var(--color-bronze-400) 16%, transparent);
         }
         .profile-form__suggestion-label {
-          font-family: 'Cormorant Garamond', serif;
+          font-family: var(--font-ui);
           font-size: 17px;
           line-height: 1.2;
           color: var(--color-wood-900);
         }
         .profile-form__suggestion-tz {
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 10px;
           color: var(--color-wood-600);
           letter-spacing: 0.1em;
@@ -348,13 +348,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           border: 1px solid color-mix(in oklab, var(--color-wood-600) 28%, transparent);
           border-radius: 6px;
           box-shadow: 0 14px 38px -10px rgba(0, 0, 0, 0.32);
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 12px;
           color: var(--color-wood-600);
         }
         .profile-form__submit {
           align-self: flex-start;
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 11px;
           letter-spacing: 0.22em;
           text-transform: uppercase;

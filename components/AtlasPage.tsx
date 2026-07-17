@@ -1422,7 +1422,7 @@ const AtlasPage: React.FC = () => {
               </nav>
               <h1
                 className="text-2xl sm:text-5xl text-bronze-300 font-medium leading-none"
-                style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}
+                style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.05em' }}
               >
                 Atlas
               </h1>
@@ -1463,13 +1463,13 @@ const AtlasPage: React.FC = () => {
                     unseeded mirror; auto-hides once real pieces arrive. Delete
                     this block at launch. */}
                 {isPlaceholder && (
-                  <p className="mt-1.5 font-serif text-[12px] leading-snug tracking-[0.03em] text-bronze-400/80">
+                  <p className="mt-1.5 font-display text-[12px] leading-snug tracking-[0.03em] text-bronze-400/80">
                     Placeholder pieces, shown until the first works find their
                     ground.
                   </p>
                 )}
                 {streamActive && dreamRoute.length > 0 && (
-                  <p className="mt-1 font-serif text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
+                  <p className="mt-1 font-display text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
                     dream {Math.max(1, dreamRoute.indexOf(selectedKey ?? '') + 1)} of{' '}
                     {dreamRoute.length} ·{' '}
                     {typeof window !== 'undefined' && 'ontouchstart' in window
@@ -1490,7 +1490,7 @@ const AtlasPage: React.FC = () => {
               {/* Once-per-visitor gloss for the control just exercised (law 5). */}
               <p
                 aria-hidden={controlGloss === null}
-                className="font-serif text-[13px] leading-snug text-atlas-gold/85 max-w-[62vw] text-right"
+                className="font-display text-[13px] leading-snug text-atlas-gold/85 max-w-[62vw] text-right"
                 style={{
                   opacity: controlGloss === null ? 0 : 1,
                   transition: 'opacity 500ms ease',
@@ -1628,7 +1628,7 @@ const AtlasPage: React.FC = () => {
                         setMandala(next);
                         if (next) setStreamActive(false);
                       }}
-                      className={`font-serif text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+                      className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
                         mandala
                           ? 'text-bronze-300 border-bronze-400/70'
                           : 'text-wood-400 border-transparent hover:text-bronze-300/80'
@@ -1648,7 +1648,7 @@ const AtlasPage: React.FC = () => {
                         type="button"
                         aria-pressed={yoursMode}
                         onClick={() => setYoursMode((v) => !v)}
-                        className={`font-serif text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+                        className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
                           yoursMode
                             ? 'text-atlas-kept border-atlas-kept/70'
                             : 'text-wood-400 border-transparent hover:text-bronze-300/80'
@@ -1672,7 +1672,7 @@ const AtlasPage: React.FC = () => {
                             type="button"
                             aria-pressed={focusSeries === s}
                             onClick={() => setFocusSeries((cur) => (cur === s ? null : s))}
-                            className={`font-serif text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+                            className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
                               focusSeries === s
                                 ? 'text-bronze-300 border-bronze-400/70'
                                 : 'text-wood-400 border-transparent hover:text-bronze-300/80'
@@ -1685,7 +1685,7 @@ const AtlasPage: React.FC = () => {
                           </button>
                         ))}
                         {hasBirthOrigin && (
-                          <span className="font-serif text-[15px] leading-none pb-1 text-wood-400">
+                          <span className="font-display text-[15px] leading-none pb-1 text-wood-400">
                             your origin
                             <span aria-hidden className="text-atlas-kept">
                               {' '}·
@@ -1856,7 +1856,7 @@ const AtlasPage: React.FC = () => {
           </nav>
           <h1
             className="text-3xl sm:text-5xl text-wood-900 font-medium leading-none"
-            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}
+            style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.05em' }}
           >
             Atlas
           </h1>
@@ -1919,7 +1919,7 @@ const AtlasPage: React.FC = () => {
       <div className="px-6 pb-32 max-w-7xl mx-auto pt-16">
         {state.kind === 'loading' && (
           <p
-            className="font-serif italic text-lg text-wood-700 py-24 text-center"
+            className="font-display italic text-lg text-wood-700 py-24 text-center"
             aria-live="polite"
           >
             loading the atlas
@@ -1928,7 +1928,7 @@ const AtlasPage: React.FC = () => {
 
         {state.kind === 'error' && (
           <p
-            className="font-serif italic text-lg text-wood-700 py-24 text-center"
+            className="font-display italic text-lg text-wood-700 py-24 text-center"
             aria-live="polite"
           >
             the atlas is briefly out of reach.

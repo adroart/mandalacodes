@@ -48,7 +48,7 @@ const CodePiecesPanel: React.FC<Props> = ({ codeNumber, codeName, pieces, onSele
   if (pieces.length === 0) {
     return (
       <div className="pt-3 pb-1">
-        <p className="font-serif text-base text-wood-700 leading-[1.7]">
+        <p className="font-reading text-base text-wood-700 leading-[1.7]">
           Not yet embodied. No piece for {codeName} has been made.
         </p>
         <p className="mt-2">
@@ -74,7 +74,7 @@ const CodePiecesPanel: React.FC<Props> = ({ codeNumber, codeName, pieces, onSele
 
           return (
             <li key={p.key} className="border-l-2 border-wood-200 pl-4">
-              <p className="font-serif text-base text-wood-900 leading-snug">
+              <p className="font-reading text-base text-wood-900 leading-snug">
                 {cleanTitle}
                 {editionLabel && (
                   <span className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-600 ml-2">
@@ -82,7 +82,7 @@ const CodePiecesPanel: React.FC<Props> = ({ codeNumber, codeName, pieces, onSele
                   </span>
                 )}
               </p>
-              <p className="font-sans text-sm text-wood-700 mt-0.5">{pieceLine(p)}</p>
+              <p className="font-reading text-sm text-wood-700 mt-0.5">{pieceLine(p)}</p>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                 {onGlobe && (
                   <>

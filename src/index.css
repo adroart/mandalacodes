@@ -1,11 +1,10 @@
 /* ─── READABILITY GUARDRAILS ────────────────────────────────────────────────
  * FONT ROLES (enforced):
- *   - font-display / font-serif (Cormorant Garamond): titles + display text
+ *   - font-display (Cormorant Garamond): titles + display text
  *     ONLY at >= 20px. Cormorant is a display serif; its thin strokes
  *     disappear at body sizes.
- *   - font-sans (Lora): ALL body, descriptions, captions, meta < 20px.
- *     Lora is a body-grade serif with screen-tuned strokes.
- *   - font-label (Karla): uppercase eyebrows / row labels only.
+ *   - font-reading (Iowan Old Style): body, descriptions, captions, and meta.
+ *   - font-label / font-ui (Iowan Old Style): controls and compact labels.
  * Italic Cormorant under 20px is forbidden — fails legibility on dark bg.
  *
  * TYPE SCALE — prefer the var() tokens below over arbitrary pixel values.
@@ -33,6 +32,7 @@
 @import "./theme.css";
 @source "../";
 @source "../components";
+@source inline("font-display font-reading font-ui font-technical font-cjk font-calligraphic font-brand");
 
 /* ─── Art Image Design Tokens ─────────────────────────────────────────────── */
 /* These mirror the constants in components/ArtImage.tsx.
@@ -50,12 +50,12 @@
    * Use these in new components instead of arbitrary text-[14px] values.
    * Marketing/hero headings can fluid-size via clamp() inline; app UI
    * (oracle reader, shop, piece pages) should hold to this fixed scale. */
-  --text-eyebrow:  0.6875rem; /* 11px — Karla uppercase labels       */
-  --text-caption:  0.8125rem; /* 13px — Lora — fine print only       */
-  --text-meta:     0.875rem;  /* 14px — Lora — secondary info, dates */
-  --text-small:    0.9375rem; /* 15px — Lora — secondary body        */
-  --text-body:     1rem;      /* 16px — Lora — default body          */
-  --text-lead:     1.0625rem; /* 17px — Lora — intro / lyrics        */
+  --text-eyebrow:  0.6875rem; /* 11px — compact uppercase labels     */
+  --text-caption:  0.8125rem; /* 13px — fine print only              */
+  --text-meta:     0.875rem;  /* 14px — secondary info, dates        */
+  --text-small:    0.9375rem; /* 15px — secondary body               */
+  --text-body:     1rem;      /* 16px — default body                 */
+  --text-lead:     1.0625rem; /* 17px — intro / lyrics               */
   --text-subhead:  1.375rem;  /* 22px — Cormorant — small titles     */
   --text-heading:  1.75rem;   /* 28px — Cormorant — page headings    */
   --text-display:  clamp(2.5rem, 6vw, 4.5rem); /* 40-72px — hero    */
@@ -118,7 +118,7 @@ blockquote {
 
 /* #21 Tabular figures on prices — digits align in columns */
 .font-label,
-.font-mono {
+.font-technical {
   font-variant-numeric: lining-nums tabular-nums;
 }
 
@@ -147,7 +147,7 @@ blockquote {
 /* #10 Drop cap on first paragraph of articles */
 .article-prose > p:first-of-type::first-letter {
   float: left;
-  font-family: "Cinzel", serif;
+  font-family: var(--font-brand);
   font-size: 3.5em;
   line-height: 0.8;
   padding-right: 0.1em;
@@ -365,16 +365,10 @@ html.dark.oracle-card-page body {
 }
 
 /* ─── Chinese serif (Mingti / Song) for hexagram glyph labels ──────────── */
-/* Loads Noto Serif TC from Google Fonts (see index.html) for consistent
- * sharp Mingti rendering across platforms. Falls back to system Song fonts
- * if the network fails. */
+/* Uses the self-hosted Noto Serif SC subset for consistent sharp Mingti
+ * rendering across platforms, with system Song fonts as fallback. */
 .font-chinese-serif {
-  font-family: "Noto Serif TC", "Source Han Serif TC", "Source Han Serif SC",
-               "Noto Serif SC",
-               "PMingLiU", "MingLiU", "DFKai-SB",
-               "Songti TC", "Songti SC", "STSong",
-               "AR PL UMing TW", "AR PL UMing CN",
-               "宋體", "新細明體", serif;
+  font-family: var(--font-cjk);
   font-weight: 600;
   font-feature-settings: "palt";
   text-rendering: optimizeLegibility;
@@ -613,7 +607,7 @@ html.oracle-card-page body {
 /* Drop caps */
 .drop-cap::first-letter {
   float: left;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-display);
   font-size: 3.6em;
   line-height: 0.78;
   padding-right: 0.07em;
@@ -647,7 +641,7 @@ html.oracle-card-page body {
     position: absolute;
     right: -200px;
     width: 168px;
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-display);
     font-size: 1rem;
     font-style: italic;
     color: var(--color-wood-600);

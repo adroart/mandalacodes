@@ -9,7 +9,7 @@ const AccountDashboard: React.FC = () => {
   return (
     <AccountLayout title="Your account">
       {email && (
-        <p className="font-serif text-wood-700 mb-8">
+        <p className="font-reading text-wood-700 mb-8">
           Signed in as <span className="text-wood-900">{email}</span>.
         </p>
       )}
@@ -25,7 +25,7 @@ const AccountDashboard: React.FC = () => {
           <div className="font-display text-xl text-wood-900 mb-1">
             Your birth chart
           </div>
-          <p className="font-serif text-sm text-wood-700">
+          <p className="font-reading text-sm text-wood-700">
             Enter your birth data once and your eleven positions follow you
             through every reading.
           </p>
@@ -41,7 +41,7 @@ const AccountDashboard: React.FC = () => {
           <div className="font-display text-xl text-wood-900 mb-1">
             The artwork you hold
           </div>
-          <p className="font-serif text-sm text-wood-700">
+          <p className="font-reading text-sm text-wood-700">
             Record where your piece rests, set your intention, and tend its
             living book.
           </p>
@@ -57,7 +57,7 @@ const AccountDashboard: React.FC = () => {
           <div className="font-display text-xl text-wood-900 mb-1">
             Saved cards
           </div>
-          <p className="font-serif text-sm text-wood-700">
+          <p className="font-reading text-sm text-wood-700">
             Gather cards into named groupings.
           </p>
         </Link>

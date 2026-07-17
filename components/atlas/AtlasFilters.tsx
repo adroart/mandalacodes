@@ -85,7 +85,7 @@ const PaperFilters: React.FC<AtlasFiltersProps> = ({
               id="atlas-series"
               value={selectedSeries}
               onChange={(e) => onSeriesChange(e.target.value)}
-              className="appearance-none bg-transparent border border-wood-400 focus:border-bronze-700 text-wood-900 font-sans text-sm pl-3 pr-10 py-2.5 min-h-[44px] outline-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors duration-200"
+              className="appearance-none bg-transparent border border-wood-400 focus:border-bronze-700 text-wood-900 font-reading text-sm pl-3 pr-10 py-2.5 min-h-[44px] outline-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors duration-200"
             >
               <option value="all">All series</option>
               {series.map((s) => (
@@ -252,7 +252,7 @@ function TextToggle<T extends string>({
               type="button"
               aria-pressed={active}
               onClick={() => onChange(o.value)}
-              className={`font-serif text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+              className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
                 active
                   ? 'text-bronze-300 border-bronze-400/70'
                   : 'text-wood-400 border-transparent hover:text-bronze-300/80'

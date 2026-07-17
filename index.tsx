@@ -5,14 +5,6 @@ import '@fontsource/cormorant-garamond/400.css';
 import '@fontsource/cormorant-garamond/500.css';
 import '@fontsource/cormorant-garamond/300-italic.css';
 import '@fontsource/cormorant-garamond/400-italic.css';
-import '@fontsource/karla/300.css';
-import '@fontsource/karla/400.css';
-import '@fontsource/karla/500.css';
-import '@fontsource/karla/600.css';
-import '@fontsource/lora/400.css';
-import '@fontsource/lora/500.css';
-import '@fontsource/lora/600.css';
-import '@fontsource/lora/400-italic.css';
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -50,12 +42,12 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '40px', fontFamily: 'monospace', color: '#7f1d1d', background: '#fef2f2', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ padding: '40px', fontFamily: 'var(--font-technical)', color: '#7f1d1d', background: '#fef2f2', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>System Error</h1>
           <p style={{marginBottom: '20px'}}>The application encountered an unexpected state. Please reload the page.</p>
           <button
             onClick={() => window.location.reload()}
-            style={{ marginTop: '20px', padding: '10px 20px', background: '#262321', color: '#f5f4f0', border: 'none', cursor: 'pointer', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '2px' }}
+            style={{ marginTop: '20px', padding: '10px 20px', background: '#262321', color: '#f5f4f0', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-technical)', textTransform: 'uppercase', letterSpacing: '2px' }}
           >
             Reload Interface
           </button>
@@ -95,7 +87,7 @@ const mountApp = () => {
         // stringified error can never be interpreted as HTML (no raw-HTML sink).
         rootElement.replaceChildren();
         const errBox = document.createElement('div');
-        errBox.setAttribute('style', 'padding:40px; color:red; font-family:monospace;');
+        errBox.setAttribute('style', 'padding:40px; color:red; font-family:var(--font-technical);');
         errBox.textContent = `Fatal: Failed to mount application. ${e}`;
         rootElement.appendChild(errBox);
     }

@@ -1,8 +1,5 @@
 
   :root{
-    --serif:'Cormorant Garamond',Georgia,serif;
-    --sans:'Karla',-apple-system,system-ui,sans-serif;
-    --cjk:'Songti SC','Noto Serif SC','Cormorant Garamond',serif;
     /* light surface */
     --l-bg:#F3EFE7; --l-1:#272219; --l-2:#6B6253; --l-3:#A39A89; --l-rule:rgba(39,34,25,0.14); --l-soft:#EAE4D7;
     /* dark surface */
@@ -24,6 +21,8 @@
     --d-bg:#D6D0C3; --d-1:#2C2B26; --d-2:#5E5C53; --d-3:#85837A; --d-rule:rgba(43,42,38,0.17); --d-soft:#CDC7B9;
     --accent:#8F7A54; --accent-d:#8A7344;
   }
+  [data-font-role="display"]{font-family:var(--font-display);}
+  [data-font-role="cjk"]{font-family:var(--font-cjk);}
   [data-accent="gold"]{ --accent:#B0913C; --accent-d:#D8B776; }
   [data-accent="clay"]{ --accent:#A06A49; --accent-d:#CA9A78; }
   *{box-sizing:border-box;}
@@ -35,7 +34,7 @@
   [data-motion="off"] *{animation:none!important;transition:none!important;}
   [data-motion="off"] [data-reveal]{opacity:1!important;transform:none!important;}
   [data-motion="off"] [data-glyph]{clip-path:none!important;opacity:1!important;}
-  .ul-dropcap{float:left;font-family:var(--serif);font-weight:500;font-size:3.34em;line-height:0.74;padding:0.06em 0.12em 0 0;color:var(--accent);}
+  .ul-dropcap{float:left;font-family:var(--font-display);font-weight:500;font-size:3.34em;line-height:0.74;padding:0.06em 0.12em 0 0;color:var(--accent);}
   @keyframes ulRise{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
   @keyframes ulFadeIn{from{opacity:0;}to{opacity:1;}}
   @keyframes ulRingBloom{from{opacity:0;transform:scale(0.45);}to{opacity:1;transform:scale(1);}}

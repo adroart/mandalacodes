@@ -1,16 +1,13 @@
 /* ════════════════════════════════════════════════════════════════════════════
    Earth's Breath reading — VERBATIM from the imported template's <style> block.
-   The only change from the original is scoping the :root tokens to .eb-reading /
-   .eb-entrance (so the rest of the site is untouched) and reading the palette
-   from the [data-palette] attribute set by the component (daybook = light,
-   nightfall = dark). Colors, fonts, and keyframes are the file's own values —
-   do not hand-edit; re-extract from the .dc.html if the template changes.
+   The template tokens are scoped to .eb-reading / .eb-entrance (so the rest of
+   the site is untouched), while typography comes from src/theme.css. The
+   palette is read from the [data-palette] attribute set by the component
+   (daybook = light, nightfall = dark). Re-extract from the .dc.html if the
+   template changes, then preserve the shared semantic font roles.
    ════════════════════════════════════════════════════════════════════════════ */
 
 .eb-reading, .eb-entrance {
-  --serif: 'Cormorant Garamond', Georgia, serif;
-  --sans: 'Karla', -apple-system, system-ui, sans-serif;
-  --cjk: 'Noto Serif TC', 'Songti SC', 'Noto Serif SC', 'Songti TC', 'Cormorant Garamond', serif;
   /* light surface */
   --l-bg: #F3EFE7; --l-1: #272219; --l-2: #6B6253; --l-3: #A39A89; --l-rule: rgba(39,34,25,0.14); --l-soft: #EAE4D7;
   /* feature panels (I Ching, Human Design) = a warm sandstone recess of the paper, not black */
@@ -29,11 +26,13 @@
 }
 
 .eb-reading h1, .eb-reading h2, .eb-reading h3 { font-variant-ligatures: discretionary-ligatures common-ligatures; }
+.eb-reading [data-font-role="display"] { font-family: var(--font-display); }
+.eb-reading [data-font-role="cjk"] { font-family: var(--font-cjk); }
 .eb-reading .ul-stage::-webkit-scrollbar, .eb-entrance .ul-stage::-webkit-scrollbar { display: none; }
 .eb-reading[data-motion="off"] *, .eb-entrance[data-motion="off"] * { animation: none !important; transition: none !important; }
 
 .eb-reading .ul-dropcap, .eb-entrance .ul-dropcap {
-  float: left; font-family: var(--serif); font-weight: 500; font-size: 3.34em;
+  float: left; font-family: var(--font-display); font-weight: 500; font-size: 3.34em;
   line-height: 0.74; padding: 0.06em 0.12em 0 0; color: var(--accent);
 }
 

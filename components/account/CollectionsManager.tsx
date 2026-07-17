@@ -86,7 +86,7 @@ const CollectionsManagerInner: React.FC = () => {
   };
 
   if (isLoading) {
-    return <p className="font-serif text-wood-700">Loading…</p>;
+    return <p className="font-reading text-wood-700">Loading…</p>;
   }
 
   return (
@@ -103,7 +103,7 @@ const CollectionsManagerInner: React.FC = () => {
             }
           }}
           placeholder="New collection name"
-          className="flex-1 font-serif text-base px-3 py-2 border border-wood-200 rounded bg-paper-50"
+          className="flex-1 font-reading text-base px-3 py-2 border border-wood-200 rounded bg-paper-50"
         />
         <button
           type="button"
@@ -121,7 +121,7 @@ const CollectionsManagerInner: React.FC = () => {
       </div>
 
       {collections.length === 0 ? (
-        <p className="font-serif text-wood-700">
+        <p className="font-reading text-wood-700">
           You don't have any collections yet. Create one above, then save cards into it from any reading.
         </p>
       ) : (
@@ -175,7 +175,7 @@ const CollectionsManagerInner: React.FC = () => {
                 </button>
               </header>
               {c.items.length === 0 ? (
-                <p className="font-serif text-sm text-wood-600 italic">No items yet.</p>
+                <p className="font-reading text-sm text-wood-600 italic">No items yet.</p>
               ) : (
                 <>
                   {(() => {
@@ -200,12 +200,12 @@ const CollectionsManagerInner: React.FC = () => {
                           <div className="min-w-0">
                             <Link
                               to={itemLink(item)}
-                              className="font-serif text-wood-800 hover:text-bronze-600 truncate block"
+                              className="font-reading text-wood-800 hover:text-bronze-600 truncate block"
                             >
                               {itemLabel(item)}
                             </Link>
                             {line && (
-                              <p className="font-serif text-xs italic text-wood-500 truncate">
+                              <p className="font-reading text-xs italic text-wood-500 truncate">
                                 {line}
                                 {atlasHref && (
                                   <>

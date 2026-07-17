@@ -251,12 +251,12 @@ const PiecePage: React.FC = () => {
     return (
       <section className="dark-preserve min-h-screen bg-paper-100 flex flex-col items-center justify-center px-6 text-center">
         <h1
-          className="font-serif text-3xl text-wood-900 font-medium mb-4"
-          style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.04em' }}
+          className="font-display text-3xl text-wood-900 font-medium mb-4"
+          style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
         >
           This piece isn't on the map yet
         </h1>
-        <p className="font-serif text-lg text-wood-700 max-w-md leading-[1.6] mb-8">
+        <p className="font-display text-lg text-wood-700 max-w-md leading-[1.6] mb-8">
           The code you scanned doesn't resolve to a known piece. If you hold one
           of Adrian's works, you can still bring it into the record.
         </p>
@@ -379,8 +379,8 @@ const PiecePage: React.FC = () => {
               </p>
             )}
             <h1
-              className="font-serif text-4xl sm:text-5xl text-wood-900 font-medium leading-[1.02]"
-              style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.02em' }}
+              className="font-display text-4xl sm:text-5xl text-wood-900 font-medium leading-[1.02]"
+              style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.02em' }}
             >
               {cleanTitle}
             </h1>
@@ -394,7 +394,7 @@ const PiecePage: React.FC = () => {
           {seeking && (
             <div className="mt-8 text-center">
               <div className="mx-auto max-w-md border-y border-wood-300 py-5">
-                <p className="font-serif text-2xl sm:text-[1.75rem] text-wood-800 leading-[1.3]">
+                <p className="font-display text-2xl sm:text-[1.75rem] text-wood-800 leading-[1.3]">
                   This piece is waiting for its keeper.{' '}
                   <Link
                     to={claimHref}
@@ -413,15 +413,15 @@ const PiecePage: React.FC = () => {
             <div className="mt-10 sm:mt-12 text-center">
               <p className={`${LABEL} text-bronze-600 mb-2`}>Founding light</p>
               <p
-                className="font-serif text-wood-900 font-medium leading-none"
-                style={{ fontFamily: 'Cinzel, serif', fontSize: 'clamp(3.5rem, 13vw, 6rem)' }}
+                className="font-display text-wood-900 font-medium leading-none"
+                style={{ fontFamily: 'var(--font-brand)', fontSize: 'clamp(3.5rem, 13vw, 6rem)' }}
               >
                 {piece.claimOrdinal}
               </p>
-              <p className="font-serif text-lg text-wood-600 mt-3">
+              <p className="font-display text-lg text-wood-600 mt-3">
                 the {ordinalLabel(piece.claimOrdinal as number)} light of the constellation
               </p>
-              <p className="font-serif text-sm text-wood-500 mt-1">
+              <p className="font-display text-sm text-wood-500 mt-1">
                 A founding light marks the order in which a piece was claimed by its keeper.
               </p>
             </div>
@@ -433,7 +433,7 @@ const PiecePage: React.FC = () => {
             <div className="mt-10 sm:mt-12">
               <Rule className="mx-auto max-w-[5rem]" />
               <p
-                className="font-serif text-wood-900 text-center leading-[1.28] mt-8 whitespace-pre-line"
+                className="font-display text-wood-900 text-center leading-[1.28] mt-8 whitespace-pre-line"
                 style={{ fontSize: 'clamp(1.6rem, 4.6vw, 2.6rem)' }}
               >
                 {piece.intention}
@@ -446,12 +446,12 @@ const PiecePage: React.FC = () => {
           {(anchoredCity || lineageLine) && (
             <div className="mt-9 sm:mt-11 text-center space-y-1.5">
               {anchoredCity && (
-                <p className="font-serif text-xl text-wood-800">
+                <p className="font-display text-xl text-wood-800">
                   Anchored in {anchoredCity}
                 </p>
               )}
               {lineageLine && (
-                <p className="font-serif text-lg text-wood-600">{lineageLine}</p>
+                <p className="font-display text-lg text-wood-600">{lineageLine}</p>
               )}
             </div>
           )}
@@ -467,13 +467,13 @@ const PiecePage: React.FC = () => {
                 className="absolute inset-1 rounded-full border border-bronze-500/30"
               />
               <span
-                className="font-serif text-xl text-bronze-600 relative"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-display text-xl text-bronze-600 relative"
+                style={{ fontFamily: 'var(--font-brand)' }}
               >
                 {claimed ? (piece.claimOrdinal as number) : '·'}
               </span>
             </span>
-            <p className="font-serif text-base text-wood-600 leading-[1.55] max-w-md mt-4">
+            <p className="font-display text-base text-wood-600 leading-[1.55] max-w-md mt-4">
               Recorded in the living ledger. Each page is sealed against the one
               before it, and the keeper can always carry the whole book away.
             </p>
@@ -485,7 +485,7 @@ const PiecePage: React.FC = () => {
           </div>
         </article>
 
-        <p className="font-serif text-base text-wood-500 text-center mt-5 leading-[1.6] max-w-sm mx-auto">
+        <p className="font-display text-base text-wood-500 text-center mt-5 leading-[1.6] max-w-sm mx-auto">
           This page is the certificate of the physical work.
         </p>
 
@@ -497,13 +497,13 @@ const PiecePage: React.FC = () => {
             <h2 className={`${LABEL} text-center mb-8`}>The work</h2>
 
             {description && (
-              <p className="font-serif text-lg text-wood-800 leading-[1.7] mb-8 whitespace-pre-line">
+              <p className="font-display text-lg text-wood-800 leading-[1.7] mb-8 whitespace-pre-line">
                 {description}
               </p>
             )}
 
             {(editionLine || art.dimensions || art.material) && (
-              <p className="font-serif text-base text-wood-600 leading-relaxed mb-8">
+              <p className="font-display text-base text-wood-600 leading-relaxed mb-8">
                 {[editionLine, art.dimensions, art.material]
                   .filter(Boolean)
                   .map((bit, i) => (
@@ -522,7 +522,7 @@ const PiecePage: React.FC = () => {
                 {content?.materials && (
                   <div>
                     <p className={`${LABEL} mb-2`}>Materials</p>
-                    <p className="font-serif text-base text-wood-800 leading-[1.6] whitespace-pre-line">
+                    <p className="font-display text-base text-wood-800 leading-[1.6] whitespace-pre-line">
                       {content.materials}
                     </p>
                   </div>
@@ -530,7 +530,7 @@ const PiecePage: React.FC = () => {
                 {content?.provenance && (
                   <div>
                     <p className={`${LABEL} mb-2`}>Provenance</p>
-                    <p className="font-serif text-base text-wood-800 leading-[1.6] whitespace-pre-line">
+                    <p className="font-display text-base text-wood-800 leading-[1.6] whitespace-pre-line">
                       {content.provenance}
                     </p>
                   </div>
@@ -550,7 +550,7 @@ const PiecePage: React.FC = () => {
                 </div>
                 <div>
                   <p className={`${LABEL} mb-2`}>The code it carries</p>
-                  <p className="font-serif text-lg text-wood-900 leading-snug">
+                  <p className="font-display text-lg text-wood-900 leading-snug">
                     {card.iching.hexagram_name} · Hexagram {cardNumber}
                   </p>
                   <Link
@@ -599,7 +599,7 @@ const PiecePage: React.FC = () => {
                       <li key={k.key}>
                         <Link
                           to={`/atlas?piece=${encodeURIComponent(k.atlasParam)}`}
-                          className="font-serif text-lg text-wood-900 leading-snug hover:text-bronze-600 transition-colors"
+                          className="font-display text-lg text-wood-900 leading-snug hover:text-bronze-600 transition-colors"
                         >
                           {k.title}
                           {k.thread && (
@@ -615,7 +615,7 @@ const PiecePage: React.FC = () => {
               {holderElement && piece.status === 'placed' && (
                 <div>
                   <p className={`${LABEL} mb-1`}>The hands it rests in</p>
-                  <p className="font-serif text-lg text-wood-900 leading-snug">
+                  <p className="font-display text-lg text-wood-900 leading-snug">
                     Held by a chart of {holderElement}
                   </p>
                 </div>
@@ -634,7 +634,7 @@ const PiecePage: React.FC = () => {
                     className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
                     style={{ transform: 'translateX(-4px)' }}
                   />
-                  <span className="font-serif text-lg text-wood-900 leading-snug">
+                  <span className="font-display text-lg text-wood-900 leading-snug">
                     {entry.label}
                     {entry.detail && (
                       <span className="text-wood-600"> · {entry.detail}</span>
@@ -648,7 +648,7 @@ const PiecePage: React.FC = () => {
                   className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
                   style={{ transform: 'translateX(-4px)' }}
                 />
-                <span className="font-serif text-lg text-wood-500 leading-snug">
+                <span className="font-display text-lg text-wood-500 leading-snug">
                   It is ready for its next keeper
                 </span>
               </li>
@@ -657,7 +657,7 @@ const PiecePage: React.FC = () => {
 
           {/* ── CTA: the claim block stays at the foot ── */}
           <div className={`${CARD} p-6 sm:p-7`}>
-            <p className="font-serif text-lg text-wood-800 leading-[1.6] mb-5">
+            <p className="font-display text-lg text-wood-800 leading-[1.6] mb-5">
               Your piece already has a story. Signing in lets you add to it:
               place it on the map, write its intentions, pass it on.
             </p>
@@ -667,7 +667,7 @@ const PiecePage: React.FC = () => {
             >
               Open this piece's book
             </Link>
-            <p className="font-serif text-sm text-wood-600 mt-3 leading-[1.6]">
+            <p className="font-display text-sm text-wood-600 mt-3 leading-[1.6]">
               Sign in with the email your piece was registered to.
             </p>
             <div className="mt-5 pt-4 border-t border-wood-200">

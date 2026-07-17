@@ -109,7 +109,7 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
 
         {/* City name */}
         <h3
-          className="font-serif text-2xl sm:text-[1.7rem] font-semibold leading-tight"
+          className="font-display text-2xl sm:text-[1.7rem] font-semibold leading-tight"
           style={{ color: '#f6f1e8' }}
         >
           {cityLabel}
@@ -132,7 +132,7 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
                   className="group block w-full text-left"
                 >
                   <span
-                    className="font-serif text-lg leading-snug transition-colors group-hover:text-bronze-300"
+                    className="font-reading text-lg leading-snug transition-colors group-hover:text-bronze-300"
                     style={{ color: '#f6f1e8' }}
                   >
                     {title}
@@ -152,7 +152,7 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
         {/* Once-per-visitor gloss for "ember". */}
         <p
           aria-hidden={gloss !== 'ember'}
-          className="mt-3 font-serif text-[13px] leading-snug"
+          className="mt-3 font-display text-[13px] leading-snug"
           style={{
             color: 'rgba(196,170,124,0.85)',
             opacity: gloss === 'ember' ? 1 : 0,

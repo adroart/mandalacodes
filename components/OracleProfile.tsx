@@ -51,7 +51,7 @@ const OracleProfile: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 24 }}>
           <h1
             style={{
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: 'var(--font-display)',
               fontSize: 36,
               color: 'var(--color-wood-900)',
               margin: 0,
@@ -65,7 +65,7 @@ const OracleProfile: React.FC = () => {
                 type="button"
                 onClick={shareProfile}
                 style={{
-                  fontFamily: "'Lato', Helvetica, sans-serif",
+                  fontFamily: 'var(--font-ui)',
                   fontSize: 10,
                   letterSpacing: '0.22em',
                   textTransform: 'uppercase',
@@ -83,7 +83,7 @@ const OracleProfile: React.FC = () => {
                 type="button"
                 onClick={() => setEditing(true)}
                 style={{
-                  fontFamily: "'Lato', Helvetica, sans-serif",
+                  fontFamily: 'var(--font-ui)',
                   fontSize: 10,
                   letterSpacing: '0.22em',
                   textTransform: 'uppercase',
@@ -102,7 +102,7 @@ const OracleProfile: React.FC = () => {
         {!showForm && (
           <div
             style={{
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: 'var(--font-reading)',
               fontSize: 15,
               color: 'var(--color-wood-700)',
               marginTop: 8,
@@ -120,7 +120,7 @@ const OracleProfile: React.FC = () => {
         <p
           data-profile-introduction
           style={{
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: 'var(--font-reading)',
             fontSize: 17,
             color: 'var(--color-wood-700)',
             marginTop: 10,
@@ -156,7 +156,7 @@ const OracleProfile: React.FC = () => {
       <section aria-label="The sky right now" style={{ marginTop: 48 }}>
         <p
           style={{
-            fontFamily: 'Cinzel, Palatino, serif',
+            fontFamily: 'var(--font-brand)',
             fontSize: 10,
             letterSpacing: '0.32em',
             textTransform: 'uppercase',
@@ -177,7 +177,7 @@ const OracleProfile: React.FC = () => {
           marginTop: 64,
           paddingTop: 24,
           borderTop: '1px solid color-mix(in oklab, var(--color-wood-600) 12%, transparent)',
-          fontFamily: "'Lato', Helvetica, sans-serif",
+          fontFamily: 'var(--font-reading)',
           fontSize: 11,
           color: 'var(--color-wood-600)',
           letterSpacing: '0.04em',

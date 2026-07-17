@@ -208,7 +208,7 @@ export default function FeaturedDream({
           style={{
             position: 'relative',
             zIndex: 1,
-            fontFamily: '"Cormorant Garamond", serif',
+            fontFamily: 'var(--font-display)',
             fontWeight: 400,
             fontSize: isPhone ? 'clamp(17px, 4.6vw, 20px)' : 'clamp(20px, 1.5vw, 23px)',
             lineHeight: 1.4,

@@ -26,7 +26,7 @@
 }
 
 .ul-energy-panel__label {
-  font-family: 'Lato', Helvetica, sans-serif;
+  font-family: var(--font-ui);
   font-size: 10px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -51,14 +51,14 @@
 }
 
 .ul-energy-panel__title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-display);
   font-size: 19px;
   line-height: 1.15;
   color: var(--color-wood-900);
 }
 
 .ul-energy-panel__meta {
-  font-family: 'Lato', Helvetica, sans-serif;
+  font-family: var(--font-ui);
   font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--color-wood-600);

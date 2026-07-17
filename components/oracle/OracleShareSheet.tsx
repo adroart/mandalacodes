@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ulCardPublicId } from '../../utils/universalLanguage';
+import { themeCanvasFont } from '../../shared/themeFonts';
 
 /* The Share panel as it was on the version live before the Earth's Breath
    rebuild — the richer sheet with brand icons (Copy link / WhatsApp / Telegram /
@@ -18,8 +19,9 @@ async function generateStoryBlob(number: number, cardName: string, keywords: str
   const publicId = ulCardPublicId(number);
   if (!publicId) throw new Error('no image');
   await Promise.all([
-    document.fonts.load('400 88px "Cormorant Garamond"'),
-    document.fonts.load('400 32px "Karla"'),
+    document.fonts.load(themeCanvasFont('400', 88, 'display')),
+    document.fonts.load(themeCanvasFont('400', 32, 'ui')),
+    document.fonts.load(themeCanvasFont('400', 32, 'reading')),
   ]).catch(() => {});
   const imgUrl = `${CLOUDINARY_BASE}/f_jpg,q_auto,w_1080,h_1080,c_fill,g_center/${publicId}`;
   const cardImg = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -34,16 +36,16 @@ async function generateStoryBlob(number: number, cardName: string, keywords: str
   grad.addColorStop(0, 'rgba(22,19,14,0)'); grad.addColorStop(1, 'rgba(22,19,14,1)');
   ctx.fillStyle = grad; ctx.fillRect(0, 940, W, 240);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const cx = W / 2;
-  ctx.fillStyle = '#C7A05B'; ctx.font = '400 26px "Karla", sans-serif';
+  ctx.fillStyle = '#C7A05B'; ctx.font = themeCanvasFont('400', 26, 'ui');
   ctx.fillText('UNIVERSAL LANGUAGE ORACLE', cx, 1240);
-  ctx.fillStyle = '#ECE4D5'; fitText(ctx, cardName, 960, 84, 52, s => `400 ${s}px "Cormorant Garamond", serif`);
+  ctx.fillStyle = '#ECE4D5'; fitText(ctx, cardName, 960, 84, 52, s => themeCanvasFont('400', s, 'display'));
   ctx.fillText(cardName, cx, 1345);
-  ctx.fillStyle = '#7A7160'; ctx.font = '400 30px "Karla", sans-serif';
+  ctx.fillStyle = '#7A7160'; ctx.font = themeCanvasFont('400', 30, 'ui');
   ctx.fillText(`Code ${String(number).padStart(2, '0')}`, cx, 1418);
-  ctx.fillStyle = '#ABA08C'; fitText(ctx, keywords, 900, 30, 22, s => `400 ${s}px "Karla", sans-serif`);
+  ctx.fillStyle = '#ABA08C'; fitText(ctx, keywords, 900, 30, 22, s => themeCanvasFont('400', s, 'ui'));
   ctx.fillText(keywords, cx, 1492);
   ctx.strokeStyle = '#3a342b'; ctx.beginPath(); ctx.moveTo(390, 1556); ctx.lineTo(690, 1556); ctx.stroke();
-  ctx.fillStyle = '#7A7160'; ctx.font = 'italic 400 30px "Cormorant Garamond", serif';
+  ctx.fillStyle = '#7A7160'; ctx.font = themeCanvasFont('italic 400', 30, 'reading');
   ctx.fillText('Open the reading and receive what it holds.', cx, 1620);
   return new Promise<Blob>((res, rej) => canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob')), 'image/jpeg', 0.92));
 }
@@ -100,7 +102,7 @@ export const OracleShareSheet: React.FC<{
       <button type="button" aria-label="Dismiss" onClick={onClose} className="absolute inset-0 bg-stone-900/55 backdrop-blur-[2px]" style={{ animation: 'ulFadeIn 200ms ease both' }} />
       <div className="relative w-full sm:max-w-[460px] bg-paper-100 border border-wood-200/60 sm:rounded-lg overflow-hidden" style={{ animation: 'ulRise 320ms cubic-bezier(.16,1,.3,1) both' }}>
         <div className="flex items-baseline justify-between px-5 pt-5 pb-3">
-          <p className="font-serif text-[22px] text-wood-900">Send a code</p>
+          <p className="font-display text-[22px] text-wood-900">Send a code</p>
           <button onClick={onClose} aria-label="Close" className="text-wood-400 hover:text-wood-700 text-2xl leading-none">×</button>
         </div>
         <div className="grid grid-cols-2 gap-2 px-5 pb-5">

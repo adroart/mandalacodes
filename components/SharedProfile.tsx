@@ -27,7 +27,7 @@ const SharedProfile: React.FC = () => {
       <header className="mb-10">
         <p
           style={{
-            fontFamily: 'Cinzel, Palatino, serif',
+            fontFamily: 'var(--font-brand)',
             fontSize: 10,
             letterSpacing: '0.32em',
             textTransform: 'uppercase',
@@ -39,7 +39,7 @@ const SharedProfile: React.FC = () => {
         </p>
         <h1
           style={{
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: 'var(--font-display)',
             fontSize: 36,
             color: 'var(--color-wood-900)',
             margin: 0,
@@ -50,7 +50,7 @@ const SharedProfile: React.FC = () => {
         {decoded?.placeLabel && (
           <p
             style={{
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: 'var(--font-reading)',
               fontSize: 17,
               color: 'var(--color-wood-700)',
               marginTop: 12,
@@ -61,7 +61,7 @@ const SharedProfile: React.FC = () => {
         )}
         <p
           style={{
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: 'var(--font-reading)',
             fontSize: 17,
             color: 'var(--color-wood-700)',
             marginTop: 12,
@@ -79,7 +79,7 @@ const SharedProfile: React.FC = () => {
       ) : (
         <p
           style={{
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: 'var(--font-reading)',
             fontSize: 17,
             color: 'var(--color-wood-700)',
           }}
@@ -94,7 +94,7 @@ const SharedProfile: React.FC = () => {
           marginTop: 64,
           paddingTop: 24,
           borderTop: '1px solid color-mix(in oklab, var(--color-wood-600) 12%, transparent)',
-          fontFamily: "'Lato', Helvetica, sans-serif",
+          fontFamily: 'var(--font-reading)',
           fontSize: 11,
           color: 'var(--color-wood-600)',
           letterSpacing: '0.04em',

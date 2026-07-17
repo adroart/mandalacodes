@@ -256,18 +256,18 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
               right margin equal to its own tracking; that pulls the trailing gap
               back and makes the final glyph land truly flush-right on both. */}
           <span
-            className={`font-serif font-normal uppercase text-wood-900 group-hover:text-bronze-600 transition-colors duration-300 ${
+            className={`font-brand font-normal uppercase text-wood-900 group-hover:text-bronze-600 transition-colors duration-300 ${
               isScrolled ? 'text-[12px]' : 'text-[13px]'
             }`}
-            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.2em', marginRight: '-0.2em', lineHeight: 1.22, textAlign: 'center' }}
+            style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.2em', marginRight: '-0.2em', lineHeight: 1.22, textAlign: 'center' }}
           >
             Mandala
           </span>
           <span
-            className={`font-serif font-normal uppercase text-wood-900 group-hover:text-bronze-600 transition-colors duration-300 ${
+            className={`font-brand font-normal uppercase text-wood-900 group-hover:text-bronze-600 transition-colors duration-300 ${
               isScrolled ? 'text-[12px]' : 'text-[13px]'
             }`}
-            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.61em', marginRight: '-0.61em', lineHeight: 1.22, textAlign: 'center' }}
+            style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.61em', marginRight: '-0.61em', lineHeight: 1.22, textAlign: 'center' }}
           >
             Codes
           </span>

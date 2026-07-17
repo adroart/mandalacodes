@@ -48,14 +48,14 @@ const OracleSystems: React.FC = () => {
         <p className="font-label text-[11px] uppercase tracking-[0.32em] text-bronze-600 mb-6">
           The Three Systems
         </p>
-        <h1 className="font-serif text-[34px] sm:text-[44px] leading-[1.05] tracking-[-0.01em] text-wood-900 mb-6 sm:mb-8">
+        <h1 className="font-display text-[34px] sm:text-[44px] leading-[1.05] tracking-[-0.01em] text-wood-900 mb-6 sm:mb-8">
           A lineage of changes
         </h1>
-        <p className="font-serif text-[18px] sm:text-[20px] text-wood-700 leading-[1.55] sm:leading-[1.5] max-w-prose">
+        <p className="font-reading text-[18px] sm:text-[20px] text-wood-700 leading-[1.55] sm:leading-[1.5] max-w-prose">
           The Universal Language reads through three lenses, three vocabularies for the same shape of energy. The I Ching arrives from ancient China. The Gene Keys and Human Design arrive in the last century, descendants and elaborations. None of this is mine. The cards are an offering of gratitude.
         </p>
 
-        <p className="font-sans text-[14px] italic text-wood-500 leading-[1.6] mt-8 max-w-prose">
+        <p className="font-reading text-[14px] italic text-wood-500 leading-[1.6] mt-8 max-w-prose">
           {/* DRAFT — prose to be refined by Adrian */}
           The text below is a working draft. The histories, the names, the lineages each deserve more care than a placeholder can give. Read it as a sketch.
         </p>
@@ -77,14 +77,14 @@ const OracleSystems: React.FC = () => {
           <p className="font-label text-[10px] uppercase tracking-[0.3em] text-bronze-600 mb-4">
             One · I Ching
           </p>
-          <h2 className="font-serif text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
+          <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
             The Book of Changes
           </h2>
-          <p className="font-serif text-[15px] text-wood-500 italic mt-2">
+          <p className="font-reading text-[15px] text-wood-500 italic mt-2">
             attributed to Fu Xi, King Wen, the Duke of Zhou, and Confucius
           </p>
 
-          <div className="space-y-5 mt-8 font-sans text-[16px] sm:text-[17px] text-wood-800 leading-[1.7]">
+          <div className="space-y-5 mt-8 font-reading text-[16px] sm:text-[17px] text-wood-800 leading-[1.7]">
             <p>
               The I Ching is the oldest text in active spiritual use anywhere in the world. Its earliest layers are attributed to the legendary Fu Xi, who is said to have observed the markings on a tortoise shell rising from the Yellow River and seen, in those eight three-line figures, the structure of the cosmos. Whether or not that origin is literal, the symbols themselves came to encode a way of reading change as it moves through any moment.
             </p>
@@ -104,10 +104,10 @@ const OracleSystems: React.FC = () => {
             <p className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
               In gratitude to
             </p>
-            <p className="font-serif text-[18px] text-wood-900">
+            <p className="font-reading text-[18px] text-wood-900">
               Richard Wilhelm and Cary F. Baynes
             </p>
-            <p className="font-serif text-[15px] text-wood-600 leading-[1.6] mt-1.5 max-w-prose">
+            <p className="font-reading text-[15px] text-wood-600 leading-[1.6] mt-1.5 max-w-prose">
               Whose translation, with Jung's foreword, is the lineage every English reader of the I Ching is standing inside of.
             </p>
           </div>
@@ -118,14 +118,14 @@ const OracleSystems: React.FC = () => {
           <p className="font-label text-[10px] uppercase tracking-[0.3em] text-bronze-600 mb-4">
             Two · Gene Keys
           </p>
-          <h2 className="font-serif text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
+          <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
             The contemplative path
           </h2>
-          <p className="font-serif text-[15px] text-wood-500 italic mt-2">
+          <p className="font-reading text-[15px] text-wood-500 italic mt-2">
             transmitted by Richard Rudd, 2002 onward
           </p>
 
-          <div className="space-y-5 mt-8 font-sans text-[16px] sm:text-[17px] text-wood-800 leading-[1.7]">
+          <div className="space-y-5 mt-8 font-reading text-[16px] sm:text-[17px] text-wood-800 leading-[1.7]">
             <p>
               The Gene Keys are the youngest of the three systems. Richard Rudd received the transmission over a long, contemplative period beginning in the early 2000s, after years of training in Human Design and a lifetime of reading the I Ching. The work is published as a book in 2013.
             </p>
@@ -145,13 +145,13 @@ const OracleSystems: React.FC = () => {
             <p className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
               In gratitude to
             </p>
-            <p className="font-serif text-[18px] text-wood-900">
+            <p className="font-reading text-[18px] text-wood-900">
               Richard Rudd
             </p>
-            <p className="font-serif text-[15px] text-wood-600 leading-[1.6] mt-1.5 max-w-prose">
+            <p className="font-reading text-[15px] text-wood-600 leading-[1.6] mt-1.5 max-w-prose">
               Whose synthesis offers the I Ching, Human Design, and the wisdom traditions back to a contemporary reader as a contemplative life.
             </p>
-            <p className="font-serif text-[14px] text-wood-500 mt-3">
+            <p className="font-reading text-[14px] text-wood-500 mt-3">
               <a
                 href="https://genekeys.com"
                 target="_blank"
@@ -169,14 +169,14 @@ const OracleSystems: React.FC = () => {
           <p className="font-label text-[10px] uppercase tracking-[0.3em] text-bronze-600 mb-4">
             Three · Human Design
           </p>
-          <h2 className="font-serif text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
+          <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
             A map of energy
           </h2>
-          <p className="font-serif text-[15px] text-wood-500 italic mt-2">
+          <p className="font-reading text-[15px] text-wood-500 italic mt-2">
             received by Ra Uru Hu, Ibiza, January 1987
           </p>
 
-          <div className="space-y-5 mt-8 font-sans text-[16px] sm:text-[17px] text-wood-800 leading-[1.7]">
+          <div className="space-y-5 mt-8 font-reading text-[16px] sm:text-[17px] text-wood-800 leading-[1.7]">
             <p>
               Human Design enters the world through Alan Robert Krakower, who later took the name Ra Uru Hu. In January of 1987, on the island of Ibiza, he reports an eight-day-and-night encounter with a voice he calls the Voice. What he transcribes during that period becomes the system: a synthesis of the I Ching, Western astrology, the Hindu chakra system, the Kabbalistic Tree of Life, and the science of the neutrino, woven into a single chart called the bodygraph.
             </p>
@@ -196,10 +196,10 @@ const OracleSystems: React.FC = () => {
             <p className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
               In gratitude to
             </p>
-            <p className="font-serif text-[18px] text-wood-900">
+            <p className="font-reading text-[18px] text-wood-900">
               Ra Uru Hu
             </p>
-            <p className="font-serif text-[15px] text-wood-600 leading-[1.6] mt-1.5 max-w-prose">
+            <p className="font-reading text-[15px] text-wood-600 leading-[1.6] mt-1.5 max-w-prose">
               Whose transmission gave the West a map of energetic design and a vocabulary for living in alignment with one's own nature.
             </p>
           </div>
@@ -207,7 +207,7 @@ const OracleSystems: React.FC = () => {
 
         {/* ── Closing ───────────────────────────────────────────────────── */}
         <section className="pt-20 sm:pt-24 mt-20 border-t border-wood-200">
-          <p className="font-serif text-[17px] sm:text-[18px] text-wood-700 leading-[1.7] max-w-prose">
+          <p className="font-reading text-[17px] sm:text-[18px] text-wood-700 leading-[1.7] max-w-prose">
             The Universal Language Oracle does not improve on these systems. It carries them, sixty-four cards holding the same sixty-four images that have travelled three thousand years through three traditions. Whatever clarity the cards offer belongs to the lineages that arrived first.
           </p>
 

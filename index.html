@@ -66,7 +66,7 @@
 
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="preload" href="/fonts/cormorant-garamond-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/lora-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/iowan-old-style-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
     <!-- The Latin reading families and Oracle CJK roles are self-hosted (see the
          @font-face block appended to src/theme.css) so this surface and the
          /learn library reference identical /fonts/... URLs and never repaint
@@ -101,9 +101,9 @@
         }
       })();
     </script>
-    <a href="#main-content" class="skip-link" style="font-family:'Karla',sans-serif;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;">Skip to main content</a>
+    <a href="#main-content" class="skip-link" style="font-family:var(--font-ui);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;">Skip to main content</a>
     <div id="root">
-        <div class="initial-loader" style="height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; background-color: #262321; color: #f5f4f0; font-family: monospace; flex-direction: column; gap: 20px;">
+        <div class="initial-loader" style="height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; background-color: #262321; color: #f5f4f0; font-family: var(--font-technical); flex-direction: column; gap: 20px;">
             <div style="width: 40px; height: 40px; border: 2px solid #524330; border-top-color: #b0966b; border-radius: 50%; animation: spin 1s linear infinite;"></div>
             <div id="loader-status" style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #b0966b;">Opening the deck...</div>
             <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>

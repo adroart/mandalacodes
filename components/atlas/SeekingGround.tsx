@@ -36,11 +36,11 @@ const SeekingGround: React.FC<SeekingGroundProps> = ({
       >
         <h2
           id="atlas-seeking-heading"
-          className="font-serif text-2xl text-wood-900 font-medium mb-3"
+          className="font-display text-2xl text-wood-900 font-medium mb-3"
         >
           Every piece has found ground
         </h2>
-        <p className="font-serif text-base text-wood-700 leading-[1.7] max-w-prose">
+        <p className="font-reading text-base text-wood-700 leading-[1.7] max-w-prose">
           Nothing wandering, for now.
         </p>
       </section>
@@ -54,15 +54,15 @@ const SeekingGround: React.FC<SeekingGroundProps> = ({
     >
       <h2
         id="atlas-seeking-heading"
-        className="font-serif text-2xl text-wood-900 font-medium mb-3"
+        className="font-display text-2xl text-wood-900 font-medium mb-3"
       >
         Seeking ground
       </h2>
-      <p className="font-sans text-sm text-wood-700 leading-[1.7] max-w-prose mb-2">
+      <p className="font-reading text-sm text-wood-700 leading-[1.7] max-w-prose mb-2">
         {count} of {totalPieces} {totalPieces === 1 ? 'piece' : 'pieces'} seeking ground.
         Made, not yet placed on the map.
       </p>
-      <p className="font-serif text-sm text-wood-600 leading-[1.7] max-w-prose mb-6">
+      <p className="font-reading text-sm text-wood-600 leading-[1.7] max-w-prose mb-6">
         Hold one of these?{' '}
         <Link
           to="/atlas/claim"
@@ -93,7 +93,7 @@ const SeekingGround: React.FC<SeekingGroundProps> = ({
                     : 'text-wood-900 hover:text-bronze-700'
                 }`}
               >
-                <span className="font-serif text-base leading-snug">{p.title}</span>
+                <span className="font-reading text-base leading-snug">{p.title}</span>
                 {inline.length > 0 && (
                   <span className="block font-label text-[11px] uppercase tracking-[0.15em] text-wood-600 mt-1">
                     {inline.map((bit, i) => (

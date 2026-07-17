@@ -79,7 +79,7 @@ const styles = `
   }
   .family-reveal__inner { width: 100%; max-width: 620px; }
   .family-reveal__eyebrow {
-    font-family: var(--font-ui, 'Karla', system-ui, sans-serif);
+    font-family: var(--font-ui);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.22em;
@@ -88,7 +88,7 @@ const styles = `
     margin: 0 0 18px;
   }
   .family-reveal__title {
-    font-family: var(--font-display, 'Cormorant Garamond', serif);
+    font-family: var(--font-display);
     font-weight: 500;
     font-size: clamp(40px, 12vw, 68px);
     line-height: 1;
@@ -96,7 +96,7 @@ const styles = `
     margin: 0 0 34px;
   }
   .family-reveal__body p {
-    font-family: var(--font-display, 'Cormorant Garamond', serif);
+    font-family: var(--font-reading);
     font-size: clamp(19px, 4.6vw, 23px);
     line-height: 1.5;
     color: var(--l-2, #C9BDA9);
@@ -113,7 +113,7 @@ const styles = `
   .family-reveal__door {
     display: block;
     padding: 16px 2px;
-    font-family: var(--font-ui, 'Karla', system-ui, sans-serif);
+    font-family: var(--font-ui);
     font-size: 12px;
     letter-spacing: 0.16em;
     text-transform: uppercase;

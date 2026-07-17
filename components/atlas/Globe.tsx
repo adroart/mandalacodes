@@ -398,7 +398,7 @@ export default function Globe({
         // Soft inner vignette so the sphere's edge melts into the panel.
         boxShadow: `inset 0 0 80px 20px rgb(${BACKGROUND_RGB})`,
         overflow: 'hidden',
-        fontFamily: '"Cormorant Garamond", serif',
+        fontFamily: 'var(--font-reading)',
       }}
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
