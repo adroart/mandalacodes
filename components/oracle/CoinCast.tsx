@@ -253,7 +253,7 @@ const BecomingPreview: React.FC<{
 
         {/* Text */}
         <div className="px-6 pt-5 pb-6">
-          <h2 className="font-serif text-[22px] text-stone-100 leading-tight">
+          <h2 className="font-display text-[22px] text-stone-100 leading-tight">
             {card.iching.hexagram_name}
           </h2>
 
@@ -270,13 +270,13 @@ const BecomingPreview: React.FC<{
                 <span className="font-label text-[9px] uppercase tracking-[0.18em] text-bronze-400/70">
                   {label}
                 </span>
-                <span className="font-serif text-[13px] text-stone-200">{value}</span>
+                <span className="font-reading text-[13px] text-stone-200">{value}</span>
               </span>
             ))}
           </div>
 
           {/* Short excerpt — the readable `nature` field, gently truncated */}
-          <p className="font-sans text-[14px] text-stone-300 leading-[1.7] mt-4">
+          <p className="font-reading text-[14px] text-stone-300 leading-[1.7] mt-4">
             {truncate(card.nature, 220)}
           </p>
 
@@ -430,7 +430,7 @@ const CoinCast: React.FC<{
           <span className="transition-transform duration-300 group-hover:-translate-y-0.5">
             <ThreeCoins size={84} />
           </span>
-          <span className="font-serif text-[17px] sm:text-[18px] text-stone-200 leading-[1.5] mt-5 max-w-[26rem]">
+          <span className="font-reading text-[17px] sm:text-[18px] text-stone-200 leading-[1.5] mt-5 max-w-[26rem]">
             Every hexagram is also in motion. Throw the three coins to see how
             this one is changing, and the hexagram it is turning into.
           </span>
@@ -500,7 +500,7 @@ const CoinCast: React.FC<{
           {/* Text block — the title at the top, aligned with the glyph's
               top edge, then the moving lines below. */}
           <div className="flex-1 min-w-0 w-full text-center sm:text-left">
-            <p className="font-serif text-[17px] sm:text-[19px] text-stone-100 leading-[1.3]">
+            <p className="font-reading text-[17px] sm:text-[19px] text-stone-100 leading-[1.3]">
               {primaryCard?.iching.hexagram_name ?? `Code ${primaryNumber}`}
             </p>
 
@@ -508,7 +508,7 @@ const CoinCast: React.FC<{
                 a silent result reads as a broken throw. */}
             {settled && movingCount === 0 && (
               <p
-                className="font-sans text-[15px] sm:text-[16px] text-stone-300 leading-[1.7] mt-4 text-left"
+                className="font-reading text-[15px] sm:text-[16px] text-stone-300 leading-[1.7] mt-4 text-left"
                 style={{ animation: reduceMotion ? undefined : 'ul-cast-soft-in 420ms ease-out both' }}
               >
                 No moving lines. The hexagram is stable — the moment is not
@@ -527,7 +527,7 @@ const CoinCast: React.FC<{
                 {movingPositions.map((pos) => {
                   const text = getMarkdownLineText(primaryNumber, pos) || getLineText(primaryNumber, pos);
                   return (
-                    <p key={pos} className="font-sans text-[16px] text-stone-200 leading-[1.7]">
+                    <p key={pos} className="font-reading text-[16px] text-stone-200 leading-[1.7]">
                       <span className="font-label text-[11px] uppercase tracking-[0.14em] font-semibold text-bronze-400/80 mr-2">
                         Line {pos}
                       </span>
@@ -576,7 +576,7 @@ const CoinCast: React.FC<{
             {/* Text block — title at the top, aligned with the glyph's top
                 edge, then the becoming reading and the link. */}
             <div className="flex-1 min-w-0 w-full text-center sm:text-left">
-              <p className="font-serif text-[17px] sm:text-[19px] text-stone-100 leading-[1.3]">
+              <p className="font-reading text-[17px] sm:text-[19px] text-stone-100 leading-[1.3]">
                 {changedCard.iching.hexagram_name}
               </p>
               {/* TEMPLATE: the becoming reading describes the quality of the
@@ -585,7 +585,7 @@ const CoinCast: React.FC<{
                   moving toward. NOTE: this is a generic placeholder — the
                   real per-becoming description is synthesis content, wired
                   when the becoming card's reading is reachable here. */}
-              <p className="font-sans text-[15px] sm:text-[16px] text-stone-300 leading-[1.7] mt-3 text-left">
+              <p className="font-reading text-[15px] sm:text-[16px] text-stone-300 leading-[1.7] mt-3 text-left">
                 As the moving line settles, the present begins to give way to
                 a different shape, a new configuration the moment is travelling
                 into. Follow the changing line to see what it asks of you.

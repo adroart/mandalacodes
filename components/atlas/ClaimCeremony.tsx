@@ -218,7 +218,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
         }}
       >
         <p
-          className="font-serif text-lg sm:text-xl mb-3"
+          className="font-reading text-lg sm:text-xl mb-3"
           style={{ color: 'rgba(203,191,168,0.9)' }}
         >
           {myTitle} has found its steward.

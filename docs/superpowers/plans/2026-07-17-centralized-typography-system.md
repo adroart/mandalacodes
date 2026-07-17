@@ -76,7 +76,7 @@ git commit --no-verify -m "test: define centralized typography contract"
   --font-reading: "Lora", Georgia, "Times New Roman", serif;
   --font-ui: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-technical: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
-  --font-cjk: "Noto Serif TC", "Noto Serif SC", "Songti SC", serif;
+  --font-cjk: "Noto Serif SC", "Songti SC", serif;
   --font-calligraphic: "Ma Shan Zheng", "Noto Serif SC", cursive;
   --font-brand: "Cinzel", Palatino, serif;
 
@@ -89,7 +89,7 @@ git commit --no-verify -m "test: define centralized typography contract"
 }
 ```
 
-Map Tailwind’s `--font-serif`, `--font-sans`, `--font-mono`, `--font-label`, and legacy `--serif`, `--sans`, `--mono`, `--cjk` aliases to these canonical roles. `--font-serif` remains the display role for existing large heading utilities; prose consumers migrate explicitly to `--font-reading`.
+Map Tailwind’s `--font-serif`, `--font-sans`, `--font-mono`, `--font-label`, and legacy `--serif`, `--sans`, `--mono`, `--cjk` aliases to these canonical roles for compatibility. Production markup uses the explicit canonical utilities so a legacy alias cannot accidentally give body copy the display face.
 
 - [ ] **Step 2: Move global direct declarations to semantic roles**
 

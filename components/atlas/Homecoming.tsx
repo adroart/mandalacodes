@@ -49,7 +49,7 @@ const formatCityLabel = (city: CityCentroid): string => {
 // A dark, inlaid field, a line of warm light under the words, never a white
 // web-form box.
 const fieldClass =
-  'w-full bg-transparent border-0 border-b border-[rgba(196,170,124,0.28)] px-0 py-3 font-serif text-[1.0625rem] text-[#e9e1d2] placeholder:text-[rgba(203,191,168,0.38)] focus:outline-none focus:border-[#c4aa7c] transition-colors';
+  'w-full bg-transparent border-0 border-b border-[rgba(196,170,124,0.28)] px-0 py-3 font-reading text-[1.0625rem] text-[#e9e1d2] placeholder:text-[rgba(203,191,168,0.38)] focus:outline-none focus:border-[#c4aa7c] transition-colors';
 
 // TypeaheadPicker hardcodes a white book/admin input; the important-prefixed
 // utilities here override it so the city field sits in the dark stage like the
@@ -130,7 +130,7 @@ const Homecoming: React.FC = () => {
           bring your piece home
         </h1>
         <p
-          className="font-serif text-[1.0625rem] leading-relaxed text-center mb-12"
+          className="font-reading text-[1.0625rem] leading-relaxed text-center mb-12"
           style={{ color: PARCHMENT }}
         >
           If one of Adrian's works rests with you and the atlas does not know it
@@ -140,7 +140,7 @@ const Homecoming: React.FC = () => {
         {sent ? (
           <div className="text-center">
             <p
-              className="font-serif text-[1.0625rem] leading-relaxed mb-4"
+              className="font-reading text-[1.0625rem] leading-relaxed mb-4"
               style={{ color: PARCHMENT }}
             >
               It rests with me now. When I recognize the piece, it will take its
@@ -158,7 +158,7 @@ const Homecoming: React.FC = () => {
         ) : !isLoaded ? null : !isSignedIn ? (
           <div className="text-center">
             <p
-              className="font-serif text-[1.0625rem] leading-relaxed mb-8"
+              className="font-reading text-[1.0625rem] leading-relaxed mb-8"
               style={{ color: PARCHMENT }}
             >
               Claim your piece to begin. Your place is kept under the same name
@@ -183,7 +183,7 @@ const Homecoming: React.FC = () => {
                 photographs of the piece
               </span>
               <p
-                className="font-serif text-sm leading-relaxed mb-4"
+                className="font-reading text-sm leading-relaxed mb-4"
                 style={{ color: PARCHMENT_SOFT }}
               >
                 Paste a web link to a photo. One is enough; up to{' '}
@@ -250,7 +250,7 @@ const Homecoming: React.FC = () => {
               />
               {cityId && getCityById(cityId) && (
                 <p
-                  className="font-serif text-sm mt-2"
+                  className="font-reading text-sm mt-2"
                   style={{ color: PARCHMENT_SOFT }}
                 >
                   {formatCityLabel(getCityById(cityId)!)}
@@ -279,7 +279,7 @@ const Homecoming: React.FC = () => {
             </div>
 
             {error && (
-              <p className="font-serif text-sm" style={{ color: '#d8a48a' }}>
+              <p className="font-reading text-sm" style={{ color: '#d8a48a' }}>
                 {error}
               </p>
             )}

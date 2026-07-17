@@ -348,7 +348,7 @@ const StewardEdit: React.FC = () => {
   if (loading) {
     return (
       <AccountLayout title="Your pieces">
-        <p className="font-serif italic text-base text-stone-600">
+        <p className="font-reading italic text-base text-stone-600">
           loading your piece
         </p>
       </AccountLayout>
@@ -359,7 +359,7 @@ const StewardEdit: React.FC = () => {
     return (
       <AccountLayout title="Your pieces">
         <div className="max-w-md space-y-4">
-          <p className="font-serif italic text-base text-stone-600">
+          <p className="font-reading italic text-base text-stone-600">
             {loadError ?? 'Could not load your piece.'}
           </p>
           <button
@@ -414,7 +414,7 @@ const StewardEdit: React.FC = () => {
                     type="button"
                     aria-pressed={active}
                     onClick={() => handlePieceSwitch(i)}
-                    className={`min-h-[44px] px-4 py-2 border font-sans text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
+                    className={`min-h-[44px] px-4 py-2 border font-reading text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                       active
                         ? 'bg-bronze-100 border-bronze-500 text-wood-900'
                         : 'bg-white border-wood-300 text-wood-700 hover:bg-paper-100'
@@ -431,7 +431,7 @@ const StewardEdit: React.FC = () => {
         {!piece ? (
           /* Claimed steward record but no ledger projection yet — nothing to
              edit until an event exists for this piece. */
-          <p className="font-serif italic text-base text-stone-600 text-center mb-12">
+          <p className="font-reading italic text-base text-stone-600 text-center mb-12">
             This piece doesn't have an atlas record yet. Ask Adrian to seed it
             and it will appear here.
           </p>
@@ -442,15 +442,15 @@ const StewardEdit: React.FC = () => {
             fresh owner is walked in rather than dropped on a wall of toggles. */}
         <div className="text-center mb-12">
           <h2
-            className="font-serif text-2xl sm:text-[1.7rem] text-wood-900 font-medium mb-2"
+            className="font-display text-2xl sm:text-[1.7rem] text-wood-900 font-medium mb-2"
             style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
           >
             You keep {artwork?.title ?? 'this piece'}
           </h2>
-          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 mb-4">
+          <p className="font-reading text-[1.0625rem] leading-relaxed text-stone-700 mb-4">
             {detailParts.join(' · ')}
           </p>
-          <p className="font-serif text-[15px] leading-relaxed text-stone-600 max-w-md mx-auto">
+          <p className="font-reading text-[15px] leading-relaxed text-stone-600 max-w-md mx-auto">
             This is the piece&apos;s book. Place it in the world, choose what
             the atlas shows, write into its pages, and one day pass it on.
             {' '}
@@ -504,7 +504,7 @@ const StewardEdit: React.FC = () => {
             aria-label="Show this piece on the atlas"
             onClick={handleVisibilityToggle}
             disabled={saving}
-            className="group flex items-center gap-4 min-h-[44px] font-sans text-base text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+            className="group flex items-center gap-4 min-h-[44px] font-reading text-base text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
           >
             <span
               aria-hidden="true"
@@ -527,12 +527,12 @@ const StewardEdit: React.FC = () => {
               sentence and sits right under the toggle it points at; flipping
               visibility clears it. The public case points down to the book. */}
           {placeNudge === 'shine' && (
-            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mt-3">
+            <p className="font-reading text-[15px] leading-relaxed text-stone-600 mt-3">
               {SHINE_SENTENCE}
             </p>
           )}
           {placeNudge === 'below' && (
-            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mt-3">
+            <p className="font-reading text-[15px] leading-relaxed text-stone-600 mt-3">
               <a
                 href="#piece-book"
                 onClick={() => setPlaceNudge(null)}
@@ -549,7 +549,7 @@ const StewardEdit: React.FC = () => {
           <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
             Chart presence
           </span>
-          <p className="font-serif italic text-sm text-stone-600 mb-4">
+          <p className="font-reading italic text-sm text-stone-600 mb-4">
             Turn this on and your piece joins the kinship constellation; arcs
             may connect it to other consenting pieces that share its trigrams.
             No name and no birth data are ever shown — only the elemental
@@ -562,7 +562,7 @@ const StewardEdit: React.FC = () => {
             aria-label="Join the kinship constellation"
             onClick={handleRing3Toggle}
             disabled={ring3Saving}
-            className="group flex items-center gap-4 min-h-[44px] font-sans text-base text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+            className="group flex items-center gap-4 min-h-[44px] font-reading text-base text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
           >
             <span
               aria-hidden="true"
@@ -598,7 +598,7 @@ const StewardEdit: React.FC = () => {
             </span>
           )}
           {!savedAt && saveError && (
-            <span className="font-serif italic text-base text-stone-600">{saveError}</span>
+            <span className="font-reading italic text-base text-stone-600">{saveError}</span>
           )}
         </div>
         </>

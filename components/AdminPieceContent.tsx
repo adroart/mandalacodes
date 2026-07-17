@@ -32,10 +32,10 @@ import {
 const fieldLabel =
     'font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold block mb-2';
 const fieldInput =
-    'w-full border border-wood-300 bg-white px-4 py-3 font-sans text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
+    'w-full border border-wood-300 bg-white px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
 const fieldTextarea = `${fieldInput} resize-y`;
 const sectionTitle = 'font-title text-2xl text-wood-900 mb-2 tracking-[0.05em]';
-const sectionLead = 'font-sans text-sm text-wood-500 mb-6';
+const sectionLead = 'font-reading text-sm text-wood-500 mb-6';
 
 function useAdminFetch(): (input: string, init?: RequestInit) => Promise<Response> {
     const { fetchAuthed } = useAccount();
@@ -187,7 +187,7 @@ const ImagesEditor: React.FC<{
                 </button>
             </div>
             {error && (
-                <p className="font-serif italic text-sm text-stone-600 mt-2">{error}</p>
+                <p className="font-reading italic text-sm text-stone-600 mt-2">{error}</p>
             )}
         </div>
     );
@@ -310,23 +310,23 @@ const PieceContentEditor: React.FC = () => {
             </div>
 
             {!pieceId && (
-                <p className="font-serif italic text-sm text-wood-500">
+                <p className="font-reading italic text-sm text-wood-500">
                     Choose a piece above to begin.
                 </p>
             )}
 
             {pieceId && loading && (
-                <p className="font-serif italic text-sm text-wood-500">Loading…</p>
+                <p className="font-reading italic text-sm text-wood-500">Loading…</p>
             )}
 
             {pieceId && !loading && (
                 <div className="space-y-6">
                     {loadError && (
-                        <p className="font-serif italic text-sm text-stone-600">{loadError}</p>
+                        <p className="font-reading italic text-sm text-stone-600">{loadError}</p>
                     )}
 
                     {staticInfo?.staticDescription && (
-                        <p className="font-serif italic text-sm text-wood-500 border-l-2 border-wood-200 pl-3">
+                        <p className="font-reading italic text-sm text-wood-500 border-l-2 border-wood-200 pl-3">
                             Current placeholder · {staticInfo.staticDescription}
                         </p>
                     )}
@@ -379,7 +379,7 @@ const PieceContentEditor: React.FC = () => {
                     />
 
                     {saveError && (
-                        <p className="font-serif italic text-sm text-stone-600">{saveError}</p>
+                        <p className="font-reading italic text-sm text-stone-600">{saveError}</p>
                     )}
                     {savedAt && (
                         <p className="font-label text-[11px] uppercase tracking-[0.15em] text-sage-700 font-semibold">
@@ -415,7 +415,7 @@ const AdminPieceContent: React.FC = () => {
                     <h1 className="font-title text-4xl text-wood-900 mb-2 tracking-[0.05em]">
                         Piece Content
                     </h1>
-                    <p className="font-sans text-sm text-wood-500 mb-12">
+                    <p className="font-reading text-sm text-wood-500 mb-12">
                         Write each piece's story, materials, provenance, and
                         gallery — no code edits.
                     </p>

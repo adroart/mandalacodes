@@ -49,14 +49,14 @@ export const ContinueRail: React.FC<{
       <div className="px-6 py-8 sm:py-10 text-center">
         <p className={`font-label text-[10px] uppercase tracking-[0.32em] ${eyebrowCls}`}>{eyebrow}</p>
 
-        <h3 className={`font-serif text-[26px] sm:text-[30px] leading-[1.15] tracking-[-0.005em] mt-3 ${titleCls} ${titleHoverCls} motion-safe:transition-colors`}>
+        <h3 className={`font-display text-[26px] sm:text-[30px] leading-[1.15] tracking-[-0.005em] mt-3 ${titleCls} ${titleHoverCls} motion-safe:transition-colors`}>
           {title}
         </h3>
 
         {subtitle && (
           <>
             <div className={`h-px w-12 ${ruleCls} mx-auto my-4`} aria-hidden="true" />
-            <p className={`font-serif text-[15px] sm:text-[16px] leading-[1.55] ${subtitleCls}`}>{subtitle}</p>
+            <p className={`font-reading text-[15px] sm:text-[16px] leading-[1.55] ${subtitleCls}`}>{subtitle}</p>
           </>
         )}
       </div>

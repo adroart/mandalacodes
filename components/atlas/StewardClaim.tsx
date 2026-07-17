@@ -153,7 +153,7 @@ const ClaimSignIn: React.FC = () => {
   const primaryBtn =
     'w-full min-h-[48px] font-label text-xs uppercase tracking-[0.18em] font-semibold py-3.5 rounded-xl transition-opacity disabled:opacity-40';
   const doorBtn =
-    'w-full min-h-[48px] flex items-center justify-center gap-2.5 font-sans text-[15px] py-3.5 rounded-full transition-colors disabled:opacity-40';
+    'w-full min-h-[48px] flex items-center justify-center gap-2.5 font-reading text-[15px] py-3.5 rounded-full transition-colors disabled:opacity-40';
 
   const doGoogle = async () => {
     setBusy(true);
@@ -230,7 +230,7 @@ const ClaimSignIn: React.FC = () => {
     <div className="text-center">
       {error && (
         <p
-          className="font-serif text-[15px] mb-5"
+          className="font-reading text-[15px] mb-5"
           style={{ color: 'rgba(214,171,138,0.9)' }}
         >
           {error}
@@ -532,13 +532,13 @@ const StewardClaim: React.FC = () => {
     return (
       <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-md text-center">
-          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700 mb-3">
+          <p className="font-reading text-[1.0625rem] leading-relaxed text-stone-700 mb-3">
             We don&apos;t have a piece bound to{' '}
             <span className="text-wood-900">{email ?? 'your email'}</span> yet.
           </p>
           {pieceContext ? (
             <div className="text-left">
-              <p className="font-serif text-sm text-stone-600">
+              <p className="font-reading text-sm text-stone-600">
                 If this piece came to you another way, an auction, a gift, an
                 inheritance, request stewardship here and the current keeper, or
                 Adrian, will approve it.
@@ -551,7 +551,7 @@ const StewardClaim: React.FC = () => {
             </div>
           ) : (
             <>
-              <p className="font-serif text-sm text-stone-600 mb-5">
+              <p className="font-reading text-sm text-stone-600 mb-5">
                 If you hold one of Adrian&apos;s pieces, scan the code on its
                 back, or find it on the map, and request stewardship from the
                 piece&apos;s own page.
@@ -594,7 +594,7 @@ const StewardClaim: React.FC = () => {
       {beat === 'error' && (
         <FadeIn key="error" className="text-center">
           <p
-            className="font-serif text-[1.0625rem] leading-relaxed mb-6"
+            className="font-reading text-[1.0625rem] leading-relaxed mb-6"
             style={{ color: 'rgba(203,191,168,0.86)' }}
           >
             Something went wrong reaching your piece. Please try again.
@@ -622,7 +622,7 @@ const StewardClaim: React.FC = () => {
           </h1>
           {arrivalStatus === 'claiming' || isSignedIn || !isLoaded ? (
             <p
-              className="font-serif text-base"
+              className="font-reading text-base"
               style={{ color: 'rgba(203,191,168,0.7)' }}
             >
               Finding your piece…
@@ -654,7 +654,7 @@ const StewardClaim: React.FC = () => {
             </p>
           )}
           <p
-            className="font-serif text-xl sm:text-2xl leading-snug mb-10"
+            className="font-reading text-xl sm:text-2xl leading-snug mb-10"
             style={{ color: '#ece2cf', fontFamily: 'var(--font-reading)' }}
           >
             This piece has been waiting to meet you.
@@ -698,13 +698,13 @@ const StewardClaim: React.FC = () => {
           </p>
           <label
             htmlFor={dreamId}
-            className="block font-serif text-xl sm:text-2xl leading-snug text-center mb-4"
+            className="block font-reading text-xl sm:text-2xl leading-snug text-center mb-4"
             style={{ color: '#ece2cf', fontFamily: 'var(--font-display)' }}
           >
             What should this piece hold for you?
           </label>
           <p
-            className="font-serif text-[15px] leading-relaxed text-center mb-7"
+            className="font-reading text-[15px] leading-relaxed text-center mb-7"
             style={{ color: 'rgba(203,191,168,0.68)' }}
           >
             Not a task. A guiding principle, something that could steer a year or
@@ -720,7 +720,7 @@ const StewardClaim: React.FC = () => {
             maxLength={2000}
             disabled={submitting}
             placeholder="Write it here."
-            className="w-full bg-transparent border-b px-1 py-3 font-serif text-lg leading-relaxed focus:outline-none disabled:opacity-60"
+            className="w-full bg-transparent border-b px-1 py-3 font-reading text-lg leading-relaxed focus:outline-none disabled:opacity-60"
             style={{
               color: '#f0ece4',
               borderColor: 'rgba(196,170,124,0.4)',
@@ -738,7 +738,7 @@ const StewardClaim: React.FC = () => {
             aria-label="Show this piece as a light on the world map"
             onClick={() => setMapPresence((v) => !v)}
             disabled={submitting}
-            className="mt-7 mx-auto flex items-center gap-3 min-h-[44px] font-sans text-[15px] disabled:opacity-60"
+            className="mt-7 mx-auto flex items-center gap-3 min-h-[44px] font-reading text-[15px] disabled:opacity-60"
             style={{ color: 'rgba(203,191,168,0.86)' }}
           >
             <span
@@ -762,7 +762,7 @@ const StewardClaim: React.FC = () => {
 
           {mapPresence && (
             <p
-              className="mt-3 text-center font-serif text-[13px] leading-relaxed"
+              className="mt-3 text-center font-reading text-[13px] leading-relaxed"
               style={{ color: 'rgba(203,191,168,0.6)' }}
             >
               Your light and its dream, visible to all.
@@ -772,7 +772,7 @@ const StewardClaim: React.FC = () => {
           <div className="h-6 mt-4 text-center" aria-live="polite">
             {dreamError && (
               <span
-                className="font-serif text-sm"
+                className="font-reading text-sm"
                 style={{ color: 'rgba(214,171,138,0.9)' }}
               >
                 {dreamError}

@@ -122,11 +122,11 @@ const CodesIndex: React.FC<Props> = ({ entries, onSelectOnGlobe }) => {
     >
       <h2
         id="atlas-codes-heading"
-        className="font-serif text-2xl text-wood-900 font-medium mb-3"
+        className="font-display text-2xl text-wood-900 font-medium mb-3"
       >
         All 64 codes
       </h2>
-      <p className="font-sans text-sm text-wood-700 leading-[1.7] max-w-prose mb-6">
+      <p className="font-reading text-sm text-wood-700 leading-[1.7] max-w-prose mb-6">
         The whole Universal Language, code by code. {litCount} of 64 carry a piece
         that has found ground. Open one to see where its pieces have come to rest.
       </p>
@@ -158,7 +158,7 @@ const CodesIndex: React.FC<Props> = ({ entries, onSelectOnGlobe }) => {
                       {String(row.number).padStart(2, '0')}
                     </span>
                     <span
-                      className={`font-serif text-base leading-snug truncate transition-colors ${
+                      className={`font-reading text-base leading-snug truncate transition-colors ${
                         row.lit
                           ? 'text-wood-900 group-hover:text-bronze-700'
                           : 'text-wood-600 group-hover:text-bronze-700'

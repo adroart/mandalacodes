@@ -74,10 +74,10 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 font-semibold mb-3">
             Access denied
           </p>
-          <h1 className="font-serif text-2xl text-wood-900 font-medium mb-4">
+          <h1 className="font-display text-2xl text-wood-900 font-medium mb-4">
             Not an admin.
           </h1>
-          <p className="font-sans text-sm text-wood-600 leading-relaxed mb-8">
+          <p className="font-reading text-sm text-wood-600 leading-relaxed mb-8">
             You are signed in as{' '}
             <span className="text-wood-900">
               {email ?? 'unknown'}
@@ -120,7 +120,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             Piece Content
           </Link>
           <span className="text-wood-200">|</span>
-          <span className="font-sans text-xs text-wood-400">
+          <span className="font-reading text-xs text-wood-400">
             {email}
           </span>
         </div>

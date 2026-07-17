@@ -37,6 +37,7 @@ const APPROVED_FONT_VARIABLES = new Set([
   '--font-label',
 ]);
 const FONT_RESET_VALUES = new Set(['inherit', 'initial', 'unset', 'revert', 'revert-layer']);
+const LEGACY_FONT_UTILITY_PATTERN = /\bfont-(?:serif|sans|mono)\b/g;
 const FONT_SHORTHAND_KEYWORDS = new Set([
   'normal', 'italic', 'oblique', 'small-caps', 'all-small-caps', 'petite-caps',
   'all-petite-caps', 'unicase', 'titling-caps', 'bold', 'bolder', 'lighter',
@@ -320,6 +321,26 @@ describe('centralized typography contract', () => {
       violations,
       `Keep approved font variables owned by src/theme.css:\n${violations
         .map(({ file, line, variable }) => `${file}:${line} redefines ${variable}`)
+        .join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('does not use ambiguous legacy font utilities in production source', () => {
+    const violations = activeProductionFiles()
+      .filter((file) => file !== THEME_FILE)
+      .flatMap((file) => {
+        const source = maskComments(readFileSync(file, 'utf8'));
+        return [...source.matchAll(LEGACY_FONT_UTILITY_PATTERN)].map((match) => ({
+          file: relative(ROOT, file),
+          line: source.slice(0, match.index ?? 0).split('\n').length,
+          utility: match[0],
+        }));
+      });
+
+    expect(
+      violations,
+      `Replace legacy utilities with font-display, font-reading, font-ui, or font-technical:\n${violations
+        .map(({ file, line, utility }) => `${file}:${line} uses ${utility}`)
         .join('\n')}`,
     ).toEqual([]);
   });

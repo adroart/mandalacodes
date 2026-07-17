@@ -73,7 +73,7 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({ title, children }) => {
           <h1 className="font-display text-4xl md:text-5xl leading-[1.05] text-wood-900">
             Your account
           </h1>
-          <p className="font-serif text-xl md:text-2xl leading-relaxed text-wood-700 mt-4">
+          <p className="font-reading text-xl md:text-2xl leading-relaxed text-wood-700 mt-4">
             One place that holds everything that is yours here.
           </p>
         </header>
@@ -98,13 +98,13 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({ title, children }) => {
                 <div className="font-display text-2xl md:text-3xl leading-tight text-wood-900 mb-2 transition-colors group-hover:text-bronze-700">
                   {f.title}
                 </div>
-                <p className="font-serif text-[17px] leading-relaxed text-wood-600 max-w-[52ch]">
+                <p className="font-reading text-[17px] leading-relaxed text-wood-600 max-w-[52ch]">
                   {f.body}
                 </p>
               </div>
               <span
                 aria-hidden="true"
-                className="font-serif text-2xl text-wood-300 transition-all duration-300 ease-out group-hover:text-bronze-600 group-hover:translate-x-1 self-center"
+                className="font-reading text-2xl text-wood-300 transition-all duration-300 ease-out group-hover:text-bronze-600 group-hover:translate-x-1 self-center"
               >
                 &rarr;
               </span>

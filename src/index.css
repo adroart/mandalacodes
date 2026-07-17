@@ -1,9 +1,9 @@
 /* ─── READABILITY GUARDRAILS ────────────────────────────────────────────────
  * FONT ROLES (enforced):
- *   - font-display / font-serif (Cormorant Garamond): titles + display text
+ *   - font-display (Cormorant Garamond): titles + display text
  *     ONLY at >= 20px. Cormorant is a display serif; its thin strokes
  *     disappear at body sizes.
- *   - font-sans (Lora): ALL body, descriptions, captions, meta < 20px.
+ *   - font-reading (Lora): ALL body, descriptions, captions, meta < 20px.
  *     Lora is a body-grade serif with screen-tuned strokes.
  *   - font-label (Karla): uppercase eyebrows / row labels only.
  * Italic Cormorant under 20px is forbidden — fails legibility on dark bg.
@@ -119,7 +119,7 @@ blockquote {
 
 /* #21 Tabular figures on prices — digits align in columns */
 .font-label,
-.font-mono {
+.font-technical {
   font-variant-numeric: lining-nums tabular-nums;
 }
 
@@ -366,9 +366,8 @@ html.dark.oracle-card-page body {
 }
 
 /* ─── Chinese serif (Mingti / Song) for hexagram glyph labels ──────────── */
-/* Loads Noto Serif TC from Google Fonts (see index.html) for consistent
- * sharp Mingti rendering across platforms. Falls back to system Song fonts
- * if the network fails. */
+/* Uses the self-hosted Noto Serif SC subset for consistent sharp Mingti
+ * rendering across platforms, with system Song fonts as fallback. */
 .font-chinese-serif {
   font-family: var(--font-cjk);
   font-weight: 600;

@@ -90,9 +90,9 @@ const LightweaverLanding: React.FC = () => {
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
-                className="w-full bg-paper-100 dark:bg-wood-800 border border-wood-200 dark:border-wood-700 rounded-md px-4 py-3 pr-16 text-wood-900 dark:text-paper-50 font-mono text-sm focus:outline-none focus:border-bronze-500"
+                className="w-full bg-paper-100 dark:bg-wood-800 border border-wood-200 dark:border-wood-700 rounded-md px-4 py-3 pr-16 text-wood-900 dark:text-paper-50 font-technical text-sm focus:outline-none focus:border-bronze-500"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-wood-400 font-mono pointer-events-none">
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-wood-400 font-technical pointer-events-none">
                 .local
               </span>
             </div>
@@ -105,8 +105,8 @@ const LightweaverLanding: React.FC = () => {
           </form>
           <p className="text-xs text-wood-500 dark:text-paper-400 mt-3 leading-relaxed">
             This opens the card's own page at{' '}
-            <span className="font-mono">http://lightweaver.local</span>. If the card is still in
-            setup mode, join its <span className="font-mono">Lightweaver-XXXX</span> WiFi network
+            <span className="font-technical">http://lightweaver.local</span>. If the card is still in
+            setup mode, join its <span className="font-technical">Lightweaver-XXXX</span> WiFi network
             and open <a href={AP_SETUP_URL} className="text-bronze-700 dark:text-bronze-300 hover:underline">192.168.4.1</a>.
           </p>
         </section>
@@ -125,11 +125,11 @@ const LightweaverLanding: React.FC = () => {
                   >
                     <div>
                       <div className="text-sm text-wood-900 dark:text-paper-50">{card.label}</div>
-                      <div className="text-xs text-wood-500 dark:text-paper-400 font-mono">
+                      <div className="text-xs text-wood-500 dark:text-paper-400 font-technical">
                         {card.host}.local
                       </div>
                     </div>
-                    <span className="text-xs text-wood-400 font-mono">
+                    <span className="text-xs text-wood-400 font-technical">
                       {new Date(card.lastSeenAt).toLocaleDateString()}
                     </span>
                   </a>
@@ -154,7 +154,7 @@ const LightweaverLanding: React.FC = () => {
             </li>
             <li>
               <strong>For more control,</strong> open your phone's WiFi list. Look for a network
-              called <span className="font-mono text-bronze-700 dark:text-bronze-300">Lightweaver-XXXX</span> and join it.
+              called <span className="font-technical text-bronze-700 dark:text-bronze-300">Lightweaver-XXXX</span> and join it.
             </li>
             <li>
               <strong>A setup page opens automatically.</strong> Enter your home WiFi name and
@@ -162,7 +162,7 @@ const LightweaverLanding: React.FC = () => {
             </li>
             <li>
               <strong>Anytime after that,</strong> from any device on your home WiFi, open{' '}
-              <span className="font-mono text-bronze-700 dark:text-bronze-300">lightweaver.local</span>{' '}
+              <span className="font-technical text-bronze-700 dark:text-bronze-300">lightweaver.local</span>{' '}
               in a browser. Patterns, colors, brightness, and saved settings all live on the card.
             </li>
             <li>
@@ -190,7 +190,7 @@ const LightweaverLanding: React.FC = () => {
               between, nothing tracking what you do.
             </li>
             <li>
-              The website you're reading this on (<span className="font-mono">led.mandalacodes.com</span>)
+              The website you're reading this on (<span className="font-technical">led.mandalacodes.com</span>)
               is Studio v3: adjust only what can be written into the ESP32 chip config, then copy
               or download that config for the card.
             </li>
@@ -221,7 +221,7 @@ const LightweaverLanding: React.FC = () => {
               </dt>
               <dd>
                 That's setup mode. Open your phone's WiFi, look for{' '}
-                <span className="font-mono">Lightweaver-XXXX</span>, join it, and follow the setup
+                <span className="font-technical">Lightweaver-XXXX</span>, join it, and follow the setup
                 page that opens. Two minutes.
               </dd>
             </div>
@@ -232,8 +232,8 @@ const LightweaverLanding: React.FC = () => {
               <dd>
                 Make sure you're on the same WiFi as the piece. On Windows, you may need to install
                 Bonjour. If the card has not joined WiFi yet, connect to its{' '}
-                <span className="font-mono">Lightweaver-XXXX</span> setup network and open{' '}
-                <span className="font-mono">192.168.4.1</span>.
+                <span className="font-technical">Lightweaver-XXXX</span> setup network and open{' '}
+                <span className="font-technical">192.168.4.1</span>.
               </dd>
             </div>
             <div>

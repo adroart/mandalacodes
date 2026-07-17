@@ -56,7 +56,7 @@ export const BuySheet: React.FC<{
 
         <div className="px-6 sm:px-8 pt-4 pb-6">
           <p className="font-label text-[10px] uppercase tracking-[0.28em] text-wood-500">Code {cardNumber}</p>
-          <h2 className="font-serif text-[26px] leading-[1.15] text-wood-900 mt-1">{cardName}</h2>
+          <h2 className="font-display text-[26px] leading-[1.15] text-wood-900 mt-1">{cardName}</h2>
 
           <div className="mt-5 flex gap-4">
             <img
@@ -66,13 +66,13 @@ export const BuySheet: React.FC<{
             />
             <div className="min-w-0 flex-1 space-y-2">
               {piece?.dimensions && (
-                <p className="font-sans text-[13px] text-wood-700 leading-[1.4]">
+                <p className="font-reading text-[13px] text-wood-700 leading-[1.4]">
                   <span className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500">Dimensions</span>
                   <br />{piece.dimensions}
                 </p>
               )}
               {piece?.material && (
-                <p className="font-sans text-[13px] text-wood-700 leading-[1.4]">
+                <p className="font-reading text-[13px] text-wood-700 leading-[1.4]">
                   <span className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500">Material</span>
                   <br />{piece.material}
                 </p>
@@ -81,7 +81,7 @@ export const BuySheet: React.FC<{
           </div>
 
           {piece?.description && (
-            <p className="font-serif text-[14px] text-wood-700 italic leading-[1.55] mt-4">
+            <p className="font-reading text-[14px] text-wood-700 italic leading-[1.55] mt-4">
               {piece.description}
             </p>
           )}
@@ -97,14 +97,14 @@ export const BuySheet: React.FC<{
                 <div className="h-[2px] w-full bg-bronze-500 group-hover:bg-bronze-400 motion-safe:transition-colors" aria-hidden="true" />
                 <div className="px-5 py-4 flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="font-serif text-[17px] text-wood-900 group-hover:text-bronze-700 leading-tight">
+                    <p className="font-reading text-[17px] text-wood-900 group-hover:text-bronze-700 leading-tight">
                       View the original
                     </p>
                     <p className="font-label text-[10px] uppercase tracking-[0.22em] text-wood-500 mt-1.5">
                       On adrianrasmussen.com · Acquire or commission
                     </p>
                   </div>
-                  <span className="font-serif text-[20px] text-bronze-500 group-hover:text-bronze-700" aria-hidden="true">↗</span>
+                  <span className="font-reading text-[20px] text-bronze-500 group-hover:text-bronze-700" aria-hidden="true">↗</span>
                 </div>
               </a>
             </div>

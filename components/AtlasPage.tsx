@@ -1140,7 +1140,7 @@ const AtlasPage: React.FC = () => {
                   <span aria-hidden className="mx-2 text-wood-400">·</span>
                   {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
                 </p>
-                <p className="mt-1.5 font-serif text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
+                <p className="mt-1.5 font-reading text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
                   a light is a piece claimed by its keeper · threads join pieces
                   that share a code
                 </p>
@@ -1149,18 +1149,18 @@ const AtlasPage: React.FC = () => {
                     unseeded mirror; auto-hides once real pieces arrive. Delete
                     this block at launch. */}
                 {isPlaceholder && (
-                  <p className="mt-1.5 font-serif text-[12px] leading-snug tracking-[0.03em] text-bronze-400/80">
+                  <p className="mt-1.5 font-reading text-[12px] leading-snug tracking-[0.03em] text-bronze-400/80">
                     Placeholder pieces, shown until the first works find their
                     ground.
                   </p>
                 )}
                 {!USE_GL_GLOBE && !mandala && !streamActive && (
-                  <p className="mt-1 font-serif text-[12px] leading-snug tracking-[0.03em] text-wood-400/60">
+                  <p className="mt-1 font-reading text-[12px] leading-snug tracking-[0.03em] text-wood-400/60">
                     touch a code on the ring to visit it
                   </p>
                 )}
                 {streamActive && dreamRoute.length > 0 && (
-                  <p className="mt-1 font-serif text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
+                  <p className="mt-1 font-reading text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
                     dream {Math.max(1, dreamRoute.indexOf(selectedKey ?? '') + 1)} of{' '}
                     {dreamRoute.length} ·{' '}
                     {typeof window !== 'undefined' && 'ontouchstart' in window
@@ -1473,7 +1473,7 @@ const AtlasPage: React.FC = () => {
       <div className="px-6 pb-32 max-w-7xl mx-auto pt-16">
         {state.kind === 'loading' && (
           <p
-            className="font-serif italic text-lg text-wood-700 py-24 text-center"
+            className="font-reading italic text-lg text-wood-700 py-24 text-center"
             aria-live="polite"
           >
             loading the atlas
@@ -1482,7 +1482,7 @@ const AtlasPage: React.FC = () => {
 
         {state.kind === 'error' && (
           <p
-            className="font-serif italic text-lg text-wood-700 py-24 text-center"
+            className="font-reading italic text-lg text-wood-700 py-24 text-center"
             aria-live="polite"
           >
             the atlas is briefly out of reach.

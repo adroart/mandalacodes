@@ -89,7 +89,7 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
 
         {/* City name */}
         <h3
-          className="font-serif text-2xl sm:text-[1.7rem] font-semibold leading-tight"
+          className="font-display text-2xl sm:text-[1.7rem] font-semibold leading-tight"
           style={{ color: '#f6f1e8' }}
         >
           {cityLabel}
@@ -112,7 +112,7 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
                   className="group block w-full text-left"
                 >
                   <span
-                    className="font-serif text-lg leading-snug transition-colors group-hover:text-bronze-300"
+                    className="font-reading text-lg leading-snug transition-colors group-hover:text-bronze-300"
                     style={{ color: '#f6f1e8' }}
                   >
                     {title}

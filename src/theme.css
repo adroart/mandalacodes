@@ -14,7 +14,7 @@
   --font-reading: "Lora", Georgia, "Times New Roman", serif;
   --font-ui: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-technical: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
-  --font-cjk: "Noto Serif TC", "Noto Serif SC", "Songti SC", serif;
+  --font-cjk: "Noto Serif SC", "Songti SC", serif;
   --font-calligraphic: "Ma Shan Zheng", "Noto Serif SC", cursive;
   --font-brand: "Cinzel", Palatino, serif;
 
@@ -270,11 +270,10 @@
  * the exact file list). Re-copy from node_modules/@fontsource/<pkg>/files/
  * if a new weight/style is ever needed.
  *
- * Noto Serif TC intentionally STAYS on Google Fonts (index.html only) —
- * CJK subsetting is impractical to self-host (the full charset is huge,
- * and Google's edge-negotiated subsetting is the practical option here).
- * It is only used by the app (hexagram glyphs), never by /learn, so it
- * doesn't need to be shared between surfaces the way these four do.
+ * The Oracle's current CJK subset is self-hosted as Noto Serif SC. Keeping it
+ * in this shared contract avoids a runtime dependency on Google Fonts. If a
+ * licensed or self-hosted Traditional Chinese family is added later, register
+ * its face here and make it the first family in --font-cjk above.
  * ─────────────────────────────────────────────────────────────────────── */
 
 @font-face {

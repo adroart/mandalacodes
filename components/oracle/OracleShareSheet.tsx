@@ -102,7 +102,7 @@ export const OracleShareSheet: React.FC<{
       <button type="button" aria-label="Dismiss" onClick={onClose} className="absolute inset-0 bg-stone-900/55 backdrop-blur-[2px]" style={{ animation: 'ulFadeIn 200ms ease both' }} />
       <div className="relative w-full sm:max-w-[460px] bg-paper-100 border border-wood-200/60 sm:rounded-lg overflow-hidden" style={{ animation: 'ulRise 320ms cubic-bezier(.16,1,.3,1) both' }}>
         <div className="flex items-baseline justify-between px-5 pt-5 pb-3">
-          <p className="font-serif text-[22px] text-wood-900">Send a code</p>
+          <p className="font-display text-[22px] text-wood-900">Send a code</p>
           <button onClick={onClose} aria-label="Close" className="text-wood-400 hover:text-wood-700 text-2xl leading-none">×</button>
         </div>
         <div className="grid grid-cols-2 gap-2 px-5 pb-5">

@@ -87,7 +87,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto">
       <h2
-        className="font-serif text-2xl font-medium text-center mb-6"
+        className="font-display text-2xl font-medium text-center mb-6"
         style={
           stage
             ? { fontFamily: 'var(--font-display)', color: '#e7dcc7', letterSpacing: '0.02em' }
@@ -104,7 +104,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
 
       {/* Ring 1, explanatory only, always on. */}
       <p
-        className={`font-serif text-[1.0625rem] leading-relaxed text-center mb-10 ${
+        className={`font-reading text-[1.0625rem] leading-relaxed text-center mb-10 ${
           stage ? '' : 'text-stone-700'
         }`}
         style={stage ? { color: 'rgba(203,191,168,0.86)' } : undefined}
@@ -125,7 +125,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         style={stage ? { borderColor: 'rgba(196,170,124,0.22)' } : undefined}
       >
         <p
-          className="font-serif text-xl leading-snug text-center mb-2"
+          className="font-reading text-xl leading-snug text-center mb-2"
           style={stage ? { color: '#ece2cf' } : undefined}
         >
           <span className={stage ? '' : 'text-wood-900'}>
@@ -133,7 +133,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
           </span>
         </p>
         <p
-          className={`font-serif text-sm text-center mb-6 ${stage ? '' : 'text-stone-600'}`}
+          className={`font-reading text-sm text-center mb-6 ${stage ? '' : 'text-stone-600'}`}
           style={stage ? { color: 'rgba(203,191,168,0.62)' } : undefined}
         >
           City-level only, no name, no identity. You can change this at any
@@ -146,7 +146,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
           aria-label="Place this piece as a light on the world map"
           onClick={() => setMapPresence(v => !v)}
           disabled={submitting}
-          className={`mx-auto flex items-center gap-4 min-h-[44px] font-sans text-base focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60 ${
+          className={`mx-auto flex items-center gap-4 min-h-[44px] font-reading text-base focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60 ${
             stage ? '' : 'text-wood-800'
           }`}
           style={stage ? { color: '#e7dcc7' } : undefined}
@@ -187,7 +187,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         <div className="mb-8">
           <label
             htmlFor={hopeId}
-            className="block font-serif text-[1.0625rem] leading-relaxed text-wood-900 mb-2"
+            className="block font-reading text-[1.0625rem] leading-relaxed text-wood-900 mb-2"
           >
             What do you hope this piece holds for you?
           </label>
@@ -199,9 +199,9 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
             maxLength={2000}
             disabled={submitting}
             placeholder="A few words, if you like."
-            className="w-full border border-wood-300 bg-white px-4 py-3 font-serif text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 disabled:opacity-60"
+            className="w-full border border-wood-300 bg-white px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 disabled:opacity-60"
           />
-          <p className="font-serif text-sm text-stone-600 mt-2">
+          <p className="font-reading text-sm text-stone-600 mt-2">
             Optional, kept in your piece&rsquo;s private book.
           </p>
         </div>
@@ -227,7 +227,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
       <div className="h-6 mt-4 text-center" aria-live="polite">
         {error && (
           <span
-            className={`font-serif text-sm ${stage ? '' : 'text-stone-600'}`}
+            className={`font-reading text-sm ${stage ? '' : 'text-stone-600'}`}
             style={stage ? { color: 'rgba(203,191,168,0.75)' } : undefined}
           >
             {error}
@@ -237,7 +237,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
 
       {/* Rings 3–4, deferred, one quiet line. */}
       <p
-        className={`font-serif text-xs text-center ${stage ? '' : 'text-stone-500'}`}
+        className={`font-reading text-xs text-center ${stage ? '' : 'text-stone-500'}`}
         style={stage ? { color: 'rgba(203,191,168,0.5)' } : undefined}
       >
         Chart presence and public identity can be opened later from your

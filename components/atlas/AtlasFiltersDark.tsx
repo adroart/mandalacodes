@@ -45,7 +45,7 @@ function TextToggle<T extends string>({
               type="button"
               aria-pressed={active}
               onClick={() => onChange(o.value)}
-              className={`font-serif text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+              className={`font-reading text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
                 active
                   ? 'text-bronze-300 border-bronze-400/70'
                   : 'text-wood-400 border-transparent hover:text-bronze-300/80'

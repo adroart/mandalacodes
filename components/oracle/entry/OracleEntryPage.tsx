@@ -219,7 +219,7 @@ const OracleEntryPage: React.FC = () => {
         <Overlay onClose={() => setSystemsOpen(false)} width="min(580px, 94vw)">
           <div className="px-8 pt-[30px] pb-[22px] border-b border-wood-200">
             <p className="m-0 mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">The Universal Language</p>
-            <h2 className="m-0 font-serif font-medium text-[34px] leading-[1.04] text-wood-900">Four systems, one frequency</h2>
+            <h2 className="m-0 font-display font-medium text-[34px] leading-[1.04] text-wood-900">Four systems, one frequency</h2>
           </div>
           <div className="px-8 pt-2 pb-3.5">
             {[
@@ -230,12 +230,12 @@ const OracleEntryPage: React.FC = () => {
             ].map(([label, body], i, arr) => (
               <div key={label} className={`flex gap-4 py-[18px] ${i < arr.length - 1 ? 'border-b border-wood-100' : ''}`}>
                 <span className="flex-[0_0_84px] font-label text-[11px] font-bold uppercase tracking-[0.14em] text-wood-700 pt-[3px]">{label}</span>
-                <span className="font-sans text-sm leading-[1.6] text-wood-800">{body}</span>
+                <span className="font-reading text-sm leading-[1.6] text-wood-800">{body}</span>
               </div>
             ))}
           </div>
           <div className="px-8 pt-5 pb-[30px] bg-paper-100">
-            <p className="m-0 mb-[18px] font-serif italic text-lg leading-[1.5] text-wood-700">
+            <p className="m-0 mb-[18px] font-reading italic text-lg leading-[1.5] text-wood-700">
               Every card is one frequency spoken in four languages. The connections between them are the grammar of the whole.
             </p>
             <div className="flex flex-wrap items-center gap-4">
@@ -251,8 +251,8 @@ const OracleEntryPage: React.FC = () => {
         <Overlay onClose={() => setGridOpen(false)} width="min(460px, 94vw)">
           <div className="px-8 pt-8 pb-7">
             <p className="m-0 mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">Sign in to yours</p>
-            <h2 className="m-0 font-serif font-medium text-[30px] leading-[1.05] text-wood-900">Link your birth moment</h2>
-            <p className="m-0 mt-3.5 font-sans text-[13.5px] leading-[1.6] text-wood-700 max-w-[34em]">
+            <h2 className="m-0 font-display font-medium text-[30px] leading-[1.05] text-wood-900">Link your birth moment</h2>
+            <p className="m-0 mt-3.5 font-reading text-[13.5px] leading-[1.6] text-wood-700 max-w-[34em]">
               Your exact birth moment links you to four of the sixty-four codes. Add your date, time, and place, and your readings will flag when one of your four appears.
             </p>
             <div className="flex flex-wrap items-center gap-x-[18px] gap-y-3.5 mt-6">

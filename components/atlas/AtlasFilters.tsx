@@ -80,7 +80,7 @@ const AtlasFilters: React.FC<AtlasFiltersProps> = ({
               id="atlas-series"
               value={selectedSeries}
               onChange={(e) => onSeriesChange(e.target.value)}
-              className="appearance-none bg-transparent border border-wood-400 focus:border-bronze-700 text-wood-900 font-sans text-sm pl-3 pr-10 py-2.5 min-h-[44px] outline-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors duration-200"
+              className="appearance-none bg-transparent border border-wood-400 focus:border-bronze-700 text-wood-900 font-reading text-sm pl-3 pr-10 py-2.5 min-h-[44px] outline-none focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors duration-200"
             >
               <option value="all">All series</option>
               {series.map((s) => (

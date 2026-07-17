@@ -74,7 +74,7 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
         aria-label="Selected piece"
         className="bg-paper-100 border border-wood-200 p-6 sm:p-8 min-h-[16rem] flex items-center justify-center"
       >
-        <p className="font-serif italic text-base text-wood-600 max-w-xs text-center leading-[1.7]">
+        <p className="font-reading italic text-base text-wood-600 max-w-xs text-center leading-[1.7]">
           Tap a point on the globe to see where that piece has come to rest.
         </p>
       </aside>
@@ -109,12 +109,12 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
       <p className="font-label text-[11px] uppercase tracking-[0.25em] text-bronze-700 mb-3">
         {piece.category ?? 'Selected piece'}
       </p>
-      <h3 className="font-serif text-2xl sm:text-3xl text-wood-900 font-medium leading-tight mb-3">
+      <h3 className="font-display text-2xl sm:text-3xl text-wood-900 font-medium leading-tight mb-3">
         {piece.title}
       </h3>
 
       {inlineBits.length > 0 && (
-        <p className="font-sans text-sm text-wood-700 leading-relaxed mb-5">
+        <p className="font-reading text-sm text-wood-700 leading-relaxed mb-5">
           {inlineBits.map((bit, i) => (
             <React.Fragment key={i}>
               {i > 0 && (
@@ -133,7 +133,7 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
           Where it rests
         </p>
         <p
-          className={`font-serif text-lg leading-snug ${
+          className={`font-reading text-lg leading-snug ${
             isSeeking || isUnawakened ? 'italic text-wood-700' : 'text-wood-900'
           }`}
         >
@@ -146,10 +146,10 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
           <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
             Founding light
           </p>
-          <p className="font-serif text-lg text-wood-900 leading-snug">
+          <p className="font-reading text-lg text-wood-900 leading-snug">
             The {ordinalLabel(piece.claimOrdinal)} light
           </p>
-          <p className="font-serif italic text-sm text-wood-600 leading-snug mt-1">
+          <p className="font-reading italic text-sm text-wood-600 leading-snug mt-1">
             A founding light marks the order in which a piece was claimed by its keeper.
           </p>
         </div>
@@ -176,7 +176,7 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
           <Link
             to={`/universal-language/${piece.cardNumber}`}
             state={{ ritual: true }}
-            className="font-serif text-lg text-wood-900 hover:text-bronze-700 transition-colors leading-snug"
+            className="font-reading text-lg text-wood-900 hover:text-bronze-700 transition-colors leading-snug"
           >
             Read Code {piece.cardNumber} →
           </Link>
@@ -188,7 +188,7 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
           <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
             Held by a chart of
           </p>
-          <p className="font-serif text-lg text-wood-900 leading-snug">
+          <p className="font-reading text-lg text-wood-900 leading-snug">
             {holderChart.element}
           </p>
         </div>
@@ -205,7 +205,7 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectKin?.(k.key)}
-                  className="font-serif text-base text-wood-900 hover:text-bronze-700 transition-colors text-left leading-snug"
+                  className="font-reading text-base text-wood-900 hover:text-bronze-700 transition-colors text-left leading-snug"
                 >
                   {k.title}
                 </button>

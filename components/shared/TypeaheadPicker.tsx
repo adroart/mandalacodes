@@ -68,9 +68,9 @@ export interface TypeaheadPickerProps<T> {
 
 const VARIANT_INPUT: Record<'admin' | 'book', string> = {
   admin:
-    'w-full border border-wood-300 bg-white px-4 py-3 font-sans text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400',
+    'w-full border border-wood-300 bg-white px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400',
   book:
-    'w-full min-h-[44px] border border-wood-300 bg-white px-4 py-3 font-sans text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400',
+    'w-full min-h-[44px] border border-wood-300 bg-white px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400',
 };
 
 const VARIANT_LIST_MAX_HEIGHT: Record<'admin' | 'book', string> = {
@@ -84,7 +84,7 @@ const VARIANT_LIST_MAX_HEIGHT: Record<'admin' | 'book', string> = {
 // highlight (arrow keys, a new addition for every site) uses a lighter
 // touch than the bronze "selected" background.
 function rowClassName(variant: 'admin' | 'book', selected: boolean, highlighted: boolean): string {
-  const base = 'px-4 py-2 cursor-pointer font-sans text-sm transition-colors';
+  const base = 'px-4 py-2 cursor-pointer font-reading text-sm transition-colors';
   if (variant === 'book' && selected) return `${base} bg-bronze-100 text-wood-900`;
   if (highlighted) {
     return variant === 'admin'
@@ -235,7 +235,7 @@ function TypeaheadPickerInner<T>({
           role="listbox"
           className="absolute z-10 left-0 right-0 mt-1 bg-white border border-wood-300 shadow-sm"
         >
-          <li className="px-4 py-2 font-serif italic text-sm text-stone-600">{emptyMessage}</li>
+          <li className="px-4 py-2 font-reading italic text-sm text-stone-600">{emptyMessage}</li>
         </ul>
       )}
     </div>

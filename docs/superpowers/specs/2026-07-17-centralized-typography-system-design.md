@@ -37,7 +37,7 @@ The shared family contract is:
 --font-reading: "Lora", Georgia, "Times New Roman", serif;
 --font-ui: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 --font-technical: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
---font-cjk: "Noto Serif SC", "Songti SC", "Noto Serif TC", serif;
+--font-cjk: "Noto Serif SC", "Songti SC", serif;
 --font-calligraphic: "Ma Shan Zheng", "Noto Serif SC", cursive;
 ```
 

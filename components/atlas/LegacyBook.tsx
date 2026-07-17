@@ -498,7 +498,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       return (
         <li key={`e-${idx}`} className="py-3">
           <span className={dateCls}>{formatDate(item.date)}</span>
-          <p className="font-serif text-[1.0625rem] leading-relaxed text-stone-700">
+          <p className="font-reading text-[1.0625rem] leading-relaxed text-stone-700">
             {item.label}
           </p>
         </li>
@@ -521,33 +521,33 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           {view.authoredByYou ? 'you' : view.attribution}
         </span>
         {view.state === 'erased' ? (
-          <p className="font-serif italic text-base text-stone-500">[entry removed]</p>
+          <p className="font-reading italic text-base text-stone-500">[entry removed]</p>
         ) : view.body !== undefined ? (
           <>
-            <p className="font-serif text-[1.0625rem] leading-relaxed text-wood-900 whitespace-pre-line">
+            <p className="font-reading text-[1.0625rem] leading-relaxed text-wood-900 whitespace-pre-line">
               {view.body}
             </p>
             {view.state === 'sealed' && (
-              <p className="font-serif italic text-sm text-stone-500 mt-1">
+              <p className="font-reading italic text-sm text-stone-500 mt-1">
                 {view.sealedLabel} — only you can read it until then.
               </p>
             )}
           </>
         ) : (
-          <p className="font-serif italic text-base text-stone-500">
+          <p className="font-reading italic text-base text-stone-500">
             {view.sealedLabel ?? 'sealed'}
           </p>
         )}
         {canShare && (
           <div className="mt-2">
             {!isShared && !everShared && (
-              <p className="font-serif italic text-sm text-stone-500 mb-1">
+              <p className="font-reading italic text-sm text-stone-500 mb-1">
                 The map carries dreams. Words about a business, a place, or a
                 name have their own homes and will not live in this space.
               </p>
             )}
             {isShared ? (
-              <p className="font-sans text-sm text-wood-700">
+              <p className="font-reading text-sm text-wood-700">
                 The piece carries these words on the map.{' '}
                 <button
                   type="button"
@@ -569,7 +569,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               </button>
             )}
             {shareError[view.id] && (
-              <p className="font-serif italic text-sm text-stone-500 mt-1">
+              <p className="font-reading italic text-sm text-stone-500 mt-1">
                 {shareError[view.id]}
               </p>
             )}
@@ -594,7 +594,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             >
               <span>Letters from the piece</span>
               {unread > 0 && (
-                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-bronze-600 text-paper-50 font-sans text-[11px] font-semibold tracking-normal">
+                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-bronze-600 text-paper-50 font-reading text-[11px] font-semibold tracking-normal">
                   {unread}
                 </span>
               )}
@@ -614,13 +614,13 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                     <span className="font-label text-[10px] uppercase tracking-[0.2em] text-stone-500">
                       {formatDate(letter.createdAt)} · {LETTER_KIND_LABELS[letter.kind]}
                     </span>
-                    <p className="font-serif text-[1.0625rem] leading-[1.7] text-wood-900 italic mt-1 whitespace-pre-line">
+                    <p className="font-reading text-[1.0625rem] leading-[1.7] text-wood-900 italic mt-1 whitespace-pre-line">
                       {letter.body}
                     </p>
                     {letter.kind === 'words-anniversary' && (
                       <div className="mt-2">
                         {wordsLetterAck[letter.id] ? (
-                          <p className="font-serif italic text-sm text-stone-500">
+                          <p className="font-reading italic text-sm text-stone-500">
                             The words stay. Thank you for reading.
                           </p>
                         ) : liveSharedView ? (
@@ -642,12 +642,12 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                             </button>
                           </div>
                         ) : (
-                          <p className="font-serif italic text-sm text-stone-500">
+                          <p className="font-reading italic text-sm text-stone-500">
                             These words already rest back in the book.
                           </p>
                         )}
                         {liveSharedView && shareError[liveSharedView.id] && (
-                          <p className="font-serif italic text-sm text-stone-500 mt-1">
+                          <p className="font-reading italic text-sm text-stone-500 mt-1">
                             {shareError[liveSharedView.id]}
                           </p>
                         )}
@@ -666,13 +666,13 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             Legacy — the piece&apos;s book
           </span>
           {inscriptions === null ? (
-            <p className="font-serif italic text-base text-stone-600">
+            <p className="font-reading italic text-base text-stone-600">
               opening the book
             </p>
           ) : (
             <>
               {loadNote && (
-                <p className="font-serif italic text-sm text-stone-500 mb-2">{loadNote}</p>
+                <p className="font-reading italic text-sm text-stone-500 mb-2">{loadNote}</p>
               )}
               <ul className="divide-y divide-wood-100">
                 {timeline.map((item, i) => renderEntry(item, i, false))}
@@ -694,7 +694,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                 role="radio"
                 aria-checked={kind === k}
                 onClick={() => setKind(k)}
-                className={`min-h-[44px] px-4 py-2 border font-sans text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
+                className={`min-h-[44px] px-4 py-2 border font-reading text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                   kind === k
                     ? 'bg-bronze-100 border-bronze-500 text-wood-900'
                     : 'bg-white border-wood-300 text-wood-700 hover:bg-paper-100'
@@ -711,7 +711,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             maxLength={2000}
             aria-label="Your entry"
             placeholder="What should this piece carry forward?"
-            className="w-full border border-wood-300 bg-white px-4 py-3 font-serif text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 mb-3"
+            className="w-full border border-wood-300 bg-white px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 mb-3"
           />
           <div className="mb-3">
             <label
@@ -725,7 +725,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                 id="seal-mode"
                 value={sealMode}
                 onChange={(e) => setSealMode(e.target.value as typeof sealMode)}
-                className="min-h-[44px] border border-wood-300 bg-white px-3 py-2 font-sans text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                className="min-h-[44px] border border-wood-300 bg-white px-3 py-2 font-reading text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
               >
                 <option value="none">Open — readable now</option>
                 <option value="date">Sealed until a date</option>
@@ -737,12 +737,12 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                   value={sealDate}
                   onChange={(e) => setSealDate(e.target.value)}
                   aria-label="Seal opens on"
-                  className="min-h-[44px] border border-wood-300 bg-white px-3 py-2 font-sans text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                  className="min-h-[44px] border border-wood-300 bg-white px-3 py-2 font-reading text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
                 />
               )}
             </div>
             {sealMode === 'transfer' && (
-              <p className="font-serif italic text-sm text-stone-500 mt-1">
+              <p className="font-reading italic text-sm text-stone-500 mt-1">
                 A letter to whoever inherits the piece — it opens for them, not before.
               </p>
             )}
@@ -755,14 +755,14 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             {submitting ? 'Inscribing…' : 'Inscribe'}
           </button>
           {formError && (
-            <p className="font-serif italic text-base text-stone-600 mt-2">{formError}</p>
+            <p className="font-reading italic text-base text-stone-600 mt-2">{formError}</p>
           )}
           {/* At-the-control nudge: one quiet line after a successful entry.
               A fresh readable intention gets the offer to share it on the map
               (the control lives on the entry just above); every other kind
               gets a soft pointer to the next section of the book. */}
           {!formError && inscribeNudge === 'share' && (
-            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mt-3">
+            <p className="font-reading text-[15px] leading-relaxed text-stone-600 mt-3">
               These words could ride on the map.{' '}
               <button
                 type="button"
@@ -774,7 +774,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             </p>
           )}
           {!formError && inscribeNudge === 'next' && (
-            <p className="font-serif text-[15px] leading-relaxed text-stone-600 mt-3">
+            <p className="font-reading text-[15px] leading-relaxed text-stone-600 mt-3">
               <a
                 href="#pass-it-on"
                 onClick={() => setInscribeNudge(null)}
@@ -791,7 +791,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
             Pass it on
           </span>
-          <p className="font-serif italic text-sm text-stone-600 mb-4">
+          <p className="font-reading italic text-sm text-stone-600 mb-4">
             A hint for whoever settles your estate — the transfer itself always
             happens through the artist.
           </p>
@@ -799,7 +799,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             <ul className="mb-4 divide-y divide-wood-100">
               {activeHeirs.map((h) => (
                 <li key={`${h.email}-${h.registeredAt}`} className="py-2 flex items-center justify-between gap-3">
-                  <span className="font-sans text-sm text-wood-800">
+                  <span className="font-reading text-sm text-wood-800">
                     {h.name ? `${h.name} · ${h.email}` : h.email}
                   </span>
                   <button
@@ -821,7 +821,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               onChange={(e) => setHeirEmail(e.target.value)}
               placeholder="heir@example.com"
               aria-label="Heir email"
-              className="flex-1 min-w-[200px] min-h-[44px] border border-wood-300 bg-white px-4 py-2 font-sans text-sm text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="flex-1 min-w-[200px] min-h-[44px] border border-wood-300 bg-white px-4 py-2 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             />
             <input
               type="text"
@@ -829,7 +829,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               onChange={(e) => setHeirName(e.target.value)}
               placeholder="Name (optional)"
               aria-label="Heir name"
-              className="flex-1 min-w-[140px] min-h-[44px] border border-wood-300 bg-white px-4 py-2 font-sans text-sm text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="flex-1 min-w-[140px] min-h-[44px] border border-wood-300 bg-white px-4 py-2 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             />
             <button
               type="submit"
@@ -840,7 +840,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             </button>
           </form>
           {heirError && (
-            <p className="font-serif italic text-base text-stone-600 mt-2">{heirError}</p>
+            <p className="font-reading italic text-base text-stone-600 mt-2">{heirError}</p>
           )}
         </div>
 
@@ -849,7 +849,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
             Your book, in your hands
           </span>
-          <p className="font-serif italic text-sm text-stone-600 mb-4">
+          <p className="font-reading italic text-sm text-stone-600 mb-4">
             The record travels with the piece — and you can always hold a copy
             yourself, independent of any server.
           </p>
@@ -870,7 +870,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             </button>
           </div>
           {exportError && (
-            <p className="font-serif italic text-base text-stone-600 mt-2">{exportError}</p>
+            <p className="font-reading italic text-base text-stone-600 mt-2">{exportError}</p>
           )}
         </div>
       </div>
@@ -883,7 +883,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
         >
           {bookTitle}
         </h1>
-        <p className="font-serif text-center text-sm mb-1">
+        <p className="font-reading text-center text-sm mb-1">
           {[
             artwork?.series,
             steward.editionNumber != null ? `Edition ${steward.editionNumber}` : null,
@@ -892,11 +892,11 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             .filter(Boolean)
             .join(' · ')}
         </p>
-        <p className="font-serif italic text-center text-sm mb-8">
+        <p className="font-reading italic text-center text-sm mb-8">
           The living record of this piece — printed {formatDate(new Date().toISOString())}
         </p>
         <ul>{timeline.map((item, i) => renderEntry(item, i, true))}</ul>
-        <p className="font-serif italic text-xs mt-10 pt-4 border-t border-stone-300">
+        <p className="font-reading italic text-xs mt-10 pt-4 border-t border-stone-300">
           This book is an export of an append-only, hash-chained record. The
           full machine-verifiable copy (every event with its SHA-256 chain
           hashes) is available as a JSON download from the piece&apos;s page —
