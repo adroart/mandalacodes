@@ -547,6 +547,14 @@ reviews; Opus takes judgment work; Sonnet takes mechanical work.
    download. Private dreams never on cards.
 7. Fable acceptance on the live URL, the unboxing test below.
 
+First-deploy verifications (the two things this environment could not prove;
+check on the first preview deploy): the share-card endpoint's workers-og wasm
+init on the real Pages runtime (fetch `/api/atlas/card/UL-122`, expect a PNG),
+and a card carrying real Cloudinary artwork (this session's egress blocked
+res.cloudinary.com, so the embed path was proven with a placeholder). Also
+walk the book once as a signed-in steward; every auth-gated screen in phases
+4 and 5 was verified by code reading only.
+
 Dependencies outward: none of this blocks or is blocked by the ops gate
 (`atlas-dim-world-ops.md`); it can all ship dark-launched before the customer
 letters go out, and must: the letters send people into exactly these flows.
