@@ -268,17 +268,31 @@ earth is progressively revealed and warmed by the love poured into it. At 15
 lights, pools of dawn on a quiet engraving; at 300, whole continents aglow.
 The lights do not sit on the world, they illuminate it.
 
-Four rendered mockups sit in `todo/plans/evidence/atlas-redesign/`
-(`earth-contact-sheet.png`, variants I hairline, II engraved plate, III
-earthen wash, IV lit engraving; IV alone in `earth-v4.png`). Fable's
-recommendation is IV: the craft of the engraving with the land clearly
-present, dark enough for lights to shine, clear enough to read as earth.
-RATIFICATION GATE: Adrian rules on the variant (or a further blend) before
-Opus builds the shader treatment. Implementation note: the engraved map
-renders to an equirectangular texture at build time (the `world-atlas` data
-and `d3-geo` are already dependencies; `scripts/generate-land-dots.ts` is the
-precedent), the light pools accumulate in the sphere's fragment shader from
-the marker positions, capped and additive-warm.
+Rendered mockups sit in `todo/plans/evidence/atlas-redesign/`. Adrian ruled
+on the first sheet (`earth-contact-sheet.png`): the hairline family, variant
+I. The elevation pass (`hairline-contact-sheet.png`, with `earth-hairline-a`
+and `earth-hairline-b` large) makes the line itself do the work:
+
+- Waterlined coasts: a soft luminous halo along the coastline with one
+  discrete echo ring on the ocean side, the signature of antique engraved
+  charts. Land stays nearly empty; the drawing lives in the line.
+- The engraving catches the light: within a light's pool the coastline
+  brightens toward warm white, so a dream visibly lights up the drawing of
+  the earth around it, strongest where dreams cluster (Lisbon).
+- Land lifted one shade above the ocean (the I-b value), so the earth is
+  clearly present without approaching the hatched variants.
+- A second hairline ring outside the rim, the fine-instrument border.
+- Light pools slightly tightened from the first sheet so they read as
+  radiance, not haze.
+
+PENDING RULING: Adrian confirms elevated hairline (I-a versus I-b's lifted
+land, and whether the whisper graticule stays) before Opus builds the shader
+treatment. Implementation note: the engraved map renders to an
+equirectangular texture at build time (the `world-atlas` data and `d3-geo`
+are already dependencies; `scripts/generate-land-dots.ts` is the precedent);
+the waterline and coast-brightening render into the texture's channels; the
+light pools and the catch-light term accumulate in the sphere's fragment
+shader from marker positions, capped and additive-warm.
 
 ### Selection: the inscription, not the card
 
