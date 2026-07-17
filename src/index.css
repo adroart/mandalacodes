@@ -33,6 +33,7 @@
 @import "./theme.css";
 @source "../";
 @source "../components";
+@source inline("font-display font-reading font-ui font-technical font-cjk font-calligraphic font-brand");
 
 /* ─── Art Image Design Tokens ─────────────────────────────────────────────── */
 /* These mirror the constants in components/ArtImage.tsx.
