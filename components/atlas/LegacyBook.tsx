@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type {
   AtlasLetter,
   HeirRegistration,
@@ -670,6 +671,19 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             )}
           </div>
         )}
+
+        {/* Watch the ignition again — a permanent door to the ceremony replay,
+            rendered from this piece's own public founding-light data. */}
+        <div className="mb-10">
+          <Link
+            to={`/atlas/claim?ceremony=${steward.pieceId}${
+              steward.editionNumber != null ? `:${steward.editionNumber}` : ''
+            }`}
+            className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+          >
+            replay the ignition
+          </Link>
+        </div>
 
         {/* Legacy timeline */}
         <div id="piece-book" className="mb-10 pt-10 border-t border-wood-200 scroll-mt-6">
