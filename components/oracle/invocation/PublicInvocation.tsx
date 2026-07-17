@@ -30,7 +30,7 @@ function Block({ block }: { block: SafeBlock }) {
 export function PublicInvocation({ invocation }: { invocation: LiveInvocation | null }) {
   if (!invocation) return null;
   return (
-    <article className="public-invocation" aria-label={invocation.title} data-invocation-version={invocation.versionNumber} data-oracle-reveal="">
+    <article className="public-invocation" aria-label={invocation.title} data-invocation-version={invocation.versionNumber}>
       {invocation.blocks.map((block, index) => <Block key={index} block={block} />)}
     </article>
   );

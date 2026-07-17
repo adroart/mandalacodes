@@ -29,6 +29,31 @@ html.oracle-card-page, html.oracle-card-page body { background:#14100b !importan
 .eb-reading [data-oracle-flow] > section[data-chapter="relations"] { background:#100d09 !important; }
 .eb-reading .ul-hero-section { padding-top:clamp(42px,6vw,72px) !important; }
 .eb-reading .ul-hero-grid > figure { background:var(--l-bg) !important; }
+.eb-reading:is([data-oracle-choreography="entrance"],[data-oracle-choreography="exiting"]) .ul-hero-section > .ul-title-mobile,
+.eb-reading:is([data-oracle-choreography="entrance"],[data-oracle-choreography="exiting"]) .ul-hero-grid > figure,
+.eb-reading:is([data-oracle-choreography="entrance"],[data-oracle-choreography="exiting"]) .ul-hero-grid > div > * {
+  opacity:0;
+  transform:translateY(20px);
+}
+.eb-reading[data-oracle-choreography="exiting"] [role="dialog"][aria-label="Card entrance. Tap to begin."] {
+  opacity:0;
+  transform:scale(.985);
+  transition:opacity 420ms cubic-bezier(.22,.61,.36,1),transform 420ms cubic-bezier(.22,.61,.36,1);
+  pointer-events:none;
+}
+.eb-reading[data-oracle-choreography="hero"] .ul-hero-section > .ul-title-mobile,
+.eb-reading[data-oracle-choreography="hero"] .ul-hero-grid > figure,
+.eb-reading[data-oracle-choreography="hero"] .ul-hero-grid > div > * {
+  animation:oracle-reading-hero-in 420ms cubic-bezier(.22,.61,.36,1) both;
+}
+.eb-reading[data-oracle-choreography="hero"] .ul-hero-section > .ul-title-mobile { animation-delay:40ms; }
+.eb-reading[data-oracle-choreography="hero"] .ul-hero-grid > figure { animation-delay:0ms; }
+.eb-reading[data-oracle-choreography="hero"] .ul-hero-grid > div > .ul-title-desktop { animation-delay:100ms; }
+.eb-reading[data-oracle-choreography="hero"] .ul-hero-grid > div > :not(.ul-title-desktop) { animation-delay:200ms; }
+@keyframes oracle-reading-hero-in {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:none; }
+}
 .eb-reading .ul-gk-spectrum-nav > button {
   min-width: 0;
   padding-inline: clamp(5px, 1.5vw, 12px) !important;
@@ -104,4 +129,8 @@ html.oracle-card-page, html.oracle-card-page body { background:#14100b !importan
 .eb-reading[data-motion="off"] [data-oracle-reveal], .eb-reading[data-motion="off"] [data-glyph] { opacity:1 !important; transform:none !important; clip-path:none !important; transition:none !important; }
 @media (prefers-reduced-motion:reduce) {
   .eb-reading [data-oracle-reveal], .eb-reading [data-glyph] { opacity:1 !important; transform:none !important; clip-path:none !important; transition:none !important; }
+  .eb-reading [role="dialog"][aria-label="Card entrance. Tap to begin."],
+  .eb-reading .ul-hero-section > .ul-title-mobile,
+  .eb-reading .ul-hero-grid > figure,
+  .eb-reading .ul-hero-grid > div > * { animation:none !important; transition:none !important; }
 }
