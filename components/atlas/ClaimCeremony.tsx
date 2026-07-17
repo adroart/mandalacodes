@@ -135,7 +135,10 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
     [state, key],
   );
   const myOrdinal = mine?.claimOrdinal;
-  const myTitle = FULL_ARCHIVE.find((a) => a.id === pieceId)?.title ?? pieceId;
+  const myTitle = (FULL_ARCHIVE.find((a) => a.id === pieceId)?.title ?? pieceId).replace(
+    /\s*-\s*\d+\s*$/,
+    '',
+  );
   const onGlobe = nodes.some((n) => n.id === key);
 
   /* Sequence: ignition runs its own clock inside the globe (~0.9s lead +
