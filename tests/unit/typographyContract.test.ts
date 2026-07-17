@@ -8,7 +8,9 @@ const GLOBAL_STYLES_FILE = join(ROOT, 'content-site/src/styles/global.css');
 const SITE_BAR_FILE = join(ROOT, 'content-site/src/styles/site-bar.css');
 
 const SOURCE_ROOTS = ['src', 'components', 'content-site/src', 'shared'];
-const ROOT_FILES = ['index.html', 'index.tsx'];
+const ROOT_EXCLUDED_FILE_PREFIXES = [
+  'vite.config.', 'tailwind.config.', 'postcss.config.', 'playwright.config.', 'vitest.config.', 'eslint.config.',
+];
 // `_mockups` and `_src` are archived design fixtures; generated source remains
 // in scope because it is imported and shipped by the application.
 const EXCLUDED_DIRECTORIES = new Set(['node_modules', 'dist', '_mockups', '_src']);
@@ -48,6 +50,12 @@ type FontDeclaration = {
   value: string;
 };
 
+type FontVariableDefinition = {
+  file: string;
+  line: number;
+  variable: string;
+};
+
 function collectProductionFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const entryPath = join(directory, entry.name);
@@ -60,9 +68,15 @@ function collectProductionFiles(directory: string): string[] {
 }
 
 function activeProductionFiles(): string[] {
+  const rootProductionFiles = readdirSync(ROOT, { withFileTypes: true })
+    .filter((entry) => entry.isFile()
+      && SOURCE_EXTENSIONS.has(extname(entry.name))
+      && !ROOT_EXCLUDED_FILE_PREFIXES.some((prefix) => entry.name.startsWith(prefix)))
+    .map((entry) => join(ROOT, entry.name));
+
   return [
     ...SOURCE_ROOTS.flatMap((sourceRoot) => collectProductionFiles(join(ROOT, sourceRoot))),
-    ...ROOT_FILES.map((file) => join(ROOT, file)),
+    ...rootProductionFiles,
   ];
 }
 
@@ -124,6 +138,7 @@ function fontDeclarations(file: string): FontDeclaration[] {
   const source = readFileSync(file, 'utf8');
   const searchableSource = maskComments(source);
   const declarations: FontDeclaration[] = [];
+  const isCssLikeFile = ['.astro', '.css', '.html'].includes(extname(file));
   const declarationPatterns = [
     {
       property: 'font-family' as const,
@@ -137,8 +152,12 @@ function fontDeclarations(file: string): FontDeclaration[] {
     },
     {
       property: 'font' as const,
-      pattern: /\bfont\s*:\s*(?:(['"`])((?:\\.|(?!\1)[\s\S])*)\1|([^,;}\n]+))/g,
-      value: (match: RegExpMatchArray) => match[1] ? `${match[1]}${match[2]}${match[1]}` : match[3],
+      pattern: isCssLikeFile
+        ? /\bfont\s*:\s*([^;}\n]+)/g
+        : /\bfont\s*:\s*(?:(['"`])((?:\\.|(?!\1)[\s\S])*)\1|([^,}\n]+))/g,
+      value: (match: RegExpMatchArray) => isCssLikeFile
+        ? match[1]
+        : match[1] ? `${match[1]}${match[2]}${match[1]}` : match[3],
     },
   ];
 
@@ -146,7 +165,8 @@ function fontDeclarations(file: string): FontDeclaration[] {
     for (const match of searchableSource.matchAll(pattern)) {
       const offset = match.index ?? 0;
       const declarationValue = value(match).trim();
-      if (property === 'font' && !/(?:var\(|['"`]|\b(?:normal|italic|oblique|\d))/.test(declarationValue)) continue;
+      // A TypeScript field type (`font: string`) is not a CSS shorthand.
+      if (property === 'font' && declarationValue === 'string') continue;
       declarations.push({
         file: relative(ROOT, file),
         line: searchableSource.slice(0, offset).split('\n').length,
@@ -157,6 +177,20 @@ function fontDeclarations(file: string): FontDeclaration[] {
   }
 
   return declarations;
+}
+
+function approvedFontVariableDefinitions(file: string): FontVariableDefinition[] {
+  const source = maskComments(readFileSync(file, 'utf8'));
+  const variableNames = [...APPROVED_FONT_VARIABLES]
+    .map((variable) => variable.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|');
+  const definitionPattern = new RegExp(`(?:^|[;,{\\s])(${variableNames})\\s*:`, 'g');
+
+  return [...source.matchAll(definitionPattern)].map((match) => ({
+    file: relative(ROOT, file),
+    line: source.slice(0, match.index ?? 0).split('\n').length,
+    variable: match[1],
+  }));
 }
 
 function formatDiagnostics(declarations: FontDeclaration[]): string {
@@ -218,6 +252,19 @@ describe('centralized typography contract', () => {
     expect(
       violations,
       `Replace direct font declarations with approved semantic variables:\n${formatDiagnostics(violations)}`,
+    ).toEqual([]);
+  });
+
+  it('does not redefine approved font variables outside src/theme.css', () => {
+    const violations = activeProductionFiles()
+      .filter((file) => file !== THEME_FILE)
+      .flatMap(approvedFontVariableDefinitions);
+
+    expect(
+      violations,
+      `Keep approved font variables owned by src/theme.css:\n${violations
+        .map(({ file, line, variable }) => `${file}:${line} redefines ${variable}`)
+        .join('\n')}`,
     ).toEqual([]);
   });
 
