@@ -19,7 +19,7 @@
 
 - [ ] **Step 1: Write a Vitest contract that requires canonical font roles and rejects production hardcodes**
 
-The test must recursively inspect active production sources while excluding `generated`, `_mockups`, `_src`, `dist`, `node_modules`, SVG assets, and the font-registration portion of `src/theme.css`. It must require the canonical variables below and reject direct production declarations for Iowan Old Style BT, GT America, Cormorant Garamond, Karla, Lora, Lato, Plus Jakarta Sans, Cinzel, and IBM Plex Mono outside the theme contract.
+The test must recursively inspect active production sources, including generated modules imported at runtime, while excluding archived `_mockups` / `_src` fixtures, `dist`, `node_modules`, and SVG assets. It must require the canonical variables below and reject every direct production font declaration outside the theme contract, rather than relying on a fixed list of known family names.
 
 ```ts
 const requiredRoles = [
@@ -127,15 +127,15 @@ Replace hardcoded Karla, Lato, and Plus Jakarta Sans declarations in account, na
 
 - [ ] **Step 2: Convert reading and supporting prose to `var(--font-reading)`**
 
-Use Iowan for oracle prose, descriptions, reflective copy, invocation content, and supporting text below the display threshold. Keep CJK and technical text on their specialized roles.
+Use the centralized reading role for oracle prose, descriptions, reflective copy, invocation content, and supporting text below the display threshold. The initial role resolves to Lora; a future licensed family can replace it in `src/theme.css`. Keep CJK and technical text on their specialized roles.
 
 - [ ] **Step 3: Keep major headings on `var(--font-display)` and brand marks on `var(--font-brand)`**
 
 Large page, article, and feature titles stay Cormorant. Existing Cinzel brand and symbolic uses move to `--font-brand` rather than becoming interface text.
 
-- [ ] **Step 4: Keep generated and archived sources out of the migration**
+- [ ] **Step 4: Migrate active generated output and its source**
 
-Do not mass-edit `components/oracle/eb/generated/`, `components/oracle/entry/generated/`, `_mockups/`, or `_src/`. Their active wrappers must supply semantic aliases when generated content is used.
+Active generated modules under `components/oracle/eb/generated/` and `components/oracle/entry/generated/` ship in the application, so their font declarations must use semantic roles too. Update the corresponding source template or controller alongside generated output so regeneration cannot restore hardcoded families. Archived mockups remain excluded.
 
 - [ ] **Step 5: Run the contract test and typecheck**
 
@@ -253,7 +253,7 @@ git diff --check
 git diff origin/main...HEAD -- src/theme.css src/index.css index.html index.tsx components content-site tests public/fonts
 ```
 
-Expected: no whitespace errors, no accidental generated/mockup edits, and `INDEX.md` remains the pre-existing user-owned modification.
+Expected: no whitespace errors, active generated output agrees with its source template, no archived mockup edits, and `INDEX.md` remains untouched.
 
 - [ ] **Step 4: Push the completed feature branch**
 
