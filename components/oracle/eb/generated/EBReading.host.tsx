@@ -6,6 +6,7 @@
    work. Animation + interaction logic is unchanged from the file. */
 import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { themeCanvasFont } from '../../../../shared/themeFonts';
 import { EBReadingMarkup } from './EBReading.generated';
 
 export interface EBData {
@@ -17,7 +18,7 @@ export interface EBData {
   shareText: string;
   moving: { n: number; image: string; becomes: string; text: string }[];
   reldata: Record<string, { kicker: string; kind: string; name: string; body: string[] }>;
-  kin: { key: string; x: number; y: number; kind: string; glyph: React.ReactNode; font: string; size: string; dim: string; svgR: number; label: string }[];
+  kin: { key: string; x: number; y: number; kind: string; glyph: React.ReactNode; fontRole: 'display' | 'cjk'; size: string; dim: string; svgR: number; label: string }[];
   overlays: Record<string, { kicker: string; title: string; sub: string; gratitude: string; paras: string[] }>;
   // UL panel reading + invocation, I Ching reading/judgement/image/combination, GK, HD, Body — bound text
   text: Record<string, any>;
@@ -352,8 +353,9 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     this.setState({ storyLabel: 'Saving…' });
     try {
       await Promise.all([
-        (document.fonts as any).load('400 88px "Cormorant Garamond"'),
-        (document.fonts as any).load('400 32px "Karla"'),
+        (document.fonts as any).load(themeCanvasFont('400', 88, 'display')),
+        (document.fonts as any).load(themeCanvasFont('400', 32, 'ui')),
+        (document.fonts as any).load(themeCanvasFont('400', 32, 'reading')),
       ]).catch(() => {});
       const cardImg: HTMLImageElement = await new Promise((res, rej) => {
         const im = new Image(); im.crossOrigin = 'anonymous';
@@ -368,16 +370,16 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       g.addColorStop(0, 'rgba(22,19,14,0)'); g.addColorStop(1, 'rgba(22,19,14,1)');
       ctx.fillStyle = g; ctx.fillRect(0, 940, W, 240);
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#C7A05B'; ctx.font = '400 26px "Karla", sans-serif';
+      ctx.fillStyle = '#C7A05B'; ctx.font = themeCanvasFont('400', 26, 'ui');
       ctx.fillText('UNIVERSAL LANGUAGE ORACLE', W / 2, 1240);
-      ctx.fillStyle = '#ECE4D5'; ctx.font = '400 84px "Cormorant Garamond", serif';
+      ctx.fillStyle = '#ECE4D5'; ctx.font = themeCanvasFont('400', 84, 'display');
       ctx.fillText(this.props.data.cardName, W / 2, 1345);
-      ctx.fillStyle = '#7A7160'; ctx.font = '400 30px "Karla", sans-serif';
+      ctx.fillStyle = '#7A7160'; ctx.font = themeCanvasFont('400', 30, 'ui');
       ctx.fillText('Code ' + String(this.props.data.code).padStart(2, '0'), W / 2, 1418);
-      ctx.fillStyle = '#ABA08C'; ctx.font = '400 30px "Karla", sans-serif';
+      ctx.fillStyle = '#ABA08C'; ctx.font = themeCanvasFont('400', 30, 'ui');
       ctx.fillText(this.props.data.keywords.slice(0, 3).join(' · '), W / 2, 1492);
       ctx.strokeStyle = '#3a342b'; ctx.beginPath(); ctx.moveTo(390, 1556); ctx.lineTo(690, 1556); ctx.stroke();
-      ctx.fillStyle = '#7A7160'; ctx.font = 'italic 400 30px "Cormorant Garamond", serif';
+      ctx.fillStyle = '#7A7160'; ctx.font = themeCanvasFont('italic 400', 30, 'reading');
       ctx.fillText('Open the reading and receive what it holds.', W / 2, 1620);
       const blob: Blob = await new Promise((res) => c.toBlob(res as any, 'image/jpeg', 0.92));
       const url = URL.createObjectURL(blob);
@@ -489,12 +491,12 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const hx = this.KINGWEN[focus - 1];
     const isCurrent = focus === this.CURRENT_CODE;
     const action = isCurrent
-      ? React.createElement('button', { onClick: () => { this.setState({ index: false }); this.go('iching'); }, style: { pointerEvents: 'auto', marginTop: '8px', fontFamily: 'var(--sans)', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#16130E', background: 'var(--accent-d)', border: 'none', cursor: 'pointer', padding: '9px 16px' } }, 'Open the reading')
-      : React.createElement('a', { href: `/universal-language/${focus}?ref=index`, style: { pointerEvents: 'auto', marginTop: '6px', fontFamily: 'var(--sans)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(236,228,213,0.6)', textDecoration: 'none' } }, 'Open Code ' + focus);
+      ? React.createElement('button', { onClick: () => { this.setState({ index: false }); this.go('iching'); }, style: { pointerEvents: 'auto', marginTop: '8px', fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#16130E', background: 'var(--accent-d)', border: 'none', cursor: 'pointer', padding: '9px 16px' } }, 'Open the reading')
+      : React.createElement('a', { href: `/universal-language/${focus}?ref=index`, style: { pointerEvents: 'auto', marginTop: '6px', fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(236,228,213,0.6)', textDecoration: 'none' } }, 'Open Code ' + focus);
     return React.createElement('div', { style: { textAlign: 'center', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', maxWidth: '150px' } },
-      React.createElement('div', { style: { fontFamily: 'var(--sans)', fontSize: '9px', letterSpacing: '0.24em', textTransform: 'uppercase', color: 'var(--accent-d)' } }, isCurrent ? 'This card' : 'Code ' + focus),
-      React.createElement('div', { style: { fontFamily: 'var(--serif)', fontSize: '44px', lineHeight: 1, color: '#ECE4D5' } }, String(focus)),
-      React.createElement('div', { style: { fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '17px', lineHeight: 1.2, color: 'rgba(236,228,213,0.8)' } }, hx[1]),
+      React.createElement('div', { style: { fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '0.24em', textTransform: 'uppercase', color: 'var(--accent-d)' } }, isCurrent ? 'This card' : 'Code ' + focus),
+      React.createElement('div', { style: { fontFamily: 'var(--font-display)', fontSize: '44px', lineHeight: 1, color: '#ECE4D5' } }, String(focus)),
+      React.createElement('div', { style: { fontFamily: 'var(--font-reading)', fontStyle: 'italic', fontSize: '17px', lineHeight: 1.2, color: 'rgba(236,228,213,0.8)' } }, hx[1]),
       action);
   }
 
@@ -638,7 +640,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       submitChart: this.submitChart,
       registerChartInput: this.registerChartInput,
       kinLines: this.buildKinLines(),
-      kinNodes: this.KIN.map((n) => ({ key: n.key, x: n.x + '%', y: n.y + '%', glyph: n.glyph, font: n.font, size: n.size, dim: n.dim, glyphColor: n.kind === 'kin' ? 'var(--accent)' : 'var(--l-1)', border: n.kind === 'kin' ? 'var(--accent)' : 'var(--l-rule)', label: n.label, name: (this.RELDATA[n.key] || ({} as any)).name || n.label, onSelect: () => this.selectKin(n.key) })),
+      kinNodes: this.KIN.map((n) => ({ key: n.key, x: n.x + '%', y: n.y + '%', glyph: n.glyph, fontRole: n.fontRole, size: n.size, dim: n.dim, glyphColor: n.kind === 'kin' ? 'var(--accent)' : 'var(--l-1)', border: n.kind === 'kin' ? 'var(--accent)' : 'var(--l-rule)', label: n.label, name: (this.RELDATA[n.key] || ({} as any)).name || n.label, onSelect: () => this.selectKin(n.key) })),
       selectKinSelf: () => this.selectKin('self'),
       kinKicker: rel.kicker,
       kinKind: rel.kind,

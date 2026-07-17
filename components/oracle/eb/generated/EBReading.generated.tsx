@@ -6,7 +6,7 @@ import React from 'react';
 
 export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   <>
-<div ref={vals.registerRoot} data-palette={vals.palette} data-accent={vals.accent} data-motion={vals.motion} style={{ minHeight: "100vh", background: "var(--l-bg)", color: "var(--l-1)", fontFamily: "var(--sans)", position: "relative" }}>
+<div ref={vals.registerRoot} data-palette={vals.palette} data-accent={vals.accent} data-motion={vals.motion} style={{ minHeight: "100vh", background: "var(--l-bg)", color: "var(--l-1)", fontFamily: 'var(--font-ui)', position: "relative" }}>
   <div aria-hidden="true" style={{ position: "fixed", inset: "0", pointerEvents: "none", zIndex: "100", opacity: "0.42", mixBlendMode: "soft-light", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "200px 200px" }}>
   </div>
   <div ref={vals.registerVeil} aria-hidden="true" style={{ position: "fixed", inset: "0", pointerEvents: "none", zIndex: "99", opacity: "0", background: "var(--l-bg)" }}>
@@ -14,7 +14,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   {(vals.entranceActive) ? (
     <>
       <div onClick={vals.dismissEntrance} role="dialog" aria-modal="true" aria-label="Card entrance. Tap to begin." style={{ position: "fixed", inset: "0", zIndex: "200", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "var(--l-bg)", cursor: "pointer", overflow: "hidden", userSelect: "none" }}>
-        <p style={{ position: "absolute", left: "0", right: "0", top: "max(40px,env(safe-area-inset-top))", textAlign: "center", padding: "0 24px", fontFamily: "var(--serif)", fontWeight: "500", fontSize: "clamp(38px,8vw,68px)", color: "var(--l-1)", letterSpacing: "-0.01em", lineHeight: "1.04", margin: "0", animation: "ulRise 1000ms cubic-bezier(.16,1,.3,1) 260ms both" }}>
+        <p style={{ position: "absolute", left: "0", right: "0", top: "max(40px,env(safe-area-inset-top))", textAlign: "center", padding: "0 24px", fontFamily: 'var(--font-display)', fontWeight: "500", fontSize: "clamp(38px,8vw,68px)", color: "var(--l-1)", letterSpacing: "-0.01em", lineHeight: "1.04", margin: "0", animation: "ulRise 1000ms cubic-bezier(.16,1,.3,1) 260ms both" }}>
         {vals.cardName}
         </p>
         <div style={{ position: "relative", width: "min(64vh,540px)", height: "min(64vh,540px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -24,7 +24,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <ul style={{ listStyle: "none", padding: "0", margin: "0", display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}>
               {(vals.keywords ?? []).map((kw, kwIdx) => (
                 <React.Fragment key={kwIdx}>
-                  <li style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "17px", color: "var(--l-2)", lineHeight: "1.3", letterSpacing: "0.02em", animation: "ulRise 760ms cubic-bezier(.16,1,.3,1) both" }}>
+                  <li style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "17px", color: "var(--l-2)", lineHeight: "1.3", letterSpacing: "0.02em", animation: "ulRise 760ms cubic-bezier(.16,1,.3,1) both" }}>
                   {kw}
                   </li>
                 </React.Fragment>
@@ -32,7 +32,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </ul>
           </div>
         </div>
-        <p style={{ position: "absolute", left: "0", right: "0", bottom: "max(34px,env(safe-area-inset-bottom))", textAlign: "center", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "clamp(19px,2.4vw,24px)", color: "var(--l-3)", margin: "0", animation: "ulPulse 3.4s ease-in-out 1.8s infinite" }}>
+        <p style={{ position: "absolute", left: "0", right: "0", bottom: "max(34px,env(safe-area-inset-bottom))", textAlign: "center", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "clamp(19px,2.4vw,24px)", color: "var(--l-3)", margin: "0", animation: "ulPulse 3.4s ease-in-out 1.8s infinite" }}>
         tap to begin
         </p>
       </div>
@@ -40,10 +40,10 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   ) : null}
   <header className="ul-topbar" style={{ position: "sticky", top: "0", zIndex: "90", background: "color-mix(in oklab,var(--l-bg) 88%,transparent)", backdropFilter: "saturate(1.1) blur(10px)", WebkitBackdropFilter: "saturate(1.1) blur(10px)", borderBottom: "1px solid var(--l-rule)" }}>
     <div style={{ maxWidth: "1180px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "18px", padding: "8px 22px" }}>
-      <span style={{ fontFamily: "var(--serif)", fontSize: "16px", letterSpacing: "0.04em", color: "var(--l-1)" }}>
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: "16px", letterSpacing: "0.04em", color: "var(--l-1)" }}>
       Universal Language
       </span>
-      <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--l-3)", display: "none" }}>
+      <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--l-3)", display: "none" }}>
       Oracle
       </span>
       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -57,12 +57,12 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </button>
         <span style={{ width: "1px", height: "13px", background: "var(--l-rule)" }}>
         </span>
-        <button onClick={vals.openBuy} style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: "4px 10px" }}>
+        <button onClick={vals.openBuy} style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: "4px 10px" }}>
         Acquire
         </button>
         <span style={{ width: "1px", height: "13px", background: "var(--l-rule)" }}>
         </span>
-        <button onClick={vals.toggleShare} style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-2)", background: "none", border: "none", cursor: "pointer", padding: "4px 10px" }}>
+        <button onClick={vals.toggleShare} style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-2)", background: "none", border: "none", cursor: "pointer", padding: "4px 10px" }}>
         Share
         </button>
       </div>
@@ -70,25 +70,25 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   </header>
   <section className="ul-hero-section" style={{ maxWidth: "1180px", margin: "0 auto", padding: "clamp(30px,4.5vw,64px) 22px clamp(28px,4vw,52px)" }}>
     <header className="ul-title-mobile" style={{ textAlign: "center", margin: "0 auto clamp(22px,3vw,40px)", maxWidth: "none" }}>
-      <h1 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(22px,6vw,46px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 10px", whiteSpace: "nowrap" }}>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(22px,6vw,46px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 10px", whiteSpace: "nowrap" }}>
       {vals.cardName}
       </h1>
     </header>
     <div className="ul-hero-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: "clamp(26px,4vw,52px)", alignItems: "center" }}>
       <figure onClick={vals.openLightbox} role="button" tabIndex={0} aria-label="Enlarge artwork" style={{ margin: "0", position: "relative", aspectRatio: "1/1", cursor: "zoom-in", overflow: "hidden", background: "var(--l-soft)", boxShadow: "0 1px 0 rgba(255,255,255,0.04),0 30px 80px -30px rgba(20,15,8,0.5)" }}>
-        <div aria-hidden="true" style={{ position: "absolute", inset: "0", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--serif)", fontStyle: "italic", color: "var(--l-3)", fontSize: "16px" }}>
+        <div aria-hidden="true" style={{ position: "absolute", inset: "0", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: 'var(--font-display)', fontStyle: "italic", color: "var(--l-3)", fontSize: "16px" }}>
         {vals.cardName}
         </div>
         <img crossOrigin="anonymous" src={vals.heroImage} alt="Earth's Breath, Universal Language 1. Original multidimensional wooden sculpture by Adrian Rasmussen." onError={vals.onImgError} loading="eager" decoding="async" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover" }} />
       </figure>
       <div style={{ textAlign: "left" }}>
-        <h1 className="ul-title-desktop" style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(26px,3.4vw,48px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 18px", whiteSpace: "nowrap" }}>
+        <h1 className="ul-title-desktop" style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(26px,3.4vw,48px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 18px", whiteSpace: "nowrap" }}>
         {vals.cardName}
         </h1>
         <div className="ul-keywords" onClick={vals.goGenekeys} title="Read the Gene Keys" style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", borderTop: "1px solid var(--l-rule)", borderBottom: "1px solid var(--l-rule)", padding: "16px 0", marginBottom: "28px", cursor: "pointer" }}>
           {(vals.keywords ?? []).map((kw, kwIdx) => (
             <React.Fragment key={kwIdx}>
-              <span style={{ fontFamily: "var(--serif)", fontSize: "clamp(15px,4vw,18px)", color: "var(--l-2)", lineHeight: "1.3", whiteSpace: "nowrap" }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: "clamp(15px,4vw,18px)", color: "var(--l-2)", lineHeight: "1.3", whiteSpace: "nowrap" }}>
               {kw}
               </span>
             </React.Fragment>
@@ -97,26 +97,26 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         {(vals.headerActionsSlot) ? vals.headerActionsSlot : (
         <div style={{ display: "flex", alignItems: "stretch", gap: "10px" }}>
           <button onClick={vals.openBuy} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ flex: "1", textAlign: "left", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", padding: "14px 18px", transition: "border-color .25s,background .25s" }}>
-            <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "18px", color: "var(--l-1)", lineHeight: "1.1" }}>
+            <span style={{ display: "block", fontFamily: 'var(--font-display)', fontSize: "18px", color: "var(--l-1)", lineHeight: "1.1" }}>
             Acquire
             </span>
-            <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", marginTop: "3px" }}>
+            <span style={{ display: "block", fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", marginTop: "3px" }}>
             The original · available
             </span>
           </button>
           <span aria-hidden="true" style={{ flexShrink: "0", alignSelf: "stretch", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "5px", color: "var(--accent)" }}>
-            <span style={{ fontFamily: "var(--cjk)", fontSize: "clamp(38px,6.5vw,52px)", lineHeight: "1" }}>
+            <span style={{ fontFamily: 'var(--font-cjk)', fontSize: "clamp(38px,6.5vw,52px)", lineHeight: "1" }}>
             {vals.heroGlyph}
             </span>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.2em" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.2em" }}>
             {vals.code2}
             </span>
           </span>
           <button onClick={vals.toggleShare} onMouseOver={(e) => { /* inline */ }} onMouseOut={(e) => { /* inline */ }} style={{ flex: "1", textAlign: "left", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", padding: "14px 18px", transition: "border-color .25s" }}>
-            <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "18px", color: "var(--l-1)", lineHeight: "1.1" }}>
+            <span style={{ display: "block", fontFamily: 'var(--font-display)', fontSize: "18px", color: "var(--l-1)", lineHeight: "1.1" }}>
             Share
             </span>
-            <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", marginTop: "3px" }}>
+            <span style={{ display: "block", fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", marginTop: "3px" }}>
             Send a code
             </span>
           </button>
@@ -135,13 +135,13 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       <div style={{ display: "inline-flex", minWidth: "100%", justifyContent: "center", position: "relative", verticalAlign: "top" }}>
         <span ref={vals.registerNavInd} aria-hidden="true" style={{ position: "absolute", left: "0", top: "0", height: "2px", width: "0", background: "var(--accent)", transition: "transform .42s cubic-bezier(.16,1,.3,1),width .42s cubic-bezier(.16,1,.3,1),opacity .3s", opacity: "0", pointerEvents: "none" }}>
         </span>
-        <button data-key="ul" ref={vals.registerNav} onClick={vals.goUL} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--sans)", fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
+        <button data-key="ul" ref={vals.registerNav} onClick={vals.goUL} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: 'var(--font-ui)', fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
         Universal
         </button>
-        <button data-key="iching" ref={vals.registerNav} onClick={vals.goIching} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--sans)", fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
+        <button data-key="iching" ref={vals.registerNav} onClick={vals.goIching} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: 'var(--font-ui)', fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
         I Ching
         </button>
-        <button data-key="genekeys" className="ul-tab2" ref={vals.registerNav} onClick={vals.goGenekeys} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--sans)", fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
+        <button data-key="genekeys" className="ul-tab2" ref={vals.registerNav} onClick={vals.goGenekeys} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: 'var(--font-ui)', fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
           <span>
           Gene
           </span>
@@ -149,7 +149,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Keys
           </span>
         </button>
-        <button data-key="humandesign" className="ul-tab2" ref={vals.registerNav} onClick={vals.goHumandesign} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--sans)", fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
+        <button data-key="humandesign" className="ul-tab2" ref={vals.registerNav} onClick={vals.goHumandesign} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: 'var(--font-ui)', fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
           <span>
           Human
           </span>
@@ -157,10 +157,10 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Design
           </span>
         </button>
-        <button data-key="body" ref={vals.registerNav} onClick={vals.goBody} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--sans)", fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
+        <button data-key="body" ref={vals.registerNav} onClick={vals.goBody} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: 'var(--font-ui)', fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
         Body
         </button>
-        <button data-key="relations" ref={vals.registerNav} onClick={vals.goRelations} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--sans)", fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
+        <button data-key="relations" ref={vals.registerNav} onClick={vals.goRelations} style={{ flex: "0 0 auto", padding: "9px clamp(6px,1.8vw,18px)", background: "none", border: "none", cursor: "pointer", fontFamily: 'var(--font-ui)', fontWeight: "500", fontSize: "clamp(10.5px,2.3vw,13px)", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--l-3)", whiteSpace: "nowrap", textAlign: "center", lineHeight: "1.06", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", transition: "color .25s" }}>
         Relations
         </button>
       </div>
@@ -169,10 +169,10 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   <div ref={vals.registerStage} className="ul-stage" style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap", width: "100%", overflowX: "auto", overflowY: "visible", scrollSnapType: "x mandatory", overscrollBehaviorX: "contain", scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
     <section data-chapter="ul" data-screen-label="Universal Language" ref={vals.registerPanel} style={{ flex: "0 0 100%", width: "100%", minWidth: "100%", scrollSnapAlign: "start", scrollSnapStop: "always", background: "var(--l-bg)", color: "var(--l-1)" }}>
       <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
-        <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", margin: "0 0 10px" }}>
+        <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", margin: "0 0 10px" }}>
         Universal Language
         </p>
-        <h2 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(30px,4vw,40px)", lineHeight: "1.1", color: "var(--l-1)", textAlign: "center", margin: "0 0 clamp(36px,5vw,56px)" }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(30px,4vw,40px)", lineHeight: "1.1", color: "var(--l-1)", textAlign: "center", margin: "0 0 clamp(36px,5vw,56px)" }}>
         The Reading
         </h2>
         {(vals.chartPreview) ? (
@@ -180,7 +180,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <div style={{ display: "flex", alignItems: "center", gap: "10px", border: "1px solid var(--l-rule)", background: "var(--l-soft)", padding: "11px 14px", margin: "0 0 clamp(30px,4vw,44px)", maxWidth: "560px", marginLeft: "auto", marginRight: "auto" }}>
               <span aria-hidden="true" style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--accent)", flexShrink: "0" }}>
               </span>
-              <p style={{ fontFamily: "var(--sans)", fontSize: "12.5px", lineHeight: "1.45", color: "var(--l-2)", margin: "0" }}>
+              <p style={{ fontFamily: 'var(--font-reading)', fontSize: "12.5px", lineHeight: "1.45", color: "var(--l-2)", margin: "0" }}>
                 <span style={{ color: "var(--accent)" }}>
                 This code is your Pearl.
                 </span>
@@ -190,7 +190,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </>
         ) : null}
         <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-          <p style={{ fontFamily: "var(--serif)", fontSize: "clamp(19px,2.2vw,22px)", lineHeight: "1.66", color: "var(--l-1)", margin: "0", textWrap: "pretty" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "clamp(19px,2.2vw,22px)", lineHeight: "1.66", color: "var(--l-1)", margin: "0", textWrap: "pretty" }}>
             <span className="ul-dropcap" aria-hidden="true">
             {vals.ulDropcap}
             </span>
@@ -198,7 +198,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </p>
           {(vals.ulReadingRest ?? []).map((para, paraIdx) => (
             <React.Fragment key={paraIdx}>
-              <p style={{ fontFamily: "var(--serif)", fontSize: "clamp(19px,2.2vw,22px)", lineHeight: "1.66", color: "var(--l-2)", margin: "0", textWrap: "pretty" }}>
+              <p style={{ fontFamily: 'var(--font-reading)', fontSize: "clamp(19px,2.2vw,22px)", lineHeight: "1.66", color: "var(--l-2)", margin: "0", textWrap: "pretty" }}>
               {para}
               </p>
             </React.Fragment>
@@ -206,11 +206,11 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </div>
         {(vals.invocation && String(vals.invocation).trim()) ? (
         <div style={{ marginTop: "clamp(48px,6vw,72px)" }}>
-          <h3 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(26px,3.2vw,32px)", color: "var(--accent)", textAlign: "center", margin: "0 0 28px" }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(26px,3.2vw,32px)", color: "var(--accent)", textAlign: "center", margin: "0 0 28px" }}>
           Invocation
           </h3>
           <div style={{ borderTop: "1px solid var(--accent)", borderBottom: "1px solid var(--accent)", padding: "clamp(28px,4vw,40px) 0", maxWidth: "48ch", margin: "0 auto", borderImage: "linear-gradient(90deg,transparent,var(--accent),transparent) 1" }}>
-            <p style={{ fontFamily: "var(--serif)", fontSize: "clamp(18px,2vw,21px)", lineHeight: "1.85", color: "var(--l-1)", textAlign: "center", margin: "0" }}>
+            <p style={{ fontFamily: 'var(--font-reading)', fontSize: "clamp(18px,2vw,21px)", lineHeight: "1.85", color: "var(--l-1)", textAlign: "center", margin: "0" }}>
             {vals.invocation}
             </p>
           </div>
@@ -222,10 +222,10 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
         <header style={{ textAlign: "center", marginBottom: "clamp(40px,5vw,60px)" }}>
           <button onClick={vals.openOverlayIching} aria-label="About the I Ching" style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: "18px", color: "inherit" }}>
-            <span data-glyph="1" style={{ fontFamily: "var(--cjk)", fontSize: "clamp(60px,9vw,80px)", lineHeight: "1", color: "var(--accent-d)" }}>
+            <span data-glyph="1" style={{ fontFamily: 'var(--font-cjk)', fontSize: "clamp(60px,9vw,80px)", lineHeight: "1", color: "var(--accent-d)" }}>
             {vals.ichingGlyph}
             </span>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px" }}>
             I Ching · about
             </span>
           </button>
@@ -235,7 +235,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <div style={{ display: "flex", alignItems: "center", gap: "10px", border: "1px solid var(--d-rule)", background: "var(--d-soft)", padding: "11px 14px", margin: "0 0 clamp(28px,4vw,40px)" }}>
               <span aria-hidden="true" style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--accent-d)", flexShrink: "0" }}>
               </span>
-              <p style={{ fontFamily: "var(--sans)", fontSize: "12.5px", lineHeight: "1.45", color: "var(--d-2)", margin: "0" }}>
+              <p style={{ fontFamily: 'var(--font-reading)', fontSize: "12.5px", lineHeight: "1.45", color: "var(--d-2)", margin: "0" }}>
                 <span style={{ color: "var(--accent-d)" }}>
                 Your Pearl sits on Line 3.
                 </span>
@@ -246,7 +246,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         ) : null}
         <div className="ul-iching-rows" style={{ borderTop: "1px solid var(--d-rule)", marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)", width: "100vw" }}>
           <button data-iv="hex" ref={vals.registerIv} onClick={vals.selHex} style={{ width: "100%", display: "flex", alignItems: "center", gap: "16px", textAlign: "left", background: "rgba(199,160,91,0.06)", border: "none", borderBottom: "1px solid var(--d-rule)", cursor: "pointer", padding: "20px clamp(22px,5vw,76px)", color: "inherit" }}>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--d-3)", width: "64px", flexShrink: "0" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--d-3)", width: "64px", flexShrink: "0" }}>
             {vals.ichingGua}
             </span>
             <span ref={vals.registerTrigram} aria-hidden="true" style={{ display: "inline-flex", flexDirection: "column", gap: "3px", flexShrink: "0" }}>
@@ -264,19 +264,19 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               ))}
             </span>
             <span style={{ flex: "1", minWidth: "0" }}>
-              <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "19px", color: "var(--d-1)", lineHeight: "1.2" }}>
+              <span style={{ display: "block", fontFamily: 'var(--font-display)', fontSize: "19px", color: "var(--d-1)", lineHeight: "1.2" }}>
               {vals.ichingHexName}
               </span>
-              <span style={{ display: "block", fontFamily: "var(--serif)", fontSize: "14px", color: "var(--d-3)" }}>
+              <span style={{ display: "block", fontFamily: 'var(--font-display)', fontSize: "14px", color: "var(--d-3)" }}>
               {vals.ichingHexFormula}
               </span>
             </span>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--d-3)", flexShrink: "0" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--d-3)", flexShrink: "0" }}>
             Hexagram
             </span>
           </button>
           <button data-iv="upper" ref={vals.registerIv} onClick={vals.selUpper} style={{ width: "100%", display: "flex", alignItems: "center", gap: "16px", textAlign: "left", background: "none", border: "none", borderBottom: "1px solid var(--d-rule)", cursor: "pointer", padding: "15px clamp(22px,5vw,76px)", color: "inherit" }}>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--d-3)", width: "64px", flexShrink: "0" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--d-3)", width: "64px", flexShrink: "0" }}>
             Upper
             </span>
             <span aria-hidden="true" style={{ display: "inline-flex", flexDirection: "column", gap: "3px", flexShrink: "0" }}>
@@ -293,15 +293,15 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 </span>
               ))}
             </span>
-            <span style={{ flex: "1", fontFamily: "var(--serif)", fontSize: "17px", color: "var(--d-2)" }}>
+            <span style={{ flex: "1", fontFamily: 'var(--font-display)', fontSize: "17px", color: "var(--d-2)" }}>
             {vals.ichingUpperName}
             </span>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--d-3)", flexShrink: "0" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--d-3)", flexShrink: "0" }}>
             Trigram
             </span>
           </button>
           <button data-iv="lower" ref={vals.registerIv} onClick={vals.selLower} style={{ width: "100%", display: "flex", alignItems: "center", gap: "16px", textAlign: "left", background: "none", border: "none", borderBottom: "1px solid var(--d-rule)", cursor: "pointer", padding: "15px clamp(22px,5vw,76px)", color: "inherit" }}>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--d-3)", width: "64px", flexShrink: "0" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--d-3)", width: "64px", flexShrink: "0" }}>
             Lower
             </span>
             <span aria-hidden="true" style={{ display: "inline-flex", flexDirection: "column", gap: "3px", flexShrink: "0" }}>
@@ -318,38 +318,38 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 </span>
               ))}
             </span>
-            <span style={{ flex: "1", fontFamily: "var(--serif)", fontSize: "17px", color: "var(--d-2)" }}>
+            <span style={{ flex: "1", fontFamily: 'var(--font-display)', fontSize: "17px", color: "var(--d-2)" }}>
             {vals.ichingLowerName}
             </span>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--d-3)", flexShrink: "0" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--d-3)", flexShrink: "0" }}>
             Trigram
             </span>
           </button>
           <div style={{ padding: "26px clamp(22px,5vw,76px) 8px", display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap" }}>
             <div style={{ flex: "1", minWidth: "240px" }}>
-              <p ref={vals.registerIvLabel} style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 12px" }}>
+              <p ref={vals.registerIvLabel} style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 12px" }}>
               Combination
               </p>
-              <div data-ivc="hex" ref={vals.registerIvc} style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)" }}>
+              <div data-ivc="hex" ref={vals.registerIvc} style={{ fontFamily: 'var(--font-ui)', fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)" }}>
               {vals.ichingCombinationHex}
               </div>
-              <div data-ivc="upper" ref={vals.registerIvc} style={{ display: "none", fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)" }}>
+              <div data-ivc="upper" ref={vals.registerIvc} style={{ display: "none", fontFamily: 'var(--font-ui)', fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)" }}>
               {vals.ichingCombinationUpper}
               </div>
-              <div data-ivc="lower" ref={vals.registerIvc} style={{ display: "none", fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)" }}>
+              <div data-ivc="lower" ref={vals.registerIvc} style={{ display: "none", fontFamily: 'var(--font-ui)', fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)" }}>
               {vals.ichingCombinationLower}
               </div>
             </div>
           </div>
         </div>
         <div style={{ marginTop: "clamp(40px,5vw,56px)" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 18px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 18px" }}>
           The Reading
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
             {(vals.ichingReading ?? []).map((para, paraIdx) => (
               <React.Fragment key={paraIdx}>
-                <p style={{ fontFamily: "var(--serif)", fontSize: "clamp(18px,2vw,20px)", lineHeight: "1.66", color: "var(--d-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "clamp(18px,2vw,20px)", lineHeight: "1.66", color: "var(--d-2)", margin: "0" }}>
                 {para}
                 </p>
               </React.Fragment>
@@ -358,41 +358,41 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </div>
         <div className="ul-ji" style={{ marginTop: "clamp(36px,4vw,48px)", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: "28px" }}>
           <div style={{ borderTop: "1px solid var(--d-rule)", paddingTop: "18px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 14px" }}>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 14px" }}>
             The Judgement
             </p>
-            <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "18px", lineHeight: "1.75", color: "var(--d-1)", margin: "0" }}>
+            <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "18px", lineHeight: "1.75", color: "var(--d-1)", margin: "0" }}>
             {vals.ichingJudgement}
             </p>
           </div>
           <div style={{ borderTop: "1px solid var(--d-rule)", paddingTop: "18px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 14px" }}>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 14px" }}>
             The Image
             </p>
-            <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "18px", lineHeight: "1.75", color: "var(--d-1)", margin: "0" }}>
+            <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "18px", lineHeight: "1.75", color: "var(--d-1)", margin: "0" }}>
             {vals.ichingImage}
             </p>
           </div>
         </div>
         <div style={{ marginTop: "clamp(44px,6vw,64px)", border: "1px solid var(--d-rule)", padding: "clamp(24px,4vw,38px)", background: "var(--d-soft)" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", textAlign: "center", margin: "0 0 8px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", textAlign: "center", margin: "0 0 8px" }}>
           The Oracle
           </p>
-          <h3 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(22px,2.6vw,27px)", color: "var(--d-1)", textAlign: "center", margin: "0 0 6px" }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(22px,2.6vw,27px)", color: "var(--d-1)", textAlign: "center", margin: "0 0 6px" }}>
           Cast the coins
           </h3>
-          <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "16px", color: "var(--d-3)", textAlign: "center", margin: "0 auto 24px", maxWidth: "42ch" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "16px", color: "var(--d-3)", textAlign: "center", margin: "0 auto 24px", maxWidth: "42ch" }}>
           Three coins, six times. The throw shows which lines are moving for you now — the places this hexagram is already turning into another.
           </p>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
             <div ref={vals.registerCoins} style={{ display: "flex", gap: "14px" }}>
-              <span style={{ width: "46px", height: "46px", borderRadius: "50%", border: "1px solid var(--d-rule)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--cjk)", fontSize: "20px", color: "var(--accent-d)" }}>
+              <span style={{ width: "46px", height: "46px", borderRadius: "50%", border: "1px solid var(--d-rule)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: 'var(--font-cjk)', fontSize: "20px", color: "var(--accent-d)" }}>
               乾
               </span>
-              <span style={{ width: "46px", height: "46px", borderRadius: "50%", border: "1px solid var(--d-rule)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--cjk)", fontSize: "20px", color: "var(--accent-d)" }}>
+              <span style={{ width: "46px", height: "46px", borderRadius: "50%", border: "1px solid var(--d-rule)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: 'var(--font-cjk)', fontSize: "20px", color: "var(--accent-d)" }}>
               坤
               </span>
-              <span style={{ width: "46px", height: "46px", borderRadius: "50%", border: "1px solid var(--d-rule)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--cjk)", fontSize: "20px", color: "var(--accent-d)" }}>
+              <span style={{ width: "46px", height: "46px", borderRadius: "50%", border: "1px solid var(--d-rule)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: 'var(--font-cjk)', fontSize: "20px", color: "var(--accent-d)" }}>
               乾
               </span>
             </div>
@@ -410,21 +410,21 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                   ))}
                 </div>
                 <button onClick={vals.openRelating} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", background: "none", border: "none", cursor: "pointer", color: "inherit", marginTop: "2px", padding: "6px 10px" }}>
-                  <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--d-3)" }}>
+                  <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--d-3)" }}>
                   {vals.castHexKicker}
                   </span>
-                  <span style={{ fontFamily: "var(--serif)", fontSize: "clamp(26px,3.6vw,34px)", lineHeight: "1.12", color: "var(--d-1)" }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: "clamp(26px,3.6vw,34px)", lineHeight: "1.12", color: "var(--d-1)" }}>
                   {vals.castHexLabel}
                   </span>
                   {(vals.castMoving) ? (
                     <>
-                      <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "3px" }}>
+                      <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "3px" }}>
                       Read where it stands →
                       </span>
                     </>
                   ) : null}
                 </button>
-                <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "17px", lineHeight: "1.6", color: "var(--d-2)", textAlign: "center", maxWidth: "44ch", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "17px", lineHeight: "1.6", color: "var(--d-2)", textAlign: "center", maxWidth: "44ch", margin: "0" }}>
                 {vals.castSummary}
                 </p>
               </div>
@@ -433,7 +433,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           {(vals.noCast) ? (
             <>
               <div style={{ display: "flex", justifyContent: "center" }}>
-                <button onClick={vals.doCast} style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--d-bg)", background: "var(--accent-d)", border: "none", cursor: "pointer", padding: "14px 32px" }}>
+                <button onClick={vals.doCast} style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--d-bg)", background: "var(--accent-d)", border: "none", cursor: "pointer", padding: "14px 32px" }}>
                 Cast the coins
                 </button>
               </div>
@@ -443,30 +443,30 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         {(vals.showMovingLines) ? (
           <>
             <div style={{ marginTop: "clamp(40px,5vw,56px)" }}>
-              <p style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 6px" }}>
+              <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 6px" }}>
               {vals.movingHeading}
               </p>
-              <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "15px", color: "var(--d-3)", margin: "0 0 22px" }}>
+              <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "15px", color: "var(--d-3)", margin: "0 0 22px" }}>
               {vals.movingSub}
               </p>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 {(vals.movingLines ?? []).map((ml, mlIdx) => (
                   <React.Fragment key={mlIdx}>
                     <div style={{ borderTop: "1px solid var(--d-rule)", padding: "18px 0", display: "grid", gridTemplateColumns: "auto 1fr", gap: "16px", alignItems: "start" }}>
-                      <span style={{ fontFamily: "var(--serif)", fontSize: "30px", lineHeight: "1", color: "var(--accent-d)", opacity: "0.7", width: "32px" }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: "30px", lineHeight: "1", color: "var(--accent-d)", opacity: "0.7", width: "32px" }}>
                       {ml.n}
                       </span>
                       <div>
                         {ml.image ? (
-                          <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "16px", color: "var(--d-2)", margin: "0 0 7px" }}>
+                          <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "16px", color: "var(--d-2)", margin: "0 0 7px" }}>
                           {ml.image}
                           </p>
                         ) : null}
-                        <p style={{ fontFamily: "var(--sans)", fontSize: "15px", lineHeight: "1.7", color: "var(--d-2)", margin: "0 0 9px" }}>
+                        <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.7", color: "var(--d-2)", margin: "0 0 9px" }}>
                         {ml.text}
                         </p>
                         {ml.becomes ? (
-                          <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--d-3)", margin: "0" }}>
+                          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--d-3)", margin: "0" }}>
                           Moving → {ml.becomes}
                           </p>
                         ) : null}
@@ -492,7 +492,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               <ellipse cx="28" cy="41" rx="20" ry="3.8" transform="rotate(7 28 41)" />
               <ellipse cx="72" cy="41" rx="20" ry="3.8" transform="rotate(-7 72 41)" />
             </svg>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", borderBottom: "1px solid var(--l-rule)", paddingBottom: "6px" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", borderBottom: "1px solid var(--l-rule)", paddingBottom: "6px" }}>
             Gene Keys · about
             </span>
           </button>
@@ -502,7 +502,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <div style={{ display: "flex", alignItems: "center", gap: "10px", border: "1px solid var(--l-rule)", background: "var(--l-soft)", padding: "11px 14px", margin: "0 0 clamp(28px,4vw,40px)" }}>
               <span aria-hidden="true" style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--accent)", flexShrink: "0" }}>
               </span>
-              <p style={{ fontFamily: "var(--sans)", fontSize: "12.5px", lineHeight: "1.45", color: "var(--l-2)", margin: "0" }}>
+              <p style={{ fontFamily: 'var(--font-reading)', fontSize: "12.5px", lineHeight: "1.45", color: "var(--l-2)", margin: "0" }}>
                 <span style={{ color: "var(--accent)" }}>
                 As your Pearl,
                 </span>
@@ -513,51 +513,51 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         ) : null}
         <div className="ul-gk-spectrum-nav" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", border: "1px solid var(--l-rule)", marginBottom: "clamp(32px,4vw,44px)" }}>
           <button onClick={vals.jumpShadow} style={{ padding: "18px 12px", textAlign: "center", border: "none", borderRight: "1px solid var(--l-rule)", background: "none", cursor: "pointer", font: "inherit", color: "inherit", display: "block" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", margin: "0 0 6px" }}>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", margin: "0 0 6px" }}>
             Shadow
             </p>
-            <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0" }}>
+            <p style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--l-1)", margin: "0" }}>
             {vals.gkShadowName}
             </p>
           </button>
           <button onClick={vals.jumpGift} style={{ padding: "18px 12px", textAlign: "center", border: "none", borderRight: "1px solid var(--l-rule)", background: "color-mix(in oklab,var(--accent) 8%,transparent)", cursor: "pointer", font: "inherit", color: "inherit", display: "block" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 6px" }}>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 6px" }}>
             Gift
             </p>
-            <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--accent)", margin: "0" }}>
+            <p style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--accent)", margin: "0" }}>
             {vals.gkGiftName}
             </p>
           </button>
           <button onClick={vals.jumpSiddhi} style={{ padding: "18px 12px", textAlign: "center", border: "none", background: "none", cursor: "pointer", font: "inherit", color: "inherit", display: "block" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", margin: "0 0 6px" }}>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", margin: "0 0 6px" }}>
             Siddhi
             </p>
-            <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0" }}>
+            <p style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--l-1)", margin: "0" }}>
             {vals.gkSiddhiName}
             </p>
           </button>
         </div>
         <div ref={vals.registerGK} data-gk="shadow" style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 4px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 4px" }}>
           Shadow
           </p>
-          <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0 0 2px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--l-1)", margin: "0 0 2px" }}>
           {vals.gkShadowName2}
           </p>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "14px", color: "var(--l-3)", margin: "0 0 16px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "14px", color: "var(--l-3)", margin: "0 0 16px" }}>
           {vals.gkShadowSub}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(vals.gkShadowParas ?? []).map((para, paraIdx) => (
               <React.Fragment key={paraIdx}>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
                 {para}
                 </p>
               </React.Fragment>
             ))}
           </div>
           <details style={{ marginTop: "18px", borderTop: "1px solid var(--l-rule)", paddingTop: "14px" }}>
-            <summary style={{ cursor: "pointer", listStyle: "none", fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", display: "flex", alignItems: "center", gap: "8px" }}>
+            <summary style={{ cursor: "pointer", listStyle: "none", fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", display: "flex", alignItems: "center", gap: "8px" }}>
               Repressive · Reactive
               <span style={{ color: "var(--l-3)" }}>
               — go deeper
@@ -565,18 +565,18 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </summary>
             <div className="ul-natures" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "18px", paddingTop: "18px" }}>
               <div>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 7px" }}>
+                <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 7px" }}>
                 Repressive · Depressive
                 </p>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "15px", lineHeight: "1.74", color: "var(--l-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.74", color: "var(--l-2)", margin: "0" }}>
                 Some people meet the numbness by going still. They stop reaching for anything, decide this flatness is simply who they are, and let the fire bank down further. It looks like calm. It is not calm.
                 </p>
               </div>
               <div>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 7px" }}>
+                <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 7px" }}>
                 Reactive · Frenetic
                 </p>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "15px", lineHeight: "1.74", color: "var(--l-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.74", color: "var(--l-2)", margin: "0" }}>
                 Others meet it by speeding up. They fill the calendar, stay in motion, keep the noise high enough that the silence underneath cannot be heard. They look productive. Inside, nothing has warmed.
                 </p>
               </div>
@@ -584,19 +584,19 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </details>
         </div>
         <div ref={vals.registerGK} data-gk="gift" style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 4px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 4px" }}>
           Gift
           </p>
-          <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0 0 2px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--l-1)", margin: "0 0 2px" }}>
           {vals.gkGiftName2}
           </p>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "14px", color: "var(--l-3)", margin: "0 0 16px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "14px", color: "var(--l-3)", margin: "0 0 16px" }}>
           {vals.gkGiftSub}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(vals.gkGiftParas ?? []).map((para, paraIdx) => (
               <React.Fragment key={paraIdx}>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
                 {para}
                 </p>
               </React.Fragment>
@@ -604,26 +604,26 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </div>
         </div>
         <div ref={vals.registerGK} data-gk="siddhi" style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 4px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 4px" }}>
           Siddhi
           </p>
-          <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--l-1)", margin: "0 0 2px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--l-1)", margin: "0 0 2px" }}>
           {vals.gkSiddhiName2}
           </p>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "14px", color: "var(--l-3)", margin: "0 0 16px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "14px", color: "var(--l-3)", margin: "0 0 16px" }}>
           {vals.gkSiddhiSub}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(vals.gkSiddhiParas ?? []).map((para, paraIdx) => (
               <React.Fragment key={paraIdx}>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
                 {para}
                 </p>
               </React.Fragment>
             ))}
           </div>
         </div>
-        <p style={{ fontFamily: "var(--sans)", fontSize: "13px", color: "var(--l-3)", margin: "18px 0 0", borderTop: "1px solid var(--l-rule)", paddingTop: "16px" }}>
+        <p style={{ fontFamily: 'var(--font-reading)', fontSize: "13px", color: "var(--l-3)", margin: "18px 0 0", borderTop: "1px solid var(--l-rule)", paddingTop: "16px" }}>
           Gene Keys text and the Shadow–Gift–Siddhi spectrum draw on the work of Richard Rudd.
           <a href="https://genekeys.com" target="_blank" rel="noopener" style={{ color: "var(--accent)", textDecoration: "none", borderBottom: "1px solid var(--l-rule)" }}>
           genekeys.com
@@ -635,13 +635,13 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
         <header style={{ textAlign: "center", marginBottom: "clamp(38px,5vw,56px)" }}>
           <button onClick={vals.openOverlayHD} aria-label="About Human Design" style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: "8px", color: "inherit" }}>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", opacity: "0.8" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", opacity: "0.8" }}>
             Gate
             </span>
-            <span data-glyph="1" style={{ fontFamily: "var(--serif)", fontSize: "clamp(58px,8vw,74px)", lineHeight: "0.9", color: "var(--accent-d)" }}>
+            <span data-glyph="1" style={{ fontFamily: 'var(--font-display)', fontSize: "clamp(58px,8vw,74px)", lineHeight: "0.9", color: "var(--accent-d)" }}>
             {vals.hdGate}
             </span>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px", marginTop: "10px" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px", marginTop: "10px" }}>
             Human Design · about
             </span>
           </button>
@@ -651,7 +651,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <div style={{ display: "flex", alignItems: "center", gap: "10px", border: "1px solid var(--d-rule)", background: "var(--d-soft)", padding: "11px 14px", marginBottom: "8px" }}>
               <span aria-hidden="true" style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--accent-d)", flexShrink: "0" }}>
               </span>
-              <p style={{ fontFamily: "var(--sans)", fontSize: "12.5px", lineHeight: "1.45", color: "var(--d-2)", margin: "0" }}>
+              <p style={{ fontFamily: 'var(--font-reading)', fontSize: "12.5px", lineHeight: "1.45", color: "var(--d-2)", margin: "0" }}>
                 <span style={{ color: "var(--accent-d)" }}>
                 This code is in your chart — your Pearl.
                 </span>
@@ -661,16 +661,16 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </>
         ) : null}
         <div style={{ borderTop: "1px solid var(--d-rule)", padding: "26px 0" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 4px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 4px" }}>
           The Drive
           </p>
-          <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--d-1)", margin: "0 0 16px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--d-1)", margin: "0 0 16px" }}>
           {vals.hdDriveName}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(vals.hdDriveParas ?? []).map((para, paraIdx) => (
               <React.Fragment key={paraIdx}>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
                 {para}
                 </p>
               </React.Fragment>
@@ -678,16 +678,16 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </div>
         </div>
         <div style={{ borderTop: "1px solid var(--d-rule)", padding: "26px 0" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 4px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 4px" }}>
           Where It Lives
           </p>
-          <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--d-1)", margin: "0 0 16px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--d-1)", margin: "0 0 16px" }}>
           {vals.hdCentreName}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(vals.hdCentreParas ?? []).map((para, paraIdx) => (
               <React.Fragment key={paraIdx}>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
                 {para}
                 </p>
               </React.Fragment>
@@ -695,16 +695,16 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </div>
         </div>
         <div style={{ borderTop: "1px solid var(--d-rule)", padding: "26px 0" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 4px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 4px" }}>
           What Completes It
           </p>
-          <p style={{ fontFamily: "var(--serif)", fontSize: "21px", color: "var(--d-1)", margin: "0 0 16px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--d-1)", margin: "0 0 16px" }}>
           {vals.hdChannelName}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(vals.hdChannelParas ?? []).map((para, paraIdx) => (
               <React.Fragment key={paraIdx}>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", lineHeight: "1.78", color: "var(--d-2)", margin: "0" }}>
                 {para}
                 </p>
               </React.Fragment>
@@ -712,13 +712,13 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </div>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "24px" }}>
-          <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
+          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
           Gate 1
           </span>
-          <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
+          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
           Identity Center
           </span>
-          <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
+          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
           Channel of Inspiration 1–8
           </span>
         </div>
@@ -726,10 +726,10 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     </section>
     <section data-chapter="body" data-screen-label="Body" ref={vals.registerPanel} style={{ flex: "0 0 100%", width: "100%", minWidth: "100%", scrollSnapAlign: "start", scrollSnapStop: "always", background: "var(--l-bg)", color: "var(--l-1)" }}>
       <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
-        <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", margin: "0 0 10px" }}>
+        <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", margin: "0 0 10px" }}>
         Body
         </p>
-        <h2 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(30px,4vw,40px)", lineHeight: "1.1", color: "var(--l-1)", textAlign: "center", margin: "0 0 clamp(34px,5vw,52px)" }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(30px,4vw,40px)", lineHeight: "1.1", color: "var(--l-1)", textAlign: "center", margin: "0 0 clamp(34px,5vw,52px)" }}>
         The Body of the Code
         </h2>
         {(vals.chartPreview) ? (
@@ -737,7 +737,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <div style={{ display: "flex", alignItems: "center", gap: "10px", border: "1px solid var(--l-rule)", background: "var(--l-soft)", padding: "11px 14px", margin: "0 auto clamp(28px,4vw,40px)", maxWidth: "560px" }}>
               <span aria-hidden="true" style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--accent)", flexShrink: "0" }}>
               </span>
-              <p style={{ fontFamily: "var(--sans)", fontSize: "12.5px", lineHeight: "1.45", color: "var(--l-2)", margin: "0" }}>
+              <p style={{ fontFamily: 'var(--font-reading)', fontSize: "12.5px", lineHeight: "1.45", color: "var(--l-2)", margin: "0" }}>
                 <span style={{ color: "var(--accent)" }}>
                 Carried in your chart,
                 </span>
@@ -747,24 +747,24 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </>
         ) : null}
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px", marginBottom: "clamp(32px,4vw,48px)" }}>
-          <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
+          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
           {vals.bodyOrganChip}
           </span>
-          <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
+          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
           {vals.bodyAminoChip}
           </span>
-          <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
+          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
           Ring of Fire
           </span>
         </div>
         <div style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 14px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 14px" }}>
           Physiology · The Liver
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(vals.bodyPhysParas ?? []).map((para, paraIdx) => (
               <React.Fragment key={paraIdx}>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
                 {para}
                 </p>
               </React.Fragment>
@@ -772,13 +772,13 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </div>
         </div>
         <div style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 14px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 14px" }}>
           Amino Acid · Lysine
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(vals.bodyAminoParas ?? []).map((para, paraIdx) => (
               <React.Fragment key={paraIdx}>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
                 {para}
                 </p>
               </React.Fragment>
@@ -789,13 +789,13 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     </section>
     <section data-chapter="relations" data-screen-label="Relations" ref={vals.registerPanel} style={{ flex: "0 0 100%", width: "100%", minWidth: "100%", scrollSnapAlign: "start", scrollSnapStop: "always", background: "var(--l-soft)", color: "var(--l-1)" }}>
       <div style={{ maxWidth: "720px", margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(30px,7vw,46px) clamp(56px,7vw,104px)" }}>
-        <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", margin: "0 0 10px" }}>
+        <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", margin: "0 0 10px" }}>
         Relations
         </p>
-        <h2 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(30px,4vw,40px)", lineHeight: "1.1", color: "var(--l-1)", textAlign: "center", margin: "0 0 24px" }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(30px,4vw,40px)", lineHeight: "1.1", color: "var(--l-1)", textAlign: "center", margin: "0 0 24px" }}>
         Its Kin
         </h2>
-        <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "clamp(18px,2.2vw,22px)", lineHeight: "1.55", color: "var(--l-2)", textAlign: "center", maxWidth: "46ch", margin: "0 auto clamp(36px,5vw,52px)" }}>
+        <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "clamp(18px,2.2vw,22px)", lineHeight: "1.55", color: "var(--l-2)", textAlign: "center", maxWidth: "46ch", margin: "0 auto clamp(36px,5vw,52px)" }}>
         {vals.relationsIntro}
         </p>
         {(vals.chartPreview) ? (
@@ -803,7 +803,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <div style={{ display: "flex", alignItems: "center", gap: "10px", border: "1px solid var(--l-rule)", background: "var(--l-bg)", padding: "11px 14px", margin: "0 auto clamp(28px,4vw,40px)", maxWidth: "560px" }}>
               <span aria-hidden="true" style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--accent)", flexShrink: "0" }}>
               </span>
-              <p style={{ fontFamily: "var(--sans)", fontSize: "12.5px", lineHeight: "1.45", color: "var(--l-2)", margin: "0" }}>
+              <p style={{ fontFamily: 'var(--font-reading)', fontSize: "12.5px", lineHeight: "1.45", color: "var(--l-2)", margin: "0" }}>
                 <span style={{ color: "var(--accent)" }}>
                 Your Pearl is partnered by UL 2,
                 </span>
@@ -816,20 +816,20 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <div style={{ position: "relative", width: "100%", aspectRatio: "1/1", overflow: "visible" }}>
             {vals.kinLines}
             <button onClick={vals.selectKinSelf} aria-label={`${vals.cardName ?? ""}, returns to itself`} style={{ position: "absolute", left: "50%", top: "50%", width: "clamp(72px,18.5vw,94px)", height: "clamp(72px,18.5vw,94px)", transform: "translate(-50%,-50%)", zIndex: "3", display: "block", background: "none", border: "none", borderRadius: "50%", cursor: "pointer", padding: "0" }}>
-              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", borderRadius: "50%", background: "var(--l-bg)", border: "1.5px solid var(--accent)", boxShadow: "0 0 0 7px color-mix(in oklab,var(--accent) 7%,transparent),0 12px 32px -14px rgba(40,34,25,0.55)", fontFamily: "var(--cjk)", fontSize: "clamp(32px,8.5vw,46px)", lineHeight: "1", color: "var(--accent)" }}>
+              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", borderRadius: "50%", background: "var(--l-bg)", border: "1.5px solid var(--accent)", boxShadow: "0 0 0 7px color-mix(in oklab,var(--accent) 7%,transparent),0 12px 32px -14px rgba(40,34,25,0.55)", fontFamily: 'var(--font-cjk)', fontSize: "clamp(32px,8.5vw,46px)", lineHeight: "1", color: "var(--accent)" }}>
               {vals.heroGlyph}
               </span>
-              <span style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", width: "160px", fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", textAlign: "center", color: "var(--l-2)" }}>
+              <span style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", width: "160px", fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", textAlign: "center", color: "var(--l-2)" }}>
               {vals.cardName}
               </span>
             </button>
             {(vals.kinNodes ?? []).map((node, nodeIdx) => (
               <React.Fragment key={nodeIdx}>
                 <button onClick={node.onSelect} aria-label={node.name} style={{ position: "absolute", left: `${node.x ?? ""}`, top: `${node.y ?? ""}`, width: `${node.dim ?? ""}`, height: `${node.dim ?? ""}`, transform: "translate(-50%,-50%)", zIndex: "3", display: "block", background: "none", border: "none", borderRadius: "50%", cursor: "pointer", padding: "0" }}>
-                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", borderRadius: "50%", background: "var(--l-bg)", border: `1px solid ${node.border ?? ""}`, fontFamily: `${node.font ?? ""}`, fontSize: `${node.size ?? ""}`, lineHeight: "1", color: `${node.glyphColor ?? ""}`, boxShadow: "0 3px 12px -5px rgba(40,34,25,0.4)" }}>
+                  <span data-font-role={node.fontRole} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", borderRadius: "50%", background: "var(--l-bg)", border: `1px solid ${node.border ?? ""}`, fontSize: `${node.size ?? ""}`, lineHeight: "1", color: `${node.glyphColor ?? ""}`, boxShadow: "0 3px 12px -5px rgba(40,34,25,0.4)" }}>
                   {node.glyph}
                   </span>
-                  <span style={{ position: "absolute", top: "calc(100% + 5px)", left: "50%", transform: "translateX(-50%)", width: "96px", fontFamily: "var(--sans)", fontSize: "8.5px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--l-3)", lineHeight: "1.3", textAlign: "center" }}>
+                  <span style={{ position: "absolute", top: "calc(100% + 5px)", left: "50%", transform: "translateX(-50%)", width: "96px", fontFamily: 'var(--font-ui)', fontSize: "8.5px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--l-3)", lineHeight: "1.3", textAlign: "center" }}>
                   {node.label}
                   </span>
                 </button>
@@ -837,12 +837,12 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             ))}
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: "22px", marginTop: "14px", flexWrap: "wrap" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: "7px", fontFamily: "var(--sans)", fontSize: "9.5px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-3)" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: "7px", fontFamily: 'var(--font-ui)', fontSize: "9.5px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-3)" }}>
               <span style={{ width: "18px", borderTop: "2px solid var(--accent)" }}>
               </span>
             Kin in the deck
             </span>
-            <span style={{ display: "flex", alignItems: "center", gap: "7px", fontFamily: "var(--sans)", fontSize: "9.5px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-3)" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: "7px", fontFamily: 'var(--font-ui)', fontSize: "9.5px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-3)" }}>
               <span style={{ width: "18px", borderTop: "1.5px dashed var(--l-3)" }}>
               </span>
             Correspondence
@@ -851,19 +851,19 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </div>
         <div style={{ borderTop: "1px solid var(--l-rule)", borderBottom: "1px solid var(--l-rule)", padding: "24px 0" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px", margin: "0 0 7px", flexWrap: "wrap" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", margin: "0" }}>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", margin: "0" }}>
             {vals.kinKicker}
             </p>
-            <span style={{ fontFamily: "var(--sans)", fontSize: "9px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--l-3)", border: "1px solid var(--l-rule)", padding: "3px 9px", borderRadius: "999px", whiteSpace: "nowrap" }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--l-3)", border: "1px solid var(--l-rule)", padding: "3px 9px", borderRadius: "999px", whiteSpace: "nowrap" }}>
             {vals.kinKind}
             </span>
           </div>
-          <p style={{ fontFamily: "var(--serif)", fontSize: "clamp(23px,3.4vw,28px)", lineHeight: "1.12", color: "var(--l-1)", margin: "0 0 14px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "clamp(23px,3.4vw,28px)", lineHeight: "1.12", color: "var(--l-1)", margin: "0 0 14px" }}>
           {vals.kinName}
           </p>
           {(vals.kinBodyParas ?? []).map((para, paraIdx) => (
             <React.Fragment key={paraIdx}>
-              <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "clamp(18px,2.4vw,21px)", lineHeight: "1.62", letterSpacing: "0.01em", color: "var(--l-2)", margin: "0 0 14px" }}>
+              <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "clamp(18px,2.4vw,21px)", lineHeight: "1.62", letterSpacing: "0.01em", color: "var(--l-2)", margin: "0 0 14px" }}>
               {para}
               </p>
             </React.Fragment>
@@ -887,7 +887,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       <div onClick={vals.closeShare} role="dialog" aria-modal="true" aria-label="Share" style={{ position: "fixed", inset: "0", zIndex: "300", background: "rgba(10,8,5,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "ulFadeIn 250ms ease both" }}>
         <div onClick={vals.stop} style={{ width: "100%", maxWidth: "540px", background: "var(--l-bg)", border: "1px solid var(--l-rule)", borderBottom: "none", padding: "24px 22px calc(24px + env(safe-area-inset-bottom))", animation: "ulRise 360ms cubic-bezier(.16,1,.3,1) both" }}>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "18px" }}>
-            <p style={{ fontFamily: "var(--serif)", fontSize: "22px", color: "var(--l-1)", margin: "0" }}>
+            <p style={{ fontFamily: 'var(--font-reading)', fontSize: "22px", color: "var(--l-1)", margin: "0" }}>
             Send a code
             </p>
             <button onClick={vals.closeShare} aria-label="Close" style={{ background: "none", border: "none", color: "var(--l-3)", fontSize: "24px", cursor: "pointer", lineHeight: "1" }}>
@@ -896,32 +896,32 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
             <button onClick={vals.copyLink} style={{ display: "flex", alignItems: "center", gap: "11px", padding: "14px", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", textAlign: "left" }}>
-              <span style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: `${vals.copyColor ?? ""}` }}>
+              <span style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: `${vals.copyColor ?? ""}` }}>
               {vals.copyLabel}
               </span>
             </button>
             <a href={vals.waHref} target="_blank" rel="noopener" onClick={vals.closeShare} style={{ display: "flex", alignItems: "center", gap: "11px", padding: "14px", border: "1px solid var(--l-rule)", textDecoration: "none" }}>
-              <span style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-2)" }}>
+              <span style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-2)" }}>
               WhatsApp
               </span>
             </a>
             <a href={vals.tgHref} target="_blank" rel="noopener" onClick={vals.closeShare} style={{ display: "flex", alignItems: "center", gap: "11px", padding: "14px", border: "1px solid var(--l-rule)", textDecoration: "none" }}>
-              <span style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-2)" }}>
+              <span style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-2)" }}>
               Telegram
               </span>
             </a>
             <a href={vals.twHref} target="_blank" rel="noopener" onClick={vals.closeShare} style={{ display: "flex", alignItems: "center", gap: "11px", padding: "14px", border: "1px solid var(--l-rule)", textDecoration: "none" }}>
-              <span style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-2)" }}>
+              <span style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-2)" }}>
               X / Twitter
               </span>
             </a>
             <a href={vals.mailHref} onClick={vals.closeShare} style={{ display: "flex", alignItems: "center", gap: "11px", padding: "14px", border: "1px solid var(--l-rule)", textDecoration: "none" }}>
-              <span style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-2)" }}>
+              <span style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-2)" }}>
               Email
               </span>
             </a>
             <button onClick={vals.generateStory} style={{ display: "flex", alignItems: "center", gap: "11px", padding: "14px", background: "none", border: "1px solid var(--l-rule)", cursor: "pointer", textAlign: "left" }}>
-              <span style={{ fontFamily: "var(--sans)", fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-2)" }}>
+              <span style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-2)" }}>
               {vals.storyLabel}
               </span>
             </button>
@@ -938,27 +938,27 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <img crossOrigin="anonymous" src={vals.buyImage} alt="Earth's Breath original artwork" onError={vals.onImgError} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <div style={{ padding: "26px 24px" }}>
-            <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 8px" }}>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 8px" }}>
             The Original · Available
             </p>
-            <h3 style={{ fontFamily: "var(--serif)", fontSize: "28px", color: "var(--l-1)", margin: "0 0 8px" }}>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: "28px", color: "var(--l-1)", margin: "0 0 8px" }}>
             {vals.cardName}
             </h3>
-            <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "16px", color: "var(--l-2)", margin: "0 0 20px", lineHeight: "1.5" }}>
+            <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "16px", color: "var(--l-2)", margin: "0 0 20px", lineHeight: "1.5" }}>
             An original multidimensional wooden sculpture, hand-made by Adrian Rasmussen. One of one.
             </p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--l-rule)", borderBottom: "1px solid var(--l-rule)", padding: "14px 0", marginBottom: "20px" }}>
-              <span style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--l-3)" }}>
+              <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--l-3)" }}>
               Enquire for price
               </span>
-              <span style={{ fontFamily: "var(--serif)", fontSize: "18px", color: "var(--l-1)" }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: "18px", color: "var(--l-1)" }}>
               Code 01 / 64
               </span>
             </div>
-            <a href="mailto:studio@adrianrasmussen.com?subject=Earth%27s%20Breath%20%E2%80%94%20Code%2001" style={{ display: "block", textAlign: "center", fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-bg)", background: "var(--accent)", textDecoration: "none", padding: "15px" }}>
+            <a href="mailto:studio@adrianrasmussen.com?subject=Earth%27s%20Breath%20%E2%80%94%20Code%2001" style={{ display: "block", textAlign: "center", fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-bg)", background: "var(--accent)", textDecoration: "none", padding: "15px" }}>
             Enquire about this piece
             </a>
-            <button onClick={vals.closeBuy} style={{ display: "block", width: "100%", textAlign: "center", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", background: "none", border: "none", cursor: "pointer", padding: "14px 0 2px" }}>
+            <button onClick={vals.closeBuy} style={{ display: "block", width: "100%", textAlign: "center", fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", background: "none", border: "none", cursor: "pointer", padding: "14px 0 2px" }}>
             Back to the reading
             </button>
           </div>
@@ -970,28 +970,28 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     <>
       <div onClick={vals.closeOverlay} role="dialog" aria-modal="true" aria-label="About this system" style={{ position: "fixed", inset: "0", zIndex: "300", background: "rgba(10,8,5,0.72)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", animation: "ulFadeIn 250ms ease both", overflowY: "auto" }}>
         <div onClick={vals.stop} style={{ width: "100%", maxWidth: "560px", background: "var(--l-bg)", border: "1px solid var(--l-rule)", padding: "clamp(28px,4vw,44px)", animation: "ulOverlay 420ms cubic-bezier(.16,1,.3,1) both" }}>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 6px" }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 6px" }}>
           {vals.overlayKicker}
           </p>
-          <h3 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(26px,3.4vw,34px)", color: "var(--l-1)", margin: "0 0 6px" }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(26px,3.4vw,34px)", color: "var(--l-1)", margin: "0 0 6px" }}>
           {vals.overlayTitle}
           </h3>
-          <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "15px", color: "var(--l-3)", margin: "0 0 20px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "15px", color: "var(--l-3)", margin: "0 0 20px" }}>
           {vals.overlaySub}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             {(vals.overlayParas ?? []).map((p, pIdx) => (
               <React.Fragment key={pIdx}>
-                <p style={{ fontFamily: "var(--sans)", fontSize: "15px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
                 {p}
                 </p>
               </React.Fragment>
             ))}
           </div>
-          <p style={{ fontFamily: "var(--sans)", fontSize: "12px", color: "var(--l-3)", margin: "18px 0 0", borderTop: "1px solid var(--l-rule)", paddingTop: "14px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "12px", color: "var(--l-3)", margin: "18px 0 0", borderTop: "1px solid var(--l-rule)", paddingTop: "14px" }}>
           In gratitude to {vals.overlayGratitude}.
           </p>
-          <button onClick={vals.closeOverlay} style={{ display: "block", width: "100%", textAlign: "center", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", background: "none", border: "none", cursor: "pointer", padding: "18px 0 2px" }}>
+          <button onClick={vals.closeOverlay} style={{ display: "block", width: "100%", textAlign: "center", fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", background: "none", border: "none", cursor: "pointer", padding: "18px 0 2px" }}>
           Close
           </button>
         </div>
@@ -1001,13 +1001,13 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   {(vals.indexOpen) ? (
     <>
       <div onClick={vals.closeIndex} role="dialog" aria-modal="true" aria-label="The sixty-four codes" style={{ position: "fixed", inset: "0", zIndex: "300", background: "rgba(9,7,4,0.93)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px", animation: "ulFadeIn 300ms ease both" }}>
-        <p style={{ fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 5px" }}>
+        <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 5px" }}>
         The Index
         </p>
-        <h3 style={{ fontFamily: "var(--serif)", fontWeight: "400", fontSize: "clamp(24px,4vw,32px)", color: "#ECE4D5", margin: "0 0 4px", textAlign: "center" }}>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(24px,4vw,32px)", color: "#ECE4D5", margin: "0 0 4px", textAlign: "center" }}>
         The Sixty-Four Codes
         </h3>
-        <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "14px", color: "rgba(236,228,213,0.5)", margin: "0 0 18px", textAlign: "center" }}>
+        <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "14px", color: "rgba(236,228,213,0.5)", margin: "0 0 18px", textAlign: "center" }}>
         Tap any figure to read where it stands.
         </p>
         <div onClick={vals.stop} style={{ position: "relative", width: "min(86vw,540px)", aspectRatio: "1/1" }}>
@@ -1016,7 +1016,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           {vals.indexCenter}
           </div>
         </div>
-        <button onClick={vals.closeIndex} style={{ marginTop: "18px", fontFamily: "var(--sans)", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(236,228,213,0.55)", background: "none", border: "none", cursor: "pointer", padding: "10px" }}>
+        <button onClick={vals.closeIndex} style={{ marginTop: "18px", fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(236,228,213,0.55)", background: "none", border: "none", cursor: "pointer", padding: "10px" }}>
         Close
         </button>
       </div>

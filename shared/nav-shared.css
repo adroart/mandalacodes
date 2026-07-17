@@ -48,7 +48,7 @@ html[data-theme='light'] {
 }
 
 .mc-nav-wordmark {
-  font-family: 'Cinzel', serif; font-weight: 400; font-size: 16px; letter-spacing: 0.16em;
+  font-family: var(--font-brand); font-weight: 400; font-size: 16px; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--mc-nav-ink); text-decoration: none;
   transition: color .3s, font-size .3s; white-space: nowrap;
 }
@@ -62,7 +62,7 @@ html[data-theme='light'] {
 .mc-nav-right { display: flex; align-items: center; gap: 0; }
 .mc-nav-links {
   display: flex; align-items: center; gap: 0;
-  font-family: 'Karla', sans-serif; font-size: 13px; font-weight: 600;
+  font-family: var(--font-ui); font-size: 13px; font-weight: 600;
   letter-spacing: 0.18em; text-transform: uppercase; white-space: nowrap;
 }
 .mc-nav-links a {
@@ -102,7 +102,7 @@ html[data-theme='light'] {
   -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--mc-nav-rule);
   box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-  font-family: 'Karla', sans-serif; font-size: 14px; font-weight: 600;
+  font-family: var(--font-ui); font-size: 14px; font-weight: 600;
   letter-spacing: 0.2em; text-transform: uppercase;
 }
 .mc-nav-sheet[data-open] { display: flex; }

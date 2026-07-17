@@ -572,7 +572,7 @@ export default function Globe3D({
       </div>
 
       {/* City-cluster count numerals: the number of pieces resting in a city,
-          in the map's label font (Lato caps), riding on its marker. Each is
+          in the map's UI label font, riding on its marker. Each is
           positioned every frame by the projection effect above. */}
       {hasNumerals && (
         <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5 }}>
@@ -594,7 +594,7 @@ export default function Globe3D({
                     top: 0,
                     opacity: 0,
                     willChange: 'transform, opacity',
-                    fontFamily: 'Lato, system-ui, sans-serif',
+                    fontFamily: 'var(--font-ui)',
                     fontWeight: 700,
                     fontSize,
                     lineHeight: 1,
@@ -636,7 +636,7 @@ export default function Globe3D({
           pointerEvents: 'none',
           opacity: travelCaption ? 1 : 0,
           transition: 'opacity 700ms ease',
-          fontFamily: '"Cormorant Garamond", serif',
+          fontFamily: 'var(--font-reading)',
           fontSize: 15,
           letterSpacing: '0.06em',
           color: 'rgba(212, 190, 150, 0.95)',
@@ -657,7 +657,7 @@ export default function Globe3D({
           pointerEvents: 'none',
           opacity: mandalaOn ? 1 : 0,
           transition: 'opacity 1.4s ease',
-          fontFamily: '"Cormorant Garamond", serif',
+          fontFamily: 'var(--font-reading)',
           fontSize: 17,
           letterSpacing: '0.04em',
           color: 'rgb(212, 190, 150)',

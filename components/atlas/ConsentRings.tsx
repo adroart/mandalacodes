@@ -90,8 +90,8 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         className="font-serif text-2xl font-medium text-center mb-6"
         style={
           stage
-            ? { fontFamily: '"Cormorant Garamond", serif', color: '#e7dcc7', letterSpacing: '0.02em' }
-            : { fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }
+            ? { fontFamily: 'var(--font-display)', color: '#e7dcc7', letterSpacing: '0.02em' }
+            : { fontFamily: 'var(--font-brand)', letterSpacing: '0.08em' }
         }
       >
         {!stage && (

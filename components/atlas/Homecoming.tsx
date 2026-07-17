@@ -122,7 +122,7 @@ const Homecoming: React.FC = () => {
         <h1
           className="text-3xl sm:text-4xl mb-6 text-center"
           style={{
-            fontFamily: 'Cinzel, serif',
+            fontFamily: 'var(--font-brand)',
             letterSpacing: '0.12em',
             color: GOLD,
           }}

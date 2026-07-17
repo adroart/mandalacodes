@@ -173,7 +173,7 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, canSave = false, on
           border-top: 1px solid var(--l-rule, rgba(180,150,110,0.20));
         }
         .ypp__eyebrow {
-          font-family: Cinzel, Palatino, serif;
+          font-family: var(--font-brand);
           font-size: 10px;
           letter-spacing: 0.24em;
           text-transform: uppercase;
@@ -182,7 +182,7 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, canSave = false, on
           padding-right: 18px;
         }
         .ypp__title {
-          font-family: 'Cormorant Garamond', serif;
+          font-family: var(--font-display);
           font-weight: 500;
           font-size: 25px;
           line-height: 1.12;
@@ -190,7 +190,7 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, canSave = false, on
           margin: 0 0 2px;
         }
         .ypp__sub {
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 10px;
           letter-spacing: 0.16em;
           text-transform: uppercase;
@@ -198,7 +198,7 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, canSave = false, on
           margin-bottom: 12px;
         }
         .ypp__body {
-          font-family: 'Cormorant Garamond', serif;
+          font-family: var(--font-reading);
           font-size: 17px;
           line-height: 1.5;
           color: var(--l-2, #C9BDA9);
@@ -211,7 +211,7 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, canSave = false, on
           margin: 16px 0 0;
         }
         .ypp__chip {
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 9px;
           letter-spacing: 0.12em;
           text-transform: uppercase;
@@ -227,7 +227,7 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, canSave = false, on
           margin-top: 16px;
           padding-top: 14px;
           border-top: 1px solid var(--l-rule, rgba(180,150,110,0.20));
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 10px;
           letter-spacing: 0.2em;
           text-transform: uppercase;
@@ -253,14 +253,14 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, canSave = false, on
           border-color: var(--color-bronze-600, #C99A5B);
         }
         .ypp__save-t {
-          font-family: 'Cormorant Garamond', serif;
+          font-family: var(--font-ui);
           font-size: 18px;
           font-weight: 500;
           line-height: 1.1;
           color: var(--l-1, #ECE4D5);
         }
         .ypp__save-s {
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-reading);
           font-size: 11.5px;
           line-height: 1.4;
           color: var(--l-2, #C9BDA9);

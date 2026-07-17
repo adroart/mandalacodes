@@ -443,7 +443,7 @@ const StewardEdit: React.FC = () => {
         <div className="text-center mb-12">
           <h2
             className="font-serif text-2xl sm:text-[1.7rem] text-wood-900 font-medium mb-2"
-            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.04em' }}
+            style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
           >
             You keep {artwork?.title ?? 'this piece'}
           </h2>

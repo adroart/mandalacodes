@@ -1,10 +1,4 @@
-/* Source-owned Oracle overrides. Generated EB markup remains untouched. */
-.eb-reading, .eb-entrance {
-  --serif: var(--font-display);
-  --sans: var(--font-ui);
-  --cjk: var(--font-cjk);
-  --mono: var(--font-technical);
-}
+/* Source-owned Oracle overrides. Generated EB markup consumes shared theme roles. */
 html.oracle-card-page, html.oracle-card-page body { overflow-x: clip; }
 .eb-reading, .eb-entrance,
 .eb-reading[data-palette="daybook"], .eb-entrance[data-palette="daybook"],

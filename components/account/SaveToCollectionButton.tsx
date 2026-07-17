@@ -103,7 +103,7 @@ const SaveToCollectionButton: React.FC<Props> = ({ kind, itemRef, label = 'Save 
 const stcStyles = `
         .stc { position: relative; display: inline-block; }
         .stc__btn {
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 10px;
           letter-spacing: 0.22em;
           text-transform: uppercase;
@@ -131,7 +131,7 @@ const stcStyles = `
           box-shadow: 0 8px 24px -10px rgba(0,0,0,0.18);
         }
         .stc__menu-empty {
-          font-family: 'Cormorant Garamond', serif;
+          font-family: var(--font-ui);
           font-size: 13px;
           color: var(--color-wood-600);
           margin: 4px 6px 8px;
@@ -141,7 +141,7 @@ const stcStyles = `
           display: block;
           width: 100%;
           text-align: left;
-          font-family: 'Cormorant Garamond', serif;
+          font-family: var(--font-ui);
           font-size: 15px;
           color: var(--color-wood-900);
           background: transparent;
@@ -159,7 +159,7 @@ const stcStyles = `
         }
         .stc__input {
           flex: 1;
-          font-family: 'Cormorant Garamond', serif;
+          font-family: var(--font-ui);
           font-size: 14px;
           padding: 6px 8px;
           border: 1px solid color-mix(in oklab, var(--color-wood-600) 22%, transparent);
@@ -167,7 +167,7 @@ const stcStyles = `
           background: var(--color-paper-50);
         }
         .stc__create-btn {
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 10px;
           letter-spacing: 0.18em;
           text-transform: uppercase;

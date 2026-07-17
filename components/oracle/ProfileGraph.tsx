@@ -412,7 +412,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         /* ── Sequence controls: part of the right-hand reading rail ── */
         .pg__filter { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 6px; padding-bottom: 14px; border-bottom: 1px solid color-mix(in oklab, var(--color-wood-600) 14%, transparent); max-width: 100%; }
         .pg__filter-btn {
-          font-family: 'Lato', Helvetica, sans-serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+          font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
           min-height: 28px; padding: 5px 7px; border: 0; border-radius: 999px; background: transparent; color: var(--color-wood-700); cursor: pointer;
           transition: background 0.2s, color 0.2s;
         }
@@ -433,12 +433,12 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .pg__node.is-sel .pg__circle { filter: drop-shadow(0 0 16px color-mix(in oklab, var(--color-bronze-400) 85%, transparent)); }
         .pg__node.is-sel .pg__ring { stroke: var(--color-bronze-500); stroke-width: 2; }
         .pg__orb:focus-visible .pg__ring { stroke: var(--color-bronze-400); stroke-width: 2.5; }
-        .pg__gate { fill: var(--color-paper-50); font-family: 'Lato', Helvetica, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-anchor: middle; pointer-events: none; }
+        .pg__gate { fill: var(--color-paper-50); font-family: var(--font-ui); font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-anchor: middle; pointer-events: none; }
         .pg__label-fo { overflow: visible; pointer-events: none; }
         .pg__label { display: flex; height: 100%; justify-content: center; }
         .pg__label.is-left { justify-content: flex-start; }
         .pg__label.is-right { justify-content: flex-end; }
-        .pg__name { display: inline-block; font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; line-height: 1.15; color: var(--color-wood-900); background: color-mix(in oklab, var(--color-paper-50) 88%, transparent); padding: 2px 9px; border-radius: 5px; white-space: nowrap; }
+        .pg__name { display: inline-block; font-family: var(--font-display); font-size: 19px; font-weight: 600; line-height: 1.15; color: var(--color-wood-900); background: color-mix(in oklab, var(--color-paper-50) 88%, transparent); padding: 2px 9px; border-radius: 5px; white-space: nowrap; }
         .pg__node.is-sel .pg__name { color: var(--color-bronze-700, var(--color-bronze-600)); }
 
         .pg__gk--siddhi { color: var(--color-bronze-600); }
@@ -477,7 +477,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .pg__zoom-btn {
           min-width: 30px; height: 26px; padding: 0 8px; border: 0; border-radius: 999px;
           background: transparent; cursor: pointer;
-          font-family: 'Lato', Helvetica, sans-serif; font-size: 12px; font-weight: 600;
+          font-family: var(--font-ui); font-size: 12px; font-weight: 600;
           letter-spacing: 0.04em; color: var(--color-wood-700);
           display: inline-flex; align-items: center; justify-content: center;
         }
@@ -486,7 +486,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
 
         /* Rail: a flowing list of the 11 positions above the chart on narrow. */
         .pg__rail { align-self: start; width: 100%; }
-        .pg__rail-title { font-family: Cinzel, Palatino, serif; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 12px; }
+        .pg__rail-title { font-family: var(--font-brand); font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 12px; }
         .pg__rail-list { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1px; }
         .pg__rail-row {
           display: flex; align-items: baseline; gap: 10px; width: 100%;
@@ -495,21 +495,21 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         }
         .pg__rail-row:hover, .pg__rail-row.is-on { background: color-mix(in oklab, var(--color-bronze-400) 12%, transparent); }
         .pg__rail-dot { width: 11px; height: 11px; border-radius: 50%; flex: none; align-self: center; }
-        .pg__rail-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--color-wood-900); flex: 1; }
-        .pg__rail-gate { font-family: 'Lato', Helvetica, sans-serif; font-size: 10px; letter-spacing: 0.12em; color: var(--color-bronze-600); }
+        .pg__rail-name { font-family: var(--font-display); font-size: 17px; color: var(--color-wood-900); flex: 1; }
+        .pg__rail-gate { font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.12em; color: var(--color-bronze-600); }
         .pg__legend { display: flex; flex-wrap: wrap; gap: 8px 18px; padding-top: 14px; border-top: 1px solid color-mix(in oklab, var(--color-wood-600) 14%, transparent); }
-        .pg__legend span { display: flex; align-items: center; gap: 9px; font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; letter-spacing: 0.08em; color: var(--color-wood-700); }
+        .pg__legend span { display: flex; align-items: center; gap: 9px; font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.08em; color: var(--color-wood-700); }
         .pg__legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
         .pg__legend-split { background: linear-gradient(90deg, #3f8f4e 0 50%, #3f7fb5 50% 100%); }
 
         .pg__detail { padding-top: 16px; }
-        .pg__detail-seq { font-family: Cinzel, Palatino, serif; font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 8px; }
+        .pg__detail-seq { font-family: var(--font-brand); font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--color-bronze-600); margin-bottom: 8px; }
         .pg__detail-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-        .pg__detail-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; line-height: 1.05; color: var(--color-wood-900); margin: 0; }
-        .pg__detail-gate { font-family: 'Lato', Helvetica, sans-serif; font-size: 10px; letter-spacing: 0.12em; color: var(--color-bronze-600); }
-        .pg__detail-art { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-style: italic; color: var(--color-wood-700); margin-top: 5px; }
-        .pg__detail-role { font-family: 'Cormorant Garamond', serif; font-size: 15px; line-height: 1.45; color: var(--color-wood-700); margin: 13px 0 0; }
-        .pg__detail-open { margin-top: 13px; border: 0; background: transparent; padding: 0; cursor: pointer; font-family: 'Lato', Helvetica, sans-serif; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-bronze-600); }
+        .pg__detail-name { font-family: var(--font-display); font-size: 22px; font-weight: 500; line-height: 1.05; color: var(--color-wood-900); margin: 0; }
+        .pg__detail-gate { font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.12em; color: var(--color-bronze-600); }
+        .pg__detail-art { font-family: var(--font-reading); font-size: 15px; font-style: italic; color: var(--color-wood-700); margin-top: 5px; }
+        .pg__detail-role { font-family: var(--font-reading); font-size: 15px; line-height: 1.45; color: var(--color-wood-700); margin: 13px 0 0; }
+        .pg__detail-open { margin-top: 13px; border: 0; background: transparent; padding: 0; cursor: pointer; font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-bronze-600); }
         .pg__detail-open:hover { color: var(--color-bronze-700, var(--color-bronze-600)); }
 
         @media (max-width: 879px) {
@@ -536,17 +536,17 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
 
         /* ── grouped list (always shown, beneath the chart) ── */
         .pg__list-view { display: flex; flex-direction: column; gap: 36px; margin-top: 48px; padding-top: 40px; border-top: 1px solid color-mix(in oklab, var(--color-wood-600) 12%, transparent); }
-        .pg__band-label { font-family: Cinzel, Palatino, serif; font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--color-bronze-600); margin: 0 0 12px; }
+        .pg__band-label { font-family: var(--font-brand); font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--color-bronze-600); margin: 0 0 12px; }
         .pg__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
         .pg__row { display: grid; grid-template-columns: 16px 1fr; align-items: start; gap: 14px; padding: 12px 14px; border: 1px solid color-mix(in oklab, var(--color-wood-600) 12%, transparent); border-radius: 3px; text-decoration: none; color: inherit; transition: border-color 0.2s, background 0.2s; }
         .pg__row:hover { border-color: color-mix(in oklab, var(--color-bronze-600) 40%, transparent); background: color-mix(in oklab, var(--color-bronze-400) 5%, transparent); }
         .pg__row-dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 5px; }
         .pg__row-label { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-        .pg__row-name { font-family: 'Cormorant Garamond', serif; font-size: 19px; color: var(--color-wood-900); }
-        .pg__row-gate { font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; letter-spacing: 0.18em; color: var(--color-bronze-600); }
-        .pg__row-art { font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; letter-spacing: 0.06em; color: var(--color-wood-600); margin-top: 2px; }
-        .pg__row-triad { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-family: 'Lato', Helvetica, sans-serif; font-size: 11px; }
-        .pg__row-role { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; color: var(--color-wood-700); margin: 8px 0 0; }
+        .pg__row-name { font-family: var(--font-display); font-size: 19px; color: var(--color-wood-900); }
+        .pg__row-gate { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.18em; color: var(--color-bronze-600); }
+        .pg__row-art { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.06em; color: var(--color-wood-600); margin-top: 2px; }
+        .pg__row-triad { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-family: var(--font-ui); font-size: 11px; }
+        .pg__row-role { font-family: var(--font-reading); font-size: 14px; font-style: italic; color: var(--color-wood-700); margin: 8px 0 0; }
 
         @media (prefers-reduced-motion: reduce) {
           .pg__circle, .pg__ring, .pg__channel, .pg__node { transition: none; }

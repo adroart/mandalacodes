@@ -78,7 +78,7 @@ const BirthTimeModal: React.FC<{
   );
   const brand = (
     <p style={{
-      fontFamily: "'Karla', system-ui, sans-serif", fontSize: 10, fontWeight: 700,
+      fontFamily: 'var(--font-ui)', fontSize: 10, fontWeight: 700,
       letterSpacing: '0.24em', textTransform: 'uppercase', color: C.bronze, margin: '0 0 10px',
     }}>
       Mandala Codes
@@ -88,13 +88,13 @@ const BirthTimeModal: React.FC<{
   const pillPrimary: React.CSSProperties = {
     width: '100%', cursor: 'pointer', background: C.bronze, color: C.onBronze, border: 'none',
     borderRadius: 12, padding: 14, marginBottom: 10,
-    fontFamily: "'Karla', system-ui, sans-serif", fontSize: 13, fontWeight: 700,
+    fontFamily: 'var(--font-ui)', fontSize: 13, fontWeight: 700,
     letterSpacing: '0.12em', textTransform: 'uppercase',
   };
   const pillGhost: React.CSSProperties = {
     width: '100%', cursor: 'pointer', background: C.surface, color: C.ink,
     border: `1px solid ${C.fieldBorder}`, borderRadius: 12, padding: 13, marginBottom: 10,
-    fontFamily: "'Cormorant Garamond', serif", fontSize: 17, fontWeight: 500,
+    fontFamily: 'var(--font-ui)', fontSize: 17, fontWeight: 500,
   };
   const quietLink: React.CSSProperties = {
     color: C.bronze, textDecoration: 'none', fontWeight: 700, background: 'none', border: 'none',
@@ -124,13 +124,13 @@ const BirthTimeModal: React.FC<{
             {ring}
             {brand}
             <h2 style={{
-              fontFamily: '"Cormorant Garamond", serif', fontWeight: 500, fontSize: 28,
+              fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 28,
               lineHeight: 1.05, color: C.ink, margin: '0 0 6px',
             }}>
               Enter your birth time
             </h2>
             <p style={{
-              fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: 17,
+              fontFamily: 'var(--font-reading)', fontStyle: 'italic', fontSize: 17,
               color: C.sub, lineHeight: 1.35, margin: '0 0 18px',
             }}>
               See which cards are most relevant to you, lit throughout the oracle.
@@ -143,7 +143,7 @@ const BirthTimeModal: React.FC<{
             {onLogIn && (
               <p style={{
                 marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.line}`,
-                fontFamily: "'Karla', system-ui, sans-serif", fontSize: 13, color: C.sub,
+                fontFamily: 'var(--font-ui)', fontSize: 13, color: C.sub,
               }}>
                 Already have an account?{' '}
                 <button type="button" style={quietLink} onClick={onLogIn}>
@@ -159,13 +159,13 @@ const BirthTimeModal: React.FC<{
             {ring}
             {brand}
             <h2 style={{
-              fontFamily: '"Cormorant Garamond", serif', fontWeight: 500, fontSize: 28,
+              fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 28,
               lineHeight: 1.05, color: C.ink, margin: '0 0 6px',
             }}>
               Your chart is lit
             </h2>
             <p style={{
-              fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: 17,
+              fontFamily: 'var(--font-reading)', fontStyle: 'italic', fontSize: 17,
               color: C.sub, lineHeight: 1.35, margin: '0 0 22px',
             }}>
               Your placement now glows across all sixty-four. Where to next?

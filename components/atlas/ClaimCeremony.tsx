@@ -226,7 +226,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
         <p
           className="text-3xl sm:text-5xl"
           style={{
-            fontFamily: 'Cinzel, serif',
+            fontFamily: 'var(--font-brand)',
             // The line arrives wide and settles, like a breath released.
             letterSpacing: phase === 'igniting' ? '0.22em' : '0.08em',
             transition: 'letter-spacing 2.4s cubic-bezier(0.22, 1, 0.36, 1)',
@@ -274,7 +274,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
           <p
             className="mx-auto max-w-xl text-2xl sm:text-3xl leading-snug"
             style={{
-              fontFamily: '"Cormorant Garamond", serif',
+              fontFamily: 'var(--font-reading)',
               color: '#e7dcc7',
             }}
           >

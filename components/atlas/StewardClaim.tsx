@@ -135,7 +135,7 @@ const authField: React.CSSProperties = {
   background: 'rgba(20,16,12,0.6)',
   borderRadius: 12,
   padding: '13px 15px',
-  fontFamily: "'Karla', system-ui, sans-serif",
+  fontFamily: 'var(--font-ui)',
   fontSize: 16,
   color: '#e7dcc7',
   marginBottom: 14,
@@ -613,7 +613,7 @@ const StewardClaim: React.FC = () => {
           <h1
             className="text-3xl sm:text-[2.25rem] leading-tight font-medium mb-10"
             style={{
-              fontFamily: '"Cormorant Garamond", serif',
+              fontFamily: 'var(--font-display)',
               color: '#ece2cf',
               letterSpacing: '0.01em',
             }}
@@ -655,7 +655,7 @@ const StewardClaim: React.FC = () => {
           )}
           <p
             className="font-serif text-xl sm:text-2xl leading-snug mb-10"
-            style={{ color: '#ece2cf', fontFamily: '"Cormorant Garamond", serif' }}
+            style={{ color: '#ece2cf', fontFamily: 'var(--font-reading)' }}
           >
             This piece has been waiting to meet you.
           </p>
@@ -699,7 +699,7 @@ const StewardClaim: React.FC = () => {
           <label
             htmlFor={dreamId}
             className="block font-serif text-xl sm:text-2xl leading-snug text-center mb-4"
-            style={{ color: '#ece2cf', fontFamily: '"Cormorant Garamond", serif' }}
+            style={{ color: '#ece2cf', fontFamily: 'var(--font-display)' }}
           >
             What should this piece hold for you?
           </label>
@@ -725,7 +725,7 @@ const StewardClaim: React.FC = () => {
               color: '#f0ece4',
               borderColor: 'rgba(196,170,124,0.4)',
               caretColor: '#c4aa7c',
-              fontFamily: '"Cormorant Garamond", serif',
+              fontFamily: 'var(--font-reading)',
             }}
           />
 

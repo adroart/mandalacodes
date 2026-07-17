@@ -67,7 +67,7 @@ const OracleGateway: React.FC = () => {
       <style>{`
         .og-link {
           display: block;
-          font-family: 'Lato', Helvetica, sans-serif;
+          font-family: var(--font-ui);
           font-size: 11px;
           letter-spacing: 0.22em;
           text-transform: uppercase;
@@ -197,7 +197,7 @@ const OracleGateway: React.FC = () => {
           }}
         >
           <p style={{
-            fontFamily: 'Cinzel, Palatino, serif',
+            fontFamily: 'var(--font-brand)',
             fontSize: '11px',
             letterSpacing: '0.32em',
             color: 'var(--color-bronze-600)',
@@ -215,7 +215,7 @@ const OracleGateway: React.FC = () => {
           <a href="https://adrianrasmussen.com/inquire" className="og-link">Contact the Artist</a>
 
           <p style={{
-            fontFamily: "'Lato', Helvetica, sans-serif",
+            fontFamily: 'var(--font-ui)',
             fontSize: '11px',
             letterSpacing: '0.18em',
             textTransform: 'uppercase',

@@ -108,7 +108,7 @@ const UniversalLanguageCard: React.FC = () => {
     return (
       <div className="eb-reading" data-palette={isDarkMode ? 'nightfall' : 'daybook'} style={{ minHeight: '100vh', background: 'var(--l-bg)', color: 'var(--l-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ textAlign: 'center', maxWidth: 360 }}>
-          <p style={{ fontFamily: 'var(--serif)', fontSize: 26, color: 'var(--l-1)', margin: '0 0 12px' }}>This card has not yet arrived.</p>
+          <p style={{ fontFamily: 'var(--font-reading)', fontSize: 26, color: 'var(--l-1)', margin: '0 0 12px' }}>This card has not yet arrived.</p>
         </div>
       </div>
     );
@@ -391,12 +391,12 @@ const heroActionStyles = `
   /* Glyph + number sizes are set inline from the measured text-block height
      (see ChartHeroBox); these are just fallbacks before the measure lands. */
   .ul-hero-hex__glyph {
-    font-family: var(--cjk, var(--serif));
+    font-family: var(--font-cjk);
     font-size: 46px;
     line-height: 1;
   }
   .ul-hero-hex__num {
-    font-family: var(--sans);
+    font-family: var(--font-ui);
     font-size: 11px;
     letter-spacing: 0.12em;
     margin-top: 7px;
@@ -409,14 +409,14 @@ const heroActionStyles = `
     min-width: 0;
   }
   .ul-hero-box__title {
-    font-family: var(--serif);
+    font-family: var(--font-display);
     font-size: 20px;
     line-height: 1.12;
     color: var(--l-1);
     margin-bottom: 6px;
   }
   .ul-hero-box__line {
-    font-family: var(--serif);
+    font-family: var(--font-reading);
     font-size: 15px;
     line-height: 1.4;
     color: var(--l-2, #C9BDA9);
@@ -460,12 +460,12 @@ function buildKin(card: any, syn?: CardSynthesis, exp?: any): EBData['kin'] {
   const skyValue = rel?.sky?.value ?? syn?.reference?.astrology ?? '';
   const skyGlyph = astrologyGlyph(skyValue);
   return [
-    { key: 'pair', x: 24, y: 50, kind: 'kin', glyph: pairHexagram, font: 'var(--serif)', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: pairCard ? `UL ${pairCard.number}` : 'Pair' },
-    { key: 'ring14', x: 76, y: 50, kind: 'kin', glyph: <CodonRingGlyph />, font: 'var(--serif)', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: ringCard ? `UL ${ringCard.number}` : 'Ring' },
-    { key: 'sky', x: 21.7, y: 21.7, kind: 'corr', glyph: skyGlyph ? <AstrologyGlyph value={skyValue} /> : '·', font: 'var(--serif)', size: 'clamp(22px,5.6vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: skyValue || 'Sky' },
-    { key: 'tarot', x: 78.3, y: 21.7, kind: 'corr', glyph: tarotNumeral(tarotCard) || '·', font: 'var(--serif)', size: 'clamp(15px,4vw,19px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: tarotCard || 'Tarot' },
-    { key: 'hebrew', x: 21.7, y: 78.3, kind: 'corr', glyph: letterGlyph ? <HebrewGlyph glyph={letterGlyph} /> : '·', font: 'var(--serif)', size: 'clamp(23px,6vw,30px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: letterName || 'Letter' },
-    { key: 'immortal', x: 78.3, y: 78.3, kind: 'corr', glyph: '笛', font: 'var(--cjk)', size: 'clamp(22px,5.8vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: 'Immortal' },
+    { key: 'pair', x: 24, y: 50, kind: 'kin', glyph: pairHexagram, fontRole: 'display', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: pairCard ? `UL ${pairCard.number}` : 'Pair' },
+    { key: 'ring14', x: 76, y: 50, kind: 'kin', glyph: <CodonRingGlyph />, fontRole: 'display', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: ringCard ? `UL ${ringCard.number}` : 'Ring' },
+    { key: 'sky', x: 21.7, y: 21.7, kind: 'corr', glyph: skyGlyph ? <AstrologyGlyph value={skyValue} /> : '·', fontRole: 'display', size: 'clamp(22px,5.6vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: skyValue || 'Sky' },
+    { key: 'tarot', x: 78.3, y: 21.7, kind: 'corr', glyph: tarotNumeral(tarotCard) || '·', fontRole: 'display', size: 'clamp(15px,4vw,19px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: tarotCard || 'Tarot' },
+    { key: 'hebrew', x: 21.7, y: 78.3, kind: 'corr', glyph: letterGlyph ? <HebrewGlyph glyph={letterGlyph} /> : '·', fontRole: 'display', size: 'clamp(23px,6vw,30px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: letterName || 'Letter' },
+    { key: 'immortal', x: 78.3, y: 78.3, kind: 'corr', glyph: '笛', fontRole: 'cjk', size: 'clamp(22px,5.8vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: 'Immortal' },
   ];
 }
 
@@ -483,7 +483,7 @@ function CodonRingGlyph() {
 function HebrewGlyph({ glyph }: { glyph: string }) {
   return (
     <svg width="28" height="32" viewBox="0 0 28 32" fill="none" aria-hidden="true" focusable="false">
-      <text x="14" y="23" textAnchor="middle" direction="rtl" fontFamily="Noto Serif Hebrew, Times New Roman, serif" fontSize="23" fill="currentColor">
+      <text x="14" y="23" textAnchor="middle" direction="rtl" fontFamily="var(--font-display)" fontSize="23" fill="currentColor">
         {glyph}
       </text>
     </svg>

@@ -1090,7 +1090,7 @@ const AtlasPage: React.FC = () => {
               </nav>
               <h1
                 className="text-2xl sm:text-5xl text-bronze-300 font-medium leading-none"
-                style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}
+                style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.05em' }}
               >
                 Atlas
               </h1>
@@ -1410,7 +1410,7 @@ const AtlasPage: React.FC = () => {
           </nav>
           <h1
             className="text-3xl sm:text-5xl text-wood-900 font-medium leading-none"
-            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}
+            style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.05em' }}
           >
             Atlas
           </h1>

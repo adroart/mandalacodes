@@ -425,7 +425,7 @@ export default function GlobeGL({
           pointerEvents: 'none',
           opacity: mandala ? 1 : 0,
           transition: 'opacity 1.4s ease',
-          fontFamily: '"Cormorant Garamond", serif',
+          fontFamily: 'var(--font-reading)',
           fontStyle: 'italic',
           fontSize: 17,
           letterSpacing: '0.04em',

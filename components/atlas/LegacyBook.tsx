@@ -879,7 +879,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       <div className="hidden print:block text-black bg-white">
         <h1
           className="text-3xl font-medium text-center mb-1"
-          style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}
+          style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.08em' }}
         >
           {bookTitle}
         </h1>

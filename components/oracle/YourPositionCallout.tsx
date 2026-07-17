@@ -191,7 +191,7 @@ const Styles: React.FC = () => (
       gap: 4px;
     }
     .ypc__eyebrow {
-      font-family: 'Karla', var(--sans, system-ui), sans-serif;
+      font-family: var(--font-ui);
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.2em;
@@ -200,7 +200,7 @@ const Styles: React.FC = () => (
       line-height: 1;
     }
     .ypc__title {
-      font-family: 'Cormorant Garamond', var(--serif, serif);
+      font-family: var(--font-display);
       font-size: 20px;
       font-weight: 500;
       line-height: 1.04;
@@ -213,7 +213,7 @@ const Styles: React.FC = () => (
     }
     .ypc__go {
       flex-shrink: 0;
-      font-family: 'Karla', var(--sans, system-ui), sans-serif;
+      font-family: var(--font-ui);
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.14em;

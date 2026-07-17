@@ -120,25 +120,25 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
 
   const labelCls = 'block mb-1.5';
   const labelStyle: React.CSSProperties = {
-    fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 9.5, letterSpacing: '0.22em',
+    fontFamily: 'var(--font-ui)', fontSize: 9.5, letterSpacing: '0.22em',
     textTransform: 'uppercase', color: C.faint, fontWeight: 600,
   };
   // Underline-only fields: a single hairline beneath, no box, no fill, no
   // radius. The minimal, classy treatment.
   const inputStyle: React.CSSProperties = {
     width: '100%', border: 0, borderBottom: `1px solid ${C.line}`, background: 'transparent',
-    borderRadius: 0, padding: '8px 1px', fontFamily: '"Cormorant Garamond", serif',
+    borderRadius: 0, padding: '8px 1px', fontFamily: 'var(--font-ui)',
     fontSize: 19, color: C.ink, outline: 'none',
   };
   // A tight bronze bar, thin and quiet, not a slab. Small caps label.
   const primaryStyle: React.CSSProperties = {
     width: '100%', background: C.accent, color: C.onAccent, borderRadius: 0,
-    fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 10.5, letterSpacing: '0.26em',
+    fontFamily: 'var(--font-ui)', fontSize: 10.5, letterSpacing: '0.26em',
     textTransform: 'uppercase', fontWeight: 600, padding: '12px', cursor: 'pointer', border: 0,
   };
   const linkStyle: React.CSSProperties = {
     background: 'transparent', border: 0, cursor: 'pointer', color: C.sub,
-    fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 10, letterSpacing: '0.16em',
+    fontFamily: 'var(--font-ui)', fontSize: 10, letterSpacing: '0.16em',
     textTransform: 'uppercase', fontWeight: 600, padding: '4px 0', textAlign: 'left',
     width: 'fit-content',
   };
@@ -147,7 +147,7 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
     width: '100%', border: `1px solid ${C.line}`, background: 'transparent',
     borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
     gap: 9, padding: '12px', cursor: 'pointer', color: C.ink,
-    fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 12, fontWeight: 600,
+    fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 600,
     letterSpacing: '0.02em',
   };
 
@@ -183,7 +183,7 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
           .sip-h__fields { display: flex; gap: 28px; }
           .sip-h__rule { display: flex; flex-direction: column; align-items: center; gap: 9px; align-self: stretch; }
           .sip-h__rule-line { flex: 1; width: 1px; background: ${C.line}; }
-          .sip-h__rule-or { font-family: 'Lato', sans-serif; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.22em; color: ${C.faint}; }
+          .sip-h__rule-or { font-family: var(--font-ui); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.22em; color: ${C.faint}; }
           @media (max-width: 760px) {
             .sip-h { grid-template-columns: 1fr; gap: 22px; }
             .sip-h__rule { flex-direction: row; }
@@ -198,17 +198,17 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
           just a quiet sub-heading so the form reads as a section, not a card. */}
       {bare ? (
         <div style={{ marginBottom: 22 }}>
-          <p style={{ fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 10, letterSpacing: '0.28em', textTransform: 'uppercase', color: C.bronze, fontWeight: 600, margin: 0 }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: 10, letterSpacing: '0.28em', textTransform: 'uppercase', color: C.bronze, fontWeight: 600, margin: 0 }}>
             {title}
           </p>
         </div>
       ) : (
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <p style={{ ...labelStyle, color: C.bronze, marginBottom: 8 }}>Mandala Codes</p>
-          <h2 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 26, color: C.ink, fontWeight: 500, margin: 0 }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 26, color: C.ink, fontWeight: 500, margin: 0 }}>
             {title}
           </h2>
-          <p style={{ fontFamily: 'Lato, Helvetica, sans-serif', fontSize: 14, color: C.sub, marginTop: 8 }}>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: 14, color: C.sub, marginTop: 8 }}>
             {subtitle}
           </p>
         </div>
@@ -217,7 +217,7 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
       {error && (
         <div style={{
           marginBottom: 16, padding: '8px 12px', border: '1px solid #d99',
-          background: '#fbeaea', color: '#8a2a2a', fontFamily: 'Lato, sans-serif', fontSize: 13,
+          background: '#fbeaea', color: '#8a2a2a', fontFamily: 'var(--font-ui)', fontSize: 13,
         }}>
           {error}
         </div>
@@ -288,7 +288,7 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: C.sub }}>
             <span style={{ flex: 1, height: 1, background: C.line }} />
-            <span style={{ fontFamily: 'Lato, sans-serif', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.15em' }}>or</span>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.15em' }}>or</span>
             <span style={{ flex: 1, height: 1, background: C.line }} />
           </div>
 

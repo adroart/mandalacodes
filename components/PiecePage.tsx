@@ -253,7 +253,7 @@ const PiecePage: React.FC = () => {
       <section className="min-h-screen bg-paper-50 flex flex-col items-center justify-center px-6 text-center">
         <h1
           className="font-serif text-3xl text-wood-900 font-medium mb-4"
-          style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.04em' }}
+          style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
         >
           This piece isn't on the map yet
         </h1>
@@ -397,7 +397,7 @@ const PiecePage: React.FC = () => {
 
             <h1
               className="font-serif text-4xl sm:text-5xl text-wood-900 font-medium leading-[1.0] mb-3"
-              style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.02em' }}
+              style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.02em' }}
             >
               {cleanTitle}
             </h1>
@@ -583,7 +583,7 @@ const PiecePage: React.FC = () => {
                 >
                   <span
                     className="font-serif text-sm text-bronze-700"
-                    style={{ fontFamily: 'Cinzel, serif' }}
+                    style={{ fontFamily: 'var(--font-brand)' }}
                   >
                     {typeof piece.claimOrdinal === 'number' ? piece.claimOrdinal : '·'}
                   </span>
