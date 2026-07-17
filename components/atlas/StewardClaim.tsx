@@ -897,8 +897,8 @@ const StewardClaim: React.FC = () => {
             <div className="mx-auto mb-9" style={{ maxWidth: 208, opacity: 0.82 }}>
               <ArtworkPlate
                 src={contextArt.coverImage ? img(contextArt.coverImage, { w: 560, crop: 'fit' }) : null}
-                alt={contextArt.title}
-                title={contextArt.title}
+                alt={contextArt.title.replace(/\s*-\s*\d+\s*$/, '')}
+                title={contextArt.title.replace(/\s*-\s*\d+\s*$/, '')}
                 aspect="square"
                 loading="eager"
                 imgStyle={{ filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.55))' }}
@@ -915,7 +915,7 @@ const StewardClaim: React.FC = () => {
                   letterSpacing: '0.01em',
                 }}
               >
-                You are claiming {contextArt.title}.
+                You are claiming {contextArt.title.replace(/\s*-\s*\d+\s*$/, '')}.
               </h1>
               <p
                 className="font-serif text-lg sm:text-xl leading-snug mb-10"
