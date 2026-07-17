@@ -285,9 +285,11 @@ and `earth-hairline-b` large) makes the line itself do the work:
 - Light pools slightly tightened from the first sheet so they read as
   radiance, not haze.
 
-PENDING RULING: Adrian confirms elevated hairline (I-a versus I-b's lifted
-land, and whether the whisper graticule stays) before Opus builds the shader
-treatment. Implementation note: the engraved map renders to an
+RULED 2026-07-17: Adrian chose the hairline family and delegated the final
+call to Fable. The built earth is the elevated hairline with I-b's lifted
+land value and NO graticule: waterlined luminous coasts with the discrete
+echo ring, the coast catch-light near dreams, the fine-instrument double rim,
+land one shade above the ocean, tightened pools. Implementation note: the engraved map renders to an
 equirectangular texture at build time (the `world-atlas` data and `d3-geo`
 are already dependencies; `scripts/generate-land-dots.ts` is the precedent);
 the waterline and coast-brightening render into the texture's channels; the
