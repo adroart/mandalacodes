@@ -17,6 +17,7 @@ import { FULL_ARCHIVE } from '../../data/mockData';
 import { buildKinshipIndex } from '../../utils/kinship';
 import { ulCardNumber } from '../../utils/universalLanguage';
 import type { PublicAtlasState } from '../../types';
+import { ATLAS_GOLD, ATLAS_NIGHT } from './stageColors';
 
 const Globe3D = lazy(() => import('./three/Globe3D'));
 
@@ -184,7 +185,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
     return (
       <div
         className="fixed inset-0"
-        style={{ background: 'rgb(15,13,11)', zIndex: 300 }}
+        style={{ background: ATLAS_NIGHT, zIndex: 300 }}
         aria-busy
       />
     );
@@ -193,7 +194,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
   return (
     <div
       className="fixed inset-0 overflow-hidden"
-      style={{ background: 'rgb(15,13,11)', zIndex: 300 }}
+      style={{ background: ATLAS_NIGHT, zIndex: 300 }}
     >
       <Suspense fallback={<div className="absolute inset-0" />}>
         <Globe3D
@@ -230,7 +231,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
             // The line arrives wide and settles, like a breath released.
             letterSpacing: phase === 'igniting' ? '0.22em' : '0.08em',
             transition: 'letter-spacing 2.4s cubic-bezier(0.22, 1, 0.36, 1)',
-            color: '#c4aa7c',
+            color: ATLAS_GOLD,
           }}
         >
           {typeof myOrdinal === 'number'

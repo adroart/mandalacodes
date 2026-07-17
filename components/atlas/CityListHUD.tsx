@@ -11,8 +11,9 @@
  */
 
 import React from 'react';
+import { ATLAS_GOLD } from './stageColors';
 
-const BRONZE = '#c4aa7c';
+const BRONZE = ATLAS_GOLD;
 
 export interface CityMember {
   key: string;

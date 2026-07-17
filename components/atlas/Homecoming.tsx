@@ -6,6 +6,7 @@ import TypeaheadPicker from '../shared/TypeaheadPicker';
 import { ATLAS_PLACES, getCityById, isCountryPlace } from '../../data/cities';
 import type { CityCentroid } from '../../types';
 import { HOMECOMING_MAX_PHOTOS } from '../../lib/atlas/homecoming';
+import { ATLAS_GOLD, ATLAS_NIGHT } from './stageColors';
 
 /**
  * The Homecoming (Phase 2.5): /atlas/homecoming.
@@ -24,10 +25,10 @@ import { HOMECOMING_MAX_PHOTOS } from '../../lib/atlas/homecoming';
  * the map.
  */
 
-const STAGE_BG = 'rgb(15,13,11)';
+const STAGE_BG = ATLAS_NIGHT;
 const PARCHMENT = 'rgba(203,191,168,0.92)';
 const PARCHMENT_SOFT = 'rgba(203,191,168,0.6)';
-const GOLD = '#c4aa7c';
+const GOLD = ATLAS_GOLD;
 
 const cityMatches = (city: CityCentroid, query: string): boolean => {
   const q = query.trim().toLowerCase();
@@ -49,14 +50,14 @@ const formatCityLabel = (city: CityCentroid): string => {
 // A dark, inlaid field, a line of warm light under the words, never a white
 // web-form box.
 const fieldClass =
-  'w-full bg-transparent border-0 border-b border-[rgba(196,170,124,0.28)] px-0 py-3 font-serif text-[1.0625rem] text-[#e9e1d2] placeholder:text-[rgba(203,191,168,0.38)] focus:outline-none focus:border-[#c4aa7c] transition-colors';
+  'w-full bg-transparent border-0 border-b border-[rgba(196,170,124,0.28)] px-0 py-3 font-serif text-[1.0625rem] text-[#e9e1d2] placeholder:text-[rgba(203,191,168,0.38)] focus:outline-none focus:border-atlas-gold transition-colors';
 
 // TypeaheadPicker hardcodes a white book/admin input; the important-prefixed
 // utilities here override it so the city field sits in the dark stage like the
 // others (its dropdown panel stays a light overlay, which reads as an overlay,
 // not a form).
 const cityInputOverride =
-  '!bg-transparent !border-0 !border-b !border-[rgba(196,170,124,0.28)] !px-0 !text-[#e9e1d2] placeholder:!text-[rgba(203,191,168,0.38)] focus:!outline-none focus:!border-[#c4aa7c] !rounded-none';
+  '!bg-transparent !border-0 !border-b !border-[rgba(196,170,124,0.28)] !px-0 !text-[#e9e1d2] placeholder:!text-[rgba(203,191,168,0.38)] focus:!outline-none focus:!border-atlas-gold !rounded-none';
 
 const labelClass =
   'block font-label text-[11px] uppercase tracking-[0.22em] font-semibold mb-3';

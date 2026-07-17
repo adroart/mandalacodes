@@ -21,9 +21,11 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ordinalLabel, type SelectedPiece, type KinEntry, type HolderChartSummary } from './PieceSidePanel';
 import { img } from '../../utils/cloudinary';
+import { ATLAS_GOLD, ATLAS_KEPT } from './stageColors';
+import ArtworkPlate from './ArtworkPlate';
 
-const BRONZE = '#c4aa7c';
-const SAGE = '#9caa87';
+const BRONZE = ATLAS_GOLD;
+const SAGE = ATLAS_KEPT;
 const PARCHMENT = '#f6f1e8';
 const MUTED = '#cbbfa8';
 
@@ -412,15 +414,14 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           backgroundColor: '#0d0b09',
         }}
       >
-        {piece.coverImage && (
-          <img
-            src={img(piece.coverImage, { w: 760 })}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-            style={{ objectPosition: '50% 50%', filter: 'saturate(0.92) brightness(0.94)' }}
-          />
-        )}
+        <ArtworkPlate
+          src={piece.coverImage ? img(piece.coverImage, { w: 760 }) : null}
+          alt=""
+          title={title}
+          aspect="cover"
+          imgClassName="transition-transform duration-500 group-hover:scale-[1.03]"
+          imgStyle={{ objectPosition: '50% 50%', filter: 'saturate(0.92) brightness(0.94)' }}
+        />
         <div
           aria-hidden
           className="absolute inset-0"

@@ -29,13 +29,11 @@ export interface AtlasFiltersProps {
   threadsShown?: number;
   /** Total kinship pairs before the cap. */
   threadsTotal?: number;
+  /** Visual seating. 'paper' (default): the light-chrome segmented form used
+      beside the fallback globe. 'stage': the quiet dark-globe overlay, text
+      toggles with a bronze underline, no filled chips or web-form boxes. */
+  variant?: 'paper' | 'stage';
 }
-
-const btnBase =
-  'font-label text-[11px] uppercase tracking-[0.18em] px-4 min-h-[44px] border transition-colors duration-200 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
-const active = 'bg-wood-900 text-paper-50 border-wood-900 z-10 relative';
-const inactive =
-  'text-wood-700 border-wood-400 hover:text-wood-900 hover:border-wood-700 bg-transparent';
 
 const STATUS_OPTIONS: ReadonlyArray<{ value: AtlasStatusFilter; label: string }> = [
   { value: 'all', label: 'All' },
@@ -43,7 +41,14 @@ const STATUS_OPTIONS: ReadonlyArray<{ value: AtlasStatusFilter; label: string }>
   { value: 'seeking', label: 'Seeking ground' },
 ];
 
-const AtlasFilters: React.FC<AtlasFiltersProps> = ({
+// ─── 'paper' variant ─────────────────────────────────────────────────────
+const btnBase =
+  'font-label text-[11px] uppercase tracking-[0.18em] px-4 min-h-[44px] border transition-colors duration-200 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
+const active = 'bg-wood-900 text-paper-50 border-wood-900 z-10 relative';
+const inactive =
+  'text-wood-700 border-wood-400 hover:text-wood-900 hover:border-wood-700 bg-transparent';
+
+const PaperFilters: React.FC<AtlasFiltersProps> = ({
   series,
   selectedSeries,
   onSeriesChange,
@@ -219,5 +224,157 @@ const AtlasFilters: React.FC<AtlasFiltersProps> = ({
     </div>
   );
 };
+
+// ─── 'stage' variant ─────────────────────────────────────────────────────
+// A row of quiet text options; the active one carries a bronze underline.
+function TextToggle<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: ReadonlyArray<{ value: T; label: string }>;
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="flex items-baseline gap-4">
+      <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 w-16 shrink-0">
+        {label}
+      </span>
+      <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+        {options.map((o) => {
+          const active = o.value === value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onChange(o.value)}
+              className={`font-serif text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+                active
+                  ? 'text-bronze-300 border-bronze-400/70'
+                  : 'text-wood-400 border-transparent hover:text-bronze-300/80'
+              }`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const StageFilters: React.FC<AtlasFiltersProps> = ({
+  series,
+  selectedSeries,
+  onSeriesChange,
+  status,
+  onStatusChange,
+  categories,
+  selectedCategory,
+  onCategoryChange,
+  availableSizes,
+  selectedSize,
+  onSizeChange,
+  placedCount,
+  seekingCount,
+  kinshipVisible,
+  onKinshipChange,
+  threadsShown,
+  threadsTotal,
+}) => {
+  const total = placedCount + seekingCount;
+
+  const seriesOptions = [
+    { value: 'all', label: 'All series' },
+    ...series.map((s) => ({ value: s, label: s })),
+  ];
+  const categoryOptions =
+    categories.length >= 2
+      ? [{ value: 'all', label: 'All' }, ...categories.map((c) => ({ value: c, label: c }))]
+      : null;
+  const sizeOptions =
+    availableSizes.length >= 2
+      ? [
+          { value: 'all' as SizeBand | 'all', label: 'All' },
+          ...SIZE_BANDS.filter((b) => availableSizes.includes(b)).map((b) => ({
+            value: b as SizeBand | 'all',
+            label: SIZE_BAND_LABELS[b],
+          })),
+        ]
+      : null;
+
+  return (
+    <div className="flex flex-col gap-5">
+      <TextToggle label="Series" options={seriesOptions} value={selectedSeries} onChange={onSeriesChange} />
+      <TextToggle label="Show" options={STATUS_OPTIONS} value={status} onChange={onStatusChange} />
+      {categoryOptions && (
+        <TextToggle
+          label="Type"
+          options={categoryOptions}
+          value={selectedCategory}
+          onChange={onCategoryChange}
+        />
+      )}
+      {sizeOptions && (
+        <TextToggle label="Size" options={sizeOptions} value={selectedSize} onChange={onSizeChange} />
+      )}
+
+      {/* Threads — a slim switch, the one expressive control. */}
+      <div className="flex items-center gap-4 pt-1">
+        <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 w-16 shrink-0">
+          Threads
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={kinshipVisible}
+          onClick={() => onKinshipChange(!kinshipVisible)}
+          className="relative inline-flex h-[18px] w-9 items-center rounded-full border border-bronze-400/30 transition-colors duration-300"
+          style={{
+            backgroundColor: kinshipVisible ? 'rgba(196,170,124,0.35)' : 'rgba(120,108,90,0.15)',
+          }}
+        >
+          <span
+            className="inline-block h-3 w-3 rounded-full transition-transform duration-300"
+            style={{
+              transform: kinshipVisible ? 'translateX(20px)' : 'translateX(3px)',
+              backgroundColor: kinshipVisible ? '#d6c38a' : '#8c7a5c',
+            }}
+          />
+        </button>
+        {typeof threadsShown === 'number' && typeof threadsTotal === 'number' && (
+          <span className="font-label text-[10px] uppercase tracking-[0.16em] text-wood-500">
+            {threadsShown === threadsTotal
+              ? `${threadsShown} ${threadsShown === 1 ? 'thread' : 'threads'}`
+              : `showing ${threadsShown} of ${threadsTotal} threads`}
+          </span>
+        )}
+      </div>
+
+      <p className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 pt-1" aria-live="polite">
+        {total} {total === 1 ? 'piece' : 'pieces'}
+        <span className="mx-1.5">·</span>
+        {placedCount} placed
+        <span className="mx-1.5">·</span>
+        {seekingCount} seeking ground
+      </p>
+    </div>
+  );
+};
+
+/**
+ * Atlas filter controls, merged from two parallel components
+ * (AtlasFilters + AtlasFiltersDark) into one with a `variant` prop: the same
+ * data-shaped controls, redrawn per surface. 'paper' is the light-chrome form
+ * beside the fallback (no-WebGL) globe; 'stage' is the quiet dark overlay on
+ * the immersive globe. Each variant's rendered output is unchanged from its
+ * former standalone component.
+ */
+const AtlasFilters: React.FC<AtlasFiltersProps> = ({ variant = 'paper', ...props }) =>
+  variant === 'stage' ? <StageFilters {...props} /> : <PaperFilters {...props} />;
 
 export default AtlasFilters;

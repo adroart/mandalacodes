@@ -8,10 +8,12 @@
  * without pulling the heavy library globe into the main chunk.
  */
 
+import { ATLAS_GOLD } from './stageColors';
+
 const SERIES_COLORS: Record<string, string> = {
-  'Universal Language': '#c4aa7c', // bronze: the founding series
-  Mandala: '#b98a6e',              // warm terracotta
-  'Light Codes': '#d6c38a',        // pale gold
+  'Universal Language': ATLAS_GOLD, // the atlas gold: the founding series
+  Mandala: '#b98a6e',               // warm terracotta
+  'Light Codes': '#d6c38a',         // pale gold
 };
 
 // Deterministic fallback hue for any series not named above. Keeps everything

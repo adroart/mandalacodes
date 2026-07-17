@@ -1,4 +1,6 @@
 import React, { useId, useState } from 'react';
+import Toggle from '../shared/Toggle';
+import { ATLAS_GOLD } from './stageColors';
 
 /**
  * ConsentRings, the consent moment of the claim flow (M2).
@@ -139,46 +141,15 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
           City-level only, no name, no identity. You can change this at any
           time.
         </p>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={mapPresence}
-          aria-label="Place this piece as a light on the world map"
-          onClick={() => setMapPresence(v => !v)}
+        <Toggle
+          checked={mapPresence}
+          onChange={setMapPresence}
+          label={mapPresence ? 'Yes, light my city' : 'Not yet, keep it unlit'}
+          ariaLabel="Place this piece as a light on the world map"
+          variant={stage ? 'stage' : 'panel'}
           disabled={submitting}
-          className={`mx-auto flex items-center gap-4 min-h-[44px] font-sans text-base focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60 ${
-            stage ? '' : 'text-wood-800'
-          }`}
-          style={stage ? { color: '#e7dcc7' } : undefined}
-        >
-          <span
-            aria-hidden="true"
-            className={`relative inline-block w-11 h-6 border transition-colors ${
-              stage
-                ? mapPresence
-                  ? ''
-                  : ''
-                : mapPresence
-                ? 'bg-bronze-400 border-bronze-500'
-                : 'bg-paper-100 border-wood-300'
-            }`}
-            style={
-              stage
-                ? mapPresence
-                  ? { background: '#c4aa7c', borderColor: '#d4b88a' }
-                  : { background: 'rgba(60,50,38,0.6)', borderColor: 'rgba(196,170,124,0.35)' }
-                : undefined
-            }
-          >
-            <span
-              className={`absolute top-0.5 left-0.5 w-4 h-4 transition-transform ${
-                mapPresence ? 'translate-x-5' : 'translate-x-0'
-              } ${stage ? '' : 'bg-white'}`}
-              style={stage ? { background: mapPresence ? '#241e17' : '#e7dcc7' } : undefined}
-            />
-          </span>
-          <span>{mapPresence ? 'Yes, light my city' : 'Not yet, keep it unlit'}</span>
-        </button>
+          className="mx-auto"
+        />
       </div>
 
       {/* The claim ritual, optional, private. Omitted on the stage, where the
@@ -217,7 +188,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         }
         style={
           stage
-            ? { background: '#c4aa7c', color: '#241e17' }
+            ? { background: ATLAS_GOLD, color: '#241e17' }
             : undefined
         }
       >

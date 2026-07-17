@@ -15,6 +15,8 @@ import ConsentRings from './ConsentRings';
 import type { ConsentChoice } from './ConsentRings';
 import ClaimCeremony from './ClaimCeremony';
 import RequestStewardship from './RequestStewardship';
+import Toggle from '../shared/Toggle';
+import { ATLAS_GOLD, ATLAS_NIGHT } from './stageColors';
 
 /**
  * Steward claim, /atlas/claim, rebuilt as ONE continuous ceremony (M2+).
@@ -49,8 +51,10 @@ import RequestStewardship from './RequestStewardship';
  * the RequestStewardship hand-off, reachable exactly as before.
  */
 
-const VIGNETTE =
-  'radial-gradient(120% 90% at 50% 36%, #241b12 0%, #191410 46%, rgb(15,13,11) 100%)';
+const VIGNETTE = `radial-gradient(120% 90% at 50% 36%, #241b12 0%, #191410 46%, ${ATLAS_NIGHT} 100%)`;
+
+// The gold "door" button treatment, repeated across every claim beat.
+const GOLD_BUTTON: React.CSSProperties = { background: ATLAS_GOLD, color: '#241e17' };
 
 type ClaimEntry = {
   steward: StewardRecord;
@@ -244,7 +248,7 @@ const ClaimSignIn: React.FC = () => {
             onClick={doGoogle}
             disabled={busy}
             className={doorBtn}
-            style={{ background: '#c4aa7c', color: '#241e17' }}
+            style={GOLD_BUTTON}
           >
             <GoogleMark /> Claim with Google
           </button>
@@ -293,7 +297,7 @@ const ClaimSignIn: React.FC = () => {
             onClick={send}
             disabled={busy || !email.trim()}
             className={primaryBtn}
-            style={{ background: '#c4aa7c', color: '#241e17' }}
+            style={GOLD_BUTTON}
           >
             {busy ? 'Sending…' : 'Send the code'}
           </button>
@@ -318,7 +322,7 @@ const ClaimSignIn: React.FC = () => {
             onClick={verify}
             disabled={busy || code.length < 6}
             className={primaryBtn}
-            style={{ background: '#c4aa7c', color: '#241e17' }}
+            style={GOLD_BUTTON}
           >
             {busy ? 'Claiming…' : 'Claim your piece'}
           </button>
@@ -349,7 +353,7 @@ const ClaimSignIn: React.FC = () => {
             onClick={doPassword}
             disabled={busy || !email.trim() || !password}
             className={primaryBtn}
-            style={{ background: '#c4aa7c', color: '#241e17' }}
+            style={GOLD_BUTTON}
           >
             {busy ? 'Claiming…' : 'Claim your piece'}
           </button>
@@ -663,7 +667,7 @@ const StewardClaim: React.FC = () => {
             type="button"
             onClick={() => setBeat('consent')}
             className="min-h-[48px] px-10 font-label text-xs uppercase tracking-[0.2em] font-semibold rounded-xl transition-opacity hover:opacity-90"
-            style={{ background: '#c4aa7c', color: '#241e17' }}
+            style={GOLD_BUTTON}
           >
             begin
           </button>
@@ -724,41 +728,22 @@ const StewardClaim: React.FC = () => {
             style={{
               color: '#f0ece4',
               borderColor: 'rgba(196,170,124,0.4)',
-              caretColor: '#c4aa7c',
+              caretColor: ATLAS_GOLD,
               fontFamily: '"Cormorant Garamond", serif',
             }}
           />
 
           {/* The show/keep-private choice rides here, at the moment of
               committing: the same Ring 2 map presence, restated compactly. */}
-          <button
-            type="button"
-            role="switch"
-            aria-checked={mapPresence}
-            aria-label="Show this piece as a light on the world map"
-            onClick={() => setMapPresence((v) => !v)}
+          <Toggle
+            checked={mapPresence}
+            onChange={setMapPresence}
+            label={mapPresence ? 'Show on the atlas' : 'Keep this private'}
+            ariaLabel="Show this piece as a light on the world map"
+            variant="stage"
             disabled={submitting}
-            className="mt-7 mx-auto flex items-center gap-3 min-h-[44px] font-sans text-[15px] disabled:opacity-60"
-            style={{ color: 'rgba(203,191,168,0.86)' }}
-          >
-            <span
-              aria-hidden="true"
-              className="relative inline-block w-11 h-6 border transition-colors"
-              style={
-                mapPresence
-                  ? { background: '#c4aa7c', borderColor: '#d4b88a' }
-                  : { background: 'rgba(60,50,38,0.6)', borderColor: 'rgba(196,170,124,0.35)' }
-              }
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 transition-transform ${
-                  mapPresence ? 'translate-x-5' : 'translate-x-0'
-                }`}
-                style={{ background: mapPresence ? '#241e17' : '#e7dcc7' }}
-              />
-            </span>
-            <span>{mapPresence ? 'Show on the atlas' : 'Keep this private'}</span>
-          </button>
+            className="mt-7 mx-auto"
+          />
 
           {mapPresence && (
             <p
@@ -785,7 +770,7 @@ const StewardClaim: React.FC = () => {
             onClick={() => submitClaim(dreamText.trim() || undefined)}
             disabled={submitting}
             className="w-full min-h-[48px] font-label text-xs uppercase tracking-[0.2em] font-semibold py-3.5 rounded-xl transition-opacity hover:opacity-90 disabled:opacity-40"
-            style={{ background: '#c4aa7c', color: '#241e17' }}
+            style={GOLD_BUTTON}
           >
             {submitting ? 'Inscribing…' : 'inscribe'}
           </button>

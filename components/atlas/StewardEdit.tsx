@@ -11,6 +11,7 @@ import LegacyBook from './LegacyBook';
 import StewardRequests from './StewardRequests';
 import AccountLayout from '../account/AccountLayout';
 import TypeaheadPicker from '../shared/TypeaheadPicker';
+import Toggle from '../shared/Toggle';
 
 /**
  * Steward edit page. Rendered at `/atlas/edit`.
@@ -497,31 +498,13 @@ const StewardEdit: React.FC = () => {
           <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
             Visibility
           </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={piece.isPublic}
-            aria-label="Show this piece on the atlas"
-            onClick={handleVisibilityToggle}
+          <Toggle
+            checked={piece.isPublic}
+            onChange={handleVisibilityToggle}
+            label={piece.isPublic ? 'Show on the atlas' : 'Keep this private'}
+            ariaLabel="Show this piece on the atlas"
             disabled={saving}
-            className="group flex items-center gap-4 min-h-[44px] font-sans text-base text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
-          >
-            <span
-              aria-hidden="true"
-              className={`relative inline-block w-11 h-6 border transition-colors ${
-                piece.isPublic
-                  ? 'bg-bronze-400 border-bronze-500'
-                  : 'bg-paper-100 border-wood-300'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white transition-transform ${
-                  piece.isPublic ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </span>
-            <span>{piece.isPublic ? 'Show on the atlas' : 'Keep this private'}</span>
-          </button>
+          />
           {/* At-the-control nudge: after a placement, one quiet line pointing
               to the natural next step. The shine line reuses the welcome
               sentence and sits right under the toggle it points at; flipping
@@ -555,35 +538,13 @@ const StewardEdit: React.FC = () => {
             No name and no birth data are ever shown — only the elemental
             shape. You can turn it off at any time.
           </p>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={ring3On}
-            aria-label="Join the kinship constellation"
-            onClick={handleRing3Toggle}
+          <Toggle
+            checked={ring3On}
+            onChange={handleRing3Toggle}
+            label={ring3On ? 'Joined the constellation' : 'Join the kinship constellation'}
+            ariaLabel="Join the kinship constellation"
             disabled={ring3Saving}
-            className="group flex items-center gap-4 min-h-[44px] font-sans text-base text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
-          >
-            <span
-              aria-hidden="true"
-              className={`relative inline-block w-11 h-6 border transition-colors ${
-                ring3On
-                  ? 'bg-bronze-400 border-bronze-500'
-                  : 'bg-paper-100 border-wood-300'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white transition-transform ${
-                  ring3On ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </span>
-            <span>
-              {ring3On
-                ? 'Joined the constellation'
-                : 'Join the kinship constellation'}
-            </span>
-          </button>
+          />
         </div>
 
         {/* Confirmation + error region */}

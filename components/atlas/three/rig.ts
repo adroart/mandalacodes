@@ -35,6 +35,17 @@ export const SELECT_ANIM_MS = 800;
 export const MANDALA_DRAW_SECONDS = 5;
 
 // ─── Palette (normalized RGB, derived from the atlas style notes) ──────────
+// This is the single JS source of stage colors for the hand-rolled Three.js
+// globe (Globe3D and its scene components): every material/shader uniform
+// that needs a stage color reads it from here, never from a literal.
+//
+// These THREE.Color instances are tuned specifically for this renderer, so
+// they are not required to be byte-identical to the plain hex constants in
+// ../stageColors.ts (GlobeGL's react-globe.gl renderer is tuned separately).
+// Where a value IS meant to be the same color, keep it in lockstep by hand
+// with both ../stageColors.ts and the matching --color-atlas-* token in
+// src/theme.css: COLOR_BG ~ atlas-night, COLOR_BRONZE ~ atlas-gold,
+// COLOR_SAGE ~ atlas-kept, COLOR_EMBER ~ atlas-ember.
 export const COLOR_BG = new THREE.Color(15 / 255, 13 / 255, 11 / 255);
 export const COLOR_LAND = new THREE.Color(0.56, 0.53, 0.47);
 export const COLOR_BRONZE = new THREE.Color(0.77, 0.67, 0.49);

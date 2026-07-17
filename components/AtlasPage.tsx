@@ -2,7 +2,6 @@ import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'rea
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
 import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
-import AtlasFiltersDark from './atlas/AtlasFiltersDark';
 import PieceSidePanel, {
   ordinalLabel,
   type KinEntry,
@@ -28,6 +27,7 @@ import { buildKinshipIndex, greatCircleDistance, MAX_KINSHIP_ARCS } from '../uti
 import { buildDreamRoute } from '../utils/dreamStream';
 import { SIZE_BANDS, sizeBandFor, type SizeBand } from '../utils/sizeBands';
 import type { PublicAtlasState } from '../types';
+import { ATLAS_GOLD, ATLAS_KEPT } from './atlas/stageColors';
 
 /* The Three.js globe loads as its own chunk so the page paints immediately;
    browsers without WebGL keep the cobe globe + SVG kinship overlay. */
@@ -1010,7 +1010,7 @@ const AtlasPage: React.FC = () => {
         <section
           ref={globeBoxRef}
           aria-label="Atlas globe"
-          className="relative w-full overflow-hidden bg-[rgb(15,13,11)] block"
+          className="relative w-full overflow-hidden bg-atlas-night block"
           style={{
             height: 'calc(100svh - var(--nav-height))',
             minHeight: 'min(560px, calc(100svh - var(--nav-height)))',
@@ -1028,7 +1028,7 @@ const AtlasPage: React.FC = () => {
                   className="w-full h-full"
                   style={{
                     background:
-                      'radial-gradient(circle at 50% 50%, rgb(28, 25, 21) 0%, rgb(15, 13, 11) 62%)',
+                      'radial-gradient(circle at 50% 50%, rgb(28, 25, 21) 0%, var(--color-atlas-night) 62%)',
                   }}
                 />
               }
@@ -1123,7 +1123,7 @@ const AtlasPage: React.FC = () => {
                 {hasBirthOrigin && (
                   <div className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed">
                     your origin
-                    <span aria-hidden style={{ color: '#9caa87' }}>
+                    <span aria-hidden className="text-atlas-kept">
                       {' '}·
                     </span>
                   </div>
@@ -1180,7 +1180,7 @@ const AtlasPage: React.FC = () => {
                   onClick={() => setYoursMode((v) => !v)}
                   title="Lights carrying one of your own codes"
                   className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
-                    yoursMode ? 'text-[#9caa87]' : 'text-wood-300 hover:text-[#9caa87]'
+                    yoursMode ? 'text-atlas-kept' : 'text-wood-300 hover:text-atlas-kept'
                   }`}
                 >
                   your codes
@@ -1278,7 +1278,8 @@ const AtlasPage: React.FC = () => {
                     close
                   </button>
                 </div>
-                <AtlasFiltersDark
+                <AtlasFilters
+                  variant="stage"
                   series={availableSeries}
                   selectedSeries={selectedSeries}
                   onSeriesChange={setSelectedSeries}
@@ -1323,7 +1324,7 @@ const AtlasPage: React.FC = () => {
                 cx={markerScreenPos.x}
                 cy={markerScreenPos.y}
                 r={2.5}
-                fill={selectedKey === BIRTH_KEY ? '#9caa87' : '#c4aa7c'}
+                fill={selectedKey === BIRTH_KEY ? ATLAS_KEPT : ATLAS_GOLD}
               />
             </svg>
           )}

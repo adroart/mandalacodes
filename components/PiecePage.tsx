@@ -8,6 +8,7 @@ import { ulCardNumber } from '../utils/universalLanguage';
 import { HexagramSVG } from './oracle/HexagramGlyph';
 import { ordinalLabel } from './atlas/PieceSidePanel';
 import RequestStewardship from './atlas/RequestStewardship';
+import ArtworkPlate from './atlas/ArtworkPlate';
 import {
   loadAtlasState,
   findPublicPiece,
@@ -128,9 +129,6 @@ const PiecePage: React.FC = () => {
   // of the archive + atlas state above — it's an enrichment layer, never a
   // blocker, so it starts null and simply fills in once (if) it arrives.
   const [content, setContent] = useState<PieceContent | null>(null);
-  // A certificate page must never show raw alt text on a black box: if the
-  // plate image fails, we fall back to a warm paper placeholder instead.
-  const [heroFailed, setHeroFailed] = useState(false);
   // The full public atlas state, kept for the kin constellation below. Same
   // load the piece itself comes from; no extra fetch.
   const [atlasState, setAtlasState] = useState<PublicAtlasState | null>(null);
@@ -325,26 +323,14 @@ const PiecePage: React.FC = () => {
                 />
               ))}
               <div className="bg-[#151311] p-3 sm:p-5 overflow-hidden">
-                {heroImage && !heroFailed ? (
-                  <img
-                    src={heroImage}
-                    alt={`${cleanTitle}${
-                      cardNumber != null ? `, Universal Language ${cardNumber}` : ''
-                    }. Original work by Adrian Rasmussen.`}
-                    className="w-full h-auto block"
-                    loading="eager"
-                    onError={() => setHeroFailed(true)}
-                  />
-                ) : (
-                  // No image id on record, or the plate image failed to load:
-                  // a quiet plate with the title, never raw alt text on black.
-                  <div className="w-full aspect-square flex flex-col items-center justify-center gap-3 text-center px-6">
-                    <span className={`${LABEL} text-bronze-400`}>The plate</span>
-                    <span className="font-serif text-lg text-paper-200 leading-snug">
-                      {cleanTitle}
-                    </span>
-                  </div>
-                )}
+                <ArtworkPlate
+                  src={heroImage}
+                  alt={`${cleanTitle}${
+                    cardNumber != null ? `, Universal Language ${cardNumber}` : ''
+                  }. Original work by Adrian Rasmussen.`}
+                  title={cleanTitle}
+                  loading="eager"
+                />
               </div>
               {/* Plate engraving: the edition marker only, and only when there
                   is one. The title lives in the H1 below, so repeating it here
