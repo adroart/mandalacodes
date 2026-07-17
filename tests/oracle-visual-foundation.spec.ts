@@ -22,7 +22,7 @@ test('uses the Teajia reading type roles and measure', async ({ page }) => {
     const computed = getComputedStyle(element);
     return { family: computed.fontFamily, size: parseFloat(computed.fontSize), lineHeight: parseFloat(computed.lineHeight), width: element.getBoundingClientRect().width };
   });
-  expect(styles.family).toContain('Lora');
+  expect(styles.family).toContain('Iowan Old Style Web');
   expect(styles.size).toBeGreaterThanOrEqual(16);
   expect(styles.lineHeight / styles.size).toBeGreaterThanOrEqual(1.78);
   expect(styles.lineHeight / styles.size).toBeLessThanOrEqual(1.82);

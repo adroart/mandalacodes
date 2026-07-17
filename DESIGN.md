@@ -14,12 +14,12 @@ typography:
     fontWeight: 400
     lineHeight: 1.1
   body:
-    fontFamily: "Cormorant Garamond, serif"
+    fontFamily: "Iowan Old Style, serif"
     fontSize: "17px"
     fontWeight: 400
     lineHeight: 1.5
   label:
-    fontFamily: "Lato, Helvetica, sans-serif"
+    fontFamily: "Iowan Old Style, serif"
     fontSize: "10px"
     fontWeight: 400
     lineHeight: 1.2
@@ -55,7 +55,7 @@ The palette uses warm paper, wood, and bronze neutrals. Bronze is reserved for l
 
 ## Typography
 
-Cormorant Garamond carries titles, teaching text, and the chart’s editorial voice. Lato carries compact controls, numbers, metadata, and uppercase system labels. Cinzel is limited to rare navigational labels.
+Cormorant Garamond carries large display titles. Iowan Old Style carries teaching text, controls, metadata, and the chart’s editorial voice. Cinzel is limited to rare brand and navigational labels.
 
 ## Elevation
 

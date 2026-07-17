@@ -4,15 +4,15 @@
 
 Mandala Codes will establish one shared typography source so future font changes are made centrally rather than repeated across components and pages. Large Mandala Codes headings retain Cormorant Garamond during the normalization.
 
-The first production release centralizes the existing licensed families: Lora for reading text and Karla for interface text. Iowan Old Style BT and GT America remain the intended later swap, but are not required to complete the architecture.
+The production system self-hosts the licensed Iowan Old Style family for reading and interface text. Large display headings remain independently controlled so the Mandala Codes title treatment does not change with the body face.
 
 ## Design Direction
 
 The hierarchy has three primary voices:
 
 1. **Display:** Cormorant Garamond preserves the existing Mandala Codes character in hero titles, page titles, article titles, and other major headings.
-2. **Reading:** Lora initially carries prose, oracle readings, descriptions, quotations, supporting editorial text, and smaller editorial headings.
-3. **Interface:** Karla initially carries navigation, controls, buttons, filters, form labels, metadata, dates, captions, and compact data.
+2. **Reading:** Iowan Old Style carries prose, oracle readings, descriptions, quotations, supporting editorial text, and smaller editorial headings.
+3. **Interface:** Iowan Old Style also carries navigation, controls, buttons, filters, form labels, metadata, dates, captions, and compact data.
 
 Specialized text keeps its purpose-specific typeface:
 
@@ -34,8 +34,8 @@ The shared family contract is:
 
 ```css
 --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
---font-reading: "Lora", Georgia, "Times New Roman", serif;
---font-ui: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+--font-reading: "Iowan Old Style Web", "Iowan Old Style", Georgia, "Times New Roman", serif;
+--font-ui: "Iowan Old Style Web", "Iowan Old Style", Georgia, "Times New Roman", serif;
 --font-technical: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 --font-cjk: "Noto Serif SC", "Songti SC", serif;
 --font-calligraphic: "Ma Shan Zheng", "Noto Serif SC", cursive;
@@ -95,7 +95,7 @@ The production setup will:
 - Load only weights and styles used by the final role system.
 - Record applicable font license notices with the existing font notices.
 
-No new commercial font binaries are required for the centralization release. When licensed Iowan Old Style BT and GT America WOFF2 files are later added, only their `@font-face` registrations and the `--font-reading` and `--font-ui` values change.
+The licensed Iowan collection is subset into four self-hosted WOFF2 assets: regular, italic, bold, and bold italic. The `@font-face` registrations and both non-display role values remain owned by `src/theme.css`.
 
 ## Migration Principle
 

@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
 import * as ts from 'typescript';
 import { describe, expect, it } from 'vitest';
@@ -7,6 +7,13 @@ const ROOT = resolve(import.meta.dirname, '../..');
 const THEME_FILE = join(ROOT, 'src/theme.css');
 const GLOBAL_STYLES_FILE = join(ROOT, 'content-site/src/styles/global.css');
 const SITE_BAR_FILE = join(ROOT, 'content-site/src/styles/site-bar.css');
+const APP_ENTRY_FILE = join(ROOT, 'index.tsx');
+const IOWAN_WEB_FONTS = [
+  'iowan-old-style-latin-400-normal.woff2',
+  'iowan-old-style-latin-400-italic.woff2',
+  'iowan-old-style-latin-700-normal.woff2',
+  'iowan-old-style-latin-700-italic.woff2',
+];
 
 const SOURCE_ROOTS = ['src', 'components', 'content-site/src', 'shared'];
 const ROOT_EXCLUDED_FILE_PREFIXES = [
@@ -291,6 +298,21 @@ function isSemanticFontDeclaration({ property, value }: FontDeclaration): boolea
 }
 
 describe('centralized typography contract', () => {
+  it('self-hosts Iowan Old Style for every non-display text role', () => {
+    const theme = maskComments(readFileSync(THEME_FILE, 'utf8'));
+    const appEntry = readFileSync(APP_ENTRY_FILE, 'utf8');
+
+    expect(theme).toMatch(/^\s*--font-reading:\s*"Iowan Old Style Web"/m);
+    expect(theme).toMatch(/^\s*--font-ui:\s*"Iowan Old Style Web"/m);
+    expect(theme).toMatch(/font-family:\s*"Iowan Old Style Web"/);
+    expect(appEntry).not.toMatch(/@fontsource\/(?:lora|karla)/);
+
+    const missingAssets = IOWAN_WEB_FONTS.filter(
+      (file) => !existsSync(join(ROOT, 'public/fonts', file)),
+    );
+    expect(missingAssets, `Add the licensed Iowan web assets: ${missingAssets.join(', ')}`).toEqual([]);
+  });
+
   it('defines every canonical semantic font role as a declaration in src/theme.css', () => {
     const theme = maskComments(readFileSync(THEME_FILE, 'utf8'));
     const missingRoles = CANONICAL_FONT_ROLES.filter(

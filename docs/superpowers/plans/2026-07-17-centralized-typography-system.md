@@ -73,8 +73,8 @@ git commit --no-verify -m "test: define centralized typography contract"
 ```css
 :root {
   --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-  --font-reading: "Lora", Georgia, "Times New Roman", serif;
-  --font-ui: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-reading: "Iowan Old Style Web", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-ui: "Iowan Old Style Web", "Iowan Old Style", Georgia, "Times New Roman", serif;
   --font-technical: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
   --font-cjk: "Noto Serif SC", "Songti SC", serif;
   --font-calligraphic: "Ma Shan Zheng", "Noto Serif SC", cursive;
@@ -127,7 +127,7 @@ Replace hardcoded Karla, Lato, and Plus Jakarta Sans declarations in account, na
 
 - [ ] **Step 2: Convert reading and supporting prose to `var(--font-reading)`**
 
-Use the centralized reading role for oracle prose, descriptions, reflective copy, invocation content, and supporting text below the display threshold. The initial role resolves to Lora; a future licensed family can replace it in `src/theme.css`. Keep CJK and technical text on their specialized roles.
+Use the centralized reading role for oracle prose, descriptions, reflective copy, invocation content, and supporting text below the display threshold. The role resolves to the self-hosted licensed Iowan Old Style family. Keep CJK and technical text on their specialized roles.
 
 - [ ] **Step 3: Keep major headings on `var(--font-display)` and brand marks on `var(--font-brand)`**
 
@@ -162,7 +162,7 @@ git commit --no-verify -m "refactor: use semantic typography roles in the app"
 
 - [ ] **Step 1: Replace direct `/learn` families**
 
-Map Lora to `var(--font-reading)`, Karla to `var(--font-ui)`, Cormorant Garamond to `var(--font-display)`, and Cinzel to `var(--font-brand)`. Keep the existing large article and library title sizes.
+Map reading and interface text to their Iowan-backed semantic roles, Cormorant Garamond to `var(--font-display)`, and Cinzel to `var(--font-brand)`. Keep the existing large article and library title sizes.
 
 - [ ] **Step 2: Apply the approved reading scale**
 
