@@ -2,7 +2,14 @@
 
 Status: authored 2026-07-17 by Fable from a three-way code map (UI surface, data
 model, design system), live screenshots of every Atlas surface on desktop and
-phone, and the ratified intention in `atlas-dim-world.md`. This document is the
+phone, and the ratified intention in `atlas-dim-world.md`. Revised the same day
+from Adrian's corrections in conversation: the resting story is the connected
+field, not floating dream text; the vision speaks as an overture, never as a
+page in the way; the piece surface is a treasure, not a document; the certificate
+is fine legacy print crowned by the art itself, no wood skeuomorphism anywhere;
+the planet must read as a classy engraved earth receiving light, not a techno
+globe of dots. Where this file and its first version disagree, this version
+rules. This document is the
 interface layer of that plan: it does not re-open ratified direction, it gives
 the direction a precise visual and experiential body, and it names what the
 current build does that betrays it. It supersedes `docs/atlas-style-notes.md`,
@@ -173,14 +180,23 @@ checklist for any Atlas PR.
 
 ### Room one: the World at rest
 
+Ruling (Adrian, 2026-07-17): the resting story is the field, not the words.
+What a person must feel at the resting globe is the interconnectedness, a fire
+of love that people are pouring into their pieces, the surprise of how many
+and how connected. Dream text is what you discover when you lean in. So the
+crowd is shown as light, the individual as text, and never many texts at once.
+
 The first five seconds are the project. Sequence for a cold visit:
 
-1. The globe settles out of black (about 1.5s).
-2. The founding lights ignite in claim order, and as each ignites its dream
-   flares briefly beside it as a short fragment in Cormorant, light on dark,
-   tethered to the light by a hairline (Phase 1.5 move 1). Total under 5s,
-   skippable with any input, played only when lights exist.
-3. The thesis line fades in at the bottom left and stays at rest opacity:
+1. The vision speaks as the overture, never as a page in the way. Over black,
+   two or three short lines in Adrian's voice ("Every piece I have ever made,
+   connected into one living artwork. Each one carries the dream of the person
+   who keeps it."), then the earth emerges through them as they dissolve. One
+   continuous motion, no click, skippable with any input.
+2. The founding lights ignite in claim order. Each ignition is a flare of
+   warmth that pours into the land around it, not a text fragment. Total under
+   5s, played only when lights exist.
+3. The thesis caption fades in at the bottom left and stays at rest opacity:
 
    > Every piece Adrian has made, and the dreams they carry.
    > 64 pieces · 9 lights lit · touch a light to read its dream
@@ -188,21 +204,33 @@ The first five seconds are the project. Sequence for a cold visit:
    Two lines, Karla label case, and this is the only caption. The current
    two-line glossary caption is retired; glossing happens where terms appear.
 
-4. At rest, up to five dreams from lights on the facing hemisphere sit as
-   faint tethered inscriptions around the globe, rotating with it, swapping
-   gently as the world turns (Phase 1.5 move 2). They are the ambient proof
-   that the dots are dreams. Tapping one selects its light.
+4. At rest, the field is the image: kinship threads are on by default as faint
+   breathing arcs, so the world reads as one connected web, and every light
+   casts a standing pool of warmth onto the earth beneath it (see the planet
+   section below). Where lights cluster, the land is visibly warmer; density
+   of love reads as illuminated earth.
+5. One dream speaks at a time. A single featured dream sits in one composed
+   position (lower third, opposite the caption), complete text, generous
+   Cormorant, a hairline tether to its light, cross-fading to the next roughly
+   every 20 seconds. Full dreams get the full stage, one voice at a time,
+   never soup. Tapping it travels to its light.
 
-Returning visitors (localStorage flag) skip the ignition overture and land on
-the resting sky directly.
+Returning visitors (localStorage flag) skip the overture and land on the
+resting sky directly.
+
+Honesty at small numbers: the field must read at 15 lights as an origin story,
+never as emptiness. The embers (the whole body of work, dim) carry the scale;
+the founding ignition carries the promise; nothing in the design may depend on
+density to make sense.
 
 Chrome layout at rest:
 
 - Top left: room name (Atlas) and breadcrumb, secondary chrome.
 - Bottom left: the thesis caption, orientation chrome.
 - Bottom right: exactly three controls plus one contextual: `dreams` (the
-  renamed drift), `threads`, `filter`. `return` appears only while something
-  is selected. `your light` appears only for signed-in stewards (below).
+  renamed drift), `threads` (on by default; the control quiets the web rather
+  than summoning it), `filter`. `return` appears only while something is
+  selected. `your light` appears only for signed-in stewards (below).
   `mandala` moves into the filter sheet as a view option; it is a lens, not a
   daily control.
 - The series legend moves into the filter sheet. Six controls at four corners
@@ -220,6 +248,37 @@ Your light: signed-in stewards get one quiet control, `your light`, bottom
 right. Tapping it flies to their piece and opens its inscription. This is the
 thread made visible; the `owned` flag already reaches the nodes
 (`AtlasPage.tsx:438-439`), nothing new is computed.
+
+### The planet itself: an engraved earth receiving light
+
+Ruling (Adrian, 2026-07-17): the current rendering, a dark sphere with
+halftone dot continents, is a techno genre borrowed from dashboards and does
+not fit. No wood skeuomorphism either; the pieces are wood, the site is the
+frame. The earth may rest slightly dark, but it must be clearly and classily
+the earth, and the image must say: we are bringing light to the earth, we are
+strengthening it together.
+
+Direction: the engraved earth. Continents drawn in the fine-atlas tradition
+that matches the certificate's fine legacy grammar: hairline gold coastlines,
+land textured with fine copperplate hatching, a whisper of graticule, warm
+umber ocean, soft gold rim. The dot-matrix `LandDots` layer retires. And the
+load-bearing move, which encodes the vision into the rendering logic itself:
+every light casts a standing pool of warmth onto the land around it, so the
+earth is progressively revealed and warmed by the love poured into it. At 15
+lights, pools of dawn on a quiet engraving; at 300, whole continents aglow.
+The lights do not sit on the world, they illuminate it.
+
+Four rendered mockups sit in `todo/plans/evidence/atlas-redesign/`
+(`earth-contact-sheet.png`, variants I hairline, II engraved plate, III
+earthen wash, IV lit engraving; IV alone in `earth-v4.png`). Fable's
+recommendation is IV: the craft of the engraving with the land clearly
+present, dark enough for lights to shine, clear enough to read as earth.
+RATIFICATION GATE: Adrian rules on the variant (or a further blend) before
+Opus builds the shader treatment. Implementation note: the engraved map
+renders to an equirectangular texture at build time (the `world-atlas` data
+and `d3-geo` are already dependencies; `scripts/generate-land-dots.ts` is the
+precedent), the light pools accumulate in the sphere's fragment shader from
+the marker positions, capped and additive-warm.
 
 ### Selection: the inscription, not the card
 
@@ -246,28 +305,61 @@ History: selecting pushes exactly one history entry; selecting another light
 while one is open replaces it. Back (button or gesture) closes the selection
 and returns to the resting sky. Esc and `return` do the same.
 
-### Room two: the Piece
+### Room two: the Piece, a treasure and not a document
 
-The certificate page is the closest surface to right. Changes are hierarchy,
-not structure:
+Ruling (Adrian, 2026-07-17): the piece surface currently reads like a data
+website. It must read as a prize: a digital certificate and an entry into the
+network, something a keeper is proud of and cannot wait to show someone. The
+grammar to build from is fine legacy print, a fine-press edition page or a
+great watchmaker's papers: warm paper stock, engraved-quality typography,
+hairline rules, a real seal, generous margins, and the actual artwork as the
+crown of the document. No wood rendering, no skeuomorphism; the art itself
+carries the material.
 
-1. Collapse the six stacked small-caps sections into three chapters with the
-   existing hairline dividers: The work (plate, edition, materials, code),
-   The dream it carries (the dream at display size, law 2), Its story (spine,
-   kin, keeper's chart element, ledger seal).
-2. If the piece is unawakened or seeking, one quiet invitation band sits
+1. The first screenful is the treasure. The artwork reproduced beautifully at
+   the top, and beneath it the certificate flows as one composed object: the
+   sigil (UL № 1), the founding-light ordinal rendered monumentally (the
+   prize: a permanent, tamper-evident number nobody can ever take), the dream
+   as the centerpiece at display size (law 2), the anchoring city, the
+   lineage of keepers, the ledger seal. The scholarship (materials, edition,
+   hexagram, full history spine, kin) reads on below the object in the three
+   chapters: The work, The dream it carries, Its story.
+2. Pride through craft, never gamification. No badges, no confetti, no share
+   prompts. The prize feeling comes from specificity and permanence: your
+   number, your dream in your words, your city, sealed in a chain that
+   provably cannot be rewritten. The anti-spectacle rule stays load bearing.
+3. If the piece is unawakened or seeking, one quiet invitation band sits
    directly under the title, above the fold on phones:
 
    > This piece is waiting for its keeper. Begin →
 
    The full claim block stays at the foot as today. QR arrivals must meet the
    door in the first screenful, not after 1,800 pixels of scholarship.
-3. The not-found state gains the missing second door:
+4. The not-found state gains the missing second door:
 
    > Holding a piece we do not know? Bring it home →
 
    routed to `/atlas/homecoming`. This is the single highest-leverage line in
    the whole redesign; the launch letter will send exactly these people here.
+
+### The share card: the treasure that travels
+
+"Cannot wait to show it to someone" needs an artifact that survives the trip.
+Every piece gets a generated share card: the artwork, the dream, one line
+("the 12th light · anchored in Lisbon"), the seal, composed in the certificate
+grammar. It serves twice:
+
+1. As social metadata, so a piece link dropped in a chat or story unfurls as
+   the certificate, not as a website preview. The per-number card pages
+   already server-render social tags (`functions/universal-language/
+   [number].js`); extend that pattern with a per-piece card image endpoint.
+2. As a possession: the steward can download their card from the book, theirs
+   to post, print, keep, like the export.
+
+Two binding rules: a private dream never appears on a share card (Ring 2
+respected; the card falls back to piece, ordinal, city), and the card carries
+no call to action, no logo shouting, nothing that smells like marketing. It
+is the certificate, small.
 
 ### The ceremony: one motion, the world present throughout
 
@@ -298,9 +390,13 @@ slowly brightening as the person advances.
    carry the whole book away." Chart presence (today's Ring 3) is not asked
    during the ceremony at all; it is offered later in the book, where it can
    be understood. One beat, one decision, law 1 restored.
-4. Ignition. The dream just written inscribes itself across the sky as the
-   light flares (the re-ignition seam from 2b), founding lights replay, the
-   camera arrives, the ordinal is spoken: "You are the 12th light."
+4. The anchoring, then ignition. As the dream commits, its text visibly
+   settles into the ledger typography, a quiet half-second ink-settling,
+   form being anchored, no spectacle. Then the light flares (the re-ignition
+   seam from 2b), the dream inscribes itself across the sky, founding lights
+   replay, the camera arrives, the ordinal is spoken: "You are the 12th
+   light." The feeling this beat owes the person: joyful completion, my dream
+   has a form, a place, and will be seen for generations.
 5. The creator's message, as ratified: one sealed line from Adrian opens.
 6. Ready. "Enter your piece's book" plus one quiet line: `watch it again`,
    which replays beat 4 from the same data. The book's letters section also
@@ -315,7 +411,12 @@ homecoming door.
 ### Room three: the Book
 
 The book is already the best-behaved surface (state-aware welcome, letters
-auto-open). Three changes:
+auto-open), but it reads as settings plus a timeline. It must open as a
+treasure chest: your plate, your dream framed as the first page, your ordinal,
+your light on the world, and then the tending controls. The export stops being
+a utility row and becomes the possession it actually is: "this book is yours
+to carry, independent of us," the continuity promise stated as ownership.
+Four changes:
 
 1. The thread, visible. The book opens with a slim globe band (about 120px)
    showing the keeper's light glowing at its city, captioned "your light ·
@@ -327,7 +428,13 @@ auto-open). Three changes:
    Letters → Pass it on (heirs, export). Chart presence lives under Let it
    shine as "join the constellation of keepers", with the kinship gloss. The
    words "Ring 2" and "Ring 3" leave the interface.
-3. The no-record state becomes a door, not a wall:
+3. Resonant dreams (after launch, when the sky has enough voices). A quiet
+   shelf in the book: "dreams that resonate with yours," public dreams only,
+   starting honestly with kinship (pieces sharing the code's trigram, already
+   computed in `utils/kinship.ts`) rather than machine similarity. It answers
+   Adrian's intent that a keeper cannot wait to discover other people's
+   dreams and where they are anchored, from inside their own treasure.
+4. The no-record state becomes a door, not a wall:
 
    > Your account is signed in, but no piece is bound to it yet.
    > Claim with the email your piece was registered to → (sign-in switch)
@@ -337,6 +444,15 @@ auto-open). Three changes:
 ### One visual language
 
 The Atlas is one place; it must be built from one set of materials.
+
+The registers, corrected per Adrian 2026-07-17: the world is a dusk stage, an
+engraved earth glowing with the light people have poured into it; the ceremony
+is a quiet dark room between the world and the book; the certificate and the
+book live on warm paper in fine legacy print, native to the rest of the site.
+Not everything is dark, and nothing anywhere imitates wood. One sentence for
+the whole system: an earth glowing with the light people have poured into it;
+every certificate a fine legacy document crowned by the art itself; the
+ceremony a quiet room between the two.
 
 Tokens (add to `src/theme.css` `@theme`, then delete every matching literal):
 
@@ -398,16 +514,24 @@ reviews; Opus takes judgment work; Sonnet takes mechanical work.
    caption rewrite, control cluster reduced to three plus contextual,
    renames and the once-per-visitor gloss system, selection history push,
    phone half-sheet with camera recenter, `your light`, honest-state chips.
-3. Dreams write the sky (Opus, shader and scene work, Fable reviews live):
-   ignition overture with dream flares, resting tethered dreams, selection
-   as inscription with `open the book`. This is Phase 1.5 built as specced.
+3. The engraved earth and the field (Opus, shader and scene work, Fable
+   reviews live; GATED on Adrian ratifying the earth variant): engraved-earth
+   texture replaces LandDots, standing light pools, threads on by default as
+   breathing ambience, the vision overture, the featured dream (one voice at
+   a time), selection as inscription with `open the book`.
 4. The ceremony as one motion (Opus implements, Fable owns every line):
    globe behind every beat, piece context on arrival, consent folded to one
-   choice in the dream beat, retry, replay, homecoming door in no-record.
-5. Piece page and book (Sonnet with Opus review): three chapters, the
-   invitation band, not-found homecoming door, book globe band, chapter
-   verbs, no-record doors.
-6. Fable acceptance on the live URL, the unboxing test below.
+   choice in the dream beat, the anchoring settle, retry, replay, homecoming
+   door in no-record.
+5. The treasure (Opus, upgraded from Sonnet on 2026-07-17; this is design
+   judgment, not mechanical hierarchy): the certificate as fine legacy print
+   crowned by the art, the invitation band, not-found homecoming door, the
+   book opening as a treasure chest with the globe band and chapter verbs,
+   no-record doors, export as possession.
+6. The share card (Opus): the per-piece card image endpoint extending the
+   `functions/universal-language/[number].js` pattern, social tags, book
+   download. Private dreams never on cards.
+7. Fable acceptance on the live URL, the unboxing test below.
 
 Dependencies outward: none of this blocks or is blocked by the ops gate
 (`atlas-dim-world-ops.md`); it can all ship dark-launched before the customer
