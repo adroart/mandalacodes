@@ -92,6 +92,16 @@ function prefixFor(input: PieceCodeInput): string {
   return prefixFromNamePreFreeze(series ?? category ?? 'Piece');
 }
 
+/**
+ * The frozen prefix a piece's sigil is built from, WITHOUT the number — the
+ * catalog room mints ids as `${piecePrefix(...)}-${number}` so a catalog
+ * piece's id trailing digits align with its sigil forever (utils/catalog.ts).
+ * Additive export; resolution rules are unchanged and frozen.
+ */
+export function piecePrefix(input: PieceCodeInput): string {
+  return prefixFor(input);
+}
+
 /** A small, stable number from a piece id: its trailing digits when present,
  *  otherwise a bounded hash, so non-UL pieces still get a steady number. The
  *  hash is deterministic and frozen: its output for a given id must never

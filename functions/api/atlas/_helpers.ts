@@ -17,12 +17,15 @@
 
 import type {
   AtlasLetter,
+  CatalogEntry,
+  CatalogStore,
   ClaimRequest,
   LedgerEvent,
   SharedIntention,
   StewardRecord,
   PublicAtlasState,
 } from '../../../types';
+import { catalogEntryMeta } from '../../../utils/catalog';
 import { projectAll, toPublicState } from '../../../utils/ledgerProjection';
 import { liveIntentionsByKey } from '../../../utils/intentions';
 import { ATLAS_PLACES } from '../../../data/cities';
@@ -39,6 +42,7 @@ export const KEY_PUBLIC = 'atlas/public.json';
 export const KEY_CLAIM_REQUESTS = 'atlas/claimRequests.json';
 export const KEY_LETTERS = 'atlas/letters.json';
 export const KEY_SHARED_INTENTIONS = 'atlas/sharedIntentions.json';
+export const KEY_CATALOG = 'atlas/catalog.json';
 
 // ---------- Env typing ----------
 
@@ -189,6 +193,24 @@ export async function readPublicState(
   return readJsonObject<PublicAtlasState>(env, KEY_PUBLIC);
 }
 
+/** The empty catalog store — the shape a cold bucket reads as. */
+export function emptyCatalogStore(): CatalogStore {
+  return { nextNumberByPrefix: {}, entries: [] };
+}
+
+/** Read the catalog store (atlas/catalog.json). A missing or malformed object
+ *  reads as the empty store, so every caller can treat it uniformly. */
+export async function readCatalog(env: AtlasEnv): Promise<CatalogStore> {
+  const store = await readJsonObject<CatalogStore>(env, KEY_CATALOG);
+  if (!store || typeof store !== 'object' || !Array.isArray(store.entries)) {
+    return emptyCatalogStore();
+  }
+  return {
+    nextNumberByPrefix: store.nextNumberByPrefix ?? {},
+    entries: store.entries,
+  };
+}
+
 // ---------- Concurrency-safe R2 mutation ----------
 
 /**
@@ -311,6 +333,62 @@ export function mutateSharedIntentions<R>(
   return mutateJsonArray<SharedIntention, R>(env, KEY_SHARED_INTENTIONS, mutate);
 }
 
+/**
+ * Concurrency-safe read-modify-write for the catalog OBJECT (atlas/
+ * catalog.json). The object sibling of mutateJsonArray: same conditional-put
+ * etag discipline (etagMatches when it existed, if-none-match when it did not),
+ * same three-attempt retry, same abort-with-a-Response contract. The catalog
+ * mint counter (nextNumberByPrefix) MUST advance through this so two racing
+ * creates can never mint the same id.
+ */
+export async function mutateCatalog<R>(
+  env: AtlasEnv,
+  mutate: (
+    current: CatalogStore,
+  ) =>
+    | Promise<{ next: CatalogStore; result: R } | Response>
+    | { next: CatalogStore; result: R }
+    | Response,
+): Promise<{ ok: true; result: R; next: CatalogStore } | Response> {
+  for (let attempt = 0; attempt < MAX_MUTATE_ATTEMPTS; attempt++) {
+    const obj = await env.ATLAS_BUCKET.get(KEY_CATALOG);
+    let current: CatalogStore = emptyCatalogStore();
+    if (obj) {
+      try {
+        const parsed = JSON.parse(await obj.text()) as CatalogStore;
+        if (parsed && typeof parsed === 'object' && Array.isArray(parsed.entries)) {
+          current = {
+            nextNumberByPrefix: parsed.nextNumberByPrefix ?? {},
+            entries: parsed.entries,
+          };
+        }
+      } catch {
+        /* malformed — treat as empty so the write repairs it */
+      }
+    }
+
+    const outcome = await mutate(current);
+    if (outcome instanceof Response) return outcome;
+
+    const onlyIf: R2Conditional = obj
+      ? { etagMatches: obj.etag }
+      : { etagDoesNotMatch: '*' };
+    const put = await env.ATLAS_BUCKET.put(
+      KEY_CATALOG,
+      JSON.stringify(outcome.next, null, 2),
+      { httpMetadata: { contentType: 'application/json' }, onlyIf },
+    );
+    if (put !== null) {
+      return { ok: true, result: outcome.result, next: outcome.next };
+    }
+    // Precondition failed — another writer got in first. Re-read and re-apply.
+  }
+  return json(
+    { ok: false, error: 'Concurrent write conflict — please retry' },
+    503,
+  );
+}
+
 // ---------- Steward issuance (shared by issue.ts + the sale queue) ----------
 
 export interface IssueStewardInput {
@@ -405,14 +483,16 @@ export async function unbindStewardsForUser(
  * Piece → { series, category, isSignaturePiece } used by toPublicState to
  * derive series/category, the marker type, and the kind facet.
  *
- * The archive is the source of truth; but a piece can live entirely OUTSIDE
- * FULL_ARCHIVE (a catalogued work whose genesis was minted by id alone, before
- * the catalog row lands). For those, fall back to the series/category the
- * genesis `created` event carried on the chain (gap 4). Archive always wins
- * over genesis-carried meta.
+ * The merge order (the catalog room, gap 4): FULL_ARCHIVE first (the source of
+ * truth), then the R2 catalog entries (a work Adrian entered through the
+ * Catalog Room but that lives outside the code-defined archive), then the
+ * series/category the genesis `created` event carried on the chain (a piece in
+ * NEITHER store). Earlier layers win, so a catalog row never overrides the
+ * archive and the genesis fallback never overrides a catalog row.
  */
 function buildArtworkMeta(
   events: readonly LedgerEvent[],
+  catalogEntries: readonly CatalogEntry[] = [],
 ): Map<string, { series?: string; category?: string; isSignaturePiece?: boolean }> {
   const map = new Map<
     string,
@@ -425,10 +505,17 @@ function buildArtworkMeta(
       isSignaturePiece: a.isSignaturePiece,
     });
   }
-  // Genesis-carried fallback for pieces the archive does not (yet) hold.
+  // Catalog rows: series/category/isSignaturePiece derived from the entry's
+  // kind (the same parts its sigil is built from), so the atlas kind facet and
+  // the printed sigil never disagree. Archive wins on an id collision.
+  for (const entry of catalogEntries) {
+    if (map.has(entry.id)) continue; // archive wins
+    map.set(entry.id, catalogEntryMeta(entry));
+  }
+  // Genesis-carried fallback for pieces neither store holds.
   for (const e of events) {
     if (e.type !== 'created') continue;
-    if (map.has(e.pieceId)) continue; // archive wins
+    if (map.has(e.pieceId)) continue; // archive/catalog win
     if (e.series || e.category) {
       map.set(e.pieceId, { series: e.series, category: e.category });
     }
@@ -472,7 +559,8 @@ export async function regeneratePublicState(
   events: LedgerEvent[],
 ): Promise<PublicAtlasState> {
   const records = projectAll(events);
-  const meta = buildArtworkMeta(events);
+  const catalog = await readCatalog(env);
+  const meta = buildArtworkMeta(events, catalog.entries);
   const stewards = await readStewards(env);
   const ring3ByKey = buildRing3ByKey(stewards);
   const intentions = await readSharedIntentions(env);

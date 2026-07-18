@@ -16,6 +16,8 @@ import {
   findPublicPiece,
   type PublicPiece,
 } from '../lib/atlas/state';
+import { loadPublicCatalog, findCatalogEntry } from '../lib/atlas/catalog';
+import { publicCatalogEntryToArtwork } from '../utils/catalog';
 import { buildKinshipIndex } from '../utils/kinship';
 import { useAccount } from '../lib/account/useAccount';
 import type { PieceContent } from '../utils/pieceContent';
@@ -270,27 +272,35 @@ const PiecePage: React.FC = () => {
     const editionNumber =
       edition !== undefined && /^\d+$/.test(edition) ? parseInt(edition, 10) : undefined;
 
-    loadAtlasState().then((state) => {
+    Promise.all([loadAtlasState(), loadPublicCatalog()]).then(([state, catalog]) => {
       if (!active) return;
       setAtlasState(state);
       const piece = findPublicPiece(state, pieceId, editionNumber);
-      // Dead-end only when the piece is in NEITHER the archive NOR the public
-      // state. A shipped piece present in public state but not yet catalogued
-      // still renders its certificate by sigil (forever contract).
-      if (!art && !piece) {
+      const catalogEntry = findCatalogEntry(catalog, pieceId);
+      // Dead-end only when the piece is in NONE of the archive, the public
+      // state, or the catalog. A shipped piece present in public state or the
+      // catalog still renders its certificate (forever contract): the catalog
+      // row supplies its real title/year/dimensions/images, and a piece in
+      // public state alone renders by sigil.
+      if (!art && !piece && !catalogEntry) {
         setLoad({ kind: 'not-found' });
         return;
       }
+      const catalogArt = catalogEntry
+        ? publicCatalogEntryToArtwork(catalogEntry)
+        : null;
       const resolved: PublicPiece =
         piece ?? {
           pieceId,
           editionNumber,
-          series: art!.series,
-          category: art!.category,
+          series: art?.series ?? catalogArt?.series,
+          category: art?.category ?? catalogArt?.category,
           cityId: null,
           status: 'seeking',
         };
-      const resolvedArt = art ?? fallbackArtFromPublic(resolved);
+      // Archive wins; else the catalog row's real fields; else the sigil-only
+      // fallback for a piece present in public state but neither store.
+      const resolvedArt = art ?? catalogArt ?? fallbackArtFromPublic(resolved);
       setLoad({ kind: 'ready', piece: resolved, art: resolvedArt });
     });
     return () => {

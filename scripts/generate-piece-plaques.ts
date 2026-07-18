@@ -16,6 +16,15 @@
  * Style-matched to scripts/generate-ul-qr.ts: the same 85×130 mm engraved
  * certificate feel, the same paper/ink/bronze/wood palette, generous quiet.
  *
+ * SCOPE NOTE (the catalog room): this script reads FULL_ARCHIVE ONLY. The R2
+ * catalog (atlas/catalog.json) needs Cloudflare credentials this local script
+ * does not carry, so plaque printing for a catalogued piece happens from the
+ * Catalog Room in AdminAtlas ("print the plaque"), which composes the same
+ * public plaque (sigil, title, series/kind whisper, QR to the immutable
+ * /qr/piece/<id>, host line) in a print window. A catalogued piece's sigil is
+ * frozen the same way (its id trailing digits ARE its sigil number), so the
+ * two paths agree.
+ *
  * Usage:
  *   npx tsx scripts/generate-piece-plaques.ts               (every piece)
  *   npx tsx scripts/generate-piece-plaques.ts --piece=UL-100 (one piece)
