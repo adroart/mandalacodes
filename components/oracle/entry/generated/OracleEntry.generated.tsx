@@ -6,7 +6,7 @@ import React from 'react';
 
 export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   <>
-<div data-theme={vals.theme} style={{ minHeight: "100vh", background: "var(--bg,#f3f1ec)", color: "var(--ink,#262321)", fontFamily: "'Karla',system-ui,sans-serif", transition: "background .5s ease,color .5s ease", overflowX: "hidden" }}>
+<div data-theme={vals.theme} style={{ minHeight: "100vh", background: "var(--bg,#f3f1ec)", color: "var(--ink,#262321)", fontFamily: 'var(--font-ui)', transition: "background .5s ease,color .5s ease", overflowX: "hidden" }}>
   {/* Floating theme toggle removed — the single icon toggle in the global nav now
       owns light/dark; this page's theme is driven by props.theme (global dark mode). */}
   <header style={{ position: "relative", background: "var(--heroWash)", padding: "clamp(40px,7vw,84px) 18px clamp(34px,5vw,56px)" }}>
@@ -17,25 +17,25 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <dc-import name="Hexagram" lines={vals.heroLines} color="var(--accent,#8a744e)" hintSize="100%,100%" style={{ width: "100%", height: "100%" }}>
             </dc-import>
           </div>
-          <p style={{ position: "relative", fontFamily: "'Karla',sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: ".34em", textTransform: "uppercase", color: "var(--accent,#8a744e)", margin: "0 0 18px" }}>
+          <p style={{ position: "relative", fontFamily: 'var(--font-ui)', fontSize: "11px", fontWeight: "700", letterSpacing: ".34em", textTransform: "uppercase", color: "var(--accent,#8a744e)", margin: "0 0 18px" }}>
           The Invocation
           </p>
-          <h1 style={{ position: "relative", fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "clamp(40px,8vw,76px)", lineHeight: ".98", letterSpacing: "-.01em", margin: "0 0 clamp(22px,3vw,34px)", color: "var(--ink,#262321)" }}>
+          <h1 style={{ position: "relative", fontFamily: 'var(--font-display)', fontWeight: "500", fontSize: "clamp(40px,8vw,76px)", lineHeight: ".98", letterSpacing: "-.01em", margin: "0 0 clamp(22px,3vw,34px)", color: "var(--ink,#262321)" }}>
           Universal Language
           </h1>
           <div style={{ position: "relative", width: "46px", height: "1px", background: "var(--accent,#8a744e)", margin: "0 auto clamp(24px,3vw,36px)", opacity: ".7" }}>
           </div>
           <div style={{ position: "relative", maxWidth: "18em", margin: "0 auto", display: "flex", flexDirection: "column", gap: "clamp(18px,2.4vw,30px)" }}>
-            <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(23px,3.6vw,34px)", lineHeight: "1.34", color: "var(--ink,#262321)", textWrap: "balance" }}>
-              <span style={{ float: "left", fontFamily: "'Cinzel',serif", fontWeight: "600", fontSize: "clamp(54px,8vw,82px)", lineHeight: ".74", padding: "6px 14px 0 0", color: "var(--accent,#8a744e)" }}>
+            <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontSize: "clamp(23px,3.6vw,34px)", lineHeight: "1.34", color: "var(--ink,#262321)", textWrap: "balance" }}>
+              <span style={{ float: "left", fontFamily: 'var(--font-brand)', fontWeight: "600", fontSize: "clamp(54px,8vw,82px)", lineHeight: ".74", padding: "6px 14px 0 0", color: "var(--accent,#8a744e)" }}>
               L
               </span>
             et this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.
             </p>
-            <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(23px,3.6vw,34px)", lineHeight: "1.34", color: "var(--ink,#262321)", textWrap: "balance" }}>
+            <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontSize: "clamp(23px,3.6vw,34px)", lineHeight: "1.34", color: "var(--ink,#262321)", textWrap: "balance" }}>
             Let it nurture harmony, clarity, and compassion in thought, word, and action.
             </p>
-            <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(23px,3.6vw,34px)", lineHeight: "1.34", color: "var(--ink,#262321)", textWrap: "balance" }}>
+            <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontSize: "clamp(23px,3.6vw,34px)", lineHeight: "1.34", color: "var(--ink,#262321)", textWrap: "balance" }}>
             Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.
             </p>
           </div>
@@ -45,24 +45,24 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     {(vals.isB) ? (
       <>
         <div style={{ maxWidth: "1040px", margin: "0 auto", textAlign: "center" }}>
-          <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "clamp(30px,5.2vw,48px)", lineHeight: "1.04", letterSpacing: "-.01em", margin: "0 0 8px", color: "var(--ink,#262321)" }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: "500", fontSize: "clamp(30px,5.2vw,48px)", lineHeight: "1.04", letterSpacing: "-.01em", margin: "0 0 8px", color: "var(--ink,#262321)" }}>
           Universal Language
           </h1>
-          <p style={{ margin: "0 0 clamp(30px,4vw,48px)", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "clamp(16px,2.1vw,22px)", lineHeight: "1.3", color: "var(--accent,#8a744e)" }}>
+          <p style={{ margin: "0 0 clamp(30px,4vw,48px)", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "clamp(16px,2.1vw,22px)", lineHeight: "1.3", color: "var(--accent,#8a744e)" }}>
           exploring the sixty-four
           </p>
           <div style={{ maxWidth: "min(94vw,640px)", margin: "0 auto", display: "flex", flexDirection: "column", gap: "clamp(18px,2.4vw,28px)" }}>
-            <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink,#262321)" }}>
+            <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink,#262321)" }}>
               An instrument of attunement
               <br />
             through the cycles of change.
             </p>
-            <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink2,#524330)" }}>
+            <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink2,#524330)" }}>
               For clarity, compassion, and harmony
               <br />
             in our thoughts, words, and actions.
             </p>
-            <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink,#262321)" }}>
+            <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontSize: "clamp(17px,2.2vw,26px)", lineHeight: "1.42", color: "var(--ink,#262321)" }}>
               Beyond the head in through the heart
               <br />
             devoted to the perfection of this moment.
@@ -87,23 +87,23 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             ))}
           </svg>
           <div style={{ position: "relative" }}>
-            <p style={{ fontFamily: "'Karla',sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: ".36em", textTransform: "uppercase", color: "var(--accent,#8a744e)", margin: "0 0 16px" }}>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", fontWeight: "700", letterSpacing: ".36em", textTransform: "uppercase", color: "var(--accent,#8a744e)", margin: "0 0 16px" }}>
             Universal Language
             </p>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "clamp(16px,2.2vw,26px)", maxWidth: "17em", margin: "0 auto" }}>
-              <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
+              <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
               Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.
               </p>
               <span aria-hidden="true" style={{ color: "var(--accent,#8a744e)", fontSize: "13px", opacity: ".7" }}>
               ◆
               </span>
-              <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
+              <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
               Let it nurture harmony, clarity, and compassion in thought, word, and action.
               </p>
               <span aria-hidden="true" style={{ color: "var(--accent,#8a744e)", fontSize: "13px", opacity: ".7" }}>
               ◆
               </span>
-              <p style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
+              <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
               Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.
               </p>
             </div>
@@ -123,15 +123,15 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <div data-oe="invitewrap" style={{ position: "relative", display: "flex", flexDirection: "column", gap: "0", background: vals.invite.done ? "var(--glow,rgba(196,170,124,.16))" : "var(--bg2,#fff)", border: vals.invite.done ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", borderRadius: "12px", overflow: vals.invite.expanded ? "visible" : "hidden" }}>
             <button type="button" data-oe="invite" onClick={vals.invite.onClick} aria-label={vals.invite.aria} aria-expanded={vals.invite.expanded ? "true" : "false"} data-oe-invite-done={vals.invite.done ? "1" : undefined} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", textAlign: "center", width: "100%", cursor: "pointer", padding: "14px 16px", background: "transparent", border: "none", transition: "background .25s ease" }}>
               <span style={{ display: "flex", flexDirection: "column", gap: "4px", minWidth: "0", alignItems: "center" }}>
-                <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "18px", fontWeight: "500", lineHeight: "1.1", color: "var(--ink,#262321)" }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: "18px", fontWeight: "500", lineHeight: "1.1", color: "var(--ink,#262321)" }}>
                 {vals.invite.title}
                 </span>
-                <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "12px", lineHeight: "1.45", color: "var(--ink3,#8a7a5e)" }}>
+                <span style={{ fontFamily: 'var(--font-reading)', fontSize: "12px", lineHeight: "1.45", color: "var(--ink3,#8a7a5e)" }}>
                 {vals.invite.sub}
                 </span>
               </span>
               {vals.invite.done ? (
-                <span aria-hidden="true" style={{ flexShrink: "0", fontFamily: "'Karla',sans-serif", fontSize: "16px", color: "var(--accent,#8a744e)" }}>
+                <span aria-hidden="true" style={{ flexShrink: "0", fontFamily: 'var(--font-ui)', fontSize: "16px", color: "var(--accent,#8a744e)" }}>
                 ✓
                 </span>
               ) : null}
@@ -154,14 +154,14 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 </span>
                 <span style={{ display: "flex", flexDirection: "column", gap: "4px", minWidth: "0" }}>
                   <span style={{ display: "flex", alignItems: "baseline", gap: "6px", minWidth: "0" }}>
-                    <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "8.5px", fontWeight: "700", letterSpacing: ".16em", textTransform: "uppercase", color: "var(--faint,#a89070)", lineHeight: "1", whiteSpace: "nowrap" }}>
+                    <span style={{ fontFamily: 'var(--font-ui)', fontSize: "8.5px", fontWeight: "700", letterSpacing: ".16em", textTransform: "uppercase", color: "var(--faint,#a89070)", lineHeight: "1", whiteSpace: "nowrap" }}>
                     {e.eyebrow}
                     </span>
-                    <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "8.5px", fontWeight: "700", letterSpacing: ".06em", color: "var(--accent,#8a744e)", lineHeight: "1", whiteSpace: "nowrap" }}>
+                    <span style={{ fontFamily: 'var(--font-ui)', fontSize: "8.5px", fontWeight: "700", letterSpacing: ".06em", color: "var(--accent,#8a744e)", lineHeight: "1", whiteSpace: "nowrap" }}>
                     {e.cardNum}
                     </span>
                   </span>
-                  <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "15px", fontWeight: "500", lineHeight: "1", color: "var(--ink,#262321)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: "15px", fontWeight: "500", lineHeight: "1", color: "var(--ink,#262321)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {e.cardName}
                   </span>
                 </span>
@@ -173,7 +173,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <div data-oe="actionrow" style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
           {(vals.actions ?? []).map((a, aIdx) => (
             <React.Fragment key={aIdx}>
-              <button type="button" onClick={a.onClick} aria-label={a.aria} style={{ minWidth: "0", cursor: "pointer", fontFamily: "'Karla',sans-serif", fontSize: "10.5px", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", lineHeight: "1.2", padding: "12px 28px", borderRadius: "12px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "background .25s ease,border-color .25s ease,color .25s ease", background: a.emphasis ? "var(--accent,#8a744e)" : "transparent", border: a.emphasis ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", color: a.emphasis ? "var(--onAccent,#f7f5f1)" : "var(--ink2,#524330)" }}>
+              <button type="button" onClick={a.onClick} aria-label={a.aria} style={{ minWidth: "0", cursor: "pointer", fontFamily: 'var(--font-ui)', fontSize: "10.5px", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", lineHeight: "1.2", padding: "12px 28px", borderRadius: "12px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "background .25s ease,border-color .25s ease,color .25s ease", background: a.emphasis ? "var(--accent,#8a744e)" : "transparent", border: a.emphasis ? "1px solid var(--accent,#8a744e)" : "1px solid var(--line2,#d2c7b4)", color: a.emphasis ? "var(--onAccent,#f7f5f1)" : "var(--ink2,#524330)" }}>
               {a.label}
               </button>
             </React.Fragment>
@@ -194,7 +194,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                         ~21% down). Absolute so it never shifts the grid; a paler
                         accent so it reads as a caption, not part of the glyph. */}
                     {(c.codeLabel) ? (
-                      <span data-oe="codelabel" style={{ position: "absolute", left: "-6px", right: "-6px", bottom: "calc(79% + 5px)", textAlign: "center", fontFamily: "'Karla',sans-serif", fontSize: "9px", fontWeight: "700", letterSpacing: ".09em", textTransform: "uppercase", color: "var(--codeLabel,#c9a45f)", lineHeight: "1.15", pointerEvents: "none" }}>
+                      <span data-oe="codelabel" style={{ position: "absolute", left: "-6px", right: "-6px", bottom: "calc(79% + 5px)", textAlign: "center", fontFamily: 'var(--font-ui)', fontSize: "9px", fontWeight: "700", letterSpacing: ".09em", textTransform: "uppercase", color: "var(--codeLabel,#c9a45f)", lineHeight: "1.15", pointerEvents: "none" }}>
                       {c.codeLabel}
                       </span>
                     ) : null}
@@ -204,7 +204,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                           <dc-import name="Hexagram" lines={c.lines} color="var(--ink3,#8a7a5e)" hintSize="100%,100%" style={{ width: "100%", height: "100%" }}>
                           </dc-import>
                         </span>
-                        <span data-oe="cardnum" style={{ textAlign: "center", fontFamily: "'Karla',sans-serif", fontWeight: "700", letterSpacing: ".06em", color: "var(--ink3,#8a7a5e)", lineHeight: "1" }}>
+                        <span data-oe="cardnum" style={{ textAlign: "center", fontFamily: 'var(--font-ui)', fontWeight: "700", letterSpacing: ".06em", color: "var(--ink3,#8a7a5e)", lineHeight: "1" }}>
                         {c.cardNum}
                         </span>
                       </span>
@@ -216,7 +216,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                   <span style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "28px", padding: "2px 4px" }}>
                     {(c.flipped) ? (
                       <>
-                        <span style={{ display: "flex", alignItems: "center", gap: "7px", fontFamily: "'Karla',sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: ".08em" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: "7px", fontFamily: 'var(--font-ui)', fontSize: "11px", fontWeight: "700", letterSpacing: ".08em" }}>
                           <button type="button" onClick={c.onBack} style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--ink3,#8a7a5e)", font: "inherit" }}>
                           Back
                           </button>
@@ -247,10 +247,10 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                   <span className="oe-art-scrim" style={{ position: "absolute", left: "0", right: "0", bottom: "0", top: "50%", background: "linear-gradient(transparent,rgba(20,16,12,.78))", opacity: "0", transition: "opacity .3s ease" }}>
                   </span>
                   <span className="oe-art-name" style={{ position: "absolute", left: "9px", right: "9px", bottom: "8px", display: "flex", flexDirection: "column", gap: "1px", opacity: "0", transition: "opacity .3s ease" }}>
-                    <span style={{ fontFamily: "'Karla',sans-serif", fontSize: "9px", fontWeight: "700", letterSpacing: ".1em", color: "var(--accent,#dabd8b)" }}>
+                    <span style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", fontWeight: "700", letterSpacing: ".1em", color: "var(--accent,#dabd8b)" }}>
                     {c.num2}
                     </span>
-                    <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "14px", lineHeight: "1.02", color: "#f5efe4" }}>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: "14px", lineHeight: "1.02", color: "#f5efe4" }}>
                     {c.name}
                     </span>
                   </span>
@@ -260,17 +260,17 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </div>
         </>
       ) : null}
-      <p style={{ fontFamily: "'Karla',sans-serif", fontSize: "13px", lineHeight: "1.7", color: "var(--ink3,#8a7a5e)", margin: "34px 0 0", maxWidth: "60ch" }}>
+      <p style={{ fontFamily: 'var(--font-reading)', fontSize: "13px", lineHeight: "1.7", color: "var(--ink3,#8a7a5e)", margin: "34px 0 0", maxWidth: "60ch" }}>
       Each card carries a hexagram from the I Ching, a Gene Key, and a gate from Human Design. Nothing needs to be understood to speak with them.
       </p>
     </main>
   </div>
   <footer style={{ borderTop: "1px solid var(--line,#e3ddd1)", marginTop: "clamp(40px,6vw,72px)" }}>
     <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "26px 18px", display: "flex", flexWrap: "wrap", gap: "14px", alignItems: "center", justifyContent: "space-between" }}>
-      <button type="button" onClick={vals.openSystems} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: "'Karla',sans-serif", fontSize: "11px", fontWeight: "600", letterSpacing: ".18em", textTransform: "uppercase", color: "var(--ink3,#8a7a5e)" }}>
+      <button type="button" onClick={vals.openSystems} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: 'var(--font-ui)', fontSize: "11px", fontWeight: "600", letterSpacing: ".18em", textTransform: "uppercase", color: "var(--ink3,#8a7a5e)" }}>
       The Systems &amp; Connections →
       </button>
-      <button type="button" onClick={vals.drawRandom} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: "'Karla',sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: ".18em", textTransform: "uppercase", color: "var(--accent,#8a744e)" }}>
+      <button type="button" onClick={vals.drawRandom} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: 'var(--font-ui)', fontSize: "11px", fontWeight: "700", letterSpacing: ".18em", textTransform: "uppercase", color: "var(--accent,#8a744e)" }}>
       Draw at Random →
       </button>
     </div>
