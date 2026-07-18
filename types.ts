@@ -512,8 +512,12 @@ export interface SharedIntention {
 export interface StewardRecord {
   pieceId: string;
   editionNumber?: number;
-  /** Collector's email, set by admin at issuance. */
-  email: string;
+  /** Collector's email, set by admin at issuance. OPTIONAL since the claim-code
+   *  path: a code-carrying record (minted for a piece passing through Adrian's
+   *  hands) can exist with no email at all — the printed code is the credential,
+   *  and the collector's account anchors the bind at claim time. Legacy records
+   *  and the sale-queue path still always carry an email. */
+  email?: string;
   /** Bound after the collector's first signed-in /atlas/claim hit matches the email. */
   clerkUserId?: string;
   /** Display name, admin-set. Optional. */
@@ -550,4 +554,20 @@ export interface StewardRecord {
    * artist via an audited `transferred` event; nothing here binds anyone.
    */
   heirs?: HeirRegistration[];
+  /**
+   * Claim-code credential (utils/claimCode.ts). The code is printed on the
+   * piece's back insert; possession of the piece is the credential. We store
+   * ONLY the SHA-256 hash — the plaintext is shown to the admin once at mint
+   * and never persisted, logged, or returned again.
+   *
+   * `claimCodeUsedAt` is stamped the moment a correct code binds an account
+   * (single use). Reissuing (stewards/reissue-code.ts) overwrites the hash,
+   * bumps `claimCodeVersion`, and refreshes `claimCodeIssuedAt`, which
+   * invalidates the old code. All four are absent on records with no code
+   * (legacy email-only records).
+   */
+  claimCodeHash?: string;
+  claimCodeIssuedAt?: string;
+  claimCodeUsedAt?: string;
+  claimCodeVersion?: number;
 }

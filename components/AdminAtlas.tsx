@@ -4,6 +4,7 @@ import AdminLayout from './AdminLayout';
 import TypeaheadPicker from './shared/TypeaheadPicker';
 import { CITIES, getCityById } from '../data/cities';
 import { FULL_ARCHIVE } from '../data/mockData';
+import { pieceCode } from '../utils/pieceCode';
 import type { SaleQueueItem } from '../utils/saleBridge';
 import type { HomecomingRequest } from '../lib/atlas/homecoming';
 import type {
@@ -71,6 +72,135 @@ const resolvePieceTitle = (pieceId: string, editionNumber?: number): string => {
     const a = pieceById.get(pieceId);
     const base = a ? a.title : pieceId;
     return editionNumber ? `${base} · #${editionNumber}` : base;
+};
+
+/** The piece's short sigil, e.g. "UL № 1" — the reference printed with the
+ *  claim code on the back insert. */
+const resolvePieceSigil = (pieceId: string): string => {
+    const a = pieceById.get(pieceId);
+    if (!a) return pieceId;
+    return pieceCode({
+        pieceId: a.id,
+        series: a.series,
+        category: a.category,
+        cardNumber: a.cardNumber,
+    });
+};
+
+/**
+ * The minted claim code, shown ONCE. Styled as a print reference: the code,
+ * the piece sigil, and the note that it lives on the back insert. We keep only
+ * a hash server-side, so this is the single moment the plaintext exists.
+ *
+ * "print the insert" opens a print window carrying the working back-insert
+ * artifact: the sigil, the grouped code, the private QR deep link
+ * (/atlas/claim?piece=...&code=...) so a keeper scans instead of types, and
+ * one line of instruction. The canonical host is printed (never the admin
+ * origin), and the plaintext never touches disk. The final insert layout is a
+ * design artifact Adrian ratifies before a first print run
+ * (todo/plans/claim-code-integration.md III.3); this view is the working
+ * version so shipping can begin.
+ */
+const CLAIM_HOST = 'https://mandalacodes.com';
+
+const ClaimCodeReference: React.FC<{
+    code: string;
+    sigil: string;
+    pieceId: string;
+    editionNumber?: number;
+    onDismiss: () => void;
+}> = ({ code, sigil, pieceId, editionNumber, onDismiss }) => {
+    const [copied, setCopied] = useState(false);
+    const copy = async () => {
+        try {
+            await navigator.clipboard.writeText(code);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        } catch {
+            /* clipboard blocked — the code is selectable below. */
+        }
+    };
+    const printInsert = async () => {
+        const pieceParam = editionNumber ? `${pieceId}:${editionNumber}` : pieceId;
+        const claimUrl = `${CLAIM_HOST}/atlas/claim?piece=${encodeURIComponent(pieceParam)}&code=${encodeURIComponent(code)}`;
+        let qrDataUri = '';
+        try {
+            const QRCode = (await import('qrcode')).default;
+            qrDataUri = await QRCode.toDataURL(claimUrl, {
+                width: 260,
+                margin: 1,
+                color: { dark: '#272219', light: '#f3efe7' },
+            });
+        } catch {
+            /* QR generation failed: the insert still prints with the typed code. */
+        }
+        const win = window.open('', '_blank', 'width=460,height=700');
+        if (!win) return;
+        win.document.write(`<!doctype html><html><head><title>${sigil} insert</title>
+<style>
+  body { margin: 0; background: #fff; }
+  .insert { width: 340px; margin: 24px auto; padding: 28px 26px; background: #f3efe7;
+    border: 1px solid #c6bca6; text-align: center; color: #272219; }
+  .sigil { font-size: 13px; letter-spacing: 0.24em; text-transform: uppercase; color: #956e2a; }
+  .code { font-size: 17px; letter-spacing: 0.12em;
+    margin: 18px 0 6px; word-break: break-all; }
+  .qr { margin: 14px auto 6px; }
+  .qr img { width: 168px; height: 168px; }
+  .line { font-size: 14px; line-height: 1.5; margin: 14px 8px 0; }
+  .host { font-size: 11px; letter-spacing: 0.08em; color: #6b6253; margin-top: 12px; }
+  @media print { body { background: #f3efe7; } .insert { border: none; margin: 0 auto; } }
+</style></head><body>
+<div class="insert">
+  <div class="sigil">${sigil}</div>
+  <div class="code">${code}</div>
+  ${qrDataUri ? `<div class="qr"><img src="${qrDataUri}" alt=""/></div>` : ''}
+  <div class="line">Pull this card when the piece is yours. The code brings your dream into it.</div>
+  <div class="host">mandalacodes.com/atlas/claim</div>
+</div>
+<script>window.onload = function () { window.print(); };</script>
+</body></html>`);
+        win.document.close();
+    };
+    return (
+        <div className="mb-6 border border-bronze-400 bg-bronze-50 px-4 py-4">
+            <p className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold mb-2">
+                claim code (shown once)
+            </p>
+            <div className="flex items-center gap-3 flex-wrap">
+                <code className="font-technical text-lg tracking-[0.14em] text-wood-900 select-all">
+                    {code}
+                </code>
+                <button
+                    type="button"
+                    onClick={copy}
+                    className="font-label text-[11px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+                >
+                    {copied ? 'copied' : 'copy'}
+                </button>
+                <button
+                    type="button"
+                    onClick={printInsert}
+                    className="font-label text-[11px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+                >
+                    print the insert
+                </button>
+            </div>
+            <p className="font-reading text-sm text-wood-700 mt-2 not-italic">
+                {sigil} · prints on the back insert
+            </p>
+            <p className="font-reading text-xs text-stone-600 mt-1 not-italic">
+                This is the only time the code is shown. Print or store it now;
+                only its hash is kept.
+            </p>
+            <button
+                type="button"
+                onClick={onDismiss}
+                className="mt-3 font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+            >
+                Dismiss
+            </button>
+        </div>
+    );
 };
 
 const formatNow = (): string => {
@@ -369,6 +499,7 @@ interface StewardForm {
     editionNumber: string;
     name: string;
     email: string;
+    mintClaimCode: boolean;
 }
 
 const EMPTY_STEWARD: StewardForm = {
@@ -376,6 +507,7 @@ const EMPTY_STEWARD: StewardForm = {
     editionNumber: '',
     name: '',
     email: '',
+    mintClaimCode: false,
 };
 
 const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
@@ -383,7 +515,9 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
 }) => {
     const [form, setForm] = useState<StewardForm>(EMPTY_STEWARD);
     const [saving, setSaving] = useState(false);
-    const [success, setSuccess] = useState<{ email: string; name?: string } | null>(null);
+    const [success, setSuccess] = useState<{ email?: string; name?: string } | null>(null);
+    // The plaintext claim code, held only until dismissed (shown once).
+    const [codeRef, setCodeRef] = useState<{ code: string; sigil: string; pieceId: string; editionNumber?: number } | null>(null);
     const [error, setError] = useState<string | null>(null);
     const adminFetch = useAdminFetch();
 
@@ -392,8 +526,10 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
             setError('Pick a piece.');
             return;
         }
-        if (!form.email.trim()) {
-            setError('Email is required — the collector signs in with it.');
+        // With a claim code, email is optional: the printed code is the
+        // credential and the collector's account anchors the bind at claim.
+        if (!form.mintClaimCode && !form.email.trim()) {
+            setError('Email is required — the collector signs in with it. (Or mint a claim code.)');
             return;
         }
         setSaving(true);
@@ -405,7 +541,8 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                     ? Number(form.editionNumber)
                     : undefined,
                 name: form.name.trim() || undefined,
-                email: form.email.trim(),
+                email: form.email.trim() || undefined,
+                mintClaimCode: form.mintClaimCode || undefined,
             };
             const res = await adminFetch('/api/atlas/stewards/issue', {
                 method: 'POST',
@@ -422,6 +559,14 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                     email: data.record.email,
                     name: data.record.name,
                 });
+                if (data.claimCode) {
+                    setCodeRef({
+                        code: data.claimCode,
+                        sigil: resolvePieceSigil(form.pieceId),
+                        pieceId: form.pieceId,
+                        editionNumber: form.editionNumber ? Number(form.editionNumber) : undefined,
+                    });
+                }
                 setForm(EMPTY_STEWARD);
                 onIssued();
             } else {
@@ -453,16 +598,38 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                 </p>
             )}
 
+            {codeRef && (
+                <ClaimCodeReference
+                    code={codeRef.code}
+                    sigil={codeRef.sigil}
+                    pieceId={codeRef.pieceId}
+                    editionNumber={codeRef.editionNumber}
+                    onDismiss={() => setCodeRef(null)}
+                />
+            )}
+
             {success && (
                 <div className="mb-6 border border-bronze-400 bg-bronze-50 px-4 py-4">
                     <p className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold mb-2">
                         Steward added
                     </p>
-                    <p className="font-reading text-sm text-wood-900 mb-2">
-                        {success.name ? `${success.name} (${success.email})` : success.email}
+                    <p className="font-reading text-sm text-wood-900 mb-2 not-italic">
+                        {success.email
+                            ? success.name
+                                ? `${success.name} (${success.email})`
+                                : success.email
+                            : success.name
+                              ? `${success.name} (code only, no email)`
+                              : 'code only, no email'}
                     </p>
-                    <p className="font-reading italic text-sm text-stone-700 mb-3">
-                        Send them this link: <code className="font-technical not-italic">/atlas/claim</code>. They sign in with the email above and the record binds to their account.
+                    <p className="font-reading text-sm text-stone-700 mb-3 not-italic">
+                        {success.email
+                            ? 'Send them this link: '
+                            : 'They claim with the code on the back insert at: '}
+                        <code className="font-technical not-italic">/atlas/claim</code>
+                        {success.email
+                            ? '. They sign in with the email above and the record binds to their account.'
+                            : '. The code authorizes the bind; their account anchors it.'}
                     </p>
                     <button
                         type="button"
@@ -525,7 +692,9 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                 </div>
 
                 <div>
-                    <label className={fieldLabel}>Email (required)</label>
+                    <label className={fieldLabel}>
+                        {form.mintClaimCode ? 'Email (optional)' : 'Email (required)'}
+                    </label>
                     <input
                         type="email"
                         value={form.email}
@@ -536,6 +705,25 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                         className={fieldInput}
                     />
                 </div>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={form.mintClaimCode}
+                        onChange={(e) =>
+                            setForm({ ...form, mintClaimCode: e.target.checked })
+                        }
+                        className="mt-1"
+                    />
+                    <span className="font-reading text-sm text-wood-700 not-italic">
+                        mint claim code
+                        <span className="block font-reading text-xs text-stone-500 not-italic">
+                            Prints on the piece's back insert. Shown once on
+                            success; only its hash is stored. Email is optional
+                            when a code is minted.
+                        </span>
+                    </span>
+                </label>
 
                 <button
                     onClick={submit}
@@ -1478,6 +1666,47 @@ const StewardRoster: React.FC<{
     const adminFetch = useAdminFetch();
     const [busyKey, setBusyKey] = useState<string | null>(null);
     const [rowError, setRowError] = useState<string | null>(null);
+    const [reissueBusyKey, setReissueBusyKey] = useState<string | null>(null);
+    // The freshly-reissued plaintext code, held only until dismissed.
+    const [reissued, setReissued] = useState<{ code: string; sigil: string; pieceId: string; editionNumber?: number } | null>(null);
+
+    const handleReissue = async (s: StewardRecord) => {
+        const key = stewardKey(s);
+        // Confirm before invalidating: a reissue kills the previously printed
+        // code the moment a new one is minted.
+        const ok = window.confirm(
+            `Reissue the claim code for ${resolvePieceTitle(s.pieceId, s.editionNumber)}? ` +
+                'The previous code stops working immediately.',
+        );
+        if (!ok) return;
+        setRowError(null);
+        setReissueBusyKey(key);
+        try {
+            const res = await adminFetch('/api/atlas/stewards/reissue-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pieceId: s.pieceId,
+                    editionNumber: s.editionNumber,
+                }),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok && data.claimCode) {
+                setReissued({ code: data.claimCode, sigil: resolvePieceSigil(s.pieceId), pieceId: s.pieceId, editionNumber: s.editionNumber });
+                await onReload();
+            } else {
+                setRowError(data?.error || 'Could not reissue the code.');
+            }
+        } catch {
+            setRowError('Network error. Check your connection.');
+        } finally {
+            setReissueBusyKey(null);
+        }
+    };
 
     const handleStatusChange = async (
         s: StewardRecord,
@@ -1541,6 +1770,16 @@ const StewardRoster: React.FC<{
                 </p>
             )}
 
+            {reissued && (
+                <ClaimCodeReference
+                    code={reissued.code}
+                    sigil={reissued.sigil}
+                    pieceId={reissued.pieceId}
+                    editionNumber={reissued.editionNumber}
+                    onDismiss={() => setReissued(null)}
+                />
+            )}
+
             {loading && (
                 <p className="font-reading text-sm text-wood-400">Loading...</p>
             )}
@@ -1571,8 +1810,11 @@ const StewardRoster: React.FC<{
                                 <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2 pr-4">
                                     Issued
                                 </th>
-                                <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2">
+                                <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2 pr-4">
                                     Last claim
+                                </th>
+                                <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2">
+                                    Code
                                 </th>
                             </tr>
                         </thead>
@@ -1629,10 +1871,30 @@ const StewardRoster: React.FC<{
                                     <td className="font-reading text-sm text-wood-500 py-3 pr-4">
                                         {formatRelative(s.issuedAt)}
                                     </td>
-                                    <td className="font-reading text-sm text-wood-500 py-3">
+                                    <td className="font-reading text-sm text-wood-500 py-3 pr-4">
                                         {s.lastClaimAt
                                             ? formatRelative(s.lastClaimAt)
                                             : '-'}
+                                    </td>
+                                    <td className="py-3">
+                                        {s.outreachStatus === 'claimed' ? (
+                                            <span className="font-reading text-xs text-wood-400 not-italic">
+                                                claimed
+                                            </span>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleReissue(s)}
+                                                disabled={reissueBusyKey === stewardKey(s)}
+                                                className="font-label text-[11px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold disabled:opacity-40"
+                                            >
+                                                {reissueBusyKey === stewardKey(s)
+                                                    ? 'reissuing...'
+                                                    : s.claimCodeHash
+                                                      ? 'reissue code'
+                                                      : 'mint code'}
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

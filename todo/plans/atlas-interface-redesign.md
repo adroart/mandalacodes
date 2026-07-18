@@ -631,6 +631,25 @@ living-art-legacy.md; "anchor" is the verb for a dream entering a piece;
 - Everywhere a place is named: "alive in {city}", replacing "anchored in"
   and "placed in" on visitor-facing surfaces.
 
+### The claim code and the sign-in, ruled (2026-07-18)
+
+- The claim code lives ON the piece: printed on the back insert, the part
+  the keeper pulls out. The visible QR on the back is the public pointer
+  (where it lives, its certificate); the hidden code is the claim
+  credential. Possession of the piece is the credential, made physical.
+  Codes are high entropy, single use, stored only as hashes, reissuable
+  (reissue kills the old one), and inert once the piece is claimed;
+  transfers stay audited. Pieces already in the field keep the existing
+  paths; codes begin with pieces that pass through Adrian's hands.
+- No Google branding anywhere. This is a gallery. Google sign-in keeps
+  working as a quiet lowercase text option with no icon or logo, on the
+  claim flow and every sign-in surface. The email step leads, spoken as
+  "where should your book reach you?", never "log in".
+- The keeper's layer on the certificate is approved as designed: "For the
+  keeper" beneath the seal, price and date from the confirmed sale record
+  when one exists, the full history, the door to the book; served only to
+  the authenticated bound keeper.
+
 ## Part III: Build order
 
 Sequenced so each step is visible on the live URL, per the standing rules

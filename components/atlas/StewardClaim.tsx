@@ -15,6 +15,7 @@ import { buildKinshipIndex } from '../../utils/kinship';
 import { ulCardNumber } from '../../utils/universalLanguage';
 import { img } from '../../utils/cloudinary';
 import { pieceCode } from '../../utils/pieceCode';
+import { groupClaimCode, normalizeClaimCode } from '../../utils/claimCode';
 import ClaimCeremony from './ClaimCeremony';
 import RequestStewardship from './RequestStewardship';
 import ArtworkPlate from './ArtworkPlate';
@@ -393,15 +394,9 @@ const ClaimSignIn: React.FC = () => {
 
       {mode === 'choices' && (
         <>
-          <button
-            type="button"
-            onClick={doGoogle}
-            disabled={busy}
-            className={doorBtn}
-            style={GOLD_BUTTON}
-          >
-            <GoogleMark /> Claim with Google
-          </button>
+          {/* The email step leads (no Google branding as the front door). This
+              is a gallery: Google stays only as a quiet lowercase text option
+              beneath, in label style, subordinate to the email step. */}
           <button
             type="button"
             onClick={() => {
@@ -409,14 +404,18 @@ const ClaimSignIn: React.FC = () => {
               setMode('email');
             }}
             disabled={busy}
-            className={`${doorBtn} mt-3`}
-            style={{
-              background: 'transparent',
-              color: '#e7dcc7',
-              border: '1px solid rgba(196,170,124,0.32)',
-            }}
+            className={doorBtn}
+            style={GOLD_BUTTON}
           >
-            Email me a claim code
+            email me a code
+          </button>
+          <button
+            type="button"
+            onClick={doGoogle}
+            disabled={busy}
+            className="mt-5 block mx-auto font-label text-[11px] lowercase tracking-[0.16em] text-wood-500 hover:text-bronze-300 transition-colors disabled:opacity-40"
+          >
+            continue with google
           </button>
           <button
             type="button"
@@ -424,9 +423,9 @@ const ClaimSignIn: React.FC = () => {
               setError(null);
               setMode('password');
             }}
-            className="mt-5 font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 hover:text-bronze-300 transition-colors"
+            className="mt-3 block mx-auto font-label text-[10px] lowercase tracking-[0.16em] text-wood-500 hover:text-bronze-300 transition-colors"
           >
-            Use a password instead
+            use a password instead
           </button>
         </>
       )}
@@ -532,15 +531,6 @@ const BackLink: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   </button>
 );
 
-const GoogleMark: React.FC = () => (
-  <svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true">
-    <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.3 17.7 9.5 24 9.5z" />
-    <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.8-9.8 6.8-17.4z" />
-    <path fill="#FBBC05" d="M10.4 28.3c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.8-6.1C.9 16.1 0 19.9 0 23.7s.9 7.6 2.6 10.7l7.8-6.1z" />
-    <path fill="#34A853" d="M24 47.4c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2 1.4-4.7 2.3-7.9 2.3-6.3 0-11.7-3.8-13.6-9.3l-7.8 6.1C6.5 42 14.6 47.4 24 47.4z" />
-  </svg>
-);
-
 /* One of the two "where should this dream live" options: a stage-seated radio,
    the gold-filled dot on selection matching the Toggle's stage conventions. */
 const StageRadio: React.FC<{
@@ -604,6 +594,62 @@ const AnchorSettle: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
+/* The code beat: a single forgiving field for the code printed on the piece's
+   back insert. Display is grouped; input is normalized (case, separators, and
+   the I/L/O ambiguity are all forgiven) so a paste or a hand-typed code both
+   land. */
+const CodeEntry: React.FC<{
+  value: string;
+  onChange: (canonical: string) => void;
+  error: string | null;
+  onContinue: () => void;
+  onNoCode: () => void;
+}> = ({ value, onChange, error, onContinue, onNoCode }) => (
+  <div className="text-center">
+    <p
+      className="font-label text-[11px] uppercase tracking-[0.22em] mb-4"
+      style={{ color: 'rgba(196,170,124,0.8)' }}
+    >
+      the code from the back of your piece
+    </p>
+    <input
+      type="text"
+      autoFocus
+      autoCapitalize="characters"
+      autoCorrect="off"
+      spellCheck={false}
+      aria-label="claim code"
+      value={groupClaimCode(value)}
+      onChange={(e) => onChange(normalizeClaimCode(e.target.value).slice(0, 40))}
+      onKeyDown={(e) => e.key === 'Enter' && onContinue()}
+      style={{ ...authField, textAlign: 'center', letterSpacing: '0.14em', marginBottom: 8 }}
+      placeholder="XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
+    />
+    <div className="h-5 mb-2" aria-live="polite">
+      {error && (
+        <span className="font-display text-sm" style={{ color: 'rgba(214,171,138,0.9)' }}>
+          {error}
+        </span>
+      )}
+    </div>
+    <button
+      type="button"
+      onClick={onContinue}
+      className="w-full min-h-[48px] font-label text-xs uppercase tracking-[0.2em] font-semibold py-3.5 rounded-xl transition-opacity hover:opacity-90"
+      style={GOLD_BUTTON}
+    >
+      continue
+    </button>
+    <button
+      type="button"
+      onClick={onNoCode}
+      className="mt-6 block mx-auto max-w-[19rem] font-display text-[13px] leading-relaxed text-wood-500 hover:text-bronze-300 transition-colors"
+    >
+      no code with your piece? sign in with the email it was registered to
+    </button>
+  </div>
+);
+
 const StewardClaim: React.FC = () => {
   const { isLoaded, isSignedIn, email, fetchAuthed } = useAccount();
   const navigate = useNavigate();
@@ -613,6 +659,26 @@ const StewardClaim: React.FC = () => {
   const [arrivalStatus, setArrivalStatus] = useState<'signin' | 'claiming'>('signin');
   const [entries, setEntries] = useState<ClaimEntry[]>([]);
   const [creatorMessage, setCreatorMessage] = useState<string | undefined>();
+
+  // ── The claim-code arrival (Adrian, 2026-07-18): with piece context the
+  //    arrival asks for the code printed on the piece's back insert first,
+  //    then anchors the book to an account. Without piece context (or on the
+  //    "no code" fallback) the legacy email-match flow stands. ──
+  const hasPieceParam = !!searchParams.get('piece');
+  // The back insert may carry its own private QR deep link: honor ?code=.
+  const initialCode = normalizeClaimCode(searchParams.get('code') ?? '');
+  const [claimCode, setClaimCode] = useState<string>(initialCode);
+  const [arrivalFlow, setArrivalFlow] = useState<'code' | 'email'>(
+    hasPieceParam ? 'code' : 'email',
+  );
+  const [codeStep, setCodeStep] = useState<'enter' | 'anchor'>('enter');
+  const [codeError, setCodeError] = useState<string | null>(null);
+  // Gates the Phase A effect: with piece context we wait for the person to
+  // submit a code (or choose the email fallback) before binding anything.
+  const [claimArmed, setClaimArmed] = useState<boolean>(!hasPieceParam);
+  // The code the Phase A POST should carry ('' = the email-match path). A ref
+  // so the effect reads the freshest value without re-subscribing.
+  const claimCodeRef = useRef<string>('');
 
   // Ring 2 map-presence choice. Private (false) is the default: placing a light
   // on the world map is an active opt-in. Committed with the dream in one POST.
@@ -655,15 +721,27 @@ const StewardClaim: React.FC = () => {
   const claimFired = useRef(false);
   const [claimAttempt, setClaimAttempt] = useState(0);
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || claimFired.current) return;
+    if (!isLoaded || !isSignedIn || claimFired.current || !claimArmed) return;
     claimFired.current = true;
     let cancelled = false;
+    const usedCode = claimCodeRef.current;
     (async () => {
       setArrivalStatus('claiming');
       try {
         const res = await fetchAuthed('/api/atlas/steward/claim', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          // The code path carries the piece + the code; the email-match path
+          // sends no body (Phase A bind by verified email, unchanged).
+          ...(usedCode
+            ? {
+                body: JSON.stringify({
+                  pieceId: pieceContext?.pieceId,
+                  editionNumber: pieceContext?.editionNumber,
+                  claimCode: usedCode,
+                }),
+              }
+            : {}),
         });
         if (cancelled) return;
         if (res.ok) {
@@ -679,6 +757,22 @@ const StewardClaim: React.FC = () => {
           navigate('/atlas/edit', { replace: true });
           return;
         }
+        // A wrong/used code, or a rate-limit, stays calm and inline on the
+        // arrival beat (never the generic error beat): return the person to
+        // the code field with a quiet line.
+        if (usedCode && (res.status === 403 || res.status === 429)) {
+          setCodeError(
+            res.status === 429
+              ? 'too many tries just now. wait a little, then try again'
+              : 'that code does not match this piece',
+          );
+          claimFired.current = false;
+          claimCodeRef.current = '';
+          setClaimArmed(false);
+          setArrivalStatus('signin');
+          setCodeStep('enter');
+          return;
+        }
         if (res.status === 404) {
           setBeat('no-record');
         } else {
@@ -692,7 +786,31 @@ const StewardClaim: React.FC = () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn, claimAttempt, fetchAuthed, navigate]);
+  }, [isLoaded, isSignedIn, claimArmed, claimAttempt, fetchAuthed, navigate]);
+
+  // Commit the entered code: arm the claim. When already signed in the effect
+  // binds immediately; otherwise we step to the account anchor and bind once
+  // the session flips.
+  const submitCode = () => {
+    const canonical = normalizeClaimCode(claimCode);
+    if (!canonical) {
+      setCodeError('enter the code from the back of your piece');
+      return;
+    }
+    setCodeError(null);
+    setClaimCode(canonical);
+    claimCodeRef.current = canonical;
+    setClaimArmed(true);
+    if (!isSignedIn) setCodeStep('anchor');
+  };
+
+  // "no code with your piece?": fall back to the legacy email-match arrival.
+  const switchToEmailFallback = () => {
+    setCodeError(null);
+    setArrivalFlow('email');
+    claimCodeRef.current = '';
+    setClaimArmed(true);
+  };
 
   // Failure honesty (law 6): re-fire Phase A from the error beat.
   const retryPhaseA = () => {
@@ -936,7 +1054,43 @@ const StewardClaim: React.FC = () => {
               The world is ready to receive your dream.
             </h1>
           )}
-          {arrivalStatus === 'claiming' || isSignedIn || !isLoaded ? (
+          {arrivalStatus === 'claiming' ? (
+            <p
+              className="font-display text-base"
+              style={{ color: 'rgba(203,191,168,0.7)' }}
+            >
+              Finding your piece…
+            </p>
+          ) : pieceContext && arrivalFlow === 'code' ? (
+            codeStep === 'enter' ? (
+              <CodeEntry
+                value={claimCode}
+                onChange={setClaimCode}
+                error={codeError}
+                onContinue={submitCode}
+                onNoCode={switchToEmailFallback}
+              />
+            ) : (
+              <div>
+                {/* The account anchor step: the email step leads, spoken as a
+                    place the book reaches you, never "log in". */}
+                <p
+                  className="font-display text-xl leading-snug mb-7"
+                  style={{ color: '#ece2cf', fontFamily: 'var(--font-display)' }}
+                >
+                  Where should your book reach you?
+                </p>
+                <ClaimSignIn />
+                <button
+                  type="button"
+                  onClick={() => setCodeStep('enter')}
+                  className="mt-6 block mx-auto font-label text-[10px] lowercase tracking-[0.18em] text-wood-500 hover:text-bronze-300 transition-colors"
+                >
+                  back to the code
+                </button>
+              </div>
+            )
+          ) : isSignedIn || !isLoaded ? (
             <p
               className="font-display text-base"
               style={{ color: 'rgba(203,191,168,0.7)' }}

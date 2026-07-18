@@ -268,13 +268,13 @@ const SignInModal: React.FC<{
           </div>
         )}
 
-        {/* ── Welcome: three doors, each logs in OR creates ── */}
+        {/* ── Welcome: the email step leads. No Google branding as a door —
+            this is a gallery. Google stays as a quiet lowercase text option
+            beneath, subordinate to the email step. Every option signs you in
+            or sets you up; the auth flows are unchanged. ── */}
         {mode === 'welcome' && (
           <>
-            <button type="button" onClick={doGoogle} disabled={busy} style={pillPrimary}>
-              <GoogleMark /> Continue with Google
-            </button>
-            <button type="button" onClick={() => { setError(null); setMode('email'); }} disabled={busy} style={pillSecondary}>
+            <button type="button" onClick={() => { setError(null); setMode('email'); }} disabled={busy} style={pillPrimary}>
               Email me a sign-in code
             </button>
             <button
@@ -283,6 +283,19 @@ const SignInModal: React.FC<{
               style={pillSecondary}
             >
               Use email and password
+            </button>
+            <button
+              type="button"
+              onClick={doGoogle}
+              disabled={busy}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                margin: '10px auto 0', padding: 4, display: 'block',
+                fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 600,
+                letterSpacing: '0.06em', textTransform: 'lowercase', color: C.sub,
+              }}
+            >
+              continue with google
             </button>
             <p style={{
               marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.line}`,
@@ -371,14 +384,5 @@ const SignInModal: React.FC<{
     document.body,
   );
 };
-
-const GoogleMark: React.FC = () => (
-  <svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true">
-    <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.3 17.7 9.5 24 9.5z" />
-    <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.8-9.8 6.8-17.4z" />
-    <path fill="#FBBC05" d="M10.4 28.3c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.8-6.1C.9 16.1 0 19.9 0 23.7s.9 7.6 2.6 10.7l7.8-6.1z" />
-    <path fill="#34A853" d="M24 47.4c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2 1.4-4.7 2.3-7.9 2.3-6.3 0-11.7-3.8-13.6-9.3l-7.8 6.1C6.5 42 14.6 47.4 24 47.4z" />
-  </svg>
-);
 
 export default SignInModal;

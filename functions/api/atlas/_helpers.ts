@@ -316,9 +316,18 @@ export function mutateSharedIntentions<R>(
 export interface IssueStewardInput {
   pieceId: string;
   editionNumber?: number;
-  email: string;
+  /** Optional since the claim-code path: a code-carrying record can exist with
+   *  no email. The sale-queue and legacy admin paths still always pass one. */
+  email?: string;
   name?: string;
   notes?: string;
+  /** SHA-256 hash of the freshly-minted claim code (utils/claimCode.ts). The
+   *  plaintext is generated and returned by the caller once; only this hash is
+   *  ever stored. When present, `claimCodeIssuedAt` / `claimCodeVersion` are
+   *  set too. Absent for ordinary email-only issuance. */
+  claimCodeHash?: string;
+  claimCodeIssuedAt?: string;
+  claimCodeVersion?: number;
 }
 
 /**
@@ -348,11 +357,18 @@ export async function issueStewardRecord(
     const record: StewardRecord = {
       pieceId: input.pieceId,
       editionNumber: input.editionNumber,
-      email: input.email,
+      ...(input.email ? { email: input.email } : {}),
       name: input.name,
       notes: input.notes,
       issuedAt: new Date().toISOString(),
       outreachStatus: 'invited',
+      ...(input.claimCodeHash
+        ? {
+            claimCodeHash: input.claimCodeHash,
+            claimCodeIssuedAt: input.claimCodeIssuedAt ?? new Date().toISOString(),
+            claimCodeVersion: input.claimCodeVersion ?? 1,
+          }
+        : {}),
     };
 
     return { next: [...stewards, record], result: record };
