@@ -5,7 +5,7 @@
  * public projection (utils/ledgerProjection.ts toPublicState):
  *   - share eligibility: wrong kind, sealed, erased, not-author all reject;
  *     an eligible 'intention' from its own author passes,
- *   - 280-char display cut,
+ *   - 1200-char display cut,
  *   - one live entry per piece (sharing a second inscription supersedes the
  *     first; re-sharing the same inscription revives it in place),
  *   - withdraw is a quiet no-op when nothing is live,
@@ -138,18 +138,25 @@ describe('toDisplayText', () => {
     expect(toDisplayText('  A short dream.  ')).toBe('A short dream.');
   });
 
-  it('cuts at exactly 280 characters', () => {
-    const long = 'x'.repeat(400);
+  it('cuts at exactly 1200 characters', () => {
+    const long = 'x'.repeat(1500);
     const cut = toDisplayText(long);
     expect(cut.length).toBe(SHARED_INTENTION_DISPLAY_MAX);
-    expect(cut).toBe('x'.repeat(280));
+    expect(cut).toBe('x'.repeat(1200));
+  });
+
+  it('passes a long paragraph-scale dream through when under the cap', () => {
+    const long = 'word '.repeat(200); // 1000 chars, under the 1200 cap
+    const cut = toDisplayText(long);
+    expect(cut).toBe(long.trim());
+    expect(cut.length).toBeLessThanOrEqual(SHARED_INTENTION_DISPLAY_MAX);
   });
 
   it('never returns more than the private inscription body — a fragment, never the whole entry', () => {
-    const long = 'word '.repeat(200); // 1000 chars
+    const long = 'word '.repeat(400); // 2000 chars, over the cap
     const cut = toDisplayText(long);
     expect(cut.length).toBeLessThanOrEqual(SHARED_INTENTION_DISPLAY_MAX);
-    expect(long.startsWith(cut.trimEnd().length > 0 ? cut.slice(0, 1) : '')).toBe(true);
+    expect(long.startsWith(cut)).toBe(true);
   });
 });
 

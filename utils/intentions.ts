@@ -14,8 +14,10 @@
  *     anonymous dream layer via this door — the kind check is the sort.
  *   - The shared inscription must be authored by the sharing steward, not
  *     sealed (a time capsule stays private until it opens), and not erased.
- *   - Display text is a hard cut at 280 characters — the map shows a
- *     fragment of the dream, never the whole private entry.
+ *   - Display text is a hard cut at 1200 characters — the map shows a
+ *     fragment of the dream, never the whole private entry. Dreams are long
+ *     (Adrian, 2026-07-18: assume paragraphs), so the fragment is generous;
+ *     the private book still holds every word.
  *   - One live entry per piece: sharing again while one is live revives/
  *     replaces it rather than stacking duplicates on the map.
  *   - Withdrawing never rewrites history — it flips status, same discipline
@@ -28,8 +30,10 @@ import type { ParseResult } from './consent';
 
 // ---------- Constants ----------
 
-/** The map shows a fragment of the dream, never the whole private entry. */
-export const SHARED_INTENTION_DISPLAY_MAX = 280;
+/** The map shows a fragment of the dream, never the whole private entry.
+ *  Raised from 280 to 1200 (Adrian, 2026-07-18): dreams are paragraphs, not
+ *  sentences, so a shared fragment carries a real opening. */
+export const SHARED_INTENTION_DISPLAY_MAX = 1200;
 
 // ---------- Ids ----------
 
@@ -42,7 +46,7 @@ export function genSharedIntentionId(): string {
 
 // ---------- Display text ----------
 
-/** First 280 characters of the inscription body, captured at share time. A
+/** First 1200 characters of the inscription body, captured at share time. A
  *  hard cut — the map is a fragment, never the whole private entry. */
 export function toDisplayText(body: string): string {
   const trimmed = body.trim();

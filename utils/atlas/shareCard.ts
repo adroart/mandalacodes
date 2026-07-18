@@ -101,9 +101,10 @@ export interface ShareCardInput {
   artworkDataUri?: string | null;
 }
 
-/** The longest dream we let ride the card. Public shared intentions are
- *  already cut to 280 at share time; this is a defensive ceiling so an
- *  over-long line can never overrun the plate. */
+/** The longest dream we let ride the card. Shared dreams may run to 1200
+ *  characters (utils/intentions.ts); the card carries the opening and the
+ *  full text lives at the link, so this ceiling is a composition choice,
+ *  not the data cap. */
 const DREAM_MAX = 280;
 
 function clampDream(dream: string): string {

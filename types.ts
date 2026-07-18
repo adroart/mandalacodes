@@ -474,7 +474,8 @@ export interface SharedIntention {
   /** The D1 atlas_inscriptions row this entry mirrors — the source of
    *  truth for the text stays the inscription; this is display-only. */
   inscriptionId: string;
-  /** First 280 chars of the inscription body, captured at share time. */
+  /** The inscription body captured at share time, up to the shared-dream
+      cap (1200 chars, see utils/intentions.ts). */
   text: string;
   sharedAt: string;
   /** 'live' — shown on the map. 'rehomed' — moved to its right field (or

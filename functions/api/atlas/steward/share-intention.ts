@@ -17,7 +17,7 @@
  *   - not sealed (a time capsule stays private until it opens),
  *   - not erased.
  *
- * share:true cuts the display text to 280 characters (utils/intentions.ts
+ * share:true cuts the display text to 1200 characters (utils/intentions.ts
  * toDisplayText) and creates or revives the one live entry for this piece;
  * share:false withdraws it. Either way regenerates public state so the
  * globe's `intention` field follows immediately.
@@ -61,7 +61,7 @@ export interface ShareOnMapSuccess {
 
 /**
  * Share one eligible inscription onto the map of dreams: the eligibility sort
- * (utils/intentions.ts checkShareEligibility), the 280-char display cut, the
+ * (utils/intentions.ts checkShareEligibility), the 1200-char display cut, the
  * one-live-entry-per-piece mutation, and the public-state regen: the single
  * source of truth for "mark a dream shared." The share-intention endpoint's
  * share:true branch and the claim ceremony's one-request publication

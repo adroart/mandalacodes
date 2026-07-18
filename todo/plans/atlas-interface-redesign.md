@@ -220,8 +220,33 @@ The first five seconds are the project. Sequence for a cold visit:
    every 20 seconds. Full dreams get the full stage, one voice at a time,
    never soup. Tapping it travels to its light.
 
-Returning visitors (localStorage flag) skip the overture and land on the
-resting sky directly.
+Rulings from Adrian's first live walkthrough (2026-07-18):
+
+- Dreams are long. Assume paragraphs, never a sentence. The shared-dream cap
+  rises from 280 to 1200 characters. Length strategy per surface: the
+  featured dream shows the opening (about 60 words) with a quiet ellipsis and
+  travels to the full text on tap; the selection inscription scales down to
+  fit about 700 characters and beyond that offers `read the whole dream` into
+  the card; the card, the sheet, and the book always hold every word. The
+  private book inscriptions were never capped and stay uncapped.
+- One voice in the caption slot, ever. The mandala caption replaces the
+  thesis caption while mandala view is active; the placeholder/fallback note
+  never renders as a stacked third line; the caption may not wrap past two
+  lines. The featured dream and its tether rest entirely during mandala view
+  and camera travel; no leader line may cross the resting composition.
+- The vision speaks every arrival, scaled by familiarity. First visit: the
+  full word-led overture, unhurried, playing regardless of how many lights
+  exist. Returning visits: a two-second breath, the thesis line settling over
+  the emerging globe. A quiet standing `the vision` link near the caption
+  replays the full overture on demand. Never a click-through gate.
+- The claiming door is visible on the Atlas itself: a quiet standing line
+  near the caption, "Hold one of these pieces? Claim your light →", routed to
+  the claim flow, shown to visitors who are not already stewards.
+- The birth-place pin is not a piece. Selecting it shows one line (the place
+  name), no card, no kin, no book action.
+- Phone chrome: no duplicated `return` (the sheet header carries it, the
+  control cluster hides its copy while the sheet is open); breadcrumb and
+  wordmark yield to the globe on phones.
 
 Honesty at small numbers: the field must read at 15 lights as an origin story,
 never as emptiness. The embers (the whole body of work, dim) carry the scale;

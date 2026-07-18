@@ -35,12 +35,40 @@ function scrim(awayLeft: boolean): string {
   return `radial-gradient(120% 140% at ${at}, rgba(7,5,3,0.68) 0%, rgba(7,5,3,0.52) 40%, rgba(7,5,3,0.28) 64%, rgba(7,5,3,0) 82%)`;
 }
 
+/* Dreams are long (Adrian, 2026-07-18). The inscription fits up to ~700
+   characters by stepping the display size down, never below the 20px site
+   guardrail; beyond that it truncates at a sentence boundary and offers a quiet
+   `read the whole dream` action into the full card, where every word renders. */
+const INSCRIPTION_CHAR_FIT = 700;
+const INSCRIPTION_MAX_PX = 34;
+const INSCRIPTION_MIN_PX = 20;
+
+/** Step the display size down as the dream lengthens (floor 20px), and cut a
+ *  longer-than-fit dream at a sentence boundary at or before the fit ceiling. */
+function fitInscription(dream: string): { text: string; fontPx: number; truncated: boolean } {
+  const clean = dream.trim();
+  if (clean.length <= INSCRIPTION_CHAR_FIT) {
+    // Interpolate from the large size down to the floor across the fit range.
+    const over = Math.max(0, clean.length - 140);
+    const span = INSCRIPTION_CHAR_FIT - 140;
+    const px = INSCRIPTION_MAX_PX - (INSCRIPTION_MAX_PX - INSCRIPTION_MIN_PX) * (over / span);
+    return { text: clean, fontPx: Math.max(INSCRIPTION_MIN_PX, Math.round(px)), truncated: false };
+  }
+  const windowText = clean.slice(0, INSCRIPTION_CHAR_FIT);
+  const m = windowText.match(/^[\s\S]*[.!?]["'”’)\]]?(?=\s|$)/);
+  const atSentence = m ? m[0].trim() : '';
+  const body =
+    atSentence && atSentence.length >= INSCRIPTION_CHAR_FIT * 0.5 ? atSentence : windowText.trim();
+  return { text: `${body} …`, fontPx: INSCRIPTION_MIN_PX, truncated: true };
+}
+
 export default function SelectionInscription({
   dream,
   standing,
   awayLeft,
   onOpenBook,
 }: SelectionInscriptionProps) {
+  const fit = dream ? fitInscription(dream) : null;
   return (
     <div
       data-atlas-inscription
@@ -68,7 +96,7 @@ export default function SelectionInscription({
           zIndex: 1,
           fontFamily: 'var(--font-display)',
           fontWeight: 400,
-          fontSize: dream ? 'clamp(26px, 2.3vw, 36px)' : 'clamp(26px, 2.2vw, 33px)',
+          fontSize: fit ? `${fit.fontPx}px` : 'clamp(26px, 2.2vw, 33px)',
           lineHeight: 1.28,
           letterSpacing: '0.008em',
           color: dream ? 'rgba(238, 228, 208, 0.98)' : 'rgba(200, 176, 132, 0.78)',
@@ -76,8 +104,18 @@ export default function SelectionInscription({
           textShadow: '0 2px 22px rgba(8,6,4,0.9)',
         }}
       >
-        {dream ?? 'no dream is kept here yet.'}
+        {fit ? fit.text : 'no dream is kept here yet.'}
       </p>
+      {fit?.truncated && (
+        <button
+          type="button"
+          onClick={onOpenBook}
+          className="pointer-events-auto relative mt-4 block font-label text-[12px] uppercase tracking-[0.22em] text-bronze-300 hover:text-bronze-200 transition-colors"
+          style={{ zIndex: 1 }}
+        >
+          read the whole dream
+        </button>
+      )}
       <p
         className="mt-5 font-label uppercase"
         style={{
