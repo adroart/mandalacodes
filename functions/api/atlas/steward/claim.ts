@@ -37,6 +37,10 @@
 import type { LedgerEvent, PieceRecord, StewardRecord } from '../../../../types';
 import { projectAll } from '../../../../utils/ledgerProjection';
 import { groupChains, BackdatedEventError } from '../../../../utils/ledger';
+import { hashClaimCode } from '../../../../utils/claimCode';
+import { timingSafeEqualHex } from '../../../../utils/saleBridge';
+import { chainHasClaimedEvent } from '../event';
+import { checkRateLimit, clientIp, tooManyRequests } from '../../_lib/rate-limit.js';
 import {
   applyConsentToSteward,
   bindStewardOnClaim,
@@ -74,6 +78,12 @@ const NO_RECORD_ERROR =
 
 const UNVERIFIED_EMAIL_ERROR =
   'Confirm your email before claiming a piece — sign in with the emailed code (or Continue with Google) so we can verify the address a piece may be issued to.';
+
+// One calm, uniform failure for the claim-code path. No oracle beyond
+// wrong-or-used: a wrong code, a used code, an already-claimed piece, and an
+// unknown piece all answer identically so the endpoint cannot be probed.
+const WRONG_OR_USED_CODE =
+  'That code does not match this piece, or it has already been used.';
 
 function findRecord(
   events: LedgerEvent[],
@@ -152,6 +162,67 @@ export async function onRequestPost(
   }
 
   const now = new Date().toISOString();
+
+  // ---------- Phase A (claim code): the piece's own credential ----------
+  // A request carrying `claimCode` binds THIS session's user to the named
+  // piece by proving possession of the code printed on the piece's back
+  // insert. requireUser still applies (above): the code authorizes the bind,
+  // the account anchors it. The email-match path below stays the legacy
+  // fallback and is untouched.
+  if (!('consent' in body) && typeof body.claimCode === 'string' && body.claimCode.trim()) {
+    // Tight IP rate limit — the code is the credential, so brute force is the
+    // threat. Fail-open (see rate-limit.js): a limiter outage never locks out
+    // a real keeper.
+    const ip = clientIp(request);
+    const { ok: within, retryAfterSec } = await checkRateLimit(
+      env,
+      `atlas:claimcode:${ip}`,
+      { limit: 10, windowMs: 60 * 60_000 },
+    );
+    if (!within) return tooManyRequests(retryAfterSec);
+
+    const pieceId = typeof body.pieceId === 'string' ? body.pieceId : '';
+    const editionNumber =
+      typeof body.editionNumber === 'number' ? body.editionNumber : undefined;
+
+    // The piece is inert once its chain carries a `claimed` event.
+    const chain0 = groupChains(await readLedger(env)).get(
+      `${pieceId}:${editionNumber ?? 0}`,
+    );
+    const alreadyClaimed = !!chain0 && chainHasClaimedEvent(chain0);
+
+    // Hash the attempt once, outside the mutator; compare in constant time.
+    const attemptHash = await hashClaimCode(body.claimCode);
+
+    const outcome = await mutateStewards(env, (stewards) => {
+      const rec = stewards.find(
+        (s) =>
+          s.pieceId === pieceId &&
+          (s.editionNumber ?? undefined) === (editionNumber ?? undefined),
+      );
+      // Uniform 403 for every "no" — unknown piece, no code on the record,
+      // already-used code, already-claimed chain, or a mismatch.
+      if (
+        !pieceId ||
+        !rec ||
+        !rec.claimCodeHash ||
+        rec.claimCodeUsedAt ||
+        alreadyClaimed ||
+        !timingSafeEqualHex(attemptHash, rec.claimCodeHash)
+      ) {
+        return json({ ok: false, error: WRONG_OR_USED_CODE }, 403);
+      }
+      // Bind the session user and stamp the code as spent (single use).
+      const next = stewards.map((s) =>
+        s === rec ? { ...bindStewardOnClaim(s, userId, now), claimCodeUsedAt: now } : s,
+      );
+      return { next, result: undefined };
+    });
+    if (outcome instanceof Response) return outcome;
+
+    const events = await readLedger(env);
+    return buildClaimedResponse(outcome.next, events, userId);
+  }
 
   // ---------- Phase A: bind only ----------
   if (!('consent' in body)) {

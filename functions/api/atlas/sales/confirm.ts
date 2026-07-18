@@ -162,7 +162,7 @@ export async function onRequestPost(
     if (outcome instanceof Response) return outcome;
     steward = outcome.steward;
     transferEvent = outcome.event;
-  } else if (existing && existing.email.toLowerCase() === buyerEmail.toLowerCase()) {
+  } else if (existing && (existing.email ?? '').toLowerCase() === buyerEmail.toLowerCase()) {
     // Case 2a — unbound record already issued to this buyer: a confirm
     // retry (or the admin beat the webhook). Reuse it.
     steward = existing;

@@ -142,15 +142,6 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
     textTransform: 'uppercase', fontWeight: 600, padding: '4px 0', textAlign: 'left',
     width: 'fit-content',
   };
-  // Google: a thin-bordered secondary, matching the field hairline weight.
-  const googleStyle: React.CSSProperties = {
-    width: '100%', border: `1px solid ${C.line}`, background: 'transparent',
-    borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    gap: 9, padding: '12px', cursor: 'pointer', color: C.ink,
-    fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 600,
-    letterSpacing: '0.02em',
-  };
-
   const title =
     mode === 'signup' ? 'Create your account'
     : mode === 'code-email' ? 'Sign in with a code'
@@ -229,18 +220,19 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
           // the Sign in pill on the right. Collapses to a column under 760px.
           <div className="sip-h">
             <div className="sip-h__left">
-              <button type="button" onClick={doGoogle} disabled={busy} style={googleStyle}>
-                <GoogleMark /> Continue with Google
-              </button>
+              {/* Email leads (the fields to the right). Google stays only as a
+                  quiet lowercase text option here, no icon or logo. */}
               <div style={{
-                display: 'flex', flexDirection: 'column', gap: 2,
-                paddingTop: 16,
+                display: 'flex', flexDirection: 'column', gap: 4,
               }}>
                 <button type="button" style={linkStyle} onClick={() => { setError(null); setMode(mode === 'signup' ? 'login' : 'signup'); }}>
                   {mode === 'signup' ? 'Have an account? Sign in' : 'Create an account'}
                 </button>
                 <button type="button" style={{ ...linkStyle, color: C.sub }} onClick={() => { setError(null); setMode('code-email'); }}>
                   Email me a code instead
+                </button>
+                <button type="button" style={{ ...linkStyle, color: C.sub, textTransform: 'lowercase', letterSpacing: '0.06em' }} onClick={doGoogle} disabled={busy}>
+                  continue with google
                 </button>
               </div>
             </div>
@@ -282,16 +274,6 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
           </div>
         ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <button type="button" onClick={doGoogle} disabled={busy} style={googleStyle}>
-            <GoogleMark /> Continue with Google
-          </button>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: C.sub }}>
-            <span style={{ flex: 1, height: 1, background: C.line }} />
-            <span style={{ fontFamily: 'var(--font-ui)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.15em' }}>or</span>
-            <span style={{ flex: 1, height: 1, background: C.line }} />
-          </div>
-
           {mode === 'signup' && (
             <div>
               <label className={labelCls} style={labelStyle}>Name (optional)</label>
@@ -326,6 +308,10 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
             </button>
             <button type="button" style={{ ...linkStyle, color: C.sub }} onClick={() => { setError(null); setMode('code-email'); }}>
               Email me a code instead
+            </button>
+            {/* Google: a quiet lowercase text option, subordinate to email. */}
+            <button type="button" style={{ ...linkStyle, color: C.sub, textTransform: 'lowercase', letterSpacing: '0.06em' }} onClick={doGoogle} disabled={busy}>
+              continue with google
             </button>
           </div>
         </div>
@@ -372,14 +358,5 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
     </div>
   );
 };
-
-const GoogleMark: React.FC = () => (
-  <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
-    <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.3 17.7 9.5 24 9.5z" />
-    <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.8-9.8 6.8-17.4z" />
-    <path fill="#FBBC05" d="M10.4 28.3c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.8-6.1C.9 16.1 0 19.9 0 23.7s.9 7.6 2.6 10.7l7.8-6.1z" />
-    <path fill="#34A853" d="M24 47.4c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2 1.4-4.7 2.3-7.9 2.3-6.3 0-11.7-3.8-13.6-9.3l-7.8 6.1C6.5 42 14.6 47.4 24 47.4z" />
-  </svg>
-);
 
 export default SignInPanel;
