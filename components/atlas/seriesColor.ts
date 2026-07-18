@@ -16,6 +16,14 @@ const SERIES_COLORS: Record<string, string> = {
   'Light Codes': '#d6c38a',         // pale gold
 };
 
+/**
+ * Neutral warm hue for a piece whose series is unknown/undefined — the
+ * ATLAS_EMBER family (--color-atlas-ember #574a36) lifted to a visible marker
+ * lightness. Deliberately NOT the UL gold: an uncatalogued or seriesless piece
+ * reads as a quiet warm neutral, never as a founding Universal Language light.
+ */
+const NEUTRAL_UNKNOWN = '#8a7a5c';
+
 // Deterministic fallback hue for any series not named above. Keeps everything
 // in a warm band (gold→amber→rose) so the map stays cohesive, never garish.
 function autoSeriesColor(series: string): string {
@@ -26,6 +34,6 @@ function autoSeriesColor(series: string): string {
 }
 
 export function seriesColor(series?: string): string {
-  if (!series) return SERIES_COLORS['Universal Language'];
+  if (!series) return NEUTRAL_UNKNOWN;
   return SERIES_COLORS[series] ?? autoSeriesColor(series);
 }

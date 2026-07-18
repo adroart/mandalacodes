@@ -84,6 +84,8 @@ const resolvePieceSigil = (pieceId: string): string => {
         series: a.series,
         category: a.category,
         cardNumber: a.cardNumber,
+        isSignaturePiece: a.isSignaturePiece,
+        sigilNumber: a.sigilNumber,
     });
 };
 
@@ -198,6 +200,85 @@ const ClaimCodeReference: React.FC<{
                 className="mt-3 font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
             >
                 Dismiss
+            </button>
+        </div>
+    );
+};
+
+/**
+ * Piece chooser with a free-text escape hatch. The dropdown stays
+ * archive-driven (it grows as the catalog lands), but an uncatalogued piece —
+ * one that passed through Adrian's hands before its Artwork row exists — can
+ * still be worked on: switch to "enter its id" and type the raw pieceId.
+ * Genesis, placement, issue, code mint, and sale confirm all work for a piece
+ * before it is catalogued; it simply renders by sigil until the row arrives.
+ */
+const PieceSelect: React.FC<{
+    value: string;
+    onChange: (pieceId: string) => void;
+}> = ({ value, onChange }) => {
+    // Free-text mode is sticky once chosen, and auto-on when the current value
+    // is an id the archive does not know.
+    const [freeText, setFreeText] = useState(() => !!value && !pieceById.has(value));
+    const trimmed = value.trim();
+    const uncatalogued = !!trimmed && !pieceById.has(trimmed);
+
+    if (freeText) {
+        return (
+            <div>
+                <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value.trim())}
+                    placeholder="Enter the piece id, e.g. MA-014"
+                    className={fieldInput}
+                />
+                <div className="flex items-center justify-between gap-3 mt-1">
+                    {uncatalogued ? (
+                        <span className="font-reading text-xs text-stone-500 not-italic">
+                            Uncatalogued id — renders by sigil only until its catalog row lands.
+                        </span>
+                    ) : (
+                        <span />
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setFreeText(false);
+                            onChange('');
+                        }}
+                        className="shrink-0 font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                    >
+                        choose from list
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className={fieldInput}
+            >
+                <option value="">Choose a piece...</option>
+                {pieceOptions.map((p) => (
+                    <option key={p.id} value={p.id}>
+                        {p.label}
+                    </option>
+                ))}
+            </select>
+            <button
+                type="button"
+                onClick={() => {
+                    setFreeText(true);
+                    onChange('');
+                }}
+                className="mt-1 font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+            >
+                piece not listed? enter its id
             </button>
         </div>
     );
@@ -390,20 +471,10 @@ const SeedEventSection: React.FC = () => {
             <div className="space-y-5">
                 <div>
                     <label className={fieldLabel}>Piece</label>
-                    <select
+                    <PieceSelect
                         value={form.pieceId}
-                        onChange={(e) =>
-                            setForm({ ...form, pieceId: e.target.value })
-                        }
-                        className={fieldInput}
-                    >
-                        <option value="">Choose a piece...</option>
-                        {pieceOptions.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.label}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={(id) => setForm({ ...form, pieceId: id })}
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -644,20 +715,10 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
             <div className="space-y-5">
                 <div>
                     <label className={fieldLabel}>Piece</label>
-                    <select
+                    <PieceSelect
                         value={form.pieceId}
-                        onChange={(e) =>
-                            setForm({ ...form, pieceId: e.target.value })
-                        }
-                        className={fieldInput}
-                    >
-                        <option value="">Choose a piece...</option>
-                        {pieceOptions.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.label}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={(id) => setForm({ ...form, pieceId: id })}
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -840,18 +901,7 @@ const PendingSaleRow: React.FC<{
             <div className="space-y-3">
                 <div>
                     <label className={fieldLabel}>Piece</label>
-                    <select
-                        value={pieceId}
-                        onChange={(e) => setPieceId(e.target.value)}
-                        className={fieldInput}
-                    >
-                        <option value="">Choose a piece...</option>
-                        {pieceOptions.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.label}
-                            </option>
-                        ))}
-                    </select>
+                    <PieceSelect value={pieceId} onChange={setPieceId} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div>

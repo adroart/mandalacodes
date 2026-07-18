@@ -140,6 +140,7 @@ export function buildSeedAtlasState(): PublicAtlasState {
         status: p.status,
         placedAt: p.placedAt,
         pieceType: 'mandala' as const, // all seeded pieces are Universal Language
+        kind: 'sixty-four' as const, // Universal Language → the sixty-four
         claimOrdinal: p.claimOrdinal,
         // DEV FIXTURE: the lit light's public dream, when one is seeded above.
         intention: p.intention,

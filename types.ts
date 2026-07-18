@@ -17,6 +17,12 @@ export interface Artwork {
   series?: string; // e.g. "Universal Language", "Mandala", "Light Codes"
   cardNumber?: number; // 1–64 — the oracle code this piece embodies (UL series). The
                        // explicit artwork↔code link, derived from the "- N" title suffix.
+  /** Curated sigil number lock (utils/pieceCode.ts). When present it wins over
+   *  cardNumber, the pieceId's trailing digits, and the stable hash — the way
+   *  to pin a permanent sigil number onto a piece whose id carries none. Set
+   *  it once a sigil is printed; it is part of the forever contract from then
+   *  on (see pieceCode.ts). */
+  sigilNumber?: number;
   coverImage: string;
   images: string[];
   description: string;
@@ -196,6 +202,14 @@ export interface PublicAtlasState {
      *  for backward compatibility with schemaVersion-2 consumers. Carries no
      *  holder data: it answers only "draw arcs to this piece?" */
     kinshipEligible?: boolean;
+    /** The taxonomy facet the visitor can filter the world by. Derived
+     *  server-side in toPublicState from archive/genesis meta:
+     *  'sixty-four' (series Universal Language), 'mandala' (series Mandala or
+     *  pieceType mandala outside UL), 'signature' (isSignaturePiece), else a
+     *  slug of the category. Additive & optional: schemaVersion-2 consumers
+     *  and pre-kind cached state simply lack it (the KIND filter row hides
+     *  when fewer than two kinds are present). Never personal. */
+    kind?: string;
     /** M6, Lens 2 — the piece's shared dream, when the keeper has chosen to
      *  let it ride publicly and the piece itself is otherwise visible here.
      *  No name, no city tie-in beyond what's already public. Absent = no
@@ -277,6 +291,14 @@ export interface LedgerEvent {
    *  optional: dropped by the canonicalizer when undefined, so pre-existing
    *  hashes stay valid. Never personal. */
   pieceType?: 'mandala' | 'other';
+  /** 'created' (genesis) only — the piece's series and category, carried on
+   *  the chain so a piece that lives OUTSIDE FULL_ARCHIVE still projects its
+   *  series/category into public state (buildArtworkMeta falls back to these).
+   *  Non-personal facts, whitelist-parsed like everything else. Additive &
+   *  optional: dropped by the canonicalizer when undefined, so pre-existing
+   *  hashes stay valid. */
+  series?: string;
+  category?: string;
   prevHash: string | null;
   hash: string;
 }

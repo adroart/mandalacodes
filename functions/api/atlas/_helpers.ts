@@ -401,10 +401,37 @@ export async function unbindStewardsForUser(
 
 // ---------- Public state regeneration ----------
 
-function buildArtworkMeta(): Map<string, { series?: string; category?: string }> {
-  const map = new Map<string, { series?: string; category?: string }>();
+/**
+ * Piece → { series, category, isSignaturePiece } used by toPublicState to
+ * derive series/category, the marker type, and the kind facet.
+ *
+ * The archive is the source of truth; but a piece can live entirely OUTSIDE
+ * FULL_ARCHIVE (a catalogued work whose genesis was minted by id alone, before
+ * the catalog row lands). For those, fall back to the series/category the
+ * genesis `created` event carried on the chain (gap 4). Archive always wins
+ * over genesis-carried meta.
+ */
+function buildArtworkMeta(
+  events: readonly LedgerEvent[],
+): Map<string, { series?: string; category?: string; isSignaturePiece?: boolean }> {
+  const map = new Map<
+    string,
+    { series?: string; category?: string; isSignaturePiece?: boolean }
+  >();
   for (const a of FULL_ARCHIVE) {
-    map.set(a.id, { series: a.series, category: a.category });
+    map.set(a.id, {
+      series: a.series,
+      category: a.category,
+      isSignaturePiece: a.isSignaturePiece,
+    });
+  }
+  // Genesis-carried fallback for pieces the archive does not (yet) hold.
+  for (const e of events) {
+    if (e.type !== 'created') continue;
+    if (map.has(e.pieceId)) continue; // archive wins
+    if (e.series || e.category) {
+      map.set(e.pieceId, { series: e.series, category: e.category });
+    }
   }
   return map;
 }
@@ -445,7 +472,7 @@ export async function regeneratePublicState(
   events: LedgerEvent[],
 ): Promise<PublicAtlasState> {
   const records = projectAll(events);
-  const meta = buildArtworkMeta();
+  const meta = buildArtworkMeta(events);
   const stewards = await readStewards(env);
   const ring3ByKey = buildRing3ByKey(stewards);
   const intentions = await readSharedIntentions(env);

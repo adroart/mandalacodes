@@ -20,6 +20,11 @@ interface SeedEvent {
     cityId: null;
     note: string;
     actor: 'admin';
+    // Series/category ride the genesis event (gap 4) so a backfilled piece is
+    // complete even before its FULL_ARCHIVE row is present at projection time.
+    // JSON.stringify drops these when undefined, so the pasteable seed stays clean.
+    series?: string;
+    category?: string;
 }
 
 const OUTPUT = '/tmp/atlas-seed.json';
@@ -41,6 +46,8 @@ const events: SeedEvent[] = FULL_ARCHIVE
         cityId: null,
         note: 'Auto-seeded from mockData',
         actor: 'admin' as const,
+        series: a.series,
+        category: a.category,
     }));
 
 fs.writeFileSync(OUTPUT, JSON.stringify(events, null, 2), 'utf8');

@@ -180,6 +180,46 @@ export function derivePieceType(
   return series === 'Universal Language' ? 'mandala' : 'other';
 }
 
+/** A dependency-free slug for a category label ("Multidimensional Art" →
+ *  "multidimensional-art", "Jewelry" → "jewelry"). Kept local so this module
+ *  (imported by both client and server) pulls in nothing. */
+function slugKind(label: string): string {
+  return label
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Derive a piece's KIND facet — the taxonomy the visitor filters the world by.
+ * Additive to the public projection (schemaVersion unchanged): every piece
+ * carries one, but readers that predate the field simply ignore it.
+ *
+ * Ratified order (todo/plans/claim-code-integration.md, gap 7):
+ *   'sixty-four' — series Universal Language
+ *   'mandala'    — series Mandala, or pieceType mandala outside UL
+ *   'signature'  — isSignaturePiece
+ *   else a slug of the category ('other' when no category is known)
+ *
+ * Pure and exported so the projection tests can freeze it.
+ */
+export function deriveKind(
+  record: PieceRecord,
+  meta: { series?: string; category?: string; isSignaturePiece?: boolean } | undefined,
+): string {
+  const series = meta?.series;
+  if (series === 'Universal Language') return 'sixty-four';
+  // 'mandala': the Mandala series, or a piece whose genesis/derived pieceType
+  // is mandala while living outside UL (series already handled above).
+  if (series === 'Mandala' || derivePieceType(record, series) === 'mandala') {
+    return 'mandala';
+  }
+  if (meta?.isSignaturePiece) return 'signature';
+  if (meta?.category) return slugKind(meta.category);
+  return 'other';
+}
+
 /**
  * Whether a piece may join the kinship constellation (M5).
  *
@@ -230,7 +270,7 @@ export function isKinshipEligible(
  */
 export function toPublicState(
   records: Map<string, PieceRecord>,
-  artworks: Map<string, { series?: string; category?: string }>,
+  artworks: Map<string, { series?: string; category?: string; isSignaturePiece?: boolean }>,
   cities: CityCentroid[],
   ring3ByKey?: Map<string, boolean | 'deferred'>,
   liveIntentionsByKey?: Map<string, string>,
@@ -290,6 +330,7 @@ export function toPublicState(
       status: publicStatus,
       placedAt,
       pieceType: derivePieceType(record, meta?.series),
+      kind: deriveKind(record, meta),
       claimOrdinal: ordinals.get(key),
       kinshipEligible: isKinshipEligible(record, ring3ByKey?.get(key)),
       ...(intention !== undefined ? { intention } : {}),

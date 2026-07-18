@@ -73,6 +73,34 @@ interface SpineEntry {
   detail?: string;
 }
 
+/**
+ * Build a minimal Artwork for a piece that is in the public atlas state but
+ * absent from FULL_ARCHIVE — a real, shipped piece whose catalog row has not
+ * landed yet. A scanned QR on a shipped piece may NEVER dead-end (the forever
+ * contract): it renders a certificate named by its sigil, its series/category
+ * from public state, no hexagram block, and the ArtworkPlate's warm plate
+ * fallback (no coverImage). The moment the catalog row lands, the real Artwork
+ * wins with zero code change.
+ */
+function fallbackArtFromPublic(piece: PublicPiece): Artwork {
+  const sigil = pieceCode({
+    pieceId: piece.pieceId,
+    series: piece.series,
+    category: piece.category,
+  });
+  return {
+    id: piece.pieceId,
+    title: sigil, // title falls back to the sigil
+    category: piece.category ?? '',
+    series: piece.series,
+    coverImage: '', // no plate image → ArtworkPlate renders its warm fallback
+    images: [],
+    description: '',
+    year: '',
+    availability: 'MADE_TO_ORDER',
+  };
+}
+
 function cityLabel(cityId: string | null | undefined): string | undefined {
   if (!cityId) return undefined;
   const c = CITIES_BY_ID.get(cityId);
@@ -246,7 +274,10 @@ const PiecePage: React.FC = () => {
       if (!active) return;
       setAtlasState(state);
       const piece = findPublicPiece(state, pieceId, editionNumber);
-      if (!art) {
+      // Dead-end only when the piece is in NEITHER the archive NOR the public
+      // state. A shipped piece present in public state but not yet catalogued
+      // still renders its certificate by sigil (forever contract).
+      if (!art && !piece) {
         setLoad({ kind: 'not-found' });
         return;
       }
@@ -254,12 +285,13 @@ const PiecePage: React.FC = () => {
         piece ?? {
           pieceId,
           editionNumber,
-          series: art.series,
-          category: art.category,
+          series: art!.series,
+          category: art!.category,
           cityId: null,
           status: 'seeking',
         };
-      setLoad({ kind: 'ready', piece: resolved, art });
+      const resolvedArt = art ?? fallbackArtFromPublic(resolved);
+      setLoad({ kind: 'ready', piece: resolved, art: resolvedArt });
     });
     return () => {
       active = false;
@@ -402,6 +434,8 @@ const PiecePage: React.FC = () => {
     series: piece.series ?? art.series,
     category: piece.category ?? art.category,
     cardNumber: cardNumber ?? undefined,
+    isSignaturePiece: art.isSignaturePiece,
+    sigilNumber: art.sigilNumber,
   });
 
   const claimed = typeof piece.claimOrdinal === 'number';

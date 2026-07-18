@@ -8,6 +8,13 @@ export interface AtlasFiltersProps {
   series: readonly string[];        // available series for the dropdown
   selectedSeries: string;            // 'all' or a specific series name
   onSeriesChange: (next: string) => void;
+  /** Kind facets present in the current data (e.g. 'sixty-four', 'mandala',
+   *  'signature', category slugs). The KIND row shows only when more than one
+   *  kind exists, so today's UL-only world shows no new chrome. */
+  kinds: readonly string[];
+  /** 'all' or a specific kind. */
+  selectedKind: string;
+  onKindChange: (next: string) => void;
   status: AtlasStatusFilter;
   onStatusChange: (next: AtlasStatusFilter) => void;
   /** Available categories derived from the current data. */
@@ -41,6 +48,32 @@ const STATUS_OPTIONS: ReadonlyArray<{ value: AtlasStatusFilter; label: string }>
   { value: 'seeking', label: 'Seeking ground' },
 ];
 
+// ─── Kind facet ────────────────────────────────────────────────────────────
+// Ratified labels (todo/plans/claim-code-integration.md, gap 7), verbatim.
+// The three named kinds lead, in this order; every other kind (a category
+// slug) follows, data-driven, humanized from its slug.
+const KIND_LABELS: Readonly<Record<string, string>> = {
+  'sixty-four': 'the sixty-four',
+  mandala: 'mandalas',
+  signature: 'signature pieces',
+};
+const KIND_ORDER: readonly string[] = ['sixty-four', 'mandala', 'signature'];
+
+function kindLabel(kind: string): string {
+  return (
+    KIND_LABELS[kind] ??
+    kind.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+  );
+}
+
+/** Order kinds: the three ratified kinds first (in their fixed order), then
+ *  any data-driven others alphabetically. */
+function orderedKinds(kinds: readonly string[]): string[] {
+  const known = KIND_ORDER.filter((k) => kinds.includes(k));
+  const rest = kinds.filter((k) => !KIND_ORDER.includes(k)).sort();
+  return [...known, ...rest];
+}
+
 // ─── 'paper' variant ─────────────────────────────────────────────────────
 const btnBase =
   'font-label text-[11px] uppercase tracking-[0.18em] px-4 min-h-[44px] border transition-colors duration-200 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2';
@@ -52,6 +85,9 @@ const PaperFilters: React.FC<AtlasFiltersProps> = ({
   series,
   selectedSeries,
   onSeriesChange,
+  kinds,
+  selectedKind,
+  onKindChange,
   status,
   onStatusChange,
   categories,
@@ -68,6 +104,7 @@ const PaperFilters: React.FC<AtlasFiltersProps> = ({
   threadsTotal,
 }) => {
   const total = placedCount + seekingCount;
+  const kindRow = orderedKinds(kinds);
 
   return (
     <div className="flex flex-col gap-4">
@@ -132,6 +169,38 @@ const PaperFilters: React.FC<AtlasFiltersProps> = ({
           </p>
         </div>
       </div>
+
+      {/* Kind filter — chip row; shown only when more than one kind exists,
+          so today's UL-only world shows no new chrome. */}
+      {kindRow.length >= 2 && (
+        <div role="group" aria-label="Kind filter" className="flex flex-wrap items-center gap-2">
+          <span className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-700 mr-1">
+            Kind
+          </span>
+          <button
+            type="button"
+            aria-pressed={selectedKind === 'all'}
+            onClick={() => onKindChange('all')}
+            className={`${btnBase} ${selectedKind === 'all' ? active : inactive}`}
+          >
+            All
+          </button>
+          {kindRow.map((kind) => {
+            const isActive = selectedKind === kind;
+            return (
+              <button
+                key={kind}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => onKindChange(kind)}
+                className={`${btnBase} ${isActive ? active : inactive}`}
+              >
+                {kindLabel(kind)}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Category filter — chip row; hidden when fewer than 2 categories. */}
       {categories.length >= 2 && (
@@ -271,6 +340,9 @@ const StageFilters: React.FC<AtlasFiltersProps> = ({
   series,
   selectedSeries,
   onSeriesChange,
+  kinds,
+  selectedKind,
+  onKindChange,
   status,
   onStatusChange,
   categories,
@@ -292,6 +364,11 @@ const StageFilters: React.FC<AtlasFiltersProps> = ({
     { value: 'all', label: 'All series' },
     ...series.map((s) => ({ value: s, label: s })),
   ];
+  const kindRow = orderedKinds(kinds);
+  const kindOptions =
+    kindRow.length >= 2
+      ? [{ value: 'all', label: 'All' }, ...kindRow.map((k) => ({ value: k, label: kindLabel(k) }))]
+      : null;
   const categoryOptions =
     categories.length >= 2
       ? [{ value: 'all', label: 'All' }, ...categories.map((c) => ({ value: c, label: c }))]
@@ -310,6 +387,9 @@ const StageFilters: React.FC<AtlasFiltersProps> = ({
   return (
     <div className="flex flex-col gap-5">
       <TextToggle label="Series" options={seriesOptions} value={selectedSeries} onChange={onSeriesChange} />
+      {kindOptions && (
+        <TextToggle label="Kind" options={kindOptions} value={selectedKind} onChange={onKindChange} />
+      )}
       <TextToggle label="Show" options={STATUS_OPTIONS} value={status} onChange={onStatusChange} />
       {categoryOptions && (
         <TextToggle

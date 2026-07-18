@@ -8,6 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   deriveClaimOrdinals,
+  deriveKind,
   derivePieceType,
   projectAll,
   projectPiece,
@@ -181,6 +182,40 @@ describe('derivePieceType', () => {
   });
 });
 
+describe('deriveKind (the taxonomy facet)', () => {
+  const seeking = () => projectPiece([evt({ type: 'created' })]);
+
+  it('Universal Language → sixty-four', () => {
+    expect(deriveKind(seeking(), { series: 'Universal Language' })).toBe('sixty-four');
+  });
+
+  it('Mandala series → mandala', () => {
+    expect(deriveKind(seeking(), { series: 'Mandala' })).toBe('mandala');
+  });
+
+  it('pieceType mandala outside UL → mandala', () => {
+    const overridden = projectPiece([evt({ type: 'created', pieceType: 'mandala' })]);
+    expect(deriveKind(overridden, { series: 'Light Codes' })).toBe('mandala');
+  });
+
+  it('signature piece → signature', () => {
+    expect(
+      deriveKind(seeking(), { category: 'Multidimensional Art', isSignaturePiece: true }),
+    ).toBe('signature');
+  });
+
+  it('otherwise a slug of the category', () => {
+    expect(deriveKind(seeking(), { category: 'Jewelry' })).toBe('jewelry');
+    expect(deriveKind(seeking(), { category: 'Multidimensional Art' })).toBe(
+      'multidimensional-art',
+    );
+  });
+
+  it('no series and no category → other', () => {
+    expect(deriveKind(seeking(), undefined)).toBe('other');
+  });
+});
+
 describe('toPublicState — claim-aware status + ordinals', () => {
   function meta() {
     return new Map([
@@ -202,7 +237,23 @@ describe('toPublicState — claim-aware status + ordinals', () => {
     expect(p?.status).toBe('placed');
     expect(p?.claimOrdinal).toBe(1);
     expect(p?.pieceType).toBe('mandala');
+    expect(p?.kind).toBe('sixty-four');
     expect(state.schemaVersion).toBe(2);
+  });
+
+  it('carries the kind facet for a non-UL piece from its meta', () => {
+    const state = toPublicState(
+      projectAll([
+        evt({ pieceId: 'JW-1', type: 'created' }),
+        evt({ pieceId: 'JW-1', type: 'placed', cityId: 'lisbon-pt' }),
+        evt({ pieceId: 'JW-1', type: 'claimed' }),
+      ]),
+      new Map([['JW-1', { category: 'Jewelry' }]]),
+      [lisbon],
+    );
+    const p = state.pieces.find((x) => x.pieceId === 'JW-1');
+    expect(p?.kind).toBe('jewelry');
+    expect(p?.pieceType).toBe('other');
   });
 
   it('placed but unclaimed → status unawakened, no ordinal', () => {

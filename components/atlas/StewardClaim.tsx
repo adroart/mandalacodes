@@ -977,6 +977,8 @@ const StewardClaim: React.FC = () => {
           series: art.series,
           category: art.category,
           cardNumber: art.cardNumber,
+          isSignaturePiece: art.isSignaturePiece,
+          sigilNumber: art.sigilNumber,
         })
       : null;
 

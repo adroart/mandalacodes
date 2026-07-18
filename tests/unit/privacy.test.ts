@@ -125,6 +125,9 @@ describe('toPublicState privacy', () => {
       // never from holder data. Added to the whitelist deliberately.
       'pieceType',
       'claimOrdinal',
+      // The taxonomy facet the visitor filters by. Non-personal — derived from
+      // series/category/pieceType, never from holder data. Whitelisted deliberately.
+      'kind',
       // M5: a single derived BOOLEAN — "draw kinship arcs to this piece?".
       // Carries no holder data; the consent OBJECT and ring3ChartPresence
       // stay forbidden (above). Added to the whitelist deliberately.
