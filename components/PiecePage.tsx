@@ -395,7 +395,8 @@ const PiecePage: React.FC = () => {
             <div className="mt-8 text-center">
               <div className="mx-auto max-w-md border-y border-wood-300 py-5">
                 <p className="font-display text-2xl sm:text-[1.75rem] text-wood-800 leading-[1.3]">
-                  This piece is waiting for its keeper.{' '}
+                  This piece is ready for someone to become its keeper and
+                  infuse it with their dream.{' '}
                   <Link
                     to={claimHref}
                     className="text-bronze-600 hover:text-bronze-500 transition-colors whitespace-nowrap"
@@ -427,14 +428,15 @@ const PiecePage: React.FC = () => {
             </div>
           )}
 
-          {/* ── The dream it carries: the centerpiece, at display size
-              (law 2 — the largest reading text on the surface). ── */}
+          {/* ── The dream it carries: the centerpiece, as a calm reading block
+              (the recentering, 2026-07-18 — the ordinal stays the monumental
+              element; the dream reads at a quiet 22-24px). ── */}
           {piece.intention && (
             <div className="mt-10 sm:mt-12">
               <Rule className="mx-auto max-w-[5rem]" />
               <p
-                className="font-display text-wood-900 text-center leading-[1.28] mt-8 whitespace-pre-line"
-                style={{ fontSize: 'clamp(1.6rem, 4.6vw, 2.6rem)' }}
+                className="font-display text-wood-900 text-center leading-[1.5] mt-8 whitespace-pre-line"
+                style={{ fontSize: 'clamp(1.375rem, 2.4vw, 1.5rem)' }}
               >
                 {piece.intention}
               </p>
@@ -442,12 +444,12 @@ const PiecePage: React.FC = () => {
             </div>
           )}
 
-          {/* ── The anchoring city + the lineage of keepers ── */}
+          {/* ── Where the piece is alive + the lineage of keepers ── */}
           {(anchoredCity || lineageLine) && (
             <div className="mt-9 sm:mt-11 text-center space-y-1.5">
               {anchoredCity && (
                 <p className="font-display text-xl text-wood-800">
-                  Anchored in {anchoredCity}
+                  alive in {anchoredCity}
                 </p>
               )}
               {lineageLine && (

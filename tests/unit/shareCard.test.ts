@@ -64,12 +64,12 @@ describe('share card composition', () => {
     const claimed = collectText(
       buildShareCardElement({ ...BASE, dream: null, claimOrdinal: 3 }),
     ).join('\n');
-    expect(claimed).toContain('the 3rd light · anchored in Denpasar, Indonesia');
+    expect(claimed).toContain('the 3rd light · alive in Denpasar, Indonesia');
 
     const seeking = collectText(
       buildShareCardElement({ ...BASE, dream: null, claimOrdinal: null }),
     ).join('\n');
-    expect(seeking).not.toMatch(/light · anchored/);
+    expect(seeking).not.toMatch(/light · alive/);
     // The seeking card still names the work and carries the seal placeholder.
     expect(seeking).toContain("Earth's Breath");
     expect(seeking).toContain('·');

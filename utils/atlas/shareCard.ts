@@ -115,13 +115,14 @@ function clampDream(dream: string): string {
   return `${(lastSpace > 200 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
 }
 
-/** Dream type sizes down as the dream gets longer, so short dreams read
- *  monumental and long ones still fit the plate. */
+/** Dream type sizes gently down as the dream gets longer. The calm scale
+ *  (Adrian, 2026-07-18): nothing larger than 30, and a short dream does not
+ *  balloon; it sits calm in the same block a long one fills. */
 function dreamFontSize(len: number): number {
-  if (len <= 90) return 40;
-  if (len <= 160) return 33;
-  if (len <= 220) return 28;
-  return 24;
+  if (len <= 90) return 30;
+  if (len <= 160) return 27;
+  if (len <= 220) return 24;
+  return 22;
 }
 
 /**
@@ -307,7 +308,7 @@ export function buildShareCardElement(input: ShareCardInput): CardNode {
   if (claimed) {
     const line =
       `the ${ordinal(input.claimOrdinal as number)} light` +
-      (cityLabel ? ` · anchored in ${cityLabel}` : '');
+      (cityLabel ? ` · alive in ${cityLabel}` : '');
     textChildren.push(
       h(
         'div',

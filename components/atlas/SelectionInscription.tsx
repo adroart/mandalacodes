@@ -19,7 +19,7 @@
 export interface SelectionInscriptionProps {
   /** The piece's public dream, unabridged; null when none is kept. */
   dream: string | null;
-  /** The sub-line, e.g. "UL № 1 · placed in Denpasar · the 1st light". */
+  /** The sub-line, e.g. "UL № 1 · alive in Denpasar · the 1st light". */
   standing: string;
   /** Write on the left when the light is on the right hemisphere, and vice
       versa: the dream sits away from its light. */
@@ -36,12 +36,15 @@ function scrim(awayLeft: boolean): string {
 }
 
 /* Dreams are long (Adrian, 2026-07-18). The inscription fits up to ~700
-   characters by stepping the display size down, never below the 20px site
-   guardrail; beyond that it truncates at a sentence boundary and offers a quiet
+   characters by stepping the size down from 22px, never below the 19px floor;
+   beyond that it truncates at a sentence boundary and offers a quiet
    `read the whole dream` action into the full card, where every word renders. */
+/* The calm dream scale (Adrian, 2026-07-18): the inscription rests at a base
+   22px and steps down only for long dreams, to a 19px floor. A short dream
+   stays 22px and is never enlarged; it sits small and dignified. */
 const INSCRIPTION_CHAR_FIT = 700;
-const INSCRIPTION_MAX_PX = 34;
-const INSCRIPTION_MIN_PX = 20;
+const INSCRIPTION_MAX_PX = 22;
+const INSCRIPTION_MIN_PX = 19;
 
 /** Step the display size down as the dream lengthens (floor 20px), and cut a
  *  longer-than-fit dream at a sentence boundary at or before the fit ceiling. */
@@ -96,8 +99,8 @@ export default function SelectionInscription({
           zIndex: 1,
           fontFamily: 'var(--font-display)',
           fontWeight: 400,
-          fontSize: fit ? `${fit.fontPx}px` : 'clamp(26px, 2.2vw, 33px)',
-          lineHeight: 1.28,
+          fontSize: fit ? `${fit.fontPx}px` : '22px',
+          lineHeight: 1.4,
           letterSpacing: '0.008em',
           color: dream ? 'rgba(238, 228, 208, 0.98)' : 'rgba(200, 176, 132, 0.78)',
           margin: 0,

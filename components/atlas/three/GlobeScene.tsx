@@ -1,6 +1,11 @@
 /**
  * Scene assembly: nested tilt/spin groups (see rig.ts for the convention),
  * the per-frame rig step, the mandala camera dolly, and post-processing.
+ *
+ * The hexagram ring is parked (Adrian, 2026-07-18, the recentering): it leaves
+ * the default scene and mounts only behind `?lenses=1`, together with the
+ * mandala view. The component is kept and reachable; only this mount is gated.
+ * The quiet kinship arcs stay always-on — they are the connective tissue.
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
@@ -23,6 +28,12 @@ import {
   stepRig,
   useRig,
 } from './rig';
+
+/* The lens layer (the hexagram ring, and with it the mandala view) is parked
+   off the default surface; `?lenses=1` brings it back. Read at module load,
+   the same dev-flag pattern the page uses. */
+const LENSES_ENABLED =
+  typeof window !== 'undefined' && /[?&]lenses=1(?:&|$)/.test(window.location.search);
 
 export interface GlobeSceneProps {
   nodes: GlobeNode[];
@@ -133,7 +144,7 @@ export default function GlobeScene({
               visible={kinshipVisible}
             />
           )}
-          <HexagramRing placedByCard={placedByCard} />
+          {LENSES_ENABLED && <HexagramRing placedByCard={placedByCard} />}
         </group>
       </group>
       <Atmosphere />

@@ -135,10 +135,6 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
     [state, key],
   );
   const myOrdinal = mine?.claimOrdinal;
-  const myTitle = (FULL_ARCHIVE.find((a) => a.id === pieceId)?.title ?? pieceId).replace(
-    /\s*-\s*\d+\s*$/,
-    '',
-  );
   const onGlobe = nodes.some((n) => n.id === key);
 
   /* Sequence: ignition runs its own clock inside the globe (~0.9s lead +
@@ -237,7 +233,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
           className="font-reading text-lg sm:text-xl mb-3"
           style={{ color: 'rgba(203,191,168,0.9)' }}
         >
-          {myTitle} has found its steward.
+          Your dream joins the dreams of the world.
         </p>
         <p
           className="text-3xl sm:text-5xl"
@@ -264,6 +260,17 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
             transition: 'width 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.4s',
           }}
         />
+        {/* The ready beat (Adrian, 2026-07-18): the piece becomes the door back
+            to this feeling. It settles below the ordinal once it has landed,
+            above the book door in the exit block below. */}
+        {phase === 'ready' && (
+          <p
+            className="mx-auto mt-6 max-w-md px-6 font-reading text-base sm:text-lg leading-snug"
+            style={{ color: 'rgba(203,191,168,0.82)' }}
+          >
+            From now on, every glance at your piece returns you to this feeling.
+          </p>
+        )}
       </div>
 
       {/* The creator's message: the final beat. Mounted only once the light is

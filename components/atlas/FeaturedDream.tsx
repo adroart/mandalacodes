@@ -62,7 +62,7 @@ const SCRIM =
    it cuts at the word target. A quiet ellipsis marks that more waits on the
    piece. A short dream (already under the window) shows whole, no ellipsis. */
 const FEATURED_WORD_TARGET = 60;
-const FEATURED_MAX_LINES = 8;
+const FEATURED_MAX_LINES = 10;
 
 /** Rebuild a truncated excerpt from the first `n` words with a quiet ellipsis,
     dropping a dangling comma or colon so the cut never ends mid-punctuation. */
@@ -284,18 +284,21 @@ export default function FeaturedDream({
             zIndex: 1,
             fontFamily: 'var(--font-display)',
             fontWeight: 400,
-            fontSize: isPhone ? 'clamp(17px, 4.6vw, 20px)' : 'clamp(20px, 1.5vw, 23px)',
-            lineHeight: 1.4,
+            // The calm dream scale (Adrian, 2026-07-18): one quiet size tuned
+            // for the three-to-five-sentence median. A short dream sits small
+            // and dignified in this same slot; nothing inflates.
+            fontSize: isPhone ? '17px' : 'clamp(17px, 1.1vw, 18px)',
+            lineHeight: 1.45,
             letterSpacing: '0.01em',
             color: 'rgba(236, 226, 207, 0.96)',
             margin: 0,
             textShadow: '0 1px 16px rgba(8,6,4,0.85)',
-            // Never more than ~8 lines in the featured slot: the opening
+            // Never more than ~10 lines in the featured slot: the opening
             // excerpt is short, but on tight desktop widths this floor keeps
             // the block calm and lets tap-through carry the rest.
             display: '-webkit-box',
             WebkitBoxOrient: 'vertical',
-            WebkitLineClamp: 8,
+            WebkitLineClamp: 10,
             overflow: 'hidden',
           }}
         >

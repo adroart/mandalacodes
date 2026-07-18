@@ -44,6 +44,16 @@ const GlobeGL = lazy(() => import('./atlas/GlobeGL'));
 const USE_GL_GLOBE =
   typeof window !== 'undefined' && window.location.search.includes('libglobe');
 
+/* The recentering (Adrian, 2026-07-18): cohesion before interconnection. The
+   dream-hop drift, the threads toggle, the mandala view and its hexagram ring
+   leave the default surface until the core experience — earth, dreams, one
+   clear way in — is cohesive. They are parked, not deleted: `?lenses=1` brings
+   the whole lens layer back so the machinery stays reachable and compiling.
+   The quiet kinship arcs are NOT a lens; they remain always-on as the
+   connective tissue. GlobeScene reads the same flag to mount the ring. */
+const LENSES_ENABLED =
+  typeof window !== 'undefined' && /[?&]lenses=1(?:&|$)/.test(window.location.search);
+
 function webglAvailable(): boolean {
   if (typeof document === 'undefined') return false;
   try {
@@ -888,7 +898,7 @@ const AtlasPage: React.FC = () => {
       });
       const cityName = p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined;
       const parts = [code];
-      if (cityName) parts.push(`placed in ${cityName}`);
+      if (cityName) parts.push(`alive in ${cityName}`);
       if (typeof p.claimOrdinal === 'number') {
         parts.push(`the ${ordinalLabel(p.claimOrdinal)} light`);
       }
@@ -1076,7 +1086,7 @@ const AtlasPage: React.FC = () => {
 
   /* MOVE 3 · the code the selection is known by, and the quiet label line
      carved beneath its dream. City name only (no country), so the line reads
-     "placed in Lisbon" rather than an address-level breadcrumb. */
+     "alive in Lisbon" rather than an address-level breadcrumb. */
   const selectedCode = useMemo(() => {
     if (!selectedPiece) return null;
     return pieceCode({
@@ -1378,7 +1388,15 @@ const AtlasPage: React.FC = () => {
                   kinshipVisible={kinshipVisible}
                   placedByCard={placedByCard}
                   mandala={mandala}
-                  mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed · touch a code to visit it`}
+                  // One voice in the caption slot (law): with the mandala view
+                  // parked, the idle camera pull-back must not speak its own
+                  // caption over the resting thesis, and the unmounted ring must
+                  // carry no phantom tap targets. Both return with ?lenses=1.
+                  mandalaCaption={
+                    LENSES_ENABLED
+                      ? `The mandala so far · ${placedByCard.size} of 64 placed · touch a code to visit it`
+                      : ''
+                  }
                   onMarkerScreenPos={setMarkerScreenPos}
                   featuredId={showFeatured ? featuredClusterId : null}
                   onFeaturedScreenPos={setFeaturedScreenPos}
@@ -1389,7 +1407,7 @@ const AtlasPage: React.FC = () => {
                   clearForHud={!showInscription}
                   focusSeries={focusSeries}
                   yoursMode={yoursMode}
-                  onRingTap={handleRingTap}
+                  onRingTap={LENSES_ENABLED ? handleRingTap : undefined}
                   className="w-full h-full"
                 />
               )}
@@ -1466,11 +1484,21 @@ const AtlasPage: React.FC = () => {
                 className="pointer-events-auto absolute left-5 sm:left-8 bottom-24 sm:bottom-6 max-w-[93vw] sm:max-w-xl"
                 style={{ opacity: orientationOpacity, transition: chromeTierTransition }}
               >
-                {/* The thesis holds to a single line on phones (12px) so the
-                    caption block never wraps past two lines (Adrian,
-                    2026-07-18); the desktop size (14px) is unchanged. */}
+                {/* The recentering (Adrian, 2026-07-18): the story is the
+                    community, not the artist. `the vision` trails the thesis as
+                    a small standing link that replays the full overture, and
+                    rests while a light is open so the line stays calm. */}
                 <p className="font-label text-[12px] sm:text-[14px] leading-snug tracking-[0.015em] text-atlas-gold">
-                  Every piece Adrian has made, and the dreams they carry.
+                  Illuminators of the dream, surrounded by resonant dreamers.
+                  {!selectedKey && !selectedCity && (
+                    <button
+                      type="button"
+                      onClick={replayVision}
+                      className="ml-2.5 align-baseline font-label text-[10px] uppercase tracking-[0.18em] text-wood-400 hover:text-bronze-300 transition-colors"
+                    >
+                      the vision
+                    </button>
+                  )}
                 </p>
                 {/* One count line, never a stacked third line (Adrian,
                     2026-07-18): when the loader served placeholder/seed data the
@@ -1522,30 +1550,20 @@ const AtlasPage: React.FC = () => {
                   </p>
                 )}
 
-                {/* Standing doors in the caption area. The claiming door
-                    (Adrian, 2026-07-18) shows only to visitors who steward no
-                    piece; a signed-in steward sees the `your light` control
-                    instead (bottom-right), never both. `the vision` replays the
-                    full overture on demand, and rests while a light is open. */}
-                <div className="mt-3 flex flex-col gap-1.5">
-                  {ownedKeys.size === 0 && (
+                {/* One door line (Adrian, 2026-07-18): the claiming door shows
+                    only to visitors who steward no piece; a signed-in steward
+                    sees the `your light` control in the cluster instead, never
+                    both. This is the third and last row of the resting caption. */}
+                {ownedKeys.size === 0 && (
+                  <div className="mt-3">
                     <Link
                       to="/atlas/claim"
                       className="font-label text-[12px] leading-snug tracking-[0.02em] text-atlas-gold/90 hover:text-atlas-gold transition-colors"
                     >
-                      Hold one of these pieces? Claim your light →
+                      Keep a piece? Anchor your dream into it →
                     </Link>
-                  )}
-                  {!selectedKey && !selectedCity && (
-                    <button
-                      type="button"
-                      onClick={replayVision}
-                      className="self-start font-label text-[11px] uppercase tracking-[0.18em] text-wood-400 hover:text-bronze-300 transition-colors"
-                    >
-                      the vision
-                    </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1581,7 +1599,12 @@ const AtlasPage: React.FC = () => {
                     your light
                   </button>
                 )}
-                {dreamRoute.length > 0 && (
+                {/* Parked lenses (Adrian, 2026-07-18): the dream-hop drift and
+                    the threads toggle return only behind ?lenses=1. Without the
+                    flag the cluster is `filter` plus contextual. The kinship
+                    arcs themselves stay always-on regardless — they are the
+                    connective tissue, not a control. */}
+                {LENSES_ENABLED && dreamRoute.length > 0 && (
                   <button
                     type="button"
                     aria-pressed={streamActive}
@@ -1594,22 +1617,24 @@ const AtlasPage: React.FC = () => {
                     dreams
                   </button>
                 )}
-                <button
-                  type="button"
-                  aria-pressed={kinshipVisible}
-                  onClick={() => {
-                    fireGloss('threads');
-                    setKinshipVisible((v) => !v);
-                  }}
-                  title="Threads join pieces that share a code"
-                  className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
-                    kinshipVisible
-                      ? 'text-bronze-300'
-                      : 'text-wood-300 hover:text-bronze-400/80'
-                  }`}
-                >
-                  threads
-                </button>
+                {LENSES_ENABLED && (
+                  <button
+                    type="button"
+                    aria-pressed={kinshipVisible}
+                    onClick={() => {
+                      fireGloss('threads');
+                      setKinshipVisible((v) => !v);
+                    }}
+                    title="Threads join pieces that share a code"
+                    className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
+                      kinshipVisible
+                        ? 'text-bronze-300'
+                        : 'text-wood-300 hover:text-bronze-400/80'
+                    }`}
+                  >
+                    threads
+                  </button>
+                )}
                 <button
                   type="button"
                   aria-expanded={filtersOpen}
@@ -1687,28 +1712,31 @@ const AtlasPage: React.FC = () => {
                     the mandala view, the series legend, and the your-codes
                     lens. Each recedes the rest of the field, never removes it. */}
                 <div className="mt-6 pt-5 border-t border-bronze-400/12 flex flex-col gap-4">
-                  {/* Mandala: a view option, not a daily control. */}
-                  <div className="flex items-baseline gap-4">
-                    <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 w-16 shrink-0">
-                      View
-                    </span>
-                    <button
-                      type="button"
-                      aria-pressed={mandala}
-                      onClick={() => {
-                        const next = !mandala;
-                        setMandala(next);
-                        if (next) setStreamActive(false);
-                      }}
-                      className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+                  {/* Mandala: a parked view (Adrian, 2026-07-18), back only
+                      behind ?lenses=1 while the core experience settles. */}
+                  {LENSES_ENABLED && (
+                    <div className="flex items-baseline gap-4">
+                      <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 w-16 shrink-0">
+                        View
+                      </span>
+                      <button
+                        type="button"
+                        aria-pressed={mandala}
+                        onClick={() => {
+                          const next = !mandala;
+                          setMandala(next);
+                          if (next) setStreamActive(false);
+                        }}
+                        className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+                          mandala
+                            ? 'text-bronze-300 border-bronze-400/70'
+                            : 'text-wood-400 border-transparent hover:text-bronze-300/80'
+                        }`}
+                      >
                         mandala
-                          ? 'text-bronze-300 border-bronze-400/70'
-                          : 'text-wood-400 border-transparent hover:text-bronze-300/80'
-                      }`}
-                    >
-                      mandala
-                    </button>
-                  </div>
+                      </button>
+                    </div>
+                  )}
 
                   {/* Your codes: light the pieces carrying one of your own. */}
                   {yourGates.size > 0 && (
@@ -1845,7 +1873,7 @@ const AtlasPage: React.FC = () => {
               dream={selectedIntention}
               standing={[
                 selectedCode,
-                selectedCityName ? `placed in ${selectedCityName}` : null,
+                selectedCityName ? `alive in ${selectedCityName}` : null,
                 typeof selectedPiece.claimOrdinal === 'number'
                   ? `the ${ordinalLabel(selectedPiece.claimOrdinal)} light`
                   : null,

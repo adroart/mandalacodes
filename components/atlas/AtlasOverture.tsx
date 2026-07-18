@@ -20,15 +20,20 @@
  *                then a plain crossfade out -> onDone(). Nothing moves.
  *   skip         any pointer/key/touch -> onSkip() lands on the resting sky.
  *
- * Ratified copy (verbatim, no em dashes, no italics):
- *   "Every piece I have ever made, connected into one living artwork."
- *   "Each one carries the dream of the person who keeps it."
+ * Ratified copy (verbatim, no em dashes, no italics; the recentering,
+ * 2026-07-18 — the story is the community, not the artist):
+ *   "We are one global family of resonance, sharing the dreams we are
+ *    birthing for the future."
+ *   "Together, our dreams shape our reality: set into the creative cauldron,
+ *    watched as they take form."
  */
 
 import { useEffect, useRef, useState } from 'react';
 
-const LINE_ONE = 'Every piece I have ever made, connected into one living artwork.';
-const LINE_TWO = 'Each one carries the dream of the person who keeps it.';
+const LINE_ONE =
+  'We are one global family of resonance, sharing the dreams we are birthing for the future.';
+const LINE_TWO =
+  'Together, our dreams shape our reality: set into the creative cauldron, watched as they take form.';
 
 // Full-motion beats (ms from mount).
 const LINE_TWO_AT = 1100;
