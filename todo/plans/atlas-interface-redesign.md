@@ -553,6 +553,53 @@ for ignition, stilled autorotation, everything legible always.
 
 ---
 
+## Part II.5: The recentering (Adrian's second walkthrough, 2026-07-18)
+
+These rulings supersede anything above that disagrees with them. They are not
+polish; they correct the spine. The work below builds only after Fable brings
+the re-centered language and surface plan back to Adrian and he ratifies the
+words themselves.
+
+1. The wrong protagonist. The entry is egotistical: "Every piece I have ever
+   made" centers the artist, and the artist is only one aspect of the story.
+   The story is the community: people sharing their dreams across the planet,
+   connected. And claiming is not acquisition: in Adrian's words, "This is
+   not you getting a piece of the planet. This is bringing your dream and
+   your light into the fire, into the planet." Every entry and ceremony line
+   is rewritten from this frame, drawn from the project's own corpus, and
+   ratified by Adrian before it ships.
+2. Cohesion before interconnection. The orbit ring of code glyphs is a mess
+   and leaves the default experience. Threads, the dream-hop journey, and the
+   mandala view are parked (kept in code behind a flag or removed from the
+   surface) until the core experience is cohesive: earth, dreams, one clear
+   way in. The atlas control surface shrinks accordingly. The one-voice
+   caption rule is still violated on the live site (mandala caption, thesis
+   block, featured dream, and controls all visible at once, overlapping);
+   whatever survives on the surface must actually hold that rule.
+3. Dreams are three to five sentences. The type system still assumes one
+   sentence and balloons short dreams to monumental size. Recalibrate every
+   dream surface to a calm scale designed for the three-to-five-sentence
+   median; a short dream sits small and dignified, it does not fill the
+   stage.
+4. The selection card is confusing: too many links, too large, nothing
+   clumped properly, "I'm not sure what to click." Strip it to one clear
+   action and quiet, grouped metadata.
+5. "Alive," not "anchored." A piece is alive in the place it is alive.
+   Retire "anchored in" from every surface.
+6. The certificate is the engagement surface for the whole dream process:
+   some details shown to everyone, some held for the keeper. The bound
+   steward, signed in, sees the full record on their piece's certificate
+   including what they paid; a visitor sees the public layer only. Privacy
+   discipline unchanged: the private layer is served only to the
+   authenticated bound steward.
+7. Claiming runs through the code that lives with the piece. The QR points,
+   and the piece's code claims: the code is the credential, presented with
+   the piece itself, not a Google button as the front door. Accounts still
+   exist beneath (the record must bind to something durable), but the
+   experienced flow is: bring the code that lives with your piece. Design
+   from the existing piece-code and claim infrastructure, mapped before
+   building.
+
 ## Part III: Build order
 
 Sequenced so each step is visible on the live URL, per the standing rules
