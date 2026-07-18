@@ -63,13 +63,15 @@ const FRAG = /* glsl */ `
     // Light gathers where the thread meets its pieces.
     float endGlow = pow(1.0 - min(vT, 1.0 - vT) * 2.0, 3.0) * 0.22;
 
-    // Selection: kin arcs brighten, the rest recede.
-    float selBoost = vHighlight * (0.55 + 0.25 * sin(uTime * 2.2));
+    // Selection: kin arcs lift a breath, the rest recede. Subtlety ruling
+    // (Adrian, 2026-07-18): the lift must stay in the quiet ambient register,
+    // never a white fan of lines across the earth.
+    float selBoost = vHighlight * (0.16 + 0.06 * sin(uTime * 2.2));
     float selFade = uSelMode * (1.0 - vHighlight) * 0.75;
 
     float alpha = (base + pulse + endGlow + selBoost) * (1.0 - selFade) * reveal * uOpacity;
     if (alpha <= 0.004) discard;
-    vec3 col = vColor * (1.0 + vHighlight * 0.5 + pulse * 0.8 + endGlow * 0.8);
+    vec3 col = vColor * (1.0 + vHighlight * 0.15 + pulse * 0.8 + endGlow * 0.8);
     gl_FragColor = vec4(col, alpha);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>

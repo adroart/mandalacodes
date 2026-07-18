@@ -921,7 +921,7 @@ const StewardClaim: React.FC = () => {
                 className="font-display text-lg sm:text-xl leading-snug mb-10"
                 style={{ color: 'rgba(203,191,168,0.8)', fontFamily: 'var(--font-display)' }}
               >
-                A piece of the world is waiting for you.
+                It is ready to receive your dream.
               </p>
             </>
           ) : (
@@ -933,7 +933,7 @@ const StewardClaim: React.FC = () => {
                 letterSpacing: '0.01em',
               }}
             >
-              A piece of the world is waiting for you.
+              The world is ready to receive your dream.
             </h1>
           )}
           {arrivalStatus === 'claiming' || isSignedIn || !isLoaded ? (
@@ -973,7 +973,7 @@ const StewardClaim: React.FC = () => {
             className="font-display text-xl sm:text-2xl leading-snug mb-10"
             style={{ color: '#ece2cf', fontFamily: 'var(--font-display)' }}
           >
-            This piece has been waiting to meet you.
+            Your dream will become its light.
           </p>
           <button
             type="button"
@@ -1033,13 +1033,16 @@ const StewardClaim: React.FC = () => {
             }}
           />
 
-          {/* Ring 1, one quiet line under the textarea. */}
+          {/* Ring 1, one quiet line under the textarea. The dream-beat promise
+              (Adrian, 2026-07-18): the bond is honest — the connection stays
+              through every hand, and the dream can always be tended. */}
           <p
             className="mt-4 text-center font-display text-[13px] leading-relaxed"
             style={{ color: 'rgba(203,191,168,0.6)' }}
           >
-            What you write stays with the piece, and you can always carry the
-            whole book away.
+            Your dream and your art stay connected, through every hand this
+            piece ever passes to. Once a year you can tend it or set a new one;
+            nothing is lost.
           </p>
 
           {/* Where the dream lives: the one map-presence question, asked once.

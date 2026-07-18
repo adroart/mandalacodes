@@ -1,23 +1,20 @@
 /**
  * Piece-detail HUD: the vessel card, an editorial-poster readout.
  *
- * Rebuilt to the won card-c mockup: a code header, a full-bleed artwork band,
- * the dream set as a gallery pull-quote (first sentence large, the rest at body
- * scale), the standing line, the others resting on the same point, quiet kin,
- * and understated action rows. Reuses the same data (SelectedPiece / KinEntry /
- * HolderChartSummary) and helpers (statusLine, ordinal) the old instrument card
- * used; only the composition changed.
- *
- * The dream fits first: when the whole dream fits inside ~15rem it shows in full
- * with no fade and no affordance; only a truly overflowing dream gets the soft
- * fade and the quiet "unfold the dream" beat that expands it in place. No raw
- * scrollbar, no mid-line clip.
+ * The one-action card (Adrian, 2026-07-18, the recentering): the card was
+ * confusing — too many links, nothing clumped. Stripped to a full-bleed artwork
+ * plate, the dream in full at a calm consistent size, one quiet standing line
+ * (code, where it is alive, its founding light, and the count of pieces resting
+ * at the same point), and exactly ONE action: open the book. The kin list, the
+ * read-code row, the "also resting here" list and the card's own return are
+ * gone — all of that already lives on the piece's certificate. The card scrolls
+ * itself for a long dream; nothing collapses or unfolds.
  *
  * Origin (the visitor's birth place) keeps its own identity layout and recolours
  * every bronze accent to sage.
  */
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ordinalLabel, type SelectedPiece, type KinEntry, type HolderChartSummary } from './PieceSidePanel';
 import { img } from '../../utils/cloudinary';
@@ -28,9 +25,6 @@ const BRONZE = ATLAS_GOLD;
 const SAGE = ATLAS_KEPT;
 const PARCHMENT = '#f6f1e8';
 const MUTED = '#cbbfa8';
-
-// The fits-first threshold: a dream taller than this collapses behind a fade.
-const MAX_DREAM_PX = 240; // ~15rem
 
 /** A piece resting at the same city point, split into its two aligned columns. */
 export interface AlsoHereEntry {
@@ -43,26 +37,6 @@ function formatCoord(lat: number, lng: number): string {
   const ns = lat >= 0 ? 'N' : 'S';
   const ew = lng >= 0 ? 'E' : 'W';
   return `${Math.abs(lat).toFixed(1)}°${ns} · ${Math.abs(lng).toFixed(1)}°${ew}`;
-}
-
-/** Split a dream into its lead (first sentence or paragraph) and the remainder,
- *  so the lead can carry the pull-quote scale and the rest the body scale. */
-function splitDream(text: string): { lead: string; rest: string } {
-  const t = text.trim();
-  const nl = t.search(/\n/);
-  if (nl !== -1) {
-    const lead = t.slice(0, nl).trim();
-    const rest = t.slice(nl).trim();
-    if (lead) return { lead, rest };
-  }
-  const m = t.match(/^[\s\S]*?[.!?]["'”’)\]]?(\s+)/);
-  if (m) {
-    const cut = m[0].length;
-    const lead = t.slice(0, cut).trim();
-    const rest = t.slice(cut).trim();
-    if (lead && rest) return { lead, rest };
-  }
-  return { lead: t, rest: '' };
 }
 
 // The coordinate counts up from 0 to its true value, a gauge settling.
@@ -164,68 +138,31 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
 
   const counted = useCoordCountUp(coord?.lat ?? 0, coord?.lng ?? 0, reduce);
 
-  // ─── Fits-first dream measurement ──────────────────────────────────────────
-  // Measure the natural height of the dream block. If it fits inside the
-  // threshold it renders in full (no cap, no fade, no affordance); if it truly
-  // overflows we cap it and reveal the fade + "unfold" beat. useLayoutEffect
-  // runs the measure-then-collapse before paint so there is no flash of the
-  // full text, and a fonts.ready re-measure catches the serif face settling
-  // after first layout (font-display: swap).
-  const dreamRef = useRef<HTMLDivElement>(null);
-  const [dreamOpen, setDreamOpen] = useState(false);
-  const [dreamOverflow, setDreamOverflow] = useState(false);
-  const [dreamFull, setDreamFull] = useState(0);
-
-  useLayoutEffect(() => {
-    setDreamOpen(false);
-    const el = dreamRef.current;
-    if (!el || !intention) {
-      setDreamOverflow(false);
-      return;
-    }
-    const measure = () => {
-      const full = el.scrollHeight;
-      setDreamFull(full);
-      setDreamOverflow(full > MAX_DREAM_PX + 2);
-    };
-    measure();
-    let cancelled = false;
-    const fonts = (document as unknown as { fonts?: { ready?: Promise<unknown> } }).fonts;
-    if (fonts?.ready) {
-      fonts.ready.then(() => {
-        if (!cancelled) measure();
-      });
-    }
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => {
-      cancelled = true;
-      ro.disconnect();
-    };
-  }, [intention]);
-
   const isSeeking = piece.status === 'seeking';
   const isUnawakened = piece.status === 'unawakened';
-  /* One quiet line carries the whole standing: place and founding light
-     together. Everything else about the piece lives in its book. */
-  const statusLine = isSeeking
+  /* The one standing line (Adrian, 2026-07-18): where the piece is alive, its
+     founding light, and — folded in only when relevant — the count of pieces
+     resting at the same city point. "alive in" is the word for where a piece
+     lives; an unawakened vessel is not yet alive, so it keeps "at rest". */
+  const restingCount = 1 + (alsoHere?.length ?? 0);
+  const placeText = isSeeking
     ? 'seeking ground'
     : isUnawakened
-    ? piece.cityLabel
-      ? `at rest in ${piece.cityLabel}, awaiting its keeper`
-      : 'awaiting its keeper'
-    : `${piece.cityLabel ? `placed in ${piece.cityLabel}` : 'placed'}${
-        typeof piece.claimOrdinal === 'number'
-          ? ` · the ${ordinalLabel(piece.claimOrdinal)} light`
-          : ''
-      }`;
-  // Split the standing at its middle dot so the founding light reads muted
-  // beside the bronze dot, the place lit in parchment (the mockup pattern).
-  const [standingPlace, standingLight] = (() => {
-    const idx = statusLine.indexOf(' · ');
-    if (idx === -1) return [statusLine, null] as const;
-    return [statusLine.slice(0, idx), statusLine.slice(idx + 3)] as const;
-  })();
+      ? piece.cityLabel
+        ? `at rest in ${piece.cityLabel}, awaiting its keeper`
+        : 'awaiting its keeper'
+      : piece.cityLabel
+        ? `alive in ${piece.cityLabel}`
+        : 'alive';
+  const standingRest = [
+    placeText,
+    !isSeeking && !isUnawakened && typeof piece.claimOrdinal === 'number'
+      ? `the ${ordinalLabel(piece.claimOrdinal)} light`
+      : null,
+    restingCount > 1 ? `one of ${restingCount} resting here` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   // Title with a middle-dot before the edition (data may carry " - 20").
   // Shown only on the origin card; pieces are named by their code here.
@@ -233,8 +170,6 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
     typeof piece.editionNumber === 'number'
       ? `${piece.title.replace(/\s*-\s*\d+\s*$/, '')} · ${piece.editionNumber}`
       : piece.title;
-
-  const dream = intention ? splitDream(intention) : null;
 
   const Rule: React.FC<{ soft?: boolean }> = ({ soft }) => (
     <div
@@ -372,12 +307,16 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
     );
   }
 
-  // ─── Piece card: the vessel ────────────────────────────────────────────────
-  // One quiet scroll surface: the card scrolls with its scrollbar hidden (the
-  // cut content at the sheet edge is the affordance); the dream never scrolls.
+  // ─── Piece card: the vessel, one action ────────────────────────────────────
+  // The plate, the dream in full, one quiet standing line, and exactly one door:
+  // open the book. The card scrolls itself (scrollbar hidden) for a long dream.
+  // No card return: on desktop the control cluster carries `return`, on the
+  // phone the sheet's own drag-to-dismiss does. The kin, the read-code row and
+  // the also-resting list all live on the certificate the book door opens.
   return shell(
     <div className={scrollCap}>
-      {/* Back to the city list, when this piece was reached through one. */}
+      {/* Back to the city list, when this piece was reached through one. This
+          is contextual navigation into the list, not a second `return`. */}
       {onBack && (
         <button
           type="button"
@@ -388,35 +327,14 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           ← the city
         </button>
       )}
-      {/* Header: code left, release right. */}
-      <header className={`flex items-baseline justify-between px-[26px] pb-4 ${onBack ? 'pt-3' : 'pt-[22px]'}`}>
-        {code ? (
-          <CodeText
-            text={code}
-            base={MUTED}
-            hi={PARCHMENT}
-            className="font-label text-[12px] uppercase tracking-[0.22em] font-medium"
-          />
-        ) : (
-          <span />
-        )}
-        <button
-          type="button"
-          onClick={onRelease}
-          className="font-label text-[10px] uppercase tracking-[0.2em] transition-colors hover:text-bronze-300"
-          style={{ color: 'rgba(203,191,168,0.5)' }}
-        >
-          return
-        </button>
-      </header>
 
-      {/* Full-bleed artwork band. Shorter on phones so the dream keeps the
-          room; full height from sm up. Tapping it opens the piece page, where
-          the full artwork is shown uncropped on its certificate plate. */}
+      {/* Full-bleed artwork plate. Shorter on phones so the dream keeps the
+          room; full height from sm up. It opens the same book door — the piece
+          page — where the artwork is shown uncropped on its certificate plate. */}
       <Link
         to={bookHref}
         aria-label="See the full artwork"
-        className="group relative block h-[124px] sm:h-[172px] overflow-hidden"
+        className={`group relative block h-[124px] sm:h-[172px] overflow-hidden ${onBack ? 'mt-3' : ''}`}
         style={{
           borderTop: '1px solid rgba(196,170,124,0.2)',
           borderBottom: '1px solid rgba(196,170,124,0.2)',
@@ -439,70 +357,22 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
               'linear-gradient(180deg, rgba(20,17,16,0) 62%, rgba(20,17,16,0.55) 100%)',
           }}
         />
-        {/* Quiet hover cue: this band is a doorway to the whole work. */}
-        <span
-          aria-hidden
-          className="absolute bottom-2 right-3 font-label text-[10px] uppercase tracking-[0.2em] text-paper-100/0 group-hover:text-paper-100/80 transition-colors duration-300"
-        >
-          See the full artwork
-        </span>
       </Link>
 
-      {/* The dream, the hero, or the quiet no-dream note. */}
-      {dream ? (
-        <section className="px-[26px] pt-[26px] pb-[22px]">
+      {/* The dream, in full, at one calm consistent size. A short dream sits
+          small and dignified here; a long one scrolls with the card. */}
+      {intention ? (
+        <section className="px-[26px] pt-[26px] pb-[20px]">
           <Label>The dream</Label>
-          <div
-            ref={dreamRef}
-            className="relative overflow-hidden"
-            style={{
-              maxHeight: dreamOpen
-                ? `${dreamFull}px`
-                : dreamOverflow
-                ? `${MAX_DREAM_PX}px`
-                : undefined,
-              transition: 'max-height 600ms cubic-bezier(.4,0,.2,1)',
-            }}
+          <p
+            className="font-display text-[20px] leading-[1.55] whitespace-pre-line"
+            style={{ color: PARCHMENT }}
           >
-            <p
-              className="font-display font-medium text-[29px] leading-[1.16]"
-              style={{ color: PARCHMENT }}
-            >
-              {dream.lead}
-            </p>
-            {dream.rest && (
-              <p
-                className="font-reading text-[16.5px] leading-[1.58] mt-4 whitespace-pre-line"
-                style={{ color: MUTED }}
-              >
-                {dream.rest}
-              </p>
-            )}
-            {dreamOverflow && !dreamOpen && (
-              <span
-                aria-hidden
-                className="pointer-events-none absolute left-0 right-0 bottom-0 h-12"
-                style={{
-                  background:
-                    'linear-gradient(180deg, rgba(17,13,10,0) 0%, rgba(17,13,10,0.97) 92%)',
-                }}
-              />
-            )}
-          </div>
-          {dreamOverflow && !dreamOpen && (
-            <button
-              type="button"
-              onClick={() => setDreamOpen(true)}
-              className="mt-3 inline-flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] font-semibold transition-colors hover:text-wood-100"
-              style={{ color: BRONZE }}
-            >
-              <span className="inline-block h-px w-4" style={{ backgroundColor: 'currentColor' }} />
-              unfold the dream
-            </button>
-          )}
+            {intention}
+          </p>
         </section>
       ) : (
-        <section className="px-[26px] pt-[26px] pb-[22px] text-center">
+        <section className="px-[26px] pt-[26px] pb-[20px] text-center">
           <p className="font-reading text-[17px] leading-[1.45]" style={{ color: MUTED }}>
             no dream is kept here yet.
           </p>
@@ -512,94 +382,37 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         </section>
       )}
 
-      {/* Structured meta: standing, also resting, holder chart, kin. */}
-      <div className="px-[26px] pt-1">
-        <div>
-          <Label>{piece.status === 'placed' ? 'Placed' : 'Standing'}</Label>
-          <p className="font-reading text-[18px] leading-[1.4]" style={{ color: PARCHMENT }}>
-            {standingPlace}
-            {standingLight && (
-              <>
-                <span style={{ color: BRONZE, margin: '0 6px' }}>·</span>
-                <span style={{ color: MUTED }}>{standingLight}</span>
-              </>
-            )}
-          </p>
-          {carriesYourCode && (
-            <p className="mt-1.5 font-reading text-[15px] leading-snug" style={{ color: SAGE }}>
-              It carries one of your codes.
-            </p>
+      {/* The one standing line: code, where it is alive, its founding light,
+          and the resting count when it matters. Quiet, grouped metadata. */}
+      <div className="px-[26px]">
+        <p className="font-reading text-[16px] leading-[1.5]" style={{ color: MUTED }}>
+          {code && (
+            <>
+              <CodeText
+                text={code}
+                base={PARCHMENT}
+                hi={BRONZE}
+                className="font-label text-[12px] uppercase tracking-[0.18em] font-medium"
+              />
+              <span style={{ color: BRONZE, margin: '0 8px' }}>·</span>
+            </>
           )}
-        </div>
-
-        {alsoHere && alsoHere.length > 0 && (
-          <>
-            <Rule soft />
-            <Label>Also resting here</Label>
-            <div className="flex flex-col">
-              {alsoHere.map((k, i) => (
-                <button
-                  key={k.key}
-                  type="button"
-                  onClick={() => onSelectKin?.(k.key)}
-                  className="group flex items-baseline justify-between py-2.5 text-left transition-[padding] hover:pl-2"
-                  style={{
-                    borderBottom:
-                      i === alsoHere.length - 1
-                        ? 'none'
-                        : '1px solid rgba(196,170,124,0.12)',
-                  }}
-                >
-                  <CodeText
-                    text={k.code}
-                    base={PARCHMENT}
-                    hi={BRONZE}
-                    className="font-display text-[20px] leading-none"
-                  />
-                  <span
-                    className="font-label text-[10px] uppercase tracking-[0.16em] transition-colors group-hover:text-bronze-300"
-                    style={{ color: MUTED }}
-                  >
-                    {k.standing}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </>
+          {standingRest}
+        </p>
+        {carriesYourCode && (
+          <p className="mt-1.5 font-reading text-[15px] leading-snug" style={{ color: SAGE }}>
+            It carries one of your codes.
+          </p>
         )}
-
         {holderChart && (
-          <>
-            <Rule soft />
-            <p className="font-reading text-[13px] leading-snug" style={{ color: 'rgba(203,191,168,0.6)' }}>
-              held by a chart of{' '}
-              <span style={{ color: MUTED }}>{holderChart.element}</span>
-            </p>
-          </>
-        )}
-
-        {kin && kin.length > 0 && (
-          <>
-            <Rule soft />
-            <Label>Kin</Label>
-            <div className="flex flex-col gap-1">
-              {kin.map((k) => (
-                <button
-                  key={k.key}
-                  type="button"
-                  onClick={() => onSelectKin?.(k.key)}
-                  className="text-left font-reading text-[13px] leading-snug transition-colors hover:text-bronze-300"
-                  style={{ color: 'rgba(203,191,168,0.52)' }}
-                >
-                  {k.title}
-                </button>
-              ))}
-            </div>
-          </>
+          <p className="mt-1.5 font-reading text-[13px] leading-snug" style={{ color: 'rgba(203,191,168,0.6)' }}>
+            held by a chart of{' '}
+            <span style={{ color: MUTED }}>{holderChart.element}</span>
+          </p>
         )}
       </div>
 
-      {/* Actions: understated rows with right arrows. */}
+      {/* The one action: open the book. */}
       <footer
         className="mt-6 flex flex-col gap-3 px-[26px] pt-[22px] pb-[26px]"
         style={{ borderTop: '1px solid rgba(196,170,124,0.12)' }}
@@ -609,20 +422,9 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           className="flex items-center justify-between font-reading text-[17px] transition-colors hover:text-bronze-300"
           style={{ color: PARCHMENT }}
         >
-          open this piece's book
+          open the book
           <span style={{ color: BRONZE }}>→</span>
         </Link>
-        {typeof piece.cardNumber === 'number' && (
-          <Link
-            to={`/universal-language/${piece.cardNumber}`}
-            state={{ ritual: true }}
-            className="flex items-center justify-between font-reading text-[15px] transition-colors hover:text-bronze-300"
-            style={{ color: MUTED }}
-          >
-            read code {piece.cardNumber}
-            <span style={{ color: BRONZE }}>→</span>
-          </Link>
-        )}
       </footer>
     </div>,
   );
