@@ -75,12 +75,17 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
     editionRaw !== undefined && /^\d+$/.test(editionRaw) ? parseInt(editionRaw, 10) : undefined;
 
   const art = pieceId ? FULL_ARCHIVE.find((a) => a.id === pieceId) : undefined;
-  // Unknown piece — hand back the shell unchanged (React renders not-found).
-  if (!art) return respond();
 
-  // Resolve the public projection for the dream + series (fail-soft: a read
-  // error just falls back to the series line, never the private record).
+  // Resolve the public projection for the dream + series/category (fail-soft: a
+  // read error just falls back to the series line, never the private record).
+  // A piece present here but absent from FULL_ARCHIVE (a shipped-but-not-yet-
+  // catalogued piece) must STILL unfurl its certificate — a scanned QR may
+  // never dead-end (forever contract). Only a piece in NEITHER the archive nor
+  // the public state hands back the shell unchanged (React renders not-found).
   let dream: string | undefined;
+  let pubSeries: string | undefined;
+  let pubCategory: string | undefined;
+  let foundInState = false;
   try {
     let state = await readPublicState(env);
     if (!state) {
@@ -91,23 +96,36 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
       typeof editionNumber === 'number'
         ? state.pieces.find((p) => p.pieceId === pieceId && (p.editionNumber ?? 0) === editionNumber)
         : state.pieces.find((p) => p.pieceId === pieceId);
-    if (piece?.intention && piece.intention.trim()) dream = piece.intention.trim();
+    if (piece) {
+      foundInState = true;
+      pubSeries = piece.series;
+      pubCategory = piece.category;
+      if (piece.intention && piece.intention.trim()) dream = piece.intention.trim();
+    }
   } catch {
     /* series line stands */
   }
 
-  const cardNumber = art.series === 'Universal Language' ? ulCardNumber(art.coverImage) : null;
-  const cleanTitle = art.title.replace(/\s*-\s*\d+$/, '');
+  if (!art && !foundInState) return respond();
+
+  const series = art?.series ?? pubSeries;
+  const category = art?.category ?? pubCategory;
+  const cardNumber =
+    art && art.series === 'Universal Language' ? ulCardNumber(art.coverImage) : null;
   const sigil = pieceCode({
     pieceId,
-    series: art.series,
-    category: art.category,
+    series,
+    category,
     cardNumber: cardNumber ?? undefined,
+    isSignaturePiece: art?.isSignaturePiece,
+    sigilNumber: art?.sigilNumber,
   });
+  // Title falls back to the sigil when the piece is not yet catalogued.
+  const cleanTitle = art ? art.title.replace(/\s*-\s*\d+$/, '') : sigil;
 
-  const title = `${cleanTitle} · ${sigil}`;
+  const title = art ? `${cleanTitle} · ${sigil}` : sigil;
   const seriesLine =
-    `${art.series}${cardNumber != null ? ` · Code ${cardNumber}` : ''}. ` +
+    `${series ? `${series}` : sigil}${cardNumber != null ? ` · Code ${cardNumber}` : ''}. ` +
     `An original work by Adrian Rasmussen.`;
   const description = clip(dream ?? seriesLine);
 

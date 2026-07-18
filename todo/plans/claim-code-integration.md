@@ -128,6 +128,80 @@ back-of-piece artifact set:
 - III.3 ships behind admin only; its first output is proofed against a
   physical print before any piece ships with it.
 
+## The forever contract (Adrian, 2026-07-18)
+
+Ruled after the minting workflow landed, before the first invitations and
+shipments. In Adrian's words: once it is sent out it cannot be changed; the
+QRs stay forever on those art pieces. Every surface that gets printed onto
+or shipped with a physical piece is a permanent contract:
+
+- `/qr/piece/:pieceId[/:edition]` URLs are immutable forever. The redirect
+  indirection exists precisely so the DESTINATION can evolve while the
+  printed URL never breaks. No route rename, host change, or scheme change
+  may ever orphan a printed QR; any future migration must preserve these
+  paths with redirects for the life of the project.
+- `pieceId` values are permanent identifiers. Never renamed, never reused.
+- The claim code format (26 crockford symbols, forgiving normalization) is
+  frozen for printed codes. Verification must accept every code ever
+  printed; `claimCodeVersion` exists for reissue, never for breaking old
+  formats. Codes never expire.
+- The private insert deep link (`/atlas/claim?piece=...&code=...`) is
+  likewise immutable once printed.
+- Nothing is "broken" in the pre-launch state; the discipline is: dial
+  everything before game time, because game time is permanent.
+
+## The whole body of work (Adrian, 2026-07-18)
+
+The Atlas is for the ENTIRETY of the artwork, linked to dreams and creation.
+The sixty-four are one series. Mandalas, signature pieces, jewelry, every
+series present and future enter the same world, the same ledger, the same
+claim flow, the same certificates, the same codes. The visitor can filter
+the world by kind: a mandala, a signature piece, one of the sixty-four, and
+whatever categories the catalog carries. The bigger picture stays the
+center: people being part of one resonant family, sharing their dreams,
+expressing them, collecting this creation. Build-out implications (verify
+against the code before building): the catalog must hold every work; the
+genesis backfill covers all of it, not only UL; the plaque/QR generator must
+mint for ANY piece, not only card-numbered ones; piece sigils, filters, and
+marker types must speak the full taxonomy.
+
+## The catalog room (Adrian, 2026-07-18)
+
+Adrian does not deliver an inventory file; the structure comes to him. A
+Catalog Room in the admin: one form per work, and every downstream door
+(claim, pay, present) flows from what he enters.
+
+- Fields, in his language: title; kind (mandala, signature piece, jewelry,
+  other with a series name; the sixty-four stay code-defined); year;
+  dimensions; materials; photos (Cloudinary reference); where it is (with a
+  keeper at a city, available, or resting with the artist); if available, a
+  price and the acquire link. On save the piece receives its permanent id
+  and sigil, minted once and frozen forever per the contract, shown
+  immediately.
+- Four actions per entry: enter the world (genesis to the ledger), mint
+  claim code (shown once), print the plaque and the insert, view its
+  certificate.
+- Storage: R2 (atlas/catalog.json) beside the steward records, the
+  mutateJsonArray discipline, zero ops. The runtime catalog is the merge of
+  the code-defined 64 and the R2 entries; PiecePage, atlas meta, admin
+  pickers, filters, and the plaque generator all read the merged catalog.
+- CORRECTED (Adrian, 2026-07-18): the phrase is "customers to claim, past
+  or present," not a payment door. The room serves both generations of
+  collectors from the one form:
+  PAST: a piece sold years ago. Status "with a keeper"; when the keeper's
+  email is known, one action issues the steward record and sends the claim
+  invitation (the existing claimInvite email machinery); when unknown, the
+  piece still enters the world as an ember and the homecoming door waits.
+  PRESENT: a piece passing through Adrian's hands now: mint the code,
+  print the insert, ship; the code claims.
+  The acquire link stays an optional field on available pieces, not a
+  pillar; the certificate and share card remain the public presentation,
+  forever at the printed QR.
+- Sigil issuance: kind prefix plus the next free number in that prefix,
+  reserved at creation, never reused even if an entry is deleted before
+  print (deletion allowed only while unprinted and unclaimed; after that,
+  entries are permanent).
+
 ## Acceptance
 
 1. A keeper pulls the insert from the back of a new piece, scans or types

@@ -68,7 +68,7 @@ function inputFor(pieceId: string): ShareCardInput {
   const city = cityId ? CITIES_BY_ID.get(cityId) : undefined;
   return {
     title: cleanTitle,
-    sigil: pieceCode({ pieceId, series: art.series, category: art.category, cardNumber: cardNumber ?? undefined }),
+    sigil: pieceCode({ pieceId, series: art.series, category: art.category, cardNumber: cardNumber ?? undefined, isSignaturePiece: art.isSignaturePiece, sigilNumber: art.sigilNumber }),
     series: art.series,
     // Only a claimed light carries a PUBLIC dream in the state; unawakened /
     // seeking pieces have no intention, so null flows through (privacy rule).

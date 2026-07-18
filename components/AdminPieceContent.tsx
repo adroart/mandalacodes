@@ -69,33 +69,90 @@ const pieceMatches = (p: PieceOption, query: string): boolean =>
 
 const pieceLabel = (p: PieceOption): string => p.label;
 
+const pieceById = new Map(pieceOptions.map((p) => [p.id, p]));
+
+/**
+ * Piece picker with a free-text escape hatch. The typeahead stays
+ * archive-driven, but an uncatalogued piece — shipped before its Artwork row
+ * lands — can still have its content written: switch to "enter its id" and
+ * type the raw pieceId. It renders by sigil until the catalog row arrives.
+ */
 const PiecePicker: React.FC<{
     value: string;
     onChange: (pieceId: string) => void;
 }> = ({ value, onChange }) => {
+    const [freeText, setFreeText] = useState(() => !!value && !pieceById.has(value));
+    const trimmed = value.trim();
+    const uncatalogued = !!trimmed && !pieceById.has(trimmed);
+
+    if (freeText) {
+        return (
+            <div>
+                <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value.trim())}
+                    placeholder="Enter the piece id, e.g. MA-014"
+                    className={fieldInput}
+                />
+                <div className="flex items-center justify-between gap-3 mt-1">
+                    {uncatalogued ? (
+                        <span className="font-reading text-xs text-stone-500 not-italic">
+                            Uncatalogued id — renders by sigil only until its catalog row lands.
+                        </span>
+                    ) : (
+                        <span />
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setFreeText(false);
+                            onChange('');
+                        }}
+                        className="shrink-0 font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                    >
+                        choose from list
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <TypeaheadPicker<PieceOption>
-            items={pieceOptions}
-            filter={pieceMatches}
-            itemKey={(p) => p.id}
-            itemLabel={pieceLabel}
-            value={value || null}
-            onPick={(p) => onChange(p.id)}
-            onQueryChange={() => onChange('')}
-            placeholder="Search a piece by title, series, or id…"
-            maxResultsEmpty={10}
-            maxResults={20}
-            variant="admin"
-            listMaxHeightClassName="max-h-72"
-            renderItem={(p) => (
-                <>
-                    {p.label}
-                    <span className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 ml-2">
-                        {p.id}
-                    </span>
-                </>
-            )}
-        />
+        <div>
+            <TypeaheadPicker<PieceOption>
+                items={pieceOptions}
+                filter={pieceMatches}
+                itemKey={(p) => p.id}
+                itemLabel={pieceLabel}
+                value={value || null}
+                onPick={(p) => onChange(p.id)}
+                onQueryChange={() => onChange('')}
+                placeholder="Search a piece by title, series, or id…"
+                maxResultsEmpty={10}
+                maxResults={20}
+                variant="admin"
+                listMaxHeightClassName="max-h-72"
+                renderItem={(p) => (
+                    <>
+                        {p.label}
+                        <span className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 ml-2">
+                            {p.id}
+                        </span>
+                    </>
+                )}
+            />
+            <button
+                type="button"
+                onClick={() => {
+                    setFreeText(true);
+                    onChange('');
+                }}
+                className="mt-1 font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+            >
+                piece not listed? enter its id
+            </button>
+        </div>
     );
 };
 

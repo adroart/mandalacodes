@@ -16,6 +16,8 @@ import {
   findPublicPiece,
   type PublicPiece,
 } from '../lib/atlas/state';
+import { loadPublicCatalog, findCatalogEntry } from '../lib/atlas/catalog';
+import { publicCatalogEntryToArtwork } from '../utils/catalog';
 import { buildKinshipIndex } from '../utils/kinship';
 import { useAccount } from '../lib/account/useAccount';
 import type { PieceContent } from '../utils/pieceContent';
@@ -71,6 +73,34 @@ type LoadState =
 interface SpineEntry {
   label: string;
   detail?: string;
+}
+
+/**
+ * Build a minimal Artwork for a piece that is in the public atlas state but
+ * absent from FULL_ARCHIVE — a real, shipped piece whose catalog row has not
+ * landed yet. A scanned QR on a shipped piece may NEVER dead-end (the forever
+ * contract): it renders a certificate named by its sigil, its series/category
+ * from public state, no hexagram block, and the ArtworkPlate's warm plate
+ * fallback (no coverImage). The moment the catalog row lands, the real Artwork
+ * wins with zero code change.
+ */
+function fallbackArtFromPublic(piece: PublicPiece): Artwork {
+  const sigil = pieceCode({
+    pieceId: piece.pieceId,
+    series: piece.series,
+    category: piece.category,
+  });
+  return {
+    id: piece.pieceId,
+    title: sigil, // title falls back to the sigil
+    category: piece.category ?? '',
+    series: piece.series,
+    coverImage: '', // no plate image → ArtworkPlate renders its warm fallback
+    images: [],
+    description: '',
+    year: '',
+    availability: 'MADE_TO_ORDER',
+  };
 }
 
 function cityLabel(cityId: string | null | undefined): string | undefined {
@@ -242,24 +272,36 @@ const PiecePage: React.FC = () => {
     const editionNumber =
       edition !== undefined && /^\d+$/.test(edition) ? parseInt(edition, 10) : undefined;
 
-    loadAtlasState().then((state) => {
+    Promise.all([loadAtlasState(), loadPublicCatalog()]).then(([state, catalog]) => {
       if (!active) return;
       setAtlasState(state);
       const piece = findPublicPiece(state, pieceId, editionNumber);
-      if (!art) {
+      const catalogEntry = findCatalogEntry(catalog, pieceId);
+      // Dead-end only when the piece is in NONE of the archive, the public
+      // state, or the catalog. A shipped piece present in public state or the
+      // catalog still renders its certificate (forever contract): the catalog
+      // row supplies its real title/year/dimensions/images, and a piece in
+      // public state alone renders by sigil.
+      if (!art && !piece && !catalogEntry) {
         setLoad({ kind: 'not-found' });
         return;
       }
+      const catalogArt = catalogEntry
+        ? publicCatalogEntryToArtwork(catalogEntry)
+        : null;
       const resolved: PublicPiece =
         piece ?? {
           pieceId,
           editionNumber,
-          series: art.series,
-          category: art.category,
+          series: art?.series ?? catalogArt?.series,
+          category: art?.category ?? catalogArt?.category,
           cityId: null,
           status: 'seeking',
         };
-      setLoad({ kind: 'ready', piece: resolved, art });
+      // Archive wins; else the catalog row's real fields; else the sigil-only
+      // fallback for a piece present in public state but neither store.
+      const resolvedArt = art ?? catalogArt ?? fallbackArtFromPublic(resolved);
+      setLoad({ kind: 'ready', piece: resolved, art: resolvedArt });
     });
     return () => {
       active = false;
@@ -402,6 +444,8 @@ const PiecePage: React.FC = () => {
     series: piece.series ?? art.series,
     category: piece.category ?? art.category,
     cardNumber: cardNumber ?? undefined,
+    isSignaturePiece: art.isSignaturePiece,
+    sigilNumber: art.sigilNumber,
   });
 
   const claimed = typeof piece.claimOrdinal === 'number';

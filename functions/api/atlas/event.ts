@@ -89,6 +89,15 @@ export function cleanEventInput(e: unknown): CleanEventInput | null {
   ) {
     return null;
   }
+  // series/category are non-personal facts carried on the genesis event so a
+  // piece outside FULL_ARCHIVE still projects series/category (and the kind
+  // facet) into public state. Bounded to keep the chain payload disciplined.
+  if (obj.series !== undefined) {
+    if (typeof obj.series !== 'string' || obj.series.length > 120) return null;
+  }
+  if (obj.category !== undefined) {
+    if (typeof obj.category !== 'string' || obj.category.length > 120) return null;
+  }
 
   // Whitelist: copy only known fields. actorRef is intentionally NOT copied
   // from the client — the handler stamps it from the verified token below.
@@ -102,9 +111,11 @@ export function cleanEventInput(e: unknown): CleanEventInput | null {
   if (obj.editionNumber !== undefined) clean.editionNumber = obj.editionNumber as number;
   if (obj.cityId !== undefined) clean.cityId = obj.cityId as string | null;
   if (obj.note !== undefined) clean.note = obj.note as string;
-  // pieceType is meaningful on the genesis event only; carry it there.
-  if (obj.type === 'created' && obj.pieceType !== undefined) {
-    clean.pieceType = obj.pieceType as 'mandala' | 'other';
+  // pieceType, series, category are meaningful on the genesis event only.
+  if (obj.type === 'created') {
+    if (obj.pieceType !== undefined) clean.pieceType = obj.pieceType as 'mandala' | 'other';
+    if (obj.series !== undefined) clean.series = obj.series as string;
+    if (obj.category !== undefined) clean.category = obj.category as string;
   }
 
   // 'transferred' — opaque refs + kind, all three REQUIRED. Never an email

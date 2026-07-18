@@ -150,6 +150,8 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
       series: piece?.series ?? art.series,
       category: piece?.category ?? art.category,
       cardNumber: cardNumber ?? undefined,
+      isSignaturePiece: art.isSignaturePiece,
+      sigilNumber: art.sigilNumber,
     }),
     series: piece?.series ?? art.series,
     // PUBLIC dream only — present in the projection solely when shared.

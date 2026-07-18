@@ -112,6 +112,12 @@ async function main(): Promise<void> {
       cityId: null,
       note: 'Genesis backfill: piece existed in FULL_ARCHIVE without a ledger chain',
       actor: 'admin',
+      // Series/category on the genesis event (gap 4) so the backfilled piece
+      // carries its full taxonomy even for pieces outside FULL_ARCHIVE at
+      // projection time. Undefined values are dropped by the canonicalizer,
+      // leaving pre-existing hashes untouched.
+      ...(a.series ? { series: a.series } : {}),
+      ...(a.category ? { category: a.category } : {}),
     });
     newEvents.push(full);
   }

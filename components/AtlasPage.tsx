@@ -129,6 +129,16 @@ function cardNumberFor(pieceId: string): number | undefined {
   return ulCardNumber(a.coverImage) ?? undefined;
 }
 
+/** Signature-piece flag from the archive, so its sigil reads `SG` everywhere. */
+function signatureFor(pieceId: string): boolean | undefined {
+  return FULL_ARCHIVE.find((art) => art.id === pieceId)?.isSignaturePiece;
+}
+
+/** Curated sigil-number lock from the archive, when one is pinned. */
+function sigilNumberFor(pieceId: string): number | undefined {
+  return FULL_ARCHIVE.find((art) => art.id === pieceId)?.sigilNumber;
+}
+
 /* ─── Component ────────────────────────────────────────────────────────────── */
 const AtlasPage: React.FC = () => {
   const [state, setState] = useState<FetchState>({ kind: 'loading' });
@@ -151,6 +161,9 @@ const AtlasPage: React.FC = () => {
   });
   const [selectedCategory, setSelectedCategoryState] = useState<string>(
     () => searchParams.get('category') ?? 'all',
+  );
+  const [selectedKind, setSelectedKindState] = useState<string>(
+    () => searchParams.get('kind') ?? 'all',
   );
   const [selectedSize, setSelectedSizeState] = useState<SizeBand | 'all'>(() => {
     const s = searchParams.get('size');
@@ -331,6 +344,10 @@ const AtlasPage: React.FC = () => {
     setSelectedCategoryState(v);
     setFilterParam('category', v);
   };
+  const setSelectedKind = (v: string) => {
+    setSelectedKindState(v);
+    setFilterParam('kind', v);
+  };
   const setSelectedSize = (v: SizeBand | 'all') => {
     setSelectedSizeState(v);
     setFilterParam('size', v);
@@ -506,6 +523,16 @@ const AtlasPage: React.FC = () => {
     return Array.from(set).sort();
   }, [enriched]);
 
+  /* Kind facets present in the data (server-derived on each public piece).
+     The KIND filter row hides unless more than one kind exists. */
+  const kindsAvailable: string[] = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of enriched) {
+      if (p.kind) set.add(p.kind);
+    }
+    return Array.from(set);
+  }, [enriched]);
+
   const sizeBandByPiece = useMemo(() => {
     const map = new Map<string, SizeBand | null>();
     for (const art of FULL_ARCHIVE) map.set(art.id, sizeBandFor(art));
@@ -522,6 +549,7 @@ const AtlasPage: React.FC = () => {
   const seriesFiltered: EnrichedPiece[] = useMemo(() => {
     return enriched.filter((p) => {
       if (selectedSeries !== 'all' && p.series !== selectedSeries) return false;
+      if (selectedKind !== 'all' && p.kind !== selectedKind) return false;
       if (selectedCategory !== 'all') {
         const c = p.category ?? categoryFor(p.pieceId);
         if (c !== selectedCategory) return false;
@@ -529,7 +557,7 @@ const AtlasPage: React.FC = () => {
       if (selectedSize !== 'all' && sizeBandByPiece.get(p.pieceId) !== selectedSize) return false;
       return true;
     });
-  }, [enriched, selectedSeries, selectedCategory, selectedSize, sizeBandByPiece]);
+  }, [enriched, selectedSeries, selectedKind, selectedCategory, selectedSize, sizeBandByPiece]);
 
   /* Counts for filter chrome — based on the series filter, before status filter. */
   const placedCount = useMemo(
@@ -895,6 +923,8 @@ const AtlasPage: React.FC = () => {
         series: p.series,
         category: p.category ?? categoryFor(p.pieceId),
         cardNumber: cardNumberFor(p.pieceId),
+        isSignaturePiece: signatureFor(p.pieceId),
+        sigilNumber: sigilNumberFor(p.pieceId),
       });
       const cityName = p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined;
       const parts = [code];
@@ -1094,6 +1124,8 @@ const AtlasPage: React.FC = () => {
       series: selectedPiece.series,
       category: selectedPiece.category,
       cardNumber: selectedPiece.cardNumber,
+      isSignaturePiece: signatureFor(selectedPiece.pieceId),
+      sigilNumber: sigilNumberFor(selectedPiece.pieceId),
     });
   }, [selectedPiece]);
 
@@ -1118,6 +1150,8 @@ const AtlasPage: React.FC = () => {
           series: p.series,
           category: p.category,
           cardNumber: cardNumberFor(p.pieceId),
+          isSignaturePiece: signatureFor(p.pieceId),
+          sigilNumber: sigilNumberFor(p.pieceId),
         });
         const standing =
           typeof p.claimOrdinal === 'number'
@@ -1643,6 +1677,7 @@ const AtlasPage: React.FC = () => {
                 >
                   filter
                   {(selectedSeries !== 'all' ||
+                    selectedKind !== 'all' ||
                     status !== 'all' ||
                     selectedCategory !== 'all' ||
                     selectedSize !== 'all' ||
@@ -1692,6 +1727,9 @@ const AtlasPage: React.FC = () => {
                   series={availableSeries}
                   selectedSeries={selectedSeries}
                   onSeriesChange={setSelectedSeries}
+                  kinds={kindsAvailable}
+                  selectedKind={selectedKind}
+                  onKindChange={setSelectedKind}
                   status={status}
                   onStatusChange={setStatus}
                   categories={categoriesAvailable}
@@ -1996,6 +2034,9 @@ const AtlasPage: React.FC = () => {
                 series={availableSeries}
                 selectedSeries={selectedSeries}
                 onSeriesChange={setSelectedSeries}
+                kinds={kindsAvailable}
+                selectedKind={selectedKind}
+                onKindChange={setSelectedKind}
                 status={status}
                 onStatusChange={setStatus}
                 categories={categoriesAvailable}

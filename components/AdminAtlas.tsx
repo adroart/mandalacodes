@@ -7,7 +7,15 @@ import { FULL_ARCHIVE } from '../data/mockData';
 import { pieceCode } from '../utils/pieceCode';
 import type { SaleQueueItem } from '../utils/saleBridge';
 import type { HomecomingRequest } from '../lib/atlas/homecoming';
+import {
+    CATALOG_KINDS,
+    CATALOG_KIND_LABELS,
+    kindToCodeParts,
+} from '../utils/catalog';
 import type {
+    CatalogEntry,
+    CatalogKind,
+    CatalogStatus,
     CityCentroid,
     ClaimRequest,
     LedgerEvent,
@@ -84,6 +92,8 @@ const resolvePieceSigil = (pieceId: string): string => {
         series: a.series,
         category: a.category,
         cardNumber: a.cardNumber,
+        isSignaturePiece: a.isSignaturePiece,
+        sigilNumber: a.sigilNumber,
     });
 };
 
@@ -109,7 +119,10 @@ const ClaimCodeReference: React.FC<{
     pieceId: string;
     editionNumber?: number;
     onDismiss: () => void;
-}> = ({ code, sigil, pieceId, editionNumber, onDismiss }) => {
+    /** Fired once the print window for the insert is opened — the Catalog Room
+     *  uses it to stamp the entry's printedAt. Optional; a no-op elsewhere. */
+    onPrinted?: () => void;
+}> = ({ code, sigil, pieceId, editionNumber, onDismiss, onPrinted }) => {
     const [copied, setCopied] = useState(false);
     const copy = async () => {
         try {
@@ -160,6 +173,7 @@ const ClaimCodeReference: React.FC<{
 <script>window.onload = function () { window.print(); };</script>
 </body></html>`);
         win.document.close();
+        onPrinted?.();
     };
     return (
         <div className="mb-6 border border-bronze-400 bg-bronze-50 px-4 py-4">
@@ -198,6 +212,85 @@ const ClaimCodeReference: React.FC<{
                 className="mt-3 font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
             >
                 Dismiss
+            </button>
+        </div>
+    );
+};
+
+/**
+ * Piece chooser with a free-text escape hatch. The dropdown stays
+ * archive-driven (it grows as the catalog lands), but an uncatalogued piece —
+ * one that passed through Adrian's hands before its Artwork row exists — can
+ * still be worked on: switch to "enter its id" and type the raw pieceId.
+ * Genesis, placement, issue, code mint, and sale confirm all work for a piece
+ * before it is catalogued; it simply renders by sigil until the row arrives.
+ */
+const PieceSelect: React.FC<{
+    value: string;
+    onChange: (pieceId: string) => void;
+}> = ({ value, onChange }) => {
+    // Free-text mode is sticky once chosen, and auto-on when the current value
+    // is an id the archive does not know.
+    const [freeText, setFreeText] = useState(() => !!value && !pieceById.has(value));
+    const trimmed = value.trim();
+    const uncatalogued = !!trimmed && !pieceById.has(trimmed);
+
+    if (freeText) {
+        return (
+            <div>
+                <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value.trim())}
+                    placeholder="Enter the piece id, e.g. MA-014"
+                    className={fieldInput}
+                />
+                <div className="flex items-center justify-between gap-3 mt-1">
+                    {uncatalogued ? (
+                        <span className="font-reading text-xs text-stone-500 not-italic">
+                            Uncatalogued id — renders by sigil only until its catalog row lands.
+                        </span>
+                    ) : (
+                        <span />
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setFreeText(false);
+                            onChange('');
+                        }}
+                        className="shrink-0 font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                    >
+                        choose from list
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className={fieldInput}
+            >
+                <option value="">Choose a piece...</option>
+                {pieceOptions.map((p) => (
+                    <option key={p.id} value={p.id}>
+                        {p.label}
+                    </option>
+                ))}
+            </select>
+            <button
+                type="button"
+                onClick={() => {
+                    setFreeText(true);
+                    onChange('');
+                }}
+                className="mt-1 font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+            >
+                piece not listed? enter its id
             </button>
         </div>
     );
@@ -390,20 +483,10 @@ const SeedEventSection: React.FC = () => {
             <div className="space-y-5">
                 <div>
                     <label className={fieldLabel}>Piece</label>
-                    <select
+                    <PieceSelect
                         value={form.pieceId}
-                        onChange={(e) =>
-                            setForm({ ...form, pieceId: e.target.value })
-                        }
-                        className={fieldInput}
-                    >
-                        <option value="">Choose a piece...</option>
-                        {pieceOptions.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.label}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={(id) => setForm({ ...form, pieceId: id })}
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -644,20 +727,10 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
             <div className="space-y-5">
                 <div>
                     <label className={fieldLabel}>Piece</label>
-                    <select
+                    <PieceSelect
                         value={form.pieceId}
-                        onChange={(e) =>
-                            setForm({ ...form, pieceId: e.target.value })
-                        }
-                        className={fieldInput}
-                    >
-                        <option value="">Choose a piece...</option>
-                        {pieceOptions.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.label}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={(id) => setForm({ ...form, pieceId: id })}
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -840,18 +913,7 @@ const PendingSaleRow: React.FC<{
             <div className="space-y-3">
                 <div>
                     <label className={fieldLabel}>Piece</label>
-                    <select
-                        value={pieceId}
-                        onChange={(e) => setPieceId(e.target.value)}
-                        className={fieldInput}
-                    >
-                        <option value="">Choose a piece...</option>
-                        {pieceOptions.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.label}
-                            </option>
-                        ))}
-                    </select>
+                    <PieceSelect value={pieceId} onChange={setPieceId} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -1907,6 +1969,739 @@ const StewardRoster: React.FC<{
 };
 
 // ───────────────────────────────────────────────────────────────────────────
+// Catalog (the Catalog Room — every work Adrian has ever made, one form)
+// ───────────────────────────────────────────────────────────────────────────
+
+/** The admin entry carries its rendered sigil from the server. */
+interface CatalogAdminEntry extends CatalogEntry {
+    sigil: string;
+}
+
+/** The public host every printed artifact points at — never the admin origin. */
+const PLAQUE_HOST = 'https://mandalacodes.com';
+
+/** "where it is", in Adrian's language. */
+const STATUS_LABELS: Record<CatalogStatus, string> = {
+    'with-keeper': 'with a keeper',
+    available: 'available',
+    'with-artist': 'resting with the artist',
+};
+
+interface CatalogFormState {
+    title: string;
+    kind: CatalogKind;
+    series: string;
+    year: string;
+    dimensions: string;
+    material: string;
+    coverImage: string;
+    images: string;
+    status: CatalogStatus;
+    cityId: string;
+    keeperEmail: string;
+    price: string;
+    acquireUrl: string;
+    notes: string;
+}
+
+const EMPTY_CATALOG_FORM: CatalogFormState = {
+    title: '',
+    kind: 'mandala',
+    series: '',
+    year: '',
+    dimensions: '',
+    material: '',
+    coverImage: '',
+    images: '',
+    status: 'with-artist',
+    cityId: '',
+    keeperEmail: '',
+    price: '',
+    acquireUrl: '',
+    notes: '',
+};
+
+const CatalogForm: React.FC<{
+    onCreated: (entry: CatalogAdminEntry, sigil: string) => void;
+}> = ({ onCreated }) => {
+    const [form, setForm] = useState<CatalogFormState>(EMPTY_CATALOG_FORM);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [mintedSigil, setMintedSigil] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
+
+    const set = <K extends keyof CatalogFormState>(k: K, v: CatalogFormState[K]) =>
+        setForm((f) => ({ ...f, [k]: v }));
+
+    const submit = async () => {
+        if (!form.title.trim()) {
+            setError('Give the piece a title.');
+            return;
+        }
+        if (form.kind === 'other' && !form.series.trim()) {
+            setError('A series name is needed for an "other" piece.');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const images = form.images
+                .split(/[\n,]+/)
+                .map((s) => s.trim())
+                .filter(Boolean);
+            const body: Record<string, unknown> = {
+                title: form.title.trim(),
+                kind: form.kind,
+                series: form.kind === 'other' ? form.series.trim() : undefined,
+                year: form.year.trim() || undefined,
+                dimensions: form.dimensions.trim() || undefined,
+                material: form.material.trim() || undefined,
+                coverImage: form.coverImage.trim() || undefined,
+                images: images.length ? images : undefined,
+                status: form.status,
+                cityId:
+                    form.status === 'with-keeper' ? form.cityId || undefined : undefined,
+                keeperEmail:
+                    form.status === 'with-keeper'
+                        ? form.keeperEmail.trim() || undefined
+                        : undefined,
+                price:
+                    form.status === 'available' && form.price.trim()
+                        ? Math.round(Number(form.price) * 100)
+                        : undefined,
+                acquireUrl:
+                    form.status === 'available'
+                        ? form.acquireUrl.trim() || undefined
+                        : undefined,
+                notes: form.notes.trim() || undefined,
+            };
+            const res = await adminFetch('/api/atlas/catalog/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok && data.entry) {
+                setMintedSigil(data.sigil);
+                onCreated({ ...data.entry, sigil: data.sigil }, data.sigil);
+                setForm(EMPTY_CATALOG_FORM);
+            } else {
+                setError(data?.error || 'Could not add the piece.');
+            }
+        } catch {
+            setError('Network error. Check your connection.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="border border-wood-200 p-6 mb-6">
+            <h3 className="font-title text-lg text-wood-900 mb-4 tracking-[0.05em]">
+                add a piece
+            </h3>
+
+            {error && (
+                <p className="font-reading italic text-sm text-stone-600 mb-4">
+                    {error}
+                </p>
+            )}
+
+            {mintedSigil && (
+                <div className="mb-6 border border-bronze-400 bg-bronze-50 px-4 py-4">
+                    <p className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold mb-2">
+                        its permanent sigil
+                    </p>
+                    <p className="font-title text-2xl text-wood-900 tracking-[0.06em]">
+                        {mintedSigil} · permanent
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => setMintedSigil(null)}
+                        className="mt-3 font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                    >
+                        Dismiss
+                    </button>
+                </div>
+            )}
+
+            <div className="space-y-5">
+                <div>
+                    <label className={fieldLabel}>Title</label>
+                    <input
+                        type="text"
+                        value={form.title}
+                        onChange={(e) => set('title', e.target.value)}
+                        placeholder="What this work is called"
+                        className={fieldInput}
+                    />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className={fieldLabel}>Kind</label>
+                        <select
+                            value={form.kind}
+                            onChange={(e) => set('kind', e.target.value as CatalogKind)}
+                            className={fieldInput}
+                        >
+                            {CATALOG_KINDS.map((k) => (
+                                <option key={k} value={k}>
+                                    {CATALOG_KIND_LABELS[k]}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {form.kind === 'other' && (
+                        <div>
+                            <label className={fieldLabel}>Series name</label>
+                            <input
+                                type="text"
+                                value={form.series}
+                                onChange={(e) => set('series', e.target.value)}
+                                placeholder="e.g. Light Codes"
+                                className={fieldInput}
+                            />
+                        </div>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                    <div>
+                        <label className={fieldLabel}>Year</label>
+                        <input
+                            type="text"
+                            value={form.year}
+                            onChange={(e) => set('year', e.target.value)}
+                            placeholder="2024"
+                            className={fieldInput}
+                        />
+                    </div>
+                    <div>
+                        <label className={fieldLabel}>Dimensions</label>
+                        <input
+                            type="text"
+                            value={form.dimensions}
+                            onChange={(e) => set('dimensions', e.target.value)}
+                            placeholder="23 in square"
+                            className={fieldInput}
+                        />
+                    </div>
+                    <div>
+                        <label className={fieldLabel}>Materials</label>
+                        <input
+                            type="text"
+                            value={form.material}
+                            onChange={(e) => set('material', e.target.value)}
+                            placeholder="Laser cut wood, acrylic"
+                            className={fieldInput}
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <label className={fieldLabel}>Cover photo (Cloudinary id)</label>
+                    <input
+                        type="text"
+                        value={form.coverImage}
+                        onChange={(e) => set('coverImage', e.target.value)}
+                        placeholder="32_x9qxas"
+                        className={fieldInput}
+                    />
+                </div>
+                <div>
+                    <label className={fieldLabel}>More photos (one id per line)</label>
+                    <textarea
+                        value={form.images}
+                        onChange={(e) => set('images', e.target.value)}
+                        rows={2}
+                        placeholder={'detail_ab12cd\nverso_ef34gh'}
+                        className={`${fieldInput} resize-y`}
+                    />
+                </div>
+
+                <div>
+                    <label className={fieldLabel}>Where it is</label>
+                    <select
+                        value={form.status}
+                        onChange={(e) => set('status', e.target.value as CatalogStatus)}
+                        className={fieldInput}
+                    >
+                        <option value="with-keeper">with a keeper at a city</option>
+                        <option value="available">available</option>
+                        <option value="with-artist">resting with the artist</option>
+                    </select>
+                </div>
+
+                {form.status === 'with-keeper' && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className={fieldLabel}>City</label>
+                            <CityAutocomplete
+                                value={form.cityId}
+                                onChange={(cityId) => set('cityId', cityId)}
+                            />
+                        </div>
+                        <div>
+                            <label className={fieldLabel}>Keeper email (private)</label>
+                            <input
+                                type="email"
+                                value={form.keeperEmail}
+                                onChange={(e) => set('keeperEmail', e.target.value)}
+                                placeholder="collector@example.com"
+                                className={fieldInput}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {form.status === 'available' && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className={fieldLabel}>Price</label>
+                            <input
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                value={form.price}
+                                onChange={(e) => set('price', e.target.value)}
+                                placeholder="1800"
+                                className={fieldInput}
+                            />
+                        </div>
+                        <div>
+                            <label className={fieldLabel}>Acquire link</label>
+                            <input
+                                type="text"
+                                value={form.acquireUrl}
+                                onChange={(e) => set('acquireUrl', e.target.value)}
+                                placeholder="https://adrianrasmussen.com/..."
+                                className={fieldInput}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                <div>
+                    <label className={fieldLabel}>Notes (admin-private)</label>
+                    <textarea
+                        value={form.notes}
+                        onChange={(e) => set('notes', e.target.value)}
+                        rows={2}
+                        placeholder="Anything only you should see"
+                        className={`${fieldInput} font-reading resize-y`}
+                    />
+                </div>
+
+                <button
+                    onClick={submit}
+                    disabled={saving}
+                    className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                >
+                    {saving ? 'Saving...' : 'Save the piece'}
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const CatalogRow: React.FC<{
+    entry: CatalogAdminEntry;
+    inWorld: boolean;
+    onChanged: () => void;
+}> = ({ entry, inWorld, onChanged }) => {
+    const adminFetch = useAdminFetch();
+    const [busy, setBusy] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [note, setNote] = useState<string | null>(null);
+    const [codeRef, setCodeRef] = useState<string | null>(null);
+
+    const stampPrinted = async () => {
+        try {
+            await adminFetch('/api/atlas/catalog/admin', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: entry.id, markPrinted: true }),
+            });
+            onChanged();
+        } catch {
+            /* the print already opened; the badge just lags until reload */
+        }
+    };
+
+    const enterWorld = async () => {
+        setBusy('world');
+        setError(null);
+        setNote(null);
+        try {
+            const parts = kindToCodeParts(entry.kind, entry.series);
+            const now = new Date().toISOString();
+            const created = {
+                id: crypto.randomUUID(),
+                pieceId: entry.id,
+                type: 'created' as const,
+                date: now,
+                actor: 'admin' as const,
+                ...(parts.series ? { series: parts.series } : {}),
+                ...(parts.category ? { category: parts.category } : {}),
+                pieceType: entry.kind === 'mandala' ? ('mandala' as const) : ('other' as const),
+            };
+            const res = await adminFetch('/api/atlas/event', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ event: created }),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            // A 409 "genesis already exists" is fine — the piece is in the world.
+            if (!data?.ok && res.status !== 409) {
+                setError(data?.error || 'Could not enter the world.');
+                return;
+            }
+            // A placed event anchors it when it rests with a keeper at a city.
+            if (entry.status === 'with-keeper' && entry.cityId) {
+                const placed = {
+                    id: crypto.randomUUID(),
+                    pieceId: entry.id,
+                    type: 'placed' as const,
+                    date: now,
+                    cityId: entry.cityId,
+                    actor: 'admin' as const,
+                };
+                await adminFetch('/api/atlas/event', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event: placed }),
+                });
+            }
+            setNote('entered the world');
+            onChanged();
+        } catch {
+            setError('Network error. Check your connection.');
+        } finally {
+            setBusy(null);
+        }
+    };
+
+    const invite = async () => {
+        if (
+            !window.confirm(
+                `Send the claim invitation for ${entry.sigil} to ${entry.keeperEmail}?`,
+            )
+        ) {
+            return;
+        }
+        setBusy('invite');
+        setError(null);
+        setNote(null);
+        try {
+            const res = await adminFetch('/api/atlas/catalog/invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: entry.id }),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                setNote('invitation sent');
+                onChanged();
+            } else {
+                setError(data?.error || 'Could not send the invitation.');
+            }
+        } catch {
+            setError('Network error. Check your connection.');
+        } finally {
+            setBusy(null);
+        }
+    };
+
+    const mintCode = async () => {
+        setBusy('code');
+        setError(null);
+        setNote(null);
+        try {
+            const res = await adminFetch('/api/atlas/stewards/issue', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pieceId: entry.id,
+                    mintClaimCode: true,
+                    email: entry.keeperEmail || undefined,
+                }),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok && data.claimCode) {
+                setCodeRef(data.claimCode);
+            } else {
+                setError(data?.error || 'Could not mint the code.');
+            }
+        } catch {
+            setError('Network error. Check your connection.');
+        } finally {
+            setBusy(null);
+        }
+    };
+
+    const printPlaque = async () => {
+        const qrUrl = `${PLAQUE_HOST}/qr/piece/${entry.id}`;
+        const title = entry.title.replace(/\s*-\s*\d+$/, '');
+        const whisper = entry.series || CATALOG_KIND_LABELS[entry.kind];
+        let qrDataUri = '';
+        try {
+            const QRCode = (await import('qrcode')).default;
+            qrDataUri = await QRCode.toDataURL(qrUrl, {
+                width: 320,
+                margin: 1,
+                color: { dark: '#2c2c2c', light: '#f5f0e8' },
+            });
+        } catch {
+            /* the plaque still prints, minus the QR */
+        }
+        const win = window.open('', '_blank', 'width=460,height=760');
+        if (!win) return;
+        win.document.write(`<!doctype html><html><head><title>${entry.sigil} plaque</title>
+<style>
+  body { margin: 0; background: #fff; }
+  .plaque { width: 340px; margin: 24px auto; padding: 34px 26px; background: #f5f0e8;
+    border: 1px solid #c6bca6; text-align: center; color: #2c2c2c; }
+  .sigil { font-size: 13px; letter-spacing: 0.26em; text-transform: uppercase; color: #8b6914; }
+  .title { font-style: italic; font-size: 26px; margin: 20px 10px 8px; }
+  .whisper { font-size: 12px; letter-spacing: 0.1em; color: #5a4a35; }
+  .qr { margin: 22px auto 6px; }
+  .qr img { width: 190px; height: 190px; }
+  .host { font-size: 11px; letter-spacing: 0.12em; color: #a09070; margin-top: 14px; }
+  @media print { body { background: #f5f0e8; } .plaque { border: none; margin: 0 auto; } }
+</style></head><body>
+<div class="plaque">
+  <div class="sigil">${entry.sigil}</div>
+  <div class="title">${title}</div>
+  <div class="whisper">${whisper}</div>
+  ${qrDataUri ? `<div class="qr"><img src="${qrDataUri}" alt=""/></div>` : ''}
+  <div class="host">mandalacodes.com</div>
+</div>
+<script>window.onload = function () { window.print(); };</script>
+</body></html>`);
+        win.document.close();
+        void stampPrinted();
+    };
+
+    const invited = !!entry.claimIssuedAt;
+    const printed = !!entry.printedAt;
+
+    return (
+        <div className="border border-wood-200 p-5 mb-4">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2">
+                <span className="font-title text-base text-wood-900 tracking-[0.05em]">
+                    {entry.sigil}
+                </span>
+                <span className="font-reading text-base text-wood-900">
+                    {entry.title}
+                </span>
+                <span className="font-reading text-sm text-wood-500">
+                    {CATALOG_KIND_LABELS[entry.kind]} · {STATUS_LABELS[entry.status]}
+                    {entry.cityId ? ` · ${cityLabelById(entry.cityId)}` : ''}
+                </span>
+                {printed && (
+                    <span className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold">
+                        printed
+                    </span>
+                )}
+                {invited && (
+                    <span className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold">
+                        invited
+                    </span>
+                )}
+            </div>
+
+            {error && (
+                <p className="font-reading italic text-sm text-stone-600 mb-2">
+                    {error}
+                </p>
+            )}
+            {note && (
+                <p className="font-reading text-sm text-bronze-700 mb-2 not-italic">
+                    {note}
+                </p>
+            )}
+
+            {codeRef && (
+                <ClaimCodeReference
+                    code={codeRef}
+                    sigil={entry.sigil}
+                    pieceId={entry.id}
+                    onDismiss={() => setCodeRef(null)}
+                    onPrinted={stampPrinted}
+                />
+            )}
+
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+                {inWorld ? (
+                    <span className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-400 font-semibold">
+                        already in the world
+                    </span>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={enterWorld}
+                        disabled={busy === 'world'}
+                        className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-700 hover:text-bronze-700 font-semibold disabled:opacity-40"
+                    >
+                        {busy === 'world' ? 'entering...' : 'enter the world'}
+                    </button>
+                )}
+
+                {entry.keeperEmail && !invited && (
+                    <button
+                        type="button"
+                        onClick={invite}
+                        disabled={busy === 'invite'}
+                        className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-700 hover:text-bronze-700 font-semibold disabled:opacity-40"
+                    >
+                        {busy === 'invite' ? 'sending...' : 'invite its keeper'}
+                    </button>
+                )}
+
+                <button
+                    type="button"
+                    onClick={mintCode}
+                    disabled={busy === 'code'}
+                    className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-700 hover:text-bronze-700 font-semibold disabled:opacity-40"
+                >
+                    {busy === 'code' ? 'minting...' : 'mint claim code'}
+                </button>
+
+                <button
+                    type="button"
+                    onClick={printPlaque}
+                    className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-700 hover:text-bronze-700 font-semibold"
+                >
+                    print the plaque
+                </button>
+
+                <a
+                    href={`/piece/${entry.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-label text-[11px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+                >
+                    view its certificate
+                </a>
+            </div>
+        </div>
+    );
+};
+
+const CatalogSection: React.FC = () => {
+    const [entries, setEntries] = useState<CatalogAdminEntry[]>([]);
+    const [inWorld, setInWorld] = useState<Set<string>>(new Set());
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
+
+    const loadWorld = async () => {
+        try {
+            const res = await fetch('/api/atlas');
+            const data = await res.json();
+            if (data?.ok && data.state?.pieces) {
+                setInWorld(
+                    new Set(
+                        (data.state.pieces as Array<{ pieceId: string }>).map(
+                            (p) => p.pieceId,
+                        ),
+                    ),
+                );
+            }
+        } catch {
+            /* the "already in the world" chip just won't show until reload */
+        }
+    };
+
+    const load = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await adminFetch('/api/atlas/catalog/admin');
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                setEntries(data.entries || []);
+            } else {
+                setError(data?.error || 'Could not load the catalog.');
+            }
+        } catch {
+            setError('Could not load the catalog.');
+        } finally {
+            setLoading(false);
+        }
+        await loadWorld();
+    };
+
+    useEffect(() => {
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    return (
+        <div className="bg-white border border-wood-200 p-8 mb-10">
+            <h2 className={sectionTitle}>Catalog</h2>
+            <p className={sectionLead}>
+                Every work you have made, entered once. Each piece receives a
+                permanent sigil the moment you save it, and every door flows from
+                the row below: enter the world, invite its keeper, mint a claim
+                code, print.
+            </p>
+
+            <CatalogForm
+                onCreated={() => {
+                    load();
+                }}
+            />
+
+            {error && (
+                <p className="font-reading italic text-sm text-stone-600 mb-4">
+                    {error}
+                </p>
+            )}
+            {loading && (
+                <p className="font-reading text-sm text-wood-400">Loading...</p>
+            )}
+            {!loading && !error && entries.length === 0 && (
+                <p className="font-reading text-sm text-wood-400">
+                    No pieces catalogued yet.
+                </p>
+            )}
+
+            {!loading &&
+                entries.map((entry) => (
+                    <CatalogRow
+                        key={entry.id}
+                        entry={entry}
+                        inWorld={inWorld.has(entry.id)}
+                        onChanged={load}
+                    />
+                ))}
+        </div>
+    );
+};
+
+// ───────────────────────────────────────────────────────────────────────────
 // Page
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -1956,6 +2751,7 @@ const AdminAtlas: React.FC = () => {
                         Seed ledger events and add stewards for the world map.
                     </p>
 
+                    <CatalogSection />
                     <SeedEventSection />
                     <PendingSalesSection />
                     <TendingSection />

@@ -17,6 +17,12 @@ export interface Artwork {
   series?: string; // e.g. "Universal Language", "Mandala", "Light Codes"
   cardNumber?: number; // 1–64 — the oracle code this piece embodies (UL series). The
                        // explicit artwork↔code link, derived from the "- N" title suffix.
+  /** Curated sigil number lock (utils/pieceCode.ts). When present it wins over
+   *  cardNumber, the pieceId's trailing digits, and the stable hash — the way
+   *  to pin a permanent sigil number onto a piece whose id carries none. Set
+   *  it once a sigil is printed; it is part of the forever contract from then
+   *  on (see pieceCode.ts). */
+  sigilNumber?: number;
   coverImage: string;
   images: string[];
   description: string;
@@ -196,6 +202,14 @@ export interface PublicAtlasState {
      *  for backward compatibility with schemaVersion-2 consumers. Carries no
      *  holder data: it answers only "draw arcs to this piece?" */
     kinshipEligible?: boolean;
+    /** The taxonomy facet the visitor can filter the world by. Derived
+     *  server-side in toPublicState from archive/genesis meta:
+     *  'sixty-four' (series Universal Language), 'mandala' (series Mandala or
+     *  pieceType mandala outside UL), 'signature' (isSignaturePiece), else a
+     *  slug of the category. Additive & optional: schemaVersion-2 consumers
+     *  and pre-kind cached state simply lack it (the KIND filter row hides
+     *  when fewer than two kinds are present). Never personal. */
+    kind?: string;
     /** M6, Lens 2 — the piece's shared dream, when the keeper has chosen to
      *  let it ride publicly and the piece itself is otherwise visible here.
      *  No name, no city tie-in beyond what's already public. Absent = no
@@ -277,6 +291,14 @@ export interface LedgerEvent {
    *  optional: dropped by the canonicalizer when undefined, so pre-existing
    *  hashes stay valid. Never personal. */
   pieceType?: 'mandala' | 'other';
+  /** 'created' (genesis) only — the piece's series and category, carried on
+   *  the chain so a piece that lives OUTSIDE FULL_ARCHIVE still projects its
+   *  series/category into public state (buildArtworkMeta falls back to these).
+   *  Non-personal facts, whitelist-parsed like everything else. Additive &
+   *  optional: dropped by the canonicalizer when undefined, so pre-existing
+   *  hashes stay valid. */
+  series?: string;
+  category?: string;
   prevHash: string | null;
   hash: string;
 }
@@ -486,6 +508,80 @@ export interface SharedIntention {
    *  entry may be tended more than once (e.g. re-shared after withdrawal). */
   tended?: boolean;
   tendedAt?: string;
+}
+
+/* ─── The catalog room (Adrian, 2026-07-18) ────────────────────────────────
+ * Every work Adrian has ever made enters through one form; each entry becomes
+ * a permanent catalog row feeding every downstream surface (certificate, share
+ * card, atlas meta, plaque). Storage is MUTABLE R2 (atlas/catalog.json) beside
+ * the steward records, with the same etag read-modify-write discipline.
+ *
+ * The runtime catalog is the MERGE of the code-defined FULL_ARCHIVE and these
+ * R2 entries (FULL_ARCHIVE wins on id collision). A catalog id + sigil are
+ * minted once and frozen forever (the forever contract): id format
+ * `${prefix}-${number}` so the trailing digits align with the sigil, and
+ * `sigilNumber` is reserved at creation and NEVER reused, even after an entry
+ * is deleted while unprinted and unclaimed.
+ *
+ * `keeperEmail` and `notes` are PRIVATE — they never appear in any public
+ * response, any chained payload, or the plaque artifact.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export type CatalogKind = 'mandala' | 'signature' | 'jewelry' | 'other';
+
+/** Where the work lives now — the "where it is" field, in Adrian's language:
+ *  with a keeper at a city, available, or resting with the artist. */
+export type CatalogStatus = 'with-keeper' | 'available' | 'with-artist';
+
+export interface CatalogEntry {
+  /** Permanent id, minted once as `${prefix}-${number}`, e.g. MA-7. Never
+   *  renamed, never reused (the forever contract). */
+  id: string;
+  title: string;
+  kind: CatalogKind;
+  /** Named series; required for kind 'other' (it derives that prefix), and the
+   *  sixty-four stay code-defined so they are never entered here. */
+  series?: string;
+  year?: string;
+  dimensions?: string;
+  material?: string;
+  /** Cloudinary public_id (or full URL) for the cover; the merge feeds it to
+   *  the certificate plate and the share card. */
+  coverImage?: string;
+  images?: string[];
+  status: CatalogStatus;
+  /** City the piece rests in — set when a keeper holds it at a place. */
+  cityId?: string;
+  /** Price in MINOR units (cents). Public ONLY when status is 'available'. */
+  price?: number;
+  /** The acquire link — an optional field on available pieces, never a pillar.
+   *  Public ONLY when status is 'available'. */
+  acquireUrl?: string;
+  /** PRIVATE. The known keeper's email for a past sale — enables one-click
+   *  claim-invitation issuance. NEVER public, never chained, never on a plaque. */
+  keeperEmail?: string;
+  /** Admin-only annotations. NEVER returned to a non-admin caller. */
+  notes?: string;
+  /** Reserved at creation from the kind prefix's next free number. Equals the
+   *  id's trailing digits and pins the sigil forever. */
+  sigilNumber: number;
+  createdAt: string;
+  /** Stamped when the piece's plaque/insert is printed — from then on the
+   *  entry is permanent (deletion is refused). */
+  printedAt?: string;
+  /** Stamped when a steward record + claim invitation are issued (the PAST
+   *  path). Also blocks deletion. */
+  claimIssuedAt?: string;
+}
+
+/**
+ * The catalog store (R2 atlas/catalog.json). `nextNumberByPrefix` is the
+ * monotone id-minting counter per sigil prefix — it only ever increments, so
+ * a number is never reused even after an entry is deleted.
+ */
+export interface CatalogStore {
+  nextNumberByPrefix: Record<string, number>;
+  entries: CatalogEntry[];
 }
 
 /**
