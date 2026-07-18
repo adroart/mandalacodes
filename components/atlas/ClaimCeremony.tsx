@@ -10,13 +10,14 @@
  * fetched (offline, cache lag), we skip straight to the book.
  */
 
-import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import type { GlobeNode } from './Globe';
 import { CITIES_BY_ID } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
 import { buildKinshipIndex } from '../../utils/kinship';
 import { ulCardNumber } from '../../utils/universalLanguage';
 import type { PublicAtlasState } from '../../types';
+import { ATLAS_GOLD, ATLAS_NIGHT } from './stageColors';
 
 const Globe3D = lazy(() => import('./three/Globe3D'));
 
@@ -51,6 +52,9 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
   const [failed, setFailed] = useState(false);
   const [phase, setPhase] = useState<Phase>('igniting');
   const [selected, setSelected] = useState<string | null>(null);
+  // "watch it again": bumping this remounts the globe (replaying its founding-
+  // light opening) and re-runs the reveal schedule from the same data.
+  const [replayNonce, setReplayNonce] = useState(0);
 
   const key = `${pieceId}:${editionNumber ?? 0}`;
 
@@ -131,7 +135,10 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
     [state, key],
   );
   const myOrdinal = mine?.claimOrdinal;
-  const myTitle = FULL_ARCHIVE.find((a) => a.id === pieceId)?.title ?? pieceId;
+  const myTitle = (FULL_ARCHIVE.find((a) => a.id === pieceId)?.title ?? pieceId).replace(
+    /\s*-\s*\d+\s*$/,
+    '',
+  );
   const onGlobe = nodes.some((n) => n.id === key);
 
   /* Sequence: ignition runs its own clock inside the globe (~0.9s lead +
@@ -158,7 +165,15 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
       window.clearTimeout(t2);
       if (t3 !== undefined) window.clearTimeout(t3);
     };
-  }, [state, nodes.length, onGlobe, key, creatorMessage]);
+  }, [state, nodes.length, onGlobe, key, creatorMessage, replayNonce]);
+
+  /* Replay the ignition from the same data: reset to the opening, remount the
+     globe (via the nonce key), and let the schedule effect above run again. */
+  const replay = useCallback(() => {
+    setSelected(null);
+    setPhase('igniting');
+    setReplayNonce((n) => n + 1);
+  }, []);
 
   /* Skip jumps forward, never blocks, and never reveals the message before
      the light is lit: from the ignition it lands on the settled ordinal; from
@@ -184,7 +199,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
     return (
       <div
         className="fixed inset-0"
-        style={{ background: 'rgb(15,13,11)', zIndex: 300 }}
+        style={{ background: ATLAS_NIGHT, zIndex: 300 }}
         aria-busy
       />
     );
@@ -193,10 +208,11 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
   return (
     <div
       className="fixed inset-0 overflow-hidden"
-      style={{ background: 'rgb(15,13,11)', zIndex: 300 }}
+      style={{ background: ATLAS_NIGHT, zIndex: 300 }}
     >
       <Suspense fallback={<div className="absolute inset-0" />}>
         <Globe3D
+          key={replayNonce}
           nodes={nodes}
           selectedId={selected}
           kinship={kinship}
@@ -230,7 +246,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
             // The line arrives wide and settles, like a breath released.
             letterSpacing: phase === 'igniting' ? '0.22em' : '0.08em',
             transition: 'letter-spacing 2.4s cubic-bezier(0.22, 1, 0.36, 1)',
-            color: '#c4aa7c',
+            color: ATLAS_GOLD,
           }}
         >
           {typeof myOrdinal === 'number'
@@ -286,7 +302,7 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
       {/* The way onward: appears after the reveal has landed (or with the
           message, when one travelled with the piece). */}
       <div
-        className="absolute inset-x-0 bottom-[5%] flex items-center justify-center gap-8"
+        className="absolute inset-x-0 bottom-[5%] flex flex-col items-center justify-center gap-3"
         style={{
           opacity: showExit ? 1 : 0,
           transition: 'opacity 1.2s ease',
@@ -299,6 +315,14 @@ const ClaimCeremony: React.FC<ClaimCeremonyProps> = ({ pieceId, editionNumber, c
           className="font-label text-[11px] uppercase tracking-[0.25em] text-bronze-300 hover:text-bronze-200 transition-colors"
         >
           Enter your piece&apos;s book
+        </button>
+        {/* The claim is once; the goosebumps should not be. */}
+        <button
+          type="button"
+          onClick={replay}
+          className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors"
+        >
+          watch it again
         </button>
       </div>
 

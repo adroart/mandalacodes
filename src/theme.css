@@ -96,6 +96,30 @@
   --color-bronze-700: #7a5a22;
   --color-bronze-900: #4a3614;
 
+  /* ─── Atlas stage palette ──────────────────────────────────────────────
+     The Atlas globe stage (dark, immersive) is a different surface from
+     the paper site: night sky rather than daybook paper, so it keeps its
+     own small token set instead of reusing the paper bronze scale.
+
+     The two-bronze ruling: #c4aa7c is the Atlas gold, the color of lights,
+     threads, and stage accents. #a37b38 (--color-bronze-500 above) is the
+     paper-surface bronze. They are distinct on purpose, one for the dark
+     stage and one for the paper pages, and neither is ever a literal again,
+     only these tokens. The sage #9caa87 is the "kept, yours" accent, used
+     for the visitor's own origin and their own claimed pieces.
+
+     JS code (Three.js materials, react-globe.gl props, SVG fills) cannot
+     read these custom properties directly. components/atlas/stageColors.ts
+     mirrors them as plain color strings, and components/atlas/three/rig.ts
+     holds the THREE.Color instances for the hand-rolled globe; keep all
+     three in lockstep by hand when a value changes. */
+  --color-atlas-night: rgb(15, 13, 11);   /* the stage background, near-black */
+  --color-atlas-sphere: rgb(34, 29, 23);  /* the globe's body, a shade up from night */
+  --color-atlas-land: #b09e7c;            /* the dotted-map land layer's base hue */
+  --color-atlas-gold: #c4aa7c;            /* lights, threads, stage accents */
+  --color-atlas-ember: #574a36;           /* unawakened (sold, unclaimed) markers */
+  --color-atlas-kept: #9caa87;            /* the visitor's own origin and pieces */
+
   /* Animations */
   --animate-spin-slow: spin 20s linear infinite;
   --animate-spin-reverse-slow: spinReverse 25s linear infinite;

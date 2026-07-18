@@ -11,8 +11,10 @@
  */
 
 import React from 'react';
+import { ATLAS_GOLD } from './stageColors';
+import { GLOSS_TEXT, useGloss } from './gloss';
 
-const BRONZE = '#c4aa7c';
+const BRONZE = ATLAS_GOLD;
 
 export interface CityMember {
   key: string;
@@ -27,6 +29,8 @@ export interface CityListHUDProps {
   members: readonly CityMember[];
   onSelectMember: (key: string) => void;
   onRelease: () => void;
+  /** Hosted in the phone half-sheet, which owns the scroll. */
+  inSheet?: boolean;
 }
 
 /* The voice for a piece's state, kept to Adrian's register: a placed-and-
@@ -41,7 +45,23 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
   members,
   onSelectMember,
   onRelease,
+  inSheet = false,
 }) => {
+  // Gloss "ember" the first time this list shows one (interface law 5).
+  const { active: gloss, fire } = useGloss();
+  const hasEmber = members.some((m) => m.status === 'unawakened');
+  const firedEmber = React.useRef(false);
+  React.useEffect(() => {
+    if (hasEmber && !firedEmber.current) {
+      firedEmber.current = true;
+      fire('ember');
+    }
+  }, [hasEmber, fire]);
+
+  const scrollCap = inSheet
+    ? 'h-full'
+    : 'max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto';
+
   const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <p
       className="font-label text-[10px] uppercase tracking-[0.2em] mb-1.5"
@@ -82,7 +102,7 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
         />
       ))}
 
-      <div className="p-5 sm:p-6 max-h-[calc(100svh-var(--nav-height)-7rem)] overflow-y-auto">
+      <div className={`p-5 sm:p-6 ${scrollCap}`}>
         <Label>
           {members.length} {members.length === 1 ? 'piece rests here' : 'pieces rest here'}
         </Label>
@@ -128,15 +148,28 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
             );
           })}
         </ul>
+
+        {/* Once-per-visitor gloss for "ember". */}
+        <p
+          aria-hidden={gloss !== 'ember'}
+          className="mt-3 font-display text-[13px] leading-snug"
+          style={{
+            color: 'rgba(196,170,124,0.85)',
+            opacity: gloss === 'ember' ? 1 : 0,
+            transition: 'opacity 500ms ease',
+          }}
+        >
+          {GLOSS_TEXT.ember}
+        </p>
       </div>
 
-      {/* Release the whole city. */}
+      {/* Return: close the whole city. */}
       <button
         type="button"
         onClick={onRelease}
         className="absolute top-2.5 right-2.5 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors px-2 py-1"
       >
-        release
+        return
       </button>
     </div>
   );

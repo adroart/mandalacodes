@@ -35,6 +35,17 @@ export const SELECT_ANIM_MS = 800;
 export const MANDALA_DRAW_SECONDS = 5;
 
 // ─── Palette (normalized RGB, derived from the atlas style notes) ──────────
+// This is the single JS source of stage colors for the hand-rolled Three.js
+// globe (Globe3D and its scene components): every material/shader uniform
+// that needs a stage color reads it from here, never from a literal.
+//
+// These THREE.Color instances are tuned specifically for this renderer, so
+// they are not required to be byte-identical to the plain hex constants in
+// ../stageColors.ts (GlobeGL's react-globe.gl renderer is tuned separately).
+// Where a value IS meant to be the same color, keep it in lockstep by hand
+// with both ../stageColors.ts and the matching --color-atlas-* token in
+// src/theme.css: COLOR_BG ~ atlas-night, COLOR_BRONZE ~ atlas-gold,
+// COLOR_SAGE ~ atlas-kept, COLOR_EMBER ~ atlas-ember.
 export const COLOR_BG = new THREE.Color(15 / 255, 13 / 255, 11 / 255);
 export const COLOR_LAND = new THREE.Color(0.56, 0.53, 0.47);
 export const COLOR_BRONZE = new THREE.Color(0.77, 0.67, 0.49);
@@ -45,6 +56,59 @@ export const COLOR_RIM = new THREE.Color(0.32, 0.27, 0.19);
 // over from the cobe globe's UNAWAKENED_COLOR intent (Globe.tsx) so the two
 // renderers agree on the resting-ember hue. Warm brown-bronze, never cold.
 export const COLOR_EMBER = new THREE.Color(0.34, 0.29, 0.21);
+
+// ─── The engraved earth (build-order item 3) ───────────────────────────────
+// Shader-only values for the ruled hairline earth and the light it receives.
+// These are the ratified mockup values (scratchpad/gen-hairline.mjs, variant
+// hb minus the graticule): the sphere fragment shader in GlobeSphere.tsx
+// composes ocean gradient + land lift + coast + waterline from the baked
+// texture channels, then adds the marker light pools and the coast catch-light.
+// They live here beside the COLOR_* set, in lockstep with the mockup, because
+// they are pure renderer tuning with no paper-surface twin (no theme.css token
+// exists for a shader gradient). Keep them in sync with the mockup by hand.
+//
+// Every color below is written as its ratified sRGB mockup hex; the string
+// constructor decodes sRGB -> the renderer's linear working space (three's
+// ColorManagement is on), so after the shader re-encodes to sRGB on output the
+// pixels display as exactly these hex values, the way the mockup ruled them.
+//
+// Ocean radial gradient (mockup: #28211a core -> #1c1712 -> #100d09 edge).
+export const OCEAN_CORE = new THREE.Color('#28211a');
+export const OCEAN_MID = new THREE.Color('#1c1712');
+export const OCEAN_EDGE = new THREE.Color('#100d09');
+// Land lifted one shade above the ocean: the additive delta from the ocean up
+// to a warm land value (a touch above the I-b #2e261c so the continents read
+// clearly against the near-black ocean, as in the mockup), in linear space, so
+// land = ocean + this.
+export const LAND_LIFT = new THREE.Color('#352b1e')
+  .clone()
+  .sub(new THREE.Color('#1c1712'));
+// The coast hairline, tinted ATLAS_GOLD (#c4aa7c); the mockup's 0.7px 0.55 line.
+export const COAST_GOLD = new THREE.Color('#c4aa7c');
+// The light pool core (#eec387 0.38 in the mockup) and the ember's small pool
+// (#c08a4e 0.5). Additive, screen-like, tightened so they read as radiance.
+export const POOL_CORE = new THREE.Color('#eec387');
+export const EMBER_POOL = new THREE.Color('#c08a4e');
+// The catch-light: inside a pool the coast brightens toward this warm white
+// (the mockup's masked 1.05px 0.6 pass, #ffe2ac).
+export const CATCH_WHITE = new THREE.Color('#ffe2ac');
+
+/** Standing light pools cast onto the earth. Capped so the sphere shader's
+    uniform arrays stay bounded; beyond the cap the heaviest pools are kept and
+    a console warning names the drop (never a silent slice). */
+export const MAX_POOLS = 64;
+
+/** One standing pool of warmth: a lit city (weight = pieces sharing the point)
+    or a dim ember. Positions are lat/lng; GlobeSphere converts them to local
+    unit vectors that ride the spin group, so the pools turn with the earth. */
+export interface LightPool {
+  lat: number;
+  lng: number;
+  /** Pieces sharing this city point (Lisbon = 3). Drives pool size + weight. */
+  weight: number;
+  /** An unawakened ember: a much smaller, dimmer pool, no catch-light. */
+  ember: boolean;
+}
 
 export function latLngToVec3(
   lat: number,

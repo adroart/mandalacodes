@@ -19,15 +19,18 @@ import Globe, { type GlobeMethods } from 'react-globe.gl';
 import * as THREE from 'three';
 import type { KinshipIndex } from '../../utils/kinship';
 import type { GlobeNode } from './Globe';
+import { ATLAS_GOLD, ATLAS_KEPT, ATLAS_LAND, ATLAS_NIGHT, ATLAS_SPHERE, withAlpha } from './stageColors';
 
 const COUNTRIES_URL = '/atlas/countries-110m.geojson';
 
 // Palette — warm stone world, bronze pieces, sage for the visitor's origin.
-const BACKGROUND = 'rgb(15, 13, 11)';
-const HEX_COLOR = 'rgba(176, 158, 124, 0.5)'; // warm bronze-stone land dots
-const SPHERE_COLOR = 'rgb(34, 29, 23)';        // deep warm stone body
-const ATMOSPHERE = '#c4aa7c';
-const SAGE = '#9caa87';
+// Sourced from stageColors.ts, the single JS source for these tokens; keep
+// in lockstep with the matching --color-atlas-* token in src/theme.css.
+const BACKGROUND = ATLAS_NIGHT;
+const HEX_COLOR = withAlpha(ATLAS_LAND, 0.5); // warm bronze-stone land dots
+const SPHERE_COLOR = ATLAS_SPHERE;             // deep warm stone body
+const ATMOSPHERE = ATLAS_GOLD;
+const SAGE = ATLAS_KEPT;
 
 // Series → marker hue lives in its own module (seriesColor.ts) so the page
 // legend can use it without pulling this heavy chunk in. Re-exported here for

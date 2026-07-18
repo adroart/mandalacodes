@@ -8,14 +8,21 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import type { KinshipIndex } from '../../../utils/kinship';
 import type { GlobeNode } from '../Globe';
+import { ATLAS_NIGHT } from '../stageColors';
 import Atmosphere from './Atmosphere';
 import GlobeSphere from './GlobeSphere';
 import HexagramRing from './HexagramRing';
 import KinshipArcs from './KinshipArcs';
-import LandDots from './LandDots';
 import Markers from './Markers';
 import Starfield from './Starfield';
-import { CAMERA_FAR_DIST, CAMERA_NEAR_DIST, easeInOutCubic, stepRig, useRig } from './rig';
+import {
+  CAMERA_FAR_DIST,
+  CAMERA_NEAR_DIST,
+  easeInOutCubic,
+  LightPool,
+  stepRig,
+  useRig,
+} from './rig';
 
 export interface GlobeSceneProps {
   nodes: GlobeNode[];
@@ -32,6 +39,9 @@ export interface GlobeSceneProps {
   focusSeries?: string | null;
   /** Your-codes lens: lights without the visitor's codes recede. */
   yoursMode?: boolean;
+  /** Skip the staggered founding-light ignition on this first load (returning
+      visitor or a skipped overture): fade the lights in quietly instead. */
+  suppressIntro?: boolean;
 }
 
 export default function GlobeScene({
@@ -43,6 +53,7 @@ export default function GlobeScene({
   placedByCard,
   focusSeries,
   yoursMode,
+  suppressIntro,
 }: GlobeSceneProps) {
   const rig = useRig();
   const tiltRef = useRef<THREE.Group>(null);
@@ -55,9 +66,18 @@ export default function GlobeScene({
     rig.camera = camera;
   }, [camera, rig]);
 
-  const rippleSources = nodes
-    .filter((n) => n.status === 'placed')
-    .map((n) => [n.lat, n.lng] as const);
+  // Standing light pools: every placed light casts one, its weight scaling with
+  // the pieces sharing the city point (Lisbon = 3 -> a visibly larger pool);
+  // every ember casts a small dim pool. The sphere shader accumulates them and
+  // brightens the coast (the catch-light) inside the lit ones.
+  const pools: LightPool[] = nodes
+    .filter((n) => n.status === 'placed' || n.status === 'unawakened')
+    .map((n) => ({
+      lat: n.lat,
+      lng: n.lng,
+      weight: n.count ?? 1,
+      ember: n.status === 'unawakened',
+    }));
 
   // Priority -1: commit the rig step (rotation, camera dolly) before any child
   // shader subscriber reads it, so uniforms and transforms never lag a frame.
@@ -90,17 +110,21 @@ export default function GlobeScene({
 
   return (
     <>
-      <color attach="background" args={[15 / 255, 13 / 255, 11 / 255]} />
+      {/* String form, not numeric components: THREE treats numeric args as
+          linear and re-encodes them to sRGB on output, which rendered the
+          intended near-black night as a washed grey. The hex string goes
+          through the correct sRGB-to-linear conversion. */}
+      <color attach="background" args={[ATLAS_NIGHT]} />
       <Starfield />
       <group ref={tiltRef}>
         <group ref={spinRef}>
-          <GlobeSphere rippleSources={rippleSources} />
-          <LandDots />
+          <GlobeSphere pools={pools} />
           <Markers
             nodes={nodes}
             selectedId={selectedId}
             focusSeries={focusSeries}
             yoursMode={yoursMode}
+            suppressIntro={suppressIntro}
           />
           {kinship && kinship.pairs.length > 0 && (
             <KinshipArcs

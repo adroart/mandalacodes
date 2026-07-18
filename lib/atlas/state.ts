@@ -15,7 +15,17 @@ import { ulCardNumber } from '../../utils/universalLanguage';
 
 let atlasStatePromise: Promise<PublicAtlasState> | null = null;
 
-export function loadAtlasState(): Promise<PublicAtlasState> {
+/** The seed/fallback state carries this marker so surfaces can tell an honest
+ *  "showing the last gathered sky" chip and offer a retry (interface law 6).
+ *  A live fetch never sets it; a forced retry that succeeds clears it. */
+export type LoadedAtlasState = PublicAtlasState & { servedFallback?: boolean };
+
+/**
+ * Load the public atlas. Pass `force` to bypass the per-session cache and
+ * refetch (the honest-state retry). On any failure the local seed is served
+ * with `servedFallback: true` so the caller can surface a quiet notice.
+ */
+export function loadAtlasState(force = false): Promise<LoadedAtlasState> {
   // ── TEMPORARY PLACEHOLDER (remove at launch) ──
   // Verification override: `?placeholder` on the URL forces the placeholder
   // state, so Adrian can preview it locally where the dev server otherwise
@@ -28,6 +38,7 @@ export function loadAtlasState(): Promise<PublicAtlasState> {
   }
   // ── end TEMPORARY PLACEHOLDER ──
 
+  if (force) atlasStatePromise = null;
   if (!atlasStatePromise) {
     atlasStatePromise = fetch('/api/atlas')
       .then(async (res) => {
@@ -49,7 +60,11 @@ export function loadAtlasState(): Promise<PublicAtlasState> {
         // ── end TEMPORARY PLACEHOLDER ──
         return state;
       })
-      .catch(() => buildSeedAtlasState());
+      .catch(() => {
+        const seed = buildSeedAtlasState() as LoadedAtlasState;
+        seed.servedFallback = true;
+        return seed;
+      });
   }
   return atlasStatePromise;
 }

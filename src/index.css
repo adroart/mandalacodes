@@ -714,36 +714,14 @@ html.oracle-card-page body {
 .chapter-scroll::-webkit-scrollbar { display: none; } /* WebKit */
 
 
-/* ─── Atlas immersive panel (dark slide-over) ──────────────────────────────
- * PieceSidePanel and the birth-place panel were authored for the paper
- * background (dark wood text, light wood dividers). On the Atlas globe they
- * sit on a translucent-dark stage, so recolor text to light, soften dividers
- * to a faint bronze, and tighten the over-airy section rhythm. */
-.atlas-panel-dark :is(h1, h2, h3, h4) { color: rgb(242, 238, 230); }
-.atlas-panel-dark p,
-.atlas-panel-dark li,
-.atlas-panel-dark button:not([class*='bronze']) { color: rgb(196, 186, 170); }
-.atlas-panel-dark .text-wood-900 { color: rgb(242, 238, 230) \!important; }
-.atlas-panel-dark .text-wood-700,
-.atlas-panel-dark .text-wood-600,
-.atlas-panel-dark .text-wood-500 { color: rgb(176, 166, 150) \!important; }
-.atlas-panel-dark :is(.border-wood-200, .border-wood-300, .border-t) {
-  border-color: rgba(196, 170, 124, 0.18) \!important;
-}
-/* Tighten the section rhythm: the paper version uses pt-5 mt-5 between every
- * block, which reads too airy on the focused dark panel. */
-.atlas-panel-dark .mt-5 { margin-top: 0.9rem \!important; }
-.atlas-panel-dark .pt-5 { padding-top: 0.9rem \!important; }
-.atlas-panel-dark .mb-5 { margin-bottom: 0.85rem \!important; }
-
-/* Filter panel reuses the same dark recolor. */
-.atlas-filters-dark :is(label, span, button, select, option) {
-  color: rgb(196, 186, 170);
-}
-.atlas-filters-dark select {
-  background-color: rgba(15, 13, 11, 0.6);
-  border-color: rgba(196, 170, 124, 0.25);
-}
+/* The .atlas-panel-dark / .atlas-filters-dark !important override blocks
+ * that used to live here (re-coloring paper components with hardcoded
+ * rgb() literals for the dark Atlas stage) have been retired. A repo-wide
+ * grep found no component applying either class, on this branch or in
+ * git history: PieceSidePanel and the birth-place panel now render their
+ * own dark seating directly (token-backed styling, no override needed), and
+ * the filter panel's dark seating lives in AtlasFilters' 'stage' variant.
+ * See todo/plans/atlas-interface-redesign.md, "One visual language". */
 
 /* ─── Atlas piece HUD entry ────────────────────────────────────────────── */
 @keyframes hud-in {

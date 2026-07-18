@@ -2,7 +2,6 @@ import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'rea
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Globe, { type GlobeNode } from './atlas/Globe';
 import AtlasFilters, { type AtlasStatusFilter } from './atlas/AtlasFilters';
-import AtlasFiltersDark from './atlas/AtlasFiltersDark';
 import PieceSidePanel, {
   ordinalLabel,
   type KinEntry,
@@ -16,6 +15,11 @@ import { useIdleFade } from './atlas/useIdleFade';
 import { seriesColor } from './atlas/seriesColor';
 import PieceHUD from './atlas/PieceHUD';
 import CityListHUD, { type CityMember } from './atlas/CityListHUD';
+import PhoneHudSheet from './atlas/PhoneHudSheet';
+import { GLOSS_TEXT, useGloss, type GlossTerm } from './atlas/gloss';
+import AtlasOverture from './atlas/AtlasOverture';
+import FeaturedDream, { type FeaturedDreamData } from './atlas/FeaturedDream';
+import SelectionInscription from './atlas/SelectionInscription';
 import { pieceCode } from '../utils/pieceCode';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
@@ -28,6 +32,7 @@ import { buildKinshipIndex, greatCircleDistance, MAX_KINSHIP_ARCS } from '../uti
 import { buildDreamRoute } from '../utils/dreamStream';
 import { SIZE_BANDS, sizeBandFor, type SizeBand } from '../utils/sizeBands';
 import type { PublicAtlasState } from '../types';
+import { ATLAS_GOLD, ATLAS_KEPT } from './atlas/stageColors';
 
 /* The Three.js globe loads as its own chunk so the page paints immediately;
    browsers without WebGL keep the cobe globe + SVG kinship overlay. */
@@ -54,6 +59,10 @@ const MAX_KIN_PER_PIECE = 6;
 /* Selection key for the visitor's own birth place (from their Hologenetic
    Profile) — a globe node that is not a piece. */
 const BIRTH_KEY = '__birth-place__';
+
+/* Stable empty node list handed to the globe while the overture holds the
+   lights in the dark (a fresh [] each render would re-run marker effects). */
+const EMPTY_NODES: GlobeNode[] = [];
 
 const EARTH_RADIUS_KM = 6371;
 
@@ -146,6 +155,124 @@ const AtlasPage: React.FC = () => {
   const [focusSeries, setFocusSeries] = useState<string | null>(null);
   const [yoursMode, setYoursMode] = useState<boolean>(false);
   const [markerScreenPos, setMarkerScreenPos] = useState<{ x: number; y: number } | null>(null);
+  const navigate = useNavigate();
+
+  /* ─── Selection history (Selection section of the plan) ──────────────────
+     The `?piece=` param is the single source of truth for a piece selection.
+     Selecting from the resting sky pushes exactly one history entry; selecting
+     another light while one is open replaces it; Back (button or gesture) pops
+     that one entry and closes the selection. return and Esc do the same. A
+     deep-linked selection was never pushed, so closing it steps in place and
+     the browser Back then leaves to the referring page, never a broken loop. */
+  const selectionOpenRef = useRef(false);
+  selectionOpenRef.current = !!selectedKey || !!selectedCity;
+  // True while the open selection was pushed by us (so closing it can pop the
+  // entry); false for a deep-linked selection that arrived in the URL.
+  const selectionPushedRef = useRef(false);
+
+  const setPieceParam = React.useCallback(
+    (key: string | null, push: boolean) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (key) next.set('piece', key.replace(/:0$/, ''));
+          else next.delete('piece');
+          return next;
+        },
+        { replace: !push },
+      );
+    },
+    [setSearchParams],
+  );
+
+  /* Select a piece: push a history entry only when opening from the resting
+     sky, otherwise replace the open one. */
+  const selectPiece = React.useCallback(
+    (key: string) => {
+      const push = !selectionOpenRef.current;
+      if (push) selectionPushedRef.current = true;
+      setPieceParam(key, push);
+    },
+    [setPieceParam],
+  );
+
+  /* Silent clear (a filter dropped the selection): no history navigation. */
+  const clearPieceSilently = React.useCallback(() => {
+    selectionPushedRef.current = false;
+    setPieceParam(null, false);
+  }, [setPieceParam]);
+
+  /* Return the visitor to the resting sky: pop our pushed entry when we made
+     one, else step in place so a deep link's Back reaches the referrer. */
+  const closeSelection = React.useCallback(() => {
+    setSelectedCity(null);
+    if (selectionPushedRef.current) {
+      selectionPushedRef.current = false;
+      navigate(-1);
+    } else {
+      setPieceParam(null, false);
+    }
+  }, [navigate, setPieceParam]);
+
+  /* Back to the city list from a piece reached through one: clear the piece
+     but keep the open city, no history step. */
+  const backToCity = React.useCallback(() => {
+    setPieceParam(null, false);
+  }, [setPieceParam]);
+
+  // Phone selection sheet: matchMedia so the half-sheet vs. side-panel choice
+  // tracks orientation changes without a reload.
+  const [isPhone, setIsPhone] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(max-width: 767px)');
+    const on = () => setIsPhone(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+
+  // Reduced motion: the overture never animates, the featured dream swaps
+  // plainly. Tracked live so toggling the OS setting takes effect.
+  const [reduced, setReduced] = useState<boolean>(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const on = () => setReduced(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+
+  /* The overture (build-order item 3): a cold visitor with lights sees the
+     vision speak once, then the earth emerges and the founding lights ignite.
+     Returning visitors (localStorage flag) and empty skies skip straight to the
+     resting sky. `overtureRevealed` gates the marker layer so the lights hold
+     in the dark until the words dissolve; `playIntro` runs the staggered
+     ignition only on a natural cold-visit reveal (a skip lands at rest). */
+  const [overture, setOverture] = useState<'pending' | 'running' | 'done'>('pending');
+  const [overtureRevealed, setOvertureRevealed] = useState(false);
+  const [playIntro, setPlayIntro] = useState(false);
+
+  /* Desktop selection writes as an inscription first; `open the book` reveals
+     the full PieceHUD card. Reset to the inscription whenever the piece
+     changes. Phone keeps its Phase 2 half-sheet, unaffected. */
+  const [bookOpen, setBookOpen] = useState(false);
+
+  /* Featured dream (one voice at a time): the resting sky shows a single dream,
+     cross-fading through the deterministic dream route roughly every 20s. */
+  const [featuredIdx, setFeaturedIdx] = useState(0);
+  const [featuredScreenPos, setFeaturedScreenPos] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+
+  // Once-per-visitor glosses for the dreams and threads controls (law 5).
+  const { active: controlGloss, fire: fireGloss } = useGloss();
+
   // Corner chrome fades when the visitor stops interacting, leaving only the
   // turning world. A selected piece or open filters keep the chrome awake.
   const idle = useIdleFade(4000) && !selectedKey && !selectedCity && !filtersOpen;
@@ -154,19 +281,19 @@ const AtlasPage: React.FC = () => {
      active, one gesture flies to the next light and opens its vessel. */
   const [streamActive, setStreamActive] = useState<boolean>(false);
 
-  // Esc releases the locked piece, any open city list, and exits the stream.
+  // Esc returns to the resting sky (same as the Back gesture and return), and
+  // exits the stream.
   useEffect(() => {
     if (!selectedKey && !selectedCity && !streamActive) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setStreamActive(false);
-        setSelectedKeyState(null);
-        setSelectedCity(null);
+        if (selectedKey || selectedCity) closeSelection();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedKey, selectedCity, streamActive]);
+  }, [selectedKey, selectedCity, streamActive, closeSelection]);
   const [use3D] = useState<boolean>(webglAvailable);
 
   /* Mirror a filter into the URL; 'all' clears the param. */
@@ -203,7 +330,6 @@ const AtlasPage: React.FC = () => {
      between the birthday map and the geography of the placed pieces. */
   const { profile } = useProfile();
   const birthPlace = profile?.inputs.place ?? null;
-  const navigate = useNavigate();
 
   /* The visitor's own codes: the gates of all eleven profile positions,
      computed locally. Nothing about the profile leaves the device; the
@@ -278,38 +404,45 @@ const AtlasPage: React.FC = () => {
     return set;
   }, [collections]);
 
-  /* Selection setter that mirrors the choice into the URL (replace, so
-     browsing pieces doesn't pile up history entries). */
-  const setSelectedKey = (key: string | null) => {
-    setSelectedKeyState(key);
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (key) next.set('piece', key.replace(/:0$/, ''));
-        else next.delete('piece');
-        return next;
-      },
-      { replace: true },
-    );
-  };
 
   /* Globe container size — KinshipLayer needs CSS pixels to render the SVG
      overlay at the same dimensions cobe is drawing into. */
   const globeBoxRef = useRef<HTMLDivElement | null>(null);
   const [globeSize, setGlobeSize] = useState({ width: 0, height: 0 });
+  /* The full stage box (not the square globe overlay): the featured dream reads
+     it to place itself off the globe's projected limb. */
+  const [stageDims, setStageDims] = useState({ width: 0, height: 0 });
 
   /* Fetch the live atlas via the shared loader (falls back to the local
      seed on any failure so the page always renders something). The card
      page's "On the Atlas" seat reads the same cached state. */
+  // Honest states (law 6): when the loader served the local seed after a fetch
+  // failure it flags `servedFallback`, and a quiet chip near the caption offers
+  // a retry that refetches the live sky.
+  const [servedFallback, setServedFallback] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   useEffect(() => {
     let active = true;
     loadAtlasState().then((data) => {
-      if (active) setState({ kind: 'ready', data });
+      if (!active) return;
+      setState({ kind: 'ready', data });
+      setServedFallback(data.servedFallback === true);
     });
     return () => {
       active = false;
     };
   }, []);
+
+  const retryAtlasFetch = () => {
+    if (retrying) return;
+    setRetrying(true);
+    loadAtlasState(true)
+      .then((data) => {
+        setState({ kind: 'ready', data });
+        setServedFallback(data.servedFallback === true);
+      })
+      .finally(() => setRetrying(false));
+  };
 
   /* Enrich pieces with titles, build the series list for the filter. */
   const enriched: EnrichedPiece[] = useMemo(() => {
@@ -329,21 +462,28 @@ const AtlasPage: React.FC = () => {
     return Array.from(set).sort();
   }, [enriched]);
 
-  /* Apply the ?piece= deep link once the atlas is loaded. Accepts both
-     "UL-122" and "UL-122:2" (piece keys without an edition end in ":0"),
-     plus the birth-place key when the visitor has a saved profile. */
+  /* Keep the piece selection in lockstep with the `?piece=` param, the single
+     source of truth. This drives deep links on load, browsing between pieces,
+     and the Back gesture: when history pops the pushed selection entry the
+     param clears here and the selection closes. Accepts both "UL-122" and
+     "UL-122:2" (keys without an edition end in ":0"), plus the birth-place key
+     when the visitor has a saved profile. */
   useEffect(() => {
-    if (enriched.length === 0) return;
     const param = searchParams.get('piece');
-    if (!param) return;
-    if (param === BIRTH_KEY) {
-      if (birthPlace) setSelectedKeyState(BIRTH_KEY);
+    if (!param) {
+      // Back reached the resting sky: no pushed selection remains open.
+      selectionPushedRef.current = false;
+      setSelectedKeyState(null);
       return;
     }
+    if (param === BIRTH_KEY) {
+      setSelectedKeyState(birthPlace ? BIRTH_KEY : null);
+      return;
+    }
+    if (enriched.length === 0) return; // resolve once the atlas has loaded
     const match = enriched.find((p) => p.key === param || p.key === `${param}:0`);
-    if (match) setSelectedKeyState(match.key);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enriched]);
+    setSelectedKeyState(match ? match.key : null);
+  }, [searchParams, enriched, birthPlace]);
 
   /* Category and size-band lookups come from the archive, keyed by pieceId. */
   const categoriesAvailable: string[] = useMemo(() => {
@@ -401,6 +541,44 @@ const AtlasPage: React.FC = () => {
     () => enriched.filter((p) => typeof p.claimOrdinal === 'number').length,
     [enriched],
   );
+
+  /* Decide the overture once the atlas is ready. It plays only for a cold
+     visitor (no localStorage flag) on the WebGL earth when lights exist; every
+     other arrival lands straight on the resting sky. Reduced motion shows the
+     two lines statically over the settled sky, then fades them. */
+  useEffect(() => {
+    if (state.kind !== 'ready' || overture !== 'pending') return;
+    if (typeof window === 'undefined') return;
+    const cold = use3D && !USE_GL_GLOBE && lightsLit > 0;
+    let seen = false;
+    try {
+      seen = window.localStorage.getItem('atlas-overture-v1') === '1';
+    } catch {
+      /* private mode: treat as seen so the overture never traps a visitor */
+      seen = true;
+    }
+    if (!cold || seen) {
+      setOverture('done');
+      setOvertureRevealed(true);
+      setPlayIntro(false);
+      return;
+    }
+    try {
+      window.localStorage.setItem('atlas-overture-v1', '1');
+    } catch {
+      /* ignore */
+    }
+    setOverture('running');
+    if (reduced) {
+      // Static block above the settled sky: the lights are already present.
+      setOvertureRevealed(true);
+      setPlayIntro(false);
+    } else {
+      // The lights hold in the dark until the words dissolve, then ignite.
+      setOvertureRevealed(false);
+      setPlayIntro(true);
+    }
+  }, [state.kind, overture, use3D, lightsLit, reduced]);
 
   /* Pieces visible on the globe respect both filters; status=seeking is shown
      in the seeking section, never on the globe (no coords to plot). */
@@ -503,15 +681,16 @@ const AtlasPage: React.FC = () => {
           : route.length - 1
         : (cur + dir + route.length) % route.length;
     streamCooldownRef.current = now + STREAM_COOLDOWN_MS;
-    setSelectedKey(route[nextIdx]);
+    selectPiece(route[nextIdx]);
   };
 
   const enterStream = () => {
     if (dreamRoute.length === 0) return;
+    fireGloss('dreams'); // once-per-visitor gloss for the renamed drift control
     setMandala(false); // leaving mandala view if it was engaged
     setStreamActive(true);
     if (!selectedKey || !dreamRoute.includes(selectedKey)) {
-      setSelectedKey(dreamRoute[0]);
+      selectPiece(dreamRoute[0]);
     }
   };
   const exitStream = () => setStreamActive(false); // keeps the current selection
@@ -661,6 +840,61 @@ const AtlasPage: React.FC = () => {
     return null;
   }, [selectedKey, selectedCity, clusterByMember]);
 
+  /* ─── Featured dream (one voice at a time) ───────────────────────────────
+     A per-key lookup of the composed dream for the resting featured slot: the
+     complete public dream, and a Karla sub-line naming the piece by its code,
+     its city, and its founding-light ordinal. Built off the dream route so the
+     order matches the deterministic route the `dreams` reel travels. */
+  const featuredByKey = useMemo(() => {
+    const map = new Map<string, FeaturedDreamData>();
+    for (const p of seriesFiltered) {
+      const text = (p as EnrichedPiece & { intention?: string }).intention;
+      if (p.status !== 'placed' || !text || !text.trim()) continue;
+      const code = pieceCode({
+        pieceId: p.pieceId,
+        series: p.series,
+        category: p.category ?? categoryFor(p.pieceId),
+        cardNumber: cardNumberFor(p.pieceId),
+      });
+      const cityName = p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined;
+      const parts = [code];
+      if (cityName) parts.push(`placed in ${cityName}`);
+      if (typeof p.claimOrdinal === 'number') {
+        parts.push(`the ${ordinalLabel(p.claimOrdinal)} light`);
+      }
+      map.set(p.key, { key: p.key, text: text.trim(), standing: parts.join(' · ') });
+    }
+    return map;
+  }, [seriesFiltered]);
+
+  /* The featured dream pauses while a selection is open, the filters are open,
+     or the dream reel is running (interacting), and resumes at rest. It never
+     shows during the overture. */
+  const featuredPaused =
+    !!selectedKey ||
+    !!selectedCity ||
+    filtersOpen ||
+    streamActive ||
+    mandala ||
+    overture !== 'done';
+
+  const featuredKey =
+    dreamRoute.length > 0 ? dreamRoute[featuredIdx % dreamRoute.length] : null;
+  const featuredDream = featuredKey ? featuredByKey.get(featuredKey) ?? null : null;
+  const featuredClusterId = featuredKey ? clusterByMember.get(featuredKey) ?? featuredKey : null;
+
+  /* Cross-fade to the next dream roughly every 20s while at rest. */
+  useEffect(() => {
+    if (featuredPaused || dreamRoute.length <= 1) return;
+    const id = window.setInterval(() => setFeaturedIdx((i) => i + 1), 20_000);
+    return () => window.clearInterval(id);
+  }, [featuredPaused, dreamRoute.length]);
+
+  /* A new selection re-opens as the inscription, never the last card. */
+  useEffect(() => {
+    setBookOpen(false);
+  }, [selectedKey, selectedCity]);
+
   /* Whether the currently selected piece was reached through a multi-piece
      city (so its HUD offers a back-to-the-list control). */
   const selectedFromCity =
@@ -673,19 +907,19 @@ const AtlasPage: React.FC = () => {
   const handleClusterSelect = (id: string) => {
     if (id === BIRTH_KEY) {
       setSelectedCity(null);
-      setSelectedKey(BIRTH_KEY);
+      selectPiece(BIRTH_KEY);
       return;
     }
     const cl = cityClusters.find((c) => c.id === id);
     if (!cl) {
-      setSelectedKey(id);
+      selectPiece(id);
       return;
     }
     if ((cl.count ?? 1) <= 1) {
       setSelectedCity(null);
-      setSelectedKey(cl.memberKeys?.[0] ?? id);
+      selectPiece(cl.memberKeys?.[0] ?? id);
     } else {
-      setSelectedKey(null); // clears ?piece
+      setPieceParam(null, false); // clears ?piece; the city list opens instead
       setSelectedCity(cl.cityId ?? null);
     }
   };
@@ -731,7 +965,7 @@ const AtlasPage: React.FC = () => {
         (p.status === 'placed' || p.status === 'unawakened') &&
         p.cityId,
     );
-    if (match) setSelectedKey(match.key);
+    if (match) selectPiece(match.key);
     else navigate(`/universal-language/${n}`);
   };
 
@@ -774,7 +1008,7 @@ const AtlasPage: React.FC = () => {
   /* Selecting a piece from the index re-selects it on the globe above and
      brings the globe back into view (the index lives below the fold). */
   const selectPieceOnGlobe = (pieceId: string, editionNumber?: number) => {
-    setSelectedKey(makeKey(pieceId, editionNumber));
+    selectPiece(makeKey(pieceId, editionNumber));
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -859,8 +1093,8 @@ const AtlasPage: React.FC = () => {
   useEffect(() => {
     if (!selectedKey || selectedKey === BIRTH_KEY) return;
     const stillVisible = seriesFiltered.some((p) => p.key === selectedKey);
-    if (!stillVisible) setSelectedKey(null);
-  }, [selectedKey, seriesFiltered]);
+    if (!stillVisible) clearPieceSilently();
+  }, [selectedKey, seriesFiltered, clearPieceSilently]);
 
   /* The placed pieces nearest the visitor's birth place — the "what of this
      language lives near where I began" list in the birth-place panel. */
@@ -892,6 +1126,7 @@ const AtlasPage: React.FC = () => {
         const cr = entry.contentRect;
         const d = Math.max(120, Math.min(cr.width, cr.height));
         setGlobeSize({ width: d, height: d });
+        setStageDims({ width: cr.width, height: cr.height });
       }
     });
     ro.observe(el);
@@ -1000,8 +1235,71 @@ const AtlasPage: React.FC = () => {
 
   const hasBirthOrigin = globeNodes.some((n) => n.status === 'origin');
 
-  // Chrome opacity easing — one class drives every corner overlay together.
-  const chromeOpacity = idle ? 'opacity-25' : 'opacity-100';
+  /* Your light (law 4, the thread made visible): the signed-in steward's own
+     lights currently on the globe. Tapping the control flies to the first and
+     opens its inscription; repeated taps cycle through the rest. */
+  const ownedOnGlobe = useMemo(
+    () => globeNodes.filter((n) => n.owned && n.status !== 'origin').map((n) => n.id),
+    [globeNodes],
+  );
+  const yourLightIdxRef = useRef(0);
+  const flyToYourLight = () => {
+    if (ownedOnGlobe.length === 0) return;
+    const idx = yourLightIdxRef.current % ownedOnGlobe.length;
+    yourLightIdxRef.current = idx + 1;
+    selectPiece(ownedOnGlobe[idx]);
+  };
+
+  // Chrome tiers with opacity floors (law 3). Orientation chrome (the thesis
+  // caption and the primary controls) never rests below 0.6; secondary chrome
+  // (the breadcrumb and the Atlas wordmark) never below 0.35. Any pointer,
+  // touch, key, or focus wakes them to full via useIdleFade. Reduced motion
+  // never idles (the hook holds idle=false), so both stay at 1.
+  const orientationOpacity = idle ? 0.6 : 1;
+  const secondaryOpacity = idle ? 0.35 : 1;
+  const chromeTierTransition = 'opacity 700ms ease';
+
+  /* The globe's projected screen circle in stage coordinates, so the featured
+     dream can seat itself off the limb (law 2). The camera looks at the origin,
+     so the sphere centres on the stage; at the resting landscape distance it
+     fills ~0.455 of the stage height (measured against the built earth). Phones
+     run in portrait where the camera pulls back, so the featured dream falls
+     back to its bottom-anchored, scrim-backed slot instead of this circle. */
+  const globeCircle = React.useMemo(
+    () =>
+      !isPhone && stageDims.width > 0 && stageDims.height > 0
+        ? {
+            cx: stageDims.width / 2,
+            cy: stageDims.height / 2,
+            r: stageDims.height * 0.455,
+          }
+        : null,
+    [isPhone, stageDims.width, stageDims.height],
+  );
+
+  // Keep the last-shown control gloss term so its line can fade out (rather
+  // than blank instantly) when useGloss clears the active term after ~6s.
+  const lastControlGlossRef = useRef<GlossTerm | null>(null);
+  if (controlGloss) lastControlGlossRef.current = controlGloss;
+
+  /* Desktop selection reads as an inscription first (build-order item 3), then
+     the full card behind `open the book`. Phone keeps its half-sheet; the
+     birth-place and city selections keep their existing panels. */
+  const showInscription =
+    !isPhone &&
+    !bookOpen &&
+    !!selectedKey &&
+    selectedKey !== BIRTH_KEY &&
+    !!selectedPiece;
+  /* Write the inscription on the side away from the light: when the light sits
+     on the right hemisphere, write on the left. */
+  const inscriptionAwayLeft =
+    markerScreenPos != null && globeBoxRef.current != null
+      ? markerScreenPos.x > globeBoxRef.current.clientWidth / 2
+      : false;
+  /* The featured dream shows only at rest on the WebGL earth. */
+  const showFeatured =
+    use3D && !USE_GL_GLOBE && !featuredPaused && featuredDream != null;
 
   return (
     <div className="min-h-screen bg-paper-50 text-wood-900">
@@ -1010,7 +1308,7 @@ const AtlasPage: React.FC = () => {
         <section
           ref={globeBoxRef}
           aria-label="Atlas globe"
-          className="relative w-full overflow-hidden bg-[rgb(15,13,11)] block"
+          className="relative w-full overflow-hidden bg-atlas-night block"
           style={{
             height: 'calc(100svh - var(--nav-height))',
             minHeight: 'min(560px, calc(100svh - var(--nav-height)))',
@@ -1028,7 +1326,7 @@ const AtlasPage: React.FC = () => {
                   className="w-full h-full"
                   style={{
                     background:
-                      'radial-gradient(circle at 50% 50%, rgb(28, 25, 21) 0%, rgb(15, 13, 11) 62%)',
+                      'radial-gradient(circle at 50% 50%, rgb(28, 25, 21) 0%, var(--color-atlas-night) 62%)',
                   }}
                 />
               }
@@ -1037,19 +1335,21 @@ const AtlasPage: React.FC = () => {
                 <GlobeGL
                   nodes={globeNodes}
                   selectedId={selectedKey}
-                  onSelect={(id) => setSelectedKey(id)}
+                  onSelect={(id) => selectPiece(id)}
                   kinship={kinshipIndex}
                   kinshipVisible={kinshipVisible}
                   placedByCard={placedByCard}
                   mandala={mandala}
                   mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed`}
                   onMarkerScreenPos={setMarkerScreenPos}
-                  onBackgroundClick={() => setSelectedKey(null)}
+                  onBackgroundClick={closeSelection}
                   className="w-full h-full"
                 />
               ) : (
                 <Globe3D
-                  nodes={cityClusters}
+                  // The overture holds the lights in the dark until the words
+                  // dissolve: the earth renders, the markers arrive at reveal.
+                  nodes={overtureRevealed ? cityClusters : EMPTY_NODES}
                   selectedId={activeClusterId}
                   kinSelectedId={selectedKey}
                   onSelect={handleClusterSelect}
@@ -1059,10 +1359,13 @@ const AtlasPage: React.FC = () => {
                   mandala={mandala}
                   mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed · touch a code to visit it`}
                   onMarkerScreenPos={setMarkerScreenPos}
-                  onBackgroundClick={() => {
-                    setSelectedKey(null);
-                    setSelectedCity(null);
-                  }}
+                  featuredId={showFeatured ? featuredClusterId : null}
+                  onFeaturedScreenPos={setFeaturedScreenPos}
+                  playIntro={playIntro}
+                  onBackgroundClick={closeSelection}
+                  // Inscription keeps the world centred (no side card yet); the
+                  // full card slides it aside as Phase 2 built.
+                  clearForHud={!showInscription}
                   focusSeries={focusSeries}
                   yoursMode={yoursMode}
                   onRingTap={handleRingTap}
@@ -1072,12 +1375,41 @@ const AtlasPage: React.FC = () => {
             </Suspense>
           </div>
 
-          {/* ── Corner chrome (fades when idle) ─────────────────────────────── */}
-          <div
-            className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${chromeOpacity}`}
-          >
-            {/* Top-left: breadcrumb + title */}
-            <div className="pointer-events-auto absolute left-5 sm:left-8 top-[calc(var(--nav-height)+1rem)]">
+          {/* ── The featured dream: one voice at a time, at rest ──────────────── */}
+          {showFeatured && (
+            <FeaturedDream
+              dream={featuredDream}
+              screenPos={featuredScreenPos}
+              globe={globeCircle}
+              isPhone={isPhone}
+              reduced={reduced}
+              opacity={orientationOpacity}
+              onSelect={(key) => selectPiece(key)}
+            />
+          )}
+
+          {/* ── The overture: the vision speaks once, then the earth emerges ──── */}
+          {overture === 'running' && (
+            <AtlasOverture
+              reduced={reduced}
+              onReveal={() => setOvertureRevealed(true)}
+              onDone={() => setOverture('done')}
+              onSkip={() => {
+                // Skip lands on the resting sky: reveal the lights without the
+                // staggered ignition (they fade in quietly).
+                setPlayIntro(false);
+                setOvertureRevealed(true);
+              }}
+            />
+          )}
+
+          {/* ── Corner chrome: two tiers, each with an opacity floor (law 3) ─── */}
+          <div className="pointer-events-none absolute inset-0">
+            {/* Top-left: breadcrumb + wordmark — secondary chrome (floor 0.35). */}
+            <div
+              className="pointer-events-auto absolute left-5 sm:left-8 top-[calc(var(--nav-height)+1rem)]"
+              style={{ opacity: secondaryOpacity, transition: chromeTierTransition }}
+            >
               <nav
                 aria-label="Breadcrumb"
                 className="flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/60 mb-3"
@@ -1096,71 +1428,48 @@ const AtlasPage: React.FC = () => {
               </h1>
             </div>
 
-            {/* Top-right: legend. Each series is a lens: tap to focus its
-                constellation; the rest of the lights recede, never vanish. */}
-            {legendSeries.length > 0 && (
-              <div className="pointer-events-auto absolute right-5 sm:right-8 top-[calc(var(--nav-height)+1rem)] text-right">
-                {legendSeries.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    aria-pressed={focusSeries === s}
-                    onClick={() => setFocusSeries((cur) => (cur === s ? null : s))}
-                    className={`block w-full text-right font-label text-[11px] uppercase tracking-[0.18em] leading-relaxed transition-colors ${
-                      focusSeries === s
-                        ? 'text-bronze-300'
-                        : focusSeries
-                          ? 'text-wood-500 hover:text-wood-300'
-                          : 'text-wood-300/80 hover:text-bronze-300/90'
-                    }`}
-                  >
-                    {s}
-                    <span aria-hidden style={{ color: seriesColor(s) }}>
-                      {' '}·
-                    </span>
-                  </button>
-                ))}
-                {hasBirthOrigin && (
-                  <div className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-300/80 leading-relaxed">
-                    your origin
-                    <span aria-hidden style={{ color: '#9caa87' }}>
-                      {' '}·
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Bottom-left: the quiet stat caption, with the vocabulary
-                explained in place so the map never reads as silent jargon. */}
+            {/* Bottom-left: the thesis caption — orientation chrome (floor 0.6). */}
             {totalCount > 0 && (
-              <div className="pointer-events-none absolute left-5 sm:left-8 bottom-6 max-w-[60vw] sm:max-w-sm">
-                <p className="font-label text-[12px] uppercase tracking-[0.2em] text-bronze-300/90">
+              <div
+                className="pointer-events-auto absolute left-5 sm:left-8 bottom-24 sm:bottom-6 max-w-[86vw] sm:max-w-md"
+                style={{ opacity: orientationOpacity, transition: chromeTierTransition }}
+              >
+                <p className="font-label text-[14px] leading-snug tracking-[0.015em] text-atlas-gold">
+                  Every piece Adrian has made, and the dreams they carry.
+                </p>
+                <p className="mt-1.5 font-label text-[12px] uppercase tracking-[0.14em] text-atlas-gold/70">
                   {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
-                  <span aria-hidden className="mx-2 text-wood-400">·</span>
+                  <span aria-hidden className="mx-2 text-wood-500">·</span>
                   {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
+                  <span aria-hidden className="mx-2 text-wood-500">·</span>
+                  touch a light to read its dream
                 </p>
-                <p className="mt-1.5 font-reading text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
-                  a light is a piece claimed by its keeper · threads join pieces
-                  that share a code
-                </p>
+                {/* Honest state (law 6): a stale sky is named, with a retry. */}
+                {servedFallback && (
+                  <p className="mt-2 font-label text-[11px] uppercase tracking-[0.12em] text-wood-400">
+                    showing the last gathered sky
+                    <button
+                      type="button"
+                      onClick={retryAtlasFetch}
+                      disabled={retrying}
+                      className="ml-2 text-bronze-300 hover:text-bronze-200 transition-colors disabled:opacity-60"
+                    >
+                      {retrying ? 'retrying' : 'retry'}
+                    </button>
+                  </p>
+                )}
                 {/* ── TEMPORARY PLACEHOLDER caption ── see data/atlasPlaceholder.ts.
                     Shown only while the placeholder dots stand in for an
                     unseeded mirror; auto-hides once real pieces arrive. Delete
                     this block at launch. */}
                 {isPlaceholder && (
-                  <p className="mt-1.5 font-reading text-[12px] leading-snug tracking-[0.03em] text-bronze-400/80">
+                  <p className="mt-1.5 font-display text-[12px] leading-snug tracking-[0.03em] text-bronze-400/80">
                     Placeholder pieces, shown until the first works find their
                     ground.
                   </p>
                 )}
-                {!USE_GL_GLOBE && !mandala && !streamActive && (
-                  <p className="mt-1 font-reading text-[12px] leading-snug tracking-[0.03em] text-wood-400/60">
-                    touch a code on the ring to visit it
-                  </p>
-                )}
                 {streamActive && dreamRoute.length > 0 && (
-                  <p className="mt-1 font-reading text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
+                  <p className="mt-1 font-display text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
                     dream {Math.max(1, dreamRoute.indexOf(selectedKey ?? '') + 1)} of{' '}
                     {dreamRoute.length} ·{' '}
                     {typeof window !== 'undefined' && 'ontouchstart' in window
@@ -1171,86 +1480,89 @@ const AtlasPage: React.FC = () => {
               </div>
             )}
 
-            {/* Bottom gutter: threads · filter · mandala */}
-            <div className="pointer-events-auto absolute right-5 sm:right-8 bottom-6 flex items-center gap-4 sm:gap-6">
-              {yourGates.size > 0 && (
-                <button
-                  type="button"
-                  aria-pressed={yoursMode}
-                  onClick={() => setYoursMode((v) => !v)}
-                  title="Lights carrying one of your own codes"
-                  className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
-                    yoursMode ? 'text-[#9caa87]' : 'text-wood-300 hover:text-[#9caa87]'
-                  }`}
-                >
-                  your codes
-                </button>
-              )}
-              {dreamRoute.length > 0 && (
-                <button
-                  type="button"
-                  aria-pressed={streamActive}
-                  onClick={() => (streamActive ? exitStream() : enterStream())}
-                  title="Drift through the dreams, one gesture to the next"
-                  className={`font-label text-[10px] uppercase tracking-[0.2em] transition-colors ${
-                    streamActive ? 'text-bronze-400' : 'text-wood-400 hover:text-bronze-400/80'
-                  }`}
-                >
-                  drift
-                </button>
-              )}
-              <button
-                type="button"
-                aria-pressed={kinshipVisible}
-                onClick={() => setKinshipVisible((v) => !v)}
-                title="Threads join pieces whose hexagrams share a trigram"
-                className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
-                  kinshipVisible
-                    ? 'text-bronze-300'
-                    : 'text-wood-300 hover:text-bronze-400/80'
-                }`}
-              >
-                threads
-              </button>
-              <button
-                type="button"
-                aria-expanded={filtersOpen}
-                onClick={() => setFiltersOpen((o) => !o)}
-                className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-200 hover:text-bronze-400 transition-colors"
-              >
-                filter
-                {(selectedSeries !== 'all' ||
-                  status !== 'all' ||
-                  selectedCategory !== 'all' ||
-                  selectedSize !== 'all') && (
-                  <span className="text-bronze-400"> · ·</span>
-                )}
-              </button>
-              <button
-                type="button"
-                aria-pressed={mandala}
-                onClick={() => {
-                  const next = !mandala;
-                  setMandala(next);
-                  if (next) setStreamActive(false); // mandala view exits the stream
+            {/* Bottom-right: three controls plus contextual — orientation
+                chrome (floor 0.6). mandala, the series legend, and your codes
+                now live inside the filter sheet as lenses. */}
+            <div
+              className="pointer-events-auto absolute right-5 sm:right-8 bottom-6 flex flex-col items-end gap-2"
+              style={{ opacity: orientationOpacity, transition: chromeTierTransition }}
+            >
+              {/* Once-per-visitor gloss for the control just exercised (law 5). */}
+              <p
+                aria-hidden={controlGloss === null}
+                className="font-display text-[13px] leading-snug text-atlas-gold/85 max-w-[62vw] text-right"
+                style={{
+                  opacity: controlGloss === null ? 0 : 1,
+                  transition: 'opacity 500ms ease',
                 }}
-                title="Pull back to see the whole weave at once"
-                className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-300/90 hover:text-bronze-300 transition-colors"
               >
-                {mandala ? 'return' : 'mandala'}
-              </button>
-              {(selectedKey || selectedCity) && (
+                {lastControlGlossRef.current ? GLOSS_TEXT[lastControlGlossRef.current] : ''}
+              </p>
+              <div className="flex items-center gap-4 sm:gap-6">
+                {ownedOnGlobe.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={flyToYourLight}
+                    title="Fly to your own light"
+                    className="font-label text-[11px] uppercase tracking-[0.2em] text-atlas-kept hover:text-atlas-kept transition-colors"
+                  >
+                    your light
+                  </button>
+                )}
+                {dreamRoute.length > 0 && (
+                  <button
+                    type="button"
+                    aria-pressed={streamActive}
+                    onClick={() => (streamActive ? exitStream() : enterStream())}
+                    title="Travel from dream to dream, one gesture at a time"
+                    className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
+                      streamActive ? 'text-bronze-400' : 'text-wood-300 hover:text-bronze-400/80'
+                    }`}
+                  >
+                    dreams
+                  </button>
+                )}
                 <button
                   type="button"
+                  aria-pressed={kinshipVisible}
                   onClick={() => {
-                    setSelectedKey(null);
-                    setSelectedCity(null);
+                    fireGloss('threads');
+                    setKinshipVisible((v) => !v);
                   }}
-                  className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-300 hover:text-bronze-200 transition-colors"
+                  title="Threads join pieces that share a code"
+                  className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
+                    kinshipVisible
+                      ? 'text-bronze-300'
+                      : 'text-wood-300 hover:text-bronze-400/80'
+                  }`}
                 >
-                  release
+                  threads
                 </button>
-              )}
+                <button
+                  type="button"
+                  aria-expanded={filtersOpen}
+                  onClick={() => setFiltersOpen((o) => !o)}
+                  className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-200 hover:text-bronze-400 transition-colors"
+                >
+                  filter
+                  {(selectedSeries !== 'all' ||
+                    status !== 'all' ||
+                    selectedCategory !== 'all' ||
+                    selectedSize !== 'all' ||
+                    mandala ||
+                    focusSeries !== null ||
+                    yoursMode) && <span className="text-bronze-400"> · ·</span>}
+                </button>
+                {(selectedKey || selectedCity) && (
+                  <button
+                    type="button"
+                    onClick={closeSelection}
+                    className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-300 hover:text-bronze-200 transition-colors"
+                  >
+                    return
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -1278,7 +1590,8 @@ const AtlasPage: React.FC = () => {
                     close
                   </button>
                 </div>
-                <AtlasFiltersDark
+                <AtlasFilters
+                  variant="stage"
                   series={availableSeries}
                   selectedSeries={selectedSeries}
                   onSeriesChange={setSelectedSeries}
@@ -1297,11 +1610,98 @@ const AtlasPage: React.FC = () => {
                   threadsShown={kinshipIndex?.pairs.length}
                   threadsTotal={kinshipIndex?.totalPairs}
                 />
+
+                {/* Lenses and views live here, not in the daily control gutter:
+                    the mandala view, the series legend, and the your-codes
+                    lens. Each recedes the rest of the field, never removes it. */}
+                <div className="mt-6 pt-5 border-t border-bronze-400/12 flex flex-col gap-4">
+                  {/* Mandala: a view option, not a daily control. */}
+                  <div className="flex items-baseline gap-4">
+                    <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 w-16 shrink-0">
+                      View
+                    </span>
+                    <button
+                      type="button"
+                      aria-pressed={mandala}
+                      onClick={() => {
+                        const next = !mandala;
+                        setMandala(next);
+                        if (next) setStreamActive(false);
+                      }}
+                      className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+                        mandala
+                          ? 'text-bronze-300 border-bronze-400/70'
+                          : 'text-wood-400 border-transparent hover:text-bronze-300/80'
+                      }`}
+                    >
+                      mandala
+                    </button>
+                  </div>
+
+                  {/* Your codes: light the pieces carrying one of your own. */}
+                  {yourGates.size > 0 && (
+                    <div className="flex items-baseline gap-4">
+                      <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 w-16 shrink-0">
+                        Lens
+                      </span>
+                      <button
+                        type="button"
+                        aria-pressed={yoursMode}
+                        onClick={() => setYoursMode((v) => !v)}
+                        className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+                          yoursMode
+                            ? 'text-atlas-kept border-atlas-kept/70'
+                            : 'text-wood-400 border-transparent hover:text-bronze-300/80'
+                        }`}
+                      >
+                        your codes
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Series legend: each series is a lens onto its constellation. */}
+                  {legendSeries.length > 0 && (
+                    <div className="flex items-baseline gap-4">
+                      <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 w-16 shrink-0">
+                        Legend
+                      </span>
+                      <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+                        {legendSeries.map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            aria-pressed={focusSeries === s}
+                            onClick={() => setFocusSeries((cur) => (cur === s ? null : s))}
+                            className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
+                              focusSeries === s
+                                ? 'text-bronze-300 border-bronze-400/70'
+                                : 'text-wood-400 border-transparent hover:text-bronze-300/80'
+                            }`}
+                          >
+                            {s}
+                            <span aria-hidden style={{ color: seriesColor(s) }}>
+                              {' '}·
+                            </span>
+                          </button>
+                        ))}
+                        {hasBirthOrigin && (
+                          <span className="font-display text-[15px] leading-none pb-1 text-wood-400">
+                            your origin
+                            <span aria-hidden className="text-atlas-kept">
+                              {' '}·
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
-          {/* ── Leader-line: a hairline from the marker to the HUD card ──────── */}
+          {/* ── Leader-line: a hairline from the marker to the card, or to the
+                 inscription on the side away from the light ─────────────────── */}
           {(selectedKey || selectedCity) && markerScreenPos && globeBoxRef.current && (
             <svg
               className="pointer-events-none absolute inset-0 z-20 hidden sm:block"
@@ -1311,11 +1711,21 @@ const AtlasPage: React.FC = () => {
               <line
                 x1={markerScreenPos.x}
                 y1={markerScreenPos.y}
-                x2={globeBoxRef.current.clientWidth - 412}
-                y2={Math.min(
-                  Math.max(markerScreenPos.y, 120),
-                  globeBoxRef.current.clientHeight - 160,
-                )}
+                x2={
+                  showInscription
+                    ? inscriptionAwayLeft
+                      ? 388
+                      : globeBoxRef.current.clientWidth - 388
+                    : globeBoxRef.current.clientWidth - 412
+                }
+                y2={
+                  showInscription
+                    ? globeBoxRef.current.clientHeight / 2
+                    : Math.min(
+                        Math.max(markerScreenPos.y, 120),
+                        globeBoxRef.current.clientHeight - 160,
+                      )
+                }
                 stroke={selectedKey === BIRTH_KEY ? 'rgba(156,170,135,0.5)' : 'rgba(196,170,124,0.45)'}
                 strokeWidth={1}
               />
@@ -1323,71 +1733,107 @@ const AtlasPage: React.FC = () => {
                 cx={markerScreenPos.x}
                 cy={markerScreenPos.y}
                 r={2.5}
-                fill={selectedKey === BIRTH_KEY ? '#9caa87' : '#c4aa7c'}
+                fill={selectedKey === BIRTH_KEY ? ATLAS_KEPT : ATLAS_GOLD}
               />
             </svg>
           )}
 
+          {/* ── Selection as inscription (desktop): the dream writes itself
+                 large across the dark on the side away from the light, with one
+                 action, open the book, that reveals the full card below. ────── */}
+          {showInscription && selectedPiece && (
+            <SelectionInscription
+              dream={selectedIntention}
+              standing={[
+                selectedCode,
+                selectedCityName ? `placed in ${selectedCityName}` : null,
+                typeof selectedPiece.claimOrdinal === 'number'
+                  ? `the ${ordinalLabel(selectedPiece.claimOrdinal)} light`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+              awayLeft={inscriptionAwayLeft}
+              onOpenBook={() => setBookOpen(true)}
+            />
+          )}
+
           {/* ── The held piece answers with the instrument card, its dream
                  leading inside the vessel; never text floating on the world.
-                 A multi-piece city instead answers with its list. ─────────── */}
-          {(selectedKey || selectedCity) && (
-            <div
-              /* data-atlas-hud marks the vessel so stream wheel/swipe scrolls
-                 the card instead of advancing. While drifting, keying by the
-                 selection replays the hud-in entrance on every hop, including
-                 same-point hops with no flight, so each dream reads as a
-                 deliberate page-turn, not a blink. */
-              data-atlas-hud
-              key={streamActive ? selectedKey : 'hud'}
-              className={`absolute z-30 animate-[hud-in_400ms_ease-out]
-                     inset-x-0 bottom-0 top-auto max-h-[76svh]
-                     sm:inset-x-auto sm:right-8 sm:bottom-auto sm:left-auto sm:w-[380px]
-                     sm:top-[var(--hud-top)]`}
-            >
-              {selectedKey === BIRTH_KEY && birthPlace ? (
-                <PieceHUD
-                  isOrigin
-                  piece={{
-                    pieceId: 'origin',
-                    title: birthPlace.label,
-                    status: 'placed',
-                    cityLabel: birthPlace.label,
-                    category: 'Your birth place',
-                  }}
-                  kin={nearestToBirth.map((n) => ({ key: n.key, title: `${n.title} · ${n.cityLabel}` }))}
-                  onSelectKin={(key) => setSelectedKey(key)}
-                  onRelease={() => setSelectedKey(null)}
-                />
-              ) : selectedKey && selectedPiece ? (
-                <PieceHUD
-                  piece={selectedPiece}
-                  kin={kinForSelected}
-                  onSelectKin={(key) => setSelectedKey(key)}
-                  holderChart={holderChart}
-                  onRelease={() => {
-                    setSelectedKey(null);
-                    setSelectedCity(null);
-                  }}
-                  onBack={selectedFromCity ? () => setSelectedKey(null) : undefined}
-                  carriesYourCode={
-                    selectedPiece.cardNumber != null &&
-                    yourGates.has(selectedPiece.cardNumber)
-                  }
-                  intention={selectedIntention}
-                  code={selectedCode}
-                  alsoHere={alsoHere}
-                />
-              ) : selectedCityData ? (
-                <CityListHUD
-                  cityLabel={selectedCityData.cityLabel}
-                  members={selectedCityData.members}
-                  onSelectMember={(key) => setSelectedKey(key)}
-                  onRelease={() => setSelectedCity(null)}
-                />
-              ) : null}
-            </div>
-          )}
+                 A multi-piece city instead answers with its list. On phones the
+                 card rides a bottom half-sheet so the globe stays visible above
+                 (law 4); on wider screens it seats beside the world. ────────── */}
+          {(selectedKey || selectedCity) &&
+            !showInscription &&
+            (() => {
+              const hudContent =
+                selectedKey === BIRTH_KEY && birthPlace ? (
+                  <PieceHUD
+                    isOrigin
+                    inSheet={isPhone}
+                    piece={{
+                      pieceId: 'origin',
+                      title: birthPlace.label,
+                      status: 'placed',
+                      cityLabel: birthPlace.label,
+                      category: 'Your birth place',
+                    }}
+                    kin={nearestToBirth.map((n) => ({
+                      key: n.key,
+                      title: `${n.title} · ${n.cityLabel}`,
+                    }))}
+                    onSelectKin={(key) => selectPiece(key)}
+                    onRelease={closeSelection}
+                  />
+                ) : selectedKey && selectedPiece ? (
+                  <PieceHUD
+                    piece={selectedPiece}
+                    inSheet={isPhone}
+                    kin={kinForSelected}
+                    onSelectKin={(key) => selectPiece(key)}
+                    holderChart={holderChart}
+                    onRelease={closeSelection}
+                    onBack={selectedFromCity ? backToCity : undefined}
+                    carriesYourCode={
+                      selectedPiece.cardNumber != null &&
+                      yourGates.has(selectedPiece.cardNumber)
+                    }
+                    intention={selectedIntention}
+                    code={selectedCode}
+                    alsoHere={alsoHere}
+                  />
+                ) : selectedCityData ? (
+                  <CityListHUD
+                    cityLabel={selectedCityData.cityLabel}
+                    members={selectedCityData.members}
+                    inSheet={isPhone}
+                    onSelectMember={(key) => selectPiece(key)}
+                    onRelease={closeSelection}
+                  />
+                ) : null;
+
+              if (!hudContent) return null;
+
+              // Phone: a draggable half-sheet capped at 45vh, globe above.
+              if (isPhone) {
+                return (
+                  <PhoneHudSheet key={streamActive ? selectedKey : 'hud'} onDismiss={closeSelection}>
+                    {hudContent}
+                  </PhoneHudSheet>
+                );
+              }
+
+              // Wider screens: the card seats to the right of the world.
+              return (
+                <div
+                  data-atlas-hud
+                  key={streamActive ? selectedKey : 'hud'}
+                  className="absolute z-30 animate-[hud-in_400ms_ease-out] inset-x-auto right-8 bottom-auto left-auto w-[380px] top-[var(--hud-top)]"
+                >
+                  {hudContent}
+                </div>
+              );
+            })()}
         </section>
       )}
 
@@ -1421,7 +1867,7 @@ const AtlasPage: React.FC = () => {
                 <Globe
                   nodes={globeNodes}
                   selectedId={selectedKey}
-                  onSelect={(id) => setSelectedKey(id)}
+                  onSelect={(id) => selectPiece(id)}
                   className="w-full h-full"
                 />
                 {kinshipIndex && (
@@ -1460,7 +1906,7 @@ const AtlasPage: React.FC = () => {
                 <PieceSidePanel
                   piece={selectedPiece}
                   kin={kinForSelected}
-                  onSelectKin={(key) => setSelectedKey(key)}
+                  onSelectKin={(key) => selectPiece(key)}
                   holderChart={holderChart}
                 />
               </div>
@@ -1473,7 +1919,7 @@ const AtlasPage: React.FC = () => {
       <div className="px-6 pb-32 max-w-7xl mx-auto pt-16">
         {state.kind === 'loading' && (
           <p
-            className="font-reading italic text-lg text-wood-700 py-24 text-center"
+            className="font-display italic text-lg text-wood-700 py-24 text-center"
             aria-live="polite"
           >
             loading the atlas
@@ -1482,7 +1928,7 @@ const AtlasPage: React.FC = () => {
 
         {state.kind === 'error' && (
           <p
-            className="font-reading italic text-lg text-wood-700 py-24 text-center"
+            className="font-display italic text-lg text-wood-700 py-24 text-center"
             aria-live="polite"
           >
             the atlas is briefly out of reach.
@@ -1497,7 +1943,7 @@ const AtlasPage: React.FC = () => {
                 seekingPieces={seekingPieces}
                 totalPieces={seriesFiltered.length}
                 onSelect={(pieceId, editionNumber) =>
-                  setSelectedKey(makeKey(pieceId, editionNumber))
+                  selectPiece(makeKey(pieceId, editionNumber))
                 }
                 selectedKey={selectedKey}
               />

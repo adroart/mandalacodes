@@ -1,4 +1,6 @@
 import React, { useId, useState } from 'react';
+import Toggle from '../shared/Toggle';
+import { ATLAS_GOLD } from './stageColors';
 
 /**
  * ConsentRings, the consent moment of the claim flow (M2).
@@ -104,7 +106,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
 
       {/* Ring 1, explanatory only, always on. */}
       <p
-        className={`font-reading text-[1.0625rem] leading-relaxed text-center mb-10 ${
+        className={`font-display text-[1.0625rem] leading-relaxed text-center mb-10 ${
           stage ? '' : 'text-stone-700'
         }`}
         style={stage ? { color: 'rgba(203,191,168,0.86)' } : undefined}
@@ -125,7 +127,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         style={stage ? { borderColor: 'rgba(196,170,124,0.22)' } : undefined}
       >
         <p
-          className="font-reading text-xl leading-snug text-center mb-2"
+          className="font-display text-xl leading-snug text-center mb-2"
           style={stage ? { color: '#ece2cf' } : undefined}
         >
           <span className={stage ? '' : 'text-wood-900'}>
@@ -133,52 +135,21 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
           </span>
         </p>
         <p
-          className={`font-reading text-sm text-center mb-6 ${stage ? '' : 'text-stone-600'}`}
+          className={`font-display text-sm text-center mb-6 ${stage ? '' : 'text-stone-600'}`}
           style={stage ? { color: 'rgba(203,191,168,0.62)' } : undefined}
         >
           City-level only, no name, no identity. You can change this at any
           time.
         </p>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={mapPresence}
-          aria-label="Place this piece as a light on the world map"
-          onClick={() => setMapPresence(v => !v)}
+        <Toggle
+          checked={mapPresence}
+          onChange={setMapPresence}
+          label={mapPresence ? 'Yes, light my city' : 'Not yet, keep it unlit'}
+          ariaLabel="Place this piece as a light on the world map"
+          variant={stage ? 'stage' : 'panel'}
           disabled={submitting}
-          className={`mx-auto flex items-center gap-4 min-h-[44px] font-reading text-base focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60 ${
-            stage ? '' : 'text-wood-800'
-          }`}
-          style={stage ? { color: '#e7dcc7' } : undefined}
-        >
-          <span
-            aria-hidden="true"
-            className={`relative inline-block w-11 h-6 border transition-colors ${
-              stage
-                ? mapPresence
-                  ? ''
-                  : ''
-                : mapPresence
-                ? 'bg-bronze-400 border-bronze-500'
-                : 'bg-paper-100 border-wood-300'
-            }`}
-            style={
-              stage
-                ? mapPresence
-                  ? { background: '#c4aa7c', borderColor: '#d4b88a' }
-                  : { background: 'rgba(60,50,38,0.6)', borderColor: 'rgba(196,170,124,0.35)' }
-                : undefined
-            }
-          >
-            <span
-              className={`absolute top-0.5 left-0.5 w-4 h-4 transition-transform ${
-                mapPresence ? 'translate-x-5' : 'translate-x-0'
-              } ${stage ? '' : 'bg-white'}`}
-              style={stage ? { background: mapPresence ? '#241e17' : '#e7dcc7' } : undefined}
-            />
-          </span>
-          <span>{mapPresence ? 'Yes, light my city' : 'Not yet, keep it unlit'}</span>
-        </button>
+          className="mx-auto"
+        />
       </div>
 
       {/* The claim ritual, optional, private. Omitted on the stage, where the
@@ -187,7 +158,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         <div className="mb-8">
           <label
             htmlFor={hopeId}
-            className="block font-reading text-[1.0625rem] leading-relaxed text-wood-900 mb-2"
+            className="block font-display text-[1.0625rem] leading-relaxed text-wood-900 mb-2"
           >
             What do you hope this piece holds for you?
           </label>
@@ -199,9 +170,9 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
             maxLength={2000}
             disabled={submitting}
             placeholder="A few words, if you like."
-            className="w-full border border-wood-300 bg-white px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 disabled:opacity-60"
+            className="w-full border border-wood-300 bg-white px-4 py-3 font-display text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 disabled:opacity-60"
           />
-          <p className="font-reading text-sm text-stone-600 mt-2">
+          <p className="font-display text-sm text-stone-600 mt-2">
             Optional, kept in your piece&rsquo;s private book.
           </p>
         </div>
@@ -217,7 +188,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         }
         style={
           stage
-            ? { background: '#c4aa7c', color: '#241e17' }
+            ? { background: ATLAS_GOLD, color: '#241e17' }
             : undefined
         }
       >
@@ -227,7 +198,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
       <div className="h-6 mt-4 text-center" aria-live="polite">
         {error && (
           <span
-            className={`font-reading text-sm ${stage ? '' : 'text-stone-600'}`}
+            className={`font-display text-sm ${stage ? '' : 'text-stone-600'}`}
             style={stage ? { color: 'rgba(203,191,168,0.75)' } : undefined}
           >
             {error}
@@ -237,7 +208,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
 
       {/* Rings 3–4, deferred, one quiet line. */}
       <p
-        className={`font-reading text-xs text-center ${stage ? '' : 'text-stone-500'}`}
+        className={`font-display text-xs text-center ${stage ? '' : 'text-stone-500'}`}
         style={stage ? { color: 'rgba(203,191,168,0.5)' } : undefined}
       >
         Chart presence and public identity can be opened later from your
