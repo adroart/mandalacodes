@@ -28,7 +28,7 @@ import { useProfile } from '../lib/profile/context';
 import { useAccount } from '../lib/account/useAccount';
 import { useCollections } from '../lib/collections/context';
 import { ulCardNumber } from '../utils/universalLanguage';
-import { buildKinshipIndex, greatCircleDistance, MAX_KINSHIP_ARCS } from '../utils/kinship';
+import { buildKinshipIndex, MAX_KINSHIP_ARCS } from '../utils/kinship';
 import { buildDreamRoute } from '../utils/dreamStream';
 import { SIZE_BANDS, sizeBandFor, type SizeBand } from '../utils/sizeBands';
 import type { PublicAtlasState } from '../types';
@@ -255,6 +255,7 @@ const AtlasPage: React.FC = () => {
      in the dark until the words dissolve; `playIntro` runs the staggered
      ignition only on a natural cold-visit reveal (a skip lands at rest). */
   const [overture, setOverture] = useState<'pending' | 'running' | 'done'>('pending');
+  const [overtureMode, setOvertureMode] = useState<'full' | 'breath'>('full');
   const [overtureRevealed, setOvertureRevealed] = useState(false);
   const [playIntro, setPlayIntro] = useState(false);
 
@@ -542,14 +543,23 @@ const AtlasPage: React.FC = () => {
     [enriched],
   );
 
-  /* Decide the overture once the atlas is ready. It plays only for a cold
-     visitor (no localStorage flag) on the WebGL earth when lights exist; every
-     other arrival lands straight on the resting sky. Reduced motion shows the
-     two lines statically over the settled sky, then fades them. */
+  /* Decide the overture once the atlas is ready (Adrian, 2026-07-18: the vision
+     speaks every arrival, scaled by familiarity). The WebGL earth is the only
+     stage it plays on; the library-backed globe and the no-WebGL fallback land
+     straight on the resting sky. A cold visit (no localStorage flag) plays the
+     full word-led overture regardless of how many lights exist, even over an
+     empty sky; a returning visit plays the two-second breath. Reduced motion
+     shows the words statically over the settled sky, then fades them. */
   useEffect(() => {
     if (state.kind !== 'ready' || overture !== 'pending') return;
     if (typeof window === 'undefined') return;
-    const cold = use3D && !USE_GL_GLOBE && lightsLit > 0;
+    const supported = use3D && !USE_GL_GLOBE;
+    if (!supported) {
+      setOverture('done');
+      setOvertureRevealed(true);
+      setPlayIntro(false);
+      return;
+    }
     let seen = false;
     try {
       seen = window.localStorage.getItem('atlas-overture-v1') === '1';
@@ -557,10 +567,13 @@ const AtlasPage: React.FC = () => {
       /* private mode: treat as seen so the overture never traps a visitor */
       seen = true;
     }
-    if (!cold || seen) {
-      setOverture('done');
+    if (seen) {
+      // Returning visit: the thesis line settles over the emerging globe, held
+      // ~2s, then the resting sky. The lights are already present.
+      setOvertureMode('breath');
       setOvertureRevealed(true);
       setPlayIntro(false);
+      setOverture('running');
       return;
     }
     try {
@@ -568,6 +581,7 @@ const AtlasPage: React.FC = () => {
     } catch {
       /* ignore */
     }
+    setOvertureMode('full');
     setOverture('running');
     if (reduced) {
       // Static block above the settled sky: the lights are already present.
@@ -578,7 +592,23 @@ const AtlasPage: React.FC = () => {
       setOvertureRevealed(false);
       setPlayIntro(true);
     }
-  }, [state.kind, overture, use3D, lightsLit, reduced]);
+  }, [state.kind, overture, use3D, reduced]);
+
+  /* The vision, on demand: a quiet standing `the vision` link (below) replays
+     the full word-led overture. It clears nothing in storage; it just plays. */
+  const replayVision = React.useCallback(() => {
+    if (!use3D || USE_GL_GLOBE) return;
+    setBookOpen(false);
+    setOvertureMode('full');
+    if (reduced) {
+      setOvertureRevealed(true);
+      setPlayIntro(false);
+    } else {
+      setOvertureRevealed(false);
+      setPlayIntro(true);
+    }
+    setOverture('running');
+  }, [use3D, reduced]);
 
   /* Pieces visible on the globe respect both filters; status=seeking is shown
      in the seeking section, never on the globe (no coords to plot). */
@@ -1096,26 +1126,6 @@ const AtlasPage: React.FC = () => {
     if (!stillVisible) clearPieceSilently();
   }, [selectedKey, seriesFiltered, clearPieceSilently]);
 
-  /* The placed pieces nearest the visitor's birth place — the "what of this
-     language lives near where I began" list in the birth-place panel. */
-  const nearestToBirth = useMemo(() => {
-    if (!birthPlace) return [];
-    const out: Array<{ key: string; title: string; cityLabel: string; km: number }> = [];
-    for (const p of enriched) {
-      if (p.status !== 'placed' || !p.cityId) continue;
-      const c = CITIES_BY_ID.get(p.cityId);
-      if (!c) continue;
-      const rad = greatCircleDistance(birthPlace.lat, birthPlace.lng, c.lat, c.lng);
-      out.push({
-        key: p.key,
-        title: p.title,
-        cityLabel: formatPlaceLabel(c),
-        km: Math.round(rad * EARTH_RADIUS_KM),
-      });
-    }
-    return out.sort((a, b) => a.km - b.km).slice(0, 3);
-  }, [birthPlace, enriched]);
-
   /* Mirror cobe's square sizing — Globe sets width=height=min(box.w,box.h). The
      SVG overlay reads the same dimensions so arcs land on the canvas pixels. */
   useEffect(() => {
@@ -1291,6 +1301,11 @@ const AtlasPage: React.FC = () => {
     !!selectedKey &&
     selectedKey !== BIRTH_KEY &&
     !!selectedPiece;
+  /* The phone selection half-sheet is up (a real piece or city, not the
+     birth-place one-liner). While it is, the sheet header carries `return`, so
+     the bottom control cluster hides its copy and rests quieter (law 6). */
+  const phoneSheetOpen =
+    isPhone && ((selectedKey != null && selectedKey !== BIRTH_KEY) || selectedCity != null);
   /* Write the inscription on the side away from the light: when the light sits
      on the right hemisphere, write on the left. */
   const inscriptionAwayLeft =
@@ -1392,6 +1407,7 @@ const AtlasPage: React.FC = () => {
           {overture === 'running' && (
             <AtlasOverture
               reduced={reduced}
+              mode={overtureMode}
               onReveal={() => setOvertureRevealed(true)}
               onDone={() => setOverture('done')}
               onSkip={() => {
@@ -1405,7 +1421,11 @@ const AtlasPage: React.FC = () => {
 
           {/* ── Corner chrome: two tiers, each with an opacity floor (law 3) ─── */}
           <div className="pointer-events-none absolute inset-0">
-            {/* Top-left: breadcrumb + wordmark — secondary chrome (floor 0.35). */}
+            {/* Top-left: breadcrumb + wordmark — secondary chrome (floor 0.35).
+                On phones the nav bar carries identity; the breadcrumb and
+                wordmark do not render over the globe (Adrian, 2026-07-18), so
+                the small screen keeps the whole earth. */}
+            {!isPhone && (
             <div
               className="pointer-events-auto absolute left-5 sm:left-8 top-[calc(var(--nav-height)+1rem)]"
               style={{ opacity: secondaryOpacity, transition: chromeTierTransition }}
@@ -1427,24 +1447,52 @@ const AtlasPage: React.FC = () => {
                 Atlas
               </h1>
             </div>
+            )}
 
-            {/* Bottom-left: the thesis caption — orientation chrome (floor 0.6). */}
-            {totalCount > 0 && (
+            {/* Bottom-left: the thesis caption — orientation chrome (floor 0.6).
+                One voice in the caption slot (Adrian, 2026-07-18): while mandala
+                view is active the mandala caption (rendered on the globe) speaks
+                alone, so the whole thesis block, its count line, and the
+                standing doors all rest. The birth-place selection likewise takes
+                the slot with its own single line, so the thesis block rests. */}
+            {!mandala && totalCount > 0 && selectedKey !== BIRTH_KEY && (
               <div
-                className="pointer-events-auto absolute left-5 sm:left-8 bottom-24 sm:bottom-6 max-w-[86vw] sm:max-w-md"
+                className="pointer-events-auto absolute left-5 sm:left-8 bottom-24 sm:bottom-6 max-w-[93vw] sm:max-w-xl"
                 style={{ opacity: orientationOpacity, transition: chromeTierTransition }}
               >
-                <p className="font-label text-[14px] leading-snug tracking-[0.015em] text-atlas-gold">
+                {/* The thesis holds to a single line on phones (12px) so the
+                    caption block never wraps past two lines (Adrian,
+                    2026-07-18); the desktop size (14px) is unchanged. */}
+                <p className="font-label text-[12px] sm:text-[14px] leading-snug tracking-[0.015em] text-atlas-gold">
                   Every piece Adrian has made, and the dreams they carry.
                 </p>
+                {/* One count line, never a stacked third line (Adrian,
+                    2026-07-18): when the loader served placeholder/seed data the
+                    fact folds into this line rather than adding one. On narrow
+                    viewports the "touch a light" segment drops before the line
+                    is allowed to wrap. */}
                 <p className="mt-1.5 font-label text-[12px] uppercase tracking-[0.14em] text-atlas-gold/70">
-                  {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
-                  <span aria-hidden className="mx-2 text-wood-500">·</span>
-                  {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
-                  <span aria-hidden className="mx-2 text-wood-500">·</span>
-                  touch a light to read its dream
+                  {/* ── TEMPORARY PLACEHOLDER caption ── see
+                      data/atlasPlaceholder.ts. Delete this branch at launch. */}
+                  {isPlaceholder ? (
+                    'placeholder pieces · shown until the first works find their ground'
+                  ) : (
+                    <>
+                      {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
+                      <span aria-hidden className="mx-2 text-wood-500">·</span>
+                      {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
+                      {!isPhone && (
+                        <>
+                          <span aria-hidden className="mx-2 text-wood-500">·</span>
+                          touch a light to read its dream
+                        </>
+                      )}
+                    </>
+                  )}
                 </p>
-                {/* Honest state (law 6): a stale sky is named, with a retry. */}
+                {/* Honest state (law 6): a stale sky is named, with a retry. It
+                    may be the only third element and never overlaps the
+                    controls. */}
                 {servedFallback && (
                   <p className="mt-2 font-label text-[11px] uppercase tracking-[0.12em] text-wood-400">
                     showing the last gathered sky
@@ -1458,16 +1506,6 @@ const AtlasPage: React.FC = () => {
                     </button>
                   </p>
                 )}
-                {/* ── TEMPORARY PLACEHOLDER caption ── see data/atlasPlaceholder.ts.
-                    Shown only while the placeholder dots stand in for an
-                    unseeded mirror; auto-hides once real pieces arrive. Delete
-                    this block at launch. */}
-                {isPlaceholder && (
-                  <p className="mt-1.5 font-display text-[12px] leading-snug tracking-[0.03em] text-bronze-400/80">
-                    Placeholder pieces, shown until the first works find their
-                    ground.
-                  </p>
-                )}
                 {streamActive && dreamRoute.length > 0 && (
                   <p className="mt-1 font-display text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
                     dream {Math.max(1, dreamRoute.indexOf(selectedKey ?? '') + 1)} of{' '}
@@ -1477,6 +1515,31 @@ const AtlasPage: React.FC = () => {
                       : 'scroll onward'}
                   </p>
                 )}
+
+                {/* Standing doors in the caption area. The claiming door
+                    (Adrian, 2026-07-18) shows only to visitors who steward no
+                    piece; a signed-in steward sees the `your light` control
+                    instead (bottom-right), never both. `the vision` replays the
+                    full overture on demand, and rests while a light is open. */}
+                <div className="mt-3 flex flex-col gap-1.5">
+                  {ownedKeys.size === 0 && (
+                    <Link
+                      to="/atlas/claim"
+                      className="font-label text-[12px] leading-snug tracking-[0.02em] text-atlas-gold/90 hover:text-atlas-gold transition-colors"
+                    >
+                      Hold one of these pieces? Claim your light →
+                    </Link>
+                  )}
+                  {!selectedKey && !selectedCity && (
+                    <button
+                      type="button"
+                      onClick={replayVision}
+                      className="self-start font-label text-[11px] uppercase tracking-[0.18em] text-wood-400 hover:text-bronze-300 transition-colors"
+                    >
+                      the vision
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1485,7 +1548,10 @@ const AtlasPage: React.FC = () => {
                 now live inside the filter sheet as lenses. */}
             <div
               className="pointer-events-auto absolute right-5 sm:right-8 bottom-6 flex flex-col items-end gap-2"
-              style={{ opacity: orientationOpacity, transition: chromeTierTransition }}
+              style={{
+                opacity: phoneSheetOpen ? 0.55 : orientationOpacity,
+                transition: chromeTierTransition,
+              }}
             >
               {/* Once-per-visitor gloss for the control just exercised (law 5). */}
               <p
@@ -1553,7 +1619,7 @@ const AtlasPage: React.FC = () => {
                     focusSeries !== null ||
                     yoursMode) && <span className="text-bronze-400"> · ·</span>}
                 </button>
-                {(selectedKey || selectedCity) && (
+                {(selectedKey || selectedCity) && !phoneSheetOpen && (
                   <button
                     type="button"
                     onClick={closeSelection}
@@ -1700,9 +1766,36 @@ const AtlasPage: React.FC = () => {
             </div>
           )}
 
+          {/* ── Birth place is not a piece (Adrian, 2026-07-18): selecting it
+                 shows one quiet line, no card, no kin, no book action, no plate,
+                 desktop and phone alike. ─────────────────────────────────────── */}
+          {selectedKey === BIRTH_KEY && birthPlace && (
+            <div
+              data-atlas-hud
+              className="absolute left-1/2 z-30 -translate-x-1/2 bottom-24 sm:bottom-16 flex max-w-[95vw] items-center gap-3 sm:gap-4 animate-[hud-in_400ms_ease-out]"
+            >
+              <span className="whitespace-nowrap font-label text-[12px] sm:text-[13px] tracking-[0.02em] text-atlas-kept">
+                Your birth place
+                <span aria-hidden className="mx-2 text-wood-500">·</span>
+                {birthPlace.label}
+              </span>
+              <button
+                type="button"
+                onClick={closeSelection}
+                className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-400 hover:text-atlas-kept transition-colors"
+              >
+                dismiss
+              </button>
+            </div>
+          )}
+
           {/* ── Leader-line: a hairline from the marker to the card, or to the
-                 inscription on the side away from the light ─────────────────── */}
-          {(selectedKey || selectedCity) && markerScreenPos && globeBoxRef.current && (
+                 inscription on the side away from the light. The birth-place pin
+                 draws no leader — its one line stands on its own. ────────────── */}
+          {(selectedKey || selectedCity) &&
+            selectedKey !== BIRTH_KEY &&
+            markerScreenPos &&
+            globeBoxRef.current && (
             <svg
               className="pointer-events-none absolute inset-0 z-20 hidden sm:block"
               width="100%"
@@ -1763,29 +1856,11 @@ const AtlasPage: React.FC = () => {
                  A multi-piece city instead answers with its list. On phones the
                  card rides a bottom half-sheet so the globe stays visible above
                  (law 4); on wider screens it seats beside the world. ────────── */}
-          {(selectedKey || selectedCity) &&
+          {((selectedKey && selectedKey !== BIRTH_KEY) || selectedCity) &&
             !showInscription &&
             (() => {
               const hudContent =
-                selectedKey === BIRTH_KEY && birthPlace ? (
-                  <PieceHUD
-                    isOrigin
-                    inSheet={isPhone}
-                    piece={{
-                      pieceId: 'origin',
-                      title: birthPlace.label,
-                      status: 'placed',
-                      cityLabel: birthPlace.label,
-                      category: 'Your birth place',
-                    }}
-                    kin={nearestToBirth.map((n) => ({
-                      key: n.key,
-                      title: `${n.title} · ${n.cityLabel}`,
-                    }))}
-                    onSelectKin={(key) => selectPiece(key)}
-                    onRelease={closeSelection}
-                  />
-                ) : selectedKey && selectedPiece ? (
+                selectedKey && selectedPiece ? (
                   <PieceHUD
                     piece={selectedPiece}
                     inSheet={isPhone}

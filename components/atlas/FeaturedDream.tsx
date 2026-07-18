@@ -56,6 +56,35 @@ export interface FeaturedDreamProps {
 const SCRIM =
   'radial-gradient(115% 135% at 62% 50%, rgba(7,5,3,0.66) 0%, rgba(7,5,3,0.5) 38%, rgba(7,5,3,0.26) 62%, rgba(7,5,3,0) 80%)';
 
+/* Dreams are long (Adrian, 2026-07-18). The featured slot shows only the
+   opening — about sixty words — and travels to the full text on tap. Where a
+   sentence boundary falls within that window the excerpt ends on it; otherwise
+   it cuts at the word target. A quiet ellipsis marks that more waits on the
+   piece. A short dream (already under the window) shows whole, no ellipsis. */
+const FEATURED_WORD_TARGET = 60;
+const FEATURED_MAX_LINES = 8;
+
+/** Rebuild a truncated excerpt from the first `n` words with a quiet ellipsis,
+    dropping a dangling comma or colon so the cut never ends mid-punctuation. */
+function toWords(core: string, n: number): string {
+  const kept = core.split(' ').slice(0, Math.max(1, n)).join(' ').replace(/[,;:–-]+$/, '');
+  return `${kept} …`;
+}
+
+export function openingExcerpt(text: string): string {
+  const clean = text.trim().replace(/\s+/g, ' ');
+  const words = clean.split(' ');
+  if (words.length <= FEATURED_WORD_TARGET) return clean;
+  const windowText = words.slice(0, FEATURED_WORD_TARGET).join(' ');
+  // Prefer the last full sentence that ends within the window, as long as it
+  // carries most of the opening (never cut back to a single clause).
+  const m = windowText.match(/^[\s\S]*[.!?]["'”’)\]]?(?=\s|$)/);
+  const atSentence = m ? m[0].trim() : '';
+  const body =
+    atSentence && atSentence.length >= windowText.length * 0.5 ? atSentence : windowText.trim();
+  return `${body} …`;
+}
+
 export default function FeaturedDream({
   dream,
   screenPos,
@@ -69,9 +98,15 @@ export default function FeaturedDream({
   const [shown, setShown] = useState<FeaturedDreamData | null>(dream);
   const [visible, setVisible] = useState(true);
   const blockRef = useRef<HTMLDivElement | null>(null);
+  const textRef = useRef<HTMLParagraphElement | null>(null);
   const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
   // Computed desktop placement (left edge + width) that clears the globe's limb.
   const [box, setBox] = useState<{ left: number; width: number } | null>(null);
+  // The opening excerpt, shortened word by word until it sits within the
+  // eight-line ceiling at the block's real width, always ending on a clean
+  // quiet ellipsis. Measured against the live paragraph so the fit is honest
+  // whether the block is a wide desktop margin or the narrow tight-desktop floor.
+  const [fitted, setFitted] = useState<string>(() => openingExcerpt(dream?.text ?? ''));
 
   useEffect(() => {
     if (dream?.key === shown?.key) {
@@ -90,6 +125,40 @@ export default function FeaturedDream({
     }, 420);
     return () => window.clearTimeout(t);
   }, [dream, shown, reduced]);
+
+  // Fit the opening excerpt into at most eight lines at the block's real width.
+  // Start from the ~60-word opening and shorten a word at a time until it sits
+  // within the ceiling; the block stays legible and the tap-through carries the
+  // rest. Runs before paint, so there is no flash of an over-long block.
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    const base = openingExcerpt(shown?.text ?? '');
+    if (!el || !shown) {
+      setFitted(base);
+      return;
+    }
+    const cs = window.getComputedStyle(el);
+    const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.4;
+    const maxH = lh * FEATURED_MAX_LINES + 1;
+    const prev = el.textContent;
+    el.textContent = base;
+    if (el.scrollHeight <= maxH) {
+      el.textContent = prev;
+      setFitted(base);
+      return;
+    }
+    const core = base.replace(/\s*…\s*$/, '');
+    const words = core.split(' ');
+    let n = words.length;
+    while (n > 6) {
+      el.textContent = toWords(core, n);
+      if (el.scrollHeight <= maxH) break;
+      n--;
+    }
+    const finalText = toWords(core, n);
+    el.textContent = prev;
+    setFitted(finalText);
+  }, [shown, box, isPhone]);
 
   // Desktop placement: seat the block in the dark margin to the RIGHT of the
   // globe. Its inner (left) edge is pushed past the globe's limb + a gap, so no
@@ -135,8 +204,12 @@ export default function FeaturedDream({
 
   if (!shown) return null;
 
-  const showTether =
-    !isPhone && visible && screenPos != null && anchor != null && opacity > 0.05;
+  /* Tether retired (Adrian's live-walkthrough ruling, second pass): a line
+     from the text to a light on the far side of the frame crossed the whole
+     face of the earth, exactly the "random lines" he rejected. The standing
+     sub-line already names the piece, its city, and its ordinal; the tap
+     still travels to the light. Less is more. */
+  const showTether = false;
 
   // Desktop box style from the computed placement; phone keeps its bottom-
   // anchored slot above the caption. Both carry the scrim.
@@ -205,6 +278,7 @@ export default function FeaturedDream({
           }}
         />
         <p
+          ref={textRef}
           style={{
             position: 'relative',
             zIndex: 1,
@@ -216,9 +290,16 @@ export default function FeaturedDream({
             color: 'rgba(236, 226, 207, 0.96)',
             margin: 0,
             textShadow: '0 1px 16px rgba(8,6,4,0.85)',
+            // Never more than ~8 lines in the featured slot: the opening
+            // excerpt is short, but on tight desktop widths this floor keeps
+            // the block calm and lets tap-through carry the rest.
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 8,
+            overflow: 'hidden',
           }}
         >
-          {shown.text}
+          {fitted}
         </p>
         <p
           className="mt-2 font-label uppercase"
