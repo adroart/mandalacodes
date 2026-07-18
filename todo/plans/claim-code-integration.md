@@ -185,10 +185,18 @@ Catalog Room in the admin: one form per work, and every downstream door
   mutateJsonArray discipline, zero ops. The runtime catalog is the merge of
   the code-defined 64 and the R2 entries; PiecePage, atlas meta, admin
   pickers, filters, and the plaque generator all read the merged catalog.
-- The customer's three doors from the one form: claim (the code from the
-  back), pay (an acquire door on available pieces routing to the sale flow,
-  whose webhook opens the claim), present (the certificate and share card
-  are the presentation, forever at the printed QR).
+- CORRECTED (Adrian, 2026-07-18): the phrase is "customers to claim, past
+  or present," not a payment door. The room serves both generations of
+  collectors from the one form:
+  PAST: a piece sold years ago. Status "with a keeper"; when the keeper's
+  email is known, one action issues the steward record and sends the claim
+  invitation (the existing claimInvite email machinery); when unknown, the
+  piece still enters the world as an ember and the homecoming door waits.
+  PRESENT: a piece passing through Adrian's hands now: mint the code,
+  print the insert, ship; the code claims.
+  The acquire link stays an optional field on available pieces, not a
+  pillar; the certificate and share card remain the public presentation,
+  forever at the printed QR.
 - Sigil issuance: kind prefix plus the next free number in that prefix,
   reserved at creation, never reused even if an entry is deleted before
   print (deletion allowed only while unprinted and unclaimed; after that,
