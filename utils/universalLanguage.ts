@@ -77,6 +77,12 @@ const UL_IMAGE_BY_NUMBER = new Map<number, string>(
   Array.from(UL_PIECE_BY_NUMBER, ([num, a]) => [num, a.coverImage] as const)
 );
 
+/* These are the source plates where the white capture/background needs to be
+ * made transparent. Cloudinary's background-removal delivery transform keeps
+ * the complete square canvas; it does not trim or crop the artwork. Add future
+ * plates here as they are identified. */
+const UL_CARDS_WITH_TRANSPARENT_BACKGROUND = new Set<number>([22]);
+
 /**
  * Square Cloudinary URL for a Universal Language card's artwork.
  * Falls back to the oracle-card placeholder if the number is unknown.
@@ -85,5 +91,13 @@ const UL_IMAGE_BY_NUMBER = new Map<number, string>(
 export function ulCardImageUrl(number: number, size: number): string {
   const publicId = UL_IMAGE_BY_NUMBER.get(number);
   if (!publicId) return img('adrian-website/placeholders/oracle-card-3', { w: size, h: size });
-  return img(publicId, { w: size, h: size, crop: 'fill', gravity: 'center', format: 'webp' });
+  const backgroundRemoval = UL_CARDS_WITH_TRANSPARENT_BACKGROUND.has(number);
+  return img(publicId, {
+    w: size,
+    h: size,
+    crop: 'fill',
+    gravity: 'center',
+    format: backgroundRemoval ? 'png' : 'webp',
+    backgroundRemoval,
+  });
 }

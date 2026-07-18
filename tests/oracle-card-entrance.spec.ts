@@ -25,6 +25,46 @@ test('a QR arrival plays once and is consumed before reload', async ({ page }) =
   await expect(entrance(page)).toHaveCount(0);
 });
 
+test('the ritual entrance exits before the hero and reading take over', async ({ page }) => {
+  await page.goto(`${CARD}?ref=qr`);
+  const ritual = entrance(page);
+  await expect(ritual).toBeVisible();
+
+  await ritual.click();
+  await expect(page.locator('[data-oracle-choreography="exiting"]')).toBeAttached();
+  await expect(ritual).toBeVisible();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-oracle-choreography="reading"]')).toBeAttached({ timeout: 2_500 });
+  await expect(ritual).toHaveCount(0);
+});
+
+test('does not arm reading reveals behind the ritual entrance', async ({ page }) => {
+  await page.goto(`${CARD}?ref=qr`);
+  await expect(entrance(page)).toBeVisible();
+  await expect(page.locator('[data-oracle-reveal]')).toHaveCount(0);
+
+  await entrance(page).click();
+  await expect(page.locator('[data-oracle-choreography="reading"]')).toBeAttached({ timeout: 2_500 });
+  expect(await page.locator('[data-oracle-reveal]').count()).toBeGreaterThan(0);
+});
+
+test('reduced motion moves directly from the ritual into the reading', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(`${CARD}?ref=qr`);
+  await expect(entrance(page)).toBeVisible();
+
+  await entrance(page).click();
+  await expect(page.locator('[data-oracle-choreography="reading"]')).toBeAttached();
+  await expect(entrance(page)).toHaveCount(0);
+  const reveals = page.locator('[data-oracle-reveal]');
+  expect(await reveals.count()).toBeGreaterThan(0);
+  for (const reveal of await reveals.all()) {
+    await expect(reveal).toHaveCSS('opacity', '1');
+    await expect(reveal).toHaveCSS('transform', 'none');
+  }
+});
+
 test('an iPhone QR arrival offers a one-tap Safari handoff without replacing the reading bar', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'userAgent', {

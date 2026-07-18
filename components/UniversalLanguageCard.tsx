@@ -121,7 +121,7 @@ const UniversalLanguageCard: React.FC = () => {
   const hexLines = hexagramLineBooleans(card.iching.upper_trigram.symbol, card.iching.lower_trigram.symbol);
   const keywords = synthesis?.keywords ?? expanded?.keywords ?? [];
   const hexChar = HEXAGRAM_CHINESE[card.number]?.char ?? String(card.number);
-  const imageUrl = `https://res.cloudinary.com/dobbosnda/image/upload/f_jpg,q_auto,w_1080,h_1080,c_fill,g_center/${ulCardPublicId(card.number) ?? ''}`;
+  const imageUrl = ulCardImageUrl(card.number, 1080);
 
   // The per-card data bag the generated markup binds. Anything not yet authored
   // for a card falls back gracefully (the field is empty/handled in markup).
@@ -157,8 +157,6 @@ const UniversalLanguageCard: React.FC = () => {
       const P = (s?: string): string[] => (s ?? '').split('\n\n').map(x => x.trim()).filter(Boolean);
       const ulP = (synthesis?.essence ?? expanded?.creator_voice?.personal_reading ?? '').split('\n\n').map(s => s.trim()).filter(Boolean);
       const first = ulP[0] ?? '';
-      const pid = ulCardPublicId(card.number) ?? '';
-      const cloud = (t: string) => `https://res.cloudinary.com/dobbosnda/image/upload/${t}/${pid}`;
       return {
         cardName: card.card_name,
         // Use the SAME image source + transform the deck index uses (square
@@ -167,7 +165,7 @@ const UniversalLanguageCard: React.FC = () => {
         // physical piece cover (which was a different image).
         heroImage: ulCardImageUrl(card.number, 1100),
         lightboxImage: ulCardImageUrl(card.number, 1600),
-        buyImage: cloud('f_auto,q_auto,w_700,c_fill,g_center'),
+        buyImage: ulCardImageUrl(card.number, 700),
         // hero uses the HEXAGRAM SYMBOL glyph (䷀ U+4DC0+n-1), like the file —
         // not the Chinese name character. The I Ching header keeps the name char.
         heroGlyph: String.fromCodePoint(0x4DBF + card.number),
@@ -260,7 +258,7 @@ const UniversalLanguageCard: React.FC = () => {
         open={buyOpen}
         onClose={() => setBuyOpen(false)}
         piece={piece ?? null}
-        imageUrl={`https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_700,c_fill,g_center/${ulCardPublicId(card.number) ?? ''}`}
+        imageUrl={ulCardImageUrl(card.number, 700)}
         imageAlt={`${card.card_name}, Universal Language ${card.number}.`}
         cardName={card.card_name}
         cardNumber={card.number}

@@ -38,6 +38,8 @@ interface HostProps {
   invocationSlot?: React.ReactNode; // hand-authored live invocation, mounted immediately after UL prose
 }
 
+type ChoreographyPhase = 'entrance' | 'exiting' | 'hero' | 'reading';
+
 export class EBReadingHost extends React.Component<HostProps, any> {
   // ── refs / maps (verbatim) ──
   rootEl: any; veilEl: any; navIndEl: any; navScrollEl: any; trigramEl: any;
@@ -51,9 +53,17 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   visibility: any;
   invocationMount: HTMLElement | null = null;
   invocationRoot: Root | null = null;
+  invocationObserver: MutationObserver | null = null;
+  entranceExitTimer: ReturnType<typeof setTimeout> | null = null;
+  heroTimer: ReturnType<typeof setTimeout> | null = null;
+  choreographySafetyTimer: ReturnType<typeof setTimeout> | null = null;
+  revealScanFrame: number | null = null;
+  revealTargets = new WeakSet<HTMLElement>();
+  glyphTargets = new WeakSet<HTMLElement>();
 
   state = {
     entranceDismissed: false,
+    choreography: ((this.props.showEntrance ?? true) ? 'entrance' : 'reading') as ChoreographyPhase,
     active: 'ul',
     cast: null as any,
     lightbox: false,
@@ -169,65 +179,42 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       if (prose?.parentElement) {
         this.invocationMount = document.createElement('div');
         this.invocationMount.className = 'oracle-invocation-mount';
-        this.invocationMount.setAttribute('data-oracle-reveal', '');
         prose.insertAdjacentElement('afterend', this.invocationMount);
         this.invocationRoot = createRoot(this.invocationMount);
+        if (typeof MutationObserver !== 'undefined') {
+          this.invocationObserver = new MutationObserver(() => {
+            if (this.state.choreography === 'reading') this.scheduleRevealScan();
+          });
+          this.invocationObserver.observe(this.invocationMount, { childList: true, subtree: true });
+        }
         this.invocationRoot.render(this.props.invocationSlot ?? null);
       }
     }
 
     if (this.stageEl) {
       this.stageEl.setAttribute('data-oracle-flow', '');
-      this.observer = new IntersectionObserver((entries) => {
-        entries.forEach((en: any) => {
-          const key = en.target.dataset.chapter;
-          this.visibility = this.visibility || {};
-          this.visibility[key] = en.intersectionRatio;
-        });
-        let best: any = null, bestR = 0;
-        Object.keys(this.visibility || {}).forEach((k) => { if (this.visibility[k] > bestR) { bestR = this.visibility[k]; best = k; } });
-        if (best && bestR > 0.5 && best !== this.state.active) { this.setState({ active: best }); this.updateNav(best); }
-      }, { root: null, rootMargin: '-18% 0px -62% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] });
-      this.panelEls.forEach((el) => { if (el) this.observer.observe(el); });
+      if (typeof IntersectionObserver !== 'undefined') {
+        this.observer = new IntersectionObserver((entries) => {
+          entries.forEach((en: any) => {
+            const key = en.target.dataset.chapter;
+            this.visibility = this.visibility || {};
+            this.visibility[key] = en.intersectionRatio;
+          });
+          let best: any = null, bestR = 0;
+          Object.keys(this.visibility || {}).forEach((k) => { if (this.visibility[k] > bestR) { bestR = this.visibility[k]; best = k; } });
+          if (best && bestR > 0.5 && best !== this.state.active) { this.setState({ active: best }); this.updateNav(best); }
+        }, { root: null, rootMargin: '-18% 0px -62% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] });
+        this.panelEls.forEach((el) => { if (el) this.observer.observe(el); });
+      }
     }
 
-    const reduce = !!this.props.reduceMotion;
     if (this.rootEl) {
-      // Match Teajia's viewport-rooted reveal. Horizontally off-screen panels
-      // remain armed and reveal when navigation brings them into the viewport.
       const prose = this.rootEl.querySelector('section[data-chapter="ul"] > div > div[style*="flex-direction: column"]');
       if (prose) {
         prose.setAttribute('data-reading-prose', '');
         prose.setAttribute('data-oracle-reading-prose', '');
       }
-      const reveal = Array.from(this.rootEl.querySelectorAll('section[data-chapter] > div > :is(p,h2,h3,div,details,figure)')) as HTMLElement[];
-      const glyphs = Array.from(this.rootEl.querySelectorAll('[data-glyph]')) as HTMLElement[];
-      const showAll = () => {
-        reveal.forEach((el) => { el.style.opacity = '1'; el.style.transform = 'none'; });
-        glyphs.forEach((el) => { el.style.clipPath = 'none'; el.style.opacity = '1'; });
-      };
-      reveal.forEach((el) => el.setAttribute('data-oracle-reveal', ''));
-      if (reduce || typeof IntersectionObserver === 'undefined') showAll();
-      else {
-      try {
-      this.revealObs = new IntersectionObserver((ents) => {
-        ents.forEach((en: any) => { if (en.isIntersecting) { const el = en.target; el.style.opacity = '1'; el.style.transform = 'none'; this.revealObs.unobserve(el); } });
-      }, { threshold: 0.08, rootMargin: '0px 0px -7% 0px' });
-      reveal.forEach((el) => {
-        el.style.opacity = '0'; el.style.transform = 'translateY(26px)';
-        el.style.transition = 'opacity 900ms cubic-bezier(.22,.61,.36,1), transform 900ms cubic-bezier(.22,.61,.36,1)';
-        this.revealObs.observe(el);
-      });
-      this.glyphObs = new IntersectionObserver((ents) => {
-        ents.forEach((en: any) => { if (en.isIntersecting) { const el = en.target; el.style.clipPath = 'inset(0 0 0% 0)'; el.style.opacity = '1'; this.glyphObs.unobserve(el); } });
-      }, { threshold: 0.2 });
-      glyphs.forEach((el) => {
-        el.style.clipPath = 'inset(0 0 100% 0)'; el.style.opacity = '0';
-        el.style.transition = 'clip-path 900ms cubic-bezier(.22,.61,.36,1), opacity 600ms ease';
-        this.glyphObs.observe(el);
-      });
-      } catch (e) { showAll(); }
-      }
+      if (this.state.choreography === 'reading') this.armReadingReveals();
     }
 
     this.repositionNav = () => this.updateNav(this.state.active);
@@ -247,12 +234,19 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   componentDidUpdate() {
     this.setBodyLock(this.isLocked());
     this.invocationRoot?.render(this.props.invocationSlot ?? null);
+    if (this.state.choreography === 'reading') this.scheduleRevealScan();
   }
   componentWillUnmount() {
     window.removeEventListener('keydown', this.onKey);
     if (this.observer) this.observer.disconnect();
     if (this.revealObs) this.revealObs.disconnect();
     if (this.glyphObs) this.glyphObs.disconnect();
+    if (this.entranceExitTimer) clearTimeout(this.entranceExitTimer);
+    if (this.heroTimer) clearTimeout(this.heroTimer);
+    if (this.choreographySafetyTimer) clearTimeout(this.choreographySafetyTimer);
+    if (this.revealScanFrame !== null) cancelAnimationFrame(this.revealScanFrame);
+    this.invocationObserver?.disconnect();
+    this.invocationObserver = null;
     if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
     this.invocationRoot?.unmount();
     this.invocationRoot = null;
@@ -263,9 +257,152 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   }
 
   entranceActive() { return (this.props.showEntrance ?? true) && !this.state.entranceDismissed; }
-  isLocked() { return this.entranceActive() || this.state.lightbox || this.state.share || this.state.buy || !!this.state.overlay || this.state.index; }
+  isLocked() { return this.state.choreography !== 'reading' || this.state.lightbox || this.state.share || this.state.buy || !!this.state.overlay || this.state.index; }
   setBodyLock(on: boolean) { try { document.body.style.overflow = on ? 'hidden' : ''; } catch (e) {} }
-  dismissEntrance = () => this.setState({ entranceDismissed: true });
+
+  scheduleRevealScan = () => {
+    if (this.revealScanFrame !== null) cancelAnimationFrame(this.revealScanFrame);
+    this.revealScanFrame = requestAnimationFrame(() => {
+      this.revealScanFrame = null;
+      this.armReadingReveals();
+    });
+  };
+
+  showAllReadingContent = () => {
+    if (!this.rootEl) return;
+    const root = this.rootEl as HTMLElement;
+    root.querySelectorAll<HTMLElement>('[data-oracle-reveal]').forEach((el) => {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+    root.querySelectorAll<HTMLElement>('[data-glyph]').forEach((el) => {
+      el.style.clipPath = 'none';
+      el.style.opacity = '1';
+    });
+  };
+
+  armReadingReveals = () => {
+    if (!this.rootEl || this.state.choreography !== 'reading') return;
+
+    const root = this.rootEl as HTMLElement;
+    const prose = root.querySelector<HTMLElement>('[data-oracle-reading-prose]');
+    const proseParagraphs = Array.from(root.querySelectorAll<HTMLElement>([
+      'section[data-chapter="ul"] [data-oracle-reading-prose] > p',
+      'section[data-chapter="iching"] div[style*="flex-direction: column"] > p',
+      'section[data-chapter="genekeys"] [data-gk] div[style*="flex-direction: column"] > p',
+      'section[data-chapter="humandesign"] div[style*="flex-direction: column"] > p',
+      'section[data-chapter="body"] div[style*="flex-direction: column"] > p',
+      'section[data-chapter="relations"] div[style*="flex-direction: column"] > p',
+    ].join(',')));
+    const invocationBlocks = Array.from(root.querySelectorAll<HTMLElement>(
+      '.oracle-invocation-mount > article > :is(h2,h3,p)',
+    ));
+    const editorialBlocks = Array.from(root.querySelectorAll<HTMLElement>(
+      'section[data-chapter] > div > :is(p,h2,h3,header,div,details,figure)',
+    )).filter((el) => el !== prose && !proseParagraphs.some((paragraph) => el.contains(paragraph)));
+    const authoredLeaves = Array.from(root.querySelectorAll<HTMLElement>(
+      'section[data-chapter] > div > div > :is(p,h2,h3,header,details,figure), section[data-chapter] [data-gk] > :is(p,h2,h3,details)',
+    )).filter((el) => !proseParagraphs.some((paragraph) => el !== paragraph && el.contains(paragraph)));
+    const revealCandidates = Array.from(new Set([...editorialBlocks, ...authoredLeaves, ...proseParagraphs, ...invocationBlocks]));
+    const reveal = revealCandidates.filter((candidate) => (
+      !revealCandidates.some((other) => other !== candidate && candidate.contains(other))
+    ));
+    const glyphs = Array.from(root.querySelectorAll<HTMLElement>('[data-glyph]'));
+    const reduce = !!this.props.reduceMotion || typeof IntersectionObserver === 'undefined';
+
+    try {
+      if (!reduce && !this.revealObs) {
+        this.revealObs = new IntersectionObserver((entries) => {
+          entries.forEach((entry: any) => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target as HTMLElement;
+            el.style.opacity = '1';
+            el.style.transform = 'none';
+            this.revealObs.unobserve(el);
+          });
+        }, { threshold: 0.08, rootMargin: '0px 0px -7% 0px' });
+      }
+      if (!reduce && !this.glyphObs) {
+        this.glyphObs = new IntersectionObserver((entries) => {
+          entries.forEach((entry: any) => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target as HTMLElement;
+            el.style.clipPath = 'inset(0 0 0% 0)';
+            el.style.opacity = '1';
+            this.glyphObs.unobserve(el);
+          });
+        }, { threshold: 0.2 });
+      }
+
+      reveal.forEach((el) => {
+        el.setAttribute('data-oracle-reveal', '');
+        if (this.revealTargets.has(el)) return;
+        this.revealTargets.add(el);
+        if (reduce) {
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+          return;
+        }
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(26px)';
+        el.style.transition = 'opacity 900ms cubic-bezier(.22,.61,.36,1), transform 900ms cubic-bezier(.22,.61,.36,1)';
+        this.revealObs.observe(el);
+      });
+      glyphs.forEach((el) => {
+        if (this.glyphTargets.has(el)) return;
+        this.glyphTargets.add(el);
+        if (reduce) {
+          el.style.clipPath = 'none';
+          el.style.opacity = '1';
+          return;
+        }
+        el.style.clipPath = 'inset(0 0 100% 0)';
+        el.style.opacity = '0';
+        el.style.transition = 'clip-path 900ms cubic-bezier(.22,.61,.36,1), opacity 600ms ease';
+        this.glyphObs.observe(el);
+      });
+    } catch (e) {
+      reveal.forEach((el) => el.setAttribute('data-oracle-reveal', ''));
+      this.showAllReadingContent();
+    }
+  };
+
+  clearChoreographyTimers = () => {
+    if (this.entranceExitTimer) clearTimeout(this.entranceExitTimer);
+    if (this.heroTimer) clearTimeout(this.heroTimer);
+    if (this.choreographySafetyTimer) clearTimeout(this.choreographySafetyTimer);
+    this.entranceExitTimer = null;
+    this.heroTimer = null;
+    this.choreographySafetyTimer = null;
+  };
+
+  finishChoreography = () => {
+    this.clearChoreographyTimers();
+    this.setState({ entranceDismissed: true, choreography: 'reading' }, () => this.armReadingReveals());
+  };
+
+  dismissEntrance = () => {
+    if (this.state.choreography !== 'entrance') return;
+    this.clearChoreographyTimers();
+
+    if (this.props.reduceMotion) {
+      this.finishChoreography();
+      return;
+    }
+
+    this.setState({ choreography: 'exiting' });
+    try {
+      this.choreographySafetyTimer = setTimeout(this.finishChoreography, 1_600);
+      this.entranceExitTimer = setTimeout(() => {
+        this.entranceExitTimer = null;
+        this.setState({ entranceDismissed: true, choreography: 'hero' }, () => {
+          this.heroTimer = setTimeout(this.finishChoreography, 620);
+        });
+      }, 420);
+    } catch (e) {
+      this.finishChoreography();
+    }
+  };
 
   go = (key: string) => {
     this.flashVeil(key);
@@ -670,7 +807,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       ['relations', 'Relations', null],
     ];
     return (
-      <div className="eb-reading" data-oracle-reader data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
+      <div className="eb-reading" data-oracle-reader data-oracle-choreography={this.state.choreography} data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
         <nav className="oracle-reading-progress" data-oracle-progress-nav aria-label="Oracle reading">
           <div className="oracle-reading-progress__jumps" role="navigation" aria-label="Jump to system">
             {systems.map(([key, label, text]) => (

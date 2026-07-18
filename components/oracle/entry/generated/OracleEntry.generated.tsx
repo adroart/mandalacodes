@@ -275,40 +275,6 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       </button>
     </div>
   </footer>
-  {(vals.reading) ? (
-    <>
-      <div onClick={vals.closeReading} style={{ position: "fixed", inset: "0", zIndex: "90", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", background: "rgba(22,18,14,.6)", backdropFilter: "blur(5px)", animation: "oe-fade .25s ease both" }}>
-        <div onClick={vals.stop} style={{ width: "min(380px,94vw)", background: "var(--bg2,#fff)", borderRadius: "16px", overflow: "hidden", boxShadow: "0 24px 60px rgba(22,18,14,.4)", animation: "oe-rise .4s cubic-bezier(.2,.85,.3,1) both" }}>
-          <div style={{ position: "relative", aspectRatio: "1/1", overflow: "hidden" }}>
-            <span style={{ position: "absolute", inset: "0", background: `${vals.readingGrad ?? ""}` }}>
-            </span>
-            <img src={vals.readingArtBig} alt={vals.readingName} loading="lazy" decoding="async" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover" }} />
-            <span style={{ position: "absolute", left: "0", right: "0", bottom: "0", top: "40%", background: "linear-gradient(transparent,rgba(20,16,12,.72))" }}>
-            </span>
-            <span style={{ position: "absolute", left: "18px", bottom: "14px", fontFamily: 'var(--font-ui)', fontSize: "10px", fontWeight: "700", letterSpacing: ".2em", textTransform: "uppercase", color: "rgba(245,239,228,.85)" }}>
-            Universal Language · {vals.readingNum2}
-            </span>
-          </div>
-          <div style={{ padding: "24px 24px 26px", textAlign: "center" }}>
-            <h2 style={{ margin: "0 0 4px", fontFamily: 'var(--font-display)', fontWeight: "500", fontSize: "30px", lineHeight: "1.06", color: "var(--ink,#262321)" }}>
-            {vals.readingName}
-            </h2>
-            <p style={{ margin: "0 0 18px", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "17px", color: "var(--ink3,#8a7a5e)" }}>
-            {vals.readingHx}
-            </p>
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-              <button type="button" onClick={vals.closeReading} style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", fontWeight: "600", letterSpacing: ".16em", textTransform: "uppercase", color: "var(--ink2,#524330)", background: "transparent", border: "1px solid var(--line2,#d2c7b4)", borderRadius: "10px", padding: "12px 18px", cursor: "pointer" }}>
-              Close
-              </button>
-              <button type="button" onClick={vals.enterReading} style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", fontWeight: "700", letterSpacing: ".16em", textTransform: "uppercase", color: "var(--onAccent,#f7f5f1)", background: "var(--accent,#8a744e)", border: "none", borderRadius: "10px", padding: "12px 20px", cursor: "pointer" }}>
-              Enter the reading
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  ) : null}
 </div>
   </>
 );

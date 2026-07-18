@@ -18,6 +18,8 @@ export interface ImgOptions {
   gravity?: 'auto' | 'center' | 'face' | 'faces';
   /** Output format. Default: 'auto'. Use 'webp' or 'png' for images with transparency. */
   format?: 'auto' | 'webp' | 'png' | 'jpg';
+  /** Remove the image background while preserving the original canvas. */
+  backgroundRemoval?: boolean;
 }
 
 /**
@@ -56,7 +58,8 @@ export function img(publicId: string, opts: ImgOptions = {}): string {
     }
   }
 
-  return `${BASE}/${transforms.join(',')}/${publicId}`;
+  const effect = opts.backgroundRemoval ? 'e_background_removal/' : '';
+  return `${BASE}/${effect}${transforms.join(',')}/${publicId}`;
 }
 
 /**

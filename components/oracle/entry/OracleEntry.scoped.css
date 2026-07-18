@@ -109,19 +109,6 @@
 .oe-root [data-oe="artgrid"] button:focus-visible .oe-art-name { opacity: 1 !important; }
 .oe-root [data-oe="artgrid"] button:hover img { transform: scale(1.05); }
 
-/* Per-card image crop: card 22's artwork has a lingering white edge — enlarge it
-   2px on every side so the parent's overflow:hidden clips the border away. */
-.oe-root [data-oe="ichgrid"] [data-oe-num="22"] img {
-  inset: auto !important;
-  top: -2px !important;
-  left: -2px !important;
-  right: auto !important;
-  bottom: auto !important;
-  width: calc(100% + 4px) !important;
-  height: calc(100% + 4px) !important;
-  object-position: center !important;
-}
-
 /* ──────────────────────────────────────────────────────────────────────────
    Entrance reveal — the premium "rise & settle" the imported template carries.
    The Oracle Entry design only defined oe-rise/oe-fade but never applied them,
