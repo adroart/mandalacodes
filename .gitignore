@@ -31,3 +31,7 @@ LED-Programming/
 # Local R2 backups (scripts/backup-atlas.ts) — stewards.json holds collector
 # emails; these must never be committed
 backups/
+
+# Conductor: settings.toml is shared (tracked); settings.local.toml is each
+# teammate's machine-specific override and wins over the shared file.
+.conductor/settings.local.toml

@@ -1,0 +1,34 @@
+# Conductor workspace scripts — shared across every workspace on this repo.
+# The Run / Setup tabs in Conductor read these. Docs: https://conductor.build/docs
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+# Runs once when Conductor creates a new workspace (fresh git checkout).
+setup = "npm install"
+
+# Let several workspaces run their preview at once — each gets its own
+# $CONDUCTOR_PORT instead of fighting over one fixed port.
+run_mode = "concurrent"
+
+# Default Run action: the main React/Vite app (App.tsx at repo root).
+# - Binds the port Conductor assigns this workspace ($CONDUCTOR_PORT), falling
+#   back to 2222 (this repo's normal dev port) when run outside Conductor.
+# - vite.config.ts pins server.port = 2222 with strictPort = true, which is
+#   exactly what makes only one workspace previewable at a time; passing
+#   --port here overrides that per-run, so we bypass `npm run dev` (which
+#   hardcodes --port 2222) in favor of calling vite directly.
+# - No secrets needed: this is a pure client dev server. Better Auth / D1 /
+#   Resend secrets only apply to the Cloudflare Pages Functions (see
+#   .env.production comments and wrangler.toml), not to the Vite preview.
+[scripts.run.web]
+command = "npx vite --port ${CONDUCTOR_PORT:-2222}"
+icon = "play"
+default = true
+
+# Optional: the Learn library's Astro/Keystatic CMS writer UI (content-site/).
+# Separate app, separate deps — installs on first run since root `setup`
+# doesn't install content-site's node_modules. Not the primary preview, so no
+# default = true.
+[scripts.run.content-writer]
+command = "npm --prefix content-site install --no-audit --no-fund && npx --prefix content-site astro dev --port ${CONDUCTOR_PORT:-4321}"
+icon = "edit"
