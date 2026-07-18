@@ -115,6 +115,51 @@ test('keeps the chart prompt direct and visually subordinate to the hexagram', a
   expect(typeScale.number).toBeLessThanOrEqual(typeScale.glyph * 0.2);
 });
 
+test('does not ask signed-in readers whether the code is in their chart', async ({ page }) => {
+  const now = new Date().toISOString();
+  await page.route('**/api/auth/get-session', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      session: {
+        id: 'session-reader',
+        userId: 'reader-1',
+        token: 'test-session-token',
+        createdAt: now,
+        updatedAt: now,
+        expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+      },
+      user: {
+        id: 'reader-1',
+        name: 'Reader',
+        email: 'reader@example.com',
+        emailVerified: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+    }),
+  }));
+  await page.route('**/api/auth/sync-user', (route) => route.fulfill({ status: 204 }));
+  await page.route('**/api/profile/get', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      inputs: {
+        date: '1990-06-15',
+        time: '14:30',
+        place: { label: 'Jakarta, Indonesia', lat: -6.2146, lng: 106.8451, tzId: 'Asia/Jakarta' },
+      },
+      computed: { lifesWork: { gate: 22, line: 3 } },
+      updatedAt: now,
+    }),
+  }));
+
+  await openReading(page);
+
+  await expect(page.locator('.ul-hero-box--chart')).toHaveCount(0);
+  await expect(page.getByText("Your Life's Work · Line 3")).toBeVisible();
+});
+
 test('shows one sticky document progress indicator', async ({ page }) => {
   await openReading(page);
   const nav = page.locator('[data-oracle-progress-nav]');
