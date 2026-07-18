@@ -600,6 +600,37 @@ words themselves.
    from the existing piece-code and claim infrastructure, mapped before
    building.
 
+### The ratified words (2026-07-18, Adrian's ideas set by Fable at his request)
+
+Verbatim spec for the recentered copy. "Forever" is rendered as "stay
+connected / through every hand" per the standing honesty rule in
+living-art-legacy.md; "anchor" is the verb for a dream entering a piece;
+"alive in" is the word for where a piece lives.
+
+- Overture line one: "We are one global family of resonance, sharing the
+  dreams we are birthing for the future."
+- Overture line two: "Together, our dreams shape our reality: set into the
+  creative cauldron, watched as they take form."
+- Resting caption thesis: "Illuminators of the dream, surrounded by resonant
+  dreamers." (counts line unchanged; `the vision` becomes a small trailing
+  link on the thesis line)
+- Claim door: "Keep a piece? Anchor your dream into it →"
+- Piece page unclaimed band: "This piece is ready for someone to become its
+  keeper and infuse it with their dream. Begin →"
+- Ceremony arrival, with piece context: "You are claiming {title}." then
+  "It is ready to receive your dream." Without context: "The world is ready
+  to receive your dream."
+- Recognition beat: "Your dream will become its light."
+- Dream-beat promise line: "Your dream and your art stay connected, through
+  every hand this piece ever passes to. Once a year you can tend it or set a
+  new one; nothing is lost."
+- Ignition sub-line: "Your dream joins the dreams of the world." (ordinal
+  line unchanged: "You are the {ordinal} light.")
+- Ready beat, above the book door: "From now on, every glance at your piece
+  returns you to this feeling."
+- Everywhere a place is named: "alive in {city}", replacing "anchored in"
+  and "placed in" on visitor-facing surfaces.
+
 ## Part III: Build order
 
 Sequenced so each step is visible on the live URL, per the standing rules
