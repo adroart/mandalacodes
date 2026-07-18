@@ -91,12 +91,25 @@ const resolvePieceSigil = (pieceId: string): string => {
  * The minted claim code, shown ONCE. Styled as a print reference: the code,
  * the piece sigil, and the note that it lives on the back insert. We keep only
  * a hash server-side, so this is the single moment the plaintext exists.
+ *
+ * "print the insert" opens a print window carrying the working back-insert
+ * artifact: the sigil, the grouped code, the private QR deep link
+ * (/atlas/claim?piece=...&code=...) so a keeper scans instead of types, and
+ * one line of instruction. The canonical host is printed (never the admin
+ * origin), and the plaintext never touches disk. The final insert layout is a
+ * design artifact Adrian ratifies before a first print run
+ * (todo/plans/claim-code-integration.md III.3); this view is the working
+ * version so shipping can begin.
  */
+const CLAIM_HOST = 'https://mandalacodes.com';
+
 const ClaimCodeReference: React.FC<{
     code: string;
     sigil: string;
+    pieceId: string;
+    editionNumber?: number;
     onDismiss: () => void;
-}> = ({ code, sigil, onDismiss }) => {
+}> = ({ code, sigil, pieceId, editionNumber, onDismiss }) => {
     const [copied, setCopied] = useState(false);
     const copy = async () => {
         try {
@@ -106,6 +119,47 @@ const ClaimCodeReference: React.FC<{
         } catch {
             /* clipboard blocked — the code is selectable below. */
         }
+    };
+    const printInsert = async () => {
+        const pieceParam = editionNumber ? `${pieceId}:${editionNumber}` : pieceId;
+        const claimUrl = `${CLAIM_HOST}/atlas/claim?piece=${encodeURIComponent(pieceParam)}&code=${encodeURIComponent(code)}`;
+        let qrDataUri = '';
+        try {
+            const QRCode = (await import('qrcode')).default;
+            qrDataUri = await QRCode.toDataURL(claimUrl, {
+                width: 260,
+                margin: 1,
+                color: { dark: '#272219', light: '#f3efe7' },
+            });
+        } catch {
+            /* QR generation failed: the insert still prints with the typed code. */
+        }
+        const win = window.open('', '_blank', 'width=460,height=700');
+        if (!win) return;
+        win.document.write(`<!doctype html><html><head><title>${sigil} insert</title>
+<style>
+  body { margin: 0; background: #fff; }
+  .insert { width: 340px; margin: 24px auto; padding: 28px 26px; background: #f3efe7;
+    border: 1px solid #c6bca6; text-align: center; color: #272219; }
+  .sigil { font-size: 13px; letter-spacing: 0.24em; text-transform: uppercase; color: #956e2a; }
+  .code { font-size: 17px; letter-spacing: 0.12em;
+    margin: 18px 0 6px; word-break: break-all; }
+  .qr { margin: 14px auto 6px; }
+  .qr img { width: 168px; height: 168px; }
+  .line { font-size: 14px; line-height: 1.5; margin: 14px 8px 0; }
+  .host { font-size: 11px; letter-spacing: 0.08em; color: #6b6253; margin-top: 12px; }
+  @media print { body { background: #f3efe7; } .insert { border: none; margin: 0 auto; } }
+</style></head><body>
+<div class="insert">
+  <div class="sigil">${sigil}</div>
+  <div class="code">${code}</div>
+  ${qrDataUri ? `<div class="qr"><img src="${qrDataUri}" alt=""/></div>` : ''}
+  <div class="line">Pull this card when the piece is yours. The code brings your dream into it.</div>
+  <div class="host">mandalacodes.com/atlas/claim</div>
+</div>
+<script>window.onload = function () { window.print(); };</script>
+</body></html>`);
+        win.document.close();
     };
     return (
         <div className="mb-6 border border-bronze-400 bg-bronze-50 px-4 py-4">
@@ -122,6 +176,13 @@ const ClaimCodeReference: React.FC<{
                     className="font-label text-[11px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
                 >
                     {copied ? 'copied' : 'copy'}
+                </button>
+                <button
+                    type="button"
+                    onClick={printInsert}
+                    className="font-label text-[11px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+                >
+                    print the insert
                 </button>
             </div>
             <p className="font-reading text-sm text-wood-700 mt-2 not-italic">
@@ -456,7 +517,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState<{ email?: string; name?: string } | null>(null);
     // The plaintext claim code, held only until dismissed (shown once).
-    const [codeRef, setCodeRef] = useState<{ code: string; sigil: string } | null>(null);
+    const [codeRef, setCodeRef] = useState<{ code: string; sigil: string; pieceId: string; editionNumber?: number } | null>(null);
     const [error, setError] = useState<string | null>(null);
     const adminFetch = useAdminFetch();
 
@@ -502,6 +563,8 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                     setCodeRef({
                         code: data.claimCode,
                         sigil: resolvePieceSigil(form.pieceId),
+                        pieceId: form.pieceId,
+                        editionNumber: form.editionNumber ? Number(form.editionNumber) : undefined,
                     });
                 }
                 setForm(EMPTY_STEWARD);
@@ -539,6 +602,8 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                 <ClaimCodeReference
                     code={codeRef.code}
                     sigil={codeRef.sigil}
+                    pieceId={codeRef.pieceId}
+                    editionNumber={codeRef.editionNumber}
                     onDismiss={() => setCodeRef(null)}
                 />
             )}
@@ -1603,7 +1668,7 @@ const StewardRoster: React.FC<{
     const [rowError, setRowError] = useState<string | null>(null);
     const [reissueBusyKey, setReissueBusyKey] = useState<string | null>(null);
     // The freshly-reissued plaintext code, held only until dismissed.
-    const [reissued, setReissued] = useState<{ code: string; sigil: string } | null>(null);
+    const [reissued, setReissued] = useState<{ code: string; sigil: string; pieceId: string; editionNumber?: number } | null>(null);
 
     const handleReissue = async (s: StewardRecord) => {
         const key = stewardKey(s);
@@ -1631,7 +1696,7 @@ const StewardRoster: React.FC<{
             }
             const data = await res.json();
             if (data?.ok && data.claimCode) {
-                setReissued({ code: data.claimCode, sigil: resolvePieceSigil(s.pieceId) });
+                setReissued({ code: data.claimCode, sigil: resolvePieceSigil(s.pieceId), pieceId: s.pieceId, editionNumber: s.editionNumber });
                 await onReload();
             } else {
                 setRowError(data?.error || 'Could not reissue the code.');
@@ -1709,6 +1774,8 @@ const StewardRoster: React.FC<{
                 <ClaimCodeReference
                     code={reissued.code}
                     sigil={reissued.sigil}
+                    pieceId={reissued.pieceId}
+                    editionNumber={reissued.editionNumber}
                     onDismiss={() => setReissued(null)}
                 />
             )}
