@@ -165,6 +165,35 @@ genesis backfill covers all of it, not only UL; the plaque/QR generator must
 mint for ANY piece, not only card-numbered ones; piece sigils, filters, and
 marker types must speak the full taxonomy.
 
+## The catalog room (Adrian, 2026-07-18)
+
+Adrian does not deliver an inventory file; the structure comes to him. A
+Catalog Room in the admin: one form per work, and every downstream door
+(claim, pay, present) flows from what he enters.
+
+- Fields, in his language: title; kind (mandala, signature piece, jewelry,
+  other with a series name; the sixty-four stay code-defined); year;
+  dimensions; materials; photos (Cloudinary reference); where it is (with a
+  keeper at a city, available, or resting with the artist); if available, a
+  price and the acquire link. On save the piece receives its permanent id
+  and sigil, minted once and frozen forever per the contract, shown
+  immediately.
+- Four actions per entry: enter the world (genesis to the ledger), mint
+  claim code (shown once), print the plaque and the insert, view its
+  certificate.
+- Storage: R2 (atlas/catalog.json) beside the steward records, the
+  mutateJsonArray discipline, zero ops. The runtime catalog is the merge of
+  the code-defined 64 and the R2 entries; PiecePage, atlas meta, admin
+  pickers, filters, and the plaque generator all read the merged catalog.
+- The customer's three doors from the one form: claim (the code from the
+  back), pay (an acquire door on available pieces routing to the sale flow,
+  whose webhook opens the claim), present (the certificate and share card
+  are the presentation, forever at the printed QR).
+- Sigil issuance: kind prefix plus the next free number in that prefix,
+  reserved at creation, never reused even if an entry is deleted before
+  print (deletion allowed only while unprinted and unclaimed; after that,
+  entries are permanent).
+
 ## Acceptance
 
 1. A keeper pulls the insert from the back of a new piece, scans or types
