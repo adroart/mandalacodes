@@ -1317,7 +1317,13 @@ const AtlasPage: React.FC = () => {
     use3D && !USE_GL_GLOBE && !featuredPaused && featuredDream != null;
 
   return (
-    <div className="min-h-screen bg-paper-50 text-wood-900">
+    /* The world room is always dusk: the whole /atlas route sits on the
+       stage's night in BOTH site themes, so the globe stage and everything
+       below the fold are one continuous color with no seam band. The local
+       `dark` class remaps the paper/wood tokens for descendants even when
+       the site theme is light, mirroring how the certificate pins itself to
+       warm paper with dark-preserve. */
+    <div className="dark min-h-screen bg-atlas-night text-wood-900">
       {/* ── Immersive globe stage ─────────────────────────────────────────── */}
       {state.kind === 'ready' && use3D && (
         <section
