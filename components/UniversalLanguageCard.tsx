@@ -17,6 +17,7 @@ import YourPositionCallout from './oracle/YourPositionCallout';
 import BirthTimeModal from './oracle/BirthTimeModal';
 import SignInModal from './account/SignInModal';
 import { useProfile } from '../lib/profile/context';
+import { useAccount } from '../lib/account/useAccount';
 import { ulPieceForCard } from '../utils/universalLanguage';
 import { astrologyGlyph, hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
 import './oracle/eb/eb-template.css';
@@ -72,6 +73,7 @@ const UniversalLanguageCard: React.FC = () => {
   const [chartFormOpen, setChartFormOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const { profile } = useProfile();
+  const { isLoaded: isAccountLoaded, isSignedIn } = useAccount();
   useEffect(() => {
     if (showEntrance) consumeCardEntranceRequest();
   }, [entranceKey, showEntrance]);
@@ -239,13 +241,13 @@ const UniversalLanguageCard: React.FC = () => {
         showEntrance={showEntrance}
         onAcquire={() => setBuyOpen(true)}
         onShare={() => setShareOpen(true)}
-        headerActionsSlot={
+        headerActionsSlot={isAccountLoaded && !isSignedIn ? (
           <ChartHeroBox
             hexGlyph={String.fromCodePoint(0x4DBF + card.number)}
             code={card.number}
             onOpen={() => { if (profile) navigate('/profile'); else setChartFormOpen(true); }}
           />
-        }
+        ) : null}
         headerChartSlot={
           /* Only the matched "in your chart" line remains here; it shows once a
              code actually sits in the visitor's chart. The old quiet strip
