@@ -20,6 +20,7 @@ import { ordinalLabel, type SelectedPiece, type KinEntry, type HolderChartSummar
 import { img } from '../../utils/cloudinary';
 import { ATLAS_GOLD, ATLAS_KEPT } from './stageColors';
 import ArtworkPlate from './ArtworkPlate';
+import DreamSignature, { type DreamSignatureValue } from './DreamSignature';
 
 const BRONZE = ATLAS_GOLD;
 const SAGE = ATLAS_KEPT;
@@ -105,6 +106,9 @@ export interface PieceHUDProps {
   carriesYourCode?: boolean;
   /** The dream this piece publicly carries, when its keeper shares one. */
   intention?: string | null;
+  /** The keeper's optional signature ("sign your dream"), shown as one quiet
+      line under the dream. Present only when the public dream is present. */
+  signedBy?: DreamSignatureValue | null;
   /** The piece's code (e.g. `UL № 1`); the header leads with it. */
   code?: string | null;
   /** Other pieces resting at the same city point, one tap away. */
@@ -123,6 +127,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   inSheet = false,
   carriesYourCode = false,
   intention,
+  signedBy,
   code,
   alsoHere,
 }) => {
@@ -370,6 +375,9 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           >
             {intention}
           </p>
+          {/* The keeper's signature: one quiet line under the dream, a link
+              out when they offered one. */}
+          <DreamSignature signedBy={signedBy} tone="stage" align="left" className="mt-4" />
         </section>
       ) : (
         <section className="px-[26px] pt-[26px] pb-[20px] text-center">

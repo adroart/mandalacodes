@@ -3,19 +3,28 @@ import { useSearchParams } from 'react-router-dom';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
 import HexagramGlyph from '../oracle/HexagramGlyph';
 import CodePiecesPanel, { type CodePiece } from './CodePiecesPanel';
+import {
+  atlasPieceToRow,
+  matchesSearch,
+  matchesState,
+  type LedgerStateFilter,
+} from './ledgerRow';
 
-/* ─── The flat all-64 index ───────────────────────────────────────────────
- * Below the globe: every Universal Language code, 1 through 64, in a
- * scannable list. Each row carries the code's glyph, number, name and an
- * honest one-line tally of its pieces derived strictly from the atlas state
- * ("2 kept", "1 seeking, 1 ember", "not yet embodied"). Tapping a row opens
- * that code's pieces in place, each linking back to the globe and out to its
- * own page.
+/* ─── The sixty-four ──────────────────────────────────────────────────────
+ * The beloved code-grouped index, now the first subsection of the living
+ * ledger (Part II.6, ruling 2). Every Universal Language code, 1 through 64,
+ * in a scannable list; each row carries the code's glyph, number, name and an
+ * honest one-line tally. Opening a row flattens its pieces to the ledger
+ * grammar (CodePiecesPanel): "{title} · alive in {city}", the public dream
+ * beneath, two quiet links.
  *
- * Lit vs unlit mirrors the ring's bright/dim split: a code with at least one
- * kept (placed) piece reads bright; the rest recede in muted wood tones.
+ * The ledger's filter bar (kind / state / search) reaches in here too: when a
+ * state or search filter is active, only codes with matching pieces show, each
+ * already open on its matches; otherwise the full honest index of all 64 codes
+ * reads, collapsed, with click-to-open. Shareable: `?code=N` opens a code.
  *
- * Shareable: `?code=N` opens a specific code; the section anchors at #codes.
+ * Simple DOM, no per-row observers: the index may render hundreds of rows and
+ * must stay at 60fps.
  */
 
 /** A single atlas piece belonging to some code, with display fields resolved. */
@@ -27,6 +36,10 @@ interface Props {
   entries: CodeIndexEntry[];
   /** Re-select a piece on the globe above (mirrors ?piece={key}). */
   onSelectOnGlobe: (pieceId: string, editionNumber?: number) => void;
+  /** The ledger's state filter (default 'all'). */
+  stateFilter?: LedgerStateFilter;
+  /** The ledger's search query (default ''). */
+  search?: string;
 }
 
 interface CodeRow {
@@ -50,10 +63,17 @@ function tally(row: CodeRow): string {
   return parts.join(', ');
 }
 
-const CodesIndex: React.FC<Props> = ({ entries, onSelectOnGlobe }) => {
+const CodesIndex: React.FC<Props> = ({
+  entries,
+  onSelectOnGlobe,
+  stateFilter = 'all',
+  search = '',
+}) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const sectionRef = useRef<HTMLElement | null>(null);
   const didScrollToCode = useRef(false);
+
+  const filterActive = stateFilter !== 'all' || search.trim() !== '';
 
   const codeParam = searchParams.get('code');
   const expandedCode = useMemo(() => {
@@ -92,6 +112,27 @@ const CodesIndex: React.FC<Props> = ({ entries, onSelectOnGlobe }) => {
 
   const litCount = useMemo(() => rows.filter((r) => r.lit).length, [rows]);
 
+  /** The pieces of a code that match the active state + search filter. */
+  const matchedOf = React.useCallback(
+    (pieces: CodePiece[]): CodePiece[] =>
+      pieces.filter((p) => {
+        const r = atlasPieceToRow(p);
+        return matchesState(r, stateFilter) && matchesSearch(r, search);
+      }),
+    [stateFilter, search],
+  );
+
+  /* Which codes to render, and with which pieces. When filtering, only codes
+     with matches show, each open on its matched pieces; otherwise all 64. */
+  const shown = useMemo(() => {
+    if (!filterActive) {
+      return rows.map((row) => ({ row, pieces: row.pieces, open: expandedCode === row.number }));
+    }
+    return rows
+      .map((row) => ({ row, pieces: matchedOf(row.pieces), open: true }))
+      .filter((r) => r.pieces.length > 0);
+  }, [rows, filterActive, matchedOf, expandedCode]);
+
   const toggle = (n: number) => {
     setSearchParams(
       (prev) => {
@@ -118,86 +159,92 @@ const CodesIndex: React.FC<Props> = ({ entries, onSelectOnGlobe }) => {
       ref={sectionRef}
       id="codes"
       aria-labelledby="atlas-codes-heading"
-      className="scroll-mt-8 border-t border-wood-200 pt-10"
+      className="scroll-mt-8"
     >
-      <h2
+      <h3
         id="atlas-codes-heading"
-        className="font-display text-2xl text-wood-900 font-medium mb-3"
+        className="font-display text-xl text-wood-900 font-medium mb-2"
       >
-        All 64 codes
-      </h2>
+        The sixty-four
+      </h3>
       <p className="font-reading text-sm text-wood-700 leading-[1.7] max-w-prose mb-6">
         The whole Universal Language, code by code. {litCount} of 64 carry a piece
-        that has found ground. Open one to see where its pieces have come to rest.
+        that has found ground.
+        {!filterActive && ' Open one to see where its pieces have come to rest.'}
       </p>
 
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0">
-        {rows.map((row) => {
-          const isOpen = expandedCode === row.number;
-          const panelId = `code-panel-${row.number}`;
-          return (
-            <li key={row.number} className="border-b border-wood-200">
-              <button
-                type="button"
-                onClick={() => toggle(row.number)}
-                aria-expanded={isOpen}
-                aria-controls={panelId}
-                className="w-full text-left flex items-center gap-4 py-3 group focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
-              >
-                <span
-                  className={`shrink-0 transition-colors ${
-                    row.lit ? 'text-bronze-600' : 'text-wood-400'
-                  }`}
-                  aria-hidden
+      {shown.length === 0 ? (
+        <p className="font-reading text-base text-wood-600 leading-[1.7]">
+          No code matches those filters.
+        </p>
+      ) : (
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0">
+          {shown.map(({ row, pieces, open }) => {
+            const panelId = `code-panel-${row.number}`;
+            return (
+              <li key={row.number} className="border-b border-wood-200">
+                <button
+                  type="button"
+                  onClick={() => toggle(row.number)}
+                  aria-expanded={open}
+                  aria-controls={panelId}
+                  className="w-full text-left flex items-center gap-3 py-3 group focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
                 >
-                  <HexagramGlyph gate={row.number} width={22} />
-                </span>
-                <span className="flex-1 min-w-0">
-                  <span className="flex items-baseline gap-2">
-                    <span className="font-label text-[11px] tabular-nums text-wood-500 tracking-[0.15em]">
-                      {String(row.number).padStart(2, '0')}
+                  <span
+                    className={`shrink-0 transition-colors ${
+                      row.lit ? 'text-bronze-600' : 'text-wood-400'
+                    }`}
+                    aria-hidden
+                  >
+                    <HexagramGlyph gate={row.number} width={22} />
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className="flex items-baseline gap-2">
+                      <span className="font-label text-[11px] tabular-nums text-wood-500 tracking-[0.15em]">
+                        {String(row.number).padStart(2, '0')}
+                      </span>
+                      <span
+                        className={`font-reading text-base leading-snug truncate transition-colors ${
+                          row.lit
+                            ? 'text-wood-900 group-hover:text-bronze-700'
+                            : 'text-wood-600 group-hover:text-bronze-700'
+                        }`}
+                      >
+                        {row.name}
+                      </span>
                     </span>
                     <span
-                      className={`font-reading text-base leading-snug truncate transition-colors ${
-                        row.lit
-                          ? 'text-wood-900 group-hover:text-bronze-700'
-                          : 'text-wood-600 group-hover:text-bronze-700'
+                      className={`block font-label text-[11px] uppercase tracking-[0.15em] mt-0.5 ${
+                        row.pieces.length === 0 ? 'text-wood-400' : 'text-wood-600'
                       }`}
                     >
-                      {row.name}
+                      {tally(row)}
                     </span>
                   </span>
                   <span
-                    className={`block font-label text-[11px] uppercase tracking-[0.15em] mt-0.5 ${
-                      row.pieces.length === 0 ? 'text-wood-400' : 'text-wood-600'
+                    aria-hidden
+                    className={`shrink-0 text-bronze-600 text-sm transition-transform duration-200 ${
+                      open ? 'rotate-90' : ''
                     }`}
                   >
-                    {tally(row)}
+                    ›
                   </span>
-                </span>
-                <span
-                  aria-hidden
-                  className={`shrink-0 text-bronze-600 text-sm transition-transform duration-200 ${
-                    isOpen ? 'rotate-90' : ''
-                  }`}
-                >
-                  ›
-                </span>
-              </button>
-              {isOpen && (
-                <div id={panelId} className="pb-4 pl-[38px] pr-2">
-                  <CodePiecesPanel
-                    codeNumber={row.number}
-                    codeName={row.name}
-                    pieces={row.pieces}
-                    onSelectOnGlobe={onSelectOnGlobe}
-                  />
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                </button>
+                {open && (
+                  <div id={panelId} className="pb-4 pl-1 pr-2">
+                    <CodePiecesPanel
+                      codeNumber={row.number}
+                      codeName={row.name}
+                      pieces={pieces}
+                      onSelectOnGlobe={onSelectOnGlobe}
+                    />
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 };

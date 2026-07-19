@@ -8,8 +8,19 @@ import PieceSidePanel, {
   type SelectedPiece,
   type HolderChartSummary,
 } from './atlas/PieceSidePanel';
-import SeekingGround, { type SeekingPiece } from './atlas/SeekingGround';
-import CodesIndex, { type CodeIndexEntry } from './atlas/CodesIndex';
+import { type CodeIndexEntry } from './atlas/CodesIndex';
+import TheLedger, { type LedgerKindSection } from './atlas/TheLedger';
+import {
+  atlasPieceToRow,
+  cleanLedgerTitle,
+  ledgerKindLabel,
+  normFromAtlasStatus,
+  normFromCatalogStatus,
+  LEDGER_KIND_ORDER,
+  type LedgerRow,
+} from './atlas/ledgerRow';
+import { loadPublicCatalog } from '../lib/atlas/catalog';
+import type { PublicCatalogEntry } from '../utils/catalog';
 import KinshipLayer from './atlas/KinshipLayer';
 import { useIdleFade } from './atlas/useIdleFade';
 import { seriesColor } from './atlas/seriesColor';
@@ -137,6 +148,32 @@ function signatureFor(pieceId: string): boolean | undefined {
 /** Curated sigil-number lock from the archive, when one is pinned. */
 function sigilNumberFor(pieceId: string): number | undefined {
   return FULL_ARCHIVE.find((art) => art.id === pieceId)?.sigilNumber;
+}
+
+/** The ledger kind facet for an atlas-state piece — the server-derived `kind`
+ *  when present, else derived from the archive. 'sixty-four' pieces belong to
+ *  the code index; everything else groups under its kind in OTHER KINDS. */
+function kindForPiece(
+  pieceId: string,
+  serverKind?: string,
+  category?: string,
+  pieceType?: 'mandala' | 'other',
+): string | null {
+  if (serverKind) return serverKind;
+  const art = FULL_ARCHIVE.find((a) => a.id === pieceId);
+  if (art) {
+    if (art.series === 'Universal Language') return 'sixty-four';
+    if (art.series === 'Mandala' || pieceType === 'mandala') return 'mandala';
+    if (art.isSignaturePiece) return 'signature';
+    if (art.category === 'Jewelry') return 'jewelry';
+    if (art.category) {
+      return art.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+  }
+  if (category) {
+    return category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+  return null;
 }
 
 /* ─── Component ────────────────────────────────────────────────────────────── */
@@ -455,6 +492,21 @@ const AtlasPage: React.FC = () => {
       if (!active) return;
       setState({ kind: 'ready', data });
       setServedFallback(data.servedFallback === true);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  /* The public catalog (mandalas, signature pieces, jewelry) for the ledger's
+     OTHER KINDS sections. Fetched once per session via the shared loader; any
+     failure resolves to an empty list, so the sections fall back to their
+     placeholder rows rather than a broken surface. */
+  const [catalog, setCatalog] = useState<PublicCatalogEntry[]>([]);
+  useEffect(() => {
+    let active = true;
+    loadPublicCatalog().then((entries) => {
+      if (active) setCatalog(entries);
     });
     return () => {
       active = false;
@@ -1039,20 +1091,6 @@ const AtlasPage: React.FC = () => {
     else navigate(`/universal-language/${n}`);
   };
 
-  /* Seeking section honors filters — when status=placed, the section hides. */
-  const seekingPieces: SeekingPiece[] = useMemo(() => {
-    if (status === 'placed') return [];
-    return seriesFiltered
-      .filter((p) => p.status === 'seeking')
-      .map((p) => ({
-        pieceId: p.pieceId,
-        editionNumber: p.editionNumber,
-        title: p.title,
-        series: p.series,
-        cardNumber: cardNumberFor(p.pieceId),
-      }));
-  }, [seriesFiltered, status]);
-
   /* The flat all-64 index reads the FULL atlas state, never the page's active
      filters: it is a fixed catalogue of the whole language, so its counts stay
      honest regardless of what the globe above is currently showing. Only UL
@@ -1070,10 +1108,83 @@ const AtlasPage: React.FC = () => {
         title: p.title,
         status: p.status,
         cityLabel: cityLabelFor(p.cityId),
+        cityName: p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined,
+        // The public dream rides only on placed public pieces; the ledger
+        // writes it inline (Part II.6, ruling 2).
+        intention: p.intention,
+        signedBy: p.signedBy,
       });
     }
     return out;
   }, [enriched]);
+
+  /* OTHER KINDS sections (Part II.6, ruling 2): mandalas, signature pieces,
+     jewelry, and any data-driven extras, merged from the public atlas state
+     (status, city, dream) and the public catalog (title, kind, city). Keyed by
+     pieceId so a catalogued piece already placed on the map is not doubled. The
+     sixty-four stay in the code index above; only non-'sixty-four' kinds land
+     here. Kinds with no real rows fall back to placeholders inside TheLedger. */
+  const kindSections: LedgerKindSection[] = useMemo(() => {
+    const byKind = new Map<string, LedgerRow[]>();
+    const seen = new Set<string>();
+    const push = (kind: string, row: LedgerRow) => {
+      const arr = byKind.get(kind);
+      if (arr) arr.push(row);
+      else byKind.set(kind, [row]);
+    };
+
+    for (const p of enriched) {
+      const k = kindForPiece(p.pieceId, p.kind, p.category ?? categoryFor(p.pieceId), p.pieceType);
+      if (!k || k === 'sixty-four') continue;
+      seen.add(p.pieceId);
+      push(
+        k,
+        atlasPieceToRow({
+          key: p.key,
+          pieceId: p.pieceId,
+          editionNumber: p.editionNumber,
+          title: p.title,
+          status: p.status,
+          cityName: p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined,
+          cityLabel: cityLabelFor(p.cityId),
+          intention: p.intention,
+          signedBy: p.signedBy,
+        }),
+      );
+    }
+
+    for (const e of catalog) {
+      if (seen.has(e.id)) continue;
+      const k = e.kind === 'other' ? 'other' : e.kind; // mandala/signature/jewelry align
+      const stated = enriched.find((pp) => pp.pieceId === e.id);
+      const cityId = e.cityId ?? stated?.cityId ?? undefined;
+      push(k, {
+        key: `${e.id}:0`,
+        pieceId: e.id,
+        title: cleanLedgerTitle(e.title),
+        norm: stated ? normFromAtlasStatus(stated.status) : normFromCatalogStatus(e.status),
+        cityName: cityId ? CITIES_BY_ID.get(cityId)?.city : undefined,
+        cityLabel: cityId ? cityLabelFor(cityId) : undefined,
+        dream:
+          stated?.intention && stated.intention.trim()
+            ? stated.intention.trim()
+            : undefined,
+        onGlobe:
+          !!stated && (stated.status === 'placed' || stated.status === 'unawakened'),
+      });
+    }
+
+    const sections: LedgerKindSection[] = [];
+    for (const k of LEDGER_KIND_ORDER) {
+      sections.push({ kind: k, label: ledgerKindLabel(k), rows: byKind.get(k) ?? [] });
+      byKind.delete(k);
+    }
+    for (const k of Array.from(byKind.keys()).sort()) {
+      if (k === 'sixty-four') continue;
+      sections.push({ kind: k, label: ledgerKindLabel(k), rows: byKind.get(k) ?? [] });
+    }
+    return sections;
+  }, [enriched, catalog]);
 
   /* Selecting a piece from the index re-selects it on the globe above and
      brings the globe back into view (the index lives below the fold). */
@@ -1112,6 +1223,15 @@ const AtlasPage: React.FC = () => {
       | (EnrichedPiece & { intention?: string })
       | undefined;
     return match?.intention ?? null;
+  }, [selectedKey, seriesFiltered]);
+
+  /* The keeper's optional signature ("sign your dream"), present in public
+     state only alongside a live public dream — so it rides the inscription and
+     the card exactly where the dream does, and nowhere else. */
+  const selectedSignedBy = useMemo(() => {
+    if (!selectedKey) return null;
+    const match = seriesFiltered.find((p) => p.key === selectedKey);
+    return match?.signedBy ?? null;
   }, [selectedKey, seriesFiltered]);
 
   /* MOVE 3 · the code the selection is known by, and the quiet label line
@@ -1461,24 +1581,30 @@ const AtlasPage: React.FC = () => {
             />
           )}
 
-          {/* ── The overture: the vision speaks once, then the earth emerges ──── */}
+          {/* ── The overture: the vision speaks and holds; the earth emerges
+                 behind it; one tap releases the words (the living ledger,
+                 ruling 1). onReveal fires at mount, so the world stands ready
+                 the moment the words fade. ───────────────────────────────── */}
           {overture === 'running' && (
             <AtlasOverture
               reduced={reduced}
               mode={overtureMode}
               onReveal={() => setOvertureRevealed(true)}
               onDone={() => setOverture('done')}
-              onSkip={() => {
-                // Skip lands on the resting sky: reveal the lights without the
-                // staggered ignition (they fade in quietly).
-                setPlayIntro(false);
-                setOvertureRevealed(true);
-              }}
             />
           )}
 
-          {/* ── Corner chrome: two tiers, each with an opacity floor (law 3) ─── */}
-          <div className="pointer-events-none absolute inset-0">
+          {/* ── Corner chrome: two tiers, each with an opacity floor (law 3).
+                 While the overture holds (the living ledger, ruling 1) the
+                 whole cluster rests hidden, so the reader-paced entry shows one
+                 thing at a time; it settles in once the words are released. ─── */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              opacity: overture === 'done' ? 1 : 0,
+              transition: 'opacity 800ms ease',
+            }}
+          >
             {/* Top-left: breadcrumb + wordmark — secondary chrome (floor 0.35).
                 On phones the nav bar carries identity; the breadcrumb and
                 wordmark do not render over the globe (Adrian, 2026-07-18), so
@@ -1909,6 +2035,7 @@ const AtlasPage: React.FC = () => {
           {showInscription && selectedPiece && (
             <SelectionInscription
               dream={selectedIntention}
+              signedBy={selectedSignedBy}
               standing={[
                 selectedCode,
                 selectedCityName ? `alive in ${selectedCityName}` : null,
@@ -1946,6 +2073,7 @@ const AtlasPage: React.FC = () => {
                       yourGates.has(selectedPiece.cardNumber)
                     }
                     intention={selectedIntention}
+                    signedBy={selectedSignedBy}
                     code={selectedCode}
                     alsoHere={alsoHere}
                   />
@@ -2087,22 +2215,14 @@ const AtlasPage: React.FC = () => {
 
         {state.kind === 'ready' && (
           <>
-            {/* Seeking ground */}
-            <div className="mt-4">
-              <SeekingGround
-                seekingPieces={seekingPieces}
-                totalPieces={seriesFiltered.length}
-                onSelect={(pieceId, editionNumber) =>
-                  selectPiece(makeKey(pieceId, editionNumber))
-                }
-                selectedKey={selectedKey}
-              />
-            </div>
-
-            {/* All 64 codes — the flat, honest index of the whole language. */}
-            <div className="mt-16">
-              <CodesIndex entries={codeEntries} onSelectOnGlobe={selectPieceOnGlobe} />
-            </div>
+            {/* The living ledger (Part II.6): the sixty-four, then mandalas,
+                signature pieces, jewelry — every piece, every dream, one record,
+                with its own kind / state / search filter bar. */}
+            <TheLedger
+              codeEntries={codeEntries}
+              kindSections={kindSections}
+              onSelectOnGlobe={selectPieceOnGlobe}
+            />
 
             {/* Generated-at footer note. */}
             <p className="mt-16 font-label text-[11px] uppercase tracking-[0.18em] text-wood-600">

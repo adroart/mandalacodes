@@ -1,24 +1,32 @@
 /**
- * The overture (build-order item 3, Room one items 1-3): the vision speaks
- * once, over black, then the earth emerges through the words as they dissolve
- * and the founding lights ignite. One continuous motion under ~5 seconds,
- * skippable with any input. The two lines are DOM, never WebGL text.
+ * The overture (build-order item 3; the living ledger, ruling 1 — reader-paced
+ * entry): the vision speaks once, over black, and HOLDS. Behind the words the
+ * earth slowly fades in over a long, gentle ramp; the founding lights ignite
+ * there. No timer ever removes the words — one tap, click, or keypress anywhere
+ * releases them (a graceful fade), and the already-present world stands. The
+ * two lines are DOM, never WebGL text.
  *
  * The vision speaks every arrival, scaled by familiarity (Adrian, 2026-07-18):
  *   full    a cold visit — the word-led overture, played regardless of how
- *           many lights exist (even over an empty sky).
- *   breath  a returning visit — a two-second breath, the thesis line settling
- *           over the emerging globe, then the resting sky. No black cover; the
- *           globe is already present. Reduced motion: static, legible, brief.
+ *           many lights exist (even over an empty sky). The black cover fades
+ *           out over the earth as it emerges; the words hold until released.
+ *   breath  a returning visit — the thesis line settles over the already-
+ *           present globe (no black cover), and holds until released.
  *
- * This component owns only the words and the black cover; AtlasPage owns the
- * globe behind it and the ignition (Markers). The full-motion choreography:
- *   full motion  cover black -> line one -> line two -> onReveal() (the black
- *                lifts, the earth emerges, the lights ignite) -> onDone()
- *   reduced      the two lines sit as a static block above the settled sky
- *                (onReveal fired at once so the sky is already there), hold,
- *                then a plain crossfade out -> onDone(). Nothing moves.
- *   skip         any pointer/key/touch -> onSkip() lands on the resting sky.
+ * This component owns only the words, the touch hint, and the black cover;
+ * AtlasPage owns the earth behind it and the ignition (Markers). onReveal fires
+ * once, at mount, so the world is already emerging behind the held words; the
+ * release only fades the words and fires onDone.
+ *
+ * Reader-paced choreography (the living ledger, ruling 1):
+ *   full     black cover fades out over ~6s (the earth emerges, the lights
+ *            ignite) while line one, then line two, settle and HOLD; a barely-
+ *            there "touch anywhere" hint appears after ~6s; one input fades the
+ *            words -> onDone(). No timer ever removes the words.
+ *   breath   the thesis line settles over the already-present globe and holds;
+ *            same hint, same tap-to-release.
+ *   reduced  the words sit static over the already-visible globe (no cover, no
+ *            motion); same hint, same tap-to-release.
  *
  * Ratified copy (verbatim, no em dashes, no italics; the recentering,
  * 2026-07-18 — the story is the community, not the artist):
@@ -35,31 +43,26 @@ const LINE_ONE =
 const LINE_TWO =
   'Together, our dreams shape our reality: set into the creative cauldron, watched as they take form.';
 
-// Full-motion beats (ms from mount).
+// The earth emerges behind the words over this long, gentle ramp, then rests.
+const SCENE_FADE_MS = 6000;
+// A gentle stagger for the second line to arrive (never a removal).
 const LINE_TWO_AT = 1100;
-const REVEAL_AT = 2300; // the black lifts, the earth emerges, the lights ignite
-const DONE_AT = 3600;
-// Reduced motion: a static block, held, then a plain crossfade out.
-const REDUCED_HOLD = 3400;
-const REDUCED_FADE = 900;
-
-// Returning-visit breath: the thesis line settles over the emerging globe, held
-// about two seconds, then the resting sky. No black; the globe is already up.
-const BREATH_HOLD = 1500;
-const BREATH_FADE = 600;
+// The barely-there hint appears once the earth has fully emerged.
+const HINT_AT = 6000;
+// The words fade gracefully on release; the returning breath fades a touch faster.
+const RELEASE_FADE_MS = 900;
+const BREATH_FADE_MS = 600;
 
 export interface AtlasOvertureProps {
   reduced: boolean;
-  /** 'full' plays the word-led overture; 'breath' plays the two-second
-      returning-visit breath. Defaults to the full overture. */
+  /** 'full' plays the word-led overture; 'breath' plays the returning-visit
+      form (one line over the already-present globe). Defaults to full. */
   mode?: 'full' | 'breath';
-  /** The black has lifted: mount the real lights so they ignite (full motion),
-      or the settled sky is already up (reduced / breath). */
+  /** Fired once, at mount: the earth is already emerging behind the held words
+      (full motion), or the settled sky is already up (reduced / breath). */
   onReveal: () => void;
   /** The overture is over: unmount it. */
   onDone: () => void;
-  /** Any input: skip the whole overture, land on the resting sky. */
-  onSkip: () => void;
 }
 
 export default function AtlasOverture({
@@ -67,71 +70,64 @@ export default function AtlasOverture({
   mode = 'full',
   onReveal,
   onDone,
-  onSkip,
 }: AtlasOvertureProps) {
   const breath = mode === 'breath';
+  // Reduced motion shows both lines at once (nothing moves); full staggers the
+  // second in; breath shows only the first line.
   const [showTwo, setShowTwo] = useState(reduced && !breath);
-  const [revealed, setRevealed] = useState(reduced || breath);
+  const [showHint, setShowHint] = useState(false);
+  // The black cover starts opaque only for the full cold visit; it fades out to
+  // reveal the emerging earth. Reduced and breath never cover the globe.
+  const [uncovered, setUncovered] = useState(reduced || breath);
   const [fading, setFading] = useState(false);
   const doneRef = useRef(false);
+  const fadeMs = breath ? BREATH_FADE_MS : RELEASE_FADE_MS;
 
-  const finish = useRef(() => {});
-  finish.current = () => {
-    if (doneRef.current) return;
-    doneRef.current = true;
-    onDone();
-  };
-
-  // Skip on any input, anywhere. Removed as soon as the overture is over.
+  // One tap / click / keypress anywhere releases the words. No timer ever does.
   useEffect(() => {
-    const skip = () => {
+    const release = () => {
       if (doneRef.current) return;
       doneRef.current = true;
-      onSkip();
-      onDone();
+      setFading(true);
+      window.setTimeout(onDone, fadeMs);
     };
-    const opts = { passive: true } as AddEventListenerOptions;
-    window.addEventListener('pointerdown', skip, opts);
-    window.addEventListener('keydown', skip);
-    window.addEventListener('touchstart', skip, opts);
-    window.addEventListener('wheel', skip, opts);
+    // Capture phase, on window: the globe stage and its controls stop
+    // propagation of pointer events before they bubble back to window, so a
+    // bubble-phase listener would never see a tap on the stage. Capturing at
+    // the top means one input anywhere always reaches the release.
+    const opts = { passive: true, capture: true } as AddEventListenerOptions;
+    window.addEventListener('pointerdown', release, opts);
+    window.addEventListener('keydown', release, true);
+    window.addEventListener('touchstart', release, opts);
     return () => {
-      window.removeEventListener('pointerdown', skip);
-      window.removeEventListener('keydown', skip);
-      window.removeEventListener('touchstart', skip);
-      window.removeEventListener('wheel', skip);
+      window.removeEventListener('pointerdown', release, true);
+      window.removeEventListener('keydown', release, true);
+      window.removeEventListener('touchstart', release, true);
     };
-  }, [onSkip, onDone]);
+  }, [onDone, fadeMs]);
 
-  // The choreography.
+  // Choreography. The world is revealed once, at mount, so it emerges behind
+  // the held words; no timer removes the words.
   useEffect(() => {
+    onReveal();
     const timers: number[] = [];
-    if (breath) {
-      // The globe is already present; settle the thesis line over it, hold,
-      // then lift. onReveal at once so the resting sky never blacks out.
-      onReveal();
-      timers.push(window.setTimeout(() => setFading(true), BREATH_HOLD));
-      timers.push(window.setTimeout(() => finish.current(), BREATH_HOLD + BREATH_FADE));
-    } else if (reduced) {
-      onReveal();
-      timers.push(window.setTimeout(() => setFading(true), REDUCED_HOLD));
-      timers.push(window.setTimeout(() => finish.current(), REDUCED_HOLD + REDUCED_FADE));
-    } else {
+    if (!reduced && !breath) {
+      // Lift the black cover on the next frame so the CSS ramp runs, and settle
+      // the second line in behind it.
+      const raf = window.requestAnimationFrame(() => setUncovered(true));
       timers.push(window.setTimeout(() => setShowTwo(true), LINE_TWO_AT));
-      timers.push(
-        window.setTimeout(() => {
-          setRevealed(true);
-          setFading(true);
-          onReveal();
-        }, REVEAL_AT),
-      );
-      timers.push(window.setTimeout(() => finish.current(), DONE_AT));
+      timers.push(window.setTimeout(() => setShowHint(true), HINT_AT));
+      return () => {
+        window.cancelAnimationFrame(raf);
+        timers.forEach((t) => window.clearTimeout(t));
+      };
     }
+    timers.push(window.setTimeout(() => setShowHint(true), HINT_AT));
     return () => timers.forEach((t) => window.clearTimeout(t));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduced, breath]);
 
-  const line = (shown: boolean, delayMs: number): React.CSSProperties => ({
+  const line = (shown: boolean): React.CSSProperties => ({
     fontFamily: 'var(--font-display)',
     fontWeight: 400,
     fontSize: 'clamp(21px, 2.6vw, 34px)',
@@ -145,8 +141,8 @@ export default function AtlasOverture({
     transform: reduced || breath ? 'none' : shown ? 'translateY(0)' : 'translateY(6px)',
     transition:
       reduced || breath
-        ? `opacity ${breath ? BREATH_FADE : REDUCED_FADE}ms ease`
-        : `opacity 800ms ease ${delayMs}ms, transform 900ms ease ${delayMs}ms`,
+        ? `opacity ${fadeMs}ms ease`
+        : `opacity 800ms ease, transform 900ms ease`,
     textShadow: breath ? '0 2px 24px rgba(8,6,4,0.9)' : undefined,
   });
 
@@ -163,20 +159,38 @@ export default function AtlasOverture({
         justifyContent: 'center',
         gap: '1.1rem',
         padding: '0 2rem',
-        pointerEvents: reduced || breath ? 'none' : 'auto',
-        // Full motion covers the earth in black, then lifts it; reduced motion
-        // and the returning breath never black out (the globe shows through).
-        background:
-          reduced || breath
-            ? 'transparent'
-            : revealed
-            ? 'rgba(15,13,11,0)'
-            : 'rgba(15,13,11,1)',
-        transition: reduced || breath ? 'none' : 'background 1200ms ease',
+        // The overture holds the stage: it takes the release tap itself, so a
+        // single input can never also fall through to the resting chrome behind
+        // it. The keydown release rides the window listener above.
+        pointerEvents: fading ? 'none' : 'auto',
+        background: `rgba(15,13,11,${uncovered ? 0 : 1})`,
+        transition:
+          reduced || breath ? 'none' : `background ${SCENE_FADE_MS}ms ease`,
       }}
     >
-      <p style={line(true, 0)}>{LINE_ONE}</p>
-      {!breath && <p style={line(showTwo, 0)}>{LINE_TWO}</p>}
+      <p style={line(true)}>{LINE_ONE}</p>
+      {!breath && <p style={line(showTwo)}>{LINE_TWO}</p>}
+
+      {/* The barely-there hint (the living ledger, ruling 1): a small lowercase
+          Karla label at the foot, resting at 0.5, that the release fades away. */}
+      <span
+        style={{
+          position: 'absolute',
+          bottom: 'clamp(2rem, 7vh, 5rem)',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          fontFamily: 'var(--font-label)',
+          fontSize: '11px',
+          textTransform: 'lowercase',
+          letterSpacing: '0.2em',
+          color: 'rgba(233, 221, 198, 0.9)',
+          opacity: fading ? 0 : showHint ? 0.5 : 0,
+          transition: 'opacity 900ms ease',
+        }}
+      >
+        touch anywhere
+      </span>
     </div>
   );
 }

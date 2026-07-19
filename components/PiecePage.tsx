@@ -11,6 +11,7 @@ import { HexagramSVG } from './oracle/HexagramGlyph';
 import { ordinalLabel } from './atlas/PieceSidePanel';
 import RequestStewardship from './atlas/RequestStewardship';
 import ArtworkPlate from './atlas/ArtworkPlate';
+import DreamSignature from './atlas/DreamSignature';
 import {
   loadAtlasState,
   findPublicPiece,
@@ -590,6 +591,14 @@ const PiecePage: React.FC = () => {
               >
                 {piece.intention}
               </p>
+              {/* The keeper's signature: one quiet line under the dream, a link
+                  out when they offered one. Rides only a public dream. */}
+              <DreamSignature
+                signedBy={piece.signedBy}
+                tone="paper"
+                align="center"
+                className="mt-5"
+              />
               <Rule className="mx-auto max-w-[5rem] mt-8" />
             </div>
           )}

@@ -168,6 +168,21 @@ export interface CityCentroid {
   lng: number;
 }
 
+/** The public face of a keeper's "sign your dream" choice (Ring 4,
+ *  2026-07-19): a display name and, optionally, ONE link. Both are the
+ *  keeper's own, chosen deliberately and revocably from their book. This is
+ *  the ONLY place a name may appear in public state, and only ever rides
+ *  alongside an already-public dream (see PublicAtlasState.pieces.signedBy).
+ *  Never in a hashed payload. */
+export interface PublicSignature {
+  /** The name as the keeper asked for it to appear. Present whenever a
+   *  signature is shown (a signature with no name has nowhere to render, so
+   *  it is never projected). */
+  name?: string;
+  /** ONE https link the keeper offers, when they added one. */
+  link?: string;
+}
+
 export interface PublicAtlasState {
   generatedAt: string;
   /** Bumped to 2 in M1: pieces gained pieceType, claimOrdinal, and the
@@ -215,6 +230,17 @@ export interface PublicAtlasState {
      *  No name, no city tie-in beyond what's already public. Absent = no
      *  live shared intention (the default for almost every piece). */
     intention?: string;
+    /** "Sign your dream" (Ring 4, 2026-07-19) — the OPTIONAL, keeper-chosen
+     *  identity line that rides wherever this piece's public dream appears.
+     *  Present ONLY when BOTH the dream is public here (an `intention` is
+     *  attached above) AND the piece's steward turned their signature on
+     *  (signature.shown === true with a name to show). The name here is
+     *  public BY THE KEEPER'S EXPLICIT, REVOCABLE CHOICE — the sole exception
+     *  to "no name in public state". It lives only on the mutable steward
+     *  record and is derived at regen time; it NEVER rides a hashed payload.
+     *  No dream on the map = this is absent everywhere. Additive & optional:
+     *  older readers ignore it. */
+    signedBy?: PublicSignature;
   }>;
   cities: CityCentroid[];
   /** TEMPORARY LAUNCH PLACEHOLDER flag. Set true only by
@@ -585,6 +611,29 @@ export interface CatalogStore {
 }
 
 /**
+ * "Sign your dream" (Ring 4 identity, 2026-07-19). A keeper may choose to
+ * display their name and ONE link wherever their piece's PUBLIC dream appears,
+ * so resonant people can dive deeper or connect. OFF by default, revocable at
+ * any time, and held ONLY here on the mutable steward record — never in any
+ * chained/hashed payload. It reaches public state only as the derived
+ * PublicSignature attached to an already-public dream (utils/ledgerProjection.
+ * toPublicState), and only while `shown` is true; a private dream = no
+ * signature anywhere.
+ */
+export interface StewardSignature {
+  /** Name as it should appear, trimmed, at most 60 characters. Optional even
+   *  when shown (though a signature with no name projects nothing). */
+  displayName?: string;
+  /** ONE link the keeper offers — an https URL only, at most 200 characters,
+   *  validated (javascript:/data: and every non-https scheme are rejected). */
+  link?: string;
+  /** Whether the signature rides with the public dream. Default false; the
+   *  keeper flips it from their book, and every flip is audited onto
+   *  consentHistory (Ring 4). */
+  shown: boolean;
+}
+
+/**
  * Steward record — binds a piece to an auth user identity.
  *
  * Admin creates the record with the collector's `email`. On first sign-in
@@ -636,6 +685,10 @@ export interface StewardRecord {
   consent?: ConsentState;
   /** Audit trail: every consent state ever captured, oldest first. */
   consentHistory?: ConsentState[];
+  /** "Sign your dream" — the keeper's optional public identity line (Ring 4).
+   *  Absent = never turned on. Mutable and revocable; never chained. See
+   *  StewardSignature. */
+  signature?: StewardSignature;
   /**
    * The claim-ritual answer — "What do you hope this piece holds for you?"
    * Private Ring 1 content belonging to the AUTHORING steward only: never
