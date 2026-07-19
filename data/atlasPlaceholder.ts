@@ -102,3 +102,36 @@ export function buildPlaceholderAtlasState(): PublicAtlasState {
     placeholder: true,
   };
 }
+
+// ── TEMPORARY LEDGER PLACEHOLDERS — SINGLE SOURCE, DELETE WHEN REAL ENTRIES LAND. ──
+//
+// The living ledger (Part II.6, ruling 2) renders OTHER KINDS sections —
+// mandalas, signature pieces, jewelry — from the public catalog + public state.
+// Until the first real works of a kind are entered, that kind's section shows a
+// few quietly-marked placeholder rows so the section reads as a waiting ledger,
+// not an empty void. Removal is one motion: delete this block and the fallback
+// in components/atlas/TheLedger.tsx that reads it. Fable authored the titles.
+
+/** The status line every placeholder row carries, in the placeholder style. */
+export const LEDGER_PLACEHOLDER_STATUS = 'placeholder · until the first works are entered';
+
+/** Per-kind ghost rows shown while a kind has no real entries. Trivially
+ *  removable: drop a kind's array (or the whole export) when its works land. */
+export const LEDGER_KIND_PLACEHOLDERS: Readonly<
+  Record<'mandala' | 'signature' | 'jewelry', readonly string[]>
+> = {
+  mandala: [
+    'A mandala yet to be entered',
+    'A mandala yet to be entered',
+    'A mandala yet to be entered',
+  ],
+  signature: [
+    'A signature work yet to be entered',
+    'A signature work yet to be entered',
+  ],
+  jewelry: [
+    'A piece yet to be entered',
+    'A piece yet to be entered',
+    'A piece yet to be entered',
+  ],
+};
