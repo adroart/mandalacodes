@@ -20,6 +20,7 @@ import type {
   LedgerEvent,
   PieceRecord,
   PublicAtlasState,
+  PublicSignature,
 } from '../types';
 
 /**
@@ -267,6 +268,14 @@ export function isKinshipEligible(
  *                  private piece a public surface. Absent map = no piece
  *                  carries an intention (the default before any keeper
  *                  shares one).
+ * @param signedByKey  Optional map of chain key → the keeper's PublicSignature
+ *                  ("sign your dream", Ring 4). Attached to a piece's public
+ *                  entry ONLY when that piece ALSO carries a public dream here
+ *                  (an `intention` was attached) — a signature has nowhere to
+ *                  appear without a public dream, so it never rides one that is
+ *                  absent or private. The map should already hold only shown
+ *                  signatures that have a name; this function double-gates on
+ *                  the dream. Absent map = no piece carries a signature.
  */
 export function toPublicState(
   records: Map<string, PieceRecord>,
@@ -274,6 +283,7 @@ export function toPublicState(
   cities: CityCentroid[],
   ring3ByKey?: Map<string, boolean | 'deferred'>,
   liveIntentionsByKey?: Map<string, string>,
+  signedByKey?: Map<string, PublicSignature>,
 ): PublicAtlasState {
   const referencedCityIds = new Set<string>();
   const pieces: PublicAtlasState['pieces'] = [];
@@ -320,6 +330,10 @@ export function toPublicState(
     if (record.currentCityId) referencedCityIds.add(record.currentCityId);
 
     const intention = liveIntentionsByKey?.get(key);
+    // "Sign your dream" rides ONLY alongside a public dream: no intention here
+    // (dream absent or private) = no signature, wherever this piece renders.
+    const signedBy =
+      intention !== undefined ? signedByKey?.get(key) : undefined;
 
     pieces.push({
       pieceId: record.pieceId,
@@ -334,6 +348,7 @@ export function toPublicState(
       claimOrdinal: ordinals.get(key),
       kinshipEligible: isKinshipEligible(record, ring3ByKey?.get(key)),
       ...(intention !== undefined ? { intention } : {}),
+      ...(signedBy !== undefined ? { signedBy } : {}),
     });
 
     // The chain tip: history is in date order (projectAll sorts it), so the

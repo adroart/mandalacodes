@@ -132,6 +132,16 @@ describe('toPublicState privacy', () => {
       // Carries no holder data; the consent OBJECT and ring3ChartPresence
       // stay forbidden (above). Added to the whitelist deliberately.
       'kinshipEligible',
+      // M6, Lens 2: the piece's public shared dream, attached only when the
+      // keeper let it ride. Non-identifying prose. Whitelisted deliberately.
+      'intention',
+      // "Sign your dream" (Ring 4, 2026-07-19): the keeper's own name + one
+      // link, present only alongside a public dream and only by their explicit,
+      // revocable choice. The one identity field a keeper may consent public;
+      // its nested `name` is the deliberate exception to the top-level 'name'
+      // ban, which still guards every unconsented path (buildState carries no
+      // signature, so the recursive forbidden-keys test above still holds).
+      'signedBy',
     ]);
     for (const piece of state.pieces) {
       for (const key of Object.keys(piece)) {

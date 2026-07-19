@@ -90,6 +90,11 @@ const StewardEdit: React.FC = () => {
   // book's own PieceRecord does not carry the global rank). Absent for a piece
   // not visible on the public map (e.g. kept private).
   const [publicOrdinal, setPublicOrdinal] = useState<number | null>(null);
+  // Whether this piece's dream is currently PUBLIC (a live shared intention on
+  // the map). "Sign your dream" only offers itself when true — a signature has
+  // nowhere to appear on a private dream. Read from the same public state as
+  // the ordinal. Resets on piece switch.
+  const [dreamIsPublic, setDreamIsPublic] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [consentSubmitting, setConsentSubmitting] = useState(false);
@@ -164,6 +169,7 @@ const StewardEdit: React.FC = () => {
   useEffect(() => {
     setPublicOrdinal(null);
     setFirstDream(null);
+    setDreamIsPublic(false);
     if (!stewardRecord) return;
     let active = true;
     loadAtlasState().then((state) => {
@@ -174,6 +180,9 @@ const StewardEdit: React.FC = () => {
         stewardRecord.editionNumber,
       );
       setPublicOrdinal(typeof pub?.claimOrdinal === 'number' ? pub.claimOrdinal : null);
+      setDreamIsPublic(
+        typeof pub?.intention === 'string' && pub.intention.trim().length > 0,
+      );
     });
     return () => {
       active = false;
@@ -297,6 +306,82 @@ const StewardEdit: React.FC = () => {
     } finally {
       setRing3Saving(false);
     }
+  };
+
+  // "Sign your dream" — Ring 4 identity, in the keeper's own control. The name
+  // and one link are local form state (seeded from the record, reset on piece
+  // switch); the toggle and each field's blur save through the same update
+  // endpoint. Off unless the keeper turns it on; the server audits every
+  // visibility flip onto consentHistory and regenerates public state so the
+  // signature follows the dream.
+  const [sigName, setSigName] = useState('');
+  const [sigLink, setSigLink] = useState('');
+  const [sigSaving, setSigSaving] = useState(false);
+  const sigShown = stewardRecord?.signature?.shown === true;
+
+  useEffect(() => {
+    setSigName(stewardRecord?.signature?.displayName ?? '');
+    setSigLink(stewardRecord?.signature?.link ?? '');
+  }, [stewardRecord?.pieceId, stewardRecord?.editionNumber, stewardRecord]);
+
+  const submitSignature = async (next: {
+    displayName: string;
+    link: string;
+    shown: boolean;
+  }) => {
+    if (!stewardRecord || sigSaving) return;
+    setSigSaving(true);
+    setSaveError(null);
+    try {
+      const res = await fetchAuthed('/api/atlas/steward/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pieceId: stewardRecord.pieceId,
+          editionNumber: stewardRecord.editionNumber,
+          signature: {
+            shown: next.shown,
+            ...(next.displayName.trim() ? { displayName: next.displayName.trim() } : {}),
+            ...(next.link.trim() ? { link: next.link.trim() } : {}),
+          },
+        }),
+      });
+      if (res.status === 401) {
+        navigate('/atlas/claim', { replace: true });
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as
+        | { ok?: boolean; steward?: StewardRecord; error?: string }
+        | null;
+      if (!res.ok || !data?.ok || !data.steward) {
+        setSaveError(data?.error ?? 'Something went wrong, please try again.');
+        return;
+      }
+      const updated = data.steward;
+      setEntries(prev =>
+        prev.map((e, i) => (i === selectedIdx ? { ...e, steward: updated } : e)),
+      );
+      flashSaved();
+    } catch {
+      setSaveError('Something went wrong, please try again.');
+    } finally {
+      setSigSaving(false);
+    }
+  };
+
+  const handleSignatureToggle = () => {
+    submitSignature({ displayName: sigName, link: sigLink, shown: !sigShown });
+  };
+
+  // Persist an edited name/link only when it actually changed, so a blur that
+  // touched nothing never fires a save. Carries the current shown state.
+  const handleSignatureFieldCommit = () => {
+    const nameChanged = sigName.trim() !== (stewardRecord?.signature?.displayName ?? '');
+    const linkChanged = sigLink.trim() !== (stewardRecord?.signature?.link ?? '');
+    if (!nameChanged && !linkChanged) return;
+    submitSignature({ displayName: sigName, link: sigLink, shown: sigShown });
   };
 
   const handleSignOut = async () => {
@@ -659,6 +744,69 @@ const StewardEdit: React.FC = () => {
               </a>
             </p>
           )}
+
+          {/* ═══ Sign your dream ═══
+              The optional keeper identity line: a name and one link that ride
+              wherever the piece's public dream appears. Offered only while the
+              dream is public; otherwise a quiet note, since a signature would
+              have nowhere to appear. */}
+          <div className="mt-8 pt-8 border-t border-wood-100">
+            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
+              Sign your dream
+            </span>
+            {dreamIsPublic ? (
+              <>
+                <p className="font-display text-[15px] leading-relaxed text-stone-600 mb-4">
+                  Show your name with your dream, and one link if you want
+                  resonant people to find you. Off unless you turn it on; remove
+                  it anytime.
+                </p>
+                <div className="space-y-4 mb-5">
+                  <label className="block">
+                    <span className="block font-label text-[11px] uppercase tracking-[0.16em] text-wood-500 mb-1.5">
+                      name as it should appear
+                    </span>
+                    <input
+                      type="text"
+                      value={sigName}
+                      maxLength={60}
+                      onChange={e => setSigName(e.target.value)}
+                      onBlur={handleSignatureFieldCommit}
+                      disabled={sigSaving}
+                      className="w-full border border-wood-300 bg-white px-3 py-2 font-reading text-base text-wood-900 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="block font-label text-[11px] uppercase tracking-[0.16em] text-wood-500 mb-1.5">
+                      one link (https)
+                    </span>
+                    <input
+                      type="url"
+                      inputMode="url"
+                      value={sigLink}
+                      maxLength={200}
+                      placeholder="https://"
+                      onChange={e => setSigLink(e.target.value)}
+                      onBlur={handleSignatureFieldCommit}
+                      disabled={sigSaving}
+                      className="w-full border border-wood-300 bg-white px-3 py-2 font-reading text-base text-wood-900 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                    />
+                  </label>
+                </div>
+                <Toggle
+                  checked={sigShown}
+                  onChange={handleSignatureToggle}
+                  label="shown with your dream"
+                  ariaLabel="Show your signature with your dream"
+                  disabled={sigSaving}
+                />
+              </>
+            ) : (
+              <p className="font-display text-[15px] leading-relaxed text-stone-600">
+                your dream is private; a signature would have nowhere to appear.
+              </p>
+            )}
+          </div>
 
           {/* Chart presence — the constellation of keepers, under Let it shine */}
           <div className="mt-8 pt-8 border-t border-wood-100">

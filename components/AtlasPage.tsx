@@ -1223,6 +1223,15 @@ const AtlasPage: React.FC = () => {
     return match?.intention ?? null;
   }, [selectedKey, seriesFiltered]);
 
+  /* The keeper's optional signature ("sign your dream"), present in public
+     state only alongside a live public dream — so it rides the inscription and
+     the card exactly where the dream does, and nowhere else. */
+  const selectedSignedBy = useMemo(() => {
+    if (!selectedKey) return null;
+    const match = seriesFiltered.find((p) => p.key === selectedKey);
+    return match?.signedBy ?? null;
+  }, [selectedKey, seriesFiltered]);
+
   /* MOVE 3 · the code the selection is known by, and the quiet label line
      carved beneath its dream. City name only (no country), so the line reads
      "alive in Lisbon" rather than an address-level breadcrumb. */
@@ -2024,6 +2033,7 @@ const AtlasPage: React.FC = () => {
           {showInscription && selectedPiece && (
             <SelectionInscription
               dream={selectedIntention}
+              signedBy={selectedSignedBy}
               standing={[
                 selectedCode,
                 selectedCityName ? `alive in ${selectedCityName}` : null,
@@ -2061,6 +2071,7 @@ const AtlasPage: React.FC = () => {
                       yourGates.has(selectedPiece.cardNumber)
                     }
                     intention={selectedIntention}
+                    signedBy={selectedSignedBy}
                     code={selectedCode}
                     alsoHere={alsoHere}
                   />

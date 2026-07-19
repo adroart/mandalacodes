@@ -21,6 +21,7 @@ import type {
   CatalogStore,
   ClaimRequest,
   LedgerEvent,
+  PublicSignature,
   SharedIntention,
   StewardRecord,
   PublicAtlasState,
@@ -542,13 +543,41 @@ function buildRing3ByKey(
 }
 
 /**
+ * Build the map of chain key → the keeper's PublicSignature ("sign your
+ * dream", Ring 4). ONLY a shown signature that carries a display name yields
+ * an entry — a signature with no name has nowhere to render, so it never
+ * reaches public state. toPublicState attaches this ONLY to a piece that also
+ * carries a public dream, so a private dream leaks no name. The displayName
+ * lifts to the public `name`; the link rides only when present. No other
+ * steward field ever travels through this door.
+ */
+export function buildSignedByKey(
+  stewards: readonly StewardRecord[],
+): Map<string, PublicSignature> {
+  const map = new Map<string, PublicSignature>();
+  for (const s of stewards) {
+    const sig = s.signature;
+    if (!sig || !sig.shown || !sig.displayName) continue;
+    map.set(`${s.pieceId}:${s.editionNumber ?? 0}`, {
+      name: sig.displayName,
+      ...(sig.link ? { link: sig.link } : {}),
+    });
+  }
+  return map;
+}
+
+/**
  * Re-derive PublicAtlasState from a full ledger and persist it to R2.
  * Called after every successful ledger write so the GET cache stays fresh.
  * The GitHub mirror is a side-effect that never blocks the response.
  *
- * Reads the steward records too — but ONLY to lift each piece's Ring 3
- * boolean for the kinshipEligible flag (M5). No consent object, email, name,
- * or any other steward field ever reaches the public projection.
+ * Reads the steward records too — to lift each piece's Ring 3 boolean for the
+ * kinshipEligible flag (M5) and, for a keeper who turned on "sign your dream"
+ * (Ring 4), their chosen display name + one link (buildSignedByKey). The
+ * signature name is the SOLE piece of identity that may reach public state,
+ * and only ever alongside an already-public dream — by the keeper's explicit,
+ * revocable choice. No consent object, email, or any other steward field ever
+ * reaches the public projection.
  *
  * Also reads the shared-intentions store to attach each qualifying piece's
  * live dream text (M6, Lens 2) — display text only, already cut to 280
@@ -563,11 +592,19 @@ export async function regeneratePublicState(
   const meta = buildArtworkMeta(events, catalog.entries);
   const stewards = await readStewards(env);
   const ring3ByKey = buildRing3ByKey(stewards);
+  const signedByKey = buildSignedByKey(stewards);
   const intentions = await readSharedIntentions(env);
   const intentionsByKey = liveIntentionsByKey(intentions);
   // ATLAS_PLACES = cities + country-level centroids, so "country only"
   // placements resolve to a glowing dot like any city.
-  const state = toPublicState(records, meta, ATLAS_PLACES, ring3ByKey, intentionsByKey);
+  const state = toPublicState(
+    records,
+    meta,
+    ATLAS_PLACES,
+    ring3ByKey,
+    intentionsByKey,
+    signedByKey,
+  );
   const jsonBody = JSON.stringify(state, null, 2);
   // Deliberately a plain (unconditional) put, not a conditional one. Every
   // caller here (event.ts, claim.ts, steward/update.ts, sales/confirm.ts,

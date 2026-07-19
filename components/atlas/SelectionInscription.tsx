@@ -16,11 +16,16 @@
  * Phase 2 built them.
  */
 
+import DreamSignature, { type DreamSignatureValue } from './DreamSignature';
+
 export interface SelectionInscriptionProps {
   /** The piece's public dream, unabridged; null when none is kept. */
   dream: string | null;
   /** The sub-line, e.g. "UL № 1 · alive in Denpasar · the 1st light". */
   standing: string;
+  /** The keeper's optional signature ("sign your dream"), one quiet line under
+      the standing line. Present only alongside a public dream. */
+  signedBy?: DreamSignatureValue | null;
   /** Write on the left when the light is on the right hemisphere, and vice
       versa: the dream sits away from its light. */
   awayLeft: boolean;
@@ -68,6 +73,7 @@ function fitInscription(dream: string): { text: string; fontPx: number; truncate
 export default function SelectionInscription({
   dream,
   standing,
+  signedBy,
   awayLeft,
   onOpenBook,
 }: SelectionInscriptionProps) {
@@ -131,6 +137,18 @@ export default function SelectionInscription({
       >
         {standing}
       </p>
+      {/* The keeper's signature: one quiet line under the standing line, inside
+          the scrim (raised above it), a link out when offered. Only rides a
+          public dream. */}
+      {dream && (
+        <DreamSignature
+          signedBy={signedBy}
+          tone="stage"
+          align={awayLeft ? 'left' : 'right'}
+          className="mt-2.5"
+          style={{ position: 'relative', zIndex: 1 }}
+        />
+      )}
       <button
         type="button"
         onClick={onOpenBook}

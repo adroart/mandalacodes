@@ -29,7 +29,12 @@
 import type { LedgerEvent, LedgerEventType, PieceRecord } from '../../../../types';
 import { appendEvent, groupChains, BackdatedEventError } from '../../../../utils/ledger';
 import { projectPiece } from '../../../../utils/ledgerProjection';
-import { nextConsentState, nextRing3ConsentState } from '../../../../utils/consent';
+import {
+  nextConsentState,
+  nextRing3ConsentState,
+  nextRing4SignatureConsentState,
+  parseSignatureInput,
+} from '../../../../utils/consent';
 import { addHeir, parseHeirInput, revokeHeir } from '../../../../utils/inscriptions';
 import { getCityById } from '../../../../data/cities';
 import type { PagesContext } from '../_helpers';
@@ -62,6 +67,12 @@ interface UpdateBody {
    *  new state onto consentHistory; public state regenerates so the
    *  kinshipEligible flag follows. No ledger event — consent is mutable. */
   ring3ChartPresence?: unknown;
+  /** "Sign your dream" (Ring 4, 2026-07-19): { displayName?, link?, shown }.
+   *  Whitelist-parsed; stored ONLY on the mutable steward record (never
+   *  chained). When `shown` flips, the change is audited onto consentHistory
+   *  as a Ring 4 consent state, and public state regenerates so the derived
+   *  signedBy follows. */
+  signature?: unknown;
 }
 
 function genEventId(): string {
@@ -233,6 +244,86 @@ export async function onRequestPost(
     await regeneratePublicState(env, events);
 
     const updated = ring3Outcome.next.find(
+      (s) =>
+        s.pieceId === record.pieceId &&
+        (s.editionNumber ?? undefined) === (record.editionNumber ?? undefined),
+    );
+    return json({
+      ok: true,
+      steward: updated ? toStewardView(updated, actorUserId) : null,
+    });
+  }
+
+  // ---------- "Sign your dream" — Ring 4 signature (2026-07-19) ----------
+  // The BOUND steward (authorized above) sets their optional public identity
+  // line: a display name and one https link, shown or hidden. Whitelist-parsed
+  // (never admin-supplied), stored ONLY on the mutable record — never a chain
+  // event. When `shown` flips, the change is audited onto consentHistory as a
+  // Ring 4 consent state (the same discipline Ring 2/Ring 3 use), and public
+  // state regenerates so the derived signedBy attaches to / drops from an
+  // already-public dream. Requires a captured consent (the book exposes this
+  // only after retro-consent), exactly like Ring 3.
+  if (body.signature !== undefined) {
+    const parsed = parseSignatureInput(body.signature);
+    if (!parsed.ok) {
+      return json({ ok: false, error: parsed.error }, 400);
+    }
+    if (!record.consent) {
+      return json(
+        { ok: false, error: 'Capture consent before signing your dream' },
+        409,
+      );
+    }
+    const signature = parsed.value;
+    const nowSig = new Date().toISOString();
+    const sigOutcome = await mutateStewards(env, (current) => ({
+      next: current.map((s) => {
+        if (
+          s.pieceId !== record.pieceId ||
+          (s.editionNumber ?? undefined) !== (record.editionNumber ?? undefined) ||
+          !s.consent
+        ) {
+          return s;
+        }
+        const nextSignature = {
+          shown: signature.shown,
+          ...(signature.displayName !== undefined
+            ? { displayName: signature.displayName }
+            : {}),
+          ...(signature.link !== undefined ? { link: signature.link } : {}),
+        };
+        // Audit ONLY on a visibility flip (turned on / turned off), matching
+        // the consent-audit discipline. Editing the name/link while the shown
+        // state is unchanged updates the stored signature but writes no new
+        // consent state.
+        const shownFlipped = (s.signature?.shown ?? false) !== signature.shown;
+        if (!shownFlipped) {
+          return { ...s, lastClaimAt: nowSig, signature: nextSignature };
+        }
+        const consent = nextRing4SignatureConsentState(
+          signature,
+          s.consent,
+          actorUserId,
+          nowSig,
+        );
+        return {
+          ...s,
+          lastClaimAt: nowSig,
+          signature: nextSignature,
+          consent,
+          consentHistory: [...(s.consentHistory ?? []), consent],
+        };
+      }),
+      result: undefined,
+    }));
+    if (sigOutcome instanceof Response) return sigOutcome;
+
+    // Regenerate so the derived signedBy on this piece follows the change.
+    // No ledger write happened — pass the current ledger through.
+    const events = await readLedger(env);
+    await regeneratePublicState(env, events);
+
+    const updated = sigOutcome.next.find(
       (s) =>
         s.pieceId === record.pieceId &&
         (s.editionNumber ?? undefined) === (record.editionNumber ?? undefined),
