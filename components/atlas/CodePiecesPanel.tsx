@@ -23,6 +23,8 @@ export interface CodePiece {
   cityName?: string;
   /** The public dream, when the keeper lets one ride here. */
   intention?: string;
+  /** The keeper's chosen signature, only alongside a public dream. */
+  signedBy?: { name?: string; link?: string };
 }
 
 interface Props {

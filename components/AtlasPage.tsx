@@ -1112,6 +1112,7 @@ const AtlasPage: React.FC = () => {
         // The public dream rides only on placed public pieces; the ledger
         // writes it inline (Part II.6, ruling 2).
         intention: p.intention,
+        signedBy: p.signedBy,
       });
     }
     return out;
@@ -1147,6 +1148,7 @@ const AtlasPage: React.FC = () => {
           cityName: p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined,
           cityLabel: cityLabelFor(p.cityId),
           intention: p.intention,
+          signedBy: p.signedBy,
         }),
       );
     }

@@ -33,6 +33,8 @@ export interface LedgerRow {
   cityLabel?: string;
   /** The public dream, when the keeper lets one ride here. */
   dream?: string;
+  /** The keeper's chosen signature, only ever alongside a public dream. */
+  signedBy?: { name?: string; link?: string };
   /** Whether this row can be selected on the globe above (placed/unawakened,
    *  with a city to fly to). */
   onGlobe: boolean;
@@ -168,6 +170,7 @@ export interface LedgerPieceLike {
   cityName?: string;
   cityLabel?: string;
   intention?: string;
+  signedBy?: { name?: string; link?: string };
 }
 
 export function atlasPieceToRow(p: LedgerPieceLike): LedgerRow {
@@ -180,6 +183,7 @@ export function atlasPieceToRow(p: LedgerPieceLike): LedgerRow {
     cityName: p.cityName,
     cityLabel: p.cityLabel,
     dream: p.intention && p.intention.trim() ? p.intention.trim() : undefined,
+    signedBy: p.intention && p.intention.trim() ? p.signedBy : undefined,
     onGlobe: p.status === 'placed' || p.status === 'unawakened',
   };
 }

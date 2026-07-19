@@ -122,11 +122,8 @@ export const LEDGER_KIND_PLACEHOLDERS: Readonly<
 > = {
   mandala: [
     'A mandala yet to be entered',
-    'A mandala yet to be entered',
-    'A mandala yet to be entered',
   ],
   signature: [
-    'A signature work yet to be entered',
     'A signature work yet to be entered',
   ],
   jewelry: [

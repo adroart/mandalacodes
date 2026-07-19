@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import DreamSignature from './DreamSignature';
 import { ledgerStatusLine, type LedgerRow } from './ledgerRow';
 import { LEDGER_PLACEHOLDER_STATUS } from '../../data/atlasPlaceholder';
 
@@ -60,9 +61,12 @@ const LedgerPieceRow: React.FC<Props> = ({ row, onSelectOnGlobe }) => {
       </p>
 
       {row.dream && (
-        <p className="mt-2 font-display text-[17px] leading-[1.65] text-wood-800 max-w-prose">
-          {row.dream}
-        </p>
+        <>
+          <p className="mt-2 font-display text-[17px] leading-[1.65] text-wood-800 max-w-prose">
+            {row.dream}
+          </p>
+          {row.signedBy && <DreamSignature signedBy={row.signedBy} className="mt-1" />}
+        </>
       )}
 
       <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
