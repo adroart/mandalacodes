@@ -650,6 +650,28 @@ living-art-legacy.md; "anchor" is the verb for a dream entering a piece;
   when one exists, the full history, the door to the book; served only to
   the authenticated bound keeper.
 
+## Part II.6: The living ledger (Adrian's rulings, 2026-07-19)
+
+1. The entry is reader-paced. The vision text holds while the globe slowly
+   fades in beneath it; one tap anywhere releases it. No timer takes the
+   words away mid-read; no button, no gate; the tap is the release.
+2. The section below the globe is THE LEDGER: the massive record of
+   everything. The 64 codes keep their beloved index; sections for
+   mandalas, signature pieces, and every other kind join them, with
+   quietly marked placeholder rows until the first real entries land.
+   Rows flatten to: "{title} · alive in {city}" with the public dream
+   written directly beneath, and two quiet links: on the globe, its page.
+   The ledger always shares the dreams; it is the interconnection surface.
+3. The ledger gets its own serious filter bar: kind; state (created and
+   waiting for someone; dreams anchored; waiting for a dream); and a
+   search across titles, cities, and dream text. URL-mirrored.
+4. Sign your dream, optional: a keeper may display their name and one
+   link (website, social, or contact) wherever their dream appears, so
+   resonant people can dive deeper or connect. Off by default, revocable,
+   held in the mutable store only, never in the chain. This activates the
+   reserved Ring 4 identity fields through the book, in the keeper's own
+   control.
+
 ## Part III: Build order
 
 Sequenced so each step is visible on the live URL, per the standing rules
