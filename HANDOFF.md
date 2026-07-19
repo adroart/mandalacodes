@@ -1,17 +1,48 @@
 # HANDOFF
 
-## State
-Security audit + full remediation done on branch `claude/trusting-johnson-0yqtcx`, merged to `main` as PR #54 (commit `2d935b8`). `main` auto-deploys to production on merge, so the remediation is deployed.
+## State (2026-07-19, after the Atlas redesign sessions)
 
-- **Works (committed + validated):** H1 verified-email steward bind; H2 D1 rate-limiter (fail-open) on `/api/auth/*` + `oracle/recommendation`; H3/M2 dead Clerk webhook removed, deletion-cleanup re-homed to Better Auth hook, two-table model documented; M3 OAuth `callbackURL` + CORS fail-closed; L1 CSP hash (no `unsafe-inline`); L2/L3/L4 headers/innerHTML/dead-link; O1/O3 Clerk env + `_lib/clerk`→`_lib/auth` rename (29 importers) + dead `bearerToken` gone; D1/D2 docs. Full report: `docs/security-audit-2026-06-16.md`.
-- **Stubbed/gated:** account deletion is wired but OFF unless `ENABLE_ACCOUNT_DELETION=true` (shared `adrian-website` DB — needs art-site review first).
-- **Untested at runtime:** `functions/` aren't in the default typecheck or unit tests — validated via dedicated tsc, esbuild bundle-checks, a Better Auth construct smoke test, and `vite build` (CSP hash confirmed). No live Workers run / no preview-deploy verification yet.
-- **Deferred:** L5 `public.json` write race (low, self-heals) — see report.
-- Local checks green: 159/159 unit tests, SPA typecheck clean, `vite build` OK.
+The full Atlas experience redesign is MERGED and LIVE on production
+(mandalacodes.com deploys from main). Shipped across PRs #113 through #122:
+the engraved-earth world with light pools, the recentered community-first
+language (Adrian's ratified words), the reader-paced entry, the living
+ledger below the globe (dreams inline, kind/state/dream-search filters),
+the fine-legacy certificate with the keeper-only layer (price), the claim
+ceremony as one motion, claim codes that live on the piece's pull-out back
+insert (mint/reissue/print from AdminAtlas), the Catalog Room (Adrian
+enters every work; permanent sigils; per-entry actions incl. invite-its-
+keeper for past collectors), the share card, sign-your-dream (opt-in
+keeper identity), and the whole-catalog forever-contract hardening.
 
-## Next
-npx wrangler d1 migrations apply adrian-website --remote (see `docs/d1-migrations.md` first, cross-repo journal caveat)
-infisical run --env=prod --path=/ -- bash scripts/sync-secrets-to-cloudflare.sh
-Confirm `BETTER_AUTH_URL` is set in Cloudflare Pages env (CORS now fails closed without it).
-Do NOT set `ENABLE_ACCOUNT_DELETION` until the shared-DB cascade is reviewed with adrianrasmussen.com.
-Verify on the deploy: email-code sign-in, Google sign-in, and a steward claim (unverified-password sessions now get a 403 asking to verify email — that's H1).
+The authoritative design memory is:
+- todo/plans/atlas-interface-redesign.md (every ruling, the six laws, the
+  ratified words, Parts II.5 and II.6)
+- todo/plans/claim-code-integration.md (forever contract, whole body of
+  work, catalog room, ops)
+- todo/plans/atlas-dim-world-ops.md (Adrian's terminal sitting, re-verified
+  2026-07-18, backfill as step 9)
+Read those three before touching the Atlas. Standing rules: typecheck
+before push, no em dashes, no italics, warm earth tones, model allocation
+quality-first (design/copy/review at the top tier, judgment implementation
+Opus, mechanical Sonnet), and everything printed with a piece is a forever
+contract.
+
+## Waiting on Adrian (blocks nothing in code)
+1. The terminal ops sitting (atlas-dim-world-ops.md): wakes inscriptions,
+   sale hand-off, letters email, mirror; plus the webhook module drop into
+   the Adrian-Website repo. ~40 min.
+2. Rulings: sigil prefixes (MA/SG/JW/LC), the hearth city.
+3. Content: 5-6 creator's messages (placeholders live in
+   functions/api/atlas/_creatorMessages.ts), catalog entry of his works
+   via the Catalog Room, light #1 (his own claim), the invitation letter.
+4. First-live-deploy proofs listed at the end of claim-code-integration.md
+   (mint a test code end to end; signed-dream render; card endpoint PNG).
+
+## Known polish debts (small, non-blocking)
+- Non-WebGL fallback globe still shows the pre-redesign dotted earth.
+- Light-theme global nav washes over the dark stage top.
+- Insert/plaque layouts are working versions; Adrian ratifies a fine
+  design before a large print run.
+- Marker cores/count badge brightness: awaiting Adrian's eye on live.
+- StewardEdit's sign-your-dream gate reads session-cached atlas state
+  (may need reload right after sharing a dream).
