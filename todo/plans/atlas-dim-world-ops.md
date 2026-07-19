@@ -10,7 +10,34 @@ replace the two handoff docs; it is the command-by-command companion.
 
 All of this requires production Cloudflare credentials (`wrangler login`)
 and, for the D1 step, a local checkout of the Adrian-Website repo. None of it
-can be run from this session.
+can be run from a Claude session.
+
+RE-VERIFIED 2026-07-18 against current main after the full redesign merged:
+every command below still matches the deployed source (sale.ts still gates on
+SALE_WEBHOOK_SECRET, claim-bridge.ts on CLAIM_BRIDGE_SECRET, _email.ts
+no-ops without RESEND_API_KEY; both migration files and the webhook sender
+module sit unchanged in todo/handoff/adrian-website/). Nothing added this
+session needs new ops: the claim codes and the Catalog Room live in R2 and
+work already.
+
+Prerequisites for the sitting: a machine with node 20+, both repo checkouts
+(mandalacodes and Adrian-Website) pulled to latest main, and a browser for
+`npx wrangler login`. Infisical is optional; every secret can be set with
+the plain wrangler commands shown below. Budget about 40 minutes.
+
+Step 9 (added 2026-07-18, run any time after step 1): the UL genesis
+backfill, so all 64 pieces exist in the live ledger:
+
+```bash
+# From the mandalacodes checkout, logged in to wrangler:
+npx tsx scripts/genesis-all-pieces.ts
+```
+
+How to prove it worked: /api/atlas returns 64 pieces, and the atlas caption
+counts them. Pieces without a resting city appear in Seeking Ground below
+the globe rather than as lights; placing them (or the hearth rendering,
+pending Adrian's hearth-city ruling) is Catalog Room work afterward, not
+part of this sitting.
 
 ---
 
