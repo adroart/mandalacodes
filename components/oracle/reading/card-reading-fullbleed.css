@@ -178,6 +178,20 @@
   display: none !important;
 }
 
+/* The design reserves 64px under its last section. Nothing follows it here, so
+   that was empty space between the header and the reading. */
+.card-reading__designed-header > div {
+  padding-bottom: 0 !important;
+}
+
+/* On the wide layout the column beside the artwork already carries "For me,
+   see where this code lives in your chart", so the header's copy of the same
+   invitation would be the second one on screen. The phone has no such column,
+   so it keeps it. */
+.card-reading--desktop .card-reading__designed-header [data-chart-cta] {
+  display: none !important;
+}
+
 /* ── The hexagram rows ─────────────────────────────────────────────────── */
 
 /* The hexagram and trigram rows sat inside the reading's text measure, so the
