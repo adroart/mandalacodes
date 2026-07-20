@@ -428,6 +428,37 @@
   }
 }
 
+/* Last resort, and only where the room genuinely runs out: the space inside
+   the two-word labels closes up, so they read ICHING and GENEKEYS. Worth about
+   ten pixels, which is the difference between the row fitting and scrolling on
+   the narrowest screens. The spaced labels stay in the markup for screen
+   readers. */
+@media (max-width: 330px) {
+  .card-reading--mobile [data-pills] {
+    --cr-rail-space: min(8px, max(0px, (100vw - 256px) / 14));
+  }
+
+  .card-reading--mobile [data-nav="iching"],
+  .card-reading--mobile [data-nav="genekeys"] {
+    font-size: 0 !important;
+  }
+
+  .card-reading--mobile [data-nav="iching"]::before,
+  .card-reading--mobile [data-nav="genekeys"]::before {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+
+  .card-reading--mobile [data-nav="iching"]::before {
+    content: 'IChing';
+  }
+
+  .card-reading--mobile [data-nav="genekeys"]::before {
+    content: 'GeneKeys';
+  }
+}
+
 
 /* Relations is the chain-link mark on the live rail, not the word. Drawn as a
    mask so it takes its colour from the button, which means it lights gold with
