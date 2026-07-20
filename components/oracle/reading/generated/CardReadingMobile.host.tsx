@@ -37,8 +37,6 @@ interface HostProps {
   /* Fills the design's top bar slot. The mobile file drew its own compact
      brand row; the app passes the site's real bar here instead. */
   topNav?: React.ReactNode;
-  /* Opens the reading's share sheet from the bar's Share link. */
-  onShare?: () => void;
 }
 
 /* The design file's own defaults, kept so the host renders identically to the
@@ -78,13 +76,15 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
   }
 
 
-  /* The bar's Share is a link where the sheet needs a callback, so the click is
-     handed to the opener the page passed down. */
+  /* The design's bar has a Share link where the reading has a Share button.
+     Rather than plumb a second share sheet, a click on it is handed to the
+     reading's own hidden button, so there is one sheet and one implementation. */
   handleShareClick = (e: any) => {
     const a = e.target?.closest?.('[data-bar-share], [data-bar-tab="share"]');
     if (!a || !this.rootEl?.contains(a)) return;
     e.preventDefault();
-    this.props.onShare?.();
+    const real = this.rootEl.querySelector('.oracle-bottom-nav [aria-label="Share this code"]') as HTMLElement | null;
+    real?.click();
   };
 
   componentDidMount() {

@@ -118,17 +118,18 @@
 
 /* ── The live reading, mounted inside the shell ────────────────────────── */
 
-/* The reading brings its own sticky lens rail, which the frame supplies, so
-   that one is hidden. Its bottom bar is no longer rendered at all: the page
-   drops it and the frame's bar takes its place, with Share calling straight
-   back to the page rather than through a hidden button. */
-.card-reading .oracle-reading-progress {
+/* The live reading brings its own sticky lens rail and its own bottom bar. The
+   shell supplies both, so both inner ones are hidden. The design's bar is the
+   one on screen, with its links wired to real destinations and its Share
+   handing off to the reading's own share sheet. */
+.card-reading .oracle-reading-progress,
+.card-reading .oracle-bottom-nav {
   display: none !important;
 }
 
 /* It also expects to be the page. Inside the shell it is a block in the
    shell's own scroll container, so it gives up full-viewport sizing. */
-.card-reading .eb-reading {
+.card-reading .eb-reading:not(.oracle-bottom-nav) {
   min-height: 0 !important;
   /* Clears the site's fixed bar on the live page. Inside the shell the bar is
      already accounted for, so this would just be a gap under the header. */
@@ -142,7 +143,7 @@
    The clearance that keeps the last line from hiding behind the bar moves off
    the scroller and onto the reading, so it is filled with the reading's colour
    rather than showing the frame through it. */
-.card-reading .eb-reading {
+.card-reading .eb-reading:not(.oracle-bottom-nav) {
   background: #100d09 !important;
   padding-bottom: 80px !important;
 }

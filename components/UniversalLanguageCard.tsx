@@ -23,6 +23,7 @@ import { ulPieceForCard } from '../utils/universalLanguage';
 import { astrologyGlyph, hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
 import './oracle/eb/eb-template.css';
 import './oracle/eb/oracle-foundation.css';
+import OracleBottomNavigation from './oracle/OracleBottomNavigation';
 import PublicInvocation from './oracle/invocation/PublicInvocation';
 import { loadLiveInvocation } from '../lib/oracle/invocationApi';
 import type { LiveInvocation } from '../lib/oracle/invocationTypes';
@@ -232,7 +233,7 @@ const UniversalLanguageCard: React.FC = () => {
   const palette = isDarkMode ? 'nightfall' : 'daybook';
   return (
     <>
-      <CardReadingShell cardNumber={card.number} onShare={() => setShareOpen(true)} reading={
+      <CardReadingShell cardNumber={card.number} reading={
       <EBReadingHost
         key={card.number}
         data={data}
@@ -292,6 +293,7 @@ const UniversalLanguageCard: React.FC = () => {
         />
       )}
 
+      <OracleBottomNavigation current={card} palette={palette} pieceId={piece ? String(piece.id) : null} onShare={() => setShareOpen(true)} onInvocationPublished={() => void refreshInvocation()} showSafariHandoff={showSafariHandoff} />
     </>
   );
 };
