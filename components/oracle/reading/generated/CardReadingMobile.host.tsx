@@ -114,6 +114,17 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
   wireReader(reader: any) {
     const scroll = reader.querySelector('[data-scroll]');
     if (!scroll) return;
+    /* Prefer the live reading's chapter over anything marked data-sec. A
+       selector list returns whichever element comes first in the document, and
+       the designed header block above the reading also carries data-sec="ul",
+       so "ul" was resolving to the header rather than to the chapter. That put
+       the first anchor in the wrong place and threw the whole rail off, so the
+       lit label stopped matching the section on screen. */
+    const secFor = (id: string) =>
+      reader.querySelector('[data-chapter="' + id + '"]')
+      || reader.querySelector('[data-sec="' + id + '"]');
+
+
     const navs = Array.from(reader.querySelectorAll('[data-nav]')) as any[];
     const pills = reader.querySelector('[data-pills]');
     const jb = reader.querySelector('[data-jumpbar]');
@@ -135,7 +146,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       const sTop = scroll.getBoundingClientRect().top;
       secList = navs.map((n: any) => {
         const id = n.getAttribute('data-nav');
-        const sec = reader.querySelector('[data-sec="' + id + '"], [data-chapter="' + id + '"]');
+        const sec = secFor(id);
         const top = sec ? (sec.getBoundingClientRect().top - sTop + scroll.scrollTop) : 0;
         return { id, top, btn: n };
       }).sort((a: any, b: any) => a.top - b.top);
@@ -195,7 +206,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
     reader.addEventListener('click', (e: any) => {
       const btn = e.target.closest && e.target.closest('[data-nav]');
       if (!btn || !reader.contains(btn)) return;
-      const target = reader.querySelector('[data-sec="' + btn.getAttribute('data-nav') + '"], [data-chapter="' + btn.getAttribute('data-nav') + '"]');
+      const target = secFor(btn.getAttribute('data-nav'));
       if (!target) return;
       const jumpH = jb ? jb.getBoundingClientRect().height : 0;
       const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - jumpH - 8;

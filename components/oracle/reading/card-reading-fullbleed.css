@@ -138,11 +138,10 @@
   padding-top: 0 !important;
 }
 
-/* Anything past the last chapter takes the bar's colour, so the floor runs
-   unbroken to the bottom instead of showing a lighter strip between the end of
-   the reading and the bar. The chapters paint over this with their own shades,
-   so only the tail is affected. */
-.card-reading [data-scroll],
+/* Only the tail past the last chapter takes the bar's colour, so the floor
+   runs unbroken to the bottom. Scoped to the reading's own wrapper: putting it
+   on the scroll container as well darkened the header area too, which is what
+   split the page into three tones. */
 .card-reading .eb-reading {
   background: #0a0805 !important;
 }
