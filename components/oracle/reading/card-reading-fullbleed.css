@@ -31,18 +31,34 @@
   box-shadow: none !important;
 }
 
+/* ── The meta list ─────────────────────────────────────────────────────── */
+
+/* The design centres each label against its value. That reads fine for the
+   one-line ones, but Keynotes runs to four lines and its label floated to the
+   middle of them. Anchored to the first line instead, so every label sits on
+   the same baseline as the value it names. */
+.card-reading--desktop aside dt {
+  align-self: start !important;
+}
+
 /* ── The bottom bar ────────────────────────────────────────────────────── */
 
 /* The shell's bar sat at 0.72 alpha over the reading, which read washed out.
    These are the live bar's own values (oracle-bottom-navigation.css) so the
    two match. */
-/* The live bar's own values, resolved: its --l-bg / --l-rule are declared on
-   the reading's own scope, which the shell sits outside of. */
+/* Darker than the reading it sits under, so it reads as a floor rather than
+   another band of the page, and slimmer so it takes less of the screen. */
 .card-reading footer {
-  background: color-mix(in oklab, #14100b 94%, transparent) !important;
+  background: #0a0805 !important;
   border-top: 1px solid rgba(168, 135, 77, 0.18) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
+  height: 58px !important;
+}
+
+.card-reading--mobile footer {
+  height: 54px !important;
+  padding-bottom: 0 !important;
 }
 
 /* ── Artwork ───────────────────────────────────────────────────────────── */
