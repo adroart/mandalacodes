@@ -138,12 +138,20 @@
   padding-top: 0 !important;
 }
 
-/* Only the tail past the last chapter takes the bar's colour, so the floor
-   runs unbroken to the bottom. Scoped to the reading's own wrapper: putting it
-   on the scroll container as well darkened the header area too, which is what
-   split the page into three tones. */
+/* The tail past the last chapter carries that chapter's own shade, so the
+   reading runs into the bar with no band of its own. Anything else reads as a
+   stripe: lighter looks like a gap, darker looks like a black block.
+
+   The clearance that keeps the last line from hiding behind the bar moves off
+   the scroller and onto the reading, so it is filled with the reading's colour
+   rather than showing the frame through it. */
 .card-reading .eb-reading {
-  background: #0a0805 !important;
+  background: #100d09 !important;
+  padding-bottom: 80px !important;
+}
+
+.card-reading [data-scroll] {
+  padding-bottom: 0 !important;
 }
 
 /* The whole top area comes from the design now: its artwork in the shell, and
