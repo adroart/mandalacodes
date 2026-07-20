@@ -310,12 +310,27 @@
    label keep its natural width and scrolling sideways rather than squeezing.
    The design's version shared the width equally between six labels, which ran
    them together on a narrow phone. */
+/* Matched value for value to the live rail (.oracle-reading-progress in
+   oracle-foundation.css), including its three tiers. Mine had only one, which
+   happened to be the values live uses below 560, so at every width above that
+   it ran too small and ranged left where live centres. The !important is
+   needed throughout because the design sets these inline on the elements.
+
+   Base, above 760: 64px tall, centred, 13px type at 0.18em. */
+.card-reading--mobile [data-jumpbar] {
+  height: 65px !important;
+  background: color-mix(in oklab, #14100b 86%, transparent) !important;
+  border-bottom: 1px solid rgba(168, 135, 77, 0.14) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
 .card-reading--mobile [data-pills] {
-  gap: 4px;
-  padding: 0 8px !important;
-  min-height: 48px;
-  align-items: center;
-  justify-content: flex-start;
+  gap: 4px !important;
+  padding: 0 clamp(8px, 2vw, 20px) !important;
+  min-height: 64px !important;
+  align-items: center !important;
+  justify-content: center !important;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -326,19 +341,56 @@
 
 .card-reading--mobile [data-nav] {
   flex: 0 0 auto !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  /* 8px rather than the live rail's 9px: it is the one value that lets all six
-     sit inside a 375px screen without the row needing to scroll. */
-  padding: 0 8px !important;
-  font-family: var(--font-label, 'Iowan Old Style Web', Georgia, serif);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 64px !important;
+  padding: 0 clamp(10px, 1.25vw, 18px) !important;
+  font-family: var(--font-label, 'Iowan Old Style Web', Georgia, serif) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+.card-reading--mobile [data-nav="relations"]::before {
+  width: 17px;
+  height: 17px;
+}
+
+/* 561 to 760: the labels tighten but the bar keeps its height. */
+@media (min-width: 561px) and (max-width: 760px) {
+  .card-reading--mobile [data-nav] {
+    padding: 0 9px !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.14em !important;
+  }
+}
+
+/* 560 and below: the shorter bar, ranged left, with the smaller mark. */
+@media (max-width: 560px) {
+  .card-reading--mobile [data-jumpbar] {
+    height: 49px !important;
+  }
+
+  .card-reading--mobile [data-pills] {
+    min-height: 48px !important;
+    justify-content: flex-start !important;
+    padding: 0 8px !important;
+  }
+
+  .card-reading--mobile [data-nav] {
+    min-height: 48px !important;
+    padding: 0 8px !important;
+    font-size: 0.6875rem !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .card-reading--mobile [data-nav="relations"]::before {
+    width: 16px !important;
+    height: 16px !important;
+  }
 }
 
 /* Relations is the chain-link mark on the live rail, not the word. Drawn as a
