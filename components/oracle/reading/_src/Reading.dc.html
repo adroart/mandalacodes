@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style data-omelette-injected>html,body{background:transparent}</style><script data-omelette-injected>(()=>{{const W=new URLSearchParams(location.search).get("theme");if(W==="light"||W==="dark"){document.documentElement.dataset.theme=W}}{if(new URLSearchParams(location.search).get("_omthumb")==="1"){const W=(q)=>{const X=q.focus;if(!X)return;q.focus=function(H){X.call(this,{...H,preventScroll:true})}};W(HTMLElement.prototype);W(SVGElement.prototype);if(typeof MathMLElement!=="undefined"){W(MathMLElement.prototype)}const $=(q)=>{q.removeAttribute("autofocus");q.inert=true;if(!(q instanceof HTMLElement))q.removeAttribute("tabindex")};const z=(q)=>{if(q.hasAttribute("autofocus"))$(q);for(const X of q.querySelectorAll("[autofocus]")){$(X)}};z(document.documentElement);new MutationObserver((q)=>{for(const X of q){for(const H of X.addedNodes){if(H.nodeType===1)z(H)}}}).observe(document,{childList:true,subtree:true})}}{const W=()=>{try{if(document.querySelector('meta[name="color-scheme"]'))return;const $=getComputedStyle(document.documentElement).getPropertyValue("color-scheme").trim();if($&&$!=="normal")return;const z=(j)=>{if(!j)return null;const F=getComputedStyle(j).backgroundColor.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\s/]+([\d.]+%?))?\s*\)$/);if(!F)return null;const G=F[4]==null?1:parseFloat(F[4])/(F[4].endsWith("%")?100:1);if(G<0.99)return null;return[+F[1],+F[2],+F[3]]};const q=z(document.body)||z(document.documentElement);if(!q)return;const X=(j)=>{const F=j/255;return F<=0.04045?F/12.92:((F+0.055)/1.055)**2.4};const H=0.2126*X(q[0])+0.7152*X(q[1])+0.0722*X(q[2]);document.documentElement.style.setProperty("color-scheme",H<0.4?"dark":"light")}catch{}};if(document.readyState==="complete")W();else window.addEventListener("load",W)}var b=[];var p=false;var u=30000;var d=3000;document.addEventListener("DOMContentLoaded",()=>{const W=window.Babel;const $="om-src-id";if(W&&W.registerPlugin&&!(W.availablePlugins&&W.availablePlugins[$])){W.registerPlugin($,({types:H})=>({visitor:{JSXOpeningElement(j,F){const G=j.node;if(G.name&&G.name.type==="JSXMemberExpression")return;for(let Q=0;Q<G.attributes.length;Q++){const V=G.attributes[Q];if(V.type==="JSXAttribute"&&V.name&&V.name.name==="data-om-id")return}const P=F.file&&F.file.opts&&F.file.opts.filename||"?";const R=G.loc&&G.loc.start;const J=`jsx:${P}:${G.start??0}:${R?R.line:0}:${R?R.column+1:0}`;G.attributes.push(H.jsxAttribute(H.jsxIdentifier("data-om-id"),H.stringLiteral(J)))}}}))}const z="om-text-extract";let q=false;if(p&&W&&W.registerPlugin&&!(W.availablePlugins&&W.availablePlugins[z])){const H=window.React;if(H&&H.useSyncExternalStore&&H.createElement){q=true;const j={};const F=new Set;let G=0;window.__omTextO=j;window.__omTextSet=(J)=>{for(const Q in J){const V=J[Q];if(V==null)delete j[Q];else j[Q]=V}G++;F.forEach((Q)=>Q())};const P=(J)=>{F.add(J);return()=>F.delete(J)};const R=()=>G;window.__OmT=function J(Q){H.useSyncExternalStore(P,R,R);return H.createElement("span",{"data-om-text":Q.i,className:"__om-t"},Q.i in j?j[Q.i]:Q.children)};W.registerPlugin(z,({types:J})=>{const Q={style:1,script:1,noscript:1,textarea:1,title:1,option:1,text:1,tspan:1,textPath:1};const V={placeholder:1,alt:1,title:1,label:1,"aria-label":1,"aria-description":1,"aria-placeholder":1};const Y=(K,M)=>J.logicalExpression("??",J.memberExpression(J.logicalExpression("||",J.memberExpression(J.identifier("window"),J.identifier("__omTextO")),J.objectExpression([])),J.stringLiteral(K),true),M);const Z=(K)=>K.file&&K.file.opts&&K.file.opts.filename||"?";const B=(K)=>K.file&&K.file.code||"";const U=(K,M)=>{const L=(D)=>D&&D.start!=null&&D.end!=null&&(D.type==="StringLiteral"||D.type==="TemplateLiteral"&&D.expressions.length===0)?[D.start,D.end]:null;const N=L(M);if(N)return N;if(M&&M.type==="Identifier"){const D=K.scope.getBinding(M.name);if(D&&D.constant&&D.path.node.type==="VariableDeclarator"){return L(D.path.node.init)}}return null};const x=(K,M,L)=>{const N=K.node;let D=false;const f=(w,A)=>{D=true;return J.jsxElement(J.jsxOpeningElement(J.jsxIdentifier("__OmT"),[J.jsxAttribute(J.jsxIdentifier("i"),J.stringLiteral(w))],false),J.jsxClosingElement(J.jsxIdentifier("__OmT")),[A],false)};const C=N.children.map((w)=>{if(w.type==="JSXText"){if(w.start==null||w.end==null)return w;const A=L.slice(w.start,w.end);const S=A.length-A.trimStart().length;const O=A.length-A.trimEnd().length;if(S+O>=A.length)return w;return f(`txt:${M}:${w.start+S}:${w.end-O}`,w)}if(w.type==="JSXExpressionContainer"){const A=U(K,w.expression);if(A)return f(`str:${M}:${A[0]}:${A[1]}`,w)}return w});if(D)N.children=C};return{visitor:{JSXOpeningElement(K,M){const L=K.node;const N=Z(M);const D={};for(let f=0;f<L.attributes.length;f++){const C=L.attributes[f];if(C.type!=="JSXAttribute"||!C.name)continue;const w=C.name.name;if(!V[w])continue;if(!C.value||C.value.type!=="StringLiteral")continue;if(C.value.start==null||C.value.end==null)continue;const A=`txt:${N}:${C.value.start}:${C.value.end}`;D[w]=A;C.value=J.jsxExpressionContainer(Y(A,J.stringLiteral(C.value.value)))}if(Object.keys(D).length){L.attributes.push(J.jsxAttribute(J.jsxIdentifier("data-om-text-attrs"),J.stringLiteral(JSON.stringify(D))))}},JSXElement(K,M){const L=K.node.openingElement;const N=L&&L.name&&L.name.name;if(N==="__OmT")return;if(typeof N==="string"&&Q[N])return;x(K,Z(M),B(M))},JSXFragment(K,M){x(K,Z(M),B(M))}}}})}}const X=q?["transform-react-jsx-source",$,z]:["transform-react-jsx-source",$];document.querySelectorAll('script[type="text/babel"],script[type="text/jsx"]').forEach((H,j)=>{const F=H.getAttribute("data-plugins")||"";const G=X.filter((P)=>F.indexOf(P)<0);if(G.length){H.setAttribute("data-plugins",F?`${F},${G.join(",")}`:G.join(","))}if(!H.hasAttribute("data-filename")){H.setAttribute("data-filename",H.getAttribute("src")||`inline-${j}`)}})});var I=window.parent;var g="not editable here — open the project in the Claude Design editor to save";var n=()=>Promise.resolve({persisted:false,noHost:true,reason:g});var k=n;var v="data/storage.json";var l=()=>{try{const W=new URL(document.baseURI);const $=W.pathname.match(/\/projects\/([^/]+)\/serve\//);if($)return $[1];return W.hostname.split(".")[0]||""}catch{return location.hostname.split(".")[0]||""}};var o=()=>{try{const W=new URL(document.baseURI);const $=W.pathname.indexOf("/serve/");if($>=0)return W.origin+W.pathname.slice(0,$+"/serve/".length)+v}catch{}return"./"+v};var E=null;var _=()=>{if(!E){E=fetch(o(),{cache:"no-store"}).then((W)=>{if(W.ok)return W.text();return W.status===404?"":null}).catch(()=>null).then((W)=>{if(W===null){E=null;return null}const $=new Map;if(!W)return $;let z;try{z=JSON.parse(W)}catch{console.warn("[omelette.storage] "+v+" is not valid JSON; treating the store as unreadable so a save cannot overwrite the "+"hand-edited bytes. Fix the JSON (or delete the file) to re-enable persistence.");E=null;return null}if(z===null||typeof z!=="object"||Array.isArray(z)){console.warn("[omelette.storage] "+v+" doesn't hold a JSON object; treating the store as unreadable so a save cannot "+"overwrite the hand-edited bytes. Make the top level a JSON object to re-enable persistence.");E=null;return null}const q=z;if("data"in q){const X=q.data;if(X===null||typeof X!=="object"||Array.isArray(X)){console.warn("[omelette.storage] "+v+' has a "data" field that is not a JSON object; treating the store as unreadable so a '+'save cannot overwrite the hand-edited bytes. Make "data" a JSON object to re-enable persistence.');E=null;return null}const H=q._meta;const j=H!==null&&typeof H==="object"?H.project:undefined;if(typeof j==="string"&&j!==""&&j!==l())return $;for(const F of Object.keys(X))$.set(F,X[F]);return $}for(const X of Object.keys(q)){if(X!=="_meta")$.set(X,q[X])}return $})}return E};var y=(W)=>k(v,JSON.stringify({_meta:{project:l(),version:1},data:Object.fromEntries(W)},null,2));var m=Promise.resolve();var T=(W)=>{const $=m.then(W);m=$.then(()=>{return},()=>{return});return $};var s=/sk-(?:ant-)?[A-Za-z0-9_-]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|xox[a-z]-[A-Za-z0-9][A-Za-z0-9-]{9,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/;var a=/password|passwd|secret|api[_-]?key|access[_-]?token|auth[_-]?token|credential/i;var r=(W,$,z)=>{if(s.test($)||a.test(W)&&typeof z==="string"&&z.length>=8){console.warn('[omelette.storage] the value for "'+W+'" looks like a credential. The storage file is a plaintext project file — visible to '+"everyone with project access and copied when the project is duplicated. Do not store secrets here.")}};var c={persisted:false,reason:"could not load the existing store — not overwriting it"};var i={persisted:false,reason:"stored value changed since a failed read — re-read this key before saving"};var h=new Set;var t={get:(W)=>{if(typeof W!=="string"){return Promise.reject(new TypeError("storage.get: key must be a string"))}return T(_).then(($)=>{if($===null){h.add(W);return null}h.delete(W);if(!$.has(W))return null;const z=$.get(W);return z==null?null:JSON.parse(JSON.stringify(z))})},set:(W,$)=>{if(typeof W!=="string"){return Promise.reject(new TypeError("storage.set: key must be a string"))}let z;try{z=JSON.stringify($)}catch(X){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable ("+String(X)+")"))}if(z===undefined){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable"))}r(W,z,$);const q=JSON.parse(z);return T(()=>_().then((X)=>{if(X===null)return c;if(h.has(W)){if(X.has(W))return i;h.delete(W)}X.set(W,q);return y(X)}))},delete:(W)=>{if(typeof W!=="string"){return Promise.reject(new TypeError("storage.delete: key must be a string"))}return T(()=>_().then(($)=>{if($===null)return c;if(h.has(W)){if($.has(W))return i;h.delete(W)}$.delete(W);return y($)}))},keys:()=>T(_).then((W)=>W===null?[]:Array.from(W.keys()))};window.omelette={writeFile:(W,$)=>k(W,$).then((z)=>{if(!z.persisted&&!z.noHost){throw new Error(z.reason||"write failed")}}),storage:t};if(I&&I!==window){const W=(J,Q)=>{try{I.postMessage({__omelette_log:true,type:J,data:Q},"*")}catch{}};["log","warn","error"].forEach((J)=>{const Q=console[J];console[J]=(...V)=>{const Y=V.map((Z)=>{try{return typeof Z==="object"?JSON.stringify(Z):String(Z)}catch{try{return String(Z)}catch{return"[unstringifiable]"}}}).join(" ");W(J,Y);Q.apply(console,V)}});window.addEventListener("error",(J)=>{const Q=J.target;if(Q&&Q!==window&&Q.tagName){const V=Q.src||Q.href||"";W("resource_error",`${Q.tagName} failed to load: ${V}`)}else{W("error",`${J.message||"Unknown error"} at ${J.filename||"?"}:${J.lineno||0}:${J.colno||0}`)}},true);window.addEventListener("unhandledrejection",(J)=>{const Q=J.reason;const V=Q instanceof Error?`${Q.message} ${Q.stack}`:String(Q);W("error",`Unhandled rejection: ${V}`)});window.addEventListener("click",(J)=>{if(J.defaultPrevented||J.button!==0)return;if(J.metaKey||J.ctrlKey||J.shiftKey||J.altKey)return;const Q=J.composedPath?J.composedPath():[];const V=["button","input","select","textarea","summary","label"];let Y=null;for(const x of Q){if(!(x instanceof Element))continue;if(x.localName==="a"){if(!(x instanceof HTMLAnchorElement))return;Y=x;break}if(V.indexOf(x.localName)!==-1)return}if(!Y)return;if(Y.isContentEditable)return;const Z=Y.closest("[contenteditable]");if(Z&&Z.getAttribute("contenteditable")!=="false")return;const B=(Y.getAttribute("target")||"_self").toLowerCase();if(B!=="_self"&&B!=="_top"&&B!=="_parent")return;let U;try{U=new URL(Y.href)}catch{return}if(U.protocol!=="http:"&&U.protocol!=="https:")return;if(location.origin==="null")return;if(U.origin===location.origin)return;J.preventDefault();window.open(U.href,"_blank","noopener,noreferrer")});const $=()=>{try{I.postMessage({type:"omelette:height",height:document.documentElement.scrollHeight},"*")}catch{}};if(window.ResizeObserver)new ResizeObserver($).observe(document.documentElement);const z=()=>{$();if(!document.querySelector('script[type="text/babel"],script[type="text/jsx"]'))return;const J=()=>document.getElementById("root")||document.querySelector("body > div[id]");const Q=J()?.firstElementChild??null;let V=0;const Y=()=>{const Z=J();if(Z&&Z.firstElementChild!==Q||++V>30){$();return}setTimeout(Y,100)};setTimeout(Y,100)};if(document.readyState==="complete")z();else window.addEventListener("load",z);const q={};let X=0;const H=(J)=>new Promise((Q,V)=>{if(!b.length){V(new Error("claude.complete: no parent origin"));return}const Y=`c${++X}`;const Z=()=>setTimeout(()=>{delete q[Y];V(new Error(`claude.complete: no data for ${u/1000}s`))},u);const B=Z();q[Y]={resolve:Q,reject:V,text:"",t:B,arm:Z};try{for(const U of b){I.postMessage({__om_api:true,id:Y,body:J},U)}}catch(U){clearTimeout(B);delete q[Y];V(U)}});const j=8;const F=async(J,Q)=>{if(!Array.isArray(J.messages)){throw new Error("claude.complete: tools require a messages array")}const V=J.messages.slice();const Y={...J,tools:J.tools.map((U)=>{if(U===null||typeof U!=="object")return U;const x={};for(const K of Object.keys(U)){if(typeof U[K]!=="function")x[K]=U[K]}return x})};const Z=Y.tool_choice;const B=Z!=null&&(Z.type==="any"||Z.type==="tool")?{...Y,tool_choice:Z.disable_parallel_tool_use!==undefined?{type:"auto",disable_parallel_tool_use:Z.disable_parallel_tool_use}:{type:"auto"}}:Y;for(let U=0;U<j;U++){const x=await H({...U===0?Y:B,messages:V});const K=x.message;const M=K&&Array.isArray(K.content)?K.content:null;const L=M?M.filter((D)=>D?.type==="tool_use"):[];if(K?.stop_reason!=="tool_use"||L.length===0){return x.text}const N=[];for(const D of L){const f=Q.get(D.name);if(!f){N.push({type:"tool_result",tool_use_id:D.id,content:`no handler for tool "${D.name}"`,is_error:true});continue}try{const C=await f(D.input);const w=typeof C==="string"?C:R(C)??"";N.push({type:"tool_result",tool_use_id:D.id,content:w})}catch(C){N.push({type:"tool_result",tool_use_id:D.id,content:String(C?.message??C??"tool handler failed"),is_error:true})}}V.push({role:"assistant",content:M},{role:"user",content:N})}throw new Error(`claude.complete: exceeded ${j} tool turns`)};window.claude={complete(J){const Q=J;if(Q!==null&&typeof Q==="object"&&Array.isArray(Q.tools)&&Q.tools.some((V)=>V!==null&&typeof V==="object"&&typeof V.run==="function")){const V=new Map;for(const Y of Q.tools){if(Y!==null&&typeof Y==="object"&&typeof Y.run==="function"){V.set(String(Y.name),Y.run)}}return F(Q,V)}return H(J).then((V)=>V.text)}};const G={};let P=0;k=(J,Q)=>new Promise((V)=>{if(!b.length){V({persisted:false,noHost:true,reason:g});return}const Y=`f${++P}`;const Z=setTimeout(()=>{delete G[Y];V({persisted:false,noHost:true,reason:g})},d);G[Y]={settle:V,t:Z};try{for(const B of b){I.postMessage({__om_file:true,id:Y,op:"write",path:J,content:Q},B)}}catch{clearTimeout(Z);delete G[Y];V({persisted:false,noHost:true,reason:g})}});const R=(J)=>{try{return JSON.stringify(J)}catch{return JSON.stringify(String(J))}};window.addEventListener("message",(J)=>{if(b.indexOf(J.origin)<0)return;if(J.source!==I)return;const Q=J.data;if(!Q)return;if(Q.type==="omelette-preview-refresh"){if(typeof Q.token!=="string"||!/^[0-9a-f.-]+(\.(rc|pr-[0-9]+))?(\.[0-9]+\.[0-9a-f]{16})?$/.test(Q.token))return;const Z=Math.max(1,Math.floor((Q.expiresAt||0)-Date.now()/1000));document.cookie="__Host-omelette-preview="+Q.token+"; Path=/; Secure; SameSite=None; Partitioned; Max-Age="+Z;return}if(Q.__om_file_r){const Z=G[Q.id];if(!Z)return;clearTimeout(Z.t);delete G[Q.id];Z.settle(Q.ok?{persisted:true}:{persisted:false,reason:Q.error||"write failed"});return}if(Q.__om_api_r){const Z=q[Q.id];if(!Z)return;if(Q.error!=null){clearTimeout(Z.t);delete q[Q.id];Z.reject(new Error(Q.error));return}if(Q.chunk!=null){clearTimeout(Z.t);Z.t=Z.arm();Z.text+=Q.chunk;return}if(Q.done){clearTimeout(Z.t);delete q[Q.id];Z.resolve({text:Q.text!=null?Q.text:Z.text,message:Q.message});return}return}if(!Q.__om_eval)return;const V=Q;const Y=(Z)=>{J.source.postMessage({...Z,__om_eval_r:1,id:V.id},J.origin)};try{const Z=(0,eval)(V.code);if(Z&&typeof Z.then==="function"){Z.then((B)=>Y({ok:1,v:R(B)}),(B)=>Y({ok:0,e:String(B)}))}else{Y({ok:1,v:R(Z)})}}catch(Z){Y({ok:0,e:String(Z)})}})}})();
+</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="width:100%;margin:0;padding:0 0 64px;font-family:'Iowan Old Style Web',Georgia,serif;color:#ede4d4;">
+
+  <!-- ══ HERO / Universal Language ══ -->
+  <article data-sec="ul" data-screen-label="Universal Language" style="scroll-margin-top:24px;padding-top:var(--hero-top,44px);">
+    <div style="max-width:772px;margin:0 auto;padding:0 var(--read-pad,44px);">
+    <div style="text-align:var(--hero-align,left);">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#a8874d;margin:0 0 10px;">{{ ulKicker }}</p>
+      <h1 style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:var(--hero-size,54px);line-height:1;letter-spacing:.01em;color:#ede4d4;margin:0;">{{ cardName }}</h1>
+    </div>
+    <div aria-hidden="true" style="display:flex;align-items:center;gap:14px;margin:20px 0;">
+      <i style="height:1px;flex:1;background:rgba(168,135,77,.28);"></i>
+      <span style="display:inline-flex;flex-direction:column;gap:4px;width:26px;flex:none;"><sc-for list="{{ hexLines }}" as="ln" hint-placeholder-count="6"><span style="display:flex;gap:4px;justify-content:space-between;"><sc-if value="{{ ln.solid }}" hint-placeholder-val="{{ true }}"><i style="width:26px;height:3px;background:#c6a667;"></i></sc-if><sc-if value="{{ ln.broken }}" hint-placeholder-val="{{ true }}"><i style="width:11px;height:3px;background:#c6a667;"></i><i style="width:11px;height:3px;background:#c6a667;"></i></sc-if></span></sc-for></span>
+      <i style="height:1px;flex:1;background:rgba(168,135,77,.28);"></i>
+    </div>
+    <p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:var(--kw-size,19px);line-height:1.6;color:#e6d9be;margin:0;text-align:var(--hero-align,left);">{{ keywordsLine }}</p>
+    <a href="#top" style="display:var(--cta-display,none);align-items:center;gap:12px;margin-top:24px;background:rgba(198,166,103,.08);border-radius:6px;padding:16px 16px;text-align:left;transition:background .3s ease;" style-hover="background:rgba(198,166,103,.13);">
+      <span style="flex:1;min-width:0;"><span style="display:block;font-family:'Cormorant Garamond',serif;font-size:19px;color:#f3ecde;line-height:1.15;">Is this code in your chart?</span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:12px;color:#a8967a;margin-top:3px;">See where all 64 codes land in you.</span></span>
+      <span style="width:30px;height:30px;border-radius:50%;background:#c6a667;color:#14100b;display:flex;align-items:center;justify-content:center;flex:none;">→</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:14px;margin:26px 0 26px;"><i style="height:1px;flex:1;background:rgba(168,135,77,.24);"></i><span style="color:#a8874d;font-size:13px;">❀</span><i style="height:1px;flex:1;background:rgba(168,135,77,.24);"></i></div>
+
+    <p style="font-family:'Iowan Old Style Web',serif;font-size:22px;line-height:1.4;color:#ede4d4;margin:0 0 24px;">I recognize the patterns of life.<br>I listen, and the wild speaks.</p>
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ dropCap }}{{ leadRest }}</p>
+      <sc-for list="{{ essenceRest }}" as="p" hint-placeholder-count="2"><p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ p }}</p></sc-for>
+    </div>
+    </div>
+  </article>
+
+  <div style="margin:58px 0;text-align:center;">
+    <span style="display:block;width:44px;height:1px;background:rgba(168,135,77,.4);margin:0 auto 24px;"></span>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:31px;line-height:1.32;color:#e6d9be;margin:0 auto;max-width:22ch;text-wrap:balance;">The word becomes the thing itself — not a description of it.</p>
+    <span style="display:block;width:44px;height:1px;background:rgba(168,135,77,.4);margin:24px auto 0;"></span>
+  </div>
+
+  <!-- ══ I CHING ══ -->
+  <article data-sec="iching" data-screen-label="I Ching" style="scroll-margin-top:24px;margin-top:52px;">
+    <div style="max-width:772px;margin:0 auto;padding:0 var(--read-pad,44px);">
+      <div style="text-align:center;padding:36px 0 0;">
+        <div style="display:flex;justify-content:center;margin-bottom:10px;"><span style="font-family:'Noto Serif SC',serif;font-size:40px;line-height:1;color:#c6a667;letter-spacing:.04em;">{{ hexChar }}</span></div>
+        <div style="font-family:'Cinzel',serif;font-weight:500;font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:#c6a667;">I Ching</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px;color:#8a7c60;margin-top:6px;">{{ hexName }}</div>
+      </div>
+    </div>
+    <div style="max-width:772px;margin:0 auto;padding:24px var(--read-pad,44px) 0;"><p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:23px;line-height:1.42;color:#ede4d4;margin:0;text-wrap:pretty;">{{ icLead }}</p></div>
+    <div style="max-width:772px;margin:0 auto;padding:26px var(--read-pad,44px) 0;">
+    <!-- hexagram / upper / lower rows -->
+    <div style="margin:0 calc(var(--read-pad,44px)*-1);border-top:1px solid rgba(168,135,77,.18);">
+      <div style="display:grid;grid-template-columns:46px auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:18px var(--read-pad,44px);border-bottom:1px solid rgba(168,135,77,.18);background:rgba(199,160,91,.05);">
+        <span style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#80735f;flex-shrink:0;white-space:nowrap;">Guà</span>
+        <span style="display:inline-flex;flex-direction:column;gap:3px;flex-shrink:0;"><sc-for list="{{ hexLines }}" as="ln"><span style="display:flex;gap:4px;"><sc-if value="{{ ln.solid }}"><i style="width:32px;height:4px;background:#c6a667;"></i></sc-if><sc-if value="{{ ln.broken }}"><i style="width:14px;height:4px;background:#c6a667;"></i><i style="width:14px;height:4px;background:#c6a667;"></i></sc-if></span></sc-for></span>
+        <span style="flex:1;min-width:0;"><span style="display:block;font-family:'Cormorant Garamond',serif;font-size:19px;color:#ede4d4;line-height:1.2;">{{ hexName }}</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-size:15px;color:#80735f;">{{ trigramLine }}</span></span>
+        <span style="font-family:'Iowan Old Style Web',serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#80735f;flex-shrink:0;">Hexagram</span>
+      </div>
+      <div style="display:grid;grid-template-columns:46px auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:14px var(--read-pad,44px);border-bottom:1px solid rgba(168,135,77,.18);">
+        <span style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#80735f;width:54px;flex-shrink:0;">Upper</span>
+        <span style="display:inline-flex;flex-direction:column;gap:3px;flex-shrink:0;"><span style="display:flex;gap:4px;"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></span><span style="display:flex;gap:4px;"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></span><span style="display:flex;gap:4px;"><i style="width:32px;height:4px;background:#80735f;"></i></span></span>
+        <span style="min-width:0;font-family:'Cormorant Garamond',serif;font-size:17px;color:#d6c9b0;">Thunder · Chên</span>
+        <span style="font-family:'Iowan Old Style Web',serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#80735f;flex-shrink:0;">Trigram</span>
+      </div>
+      <div style="display:grid;grid-template-columns:46px auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:14px var(--read-pad,44px);border-bottom:1px solid rgba(168,135,77,.18);">
+        <span style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#80735f;width:54px;flex-shrink:0;">Lower</span>
+        <span style="display:inline-flex;flex-direction:column;gap:3px;flex-shrink:0;"><span style="display:flex;gap:4px;"><i style="width:32px;height:4px;background:#80735f;"></i></span><span style="display:flex;gap:4px;"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></span><span style="display:flex;gap:4px;"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></span></span>
+        <span style="min-width:0;font-family:'Cormorant Garamond',serif;font-size:17px;color:#d6c9b0;">Mountain · Kên</span>
+        <span style="font-family:'Iowan Old Style Web',serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#80735f;flex-shrink:0;">Trigram</span>
+      </div>
+      <div style="padding:22px var(--read-pad,44px) 6px;">
+        <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#c6a667;margin:0 0 10px;">Combination</p>
+        <p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;">{{ icComb }}</p>
+      </div>
+    </div>
+    <div style="margin-top:40px;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#c6a667;margin:0 0 16px;">The Reading</p>
+      <div style="display:flex;flex-direction:column;gap:16px;"><sc-for list="{{ icRead }}" as="p" hint-placeholder-count="4"><p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ p }}</p></sc-for></div>
+    </div>
+    <div style="margin-top:36px;border:1px solid rgba(168,135,77,.22);border-radius:3px;background:#181109;overflow:hidden;">
+      <div style="padding:24px var(--read-pad,44px);text-align:center;"><p style="font-family:'Iowan Old Style Web',serif;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#a8874d;margin:0 0 11px;">The {{ relRingTarot }}</p><p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;line-height:1.5;color:#ede4d4;margin:0;">{{ icJudge }}</p></div>
+      <div style="height:1px;background:rgba(168,135,77,.16);margin:0 var(--read-pad,44px);"></div>
+      <div style="padding:24px var(--read-pad,44px);text-align:center;"><p style="font-family:'Iowan Old Style Web',serif;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#a8874d;margin:0 0 11px;">The Image</p><p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;line-height:1.5;color:#ede4d4;margin:0;">{{ icImage }}</p></div>
+    </div>
+    <div style="margin-top:40px;border:1px solid rgba(168,135,77,.22);border-radius:3px;padding:30px var(--read-pad,44px);background:#181109;text-align:center;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#a8874d;margin:0 0 18px;">The Oracle</p>
+      <div style="display:flex;justify-content:center;gap:10px;margin-bottom:20px;">
+        <span style="width:38px;height:48px;border:1px solid rgba(168,135,77,.26);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:19px;color:#c6a667;">乾</span>
+        <span style="width:38px;height:48px;border:1px solid rgba(168,135,77,.26);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:19px;color:#c6a667;">坤</span>
+        <span style="width:38px;height:48px;border:1px solid rgba(168,135,77,.26);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:19px;color:#c6a667;">乾</span>
+      </div>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:25px;color:#f3ecde;margin:0 0 6px;">Cast the coins</p>
+      <p style="font-family:'Iowan Old Style Web',serif;font-style:italic;font-size:15px;color:#8a7c60;margin:0 auto 20px;max-width:40ch;line-height:1.5;">See which lines are moving for you now — where this hexagram is already turning into another.</p>
+      <a href="#top" style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#c6a667;border-bottom:1px solid rgba(198,166,103,.4);padding-bottom:5px;">Throw the coins →</a>
+    </div>
+    </div>
+  </article>
+
+  <!-- ══ GENE KEYS ══ -->
+  <article data-sec="genekeys" data-screen-label="Gene Keys" style="scroll-margin-top:24px;margin-top:52px;">
+    <div style="max-width:772px;margin:0 auto;padding:0 var(--read-pad,44px);">
+      <div style="text-align:center;padding:36px 0 0;">
+        <div style="display:flex;justify-content:center;margin-bottom:11px;"><svg width="28" height="28" viewBox="0 0 100 100" fill="#c6a667"><circle cx="50" cy="14" r="4.4"/><path d="M 47.8 19 L 52.2 19 L 51.5 84 Q 50 87.5 48.5 84 Z"/><ellipse cx="25" cy="28" rx="23" ry="4.2" transform="rotate(-4 25 28)"/><ellipse cx="75" cy="28" rx="23" ry="4.2" transform="rotate(4 75 28)"/><ellipse cx="28" cy="41" rx="20" ry="3.8" transform="rotate(7 28 41)"/><ellipse cx="72" cy="41" rx="20" ry="3.8" transform="rotate(-7 72 41)"/></svg></div>
+        <div style="font-family:'Cinzel',serif;font-weight:500;font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:#c6a667;">Gene Keys</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px;color:#8a7c60;margin-top:6px;">{{ gkGiftName }}</div>
+      </div>
+    </div>
+    <div style="max-width:772px;margin:0 auto;padding:24px var(--read-pad,44px) 0;"><p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:23px;line-height:1.42;color:#ede4d4;margin:0;text-wrap:pretty;">{{ gkLead }}</p></div>
+    <div style="max-width:772px;margin:0 auto;padding:26px var(--read-pad,44px) 0;">
+    <div style="display:flex;align-items:stretch;border:1px solid rgba(168,135,77,.2);margin-bottom:36px;">
+      <div style="flex:1;padding:16px 12px;text-align:center;border-right:1px solid rgba(168,135,77,.2);"><p style="font-family:'Iowan Old Style Web',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#80735f;margin:0 0 6px;">Shadow</p><p style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#a89a80;margin:0;">{{ gkShadowName }}</p></div>
+      <div style="flex:1.25;padding:16px 12px;text-align:center;border-right:1px solid rgba(168,135,77,.2);background:rgba(199,160,91,.1);"><p style="font-family:'Iowan Old Style Web',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#c6a667;margin:0 0 6px;">Gift</p><p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:22px;color:#f3ecde;margin:0;">{{ gkGiftName }}</p></div>
+      <div style="flex:1;padding:16px 12px;text-align:center;"><p style="font-family:'Iowan Old Style Web',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#80735f;margin:0 0 6px;">Siddhi</p><p style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#a89a80;margin:0;">{{ gkSiddhiName }}</p></div>
+    </div>
+    <div style="border-top:1px solid rgba(168,135,77,.18);padding:22px 0;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:400;color:#c6a667;margin:0 0 4px;">Shadow</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:21px;color:#ede4d4;margin:0 0 16px;">{{ gkShadowName }}</p>
+      <div style="display:flex;flex-direction:column;gap:15px;"><sc-for list="{{ gkShadow }}" as="p" hint-placeholder-count="4"><p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ p }}</p></sc-for></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px;border-top:1px solid rgba(168,135,77,.18);padding-top:18px;">
+        <div><p style="font-family:'Iowan Old Style Web',serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#c6a667;margin:0 0 7px;">Repressive · Obsession</p><p style="font-family:'Iowan Old Style Web',serif;font-size:14.5px;line-height:1.72;color:#d6c9b0;margin:0;">{{ gkRepressive }}</p></div>
+        <div><p style="font-family:'Iowan Old Style Web',serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#c6a667;margin:0 0 7px;">Reactive · Pedantry</p><p style="font-family:'Iowan Old Style Web',serif;font-size:14.5px;line-height:1.72;color:#d6c9b0;margin:0;">{{ gkReactive }}</p></div>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(168,135,77,.18);padding:22px 0;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:400;color:#c6a667;margin:0 0 4px;">Gift</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:21px;color:#ede4d4;margin:0 0 16px;">{{ gkGiftName }}</p>
+      <div style="display:flex;flex-direction:column;gap:15px;"><sc-for list="{{ gkGift }}" as="p" hint-placeholder-count="4"><p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ p }}</p></sc-for></div>
+    </div>
+    <div style="border-top:1px solid rgba(168,135,77,.18);padding:22px 0;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:400;color:#c6a667;margin:0 0 4px;">Siddhi</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:21px;color:#ede4d4;margin:0 0 16px;">{{ gkSiddhiName }}</p>
+      <div style="display:flex;flex-direction:column;gap:15px;"><sc-for list="{{ gkSiddhi }}" as="p" hint-placeholder-count="4"><p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ p }}</p></sc-for></div>
+    </div>
+    <div style="border-top:1px solid rgba(168,135,77,.18);padding:22px 0;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:400;color:#c6a667;margin:0 0 4px;">Programming Partner</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:21px;color:#ede4d4;margin:0 0 16px;">{{ gkPartnerName }}</p>
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ gkPartner }}</p>
+    </div>
+    </div>
+  </article>
+
+  <!-- ══ HUMAN DESIGN ══ -->
+  <article data-sec="humandesign" data-screen-label="Human Design" style="scroll-margin-top:24px;margin-top:52px;">
+    <div style="max-width:772px;margin:0 auto;padding:0 var(--read-pad,44px);">
+      <div style="text-align:center;padding:36px 0 0;">
+        <div style="display:flex;justify-content:center;margin-bottom:11px;"><svg viewBox="0 0 40 40" fill="none" stroke="#c6a667" stroke-width="2.4" style="width:26px;height:26px;"><rect x="11" y="11" width="18" height="18" transform="rotate(45 20 20)"/></svg></div>
+        <div style="font-family:'Cinzel',serif;font-weight:500;font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:#c6a667;">Human Design</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px;color:#8a7c60;margin-top:6px;">{{ hdCentre }}</div>
+      </div>
+    </div>
+    <div style="max-width:772px;margin:0 auto;padding:24px var(--read-pad,44px) 0;"><p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:23px;line-height:1.42;color:#ede4d4;margin:0;text-wrap:pretty;">{{ hdLead }}</p></div>
+    <div style="max-width:772px;margin:0 auto;padding:26px var(--read-pad,44px) 0;">
+    <div style="border-top:1px solid rgba(168,135,77,.18);padding:20px 0;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:400;color:#c6a667;margin:0 0 4px;">Gate · Detail</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:19px;color:#80735f;margin:0 0 14px;">{{ hdCentreLine }}</p>
+      <div style="display:flex;flex-direction:column;gap:15px;"><sc-for list="{{ hdGate }}" as="p" hint-placeholder-count="2"><p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ p }}</p></sc-for></div>
+    </div>
+    <div style="border-top:1px solid rgba(168,135,77,.18);padding:20px 0;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:400;color:#c6a667;margin:0 0 4px;">Channel 62 – 17 · Acceptance</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:19px;color:#80735f;margin:0 0 14px;">A design of an organizational being</p>
+      <div style="display:flex;flex-direction:column;gap:15px;"><sc-for list="{{ hdChannel }}" as="p" hint-placeholder-count="2"><p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ p }}</p></sc-for></div>
+    </div>
+    <div style="border-top:1px solid rgba(168,135,77,.18);padding:20px 0;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:400;color:#c6a667;margin:0 0 12px;">Circuit · Understanding</p>
+      <div style="display:flex;flex-direction:column;gap:15px;"><sc-for list="{{ hdCircuit }}" as="p" hint-placeholder-count="1"><p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ p }}</p></sc-for></div>
+    </div>
+    </div>
+  </article>
+
+  <!-- ══ BODY ══ -->
+  <article data-sec="body" data-screen-label="Body" style="scroll-margin-top:24px;margin-top:52px;">
+    <div style="max-width:772px;margin:0 auto;padding:0 var(--read-pad,44px);">
+      <div style="text-align:center;padding:36px 0 0;">
+        <div style="display:flex;justify-content:center;margin-bottom:11px;"><svg viewBox="0 0 40 40" fill="none" stroke="#c6a667" stroke-width="2.4" style="width:26px;height:26px;"><circle cx="20" cy="20" r="13"/><circle cx="20" cy="20" r="3.4" fill="#c6a667" stroke="none"/></svg></div>
+        <div style="font-family:'Cinzel',serif;font-weight:500;font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:#c6a667;">Body</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px;color:#8a7c60;margin-top:6px;">{{ bodySite }}</div>
+      </div>
+    </div>
+    <div style="max-width:772px;margin:0 auto;padding:24px var(--read-pad,44px) 0;"><p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:23px;line-height:1.42;color:#ede4d4;margin:0;text-wrap:pretty;">{{ bodyLead }}</p></div>
+    <div style="max-width:772px;margin:0 auto;padding:26px var(--read-pad,44px) 0;">
+    <div style="border-top:1px solid rgba(168,135,77,.18);padding:20px 0;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:400;color:#c6a667;margin:0 0 14px;">Physiology · {{ bodySiteRaw }}</p>
+      <div style="display:flex;flex-direction:column;gap:15px;"><sc-for list="{{ bodyPhys }}" as="p" hint-placeholder-count="2"><p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ p }}</p></sc-for></div>
+    </div>
+    <div style="border-top:1px solid rgba(168,135,77,.18);padding:20px 0;">
+      <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:400;color:#c6a667;margin:0 0 14px;">Amino Acid · {{ bodyAminoName }}</p>
+      <div style="display:flex;flex-direction:column;gap:15px;"><sc-for list="{{ bodyAmino }}" as="p" hint-placeholder-count="1"><p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ p }}</p></sc-for></div>
+    </div>
+    </div>
+  </article>
+
+  <div style="margin:58px 0;text-align:center;">
+    <span style="display:block;width:44px;height:1px;background:rgba(168,135,77,.4);margin:0 auto 24px;"></span>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:31px;line-height:1.32;color:#e6d9be;margin:0 auto;max-width:22ch;text-wrap:balance;">The world is speaking continuously. Your task is to become a better listener.</p>
+    <span style="display:block;width:44px;height:1px;background:rgba(168,135,77,.4);margin:24px auto 0;"></span>
+  </div>
+
+  <!-- ══ RELATIONS ══ -->
+  <article data-sec="relations" data-screen-label="Relations" style="scroll-margin-top:24px;margin-top:52px;">
+    <div style="max-width:772px;margin:0 auto;padding:0 var(--read-pad,44px);">
+      <div style="text-align:center;padding:36px 0 0;">
+        <div style="display:flex;justify-content:center;margin-bottom:11px;"><svg viewBox="0 0 40 40" fill="none" stroke="#c6a667" stroke-width="2.4" style="width:30px;height:26px;"><circle cx="15" cy="20" r="10"/><circle cx="25" cy="20" r="10"/></svg></div>
+        <div style="font-family:'Cinzel',serif;font-weight:500;font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:#c6a667;">Relations</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px;color:#8a7c60;margin-top:6px;">{{ relTitle }}</div>
+      </div>
+    </div>
+    <div style="max-width:772px;margin:0 auto;padding:26px var(--read-pad,44px) 0;">
+    <p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:23px;line-height:1.42;color:#ede4d4;margin:0 0 26px;text-wrap:pretty;">{{ relIntro }}</p>
+    <div style="display:flex;flex-direction:column;">
+      <sc-for list="{{ relRows }}" as="r" hint-placeholder-count="4">
+        <div style="border-top:1px solid rgba(168,135,77,.18);padding:18px 0;">
+          <p style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#c6a667;margin:0 0 8px;">{{ r.label }}</p>
+          <p style="font-family:'Iowan Old Style Web',serif;font-size:17px;line-height:1.82;color:#d6c9b0;margin:0;text-wrap:pretty;">{{ r.text }}</p>
+        </div>
+      </sc-for>
+    </div>
+    </div>
+  </article>
+
+  <div style="margin:64px auto 8px;max-width:772px;padding:0 var(--read-pad,44px);text-align:center;">
+    <span style="display:block;width:40px;height:1px;background:rgba(168,135,77,.4);margin:0 auto 24px;"></span>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:26px;line-height:1.35;color:#e6d9be;margin:0 auto 22px;max-width:24ch;text-wrap:balance;">The word becomes the thing itself. What is said from here cannot be unsaid.</p>
+    <div style="font-family:'Noto Serif SC',serif;font-size:26px;color:#c6a667;margin-bottom:24px;">{{ hexChar }}</div>
+    <a href="#top" style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#c6a667;border-bottom:1px solid rgba(198,166,103,.4);padding-bottom:5px;">Return to the 64 →</a>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const essence = [
+      "Precision is not the enemy of wonder. The smallest distinction can become a doorway. To attend closely is to participate in the intelligence that weaves the whole. You are invited into a practice of listening that is both intimate and exacting.",
+      "Look at the leaf. Notice the way its veins are not random, but recursive. Look at the storm. Notice the way its rage is shaped by unseen laws. Truth does not announce itself. It arranges itself. And when we learn the language of arrangement, we stop mistaking noise for meaning.",
+      "This is the path of the 62nd Gate: to perceive the invisible architecture beneath appearance. Not to control it, not to exploit it, but to collaborate with it. Your role is to be a clear instrument. The world is speaking continuously. Your task is to become a better listener.",
+      "At its highest expression this energy speaks in a way that others recognize as true — not because it is performing accuracy but because something in it has moved from collected knowledge to direct contact. The word becomes the thing itself, not a description of it. What gets said from this place cannot be unsaid. It enters the listener and changes the configuration of what they hold as possible."
+    ];
+    const dropCap = essence[0].charAt(0);
+    const leadRest = essence[0].slice(1);
+    const essenceRest = essence.slice(1);
+    return {
+      dropCap, leadRest, essenceRest,
+      keywords: ["Precision of Speech","Language as Light","Small Exceeding Great","Intelligence of the Heart","Impeccable Expression"],
+      keywordsLine: "Precision of Speech · Language as Light · Small Exceeding Great · Intelligence of the Heart · Impeccable Expression",
+      hexLines: [
+        {solid:false,broken:true},{solid:false,broken:true},
+        {solid:true,broken:false},{solid:true,broken:false},
+        {solid:false,broken:true},{solid:false,broken:true}
+      ],
+      icComb: "Thunder (Chen) over Mountain (Ken). Movement above stillness — a contained energy that carries precisely because it does not overreach.",
+      icRead: [
+        "Thunder rests above the mountain. The sound is sharp but contained, a crack of energy held within a vast stillness. This is not the storm that levels forests. It is the bird's note in the early morning, the cricket's call in the grass — small, precise, and carrying further than its size suggests.",
+        "The hexagram speaks of preponderance of the small. Success does not come here from grand gestures or sweeping ambitions. It comes from attending to what is directly in front with full attention, from doing each small thing better than it would otherwise be done. The flying bird carries the message: striving upward does not serve. Remaining below is well.",
+        "In this position, the right action is not impressive. Reverence in conduct. Grief given its proper weight in bereavement. Thrift in expenditure. Each excess is measured and purposeful, directed not at greatness but at the correct proportion of what the moment requires.",
+        "The timing is not yet right for large moves. Small changes are the native movement of this moment, one rung at a time. The mountain is solid. The thunder above it speaks in short syllables. Each one is distinct."
+      ],
+      icJudge: "Preponderance of the Small. Success. Perseverance furthers. Small things may be done; great things should not be done. The flying bird brings the message: it is well to remain below. Great good fortune.",
+      icImage: "Thunder on the mountain: the image of Preponderance of the Small. Thus in his conduct the superior man gives preponderance to reverence, in bereavement to grief, and in his expenditures to thrift.",
+      gkShadow: [
+        "The Shadow of Intellect carries a specific and modern affliction: the confusion of knowledge with understanding. Intellect, in this context, is not stupidity. It is something more insidious — the highly developed capacity to manipulate facts, to name things, to arrange language with great skill, while missing what is actually alive in the room. The intellect acquires. It categorizes. It argues. But it does not see.",
+        "The modern world has organized itself around this shadow as though it were a virtue. Education, as it is commonly practiced, loads information into the mind at the cost of natural intelligence. The child who enters school already knows things through the body, through feeling, through direct contact with the world. That knowing is progressively replaced by a vocabulary. What was once experienced becomes named, filed, and thereby reduced. The word replaces the thing.",
+        "At the core of this shadow is a fundamental split: intellect handles the world through language and facts, while intelligence, which belongs to the heart, meets the world directly. The 62nd Shadow and its partner, the 61st Shadow of Psychosis, are two poles of the same fracture — science and religion in their extreme forms, one explaining life through accumulated fact, the other trying to bypass the mind entirely.",
+        "Language at low frequency does not serve communication. It controls it. A person in the grip of this shadow is not using language — language is using them, running the software of an upbringing they never chose, defending positions they have never truly examined."
+      ],
+      gkRepressive: "When the 62nd Shadow turns inward, it becomes obsession. The attention that would produce precision instead becomes compulsive fixation on detail — relentlessly focused on the smallest units of experience, using minutiae to prevent the larger picture from ever coming into view.",
+      gkReactive: "The reactive expression turns outward, using intellectual precision as a weapon. The command of language and detail is often impressive, but the intelligence is deployed defensively — directed at finding the flaw in another's position rather than at genuine understanding. Pedantry: correctness at the expense of meaning.",
+      gkGift: [
+        "Precision, as a gift, is not a more refined version of intellectual correctness. It is a different operation entirely. It arises when natural intelligence, which belongs to the heart, to the whole body, is given authority over the mind. The mind does not disappear. It moves into service. What it produces is something far more alive than facts: language that carries actual seeing.",
+        "When the mind is led by the heart, what a person says about a tree is not the tree's name and category. It is the tree itself, transmitted through words that carry the quality of direct contact. The precision is not in being technically correct. It is in the alignment between what is felt and what is expressed. Economy and exactness come naturally, because there is nothing to add that the intelligence has not already confirmed as necessary.",
+        "The 62nd Gift finds the limelight not by seeking it but by speaking in a way others recognize as true. Writers, speakers, scientists, artists at this frequency arrange facts in ways that are inspirational rather than dull — because the heart's encounter with reality is already alive.",
+        "At this gift level, there is no return. Once the voice has been given to truth, the lower register of language closes behind them. The throat becomes the seat of a greater initiation."
+      ],
+      gkSiddhi: [
+        "Impeccability, at the siddhic level of the 62nd Gene Key, is not a moral category. It is the condition of one who has disappeared — in whom the ego that could commit an error has dissolved, leaving only pure consciousness moving through a specific genetic vehicle.",
+        "If there is no one home, there is no one to be held accountable. What remains is the whole operating through a particular form, saying and doing exactly what is needed in each moment — not because it has been calculated to be correct, but because there is no agenda left to distort it.",
+        "The 62nd Siddhi uses the intellect to dismantle the intellect. The great sages at this frequency use logic so precisely that thought defeats itself in the listener, demonstrating through language how language is the very substance of the illusion — and breaking open the space behind it.",
+        "Cosmometry is the science of this level: every cell, every movement, every breath a living word in the Divine alphabet. When consciousness merges entirely with this understanding, nothing is left out of place. Every word arrives from the void rather than from thought."
+      ],
+      gkPartner: "Key 61, the programming partner, carries the Shadow of Psychosis, the Gift of Inspiration, and the Siddhi of Sanctity. Where Key 62 concerns what is expressed, Key 61 concerns what presses from within — the source of the pressure that demands expression, the mystery that insists on being spoken.",
+      hdGate: [
+        "Gate 62 sits in the Throat Center, the center of manifestation and expression. Its keyword is Detail. This gate translates what has been understood — internally organized, categorized, processed — into language that others can actually receive. It does not generate insight on its own. It renders insight communicable.",
+        "Where other throat gates speak in broad strokes, Gate 62 gives particulars: what happened, in what sequence, with what components. This precision serves understanding when it is in alignment. When misaligned, the same capacity becomes an avalanche of irrelevant detail that buries meaning rather than clarifying it."
+      ],
+      hdChannel: [
+        "The Channel of Acceptance, formed between Gate 62 in the Throat and Gate 17 in the Ajna Center, connects pattern recognition and logical following to the ability to name what has been recognized with precision. Its keynote — a design of an organizational being — points to the systematic ordering and communication of understanding.",
+        "Gate 17 holds the ability to see what follows from what. Gate 62 renders that structured perception into language precise enough that others can understand, verify, and build on it: the researcher, the analyst, the teacher who holds complex information and presents it with economy and clarity."
+      ],
+      hdCircuit: [
+        "The Understanding Circuit works with knowledge that can be formulated, tested, and shared. It runs between the Ajna Center, where concepts form, and the Throat, where they find expression, and its purpose is to make understanding available to the collective — the circuit of information that can be reproduced."
+      ],
+      bodyPhys: [
+        "At shadow frequency the intellectual function takes in and processes information but cannot transform it into genuine understanding. At gift frequency, the same intake is metabolized into something alive. The thyroid is the body's central regulator of this transformative rate, governing metabolism — the rate at which the body converts what it takes in into energy and form.",
+        "The throat is both the anatomical site of voice and, in the body graph, the center through which all interior states must pass to become manifest. Disruption to the thyroid shows as excess or deficiency, too fast or too slow — both poles echo the reactive and repressive shadows. The healthy thyroid, like the gift of precision, finds exactly the rate the organism requires."
+      ],
+      bodyAmino: [
+        "The 62nd Gene Key is coded by the amino acid tyrosine — precursor to the catecholamines (dopamine, norepinephrine, epinephrine) that govern attention and alertness, to the thyroid hormones that regulate metabolic conversion, and to melanin, which absorbs light. A single foundational compound whose reach runs from pigmentation and metabolism to attention and emotional regulation: the body as a living instrument for perceiving, expressing, and embodying with precision."
+      ],
+      relIntro: "Voice of Nature belongs to the Ring of No Return, whose shared arcana is the twentieth trump — Judgement in the Rider-Waite tradition, The Aeon in Thoth. Every code is bound to the others; this one answers most directly to its programming partner.",
+      relRows: [
+        {label:"The Pair · Key 61", text:"Where 62 concerns what is expressed, 61 concerns what presses from within — the mystery that insists on being spoken. Together they describe the full arc of revelation: the moment of inner knowing and the word that carries it into the world. The Ring of No Return names this arc as irreversible."},
+        {label:"Tarot · XX, The Aeon", text:"A moment of total transformation — the old order dissolved and reconstituted. For Key 62 the card points to language as the medium of the new age: the aeon is announced by a sound, and that sound, arriving from full awakening, is the voice of nature itself."},
+        {label:"Hebrew · Shin", text:"The tooth; fire; the transforming flame of a new age. The path 31, from Hod to Malkuth, is the descent of formed consciousness into embodied life — structured understanding entering the material world."},
+        {label:"The Sky · Fire", text:"Vivid, irreversible, transforming — the glowing orange-scarlet of speech that arrives with full shakti behind each word."}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

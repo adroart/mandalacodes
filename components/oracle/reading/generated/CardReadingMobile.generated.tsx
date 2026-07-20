@@ -6,13 +6,13 @@ import React from 'react';
 
 export const CardReadingMobileMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   <>
-<section style={{ padding: "48px", background: "#0b0906", display: "flex", justifyContent: "center", fontFamily: "'Iowan Old Style Web',Georgia,serif" } as React.CSSProperties}>
-  <div style={{ position: "relative", width: "402px", height: "858px", display: "flex", flexDirection: "column", background: "#14100b", border: "1px solid rgba(168,135,77,.22)", borderRadius: "44px", overflow: "hidden", boxShadow: "0 40px 90px -40px rgba(0,0,0,.85)" } as React.CSSProperties}>
-    <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "44px", padding: "0 26px 0 30px", background: "#211c16" } as React.CSSProperties}>
-      <span style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "14px", fontWeight: "700", color: "#f3ecde", letterSpacing: ".02em" } as React.CSSProperties}>
+<section style={{ padding: "48px", background: "#0b0906", display: "flex", justifyContent: "center", fontFamily: "'Iowan Old Style Web',Georgia,serif" } as unknown as React.CSSProperties}>
+  <div style={{ position: "relative", width: "402px", height: "858px", display: "flex", flexDirection: "column", background: "#14100b", border: "1px solid rgba(168,135,77,.22)", borderRadius: "44px", overflow: "hidden", boxShadow: "0 40px 90px -40px rgba(0,0,0,.85)" } as unknown as React.CSSProperties}>
+    <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "44px", padding: "0 26px 0 30px", background: "#211c16" } as unknown as React.CSSProperties}>
+      <span style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "14px", fontWeight: "700", color: "#f3ecde", letterSpacing: ".02em" } as unknown as React.CSSProperties}>
       9:41
       </span>
-      <span style={{ display: "flex", alignItems: "center", gap: "6px" } as React.CSSProperties}>
+      <span style={{ display: "flex", alignItems: "center", gap: "6px" } as unknown as React.CSSProperties}>
         <svg width="17" height="11" viewBox="0 0 17 11" fill="#f3ecde">
           <rect x="0" y="7" width="3" height="4" rx="1">
           </rect>
@@ -33,22 +33,22 @@ export const CardReadingMobileMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </svg>
       </span>
     </div>
-    <header style={{ flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "56px", padding: "0 22px", background: "#211c16", borderBottom: "1px solid rgba(168,135,77,.2)" } as React.CSSProperties}>
-      <button type="button" aria-label="Menu" style={{ background: "none", border: "0", cursor: "pointer", padding: "8px", display: "flex" } as React.CSSProperties}>
+    <header style={{ flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "56px", padding: "0 22px", background: "#211c16", borderBottom: "1px solid rgba(168,135,77,.2)" } as unknown as React.CSSProperties}>
+      <button type="button" aria-label="Menu" style={{ background: "none", border: "0", cursor: "pointer", padding: "8px", display: "flex" } as unknown as React.CSSProperties}>
         <svg width="20" height="14" viewBox="0 0 20 14" stroke="#cdc0a8" strokeWidth="1.6">
           <path d="M0 1h20M0 7h20M0 13h14">
           </path>
         </svg>
       </button>
-      <a href="#top" style={{ display: "flex", flexDirection: "column", lineHeight: "1.2", textAlign: "center" } as React.CSSProperties}>
-        <span style={{ fontFamily: "'Cinzel',serif", fontSize: "12px", textTransform: "uppercase", color: "#f3ecde", letterSpacing: ".2em", marginRight: "-.2em" } as React.CSSProperties}>
+      <a href="#top" style={{ display: "flex", flexDirection: "column", lineHeight: "1.2", textAlign: "center" } as unknown as React.CSSProperties}>
+        <span style={{ fontFamily: "'Cinzel',serif", fontSize: "12px", textTransform: "uppercase", color: "#f3ecde", letterSpacing: ".2em", marginRight: "-.2em" } as unknown as React.CSSProperties}>
         Mandala
         </span>
-        <span style={{ fontFamily: "'Cinzel',serif", fontSize: "12px", textTransform: "uppercase", color: "#f3ecde", letterSpacing: ".58em", marginRight: "-.58em" } as React.CSSProperties}>
+        <span style={{ fontFamily: "'Cinzel',serif", fontSize: "12px", textTransform: "uppercase", color: "#f3ecde", letterSpacing: ".58em", marginRight: "-.58em" } as unknown as React.CSSProperties}>
         Codes
         </span>
       </a>
-      <button type="button" aria-label="Account" style={{ background: "none", border: "0", cursor: "pointer", padding: "8px", display: "flex" } as React.CSSProperties}>
+      <button type="button" aria-label="Account" style={{ background: "none", border: "0", cursor: "pointer", padding: "8px", display: "flex" } as unknown as React.CSSProperties}>
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#cdc0a8" strokeWidth="1.6">
           <circle cx="12" cy="8" r="4">
           </circle>
@@ -57,51 +57,51 @@ export const CardReadingMobileMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </svg>
       </button>
     </header>
-    <div data-reader="" style={{ flex: "1", minHeight: "0", position: "relative" } as React.CSSProperties}>
-      <main data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", WebkitOverflowScrolling: "touch", paddingBottom: "80px" } as React.CSSProperties}>
-        <div data-jumpbar="" style={{ position: "sticky", top: "0", zIndex: "5", overflow: "hidden", background: "#191510cc", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", borderBottom: "1px solid rgba(168,135,77,.16)" } as React.CSSProperties}>
-          <span data-progressfill-h="" style={{ position: "absolute", left: "0", top: "0", height: "1px", width: "0", background: "linear-gradient(to right,rgba(198,166,103,.08),rgba(222,188,126,.6))", zIndex: "2", transition: "width .12s linear" } as React.CSSProperties}>
+    <div data-reader="" style={{ flex: "1", minHeight: "0", position: "relative" } as unknown as React.CSSProperties}>
+      <main data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", WebkitOverflowScrolling: "touch", paddingBottom: "80px" } as unknown as React.CSSProperties}>
+        <div data-jumpbar="" style={{ position: "sticky", top: "0", zIndex: "5", overflow: "hidden", background: "#191510cc", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", borderBottom: "1px solid rgba(168,135,77,.16)" } as unknown as React.CSSProperties}>
+          <span data-progressfill-h="" style={{ position: "absolute", left: "0", top: "0", height: "1px", width: "0", background: "linear-gradient(to right,rgba(198,166,103,.08),rgba(222,188,126,.6))", zIndex: "2", transition: "width .12s linear" } as unknown as React.CSSProperties}>
           </span>
-          <span data-comet="" style={{ position: "absolute", left: "0", top: "0.5px", width: "5px", height: "5px", transform: "translate(-50%,-50%) rotate(45deg)", borderRadius: "1px", background: "#d9c290", boxShadow: "0 0 5px 1px rgba(217,194,144,.4)", zIndex: "3", transition: "left .12s linear" } as React.CSSProperties}>
+          <span data-comet="" style={{ position: "absolute", left: "0", top: "0.5px", width: "5px", height: "5px", transform: "translate(-50%,-50%) rotate(45deg)", borderRadius: "1px", background: "#d9c290", boxShadow: "0 0 5px 1px rgba(217,194,144,.4)", zIndex: "3", transition: "left .12s linear" } as unknown as React.CSSProperties}>
           </span>
-          <div data-pills="" style={{ display: "flex", padding: "12px 12px" } as React.CSSProperties}>
+          <div data-pills="" style={{ display: "flex", padding: "12px 12px" } as unknown as React.CSSProperties}>
             {(vals.nav ?? []).map((n: any, nIdx: number) => (
               <React.Fragment key={nIdx}>
-                <button type="button" data-nav={n.id} style={{ flex: "1 1 0", minWidth: "0", background: "none", border: "0", cursor: "pointer", padding: "6px 2px", fontFamily: "'Iowan Old Style Web',serif", fontSize: "9px", fontWeight: "600", letterSpacing: ".03em", textTransform: "uppercase", color: "#80735f", whiteSpace: "nowrap", textAlign: "center", transition: "color .3s ease,transform .35s cubic-bezier(.4,0,.2,1)", transformOrigin: "center" } as React.CSSProperties}>
+                <button type="button" data-nav={n.id} style={{ flex: "1 1 0", minWidth: "0", background: "none", border: "0", cursor: "pointer", padding: "6px 2px", fontFamily: "'Iowan Old Style Web',serif", fontSize: "9px", fontWeight: "600", letterSpacing: ".03em", textTransform: "uppercase", color: "#80735f", whiteSpace: "nowrap", textAlign: "center", transition: "color .3s ease,transform .35s cubic-bezier(.4,0,.2,1)", transformOrigin: "center" } as unknown as React.CSSProperties}>
                 {n.tab}
                 </button>
               </React.Fragment>
             ))}
           </div>
         </div>
-        <div style={{ padding: "16px 22px 0", paddingTop: "15px" } as React.CSSProperties}>
-          <div style={{ position: "relative", width: "100%", aspectRatio: "1/1", overflow: "hidden", borderRadius: "12px", background: "#14100b" } as React.CSSProperties}>
-            <div data-artparallax="" style={{ position: "absolute", inset: "0", transform: "scale(1.03)", transformOrigin: "center", willChange: "transform" } as React.CSSProperties}>
+        <div style={{ padding: "16px 22px 0", paddingTop: "15px" } as unknown as React.CSSProperties}>
+          <div style={{ position: "relative", width: "100%", aspectRatio: "1/1", overflow: "hidden", borderRadius: "12px", background: "#14100b" } as unknown as React.CSSProperties}>
+            <div data-artparallax="" style={{ position: "absolute", inset: "0", transform: "scale(1.03)", transformOrigin: "center", willChange: "transform" } as unknown as React.CSSProperties}>
               <div data-image-slot={""} data-slot-id="art-mobile" data-slot-fit="cover" data-slot-placeholder="Drop the mandala artwork" style={{ width: "100%", height: "100%", overflow: "hidden" }}>
                 {vals.images?.["art-mobile"]}
               </div>
             </div>
           </div>
         </div>
-        <div style={{ width: "100%", "--read-pad": "22px", "--hero-dir": "column", "--hero-justify": "center", "--hero-align": "center", "--hero-size": "38px", "--hero-glyph": "34px", "--kw-size": "16px", "--cta-display": "flex", "--hero-top": "14px" } as React.CSSProperties}>
+        <div style={{ width: "100%", "--read-pad": "22px", "--hero-dir": "column", "--hero-justify": "center", "--hero-align": "center", "--hero-size": "38px", "--hero-glyph": "34px", "--kw-size": "16px", "--cta-display": "flex", "--hero-top": "14px" } as unknown as React.CSSProperties}>
           {vals.slots?.Reading ?? (<dc-import name="Reading" hintSize="100%,2600px" />)}
         </div>
       </main>
     </div>
-    <footer style={{ position: "absolute", left: "0", right: "0", bottom: "0", zIndex: "6", display: "flex", alignItems: "stretch", height: "72px", paddingBottom: "8px", borderTop: "1px solid rgba(168,135,77,.16)", background: "rgba(22,16,9,.72)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" } as React.CSSProperties}>
+    <footer style={{ position: "absolute", left: "0", right: "0", bottom: "0", zIndex: "6", display: "flex", alignItems: "stretch", height: "72px", paddingBottom: "8px", borderTop: "1px solid rgba(168,135,77,.16)", background: "rgba(22,16,9,.72)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" } as unknown as React.CSSProperties}>
       {(vals.tabs ?? []).map((t: any, tIdx: number) => (
         <React.Fragment key={tIdx}>
-          <a href="#top" data-tab={t.id} style={{ flex: "1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "5px", color: `${t.color ?? ""}` } as React.CSSProperties}>
-            <span data-tabicon="" style={{ display: "flex" } as React.CSSProperties}>
+          <a href="#top" data-tab={t.id} style={{ flex: "1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "5px", color: `${t.color ?? ""}` } as unknown as React.CSSProperties}>
+            <span data-tabicon="" style={{ display: "flex" } as unknown as React.CSSProperties}>
             </span>
-            <span style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "9px", letterSpacing: ".1em", textTransform: "uppercase" } as React.CSSProperties}>
+            <span style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "9px", letterSpacing: ".1em", textTransform: "uppercase" } as unknown as React.CSSProperties}>
             {t.label}
             </span>
           </a>
         </React.Fragment>
       ))}
     </footer>
-    <div style={{ position: "absolute", left: "50%", bottom: "8px", zIndex: "7", transform: "translateX(-50%)", width: "128px", height: "5px", borderRadius: "3px", background: "rgba(243,236,222,.28)" } as React.CSSProperties}>
+    <div style={{ position: "absolute", left: "50%", bottom: "8px", zIndex: "7", transform: "translateX(-50%)", width: "128px", height: "5px", borderRadius: "3px", background: "rgba(243,236,222,.28)" } as unknown as React.CSSProperties}>
     </div>
   </div>
 </section>

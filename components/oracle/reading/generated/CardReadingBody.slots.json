@@ -1,0 +1,25 @@
+{
+  "placeholders": [],
+  "handlers": [],
+  "refs": [],
+  "loops": [
+    "bodyAmino as p",
+    "bodyPhys as p",
+    "essenceRest as p",
+    "gkGift as p",
+    "gkShadow as p",
+    "gkSiddhi as p",
+    "hdChannel as p",
+    "hdCircuit as p",
+    "hdGate as p",
+    "hexLines as ln",
+    "icRead as p",
+    "relRows as r"
+  ],
+  "conditionals": [
+    "ln.broken",
+    "ln.solid"
+  ],
+  "componentSlots": [],
+  "imageSlots": []
+}

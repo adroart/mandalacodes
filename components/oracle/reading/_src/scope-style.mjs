@@ -9,9 +9,12 @@
    Idempotent — safe to run repeatedly. */
 import { readFileSync, writeFileSync } from 'node:fs';
 
+/* The reading body renders inside BOTH shells, so it scopes to the shared
+   .card-reading wrapper rather than one variant. */
 const TARGETS = [
   ['components/oracle/reading/generated/CardReadingMobile.style.css', '.card-reading--mobile'],
   ['components/oracle/reading/generated/CardReadingDesktop.style.css', '.card-reading--desktop'],
+  ['components/oracle/reading/generated/CardReadingBody.style.css', '.card-reading'],
 ];
 
 const MARKER = '/* scoped by scope-style.mjs */';
