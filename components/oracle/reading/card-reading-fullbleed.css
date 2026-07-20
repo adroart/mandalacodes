@@ -138,6 +138,15 @@
   padding-top: 0 !important;
 }
 
+/* Anything past the last chapter takes the bar's colour, so the floor runs
+   unbroken to the bottom instead of showing a lighter strip between the end of
+   the reading and the bar. The chapters paint over this with their own shades,
+   so only the tail is affected. */
+.card-reading [data-scroll],
+.card-reading .eb-reading {
+  background: #0a0805 !important;
+}
+
 /* The whole top area comes from the design now: its artwork in the shell, and
    its header block below. The live reading's hero would repeat all of it. */
 .card-reading .ul-hero-section {
