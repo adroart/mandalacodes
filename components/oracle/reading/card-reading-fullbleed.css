@@ -78,6 +78,31 @@
   padding-top: var(--nav-height, 64px);
 }
 
+/* ── The live reading, mounted inside the shell ────────────────────────── */
+
+/* The live reading brings its own sticky lens rail and its own fixed bottom
+   bar. The shell supplies both, so the inner ones would be second copies of
+   the same thing sitting on top of the shell's. */
+.card-reading .oracle-reading-progress,
+.card-reading .oracle-bottom-nav {
+  display: none !important;
+}
+
+/* It also expects to be the page. Inside the shell it is a block in the
+   shell's own scroll container, so it gives up full-viewport sizing. */
+.card-reading .eb-reading {
+  min-height: 0 !important;
+}
+
+/* The artwork is the one piece of the top area the shell owns, in its own
+   column on the wide layout and full bleed on the phone. The live hero's copy
+   of it would be a second one directly underneath, so only that goes. The
+   card name, keywords and chart invitation stay: the shell has no title block
+   of its own on the phone, and this is the treatment already on the site. */
+.card-reading .ul-hero-grid > figure {
+  display: none !important;
+}
+
 /* ── Section tints and page breaks ─────────────────────────────────────── */
 
 /* Every section in the import was transparent, so the six chapters ran

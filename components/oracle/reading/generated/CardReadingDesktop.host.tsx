@@ -119,7 +119,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       readers.forEach((reader) => {
         if (this._wired.has(reader)) return;
         const ready = reader.querySelector('[data-scroll]')
-          && reader.querySelectorAll('[data-sec]').length >= 6
+          && reader.querySelectorAll('[data-sec], [data-chapter]').length >= 6
           && reader.querySelectorAll('[data-nav]').length;
         if (ready) { this._wired.add(reader); this.wireReader(reader); }
         else pending = true;
@@ -131,10 +131,14 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
 
   componentWillUnmount() { if (this._timer) clearTimeout(this._timer); if (this._anim) clearInterval(this._anim); }
 
+  /* Section lookup: the live reading marks its six chapters with data-chapter,
+     the imported design used data-sec. The engine accepts either so the shell
+     can drive the live body. Ids match on both (ul, iching, genekeys,
+     humandesign, body, relations). */
   wireReader(reader: any) {
     const scroll = reader.querySelector('[data-scroll]');
     if (!scroll) return;
-    const secs = Array.from(reader.querySelectorAll('[data-sec]')) as any[];
+    const secs = Array.from(reader.querySelectorAll('[data-sec], [data-chapter]')) as any[];
     const navs = Array.from(reader.querySelectorAll('[data-nav]')) as any[];
     if (!secs.length || !navs.length) return;
 
@@ -173,7 +177,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       const sTop = scroll.getBoundingClientRect().top;
       secList = navs.map((n: any) => {
         const id = n.getAttribute('data-nav');
-        const sec = reader.querySelector('[data-sec="' + id + '"]');
+        const sec = reader.querySelector('[data-sec="' + id + '"], [data-chapter="' + id + '"]');
         const top = sec ? (sec.getBoundingClientRect().top - sTop + scroll.scrollTop) : 0;
         return { id, top, btn: n };
       }).sort((a: any, b: any) => a.top - b.top);
@@ -266,7 +270,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
     reader.addEventListener('click', (e: any) => {
       const btn = e.target.closest && e.target.closest('[data-nav]');
       if (!btn || !reader.contains(btn)) return;
-      const target = reader.querySelector('[data-sec="' + btn.getAttribute('data-nav') + '"]');
+      const target = reader.querySelector('[data-sec="' + btn.getAttribute('data-nav') + '"], [data-chapter="' + btn.getAttribute('data-nav') + '"]');
       if (!target) return;
       const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - 12;
       const max = scroll.scrollHeight - scroll.clientHeight;

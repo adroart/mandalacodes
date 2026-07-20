@@ -12,11 +12,9 @@ import React, { useEffect, useState } from 'react';
 import { CARD_BY_NUMBER } from '../../../data/oracleData';
 import { getSynthesis, type CardSynthesis } from '../../../data/synthesisData';
 import { ulCardImageUrl } from '../../../utils/universalLanguage';
-import { hexagramLineBooleans } from '../HexagramGlyph';
-import { HEXAGRAM_CHINESE } from '../../../data/hexagramChinese';
 import CardReading, { type CardReadingLens } from './CardReading';
 import Navigation from '../../Navigation';
-import CardReadingBodyHost, { type CardReadingBodyData } from './generated/CardReadingBody.host';
+import UniversalLanguageCard from '../../UniversalLanguageCard';
 
 /* Prose in these files is paragraph-separated by blank lines. */
 const paras = (s?: string): string[] =>
@@ -31,103 +29,6 @@ const LENSES: CardReadingLens[] = [
   { id: 'body', label: 'Body', tab: 'Body', glyph: 'circle' },
   { id: 'relations', label: 'Relations', tab: 'Relations', glyph: 'rings' },
 ];
-
-function buildBody(card: any, syn?: CardSynthesis): CardReadingBodyData {
-  const s = syn?.synthesis;
-  const rel = syn?.relations;
-
-  /* The design opens the reading with a drop cap, so the first paragraph is
-     split into its first character and the remainder. */
-  const essence = paras(syn?.essence);
-  const lead = essence[0] ?? '';
-
-  const hexLines = hexagramLineBooleans(
-    card.iching.upper_trigram.symbol,
-    card.iching.lower_trigram.symbol,
-  ).map((solid) => ({ solid, broken: !solid }));
-
-  /* "Thunder (Chen)" -> "Thunder · Chen", the way the design writes it. */
-  const trigramName = (n: string) => n.replace(/\s*\(([^)]+)\)\s*$/, ' · $1').trim();
-
-  /* The design's relations table: one row per relationship the card carries.
-     Rows with nothing authored are dropped rather than shown empty. */
-  const relRows = [
-    rel?.pair && { label: `The Pair · Key ${rel.pair.number}`, text: rel.pair.teaching },
-    rel?.tarot && { label: `Tarot · ${rel.tarot.card}`, text: rel.tarot.teaching },
-    rel?.hebrew_letter && { label: `Hebrew · ${rel.hebrew_letter.letter}`, text: rel.hebrew_letter.teaching },
-    rel?.sky && { label: `The Sky · ${rel.sky.value}`, text: rel.sky.teaching },
-    rel?.codon_ring && { label: `Ring · ${rel.codon_ring.name}`, text: rel.codon_ring.teaching },
-  ].filter(Boolean) as { label: string; text: string }[];
-
-  const ref = syn?.reference;
-  const g = card.gene_keys;
-
-  /* "Thunder over Mountain" — the trigram pair, romanisations dropped. */
-  const bare = (t: string) => t.replace(/\s*\([^)]*\)\s*/g, '').trim();
-  const partner = rel?.programming_partner;
-  const partnerCard = partner ? CARD_BY_NUMBER.get(partner.number) : undefined;
-
-  const icReadParas = paras(s?.iching?.reading);
-  const gkGiftParas = paras(s?.gene_keys?.gift);
-  const hdGateParas = paras(s?.human_design?.gate);
-  const bodyPhysParas = paras(s?.body?.physiology);
-
-  return {
-    ulKicker: `Universal Language ${card.number}`,
-    cardName: card.card_name,
-    dropCap: lead.charAt(0),
-    leadRest: lead.slice(1),
-    essenceRest: essence.slice(1),
-    keywordsLine: (syn?.keywords ?? []).join(' · '),
-
-    hexChar: HEXAGRAM_CHINESE[card.number]?.char ?? '',
-    hexName: card.iching.hexagram_name,
-    trigramLine: `${bare(card.iching.upper_trigram.name)} over ${bare(card.iching.lower_trigram.name)}`,
-    hexLines: hexLines,
-    upperTrigram: trigramName(card.iching.upper_trigram.name),
-    lowerTrigram: trigramName(card.iching.lower_trigram.name),
-    upperLines: hexLines.slice(0, 3),
-    lowerLines: hexLines.slice(3),
-    icComb: s?.iching?.trigram_combination ?? '',
-    icRead: icReadParas,
-    icJudge: (s?.iching?.judgement_lines ?? []).join(' '),
-    icImage: (s?.iching?.image_lines ?? []).join(' '),
-
-    gkShadowName: g.shadow,
-    gkGiftName: g.gift,
-    gkSiddhiName: g.siddhi,
-    gkPartnerName: partnerCard
-      ? `Key ${partnerCard.number} · ${partnerCard.gene_keys.gift}`
-      : partner ? `Key ${partner.number}` : '',
-    gkShadow: paras(s?.gene_keys?.shadow),
-    gkRepressive: s?.gene_keys?.repressive ?? '',
-    gkReactive: s?.gene_keys?.reactive ?? '',
-    gkGift: gkGiftParas,
-    gkSiddhi: paras(s?.gene_keys?.siddhi),
-    gkPartner: s?.gene_keys?.programming_partner ?? '',
-
-    /* The design writes the centre as "The Throat"; the data holds "Throat". */
-    hdCentre: ref?.hd_center ? `The ${ref.hd_center}` : '',
-    hdCentreLine: ref?.hd_center
-      ? `The ${ref.hd_center}${ref.hd_circuit ? ` — ${ref.hd_circuit} circuit` : ''}`
-      : '',
-    hdGate: hdGateParas,
-    hdChannel: paras(s?.human_design?.channel),
-    hdCircuit: paras(s?.human_design?.circuit),
-
-    bodySite: (ref?.body_physiology ?? '').replace('/', ' & '),
-    bodySiteRaw: ref?.body_physiology ?? '',
-    bodyAminoName: ref?.body_amino_acid ?? '',
-    bodyPhys: bodyPhysParas,
-    bodyAmino: paras(s?.body?.amino_acid),
-
-    /* The design's relations subtitle has no field behind it; the codon ring is
-       the card's real relations-level identity, so it stands there instead. */
-    relTitle: rel?.codon_ring?.name ?? 'Relations',
-    relIntro: rel?.unity_line ?? '',
-    relRows,
-  };
-}
 
 export const CardReadingData: React.FC<{ cardNumber: number; variant?: 'mobile' | 'desktop' }> = ({ cardNumber, variant }) => {
   const card = CARD_BY_NUMBER.get(cardNumber);
@@ -164,10 +65,22 @@ export const CardReadingData: React.FC<{ cardNumber: number; variant?: 'mobile' 
     return { ...l, sum };
   });
 
-  /* The reading body is the design's own Reading file, not markup written here.
-     It already carries data-sec on each of the six sections, which is what the
-     shell's scroll engine keys the rail and progress marker off. */
-  const reading = <CardReadingBodyHost data={buildBody(card, syn)} />;
+  /* The reading body is the LIVE reading, mounted whole inside the new shell.
+
+     The imported Reading.dc.html was a second, thinner implementation of a
+     reading that already exists and is far richer: the kin diagram, the coin
+     cast, the shadow/gift/siddhi switcher, the artwork lightbox, share and
+     acquire, and all of the real content wiring. Rebuilding that against the
+     new design would have meant reproducing months of work and losing
+     behaviour on the way. The new design's value is the shell around it, so
+     the shell is what we keep and the live body goes inside.
+
+     UniversalLanguageCard reads the card number from the route, which is the
+     same :number param this preview uses, so it needs nothing passed to it.
+     Its own progress rail is hidden in card-reading-fullbleed.css because the
+     shell supplies that, and the shell's scroll engine reads its sections via
+     data-chapter (see the note in the hosts). */
+  const reading = <UniversalLanguageCard />;
 
   /* Full width of its column at the artwork's own square proportion: never
      cropped (the pattern IS the piece) and never letterboxed inside a taller
