@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style data-omelette-injected>html,body{background:transparent}</style><script data-omelette-injected>(()=>{{const W=new URLSearchParams(location.search).get("theme");if(W==="light"||W==="dark"){document.documentElement.dataset.theme=W}}{if(new URLSearchParams(location.search).get("_omthumb")==="1"){const W=(q)=>{const X=q.focus;if(!X)return;q.focus=function(H){X.call(this,{...H,preventScroll:true})}};W(HTMLElement.prototype);W(SVGElement.prototype);if(typeof MathMLElement!=="undefined"){W(MathMLElement.prototype)}const $=(q)=>{q.removeAttribute("autofocus");q.inert=true;if(!(q instanceof HTMLElement))q.removeAttribute("tabindex")};const z=(q)=>{if(q.hasAttribute("autofocus"))$(q);for(const X of q.querySelectorAll("[autofocus]")){$(X)}};z(document.documentElement);new MutationObserver((q)=>{for(const X of q){for(const H of X.addedNodes){if(H.nodeType===1)z(H)}}}).observe(document,{childList:true,subtree:true})}}{const W=()=>{try{if(document.querySelector('meta[name="color-scheme"]'))return;const $=getComputedStyle(document.documentElement).getPropertyValue("color-scheme").trim();if($&&$!=="normal")return;const z=(j)=>{if(!j)return null;const F=getComputedStyle(j).backgroundColor.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\s/]+([\d.]+%?))?\s*\)$/);if(!F)return null;const G=F[4]==null?1:parseFloat(F[4])/(F[4].endsWith("%")?100:1);if(G<0.99)return null;return[+F[1],+F[2],+F[3]]};const q=z(document.body)||z(document.documentElement);if(!q)return;const X=(j)=>{const F=j/255;return F<=0.04045?F/12.92:((F+0.055)/1.055)**2.4};const H=0.2126*X(q[0])+0.7152*X(q[1])+0.0722*X(q[2]);document.documentElement.style.setProperty("color-scheme",H<0.4?"dark":"light")}catch{}};if(document.readyState==="complete")W();else window.addEventListener("load",W)}var b=[];var p=false;var u=30000;var d=3000;document.addEventListener("DOMContentLoaded",()=>{const W=window.Babel;const $="om-src-id";if(W&&W.registerPlugin&&!(W.availablePlugins&&W.availablePlugins[$])){W.registerPlugin($,({types:H})=>({visitor:{JSXOpeningElement(j,F){const G=j.node;if(G.name&&G.name.type==="JSXMemberExpression")return;for(let Q=0;Q<G.attributes.length;Q++){const V=G.attributes[Q];if(V.type==="JSXAttribute"&&V.name&&V.name.name==="data-om-id")return}const P=F.file&&F.file.opts&&F.file.opts.filename||"?";const R=G.loc&&G.loc.start;const J=`jsx:${P}:${G.start??0}:${R?R.line:0}:${R?R.column+1:0}`;G.attributes.push(H.jsxAttribute(H.jsxIdentifier("data-om-id"),H.stringLiteral(J)))}}}))}const z="om-text-extract";let q=false;if(p&&W&&W.registerPlugin&&!(W.availablePlugins&&W.availablePlugins[z])){const H=window.React;if(H&&H.useSyncExternalStore&&H.createElement){q=true;const j={};const F=new Set;let G=0;window.__omTextO=j;window.__omTextSet=(J)=>{for(const Q in J){const V=J[Q];if(V==null)delete j[Q];else j[Q]=V}G++;F.forEach((Q)=>Q())};const P=(J)=>{F.add(J);return()=>F.delete(J)};const R=()=>G;window.__OmT=function J(Q){H.useSyncExternalStore(P,R,R);return H.createElement("span",{"data-om-text":Q.i,className:"__om-t"},Q.i in j?j[Q.i]:Q.children)};W.registerPlugin(z,({types:J})=>{const Q={style:1,script:1,noscript:1,textarea:1,title:1,option:1,text:1,tspan:1,textPath:1};const V={placeholder:1,alt:1,title:1,label:1,"aria-label":1,"aria-description":1,"aria-placeholder":1};const Y=(K,M)=>J.logicalExpression("??",J.memberExpression(J.logicalExpression("||",J.memberExpression(J.identifier("window"),J.identifier("__omTextO")),J.objectExpression([])),J.stringLiteral(K),true),M);const Z=(K)=>K.file&&K.file.opts&&K.file.opts.filename||"?";const B=(K)=>K.file&&K.file.code||"";const U=(K,M)=>{const L=(D)=>D&&D.start!=null&&D.end!=null&&(D.type==="StringLiteral"||D.type==="TemplateLiteral"&&D.expressions.length===0)?[D.start,D.end]:null;const N=L(M);if(N)return N;if(M&&M.type==="Identifier"){const D=K.scope.getBinding(M.name);if(D&&D.constant&&D.path.node.type==="VariableDeclarator"){return L(D.path.node.init)}}return null};const x=(K,M,L)=>{const N=K.node;let D=false;const f=(w,A)=>{D=true;return J.jsxElement(J.jsxOpeningElement(J.jsxIdentifier("__OmT"),[J.jsxAttribute(J.jsxIdentifier("i"),J.stringLiteral(w))],false),J.jsxClosingElement(J.jsxIdentifier("__OmT")),[A],false)};const C=N.children.map((w)=>{if(w.type==="JSXText"){if(w.start==null||w.end==null)return w;const A=L.slice(w.start,w.end);const S=A.length-A.trimStart().length;const O=A.length-A.trimEnd().length;if(S+O>=A.length)return w;return f(`txt:${M}:${w.start+S}:${w.end-O}`,w)}if(w.type==="JSXExpressionContainer"){const A=U(K,w.expression);if(A)return f(`str:${M}:${A[0]}:${A[1]}`,w)}return w});if(D)N.children=C};return{visitor:{JSXOpeningElement(K,M){const L=K.node;const N=Z(M);const D={};for(let f=0;f<L.attributes.length;f++){const C=L.attributes[f];if(C.type!=="JSXAttribute"||!C.name)continue;const w=C.name.name;if(!V[w])continue;if(!C.value||C.value.type!=="StringLiteral")continue;if(C.value.start==null||C.value.end==null)continue;const A=`txt:${N}:${C.value.start}:${C.value.end}`;D[w]=A;C.value=J.jsxExpressionContainer(Y(A,J.stringLiteral(C.value.value)))}if(Object.keys(D).length){L.attributes.push(J.jsxAttribute(J.jsxIdentifier("data-om-text-attrs"),J.stringLiteral(JSON.stringify(D))))}},JSXElement(K,M){const L=K.node.openingElement;const N=L&&L.name&&L.name.name;if(N==="__OmT")return;if(typeof N==="string"&&Q[N])return;x(K,Z(M),B(M))},JSXFragment(K,M){x(K,Z(M),B(M))}}}})}}const X=q?["transform-react-jsx-source",$,z]:["transform-react-jsx-source",$];document.querySelectorAll('script[type="text/babel"],script[type="text/jsx"]').forEach((H,j)=>{const F=H.getAttribute("data-plugins")||"";const G=X.filter((P)=>F.indexOf(P)<0);if(G.length){H.setAttribute("data-plugins",F?`${F},${G.join(",")}`:G.join(","))}if(!H.hasAttribute("data-filename")){H.setAttribute("data-filename",H.getAttribute("src")||`inline-${j}`)}})});var I=window.parent;var g="not editable here — open the project in the Claude Design editor to save";var n=()=>Promise.resolve({persisted:false,noHost:true,reason:g});var k=n;var v="data/storage.json";var l=()=>{try{const W=new URL(document.baseURI);const $=W.pathname.match(/\/projects\/([^/]+)\/serve\//);if($)return $[1];return W.hostname.split(".")[0]||""}catch{return location.hostname.split(".")[0]||""}};var o=()=>{try{const W=new URL(document.baseURI);const $=W.pathname.indexOf("/serve/");if($>=0)return W.origin+W.pathname.slice(0,$+"/serve/".length)+v}catch{}return"./"+v};var E=null;var _=()=>{if(!E){E=fetch(o(),{cache:"no-store"}).then((W)=>{if(W.ok)return W.text();return W.status===404?"":null}).catch(()=>null).then((W)=>{if(W===null){E=null;return null}const $=new Map;if(!W)return $;let z;try{z=JSON.parse(W)}catch{console.warn("[omelette.storage] "+v+" is not valid JSON; treating the store as unreadable so a save cannot overwrite the "+"hand-edited bytes. Fix the JSON (or delete the file) to re-enable persistence.");E=null;return null}if(z===null||typeof z!=="object"||Array.isArray(z)){console.warn("[omelette.storage] "+v+" doesn't hold a JSON object; treating the store as unreadable so a save cannot "+"overwrite the hand-edited bytes. Make the top level a JSON object to re-enable persistence.");E=null;return null}const q=z;if("data"in q){const X=q.data;if(X===null||typeof X!=="object"||Array.isArray(X)){console.warn("[omelette.storage] "+v+' has a "data" field that is not a JSON object; treating the store as unreadable so a '+'save cannot overwrite the hand-edited bytes. Make "data" a JSON object to re-enable persistence.');E=null;return null}const H=q._meta;const j=H!==null&&typeof H==="object"?H.project:undefined;if(typeof j==="string"&&j!==""&&j!==l())return $;for(const F of Object.keys(X))$.set(F,X[F]);return $}for(const X of Object.keys(q)){if(X!=="_meta")$.set(X,q[X])}return $})}return E};var y=(W)=>k(v,JSON.stringify({_meta:{project:l(),version:1},data:Object.fromEntries(W)},null,2));var m=Promise.resolve();var T=(W)=>{const $=m.then(W);m=$.then(()=>{return},()=>{return});return $};var s=/sk-(?:ant-)?[A-Za-z0-9_-]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|xox[a-z]-[A-Za-z0-9][A-Za-z0-9-]{9,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/;var a=/password|passwd|secret|api[_-]?key|access[_-]?token|auth[_-]?token|credential/i;var r=(W,$,z)=>{if(s.test($)||a.test(W)&&typeof z==="string"&&z.length>=8){console.warn('[omelette.storage] the value for "'+W+'" looks like a credential. The storage file is a plaintext project file — visible to '+"everyone with project access and copied when the project is duplicated. Do not store secrets here.")}};var c={persisted:false,reason:"could not load the existing store — not overwriting it"};var i={persisted:false,reason:"stored value changed since a failed read — re-read this key before saving"};var h=new Set;var t={get:(W)=>{if(typeof W!=="string"){return Promise.reject(new TypeError("storage.get: key must be a string"))}return T(_).then(($)=>{if($===null){h.add(W);return null}h.delete(W);if(!$.has(W))return null;const z=$.get(W);return z==null?null:JSON.parse(JSON.stringify(z))})},set:(W,$)=>{if(typeof W!=="string"){return Promise.reject(new TypeError("storage.set: key must be a string"))}let z;try{z=JSON.stringify($)}catch(X){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable ("+String(X)+")"))}if(z===undefined){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable"))}r(W,z,$);const q=JSON.parse(z);return T(()=>_().then((X)=>{if(X===null)return c;if(h.has(W)){if(X.has(W))return i;h.delete(W)}X.set(W,q);return y(X)}))},delete:(W)=>{if(typeof W!=="string"){return Promise.reject(new TypeError("storage.delete: key must be a string"))}return T(()=>_().then(($)=>{if($===null)return c;if(h.has(W)){if($.has(W))return i;h.delete(W)}$.delete(W);return y($)}))},keys:()=>T(_).then((W)=>W===null?[]:Array.from(W.keys()))};window.omelette={writeFile:(W,$)=>k(W,$).then((z)=>{if(!z.persisted&&!z.noHost){throw new Error(z.reason||"write failed")}}),storage:t};if(I&&I!==window){const W=(J,Q)=>{try{I.postMessage({__omelette_log:true,type:J,data:Q},"*")}catch{}};["log","warn","error"].forEach((J)=>{const Q=console[J];console[J]=(...V)=>{const Y=V.map((Z)=>{try{return typeof Z==="object"?JSON.stringify(Z):String(Z)}catch{try{return String(Z)}catch{return"[unstringifiable]"}}}).join(" ");W(J,Y);Q.apply(console,V)}});window.addEventListener("error",(J)=>{const Q=J.target;if(Q&&Q!==window&&Q.tagName){const V=Q.src||Q.href||"";W("resource_error",`${Q.tagName} failed to load: ${V}`)}else{W("error",`${J.message||"Unknown error"} at ${J.filename||"?"}:${J.lineno||0}:${J.colno||0}`)}},true);window.addEventListener("unhandledrejection",(J)=>{const Q=J.reason;const V=Q instanceof Error?`${Q.message} ${Q.stack}`:String(Q);W("error",`Unhandled rejection: ${V}`)});window.addEventListener("click",(J)=>{if(J.defaultPrevented||J.button!==0)return;if(J.metaKey||J.ctrlKey||J.shiftKey||J.altKey)return;const Q=J.composedPath?J.composedPath():[];const V=["button","input","select","textarea","summary","label"];let Y=null;for(const x of Q){if(!(x instanceof Element))continue;if(x.localName==="a"){if(!(x instanceof HTMLAnchorElement))return;Y=x;break}if(V.indexOf(x.localName)!==-1)return}if(!Y)return;if(Y.isContentEditable)return;const Z=Y.closest("[contenteditable]");if(Z&&Z.getAttribute("contenteditable")!=="false")return;const B=(Y.getAttribute("target")||"_self").toLowerCase();if(B!=="_self"&&B!=="_top"&&B!=="_parent")return;let U;try{U=new URL(Y.href)}catch{return}if(U.protocol!=="http:"&&U.protocol!=="https:")return;if(location.origin==="null")return;if(U.origin===location.origin)return;J.preventDefault();window.open(U.href,"_blank","noopener,noreferrer")});const $=()=>{try{I.postMessage({type:"omelette:height",height:document.documentElement.scrollHeight},"*")}catch{}};if(window.ResizeObserver)new ResizeObserver($).observe(document.documentElement);const z=()=>{$();if(!document.querySelector('script[type="text/babel"],script[type="text/jsx"]'))return;const J=()=>document.getElementById("root")||document.querySelector("body > div[id]");const Q=J()?.firstElementChild??null;let V=0;const Y=()=>{const Z=J();if(Z&&Z.firstElementChild!==Q||++V>30){$();return}setTimeout(Y,100)};setTimeout(Y,100)};if(document.readyState==="complete")z();else window.addEventListener("load",z);const q={};let X=0;const H=(J)=>new Promise((Q,V)=>{if(!b.length){V(new Error("claude.complete: no parent origin"));return}const Y=`c${++X}`;const Z=()=>setTimeout(()=>{delete q[Y];V(new Error(`claude.complete: no data for ${u/1000}s`))},u);const B=Z();q[Y]={resolve:Q,reject:V,text:"",t:B,arm:Z};try{for(const U of b){I.postMessage({__om_api:true,id:Y,body:J},U)}}catch(U){clearTimeout(B);delete q[Y];V(U)}});const j=8;const F=async(J,Q)=>{if(!Array.isArray(J.messages)){throw new Error("claude.complete: tools require a messages array")}const V=J.messages.slice();const Y={...J,tools:J.tools.map((U)=>{if(U===null||typeof U!=="object")return U;const x={};for(const K of Object.keys(U)){if(typeof U[K]!=="function")x[K]=U[K]}return x})};const Z=Y.tool_choice;const B=Z!=null&&(Z.type==="any"||Z.type==="tool")?{...Y,tool_choice:Z.disable_parallel_tool_use!==undefined?{type:"auto",disable_parallel_tool_use:Z.disable_parallel_tool_use}:{type:"auto"}}:Y;for(let U=0;U<j;U++){const x=await H({...U===0?Y:B,messages:V});const K=x.message;const M=K&&Array.isArray(K.content)?K.content:null;const L=M?M.filter((D)=>D?.type==="tool_use"):[];if(K?.stop_reason!=="tool_use"||L.length===0){return x.text}const N=[];for(const D of L){const f=Q.get(D.name);if(!f){N.push({type:"tool_result",tool_use_id:D.id,content:`no handler for tool "${D.name}"`,is_error:true});continue}try{const C=await f(D.input);const w=typeof C==="string"?C:R(C)??"";N.push({type:"tool_result",tool_use_id:D.id,content:w})}catch(C){N.push({type:"tool_result",tool_use_id:D.id,content:String(C?.message??C??"tool handler failed"),is_error:true})}}V.push({role:"assistant",content:M},{role:"user",content:N})}throw new Error(`claude.complete: exceeded ${j} tool turns`)};window.claude={complete(J){const Q=J;if(Q!==null&&typeof Q==="object"&&Array.isArray(Q.tools)&&Q.tools.some((V)=>V!==null&&typeof V==="object"&&typeof V.run==="function")){const V=new Map;for(const Y of Q.tools){if(Y!==null&&typeof Y==="object"&&typeof Y.run==="function"){V.set(String(Y.name),Y.run)}}return F(Q,V)}return H(J).then((V)=>V.text)}};const G={};let P=0;k=(J,Q)=>new Promise((V)=>{if(!b.length){V({persisted:false,noHost:true,reason:g});return}const Y=`f${++P}`;const Z=setTimeout(()=>{delete G[Y];V({persisted:false,noHost:true,reason:g})},d);G[Y]={settle:V,t:Z};try{for(const B of b){I.postMessage({__om_file:true,id:Y,op:"write",path:J,content:Q},B)}}catch{clearTimeout(Z);delete G[Y];V({persisted:false,noHost:true,reason:g})}});const R=(J)=>{try{return JSON.stringify(J)}catch{return JSON.stringify(String(J))}};window.addEventListener("message",(J)=>{if(b.indexOf(J.origin)<0)return;if(J.source!==I)return;const Q=J.data;if(!Q)return;if(Q.type==="omelette-preview-refresh"){if(typeof Q.token!=="string"||!/^[0-9a-f.-]+(\.(rc|pr-[0-9]+))?(\.[0-9]+\.[0-9a-f]{16})?$/.test(Q.token))return;const Z=Math.max(1,Math.floor((Q.expiresAt||0)-Date.now()/1000));document.cookie="__Host-omelette-preview="+Q.token+"; Path=/; Secure; SameSite=None; Partitioned; Max-Age="+Z;return}if(Q.__om_file_r){const Z=G[Q.id];if(!Z)return;clearTimeout(Z.t);delete G[Q.id];Z.settle(Q.ok?{persisted:true}:{persisted:false,reason:Q.error||"write failed"});return}if(Q.__om_api_r){const Z=q[Q.id];if(!Z)return;if(Q.error!=null){clearTimeout(Z.t);delete q[Q.id];Z.reject(new Error(Q.error));return}if(Q.chunk!=null){clearTimeout(Z.t);Z.t=Z.arm();Z.text+=Q.chunk;return}if(Q.done){clearTimeout(Z.t);delete q[Q.id];Z.resolve({text:Q.text!=null?Q.text:Z.text,message:Q.message});return}return}if(!Q.__om_eval)return;const V=Q;const Y=(Z)=>{J.source.postMessage({...Z,__om_eval_r:1,id:V.id},J.origin)};try{const Z=(0,eval)(V.code);if(Z&&typeof Z.then==="function"){Z.then((B)=>Y({ok:1,v:R(B)}),(B)=>Y({ok:0,e:String(B)}))}else{Y({ok:1,v:R(Z)})}}catch(Z){Y({ok:0,e:String(Z)})}})}})();
+</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:400;font-display:swap;src:url('public/fonts/cormorant-garamond-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:400;font-display:swap;src:url('public/fonts/cormorant-garamond-latin-400-italic.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:500;font-display:swap;src:url('public/fonts/cormorant-garamond-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:500;font-display:swap;src:url('public/fonts/cormorant-garamond-latin-500-italic.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:normal;font-weight:400;font-display:swap;src:url('public/fonts/iowan-old-style-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:italic;font-weight:400;font-display:swap;src:url('public/fonts/iowan-old-style-latin-400-italic.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:normal;font-weight:700;font-display:swap;src:url('public/fonts/iowan-old-style-latin-700-normal.woff2') format('woff2');}
+@font-face{font-family:"Cinzel";font-style:normal;font-weight:500;font-display:swap;src:url('public/fonts/cinzel-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:"Cinzel";font-style:normal;font-weight:600;font-display:swap;src:url('public/fonts/cinzel-latin-600-normal.woff2') format('woff2');}
+*{box-sizing:border-box;}
+body{margin:0;background:#0b0906;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:#c6a667;text-decoration:none;}a:hover{color:#debc7e;}
+[data-scroll]{scrollbar-width:none;}
+[data-scroll]::-webkit-scrollbar{width:0;height:0;display:none;}
+[data-pills]::-webkit-scrollbar{display:none;}[data-pills]{scrollbar-width:none;}
+@keyframes cometGlow{0%,100%{box-shadow:0 0 8px 1px rgba(240,217,168,.5);}50%{box-shadow:0 0 15px 4px rgba(240,217,168,.8);}}
+</style>
+</helmet>
+
+<section style="padding:48px;background:#0b0906;display:flex;justify-content:center;font-family:'Iowan Old Style Web',Georgia,serif;">
+  <div style="position:relative;width:402px;height:858px;display:flex;flex-direction:column;background:#14100b;border:1px solid rgba(168,135,77,.22);border-radius:44px;overflow:hidden;box-shadow:0 40px 90px -40px rgba(0,0,0,.85);">
+
+    <!-- status bar -->
+    <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;height:44px;padding:0 26px 0 30px;background:#211c16;">
+      <span style="font-family:'Iowan Old Style Web',serif;font-size:14px;font-weight:700;color:#f3ecde;letter-spacing:.02em;">9:41</span>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="#f3ecde"><rect x="0" y="7" width="3" height="4" rx="1"></rect><rect x="4.5" y="5" width="3" height="6" rx="1"></rect><rect x="9" y="2.5" width="3" height="8.5" rx="1"></rect><rect x="13.5" y="0" width="3" height="11" rx="1"></rect></svg>
+        <svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5" stroke="#f3ecde" opacity=".5"></rect><rect x="2" y="2" width="14" height="7" rx="1.3" fill="#f3ecde"></rect><rect x="20" y="3.5" width="1.5" height="4" rx="0.75" fill="#f3ecde" opacity=".5"></rect></svg>
+      </span>
+    </div>
+
+    <!-- header -->
+    <dc-import name="TopNav" hint-size="100%,56px"></dc-import>
+
+    <!-- body scroller -->
+    <div data-reader="" style="flex:1;min-height:0;position:relative;">
+      <main data-scroll="" style="position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:80px;">
+
+        <!-- sticky pill jump bar (top) -->
+        <div data-jumpbar="" style="position:sticky;top:0;z-index:5;overflow:hidden;background:#191510cc;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(168,135,77,.16);">
+          <span data-progressfill-h="" style="position:absolute;left:0;top:0;height:1px;width:0;background:linear-gradient(to right,rgba(198,166,103,.08),rgba(222,188,126,.6));z-index:2;transition:width .12s linear;"></span>
+          <span data-comet="" style="position:absolute;left:0;top:0.5px;width:5px;height:5px;transform:translate(-50%,-50%) rotate(45deg);border-radius:1px;background:#d9c290;box-shadow:0 0 5px 1px rgba(217,194,144,.4);z-index:3;transition:left .12s linear;"></span>
+          <div data-pills="" style="display:flex;padding:12px 12px;">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6"><button type="button" data-nav="{{ n.id }}" style="flex:1 1 0;min-width:0;background:none;border:0;cursor:pointer;padding:6px 2px;font-family:'Iowan Old Style Web',serif;font-size:9px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:#80735f;white-space:nowrap;text-align:center;transition:color .3s ease,transform .35s cubic-bezier(.4,0,.2,1);transform-origin:center;">{{ n.tab }}</button></sc-for>
+          </div>
+        </div>
+
+        <!-- HERO: framed mandala plate (title + keywords live in the reading below) -->
+        <div style="padding: 16px 22px 0; padding-top: 15px">
+          <div style="position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:12px;background:#14100b;">
+            <div data-artparallax="" style="position:absolute;inset:0;transform:scale(1.03);transform-origin:center;will-change:transform;">
+              <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="art-mobile" fit="cover" placeholder="Drop the mandala artwork" hint-size="100%,100%"></x-import>
+            </div>
+          </div>
+        </div>
+
+        <!-- reading -->
+        <div style="width:100%;--read-pad:22px;--hero-dir:column;--hero-justify:center;--hero-align:center;--hero-size:38px;--hero-glyph:34px;--kw-size:16px;--cta-display:flex;--hero-top:14px;">
+          <dc-import name="Reading" hint-size="100%,2600px"></dc-import>
+        </div>
+      </main>
+    </div>
+
+    <!-- bottom tab bar -->
+    <footer style="position:absolute;left:0;right:0;bottom:0;z-index:6;display:flex;align-items:stretch;height:72px;padding-bottom:8px;border-top:1px solid rgba(168,135,77,.16);background:rgba(22,16,9,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5"><a href="{{ t.href }}" data-bar-tab="{{ t.id }}" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:{{ t.color }};" data-tab="{{ t.id }}">
+        <span data-tabicon="" style="display:flex;"></span>
+        <span style="font-family:'Iowan Old Style Web',serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;">{{ t.label }}</span>
+      </a></sc-for>
+    </footer>
+
+    <!-- home indicator -->
+    <div style="position:absolute;left:50%;bottom:8px;z-index:7;transform:translateX(-50%);width:128px;height:5px;border-radius:3px;background:rgba(243,236,222,.28);"></div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      nav: [
+        {id:"ul", tab:"UL"},
+        {id:"iching", tab:"I Ching"},
+        {id:"genekeys", tab:"Gene Keys"},
+        {id:"humandesign", tab:"H. Design"},
+        {id:"body", tab:"Body"},
+        {id:"relations", tab:"Relations"}
+      ],
+      tabs: [
+        {id:"family", label:"Family", color:"#80735f"},
+        {id:"forme", label:"For Me", color:"#80735f"},
+        {id:"deck", label:"The 64", color:"#c6a667"},
+        {id:"piece", label:"Piece", color:"#80735f"},
+        {id:"share", label:"Share", color:"#80735f"}
+      ]
+    };
+  }
+
+  componentDidMount() {
+    this._icons = {
+      family:'<svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="13" cy="15" r="4"/><circle cx="27" cy="15" r="4"/><path d="M6 30c0-4 3.5-7 7-7s7 3 7 7M20 30c0-4 3.5-7 7-7s7 3 7 7"/></svg>',
+      forme:'<svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="20" cy="20" r="13"/><circle cx="20" cy="20" r="4"/><path d="M20 7v5M20 28v5M7 20h5M28 20h5"/></svg>',
+      deck:'<svg width="22" height="22" viewBox="0 0 40 40" fill="currentColor"><g><circle cx="11" cy="11" r="1.7"/><circle cx="20" cy="11" r="1.7"/><circle cx="29" cy="11" r="1.7"/><circle cx="11" cy="20" r="1.7"/><circle cx="20" cy="20" r="1.7"/><circle cx="29" cy="20" r="1.7"/><circle cx="11" cy="29" r="1.7"/><circle cx="20" cy="29" r="1.7"/><circle cx="29" cy="29" r="1.7"/></g></svg>',
+      piece:'<svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="8" y="9" width="24" height="22"/><path d="M8 9l12 11 12-11"/></svg>',
+      share:'<svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M10 30c0-9 6-13 15-13M18 10l8 7-8 7"/></svg>'
+    };
+    this._wired = new WeakSet();
+    let tries = 0;
+    const tick = () => {
+      let pending = false;
+      document.querySelectorAll('[data-tab]').forEach((a) => {
+        const slot = a.querySelector('[data-tabicon]');
+        if (slot && !slot.innerHTML) { const ic = this._icons[a.getAttribute('data-tab')]; if (ic) slot.innerHTML = ic; }
+      });
+      const readers = document.querySelectorAll('[data-reader]');
+      readers.forEach((reader) => {
+        if (this._wired.has(reader)) return;
+        const ready = reader.querySelector('[data-scroll]')
+          && reader.querySelectorAll('[data-sec]').length >= 6
+          && reader.querySelectorAll('[data-nav]').length;
+        if (ready) { this._wired.add(reader); this.wireReader(reader); }
+        else pending = true;
+      });
+      if ((pending || readers.length === 0) && tries++ < 160) this._timer = setTimeout(tick, 120);
+    };
+    tick();
+  }
+
+  componentWillUnmount() { if (this._timer) clearTimeout(this._timer); if (this._anim) clearInterval(this._anim); }
+
+  wireReader(reader) {
+    const scroll = reader.querySelector('[data-scroll]');
+    if (!scroll) return;
+    const navs = Array.from(reader.querySelectorAll('[data-nav]'));
+    const pills = reader.querySelector('[data-pills]');
+    const jb = reader.querySelector('[data-jumpbar]');
+    const hfill = reader.querySelector('[data-progressfill-h]');
+    const comet = reader.querySelector('[data-comet]');
+    const artPar = reader.querySelector('[data-artparallax]');
+    if (!navs.length) return;
+
+    const setActive = (idx) => {
+      navs.forEach((n, i) => {
+        n.style.color = i === idx ? '#c6a667' : '#80735f';
+        n.style.transform = i === idx ? 'scale(1.05)' : 'scale(1)';
+      });
+    };
+
+    let secList = [];
+    let breaks = [];
+    const layout = () => {
+      const sTop = scroll.getBoundingClientRect().top;
+      secList = navs.map((n) => {
+        const id = n.getAttribute('data-nav');
+        const sec = reader.querySelector('[data-sec="' + id + '"]');
+        const top = sec ? (sec.getBoundingClientRect().top - sTop + scroll.scrollTop) : 0;
+        return { id, top, btn: n };
+      }).sort((a, b) => a.top - b.top);
+      breaks = secList.map((s) => s.top);
+      const jbLeft = jb ? jb.getBoundingClientRect().left : 0;
+      secList.forEach((s) => { const rr = s.btn.getBoundingClientRect(); const padL = parseFloat(getComputedStyle(s.btn).paddingLeft) || 0; s.cx = rr.left - jbLeft + padL; });
+    };
+
+    let lastActive = -1;
+    const onScroll = () => {
+      layout();
+      const n = breaks.length;
+      if (!n) return;
+      const pos = scroll.scrollTop;
+      if (artPar) artPar.style.transform = 'scale(1.12) translateY(' + (pos * 0.12) + 'px)';
+      const den = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
+      const frac = Math.max(0, Math.min(1, pos / den));
+      // comet rides the fixed-width sub-bar; clamp so it never leaves the frame
+      const barW = pills ? pills.clientWidth : 0;
+      const x = Math.max(4, Math.min(frac * barW, barW - 4));
+      if (hfill) hfill.style.width = (frac * barW) + 'px';
+      if (comet) comet.style.left = x + 'px';
+      let ak = 0;
+      const jumpTop = jb ? jb.getBoundingClientRect().height : 0;
+      for (let i = 0; i < n; i++) { if (pos + jumpTop + 20 >= breaks[i]) ak = i; }
+      const idx = navs.indexOf(secList[ak].btn);
+      if (idx !== lastActive) { lastActive = idx; setActive(idx); }
+    };
+
+    layout();
+    onScroll();
+    scroll.addEventListener('scroll', onScroll, { passive: true });
+    setTimeout(() => { layout(); onScroll(); }, 500);
+    setTimeout(() => { layout(); onScroll(); }, 1400);
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => { layout(); onScroll(); });
+      ro.observe(scroll); ro.observe(reader);
+    }
+
+    const smoothTo = (to) => {
+      const start = scroll.scrollTop;
+      const dist = to - start;
+      const dur = 500;
+      const t0 = Date.now();
+      const ease = (p) => 1 - Math.pow(1 - p, 3);
+      if (this._anim) clearInterval(this._anim);
+      this._anim = setInterval(() => {
+        const p = Math.min(1, (Date.now() - t0) / dur);
+        scroll.scrollTop = start + dist * ease(p);
+        onScroll();
+        if (p >= 1) { clearInterval(this._anim); this._anim = null; }
+      }, 16);
+    };
+    reader.addEventListener('click', (e) => {
+      const btn = e.target.closest && e.target.closest('[data-nav]');
+      if (!btn || !reader.contains(btn)) return;
+      const target = reader.querySelector('[data-sec="' + btn.getAttribute('data-nav') + '"]');
+      if (!target) return;
+      const jumpH = jb ? jb.getBoundingClientRect().height : 0;
+      const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - jumpH - 8;
+      const max = scroll.scrollHeight - scroll.clientHeight;
+      smoothTo(Math.max(0, Math.min(top, max)));
+    });
+  }
+}
+</script>
+</body>
+</html>

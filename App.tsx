@@ -63,7 +63,11 @@ const AppInner: React.FC = () => {
   // The Gateway is a fullscreen orbit-arrival screen with its own chrome; the
   // global top bar (the original MANDALA CODES nav) belongs on every other
   // oracle page, including the card reading. LED host never shows it.
-  const showNav = !ledHost && location.pathname !== '/gateway';
+  /* The card reading draws the site bar inside its own frame, so the global one
+     would be a second copy sitting on top of it. */
+  const chromeless = location.pathname === '/gateway'
+    || /^\/universal-language\/\d+$/.test(location.pathname);
+  const showNav = !ledHost && !chromeless;
 
   return (
     <Suspense fallback={<div className="min-h-screen bg-wood-900" />}>

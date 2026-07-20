@@ -1,0 +1,79 @@
+
+class Component extends DCLogic {
+  renderVals() {
+    const essence = [
+      "Precision is not the enemy of wonder. The smallest distinction can become a doorway. To attend closely is to participate in the intelligence that weaves the whole. You are invited into a practice of listening that is both intimate and exacting.",
+      "Look at the leaf. Notice the way its veins are not random, but recursive. Look at the storm. Notice the way its rage is shaped by unseen laws. Truth does not announce itself. It arranges itself. And when we learn the language of arrangement, we stop mistaking noise for meaning.",
+      "This is the path of the 62nd Gate: to perceive the invisible architecture beneath appearance. Not to control it, not to exploit it, but to collaborate with it. Your role is to be a clear instrument. The world is speaking continuously. Your task is to become a better listener.",
+      "At its highest expression this energy speaks in a way that others recognize as true — not because it is performing accuracy but because something in it has moved from collected knowledge to direct contact. The word becomes the thing itself, not a description of it. What gets said from this place cannot be unsaid. It enters the listener and changes the configuration of what they hold as possible."
+    ];
+    const dropCap = essence[0].charAt(0);
+    const leadRest = essence[0].slice(1);
+    const essenceRest = essence.slice(1);
+    return {
+      dropCap, leadRest, essenceRest,
+      keywords: ["Precision of Speech","Language as Light","Small Exceeding Great","Intelligence of the Heart","Impeccable Expression"],
+      keywordsLine: "Precision of Speech · Language as Light · Small Exceeding Great · Intelligence of the Heart · Impeccable Expression",
+      hexLines: [
+        {solid:false,broken:true},{solid:false,broken:true},
+        {solid:true,broken:false},{solid:true,broken:false},
+        {solid:false,broken:true},{solid:false,broken:true}
+      ],
+      icComb: "Thunder (Chen) over Mountain (Ken). Movement above stillness — a contained energy that carries precisely because it does not overreach.",
+      icRead: [
+        "Thunder rests above the mountain. The sound is sharp but contained, a crack of energy held within a vast stillness. This is not the storm that levels forests. It is the bird's note in the early morning, the cricket's call in the grass — small, precise, and carrying further than its size suggests.",
+        "The hexagram speaks of preponderance of the small. Success does not come here from grand gestures or sweeping ambitions. It comes from attending to what is directly in front with full attention, from doing each small thing better than it would otherwise be done. The flying bird carries the message: striving upward does not serve. Remaining below is well.",
+        "In this position, the right action is not impressive. Reverence in conduct. Grief given its proper weight in bereavement. Thrift in expenditure. Each excess is measured and purposeful, directed not at greatness but at the correct proportion of what the moment requires.",
+        "The timing is not yet right for large moves. Small changes are the native movement of this moment, one rung at a time. The mountain is solid. The thunder above it speaks in short syllables. Each one is distinct."
+      ],
+      icJudge: "Preponderance of the Small. Success. Perseverance furthers. Small things may be done; great things should not be done. The flying bird brings the message: it is well to remain below. Great good fortune.",
+      icImage: "Thunder on the mountain: the image of Preponderance of the Small. Thus in his conduct the superior man gives preponderance to reverence, in bereavement to grief, and in his expenditures to thrift.",
+      gkShadow: [
+        "The Shadow of Intellect carries a specific and modern affliction: the confusion of knowledge with understanding. Intellect, in this context, is not stupidity. It is something more insidious — the highly developed capacity to manipulate facts, to name things, to arrange language with great skill, while missing what is actually alive in the room. The intellect acquires. It categorizes. It argues. But it does not see.",
+        "The modern world has organized itself around this shadow as though it were a virtue. Education, as it is commonly practiced, loads information into the mind at the cost of natural intelligence. The child who enters school already knows things through the body, through feeling, through direct contact with the world. That knowing is progressively replaced by a vocabulary. What was once experienced becomes named, filed, and thereby reduced. The word replaces the thing.",
+        "At the core of this shadow is a fundamental split: intellect handles the world through language and facts, while intelligence, which belongs to the heart, meets the world directly. The 62nd Shadow and its partner, the 61st Shadow of Psychosis, are two poles of the same fracture — science and religion in their extreme forms, one explaining life through accumulated fact, the other trying to bypass the mind entirely.",
+        "Language at low frequency does not serve communication. It controls it. A person in the grip of this shadow is not using language — language is using them, running the software of an upbringing they never chose, defending positions they have never truly examined."
+      ],
+      gkRepressive: "When the 62nd Shadow turns inward, it becomes obsession. The attention that would produce precision instead becomes compulsive fixation on detail — relentlessly focused on the smallest units of experience, using minutiae to prevent the larger picture from ever coming into view.",
+      gkReactive: "The reactive expression turns outward, using intellectual precision as a weapon. The command of language and detail is often impressive, but the intelligence is deployed defensively — directed at finding the flaw in another's position rather than at genuine understanding. Pedantry: correctness at the expense of meaning.",
+      gkGift: [
+        "Precision, as a gift, is not a more refined version of intellectual correctness. It is a different operation entirely. It arises when natural intelligence, which belongs to the heart, to the whole body, is given authority over the mind. The mind does not disappear. It moves into service. What it produces is something far more alive than facts: language that carries actual seeing.",
+        "When the mind is led by the heart, what a person says about a tree is not the tree's name and category. It is the tree itself, transmitted through words that carry the quality of direct contact. The precision is not in being technically correct. It is in the alignment between what is felt and what is expressed. Economy and exactness come naturally, because there is nothing to add that the intelligence has not already confirmed as necessary.",
+        "The 62nd Gift finds the limelight not by seeking it but by speaking in a way others recognize as true. Writers, speakers, scientists, artists at this frequency arrange facts in ways that are inspirational rather than dull — because the heart's encounter with reality is already alive.",
+        "At this gift level, there is no return. Once the voice has been given to truth, the lower register of language closes behind them. The throat becomes the seat of a greater initiation."
+      ],
+      gkSiddhi: [
+        "Impeccability, at the siddhic level of the 62nd Gene Key, is not a moral category. It is the condition of one who has disappeared — in whom the ego that could commit an error has dissolved, leaving only pure consciousness moving through a specific genetic vehicle.",
+        "If there is no one home, there is no one to be held accountable. What remains is the whole operating through a particular form, saying and doing exactly what is needed in each moment — not because it has been calculated to be correct, but because there is no agenda left to distort it.",
+        "The 62nd Siddhi uses the intellect to dismantle the intellect. The great sages at this frequency use logic so precisely that thought defeats itself in the listener, demonstrating through language how language is the very substance of the illusion — and breaking open the space behind it.",
+        "Cosmometry is the science of this level: every cell, every movement, every breath a living word in the Divine alphabet. When consciousness merges entirely with this understanding, nothing is left out of place. Every word arrives from the void rather than from thought."
+      ],
+      gkPartner: "Key 61, the programming partner, carries the Shadow of Psychosis, the Gift of Inspiration, and the Siddhi of Sanctity. Where Key 62 concerns what is expressed, Key 61 concerns what presses from within — the source of the pressure that demands expression, the mystery that insists on being spoken.",
+      hdGate: [
+        "Gate 62 sits in the Throat Center, the center of manifestation and expression. Its keyword is Detail. This gate translates what has been understood — internally organized, categorized, processed — into language that others can actually receive. It does not generate insight on its own. It renders insight communicable.",
+        "Where other throat gates speak in broad strokes, Gate 62 gives particulars: what happened, in what sequence, with what components. This precision serves understanding when it is in alignment. When misaligned, the same capacity becomes an avalanche of irrelevant detail that buries meaning rather than clarifying it."
+      ],
+      hdChannel: [
+        "The Channel of Acceptance, formed between Gate 62 in the Throat and Gate 17 in the Ajna Center, connects pattern recognition and logical following to the ability to name what has been recognized with precision. Its keynote — a design of an organizational being — points to the systematic ordering and communication of understanding.",
+        "Gate 17 holds the ability to see what follows from what. Gate 62 renders that structured perception into language precise enough that others can understand, verify, and build on it: the researcher, the analyst, the teacher who holds complex information and presents it with economy and clarity."
+      ],
+      hdCircuit: [
+        "The Understanding Circuit works with knowledge that can be formulated, tested, and shared. It runs between the Ajna Center, where concepts form, and the Throat, where they find expression, and its purpose is to make understanding available to the collective — the circuit of information that can be reproduced."
+      ],
+      bodyPhys: [
+        "At shadow frequency the intellectual function takes in and processes information but cannot transform it into genuine understanding. At gift frequency, the same intake is metabolized into something alive. The thyroid is the body's central regulator of this transformative rate, governing metabolism — the rate at which the body converts what it takes in into energy and form.",
+        "The throat is both the anatomical site of voice and, in the body graph, the center through which all interior states must pass to become manifest. Disruption to the thyroid shows as excess or deficiency, too fast or too slow — both poles echo the reactive and repressive shadows. The healthy thyroid, like the gift of precision, finds exactly the rate the organism requires."
+      ],
+      bodyAmino: [
+        "The 62nd Gene Key is coded by the amino acid tyrosine — precursor to the catecholamines (dopamine, norepinephrine, epinephrine) that govern attention and alertness, to the thyroid hormones that regulate metabolic conversion, and to melanin, which absorbs light. A single foundational compound whose reach runs from pigmentation and metabolism to attention and emotional regulation: the body as a living instrument for perceiving, expressing, and embodying with precision."
+      ],
+      relIntro: "Voice of Nature belongs to the Ring of No Return, whose shared arcana is the twentieth trump — Judgement in the Rider-Waite tradition, The Aeon in Thoth. Every code is bound to the others; this one answers most directly to its programming partner.",
+      relRows: [
+        {label:"The Pair · Key 61", text:"Where 62 concerns what is expressed, 61 concerns what presses from within — the mystery that insists on being spoken. Together they describe the full arc of revelation: the moment of inner knowing and the word that carries it into the world. The Ring of No Return names this arc as irreversible."},
+        {label:"Tarot · XX, The Aeon", text:"A moment of total transformation — the old order dissolved and reconstituted. For Key 62 the card points to language as the medium of the new age: the aeon is announced by a sound, and that sound, arriving from full awakening, is the voice of nature itself."},
+        {label:"Hebrew · Shin", text:"The tooth; fire; the transforming flame of a new age. The path 31, from Hod to Malkuth, is the descent of formed consciousness into embodied life — structured understanding entering the material world."},
+        {label:"The Sky · Fire", text:"Vivid, irreversible, transforming — the glowing orange-scarlet of speech that arrives with full shakti behind each word."}
+      ]
+    };
+  }
+}

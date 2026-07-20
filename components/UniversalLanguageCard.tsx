@@ -11,6 +11,7 @@ import { ulCardImageUrl, ulCardPublicId } from '../utils/universalLanguage';
 import { useMetaTags } from '../hooks/useMetaTags';
 import { useDarkMode } from '../DarkModeContext';
 import { EBReadingHost, type EBData } from './oracle/eb/generated/EBReading.host';
+import CardReadingShell from './oracle/reading/CardReadingData';
 import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
@@ -232,6 +233,7 @@ const UniversalLanguageCard: React.FC = () => {
   const palette = isDarkMode ? 'nightfall' : 'daybook';
   return (
     <>
+      <CardReadingShell cardNumber={card.number} reading={
       <EBReadingHost
         key={card.number}
         data={data}
@@ -256,6 +258,7 @@ const UniversalLanguageCard: React.FC = () => {
         }
         invocationSlot={<PublicInvocation invocation={liveInvocation} />}
       />
+      } />
       <BuySheet
         open={buyOpen}
         onClose={() => setBuyOpen(false)}
