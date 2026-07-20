@@ -74,20 +74,18 @@
   object-fit: contain !important;
 }
 
-/* The design insets the artwork from the edges. It reads better full bleed, so
-   the wrappers that hold the parallax layer give up their side padding. */
+/* The artwork sits inset on all four sides rather than bleeding to the edges,
+   on both layouts. */
 .card-reading--mobile [data-scroll] > div:has([data-artparallax]) {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  padding: 20px !important;
 }
 
-/* Desktop keeps the column's padding (the meta block below needs it) and lets
-   only the artwork break out of it, so the image reaches the panel edges while
-   Element / Gate / Keynotes stay indented. 32px and 34px are the aside's own
-   padding, from the design. */
+/* Desktop: the artwork sits inset on all four sides rather than breaking out
+   to the panel edges. The column's own 34px top and 32px sides already give
+   three of them, so this only needs to stop the breakout and even up the top. */
 .card-reading--desktop aside > div:has(> [data-artparallax]) {
-  margin: -34px -32px 0 !important;
-  width: calc(100% + 64px) !important;
+  margin: 0 !important;
+  width: auto !important;
 }
 
 /* ── The site bar on mobile ────────────────────────────────────────────── */
@@ -132,19 +130,18 @@
    child onward is dropped and every chapter but the first is hidden whole.
    Order inside the block: title, hexagram divider, keywords, chart
    invitation, the flourish rule. */
-/* Ranged left on the wide layout, which is the reference. On the phone the
-   design's own default centres it, which is what is wanted there, so the
-   override is scoped to desktop rather than applied to both. */
-.card-reading--desktop .card-reading__designed-header [data-sec="ul"] {
-  --hero-align: left;
+/* Centred on both layouts, and the type scales with the screen rather than
+   sitting at one fixed size. All three are the design's own knobs. */
+.card-reading__designed-header [data-sec="ul"] {
+  --hero-align: center;
+  --hero-size: clamp(34px, 7vw, 54px);
+  --kw-size: clamp(19px, 3.4vw, 29px);
 }
 
 /* The phone: the design's 44px side padding is too generous on a narrow
-   screen, and the keywords carry the card, so they take the larger size here.
-   Both are the design's own knobs. */
+   screen. */
 .card-reading--mobile .card-reading__designed-header [data-sec="ul"] {
   --read-pad: 10px;
-  --kw-size: 29px;
 }
 
 .card-reading__designed-header [data-sec]:not([data-sec="ul"]) {
