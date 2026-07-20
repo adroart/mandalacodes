@@ -50,8 +50,14 @@ for (const [path, wrapper] of TARGETS) {
   for (const rule of rules) {
     if (!rule) continue;
 
-    // @font-face and @keyframes are global by nature; leave them at top level.
-    if (rule.startsWith('@font-face') || rule.startsWith('@keyframes')) {
+    // The design ships its own @font-face for fonts src/theme.css already
+    // declares, so they are duplicates. Dropped, both to avoid loading the
+    // same files twice and because the typography contract bans raw font
+    // names outside the theme.
+    if (rule.startsWith('@font-face')) continue;
+
+    // @keyframes are global by nature; leave them at top level.
+    if (rule.startsWith('@keyframes')) {
       out.push(rule);
       continue;
     }

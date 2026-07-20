@@ -346,7 +346,7 @@
   justify-content: center !important;
   min-height: 64px !important;
   padding: 0 clamp(10px, 1.25vw, 18px) !important;
-  font-family: var(--font-label, 'Iowan Old Style Web', Georgia, serif) !important;
+  font-family: var(--font-label) !important;
   font-size: 0.8125rem !important;
   font-weight: 600 !important;
   letter-spacing: 0.18em !important;
