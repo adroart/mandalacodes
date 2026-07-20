@@ -125,7 +125,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
     const setActive = (idx: number) => {
       navs.forEach((n: any, i: number) => {
         n.style.color = i === idx ? '#c6a667' : '#80735f';
-        n.style.transform = i === idx ? 'scale(1.05)' : 'scale(1)';
+        n.style.transform = i === idx ? 'scale(1.06)' : 'scale(1)';
       });
     };
 
@@ -153,10 +153,13 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       if (artPar) artPar.style.transform = 'scale(1.12) translateY(' + (pos * 0.12) + 'px)';
       const den = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
       const frac = Math.max(0, Math.min(1, pos / den));
-      // comet rides the fixed-width sub-bar; clamp so it never leaves the frame
-      const barW = pills ? pills.clientWidth : 0;
-      const x = Math.max(4, Math.min(frac * barW, barW - 4));
-      if (hfill) hfill.style.width = (frac * barW) + 'px';
+
+      /* Progress marker: the bar and its diamond track scroll across the full
+         width of the reader, empty at the top and complete at the bottom, rather
+         than hopping between section anchors. */
+      const track = reader.getBoundingClientRect().width;
+      const x = frac * track;
+      if (hfill) hfill.style.width = x + 'px';
       if (comet) comet.style.left = x + 'px';
       let ak = 0;
       const jumpTop = jb ? jb.getBoundingClientRect().height : 0;

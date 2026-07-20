@@ -267,6 +267,25 @@
   opacity: 0 !important;
 }
 
+/* ── The progress marker ───────────────────────────────────────────────── */
+
+/* Light brown rather than gold, fading up from nothing on the left so the
+   start of the reading reads as empty rather than as a short gold stub. */
+.card-reading [data-progressfill-h] {
+  background: linear-gradient(to right, rgba(150, 116, 79, 0), #b98f63) !important;
+}
+
+/* A smaller diamond, in the same brown, with its glow toned to match. It sits
+   at the very left at the top of the reading, where it reads as absent, and
+   reaches the right edge at the end. */
+.card-reading [data-comet] {
+  width: 5px !important;
+  height: 5px !important;
+  background: #c9a47a !important;
+  animation: none !important;
+  box-shadow: 0 0 6px 1px rgba(185, 143, 99, 0.5) !important;
+}
+
 /* ── The lens rail ─────────────────────────────────────────────────────── */
 
 /* Matched to the rail the live reading page already uses

@@ -158,7 +158,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
         n.style.transition = 'color .3s ease, transform .35s cubic-bezier(.4,0,.2,1)';
         n.style.transformOrigin = 'center';
         n.style.display = 'inline-block';
-        n.style.transform = i === idx ? 'scale(1.05)' : 'scale(1)';
+        n.style.transform = i === idx ? 'scale(1.06)' : 'scale(1)';
       });
     };
     if (aside && artPar) aside.addEventListener('scroll', () => {
@@ -206,12 +206,12 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       if (comet) comet.style.top = '1px';
       let ak = 0;
       for (let i = 0; i < n; i++) { if (pos >= breaks[i]) ak = i; }
-      let cx = secList[ak].cx;
-      if (ak < n - 1) {
-        const seg = Math.max(1, breaks[ak + 1] - breaks[ak]);
-        const t = Math.max(0, Math.min(1, (pos - breaks[ak]) / seg));
-        cx = secList[ak].cx + (secList[ak + 1].cx - secList[ak].cx) * t;
-      }
+
+    /* Progress marker: the bar and its diamond track scroll across the full
+       width of the reader, empty at the top and complete at the bottom, rather
+       than hopping between section anchors. */
+      const track = reader.getBoundingClientRect().width;
+      const cx = frac * track;
       if (hfill) hfill.style.width = cx + 'px';
       if (comet) comet.style.left = cx + 'px';
       setActive(navs.indexOf(secList[ak].btn));
