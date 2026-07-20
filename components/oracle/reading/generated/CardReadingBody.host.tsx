@@ -41,6 +41,10 @@ export interface CardReadingBodyData {
   keywordsLine: string;
   /* I Ching */
   hexChar: string;
+  upperTrigram: string;
+  lowerTrigram: string;
+  upperLines: HexLine[];
+  lowerLines: HexLine[];
   hexName: string;
   trigramLine: string;
   hexLines: HexLine[];

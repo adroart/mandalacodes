@@ -66,14 +66,14 @@
       </div>
       <div style="display:grid;grid-template-columns:46px auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:14px var(--read-pad,44px);border-bottom:1px solid rgba(168,135,77,.18);">
         <span style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#80735f;width:54px;flex-shrink:0;">Upper</span>
-        <span style="display:inline-flex;flex-direction:column;gap:3px;flex-shrink:0;"><span style="display:flex;gap:4px;"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></span><span style="display:flex;gap:4px;"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></span><span style="display:flex;gap:4px;"><i style="width:32px;height:4px;background:#80735f;"></i></span></span>
-        <span style="min-width:0;font-family:'Cormorant Garamond',serif;font-size:17px;color:#d6c9b0;">Thunder · Chên</span>
+        <span style="display:inline-flex;flex-direction:column;gap:3px;flex-shrink:0;"><sc-for list="{{ upperLines }}" as="ln"><span style="display:flex;gap:4px;"><sc-if value="{{ ln.solid }}"><i style="width:32px;height:4px;background:#80735f;"></i></sc-if><sc-if value="{{ ln.broken }}"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></sc-if></span></sc-for></span>
+        <span style="min-width:0;font-family:'Cormorant Garamond',serif;font-size:17px;color:#d6c9b0;">{{ upperTrigram }}</span>
         <span style="font-family:'Iowan Old Style Web',serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#80735f;flex-shrink:0;">Trigram</span>
       </div>
       <div style="display:grid;grid-template-columns:46px auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:14px var(--read-pad,44px);border-bottom:1px solid rgba(168,135,77,.18);">
         <span style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#80735f;width:54px;flex-shrink:0;">Lower</span>
-        <span style="display:inline-flex;flex-direction:column;gap:3px;flex-shrink:0;"><span style="display:flex;gap:4px;"><i style="width:32px;height:4px;background:#80735f;"></i></span><span style="display:flex;gap:4px;"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></span><span style="display:flex;gap:4px;"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></span></span>
-        <span style="min-width:0;font-family:'Cormorant Garamond',serif;font-size:17px;color:#d6c9b0;">Mountain · Kên</span>
+        <span style="display:inline-flex;flex-direction:column;gap:3px;flex-shrink:0;"><sc-for list="{{ lowerLines }}" as="ln"><span style="display:flex;gap:4px;"><sc-if value="{{ ln.solid }}"><i style="width:32px;height:4px;background:#80735f;"></i></sc-if><sc-if value="{{ ln.broken }}"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></sc-if></span></sc-for></span>
+        <span style="min-width:0;font-family:'Cormorant Garamond',serif;font-size:17px;color:#d6c9b0;">{{ lowerTrigram }}</span>
         <span style="font-family:'Iowan Old Style Web',serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#80735f;flex-shrink:0;">Trigram</span>
       </div>
       <div style="padding:22px var(--read-pad,44px) 6px;">

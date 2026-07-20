@@ -17,6 +17,12 @@ import { HEXAGRAM_CHINESE } from '../../../data/hexagramChinese';
 import CardReading, { type CardReadingLens } from './CardReading';
 import CardReadingBodyHost, { type CardReadingBodyData } from './generated/CardReadingBody.host';
 
+/* The design carries a one-line standfirst above each lens's prose. No card has
+   one written, and there is no field for it in the oracle data, so the slot
+   holds this until the lines are authored. Deliberately reads as unwritten
+   rather than as finished copy. */
+const LEAD_PLACEHOLDER = 'Summary line to come.';
+
 /* Prose in these files is paragraph-separated by blank lines. */
 const paras = (s?: string): string[] =>
   (s ?? '').split('\n\n').map((p) => p.trim()).filter(Boolean);
@@ -40,7 +46,13 @@ function buildBody(card: any, syn?: CardSynthesis): CardReadingBodyData {
   const essence = paras(syn?.essence);
   const lead = essence[0] ?? '';
 
-  const lines = hexagramLineBooleans(card.iching.upper_trigram.symbol, card.iching.lower_trigram.symbol);
+  const hexLines = hexagramLineBooleans(
+    card.iching.upper_trigram.symbol,
+    card.iching.lower_trigram.symbol,
+  ).map((solid) => ({ solid, broken: !solid }));
+
+  /* "Thunder (Chen)" -> "Thunder · Chen", the way the design writes it. */
+  const trigramName = (n: string) => n.replace(/\s*\(([^)]+)\)\s*$/, ' · $1').trim();
 
   /* The design's relations table: one row per relationship the card carries.
      Rows with nothing authored are dropped rather than shown empty. */
@@ -60,25 +72,18 @@ function buildBody(card: any, syn?: CardSynthesis): CardReadingBodyData {
   const partner = rel?.programming_partner;
   const partnerCard = partner ? CARD_BY_NUMBER.get(partner.number) : undefined;
 
-  /* The design's section standfirsts have no field of their own in the oracle
-     data. Rather than invent a line per card, each takes the opening sentence
-     of that lens's own authored prose, and is empty when nothing is written. */
-  const firstSentence = (ps: string[]): string => {
-    const p = ps[0] ?? '';
-    const m = p.match(/^[\s\S]*?[.!?](?=\s|$)/);
-    return (m ? m[0] : p).trim();
-  };
-
   const icReadParas = paras(s?.iching?.reading);
   const gkGiftParas = paras(s?.gene_keys?.gift);
   const hdGateParas = paras(s?.human_design?.gate);
   const bodyPhysParas = paras(s?.body?.physiology);
 
   return {
-    icLead: firstSentence(icReadParas),
-    gkLead: firstSentence(gkGiftParas),
-    hdLead: firstSentence(hdGateParas),
-    bodyLead: firstSentence(bodyPhysParas),
+    /* Not written for any card yet, so the design's slot holds a placeholder
+       rather than an echo of the paragraph directly beneath it. */
+    icLead: LEAD_PLACEHOLDER,
+    gkLead: LEAD_PLACEHOLDER,
+    hdLead: LEAD_PLACEHOLDER,
+    bodyLead: LEAD_PLACEHOLDER,
 
     ulKicker: `Universal Language ${card.number}`,
     cardName: card.card_name,
@@ -90,7 +95,11 @@ function buildBody(card: any, syn?: CardSynthesis): CardReadingBodyData {
     hexChar: HEXAGRAM_CHINESE[card.number]?.char ?? '',
     hexName: card.iching.hexagram_name,
     trigramLine: `${bare(card.iching.upper_trigram.name)} over ${bare(card.iching.lower_trigram.name)}`,
-    hexLines: lines.map((solid) => ({ solid, broken: !solid })),
+    hexLines: hexLines,
+    upperTrigram: trigramName(card.iching.upper_trigram.name),
+    lowerTrigram: trigramName(card.iching.lower_trigram.name),
+    upperLines: hexLines.slice(0, 3),
+    lowerLines: hexLines.slice(3),
     icComb: s?.iching?.trigram_combination ?? '',
     icRead: icReadParas,
     icJudge: (s?.iching?.judgement_lines ?? []).join(' '),

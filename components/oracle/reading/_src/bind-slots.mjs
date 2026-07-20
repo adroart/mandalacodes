@@ -22,6 +22,25 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const DESKTOP = 'components/oracle/reading/_src/Card Reading v2 - Wide Image (Desktop, locked).dc.html';
 const READING = 'components/oracle/reading/_src/Reading.dc.html';
 
+/* The two trigram rows in the I Ching section carry card 62's trigrams as a
+   fixed pattern of <i> bars. Replaced with a loop over the card's own lines,
+   reusing the design's exact bar sizes and colour. Whole-element children are
+   swapped, so the tree stays balanced. */
+const TRIGRAM_BARS = (which) =>
+  `<sc-for list="{{ ${which} }}" as="ln">`
+  + `<span style="display:flex;gap:4px;">`
+  + `<sc-if value="{{ ln.solid }}"><i style="width:32px;height:4px;background:#80735f;"></i></sc-if>`
+  + `<sc-if value="{{ ln.broken }}"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></sc-if>`
+  + `</span></sc-for>`;
+
+const BAR_SOLID = '<span style="display:flex;gap:4px;"><i style="width:32px;height:4px;background:#80735f;"></i></span>';
+const BAR_BROKEN = '<span style="display:flex;gap:4px;"><i style="width:14px;height:4px;background:#80735f;"></i><i style="width:14px;height:4px;background:#80735f;"></i></span>';
+
+/* Card 62: upper is Thunder (broken, broken, solid), lower is Mountain
+   (solid, broken, broken) reading top to bottom. */
+const UPPER_FIXED = BAR_BROKEN + BAR_BROKEN + BAR_SOLID;
+const LOWER_FIXED = BAR_SOLID + BAR_BROKEN + BAR_BROKEN;
+
 const BINDINGS = [
   {
     file: DESKTOP,
@@ -46,6 +65,11 @@ const BINDINGS = [
       ['e:19px;color:#8a7c60;margin-top:6px;">', 'Small Exceeding', '{{ hexName }}'],
       [':19px;color:#ede4d4;line-height:1.2;">', 'Small Exceeding', '{{ hexName }}'],
       ["ond',serif;font-size:15px;color:#80735f;\">", 'Thunder over Mountain', '{{ trigramLine }}'],
+      // The two trigram rows: names, then the bar glyphs beside them.
+      ["e:17px;color:#d6c9b0;\">", 'Thunder · Chên', '{{ upperTrigram }}'],
+      ["e:17px;color:#d6c9b0;\">", 'Mountain · Kên', '{{ lowerTrigram }}'],
+      ['gap:3px;flex-shrink:0;">', UPPER_FIXED, TRIGRAM_BARS('upperLines')],
+      ['gap:3px;flex-shrink:0;">', LOWER_FIXED, TRIGRAM_BARS('lowerLines')],
 
       // ── Gene Keys: the spectrum band, then each plate's heading ──
       ["f;font-size:20px;color:#a89a80;margin:0;\">", 'Intellect', '{{ gkShadowName }}'],

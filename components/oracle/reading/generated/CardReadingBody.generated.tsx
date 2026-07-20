@@ -164,25 +164,29 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Upper
           </span>
           <span style={{ display: "inline-flex", flexDirection: "column", gap: "3px", flexShrink: "0" } as unknown as React.CSSProperties}>
-            <span style={{ display: "flex", gap: "4px" } as unknown as React.CSSProperties}>
-              <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
-              </i>
-              <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
-              </i>
-            </span>
-            <span style={{ display: "flex", gap: "4px" } as unknown as React.CSSProperties}>
-              <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
-              </i>
-              <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
-              </i>
-            </span>
-            <span style={{ display: "flex", gap: "4px" } as unknown as React.CSSProperties}>
-              <i style={{ width: "32px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
-              </i>
-            </span>
+            {(vals.upperLines ?? []).map((ln: any, lnIdx: number) => (
+              <React.Fragment key={lnIdx}>
+                <span style={{ display: "flex", gap: "4px" } as unknown as React.CSSProperties}>
+                  {(ln.solid) ? (
+                    <>
+                      <i style={{ width: "32px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
+                      </i>
+                    </>
+                  ) : null}
+                  {(ln.broken) ? (
+                    <>
+                      <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
+                      </i>
+                      <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
+                      </i>
+                    </>
+                  ) : null}
+                </span>
+              </React.Fragment>
+            ))}
           </span>
           <span style={{ minWidth: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "17px", color: "#d6c9b0" } as unknown as React.CSSProperties}>
-          Thunder · Chên
+          {vals.upperTrigram}
           </span>
           <span style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "10px", letterSpacing: ".18em", textTransform: "uppercase", color: "#80735f", flexShrink: "0" } as unknown as React.CSSProperties}>
           Trigram
@@ -193,25 +197,29 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           Lower
           </span>
           <span style={{ display: "inline-flex", flexDirection: "column", gap: "3px", flexShrink: "0" } as unknown as React.CSSProperties}>
-            <span style={{ display: "flex", gap: "4px" } as unknown as React.CSSProperties}>
-              <i style={{ width: "32px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
-              </i>
-            </span>
-            <span style={{ display: "flex", gap: "4px" } as unknown as React.CSSProperties}>
-              <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
-              </i>
-              <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
-              </i>
-            </span>
-            <span style={{ display: "flex", gap: "4px" } as unknown as React.CSSProperties}>
-              <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
-              </i>
-              <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
-              </i>
-            </span>
+            {(vals.lowerLines ?? []).map((ln: any, lnIdx: number) => (
+              <React.Fragment key={lnIdx}>
+                <span style={{ display: "flex", gap: "4px" } as unknown as React.CSSProperties}>
+                  {(ln.solid) ? (
+                    <>
+                      <i style={{ width: "32px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
+                      </i>
+                    </>
+                  ) : null}
+                  {(ln.broken) ? (
+                    <>
+                      <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
+                      </i>
+                      <i style={{ width: "14px", height: "4px", background: "#80735f" } as unknown as React.CSSProperties}>
+                      </i>
+                    </>
+                  ) : null}
+                </span>
+              </React.Fragment>
+            ))}
           </span>
           <span style={{ minWidth: "0", fontFamily: "'Cormorant Garamond',serif", fontSize: "17px", color: "#d6c9b0" } as unknown as React.CSSProperties}>
-          Mountain · Kên
+          {vals.lowerTrigram}
           </span>
           <span style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "10px", letterSpacing: ".18em", textTransform: "uppercase", color: "#80735f", flexShrink: "0" } as unknown as React.CSSProperties}>
           Trigram

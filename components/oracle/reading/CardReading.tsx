@@ -27,8 +27,11 @@ import './generated/CardReadingDesktop.style.css';
    viewport. See the file for why it overrides rather than edits. */
 import './card-reading-fullbleed.css';
 
-/* Desktop design is min(1480px, 94vw) wide; below this it cannot breathe. */
-const DESKTOP_QUERY = '(min-width: 1024px)';
+/* Where the two-column desktop layout gives way to the single-column mobile
+   one. Measured rather than guessed: the desktop layout still reads correctly
+   down to about 780px, and only breaks below ~760 where the brand mark and the
+   top nav start to overlap. 820 keeps a margin above that. */
+const DESKTOP_QUERY = '(min-width: 820px)';
 
 export interface CardReadingLens {
   id: string;

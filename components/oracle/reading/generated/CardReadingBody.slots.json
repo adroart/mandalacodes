@@ -14,7 +14,9 @@
     "hdGate as p",
     "hexLines as ln",
     "icRead as p",
-    "relRows as r"
+    "lowerLines as ln",
+    "relRows as r",
+    "upperLines as ln"
   ],
   "conditionals": [
     "ln.broken",
