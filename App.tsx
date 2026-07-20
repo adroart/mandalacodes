@@ -130,6 +130,7 @@ const AppInner: React.FC = () => {
                     the desktop wide-image design above 1024px and the mobile
                     design below it; ?variant=mobile|desktop forces one. */}
                 <Route path="/preview/card-reading" element={<CardReadingPreview />} />
+                <Route path="/preview/card-reading/:number" element={<CardReadingPreview />} />
 
                 {/* Admin — atlas ledger + steward key issuance */}
                 <Route path="/admin" element={<Navigate to="/admin/atlas" replace />} />

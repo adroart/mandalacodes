@@ -67,10 +67,10 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </div>
         <div style={{ textAlign: "center", marginTop: "-15px" } as React.CSSProperties}>
           <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "10px", letterSpacing: ".24em", textTransform: "uppercase", color: "#80735f", marginTop: "5px" } as React.CSSProperties}>
-          No. 62 · Universal Language
+          {vals.cardKicker}
           </span>
           <span style={{ fontFamily: "'Cinzel',serif", fontSize: "12px", letterSpacing: ".28em", textTransform: "uppercase", color: "#c6a667" } as React.CSSProperties}>
-          Voice of Nature
+          {vals.cardName}
           </span>
         </div>
         <dl style={{ margin: "0", display: "grid", gridTemplateColumns: "auto 1fr", gap: "11px 22px" } as React.CSSProperties}>

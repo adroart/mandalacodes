@@ -51,6 +51,9 @@ export interface CardReadingProps {
   meta?: { k: string; v: string }[];
   /* Desktop top nav. */
   headerLabels?: { label: string; active?: boolean }[];
+  /* Desktop header title block: the small line above, then the card name. */
+  cardKicker?: string;
+  cardName?: string;
   /* Mobile bottom tab bar. */
   tabs?: { id: string; label: string; color: string }[];
   /* Desktop rail node style, from the design file's own two modes. */
@@ -93,7 +96,7 @@ function useIsDesktop(forced?: 'mobile' | 'desktop') {
 }
 
 export const CardReading: React.FC<CardReadingProps> = ({
-  lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork,
+  lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork, cardKicker, cardName,
 }) => {
   const isDesktop = useIsDesktop(variant);
 
@@ -114,6 +117,8 @@ export const CardReading: React.FC<CardReadingProps> = ({
     })),
     meta,
     headerLabels,
+    cardKicker,
+    cardName,
   };
 
   return isDesktop

@@ -38,6 +38,10 @@ export interface CardReadingDesktopData {
   headerLabels?: CardReadingDesktopHeaderLabel[];
   meta?: CardReadingDesktopMetaItem[];
   nav?: CardReadingDesktopNavItem[];
+  /* Header title block. "No. 62 · Universal Language" */
+  cardKicker?: string;
+  /* Header title block. "Voice of Nature" */
+  cardName?: string;
 }
 
 interface HostProps {
@@ -98,6 +102,8 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       ringMode: mode === 'ring',
       meta: data.meta ?? DEFAULT_META,
       nav: data.nav ?? DEFAULT_NAV,
+      cardKicker: data.cardKicker ?? 'No. 62 · Universal Language',
+      cardName: data.cardName ?? 'Voice of Nature',
       slots: { Reading: this.props.reading },
       images: { 'art-desktop': this.props.artwork },
     };
