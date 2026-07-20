@@ -465,17 +465,28 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   }
 
   doCast = () => {
+    // The card carries the hexagram. The coins only resolve which of ITS lines
+    // are moving — throwing a fresh hexagram would leave the reading below
+    // describing a hexagram the reader never cast.
+    //
+    // With three coins a line is "old" (moving) on 1 throw in 8, and young on
+    // 3 in 8. Holding the line's polarity fixed, that leaves it moving one
+    // time in four. KINGWEN bits are bottom-to-top, same order as `lines`.
+    const bits = (this.KINGWEN[this.CURRENT_CODE - 1] || this.KINGWEN[0])[2];
     const lines: any[] = [];
     for (let i = 0; i < 6; i++) {
-      let sum = 0; for (let c = 0; c < 3; c++) sum += (Math.random() < 0.5 ? 2 : 3);
-      lines.push({ yang: sum === 7 || sum === 9, moving: sum === 6 || sum === 9 });
+      lines.push({ yang: bits[i] === '1', moving: Math.random() < 0.25 });
     }
-    this.setState({ cast: { lines } });
+    // The coins tumble first, then the result takes their place. Setting the
+    // cast immediately would unmount the coins mid-throw.
     if (this.coinsEl && !this.props.reduceMotion) {
       Array.from(this.coinsEl.children).forEach((c: any, i: number) => {
         c.style.animation = 'none'; void c.offsetWidth;
         c.style.animation = `ulCoinTumble 720ms cubic-bezier(.2,.7,.2,1) ${i * 90}ms both`;
       });
+      setTimeout(() => this.setState({ cast: { lines } }), 900);
+    } else {
+      this.setState({ cast: { lines } });
     }
   };
 
@@ -674,17 +685,33 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     }
     const centerHex = relatingHex || primaryHex;
     const castDisplay = lines ? this.buildCastDisplay(lines) : [];
+    // The summary only speaks when nothing is moving. When lines ARE moving,
+    // the box names both hexagrams and the moving-lines section below numbers
+    // them, so a sentence restating either is redundant.
     let castSummary;
-    if (!cast) castSummary = '';
-    else if (movingNums.length === 0) castSummary = (primaryHex ? primaryHex.name : 'The hexagram') + ' stands whole — no lines are moving.';
-    else castSummary = (movingNums.length === 1 ? 'Line ' : 'Lines ') + movingNums.join(', ') + (movingNums.length === 1 ? ' is moving' : ' are moving') + ' — ' + (primaryHex ? primaryHex.name : 'this hexagram') + ' is turning toward ' + (relatingHex ? relatingHex.name : 'another hexagram') + '.';
+    if (cast && movingNums.length === 0) castSummary = (primaryHex ? primaryHex.name : 'The hexagram') + ' stands whole. No lines are moving.';
+    else castSummary = '';
 
     const ov = this.state.overlay ? this.OVERLAYS[this.state.overlay] : null;
     const rel = this.RELDATA[this.state.relSel] || this.RELDATA.pair;
     const enc = encodeURIComponent;
     const movingShown = (cast && movingNums.length) ? this.MOVING.filter((m) => movingNums.includes(m.n)) : this.MOVING;
     const movingHeading = (cast && movingNums.length) ? 'Your Moving Lines' : 'The Six Moving Lines';
-    const movingSub = (cast && movingNums.length) ? 'The places this hexagram is already turning into another — the lines your throw set in motion.' : 'The arc of the lines, from the deep to one step too high.';
+    // Say the mechanic in plain words. A reader who has never cast before has
+    // to be told what a moving line is, and that flipping these is what turns
+    // one hexagram into the other.
+    const countWord = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'][movingNums.length] || String(movingNums.length);
+    const many = movingNums.length > 1;
+    // Two sentences. Define the term, then name the consequence.
+    let movingSub;
+    if (cast && movingNums.length) {
+      movingSub = countWord + ' of the six lines came up unstable, ' +
+        (many ? 'places already in motion. Flip them and ' : 'a place already in motion. Flip it and ') +
+        (primaryHex ? primaryHex.name : 'this hexagram') + ' becomes ' +
+        (relatingHex ? relatingHex.name : 'the next hexagram') + '.';
+    } else {
+      movingSub = 'The arc of the lines, from the deep to one step too high.';
+    }
 
     return {
       ...T, // card-bound prose (UL reading/invocation, I Ching, GK, HD, Body) merged in
@@ -698,7 +725,13 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       castHexKicker: relatingHex ? 'Moving toward' : 'Your cast',
       castHexGlyph: centerHex ? centerHex.glyph : '',
       castHexLabel: centerHex ? ('Hexagram ' + centerHex.num + ' · ' + centerHex.name) : '',
+      // The hexagram the throw actually landed on, named under its own glyph.
+      castPresentLabel: primaryHex ? ('Hexagram ' + primaryHex.num + ' · ' + primaryHex.name) : '',
       castMoving: !!relatingHex,
+      castStill: !!(cast && !relatingHex),
+      // With several lines moving, each line's own `becomes` is NOT the
+      // destination above — it is where that line would lead alone. Label it so.
+      castMultiMoving: movingNums.length > 1,
       openRelating: () => { if (centerHex) this.setState({ index: true, indexFocus: centerHex.num, share: false }); },
       entranceActive: this.entranceActive(),
       dismissEntrance: this.dismissEntrance,
