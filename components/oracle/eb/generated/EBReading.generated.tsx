@@ -375,41 +375,31 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </div>
         </div>
         <div style={{ marginTop: "clamp(44px,6vw,64px)", border: "1px solid var(--d-rule)", padding: "clamp(24px,4vw,38px)", background: "var(--d-soft)" }}>
-          {(vals.noCast) ? (
-            <>
-              <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", textAlign: "center", margin: "0 0 8px" }}>
-              The Oracle
-              </p>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(22px,2.6vw,27px)", color: "var(--d-1)", textAlign: "center", margin: "0 0 6px" }}>
-              Cast the coins
-              </h3>
-              <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", color: "var(--d-3)", textAlign: "center", margin: "0 auto 24px", maxWidth: "42ch" }}>
-              Three coins, six times. The throw shows which lines are moving for you now, the places this hexagram is already turning into another.
-              </p>
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
-                <div ref={vals.registerCoins} style={{ display: "flex", gap: "14px" }}>
-                  {[0, 1, 2].map((coinIdx) => (
-                    <svg key={coinIdx} width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true">
-                      <circle cx="23" cy="23" r="22" stroke="var(--d-rule)" strokeWidth="1" />
-                      <circle cx="23" cy="23" r="17" stroke="var(--d-rule)" strokeWidth="1" opacity="0.55" />
-                      <rect x="17.5" y="17.5" width="11" height="11" stroke="var(--accent-d)" strokeWidth="1" opacity="0.8" />
-                    </svg>
-                  ))}
-                </div>
-              </div>
-            </>
-          ) : null}
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", textAlign: "center", margin: "0 0 8px" }}>
+          The Oracle
+          </p>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(22px,2.6vw,27px)", color: "var(--d-1)", textAlign: "center", margin: "0 0 6px" }}>
+          Cast the coins
+          </h3>
+          <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "16px", color: "var(--d-3)", textAlign: "center", margin: "0 auto 24px", maxWidth: "42ch" }}>
+          Three coins, six times. The throw shows which lines are moving for you now — the places this hexagram is already turning into another.
+          </p>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
+            <div ref={vals.registerCoins} style={{ display: "flex", gap: "14px" }}>
+              <span style={{ width: "46px", height: "46px", borderRadius: "50%", border: "1px solid var(--d-rule)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: 'var(--font-cjk)', fontSize: "20px", color: "var(--accent-d)" }}>
+              乾
+              </span>
+              <span style={{ width: "46px", height: "46px", borderRadius: "50%", border: "1px solid var(--d-rule)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: 'var(--font-cjk)', fontSize: "20px", color: "var(--accent-d)" }}>
+              坤
+              </span>
+              <span style={{ width: "46px", height: "46px", borderRadius: "50%", border: "1px solid var(--d-rule)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: 'var(--font-cjk)', fontSize: "20px", color: "var(--accent-d)" }}>
+              乾
+              </span>
+            </div>
+          </div>
           {(vals.hasCast) ? (
             <>
-              {/* Two named states, one above the other: what the throw landed
-                  on, then what it is turning into. No sentence restating either. */}
-              {/* Two beats, one above the other: where the throw landed, then
-                  where it is going. Captions are divs, not p — the chapter
-                  stylesheet force-left-aligns every p in a flex column. */}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", animation: "ulFadeIn 500ms ease both" }}>
-                <div style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--d-3)", marginBottom: "26px" }}>
-                Your cast
-                </div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "20px", animation: "ulFadeIn 500ms ease both" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "9px", alignItems: "center" }}>
                   {(vals.castDisplay ?? []).map((ln, lnIdx) => (
                     <React.Fragment key={lnIdx}>
@@ -419,34 +409,24 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                     </React.Fragment>
                   ))}
                 </div>
-                {/* Tight to the glyph: the name is its caption, not a new idea. */}
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: "clamp(17px,1.9vw,19px)", lineHeight: "1.25", color: "var(--d-2)", marginTop: "15px" }}>
-                {vals.castPresentLabel}
-                </div>
-                {(vals.castMoving) ? (
-                  <>
-                    <span style={{ display: "block", width: "30px", height: "1px", background: "var(--d-rule)", margin: "36px 0" }}>
-                    </span>
-                    <button onClick={vals.openRelating} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0", background: "none", border: "none", cursor: "pointer", color: "inherit", padding: "0", textAlign: "center" }}>
-                      <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--accent-d)", marginBottom: "12px" }}>
-                      {vals.castHexKicker}
-                      </span>
-                      <span style={{ fontFamily: 'var(--font-display)', fontSize: "clamp(27px,3.6vw,35px)", lineHeight: "1.14", color: "var(--d-1)" }}>
-                      {vals.castHexLabel}
-                      </span>
-                      <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "4px", marginTop: "16px" }}>
+                <button onClick={vals.openRelating} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", background: "none", border: "none", cursor: "pointer", color: "inherit", marginTop: "2px", padding: "6px 10px" }}>
+                  <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--d-3)" }}>
+                  {vals.castHexKicker}
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: "clamp(26px,3.6vw,34px)", lineHeight: "1.12", color: "var(--d-1)" }}>
+                  {vals.castHexLabel}
+                  </span>
+                  {(vals.castMoving) ? (
+                    <>
+                      <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "3px" }}>
                       Read where it stands →
                       </span>
-                    </button>
-                  </>
-                ) : null}
-                {(vals.castStill) ? (
-                  <>
-                    <div style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", lineHeight: "1.65", color: "var(--d-2)", maxWidth: "40ch", marginTop: "20px" }}>
-                    {vals.castSummary}
-                    </div>
-                  </>
-                ) : null}
+                    </>
+                  ) : null}
+                </button>
+                <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "17px", lineHeight: "1.6", color: "var(--d-2)", textAlign: "center", maxWidth: "44ch", margin: "0" }}>
+                {vals.castSummary}
+                </p>
               </div>
             </>
           ) : null}
@@ -459,52 +439,45 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               </div>
             </>
           ) : null}
-          {/* The moving lines live INSIDE the cast, not beside it. They are the
-              detail of the throw above, so they share its container and its rule. */}
-          {(vals.showMovingLines) ? (
-            <>
-              <div style={{ marginTop: "clamp(38px,5vw,52px)", borderTop: "1px solid var(--d-rule)", paddingTop: "clamp(30px,4vw,38px)" }}>
-                <div style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--accent-d)", marginBottom: "12px" }}>
-                {vals.movingHeading}
-                </div>
-                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.75", color: "var(--d-3)", maxWidth: "50ch", margin: "0" }}>
-                {vals.movingSub}
-                </p>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {(vals.movingLines ?? []).map((ml, mlIdx) => (
-                    <React.Fragment key={mlIdx}>
-                      <div style={{ marginTop: mlIdx === 0 ? "clamp(30px,4vw,38px)" : "clamp(26px,3.4vw,32px)", paddingTop: mlIdx === 0 ? "0" : "clamp(26px,3.4vw,32px)", borderTop: mlIdx === 0 ? "none" : "1px solid var(--d-rule)", display: "grid", gridTemplateColumns: "auto 1fr", gap: "20px", alignItems: "start" }}>
-                        <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", width: "38px", paddingTop: "1px" }}>
-                          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--d-3)" }}>
-                          Line
-                          </span>
-                          <span style={{ fontFamily: 'var(--font-display)', fontSize: "28px", lineHeight: "1", color: "var(--accent-d)" }}>
-                          {ml.n}
-                          </span>
-                        </span>
-                        <div>
-                          {ml.image ? (
-                            <p style={{ fontFamily: 'var(--font-display)', fontSize: "19px", lineHeight: "1.3", color: "var(--d-1)", margin: "0 0 11px" }}>
-                            {ml.image}
-                            </p>
-                          ) : null}
-                          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.72", color: "var(--d-2)", margin: "0 0 14px" }}>
-                          {ml.text}
-                          </p>
-                          {ml.becomes ? (
-                            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "9.5px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--d-3)", margin: "0" }}>
-                            {vals.castMultiMoving ? 'This line alone' : 'Flipped'} → {ml.becomes}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
-            </>
-          ) : null}
         </div>
+        {(vals.showMovingLines) ? (
+          <>
+            <div style={{ marginTop: "clamp(40px,5vw,56px)" }}>
+              <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 6px" }}>
+              {vals.movingHeading}
+              </p>
+              <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "15px", color: "var(--d-3)", margin: "0 0 22px" }}>
+              {vals.movingSub}
+              </p>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {(vals.movingLines ?? []).map((ml, mlIdx) => (
+                  <React.Fragment key={mlIdx}>
+                    <div style={{ borderTop: "1px solid var(--d-rule)", padding: "18px 0", display: "grid", gridTemplateColumns: "auto 1fr", gap: "16px", alignItems: "start" }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: "30px", lineHeight: "1", color: "var(--accent-d)", opacity: "0.7", width: "32px" }}>
+                      {ml.n}
+                      </span>
+                      <div>
+                        {ml.image ? (
+                          <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "16px", color: "var(--d-2)", margin: "0 0 7px" }}>
+                          {ml.image}
+                          </p>
+                        ) : null}
+                        <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.7", color: "var(--d-2)", margin: "0 0 9px" }}>
+                        {ml.text}
+                        </p>
+                        {ml.becomes ? (
+                          <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--d-3)", margin: "0" }}>
+                          Moving → {ml.becomes}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : null}
       </div>
     </section>
     <section data-chapter="genekeys" data-screen-label="Gene Keys" ref={vals.registerPanel} style={{ flex: "0 0 100%", width: "100%", minWidth: "100%", scrollSnapAlign: "start", scrollSnapStop: "always", background: "var(--l-bg)", color: "var(--l-1)" }}>
@@ -587,7 +560,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <summary style={{ cursor: "pointer", listStyle: "none", fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", display: "flex", alignItems: "center", gap: "8px" }}>
               Repressive · Reactive
               <span style={{ color: "var(--l-3)" }}>
-              · go deeper
+              — go deeper
               </span>
             </summary>
             <div className="ul-natures" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "18px", paddingTop: "18px" }}>
