@@ -219,6 +219,15 @@
   }
 }
 
+/* The band spans the full width, the text inside it does not have to. On the
+   wide layout the rows already inset to the prose edge. On the narrow one the
+   design holds a flat 22px, which is right on a phone and too tight once the
+   screen widens, so it scales up to meet the wide layout's 64px. */
+.card-reading--mobile .ul-iching-rows > * {
+  padding-left: clamp(22px, 6vw, 64px) !important;
+  padding-right: clamp(22px, 6vw, 64px) !important;
+}
+
 /* ── Section tints and page breaks ─────────────────────────────────────── */
 
 /* The shades and the hairline that used to be declared here are gone: the live
