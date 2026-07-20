@@ -21,6 +21,14 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 const DESKTOP = 'components/oracle/reading/_src/Card Reading v2 - Wide Image (Desktop, locked).dc.html';
 const READING = 'components/oracle/reading/_src/Reading.dc.html';
+const MOBILE = 'components/oracle/reading/_src/Card Reading - Mobile.dc.html';
+
+/* The mobile file draws its own compact brand row. The site's real bar is the
+   better one and is already what the live card page uses, so the header
+   becomes a slot the app fills with <Navigation />. Matched by its opening tag
+   through its close, a balanced swap. */
+const MOBILE_HEADER_OPEN = '<header style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 22px;background:#211c16;border-bottom:1px solid rgba(168,135,77,.2);">';
+const MOBILE_HEADER_SLOT = '<dc-import name="TopNav" hint-size="100%,56px"></dc-import>';
 
 /* The two trigram rows in the I Ching section carry card 62's trigrams as a
    fixed pattern of <i> bars. Replaced with a loop over the card's own lines,
@@ -41,6 +49,19 @@ const BAR_BROKEN = '<span style="display:flex;gap:4px;"><i style="width:14px;hei
 const UPPER_FIXED = BAR_BROKEN + BAR_BROKEN + BAR_SOLID;
 const LOWER_FIXED = BAR_SOLID + BAR_BROKEN + BAR_BROKEN;
 
+/* The one opening line, in the design's own standfirst type, inserted directly
+   under the card name at the top of the reading. */
+const LEAD_P = `<p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:23px;`
+  + `line-height:1.42;color:#ede4d4;margin:18px 0 0;text-wrap:pretty;">{{ ulLead }}</p>`;
+
+/* The four per-lens standfirsts the design carried. Removed whole (wrapper and
+   paragraph together, a balanced removal) now that the reading opens with one
+   line instead of repeating one per section. */
+const DEAD_LEADS = ['icLead', 'gkLead', 'hdLead', 'bodyLead'].map((slot) =>
+  '<div style="max-width:772px;margin:0 auto;padding:24px var(--read-pad,44px) 0;">'
+  + `<p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:23px;`
+  + `line-height:1.42;color:#ede4d4;margin:0;text-wrap:pretty;">{{ ${slot} }}</p></div>`);
+
 const BINDINGS = [
   {
     file: DESKTOP,
@@ -51,7 +72,12 @@ const BINDINGS = [
     ],
   },
   {
+    file: MOBILE,
+    spans: [{ open: MOBILE_HEADER_OPEN, closeTag: '</header>', replacement: MOBILE_HEADER_SLOT }],
+  },
+  {
     file: READING,
+    removals: DEAD_LEADS,
     // [anchor, literal, slot] — anchor is the style attribute ending that
     // uniquely identifies the element, so prose mentions are never touched.
     anchored: [
@@ -95,21 +121,34 @@ const BINDINGS = [
       ['e:19px;color:#8a7c60;margin-top:6px;">', 'The Ecology of Truth', '{{ relTitle }}'],
       ['rcase;color:#a8874d;margin:0 0 11px;">The ', 'Judgement', '{{ relRingTarot }}'],
 
-      // ── The four section standfirsts (23px lead above each lens's prose).
-      //    These are editorial one-liners with no field of their own in the
-      //    oracle data; see CardReadingData for what feeds them. ──
-      ['font-size:23px;line-height:1.42;color:#ede4d4;margin:0;text-wrap:pretty;">', 'Thunder rests above the mountain — a sound sharp but contained, carrying further than its size suggests.', '{{ icLead }}'],
-      ['font-size:23px;line-height:1.42;color:#ede4d4;margin:0;text-wrap:pretty;">', 'The gift turns the confusion of knowledge with understanding into language that carries actual seeing.', '{{ gkLead }}'],
-      ['font-size:23px;line-height:1.42;color:#ede4d4;margin:0;text-wrap:pretty;">', 'The throat renders what has been understood into words that others can actually receive.', '{{ hdLead }}'],
-      ['font-size:23px;line-height:1.42;color:#ede4d4;margin:0;text-wrap:pretty;">', 'The body becomes a living instrument for perceiving, expressing, and embodying with precision.', '{{ bodyLead }}'],
+      // ── The reading's single opening line, under the card name. The design
+      //    had one standfirst per lens; there is only one now, at the top. ──
+      ['{{ cardName }}</h1>', '', LEAD_P],
     ],
   },
 ];
 
-for (const { file, swaps = [], anchored = [] } of BINDINGS) {
+for (const { file, swaps = [], anchored = [], removals = [], spans = [] } of BINDINGS) {
   let html = readFileSync(file, 'utf8');
   let changed = 0;
   let already = 0;
+
+  /* Replace a whole element, from its opening tag through its matching close. */
+  for (const { open, closeTag, replacement } of spans) {
+    if (html.includes(replacement)) { already++; continue; }
+    const a = html.indexOf(open);
+    if (a < 0) { console.warn(`  ! span "${open.slice(0, 40)}…" not found`); continue; }
+    const b = html.indexOf(closeTag, a);
+    if (b < 0) { console.warn(`  ! close "${closeTag}" not found`); continue; }
+    html = html.slice(0, a) + replacement + html.slice(b + closeTag.length);
+    changed++;
+  }
+
+  for (const dead of removals) {
+    if (!html.includes(dead)) { already++; continue; }
+    html = html.split(dead).join('');
+    changed++;
+  }
 
   for (const [literal, slot] of swaps) {
     if (html.includes(slot)) { already++; continue; }

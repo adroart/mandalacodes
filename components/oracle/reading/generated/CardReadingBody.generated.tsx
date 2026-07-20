@@ -16,6 +16,9 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "var(--hero-size,54px)", lineHeight: "1", letterSpacing: ".01em", color: "#ede4d4", margin: "0" } as unknown as React.CSSProperties}>
         {vals.cardName}
         </h1>
+        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "23px", lineHeight: "1.42", color: "#ede4d4", margin: "18px 0 0", textWrap: "pretty" } as unknown as React.CSSProperties}>
+        {vals.ulLead}
+        </p>
       </div>
       <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: "14px", margin: "20px 0" } as unknown as React.CSSProperties}>
         <i style={{ height: "1px", flex: "1", background: "rgba(168,135,77,.28)" } as unknown as React.CSSProperties}>
@@ -113,11 +116,6 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         {vals.hexName}
         </div>
       </div>
-    </div>
-    <div style={{ maxWidth: "772px", margin: "0 auto", padding: "24px var(--read-pad,44px) 0" } as unknown as React.CSSProperties}>
-      <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "23px", lineHeight: "1.42", color: "#ede4d4", margin: "0", textWrap: "pretty" } as unknown as React.CSSProperties}>
-      {vals.icLead}
-      </p>
     </div>
     <div style={{ maxWidth: "772px", margin: "0 auto", padding: "26px var(--read-pad,44px) 0" } as unknown as React.CSSProperties}>
       <div style={{ margin: "0 calc(var(--read-pad,44px)*-1)", borderTop: "1px solid rgba(168,135,77,.18)" } as unknown as React.CSSProperties}>
@@ -316,11 +314,6 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </div>
       </div>
     </div>
-    <div style={{ maxWidth: "772px", margin: "0 auto", padding: "24px var(--read-pad,44px) 0" } as unknown as React.CSSProperties}>
-      <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "23px", lineHeight: "1.42", color: "#ede4d4", margin: "0", textWrap: "pretty" } as unknown as React.CSSProperties}>
-      {vals.gkLead}
-      </p>
-    </div>
     <div style={{ maxWidth: "772px", margin: "0 auto", padding: "26px var(--read-pad,44px) 0" } as unknown as React.CSSProperties}>
       <div style={{ display: "flex", alignItems: "stretch", border: "1px solid rgba(168,135,77,.2)", marginBottom: "36px" } as unknown as React.CSSProperties}>
         <div style={{ flex: "1", padding: "16px 12px", textAlign: "center", borderRight: "1px solid rgba(168,135,77,.2)" } as unknown as React.CSSProperties}>
@@ -446,11 +439,6 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </div>
       </div>
     </div>
-    <div style={{ maxWidth: "772px", margin: "0 auto", padding: "24px var(--read-pad,44px) 0" } as unknown as React.CSSProperties}>
-      <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "23px", lineHeight: "1.42", color: "#ede4d4", margin: "0", textWrap: "pretty" } as unknown as React.CSSProperties}>
-      {vals.hdLead}
-      </p>
-    </div>
     <div style={{ maxWidth: "772px", margin: "0 auto", padding: "26px var(--read-pad,44px) 0" } as unknown as React.CSSProperties}>
       <div style={{ borderTop: "1px solid rgba(168,135,77,.18)", padding: "20px 0" } as unknown as React.CSSProperties}>
         <p style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".24em", textTransform: "uppercase", fontWeight: "400", color: "#c6a667", margin: "0 0 4px" } as unknown as React.CSSProperties}>
@@ -518,11 +506,6 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         {vals.bodySite}
         </div>
       </div>
-    </div>
-    <div style={{ maxWidth: "772px", margin: "0 auto", padding: "24px var(--read-pad,44px) 0" } as unknown as React.CSSProperties}>
-      <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "23px", lineHeight: "1.42", color: "#ede4d4", margin: "0", textWrap: "pretty" } as unknown as React.CSSProperties}>
-      {vals.bodyLead}
-      </p>
     </div>
     <div style={{ maxWidth: "772px", margin: "0 auto", padding: "26px var(--read-pad,44px) 0" } as unknown as React.CSSProperties}>
       <div style={{ borderTop: "1px solid rgba(168,135,77,.18)", padding: "20px 0" } as unknown as React.CSSProperties}>

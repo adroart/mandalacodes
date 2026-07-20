@@ -31,6 +31,42 @@
   box-shadow: none !important;
 }
 
+/* ── Artwork ───────────────────────────────────────────────────────────── */
+
+/* The design gives the artwork slot a fixed 100%-height box, which forces a
+   square mandala to either crop or letterbox. Releasing the height lets the
+   image sit at its own proportion, full width of its column, uncropped. */
+.card-reading [data-image-slot] {
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* The design insets the artwork from the edges. It reads better full bleed, so
+   the wrappers that hold the parallax layer give up their side padding. */
+.card-reading--mobile [data-scroll] > div:has([data-artparallax]) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Desktop keeps the column's padding (the meta block below needs it) and lets
+   only the artwork break out of it, so the image reaches the panel edges while
+   Element / Gate / Keynotes stay indented. 32px and 34px are the aside's own
+   padding, from the design. */
+.card-reading--desktop aside > div:has(> [data-artparallax]) {
+  margin: -34px -32px 0 !important;
+  width: calc(100% + 64px) !important;
+}
+
+/* ── The site bar on mobile ────────────────────────────────────────────── */
+
+/* The design drew its own compact header in the flow; the site's real bar is
+   position:fixed and reserves no space, so the frame reserves it here. The bar
+   keeps --nav-height equal to its own rendered height (NavigationCore's
+   ResizeObserver), which is the site's standing convention for this. */
+.card-reading--mobile > section > div {
+  padding-top: var(--nav-height, 64px);
+}
+
 /* ── Device simulation, mobile only ────────────────────────────────────── */
 
 /* The mock iPhone status bar (9:41, signal, battery). A real phone draws its

@@ -15,6 +15,7 @@ import { ulCardImageUrl } from '../../../utils/universalLanguage';
 import { hexagramLineBooleans } from '../HexagramGlyph';
 import { HEXAGRAM_CHINESE } from '../../../data/hexagramChinese';
 import CardReading, { type CardReadingLens } from './CardReading';
+import Navigation from '../../Navigation';
 import CardReadingBodyHost, { type CardReadingBodyData } from './generated/CardReadingBody.host';
 
 /* The design carries a one-line standfirst above each lens's prose. No card has
@@ -78,12 +79,8 @@ function buildBody(card: any, syn?: CardSynthesis): CardReadingBodyData {
   const bodyPhysParas = paras(s?.body?.physiology);
 
   return {
-    /* Not written for any card yet, so the design's slot holds a placeholder
-       rather than an echo of the paragraph directly beneath it. */
-    icLead: LEAD_PLACEHOLDER,
-    gkLead: LEAD_PLACEHOLDER,
-    hdLead: LEAD_PLACEHOLDER,
-    bodyLead: LEAD_PLACEHOLDER,
+    /* Not written for any card yet, so the slot holds a placeholder. */
+    ulLead: LEAD_PLACEHOLDER,
 
     ulKicker: `Universal Language ${card.number}`,
     cardName: card.card_name,
@@ -182,13 +179,14 @@ export const CardReadingData: React.FC<{ cardNumber: number; variant?: 'mobile' 
      shell's scroll engine keys the rail and progress marker off. */
   const reading = <CardReadingBodyHost data={buildBody(card, syn)} />;
 
-  /* contain, not cover: the mandala is a square artwork and cropping it cuts
-     the pattern, which is the piece itself. */
+  /* Full width of its column at the artwork's own square proportion: never
+     cropped (the pattern IS the piece) and never letterboxed inside a taller
+     box. The slot's fixed height is released in card-reading-fullbleed.css. */
   const artwork = (
     <img
       src={ulCardImageUrl(card.number, 1080)}
       alt={`${card.card_name} · Code ${card.number}`}
-      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+      style={{ width: '100%', height: 'auto', display: 'block' }}
     />
   );
 
@@ -201,6 +199,7 @@ export const CardReadingData: React.FC<{ cardNumber: number; variant?: 'mobile' 
       cardName={card.card_name}
       reading={reading}
       artwork={artwork}
+      topNav={<Navigation />}
     />
   );
 };

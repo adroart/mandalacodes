@@ -24,14 +24,9 @@ export interface RelRow {
    an empty block rather than sample text, which is what we want for a card
    whose prose is not written yet. */
 export interface CardReadingBodyData {
-  /* The one-line standfirst above each lens's prose. The design wrote these by
-     hand for card 62; the oracle data has no field for them, so they are fed
-     with the opening sentence of that lens's own authored text and fall back to
-     empty for a card with nothing written. */
-  icLead: string;
-  gkLead: string;
-  hdLead: string;
-  bodyLead: string;
+  /* The reading's single opening line, under the card name. Not written for
+     any card yet and no field for it in the oracle data. */
+  ulLead: string;
   /* UL — the essence, with the design's drop cap on the opening paragraph. */
   ulKicker: string;
   cardName: string;

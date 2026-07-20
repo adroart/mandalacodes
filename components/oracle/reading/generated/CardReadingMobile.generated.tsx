@@ -33,30 +33,7 @@ export const CardReadingMobileMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </svg>
       </span>
     </div>
-    <header style={{ flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "56px", padding: "0 22px", background: "#211c16", borderBottom: "1px solid rgba(168,135,77,.2)" } as unknown as React.CSSProperties}>
-      <button type="button" aria-label="Menu" style={{ background: "none", border: "0", cursor: "pointer", padding: "8px", display: "flex" } as unknown as React.CSSProperties}>
-        <svg width="20" height="14" viewBox="0 0 20 14" stroke="#cdc0a8" strokeWidth="1.6">
-          <path d="M0 1h20M0 7h20M0 13h14">
-          </path>
-        </svg>
-      </button>
-      <a href="#top" style={{ display: "flex", flexDirection: "column", lineHeight: "1.2", textAlign: "center" } as unknown as React.CSSProperties}>
-        <span style={{ fontFamily: "'Cinzel',serif", fontSize: "12px", textTransform: "uppercase", color: "#f3ecde", letterSpacing: ".2em", marginRight: "-.2em" } as unknown as React.CSSProperties}>
-        Mandala
-        </span>
-        <span style={{ fontFamily: "'Cinzel',serif", fontSize: "12px", textTransform: "uppercase", color: "#f3ecde", letterSpacing: ".58em", marginRight: "-.58em" } as unknown as React.CSSProperties}>
-        Codes
-        </span>
-      </a>
-      <button type="button" aria-label="Account" style={{ background: "none", border: "0", cursor: "pointer", padding: "8px", display: "flex" } as unknown as React.CSSProperties}>
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#cdc0a8" strokeWidth="1.6">
-          <circle cx="12" cy="8" r="4">
-          </circle>
-          <path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7">
-          </path>
-        </svg>
-      </button>
-    </header>
+    {vals.slots?.TopNav ?? (<dc-import name="TopNav" hintSize="100%,56px" />)}
     <div data-reader="" style={{ flex: "1", minHeight: "0", position: "relative" } as unknown as React.CSSProperties}>
       <main data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", WebkitOverflowScrolling: "touch", paddingBottom: "80px" } as unknown as React.CSSProperties}>
         <div data-jumpbar="" style={{ position: "sticky", top: "0", zIndex: "5", overflow: "hidden", background: "#191510cc", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", borderBottom: "1px solid rgba(168,135,77,.16)" } as unknown as React.CSSProperties}>

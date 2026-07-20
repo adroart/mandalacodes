@@ -11,7 +11,8 @@
   ],
   "conditionals": [],
   "componentSlots": [
-    "Reading"
+    "Reading",
+    "TopNav"
   ],
   "imageSlots": [
     "art-mobile"

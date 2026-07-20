@@ -72,6 +72,8 @@ export interface CardReadingProps {
   reading?: React.ReactNode;
   /* The mandala artwork, dropped into the design's own sizing container. */
   artwork?: React.ReactNode;
+  /* The site's real top bar, used on mobile in place of the design's own. */
+  topNav?: React.ReactNode;
 }
 
 const GLYPH_FLAG: Record<string, string> = {
@@ -99,7 +101,7 @@ function useIsDesktop(forced?: 'mobile' | 'desktop') {
 }
 
 export const CardReading: React.FC<CardReadingProps> = ({
-  lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork, cardKicker, cardName,
+  lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork, cardKicker, cardName, topNav,
 }) => {
   const isDesktop = useIsDesktop(variant);
 
@@ -126,7 +128,7 @@ export const CardReading: React.FC<CardReadingProps> = ({
 
   return isDesktop
     ? <CardReadingDesktopHost data={desktopData} railNode={railNode} reading={reading} artwork={artwork} />
-    : <CardReadingMobileHost data={mobileData} reading={reading} artwork={artwork} />;
+    : <CardReadingMobileHost data={mobileData} reading={reading} artwork={artwork} topNav={topNav} />;
 };
 
 export default CardReading;

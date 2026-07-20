@@ -33,6 +33,9 @@ interface HostProps {
   reading?: React.ReactNode;
   /* Fills the design's artwork slot (id "art-mobile"). */
   artwork?: React.ReactNode;
+  /* Fills the design's top bar slot. The mobile file drew its own compact
+     brand row; the app passes the site's real bar here instead. */
+  topNav?: React.ReactNode;
 }
 
 /* The design file's own defaults, kept so the host renders identically to the
@@ -66,7 +69,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
     return {
       nav: data.nav ?? DEFAULT_NAV,
       tabs: data.tabs ?? DEFAULT_TABS,
-      slots: { Reading: this.props.reading },
+      slots: { Reading: this.props.reading, TopNav: this.props.topNav },
       images: { 'art-mobile': this.props.artwork },
     };
   }
