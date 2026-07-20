@@ -16,9 +16,6 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "var(--hero-size,54px)", lineHeight: "1", letterSpacing: ".01em", color: "#ede4d4", margin: "0" } as unknown as React.CSSProperties}>
         {vals.cardName}
         </h1>
-        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "23px", lineHeight: "1.42", color: "#ede4d4", margin: "18px 0 0", textWrap: "pretty" } as unknown as React.CSSProperties}>
-        {vals.ulLead}
-        </p>
       </div>
       <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: "14px", margin: "20px 0" } as unknown as React.CSSProperties}>
         <i style={{ height: "1px", flex: "1", background: "rgba(168,135,77,.28)" } as unknown as React.CSSProperties}>

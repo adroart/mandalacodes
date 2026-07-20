@@ -24,9 +24,6 @@ export interface RelRow {
    an empty block rather than sample text, which is what we want for a card
    whose prose is not written yet. */
 export interface CardReadingBodyData {
-  /* The reading's single opening line, under the card name. Not written for
-     any card yet and no field for it in the oracle data. */
-  ulLead: string;
   /* UL — the essence, with the design's drop cap on the opening paragraph. */
   ulKicker: string;
   cardName: string;

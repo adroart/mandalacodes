@@ -18,12 +18,6 @@ import CardReading, { type CardReadingLens } from './CardReading';
 import Navigation from '../../Navigation';
 import CardReadingBodyHost, { type CardReadingBodyData } from './generated/CardReadingBody.host';
 
-/* The design carries a one-line standfirst above each lens's prose. No card has
-   one written, and there is no field for it in the oracle data, so the slot
-   holds this until the lines are authored. Deliberately reads as unwritten
-   rather than as finished copy. */
-const LEAD_PLACEHOLDER = 'Summary line to come.';
-
 /* Prose in these files is paragraph-separated by blank lines. */
 const paras = (s?: string): string[] =>
   (s ?? '').split('\n\n').map((p) => p.trim()).filter(Boolean);
@@ -79,9 +73,6 @@ function buildBody(card: any, syn?: CardSynthesis): CardReadingBodyData {
   const bodyPhysParas = paras(s?.body?.physiology);
 
   return {
-    /* Not written for any card yet, so the slot holds a placeholder. */
-    ulLead: LEAD_PLACEHOLDER,
-
     ulKicker: `Universal Language ${card.number}`,
     cardName: card.card_name,
     dropCap: lead.charAt(0),

@@ -49,11 +49,6 @@ const BAR_BROKEN = '<span style="display:flex;gap:4px;"><i style="width:14px;hei
 const UPPER_FIXED = BAR_BROKEN + BAR_BROKEN + BAR_SOLID;
 const LOWER_FIXED = BAR_SOLID + BAR_BROKEN + BAR_BROKEN;
 
-/* The one opening line, in the design's own standfirst type, inserted directly
-   under the card name at the top of the reading. */
-const LEAD_P = `<p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:23px;`
-  + `line-height:1.42;color:#ede4d4;margin:18px 0 0;text-wrap:pretty;">{{ ulLead }}</p>`;
-
 /* The four per-lens standfirsts the design carried. Removed whole (wrapper and
    paragraph together, a balanced removal) now that the reading opens with one
    line instead of repeating one per section. */
@@ -128,9 +123,6 @@ const BINDINGS = [
       ['e:19px;color:#8a7c60;margin-top:6px;">', 'The Ecology of Truth', '{{ relTitle }}'],
       ['rcase;color:#a8874d;margin:0 0 11px;">The ', 'Judgement', '{{ relRingTarot }}'],
 
-      // ── The reading's single opening line, under the card name. The design
-      //    had one standfirst per lens; there is only one now, at the top. ──
-      ['{{ cardName }}</h1>', '', LEAD_P],
 
     ],
   },
