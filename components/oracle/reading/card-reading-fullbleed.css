@@ -33,12 +33,23 @@
 
 /* ── Artwork ───────────────────────────────────────────────────────────── */
 
-/* The design gives the artwork slot a fixed 100%-height box, which forces a
-   square mandala to either crop or letterbox. Releasing the height lets the
-   image sit at its own proportion, full width of its column, uncropped. */
+/* The whole artwork, always. The design frames it in a square tile and then
+   zooms the layer inside to 1.14 so it can drift on scroll, which trims the
+   outer ring off a mandala. The tile is already square and so is the artwork,
+   so dropping the zoom makes the image sit exactly in the frame with nothing
+   cut off. Costs the parallax drift, which is the trade for seeing all of it. */
+.card-reading [data-artparallax] {
+  transform: none !important;
+}
+
 .card-reading [data-image-slot] {
-  height: auto !important;
-  overflow: visible !important;
+  height: 100% !important;
+}
+
+.card-reading [data-image-slot] img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
 }
 
 /* The design insets the artwork from the edges. It reads better full bleed, so
