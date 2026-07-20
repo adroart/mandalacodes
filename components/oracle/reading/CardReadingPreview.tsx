@@ -23,7 +23,7 @@ const LENSES: (CardReadingLens & { body: string[] })[] = [
     body: ['Shadow moves through the compulsion to correct everything in reach.',
            'The gift is discernment: knowing which detail carries the structure and which is noise.',
            'At the siddhi it becomes impeccability, where precision stops being effort.'] },
-  { id: 'humandesign', label: 'Human Design', tab: 'Human Design', sum: 'Channel of Discernment', glyph: 'diamond',
+  { id: 'humandesign', label: 'Human Design', tab: 'Human Design', tabShort: 'H. Design', sum: 'Channel of Discernment', glyph: 'diamond',
     body: ['A channel that reads pattern before it reads meaning.',
            'Its correctness depends entirely on waiting for the thing to finish arriving.'] },
   { id: 'body', label: 'Body', tab: 'Body', sum: 'Listening as Regulation', glyph: 'circle',

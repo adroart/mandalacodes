@@ -1,0 +1,45 @@
+/* Full-bleed override for the imported card reading.
+
+   The design files present themselves as a mockup: a fixed-size panel with
+   rounded corners and a drop shadow, floating inside a padded page. That is
+   how the design tool frames a screen, not how the screen should ship. The
+   structure inside the frame is already correct — header pinned at the top,
+   link bar pinned at the bottom, the reading scrolling between them — so this
+   only dissolves the frame and lets that structure fill the viewport.
+
+   Hand-written on purpose. The generated files are never edited; this loads
+   after them and overrides the design's inline sizing, which is why every rule
+   here needs !important. */
+
+/* ── The frame ─────────────────────────────────────────────────────────── */
+
+.card-reading--mobile > section,
+.card-reading--desktop > section {
+  padding: 0 !important;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+/* The panel: fixed width/height and mockup styling become a full viewport. */
+.card-reading--mobile > section > div,
+.card-reading--desktop > section > div {
+  width: 100% !important;
+  max-width: none !important;
+  height: 100dvh !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ── Device simulation, mobile only ────────────────────────────────────── */
+
+/* The mock iPhone status bar (9:41, signal, battery). A real phone draws its
+   own, so this would be a second, wrong one. */
+.card-reading--mobile > section > div > div:first-child {
+  display: none !important;
+}
+
+/* The mock home-indicator pill above the link bar. Same reason. */
+.card-reading--mobile > section > div > div:last-child {
+  display: none !important;
+}

@@ -23,6 +23,9 @@ import CardReadingMobileHost, { type CardReadingMobileData } from './generated/C
 import CardReadingDesktopHost, { type CardReadingDesktopData } from './generated/CardReadingDesktop.host';
 import './generated/CardReadingMobile.style.css';
 import './generated/CardReadingDesktop.style.css';
+/* Loads last: dissolves the design files' mockup frame so the reading fills the
+   viewport. See the file for why it overrides rather than edits. */
+import './card-reading-fullbleed.css';
 
 /* Desktop design is min(1480px, 94vw) wide; below this it cannot breathe. */
 const DESKTOP_QUERY = '(min-width: 1024px)';
@@ -31,8 +34,11 @@ export interface CardReadingLens {
   id: string;
   /* Full name, desktop rail: "Universal Language" */
   label: string;
-  /* Short name, both rails: "UL" / "H. Design" */
+  /* Rail name on desktop, where there is room: "Human Design" */
   tab: string;
+  /* Rail name on mobile, where six labels share 402px. The design abbreviates
+     here ("H. Design"); without it long names collide. Falls back to `tab`. */
+  tabShort?: string;
   /* Desktop rail summary line: "Sphere of Genius" */
   sum?: string;
   glyph?: 'star' | 'hex' | 'sprout' | 'diamond' | 'circle' | 'rings';
@@ -94,7 +100,7 @@ export const CardReading: React.FC<CardReadingProps> = ({
   /* One bag, two shapes. Each host falls back to its design file's own defaults
      for anything not supplied, so an unconfigured render matches the source. */
   const mobileData: CardReadingMobileData = {
-    nav: lenses?.map((l) => ({ id: l.id, tab: l.tab })),
+    nav: lenses?.map((l) => ({ id: l.id, tab: l.tabShort ?? l.tab })),
     tabs,
   };
 
