@@ -1,0 +1,556 @@
+/* Full-bleed override for the imported card reading.
+
+   The design files present themselves as a mockup: a fixed-size panel with
+   rounded corners and a drop shadow, floating inside a padded page. That is
+   how the design tool frames a screen, not how the screen should ship. The
+   structure inside the frame is already correct — header pinned at the top,
+   link bar pinned at the bottom, the reading scrolling between them — so this
+   only dissolves the frame and lets that structure fill the viewport.
+
+   Hand-written on purpose. The generated files are never edited; this loads
+   after them and overrides the design's inline sizing, which is why every rule
+   here needs !important. */
+
+/* ── The frame ─────────────────────────────────────────────────────────── */
+
+.card-reading--mobile > section,
+.card-reading--desktop > section {
+  padding: 0 !important;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+/* The panel: fixed width/height and mockup styling become a full viewport. */
+.card-reading--mobile > section > div,
+.card-reading--desktop > section > div {
+  width: 100% !important;
+  max-width: none !important;
+  height: 100dvh !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ── The meta list ─────────────────────────────────────────────────────── */
+
+/* The design centres each label against its value. That reads fine for the
+   one-line ones, but Keynotes runs to four lines and its label floated to the
+   middle of them. Anchored to the first line instead, so every label sits on
+   the same baseline as the value it names. */
+.card-reading--desktop aside dt {
+  align-self: start !important;
+}
+
+/* ── The bottom bar ────────────────────────────────────────────────────── */
+
+/* The shell's bar sat at 0.72 alpha over the reading, which read washed out.
+   These are the live bar's own values (oracle-bottom-navigation.css) so the
+   two match. */
+/* Darker than the reading it sits under, so it reads as a floor rather than
+   another band of the page, and slimmer so it takes less of the screen. */
+.card-reading footer {
+  background: #0a0805 !important;
+  border-top: 1px solid rgba(168, 135, 77, 0.18) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  height: 58px !important;
+}
+
+.card-reading--mobile footer {
+  height: 54px !important;
+  padding-bottom: 0 !important;
+}
+
+/* ── Artwork ───────────────────────────────────────────────────────────── */
+
+/* The design darkens the bottom of the artwork tile, which worked while the
+   image was zoomed and cropped: the shading fell outside the frame. Now that
+   the whole square is visible it lands across the artwork as a hard band. The
+   hairline edge stays; the vignette goes. */
+.card-reading :has(> [data-artparallax]) {
+  box-shadow: inset 0 0 0 1px rgba(198, 166, 103, 0.22) !important;
+}
+
+/* The whole artwork, always. The design frames it in a square tile and then
+   zooms the layer inside to 1.14 so it can drift on scroll, which trims the
+   outer ring off a mandala. The tile is already square and so is the artwork,
+   so dropping the zoom makes the image sit exactly in the frame with nothing
+   cut off. Costs the parallax drift, which is the trade for seeing all of it. */
+.card-reading [data-artparallax] {
+  transform: none !important;
+}
+
+.card-reading [data-image-slot] {
+  height: 100% !important;
+}
+
+.card-reading [data-image-slot] img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+/* The artwork sits 15px in on all four sides rather than bleeding to the
+   edges, on both layouts. */
+.card-reading--mobile [data-scroll] > div:has([data-artparallax]) {
+  padding: 15px !important;
+}
+
+/* Desktop: the artwork sits 15px in on all four sides. The buffer comes from
+   the column's own padding, which the design set unevenly (34 top, 32 left,
+   30 right), so the column is evened up to 15 and the artwork stops breaking
+   out of it. The meta block below inherits the same 15px indent. */
+.card-reading--desktop aside {
+  padding: 15px !important;
+}
+
+.card-reading--desktop aside > div:has(> [data-artparallax]) {
+  margin: 0 !important;
+  width: auto !important;
+}
+
+/* ── The site bar on mobile ────────────────────────────────────────────── */
+
+/* The design drew its own compact header in the flow; the site's real bar is
+   position:fixed and reserves no space, so the frame reserves it here. The bar
+   keeps --nav-height equal to its own rendered height (NavigationCore's
+   ResizeObserver), which is the site's standing convention for this. */
+.card-reading--mobile > section > div {
+  padding-top: var(--nav-height, 64px);
+}
+
+/* ── The live reading, mounted inside the shell ────────────────────────── */
+
+/* The live reading brings its own sticky lens rail and its own fixed bottom
+   bar. The shell supplies both, so the inner ones would be second copies of
+   the same thing sitting on top of the shell's. */
+.card-reading .oracle-reading-progress,
+.card-reading .oracle-bottom-nav {
+  display: none !important;
+}
+
+/* It also expects to be the page. Inside the shell it is a block in the
+   shell's own scroll container, so it gives up full-viewport sizing. */
+.card-reading .eb-reading {
+  min-height: 0 !important;
+  /* Clears the site's fixed bar on the live page. Inside the shell the bar is
+     already accounted for, so this would just be a gap under the header. */
+  padding-top: 0 !important;
+}
+
+/* The tail past the last chapter carries that chapter's own shade, so the
+   reading runs into the bar with no band of its own. Anything else reads as a
+   stripe: lighter looks like a gap, darker looks like a black block.
+
+   The clearance that keeps the last line from hiding behind the bar moves off
+   the scroller and onto the reading, so it is filled with the reading's colour
+   rather than showing the frame through it. */
+.card-reading .eb-reading {
+  background: #100d09 !important;
+  padding-bottom: 80px !important;
+}
+
+.card-reading [data-scroll] {
+  padding-bottom: 0 !important;
+}
+
+/* The whole top area comes from the design now: its artwork in the shell, and
+   its header block below. The live reading's hero would repeat all of it. */
+.card-reading .ul-hero-section {
+  display: none !important;
+}
+
+/* ── The designed header ───────────────────────────────────────────────── */
+
+/* The design file is mounted only for its top block. Everything past the
+   keywords is the reading itself, which the live one supplies, so the sixth
+   child onward is dropped and every chapter but the first is hidden whole.
+   Order inside the block: title, hexagram divider, keywords, chart
+   invitation, the flourish rule. */
+/* Centred on both layouts, and the type scales with the screen rather than
+   sitting at one fixed size. All three are the design's own knobs. */
+.card-reading__designed-header [data-sec="ul"] {
+  --hero-align: center;
+  --hero-size: clamp(34px, 7vw, 54px);
+  --kw-size: clamp(19px, 3.4vw, 29px);
+}
+
+/* The phone: the design's 44px side padding is too generous on a narrow
+   screen. */
+.card-reading--mobile .card-reading__designed-header [data-sec="ul"] {
+  --read-pad: 10px;
+}
+
+.card-reading__designed-header [data-sec]:not([data-sec="ul"]) {
+  display: none !important;
+}
+
+.card-reading__designed-header [data-sec="ul"] > div > :nth-child(n + 6) {
+  display: none !important;
+}
+
+/* The trailing divider that sits between the design's own sections. */
+.card-reading__designed-header [data-sec="ul"] ~ div {
+  display: none !important;
+}
+
+/* The design reserves 64px under its last section. Nothing follows it here, so
+   that was empty space between the header and the reading. The negative pull
+   takes the remaining gap from the flourish's own 26px down to 16px. */
+.card-reading__designed-header > div {
+  padding-bottom: 0 !important;
+}
+
+.card-reading__designed-header {
+  margin-bottom: -10px;
+}
+
+/* On the wide layout the column beside the artwork already carries "For me,
+   see where this code lives in your chart", so the header's copy of the same
+   invitation would be the second one on screen. The phone has no such column,
+   so it keeps it. */
+.card-reading--desktop .card-reading__designed-header [data-chart-cta] {
+  display: none !important;
+}
+
+/* ── The hexagram rows ─────────────────────────────────────────────────── */
+
+/* The hexagram and trigram rows sat inside the reading's text measure, so the
+   banded rows stopped short of the column on both sides.
+
+   On a phone the reading already breaks them out to the full screen with an
+   inline width. Above 720px it deliberately pulls them back in, which is the
+   rule being overridden here: a table of rows reads better spanning its column
+   than indented to prose width. Needs the extra class to outrank that rule,
+   which carries !important at equal specificity and wins on order.
+
+   90px is the section's margin plus its padding, so the rows land exactly on
+   the column's edges. */
+/* Not behind a width query. The reading's own full-bleed is written in viewport
+   units, which is correct when the reading IS the page but wrong beside the
+   artwork column: below 720 the reading's reset stopped applying and the rows
+   spread to the whole window, sliding under the column and pushing their text
+   off the left of the reading. Bound to the column instead, at every width. */
+.card-reading--desktop .eb-reading .ul-iching-rows {
+  margin-left: calc(-1 * var(--read-pad, 46px)) !important;
+  margin-right: calc(-1 * var(--read-pad, 46px)) !important;
+  width: calc(100% + (2 * var(--read-pad, 46px))) !important;
+  max-width: none !important;
+}
+
+/* The band spans the full width, the text inside it does not have to. It takes
+   the same inset the prose does, so rows and paragraphs share one left edge at
+   every width. */
+.card-reading--desktop .ul-iching-rows > * {
+  padding-left: var(--read-pad, 46px) !important;
+  padding-right: var(--read-pad, 46px) !important;
+}
+
+/* On the phone the design holds a flat 22px, which is right on a phone and
+   too tight once the screen widens, so it scales up. */
+.card-reading--mobile .ul-iching-rows > * {
+  padding-left: clamp(22px, 6vw, 64px) !important;
+  padding-right: clamp(22px, 6vw, 64px) !important;
+}
+
+/* ── Section tints and page breaks ─────────────────────────────────────── */
+
+/* The shades and the hairline that used to be declared here are gone: the live
+   reading brings both natively (oracle-foundation.css), and a copy here just
+   painted them twice.
+
+   One exception. Each chapter carries a 1px warm rule along its top to divide
+   it from the chapter before. The first chapter has no chapter before it, so
+   inside the shell that rule lands directly under the hero as a stray line
+   across the page with nothing to separate. Only the first one is dropped;
+   every break between chapters is untouched. */
+.card-reading [data-chapter="ul"] {
+  box-shadow: none !important;
+}
+
+/* ── Grain ─────────────────────────────────────────────────────────────── */
+
+/* The shell's own grain element is a fixed-height SVG pinned over the top of
+   the reading column, not a full-surface layer. Giving it the noise texture
+   painted a 150px band that sat static while the reading scrolled under it,
+   and its bottom edge read as a hard line across the page.
+
+   The live reading already carries a proper grain: fixed, the whole viewport,
+   same noise and weight. So the shell's element is left bare and the live one
+   does the work for both. */
+.card-reading [data-grain] {
+  background-image: none !important;
+  opacity: 0 !important;
+}
+
+/* ── The progress marker ───────────────────────────────────────────────── */
+
+/* Light brown rather than gold, fading up from nothing on the left so the
+   start of the reading reads as empty rather than as a short gold stub. */
+.card-reading [data-progressfill-h] {
+  background: linear-gradient(to right, rgba(150, 116, 79, 0), #b98f63) !important;
+}
+
+/* A smaller diamond, in the same brown, with its glow toned to match. It sits
+   at the very left at the top of the reading, where it reads as absent, and
+   reaches the right edge at the end. */
+.card-reading [data-comet] {
+  width: 5px !important;
+  height: 5px !important;
+  background: #c9a47a !important;
+  animation: none !important;
+  box-shadow: 0 0 6px 1px rgba(185, 143, 99, 0.5) !important;
+}
+
+/* ── The lens rail ─────────────────────────────────────────────────────── */
+
+/* Matched to the rail the live reading page already uses
+   (.oracle-reading-progress in oracle-foundation.css): same label type, same
+   letter-spacing, same tap height, and the same behaviour of letting each
+   label keep its natural width and scrolling sideways rather than squeezing.
+   The design's version shared the width equally between six labels, which ran
+   them together on a narrow phone. */
+/* Matched value for value to the live rail (.oracle-reading-progress in
+   oracle-foundation.css), including its three tiers. Mine had only one, which
+   happened to be the values live uses below 560, so at every width above that
+   it ran too small and ranged left where live centres. The !important is
+   needed throughout because the design sets these inline on the elements.
+
+   Base, above 760: 64px tall, centred, 13px type at 0.18em. */
+.card-reading--mobile [data-jumpbar] {
+  height: 65px !important;
+  background: color-mix(in oklab, #14100b 86%, transparent) !important;
+  border-bottom: 1px solid rgba(168, 135, 77, 0.14) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.card-reading--mobile [data-pills] {
+  gap: 4px !important;
+  padding: 0 clamp(8px, 2vw, 20px) !important;
+  min-height: 64px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.card-reading--mobile [data-pills]::-webkit-scrollbar {
+  display: none;
+}
+
+.card-reading--mobile [data-nav] {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 64px !important;
+  padding: 0 clamp(10px, 1.25vw, 18px) !important;
+  font-family: var(--font-label) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+.card-reading--mobile [data-nav="relations"]::before {
+  width: 17px;
+  height: 17px;
+}
+
+/* 561 to 760: the labels tighten but the bar keeps its height. */
+@media (min-width: 561px) and (max-width: 760px) {
+  .card-reading--mobile [data-nav] {
+    padding: 0 9px !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.14em !important;
+  }
+}
+
+/* 560 and below: the shorter bar, ranged left, with the smaller mark. */
+@media (max-width: 560px) {
+  .card-reading--mobile [data-jumpbar] {
+    height: 49px !important;
+  }
+
+  /* Live ranges left here because at its own padding the six labels overflow a
+     phone, and centring a row that overflows only clips both ends.
+
+     Instead of a fixed padding that either fits or does not, the space between
+     labels is whatever is left over once the words themselves are laid out,
+     divided evenly: generous at 560, closing steadily as the screen narrows,
+     nothing at all by the point the words fill the width. So the row tightens
+     rather than starting to scroll. 310px is the measured width of the six
+     labels at this size; 14 is the twelve gaps between and beside them plus
+     the two at the ends. */
+  .card-reading--mobile [data-pills] {
+    --cr-rail-space: min(8px, max(0px, (100vw - 310px) / 14));
+
+    min-height: 48px !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    padding: 0 var(--cr-rail-space) !important;
+  }
+
+  .card-reading--mobile [data-nav] {
+    min-height: 48px !important;
+    padding: 0 var(--cr-rail-space) !important;
+    font-size: 0.6875rem !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .card-reading--mobile [data-nav="relations"]::before {
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
+/* Once the spacing has closed as far as it can, the longest label gives way
+   instead. "Human Design" is 113px of the 310px the six occupy, far more than
+   any other, so shortening just that one buys back enough room for real
+   spacing again on the smallest phones. The floor in the formula drops to
+   match the shorter row. The label stays in the markup for screen readers. */
+@media (max-width: 360px) {
+  .card-reading--mobile [data-pills] {
+    --cr-rail-space: min(8px, max(0px, (100vw - 266px) / 14));
+  }
+
+  .card-reading--mobile [data-nav="humandesign"] {
+    font-size: 0 !important;
+  }
+
+  .card-reading--mobile [data-nav="humandesign"]::before {
+    content: 'Human D';
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* Last resort, and only where the room genuinely runs out: the space inside
+   the two-word labels closes up, so they read ICHING and GENEKEYS. Worth about
+   ten pixels, which is the difference between the row fitting and scrolling on
+   the narrowest screens. The spaced labels stay in the markup for screen
+   readers. */
+@media (max-width: 330px) {
+  .card-reading--mobile [data-pills] {
+    --cr-rail-space: min(8px, max(0px, (100vw - 256px) / 14));
+  }
+
+  .card-reading--mobile [data-nav="iching"],
+  .card-reading--mobile [data-nav="genekeys"] {
+    font-size: 0 !important;
+  }
+
+  .card-reading--mobile [data-nav="iching"]::before,
+  .card-reading--mobile [data-nav="genekeys"]::before {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+
+  .card-reading--mobile [data-nav="iching"]::before {
+    content: 'IChing';
+  }
+
+  .card-reading--mobile [data-nav="genekeys"]::before {
+    content: 'GeneKeys';
+  }
+}
+
+
+/* Relations is the chain-link mark on the live rail, not the word. Drawn as a
+   mask so it takes its colour from the button, which means it lights gold with
+   the others when that section is active. Same path and 17px size as the live
+   rail's icon (.oracle-reading-progress__jumps svg). The label stays in the
+   markup for screen readers. */
+.card-reading--mobile [data-nav="relations"] {
+  font-size: 0 !important;
+  gap: 0;
+}
+
+.card-reading--mobile [data-nav="relations"]::before {
+  content: '';
+  width: 17px;
+  height: 17px;
+  background-color: currentColor;
+  -webkit-mask: var(--cr-connection-icon) center / contain no-repeat;
+  mask: var(--cr-connection-icon) center / contain no-repeat;
+}
+
+.card-reading {
+  /* The two interlocking rings, the same mark the Relations section header
+     uses, so the rail and the section it points at agree. */
+  --cr-connection-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='2.4'%3E%3Ccircle cx='15' cy='20' r='10'/%3E%3Ccircle cx='25' cy='20' r='10'/%3E%3C/svg%3E");
+}
+
+/* ── The keywords line ─────────────────────────────────────────────────── */
+
+/* The design exposes its own size knob for this line. Raised from 19px so the
+   keywords carry the weight they should: they are the card in seven words. */
+.card-reading {
+  --kw-size: 25px;
+}
+
+/* ── The chart invitation ──────────────────────────────────────────────── */
+
+/* Was a full-width slab. Now it sizes to its own content like a button and
+   centres under the keywords, so it reads as one thing to press rather than a
+   band across the reading. */
+.card-reading [data-chart-cta] {
+  display: flex !important;
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 18px !important;
+  padding: 14px 22px !important;
+  background: transparent !important;
+  border: 1px solid rgba(198, 166, 103, 0.32);
+  border-radius: 2px !important;
+  transition: border-color .35s ease, background .35s ease !important;
+}
+
+/* The design centres the reading column on mobile; this keeps the button with
+   it rather than stranded left. */
+.card-reading [data-chart-cta] {
+  align-self: center;
+}
+
+.card-reading [data-chart-cta]:hover {
+  background: rgba(198, 166, 103, 0.06) !important;
+  border-color: rgba(198, 166, 103, 0.55);
+}
+
+/* The entrance mark. The filled gold disc read as a notification badge; this is
+   a hairline ring with a fine arrow that opens on hover, quieter and more of a
+   doorway than a button. */
+.card-reading [data-chart-arrow] {
+  width: 34px !important;
+  height: 34px !important;
+  background: transparent !important;
+  border: 1px solid rgba(198, 166, 103, 0.45);
+  color: #c6a667 !important;
+  font-size: 15px;
+  line-height: 1;
+  transition: border-color .35s ease, transform .35s cubic-bezier(.4, 0, .2, 1);
+}
+
+.card-reading [data-chart-cta]:hover [data-chart-arrow] {
+  border-color: rgba(198, 166, 103, 0.85);
+  transform: translateX(3px);
+}
+
+/* ── Device simulation, mobile only ────────────────────────────────────── */
+
+/* The mock iPhone status bar (9:41, signal, battery). A real phone draws its
+   own, so this would be a second, wrong one. */
+.card-reading--mobile > section > div > div:first-child {
+  display: none !important;
+}
+
+/* The mock home-indicator pill above the link bar. Same reason. */
+.card-reading--mobile > section > div > div:last-child {
+  display: none !important;
+}

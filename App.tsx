@@ -18,6 +18,7 @@ const OracleProfile = lazy(() => import('./components/OracleProfile'));
 const SharedProfile = lazy(() => import('./components/SharedProfile'));
 const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
 const CollectionsManager = lazy(() => import('./components/account/CollectionsManager'));
+const CardReadingPreview = lazy(() => import('./components/oracle/reading/CardReadingPreview'));
 const NotFound = lazy(() => import('./components/NotFound'));
 const LightweaverLanding = lazy(() => import('./components/lightweaver/LightweaverLanding'));
 
@@ -63,7 +64,11 @@ const AppInner: React.FC = () => {
   // The Gateway is a fullscreen orbit-arrival screen with its own chrome; the
   // global top bar (the original MANDALA CODES nav) belongs on every other
   // oracle page, including the card reading. LED host never shows it.
-  const showNav = !ledHost && location.pathname !== '/gateway';
+  // The imported card-reading preview also ships its own header from the design
+  // file, so the global bar would double up on it.
+  const chromeless = location.pathname === '/gateway'
+    || location.pathname.startsWith('/preview/');
+  const showNav = !ledHost && !chromeless;
 
   return (
     <Suspense fallback={<div className="min-h-screen bg-wood-900" />}>
@@ -120,6 +125,12 @@ const AppInner: React.FC = () => {
                 <Route path="/piece/:pieceId" element={<PiecePage />} />
                 <Route path="/piece/:pieceId/:edition" element={<PiecePage />} />
                 <Route path="/atlas/edit" element={<StewardEdit />} />
+
+                {/* Imported Claude Design card reading — preview surface. Renders
+                    the desktop wide-image design above 1024px and the mobile
+                    design below it; ?variant=mobile|desktop forces one. */}
+                <Route path="/preview/card-reading" element={<CardReadingPreview />} />
+                <Route path="/preview/card-reading/:number" element={<CardReadingPreview />} />
 
                 {/* Admin — atlas ledger + steward key issuance */}
                 <Route path="/admin" element={<Navigate to="/admin/atlas" replace />} />

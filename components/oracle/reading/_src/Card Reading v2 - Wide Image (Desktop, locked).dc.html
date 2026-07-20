@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style data-omelette-injected>html,body{background:transparent}</style><script data-omelette-injected>(()=>{{const W=new URLSearchParams(location.search).get("theme");if(W==="light"||W==="dark"){document.documentElement.dataset.theme=W}}{if(new URLSearchParams(location.search).get("_omthumb")==="1"){const W=(q)=>{const X=q.focus;if(!X)return;q.focus=function(H){X.call(this,{...H,preventScroll:true})}};W(HTMLElement.prototype);W(SVGElement.prototype);if(typeof MathMLElement!=="undefined"){W(MathMLElement.prototype)}const $=(q)=>{q.removeAttribute("autofocus");q.inert=true;if(!(q instanceof HTMLElement))q.removeAttribute("tabindex")};const z=(q)=>{if(q.hasAttribute("autofocus"))$(q);for(const X of q.querySelectorAll("[autofocus]")){$(X)}};z(document.documentElement);new MutationObserver((q)=>{for(const X of q){for(const H of X.addedNodes){if(H.nodeType===1)z(H)}}}).observe(document,{childList:true,subtree:true})}}{const W=()=>{try{if(document.querySelector('meta[name="color-scheme"]'))return;const $=getComputedStyle(document.documentElement).getPropertyValue("color-scheme").trim();if($&&$!=="normal")return;const z=(j)=>{if(!j)return null;const F=getComputedStyle(j).backgroundColor.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\s/]+([\d.]+%?))?\s*\)$/);if(!F)return null;const G=F[4]==null?1:parseFloat(F[4])/(F[4].endsWith("%")?100:1);if(G<0.99)return null;return[+F[1],+F[2],+F[3]]};const q=z(document.body)||z(document.documentElement);if(!q)return;const X=(j)=>{const F=j/255;return F<=0.04045?F/12.92:((F+0.055)/1.055)**2.4};const H=0.2126*X(q[0])+0.7152*X(q[1])+0.0722*X(q[2]);document.documentElement.style.setProperty("color-scheme",H<0.4?"dark":"light")}catch{}};if(document.readyState==="complete")W();else window.addEventListener("load",W)}var b=[];var p=false;var u=30000;var d=3000;document.addEventListener("DOMContentLoaded",()=>{const W=window.Babel;const $="om-src-id";if(W&&W.registerPlugin&&!(W.availablePlugins&&W.availablePlugins[$])){W.registerPlugin($,({types:H})=>({visitor:{JSXOpeningElement(j,F){const G=j.node;if(G.name&&G.name.type==="JSXMemberExpression")return;for(let Q=0;Q<G.attributes.length;Q++){const V=G.attributes[Q];if(V.type==="JSXAttribute"&&V.name&&V.name.name==="data-om-id")return}const P=F.file&&F.file.opts&&F.file.opts.filename||"?";const R=G.loc&&G.loc.start;const J=`jsx:${P}:${G.start??0}:${R?R.line:0}:${R?R.column+1:0}`;G.attributes.push(H.jsxAttribute(H.jsxIdentifier("data-om-id"),H.stringLiteral(J)))}}}))}const z="om-text-extract";let q=false;if(p&&W&&W.registerPlugin&&!(W.availablePlugins&&W.availablePlugins[z])){const H=window.React;if(H&&H.useSyncExternalStore&&H.createElement){q=true;const j={};const F=new Set;let G=0;window.__omTextO=j;window.__omTextSet=(J)=>{for(const Q in J){const V=J[Q];if(V==null)delete j[Q];else j[Q]=V}G++;F.forEach((Q)=>Q())};const P=(J)=>{F.add(J);return()=>F.delete(J)};const R=()=>G;window.__OmT=function J(Q){H.useSyncExternalStore(P,R,R);return H.createElement("span",{"data-om-text":Q.i,className:"__om-t"},Q.i in j?j[Q.i]:Q.children)};W.registerPlugin(z,({types:J})=>{const Q={style:1,script:1,noscript:1,textarea:1,title:1,option:1,text:1,tspan:1,textPath:1};const V={placeholder:1,alt:1,title:1,label:1,"aria-label":1,"aria-description":1,"aria-placeholder":1};const Y=(K,M)=>J.logicalExpression("??",J.memberExpression(J.logicalExpression("||",J.memberExpression(J.identifier("window"),J.identifier("__omTextO")),J.objectExpression([])),J.stringLiteral(K),true),M);const Z=(K)=>K.file&&K.file.opts&&K.file.opts.filename||"?";const B=(K)=>K.file&&K.file.code||"";const U=(K,M)=>{const L=(D)=>D&&D.start!=null&&D.end!=null&&(D.type==="StringLiteral"||D.type==="TemplateLiteral"&&D.expressions.length===0)?[D.start,D.end]:null;const N=L(M);if(N)return N;if(M&&M.type==="Identifier"){const D=K.scope.getBinding(M.name);if(D&&D.constant&&D.path.node.type==="VariableDeclarator"){return L(D.path.node.init)}}return null};const x=(K,M,L)=>{const N=K.node;let D=false;const f=(w,A)=>{D=true;return J.jsxElement(J.jsxOpeningElement(J.jsxIdentifier("__OmT"),[J.jsxAttribute(J.jsxIdentifier("i"),J.stringLiteral(w))],false),J.jsxClosingElement(J.jsxIdentifier("__OmT")),[A],false)};const C=N.children.map((w)=>{if(w.type==="JSXText"){if(w.start==null||w.end==null)return w;const A=L.slice(w.start,w.end);const S=A.length-A.trimStart().length;const O=A.length-A.trimEnd().length;if(S+O>=A.length)return w;return f(`txt:${M}:${w.start+S}:${w.end-O}`,w)}if(w.type==="JSXExpressionContainer"){const A=U(K,w.expression);if(A)return f(`str:${M}:${A[0]}:${A[1]}`,w)}return w});if(D)N.children=C};return{visitor:{JSXOpeningElement(K,M){const L=K.node;const N=Z(M);const D={};for(let f=0;f<L.attributes.length;f++){const C=L.attributes[f];if(C.type!=="JSXAttribute"||!C.name)continue;const w=C.name.name;if(!V[w])continue;if(!C.value||C.value.type!=="StringLiteral")continue;if(C.value.start==null||C.value.end==null)continue;const A=`txt:${N}:${C.value.start}:${C.value.end}`;D[w]=A;C.value=J.jsxExpressionContainer(Y(A,J.stringLiteral(C.value.value)))}if(Object.keys(D).length){L.attributes.push(J.jsxAttribute(J.jsxIdentifier("data-om-text-attrs"),J.stringLiteral(JSON.stringify(D))))}},JSXElement(K,M){const L=K.node.openingElement;const N=L&&L.name&&L.name.name;if(N==="__OmT")return;if(typeof N==="string"&&Q[N])return;x(K,Z(M),B(M))},JSXFragment(K,M){x(K,Z(M),B(M))}}}})}}const X=q?["transform-react-jsx-source",$,z]:["transform-react-jsx-source",$];document.querySelectorAll('script[type="text/babel"],script[type="text/jsx"]').forEach((H,j)=>{const F=H.getAttribute("data-plugins")||"";const G=X.filter((P)=>F.indexOf(P)<0);if(G.length){H.setAttribute("data-plugins",F?`${F},${G.join(",")}`:G.join(","))}if(!H.hasAttribute("data-filename")){H.setAttribute("data-filename",H.getAttribute("src")||`inline-${j}`)}})});var I=window.parent;var g="not editable here — open the project in the Claude Design editor to save";var n=()=>Promise.resolve({persisted:false,noHost:true,reason:g});var k=n;var v="data/storage.json";var l=()=>{try{const W=new URL(document.baseURI);const $=W.pathname.match(/\/projects\/([^/]+)\/serve\//);if($)return $[1];return W.hostname.split(".")[0]||""}catch{return location.hostname.split(".")[0]||""}};var o=()=>{try{const W=new URL(document.baseURI);const $=W.pathname.indexOf("/serve/");if($>=0)return W.origin+W.pathname.slice(0,$+"/serve/".length)+v}catch{}return"./"+v};var E=null;var _=()=>{if(!E){E=fetch(o(),{cache:"no-store"}).then((W)=>{if(W.ok)return W.text();return W.status===404?"":null}).catch(()=>null).then((W)=>{if(W===null){E=null;return null}const $=new Map;if(!W)return $;let z;try{z=JSON.parse(W)}catch{console.warn("[omelette.storage] "+v+" is not valid JSON; treating the store as unreadable so a save cannot overwrite the "+"hand-edited bytes. Fix the JSON (or delete the file) to re-enable persistence.");E=null;return null}if(z===null||typeof z!=="object"||Array.isArray(z)){console.warn("[omelette.storage] "+v+" doesn't hold a JSON object; treating the store as unreadable so a save cannot "+"overwrite the hand-edited bytes. Make the top level a JSON object to re-enable persistence.");E=null;return null}const q=z;if("data"in q){const X=q.data;if(X===null||typeof X!=="object"||Array.isArray(X)){console.warn("[omelette.storage] "+v+' has a "data" field that is not a JSON object; treating the store as unreadable so a '+'save cannot overwrite the hand-edited bytes. Make "data" a JSON object to re-enable persistence.');E=null;return null}const H=q._meta;const j=H!==null&&typeof H==="object"?H.project:undefined;if(typeof j==="string"&&j!==""&&j!==l())return $;for(const F of Object.keys(X))$.set(F,X[F]);return $}for(const X of Object.keys(q)){if(X!=="_meta")$.set(X,q[X])}return $})}return E};var y=(W)=>k(v,JSON.stringify({_meta:{project:l(),version:1},data:Object.fromEntries(W)},null,2));var m=Promise.resolve();var T=(W)=>{const $=m.then(W);m=$.then(()=>{return},()=>{return});return $};var s=/sk-(?:ant-)?[A-Za-z0-9_-]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|xox[a-z]-[A-Za-z0-9][A-Za-z0-9-]{9,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/;var a=/password|passwd|secret|api[_-]?key|access[_-]?token|auth[_-]?token|credential/i;var r=(W,$,z)=>{if(s.test($)||a.test(W)&&typeof z==="string"&&z.length>=8){console.warn('[omelette.storage] the value for "'+W+'" looks like a credential. The storage file is a plaintext project file — visible to '+"everyone with project access and copied when the project is duplicated. Do not store secrets here.")}};var c={persisted:false,reason:"could not load the existing store — not overwriting it"};var i={persisted:false,reason:"stored value changed since a failed read — re-read this key before saving"};var h=new Set;var t={get:(W)=>{if(typeof W!=="string"){return Promise.reject(new TypeError("storage.get: key must be a string"))}return T(_).then(($)=>{if($===null){h.add(W);return null}h.delete(W);if(!$.has(W))return null;const z=$.get(W);return z==null?null:JSON.parse(JSON.stringify(z))})},set:(W,$)=>{if(typeof W!=="string"){return Promise.reject(new TypeError("storage.set: key must be a string"))}let z;try{z=JSON.stringify($)}catch(X){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable ("+String(X)+")"))}if(z===undefined){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable"))}r(W,z,$);const q=JSON.parse(z);return T(()=>_().then((X)=>{if(X===null)return c;if(h.has(W)){if(X.has(W))return i;h.delete(W)}X.set(W,q);return y(X)}))},delete:(W)=>{if(typeof W!=="string"){return Promise.reject(new TypeError("storage.delete: key must be a string"))}return T(()=>_().then(($)=>{if($===null)return c;if(h.has(W)){if($.has(W))return i;h.delete(W)}$.delete(W);return y($)}))},keys:()=>T(_).then((W)=>W===null?[]:Array.from(W.keys()))};window.omelette={writeFile:(W,$)=>k(W,$).then((z)=>{if(!z.persisted&&!z.noHost){throw new Error(z.reason||"write failed")}}),storage:t};if(I&&I!==window){const W=(J,Q)=>{try{I.postMessage({__omelette_log:true,type:J,data:Q},"*")}catch{}};["log","warn","error"].forEach((J)=>{const Q=console[J];console[J]=(...V)=>{const Y=V.map((Z)=>{try{return typeof Z==="object"?JSON.stringify(Z):String(Z)}catch{try{return String(Z)}catch{return"[unstringifiable]"}}}).join(" ");W(J,Y);Q.apply(console,V)}});window.addEventListener("error",(J)=>{const Q=J.target;if(Q&&Q!==window&&Q.tagName){const V=Q.src||Q.href||"";W("resource_error",`${Q.tagName} failed to load: ${V}`)}else{W("error",`${J.message||"Unknown error"} at ${J.filename||"?"}:${J.lineno||0}:${J.colno||0}`)}},true);window.addEventListener("unhandledrejection",(J)=>{const Q=J.reason;const V=Q instanceof Error?`${Q.message} ${Q.stack}`:String(Q);W("error",`Unhandled rejection: ${V}`)});window.addEventListener("click",(J)=>{if(J.defaultPrevented||J.button!==0)return;if(J.metaKey||J.ctrlKey||J.shiftKey||J.altKey)return;const Q=J.composedPath?J.composedPath():[];const V=["button","input","select","textarea","summary","label"];let Y=null;for(const x of Q){if(!(x instanceof Element))continue;if(x.localName==="a"){if(!(x instanceof HTMLAnchorElement))return;Y=x;break}if(V.indexOf(x.localName)!==-1)return}if(!Y)return;if(Y.isContentEditable)return;const Z=Y.closest("[contenteditable]");if(Z&&Z.getAttribute("contenteditable")!=="false")return;const B=(Y.getAttribute("target")||"_self").toLowerCase();if(B!=="_self"&&B!=="_top"&&B!=="_parent")return;let U;try{U=new URL(Y.href)}catch{return}if(U.protocol!=="http:"&&U.protocol!=="https:")return;if(location.origin==="null")return;if(U.origin===location.origin)return;J.preventDefault();window.open(U.href,"_blank","noopener,noreferrer")});const $=()=>{try{I.postMessage({type:"omelette:height",height:document.documentElement.scrollHeight},"*")}catch{}};if(window.ResizeObserver)new ResizeObserver($).observe(document.documentElement);const z=()=>{$();if(!document.querySelector('script[type="text/babel"],script[type="text/jsx"]'))return;const J=()=>document.getElementById("root")||document.querySelector("body > div[id]");const Q=J()?.firstElementChild??null;let V=0;const Y=()=>{const Z=J();if(Z&&Z.firstElementChild!==Q||++V>30){$();return}setTimeout(Y,100)};setTimeout(Y,100)};if(document.readyState==="complete")z();else window.addEventListener("load",z);const q={};let X=0;const H=(J)=>new Promise((Q,V)=>{if(!b.length){V(new Error("claude.complete: no parent origin"));return}const Y=`c${++X}`;const Z=()=>setTimeout(()=>{delete q[Y];V(new Error(`claude.complete: no data for ${u/1000}s`))},u);const B=Z();q[Y]={resolve:Q,reject:V,text:"",t:B,arm:Z};try{for(const U of b){I.postMessage({__om_api:true,id:Y,body:J},U)}}catch(U){clearTimeout(B);delete q[Y];V(U)}});const j=8;const F=async(J,Q)=>{if(!Array.isArray(J.messages)){throw new Error("claude.complete: tools require a messages array")}const V=J.messages.slice();const Y={...J,tools:J.tools.map((U)=>{if(U===null||typeof U!=="object")return U;const x={};for(const K of Object.keys(U)){if(typeof U[K]!=="function")x[K]=U[K]}return x})};const Z=Y.tool_choice;const B=Z!=null&&(Z.type==="any"||Z.type==="tool")?{...Y,tool_choice:Z.disable_parallel_tool_use!==undefined?{type:"auto",disable_parallel_tool_use:Z.disable_parallel_tool_use}:{type:"auto"}}:Y;for(let U=0;U<j;U++){const x=await H({...U===0?Y:B,messages:V});const K=x.message;const M=K&&Array.isArray(K.content)?K.content:null;const L=M?M.filter((D)=>D?.type==="tool_use"):[];if(K?.stop_reason!=="tool_use"||L.length===0){return x.text}const N=[];for(const D of L){const f=Q.get(D.name);if(!f){N.push({type:"tool_result",tool_use_id:D.id,content:`no handler for tool "${D.name}"`,is_error:true});continue}try{const C=await f(D.input);const w=typeof C==="string"?C:R(C)??"";N.push({type:"tool_result",tool_use_id:D.id,content:w})}catch(C){N.push({type:"tool_result",tool_use_id:D.id,content:String(C?.message??C??"tool handler failed"),is_error:true})}}V.push({role:"assistant",content:M},{role:"user",content:N})}throw new Error(`claude.complete: exceeded ${j} tool turns`)};window.claude={complete(J){const Q=J;if(Q!==null&&typeof Q==="object"&&Array.isArray(Q.tools)&&Q.tools.some((V)=>V!==null&&typeof V==="object"&&typeof V.run==="function")){const V=new Map;for(const Y of Q.tools){if(Y!==null&&typeof Y==="object"&&typeof Y.run==="function"){V.set(String(Y.name),Y.run)}}return F(Q,V)}return H(J).then((V)=>V.text)}};const G={};let P=0;k=(J,Q)=>new Promise((V)=>{if(!b.length){V({persisted:false,noHost:true,reason:g});return}const Y=`f${++P}`;const Z=setTimeout(()=>{delete G[Y];V({persisted:false,noHost:true,reason:g})},d);G[Y]={settle:V,t:Z};try{for(const B of b){I.postMessage({__om_file:true,id:Y,op:"write",path:J,content:Q},B)}}catch{clearTimeout(Z);delete G[Y];V({persisted:false,noHost:true,reason:g})}});const R=(J)=>{try{return JSON.stringify(J)}catch{return JSON.stringify(String(J))}};window.addEventListener("message",(J)=>{if(b.indexOf(J.origin)<0)return;if(J.source!==I)return;const Q=J.data;if(!Q)return;if(Q.type==="omelette-preview-refresh"){if(typeof Q.token!=="string"||!/^[0-9a-f.-]+(\.(rc|pr-[0-9]+))?(\.[0-9]+\.[0-9a-f]{16})?$/.test(Q.token))return;const Z=Math.max(1,Math.floor((Q.expiresAt||0)-Date.now()/1000));document.cookie="__Host-omelette-preview="+Q.token+"; Path=/; Secure; SameSite=None; Partitioned; Max-Age="+Z;return}if(Q.__om_file_r){const Z=G[Q.id];if(!Z)return;clearTimeout(Z.t);delete G[Q.id];Z.settle(Q.ok?{persisted:true}:{persisted:false,reason:Q.error||"write failed"});return}if(Q.__om_api_r){const Z=q[Q.id];if(!Z)return;if(Q.error!=null){clearTimeout(Z.t);delete q[Q.id];Z.reject(new Error(Q.error));return}if(Q.chunk!=null){clearTimeout(Z.t);Z.t=Z.arm();Z.text+=Q.chunk;return}if(Q.done){clearTimeout(Z.t);delete q[Q.id];Z.resolve({text:Q.text!=null?Q.text:Z.text,message:Q.message});return}return}if(!Q.__om_eval)return;const V=Q;const Y=(Z)=>{J.source.postMessage({...Z,__om_eval_r:1,id:V.id},J.origin)};try{const Z=(0,eval)(V.code);if(Z&&typeof Z.then==="function"){Z.then((B)=>Y({ok:1,v:R(B)}),(B)=>Y({ok:0,e:String(B)}))}else{Y({ok:1,v:R(Z)})}}catch(Z){Y({ok:0,e:String(Z)})}})}})();
+</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:400;font-display:swap;src:url('public/fonts/cormorant-garamond-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:400;font-display:swap;src:url('public/fonts/cormorant-garamond-latin-400-italic.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:500;font-display:swap;src:url('public/fonts/cormorant-garamond-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:500;font-display:swap;src:url('public/fonts/cormorant-garamond-latin-500-italic.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:600;font-display:swap;src:url('public/fonts/cormorant-garamond-latin-600-normal.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:normal;font-weight:400;font-display:swap;src:url('public/fonts/iowan-old-style-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:italic;font-weight:400;font-display:swap;src:url('public/fonts/iowan-old-style-latin-400-italic.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:normal;font-weight:700;font-display:swap;src:url('public/fonts/iowan-old-style-latin-700-normal.woff2') format('woff2');}
+@font-face{font-family:"Cinzel";font-style:normal;font-weight:500;font-display:swap;src:url('public/fonts/cinzel-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:"Cinzel";font-style:normal;font-weight:600;font-display:swap;src:url('public/fonts/cinzel-latin-600-normal.woff2') format('woff2');}
+@font-face{font-family:"Noto Serif SC";font-style:normal;font-weight:400;font-display:swap;src:url('public/fonts/noto-serif-sc-400-normal-x.woff2') format('woff2');}
+*{box-sizing:border-box;}
+body{margin:0;background:#0b0906;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:#c6a667;text-decoration:none;}a:hover{color:#debc7e;}
+[data-scroll]{scrollbar-width:none;}
+[data-scroll]::-webkit-scrollbar{width:0;height:0;display:none;}
+[data-nostyle-scroll]::-webkit-scrollbar{display:none;}[data-nostyle-scroll]{scrollbar-width:none;}
+@keyframes cometGlow{0%,100%{box-shadow:0 0 8px 1px rgba(240,217,168,.5);}50%{box-shadow:0 0 15px 4px rgba(240,217,168,.8);}}
+</style>
+</helmet>
+
+<section style="padding:60px;background:#0b0906;font-family:'Iowan Old Style Web',Georgia,serif;">
+  <div style="position:relative;width:min(1480px,94vw);height:940px;display:flex;flex-direction:column;background:#14100b;border:1px solid rgba(168,135,77,.22);border-radius:8px;overflow:hidden;box-shadow:0 40px 90px -40px rgba(0,0,0,.85);">
+
+    <!-- top bar -->
+    <header style="flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;height:62px;padding:0 40px;background:#211c16;border-bottom:1px solid rgba(168,135,77,.2);">
+      <a href="#top" style="display:flex;flex-direction:column;line-height:1.22;text-align:center;">
+        <span style="font-family:'Cinzel',serif;font-size:13px;text-transform:uppercase;color:#f3ecde;letter-spacing:.2em;margin-right:-.2em;">Mandala</span>
+        <span style="font-family:'Cinzel',serif;font-size:13px;text-transform:uppercase;color:#f3ecde;letter-spacing:.61em;margin-right:-.61em;">Codes</span>
+      </a>
+      <nav style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;">
+        <sc-for list="{{ headerNav }}" as="h" hint-placeholder-count="5">
+          <sc-if value="{{ h.divider }}" hint-placeholder-val="{{ true }}"><span style="width:1px;height:13px;background:rgba(243,236,222,.15);"></span></sc-if>
+          <a href="#top" style="position:relative;font-family:'Iowan Old Style Web',serif;font-size:13px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:12px 18px;color:{{ h.color }};">{{ h.label }}<sc-if value="{{ h.active }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;left:18px;right:18px;bottom:8px;height:2px;background:#c6a667;"></span></sc-if></a>
+        </sc-for>
+      </nav>
+      <span aria-hidden="true" style="width:36px;"></span>
+    </header>
+
+    <!-- body -->
+    <div data-reader="" style="flex:1;min-height:0;position:relative;">
+      <!-- top jump bar -->
+      <div data-jumpbar="" style="position:absolute;left:0;right:0;top:0;height:49px;z-index:5;display:flex;align-items:stretch;justify-content:center;background:#191510;overflow:hidden;transition:height .3s ease,background .3s ease,box-shadow .3s ease;">
+        <div data-nostyle-scroll="" style="position:relative;display:flex;justify-content:center;overflow-x:auto;">
+          <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6"><button type="button" data-nav="{{ n.id }}" style="flex:0 0 auto;background:none;border:0;cursor:pointer;padding:0 clamp(9px,1.3vw,18px);font-family:'Iowan Old Style Web',serif;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#80735f;white-space:nowrap;transition:color .25s;">{{ n.tab }}</button></sc-for>
+        </div>
+      </div>
+      <span data-progressfill-h style="position:absolute;left:0;top:0;height:2px;width:0;background:linear-gradient(to right,rgba(198,166,103,.12),#debc7e);z-index:6;transition:width .12s linear,top .3s ease;"></span>
+      <span data-comet style="position:absolute;left:0;top:1px;width:7px;height:7px;transform:translate(-50%,-50%) rotate(45deg);border-radius:1px;background:#f0d9a8;z-index:7;animation:cometGlow 2.4s ease-in-out infinite;transition:left .12s linear,top .3s ease;"></span>
+      <!-- LEFT meta rail -->
+      <aside data-nostyle-scroll="" style="position:absolute;left:0;top:49px;bottom:0;width:40%;overflow-y:auto;border-right:1px solid rgba(168,135,77,.16);padding:34px 32px;display:flex;flex-direction:column;gap:24px;transition:top .3s ease;-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - 36px),transparent);">
+        <div style="position:relative;margin:-14px -12px 4px;aspect-ratio:1/1;flex:none;overflow:hidden;background:#100d09;box-shadow:inset 0 0 0 1px rgba(198,166,103,.22),inset 0 -80px 90px -20px rgba(11,9,6,.95),inset 0 0 140px 24px rgba(11,9,6,.5);">
+          <div data-artparallax="" style="width:100%;height:100%;transform:scale(1.14);transform-origin:center;will-change:transform;">
+            <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="art-desktop" fit="cover" placeholder="Drop the mandala artwork" hint-size="100%,100%"></x-import>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: -15px"><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#80735f;margin-top:5px;">{{ cardKicker }}</span><span style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:#c6a667;">{{ cardName }}</span></div><dl style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:11px 22px;">
+          <sc-for list="{{ meta }}" as="m" hint-placeholder-count="4">
+            <dt style="font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#80735f;align-self:center;">{{ m.k }}</dt>
+            <dd style="margin:0;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:#cdc0a8;line-height:1.2;">{{ m.v }}</dd>
+          </sc-for>
+        </dl>
+        <div style="display:flex;align-items:center;gap:14px;margin:2px 0;"><i style="height:1px;flex:1;background:rgba(168,135,77,.18);"></i><span style="color:#80735f;font-size:11px;">❀</span><i style="height:1px;flex:1;background:rgba(168,135,77,.18);"></i></div>
+        <a href="#top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid rgba(168,135,77,.28);padding:13px 15px;transition:border-color .3s,transform .3s,background .3s;" style-hover="border-color:#c6a667;transform:translateY(-2px);background:rgba(198,166,103,.05);">
+          <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#c6a667;">For Me</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#cdc0a8;margin-top:2px;">See where this code lives in your chart</span></span>
+          <span style="color:#c6a667;font-size:15px;">→</span>
+        </a>
+        <a href="#top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .3s ease;" style-hover="transform:translateX(5px);">
+          <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#ede4d4;">The Piece</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#80735f;margin-top:2px;">The one-of-one physical work</span></span>
+          <span style="color:#a8874d;font-size:15px;">→</span>
+        </a>
+        <a href="#top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .3s ease;" style-hover="transform:translateX(5px);">
+          <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#ede4d4;">Family</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#80735f;margin-top:2px;">People, places, and the living collection</span></span>
+          <span style="color:#a8874d;font-size:15px;">→</span>
+        </a>
+        <div style="display:flex;align-items:center;gap:14px;margin:2px 0;"><i style="height:1px;flex:1;background:rgba(168,135,77,.18);"></i><i style="height:1px;flex:1;background:rgba(168,135,77,.18);"></i></div>
+        <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#80735f;margin:0;">One artwork within a family of 64.</p>
+      </aside>
+
+      <svg data-grain="" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="position:absolute;left:40%;right:0;top:49px;bottom:0;width:60%;pointer-events:none;z-index:2;opacity:.05;mix-blend-mode:overlay;transition:left .3s ease;"><filter id="grainf"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2"></feTurbulence></filter><rect width="100%" height="100%" filter="url(#grainf)"></rect></svg>
+
+      <!-- CENTER scroll -->
+      <main data-scroll="" style="position:absolute;left:40%;right:0;top:49px;bottom:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;transition:top .3s ease;">
+        <div style="width:100%;">
+          <dc-import name="Reading" hint-size="100%,1400px"></dc-import>
+        </div>
+      </main>
+
+      <!-- (navigation moved to the top jump bar) -->
+    </div>
+
+    <!-- bottom nav -->
+    <footer style="flex:0 0 auto;display:flex;align-items:stretch;height:80px;border-top:1px solid rgba(168,135,77,.2);background:#161009;">
+      <a href="#top" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba(168,135,77,.12);transition:background .3s ease,box-shadow .3s ease;" style-hover="background:rgba(198,166,103,.06);box-shadow:inset 0 2px 0 #c6a667;">
+        <svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="#a8874d" stroke-width="1.5"><circle cx="13" cy="15" r="4"></circle><circle cx="27" cy="15" r="4"></circle><path d="M6 30c0-4 3.5-7 7-7s7 3 7 7M20 30c0-4 3.5-7 7-7s7 3 7 7"></path></svg>
+        <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:#ede4d4;">Family</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:#80735f;">People &amp; places</span></span>
+      </a>
+      <a href="#top" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba(168,135,77,.12);transition:background .3s ease,box-shadow .3s ease;" style-hover="background:rgba(198,166,103,.06);box-shadow:inset 0 2px 0 #c6a667;">
+        <svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="#a8874d" stroke-width="1.5"><circle cx="20" cy="20" r="13"></circle><circle cx="20" cy="20" r="4"></circle><path d="M20 7v5M20 28v5M7 20h5M28 20h5"></path></svg>
+        <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:#ede4d4;">For Me</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:#80735f;">Your chart</span></span>
+      </a>
+      <a href="#top" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba(168,135,77,.12);transition:background .3s ease,box-shadow .3s ease;" style-hover="background:rgba(198,166,103,.06);box-shadow:inset 0 2px 0 #c6a667;">
+        <svg width="30" height="30" viewBox="0 0 40 40" fill="#a8874d"><g><circle cx="10" cy="10" r="1.6"></circle><circle cx="16" cy="10" r="1.6"></circle><circle cx="22" cy="10" r="1.6"></circle><circle cx="28" cy="10" r="1.6"></circle><circle cx="10" cy="16" r="1.6"></circle><circle cx="16" cy="16" r="1.6"></circle><circle cx="22" cy="16" r="1.6"></circle><circle cx="28" cy="16" r="1.6"></circle><circle cx="10" cy="22" r="1.6"></circle><circle cx="16" cy="22" r="1.6"></circle><circle cx="22" cy="22" r="1.6"></circle><circle cx="28" cy="22" r="1.6"></circle><circle cx="10" cy="28" r="1.6"></circle><circle cx="16" cy="28" r="1.6"></circle><circle cx="22" cy="28" r="1.6"></circle><circle cx="28" cy="28" r="1.6"></circle></g></svg>
+        <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:#ede4d4;">62 · All 64</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:#80735f;">Discover the codes</span></span>
+      </a>
+      <a href="#top" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba(168,135,77,.12);transition:background .3s ease,box-shadow .3s ease;" style-hover="background:rgba(198,166,103,.06);box-shadow:inset 0 2px 0 #c6a667;">
+        <svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="#a8874d" stroke-width="1.5"><rect x="8" y="9" width="24" height="22"></rect><path d="M8 9l12 11 12-11M13 31l7-7M27 31l-7-7"></path></svg>
+        <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:#ede4d4;">The Piece</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:#80735f;">Physical artwork</span></span>
+      </a>
+      <a href="#top" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;transition:background .3s ease,box-shadow .3s ease;" style-hover="background:rgba(198,166,103,.06);box-shadow:inset 0 2px 0 #c6a667;">
+        <svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="#a8874d" stroke-width="1.5"><path d="M10 30c0-9 6-13 15-13M18 10l8 7-8 7" stroke-linejoin="round" stroke-linecap="round"></path></svg>
+        <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:#ede4d4;">Share</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:#80735f;">Keep it moving</span></span>
+      </a>
+    </footer>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const labels = [
+      { label: "Deck", active: true },
+      { label: "The Systems" },
+      { label: "Learn" },
+      { label: "Atlas" },
+      { label: "Account" }
+    ];
+    const headerNav = labels.map((h, i) => ({
+      label: h.label,
+      active: !!h.active,
+      divider: i > 0,
+      color: h.active ? "#f3ecde" : "#ddd4c2"
+    }));
+    const mode = this.props.railNode === 'ring' ? 'ring' : 'glyph';
+    return {
+      headerNav,
+      glyphMode: mode === 'glyph',
+      ringMode: mode === 'ring',
+      meta: [
+        {k:"Element", v:"Wind / Thunder"},
+        {k:"Gate", v:"62 — Precision"},
+        {k:"Keynotes", v:"Discernment, Pattern, Truth"}
+      ],
+      nav: [
+        {id:"ul", label:"Universal Language", sum:"62", tab:"UL", gStar:true},
+        {id:"iching", label:"I Ching", sum:"Hexagram 62", tab:"I Ching", gHex:true},
+        {id:"genekeys", label:"Gene Keys", sum:"Sphere of Genius", tab:"Gene Keys", gSprout:true},
+        {id:"humandesign", label:"Human Design", sum:"Channel of Discernment", tab:"Human Design", gDiamond:true},
+        {id:"body", label:"Body", sum:"Listening as Regulation", tab:"Body", gCircle:true},
+        {id:"relations", label:"Relations", sum:"The Ecology of Truth", tab:"Relations", gRings:true}
+      ]
+    };
+  }
+
+  componentDidMount() {
+    this._wired = new WeakSet();
+    let tries = 0;
+    const tick = () => {
+      let pending = false;
+      const readers = document.querySelectorAll('[data-reader]');
+      readers.forEach((reader) => {
+        if (this._wired.has(reader)) return;
+        const ready = reader.querySelector('[data-scroll]')
+          && reader.querySelectorAll('[data-sec]').length >= 6
+          && reader.querySelectorAll('[data-nav]').length;
+        if (ready) { this._wired.add(reader); this.wireReader(reader); }
+        else pending = true;
+      });
+      if ((pending || readers.length === 0) && tries++ < 160) this._timer = setTimeout(tick, 120);
+    };
+    tick();
+  }
+
+  componentWillUnmount() { if (this._timer) clearTimeout(this._timer); }
+
+  wireReader(reader) {
+    const scroll = reader.querySelector('[data-scroll]');
+    if (!scroll) return;
+    const secs = Array.from(reader.querySelectorAll('[data-sec]'));
+    const navs = Array.from(reader.querySelectorAll('[data-nav]'));
+    if (!secs.length || !navs.length) return;
+
+    const vfill = reader.querySelector('[data-progressfill]');
+    const hfill = reader.querySelector('[data-progressfill-h]');
+
+    // Focus-fade: labels dim by distance from the active section. Active also
+    // brightens its glyph node; in ring mode the active node shows % read.
+    const jb = reader.querySelector('[data-jumpbar]');
+    const aside = reader.querySelector('aside');
+    const artPar = reader.querySelector('[data-artparallax]');
+    const comet = reader.querySelector('[data-comet]');
+    const grain = reader.querySelector('[data-grain]');
+    const setActive = (idx) => {
+      navs.forEach((n, i) => {
+        n.style.color = i === idx ? '#c6a667' : '#80735f';
+        n.style.transition = 'color .3s ease, transform .35s cubic-bezier(.4,0,.2,1)';
+        n.style.transformOrigin = 'center';
+        n.style.display = 'inline-block';
+        n.style.transform = i === idx ? 'scale(1.05)' : 'scale(1)';
+      });
+    };
+    if (aside && artPar) aside.addEventListener('scroll', () => {
+      artPar.style.transform = 'scale(1.14) translateY(' + (aside.scrollTop * 0.06) + 'px)';
+    }, { passive: true });
+
+    // Map each label to its section's real position in the reading, so the rail
+    // is a proportional map (Gene Keys occupies more of it because it's longer).
+    let secList = [];
+    let trackLen = 0;
+    let breaks = [];
+    let railY = [];
+    let maxScrollRef = 1;
+    let lastSH = 0;
+    const layout = () => {
+      const sTop = scroll.getBoundingClientRect().top;
+      secList = navs.map((n) => {
+        const id = n.getAttribute('data-nav');
+        const sec = reader.querySelector('[data-sec="' + id + '"]');
+        const top = sec ? (sec.getBoundingClientRect().top - sTop + scroll.scrollTop) : 0;
+        return { id, top, btn: n };
+      }).sort((a, b) => a.top - b.top);
+      breaks = secList.map((s) => s.top);
+      const jbLeft = jb ? jb.getBoundingClientRect().left : 0;
+      secList.forEach((s) => { const rr = s.btn.getBoundingClientRect(); const padL = parseFloat(getComputedStyle(s.btn).paddingLeft) || 0; s.cx = rr.left - jbLeft + padL; });
+      maxScrollRef = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
+      lastSH = scroll.scrollHeight;
+    };
+
+    // Marker, fill and active label all track scroll progress against the same
+    // range, so they stay locked to each other and reach the bottom at the end.
+    const onScroll = () => {
+      layout();
+      const n = breaks.length;
+      if (!n) return;
+      const pos = scroll.scrollTop;
+      // Marker moves piecewise between label anchors by real position within each
+      // section, so it stays aligned to the labels AND spans top -> bottom.
+      const den = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
+      const frac = Math.max(0, Math.min(1, pos / den));
+      const barH = pos > 24 ? 38 : 49;
+      if (jb) { jb.style.height = barH + 'px'; jb.style.background = pos > 24 ? '#15110c' : '#191510'; jb.style.boxShadow = pos > 24 ? '0 1px 0 rgba(168,135,77,.28)' : 'none'; }
+      [aside, scroll, grain].forEach((el) => { if (el) el.style.top = barH + 'px'; });
+      if (hfill) hfill.style.top = '0px';
+      if (comet) comet.style.top = '1px';
+      let ak = 0;
+      for (let i = 0; i < n; i++) { if (pos >= breaks[i]) ak = i; }
+      let cx = secList[ak].cx;
+      if (ak < n - 1) {
+        const seg = Math.max(1, breaks[ak + 1] - breaks[ak]);
+        const t = Math.max(0, Math.min(1, (pos - breaks[ak]) / seg));
+        cx = secList[ak].cx + (secList[ak + 1].cx - secList[ak].cx) * t;
+      }
+      if (hfill) hfill.style.width = cx + 'px';
+      if (comet) comet.style.left = cx + 'px';
+      setActive(navs.indexOf(secList[ak].btn));
+    };
+
+    layout();
+    onScroll();
+    scroll.addEventListener('scroll', onScroll, { passive: true });
+    // Re-measure once fonts/images settle (they change section heights).
+    setTimeout(() => { layout(); onScroll(); }, 500);
+    setTimeout(() => { layout(); onScroll(); }, 1400);
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => { layout(); onScroll(); });
+      ro.observe(scroll);
+      ro.observe(reader);
+    }
+    // gentle section reveal as each enters view
+    if (typeof IntersectionObserver !== 'undefined') {
+      const io2 = new IntersectionObserver((es) => {
+        es.forEach((e) => {
+          if (!e.isIntersecting) return;
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'none';
+          Array.from(e.target.children).forEach((k, i) => {
+            k.style.transition = 'opacity .5s ease, transform .5s ease';
+            k.style.transitionDelay = Math.min(i * 60, 360) + 'ms';
+            k.style.opacity = '0'; k.style.transform = 'translateY(10px)';
+            requestAnimationFrame(() => requestAnimationFrame(() => { k.style.opacity = '1'; k.style.transform = 'none'; }));
+          });
+          io2.unobserve(e.target);
+        });
+      }, { root: scroll, threshold: 0.08 });
+      secs.forEach((s) => {
+        s.style.transition = 'opacity .6s ease, transform .6s ease';
+        const rTop = s.getBoundingClientRect().top - scroll.getBoundingClientRect().top;
+        if (rTop > scroll.clientHeight * 0.85) { s.style.opacity = '0'; s.style.transform = 'translateY(16px)'; }
+        io2.observe(s);
+      });
+    }
+
+    const smoothTo = (to) => {
+      const start = scroll.scrollTop;
+      const dist = to - start;
+      const dur = 500;
+      const t0 = Date.now();
+      const ease = (p) => 1 - Math.pow(1 - p, 3);
+      if (this._anim) clearInterval(this._anim);
+      this._anim = setInterval(() => {
+        const p = Math.min(1, (Date.now() - t0) / dur);
+        scroll.scrollTop = start + dist * ease(p);
+        onScroll();
+        if (p >= 1) { clearInterval(this._anim); this._anim = null; }
+      }, 16);
+    };
+    // Delegate on the stable reader element so clicks survive template re-renders.
+    reader.addEventListener('click', (e) => {
+      const btn = e.target.closest && e.target.closest('[data-nav]');
+      if (!btn || !reader.contains(btn)) return;
+      const target = reader.querySelector('[data-sec="' + btn.getAttribute('data-nav') + '"]');
+      if (!target) return;
+      const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - 12;
+      const max = scroll.scrollHeight - scroll.clientHeight;
+      smoothTo(Math.max(0, Math.min(top, max)));
+    });
+  }
+}
+</script>
+</body>
+</html>
