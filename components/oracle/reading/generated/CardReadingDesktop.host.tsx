@@ -130,7 +130,8 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
     const a = e.target?.closest?.('[data-bar-share], [data-bar-tab="share"]');
     if (!a || !this.rootEl?.contains(a)) return;
     e.preventDefault();
-    const real = this.rootEl.querySelector('.oracle-bottom-nav [aria-label="Share this code"]') as HTMLElement | null;
+    /* document, not the frame: the reading's bar sits beside the frame now. */
+    const real = document.querySelector('.oracle-bottom-nav [aria-label="Share this code"]') as HTMLElement | null;
     real?.click();
   };
 

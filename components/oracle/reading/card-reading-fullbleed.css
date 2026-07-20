@@ -118,12 +118,19 @@
 
 /* ── The live reading, mounted inside the shell ────────────────────────── */
 
-/* The live reading brings its own sticky lens rail and its own bottom bar. The
-   shell supplies both, so both inner ones are hidden. The design's bar is the
-   one on screen, with its links wired to real destinations and its Share
-   handing off to the reading's own share sheet. */
-.card-reading .oracle-reading-progress,
-.card-reading .oracle-bottom-nav {
+/* The reading brings its own lens rail and its own bottom bar, and the frame
+   supplies both, so both of the reading's are hidden.
+
+   Not scoped under .card-reading: the page renders the frame as a child, so
+   the reading's bar is a sibling of the frame rather than inside it. This
+   stylesheet only loads with the reading, so an unscoped rule is already
+   confined to this page. The bar stays in the page while hidden, which is what
+   lets the frame's Share hand off to its button. */
+.card-reading .oracle-reading-progress {
+  display: none !important;
+}
+
+.oracle-bottom-nav {
   display: none !important;
 }
 
