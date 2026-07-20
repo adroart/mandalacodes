@@ -60,7 +60,19 @@ const DEAD_LEADS = ['icLead', 'gkLead', 'hdLead', 'bodyLead'].map((slot) =>
 const BINDINGS = [
   {
     file: DESKTOP,
+    anchored: [
+      /* The side column's three links and the brand mark shipped as "#top"
+         placeholders. The two row links are byte-identical, so they bind in
+         document order: the piece first, then family. */
+      ['<a ', 'href="#top" style="display:flex;flex-direction:column;line-height:1.22;text-align:center;"', 'href="/" style="display:flex;flex-direction:column;line-height:1.22;text-align:center;"'],
+      ['<a ', 'href="#top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid', 'href="{{ forMeHref }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid'],
+      ['<a ', 'href="#top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .3s ease;"', 'href="{{ pieceHref }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .3s ease;"'],
+      ['<a ', 'href="#top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .3s ease;"', 'href="{{ familyHref }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .3s ease;"'],
+    ],
     swaps: [
+      // The header nav shipped as href="#top" placeholders. Bound so each item
+      // carries its real destination.
+      ['<a href="#top" style="position:relative;font-family:\'Iowan Old Style Web\',serif;font-size:13px;', '<a href="{{ h.href }}" style="position:relative;font-family:\'Iowan Old Style Web\',serif;font-size:13px;'],
       // Header title block, above the meta list.
       ['No. 62 · Universal Language', '{{ cardKicker }}'],
       ['Voice of Nature', '{{ cardName }}'],
@@ -77,7 +89,7 @@ const BINDINGS = [
        touching generated markup. Data attributes rather than a class, because
        style-hover already claims the class slot. */
     swaps: [
-      ['<a href="#top" style="display:var(--cta-display,none);', '<a data-chart-cta href="#top" style="display:var(--cta-display,none);'],
+      ['<a href="#top" style="display:var(--cta-display,none);', '<a data-chart-cta href="/profile" style="display:var(--cta-display,none);'],
       ['<span style="width:30px;height:30px;border-radius:50%;background:#c6a667;', '<span data-chart-arrow style="width:30px;height:30px;border-radius:50%;background:#c6a667;'],
     ],
     // [anchor, literal, slot] — anchor is the style attribute ending that

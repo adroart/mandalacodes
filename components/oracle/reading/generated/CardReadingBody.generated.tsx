@@ -48,7 +48,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: "500", fontSize: "var(--kw-size,19px)", lineHeight: "1.6", color: "#e6d9be", margin: "0", textAlign: "var(--hero-align,left)" } as unknown as React.CSSProperties}>
       {vals.keywordsLine}
       </p>
-      <a data-chart-cta="" href="#top" className="dcw-cardreadingbody-h0" style={{ display: "var(--cta-display,none)", alignItems: "center", gap: "12px", marginTop: "24px", background: "rgba(198,166,103,.08)", borderRadius: "6px", padding: "16px 16px", textAlign: "left", transition: "background .3s ease" } as unknown as React.CSSProperties}>
+      <a data-chart-cta="" href="/profile" className="dcw-cardreadingbody-h0" style={{ display: "var(--cta-display,none)", alignItems: "center", gap: "12px", marginTop: "24px", background: "rgba(198,166,103,.08)", borderRadius: "6px", padding: "16px 16px", textAlign: "left", transition: "background .3s ease" } as unknown as React.CSSProperties}>
         <span style={{ flex: "1", minWidth: "0" } as unknown as React.CSSProperties}>
           <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontSize: "19px", color: "#f3ecde", lineHeight: "1.15" } as unknown as React.CSSProperties}>
           Is this code in your chart?
