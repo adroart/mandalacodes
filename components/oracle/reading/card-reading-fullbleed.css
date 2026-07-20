@@ -78,6 +78,63 @@
   padding-top: var(--nav-height, 64px);
 }
 
+/* ── The keywords line ─────────────────────────────────────────────────── */
+
+/* The design exposes its own size knob for this line. Raised from 19px so the
+   keywords carry the weight they should: they are the card in seven words. */
+.card-reading {
+  --kw-size: 25px;
+}
+
+/* ── The chart invitation ──────────────────────────────────────────────── */
+
+/* Was a full-width slab. Now it sizes to its own content like a button and
+   centres under the keywords, so it reads as one thing to press rather than a
+   band across the reading. */
+.card-reading [data-chart-cta] {
+  display: flex !important;
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 18px !important;
+  padding: 14px 22px !important;
+  background: transparent !important;
+  border: 1px solid rgba(198, 166, 103, 0.32);
+  border-radius: 2px !important;
+  transition: border-color .35s ease, background .35s ease !important;
+}
+
+/* The design centres the reading column on mobile; this keeps the button with
+   it rather than stranded left. */
+.card-reading [data-chart-cta] {
+  align-self: center;
+}
+
+.card-reading [data-chart-cta]:hover {
+  background: rgba(198, 166, 103, 0.06) !important;
+  border-color: rgba(198, 166, 103, 0.55);
+}
+
+/* The entrance mark. The filled gold disc read as a notification badge; this is
+   a hairline ring with a fine arrow that opens on hover, quieter and more of a
+   doorway than a button. */
+.card-reading [data-chart-arrow] {
+  width: 34px !important;
+  height: 34px !important;
+  background: transparent !important;
+  border: 1px solid rgba(198, 166, 103, 0.45);
+  color: #c6a667 !important;
+  font-size: 15px;
+  line-height: 1;
+  transition: border-color .35s ease, transform .35s cubic-bezier(.4, 0, .2, 1);
+}
+
+.card-reading [data-chart-cta]:hover [data-chart-arrow] {
+  border-color: rgba(198, 166, 103, 0.85);
+  transform: translateX(3px);
+}
+
 /* ── Device simulation, mobile only ────────────────────────────────────── */
 
 /* The mock iPhone status bar (9:41, signal, battery). A real phone draws its

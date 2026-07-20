@@ -78,6 +78,13 @@ const BINDINGS = [
   {
     file: READING,
     removals: DEAD_LEADS,
+    /* Handles for the chart invitation, so it can be restyled in CSS without
+       touching generated markup. Data attributes rather than a class, because
+       style-hover already claims the class slot. */
+    swaps: [
+      ['<a href="#top" style="display:var(--cta-display,none);', '<a data-chart-cta href="#top" style="display:var(--cta-display,none);'],
+      ['<span style="width:30px;height:30px;border-radius:50%;background:#c6a667;', '<span data-chart-arrow style="width:30px;height:30px;border-radius:50%;background:#c6a667;'],
+    ],
     // [anchor, literal, slot] — anchor is the style attribute ending that
     // uniquely identifies the element, so prose mentions are never touched.
     anchored: [
@@ -124,6 +131,7 @@ const BINDINGS = [
       // ── The reading's single opening line, under the card name. The design
       //    had one standfirst per lens; there is only one now, at the top. ──
       ['{{ cardName }}</h1>', '', LEAD_P],
+
     ],
   },
 ];
