@@ -374,22 +374,36 @@
     height: 49px !important;
   }
 
+  /* Live ranges left here because at its own padding the six labels overflow a
+     phone, and centring a row that overflows just clips both ends. Tightened
+     enough that they fit, so the row can centre instead of starting hard left
+     with the last one off-screen. */
   .card-reading--mobile [data-pills] {
     min-height: 48px !important;
-    justify-content: flex-start !important;
-    padding: 0 8px !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    padding: 0 4px !important;
   }
 
   .card-reading--mobile [data-nav] {
     min-height: 48px !important;
-    padding: 0 8px !important;
+    padding: 0 4px !important;
     font-size: 0.6875rem !important;
-    letter-spacing: 0.1em !important;
+    letter-spacing: 0.08em !important;
   }
 
   .card-reading--mobile [data-nav="relations"]::before {
     width: 16px !important;
     height: 16px !important;
+  }
+}
+
+/* The smallest phones need a couple more pixels back before the six fit. */
+@media (max-width: 400px) {
+  .card-reading--mobile [data-pills],
+  .card-reading--mobile [data-nav] {
+    padding-left: 3px !important;
+    padding-right: 3px !important;
   }
 }
 
