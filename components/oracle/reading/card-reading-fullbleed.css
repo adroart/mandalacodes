@@ -114,14 +114,40 @@
    shell's own scroll container, so it gives up full-viewport sizing. */
 .card-reading .eb-reading {
   min-height: 0 !important;
+  /* Clears the site's fixed bar on the live page. Inside the shell the bar is
+     already accounted for, so this would just be a gap under the header. */
+  padding-top: 0 !important;
 }
 
-/* The artwork is the one piece of the top area the shell owns, in its own
-   column on the wide layout and full bleed on the phone. The live hero's copy
-   of it would be a second one directly underneath, so only that goes. The
-   card name, keywords and chart invitation stay: the shell has no title block
-   of its own on the phone, and this is the treatment already on the site. */
-.card-reading .ul-hero-grid > figure {
+/* The whole top area comes from the design now: its artwork in the shell, and
+   its header block below. The live reading's hero would repeat all of it. */
+.card-reading .ul-hero-section {
+  display: none !important;
+}
+
+/* ── The designed header ───────────────────────────────────────────────── */
+
+/* The design file is mounted only for its top block. Everything past the
+   keywords is the reading itself, which the live one supplies, so the sixth
+   child onward is dropped and every chapter but the first is hidden whole.
+   Order inside the block: title, hexagram divider, keywords, chart
+   invitation, the flourish rule. */
+/* The design centres this block on narrow screens through its own alignment
+   knob. Ranged left on both, which is the layout being matched. */
+.card-reading__designed-header [data-sec="ul"] {
+  --hero-align: left;
+}
+
+.card-reading__designed-header [data-sec]:not([data-sec="ul"]) {
+  display: none !important;
+}
+
+.card-reading__designed-header [data-sec="ul"] > div > :nth-child(n + 6) {
+  display: none !important;
+}
+
+/* The trailing divider that sits between the design's own sections. */
+.card-reading__designed-header [data-sec="ul"] ~ div {
   display: none !important;
 }
 

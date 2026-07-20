@@ -14,6 +14,8 @@ import { getSynthesis, type CardSynthesis } from '../../../data/synthesisData';
 import { ulCardImageUrl } from '../../../utils/universalLanguage';
 import CardReading, { type CardReadingLens } from './CardReading';
 import Navigation from '../../Navigation';
+import { hexagramLineBooleans } from '../HexagramGlyph';
+import CardReadingBodyHost, { type CardReadingBodyData } from './generated/CardReadingBody.host';
 import UniversalLanguageCard from '../../UniversalLanguageCard';
 
 /* Prose in these files is paragraph-separated by blank lines. */
@@ -29,6 +31,39 @@ const LENSES: CardReadingLens[] = [
   { id: 'body', label: 'Body', tab: 'Body', glyph: 'circle' },
   { id: 'relations', label: 'Relations', tab: 'Relations', glyph: 'rings' },
 ];
+
+
+/* The design's own top block: kicker, card name, the hexagram divider and the
+   keywords. The live reading's hero has no kicker and no hexagram divider, so
+   it cannot reproduce this layout; the design file can, and it is generated
+   markup rather than markup written here. Only its header shows (see
+   card-reading-fullbleed.css) and the live reading supplies every chapter.
+
+   The fields below the header are required by the type but never rendered, so
+   they are left empty rather than computed twice. */
+function buildHeader(card: any, syn?: CardSynthesis): CardReadingBodyData {
+  const hexLines = hexagramLineBooleans(
+    card.iching.upper_trigram.symbol,
+    card.iching.lower_trigram.symbol,
+  ).map((solid) => ({ solid, broken: !solid }));
+
+  const none = { hexChar: '', upperTrigram: '', lowerTrigram: '', upperLines: [], lowerLines: [],
+    hexName: '', trigramLine: '', icComb: '', icRead: [], icJudge: '', icImage: '',
+    gkShadowName: '', gkGiftName: '', gkSiddhiName: '', gkPartnerName: '', gkShadow: [],
+    gkRepressive: '', gkReactive: '', gkGift: [], gkSiddhi: [], gkPartner: '',
+    hdCentre: '', hdCentreLine: '', hdGate: [], hdChannel: [], hdCircuit: [],
+    bodySite: '', bodySiteRaw: '', bodyAminoName: '', bodyPhys: [], bodyAmino: [],
+    relTitle: '', relIntro: '', relRows: [],
+    dropCap: '', leadRest: '', essenceRest: [] };
+
+  return {
+    ...none,
+    ulKicker: `Universal Language ${card.number}`,
+    cardName: card.card_name,
+    keywordsLine: (syn?.keywords ?? []).join(' · '),
+    hexLines,
+  };
+}
 
 export const CardReadingData: React.FC<{ cardNumber: number; variant?: 'mobile' | 'desktop' }> = ({ cardNumber, variant }) => {
   const card = CARD_BY_NUMBER.get(cardNumber);
@@ -80,7 +115,14 @@ export const CardReadingData: React.FC<{ cardNumber: number; variant?: 'mobile' 
      Its own progress rail is hidden in card-reading-fullbleed.css because the
      shell supplies that, and the shell's scroll engine reads its sections via
      data-chapter (see the note in the hosts). */
-  const reading = <UniversalLanguageCard />;
+  const reading = (
+    <>
+      <div className="card-reading__designed-header">
+        <CardReadingBodyHost data={buildHeader(card, syn)} />
+      </div>
+      <UniversalLanguageCard />
+    </>
+  );
 
   /* Full width of its column at the artwork's own square proportion: never
      cropped (the pattern IS the piece) and never letterboxed inside a taller
