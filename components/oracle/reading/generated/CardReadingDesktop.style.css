@@ -1,0 +1,30 @@
+/* scoped by scope-style.mjs */
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/cormorant-garamond-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:400;font-display:swap;src:url('/fonts/cormorant-garamond-latin-400-italic.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/cormorant-garamond-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:500;font-display:swap;src:url('/fonts/cormorant-garamond-latin-500-italic.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/cormorant-garamond-latin-600-normal.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/iowan-old-style-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:italic;font-weight:400;font-display:swap;src:url('/fonts/iowan-old-style-latin-400-italic.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/iowan-old-style-latin-700-normal.woff2') format('woff2');}
+@font-face{font-family:"Cinzel";font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/cinzel-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:"Cinzel";font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/cinzel-latin-600-normal.woff2') format('woff2');}
+@font-face{font-family:"Noto Serif SC";font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/noto-serif-sc-400-normal-x.woff2') format('woff2');}
+.card-reading--desktop,.card-reading--desktop *{box-sizing:border-box;}
+.card-reading--desktop{margin:0;background:#0b0906;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+.card-reading--desktop a{color:#c6a667;text-decoration:none;}
+.card-reading--desktop a:hover{color:#debc7e;}
+.card-reading--desktop [data-scroll]{scrollbar-width:none;}
+.card-reading--desktop [data-scroll]::-webkit-scrollbar{width:0;height:0;display:none;}
+.card-reading--desktop [data-nostyle-scroll]::-webkit-scrollbar{display:none;}
+.card-reading--desktop [data-nostyle-scroll]{scrollbar-width:none;}
+@keyframes cometGlow{0%,100%{box-shadow:0 0 8px 1px rgba(240,217,168,.5);}50%{box-shadow:0 0 15px 4px rgba(240,217,168,.8);}}
+.card-reading--desktop /* hover states lifted from style-hover attributes */
+.dcw-h0:hover{border-color:#c6a667;transform:translateY(-2px);background:rgba(198,166,103,.05);}
+.card-reading--desktop .dcw-h1:hover{transform:translateX(5px);}
+.card-reading--desktop .dcw-h2:hover{transform:translateX(5px);}
+.card-reading--desktop .dcw-h3:hover{background:rgba(198,166,103,.06);box-shadow:inset 0 2px 0 #c6a667;}
+.card-reading--desktop .dcw-h4:hover{background:rgba(198,166,103,.06);box-shadow:inset 0 2px 0 #c6a667;}
+.card-reading--desktop .dcw-h5:hover{background:rgba(198,166,103,.06);box-shadow:inset 0 2px 0 #c6a667;}
+.card-reading--desktop .dcw-h6:hover{background:rgba(198,166,103,.06);box-shadow:inset 0 2px 0 #c6a667;}
+.card-reading--desktop .dcw-h7:hover{background:rgba(198,166,103,.06);box-shadow:inset 0 2px 0 #c6a667;}

@@ -1,0 +1,19 @@
+/* scoped by scope-style.mjs */
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/cormorant-garamond-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:400;font-display:swap;src:url('/fonts/cormorant-garamond-latin-400-italic.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/cormorant-garamond-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:500;font-display:swap;src:url('/fonts/cormorant-garamond-latin-500-italic.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/iowan-old-style-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:italic;font-weight:400;font-display:swap;src:url('/fonts/iowan-old-style-latin-400-italic.woff2') format('woff2');}
+@font-face{font-family:"Iowan Old Style Web";font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/iowan-old-style-latin-700-normal.woff2') format('woff2');}
+@font-face{font-family:"Cinzel";font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/cinzel-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:"Cinzel";font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/cinzel-latin-600-normal.woff2') format('woff2');}
+.card-reading--mobile,.card-reading--mobile *{box-sizing:border-box;}
+.card-reading--mobile{margin:0;background:#0b0906;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+.card-reading--mobile a{color:#c6a667;text-decoration:none;}
+.card-reading--mobile a:hover{color:#debc7e;}
+.card-reading--mobile [data-scroll]{scrollbar-width:none;}
+.card-reading--mobile [data-scroll]::-webkit-scrollbar{width:0;height:0;display:none;}
+.card-reading--mobile [data-pills]::-webkit-scrollbar{display:none;}
+.card-reading--mobile [data-pills]{scrollbar-width:none;}
+@keyframes cometGlow{0%,100%{box-shadow:0 0 8px 1px rgba(240,217,168,.5);}50%{box-shadow:0 0 15px 4px rgba(240,217,168,.8);}}
