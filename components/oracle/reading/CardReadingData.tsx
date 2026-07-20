@@ -72,9 +72,13 @@ interface Props {
      page back would leave the two waiting on each other. That loop is invisible
      in development and breaks the built site. */
   reading: React.ReactNode;
+  /* Opens the reading's share sheet. The bar's Share is a link where the sheet
+     needs a callback, so the page hands its own opener down rather than the
+     shell reaching into the page's DOM for a hidden button. */
+  onShare?: () => void;
 }
 
-export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading: readingBody }) => {
+export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading: readingBody, onShare }) => {
   const card = CARD_BY_NUMBER.get(cardNumber);
   const [syn, setSyn] = useState<CardSynthesis | undefined>();
 
@@ -153,6 +157,7 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
       reading={reading}
       artwork={artwork}
       topNav={<Navigation />}
+      onShare={onShare}
     />
   );
 };
