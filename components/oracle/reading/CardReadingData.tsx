@@ -33,7 +33,7 @@ const LENSES: CardReadingLens[] = [
   { id: 'ul', label: 'Universal Language', tab: 'UL', glyph: 'star' },
   { id: 'iching', label: 'I Ching', tab: 'I Ching', glyph: 'hex' },
   { id: 'genekeys', label: 'Gene Keys', tab: 'Gene Keys', glyph: 'sprout' },
-  { id: 'humandesign', label: 'Human Design', tab: 'Human Design', tabShort: 'H. Design', glyph: 'diamond' },
+  { id: 'humandesign', label: 'Human Design', tab: 'Human Design', glyph: 'diamond' },
   { id: 'body', label: 'Body', tab: 'Body', glyph: 'circle' },
   { id: 'relations', label: 'Relations', tab: 'Relations', glyph: 'rings' },
 ];

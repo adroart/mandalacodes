@@ -78,6 +78,43 @@
   padding-top: var(--nav-height, 64px);
 }
 
+/* ── The lens rail ─────────────────────────────────────────────────────── */
+
+/* Matched to the rail the live reading page already uses
+   (.oracle-reading-progress in oracle-foundation.css): same label type, same
+   letter-spacing, same tap height, and the same behaviour of letting each
+   label keep its natural width and scrolling sideways rather than squeezing.
+   The design's version shared the width equally between six labels, which ran
+   them together on a narrow phone. */
+.card-reading--mobile [data-pills] {
+  gap: 4px;
+  padding: 0 8px !important;
+  min-height: 48px;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.card-reading--mobile [data-pills]::-webkit-scrollbar {
+  display: none;
+}
+
+.card-reading--mobile [data-nav] {
+  flex: 0 0 auto !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 9px !important;
+  font-family: var(--font-label, 'Iowan Old Style Web', Georgia, serif);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 /* ── The keywords line ─────────────────────────────────────────────────── */
 
 /* The design exposes its own size knob for this line. Raised from 19px so the
