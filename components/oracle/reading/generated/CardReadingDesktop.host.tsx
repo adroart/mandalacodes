@@ -59,7 +59,7 @@ interface HostProps {
    source .dc.html when no data is supplied. */
 const DEFAULT_HEADER_LABELS: CardReadingDesktopHeaderLabel[] = [
   { label: 'Deck', active: true },
-  { label: 'The Systems' },
+  { label: 'Systems' },
   { label: 'Learn' },
   { label: 'Atlas' },
   { label: 'Account' },
