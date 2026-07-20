@@ -179,9 +179,14 @@
 }
 
 /* The design reserves 64px under its last section. Nothing follows it here, so
-   that was empty space between the header and the reading. */
+   that was empty space between the header and the reading. The negative pull
+   takes the remaining gap from the flourish's own 26px down to 16px. */
 .card-reading__designed-header > div {
   padding-bottom: 0 !important;
+}
+
+.card-reading__designed-header {
+  margin-bottom: -10px;
 }
 
 /* On the wide layout the column beside the artwork already carries "For me,
