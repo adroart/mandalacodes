@@ -160,6 +160,28 @@
   display: none !important;
 }
 
+/* ── The hexagram rows ─────────────────────────────────────────────────── */
+
+/* The hexagram and trigram rows sat inside the reading's text measure, so the
+   banded rows stopped short of the column on both sides.
+
+   On a phone the reading already breaks them out to the full screen with an
+   inline width. Above 720px it deliberately pulls them back in, which is the
+   rule being overridden here: a table of rows reads better spanning its column
+   than indented to prose width. Needs the extra class to outrank that rule,
+   which carries !important at equal specificity and wins on order.
+
+   90px is the section's margin plus its padding, so the rows land exactly on
+   the column's edges. */
+@media (min-width: 720px) {
+  .card-reading .eb-reading .ul-iching-rows {
+    margin-left: -90px !important;
+    margin-right: -90px !important;
+    width: calc(100% + 180px) !important;
+    max-width: none !important;
+  }
+}
+
 /* ── Section tints and page breaks ─────────────────────────────────────── */
 
 /* The shades and the hairline that used to be declared here are gone: the live
