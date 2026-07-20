@@ -74,15 +74,20 @@
   object-fit: contain !important;
 }
 
-/* The artwork sits inset on all four sides rather than bleeding to the edges,
-   on both layouts. */
+/* The artwork sits 15px in on all four sides rather than bleeding to the
+   edges, on both layouts. */
 .card-reading--mobile [data-scroll] > div:has([data-artparallax]) {
-  padding: 20px !important;
+  padding: 15px !important;
 }
 
-/* Desktop: the artwork sits inset on all four sides rather than breaking out
-   to the panel edges. The column's own 34px top and 32px sides already give
-   three of them, so this only needs to stop the breakout and even up the top. */
+/* Desktop: the artwork sits 15px in on all four sides. The buffer comes from
+   the column's own padding, which the design set unevenly (34 top, 32 left,
+   30 right), so the column is evened up to 15 and the artwork stops breaking
+   out of it. The meta block below inherits the same 15px indent. */
+.card-reading--desktop aside {
+  padding: 15px !important;
+}
+
 .card-reading--desktop aside > div:has(> [data-artparallax]) {
   margin: 0 !important;
   width: auto !important;
