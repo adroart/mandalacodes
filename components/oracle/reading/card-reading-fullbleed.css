@@ -406,6 +406,28 @@
   }
 }
 
+/* Once the spacing has closed as far as it can, the longest label gives way
+   instead. "Human Design" is 113px of the 310px the six occupy, far more than
+   any other, so shortening just that one buys back enough room for real
+   spacing again on the smallest phones. The floor in the formula drops to
+   match the shorter row. The label stays in the markup for screen readers. */
+@media (max-width: 360px) {
+  .card-reading--mobile [data-pills] {
+    --cr-rail-space: min(8px, max(0px, (100vw - 266px) / 14));
+  }
+
+  .card-reading--mobile [data-nav="humandesign"] {
+    font-size: 0 !important;
+  }
+
+  .card-reading--mobile [data-nav="humandesign"]::before {
+    content: 'Human D';
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+}
+
 
 /* Relations is the chain-link mark on the live rail, not the word. Drawn as a
    mask so it takes its colour from the button, which means it lights gold with
