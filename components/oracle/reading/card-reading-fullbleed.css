@@ -132,10 +132,19 @@
    child onward is dropped and every chapter but the first is hidden whole.
    Order inside the block: title, hexagram divider, keywords, chart
    invitation, the flourish rule. */
-/* The design centres this block on narrow screens through its own alignment
-   knob. Ranged left on both, which is the layout being matched. */
-.card-reading__designed-header [data-sec="ul"] {
+/* Ranged left on the wide layout, which is the reference. On the phone the
+   design's own default centres it, which is what is wanted there, so the
+   override is scoped to desktop rather than applied to both. */
+.card-reading--desktop .card-reading__designed-header [data-sec="ul"] {
   --hero-align: left;
+}
+
+/* The phone: the design's 44px side padding is too generous on a narrow
+   screen, and the keywords carry the card, so they take the larger size here.
+   Both are the design's own knobs. */
+.card-reading--mobile .card-reading__designed-header [data-sec="ul"] {
+  --read-pad: 10px;
+  --kw-size: 29px;
 }
 
 .card-reading__designed-header [data-sec]:not([data-sec="ul"]) {
