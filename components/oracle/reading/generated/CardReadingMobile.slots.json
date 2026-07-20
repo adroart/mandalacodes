@@ -1,0 +1,21 @@
+{
+  "placeholders": [
+    "n.id",
+    "t.href",
+    "t.id"
+  ],
+  "handlers": [],
+  "refs": [],
+  "loops": [
+    "nav as n",
+    "tabs as t"
+  ],
+  "conditionals": [],
+  "componentSlots": [
+    "Reading",
+    "TopNav"
+  ],
+  "imageSlots": [
+    "art-mobile"
+  ]
+}
