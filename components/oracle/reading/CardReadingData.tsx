@@ -11,7 +11,7 @@
 import React, { useEffect, useState } from 'react';
 import { CARD_BY_NUMBER } from '../../../data/oracleData';
 import { getSynthesis, type CardSynthesis } from '../../../data/synthesisData';
-import { ulCardImageUrl, ulPieceForCard } from '../../../utils/universalLanguage';
+import { ulCardImageUrl } from '../../../utils/universalLanguage';
 import CardReading, { type CardReadingLens } from './CardReading';
 import Navigation from '../../Navigation';
 import { hexagramLineBooleans } from '../HexagramGlyph';
@@ -79,7 +79,6 @@ export const CardReadingData: React.FC<{ cardNumber: number; variant?: 'mobile' 
   if (!card) return null;
 
   const keywords = syn?.keywords ?? [];
-  const piece = ulPieceForCard(card.number);
 
   /* The design's left-hand meta block, from the card's own fields. */
   const meta = [
@@ -143,9 +142,6 @@ export const CardReadingData: React.FC<{ cardNumber: number; variant?: 'mobile' 
       meta={meta}
       cardKicker={`No. ${card.number} · Universal Language`}
       cardName={card.card_name}
-      forMeHref="/profile"
-      pieceHref={piece ? `/piece/${piece.id}` : '/universal-language'}
-      familyHref="/family"
       reading={reading}
       artwork={artwork}
       topNav={<Navigation />}

@@ -1,10 +1,6 @@
 {
   "placeholders": [
-    "familyHref",
-    "forMeHref",
-    "h.href",
-    "n.id",
-    "pieceHref"
+    "n.id"
   ],
   "handlers": [],
   "refs": [],

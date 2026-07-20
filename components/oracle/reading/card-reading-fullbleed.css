@@ -43,19 +43,22 @@
 
 /* ── The bottom bar ────────────────────────────────────────────────────── */
 
-/* The live bar is the one on screen now, so the darker, slimmer treatment
-   lands on it rather than on the design's hidden copy. Darker than the reading
-   above it so it reads as a floor rather than another band of the page. */
-.card-reading .oracle-bottom-nav {
+/* The shell's bar sat at 0.72 alpha over the reading, which read washed out.
+   These are the live bar's own values (oracle-bottom-navigation.css) so the
+   two match. */
+/* Darker than the reading it sits under, so it reads as a floor rather than
+   another band of the page, and slimmer so it takes less of the screen. */
+.card-reading footer {
   background: #0a0805 !important;
   border-top: 1px solid rgba(168, 135, 77, 0.18) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
-  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  height: 58px !important;
 }
 
-.card-reading .oracle-bottom-nav__inner {
-  min-height: 54px !important;
+.card-reading--mobile footer {
+  height: 54px !important;
+  padding-bottom: 0 !important;
 }
 
 /* ── Artwork ───────────────────────────────────────────────────────────── */
@@ -118,22 +121,17 @@
 
 /* ── The live reading, mounted inside the shell ────────────────────────── */
 
-/* The live reading brings its own sticky lens rail, which the shell supplies,
-   so that one is hidden. Its bottom bar is kept: the design's is five dead
-   links pointing at "#top", while this one carries the real destinations and
-   the two that are actions rather than links (For me opens the chart, Share
-   opens the sheet). The design's is hidden in its place. */
-.card-reading .oracle-reading-progress {
-  display: none !important;
-}
-
-.card-reading > section > div > footer {
+/* The live reading brings its own sticky lens rail and its own fixed bottom
+   bar. The shell supplies both, so the inner ones would be second copies of
+   the same thing sitting on top of the shell's. */
+.card-reading .oracle-reading-progress,
+.card-reading .oracle-bottom-nav {
   display: none !important;
 }
 
 /* It also expects to be the page. Inside the shell it is a block in the
    shell's own scroll container, so it gives up full-viewport sizing. */
-.card-reading .eb-reading:not(.oracle-bottom-nav) {
+.card-reading .eb-reading {
   min-height: 0 !important;
   /* Clears the site's fixed bar on the live page. Inside the shell the bar is
      already accounted for, so this would just be a gap under the header. */
@@ -147,7 +145,7 @@
    The clearance that keeps the last line from hiding behind the bar moves off
    the scroller and onto the reading, so it is filled with the reading's colour
    rather than showing the frame through it. */
-.card-reading .eb-reading:not(.oracle-bottom-nav) {
+.card-reading .eb-reading {
   background: #100d09 !important;
   padding-bottom: 80px !important;
 }

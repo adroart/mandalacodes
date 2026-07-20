@@ -31,7 +31,6 @@ export interface CardReadingDesktopMetaItem {
 
 export interface CardReadingDesktopHeaderLabel {
   label: string;
-  href: string;
   active?: boolean;
 }
 
@@ -43,10 +42,6 @@ export interface CardReadingDesktopData {
   cardKicker?: string;
   /* Header title block. "Voice of Nature" */
   cardName?: string;
-  /* The side column's three links. The piece one is per-card. */
-  forMeHref?: string;
-  pieceHref?: string;
-  familyHref?: string;
 }
 
 interface HostProps {
@@ -63,11 +58,11 @@ interface HostProps {
 /* The design file's own defaults, kept so the host renders identically to the
    source .dc.html when no data is supplied. */
 const DEFAULT_HEADER_LABELS: CardReadingDesktopHeaderLabel[] = [
-  { label: 'Deck', href: '/universal-language', active: true },
-  { label: 'Systems', href: '/the-systems' },
-  { label: 'Learn', href: '/learn' },
-  { label: 'Atlas', href: '/atlas' },
-  { label: 'Account', href: '/account' },
+  { label: 'Deck', active: true },
+  { label: 'Systems' },
+  { label: 'Learn' },
+  { label: 'Atlas' },
+  { label: 'Account' },
 ];
 
 const DEFAULT_META: CardReadingDesktopMetaItem[] = [
@@ -96,7 +91,6 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
     const labels = data.headerLabels ?? DEFAULT_HEADER_LABELS;
     const headerNav = labels.map((h, i) => ({
       label: h.label,
-      href: h.href,
       active: !!h.active,
       divider: i > 0,
       color: h.active ? "#f3ecde" : "#ddd4c2"
@@ -110,9 +104,6 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       nav: data.nav ?? DEFAULT_NAV,
       cardKicker: data.cardKicker ?? 'No. 62 · Universal Language',
       cardName: data.cardName ?? 'Voice of Nature',
-      forMeHref: data.forMeHref ?? '/profile',
-      pieceHref: data.pieceHref ?? '/universal-language',
-      familyHref: data.familyHref ?? '/family',
       slots: { Reading: this.props.reading },
       images: { 'art-desktop': this.props.artwork },
     };
