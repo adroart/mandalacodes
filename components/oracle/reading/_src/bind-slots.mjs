@@ -61,6 +61,14 @@ const BINDINGS = [
   {
     file: DESKTOP,
     anchored: [
+      /* The bar's five links. Identical prefixes, so they bind in document
+         order: family, for me, the deck, the piece, share. Share carries a
+         marker so the host can hand its click to the real share sheet. */
+      ['<a ', 'href="#top" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba', 'href="{{ familyHref }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba'],
+      ['<a ', 'href="#top" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba', 'href="{{ forMeHref }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba'],
+      ['<a ', 'href="#top" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba', 'href="{{ deckHref }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba'],
+      ['<a ', 'href="#top" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba', 'href="{{ pieceHref }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;border-right:1px solid rgba'],
+      ['<a ', 'href="#top" style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;transition:background .3s e', 'href="{{ shareHref }}" data-bar-share style="flex:1;display:flex;align-items:center;justify-content:center;gap:14px;transition:background .3s e'],
       /* The side column's three links and the brand mark shipped as "#top"
          placeholders. The two row links are byte-identical, so they bind in
          document order: the piece first, then family. */

@@ -62,7 +62,7 @@ export interface CardReadingProps {
   pieceHref?: string;
   familyHref?: string;
   /* Mobile bottom tab bar. */
-  tabs?: { id: string; label: string; color: string }[];
+  tabs?: { id: string; label: string; color: string; href: string }[];
   /* Desktop rail node style, from the design file's own two modes. */
   railNode?: 'glyph' | 'ring';
   /* Force a variant instead of measuring the viewport (useful for previews). */
