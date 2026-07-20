@@ -47,8 +47,6 @@ export interface CardReadingDesktopData {
   forMeHref?: string;
   pieceHref?: string;
   familyHref?: string;
-  deckHref?: string;
-  shareHref?: string;
 }
 
 interface HostProps {
@@ -115,24 +113,10 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       forMeHref: data.forMeHref ?? '/profile',
       pieceHref: data.pieceHref ?? '/universal-language',
       familyHref: data.familyHref ?? '/family',
-      deckHref: data.deckHref ?? '/universal-language',
-      shareHref: data.shareHref ?? '#share',
       slots: { Reading: this.props.reading },
       images: { 'art-desktop': this.props.artwork },
     };
   }
-
-
-  /* The design's bar has a Share link where the reading has a Share button.
-     Rather than plumb a second share sheet, a click on it is handed to the
-     reading's own hidden button, so there is one sheet and one implementation. */
-  handleShareClick = (e: any) => {
-    const a = e.target?.closest?.('[data-bar-share], [data-bar-tab="share"]');
-    if (!a || !this.rootEl?.contains(a)) return;
-    e.preventDefault();
-    const real = this.rootEl.querySelector('.oracle-bottom-nav [aria-label="Share this code"]') as HTMLElement | null;
-    real?.click();
-  };
 
   componentDidMount() {
     this._wired = new WeakSet();
@@ -316,7 +300,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
 
   render() {
     return (
-      <div className="card-reading card-reading--desktop" ref={(el) => { this.rootEl = el; }} onClick={this.handleShareClick}>
+      <div className="card-reading card-reading--desktop" ref={(el) => { this.rootEl = el; }}>
         <CardReadingDesktopMarkup vals={this.renderVals()} />
       </div>
     );

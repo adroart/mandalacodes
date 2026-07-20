@@ -1,7 +1,6 @@
 {
   "placeholders": [
     "n.id",
-    "t.href",
     "t.id"
   ],
   "handlers": [],

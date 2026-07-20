@@ -43,19 +43,19 @@
 
 /* ── The bottom bar ────────────────────────────────────────────────────── */
 
-/* Darker than the reading above it, so it reads as a floor rather than another
-   band of the page, and slimmer so it takes less of the screen. */
-.card-reading > section > div > footer {
+/* The live bar is the one on screen now, so the darker, slimmer treatment
+   lands on it rather than on the design's hidden copy. Darker than the reading
+   above it so it reads as a floor rather than another band of the page. */
+.card-reading .oracle-bottom-nav {
   background: #0a0805 !important;
   border-top: 1px solid rgba(168, 135, 77, 0.18) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
-  height: 58px !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
 }
 
-.card-reading--mobile > section > div > footer {
-  height: 54px !important;
-  padding-bottom: 0 !important;
+.card-reading .oracle-bottom-nav__inner {
+  min-height: 54px !important;
 }
 
 /* ── Artwork ───────────────────────────────────────────────────────────── */
@@ -118,12 +118,16 @@
 
 /* ── The live reading, mounted inside the shell ────────────────────────── */
 
-/* The live reading brings its own sticky lens rail and its own bottom bar. The
-   shell supplies both, so both inner ones are hidden. The design's bar is the
-   one on screen, with its links wired to real destinations and its Share
-   handing off to the reading's own share sheet. */
-.card-reading .oracle-reading-progress,
-.card-reading .oracle-bottom-nav {
+/* The live reading brings its own sticky lens rail, which the shell supplies,
+   so that one is hidden. Its bottom bar is kept: the design's is five dead
+   links pointing at "#top", while this one carries the real destinations and
+   the two that are actions rather than links (For me opens the chart, Share
+   opens the sheet). The design's is hidden in its place. */
+.card-reading .oracle-reading-progress {
+  display: none !important;
+}
+
+.card-reading > section > div > footer {
   display: none !important;
 }
 

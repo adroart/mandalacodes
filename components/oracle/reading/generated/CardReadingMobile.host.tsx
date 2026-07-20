@@ -19,7 +19,6 @@ export interface CardReadingMobileTabItem {
   id: string;
   label: string;
   color: string;
-  href: string;
 }
 
 export interface CardReadingMobileData {
@@ -51,11 +50,11 @@ const DEFAULT_NAV: CardReadingMobileNavItem[] = [
 ];
 
 const DEFAULT_TABS: CardReadingMobileTabItem[] = [
-  { id: 'family', label: 'Family', color: '#80735f', href: '/family' },
-  { id: 'forme', label: 'For Me', color: '#80735f', href: '/profile' },
-  { id: 'deck', label: 'The 64', color: '#c6a667', href: '/universal-language' },
-  { id: 'piece', label: 'Piece', color: '#80735f', href: '/universal-language' },
-  { id: 'share', label: 'Share', color: '#80735f', href: '#share' },
+  { id: 'family', label: 'Family', color: '#80735f' },
+  { id: 'forme', label: 'For Me', color: '#80735f' },
+  { id: 'deck', label: 'The 64', color: '#c6a667' },
+  { id: 'piece', label: 'Piece', color: '#80735f' },
+  { id: 'share', label: 'Share', color: '#80735f' },
 ];
 
 export class CardReadingMobileHost extends React.Component<HostProps> {
@@ -74,18 +73,6 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       images: { 'art-mobile': this.props.artwork },
     };
   }
-
-
-  /* The design's bar has a Share link where the reading has a Share button.
-     Rather than plumb a second share sheet, a click on it is handed to the
-     reading's own hidden button, so there is one sheet and one implementation. */
-  handleShareClick = (e: any) => {
-    const a = e.target?.closest?.('[data-bar-share], [data-bar-tab="share"]');
-    if (!a || !this.rootEl?.contains(a)) return;
-    e.preventDefault();
-    const real = this.rootEl.querySelector('.oracle-bottom-nav [aria-label="Share this code"]') as HTMLElement | null;
-    real?.click();
-  };
 
   componentDidMount() {
     this._icons = {
@@ -230,7 +217,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
 
   render() {
     return (
-      <div className="card-reading card-reading--mobile" ref={(el) => { this.rootEl = el; }} onClick={this.handleShareClick}>
+      <div className="card-reading card-reading--mobile" ref={(el) => { this.rootEl = el; }}>
         <CardReadingMobileMarkup vals={this.renderVals()} />
       </div>
     );

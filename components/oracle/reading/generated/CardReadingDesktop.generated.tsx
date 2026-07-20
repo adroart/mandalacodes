@@ -158,7 +158,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       </main>
     </div>
     <footer style={{ flex: "0 0 auto", display: "flex", alignItems: "stretch", height: "80px", borderTop: "1px solid rgba(168,135,77,.2)", background: "#161009" } as unknown as React.CSSProperties}>
-      <a href={vals.familyHref} className="dcw-cardreadingdesktop-h3" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
+      <a href="#top" className="dcw-cardreadingdesktop-h3" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
         <svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="#a8874d" strokeWidth="1.5">
           <circle cx="13" cy="15" r="4">
           </circle>
@@ -176,7 +176,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </span>
         </span>
       </a>
-      <a href={vals.forMeHref} className="dcw-cardreadingdesktop-h4" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
+      <a href="#top" className="dcw-cardreadingdesktop-h4" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
         <svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="#a8874d" strokeWidth="1.5">
           <circle cx="20" cy="20" r="13">
           </circle>
@@ -194,7 +194,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </span>
         </span>
       </a>
-      <a href={vals.deckHref} className="dcw-cardreadingdesktop-h5" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
+      <a href="#top" className="dcw-cardreadingdesktop-h5" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
         <svg width="30" height="30" viewBox="0 0 40 40" fill="#a8874d">
           <g>
             <circle cx="10" cy="10" r="1.6">
@@ -240,7 +240,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </span>
         </span>
       </a>
-      <a href={vals.pieceHref} className="dcw-cardreadingdesktop-h6" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
+      <a href="#top" className="dcw-cardreadingdesktop-h6" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
         <svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="#a8874d" strokeWidth="1.5">
           <rect x="8" y="9" width="24" height="22">
           </rect>
@@ -256,7 +256,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </span>
         </span>
       </a>
-      <a href={vals.shareHref} data-bar-share="" className="dcw-cardreadingdesktop-h7" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
+      <a href="#top" className="dcw-cardreadingdesktop-h7" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
         <svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="#a8874d" strokeWidth="1.5">
           <path d="M10 30c0-9 6-13 15-13M18 10l8 7-8 7" strokeLinejoin="round" strokeLinecap="round">
           </path>

@@ -80,7 +80,6 @@ export const CardReadingData: React.FC<{ cardNumber: number; variant?: 'mobile' 
 
   const keywords = syn?.keywords ?? [];
   const piece = ulPieceForCard(card.number);
-  const pieceHref = piece ? `/piece/${piece.id}` : '/universal-language';
 
   /* The design's left-hand meta block, from the card's own fields. */
   const meta = [
@@ -145,15 +144,8 @@ export const CardReadingData: React.FC<{ cardNumber: number; variant?: 'mobile' 
       cardKicker={`No. ${card.number} · Universal Language`}
       cardName={card.card_name}
       forMeHref="/profile"
-      pieceHref={pieceHref}
+      pieceHref={piece ? `/piece/${piece.id}` : '/universal-language'}
       familyHref="/family"
-      tabs={[
-        { id: 'family', label: 'Family', color: '#80735f', href: '/family' },
-        { id: 'forme', label: 'For Me', color: '#80735f', href: '/profile' },
-        { id: 'deck', label: 'The 64', color: '#c6a667', href: '/universal-language' },
-        { id: 'piece', label: 'Piece', color: '#80735f', href: pieceHref },
-        { id: 'share', label: 'Share', color: '#80735f', href: '#share' },
-      ]}
       reading={reading}
       artwork={artwork}
       topNav={<Navigation />}
