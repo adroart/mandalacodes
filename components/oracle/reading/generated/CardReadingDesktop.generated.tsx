@@ -9,7 +9,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
 <section style={{ padding: "60px", background: "#0b0906", fontFamily: "'Iowan Old Style Web',Georgia,serif" } as unknown as React.CSSProperties}>
   <div style={{ position: "relative", width: "min(1480px,94vw)", height: "940px", display: "flex", flexDirection: "column", background: "#14100b", border: "1px solid rgba(168,135,77,.22)", borderRadius: "8px", overflow: "hidden", boxShadow: "0 40px 90px -40px rgba(0,0,0,.85)" } as unknown as React.CSSProperties}>
     <header style={{ flex: "0 0 auto", position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", height: "62px", padding: "0 40px", background: "#211c16", borderBottom: "1px solid rgba(168,135,77,.2)" } as unknown as React.CSSProperties}>
-      <a href="#top" style={{ display: "flex", flexDirection: "column", lineHeight: "1.22", textAlign: "center" } as unknown as React.CSSProperties}>
+      <a href="/" style={{ display: "flex", flexDirection: "column", lineHeight: "1.22", textAlign: "center" } as unknown as React.CSSProperties}>
         <span style={{ fontFamily: "'Cinzel',serif", fontSize: "13px", textTransform: "uppercase", color: "#f3ecde", letterSpacing: ".2em", marginRight: "-.2em" } as unknown as React.CSSProperties}>
         Mandala
         </span>
@@ -26,7 +26,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 </span>
               </>
             ) : null}
-            <a href="#top" style={{ position: "relative", fontFamily: "'Iowan Old Style Web',serif", fontSize: "13px", fontWeight: "600", letterSpacing: ".18em", textTransform: "uppercase", padding: "12px 18px", color: `${h.color ?? ""}` } as unknown as React.CSSProperties}>
+            <a href={h.href} style={{ position: "relative", fontFamily: "'Iowan Old Style Web',serif", fontSize: "13px", fontWeight: "600", letterSpacing: ".18em", textTransform: "uppercase", padding: "12px 18px", color: `${h.color ?? ""}` } as unknown as React.CSSProperties}>
               {h.label}
               {(h.active) ? (
                 <>
@@ -94,7 +94,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <i style={{ height: "1px", flex: "1", background: "rgba(168,135,77,.18)" } as unknown as React.CSSProperties}>
           </i>
         </div>
-        <a href="#top" className="dcw-cardreadingdesktop-h0" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", border: "1px solid rgba(168,135,77,.28)", padding: "13px 15px", transition: "border-color .3s,transform .3s,background .3s" } as unknown as React.CSSProperties}>
+        <a href={vals.forMeHref} className="dcw-cardreadingdesktop-h0" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", border: "1px solid rgba(168,135,77,.28)", padding: "13px 15px", transition: "border-color .3s,transform .3s,background .3s" } as unknown as React.CSSProperties}>
           <span>
             <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".14em", textTransform: "uppercase", color: "#c6a667" } as unknown as React.CSSProperties}>
             For Me
@@ -107,7 +107,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           →
           </span>
         </a>
-        <a href="#top" className="dcw-cardreadingdesktop-h1" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", transition: "transform .3s ease" } as unknown as React.CSSProperties}>
+        <a href={vals.pieceHref} className="dcw-cardreadingdesktop-h1" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", transition: "transform .3s ease" } as unknown as React.CSSProperties}>
           <span>
             <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".14em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
             The Piece
@@ -120,7 +120,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           →
           </span>
         </a>
-        <a href="#top" className="dcw-cardreadingdesktop-h2" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", transition: "transform .3s ease" } as unknown as React.CSSProperties}>
+        <a href={vals.familyHref} className="dcw-cardreadingdesktop-h2" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", transition: "transform .3s ease" } as unknown as React.CSSProperties}>
           <span>
             <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".14em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
             Family

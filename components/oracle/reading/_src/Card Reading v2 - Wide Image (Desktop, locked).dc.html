@@ -39,14 +39,14 @@ a{color:#c6a667;text-decoration:none;}a:hover{color:#debc7e;}
 
     <!-- top bar -->
     <header style="flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:space-between;height:62px;padding:0 40px;background:#211c16;border-bottom:1px solid rgba(168,135,77,.2);">
-      <a href="#top" style="display:flex;flex-direction:column;line-height:1.22;text-align:center;">
+      <a href="/" style="display:flex;flex-direction:column;line-height:1.22;text-align:center;">
         <span style="font-family:'Cinzel',serif;font-size:13px;text-transform:uppercase;color:#f3ecde;letter-spacing:.2em;margin-right:-.2em;">Mandala</span>
         <span style="font-family:'Cinzel',serif;font-size:13px;text-transform:uppercase;color:#f3ecde;letter-spacing:.61em;margin-right:-.61em;">Codes</span>
       </a>
       <nav style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;">
         <sc-for list="{{ headerNav }}" as="h" hint-placeholder-count="5">
           <sc-if value="{{ h.divider }}" hint-placeholder-val="{{ true }}"><span style="width:1px;height:13px;background:rgba(243,236,222,.15);"></span></sc-if>
-          <a href="#top" style="position:relative;font-family:'Iowan Old Style Web',serif;font-size:13px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:12px 18px;color:{{ h.color }};">{{ h.label }}<sc-if value="{{ h.active }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;left:18px;right:18px;bottom:8px;height:2px;background:#c6a667;"></span></sc-if></a>
+          <a href="{{ h.href }}" style="position:relative;font-family:'Iowan Old Style Web',serif;font-size:13px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:12px 18px;color:{{ h.color }};">{{ h.label }}<sc-if value="{{ h.active }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;left:18px;right:18px;bottom:8px;height:2px;background:#c6a667;"></span></sc-if></a>
         </sc-for>
       </nav>
       <span aria-hidden="true" style="width:36px;"></span>
@@ -77,15 +77,15 @@ a{color:#c6a667;text-decoration:none;}a:hover{color:#debc7e;}
           </sc-for>
         </dl>
         <div style="display:flex;align-items:center;gap:14px;margin:2px 0;"><i style="height:1px;flex:1;background:rgba(168,135,77,.18);"></i><span style="color:#80735f;font-size:11px;">❀</span><i style="height:1px;flex:1;background:rgba(168,135,77,.18);"></i></div>
-        <a href="#top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid rgba(168,135,77,.28);padding:13px 15px;transition:border-color .3s,transform .3s,background .3s;" style-hover="border-color:#c6a667;transform:translateY(-2px);background:rgba(198,166,103,.05);">
+        <a href="{{ forMeHref }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid rgba(168,135,77,.28);padding:13px 15px;transition:border-color .3s,transform .3s,background .3s;" style-hover="border-color:#c6a667;transform:translateY(-2px);background:rgba(198,166,103,.05);">
           <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#c6a667;">For Me</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#cdc0a8;margin-top:2px;">See where this code lives in your chart</span></span>
           <span style="color:#c6a667;font-size:15px;">→</span>
         </a>
-        <a href="#top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .3s ease;" style-hover="transform:translateX(5px);">
+        <a href="{{ pieceHref }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .3s ease;" style-hover="transform:translateX(5px);">
           <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#ede4d4;">The Piece</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#80735f;margin-top:2px;">The one-of-one physical work</span></span>
           <span style="color:#a8874d;font-size:15px;">→</span>
         </a>
-        <a href="#top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .3s ease;" style-hover="transform:translateX(5px);">
+        <a href="{{ familyHref }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .3s ease;" style-hover="transform:translateX(5px);">
           <span><span style="display:block;font-family:'Iowan Old Style Web',serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#ede4d4;">Family</span><span style="display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#80735f;margin-top:2px;">People, places, and the living collection</span></span>
           <span style="color:#a8874d;font-size:15px;">→</span>
         </a>
