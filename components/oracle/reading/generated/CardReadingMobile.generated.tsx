@@ -68,7 +68,7 @@ export const CardReadingMobileMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     <footer style={{ position: "absolute", left: "0", right: "0", bottom: "0", zIndex: "6", display: "flex", alignItems: "stretch", height: "72px", paddingBottom: "8px", borderTop: "1px solid rgba(168,135,77,.16)", background: "rgba(22,16,9,.72)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" } as unknown as React.CSSProperties}>
       {(vals.tabs ?? []).map((t: any, tIdx: number) => (
         <React.Fragment key={tIdx}>
-          <a href="#top" data-tab={t.id} style={{ flex: "1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "5px", color: `${t.color ?? ""}` } as unknown as React.CSSProperties}>
+          <a href={t.href} data-bar-tab={t.id} data-tab={t.id} style={{ flex: "1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "5px", color: `${t.color ?? ""}` } as unknown as React.CSSProperties}>
             <span data-tabicon="" style={{ display: "flex" } as unknown as React.CSSProperties}>
             </span>
             <span style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "9px", letterSpacing: ".1em", textTransform: "uppercase" } as unknown as React.CSSProperties}>
