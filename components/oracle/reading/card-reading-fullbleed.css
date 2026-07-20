@@ -375,19 +375,27 @@
   }
 
   /* Live ranges left here because at its own padding the six labels overflow a
-     phone, and centring a row that overflows just clips both ends. Tightened
-     enough that they fit, so the row can centre instead of starting hard left
-     with the last one off-screen. */
+     phone, and centring a row that overflows only clips both ends.
+
+     Instead of a fixed padding that either fits or does not, the space between
+     labels is whatever is left over once the words themselves are laid out,
+     divided evenly: generous at 560, closing steadily as the screen narrows,
+     nothing at all by the point the words fill the width. So the row tightens
+     rather than starting to scroll. 310px is the measured width of the six
+     labels at this size; 14 is the twelve gaps between and beside them plus
+     the two at the ends. */
   .card-reading--mobile [data-pills] {
+    --cr-rail-space: min(8px, max(0px, (100vw - 310px) / 14));
+
     min-height: 48px !important;
     justify-content: center !important;
-    gap: 2px !important;
-    padding: 0 4px !important;
+    gap: 0 !important;
+    padding: 0 var(--cr-rail-space) !important;
   }
 
   .card-reading--mobile [data-nav] {
     min-height: 48px !important;
-    padding: 0 4px !important;
+    padding: 0 var(--cr-rail-space) !important;
     font-size: 0.6875rem !important;
     letter-spacing: 0.08em !important;
   }
@@ -398,14 +406,6 @@
   }
 }
 
-/* The smallest phones need a couple more pixels back before the six fit. */
-@media (max-width: 400px) {
-  .card-reading--mobile [data-pills],
-  .card-reading--mobile [data-nav] {
-    padding-left: 3px !important;
-    padding-right: 3px !important;
-  }
-}
 
 /* Relations is the chain-link mark on the live rail, not the word. Drawn as a
    mask so it takes its colour from the button, which means it lights gold with
