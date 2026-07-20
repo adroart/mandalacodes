@@ -69,7 +69,6 @@ export interface CardReadingBodyData {
   bodyAmino: string[];
   /* Relations */
   relTitle: string;
-  relRingTarot: string;
   relIntro: string;
   relRows: RelRow[];
 }

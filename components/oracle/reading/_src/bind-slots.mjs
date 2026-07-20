@@ -121,7 +121,6 @@ const BINDINGS = [
 
       // ── Relations ──
       ['e:19px;color:#8a7c60;margin-top:6px;">', 'The Ecology of Truth', '{{ relTitle }}'],
-      ['rcase;color:#a8874d;margin:0 0 11px;">The ', 'Judgement', '{{ relRingTarot }}'],
 
 
     ],

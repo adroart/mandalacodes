@@ -246,7 +246,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       <div style={{ marginTop: "36px", border: "1px solid rgba(168,135,77,.22)", borderRadius: "3px", background: "#181109", overflow: "hidden" } as unknown as React.CSSProperties}>
         <div style={{ padding: "24px var(--read-pad,44px)", textAlign: "center" } as unknown as React.CSSProperties}>
           <p style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "10px", letterSpacing: ".28em", textTransform: "uppercase", color: "#a8874d", margin: "0 0 11px" } as unknown as React.CSSProperties}>
-          The {vals.relRingTarot}
+          The Judgement
           </p>
           <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "20px", lineHeight: "1.5", color: "#ede4d4", margin: "0" } as unknown as React.CSSProperties}>
           {vals.icJudge}

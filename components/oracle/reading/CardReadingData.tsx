@@ -124,7 +124,6 @@ function buildBody(card: any, syn?: CardSynthesis): CardReadingBodyData {
     /* The design's relations subtitle has no field behind it; the codon ring is
        the card's real relations-level identity, so it stands there instead. */
     relTitle: rel?.codon_ring?.name ?? 'Relations',
-    relRingTarot: (rel?.codon_ring?.tarot ?? '').replace(/^\d+\s*-\s*/, ''),
     relIntro: rel?.unity_line ?? '',
     relRows,
   };
