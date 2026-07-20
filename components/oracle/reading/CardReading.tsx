@@ -78,6 +78,8 @@ export interface CardReadingProps {
   artwork?: React.ReactNode;
   /* The site's real top bar, used on mobile in place of the design's own. */
   topNav?: React.ReactNode;
+  /* Opens the reading's share sheet from the bar's Share link. */
+  onShare?: () => void;
 }
 
 const GLYPH_FLAG: Record<string, string> = {
@@ -105,7 +107,7 @@ function useIsDesktop(forced?: 'mobile' | 'desktop') {
 }
 
 export const CardReading: React.FC<CardReadingProps> = ({
-  lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork, cardKicker, cardName, topNav, forMeHref, pieceHref, familyHref,
+  lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork, cardKicker, cardName, topNav, forMeHref, pieceHref, familyHref, onShare,
 }) => {
   const isDesktop = useIsDesktop(variant);
 
@@ -134,8 +136,8 @@ export const CardReading: React.FC<CardReadingProps> = ({
   };
 
   return isDesktop
-    ? <CardReadingDesktopHost data={desktopData} railNode={railNode} reading={reading} artwork={artwork} />
-    : <CardReadingMobileHost data={mobileData} reading={reading} artwork={artwork} topNav={topNav} />;
+    ? <CardReadingDesktopHost data={desktopData} railNode={railNode} reading={reading} artwork={artwork} onShare={onShare} />
+    : <CardReadingMobileHost data={mobileData} reading={reading} artwork={artwork} topNav={topNav} onShare={onShare} />;
 };
 
 export default CardReading;
