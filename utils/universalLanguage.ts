@@ -81,7 +81,9 @@ const UL_IMAGE_BY_NUMBER = new Map<number, string>(
  * transparent. Cloudinary's background-removal delivery transform keeps the
  * complete square canvas; it does not trim or crop the artwork. Add future
  * plates here as they are identified. */
-const UL_CARDS_WITH_TRANSPARENT_BACKGROUND = new Set<number>([6, 22]);
+const UL_CARDS_WITH_TRANSPARENT_BACKGROUND = new Set<number>([
+  6, 9, 19, 22, 32, 35, 39, 47, 51,
+]);
 
 /**
  * Square Cloudinary URL for a Universal Language card's artwork.
