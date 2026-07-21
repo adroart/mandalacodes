@@ -77,11 +77,11 @@ const UL_IMAGE_BY_NUMBER = new Map<number, string>(
   Array.from(UL_PIECE_BY_NUMBER, ([num, a]) => [num, a.coverImage] as const)
 );
 
-/* These are the source plates where the white capture/background needs to be
- * made transparent. Cloudinary's background-removal delivery transform keeps
- * the complete square canvas; it does not trim or crop the artwork. Add future
+/* These are the source plates where the captured backdrop needs to be made
+ * transparent. Cloudinary's background-removal delivery transform keeps the
+ * complete square canvas; it does not trim or crop the artwork. Add future
  * plates here as they are identified. */
-const UL_CARDS_WITH_TRANSPARENT_BACKGROUND = new Set<number>([22]);
+const UL_CARDS_WITH_TRANSPARENT_BACKGROUND = new Set<number>([6, 22]);
 
 /**
  * Square Cloudinary URL for a Universal Language card's artwork.

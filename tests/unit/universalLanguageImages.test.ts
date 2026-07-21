@@ -22,6 +22,12 @@ describe('Universal Language image treatment', () => {
     expect(url).toContain('/e_background_removal/f_png,q_auto,w_640,h_640,c_fill,g_center/22_lldo5g');
   });
 
+  it('uses the transparent full-image treatment for card 6', () => {
+    const url = ulCardImageUrl(6, 640);
+
+    expect(url).toContain('/e_background_removal/f_png,q_auto,w_640,h_640,c_fill,g_center/6_');
+  });
+
   it('leaves unaffected cards on the normal optimized delivery path', () => {
     const url = ulCardImageUrl(21, 640);
 

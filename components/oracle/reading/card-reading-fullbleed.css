@@ -60,12 +60,13 @@
 
 /* ── Artwork ───────────────────────────────────────────────────────────── */
 
-/* The design darkens the bottom of the artwork tile, which worked while the
-   image was zoomed and cropped: the shading fell outside the frame. Now that
-   the whole square is visible it lands across the artwork as a hard band. The
-   hairline edge stays; the vignette goes. */
+/* The artwork belongs to the reading surface rather than to a card placed on
+   top of it. Drop the generated tile fill, rounded clipping and inset edge so
+   transparent artwork can meet the page directly. */
 .card-reading :has(> [data-artparallax]) {
-  box-shadow: inset 0 0 0 1px rgba(198, 166, 103, 0.22) !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 /* The whole artwork, always. The design frames it in a square tile and then
