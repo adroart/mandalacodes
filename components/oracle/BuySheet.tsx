@@ -63,6 +63,7 @@ export const BuySheet: React.FC<{
               src={imageUrl}
               alt={imageAlt}
               className="w-24 h-24 object-cover border border-wood-300/40 flex-shrink-0"
+              crossOrigin="anonymous"
             />
             <div className="min-w-0 flex-1 space-y-2">
               {piece?.dimensions && (

@@ -28,6 +28,7 @@ import { LAUNCH_FLAGS } from '../../../launchFlags';
 import { todaysEnergy, yearsEnergy } from '../../../lib/astrology/today';
 import { OracleEntryHost, type EntryCard, type EntryAdapter } from './generated/OracleEntry.host';
 import OracleRailTop from './OracleRailTop';
+import { warmOracleForOffline } from '../../../lib/oracle/offlineWarm';
 import './OracleEntry.scoped.css';
 
 /* Trigram names carry a parenthetical Chinese name ("Heaven (Ch'ien)"); the deck
@@ -179,6 +180,12 @@ const OracleEntryPage: React.FC = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [systemsOpen, gridOpen]);
+
+  // Opening the deck is a strong signal the visitor is here for a reading;
+  // quietly make the whole deck available offline from this point on.
+  useEffect(() => {
+    warmOracleForOffline();
+  }, []);
 
   return (
     <div className="oe-root pt-[var(--nav-height)]">

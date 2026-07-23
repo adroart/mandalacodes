@@ -130,6 +130,7 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
       src={ulCardImageUrl(card.number, 1080)}
       alt={`${card.card_name} · Code ${card.number}`}
       style={{ width: '100%', height: 'auto', display: 'block' }}
+      crossOrigin="anonymous"
     />
   );
 

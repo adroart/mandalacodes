@@ -209,7 +209,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                         </span>
                       </span>
                       <span style={{ position: "absolute", inset: "0", backfaceVisibility: "hidden", transform: "rotateY(180deg)", overflow: "hidden" }}>
-                        <img src={c.art} alt={c.name} loading="lazy" decoding="async" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", filter: "saturate(1.08) brightness(1.03)" }} />
+                        <img src={c.art} alt={c.name} loading="lazy" decoding="async" crossOrigin="anonymous" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", filter: "saturate(1.08) brightness(1.03)" }} />
                       </span>
                     </span>
                   </button>
@@ -243,7 +243,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 <button type="button" onClick={c.onRead} aria-label={c.yours ? c.aria + " — one of your codes" : c.aria} data-oe-yours={c.yours ? "1" : undefined} style={{ all: "unset", cursor: "pointer", position: "relative", display: "block", width: "100%", aspectRatio: "1/1", overflow: "hidden" }}>
                   <span style={{ position: "absolute", inset: "0", background: `${c.grad ?? ""}` }}>
                   </span>
-                  <img src={c.art} alt={c.name} loading="lazy" decoding="async" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", filter: "saturate(1.08) brightness(1.03)", transition: "transform .5s ease" }} />
+                  <img src={c.art} alt={c.name} loading="lazy" decoding="async" crossOrigin="anonymous" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", filter: "saturate(1.08) brightness(1.03)", transition: "transform .5s ease" }} />
                   <span className="oe-art-scrim" style={{ position: "absolute", left: "0", right: "0", bottom: "0", top: "50%", background: "linear-gradient(transparent,rgba(20,16,12,.78))", opacity: "0", transition: "opacity .3s ease" }}>
                   </span>
                   <span className="oe-art-name" style={{ position: "absolute", left: "9px", right: "9px", bottom: "8px", display: "flex", flexDirection: "column", gap: "1px", opacity: "0", transition: "opacity .3s ease" }}>

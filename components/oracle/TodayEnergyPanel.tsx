@@ -31,6 +31,7 @@ const TodayEnergyPanel: React.FC<{ now?: Date }> = ({ now }) => {
           aria-hidden="true"
           className="ul-energy-panel__thumb"
           loading="lazy"
+          crossOrigin="anonymous"
         />
       )}
       <div className="ul-energy-panel__body">

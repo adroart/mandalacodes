@@ -241,6 +241,7 @@ const BecomingPreview: React.FC<{
             className="w-full h-full object-cover"
             loading="lazy"
             decoding="async"
+            crossOrigin="anonymous"
           />
           <div
             aria-hidden="true"

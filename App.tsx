@@ -22,6 +22,7 @@ const NotFound = lazy(() => import('./components/NotFound'));
 const LightweaverLanding = lazy(() => import('./components/lightweaver/LightweaverLanding'));
 
 import Navigation from './components/Navigation';
+import ChunkErrorBoundary from './components/ChunkErrorBoundary';
 import { useSeoMeta } from './useSeoMeta';
 import { DarkModeProvider } from './DarkModeContext';
 import { AccountProvider } from './lib/account/AccountProvider';
@@ -78,6 +79,7 @@ const AppInner: React.FC = () => {
             key={/^\/universal-language\/\d+$/.test(location.pathname) ? '/universal-language/:n' : location.pathname}
             className="route-fade-in"
           >
+            <ChunkErrorBoundary>
             {ledHost ? (
               <Routes>
                 {/* led.mandalacodes.com — Studio/install entry. The card is
@@ -153,6 +155,7 @@ const AppInner: React.FC = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             )}
+            </ChunkErrorBoundary>
           </div>
         </main>
       </div>
