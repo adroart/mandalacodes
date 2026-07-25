@@ -10,6 +10,7 @@ import PieceSidePanel, {
 } from './atlas/PieceSidePanel';
 import { type CodeIndexEntry } from './atlas/CodesIndex';
 import TheLedger, { type LedgerKindSection } from './atlas/TheLedger';
+import TheWall, { type WallCard } from './atlas/TheWall';
 import {
   atlasPieceToRow,
   cleanLedgerTitle,
@@ -32,6 +33,7 @@ import AtlasOverture from './atlas/AtlasOverture';
 import FeaturedDream, { type FeaturedDreamData } from './atlas/FeaturedDream';
 import SelectionInscription from './atlas/SelectionInscription';
 import { pieceCode } from '../utils/pieceCode';
+import { img } from '../utils/cloudinary';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
@@ -1186,6 +1188,66 @@ const AtlasPage: React.FC = () => {
     return sections;
   }, [enriched, catalog]);
 
+  /* The wall's cards: the same one record (the sixty-four + the kind
+     sections), each row joined to its catalog plate — cover image, year,
+     dimensions, material — so the art face is honest with what the record
+     truly carries. Placeholder ghost rows never hang on the wall. */
+  const wallCards: WallCard[] = useMemo(() => {
+    const byId = new Map(FULL_ARCHIVE.map((a) => [a.id, a]));
+    const dress = (row: LedgerRow, kind: string, cardNumber?: number): WallCard => {
+      const art = byId.get(row.pieceId);
+      return {
+        ...row,
+        kind,
+        cardNumber,
+        // coverImage on record is a Cloudinary public id; the wall needs
+        // delivery URLs (tile-sized, and larger for the opened record).
+        coverImage: art?.coverImage ? img(art.coverImage, { w: 640 }) : undefined,
+        coverImageLarge: art?.coverImage
+          ? img(art.coverImage, { w: 1400 })
+          : undefined,
+        year: art?.year,
+        dimensions: art?.dimensions,
+        material: art?.material,
+      };
+    };
+    const out: WallCard[] = [];
+    const seen = new Set<string>();
+    for (const e of codeEntries) {
+      const row = atlasPieceToRow(e);
+      if (seen.has(row.key)) continue;
+      seen.add(row.key);
+      out.push(dress(row, 'sixty-four', e.cardNumber));
+    }
+    for (const s of kindSections) {
+      for (const row of s.rows) {
+        if (seen.has(row.key)) continue;
+        seen.add(row.key);
+        out.push(dress(row, s.kind));
+      }
+    }
+    return out;
+  }, [codeEntries, kindSections]);
+
+  /* Which reading of the record is open below the globe: the wall (the
+     exploratory card field, default) or the ledger (the full written record).
+     A shared ?code=N deep link belongs to the ledger's index, so it wins. */
+  const ledgerView = searchParams.get('view') === 'ledger' || !!searchParams.get('code');
+  const setLedgerView = (toLedger: boolean) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (toLedger) next.set('view', 'ledger');
+        else {
+          next.delete('view');
+          next.delete('code');
+        }
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
   /* Selecting a piece from the index re-selects it on the globe above and
      brings the globe back into view (the index lives below the fold). */
   const selectPieceOnGlobe = (pieceId: string, editionNumber?: number) => {
@@ -2215,14 +2277,48 @@ const AtlasPage: React.FC = () => {
 
         {state.kind === 'ready' && (
           <>
-            {/* The living ledger (Part II.6): the sixty-four, then mandalas,
-                signature pieces, jewelry — every piece, every dream, one record,
-                with its own kind / state / search filter bar. */}
-            <TheLedger
-              codeEntries={codeEntries}
-              kindSections={kindSections}
-              onSelectOnGlobe={selectPieceOnGlobe}
-            />
+            {/* One record, two readings below the globe: the wall (the
+                exploratory card field, default) and the ledger (the full
+                written record). Filters (lk / ls / lq) persist across both. */}
+            <div className="mb-8 flex items-baseline gap-5 border-t border-wood-200 pt-10">
+              <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500">
+                read it as
+              </span>
+              <button
+                type="button"
+                aria-pressed={!ledgerView}
+                onClick={() => setLedgerView(false)}
+                className={`font-display text-lg transition-colors border-b ${
+                  !ledgerView
+                    ? 'text-wood-900 border-bronze-600'
+                    : 'text-wood-500 border-transparent hover:text-bronze-700'
+                }`}
+              >
+                the wall
+              </button>
+              <button
+                type="button"
+                aria-pressed={ledgerView}
+                onClick={() => setLedgerView(true)}
+                className={`font-display text-lg transition-colors border-b ${
+                  ledgerView
+                    ? 'text-wood-900 border-bronze-600'
+                    : 'text-wood-500 border-transparent hover:text-bronze-700'
+                }`}
+              >
+                the ledger
+              </button>
+            </div>
+
+            {ledgerView ? (
+              <TheLedger
+                codeEntries={codeEntries}
+                kindSections={kindSections}
+                onSelectOnGlobe={selectPieceOnGlobe}
+              />
+            ) : (
+              <TheWall cards={wallCards} onSelectOnGlobe={selectPieceOnGlobe} />
+            )}
 
             {/* Generated-at footer note. */}
             <p className="mt-16 font-label text-[11px] uppercase tracking-[0.18em] text-wood-600">

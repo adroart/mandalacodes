@@ -190,10 +190,8 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
     (sixtyFourVisible && sixtyFourHasContent) || resolvedSections.length > 0;
 
   return (
-    <section
-      aria-labelledby="atlas-ledger-heading"
-      className="border-t border-wood-200 pt-10"
-    >
+    // The top rule lives on the wall/ledger switcher in AtlasPage now.
+    <section aria-labelledby="atlas-ledger-heading">
       <h2
         id="atlas-ledger-heading"
         className="font-display text-3xl text-wood-900 font-medium mb-2"
