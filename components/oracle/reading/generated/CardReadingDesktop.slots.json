@@ -1,0 +1,28 @@
+{
+  "placeholders": [
+    "deckHref",
+    "familyHref",
+    "forMeHref",
+    "h.href",
+    "n.id",
+    "pieceHref",
+    "shareHref"
+  ],
+  "handlers": [],
+  "refs": [],
+  "loops": [
+    "headerNav as h",
+    "meta as m",
+    "nav as n"
+  ],
+  "conditionals": [
+    "h.active",
+    "h.divider"
+  ],
+  "componentSlots": [
+    "Reading"
+  ],
+  "imageSlots": [
+    "art-desktop"
+  ]
+}
