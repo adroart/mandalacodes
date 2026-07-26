@@ -216,7 +216,24 @@ const AtlasPage: React.FC = () => {
      visitor's own codes. Recede, never remove. */
   const [focusSeries, setFocusSeries] = useState<string | null>(null);
   const [yoursMode, setYoursMode] = useState<boolean>(false);
-  const [markerScreenPos, setMarkerScreenPos] = useState<{ x: number; y: number } | null>(null);
+  /* The selected light's live screen position.
+     THIS MUST NOT BE REACT STATE. Globe3D projects the light and reports it on
+     every animation frame; held in state that re-rendered this whole page at
+     60fps, and a page re-rendering every frame starves React Router's
+     navigation transitions so they never commit. The symptoms looked like three
+     unrelated bugs and were all this one: "open the book" pushed the URL but
+     never rendered the piece page (the card just sat there on top of it), Back
+     did nothing, and tapping a piece in a city's list changed `?piece=` without
+     ever opening it, because the `?piece=` sync effect never got to run either.
+     The leader line is drawn by writing SVG attributes straight to these refs,
+     so the hairline still tracks the turning globe and React renders nothing. */
+  const markerPosRef = useRef<{ x: number; y: number } | null>(null);
+  const leaderLineRef = useRef<SVGLineElement | null>(null);
+  const leaderDotRef = useRef<SVGCircleElement | null>(null);
+  /* The one thing about that position React does need: which hemisphere the
+     light is on, so the inscription can be written on the far side. It flips
+     rarely, and only a flip is allowed to re-render. */
+  const [markerRightHalf, setMarkerRightHalf] = useState(false);
   const navigate = useNavigate();
 
   /* ─── Selection history (Selection section of the plan) ──────────────────
@@ -267,6 +284,13 @@ const AtlasPage: React.FC = () => {
   /* Return the visitor to the resting sky: pop our pushed entry when we made
      one, else step in place so a deep link's Back reaches the referrer. */
   const closeSelection = React.useCallback(() => {
+    // Close the selection HERE, not only by clearing the URL and waiting for
+    // the `?piece=` sync effect to notice. That round trip did not always come
+    // back: the param cleared, the card stayed on screen, and on a phone (where
+    // this was the ONLY way out) the reader was stuck inside the piece with no
+    // exit. The URL is still the source of truth for deep links and for Back;
+    // this just makes the close itself immediate and unconditional.
+    setSelectedKeyState(null);
     setSelectedCity(null);
     if (selectionPushedRef.current) {
       selectionPushedRef.current = false;
@@ -275,6 +299,14 @@ const AtlasPage: React.FC = () => {
       setPieceParam(null, false);
     }
   }, [navigate, setPieceParam]);
+
+  /* Drop the open card without touching the URL or history. Used when a link
+     inside the card is navigating away on its own: the route change is already
+     in flight, so all that is left to do is stop drawing over it. */
+  const dismissForNavigation = React.useCallback(() => {
+    setSelectedKeyState(null);
+    setSelectedCity(null);
+  }, []);
 
   /* Back to the city list from a piece reached through one: clear the piece
      but keep the open city, no history step. */
@@ -329,9 +361,11 @@ const AtlasPage: React.FC = () => {
   /* Featured dream (one voice at a time): the resting sky shows a single dream,
      cross-fading through the deterministic dream route roughly every 20s. */
   const [featuredIdx, setFeaturedIdx] = useState(0);
-  const [featuredScreenPos, setFeaturedScreenPos] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  /* The featured dream's tether is retired (see FeaturedDream), so its screen
+     position is no longer tracked at all. It used to be state written on every
+     animation frame, which re-rendered this page 60 times a second while the
+     atlas simply sat at rest — see markerPosRef above for what that costs. */
+  const featuredScreenPos = null;
 
   // Once-per-visitor glosses for the dreams and threads controls (law 5).
   const { active: controlGloss, fire: fireGloss } = useGloss();
@@ -358,6 +392,33 @@ const AtlasPage: React.FC = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedKey, selectedCity, streamActive, closeSelection]);
   const [use3D] = useState<boolean>(webglAvailable);
+
+  /* Per-frame from Globe3D. Everything here is either a ref write or a DOM
+     write; the only setState is guarded to fire on a hemisphere flip. */
+  const handleMarkerScreenPos = React.useCallback((pos: { x: number; y: number }) => {
+    markerPosRef.current = pos;
+    const box = globeBoxRef.current;
+    if (box) {
+      const right = pos.x > box.clientWidth / 2;
+      setMarkerRightHalf((prev) => (prev === right ? prev : right));
+    }
+    const line = leaderLineRef.current;
+    if (line) {
+      line.setAttribute('x1', String(pos.x));
+      line.setAttribute('y1', String(pos.y));
+      // y2 tracks the light vertically, clamped so the line stays in the frame.
+      const clampTo = line.dataset.clamp;
+      if (clampTo) {
+        const h = Number(clampTo);
+        line.setAttribute('y2', String(Math.min(Math.max(pos.y, 120), h - 160)));
+      }
+    }
+    const dot = leaderDotRef.current;
+    if (dot) {
+      dot.setAttribute('cx', String(pos.x));
+      dot.setAttribute('cy', String(pos.y));
+    }
+  }, []);
 
   /* Mirror a filter into the URL; 'all' clears the param. */
   const setFilterParam = (key: string, value: string) => {
@@ -981,11 +1042,18 @@ const AtlasPage: React.FC = () => {
         sigilNumber: sigilNumberFor(p.pieceId),
       });
       const cityName = p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined;
-      const parts = [code];
+      // The place leads, the catalogue follows. `UL № 1` opening the line put an
+      // unexplained initialism in the position of maximum attention, directly
+      // under the most intimate sentence on the page, and buried the one human
+      // fact ("alive in Denpasar") between two inventory numbers. Ordering it
+      // place, ordinal, code lets the sub-line read as a sentence that trails
+      // off into a reference, which is what it is.
+      const parts: string[] = [];
       if (cityName) parts.push(`alive in ${cityName}`);
       if (typeof p.claimOrdinal === 'number') {
         parts.push(`the ${ordinalLabel(p.claimOrdinal)} light`);
       }
+      parts.push(code);
       map.set(p.key, { key: p.key, text: text.trim(), standing: parts.join(' · ') });
     }
     return map;
@@ -1491,8 +1559,17 @@ const AtlasPage: React.FC = () => {
   // (the breadcrumb and the Atlas wordmark) never below 0.35. Any pointer,
   // touch, key, or focus wakes them to full via useIdleFade. Reduced motion
   // never idles (the hook holds idle=false), so both stay at 1.
-  const orientationOpacity = idle ? 0.6 : 1;
-  const secondaryOpacity = idle ? 0.35 : 1;
+  /* The idle fade: the chrome recedes while the world turns.
+     The floors are 0.8 / 0.55, not 0.6 / 0.35. The old floors multiplied a
+     whole block of already-alpha'd text, and the two together took the count
+     line to 2.4:1 and the stale-sky line to 3.2:1 against the stage night, well
+     under the 4.5:1 an AA reading needs: at rest, the page's own information
+     was not legible. Everything in the band is now full-alpha and ranked by
+     size, case and hue instead, which leaves this fade as the only opacity in
+     play; at 0.8 every line still clears 4.8:1 and the recede is still read.
+     Verified against --color-atlas-night; keep it that way if you retune. */
+  const orientationOpacity = idle ? 0.8 : 1;
+  const secondaryOpacity = idle ? 0.68 : 1;
   const chromeTierTransition = 'opacity 700ms ease';
 
   /* The globe's projected screen circle in stage coordinates, so the featured
@@ -1534,10 +1611,7 @@ const AtlasPage: React.FC = () => {
     isPhone && ((selectedKey != null && selectedKey !== BIRTH_KEY) || selectedCity != null);
   /* Write the inscription on the side away from the light: when the light sits
      on the right hemisphere, write on the left. */
-  const inscriptionAwayLeft =
-    markerScreenPos != null && globeBoxRef.current != null
-      ? markerScreenPos.x > globeBoxRef.current.clientWidth / 2
-      : false;
+  const inscriptionAwayLeft = markerRightHalf;
   /* The featured dream shows only at rest on the WebGL earth. */
   const showFeatured =
     use3D && !USE_GL_GLOBE && !featuredPaused && featuredDream != null;
@@ -1588,7 +1662,7 @@ const AtlasPage: React.FC = () => {
                   placedByCard={placedByCard}
                   mandala={mandala}
                   mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed`}
-                  onMarkerScreenPos={setMarkerScreenPos}
+                  onMarkerScreenPos={handleMarkerScreenPos}
                   onBackgroundClick={closeSelection}
                   className="w-full h-full"
                 />
@@ -1613,9 +1687,14 @@ const AtlasPage: React.FC = () => {
                       ? `The mandala so far · ${placedByCard.size} of 64 placed · touch a code to visit it`
                       : ''
                   }
-                  onMarkerScreenPos={setMarkerScreenPos}
+                  onMarkerScreenPos={handleMarkerScreenPos}
                   featuredId={showFeatured ? featuredClusterId : null}
-                  onFeaturedScreenPos={setFeaturedScreenPos}
+                  /* The featured tether is retired (see FeaturedDream), so
+                     nothing consumes this. Not passing it also stops a second
+                     per-frame projection loop from running at rest, which was
+                     re-rendering this page 60 times a second for a line that is
+                     never drawn. */
+                  onFeaturedScreenPos={undefined}
                   playIntro={playIntro}
                   onBackgroundClick={closeSelection}
                   // Inscription keeps the world centred (no side card yet); the
@@ -1630,8 +1709,12 @@ const AtlasPage: React.FC = () => {
             </Suspense>
           </div>
 
-          {/* ── The featured dream: one voice at a time, at rest ──────────────── */}
-          {showFeatured && (
+          {/* ── The featured dream: one voice at a time, at rest ──────────────
+                 Desktop only here: it seats itself in the dark margin beside
+                 the globe. On phones there is no margin to seat it in, so it
+                 joins the lower band below and is rendered inside that stack
+                 instead of floating over the earth. ─────────────────────────── */}
+          {showFeatured && !isPhone && (
             <FeaturedDream
               dream={featuredDream}
               screenPos={featuredScreenPos}
@@ -1667,10 +1750,13 @@ const AtlasPage: React.FC = () => {
               transition: 'opacity 800ms ease',
             }}
           >
-            {/* Top-left: breadcrumb + wordmark — secondary chrome (floor 0.35).
+            {/* Top-left: breadcrumb + wordmark — secondary chrome (floor 0.55).
                 On phones the nav bar carries identity; the breadcrumb and
                 wordmark do not render over the globe (Adrian, 2026-07-18), so
-                the small screen keeps the whole earth. */}
+                the small screen keeps the whole earth.
+                The breadcrumb carries no alpha of its own: at /60 under the
+                old 0.35 floor these links composited to 2.1:1, a navigation
+                control you could not read. The tier fade alone is the quiet. */}
             {!isPhone && (
             <div
               className="pointer-events-auto absolute left-5 sm:left-8 top-[calc(var(--nav-height)+1rem)]"
@@ -1678,13 +1764,13 @@ const AtlasPage: React.FC = () => {
             >
               <nav
                 aria-label="Breadcrumb"
-                className="flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400/60 mb-3"
+                className="flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] text-bronze-400 mb-3"
               >
                 <Link to="/" className="hover:text-bronze-400 transition-colors">
                   Home
                 </Link>
                 <span aria-hidden>/</span>
-                <span className="text-bronze-400/90">Atlas</span>
+                <span className="text-wood-800">Atlas</span>
               </nav>
               <h1
                 className="text-2xl sm:text-5xl text-bronze-300 font-medium leading-none"
@@ -1695,103 +1781,193 @@ const AtlasPage: React.FC = () => {
             </div>
             )}
 
-            {/* Bottom-left: the thesis caption — orientation chrome (floor 0.6).
-                One voice in the caption slot (Adrian, 2026-07-18): while mandala
-                view is active the mandala caption (rendered on the globe) speaks
-                alone, so the whole thesis block, its count line, and the
-                standing doors all rest. The birth-place selection likewise takes
-                the slot with its own single line, so the thesis block rests. */}
+            {/* ── The lower band ────────────────────────────────────────────────
+                One rail, two zones, one gradient floor.
+
+                What this replaced: six typographic voices stacked at the same
+                size, weight and colour, on two different left rails (the dream
+                indented by its own padding, the caption not), as two separately
+                bottom-anchored blocks that drifted toward each other as the
+                dream's length changed. Nothing was ranked, so the eye had no
+                entry point and no second focal point after the globe.
+
+                What it is now. Zone one is intimate: the dream, then its
+                attribution. A hairline divides. Zone two orients: the pulse
+                (lights lit, the only living number, and the loudest line here),
+                the thesis that glosses it, the door, and last the system voice.
+                Rank is carried by size, case and hue, never by opacity, because
+                opacity is already spent on the idle fade and stacking the two
+                is what pushed this text under the legibility floor.
+
+                Watch the wood scale here. The whole /atlas route sits inside a
+                local `dark` wrapper (see the route root above), and dark
+                INVERTS the ramp: wood-200/300 are near-black, wood-500 upward
+                are the light ones. Reaching for wood-300 to mean "quiet" gives
+                you 1.8:1 on this stage, and wood-200 gives 1.4:1. Quiet on the
+                night is wood-500; wood-700+ is emphasis. Measured against
+                --color-atlas-night; `node tests/_atlas-contrast.mjs` re-measures
+                the whole band in a real browser and fails if any of it slips.
+
+                One voice in the caption slot (Adrian, 2026-07-18): while the
+                mandala speaks, or a birth place is selected, the whole band
+                rests. */}
             {!mandala && totalCount > 0 && selectedKey !== BIRTH_KEY && (
               <div
-                className="pointer-events-auto absolute left-5 sm:left-8 bottom-24 sm:bottom-6 max-w-[93vw] sm:max-w-xl"
+                className="pointer-events-auto absolute inset-x-0 bottom-0 sm:inset-x-auto sm:left-8 sm:bottom-6 sm:max-w-xl"
                 style={{ opacity: orientationOpacity, transition: chromeTierTransition }}
               >
-                {/* The recentering (Adrian, 2026-07-18): the story is the
-                    community, not the artist. `the vision` trails the thesis as
-                    a small standing link that replays the full overture, and
-                    rests while a light is open so the line stays calm. */}
-                <p className="font-label text-[12px] sm:text-[14px] leading-snug tracking-[0.015em] text-atlas-gold">
-                  Illuminators of the dream, surrounded by resonant dreamers.
+                {/* The floor: on phones the band lies over the lower dark, so
+                    it carries its own deepening of the night that reaches the
+                    bottom edge and falls to nothing well above the first line.
+                    This is what lets the dream sit in flow without a local
+                    scrim, and what keeps the earth's lower limb from running
+                    through the text the way it used to. */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 bottom-0 sm:hidden"
+                  style={{
+                    top: '-8rem',
+                    background:
+                      'linear-gradient(to bottom, rgba(9,7,5,0) 0%, rgba(9,7,5,0.5) 26%, rgba(9,7,5,0.86) 52%, rgba(9,7,5,0.97) 78%, rgba(9,7,5,0.99) 100%)',
+                  }}
+                />
+
+                <div className="relative px-5 pb-16 sm:px-0 sm:pb-0">
+                  {/* Zone one, phones only: the dream joins the rail instead of
+                      floating over the earth on its own inset. */}
+                  {showFeatured && isPhone && (
+                    <div className="mb-5">
+                      <FeaturedDream
+                        dream={featuredDream}
+                        screenPos={featuredScreenPos}
+                        globe={globeCircle}
+                        isPhone={isPhone}
+                        reduced={reduced}
+                        opacity={1}
+                        inFlow
+                        onSelect={(key) => selectPiece(key)}
+                      />
+                    </div>
+                  )}
+
+                  {/* The divider: the whole hierarchy of the band hangs off this
+                      one hairline. Above it the work speaks; below it the atlas
+                      speaks about itself. Short and left-hung so it reads as a
+                      breath, not a rule across a card. */}
+                  {showFeatured && isPhone && (
+                    <div
+                      aria-hidden
+                      className="mb-4 h-px w-10"
+                      style={{ background: 'rgba(196,170,124,0.3)' }}
+                    />
+                  )}
+
+                  {/* The pulse: the one loud line in the band. Lights lit is the
+                      only number here that changes when a life is attached, so
+                      it leads and the inventory total trails it as a quiet tail
+                      rather than sharing its weight. */}
+                  <p className="font-label text-[13px] sm:text-[14px] uppercase tracking-[0.16em] text-atlas-gold">
+                    {/* ── TEMPORARY PLACEHOLDER caption ── see
+                        data/atlasPlaceholder.ts. Delete this branch at launch. */}
+                    {isPlaceholder ? (
+                      <>
+                        placeholder pieces
+                        <span className="ml-2 normal-case tracking-[0.02em] text-[12px] text-wood-500">
+                          shown until the first works find their ground
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
+                        <span className="ml-2 normal-case tracking-[0.02em] text-[12px] text-wood-500">
+                          of {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
+                          {!isPhone && ' · touch a light to read its dream'}
+                        </span>
+                      </>
+                    )}
+                  </p>
+
+                  {/* The gloss on the pulse. The recentering (Adrian,
+                      2026-07-18): the story is the community, not the artist.
+                      `the vision` trails it as a small standing link that
+                      replays the overture, and rests while a light is open so
+                      the line stays calm. */}
+                  <p className="mt-1.5 font-display text-[13px] sm:text-[14px] leading-snug text-wood-500">
+                    Illuminators of the dream, surrounded by resonant dreamers.
+                  </p>
+                  {/* `the vision` gets its own row rather than trailing the
+                      sentence: inline, it wrapped to a second line on phones and
+                      landed there wearing the sentence's left margin, reading as
+                      a stranded fragment rather than a control. */}
                   {!selectedKey && !selectedCity && (
                     <button
                       type="button"
                       onClick={replayVision}
-                      className="ml-2.5 align-baseline font-label text-[10px] uppercase tracking-[0.18em] text-wood-400 hover:text-bronze-300 transition-colors"
+                      className="mt-2 font-label text-[10px] uppercase tracking-[0.18em] text-atlas-gold hover:text-bronze-300 transition-colors border-b border-[rgba(196,170,124,0.28)] hover:border-[rgba(196,170,124,0.8)] pb-0.5"
                     >
                       the vision
                     </button>
                   )}
-                </p>
-                {/* One count line, never a stacked third line (Adrian,
-                    2026-07-18): when the loader served placeholder/seed data the
-                    fact folds into this line rather than adding one. On narrow
-                    viewports the "touch a light" segment drops before the line
-                    is allowed to wrap. */}
-                <p className="mt-1.5 font-label text-[12px] uppercase tracking-[0.14em] text-atlas-gold/70">
-                  {/* ── TEMPORARY PLACEHOLDER caption ── see
-                      data/atlasPlaceholder.ts. Delete this branch at launch. */}
-                  {isPlaceholder ? (
-                    'placeholder pieces · shown until the first works find their ground'
-                  ) : (
-                    <>
-                      {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
-                      <span aria-hidden className="mx-2 text-wood-500">·</span>
-                      {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
-                      {!isPhone && (
-                        <>
-                          <span aria-hidden className="mx-2 text-wood-500">·</span>
-                          touch a light to read its dream
-                        </>
-                      )}
-                    </>
-                  )}
-                </p>
-                {/* Honest state (law 6): a stale sky is named, with a retry. It
-                    may be the only third element and never overlaps the
-                    controls. */}
-                {servedFallback && (
-                  <p className="mt-2 font-label text-[11px] uppercase tracking-[0.12em] text-wood-400">
-                    showing the last gathered sky
-                    <button
-                      type="button"
-                      onClick={retryAtlasFetch}
-                      disabled={retrying}
-                      className="ml-2 text-bronze-300 hover:text-bronze-200 transition-colors disabled:opacity-60"
-                    >
-                      {retrying ? 'retrying' : 'retry'}
-                    </button>
-                  </p>
-                )}
-                {streamActive && dreamRoute.length > 0 && (
-                  <p className="mt-1 font-display text-[12px] leading-snug tracking-[0.03em] text-wood-400/80">
-                    dream {Math.max(1, dreamRoute.indexOf(selectedKey ?? '') + 1)} of{' '}
-                    {dreamRoute.length} ·{' '}
-                    {typeof window !== 'undefined' && 'ontouchstart' in window
-                      ? 'swipe onward'
-                      : 'scroll onward'}
-                  </p>
-                )}
 
-                {/* One door line (Adrian, 2026-07-18): the claiming door shows
-                    only to visitors who steward no piece; a signed-in steward
-                    sees the `your light` control in the cluster instead, never
-                    both. This is the third and last row of the resting caption. */}
-                {ownedKeys.size === 0 && (
-                  <div className="mt-3">
-                    <Link
-                      to="/atlas/claim"
-                      className="font-label text-[12px] leading-snug tracking-[0.02em] text-atlas-gold/90 hover:text-atlas-gold transition-colors"
-                    >
-                      Keep a piece? Anchor your dream into it →
-                    </Link>
-                  </div>
-                )}
+                  {streamActive && dreamRoute.length > 0 && (
+                    <p className="mt-1 font-display text-[12px] leading-snug tracking-[0.03em] text-wood-500">
+                      dream {Math.max(1, dreamRoute.indexOf(selectedKey ?? '') + 1)} of{' '}
+                      {dreamRoute.length} ·{' '}
+                      {typeof window !== 'undefined' && 'ontouchstart' in window
+                        ? 'swipe onward'
+                        : 'scroll onward'}
+                    </p>
+                  )}
+
+                  {/* The door (Adrian, 2026-07-18): shows only to visitors who
+                      steward no piece; a signed-in steward sees `your light` in
+                      the control cluster instead, never both. It is the one
+                      thing in the band a visitor is asked to do, so it carries a
+                      standing underline: a link that looks like a link. */}
+                  {ownedKeys.size === 0 && (
+                    <div className="mt-3.5">
+                      <Link
+                        to="/atlas/claim"
+                        className="inline-block font-display text-[14px] leading-snug text-atlas-gold border-b border-[rgba(196,170,124,0.35)] pb-0.5 hover:border-[rgba(196,170,124,0.9)] transition-colors"
+                      >
+                        Keep a piece? Anchor your dream into it →
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Honest state (law 6), in the system's own voice. It used to
+                      wear the same caps, tracking and colour as the piece count,
+                      so a degraded-data warning and an inventory fact were
+                      indistinguishable; and `retry` sat in lowercase roman with
+                      no affordance, reading as a typo rather than a control. It
+                      now sits last, unlettered, in the muted wood, with retry as
+                      a real underlined button. */}
+                  {servedFallback && (
+                    <p className="mt-3.5 font-label text-[11px] leading-snug text-wood-500">
+                      Showing the last gathered sky.
+                      <button
+                        type="button"
+                        onClick={retryAtlasFetch}
+                        disabled={retrying}
+                        className="ml-1.5 underline underline-offset-2 decoration-[rgba(221,212,194,0.55)] text-wood-700 hover:text-atlas-gold transition-colors disabled:opacity-60 disabled:no-underline"
+                      >
+                        {retrying ? 'retrying' : 'retry'}
+                      </button>
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* Bottom-right: three controls plus contextual — orientation
-                chrome (floor 0.6). mandala, the series legend, and your codes
-                now live inside the filter sheet as lenses. */}
+            {/* Bottom-right: the control cluster — orientation chrome (floor
+                0.8). mandala, the series legend and your codes live inside the
+                filter sheet as lenses, so with the lens layer parked this is
+                usually a single word. That is the problem it has: one 11px
+                letterspaced word alone in a large field of black disappears
+                even though its contrast passes. It is answered below by giving
+                the control a standing underline (an affordance, not just a
+                colour) and by closing the gap to the caption band, so the two
+                read as one baseline rather than one word adrift. */}
             <div
               className="pointer-events-auto absolute right-5 sm:right-8 bottom-6 flex flex-col items-end gap-2"
               style={{
@@ -1861,7 +2037,7 @@ const AtlasPage: React.FC = () => {
                   type="button"
                   aria-expanded={filtersOpen}
                   onClick={() => setFiltersOpen((o) => !o)}
-                  className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-200 hover:text-bronze-400 transition-colors"
+                  className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 hover:text-atlas-gold transition-colors border-b border-[rgba(221,212,194,0.32)] hover:border-atlas-gold pb-1"
                 >
                   filter
                   {(selectedSeries !== 'all' ||
@@ -2052,18 +2228,21 @@ const AtlasPage: React.FC = () => {
           {/* ── Leader-line: a hairline from the marker to the card, or to the
                  inscription on the side away from the light. The birth-place pin
                  draws no leader — its one line stands on its own. ────────────── */}
-          {(selectedKey || selectedCity) &&
-            selectedKey !== BIRTH_KEY &&
-            markerScreenPos &&
-            globeBoxRef.current && (
+          {(selectedKey || selectedCity) && selectedKey !== BIRTH_KEY && globeBoxRef.current && (
             <svg
               className="pointer-events-none absolute inset-0 z-20 hidden sm:block"
               width="100%"
               height="100%"
             >
+              {/* x1/y1/cx/cy and, when the card is showing, y2 are written every
+                  frame by handleMarkerScreenPos through these refs. They start
+                  at the last known position, or off-screen, so the very first
+                  paint never flashes a hairline across the corner. */}
               <line
-                x1={markerScreenPos.x}
-                y1={markerScreenPos.y}
+                ref={leaderLineRef}
+                data-clamp={showInscription ? undefined : globeBoxRef.current.clientHeight}
+                x1={markerPosRef.current?.x ?? -100}
+                y1={markerPosRef.current?.y ?? -100}
                 x2={
                   showInscription
                     ? inscriptionAwayLeft
@@ -2075,7 +2254,7 @@ const AtlasPage: React.FC = () => {
                   showInscription
                     ? globeBoxRef.current.clientHeight / 2
                     : Math.min(
-                        Math.max(markerScreenPos.y, 120),
+                        Math.max(markerPosRef.current?.y ?? -100, 120),
                         globeBoxRef.current.clientHeight - 160,
                       )
                 }
@@ -2083,8 +2262,9 @@ const AtlasPage: React.FC = () => {
                 strokeWidth={1}
               />
               <circle
-                cx={markerScreenPos.x}
-                cy={markerScreenPos.y}
+                ref={leaderDotRef}
+                cx={markerPosRef.current?.x ?? -100}
+                cy={markerPosRef.current?.y ?? -100}
                 r={2.5}
                 fill={selectedKey === BIRTH_KEY ? ATLAS_KEPT : ATLAS_GOLD}
               />
@@ -2098,12 +2278,15 @@ const AtlasPage: React.FC = () => {
             <SelectionInscription
               dream={selectedIntention}
               signedBy={selectedSignedBy}
+              // Place, then ordinal, then code — the same order as the featured
+              // dream's sub-line and the piece card, so the one human fact
+              // leads wherever this line appears.
               standing={[
-                selectedCode,
                 selectedCityName ? `alive in ${selectedCityName}` : null,
                 typeof selectedPiece.claimOrdinal === 'number'
                   ? `the ${ordinalLabel(selectedPiece.claimOrdinal)} light`
                   : null,
+                selectedCode,
               ]
                 .filter(Boolean)
                 .join(' · ')}
@@ -2151,10 +2334,16 @@ const AtlasPage: React.FC = () => {
 
               if (!hudContent) return null;
 
-              // Phone: a draggable half-sheet capped at 45vh, globe above.
+              // Phone: a full-screen reading surface fixed to the viewport,
+              // with a close button (Adrian, 2026-07-26). See PhoneHudSheet for
+              // why it is no longer a half-sheet riding inside this section.
               if (isPhone) {
                 return (
-                  <PhoneHudSheet key={streamActive ? selectedKey : 'hud'} onDismiss={closeSelection}>
+                  <PhoneHudSheet
+                    key={streamActive ? selectedKey : 'hud'}
+                    onDismiss={closeSelection}
+                    onNavigateAway={dismissForNavigation}
+                  >
                     {hudContent}
                   </PhoneHudSheet>
                 );
@@ -2280,34 +2469,47 @@ const AtlasPage: React.FC = () => {
             {/* One record, two readings below the globe: the wall (the
                 exploratory card field, default) and the ledger (the full
                 written record). Filters (lk / ls / lq) persist across both. */}
-            <div className="mb-8 flex items-baseline gap-5 border-t border-wood-200 pt-10">
-              <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500">
+            {/* One record, two readings. This used to read as a heading
+                followed by two links: a 10px letterspaced label against 18px
+                serif options, with the active state carried by the only
+                underline on the row, so nothing said the two words were a pair
+                or that either was pressable. Now both options always carry the
+                rail (faint when resting, lit when chosen), a divider binds them
+                into one switch, and the size gap between label and options is
+                closed enough that they read as parts of the same control. */}
+            <div className="mb-8 flex flex-wrap items-baseline gap-x-4 gap-y-2 border-t border-wood-200 pt-10">
+              <span className="shrink-0 font-label text-[10px] uppercase tracking-[0.22em] text-wood-500">
                 read it as
               </span>
-              <button
-                type="button"
-                aria-pressed={!ledgerView}
-                onClick={() => setLedgerView(false)}
-                className={`font-display text-lg transition-colors border-b ${
-                  !ledgerView
-                    ? 'text-wood-900 border-bronze-600'
-                    : 'text-wood-500 border-transparent hover:text-bronze-700'
-                }`}
-              >
-                the wall
-              </button>
-              <button
-                type="button"
-                aria-pressed={ledgerView}
-                onClick={() => setLedgerView(true)}
-                className={`font-display text-lg transition-colors border-b ${
-                  ledgerView
-                    ? 'text-wood-900 border-bronze-600'
-                    : 'text-wood-500 border-transparent hover:text-bronze-700'
-                }`}
-              >
-                the ledger
-              </button>
+              <div className="flex items-baseline gap-4">
+                <button
+                  type="button"
+                  aria-pressed={!ledgerView}
+                  onClick={() => setLedgerView(false)}
+                  className={`font-display text-[17px] leading-none pb-1 border-b transition-colors ${
+                    !ledgerView
+                      ? 'text-wood-900 border-bronze-600'
+                      : 'text-wood-500 border-[rgba(196,170,124,0.3)] hover:text-wood-800 hover:border-atlas-gold'
+                  }`}
+                >
+                  the wall
+                </button>
+                <span aria-hidden className="text-wood-400 text-[13px] leading-none">
+                  /
+                </span>
+                <button
+                  type="button"
+                  aria-pressed={ledgerView}
+                  onClick={() => setLedgerView(true)}
+                  className={`font-display text-[17px] leading-none pb-1 border-b transition-colors ${
+                    ledgerView
+                      ? 'text-wood-900 border-bronze-600'
+                      : 'text-wood-500 border-wood-200 hover:text-bronze-700 hover:border-bronze-700'
+                  }`}
+                >
+                  the ledger
+                </button>
+              </div>
             </div>
 
             {ledgerView ? (

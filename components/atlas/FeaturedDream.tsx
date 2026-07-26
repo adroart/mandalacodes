@@ -1,21 +1,29 @@
 /**
  * The featured dream (build-order item 3, Room one item 5): at rest, one dream
  * at a time. A single public dream, complete, in generous Cormorant, composed
- * in the lower third opposite the caption (right on desktop; above the caption
- * on phones), with a hairline tether from the text toward its light when that
- * light is on the facing hemisphere. Cross-fades to the next roughly every 20s
- * (the rotation lives in AtlasPage); tapping it travels to the piece.
+ * in the lower third opposite the caption. Cross-fades to the next roughly
+ * every 20s (the rotation lives in AtlasPage); tapping it travels to the piece.
  *
- * Legibility first (law 2, sharpened): the dream never fights the earth. On
- * desktop the block is placed in the dark margin beside the globe, its inner
- * edge computed from the globe's projected screen circle (`globe`) so no line
- * crosses the limb, the rim rings, or a light's bloom. Wherever it renders it
- * is backed by a quiet local scrim — a soft radial deepening of the night, no
- * card edge — so every glyph sits on calm ground. Adrian's ruling: if you can't
- * read the dream it does not exist.
+ * Two placements, and they are genuinely different problems:
  *
- * Orientation-level chrome: it rests no lower than 0.6 opacity (law 3), passed
- * in as `opacity`. Reduced motion swaps plainly, never cross-fades.
+ *  - Desktop: this component seats itself in the dark margin to the RIGHT of
+ *    the globe, its inner edge computed from the globe's projected screen
+ *    circle (`globe`) so no line crosses the limb, the rim rings, or a light's
+ *    bloom. It carries its own radial scrim.
+ *  - Phone (`inFlow`): there is no margin to seat it in. It renders as a plain
+ *    block inside AtlasPage's lower band, sharing that band's rail and gradient
+ *    floor, and the globe's camera lifts to clear it (see GlobeScene). It used
+ *    to float bottom-anchored over the sphere on its own left inset, which put
+ *    the most intimate text on the page across the lit coastlines and left it
+ *    one long dream away from colliding with the caption below it.
+ *
+ * Legibility first (law 2, sharpened): the dream never fights the earth, and
+ * whatever backs it is a deepening of the night, never a card edge. Adrian's
+ * ruling: if you can't read the dream it does not exist.
+ *
+ * Orientation-level chrome: at rest the page fades it with the rest of the band
+ * (floor 0.8, passed in as `opacity`; see the contrast note in AtlasPage before
+ * lowering that). Reduced motion swaps plainly, never cross-fades.
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -48,13 +56,20 @@ export interface FeaturedDreamProps {
   reduced: boolean;
   opacity: number;
   onSelect: (key: string) => void;
+  /** Render as a static block inside the caller's stack instead of positioning
+      itself. The phone band uses this: the dream and the caption rail used to
+      be two independently bottom-anchored blocks that drifted into each other
+      as the dream's length changed, on two different left rails. In flow they
+      share one rail, one rhythm, and the band's own gradient floor, so nothing
+      needs a local scrim and nothing can collide. */
+  inFlow?: boolean;
 }
 
 /** The scrim: a soft elliptical deepening of the night behind the text, so the
     dream always sits on calm ground. No visible edge, no blur box — it falls to
     fully transparent well before any hard boundary (law 2). */
 const SCRIM =
-  'radial-gradient(115% 135% at 62% 50%, rgba(7,5,3,0.66) 0%, rgba(7,5,3,0.5) 38%, rgba(7,5,3,0.26) 62%, rgba(7,5,3,0) 80%)';
+  'radial-gradient(96% 104% at 60% 50%, rgba(7,5,3,0.72) 0%, rgba(7,5,3,0.56) 34%, rgba(7,5,3,0.24) 58%, rgba(7,5,3,0.07) 74%, rgba(7,5,3,0) 88%)';
 
 /* Dreams are long (Adrian, 2026-07-18). The featured slot shows only the
    opening — about sixty words — and travels to the full text on tap. Where a
@@ -93,6 +108,7 @@ export default function FeaturedDream({
   reduced,
   opacity,
   onSelect,
+  inFlow = false,
 }: FeaturedDreamProps) {
   // Cross-fade: hold the shown dream, fade out on change, swap, fade in.
   const [shown, setShown] = useState<FeaturedDreamData | null>(dream);
@@ -158,7 +174,7 @@ export default function FeaturedDream({
     const finalText = toWords(core, n);
     el.textContent = prev;
     setFitted(finalText);
-  }, [shown, box, isPhone]);
+  }, [shown, box, isPhone, inFlow]);
 
   // Desktop placement: seat the block in the dark margin to the RIGHT of the
   // globe. Its inner (left) edge is pushed past the globe's limb + a gap, so no
@@ -167,7 +183,7 @@ export default function FeaturedDream({
   // the width from the block's own height — no reflow loop. On tight desktops
   // the width floors and the scrim carries any small overlap of the lower dark.
   useLayoutEffect(() => {
-    if (isPhone || !globe) {
+    if (inFlow || !globe) {
       setBox(null);
       return;
     }
@@ -193,14 +209,14 @@ export default function FeaturedDream({
   // section coordinates, so the hairline meets the text cleanly.
   useEffect(() => {
     const el = blockRef.current;
-    if (!el || isPhone) {
+    if (!el || inFlow) {
       setAnchor(null);
       return;
     }
     const x = el.offsetLeft; // left edge (the inner edge on the right side)
     const y = el.offsetTop + el.offsetHeight / 2;
     setAnchor({ x, y });
-  }, [shown, isPhone, visible, box]);
+  }, [shown, inFlow, visible, box]);
 
   if (!shown) return null;
 
@@ -211,10 +227,10 @@ export default function FeaturedDream({
      still travels to the light. Less is more. */
   const showTether = false;
 
-  // Desktop box style from the computed placement; phone keeps its bottom-
-  // anchored slot above the caption. Both carry the scrim.
-  const positionStyle: React.CSSProperties = isPhone
-    ? { left: '1.25rem', right: '1.25rem', bottom: '13rem' }
+  // In flow the parent band owns placement, the rail and the floor, so the
+  // block contributes nothing but its own height.
+  const positionStyle: React.CSSProperties = inFlow
+    ? { position: 'static', width: '100%' }
     : box
       ? { left: box.left, width: box.width, bottom: '11%' }
       : // Pre-measure fallback: hug the right margin, narrow, so the very first
@@ -249,8 +265,8 @@ export default function FeaturedDream({
         onClick={() => onSelect(shown.key)}
         aria-label="Read this dream on its piece"
         className={
-          isPhone
-            ? 'pointer-events-auto absolute z-10 text-left'
+          inFlow
+            ? 'pointer-events-auto block w-full text-left'
             : 'pointer-events-auto absolute z-10 text-right'
         }
         style={{
@@ -259,24 +275,35 @@ export default function FeaturedDream({
           transition: reduced ? 'none' : 'opacity 420ms ease',
           background: 'transparent',
           border: 'none',
-          // Generous padding so the scrim reaches well beyond the glyphs and
-          // falls off as calm night, never as a panel edge.
-          padding: isPhone ? '1.1rem 1.25rem' : '1.4rem 1.6rem',
+          // In flow the band supplies the rail inset; free-floating, the padding
+          // is what lets the scrim reach past the glyphs and fall off as calm
+          // night rather than as a panel edge.
+          padding: inFlow ? 0 : '1.4rem 1.6rem',
           cursor: 'pointer',
         }}
       >
         {/* The scrim sits behind the text, extending past the padding and
-            fading to nothing — a deepening of the night, not a card. */}
-        <span
-          aria-hidden
-          style={{
-            position: 'absolute',
-            inset: isPhone ? '-1rem -0.75rem' : '-1.2rem -1rem',
-            background: SCRIM,
-            pointerEvents: 'none',
-            zIndex: 0,
-          }}
-        />
+            fading to nothing — a deepening of the night, not a card. In flow
+            the band's own gradient floor already does this job for the whole
+            lower third, and a second one stacked on top reads as a smudge. */}
+        {!inFlow && (
+          <span
+            aria-hidden
+            style={{
+              position: 'absolute',
+              // Wide enough that the gradient reaches full transparency well
+              // inside its own box. At the old inset the vertical stop still
+              // carried alpha at the box edge, so the "soft deepening of the
+              // night, no card edge" rendered on desktop as a visible rectangle
+              // with hard top and bottom borders: precisely the panel it is
+              // documented not to be.
+              inset: '-3.25rem -2.75rem',
+              background: SCRIM,
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          />
+        )}
         <p
           ref={textRef}
           style={{
@@ -292,7 +319,12 @@ export default function FeaturedDream({
             letterSpacing: '0.01em',
             color: 'rgba(236, 226, 207, 0.96)',
             margin: 0,
-            textShadow: '0 1px 16px rgba(8,6,4,0.85)',
+            // Only when free-floating over the earth. In flow the band's
+            // gradient already gives the text calm ground, and the per-glyph
+            // haloes then overlap into a faint rectangle the size of the text
+            // block: an accidental card edge, the exact thing the scrim is
+            // written to avoid.
+            textShadow: inFlow ? 'none' : '0 1px 16px rgba(8,6,4,0.85)',
             // Never more than ~10 lines in the featured slot: the opening
             // excerpt is short, but on tight desktop widths this floor keeps
             // the block calm and lets tap-through carry the rest.
@@ -311,10 +343,20 @@ export default function FeaturedDream({
             zIndex: 1,
             fontSize: isPhone ? 10 : 11,
             letterSpacing: '0.16em',
-            color: 'rgba(200,176,132,0.78)',
+            // Full alpha, dimmer hue. Quiet has to come from the colour itself:
+            // the block already sits under the page's idle fade, and a second
+            // alpha on top of that is what took this line under 3:1.
+            color: '#b9a179',
           }}
         >
-          {shown.standing}
+          {/* Break only at the separators. Right-aligned in the desktop margin
+              this line wrapped mid-phrase ("THE 1ST / LIGHT"), splitting the
+              one human fact on it across two rows. Hard spaces inside each
+              segment let it wrap between facts and never inside one. */}
+          {shown.standing
+            .split(' · ')
+            .map((seg) => seg.replace(/ /g, '\u00A0'))
+            .join(' · ')}
         </p>
       </button>
     </>

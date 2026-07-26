@@ -196,42 +196,56 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   }`;
 
   // ─── Shared shell ──────────────────────────────────────────────────────────
-  const shell = (children: React.ReactNode) => (
-    <div
-      className="relative [color-scheme:dark]"
-      style={{
-        // The vessel's warm brown-black surface. Kept slightly translucent with
-        // a blur so it seats over the live globe without the bright world
-        // washing the serif text out.
-        background:
-          'linear-gradient(176deg, rgba(26,22,19,0.97) 0%, rgba(20,17,16,0.98) 100%)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: `1px solid ${isOrigin ? 'rgba(156,170,135,0.2)' : 'rgba(196,170,124,0.2)'}`,
-        boxShadow: '0 40px 90px -40px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,0,0,0.3)',
-      }}
-    >
-      {/* Corner brackets: the atlas motif. */}
-      {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
-        <span
-          key={c}
-          aria-hidden
-          className="pointer-events-none absolute h-3.5 w-3.5"
-          style={{
-            top: c[0] === 't' ? 8 : undefined,
-            bottom: c[0] === 'b' ? 8 : undefined,
-            left: c[1] === 'l' ? 8 : undefined,
-            right: c[1] === 'r' ? 8 : undefined,
-            borderTop: c[0] === 't' ? `1px solid ${accent}8c` : undefined,
-            borderBottom: c[0] === 'b' ? `1px solid ${accent}8c` : undefined,
-            borderLeft: c[1] === 'l' ? `1px solid ${accent}8c` : undefined,
-            borderRight: c[1] === 'r' ? `1px solid ${accent}8c` : undefined,
-          }}
-        />
-      ))}
-      {children}
-    </div>
-  );
+  /* Two surfaces, because the card lives in two different places.
+
+     Floating (desktop): a vessel seated over the live globe. It needs an edge,
+     a shadow and a blur so the turning world does not wash the serif out.
+
+     In the phone sheet: there is no globe behind it any more, the sheet fills
+     the screen. A border and a drop shadow there do not read as a vessel, they
+     read as a panel stranded in a black field with a hard line cutting the top
+     of the artwork; the blur has nothing to blur. So the card goes edge to
+     edge, transparent, and lets the sheet's own night be the surface. The
+     bracket motif stays with the floating card and with the certificate. */
+  const shell = (children: React.ReactNode) =>
+    inSheet ? (
+      <div className="relative [color-scheme:dark]">{children}</div>
+    ) : (
+      <div
+        className="relative [color-scheme:dark]"
+        style={{
+          // The vessel's warm brown-black surface. Kept slightly translucent
+          // with a blur so it seats over the live globe without the bright
+          // world washing the serif text out.
+          background:
+            'linear-gradient(176deg, rgba(26,22,19,0.97) 0%, rgba(20,17,16,0.98) 100%)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: `1px solid ${isOrigin ? 'rgba(156,170,135,0.2)' : 'rgba(196,170,124,0.2)'}`,
+          boxShadow: '0 40px 90px -40px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,0,0,0.3)',
+        }}
+      >
+        {/* Corner brackets: the atlas motif. */}
+        {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
+          <span
+            key={c}
+            aria-hidden
+            className="pointer-events-none absolute h-3.5 w-3.5"
+            style={{
+              top: c[0] === 't' ? 8 : undefined,
+              bottom: c[0] === 'b' ? 8 : undefined,
+              left: c[1] === 'l' ? 8 : undefined,
+              right: c[1] === 'r' ? 8 : undefined,
+              borderTop: c[0] === 't' ? `1px solid ${accent}8c` : undefined,
+              borderBottom: c[0] === 'b' ? `1px solid ${accent}8c` : undefined,
+              borderLeft: c[1] === 'l' ? `1px solid ${accent}8c` : undefined,
+              borderRight: c[1] === 'r' ? `1px solid ${accent}8c` : undefined,
+            }}
+          />
+        ))}
+        {children}
+      </div>
+    );
 
   // ─── Origin card: kept as its own identity layout ──────────────────────────
   if (isOrigin) {
@@ -316,7 +330,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   // The plate, the dream in full, one quiet standing line, and exactly one door:
   // open the book. The card scrolls itself (scrollbar hidden) for a long dream.
   // No card return: on desktop the control cluster carries `return`, on the
-  // phone the sheet's own drag-to-dismiss does. The kin, the read-code row and
+  // phone the sheet's own close button does. The kin, the read-code row and
   // the also-resting list all live on the certificate the book door opens.
   return shell(
     <div className={scrollCap}>
@@ -333,36 +347,62 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         </button>
       )}
 
-      {/* Full-bleed artwork plate. Shorter on phones so the dream keeps the
-          room; full height from sm up. It opens the same book door — the piece
-          page — where the artwork is shown uncropped on its certificate plate. */}
-      <Link
-        to={bookHref}
-        aria-label="See the full artwork"
-        className={`group relative block h-[124px] sm:h-[172px] overflow-hidden ${onBack ? 'mt-3' : ''}`}
-        style={{
+      {/* The whole artwork (Adrian, 2026-07-26: "open with the whole art piece
+          on it instead of the small piece").
+
+          It used to be cropped twice over: Cloudinary was asked for
+          `c_fill,g_auto`, which cut the piece down to a square, and then CSS
+          `object-cover` cut that square into a 124px letterbox band — so a
+          reader met roughly a third of the work, sliced through the middle, and
+          had to leave the card to see what they had actually opened. `c_fit`
+          keeps the whole frame, `object-contain` shows all of it, and the plate
+          now takes its natural share of the screen and lets the dream scroll
+          beneath. The gradient wash over its lower edge is gone with it: that
+          existed to blend a cropped band into the card, and dimming the corner
+          of a piece of art to make a seam disappear is not a trade worth
+          making.
+
+          In the phone sheet the plate is NOT a link. Tapping anywhere on that
+          surface closes the card (Adrian, 2026-07-26), and the artwork is the
+          largest thing on it, so it has to answer to that gesture like
+          everything else. Wrapped in a link it would silently do the opposite of
+          the text right beside it. The book keeps its one named door in the
+          footer. On the floating desktop card, where no such gesture exists, the
+          plate stays a link. */}
+      {(() => {
+        const frame = `group relative block overflow-hidden ${onBack ? 'mt-3' : ''}`;
+        const edges = {
           borderTop: '1px solid rgba(196,170,124,0.2)',
           borderBottom: '1px solid rgba(196,170,124,0.2)',
           backgroundColor: '#0d0b09',
-        }}
-      >
-        <ArtworkPlate
-          src={piece.coverImage ? img(piece.coverImage, { w: 760 }) : null}
-          alt=""
-          title={title}
-          aspect="cover"
-          imgClassName="transition-transform duration-500 group-hover:scale-[1.03]"
-          imgStyle={{ objectPosition: '50% 50%', filter: 'saturate(0.92) brightness(0.94)' }}
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(180deg, rgba(20,17,16,0) 62%, rgba(20,17,16,0.55) 100%)',
-          }}
-        />
-      </Link>
+        };
+        const plate = (
+          <ArtworkPlate
+            src={piece.coverImage ? img(piece.coverImage, { w: 900, crop: 'fit' }) : null}
+            alt=""
+            title={title}
+            // Capped so the plate never crowds the dream off a short screen: it
+            // shrinks whole rather than cropping.
+            imgClassName={`mx-auto object-contain transition-transform duration-500 group-hover:scale-[1.02] ${
+              // Only the sheet needs a ceiling: it shares one screen with the
+              // dream. The floating card is already inside its own scroll cap,
+              // so capping it there would letterbox the piece between two dark
+              // bars for no gain.
+              inSheet ? 'max-h-[46svh]' : ''
+            }`}
+            imgStyle={{ filter: 'saturate(0.92) brightness(0.94)' }}
+          />
+        );
+        return inSheet ? (
+          <div className={frame} style={edges}>
+            {plate}
+          </div>
+        ) : (
+          <Link to={bookHref} aria-label="See the full artwork" className={frame} style={edges}>
+            {plate}
+          </Link>
+        );
+      })()}
 
       {/* The dream, in full, at one calm consistent size. A short dream sits
           small and dignified here; a long one scrolls with the card. */}
@@ -393,19 +433,23 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
       {/* The one standing line: code, where it is alive, its founding light,
           and the resting count when it matters. Quiet, grouped metadata. */}
       <div className="px-[26px]">
+        {/* Place first, catalogue last — matched to the featured dream's
+            sub-line. Leading with the code put an unexplained initialism in
+            front of the one human fact on the line ("alive in London"), which
+            is the fact a reader is actually here for. */}
         <p className="font-reading text-[16px] leading-[1.5]" style={{ color: MUTED }}>
+          {standingRest}
           {code && (
             <>
+              <span style={{ color: BRONZE, margin: '0 8px' }}>·</span>
               <CodeText
                 text={code}
                 base={PARCHMENT}
                 hi={BRONZE}
                 className="font-label text-[12px] uppercase tracking-[0.18em] font-medium"
               />
-              <span style={{ color: BRONZE, margin: '0 8px' }}>·</span>
             </>
           )}
-          {standingRest}
         </p>
         {carriesYourCode && (
           <p className="mt-1.5 font-reading text-[15px] leading-snug" style={{ color: SAGE }}>

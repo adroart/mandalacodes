@@ -37,7 +37,11 @@ export interface SelectionInscriptionProps {
     to nothing before any hard boundary — a deepening, not a panel (law 2). */
 function scrim(awayLeft: boolean): string {
   const at = awayLeft ? '38% 50%' : '62% 50%';
-  return `radial-gradient(120% 140% at ${at}, rgba(7,5,3,0.68) 0%, rgba(7,5,3,0.52) 40%, rgba(7,5,3,0.28) 64%, rgba(7,5,3,0) 82%)`;
+  // Reaches full transparency well inside its own box. At the old radii the
+  // gradient still had alpha at the boundary, so the "soft deepening of the
+  // night" drew a visible rectangle with hard edges (same fault, same fix, as
+  // FeaturedDream's SCRIM).
+  return `radial-gradient(98% 108% at ${at}, rgba(7,5,3,0.74) 0%, rgba(7,5,3,0.58) 34%, rgba(7,5,3,0.26) 58%, rgba(7,5,3,0.08) 74%, rgba(7,5,3,0) 88%)`;
 }
 
 /* Dreams are long (Adrian, 2026-07-18). The inscription fits up to ~700
@@ -93,7 +97,7 @@ export default function SelectionInscription({
         aria-hidden
         style={{
           position: 'absolute',
-          inset: '-1.4rem -1.2rem',
+          inset: '-3.4rem -2.9rem',
           background: scrim(awayLeft),
           pointerEvents: 'none',
           zIndex: 0,
