@@ -228,11 +228,20 @@ test('matches the system rail typography to the primary navigation', async ({ pa
   expect(mobileRail.scrollWidth).toBeGreaterThan(mobileRail.clientWidth);
 });
 
-test('uses tonal chapter shifts and inset I Ching editorial panels', async ({ page }) => {
+test('iOS Oracle surface uses exact warm-dark chapter colors and inset I Ching editorial panels', async ({ page }) => {
   await openReading(page);
   const chapters = page.locator('section[data-chapter]');
-  const backgrounds = await chapters.evaluateAll((elements) => elements.map((element) => getComputedStyle(element).backgroundColor));
-  expect(new Set(backgrounds).size).toBeGreaterThanOrEqual(3);
+  const backgrounds = await chapters.evaluateAll((elements) => Object.fromEntries(
+    elements.map((element) => [element.getAttribute('data-chapter'), getComputedStyle(element).backgroundColor]),
+  ));
+  expect(backgrounds).toEqual({
+    ul: 'rgb(20, 16, 11)',
+    iching: 'rgb(17, 14, 10)',
+    genekeys: 'rgb(23, 18, 12)',
+    humandesign: 'rgb(18, 15, 11)',
+    body: 'rgb(24, 19, 13)',
+    relations: 'rgb(16, 13, 9)',
+  });
 
   const panel = page.locator('section[data-chapter="iching"] .ul-ji > div').first();
   await panel.scrollIntoViewIfNeeded();
@@ -253,6 +262,21 @@ test('uses tonal chapter shifts and inset I Ching editorial panels', async ({ pa
   expect(geometry.paddingLeft).toBeGreaterThanOrEqual(24);
   expect(geometry.paddingRight).toBeGreaterThanOrEqual(24);
   expect(geometry.borderLeft).toBe(1);
+});
+
+test('iOS Oracle surface keeps a restrained grain after entry', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${BASE}${CARD}?ref=qr`);
+  const ritual = page.getByRole('dialog', { name: 'Card entrance. Tap to begin.' });
+  await expect(ritual).toBeVisible();
+  await ritual.click();
+  await expect(page.locator('[data-oracle-choreography="reading"]')).toBeAttached({ timeout: 2_500 });
+
+  const grain = page.locator('[data-oracle-grain]');
+  await expect(grain).toHaveCount(1);
+  await expect(grain).toBeVisible();
+  expect(await grain.evaluate((element) => Number.parseFloat(getComputedStyle(element).opacity))).toBeLessThanOrEqual(0.08);
+  await expect(page.locator('[data-reader] > svg')).toBeHidden();
 });
 
 test('keeps the reading action bar fixed at the bottom', async ({ page }) => {
