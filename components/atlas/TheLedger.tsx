@@ -95,10 +95,10 @@ function placeholdersFor(kind: string): LedgerRow[] {
 const anchorId = (id: string) => `ledger-${id}`;
 
 /* The sticky controls need the stage behind them. The atlas is always the dark
-   stage (AtlasPage's root is `dark ... bg-atlas-night`), so there is one
-   colour to match, not two. */
-const STICKY_SURFACE =
-  'bg-atlas-night/95 supports-[backdrop-filter]:backdrop-blur-sm';
+   stage (AtlasPage's root is `dark ... bg-atlas-night`), so there is one colour
+   to match, not two. Fully opaque: at 95% the dream text passing underneath
+   still ghosted through the controls, which is worse than a hard edge. */
+const STICKY_SURFACE = 'bg-atlas-night';
 
 const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -379,7 +379,7 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
       {/* ── The controls: one line, one rule, no box ─────────────────────── */}
       <div
         ref={barRef}
-        className={`sticky top-[var(--nav-height,64px)] z-20 -mx-6 px-6 pt-4 mt-4 mb-10 `}
+        className={`sticky top-[var(--nav-height,64px)] z-20 -mx-6 px-6 pt-4 mt-4 mb-10 ${STICKY_SURFACE}`}
       >
         <LedgerControlRow>
           <LedgerSearchField
