@@ -7,6 +7,7 @@ import { FULL_ARCHIVE } from '../data/mockData';
 import { pieceCode } from '../utils/pieceCode';
 import type { SaleQueueItem } from '../utils/saleBridge';
 import type { HomecomingRequest } from '../lib/atlas/homecoming';
+import type { MakeRequest } from '../lib/atlas/make';
 import {
     CATALOG_KINDS,
     CATALOG_KIND_LABELS,
@@ -1971,6 +1972,167 @@ const StewardRoster: React.FC<{
 // ───────────────────────────────────────────────────────────────────────────
 // Catalog (the Catalog Room — every work Adrian has ever made, one form)
 // ───────────────────────────────────────────────────────────────────────────
+// Make Requests — "Begin your piece" notes from /make
+// ───────────────────────────────────────────────────────────────────────────
+
+const MakeRequestsSection: React.FC = () => {
+    const [requests, setRequests] = useState<MakeRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [busyId, setBusyId] = useState<string | null>(null);
+    const adminFetch = useAdminFetch();
+
+    const load = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await adminFetch('/api/atlas/make');
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                setRequests(data.requests || []);
+            } else {
+                setError(data?.error || 'Could not load make requests.');
+            }
+        } catch {
+            setError('Could not load make requests.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const resolve = async (requestId: string, action: 'answered' | 'dismissed') => {
+        setBusyId(requestId);
+        setError(null);
+        try {
+            const res = await adminFetch('/api/atlas/make/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestId, action }),
+            });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            const data = await res.json();
+            if (data?.ok) {
+                await load();
+            } else {
+                setError(data?.error || 'Could not resolve the request.');
+            }
+        } catch {
+            setError('Network error. Check your connection.');
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const pending = requests.filter((r) => r.status === 'pending');
+    const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
+
+    return (
+        <div className="bg-white border border-wood-200 p-8 mb-10">
+            <h2 className={sectionTitle}>Make Requests</h2>
+            <p className={sectionLead}>
+                Notes from the /make door: someone wants a piece made (code,
+                size, palette). Reply by email, then mark the note answered.
+                Nothing here touches the ledger.
+            </p>
+
+            {error && (
+                <p className="font-reading text-sm text-stone-600 mb-4">{error}</p>
+            )}
+            {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
+            {!loading && !error && pending.length === 0 && (
+                <p className="font-reading text-sm text-wood-400">No pending notes.</p>
+            )}
+
+            {!loading &&
+                pending.map((r) => (
+                    <div key={r.id} className="border border-wood-200 p-5 mb-4">
+                        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+                            <span className="font-reading text-base text-wood-900">
+                                {r.requesterEmail}
+                            </span>
+                            {typeof r.code === 'number' && (
+                                <span className="font-label text-[10px] uppercase tracking-[0.15em] font-semibold text-bronze-700">
+                                    Code {r.code}
+                                </span>
+                            )}
+                            {r.pieceId && (
+                                <span className="font-reading text-sm text-wood-700">
+                                    from {resolvePieceTitle(r.pieceId, undefined)}
+                                </span>
+                            )}
+                        </div>
+                        <p className="font-reading text-sm text-wood-500 mb-2">
+                            {formatRelative(r.createdAt)}
+                        </p>
+                        <p className="font-reading text-sm text-wood-800 mb-1">
+                            Size: {r.size}
+                        </p>
+                        {r.palette && (
+                            <p className="font-reading text-sm text-wood-800 mb-1">
+                                Palette: {r.palette}
+                            </p>
+                        )}
+                        {r.note && (
+                            <p className="font-reading text-sm text-wood-700 mt-2 mb-3">
+                                “{r.note}”
+                            </p>
+                        )}
+                        <div className="flex gap-3 mt-4">
+                            <a
+                                href={`mailto:${r.requesterEmail}?subject=${encodeURIComponent('Your piece, from the studio')}`}
+                                className="flex-1 text-center bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors"
+                            >
+                                Reply by email
+                            </a>
+                            <button
+                                onClick={() => resolve(r.id, 'answered')}
+                                disabled={busyId === r.id}
+                                className="flex-1 border border-wood-300 text-wood-800 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:border-bronze-500 transition-colors disabled:opacity-40"
+                            >
+                                {busyId === r.id ? 'Working...' : 'Mark answered'}
+                            </button>
+                            <button
+                                onClick={() => resolve(r.id, 'dismissed')}
+                                disabled={busyId === r.id}
+                                className="flex-1 border border-wood-300 text-stone-600 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:border-stone-400 transition-colors disabled:opacity-40"
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                ))}
+
+            {recent.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-wood-200">
+                    <p className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 mb-2">
+                        Recently resolved
+                    </p>
+                    {recent.map((r) => (
+                        <p key={r.id} className="font-reading text-sm text-wood-600">
+                            {r.requesterEmail} · {r.size}
+                            {typeof r.code === 'number' ? ` · Code ${r.code}` : ''} ·{' '}
+                            {r.status}
+                        </p>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ───────────────────────────────────────────────────────────────────────────
 
 /** The admin entry carries its rendered sigil from the server. */
 interface CatalogAdminEntry extends CatalogEntry {
@@ -2757,6 +2919,7 @@ const AdminAtlas: React.FC = () => {
                     <TendingSection />
                     <ClaimRequestsSection />
                     <HomecomingSection />
+                    <MakeRequestsSection />
                     <IssueStewardKeySection onIssued={loadStewards} />
                     <StewardRoster
                         stewards={stewards}

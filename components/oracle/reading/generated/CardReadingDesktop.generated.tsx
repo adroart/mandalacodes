@@ -110,7 +110,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             The Piece
             </span>
             <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "15px", color: "#80735f", marginTop: "2px" } as unknown as React.CSSProperties}>
-            The one-of-one physical work
+            The physical work, made by hand
             </span>
           </span>
           <span style={{ color: "#a8874d", fontSize: "15px" } as unknown as React.CSSProperties}>
