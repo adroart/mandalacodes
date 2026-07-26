@@ -77,6 +77,13 @@ test('does not arm reading reveals behind the ritual entrance', async ({ page })
   expect(await page.locator('[data-oracle-reveal]').count()).toBeGreaterThan(0);
 });
 
+test('returns direct QR focus to the reading after the entrance closes', async ({ page }) => {
+  await page.goto(`${CARD}?ref=qr`);
+  await entrance(page).click();
+  await expect(page.locator('[data-oracle-choreography="reading"]')).toBeAttached({ timeout: 2_500 });
+  expect(await page.evaluate(() => !!(document.activeElement as HTMLElement | null)?.closest('[data-oracle-reader]'))).toBe(true);
+});
+
 test('reduced motion moves directly from the ritual into the reading', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(`${CARD}?ref=qr`);
