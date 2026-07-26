@@ -25,6 +25,35 @@ test('a QR arrival plays once and is consumed before reload', async ({ page }) =
   await expect(entrance(page)).toHaveCount(0);
 });
 
+test('iOS Oracle surface portals the QR entrance above the mobile reader at 390x844', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${CARD}?ref=qr`);
+
+  const ritual = entrance(page);
+  await expect(ritual).toBeVisible();
+  expect(await ritual.evaluate((element) => element.parentElement === document.body)).toBe(true);
+  expect(await ritual.evaluate((element) => !element.closest('[data-scroll], [data-oracle-reader]'))).toBe(true);
+});
+
+test('iOS Oracle surface hides mobile shell chrome until the entrance becomes a reading', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${CARD}?ref=qr`);
+
+  const ritual = entrance(page);
+  const mobileChrome = [
+    page.locator('.site-bar-root'),
+    page.locator('.ul-topbar'),
+    page.locator('[data-jumpbar]'),
+    page.locator('[data-reader] > footer'),
+  ];
+  await expect(ritual).toBeVisible();
+  for (const chrome of mobileChrome) await expect(chrome).toBeHidden();
+
+  await ritual.click();
+  await expect(page.locator('[data-oracle-choreography="reading"]')).toBeAttached({ timeout: 2_500 });
+  for (const chrome of mobileChrome) await expect(chrome).toBeVisible();
+});
+
 test('the ritual entrance exits before the hero and reading take over', async ({ page }) => {
   await page.goto(`${CARD}?ref=qr`);
   const ritual = entrance(page);
