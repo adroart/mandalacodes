@@ -29,9 +29,31 @@ export function OracleEntrancePortal({
   registerVeil,
 }: OracleEntrancePortalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (active) dialogRef.current?.focus();
+    if (!active) return;
+
+    const current = document.activeElement;
+    if (current instanceof HTMLElement && current !== dialogRef.current) {
+      returnFocusRef.current = current;
+    }
+    dialogRef.current?.focus({ preventScroll: true });
+
+    return () => {
+      const previous = returnFocusRef.current;
+      if (previous?.isConnected) {
+        previous.focus({ preventScroll: true });
+        return;
+      }
+
+      const landmark = document.querySelector<HTMLElement>('[data-oracle-reader] [data-oracle-flow], [data-oracle-reader]');
+      if (!landmark) return;
+      const hadTabIndex = landmark.hasAttribute('tabindex');
+      if (!hadTabIndex) landmark.setAttribute('tabindex', '-1');
+      landmark.focus({ preventScroll: true });
+      if (!hadTabIndex) landmark.removeAttribute('tabindex');
+    };
   }, [active]);
 
   if (typeof document === 'undefined') return null;
