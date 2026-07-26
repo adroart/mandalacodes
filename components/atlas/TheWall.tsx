@@ -447,21 +447,24 @@ const WallTile: React.FC<{
                 away={face === 'dreams'}
               />
             </div>
-            {/* The square piece. */}
+            {/* The piece, whole and uncropped: the square work sits on a
+                square stage sized to the middle, centered between the bars, so
+                the original is never cut. */}
             <button
               type="button"
               onClick={open}
               tabIndex={face === 'dreams' ? -1 : 0}
               aria-label={`Open the record of ${card.title}`}
-              className="relative flex-1 min-h-0 w-full overflow-hidden focus:outline-2 focus:outline-bronze-400 focus:outline-offset-[-2px] group"
+              className="relative flex-1 min-h-0 w-full flex items-center justify-center focus:outline-2 focus:outline-bronze-400 focus:outline-offset-[-2px]"
             >
-              <ArtworkPlate
-                src={card.coverImage}
-                alt={card.title}
-                title={card.title}
-                aspect="cover"
-                imgClassName="transition-transform duration-[1600ms] ease-out group-hover:scale-[1.05]"
-              />
+              <span className="relative block h-full aspect-square max-w-full">
+                <ArtworkPlate
+                  src={card.coverImage}
+                  alt={card.title}
+                  title={card.title}
+                  aspect="cover"
+                />
+              </span>
             </button>
             {/* Lower bar. */}
             <div className="relative border-t border-white/10 px-3 py-2 text-center">
@@ -641,7 +644,10 @@ const WallRecord: React.FC<{
             face === 'art' ? '[transform:rotateY(180deg)]' : ''
           }`}
         >
-          {/* Dream page */}
+          {/* Dream page — three zones like the tile, at scale: an upper bar
+              carrying the title and the flip control, the dream in the middle,
+              and a lower bar with the walking arrows and the record's links.
+              Title and links live on separate rows, so nothing overlaps. */}
           <div
             aria-hidden={face === 'art'}
             className={`absolute inset-0 [backface-visibility:hidden] flex flex-col overflow-hidden border border-bronze-500/30 bg-wood-50 shadow-[0_24px_80px_rgba(21,19,17,0.45)] ${
@@ -650,7 +656,25 @@ const WallRecord: React.FC<{
           >
             <KindMark card={card} width={280} />
             <Grain />
-            <div className="absolute inset-0 overflow-y-auto px-5 sm:px-9 pt-6 sm:pt-9 pb-[70px]">
+            {/* Upper bar: title + anchor, and the flip control tight right. */}
+            <div className="relative z-10 flex items-start justify-between gap-4 px-5 sm:px-9 pt-5 pb-2">
+              <span className="min-w-0">
+                <span className="block font-display text-[18px] text-wood-900 truncate">
+                  {card.title}
+                </span>
+                <span className="block font-label text-[10px] uppercase tracking-[0.18em] text-bronze-600">
+                  {ledgerStatusLine(card)}
+                </span>
+              </span>
+              <FlipButton
+                label="show art"
+                onTurn={() => setFace('art')}
+                far={false}
+                away={face === 'art'}
+              />
+            </div>
+            {/* Middle: the dream. */}
+            <div className="relative flex-1 min-h-0 overflow-y-auto px-5 sm:px-9 pt-2 pb-4">
               {card.dream ? (
                 <>
                   <p className="font-display text-[20px] sm:text-[23px] leading-[1.75] text-wood-900 whitespace-pre-line">
@@ -669,24 +693,10 @@ const WallRecord: React.FC<{
                 </div>
               )}
             </div>
-            <div className="absolute inset-x-0 bottom-0 h-[60px] border-t border-wood-200 bg-wood-50/95 px-2.5 sm:px-4 flex items-center gap-x-3 sm:gap-x-5 overflow-x-auto whitespace-nowrap">
+            {/* Lower bar: walk left and right; the links rest in the middle. */}
+            <div className="relative shrink-0 h-[52px] border-t border-wood-200 bg-wood-50/95 px-3 sm:px-5 flex items-center">
               <StepArrow dir={-1} enabled={hasPrev} onStep={onStep} tone="paper" />
-              <span className="flex items-baseline gap-x-3 sm:gap-x-4 min-w-0">
-                <span className="font-display text-[16px] text-wood-800 shrink-0">
-                  {card.title}
-                </span>
-                <span className="font-label text-[10px] uppercase tracking-[0.18em] text-bronze-600">
-                  {ledgerStatusLine(card)}
-                </span>
-              </span>
-              <span className="ml-auto flex items-center gap-x-4 sm:gap-x-6">
-                <button
-                  type="button"
-                  onClick={() => setFace('art')}
-                  className={linkClass}
-                >
-                  see the piece
-                </button>
+              <span className="mx-auto flex items-center gap-x-6 sm:gap-x-8">
                 {card.onGlobe && (
                   <button
                     type="button"
@@ -710,46 +720,50 @@ const WallRecord: React.FC<{
             </div>
           </div>
 
-          {/* Art page */}
+          {/* Art page — the square work whole and uncropped between the bars. */}
           <div
             aria-hidden={face === 'dreams'}
             className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden border border-bronze-500/40 bg-[#151311] shadow-[0_24px_80px_rgba(21,19,17,0.45)] ${
               face === 'dreams' ? 'pointer-events-none' : ''
             }`}
           >
-            {/* The piece, whole: a square stage for a square work, contain-fit
-                so nothing is ever cut away. */}
-            <div className="absolute inset-0">
-              <ArtworkPlate
-                src={card.coverImageLarge ?? card.coverImage}
-                alt={card.title}
-                title={card.title}
-                aspect="cover"
-                imgStyle={{ objectFit: 'contain' }}
-                loading="eager"
-              />
-            </div>
-            <Grain />
-            <div className="absolute inset-x-0 bottom-0 h-[60px] px-2.5 sm:px-4 flex items-center gap-x-3 sm:gap-x-5 overflow-x-auto whitespace-nowrap bg-gradient-to-t from-black/85 via-black/60 to-transparent">
-              <StepArrow dir={-1} enabled={hasPrev} onStep={onStep} tone="stage" />
-              <span className="flex items-baseline gap-x-3 sm:gap-x-4 min-w-0">
-                <span className="font-display text-[16px] text-[#f0e8d8] shrink-0">
+            {/* Upper bar: title + details, and the flip control tight right. */}
+            <div className="relative z-10 flex items-start justify-between gap-4 px-5 sm:px-9 pt-5 pb-2">
+              <span className="min-w-0">
+                <span className="block font-display text-[18px] text-[#f0e8d8] truncate">
                   {card.title}
                 </span>
                 {details && (
-                  <span className="font-label text-[10px] uppercase tracking-[0.18em] text-[#c8b084] truncate">
+                  <span className="block font-label text-[10px] uppercase tracking-[0.18em] text-[#c8b084] truncate">
                     {details}
                   </span>
                 )}
               </span>
-              <span className="ml-auto flex items-center gap-x-4 sm:gap-x-6">
-                <button
-                  type="button"
-                  onClick={() => setFace('dreams')}
-                  className={linkClassDark}
-                >
-                  read the dream
-                </button>
+              <FlipButton
+                label="show dream"
+                onTurn={() => setFace('dreams')}
+                far={false}
+                dark
+                away={face === 'dreams'}
+              />
+            </div>
+            {/* Middle: the square piece, contained and centered, never cut. */}
+            <div className="relative flex-1 min-h-0 flex items-center justify-center px-4 pb-1">
+              <span className="relative block h-full aspect-square max-w-full">
+                <ArtworkPlate
+                  src={card.coverImageLarge ?? card.coverImage}
+                  alt={card.title}
+                  title={card.title}
+                  aspect="cover"
+                  imgStyle={{ objectFit: 'contain' }}
+                  loading="eager"
+                />
+              </span>
+            </div>
+            {/* Lower bar. */}
+            <div className="relative shrink-0 h-[52px] border-t border-white/10 px-3 sm:px-5 flex items-center">
+              <StepArrow dir={-1} enabled={hasPrev} onStep={onStep} tone="stage" />
+              <span className="mx-auto flex items-center gap-x-6 sm:gap-x-8">
                 <Link to={piecePathOf(card)} className={linkClassDark}>
                   its page
                 </Link>

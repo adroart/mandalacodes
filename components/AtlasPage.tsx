@@ -1237,8 +1237,13 @@ const AtlasPage: React.FC = () => {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        if (toLedger) next.set('view', 'ledger');
-        else {
+        if (toLedger) {
+          next.set('view', 'ledger');
+          // Opening the ledger starts from the whole record: kind and state
+          // reset to all, so the full written list is what greets you.
+          next.delete('lk');
+          next.delete('ls');
+        } else {
           next.delete('view');
           next.delete('code');
         }
