@@ -1183,6 +1183,9 @@ const AtlasPage: React.FC = () => {
         // writes it inline (Part II.6, ruling 2).
         intention: p.intention,
         signedBy: p.signedBy,
+        // Sort keys for the ledger's "most recently anchored" order.
+        placedAt: p.placedAt,
+        claimOrdinal: p.claimOrdinal,
       });
     }
     return out;
@@ -1219,6 +1222,8 @@ const AtlasPage: React.FC = () => {
           cityLabel: cityLabelFor(p.cityId),
           intention: p.intention,
           signedBy: p.signedBy,
+          placedAt: p.placedAt,
+          claimOrdinal: p.claimOrdinal,
         }),
       );
     }
@@ -1241,6 +1246,8 @@ const AtlasPage: React.FC = () => {
             : undefined,
         onGlobe:
           !!stated && (stated.status === 'placed' || stated.status === 'unawakened'),
+        placedAt: stated?.placedAt,
+        claimOrdinal: stated?.claimOrdinal,
       });
     }
 
@@ -1305,8 +1312,13 @@ const AtlasPage: React.FC = () => {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        if (toLedger) next.set('view', 'ledger');
-        else {
+        if (toLedger) {
+          next.set('view', 'ledger');
+          // Opening the ledger starts from the whole record: kind and state
+          // reset to all, so the full written list is what greets you.
+          next.delete('lk');
+          next.delete('ls');
+        } else {
           next.delete('view');
           next.delete('code');
         }

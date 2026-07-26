@@ -573,9 +573,15 @@ button, a, [role="button"], input, select, textarea, label {
 
 /* Reveal animations use translateX which can push content past the viewport
    on narrow screens. Clip horizontal overflow at the document root so reveal
-   start states never produce a scrollbar. */
+   start states never produce a scrollbar.
+
+   `clip`, not `hidden`: hidden makes the root a SCROLL CONTAINER, and every
+   position: sticky on the site then resolves against a box that never scrolls,
+   so nothing ever pins (see the oracle-card-page escape hatch below, which was
+   the first casualty, and the atlas ledger's controls, which were the second).
+   `clip` does the same visual clipping without the scrollport. */
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* The card reading (Earth's Breath) pins its top bar and the system sub-nav

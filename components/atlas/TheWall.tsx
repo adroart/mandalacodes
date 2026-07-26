@@ -11,6 +11,12 @@ import ArtworkPlate from './ArtworkPlate';
 import DreamSignature from './DreamSignature';
 import HexagramGlyph from '../oracle/HexagramGlyph';
 import {
+  LedgerControlRow,
+  LedgerSearchField,
+  LedgerSelect,
+  LedgerTally,
+} from './LedgerControls';
+import {
   ledgerKindLabel,
   ledgerStatusLine,
   matchesSearch,
@@ -115,32 +121,9 @@ function piecePathOf(c: WallCard): string {
   }`;
 }
 
-/* ─── Filter chips (paper grammar, same voice as the ledger's bar) ────────── */
-
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={`whitespace-nowrap font-label text-[12px] lowercase tracking-[0.04em] pb-0.5 border-b transition-colors ${
-        active
-          ? 'text-bronze-700 border-bronze-600'
-          : 'text-wood-500 border-transparent hover:text-bronze-700'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
+/* The wall's controls are the shared ones (LedgerControls.tsx). It keeps kind
+   as a real filter, unlike the ledger: a card field has no sections to jump
+   to, so narrowing is the only way to see one kind on its own. */
 
 /* ─── The hand instruments: tilt + sheen vars on one element ─────────────── */
 
@@ -267,12 +250,13 @@ const KindMark: React.FC<{ card: WallCard; width: number }> = ({ card, width }) 
     mark = <JewelryMark width={width} />;
   }
   if (!mark) return null;
-  /* Pressed INTO the paper, not floating above it: the sigil sits darker
-     than the surface, ink sunk in shadow rather than a lighter ghost. */
+  /* A faint warm watermark, the same on paper and on the night surface: a
+     breath of bronze, not the heavy dark bars that read as a loading
+     skeleton. Kept low so it never competes with the dream over it. */
   return (
     <span
       aria-hidden
-      className="pointer-events-none absolute inset-0 flex items-center justify-center text-[#0b0906] opacity-[0.45]"
+      className="pointer-events-none absolute inset-0 flex items-center justify-center text-bronze-400 opacity-[0.035]"
     >
       {mark}
     </span>
@@ -319,7 +303,7 @@ const WallTile: React.FC<{
         onPointerMove={tilt.onMove}
         onPointerLeave={tilt.onLeave}
         onClick={open}
-        className="group/card relative aspect-[4/5] cursor-pointer"
+        className="group/card relative aspect-[3/4] cursor-pointer"
         style={{
           perspective: '1400px',
           transform:
@@ -369,13 +353,14 @@ const WallTile: React.FC<{
                 away={face === 'art'}
               />
             </div>
-            {/* Middle: the dream, with the sigil embossed behind only here. */}
+            {/* Middle: the dream, centered so a short one never leaves a void
+                below it, with the sigil embossed faintly behind only here. */}
             <button
               type="button"
               onClick={open}
               tabIndex={face === 'art' ? -1 : 0}
               aria-label={`Open the record of ${card.title}`}
-              className="relative flex-1 min-h-0 w-full flex flex-col text-left px-3.5 sm:px-4 pb-1 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px] group"
+              className="relative flex-1 min-h-0 w-full flex flex-col justify-center text-left px-4 sm:px-5 pb-1 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px] group"
             >
               <KindMark card={card} width={far ? 56 : 88} />
               {card.dream ? (
@@ -447,24 +432,25 @@ const WallTile: React.FC<{
                 away={face === 'dreams'}
               />
             </div>
-            {/* The square piece. */}
+            {/* The piece fills the card edge to edge: a full-width square
+                plate, whole and uncropped. The 3:4 card leaves exactly a slim
+                upper and lower bar around it. */}
             <button
               type="button"
               onClick={open}
               tabIndex={face === 'dreams' ? -1 : 0}
               aria-label={`Open the record of ${card.title}`}
-              className="relative flex-1 min-h-0 w-full overflow-hidden focus:outline-2 focus:outline-bronze-400 focus:outline-offset-[-2px] group"
+              className="relative w-full aspect-square shrink-0 focus:outline-2 focus:outline-bronze-400 focus:outline-offset-[-2px]"
             >
               <ArtworkPlate
                 src={card.coverImage}
                 alt={card.title}
                 title={card.title}
                 aspect="cover"
-                imgClassName="transition-transform duration-[1600ms] ease-out group-hover:scale-[1.05]"
               />
             </button>
-            {/* Lower bar. */}
-            <div className="relative border-t border-white/10 px-3 py-2 text-center">
+            {/* Lower bar: fills the remaining band and centers its line. */}
+            <div className="relative flex-1 min-h-0 border-t border-white/10 px-3 flex flex-col justify-center text-center">
               <span
                 className={`block font-display text-[#f0e8d8] leading-snug truncate ${
                   far ? 'text-[13px]' : 'text-[15px]'
@@ -472,9 +458,9 @@ const WallTile: React.FC<{
               >
                 {card.title}
               </span>
-              {!far && detailLine(card) && (
+              {!far && (
                 <span className="block font-label text-[9px] uppercase tracking-[0.16em] text-[#c8b084] truncate">
-                  {detailLine(card)}
+                  {[card.year, card.dimensions].filter(Boolean).join(' · ')}
                 </span>
               )}
             </div>
@@ -629,11 +615,12 @@ const WallRecord: React.FC<{
     >
       {/* The record is a bigger card among the cards: it spans an NxN block
           of the same grid (dense flow packs the other dreams around it), so
-          the big dream never stands alone on its own row. Square, like its
-          siblings, with the caption riding the bottom edge. */}
+          the big dream never stands alone on its own row. It fills the whole
+          block, which is 3:4 like a scaled tile, so the enlarged view matches
+          the small ones exactly, art and bars in the same proportion. */}
       <div
         ref={panelRef}
-        className="relative w-full aspect-square will-change-transform"
+        className="relative w-full aspect-[3/4] will-change-transform"
         style={{ perspective: '2200px' }}
       >
         <div
@@ -641,7 +628,10 @@ const WallRecord: React.FC<{
             face === 'art' ? '[transform:rotateY(180deg)]' : ''
           }`}
         >
-          {/* Dream page */}
+          {/* Dream page — three zones like the tile, at scale: an upper bar
+              carrying the title and the flip control, the dream in the middle,
+              and a lower bar with the walking arrows and the record's links.
+              Title and links live on separate rows, so nothing overlaps. */}
           <div
             aria-hidden={face === 'art'}
             className={`absolute inset-0 [backface-visibility:hidden] flex flex-col overflow-hidden border border-bronze-500/30 bg-wood-50 shadow-[0_24px_80px_rgba(21,19,17,0.45)] ${
@@ -650,7 +640,25 @@ const WallRecord: React.FC<{
           >
             <KindMark card={card} width={280} />
             <Grain />
-            <div className="absolute inset-0 overflow-y-auto px-5 sm:px-9 pt-6 sm:pt-9 pb-[70px]">
+            {/* Upper bar: title + anchor, and the flip control tight right. */}
+            <div className="relative z-10 flex items-start justify-between gap-4 px-5 sm:px-9 pt-5 pb-2">
+              <span className="min-w-0">
+                <span className="block font-display text-[18px] text-wood-900 truncate">
+                  {card.title}
+                </span>
+                <span className="block font-label text-[10px] uppercase tracking-[0.18em] text-bronze-600">
+                  {ledgerStatusLine(card)}
+                </span>
+              </span>
+              <FlipButton
+                label="show art"
+                onTurn={() => setFace('art')}
+                far={false}
+                away={face === 'art'}
+              />
+            </div>
+            {/* Middle: the dream. */}
+            <div className="relative flex-1 min-h-0 overflow-y-auto px-5 sm:px-9 pt-2 pb-4">
               {card.dream ? (
                 <>
                   <p className="font-display text-[20px] sm:text-[23px] leading-[1.75] text-wood-900 whitespace-pre-line">
@@ -669,24 +677,10 @@ const WallRecord: React.FC<{
                 </div>
               )}
             </div>
-            <div className="absolute inset-x-0 bottom-0 h-[60px] border-t border-wood-200 bg-wood-50/95 px-2.5 sm:px-4 flex items-center gap-x-3 sm:gap-x-5 overflow-x-auto whitespace-nowrap">
+            {/* Lower bar: walk left and right; the links rest in the middle. */}
+            <div className="relative shrink-0 h-[52px] border-t border-wood-200 bg-wood-50/95 px-3 sm:px-5 flex items-center">
               <StepArrow dir={-1} enabled={hasPrev} onStep={onStep} tone="paper" />
-              <span className="flex items-baseline gap-x-3 sm:gap-x-4 min-w-0">
-                <span className="font-display text-[16px] text-wood-800 shrink-0">
-                  {card.title}
-                </span>
-                <span className="font-label text-[10px] uppercase tracking-[0.18em] text-bronze-600">
-                  {ledgerStatusLine(card)}
-                </span>
-              </span>
-              <span className="ml-auto flex items-center gap-x-4 sm:gap-x-6">
-                <button
-                  type="button"
-                  onClick={() => setFace('art')}
-                  className={linkClass}
-                >
-                  see the piece
-                </button>
+              <span className="mx-auto flex items-center gap-x-6 sm:gap-x-8">
                 {card.onGlobe && (
                   <button
                     type="button"
@@ -710,16 +704,36 @@ const WallRecord: React.FC<{
             </div>
           </div>
 
-          {/* Art page */}
+          {/* Art page — the square work whole and uncropped between the bars. */}
           <div
             aria-hidden={face === 'dreams'}
             className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden border border-bronze-500/40 bg-[#151311] shadow-[0_24px_80px_rgba(21,19,17,0.45)] ${
               face === 'dreams' ? 'pointer-events-none' : ''
             }`}
           >
-            {/* The piece, whole: a square stage for a square work, contain-fit
-                so nothing is ever cut away. */}
-            <div className="absolute inset-0">
+            {/* Upper bar: title + details, and the flip control tight right. */}
+            <div className="relative z-10 flex items-start justify-between gap-4 px-5 sm:px-9 pt-5 pb-2">
+              <span className="min-w-0">
+                <span className="block font-display text-[18px] text-[#f0e8d8] truncate">
+                  {card.title}
+                </span>
+                {details && (
+                  <span className="block font-label text-[10px] uppercase tracking-[0.18em] text-[#c8b084] truncate">
+                    {details}
+                  </span>
+                )}
+              </span>
+              <FlipButton
+                label="show dream"
+                onTurn={() => setFace('dreams')}
+                far={false}
+                dark
+                away={face === 'dreams'}
+              />
+            </div>
+            {/* Middle: the piece fills the whole space between the slim bars,
+                whole and uncropped, as large as it can be without a crop. */}
+            <div className="relative flex-1 min-h-0">
               <ArtworkPlate
                 src={card.coverImageLarge ?? card.coverImage}
                 alt={card.title}
@@ -729,27 +743,10 @@ const WallRecord: React.FC<{
                 loading="eager"
               />
             </div>
-            <Grain />
-            <div className="absolute inset-x-0 bottom-0 h-[60px] px-2.5 sm:px-4 flex items-center gap-x-3 sm:gap-x-5 overflow-x-auto whitespace-nowrap bg-gradient-to-t from-black/85 via-black/60 to-transparent">
+            {/* Lower bar (slim, fixed). */}
+            <div className="relative shrink-0 h-[52px] border-t border-white/10 px-3 sm:px-5 flex items-center">
               <StepArrow dir={-1} enabled={hasPrev} onStep={onStep} tone="stage" />
-              <span className="flex items-baseline gap-x-3 sm:gap-x-4 min-w-0">
-                <span className="font-display text-[16px] text-[#f0e8d8] shrink-0">
-                  {card.title}
-                </span>
-                {details && (
-                  <span className="font-label text-[10px] uppercase tracking-[0.18em] text-[#c8b084] truncate">
-                    {details}
-                  </span>
-                )}
-              </span>
-              <span className="ml-auto flex items-center gap-x-4 sm:gap-x-6">
-                <button
-                  type="button"
-                  onClick={() => setFace('dreams')}
-                  className={linkClassDark}
-                >
-                  read the dream
-                </button>
+              <span className="mx-auto flex items-center gap-x-6 sm:gap-x-8">
                 <Link to={piecePathOf(card)} className={linkClassDark}>
                   its page
                 </Link>
@@ -864,6 +861,9 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
   const [search, setSearchState] = useState<string>(
     () => searchParams.get('lq') ?? '',
   );
+  /** What the field holds; `search` follows a beat later so a long wall is not
+   *  refiltered on every keystroke. */
+  const [typed, setTyped] = useState<string>(() => searchParams.get('lq') ?? '');
 
   const mirror = (key: string, value: string, clearVal: string) => {
     setSearchParams(
@@ -884,10 +884,48 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
     setStateState(v);
     mirror('ls', v, 'all');
   };
-  const setSearch = (v: string) => {
-    setSearchState(v);
-    mirror('lq', v, '');
+  const setSearch = useCallback(
+    (v: string) => {
+      setSearchState(v);
+      mirror('lq', v, '');
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setSearchParams],
+  );
+  useEffect(() => {
+    if (typed === search) return;
+    const t = setTimeout(() => setSearch(typed), 180);
+    return () => clearTimeout(t);
+  }, [typed, search, setSearch]);
+
+  const filterActive = kind !== 'all' || state !== 'all' || search.trim() !== '';
+  const clearAll = () => {
+    setKind('all');
+    setState('all');
+    setTyped('');
+    setSearch('');
   };
+
+  /* Counts on every option, so a dead end is visible before it is chosen. */
+  const kindSelectOptions = useMemo(
+    () =>
+      kindOptions.map((k) => ({
+        value: k,
+        label: k === 'all' ? 'every kind' : ledgerKindLabel(k),
+        count: k === 'all' ? cards.length : cards.filter((c) => c.kind === k).length,
+      })),
+    [kindOptions, cards],
+  );
+  const stateSelectOptions = useMemo(
+    () =>
+      LEDGER_STATE_OPTIONS.map((o) => ({
+        ...o,
+        count: cards.filter(
+          (c) => (kind === 'all' || c.kind === kind) && matchesState(c, o.value),
+        ).length,
+      })),
+    [cards, kind],
+  );
 
   /* The two whole-wall instruments: which face is out, and how close you
      stand. A whole-wall turn ripples with a per-card stagger; turning one
@@ -1040,57 +1078,34 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
           </div>
         </div>
 
-        <div className="border border-bronze-400/20 bg-bronze-400/[0.04] p-4 sm:p-5 flex flex-col gap-4">
-          <div className="flex items-baseline gap-4">
-            <span className="w-14 shrink-0 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500">
-              kind
-            </span>
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-              {kindOptions.map((k) => (
-                <Chip key={k} active={kind === k} onClick={() => setKind(k)}>
-                  {k === 'all' ? 'all' : ledgerKindLabel(k)}
-                </Chip>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-baseline gap-4">
-            <span className="w-14 shrink-0 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500">
-              state
-            </span>
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-              {LEDGER_STATE_OPTIONS.map((opt) => (
-                <Chip
-                  key={opt.value}
-                  active={state === opt.value}
-                  onClick={() => setState(opt.value)}
-                >
-                  {opt.label}
-                </Chip>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-baseline gap-4">
-            <span className="w-14 shrink-0 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500">
-              search
-            </span>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="search titles, cities, dreams"
-              aria-label="Search the wall by title, city, or dream"
-              className="w-full max-w-md bg-transparent border-b border-wood-300 pb-1 font-reading text-[15px] text-wood-900 placeholder:text-wood-500 focus:outline-none focus:border-bronze-600 transition-colors"
-            />
-          </div>
-        </div>
+        <LedgerControlRow>
+          <LedgerSearchField
+            value={typed}
+            onChange={setTyped}
+            ariaLabel="Search the wall by title, city, or dream"
+          />
+          <LedgerSelect
+            label="kind"
+            value={kind}
+            options={kindSelectOptions}
+            onChange={setKind}
+            emphasis={kind !== 'all'}
+          />
+          <LedgerSelect
+            label="status"
+            value={state}
+            options={stateSelectOptions}
+            onChange={setState}
+            emphasis={state !== 'all'}
+          />
+        </LedgerControlRow>
 
-        <p
-          className="font-label text-[11px] uppercase tracking-[0.16em] text-wood-600"
-          aria-live="polite"
-        >
-          {visible.length} of {cards.length} pieces
+        <LedgerTally onClear={filterActive ? clearAll : undefined}>
+          {filterActive
+            ? `${visible.length} of ${cards.length} pieces`
+            : `${cards.length} pieces`}
           {dreamsRiding > 0 && ` · ${dreamsRiding} dreams riding`}
-        </p>
+        </LedgerTally>
       </div>
 
       {visible.length === 0 ? (

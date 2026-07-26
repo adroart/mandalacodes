@@ -17,6 +17,14 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 ## Soon
 
+- [ ] Verify the /make note form end to end on the deployed preview after merging the piece-page branch (auth + R2 queue cannot run under plain Vite; a note should appear in AdminAtlas "Make Requests") _(band: agent-runnable)_ _(effort: quick)_ → Plan: [piece-page-acquisition.md](todo/plans/piece-page-acquisition.md)
+
+- [ ] Flip finished pieces to the take-it-home door: in the Catalog Room set status available + acquireUrl; the piece page reads it automatically _(band: you-required)_ _(effort: quick)_
+
+- [ ] The making strip on /make: two or three photos of layers being cut ("The making, in layers"); needs your studio photos _(band: you-required)_ _(effort: quick)_
+
+- [ ] RequestStewardship still uses bg-white inputs, slightly glaring on the new dark piece page; retoken to paper like the /make fields _(band: agent-runnable)_ _(effort: quick)_
+
 - [ ] Rewrite the 64 opening readings so each speaks the whole code (all traditions as lenses on one energy) and ends lifting, not heavy _(band: you-required)_ _(effort: deep)_ → Plan: [reading-rewrite.md](todo/plans/reading-rewrite.md)
 
 - [ ] Scrub the remaining soft source-name phrases in card prose ("the lineage calls this", "the text calls this", "the Eranos source calls this" on cards 1, 4, 5, 6, 13, 40, 60) — your call, since "the lineage" may read as acceptable in-world voice _(band: you-required)_ _(effort: quick)_

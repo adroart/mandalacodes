@@ -14,8 +14,8 @@ import './oracle-bottom-navigation.css';
 
    All 64 stays the centre anchor (and holds the admin reflection recorder on
    long-press, unchanged). The two slots beside it are the highest-intent acts:
-   For Me (find the codes in your chart) and The Piece (the real one-of-one
-   wooden original, acquiring lives one layer in). Family opens the project
+   For Me (find the codes in your chart) and The Piece (the physical wooden
+   work, made by hand; acquiring lives one layer in). Family opens the project
    reveal; Share sends this code onward. No "buy"/"claim" word ever sits on the
    ever-present bar. */
 

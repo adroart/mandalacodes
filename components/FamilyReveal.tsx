@@ -42,7 +42,7 @@ const FamilyReveal: React.FC = () => {
           </p>
           <p>
             We share dreams here, not opinions. The wisdom stays free. The art
-            is real, one of one, and it lives in homes and hands across the
+            is real, made by hand, and it lives in homes and hands across the
             earth.
           </p>
         </div>
