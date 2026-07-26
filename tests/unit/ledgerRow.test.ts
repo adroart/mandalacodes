@@ -8,12 +8,16 @@ import { describe, expect, it } from 'vitest';
 import {
   atlasPieceToRow,
   cleanLedgerTitle,
+  groupLedgerRows,
   ledgerKindLabel,
+  ledgerStateLabel,
   ledgerStateOf,
   ledgerStatusLine,
   matchesSearch,
   matchesState,
   normFromCatalogStatus,
+  sortLedgerRows,
+  LEDGER_NO_PLACE_LABEL,
   type LedgerRow,
 } from '../../components/atlas/ledgerRow';
 
@@ -146,5 +150,106 @@ describe('atlasPieceToRow + normFromCatalogStatus', () => {
     expect(normFromCatalogStatus('with-keeper')).toBe('placed');
     expect(normFromCatalogStatus('available')).toBe('seeking');
     expect(normFromCatalogStatus('with-artist')).toBe('at-rest');
+  });
+  it('carries the sort keys through', () => {
+    const r = atlasPieceToRow({
+      key: 'UL-1:0',
+      pieceId: 'UL-1',
+      title: 'A Piece',
+      status: 'placed',
+      cardNumber: 7,
+      placedAt: '2025-03-08',
+      claimOrdinal: 9,
+    });
+    expect(r.cardNumber).toBe(7);
+    expect(r.placedAt).toBe('2025-03-08');
+    expect(r.claimOrdinal).toBe(9);
+  });
+});
+
+/* ─── Arrange: sorting and grouping the record ───────────────────────────── */
+
+describe('sortLedgerRows', () => {
+  const a = row({ key: 'a', title: 'Zephyr', cityName: 'Amsterdam', placedAt: '2024-01-01' });
+  const b = row({ key: 'b', title: 'Anchor', cityName: 'Zurich', placedAt: '2025-06-01' });
+  const c = row({ key: 'c', title: 'Middle', cityName: undefined, placedAt: undefined });
+
+  it('record order is the identity, and never mutates the input', () => {
+    const input = [a, b, c];
+    const out = sortLedgerRows(input, 'record');
+    expect(out.map((r) => r.key)).toEqual(['a', 'b', 'c']);
+    expect(out).not.toBe(input);
+  });
+  it('title sorts a to z', () => {
+    expect(sortLedgerRows([a, b, c], 'title').map((r) => r.key)).toEqual([
+      'b',
+      'c',
+      'a',
+    ]);
+  });
+  it('place sorts by city, and a piece with no city reads last', () => {
+    expect(sortLedgerRows([b, c, a], 'place').map((r) => r.key)).toEqual([
+      'a',
+      'b',
+      'c',
+    ]);
+  });
+  it('recent puts the newest anchoring first and the undated last', () => {
+    expect(sortLedgerRows([a, c, b], 'recent').map((r) => r.key)).toEqual([
+      'b',
+      'a',
+      'c',
+    ]);
+  });
+  it('recent tiebreaks on the claim ordinal, newest claim first', () => {
+    const first = row({ key: 'first', placedAt: '2025-01-01', claimOrdinal: 1 });
+    const ninth = row({ key: 'ninth', placedAt: '2025-01-01', claimOrdinal: 9 });
+    expect(sortLedgerRows([first, ninth], 'recent').map((r) => r.key)).toEqual([
+      'ninth',
+      'first',
+    ]);
+  });
+});
+
+describe('groupLedgerRows', () => {
+  const anchored = row({ key: 'anchored', norm: 'placed', dream: 'a dream', cityName: 'Lisbon' });
+  const seeking = row({ key: 'seeking', norm: 'seeking', cityName: undefined });
+  const quiet = row({ key: 'quiet', norm: 'placed', dream: undefined, cityName: 'Berlin' });
+
+  it('one list keeps everything under a single section', () => {
+    const [only] = groupLedgerRows([anchored, seeking, quiet], 'none', 'record');
+    expect(only.rows).toHaveLength(3);
+  });
+  it('one list of nothing is no section at all', () => {
+    expect(groupLedgerRows([], 'none', 'record')).toEqual([]);
+  });
+  it('by state reads the living first and drops empty states', () => {
+    const out = groupLedgerRows([quiet, seeking, anchored], 'state', 'record');
+    expect(out.map((s) => s.label)).toEqual([
+      ledgerStateLabel('anchored'),
+      ledgerStateLabel('waiting-someone'),
+      ledgerStateLabel('waiting-dream'),
+    ]);
+    expect(groupLedgerRows([anchored], 'state', 'record')).toHaveLength(1);
+  });
+  it('by place is alphabetical with the unplaced last', () => {
+    const out = groupLedgerRows([anchored, seeking, quiet], 'place', 'record');
+    expect(out.map((s) => s.label)).toEqual([
+      'Berlin',
+      'Lisbon',
+      LEDGER_NO_PLACE_LABEL,
+    ]);
+  });
+  it('gives every section a stable, unique anchor id', () => {
+    const out = groupLedgerRows([anchored, seeking, quiet], 'place', 'record');
+    const ids = out.map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).toContain('place-berlin');
+  });
+  it('sorts inside each section', () => {
+    const early = row({ key: 'early', cityName: 'Lisbon', title: 'Zed' });
+    const late = row({ key: 'late', cityName: 'Lisbon', title: 'Alpha' });
+    const [lisbon] = groupLedgerRows([early, late], 'place', 'title');
+    expect(lisbon.rows.map((r) => r.key)).toEqual(['late', 'early']);
   });
 });

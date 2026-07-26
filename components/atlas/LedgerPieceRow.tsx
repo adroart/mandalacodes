@@ -51,6 +51,13 @@ const LedgerPieceRow: React.FC<Props> = ({ row, onSelectOnGlobe }) => {
   return (
     <li className="py-3 border-b border-wood-200/60">
       <p className="font-reading text-base leading-snug text-wood-900">
+        {/* Its code, when the row is read outside the code index and would
+            otherwise lose which of the sixty-four it belongs to. */}
+        {typeof row.cardNumber === 'number' && (
+          <span className="mr-2 font-label text-[11px] tabular-nums tracking-[0.15em] text-wood-500">
+            {String(row.cardNumber).padStart(2, '0')}
+          </span>
+        )}
         {row.title}
         <span aria-hidden className="mx-2 text-wood-400">
           ·

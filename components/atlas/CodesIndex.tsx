@@ -18,7 +18,7 @@ import {
  * grammar (CodePiecesPanel): "{title} · alive in {city}", the public dream
  * beneath, two quiet links.
  *
- * The ledger's filter bar (kind / state / search) reaches in here too: when a
+ * The ledger's controls (status / search) reach in here too: when a
  * state or search filter is active, only codes with matching pieces show, each
  * already open on its matches; otherwise the full honest index of all 64 codes
  * reads, collapsed, with click-to-open. Shareable: `?code=N` opens a code.
@@ -159,7 +159,12 @@ const CodesIndex: React.FC<Props> = ({
       ref={sectionRef}
       id="codes"
       aria-labelledby="atlas-codes-heading"
-      className="scroll-mt-8"
+      /* Clear the ledger's sticky controls when a ?code=N link scrolls here.
+         --ledger-bar is measured and set by TheLedger. */
+      style={{
+        scrollMarginTop:
+          'calc(var(--nav-height, 64px) + var(--ledger-bar, 100px) + 1.5rem)',
+      }}
     >
       <h3
         id="atlas-codes-heading"
