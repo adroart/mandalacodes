@@ -109,11 +109,37 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
     );
   };
 
+  // Several pages (the card reading, the Atlas) do NOT scroll the window — they
+  // scroll an inner absolutely-positioned container, so `window.scrollY` stays
+  // 0 forever there. Listening on `window` alone left the bar stuck in its
+  // translucent top-of-page state on exactly the pages that scroll the most
+  // content underneath it. Scroll events don't bubble, but they DO capture, so
+  // a capture-phase listener on the document sees every scroller on the page;
+  // we read the offset off whichever element actually fired.
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleScroll = (e: Event) => {
+      const target = e.target;
+      if (target === document || target === document.documentElement || target === document.body) {
+        setIsScrolled(window.scrollY > 20);
+        return;
+      }
+      const el = target as HTMLElement | null;
+      if (!el || typeof el.scrollTop !== 'number') return;
+      // Ignore horizontal-only rails (the lens pill strip scrolls sideways);
+      // their scrollTop is permanently 0 and would falsely reset the bar.
+      if (el.scrollHeight <= el.clientHeight + 1) return;
+      setIsScrolled(el.scrollTop > 20);
+    };
+    document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    return () => document.removeEventListener('scroll', handleScroll, { capture: true } as EventListenerOptions);
   }, []);
+
+  // A page swap resets every scroller to the top, but no scroll event fires for
+  // that — without this the bar would keep the compact scrolled surface from the
+  // previous page.
+  useEffect(() => {
+    setIsScrolled(window.scrollY > 20);
+  }, [pathname]);
 
   // Decide whether the inline menu fits, by measuring real geometry rather than
   // guessing a viewport breakpoint. The menu is centered in the bar, the
@@ -232,10 +258,15 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
   };
 
   const open = isMobileMenuOpen;
-  // Solid surface once scrolled or while the mobile sheet is open; translucent
-  // glass over the top of a page otherwise.
+  // Truly opaque once scrolled or while the mobile sheet is open; translucent
+  // glass over the top of a page otherwise. The scrolled surface used to sit at
+  // 95% alpha and lean on the blur to hide the rest — but backdrop-filter does
+  // not reliably sample an inner scroller on iOS Safari, so that last 5% showed
+  // the page's own background and headings sliding past *through* the bar. A
+  // fixed bar over moving content has to be opaque; the blur stays only as a
+  // fallback flourish for the top-of-page glass state.
   const surface = isScrolled || open
-    ? 'bg-paper-50/95 backdrop-blur-xl border-b border-wood-200'
+    ? 'bg-paper-50 border-b border-wood-200'
     : 'bg-paper-50/85 backdrop-blur-md border-b border-wood-200/50';
   // On phones the bar stays slim so it reads as a compact top strip above the
   // page chrome (e.g. the card's chapter band); desktop keeps a generous bar.
