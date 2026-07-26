@@ -232,13 +232,23 @@ These identifiers are related but are not interchangeable.
 This integration is currently local branch work. It has not been deployed or
 seeded into the live i64 OS environment during this session.
 
-### Still underway or deliberately deferred
+### WordForge and publication now built locally
 
-- WordForge still needs its production 64-article/384-passage corpus,
-  deterministic manuscript addressing, conflict-safe section patching, and
-  reviewed publication workflow.
-- A one-action workflow that writes exactly one selected card lens into
-  `oracle/cards/NN.md` is not yet finished.
+- WordForge indexes one production series, 64 articles, and 384 passages with
+  deterministic manuscript and section bindings.
+- Three-way hashes distinguish clean, file-only, WordForge-only, divergent,
+  invalid, and protected-AI-block states without silently choosing a winner.
+- The real WordForge Series view loads all 64 cards and their six lenses; the
+  earlier illustrative sample has been removed.
+- “Propose card update” prepares exactly one selected manuscript in a
+  disposable Mandala worktree, validates the complete corpus/build, and
+  creates a local branch and commit while leaving the shared checkout intact.
+- Preparation stops before push or draft PR and returns an explicit
+  human-approval handoff. Final prose remains editorially protected.
+- The i64 OS operating map is `i64os/docs/ORACLE_SYSTEM_INDEX.md`.
+
+### Deliberately deferred operational work
+
 - Library-to-Study/altar/recall passage joins and wider altar formulas remain
   separate future work.
 - Deployment, production Temple seeding, and live end-to-end MCP verification
@@ -331,12 +341,12 @@ authorities.
 
 ## Highest-value unfinished joins
 
-1. Finish the WordForge production corpus and conflict-safe card/lens editing
-   workflow against `oracle/cards/NN.md`.
-2. Review, integrate, deploy, and live-verify the local Mandala Codes and i64 OS
+1. Review, integrate, deploy, and live-verify the local Mandala Codes and i64 OS
    branches.
-3. Seed the 64-room Temple expansion in the intended i64 OS environment after
-   operational approval.
+2. Seed the 64-room Temple expansion and WordForge production series in the
+   intended i64 OS environment after operational approval.
+3. Inspect and approve the first one-card draft PR before merging any canonical
+   publication.
 4. Connect Library passages to Study, altars, recall, and WordForge with
    verbatim attribution intact.
 5. Preserve the invocation composer as a separate reviewed personal layer as
@@ -355,5 +365,7 @@ These are infrastructure tasks, not permission to rewrite the card corpus.
 - **Use locally through MCP:** `mcp/oracle-server/README.md`.
 - **Coordinate in i64 OS:** Temple `mandala-codes`, wing `mc-oracle-cards`, and
   room `mc-gate-N`.
-- **Advance the remaining system:** continue the WordForge production workflow,
-  then review and deploy the local integration branches.
+- **Operate WordForge:** read `i64os/docs/ORACLE_SYSTEM_INDEX.md`, sync the real
+  series, edit one passage, and prepare one approval-gated card update.
+- **Advance the remaining system:** review and deploy the local integration
+  branches, then run the production seed and live verification steps.
