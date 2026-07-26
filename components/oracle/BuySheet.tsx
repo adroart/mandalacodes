@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import type { Artwork } from '../../data/mockData';
+import { ulCardArtFloatsFree } from '../../utils/universalLanguage';
 
 const ART_SITE = 'https://adrianrasmussen.com';
 
@@ -62,7 +63,12 @@ export const BuySheet: React.FC<{
             <img
               src={imageUrl}
               alt={imageAlt}
-              className="w-24 h-24 object-cover border border-wood-300/40 flex-shrink-0"
+              /* The plates with transparent corners float free, so a border
+                 there would box in empty space; the ones carrying their own
+                 captured ground keep the edge that separates plate from sheet. */
+              className={`w-24 h-24 object-contain flex-shrink-0 ${
+                ulCardArtFloatsFree(cardNumber) ? '' : 'border border-wood-300/40'
+              }`}
             />
             <div className="min-w-0 flex-1 space-y-2">
               {piece?.dimensions && (
