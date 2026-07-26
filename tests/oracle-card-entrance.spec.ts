@@ -44,7 +44,7 @@ test('iOS Oracle surface hides mobile shell chrome until the entrance becomes a 
     page.locator('.site-bar-root'),
     page.locator('.ul-topbar'),
     page.locator('[data-jumpbar]'),
-    page.locator('[data-reader] > footer'),
+    page.locator('.card-reading--mobile > section > div > footer'),
   ];
   await expect(ritual).toBeVisible();
   for (const chrome of mobileChrome) await expect(chrome).toBeHidden();
