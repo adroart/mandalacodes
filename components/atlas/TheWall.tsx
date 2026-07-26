@@ -267,12 +267,13 @@ const KindMark: React.FC<{ card: WallCard; width: number }> = ({ card, width }) 
     mark = <JewelryMark width={width} />;
   }
   if (!mark) return null;
-  /* Pressed INTO the paper, not floating above it: the sigil sits darker
-     than the surface, ink sunk in shadow rather than a lighter ghost. */
+  /* A faint warm watermark, the same on paper and on the night surface: a
+     breath of bronze, not the heavy dark bars that read as a loading
+     skeleton. Kept low so it never competes with the dream over it. */
   return (
     <span
       aria-hidden
-      className="pointer-events-none absolute inset-0 flex items-center justify-center text-[#0b0906] opacity-[0.45]"
+      className="pointer-events-none absolute inset-0 flex items-center justify-center text-bronze-400 opacity-[0.035]"
     >
       {mark}
     </span>
@@ -319,7 +320,7 @@ const WallTile: React.FC<{
         onPointerMove={tilt.onMove}
         onPointerLeave={tilt.onLeave}
         onClick={open}
-        className="group/card relative aspect-[4/5] cursor-pointer"
+        className="group/card relative aspect-[3/4] cursor-pointer"
         style={{
           perspective: '1400px',
           transform:
@@ -369,13 +370,14 @@ const WallTile: React.FC<{
                 away={face === 'art'}
               />
             </div>
-            {/* Middle: the dream, with the sigil embossed behind only here. */}
+            {/* Middle: the dream, centered so a short one never leaves a void
+                below it, with the sigil embossed faintly behind only here. */}
             <button
               type="button"
               onClick={open}
               tabIndex={face === 'art' ? -1 : 0}
               aria-label={`Open the record of ${card.title}`}
-              className="relative flex-1 min-h-0 w-full flex flex-col text-left px-3.5 sm:px-4 pb-1 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px] group"
+              className="relative flex-1 min-h-0 w-full flex flex-col justify-center text-left px-4 sm:px-5 pb-1 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px] group"
             >
               <KindMark card={card} width={far ? 56 : 88} />
               {card.dream ? (
@@ -447,27 +449,25 @@ const WallTile: React.FC<{
                 away={face === 'dreams'}
               />
             </div>
-            {/* The piece, whole and uncropped: the square work sits on a
-                square stage sized to the middle, centered between the bars, so
-                the original is never cut. */}
+            {/* The piece fills the card edge to edge: a full-width square
+                plate, whole and uncropped. The 3:4 card leaves exactly a slim
+                upper and lower bar around it. */}
             <button
               type="button"
               onClick={open}
               tabIndex={face === 'dreams' ? -1 : 0}
               aria-label={`Open the record of ${card.title}`}
-              className="relative flex-1 min-h-0 w-full flex items-center justify-center focus:outline-2 focus:outline-bronze-400 focus:outline-offset-[-2px]"
+              className="relative w-full aspect-square shrink-0 focus:outline-2 focus:outline-bronze-400 focus:outline-offset-[-2px]"
             >
-              <span className="relative block h-full aspect-square max-w-full">
-                <ArtworkPlate
-                  src={card.coverImage}
-                  alt={card.title}
-                  title={card.title}
-                  aspect="cover"
-                />
-              </span>
+              <ArtworkPlate
+                src={card.coverImage}
+                alt={card.title}
+                title={card.title}
+                aspect="cover"
+              />
             </button>
-            {/* Lower bar. */}
-            <div className="relative border-t border-white/10 px-3 py-2 text-center">
+            {/* Lower bar: fills the remaining band and centers its line. */}
+            <div className="relative flex-1 min-h-0 border-t border-white/10 px-3 flex flex-col justify-center text-center">
               <span
                 className={`block font-display text-[#f0e8d8] leading-snug truncate ${
                   far ? 'text-[13px]' : 'text-[15px]'
@@ -475,9 +475,9 @@ const WallTile: React.FC<{
               >
                 {card.title}
               </span>
-              {!far && detailLine(card) && (
+              {!far && (
                 <span className="block font-label text-[9px] uppercase tracking-[0.16em] text-[#c8b084] truncate">
-                  {detailLine(card)}
+                  {[card.year, card.dimensions].filter(Boolean).join(' · ')}
                 </span>
               )}
             </div>
@@ -632,11 +632,12 @@ const WallRecord: React.FC<{
     >
       {/* The record is a bigger card among the cards: it spans an NxN block
           of the same grid (dense flow packs the other dreams around it), so
-          the big dream never stands alone on its own row. Square, like its
-          siblings, with the caption riding the bottom edge. */}
+          the big dream never stands alone on its own row. It fills the whole
+          block, which is 3:4 like a scaled tile, so the enlarged view matches
+          the small ones exactly, art and bars in the same proportion. */}
       <div
         ref={panelRef}
-        className="relative w-full aspect-square will-change-transform"
+        className="relative w-full aspect-[3/4] will-change-transform"
         style={{ perspective: '2200px' }}
       >
         <div
@@ -747,20 +748,19 @@ const WallRecord: React.FC<{
                 away={face === 'dreams'}
               />
             </div>
-            {/* Middle: the square piece, contained and centered, never cut. */}
-            <div className="relative flex-1 min-h-0 flex items-center justify-center px-4 pb-1">
-              <span className="relative block h-full aspect-square max-w-full">
-                <ArtworkPlate
-                  src={card.coverImageLarge ?? card.coverImage}
-                  alt={card.title}
-                  title={card.title}
-                  aspect="cover"
-                  imgStyle={{ objectFit: 'contain' }}
-                  loading="eager"
-                />
-              </span>
+            {/* Middle: the piece fills the whole space between the slim bars,
+                whole and uncropped, as large as it can be without a crop. */}
+            <div className="relative flex-1 min-h-0">
+              <ArtworkPlate
+                src={card.coverImageLarge ?? card.coverImage}
+                alt={card.title}
+                title={card.title}
+                aspect="cover"
+                imgStyle={{ objectFit: 'contain' }}
+                loading="eager"
+              />
             </div>
-            {/* Lower bar. */}
+            {/* Lower bar (slim, fixed). */}
             <div className="relative shrink-0 h-[52px] border-t border-white/10 px-3 sm:px-5 flex items-center">
               <StepArrow dir={-1} enabled={hasPrev} onStep={onStep} tone="stage" />
               <span className="mx-auto flex items-center gap-x-6 sm:gap-x-8">
