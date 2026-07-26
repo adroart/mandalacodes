@@ -48,16 +48,18 @@ export function loadAtlasState(force = false): Promise<LoadedAtlasState> {
           throw new Error('atlas malformed');
         }
         const state = body.state as PublicAtlasState;
-        // ── TEMPORARY PLACEHOLDER (remove at launch) ──
+        // ── TEMPORARY PRE-LAUNCH SEED (remove at launch) ──
         // The live public mirror is not seeded yet: /api/atlas answers ok:true
         // with zero pieces, which the error→seed fallback below never catches
-        // (it is a valid, empty body). Show three clearly-marked placeholder
-        // dots ONLY while the live count is exactly 0. This auto-hides the
-        // instant any real piece lands. Delete this block at launch.
+        // (it is a valid, empty body). Until the real mirror is populated,
+        // stand the full local seed in its place so the atlas — globe, ledger,
+        // and wall — reads as the intended body of work rather than three bare
+        // dots. Auto-hides the instant any real piece lands. Swap back to
+        // buildPlaceholderAtlasState() (or delete this block) at launch.
         if (state.pieces.length === 0) {
-          return buildPlaceholderAtlasState();
+          return buildSeedAtlasState();
         }
-        // ── end TEMPORARY PLACEHOLDER ──
+        // ── end TEMPORARY PRE-LAUNCH SEED ──
         return state;
       })
       .catch(() => {
