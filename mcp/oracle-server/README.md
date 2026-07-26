@@ -1,64 +1,82 @@
 # Oracle MCP server
 
-An MCP server for the Universal Language Oracle. It makes the 64 codes
-queryable — search them by meaning, read any voice whole, draw a moving line,
-cast a hexagram, find the artwork for a code, and assemble a reading scaffold —
-from your Claude client, with no network and no auth.
+The Oracle MCP makes all 64 Universal Language cards queryable from an MCP
+client: search by meaning, read a complete card or lens, draw a moving line,
+cast a hexagram, find linked artwork, or assemble a reading scaffold.
 
-Phase 1 of [`docs/oracle-mcp-integration-plan.md`](../../docs/oracle-mcp-integration-plan.md).
+## Content authority
 
-## What it indexes
+The local server reads `oracle/cards/01.md` through `oracle/cards/64.md` at
+startup. Those manuscripts are the sole source of authored card prose. The
+loader validates the complete set and fails closed when a numbered file,
+required lens, required passage, moving line, or structural mapping is missing
+or malformed.
 
-The corpus is built **in memory** at startup by merging every complete on-disk
-source — it does **not** write to `oracle/generated/` (the live site renders
-from there), so the website is untouched:
+It does not refill prose from `oracle/oracle_cards_complete.json`,
+`oracle/synthesis/`, `oracle/sections/`, `oracle/generated/`, or archives.
 
-| Source | Contributes |
-|---|---|
-| `oracle/oracle_cards_complete.json` | structural facts (trigrams, ring, gate), all 64 |
-| `oracle/synthesis/key_N.json` | synthesis prose + keywords + essence, all 64 |
-| `oracle/sections/{keys,design,iching,body}/NN(.deep).json` | bridge rewrites + the 6 moving lines |
-| `oracle/generated/NN.json` | `glance.reading` / `invocation` (card 01) |
-| `data/mockData.ts` `FULL_ARCHIVE` | the artwork ↔ code link (UL pieces) |
+Two linked systems remain deliberately separate:
 
-All 64 codes load with their keywords, six moving lines, and linked artwork.
+| Source | Role |
+| --- | --- |
+| `data/mockData.ts` | Artwork identifiers and presentation metadata linked by card number. |
+| D1 + private R2 invocation publication | Versioned personal/live invocations; not merged into the canonical card corpus. |
+
+The hosted REST API and remote MCP cannot read repository files at runtime, so
+they consume deterministic `data/oracle-corpus.json` and
+`data/oracle-search-index.json` artifacts built from this same loader. These
+JSON files are deployment outputs, not places to write Oracle prose.
 
 ## Tools
 
 | Tool | What it does |
-|---|---|
-| `search_oracle` | Rank the 64 codes for a free-text query (`"creation and new beginnings"`). Explainable: reports the matched keywords + a snippet. |
-| `get_card` | Full canonical object for one code (by number or name). |
-| `get_voice` | One voice whole: `glance` · `iching` · `gene_keys` · `human_design` · `tarot` · `body`. |
-| `get_line` | One of the six moving lines, with the hexagram it transitions into. |
-| `list_cards` | All 64 (number, name, ring, keywords, artwork count); filter by ring. |
-| `find_artworks` | The UL artwork(s) for a code — by number/name **or** by query (searches first). |
-| `compose_reading` | Assemble the *material* for a reading (Glance + chosen voices + optional artwork/line) for you to render in the deck's voice. |
-| `cast_hexagram` | Three-coin cast → primary code, moving lines, resulting code. |
+| --- | --- |
+| `search_oracle` | Rank the 64 cards for free-text meaning and return explainable matches. |
+| `get_card` | Return the complete canonical object by number or name. |
+| `get_voice` | Return `glance`, `iching`, `gene_keys`, `human_design`, `tarot`, or `body`. |
+| `get_line` | Return one of six moving lines and its resulting hexagram. |
+| `list_cards` | List all cards, optionally filtered by codon ring. |
+| `find_artworks` | Find artwork linked to a card number/name or the top search match. |
+| `get_reading` | Return an authored local artwork reading, or a scaffold when none exists. |
+| `compose_reading` | Assemble source material for a reading without inventing final prose. |
+| `cast_hexagram` | Perform a three-coin cast and return primary/resulting cards. |
 
-## Run
+The hosted MCP exposes the read-only public subset defined in
+`lib/oracle/tool-defs.ts`. Local-only reading composition helpers are not added
+to the hosted surface.
+
+## Run and verify
+
+From the repository root:
 
 ```bash
-cd mcp/oracle-server
-npm install        # installs the MCP SDK + tsx
-npm run smoke      # sanity-check the corpus, search, and cast against real data
-npm start          # start the stdio server
+npm --prefix mcp/oracle-server install
+npm --prefix mcp/oracle-server run typecheck
+npm --prefix mcp/oracle-server run smoke
+npm --prefix mcp/oracle-server start
 ```
 
-## Register in a client
+The smoke test loads all 64 Markdown cards and checks corpus, moving-line,
+artwork, casting, and one representative hosted/local search-parity query. Full
+64-card and complete-search-document parity lives in
+`tests/unit/oracleHostedApi.test.ts` and `tests/unit/oracleHostedTools.test.ts`.
 
-**Claude Code (this repo).** Run `npm install` in this folder once, then add the
-server (run from the repo root):
+After a manuscript or artwork-link change, regenerate the hosted artifacts:
+
+```bash
+npm run build:oracle-corpus
+npm run build:search-index
+```
+
+## Register the local stdio server
+
+Claude Code, from the repository root:
 
 ```bash
 claude mcp add oracle -- npx tsx mcp/oracle-server/src/server.ts
 ```
 
-To make it available to anyone who opens the repo, commit a project-scoped
-`.mcp.json` at the repo root with the same `command`/`args` (note: Claude Code
-prompts each user to approve project MCP servers before they run).
-
-**Claude Desktop** (`claude_desktop_config.json`):
+Claude Desktop (`claude_desktop_config.json`):
 
 ```json
 {
@@ -71,25 +89,24 @@ prompts each user to approve project MCP servers before they run).
 }
 ```
 
-Paths resolve relative to the server file, so the working directory the client
-spawns it in does not matter.
+Paths used by the server resolve from its own file, so the spawning client's
+working directory does not matter.
 
-## Notes & roadmap
+## Hosted endpoint
 
-- **Rights (CONCEPT §11).** This local server may surface the deck's own
-  synthesized prose for authoring. Any *hosted/public* surface (Phase 3) must
-  serve own-voice content only — never the raw vault source translations. Bake
-  that as a build-time allowlist before going remote.
-- **Search is keyword + concept-expansion, transparent, offline.** The shared
-  ranker (`lib/oracle/ranker.ts`) expands a query through a concept ontology
-  tuned to the deck's vocabulary, so lexically-distant intent matches land — e.g.
-  *Earth's Breath* now tops "creation and new beginnings" via its keywords
-  *Originating Force / Creative Impulse / Genesis / Pure Potential*, and the hit
-  explains itself ("related keywords: …"). Pass `literal: true` to match only the
-  typed terms. Hosted embeddings can later layer on behind the same `rank()`
-  signature for cases the ontology doesn't cover.
-- **Moving-line coverage** depends on the `oracle/sections/iching/` files; lines
-  not yet authored return a clear note rather than inventing text.
-- The corpus loader (`src/corpus.ts`) is the single merge point. When the
-  Phase-0 normalization to canonical `oracle/generated/` lands, point it there;
-  every tool keeps working unchanged.
+The existing stateless Streamable HTTP endpoint is:
+
+```text
+https://mandalacodes.com/api/oracle/mcp
+```
+
+Repository changes do not alter production until they are committed and
+deployed. Verify the deployed endpoint separately from local tests.
+
+## Writing rule
+
+Never edit generated artifacts or legacy JSON to change a card. Edit the
+matching `oracle/cards/NN.md`, preserve its editorial status and provenance,
+regenerate both artifacts, and run the parity tests. See
+[`../../oracle/INDEX.md`](../../oracle/INDEX.md) for the complete human/AI
+workflow.

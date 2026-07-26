@@ -25,9 +25,9 @@ const json = (body: unknown, cache = false) =>
     },
   });
 
-export const onRequestOptions: PagesFunction = async () => new Response(null, { headers: CORS });
+export const onRequestOptions = async () => new Response(null, { headers: CORS });
 
-export const onRequestGet: PagesFunction = async ({ request }) => {
+export const onRequestGet = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
   const q = (url.searchParams.get('q') || '').slice(0, 200);
   const limit = Math.min(Number(url.searchParams.get('limit')) || 8, 24);

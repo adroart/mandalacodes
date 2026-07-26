@@ -1,14 +1,18 @@
 import {
   getParsedCard,
-  hasCardMarkdown,
+  mapBody,
   mapCode,
-  mapKeys,
   mapDesign,
   mapIching,
-  mapBody,
+  mapKeys,
+  mapRelations,
+  type MdIchingSection,
+  type ParsedCard,
+  type YamlValue,
 } from './cardMarkdown';
+import type { OracleRelations } from '../lib/oracle/types';
 
-/* ─── Types ─────────────────────────────────────────────────────────────── */
+/* ─── Public browser shape ──────────────────────────────────────────────── */
 
 export interface SynthesisReference {
   binary: string;
@@ -52,15 +56,11 @@ export interface SynthesisTarot {
 }
 
 export interface SynthesisHumanDesign {
-  /** Plate 1 — "The Gate". The felt drive itself. */
+  /** Plate 1 — the Gate: the felt drive itself. */
   gate: string;
-  /** Plate 2 — "The Centre" (bridge) / formerly "The Channel". Where the drive
-   * lives in the body. Old synthesis files used this slot for channel prose;
-   * bridge overlay puts centre_field here. */
+  /** Plate 2 — the Centre: where the drive lives in the body. */
   channel: string;
-  /** Plate 3 — "The Channel" (bridge) / formerly "The Circuit". What the drive
-   * reaches for, what completes it. Old synthesis files used this slot for
-   * circuit prose; bridge overlay puts the channel field here. */
+  /** Plate 3 — the Channel: what the drive reaches for. */
   circuit: string;
 }
 
@@ -83,321 +83,201 @@ export interface CardSynthesis {
     human_design: SynthesisHumanDesign;
     body: SynthesisBody;
   };
-  /** RELATIONS overlay, present when oracle/sections/relations/NN.json exists. */
-  relations?: RelationsSection;
+  /** Complete moving-line shape retained for existing/future consumers. */
+  iching_extended?: MdIchingSection;
+  /** Markdown-native kinship web. */
+  relations?: OracleRelations;
 }
 
-/* ─── Auto-discovery ─────────────────────────────────────────────────────── */
-// Vite glob import - picks up every key_N.json in oracle/synthesis/ automatically.
-// No manual registration needed. Drop a new file in the folder and it's live.
+/* ─── Markdown-only builder ─────────────────────────────────────────────── */
 
-const modules = import.meta.glob<{ default: CardSynthesis }>('../oracle/synthesis/key_*.json');
+type YamlMap = Record<string, YamlValue>;
 
-/* Bridge-section overlays. When per-section files exist in
- * oracle/sections/<section>/NN.json they OVERRIDE the old synthesis for that
- * section. ICHING, RELATIONS, BODY still come from the old synthesis until
- * those sections get their own bridge rewrite. */
-type KeysSection = {
-  number: number;
-  shadow_name: string;
-  gift_name: string;
-  siddhi_name: string;
-  shadow: string;
-  repressive: string;
-  reactive: string;
-  gift: string;
-  siddhi: string;
-};
-type DesignSection = {
-  number: number;
-  gate_number: number;
-  gate_keyword: string;
-  centre: string;
-  channel_keywords: string[];
-  gate: string;
-  centre_field: string;
-  channel: string;
+const TRIGRAM_BINARY: Readonly<Record<string, string>> = {
+  Heaven: '111',
+  Earth: '000',
+  Thunder: '100',
+  Water: '010',
+  Mountain: '001',
+  Wind: '011',
+  Fire: '101',
+  Lake: '110',
 };
 
-type IchingSection = {
-  number: number;
-  hexagram_name: string;
-  combination: string;
-  upper_nature: string;
-  lower_nature: string;
-  reading: string;
-  judgement_lines: string[];
-  image_lines: string[];
-  lines: Array<{
-    line: number;
-    image: string;
-    reading: string;
-    becomes: { hexagram: number; name: string };
-  }>;
-};
-type BodySection = {
-  number: number;
-  physiology: string;
-  amino_acid: string;
-  meta?: { organ?: string; amino_acid_name?: string; codon_ring?: string };
-};
+const synthesisCache = new Map<number, CardSynthesis>();
 
-/* RELATIONS overlay — the kinship web around a code. Every seat in the card's
- * Relations panel (pair, inverse, programming partner, codon ring, tarot,
- * sky, immortals, hebrew letter) reads from here when the file exists. */
-export interface RelationsSection {
-  number: number;
-  card_name: string;
-  status?: string;
-  unity_line: string;
-  pair: {
-    number: number;
-    card_name: string;
-    hexagram_name: string;
-    teaching: string;
-  };
-  inverse: {
-    number: number;
-    card_name: string | null;
-    hexagram_name: string | null;
-    is_self_inverse: boolean;
-    teaching: string;
-  };
-  programming_partner: {
-    number: number;
-    card_name: string;
-    teaching: string;
-  };
-  codon_ring: {
-    name: string;
-    tarot: string;
-    siblings: number[];
-    teaching: string;
-  };
-  tarot: {
-    card: string;
-    teaching: string;
-  };
-  sky: {
-    value: string;
-    type: string;
-    teaching: string;
-  };
-  immortals: {
-    upper: { trigram: string; name: string; virtue: string };
-    lower: { trigram: string; name: string; virtue: string };
-    same_trigram: boolean;
-    teaching: string;
-  };
-  hebrew_letter: {
-    letter: string;
-    meaning: string;
-    path_number: string;
-    path_connects: string;
-    teaching: string;
-  };
+function pad2(number: number): string {
+  return number < 10 ? `0${number}` : String(number);
 }
 
-const keysModules = import.meta.glob<{ default: KeysSection }>('../oracle/sections/keys/*.json');
-const designModules = import.meta.glob<{ default: DesignSection }>('../oracle/sections/design/*.json');
-const ichingModules = import.meta.glob<{ default: IchingSection }>('../oracle/sections/iching/*.json');
-const bodyModules = import.meta.glob<{ default: BodySection }>('../oracle/sections/body/*.json');
-// Character class keeps the per-card files only (skips _per_card_reference.json).
-const relationsModules = import.meta.glob<{ default: RelationsSection }>('../oracle/sections/relations/[0-9][0-9].json');
-
-/* Deep-pass priority. When a `NN.deep.json` exists alongside `NN.json`, prefer
- * the deep version. This lets the pilot (UL 3 / 22 / 50) preview the deep
- * pass on the live card without overwriting the scaffolds. Scaffolds remain
- * for the other 61 cards until the deep pass is committed. */
-function pickSection<T>(
-  modules: Record<string, () => Promise<{ default: T }>>,
-  folder: string,
-  cardNumber: number,
-): (() => Promise<{ default: T }>) | undefined {
-  const pad = pad2(cardNumber);
-  const deep = modules[`../oracle/sections/${folder}/${pad}.deep.json`];
-  if (deep) return deep;
-  return modules[`../oracle/sections/${folder}/${pad}.json`];
+function asMap(value: YamlValue | undefined): YamlMap | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as YamlMap
+    : undefined;
 }
 
-/* Main Reading data lives in oracle/generated/NN.json under glance.
- * Currently only UL 1 has this populated; other cards return undefined
- * until the invocation-writing pass commissions them. */
-type GeneratedShape = {
-  glance?: {
-    invocation?: string;
-    reading?: string;
-    keywords?: string[];
-  };
-};
-const generatedModules = import.meta.glob<{ default: GeneratedShape }>('../oracle/generated/*.json');
-
-const synthesisCache = new Map<number, CardSynthesis | undefined>();
-const invocationCache = new Map<number, string | undefined>();
-
-function pad2(n: number): string {
-  return n < 10 ? `0${n}` : String(n);
+function asString(value: YamlValue | undefined): string {
+  return typeof value === 'string' ? value.trim() : '';
 }
 
-export async function getSynthesis(cardNumber: number): Promise<CardSynthesis | undefined> {
-  if (synthesisCache.has(cardNumber)) return synthesisCache.get(cardNumber);
+function required(value: string, label: string, context: string): string {
+  if (!value.trim()) throw new Error(`${context}: required Markdown content is missing: ${label}`);
+  return value;
+}
 
-  const loader = modules[`../oracle/synthesis/key_${cardNumber}.json`];
-  if (!loader) {
-    synthesisCache.set(cardNumber, undefined);
-    return undefined;
+function harmonicGate(parsed: ParsedCard, gateNumber: number): string {
+  const heading = parsed.sections.DESIGN?.subheadings
+    .find(section => section.heading.toLowerCase().startsWith('what completes it'))
+    ?.heading ?? '';
+  const match = heading.match(/\((\d+)\s*[–—-]\s*(\d+)\)/);
+  if (!match) return '';
+  const first = Number(match[1]);
+  const second = Number(match[2]);
+  return String(first === gateNumber ? second : first);
+}
+
+function referenceFor(
+  parsed: ParsedCard,
+  number: number,
+  design: ReturnType<typeof mapDesign> & {},
+  body: ReturnType<typeof mapBody> & {},
+  relations: OracleRelations,
+  context: string,
+): SynthesisReference {
+  const trigrams = asMap(parsed.frontmatter.trigrams);
+  const upperName = asString(trigrams?.upper);
+  const lowerName = asString(trigrams?.lower);
+  const upper = TRIGRAM_BINARY[upperName];
+  const lower = TRIGRAM_BINARY[lowerName];
+  if (!upper || !lower) {
+    throw new Error(`${context}: unknown trigram structure ${JSON.stringify({ upper: upperName, lower: lowerName })}`);
   }
 
-  const base = (await loader()).default;
-
-  // Clone so we don't mutate the imported module's object.
-  const merged: CardSynthesis = {
-    ...base,
-    synthesis: { ...base.synthesis },
+  return {
+    binary: `${lower}${upper}`,
+    hexagram_symbol: String.fromCodePoint(0x4dc0 + number - 1),
+    tarot_card: relations.tarot?.card ?? relations.codon_ring.tarot ?? '',
+    hebrew_letter: relations.hebrew_letter?.letter ?? '',
+    hebrew_meaning: relations.hebrew_letter?.teaching ?? '',
+    path: '',
+    path_connects: '',
+    astrology: relations.sky?.value ?? '',
+    queen_scale_color: '',
+    hd_gate: design.gate_number,
+    hd_keyword: design.gate_keyword,
+    hd_center: design.centre,
+    hd_circuit: design.channel_keywords.join(' · '),
+    hd_harmonic_gate: harmonicGate(parsed, design.gate_number),
+    body_physiology: body.meta?.organ ?? '',
+    body_amino_acid: body.meta?.amino_acid_name ?? '',
+    programming_partner: relations.programming_partner.number || null,
   };
+}
 
-  /* DUAL-PATH SAFETY. When `oracle/cards/NN.md` exists, that Markdown is the
-   * single source of truth and each section is fed from it. When it does not,
-   * the existing per-section JSON overlays are used exactly as before, so the
-   * other cards keep rendering through the migration. The Markdown is parsed
-   * once here and each section block prefers the MD-mapped object. */
-  const md = hasCardMarkdown(cardNumber) ? await getParsedCard(cardNumber) : undefined;
-
-  // CODE overlay (the opening face) — MD first, JSON fallback. The `## CODE`
-  // section feeds the hero keywords (`merged.keywords`) and "The Reading" panel
-  // (`merged.essence`). When the card has no `## CODE` block the existing base
-  // values from synthesis/key_N.json are kept untouched.
-  const mdCode = md ? mapCode(md) : undefined;
-  if (mdCode) {
-    if (mdCode.keywords.length > 0) merged.keywords = mdCode.keywords;
-    if (mdCode.reading) merged.essence = mdCode.reading;
+function buildSynthesis(parsed: ParsedCard, cardNumber: number, context: string): CardSynthesis {
+  const frontmatterNumber = parsed.frontmatter.number;
+  if (frontmatterNumber !== cardNumber) {
+    throw new Error(`${context}: frontmatter number ${String(frontmatterNumber)} does not match requested card ${cardNumber}`);
   }
 
-  // KEYS overlay — MD first, JSON fallback.
-  const mdKeys = md ? mapKeys(md) : undefined;
-  if (mdKeys) {
-    merged.synthesis.gene_keys = {
-      shadow: mdKeys.shadow,
-      repressive: mdKeys.repressive,
-      reactive: mdKeys.reactive,
-      gift: mdKeys.gift,
-      siddhi: mdKeys.siddhi,
-      programming_partner: base.synthesis.gene_keys?.programming_partner ?? '',
-    };
-  } else {
-    const keysPath = `../oracle/sections/keys/${pad2(cardNumber)}.json`;
-    const keysLoader = keysModules[keysPath];
-    if (keysLoader) {
-      const keys = (await keysLoader()).default;
-      merged.synthesis.gene_keys = {
+  const cardName = required(asString(parsed.frontmatter.card_name), 'card_name', context);
+  const code = mapCode(parsed);
+  const iching = mapIching(parsed);
+  const keys = mapKeys(parsed);
+  const design = mapDesign(parsed);
+  const body = mapBody(parsed);
+  const relations = mapRelations(parsed);
+  if (!code || !iching || !keys || !design || !body || !relations) {
+    throw new Error(`${context}: one or more required Markdown lenses could not be mapped`);
+  }
+
+  if (code.keywords.length === 0) {
+    throw new Error(`${context}: required Markdown content is missing: CODE keywords`);
+  }
+  required(code.reading, 'CODE reading', context);
+  required(iching.combination, 'ICHING combination', context);
+  required(iching.reading, 'ICHING reading', context);
+  if (iching.judgement_lines.length === 0 || iching.image_lines.length === 0) {
+    throw new Error(`${context}: required Markdown content is missing: ICHING judgement/image`);
+  }
+  if (iching.lines.length !== 6 || iching.lines.some((line, index) => line.line !== index + 1 || !line.reading.trim())) {
+    throw new Error(`${context}: required Markdown content is missing: ICHING moving lines 1-6`);
+  }
+  for (const [label, value] of [
+    ['KEYS shadow', keys.shadow],
+    ['KEYS repressive nature', keys.repressive],
+    ['KEYS reactive nature', keys.reactive],
+    ['KEYS gift', keys.gift],
+    ['KEYS siddhi', keys.siddhi],
+    ['DESIGN drive', design.gate],
+    ['DESIGN centre', design.centre_field],
+    ['DESIGN channel', design.channel],
+    ['BODY physiology', body.physiology],
+    ['BODY amino acid', body.amino_acid],
+    ['RELATIONS unity line', relations.unity_line],
+    ['RELATIONS pair', relations.pair.teaching],
+    ['RELATIONS inverse', relations.inverse.teaching],
+    ['RELATIONS programming partner', relations.programming_partner.teaching],
+    ['RELATIONS codon ring', relations.codon_ring.teaching],
+  ] as const) {
+    required(value, label, context);
+  }
+
+  return {
+    number: cardNumber,
+    card_name: cardName,
+    ring_name: relations.codon_ring.name,
+    keywords: code.keywords,
+    essence: code.reading,
+    reference: referenceFor(parsed, cardNumber, design, body, relations, context),
+    synthesis: {
+      iching: {
+        trigram_combination: iching.combination,
+        reading: iching.reading,
+        judgement_lines: iching.judgement_lines,
+        image_lines: iching.image_lines,
+      },
+      gene_keys: {
         shadow: keys.shadow,
         repressive: keys.repressive,
         reactive: keys.reactive,
         gift: keys.gift,
         siddhi: keys.siddhi,
-        // programming_partner comes from the old synthesis for now; RELATIONS
-        // will replace it when that section is bridge-rewritten.
-        programming_partner: base.synthesis.gene_keys?.programming_partner ?? '',
-      };
-    }
-  }
-
-  // DESIGN overlay. Bridge schema (gate / centre_field / channel) maps to the
-  // three card plates in reading order:
-  //   Plate 1 "The Gate"    ← bridge.gate         (the drive)
-  //   Plate 2 "The Centre"  ← bridge.centre_field (where it lives)
-  //   Plate 3 "The Channel" ← bridge.channel      (what it reaches for)
-  // The card UI labels were updated from "Gate / Channel / Circuit" to match.
-  const mdDesign = md ? mapDesign(md) : undefined;
-  if (mdDesign) {
-    merged.synthesis.human_design = {
-      gate: mdDesign.gate,
-      channel: mdDesign.centre_field, // plate 2 slot
-      circuit: mdDesign.channel,       // plate 3 slot
-    };
-  } else {
-    const designPath = `../oracle/sections/design/${pad2(cardNumber)}.json`;
-    const designLoader = designModules[designPath];
-    if (designLoader) {
-      const design = (await designLoader()).default;
-      merged.synthesis.human_design = {
+        programming_partner: relations.programming_partner.teaching,
+      },
+      tarot: {
+        ring_role: relations.codon_ring.teaching,
+        tarot_resonance: relations.tarot?.teaching ?? '',
+      },
+      human_design: {
         gate: design.gate,
-        channel: design.centre_field, // plate 2 slot
-        circuit: design.channel,       // plate 3 slot
-      };
-    }
-  }
-
-  // ICHING overlay. MD first; else prefers `*.deep.json` then scaffold `*.json`.
-  // Section provides combination + reading + judgement_lines + image_lines +
-  // six moving lines (preserved on `iching_extended` for future use).
-  const mdIching = md ? mapIching(md) : undefined;
-  if (mdIching) {
-    merged.synthesis.iching = {
-      trigram_combination: mdIching.combination,
-      reading: mdIching.reading,
-      judgement_lines: mdIching.judgement_lines ?? [],
-      image_lines: mdIching.image_lines ?? [],
-    };
-    (merged as unknown as Record<string, unknown>).iching_extended = mdIching;
-  } else {
-    const ichingLoader = pickSection(ichingModules, 'iching', cardNumber);
-    if (ichingLoader) {
-      const iching = (await ichingLoader()).default;
-      merged.synthesis.iching = {
-        trigram_combination: iching.combination,
-        reading: iching.reading,
-        judgement_lines: iching.judgement_lines ?? [],
-        image_lines: iching.image_lines ?? [],
-      };
-      (merged as unknown as Record<string, unknown>).iching_extended = iching;
-    }
-  }
-
-  // BODY overlay. MD first; else prefers `*.deep.json` then scaffold.
-  const mdBody = md ? mapBody(md) : undefined;
-  if (mdBody) {
-    merged.synthesis.body = {
-      physiology: mdBody.physiology,
-      amino_acid: mdBody.amino_acid,
-    };
-  } else {
-    const bodyLoader = pickSection(bodyModules, 'body', cardNumber);
-    if (bodyLoader) {
-      const body = (await bodyLoader()).default;
-      merged.synthesis.body = {
+        channel: design.centre_field,
+        circuit: design.channel,
+      },
+      body: {
         physiology: body.physiology,
         amino_acid: body.amino_acid,
-      };
-    }
-  }
-
-  // RELATIONS overlay. Feeds every seat of the card's Relations panel:
-  // unity line, pair, inverse, programming partner, codon ring, tarot,
-  // sky, immortals, hebrew letter.
-  const relationsLoader = relationsModules[`../oracle/sections/relations/${pad2(cardNumber)}.json`];
-  if (relationsLoader) {
-    merged.relations = (await relationsLoader()).default;
-  }
-
-  synthesisCache.set(cardNumber, merged);
-  return merged;
+      },
+    },
+    iching_extended: iching,
+    relations,
+  };
 }
 
-/* ─── Invocation loader ──────────────────────────────────────────────────
-   Returns the invocation prose for a given card, or undefined when the
-   generated/NN.json file doesn't exist yet. Cached after first load. */
-export async function getInvocation(cardNumber: number): Promise<string | undefined> {
-  if (invocationCache.has(cardNumber)) return invocationCache.get(cardNumber);
+/**
+ * Build the browser's public CardSynthesis shape from its required manuscript.
+ * Artwork remains linked independently by the existing card/artwork utilities;
+ * versioned live invocations are loaded through the invocation API.
+ */
+export async function getSynthesis(cardNumber: number): Promise<CardSynthesis | undefined> {
+  const cached = synthesisCache.get(cardNumber);
+  if (cached) return cached;
 
-  const loader = generatedModules[`../oracle/generated/${pad2(cardNumber)}.json`];
-  if (!loader) {
-    invocationCache.set(cardNumber, undefined);
-    return undefined;
-  }
+  const context = `oracle/cards/${pad2(cardNumber)}.md`;
+  const parsed = await getParsedCard(cardNumber);
+  if (!parsed) throw new Error(`${context}: missing Markdown source`);
 
-  const data = (await loader()).default;
-  const inv = data.glance?.invocation;
-  invocationCache.set(cardNumber, inv);
-  return inv;
+  const synthesis = buildSynthesis(parsed, cardNumber, context);
+  synthesisCache.set(cardNumber, synthesis);
+  return synthesis;
 }
