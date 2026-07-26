@@ -76,6 +76,10 @@ export interface CardReadingProps {
   reading?: React.ReactNode;
   /* The mandala artwork, dropped into the design's own sizing container. */
   artwork?: React.ReactNode;
+  /* True when this card's plate has transparent corners, so the artwork wants
+     no frame around it. Surfaces as a class on a display:contents wrapper,
+     because the shell's own root class is fixed inside the generated host. */
+  artFloatsFree?: boolean;
   /* The site's real top bar, used on mobile in place of the design's own. */
   topNav?: React.ReactNode;
 }
@@ -105,7 +109,7 @@ function useIsDesktop(forced?: 'mobile' | 'desktop') {
 }
 
 export const CardReading: React.FC<CardReadingProps> = ({
-  lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork, cardKicker, cardName, topNav, forMeHref, pieceHref, familyHref,
+  lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork, artFloatsFree, cardKicker, cardName, topNav, forMeHref, pieceHref, familyHref,
 }) => {
   const isDesktop = useIsDesktop(variant);
 
@@ -133,9 +137,15 @@ export const CardReading: React.FC<CardReadingProps> = ({
     familyHref,
   };
 
-  return isDesktop
+  const shell = isDesktop
     ? <CardReadingDesktopHost data={desktopData} railNode={railNode} reading={reading} artwork={artwork} />
     : <CardReadingMobileHost data={mobileData} reading={reading} artwork={artwork} topNav={topNav} />;
+
+  /* display:contents so this wrapper is a CSS ancestor and nothing else — it
+     adds no box, so every layout rule that targets the shell keeps matching. */
+  return artFloatsFree
+    ? <div className="ul-art-floats" style={{ display: 'contents' }}>{shell}</div>
+    : shell;
 };
 
 export default CardReading;
