@@ -11,6 +11,7 @@ const AdminLogin = lazy(() => import('./components/AdminLogin'));
 const AdminAtlas = lazy(() => import('./components/AdminAtlas'));
 const AdminPieceContent = lazy(() => import('./components/AdminPieceContent'));
 const PiecePage = lazy(() => import('./components/PiecePage'));
+const MakePage = lazy(() => import('./components/MakePage'));
 const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
 const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
 const Homecoming = lazy(() => import('./components/atlas/Homecoming'));
@@ -121,6 +122,7 @@ const AppInner: React.FC = () => {
                     the artwork, story, edition, Founding Lights ordinal, and
                     the public history spine. `/piece/:pieceId` resolves via the
                     `:0` no-edition fallback; `/piece/:pieceId/:edition` pins one. */}
+                <Route path="/make" element={<MakePage />} />
                 <Route path="/piece/:pieceId" element={<PiecePage />} />
                 <Route path="/piece/:pieceId/:edition" element={<PiecePage />} />
                 <Route path="/atlas/edit" element={<StewardEdit />} />

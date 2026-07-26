@@ -18,6 +18,7 @@ import {
   type PublicPiece,
 } from '../lib/atlas/state';
 import { loadPublicCatalog, findCatalogEntry } from '../lib/atlas/catalog';
+import type { PublicCatalogEntry } from '../utils/catalog';
 import { publicCatalogEntryToArtwork } from '../utils/catalog';
 import { buildKinshipIndex } from '../utils/kinship';
 import { useAccount } from '../lib/account/useAccount';
@@ -33,17 +34,23 @@ import type { Artwork, LedgerEvent, PublicAtlasState } from '../types';
  * of their piece: a fine legacy certificate. The artwork crowns it; beneath it
  * one composed certificate object carries the sigil, the founding-light
  * ordinal (the permanent, tamper-evident number), the dream at display size,
- * the anchoring city, the lineage of keepers, and the ledger seal. The
- * scholarship — materials, edition, the code, the story spine, its kin — reads
- * below the certificate in three chapters. It NEVER shows private events,
+ * the anchoring city, the lineage of keepers, and the ledger seal. Directly
+ * beneath it, "How this works" teaches the whole system in three short
+ * statements, and everything else hangs on ONE connected ledger line ("The
+ * life of this piece"): what has happened, what it carries (code, kin), and
+ * what is still unwritten — the hollow marks that carry the invitations.
+ * The page ends on one band with two doors (claim it / have one made).
+ * It NEVER shows private events,
  * notes, or holder identity: everything comes from the *public* projection
  * (fetched with the same seed fallback AtlasPage uses), so a slightly-stale
  * cache still renders.
  *
- * Register: the certificate is warm paper regardless of the site theme — a
- * physical document photographed against the page. The whole surface carries
- * `dark-preserve` so paper, wood, and bronze tokens hold their light values in
- * both dark and light site themes.
+ * Register: the page follows the site theme and DEFAULTS DARK (the site
+ * default): nightfall paper, cream ink, antique gold — the same register as
+ * the oracle reading. Light mode is one sun-toggle away and renders the
+ * warm-paper daybook. Typography matches the reading's contract: Iowan
+ * (font-reading) for prose, Cormorant (font-reading) for ceremonial
+ * moments, Cinzel only on the title.
  */
 
 /**
@@ -56,6 +63,8 @@ const LABEL = 'font-label text-[11px] uppercase tracking-[0.2em] text-wood-600';
 const LINK =
   'font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-bronze-600 hover:text-bronze-500 transition-colors';
 const CARD = 'border border-wood-200 bg-paper-100/60';
+const BUTTON =
+  'inline-block font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3';
 
 /** The hairline rule the certificate is ruled with. */
 const Rule: React.FC<{ className?: string }> = ({ className = '' }) => (
@@ -68,7 +77,14 @@ const Rule: React.FC<{ className?: string }> = ({ className = '' }) => (
 type LoadState =
   | { kind: 'loading' }
   | { kind: 'not-found' }
-  | { kind: 'ready'; piece: PublicPiece; art: Artwork };
+  | {
+      kind: 'ready';
+      piece: PublicPiece;
+      art: Artwork;
+      /** The public catalog row, when one exists — carries status and (for an
+       *  'available' piece) the public price + acquire link. */
+      catalog: PublicCatalogEntry | null;
+    };
 
 /** Spine entry: a single public, non-personal moment in the piece's life. */
 interface SpineEntry {
@@ -153,7 +169,7 @@ function buildSpine(piece: PublicPiece, art: Artwork): SpineEntry[] {
   } else if (piece.status === 'unawakened' && place) {
     spine.push({ label: 'On display', detail: place });
   } else {
-    spine.push({ label: 'Seeking ground', detail: 'not yet placed in the world' });
+    spine.push({ label: 'Seeking ground', detail: 'waiting for its first home on the map' });
   }
 
   if (typeof piece.claimOrdinal === 'number') {
@@ -302,7 +318,12 @@ const PiecePage: React.FC = () => {
       // Archive wins; else the catalog row's real fields; else the sigil-only
       // fallback for a piece present in public state but neither store.
       const resolvedArt = art ?? catalogArt ?? fallbackArtFromPublic(resolved);
-      setLoad({ kind: 'ready', piece: resolved, art: resolvedArt });
+      setLoad({
+        kind: 'ready',
+        piece: resolved,
+        art: resolvedArt,
+        catalog: catalogEntry ?? null,
+      });
     });
     return () => {
       active = false;
@@ -337,30 +358,6 @@ const PiecePage: React.FC = () => {
       });
   }, [atlasState, pieceId, edition]);
 
-  /* Holder's chart element — the same public endpoint the atlas HUD uses;
-     returns chart: null unless the steward opted into chart presence. */
-  const [holderElement, setHolderElement] = useState<string | null>(null);
-  useEffect(() => {
-    setHolderElement(null);
-    if (load.kind !== 'ready' || load.piece.status !== 'placed') return;
-    let active = true;
-    const params = new URLSearchParams({ pieceId: load.piece.pieceId });
-    if (typeof load.piece.editionNumber === 'number') {
-      params.set('editionNumber', String(load.piece.editionNumber));
-    }
-    fetch(`/api/atlas/holder-chart?${params.toString()}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { chart?: { element?: string } | null } | null) => {
-        if (active) setHolderElement(data?.chart?.element ?? null);
-      })
-      .catch(() => {
-        /* quiet: the line simply doesn't render */
-      });
-    return () => {
-      active = false;
-    };
-  }, [load]);
-
   /* The keeper's layer: only when signed in, and only revealed on a positive
      response. A non-keeper gets a 404 and nothing renders; every failure is
      silent, so the certificate stays byte-identical to the public view. */
@@ -388,7 +385,7 @@ const PiecePage: React.FC = () => {
 
   if (load.kind === 'loading') {
     return (
-      <section className="dark-preserve min-h-screen bg-paper-100 flex items-center justify-center px-6">
+      <section className="min-h-screen bg-paper-100 flex items-center justify-center px-6">
         <p className={`${LABEL} text-wood-500`} aria-live="polite">
           Opening the certificate
         </p>
@@ -398,20 +395,20 @@ const PiecePage: React.FC = () => {
 
   if (load.kind === 'not-found') {
     return (
-      <section className="dark-preserve min-h-screen bg-paper-100 flex flex-col items-center justify-center px-6 text-center">
+      <section className="min-h-screen bg-paper-100 flex flex-col items-center justify-center px-6 text-center">
         <h1
           className="font-display text-3xl text-wood-900 font-medium mb-4"
           style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
         >
           This piece isn't on the map yet
         </h1>
-        <p className="font-display text-lg text-wood-700 max-w-md leading-[1.6] mb-8">
+        <p className="font-reading text-lg text-wood-700 max-w-md leading-[1.6] mb-8">
           The code you scanned doesn't resolve to a known piece. If you hold one
           of Adrian's works, you can still bring it into the record.
         </p>
         <div className="flex flex-col items-center gap-4">
           <Link to="/atlas/claim" className={LINK}>
-            Open this piece's book →
+            Claim a piece you hold →
           </Link>
           {/* The homecoming door — the single highest-leverage line in the
               redesign: the launch letter will send exactly these people here. */}
@@ -423,13 +420,18 @@ const PiecePage: React.FC = () => {
     );
   }
 
-  const { piece, art } = load;
+  const { piece, art, catalog } = load;
   const cardNumber =
     art.series === 'Universal Language' ? ulCardNumber(art.coverImage) : null;
   const card = cardNumber != null ? CARD_BY_NUMBER.get(cardNumber) : undefined;
   const spine = buildSpine(piece, art);
 
-  const description = content?.story || art.longDescription || art.description || undefined;
+  // The story prose. The archive's "Number N in the ... series." placeholder
+  // earns no ink: a page fighting reader fatigue only prints real writing.
+  const rawStory = content?.story || art.longDescription || art.description || '';
+  const story = /^Number \d+ in the .+ series\.$/.test(rawStory.trim())
+    ? undefined
+    : rawStory || undefined;
   const cleanTitle = art.title.replace(/\s*-\s*\d+$/, '');
   const galleryImages = content?.images ?? [];
 
@@ -462,6 +464,14 @@ const PiecePage: React.FC = () => {
   const claimHref = `/atlas/claim?piece=${encodeURIComponent(piece.pieceId)}${
     typeof piece.editionNumber === 'number' ? `:${piece.editionNumber}` : ''
   }`;
+  // The two doors. A catalog row marked 'available' means a finished piece is
+  // waiting in the studio: its acquire link is the "take it home" door. In
+  // every other unclaimed state the door is the making journey.
+  const acquireUrl =
+    catalog?.status === 'available' ? catalog.acquireUrl : undefined;
+  const makeHref = `/make?piece=${encodeURIComponent(piece.pieceId)}${
+    cardNumber != null ? `&code=${cardNumber}` : ''
+  }`;
   const atlasHref = `/atlas?piece=${encodeURIComponent(
     `${piece.pieceId}${
       typeof piece.editionNumber === 'number' ? `:${piece.editionNumber}` : ''
@@ -469,7 +479,7 @@ const PiecePage: React.FC = () => {
   )}`;
 
   return (
-    <div className="dark-preserve min-h-screen bg-paper-100 text-wood-900">
+    <div className="min-h-screen bg-paper-100 text-wood-900">
       <div className="px-5 sm:px-6 pb-32 max-w-3xl mx-auto pt-[calc(var(--nav-height)+1rem)] sm:pt-[calc(var(--nav-height)+1.75rem)]">
         {/* Breadcrumb */}
         <nav
@@ -510,7 +520,7 @@ const PiecePage: React.FC = () => {
                 src={heroImage}
                 alt={`${cleanTitle}${
                   cardNumber != null ? `, Universal Language ${cardNumber}` : ''
-                }. Original work by Adrian Rasmussen.`}
+                }. Made by hand by Adrian Rasmussen.`}
                 title={cleanTitle}
                 loading="eager"
               />
@@ -538,6 +548,13 @@ const PiecePage: React.FC = () => {
             <p className="font-label text-[12px] uppercase tracking-[0.32em] text-wood-500 mt-4">
               {sigil}
             </p>
+            {/* The stranger's first ground: one plain sentence that names the
+                maker and what this page is, before any invented word lands. */}
+            <p className="font-reading text-[15px] text-wood-600 leading-[1.6] max-w-md mx-auto mt-5">
+              Made by hand by Adrian Rasmussen. This page is its certificate:
+              what it is, the dream it keeps, and the hands it has passed
+              through.
+            </p>
           </div>
 
           {/* ── The invitation band: QR arrivals meet the door in the first
@@ -545,16 +562,43 @@ const PiecePage: React.FC = () => {
           {seeking && (
             <div className="mt-8 text-center">
               <div className="mx-auto max-w-md border-y border-wood-300 py-5">
-                <p className="font-display text-2xl sm:text-[1.75rem] text-wood-800 leading-[1.3]">
-                  This piece is ready for someone to become its keeper and
-                  infuse it with their dream.{' '}
-                  <Link
-                    to={claimHref}
-                    className="text-bronze-600 hover:text-bronze-500 transition-colors whitespace-nowrap"
-                  >
-                    Begin →
-                  </Link>
-                </p>
+                {acquireUrl ? (
+                  <>
+                    <p className="font-display text-2xl sm:text-[1.75rem] text-wood-800 leading-[1.3]">
+                      This piece is finished and waiting in the studio. It can
+                      be on your wall within the week.{' '}
+                      <a
+                        href={acquireUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-bronze-600 hover:text-bronze-500 transition-colors whitespace-nowrap"
+                      >
+                        Take it home →
+                      </a>
+                    </p>
+                    <p className="font-reading text-base text-wood-600 leading-[1.5] mt-4">
+                      Not the right size or palette?{' '}
+                      <Link
+                        to={makeHref}
+                        className="text-bronze-600 hover:text-bronze-500 transition-colors whitespace-nowrap"
+                      >
+                        Have yours made →
+                      </Link>
+                    </p>
+                  </>
+                ) : (
+                  <p className="font-display text-2xl sm:text-[1.75rem] text-wood-800 leading-[1.3]">
+                    This design is waiting to be made. Yours would be cut layer
+                    by layer: your size, your palette, your dream sealed into
+                    it.{' '}
+                    <Link
+                      to={makeHref}
+                      className="text-bronze-600 hover:text-bronze-500 transition-colors whitespace-nowrap"
+                    >
+                      Begin your piece →
+                    </Link>
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -566,15 +610,16 @@ const PiecePage: React.FC = () => {
               <p className={`${LABEL} text-bronze-600 mb-2`}>Founding light</p>
               <p
                 className="font-display text-wood-900 font-medium leading-none"
-                style={{ fontFamily: 'var(--font-brand)', fontSize: 'clamp(3.5rem, 13vw, 6rem)' }}
+                style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(3.5rem, 13vw, 6rem)' }}
               >
                 {piece.claimOrdinal}
               </p>
               <p className="font-display text-lg text-wood-600 mt-3">
                 the {ordinalLabel(piece.claimOrdinal as number)} light of the constellation
               </p>
-              <p className="font-display text-sm text-wood-500 mt-1">
-                A founding light marks the order in which a piece was claimed by its keeper.
+              <p className="font-reading text-sm text-wood-500 mt-1">
+                Each claimed piece receives its number in the order it came to
+                light. It can never change and never be taken away.
               </p>
             </div>
           )}
@@ -612,10 +657,39 @@ const PiecePage: React.FC = () => {
                 </p>
               )}
               {lineageLine && (
-                <p className="font-display text-lg text-wood-600">{lineageLine}</p>
+                <p className="font-reading text-lg text-wood-600">{lineageLine}</p>
               )}
             </div>
           )}
+
+          {/* ── The signatures: a certificate ends in named hands. The
+              maker's line is signed; the keeper's line is the invitation
+              embodied — ruled and empty until someone claims it, then
+              carrying their public signature (or the quiet ordinal). ── */}
+          <div className="mt-11 sm:mt-14 mx-auto max-w-md grid grid-cols-2 gap-8 sm:gap-12 text-center">
+            <div>
+              <p
+                className="font-display text-lg text-wood-900 leading-none pb-2"
+                style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
+              >
+                Adrian Rasmussen
+              </p>
+              <Rule />
+              <p className={`${LABEL} mt-2`}>Maker</p>
+            </div>
+            <div>
+              <p
+                className="font-display text-lg text-wood-900 leading-none pb-2"
+                style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
+              >
+                {claimed ? (piece.signedBy?.name ?? 'Its first keeper') : ' '}
+              </p>
+              <Rule />
+              <p className={`${LABEL} mt-2`}>
+                {claimed ? 'Keeper' : 'Awaiting its keeper'}
+              </p>
+            </div>
+          </div>
 
           {/* ── The ledger seal: the recorded-in-the-living-ledger mark,
               elevated into a proper seal. ── */}
@@ -629,14 +703,15 @@ const PiecePage: React.FC = () => {
               />
               <span
                 className="font-display text-xl text-bronze-600 relative"
-                style={{ fontFamily: 'var(--font-brand)' }}
+                style={{ fontFamily: 'var(--font-display)' }}
               >
                 {claimed ? (piece.claimOrdinal as number) : '·'}
               </span>
             </span>
-            <p className="font-display text-base text-wood-600 leading-[1.55] max-w-md mt-4">
-              Recorded in the living ledger. Each page is sealed against the one
-              before it, and the keeper can always carry the whole book away.
+            <p className="font-reading text-base text-wood-600 leading-[1.55] max-w-md mt-4">
+              Recorded in the ledger, the permanent record every piece carries.
+              Each entry is sealed against the one before it, so its history
+              can never be quietly rewritten.
             </p>
             {piece.status === 'placed' && (
               <Link to={atlasHref} className={`${LINK} mt-4`}>
@@ -655,7 +730,7 @@ const PiecePage: React.FC = () => {
               <p className={`${LABEL} text-center mb-8`}>For the keeper</p>
 
               {keeper.acquisition && (
-                <p className="font-display text-lg text-wood-700 text-center mb-8">
+                <p className="font-reading text-lg text-wood-700 text-center mb-8">
                   Came to you {formatSaleDate(keeper.acquisition.saleDate)}
                   {formatAcquisitionAmount(keeper.acquisition)
                     ? ` · ${formatAcquisitionAmount(keeper.acquisition)}`
@@ -672,7 +747,7 @@ const PiecePage: React.FC = () => {
                         className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
                         style={{ transform: 'translateX(-4px)' }}
                       />
-                      <span className="font-display text-lg text-wood-900 leading-snug">
+                      <span className="font-reading text-lg text-wood-900 leading-snug">
                         {entry.label}
                         {entry.detail && (
                           <span className="text-wood-600"> · {entry.detail}</span>
@@ -684,164 +759,126 @@ const PiecePage: React.FC = () => {
               )}
 
               <div className="text-center">
+                {/* The carried-away promise lives here, with the person it is
+                    for, not on the public seal. */}
+                <p className="font-reading text-base text-wood-600 leading-[1.6] mb-4">
+                  The book is yours. You can always carry the whole record away.
+                </p>
                 <Link to="/atlas/edit" className={LINK}>
                   open your book →
                 </Link>
               </div>
             </div>
           )}
+
+          {/* ── The plate line: the certificate's engraved last line, the
+              formal particulars in banknote grammar. ── */}
+          <p className="font-label text-[10px] uppercase tracking-[0.28em] text-wood-500 text-center leading-[1.9] mt-12 sm:mt-14">
+            {[
+              sigil,
+              piece.series ?? art.series,
+              art.material,
+              art.dimensions,
+              art.year ? `cut ${art.year}` : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
         </article>
 
-        <p className="font-display text-base text-wood-500 text-center mt-5 leading-[1.6] max-w-sm mx-auto">
-          This page is the certificate of the physical work.
-        </p>
-
-        {/* ═══════════════════ THE SCHOLARSHIP ═══════════════════
-            Three chapters below the certificate object. */}
-        <div className="mt-16 sm:mt-20 space-y-16">
-          {/* ── Chapter: The work ── */}
-          <section>
-            <h2 className={`${LABEL} text-center mb-8`}>The work</h2>
-
-            {description && (
-              <p className="font-display text-lg text-wood-800 leading-[1.7] mb-8 whitespace-pre-line">
-                {description}
-              </p>
-            )}
-
-            {(editionLine || art.dimensions || art.material) && (
-              <p className="font-display text-base text-wood-600 leading-relaxed mb-8">
-                {[editionLine, art.dimensions, art.material]
-                  .filter(Boolean)
-                  .map((bit, i) => (
-                    <React.Fragment key={i}>
-                      {i > 0 && (
-                        <span aria-hidden className="mx-2 text-wood-400">·</span>
-                      )}
-                      <span>{bit}</span>
-                    </React.Fragment>
-                  ))}
-              </p>
-            )}
-
-            {(content?.materials || content?.provenance) && (
-              <div className="space-y-5 mb-8">
-                {content?.materials && (
-                  <div>
-                    <p className={`${LABEL} mb-2`}>Materials</p>
-                    <p className="font-display text-base text-wood-800 leading-[1.6] whitespace-pre-line">
-                      {content.materials}
-                    </p>
-                  </div>
-                )}
-                {content?.provenance && (
-                  <div>
-                    <p className={`${LABEL} mb-2`}>Provenance</p>
-                    <p className="font-display text-base text-wood-800 leading-[1.6] whitespace-pre-line">
-                      {content.provenance}
-                    </p>
-                  </div>
-                )}
+        {/* ═══════════════════ HOW THIS WORKS ═══════════════════
+            The stranger's on-ramp in one breath: three short statements,
+            each grounding one invented word (hand, dream, ledger).
+            Compressed hard (Adrian, 2026-07-26: "so much text... easy to
+            get fatigued and just skip") — the longer teaching lives on
+            /make and in the certificate itself. */}
+        <section className="mt-10 sm:mt-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-8 text-center">
+            {[
+              { lead: 'Made by hand', body: 'One artist, layer by layer, to order.' },
+              { lead: 'One dream', body: 'Written by its keeper, kept for life.' },
+              { lead: 'Never lost', body: 'Its whole story in a sealed ledger.' },
+            ].map((item) => (
+              <div key={item.lead} className="border-t border-wood-300 pt-4">
+                <p className="font-display text-xl text-wood-900 font-semibold leading-snug">
+                  {item.lead}
+                </p>
+                <p className="font-reading text-base text-wood-600 leading-[1.5] mt-1">
+                  {item.body}
+                </p>
               </div>
-            )}
+            ))}
+          </div>
+        </section>
 
-            {/* The code it carries — Universal Language pieces only. */}
-            {card && cardNumber != null && (
-              <div className="flex items-start gap-5 pt-2">
-                <div className="shrink-0 text-bronze-600">
-                  <HexagramSVG
-                    upper={card.iching.upper_trigram.symbol}
-                    lower={card.iching.lower_trigram.symbol}
-                    width={48}
-                  />
-                </div>
-                <div>
-                  <p className={`${LABEL} mb-2`}>The code it carries</p>
-                  <p className="font-display text-lg text-wood-900 leading-snug">
-                    {card.iching.hexagram_name} · Hexagram {cardNumber}
-                  </p>
-                  <Link
-                    to={`/universal-language/${cardNumber}`}
-                    state={{ ritual: true }}
-                    className={`${LINK} mt-3 inline-block`}
-                  >
-                    Read Code {cardNumber} →
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {galleryImages.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mt-8">
-                {galleryImages.map((publicId, i) => (
-                  <a
-                    key={publicId}
-                    href={img(publicId, { w: 1600, crop: 'fit' })}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block bg-[#151311] overflow-hidden"
-                  >
-                    <img
-                      src={img(publicId, { w: 400, h: 400, crop: 'fill' })}
-                      alt={`${cleanTitle}, additional view ${i + 1}`}
-                      className="w-full h-full object-cover block"
-                      loading="lazy"
-                    />
-                  </a>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* ── Chapter: The dream it carries — the network the dream joins ── */}
-          {(kinEntries.length > 0 || (holderElement && piece.status === 'placed')) && (
-            <section>
-              <h2 className={`${LABEL} text-center mb-8`}>The dream it carries</h2>
-
-              {kinEntries.length > 0 && (
-                <div className="mb-8">
-                  <p className={`${LABEL} mb-3`}>Its kin on the map</p>
-                  <ul className="space-y-2">
-                    {kinEntries.map((k) => (
-                      <li key={k.key}>
-                        <Link
-                          to={`/atlas?piece=${encodeURIComponent(k.atlasParam)}`}
-                          className="font-display text-lg text-wood-900 leading-snug hover:text-bronze-600 transition-colors"
-                        >
-                          {k.title}
-                          {k.thread && (
-                            <span className="text-wood-600"> · {k.thread}</span>
-                          )}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {holderElement && piece.status === 'placed' && (
-                <div>
-                  <p className={`${LABEL} mb-1`}>The hands it rests in</p>
-                  <p className="font-display text-lg text-wood-900 leading-snug">
-                    Held by a chart of {holderElement}
-                  </p>
-                </div>
-              )}
-            </section>
+        {/* ═══════════════════ THE LIFE OF THIS PIECE ═══════════════════
+            One connected spine instead of floating chapters. Everything
+            below the certificate hangs on a single ledger line: what has
+            happened (filled marks), what it carries (the code, its kin),
+            and what is still unwritten (hollow marks) — so the page's ask
+            reads as the piece's own next event, never a sales block. */}
+        <div className="mt-14 sm:mt-16">
+          {story && (
+            <p className="font-reading text-lg text-wood-800 leading-[1.7] mb-10 whitespace-pre-line">
+              {story}
+            </p>
           )}
 
-          {/* ── Chapter: Its story — the public history spine ── */}
+          {(content?.materials || content?.provenance) && (
+            <div className="space-y-5 mb-10">
+              {content?.materials && (
+                <div>
+                  <p className={`${LABEL} mb-2`}>Materials</p>
+                  <p className="font-reading text-base text-wood-800 leading-[1.6] whitespace-pre-line">
+                    {content.materials}
+                  </p>
+                </div>
+              )}
+              {content?.provenance && (
+                <div>
+                  <p className={`${LABEL} mb-2`}>Provenance</p>
+                  <p className="font-reading text-base text-wood-800 leading-[1.6] whitespace-pre-line">
+                    {content.provenance}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {galleryImages.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 mb-10">
+              {galleryImages.map((publicId, i) => (
+                <a
+                  key={publicId}
+                  href={img(publicId, { w: 1600, crop: 'fit' })}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block bg-[#151311] overflow-hidden"
+                >
+                  <img
+                    src={img(publicId, { w: 400, h: 400, crop: 'fill' })}
+                    alt={`${cleanTitle}, additional view ${i + 1}`}
+                    className="w-full h-full object-cover block"
+                    loading="lazy"
+                  />
+                </a>
+              ))}
+            </div>
+          )}
+
           <section>
-            <h2 className={`${LABEL} text-center mb-8`}>Its story</h2>
-            <ol className="relative ml-[3px] border-l border-wood-300 space-y-5 pb-1">
-              {spine.map((entry, i) => (
+            <h2 className={`${LABEL} text-center mb-8`}>The life of this piece</h2>
+            <ol className="relative ml-[3px] border-l border-wood-300 space-y-6 pb-1 max-w-lg mx-auto">
+              {/* What has happened — filled marks. The code stop rides
+                  directly after Created: it is a birth fact, not an event. */}
+              {spine.slice(0, 1).map((entry, i) => (
                 <li key={i} className="relative pl-6">
                   <span
                     aria-hidden
                     className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
                     style={{ transform: 'translateX(-4px)' }}
                   />
-                  <span className="font-display text-lg text-wood-900 leading-snug">
+                  <span className="font-reading text-lg text-wood-900 leading-snug">
                     {entry.label}
                     {entry.detail && (
                       <span className="text-wood-600"> · {entry.detail}</span>
@@ -849,40 +886,164 @@ const PiecePage: React.FC = () => {
                   </span>
                 </li>
               ))}
-              <li className="relative pl-6">
-                <span
-                  aria-hidden
-                  className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
-                  style={{ transform: 'translateX(-4px)' }}
-                />
-                <span className="font-display text-lg text-wood-500 leading-snug">
-                  It is ready for its next keeper
-                </span>
-              </li>
+
+              {/* What it carries — the code, marked by its own glyph. */}
+              {card && cardNumber != null && (
+                <li className="relative pl-6">
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
+                    style={{ transform: 'translateX(-4px)' }}
+                  />
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="font-reading text-lg text-wood-900 leading-snug">
+                      Carries the code {card.iching.hexagram_name.replace(/\s*\(.*\)$/, '')}
+                      <span className="text-wood-600"> · Hexagram {cardNumber}</span>{' '}
+                      <Link
+                        to={`/universal-language/${cardNumber}`}
+                        state={{ ritual: true }}
+                        className={`${LINK} whitespace-nowrap`}
+                      >
+                        Read it →
+                      </Link>
+                    </span>
+                    <span aria-hidden className="shrink-0 text-bronze-600 pt-0.5">
+                      <HexagramSVG
+                        upper={card.iching.upper_trigram.symbol}
+                        lower={card.iching.lower_trigram.symbol}
+                        width={24}
+                      />
+                    </span>
+                  </div>
+                </li>
+              )}
+
+              {/* The rest of what has happened. */}
+              {spine.slice(1).map((entry, i) => (
+                <li key={`rest-${i}`} className="relative pl-6">
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
+                    style={{ transform: 'translateX(-4px)' }}
+                  />
+                  <span className="font-reading text-lg text-wood-900 leading-snug">
+                    {entry.label}
+                    {entry.detail && (
+                      <span className="text-wood-600"> · {entry.detail}</span>
+                    )}
+                  </span>
+                </li>
+              ))}
+
+              {/* Its kin — alive elsewhere, one quiet stop. */}
+              {kinEntries.length > 0 && (
+                <li className="relative pl-6">
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
+                    style={{ transform: 'translateX(-4px)' }}
+                  />
+                  <span className="font-reading text-lg text-wood-900 leading-snug">
+                    Its kin
+                    <span className="text-wood-600"> · nearest in pattern, alive elsewhere</span>
+                  </span>
+                  <ul className="mt-2 space-y-1">
+                    {kinEntries.map((k) => (
+                      <li key={k.key}>
+                        <Link
+                          to={`/atlas?piece=${encodeURIComponent(k.atlasParam)}`}
+                          className="font-reading text-base text-wood-800 leading-snug hover:text-bronze-600 transition-colors"
+                        >
+                          {k.title}
+                          {k.thread && (
+                            <span className="text-wood-500"> · {k.thread}</span>
+                          )}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              )}
+
+              {/* What is still unwritten — hollow marks. The invitation is
+                  the piece's own next event. */}
+              {seeking ? (
+                <>
+                  <li className="relative pl-6">
+                    <span
+                      aria-hidden
+                      className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
+                      style={{ transform: 'translateX(-4px)' }}
+                    />
+                    <span className="font-reading text-lg text-wood-500 leading-snug">
+                      A keeper writes one dream into it{' '}
+                      <Link to={claimHref} className={`${LINK} whitespace-nowrap`}>
+                        Become its keeper →
+                      </Link>
+                    </span>
+                  </li>
+                  <li className="relative pl-6">
+                    <span
+                      aria-hidden
+                      className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
+                      style={{ transform: 'translateX(-4px)' }}
+                    />
+                    <span className="font-reading text-lg text-wood-500 leading-snug">
+                      Its light joins the map
+                    </span>
+                  </li>
+                </>
+              ) : (
+                <li className="relative pl-6">
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
+                    style={{ transform: 'translateX(-4px)' }}
+                  />
+                  <span className="font-reading text-lg text-wood-500 leading-snug">
+                    Passed on, someday
+                    <span className="text-wood-400"> · the book continues</span>
+                  </span>
+                </li>
+              )}
             </ol>
           </section>
 
-          {/* ── CTA: the claim block stays at the foot ── */}
-          <div className={`${CARD} p-6 sm:p-7`}>
-            <p className="font-display text-lg text-wood-800 leading-[1.6] mb-5">
-              Your piece already has a story. Signing in lets you add to it:
-              place it on the map, write its intentions, pass it on.
-            </p>
-            <Link
-              to={claimHref}
-              className="inline-block font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3"
-            >
-              Open this piece's book
-            </Link>
-            <p className="font-display text-sm text-wood-600 mt-3 leading-[1.6]">
-              Sign in with the email your piece was registered to.
-            </p>
-            <div className="mt-5 pt-4 border-t border-wood-200">
-              <RequestStewardship
-                pieceId={piece.pieceId}
-                editionNumber={piece.editionNumber}
-                leadIn="Came to it another way? An auction, a gift, an inheritance:"
-              />
+          {/* ═══════════════════ THE TWO DOORS ═══════════════════
+              One band, two short doors: the holder's and the maker's. */}
+          <div className={`${CARD} grid sm:grid-cols-2 mt-14 sm:mt-16`}>
+            <div className="p-6 sm:p-7 border-b sm:border-b-0 sm:border-r border-wood-200">
+              <p className={`${LABEL} mb-3`}>Hold this piece?</p>
+              <p className="font-reading text-base text-wood-700 leading-[1.6] mb-5">
+                Claim it: place it on the map, write the dream it will keep.
+              </p>
+              <Link to={claimHref} className={BUTTON}>
+                Claim your piece
+              </Link>
+              <p className="font-reading text-sm text-wood-600 mt-3 leading-[1.6]">
+                Sign in with the email it was registered to.
+              </p>
+              <div className="mt-5 pt-4 border-t border-wood-200">
+                <RequestStewardship
+                  pieceId={piece.pieceId}
+                  editionNumber={piece.editionNumber}
+                  leadIn="An auction, a gift, an inheritance?"
+                />
+              </div>
+            </div>
+            <div className="p-6 sm:p-7">
+              <p className={`${LABEL} mb-3`}>Want one made?</p>
+              <p className="font-reading text-base text-wood-700 leading-[1.6] mb-5">
+                {claimed
+                  ? 'This design can be made again: your size, your palette.'
+                  : 'Your size, your palette, cut layer by layer for you.'}
+              </p>
+              <Link to={makeHref} className={BUTTON}>
+                Begin your piece
+              </Link>
+              <p className="font-reading text-sm text-wood-600 mt-3 leading-[1.6]">
+                A short note to the studio. Adrian replies himself.
+              </p>
             </div>
           </div>
         </div>
