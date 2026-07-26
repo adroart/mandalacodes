@@ -301,8 +301,6 @@ const WallTile: React.FC<{
     if (rect) onOpen(card.key, rect);
   };
 
-  const turnLabel = face === 'dreams' ? 'see the piece' : 'read the dream';
-
   return (
     <li
       data-flipkey={card.key}
@@ -321,7 +319,7 @@ const WallTile: React.FC<{
         onPointerMove={tilt.onMove}
         onPointerLeave={tilt.onLeave}
         onClick={open}
-        className="group/card relative aspect-square cursor-pointer"
+        className="group/card relative aspect-[4/5] cursor-pointer"
         style={{
           perspective: '1400px',
           transform:
@@ -345,9 +343,12 @@ const WallTile: React.FC<{
           }`}
           style={{ transitionDelay: `${delayMs}ms` }}
         >
-          {/* Dream face. The away face keeps paint hidden via backface-visibility
-              but would still catch clicks and tab stops — pointer-events and
-              focusability must follow the turn. */}
+          {/* Dream face — three zones: a slim upper bar carrying the flip
+              button, the dream in the middle, the signature and anchor in the
+              lower bar. Separated zones so nothing overlaps the embossed
+              sigil. The away face keeps paint hidden via backface-visibility
+              but would still catch clicks and tab stops, so pointer-events and
+              focusability follow the turn. */}
           <div
             aria-hidden={face === 'art'}
             className={`absolute inset-0 [backface-visibility:hidden] flex flex-col overflow-hidden border bg-wood-50 ${
@@ -358,125 +359,126 @@ const WallTile: React.FC<{
                 'linear-gradient(168deg, rgba(222,188,126,0.05), transparent 38%, rgba(21,19,17,0.12))',
             }}
           >
-            {/* The kind's sigil, embossed into the paper. */}
-            <KindMark card={card} width={far ? 60 : 96} />
             <Grain />
+            {/* Upper bar: the flip control, tight in the corner. */}
+            <div className="relative z-10 flex items-center justify-end px-3 pt-2 pb-1">
+              <FlipButton
+                label="show art"
+                onTurn={() => onTurn(card.key)}
+                far={far}
+                away={face === 'art'}
+              />
+            </div>
+            {/* Middle: the dream, with the sigil embossed behind only here. */}
             <button
               type="button"
               onClick={open}
               tabIndex={face === 'art' ? -1 : 0}
               aria-label={`Open the record of ${card.title}`}
-              className="relative flex-1 min-h-0 flex flex-col text-left p-3.5 sm:p-4 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 group"
+              className="relative flex-1 min-h-0 w-full flex flex-col text-left px-3.5 sm:px-4 pb-1 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px] group"
             >
+              <KindMark card={card} width={far ? 56 : 88} />
               {card.dream ? (
-                <>
-                  <p
-                    className={`font-display text-wood-800 group-hover:text-wood-900 transition-colors ${
-                      far
-                        ? 'text-[13px] leading-[1.5] line-clamp-4'
-                        : density === 'near'
-                          ? 'text-[17px] leading-[1.65] line-clamp-[9]'
-                          : 'text-[16px] leading-[1.6] line-clamp-6'
-                    }`}
-                  >
-                    {card.dream}
-                  </p>
-                  <span className="mt-auto pt-2 block text-center px-8">
-                    {card.signedBy?.name && (
-                      <span
-                        className={`block font-display text-wood-600 truncate ${
-                          far ? 'text-[12px]' : 'text-[14px]'
-                        }`}
-                      >
-                        {card.signedBy.name}
-                      </span>
-                    )}
-                    <span
-                      className={`block font-label uppercase tracking-[0.14em] text-bronze-600 ${
-                        far ? 'text-[9px]' : 'text-[11px]'
-                      }`}
-                    >
-                      {ledgerStatusLine(card)}
-                    </span>
-                  </span>
-                </>
+                <p
+                  className={`relative font-display text-wood-800 group-hover:text-wood-900 transition-colors ${
+                    far
+                      ? 'text-[13px] leading-[1.5] line-clamp-5'
+                      : density === 'near'
+                        ? 'text-[17px] leading-[1.6] line-clamp-[10]'
+                        : 'text-[16px] leading-[1.6] line-clamp-[7]'
+                  }`}
+                >
+                  {card.dream}
+                </p>
               ) : (
-                <>
-                  <span className="my-auto text-center block">
-                    <span
-                      className={`block font-display text-wood-600 leading-snug ${
-                        far ? 'text-[14px]' : 'text-xl'
-                      }`}
-                    >
-                      {card.title}
-                    </span>
-                  </span>
+                <span className="relative m-auto text-center block">
                   <span
-                    className={`block text-center font-label uppercase tracking-[0.14em] text-wood-400 ${
-                      far ? 'text-[9px]' : 'text-[11px]'
+                    className={`block font-display text-wood-600 leading-snug ${
+                      far ? 'text-[14px]' : 'text-xl'
                     }`}
                   >
-                    {card.norm === 'seeking'
-                      ? 'seeking ground'
-                      : 'waiting for a dream'}
+                    {card.title}
                   </span>
-                </>
+                </span>
               )}
             </button>
+            {/* Lower bar: who signed it, where it lives. */}
+            <div className="relative border-t border-wood-200/70 px-3 py-2 text-center">
+              {card.dream && card.signedBy?.name && (
+                <span
+                  className={`block font-display text-wood-600 truncate ${
+                    far ? 'text-[12px]' : 'text-[13px]'
+                  }`}
+                >
+                  {card.signedBy.name}
+                </span>
+              )}
+              <span
+                className={`block font-label uppercase tracking-[0.16em] ${
+                  card.dream ? 'text-bronze-600' : 'text-wood-400'
+                } ${far ? 'text-[9px]' : 'text-[10px]'}`}
+              >
+                {card.dream
+                  ? ledgerStatusLine(card)
+                  : card.norm === 'seeking'
+                    ? 'seeking ground'
+                    : 'waiting for a dream'}
+              </span>
+            </div>
             <Sheen />
-            <TurnMark
-              label={turnLabel}
-              onTurn={() => onTurn(card.key)}
-              far={far}
-              away={face === 'art'}
-            />
           </div>
 
-          {/* Art face */}
+          {/* Art face — the square work framed by an upper and lower bar. The
+              flip button rides the upper bar, the title and details the
+              lower; the piece sits whole between them. */}
           <div
             aria-hidden={face === 'dreams'}
-            className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden border bg-[#151311] ${
+            className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden border bg-[#151311] ${
               face === 'dreams' ? 'pointer-events-none' : ''
             } ${placed ? 'border-bronze-500/50' : 'border-wood-800/40'}`}
           >
+            {/* Upper bar. */}
+            <div className="relative z-10 flex items-center justify-end px-3 pt-2 pb-1.5">
+              <FlipButton
+                label="show dream"
+                onTurn={() => onTurn(card.key)}
+                far={far}
+                dark
+                away={face === 'dreams'}
+              />
+            </div>
+            {/* The square piece. */}
             <button
               type="button"
               onClick={open}
               tabIndex={face === 'dreams' ? -1 : 0}
               aria-label={`Open the record of ${card.title}`}
-              className="absolute inset-0 w-full text-left focus:outline-2 focus:outline-bronze-400 focus:outline-offset-[-2px] group"
+              className="relative flex-1 min-h-0 w-full overflow-hidden focus:outline-2 focus:outline-bronze-400 focus:outline-offset-[-2px] group"
             >
               <ArtworkPlate
                 src={card.coverImage}
                 alt={card.title}
                 title={card.title}
                 aspect="cover"
-                imgClassName="transition-transform duration-[1600ms] ease-out group-hover:scale-[1.06]"
+                imgClassName="transition-transform duration-[1600ms] ease-out group-hover:scale-[1.05]"
               />
-              <span className="absolute inset-x-0 bottom-0 pt-10 px-3 pb-2.5 bg-gradient-to-t from-black/75 via-black/35 to-transparent">
-                <span
-                  className={`block font-display text-[#f0e8d8] leading-snug truncate ${
-                    far ? 'text-[13px]' : 'text-[16px]'
-                  }`}
-                >
-                  {card.title}
-                </span>
-                {!far && detailLine(card) && (
-                  <span className="block font-label text-[10px] uppercase tracking-[0.16em] text-[#c8b084] truncate pr-10">
-                    {detailLine(card)}
-                  </span>
-                )}
-              </span>
             </button>
+            {/* Lower bar. */}
+            <div className="relative border-t border-white/10 px-3 py-2 text-center">
+              <span
+                className={`block font-display text-[#f0e8d8] leading-snug truncate ${
+                  far ? 'text-[13px]' : 'text-[15px]'
+                }`}
+              >
+                {card.title}
+              </span>
+              {!far && detailLine(card) && (
+                <span className="block font-label text-[9px] uppercase tracking-[0.16em] text-[#c8b084] truncate">
+                  {detailLine(card)}
+                </span>
+              )}
+            </div>
             <Sheen strong />
-            <Grain />
-            <TurnMark
-              label={turnLabel}
-              onTurn={() => onTurn(card.key)}
-              far={far}
-              dark
-              away={face === 'dreams'}
-            />
           </div>
         </div>
       </div>
@@ -484,66 +486,44 @@ const WallTile: React.FC<{
   );
 };
 
-/** The flip affordance — a whisper, not an ornament. The card stays clean
- *  paper until a hand arrives; only then does a single hairline mark breathe
- *  in at the lower right, an engraved "reverse" glyph at 0.75px. No fill, no
- *  fold, no shadow, no gradient. This is the gallery move: restraint, and the
- *  surface untouched until you reach for it. On a touch device the mark stays
- *  faintly present, since there is no hover to summon it. */
-const TurnMark: React.FC<{
+/** The flip control — a named button seated tight in a face's upper-right
+ *  corner: "show art" on the dream side, "show dream" on the reverse. A small
+ *  caps label with a hairline that draws in from the right under the hand, so
+ *  it reads as a considered switch rather than an icon. Stops propagation so
+ *  turning the card never also opens the record. */
+const FlipButton: React.FC<{
   label: string;
   onTurn: () => void;
   far: boolean;
   dark?: boolean;
   /** True when this mark's face is turned away — unclickable, unfocusable. */
   away?: boolean;
-}> = ({ label, onTurn, far, dark, away }) => {
-  const stroke = dark ? 'rgba(200,176,132,0.9)' : 'rgba(122,90,34,0.9)';
-  const s = far ? 15 : 19;
-  return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        onTurn();
-      }}
-      tabIndex={away ? -1 : 0}
-      aria-label={label}
-      title={label}
-      className={`absolute bottom-0 right-0 z-10 flex items-center justify-center transition-opacity duration-500 ease-out focus:outline-none focus-visible:opacity-100 ${
-        far ? 'h-8 w-8' : 'h-11 w-11'
-      } ${
-        HANDED
-          ? 'opacity-0 group-hover/card:opacity-45 hover:!opacity-100'
-          : 'opacity-30 hover:opacity-100'
+}> = ({ label, onTurn, far, dark, away }) => (
+  <button
+    type="button"
+    onClick={(e) => {
+      e.stopPropagation();
+      onTurn();
+    }}
+    tabIndex={away ? -1 : 0}
+    aria-label={label}
+    className={`group/flip relative shrink-0 font-label uppercase tracking-[0.18em] leading-none pb-1 transition-colors ${
+      far ? 'text-[8px]' : 'text-[9px]'
+    } ${
+      dark
+        ? 'text-[#c8b084]/85 hover:text-[#f0e2c2]'
+        : 'text-bronze-600/85 hover:text-bronze-700'
+    }`}
+  >
+    {label}
+    <span
+      aria-hidden
+      className={`absolute left-auto right-0 bottom-0 h-px w-0 transition-[width] duration-300 ease-out group-hover/flip:w-full ${
+        dark ? 'bg-[#c8b084]/70' : 'bg-bronze-500/70'
       }`}
-    >
-      {/* An engraved reverse mark: two mirrored quarter-arcs meeting a fine
-          axis, the sign of a face and its other side. Hairline, round-capped. */}
-      <svg width={s} height={s} viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path
-          d="M12 3.5 v17"
-          stroke={stroke}
-          strokeWidth="0.75"
-          strokeOpacity="0.55"
-          strokeLinecap="round"
-        />
-        <path
-          d="M9 6 A 7 7 0 0 0 9 18"
-          stroke={stroke}
-          strokeWidth="1"
-          strokeLinecap="round"
-        />
-        <path
-          d="M15 6 A 7 7 0 0 1 15 18"
-          stroke={stroke}
-          strokeWidth="1"
-          strokeLinecap="round"
-        />
-      </svg>
-    </button>
-  );
-};
+    />
+  </button>
+);
 
 /* ─── The record, in the flow of the wall ─────────────────────────────────
  * Not a popup: this renders as a grid item spanning an NxN block of the
