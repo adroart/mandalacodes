@@ -11,6 +11,12 @@ import ArtworkPlate from './ArtworkPlate';
 import DreamSignature from './DreamSignature';
 import HexagramGlyph from '../oracle/HexagramGlyph';
 import {
+  LedgerControlRow,
+  LedgerSearchField,
+  LedgerSelect,
+  LedgerTally,
+} from './LedgerControls';
+import {
   ledgerKindLabel,
   ledgerStatusLine,
   matchesSearch,
@@ -115,32 +121,9 @@ function piecePathOf(c: WallCard): string {
   }`;
 }
 
-/* ─── Filter chips (paper grammar, same voice as the ledger's bar) ────────── */
-
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={`whitespace-nowrap font-label text-[12px] lowercase tracking-[0.04em] pb-0.5 border-b transition-colors ${
-        active
-          ? 'text-bronze-700 border-bronze-600'
-          : 'text-wood-500 border-transparent hover:text-bronze-700'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
+/* The wall's controls are the shared ones (LedgerControls.tsx). It keeps kind
+   as a real filter, unlike the ledger: a card field has no sections to jump
+   to, so narrowing is the only way to see one kind on its own. */
 
 /* ─── The hand instruments: tilt + sheen vars on one element ─────────────── */
 
@@ -878,6 +861,9 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
   const [search, setSearchState] = useState<string>(
     () => searchParams.get('lq') ?? '',
   );
+  /** What the field holds; `search` follows a beat later so a long wall is not
+   *  refiltered on every keystroke. */
+  const [typed, setTyped] = useState<string>(() => searchParams.get('lq') ?? '');
 
   const mirror = (key: string, value: string, clearVal: string) => {
     setSearchParams(
@@ -898,10 +884,48 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
     setStateState(v);
     mirror('ls', v, 'all');
   };
-  const setSearch = (v: string) => {
-    setSearchState(v);
-    mirror('lq', v, '');
+  const setSearch = useCallback(
+    (v: string) => {
+      setSearchState(v);
+      mirror('lq', v, '');
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setSearchParams],
+  );
+  useEffect(() => {
+    if (typed === search) return;
+    const t = setTimeout(() => setSearch(typed), 180);
+    return () => clearTimeout(t);
+  }, [typed, search, setSearch]);
+
+  const filterActive = kind !== 'all' || state !== 'all' || search.trim() !== '';
+  const clearAll = () => {
+    setKind('all');
+    setState('all');
+    setTyped('');
+    setSearch('');
   };
+
+  /* Counts on every option, so a dead end is visible before it is chosen. */
+  const kindSelectOptions = useMemo(
+    () =>
+      kindOptions.map((k) => ({
+        value: k,
+        label: k === 'all' ? 'every kind' : ledgerKindLabel(k),
+        count: k === 'all' ? cards.length : cards.filter((c) => c.kind === k).length,
+      })),
+    [kindOptions, cards],
+  );
+  const stateSelectOptions = useMemo(
+    () =>
+      LEDGER_STATE_OPTIONS.map((o) => ({
+        ...o,
+        count: cards.filter(
+          (c) => (kind === 'all' || c.kind === kind) && matchesState(c, o.value),
+        ).length,
+      })),
+    [cards, kind],
+  );
 
   /* The two whole-wall instruments: which face is out, and how close you
      stand. A whole-wall turn ripples with a per-card stagger; turning one
@@ -1054,57 +1078,34 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
           </div>
         </div>
 
-        <div className="border border-bronze-400/20 bg-bronze-400/[0.04] p-4 sm:p-5 flex flex-col gap-4">
-          <div className="flex items-baseline gap-4">
-            <span className="w-14 shrink-0 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500">
-              kind
-            </span>
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-              {kindOptions.map((k) => (
-                <Chip key={k} active={kind === k} onClick={() => setKind(k)}>
-                  {k === 'all' ? 'all' : ledgerKindLabel(k)}
-                </Chip>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-baseline gap-4">
-            <span className="w-14 shrink-0 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500">
-              state
-            </span>
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-              {LEDGER_STATE_OPTIONS.map((opt) => (
-                <Chip
-                  key={opt.value}
-                  active={state === opt.value}
-                  onClick={() => setState(opt.value)}
-                >
-                  {opt.label}
-                </Chip>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-baseline gap-4">
-            <span className="w-14 shrink-0 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500">
-              search
-            </span>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="search titles, cities, dreams"
-              aria-label="Search the wall by title, city, or dream"
-              className="w-full max-w-md bg-transparent border-b border-wood-300 pb-1 font-reading text-[15px] text-wood-900 placeholder:text-wood-500 focus:outline-none focus:border-bronze-600 transition-colors"
-            />
-          </div>
-        </div>
+        <LedgerControlRow>
+          <LedgerSearchField
+            value={typed}
+            onChange={setTyped}
+            ariaLabel="Search the wall by title, city, or dream"
+          />
+          <LedgerSelect
+            label="kind"
+            value={kind}
+            options={kindSelectOptions}
+            onChange={setKind}
+            emphasis={kind !== 'all'}
+          />
+          <LedgerSelect
+            label="status"
+            value={state}
+            options={stateSelectOptions}
+            onChange={setState}
+            emphasis={state !== 'all'}
+          />
+        </LedgerControlRow>
 
-        <p
-          className="font-label text-[11px] uppercase tracking-[0.16em] text-wood-600"
-          aria-live="polite"
-        >
-          {visible.length} of {cards.length} pieces
+        <LedgerTally onClear={filterActive ? clearAll : undefined}>
+          {filterActive
+            ? `${visible.length} of ${cards.length} pieces`
+            : `${cards.length} pieces`}
           {dreamsRiding > 0 && ` · ${dreamsRiding} dreams riding`}
-        </p>
+        </LedgerTally>
       </div>
 
       {visible.length === 0 ? (

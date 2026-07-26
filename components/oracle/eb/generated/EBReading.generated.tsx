@@ -386,14 +386,20 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", color: "var(--d-3)", textAlign: "center", margin: "0 auto 24px", maxWidth: "42ch" }}>
               Three coins, six times. The throw shows which lines are moving for you now, the places this hexagram is already turning into another.
               </p>
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px", perspective: "560px" }}>
                 <div ref={vals.registerCoins} style={{ display: "flex", gap: "14px" }}>
                   {[0, 1, 2].map((coinIdx) => (
-                    <svg key={coinIdx} width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true">
-                      <circle cx="23" cy="23" r="22" stroke="var(--d-rule)" strokeWidth="1" />
-                      <circle cx="23" cy="23" r="17" stroke="var(--d-rule)" strokeWidth="1" opacity="0.55" />
-                      <rect x="17.5" y="17.5" width="11" height="11" stroke="var(--accent-d)" strokeWidth="1" opacity="0.8" />
-                    </svg>
+                    // The animated element is this HTML span, not the SVG inside
+                    // it. HTML boxes get their own GPU layer for 3D transforms;
+                    // rotating the SVG directly re-rasterizes the vector every
+                    // frame, which is what made the toss lag.
+                    <span key={coinIdx} style={{ display: "inline-flex", willChange: "transform", backfaceVisibility: "hidden", transformStyle: "preserve-3d" }}>
+                      <svg width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true">
+                        <circle cx="23" cy="23" r="22" stroke="var(--d-rule)" strokeWidth="1" />
+                        <circle cx="23" cy="23" r="17" stroke="var(--d-rule)" strokeWidth="1" opacity="0.55" />
+                        <rect x="17.5" y="17.5" width="11" height="11" stroke="var(--accent-d)" strokeWidth="1" opacity="0.8" />
+                      </svg>
+                    </span>
                   ))}
                 </div>
               </div>
