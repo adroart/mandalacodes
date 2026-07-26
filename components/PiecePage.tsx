@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { CARD_BY_NUMBER } from '../data/oracleData';
@@ -260,6 +260,16 @@ function formatSaleDate(iso: string): string {
 
 const PiecePage: React.FC = () => {
   const { pieceId, edition } = useParams<{ pieceId: string; edition?: string }>();
+  const navigate = useNavigate();
+  /* Is there somewhere inside the app to step back to? react-router stamps an
+     incrementing idx on every history entry it creates, so a positive idx means
+     this page was opened from another page of the site rather than cold (a
+     shared link, a QR scan). MUST be read here, above the loading and
+     not-found early returns below: hooks after a conditional return change the
+     hook count between renders and React tears the page down with "Rendered
+     more hooks than during the previous render". */
+  const routerIdx = (window.history.state as { idx?: number } | null)?.idx;
+  const cameFromApp = typeof routerIdx === 'number' ? routerIdx > 0 : window.history.length > 1;
   const { isLoaded, isSignedIn, fetchAuthed } = useAccount();
   const [load, setLoad] = useState<LoadState>({ kind: 'loading' });
   const [content, setContent] = useState<PieceContent | null>(null);
@@ -481,6 +491,27 @@ const PiecePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-paper-100 text-wood-900">
       <div className="px-5 sm:px-6 pb-32 max-w-3xl mx-auto pt-[calc(var(--nav-height)+1rem)] sm:pt-[calc(var(--nav-height)+1.75rem)]">
+        {/* The way back, and then the breadcrumb.
+
+            A reader who opened this from a light on the atlas wants to shut the
+            book and be returned to the light they were standing at, not to a
+            fresh globe with nothing selected (Adrian, 2026-07-26). The
+            breadcrumb's "Atlas" link cannot do that: it is a forward navigation
+            to a bare /atlas. So when we arrived from inside the app, step back
+            through history, which lands on the atlas with the piece still open.
+            A cold arrival (a shared link, a QR scan) has no history to step
+            into, so it gets the plain link instead. */}
+        {cameFromApp && (
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="mb-4 -ml-1 flex items-center gap-2 px-1 py-1 font-label text-[11px] uppercase tracking-[0.16em] text-wood-600 hover:text-wood-900 transition-colors"
+          >
+            <span aria-hidden className="text-[15px] leading-none">←</span>
+            close the book
+          </button>
+        )}
+
         {/* Breadcrumb */}
         <nav
           aria-label="Breadcrumb"

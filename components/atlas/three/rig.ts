@@ -18,10 +18,12 @@ import * as THREE from 'three';
 
 export const GLOBE_RADIUS = 1;
 
-/** Camera distance at rest and pulled back for the Mandala View. At fov 26°
-    the resting sphere fills ~88% of the viewport height (commanding, never
-    cropped); the mandala distance is a floor: GlobeScene pushes further back
-    on narrow viewports until the full hexagram ring fits. */
+/** Camera distance at rest and pulled back for the Mandala View. Both are
+    FLOORS, not fixed positions: GlobeScene pushes further back whenever the
+    frame is too narrow to hold the subject, so the resting sphere always keeps
+    a margin and the mandala always shows its whole ring. Do not read the
+    resting number as a framing guarantee on its own — the fit math in
+    GlobeScene is what guarantees the framing. */
 export const CAMERA_NEAR_DIST = 5.15;
 export const CAMERA_FAR_DIST = 7.6;
 
