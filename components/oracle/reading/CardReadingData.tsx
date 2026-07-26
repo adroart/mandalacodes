@@ -11,7 +11,7 @@
 import React, { useEffect, useState } from 'react';
 import { CARD_BY_NUMBER } from '../../../data/oracleData';
 import { getSynthesis, type CardSynthesis } from '../../../data/synthesisData';
-import { ulCardImageUrl, ulPieceForCard } from '../../../utils/universalLanguage';
+import { ulCardArtFloatsFree, ulCardImageUrl, ulPieceForCard } from '../../../utils/universalLanguage';
 import CardReading, { type CardReadingLens } from './CardReading';
 import Navigation from '../../Navigation';
 import { hexagramLineBooleans } from '../HexagramGlyph';
@@ -152,6 +152,7 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
       ]}
       reading={reading}
       artwork={artwork}
+      artFloatsFree={ulCardArtFloatsFree(card.number)}
       topNav={<Navigation />}
     />
   );

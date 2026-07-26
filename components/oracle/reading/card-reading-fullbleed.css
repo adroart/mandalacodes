@@ -68,6 +68,16 @@
   box-shadow: inset 0 0 0 1px rgba(198, 166, 103, 0.22) !important;
 }
 
+/* Except on the plates that arrive with transparent corners. There the mandala
+   is a shape on the page, not a picture on a rectangle, and the hairline was
+   drawing a box around four empty corners. The plates that keep their captured
+   ground keep the edge, because on those it is the only thing separating a dark
+   ground from the dark page. `ul-art-floats` is set per card from
+   ulCardArtFloatsFree() in utils/universalLanguage.ts. */
+.ul-art-floats .card-reading :has(> [data-artparallax]) {
+  box-shadow: none !important;
+}
+
 /* The whole artwork, always. The design frames it in a square tile and then
    zooms the layer inside to 1.14 so it can drift on scroll, which trims the
    outer ring off a mandala. The tile is already square and so is the artwork,
