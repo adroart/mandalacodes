@@ -21,7 +21,7 @@
     </div>
     <div aria-hidden="true" style="display:flex;align-items:center;gap:14px;margin:20px 0;">
       <i style="height:1px;flex:1;background:rgba(168,135,77,.28);"></i>
-      <span style="display:inline-flex;flex-direction:column;gap:4px;width:26px;flex:none;"><sc-for list="{{ hexLines }}" as="ln" hint-placeholder-count="6"><span style="display:flex;gap:4px;justify-content:space-between;"><sc-if value="{{ ln.solid }}" hint-placeholder-val="{{ true }}"><i style="width:26px;height:3px;background:#c6a667;"></i></sc-if><sc-if value="{{ ln.broken }}" hint-placeholder-val="{{ true }}"><i style="width:11px;height:3px;background:#c6a667;"></i><i style="width:11px;height:3px;background:#c6a667;"></i></sc-if></span></sc-for></span>
+      <span style="display:inline-flex;flex-direction:column;gap:3px;width:34px;flex:none;"><sc-for list="{{ hexLines }}" as="ln" hint-placeholder-count="6"><span style="display:flex;gap:4px;justify-content:space-between;"><sc-if value="{{ ln.solid }}" hint-placeholder-val="{{ true }}"><i style="width:34px;height:4px;background:#c6a667;"></i></sc-if><sc-if value="{{ ln.broken }}" hint-placeholder-val="{{ true }}"><i style="width:15px;height:4px;background:#c6a667;"></i><i style="width:15px;height:4px;background:#c6a667;"></i></sc-if></span></sc-for></span>
       <i style="height:1px;flex:1;background:rgba(168,135,77,.28);"></i>
     </div>
     <p style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:var(--kw-size,19px);line-height:1.6;color:#e6d9be;margin:0;text-align:var(--hero-align,left);">{{ keywordsLine }}</p>

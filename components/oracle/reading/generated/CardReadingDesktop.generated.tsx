@@ -9,12 +9,9 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
 <section style={{ padding: "60px", background: "#0b0906", fontFamily: "'Iowan Old Style Web',Georgia,serif" } as unknown as React.CSSProperties}>
   <div style={{ position: "relative", width: "min(1480px,94vw)", height: "940px", display: "flex", flexDirection: "column", background: "#14100b", border: "1px solid rgba(168,135,77,.22)", borderRadius: "8px", overflow: "hidden", boxShadow: "0 40px 90px -40px rgba(0,0,0,.85)" } as unknown as React.CSSProperties}>
     <header style={{ flex: "0 0 auto", position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", height: "62px", padding: "0 40px", background: "#211c16", borderBottom: "1px solid rgba(168,135,77,.2)" } as unknown as React.CSSProperties}>
-      <a href="/" style={{ display: "flex", flexDirection: "column", lineHeight: "1.22", textAlign: "center" } as unknown as React.CSSProperties}>
-        <span style={{ fontFamily: "'Cinzel',serif", fontSize: "13px", textTransform: "uppercase", color: "#f3ecde", letterSpacing: ".2em", marginRight: "-.2em" } as unknown as React.CSSProperties}>
-        Mandala
-        </span>
-        <span style={{ fontFamily: "'Cinzel',serif", fontSize: "13px", textTransform: "uppercase", color: "#f3ecde", letterSpacing: ".61em", marginRight: "-.61em" } as unknown as React.CSSProperties}>
-        Codes
+      <a href="/" style={{ display: "flex", alignItems: "center", lineHeight: "1.22" } as unknown as React.CSSProperties}>
+        <span style={{ fontFamily: "'Cinzel',serif", fontSize: "13px", textTransform: "uppercase", color: "#f3ecde", letterSpacing: ".2em", marginRight: "-.2em", whiteSpace: "nowrap" } as unknown as React.CSSProperties}>
+        Mandala Codes
         </span>
       </a>
       <nav style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", display: "flex", alignItems: "center" } as unknown as React.CSSProperties}>

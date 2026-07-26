@@ -83,7 +83,7 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
   const rowRef = useRef<HTMLDivElement>(null);
   const inlineMenuRef = useRef<HTMLDivElement>(null);
   const wordmarkRef = useRef<HTMLAnchorElement>(null);
-  const controlsRef = useRef<HTMLDivElement>(null);
+  const controlsRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
@@ -109,21 +109,55 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
     );
   };
 
+  // Several pages (the card reading, the Atlas) do NOT scroll the window — they
+  // scroll an inner absolutely-positioned container, so `window.scrollY` stays
+  // 0 forever there. Listening on `window` alone left the bar stuck in its
+  // translucent top-of-page state on exactly the pages that scroll the most
+  // content underneath it. Scroll events don't bubble, but they DO capture, so
+  // a capture-phase listener on the document sees every scroller on the page;
+  // we read the offset off whichever element actually fired.
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleScroll = (e: Event) => {
+      const target = e.target;
+      if (target === document || target === document.documentElement || target === document.body) {
+        setIsScrolled(window.scrollY > 20);
+        return;
+      }
+      const el = target as HTMLElement | null;
+      if (!el || typeof el.scrollTop !== 'number') return;
+      // Ignore horizontal-only rails (the lens pill strip scrolls sideways);
+      // their scrollTop is permanently 0 and would falsely reset the bar.
+      if (el.scrollHeight <= el.clientHeight + 1) return;
+      setIsScrolled(el.scrollTop > 20);
+    };
+    document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    return () => document.removeEventListener('scroll', handleScroll, { capture: true } as EventListenerOptions);
   }, []);
 
+  // A page swap resets every scroller to the top, but no scroll event fires for
+  // that — without this the bar would keep the compact scrolled surface from the
+  // previous page.
+  useEffect(() => {
+    setIsScrolled(window.scrollY > 20);
+  }, [pathname]);
+
   // Decide whether the inline menu fits, by measuring real geometry rather than
-  // guessing a viewport breakpoint. The menu is centered in the bar, the
-  // wordmark anchors left and the controls anchor right; the menu can grow until
-  // its half-width reaches whichever side element sits closer to center. We
-  // measure against the menu's *natural* width (clientWidth ignores any clipping)
-  // and add a small gutter so labels never kiss the wordmark/toggle before we
-  // collapse. The inline menu is always in the DOM (just visually hidden when it
-  // doesn't fit) so its natural width stays measurable even while the hamburger
-  // is showing — that's what lets it expand back the instant room returns.
+  // guessing a viewport breakpoint. The menu is centered in the bar; it can grow
+  // until its half-width reaches whichever flanking element sits closer to
+  // center, plus a small gutter so labels never kiss the wordmark or the toggle
+  // before we collapse. The inline menu is always in the DOM (just visually
+  // hidden when it doesn't fit) so its natural width stays measurable even while
+  // the hamburger is showing — that's what lets it expand back the instant room
+  // returns.
+  //
+  // This measures WIDTHS, never on-screen positions. It used to read the
+  // wordmark's and the toggle's bounding rects, which was fine while the bar had
+  // exactly one arrangement. Now the collapsed bar centers the wordmark and
+  // splits the controls to opposite edges, so a position-based reading of the
+  // collapsed layout would always report "no room on the left" and the desktop
+  // menu could never come back when the window widened again. Widths are the
+  // same in either arrangement, so the test always evaluates the hypothetical
+  // expanded layout and there is no feedback loop between layout and decision.
   useLayoutEffect(() => {
     const row = rowRef.current;
     const menu = inlineMenuRef.current;
@@ -134,14 +168,17 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
     const GUTTER = 24; // breathing room each side before we collapse
 
     const measure = () => {
-      const rowRect = row.getBoundingClientRect();
-      const center = rowRect.left + rowRect.width / 2;
+      const style = getComputedStyle(row);
+      const contentWidth =
+        row.getBoundingClientRect().width -
+        parseFloat(style.paddingLeft || '0') -
+        parseFloat(style.paddingRight || '0');
+      const half = contentWidth / 2;
       const menuHalf = menu.scrollWidth / 2; // natural, unclipped half-width
-      // Room from center out to each side element's inner edge.
-      const leftRoom = wordmark.getBoundingClientRect().right;
-      const rightRoom = controls.getBoundingClientRect().left;
-      const roomLeft = center - leftRoom;
-      const roomRight = rightRoom - center;
+      // Room from center out to where each flanking element would end in the
+      // expanded layout: the wordmark hard-left, the theme toggle hard-right.
+      const roomLeft = half - wordmark.scrollWidth;
+      const roomRight = half - controls.offsetWidth;
       const fits = menuHalf + GUTTER <= Math.min(roomLeft, roomRight);
       setMenuFits(fits);
     };
@@ -232,10 +269,15 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
   };
 
   const open = isMobileMenuOpen;
-  // Solid surface once scrolled or while the mobile sheet is open; translucent
-  // glass over the top of a page otherwise.
+  // Truly opaque once scrolled or while the mobile sheet is open; translucent
+  // glass over the top of a page otherwise. The scrolled surface used to sit at
+  // 95% alpha and lean on the blur to hide the rest — but backdrop-filter does
+  // not reliably sample an inner scroller on iOS Safari, so that last 5% showed
+  // the page's own background and headings sliding past *through* the bar. A
+  // fixed bar over moving content has to be opaque; the blur stays only as a
+  // fallback flourish for the top-of-page glass state.
   const surface = isScrolled || open
-    ? 'bg-paper-50/95 backdrop-blur-xl border-b border-wood-200'
+    ? 'bg-paper-50 border-b border-wood-200'
     : 'bg-paper-50/85 backdrop-blur-md border-b border-wood-200/50';
   // On phones the bar stays slim so it reads as a compact top strip above the
   // page chrome (e.g. the card's chapter band); desktop keeps a generous bar.
@@ -247,29 +289,27 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
       className={`site-bar-root fixed top-0 left-0 w-full z-[100] transition-all duration-500 ease-in-out ${surface} ${pad}`}
     >
       <div ref={rowRef} className="max-w-[1800px] mx-auto px-6 md:px-12 flex justify-between items-center relative z-[120]">
-        <LinkComponent ref={wordmarkRef} to="/" className="group flex flex-col items-stretch leading-none py-2 -my-2 shrink-0" aria-label="Mandala Codes home">
-          {/* Two stacked lines tuned to the SAME printed glyph width. "Mandala"
-              (7 letters) carries light tracking; "Codes" (5 letters) carries
-              heavier tracking so the shorter word stretches to the same right
-              edge — C flush under M, S flush under A. CSS letter-spacing adds a
-              phantom gap AFTER the last letter, so each line is given a negative
-              right margin equal to its own tracking; that pulls the trailing gap
-              back and makes the final glyph land truly flush-right on both. */}
+        {/* One line, both words in a single run of tracking. Letter-spacing adds
+            a phantom gap AFTER the last letter, so a negative right margin equal
+            to the tracking pulls that gap back and lets the final S land truly
+            flush against whatever sits to its right.
+
+            Flex `order` places it: hard-left when the inline menu fits (the menu
+            owns the true center), dead-center when it doesn't, with the theme
+            toggle and the hamburger flanking it. */}
+        <LinkComponent
+          ref={wordmarkRef}
+          to="/"
+          className={`group flex items-center leading-none py-2 -my-2 shrink-0 ${menuFits ? 'order-1' : 'order-2'}`}
+          aria-label="Mandala Codes home"
+        >
           <span
-            className={`font-brand font-normal uppercase text-wood-900 group-hover:text-bronze-600 transition-colors duration-300 ${
+            className={`font-brand font-normal uppercase whitespace-nowrap text-wood-900 group-hover:text-bronze-600 transition-colors duration-300 ${
               isScrolled ? 'text-[12px]' : 'text-[13px]'
             }`}
-            style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.2em', marginRight: '-0.2em', lineHeight: 1.22, textAlign: 'center' }}
+            style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.2em', marginRight: '-0.2em', lineHeight: 1.22 }}
           >
-            Mandala
-          </span>
-          <span
-            className={`font-brand font-normal uppercase text-wood-900 group-hover:text-bronze-600 transition-colors duration-300 ${
-              isScrolled ? 'text-[12px]' : 'text-[13px]'
-            }`}
-            style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.61em', marginRight: '-0.61em', lineHeight: 1.22, textAlign: 'center' }}
-          >
-            Codes
+            Mandala Codes
           </span>
         </LinkComponent>
 
@@ -284,7 +324,7 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
         <div
           ref={inlineMenuRef}
           aria-hidden={!menuFits}
-          className={`items-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap ${
+          className={`items-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap order-3 ${
             menuFits ? 'flex' : 'flex invisible pointer-events-none'
           }`}
         >
@@ -321,30 +361,34 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
           })}
         </div>
 
-        {/* Far-right: bare theme toggle (no enclosing circle), pushed flush to
-            the bar's right edge, then the hamburger (shown only when the inline
-            menu doesn't fit). */}
-        <div ref={controlsRef} className="flex items-center gap-0 shrink-0 -mr-2">
-          <button
-            onClick={toggleDarkMode}
-            className="inline-flex items-center justify-center text-wood-700 hover:text-bronze-600 transition-colors h-9 w-9"
-            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {isDarkMode
-              ? <Sun aria-hidden="true" size={17} strokeWidth={1.75} />
-              : <Moon aria-hidden="true" size={17} strokeWidth={1.75} />}
-          </button>
+        {/* The two controls are independent flex cells rather than one cluster,
+            so they can sit together at the right edge on desktop and split to
+            opposite edges around the centered wordmark on mobile. Both carry the
+            same 44px box, which is the touch minimum AND what makes the wordmark
+            land on true center between them (justify-between only centers the
+            middle child when its two neighbours measure the same). */}
+        <button
+          ref={controlsRef}
+          onClick={toggleDarkMode}
+          className={`inline-flex items-center justify-center shrink-0 text-wood-700 hover:text-bronze-600 transition-colors min-w-[44px] min-h-[44px] ${
+            menuFits ? 'order-4 -mr-2' : 'order-1 -ml-3'
+          }`}
+          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {isDarkMode
+            ? <Sun aria-hidden="true" size={17} strokeWidth={1.75} />
+            : <Moon aria-hidden="true" size={17} strokeWidth={1.75} />}
+        </button>
 
-          <button
-            className={`${menuFits ? 'hidden' : 'flex'} text-wood-900 hover:opacity-70 transition-opacity p-3 -mr-3 min-w-[44px] min-h-[44px] items-center justify-center`}
-            onClick={() => setIsMobileMenuOpen(!open)}
-            aria-expanded={open}
-            aria-controls="mobile-nav-menu"
-            aria-label={open ? 'Close menu' : 'Open menu'}
-          >
-            {open ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+        <button
+          className={`${menuFits ? 'hidden' : 'flex'} order-5 shrink-0 text-wood-900 hover:opacity-70 transition-opacity -mr-3 min-w-[44px] min-h-[44px] items-center justify-center`}
+          onClick={() => setIsMobileMenuOpen(!open)}
+          aria-expanded={open}
+          aria-controls="mobile-nav-menu"
+          aria-label={open ? 'Close menu' : 'Open menu'}
+        >
+          {open ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
       {/* Mobile sheet — only when the inline menu doesn't fit and is open. */}
@@ -354,7 +398,7 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
           id="mobile-nav-menu"
           role="navigation"
           aria-label="Mobile navigation"
-          className="absolute top-full left-0 w-full bg-paper-50/98 backdrop-blur-xl border-b border-wood-200 py-10 px-6 flex flex-col gap-7 items-center shadow-2xl"
+          className="absolute top-full left-0 w-full bg-paper-50 border-b border-wood-200 py-10 px-6 flex flex-col gap-7 items-center shadow-2xl"
         >
           {visibleItems.map((item) => {
             const itemClass = `text-sm font-label uppercase tracking-[0.2em] font-semibold transition-colors ${

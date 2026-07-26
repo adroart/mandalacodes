@@ -68,6 +68,16 @@
   box-shadow: inset 0 0 0 1px rgba(198, 166, 103, 0.22) !important;
 }
 
+/* Except on the plates that arrive with transparent corners. There the mandala
+   is a shape on the page, not a picture on a rectangle, and the hairline was
+   drawing a box around four empty corners. The plates that keep their captured
+   ground keep the edge, because on those it is the only thing separating a dark
+   ground from the dark page. `ul-art-floats` is set per card from
+   ulCardArtFloatsFree() in utils/universalLanguage.ts. */
+.ul-art-floats .card-reading :has(> [data-artparallax]) {
+  box-shadow: none !important;
+}
+
 /* The whole artwork, always. The design frames it in a square tile and then
    zooms the layer inside to 1.14 so it can drift on scroll, which trims the
    outer ring off a mandala. The tile is already square and so is the artwork,
@@ -322,12 +332,17 @@
    needed throughout because the design sets these inline on the elements.
 
    Base, above 760: 64px tall, centred, 13px type at 0.18em. */
+/* Opaque, not 86% glass. This rail is pinned over a scroller, and iOS Safari
+   does not reliably resample backdrop-filter against an inner scrolling
+   container — so the remaining 14% let the reading's own headings slide past
+   visibly *through* the rail. The reading ground is this exact colour, so
+   going solid costs nothing visually and kills the bleed. */
 .card-reading--mobile [data-jumpbar] {
   height: 65px !important;
-  background: color-mix(in oklab, #14100b 86%, transparent) !important;
+  background: #14100b !important;
   border-bottom: 1px solid rgba(168, 135, 77, 0.14) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .card-reading--mobile [data-pills] {

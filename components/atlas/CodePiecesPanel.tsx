@@ -25,6 +25,10 @@ export interface CodePiece {
   intention?: string;
   /** The keeper's chosen signature, only alongside a public dream. */
   signedBy?: { name?: string; link?: string };
+  /** When it landed, and its Founding Lights ordinal. Carried so the ledger
+   *  can order the record by recency. */
+  placedAt?: string;
+  claimOrdinal?: number;
 }
 
 interface Props {

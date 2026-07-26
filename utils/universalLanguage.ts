@@ -85,6 +85,29 @@ const UL_IMAGE_BY_NUMBER = new Map<number, string>(
  * plates here as they are identified. */
 const UL_CARDS_WITH_TRANSPARENT_BACKGROUND = new Set<number>([22]);
 
+/* The plates that arrive with genuinely transparent corners, so the mandala
+ * reads as a shape floating on whatever is behind it rather than as a picture
+ * on a rectangle. Everything else is an opaque square with its own captured
+ * ground baked in, dark on some plates and near-white on others.
+ *
+ * That difference decides whether a frame is decoration or structure. Around a
+ * floating mandala a border boxes in four empty corners, which is exactly what
+ * it looks like. Around an opaque plate it is the only thing separating a dark
+ * capture ground from the dark page behind it, so it stays.
+ *
+ * Measured from the delivered images, not from the source files: each plate was
+ * fetched through the same transform the app uses and its four corners sampled
+ * for alpha. Re-measure if the plates are ever recaptured or re-uploaded. */
+const UL_CARDS_THAT_FLOAT = new Set<number>([6, 9, 19, 32, 35, 39, 47, 51]);
+
+/**
+ * Whether a card's artwork sits on the page with no ground of its own, and so
+ * wants no frame around it. See UL_CARDS_THAT_FLOAT.
+ */
+export function ulCardArtFloatsFree(number: number): boolean {
+  return UL_CARDS_THAT_FLOAT.has(number);
+}
+
 /**
  * Square Cloudinary URL for a Universal Language card's artwork.
  * Falls back to the oracle-card placeholder if the number is unknown.

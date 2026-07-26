@@ -20,21 +20,21 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: "14px", margin: "20px 0" } as unknown as React.CSSProperties}>
         <i style={{ height: "1px", flex: "1", background: "rgba(168,135,77,.28)" } as unknown as React.CSSProperties}>
         </i>
-        <span style={{ display: "inline-flex", flexDirection: "column", gap: "4px", width: "26px", flex: "none" } as unknown as React.CSSProperties}>
+        <span style={{ display: "inline-flex", flexDirection: "column", gap: "3px", width: "34px", flex: "none" } as unknown as React.CSSProperties}>
           {(vals.hexLines ?? []).map((ln: any, lnIdx: number) => (
             <React.Fragment key={lnIdx}>
               <span style={{ display: "flex", gap: "4px", justifyContent: "space-between" } as unknown as React.CSSProperties}>
                 {(ln.solid) ? (
                   <>
-                    <i style={{ width: "26px", height: "3px", background: "#c6a667" } as unknown as React.CSSProperties}>
+                    <i style={{ width: "34px", height: "4px", background: "#c6a667" } as unknown as React.CSSProperties}>
                     </i>
                   </>
                 ) : null}
                 {(ln.broken) ? (
                   <>
-                    <i style={{ width: "11px", height: "3px", background: "#c6a667" } as unknown as React.CSSProperties}>
+                    <i style={{ width: "15px", height: "4px", background: "#c6a667" } as unknown as React.CSSProperties}>
                     </i>
-                    <i style={{ width: "11px", height: "3px", background: "#c6a667" } as unknown as React.CSSProperties}>
+                    <i style={{ width: "15px", height: "4px", background: "#c6a667" } as unknown as React.CSSProperties}>
                     </i>
                   </>
                 ) : null}
