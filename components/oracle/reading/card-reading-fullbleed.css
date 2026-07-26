@@ -322,12 +322,17 @@
    needed throughout because the design sets these inline on the elements.
 
    Base, above 760: 64px tall, centred, 13px type at 0.18em. */
+/* Opaque, not 86% glass. This rail is pinned over a scroller, and iOS Safari
+   does not reliably resample backdrop-filter against an inner scrolling
+   container — so the remaining 14% let the reading's own headings slide past
+   visibly *through* the rail. The reading ground is this exact colour, so
+   going solid costs nothing visually and kills the bleed. */
 .card-reading--mobile [data-jumpbar] {
   height: 65px !important;
-  background: color-mix(in oklab, #14100b 86%, transparent) !important;
+  background: #14100b !important;
   border-bottom: 1px solid rgba(168, 135, 77, 0.14) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .card-reading--mobile [data-pills] {
