@@ -15,6 +15,7 @@ const MakePage = lazy(() => import('./components/MakePage'));
 const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
 const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
 const Homecoming = lazy(() => import('./components/atlas/Homecoming'));
+const TheRegistry = lazy(() => import('./components/atlas/TheRegistry'));
 const OracleProfile = lazy(() => import('./components/OracleProfile'));
 const SharedProfile = lazy(() => import('./components/SharedProfile'));
 const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
@@ -120,6 +121,9 @@ const AppInner: React.FC = () => {
                 {/* The Homecoming, the way home for a piece the atlas has no
                     record of (Phase 2.5). */}
                 <Route path="/atlas/homecoming" element={<Homecoming />} />
+                {/* The registry — the ledger's companion: the whole record as
+                    one quiet table, no globe. */}
+                <Route path="/atlas/registry" element={<TheRegistry />} />
 
                 {/* Public piece page — the QR-arrival surface. Pre-auth; shows
                     the artwork, story, edition, Founding Lights ordinal, and

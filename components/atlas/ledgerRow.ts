@@ -43,6 +43,10 @@ export interface LedgerRow {
   placeholder?: boolean;
   /** The kind facet this row belongs to, so a flat pool can be regrouped. */
   kind?: string;
+  /** The frozen sigil the piece is known by (`UL № 1`). Filled by the record
+   *  assembly (lib/atlas/record.ts) for the surfaces that name a work by its
+   *  code first; absent everywhere it is not needed. */
+  sigil?: string;
   /** The Universal Language code (1 to 64) when the piece carries one. Lets a
    *  row name its code once it is read outside the code index. */
   cardNumber?: number;

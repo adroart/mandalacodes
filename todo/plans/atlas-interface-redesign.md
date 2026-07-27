@@ -672,6 +672,37 @@ living-art-legacy.md; "anchor" is the verb for a dream entering a piece;
    reserved Ring 4 identity fields through the book, in the keeper's own
    control.
 
+### The ledger's form, ruled (Adrian, 2026-07-19)
+
+Four rendered options were put before Adrian (folio, wall of dreams,
+stream of voices, registry; evidence in the session mockups). He ruled:
+the WALL OF DREAMS is the ledger's primary form, and the REGISTRY joins
+as an additional view reached by a quiet link.
+
+- The wall: every piece a small certificate card on the night; the
+  artwork plate first (ArtworkPlate with the warm fallback), the title
+  line "{sigil} · {title}", the tail "alive in {city} · the Nth light",
+  the dream beneath clamped to about six lines with a quiet ellipsis,
+  the keeper's signature line when shown. The whole card opens its page;
+  placed pieces carry a small "on the globe →" link in the tail row.
+  Ghost cards stand in for kinds with no entries yet. The existing
+  kind/state/search filter bar stays above the wall. Default order:
+  lit dreams by founding ordinal, then unawakened, then seeking and
+  at-rest, placeholders last.
+- The registry: its own quiet page (/atlas/registry, night stage, no
+  globe): the fine catalog table, one hairline row per work (sigil,
+  work, place, the dream's opening), the dream unfolding inline on
+  touch, the same filters, "the atlas →" to return. The ledger header
+  carries "the registry →". Built to hold three hundred rows.
+- Reconciliation (2026-07-19, after building the registry against a main
+  that had advanced through parallel sessions): the sixty-four code index
+  never retired and STAYS (Adrian's parallel stream kept it); the wall as
+  built is a richer flip-card design than this ruling sketched and is the
+  standing truth; the atlas's written record below the globe moved to the
+  paper register while the registry ships on night as Adrian saw it in the
+  chosen mockup. One open eye-call for Adrian: whether the registry stays
+  night or follows the written record onto paper.
+
 ## Part III: Build order
 
 Sequenced so each step is visible on the live URL, per the standing rules

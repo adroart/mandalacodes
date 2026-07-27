@@ -11,15 +11,20 @@ import PieceSidePanel, {
 import { type CodeIndexEntry } from './atlas/CodesIndex';
 import TheLedger, { type LedgerKindSection } from './atlas/TheLedger';
 import TheWall, { type WallCard } from './atlas/TheWall';
+import { atlasPieceToRow, type LedgerRow } from './atlas/ledgerRow';
 import {
-  atlasPieceToRow,
-  cleanLedgerTitle,
-  ledgerKindLabel,
-  normFromAtlasStatus,
-  normFromCatalogStatus,
-  LEDGER_KIND_ORDER,
-  type LedgerRow,
-} from './atlas/ledgerRow';
+  buildCodeEntries,
+  buildKindSections,
+  cardNumberFor,
+  categoryFor,
+  cityLabelFor,
+  coverImageFor,
+  makeKey,
+  signatureFor,
+  sigilNumberFor,
+  titleFor,
+  type EnrichedPiece,
+} from '../lib/atlas/record';
 import { loadPublicCatalog } from '../lib/atlas/catalog';
 import type { PublicCatalogEntry } from '../utils/catalog';
 import KinshipLayer from './atlas/KinshipLayer';
@@ -35,12 +40,11 @@ import SelectionInscription from './atlas/SelectionInscription';
 import { pieceCode } from '../utils/pieceCode';
 import { img } from '../utils/cloudinary';
 import { FULL_ARCHIVE } from '../data/mockData';
-import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
+import { CITIES_BY_ID } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
 import { useProfile } from '../lib/profile/context';
 import { useAccount } from '../lib/account/useAccount';
 import { useCollections } from '../lib/collections/context';
-import { ulCardNumber } from '../utils/universalLanguage';
 import { buildKinshipIndex, MAX_KINSHIP_ARCS } from '../utils/kinship';
 import { buildDreamRoute } from '../utils/dreamStream';
 import { SIZE_BANDS, sizeBandFor, type SizeBand } from '../utils/sizeBands';
@@ -103,80 +107,9 @@ type FetchState =
   | { kind: 'error' }
   | { kind: 'ready'; data: PublicAtlasState };
 
-type EnrichedPiece = PublicAtlasState['pieces'][number] & {
-  key: string;
-  title: string;
-};
-
-/* ─── Helpers ──────────────────────────────────────────────────────────────── */
-/* Same key convention as the ledger (groupChains / projectAll) and the
-   kinship index: pieces with no editionNumber use `0`. */
-function makeKey(pieceId: string, editionNumber?: number): string {
-  return `${pieceId}:${editionNumber ?? 0}`;
-}
-
-function titleFor(pieceId: string): string {
-  const a = FULL_ARCHIVE.find((art) => art.id === pieceId);
-  return a?.title ?? pieceId;
-}
-
-function categoryFor(pieceId: string): string | undefined {
-  return FULL_ARCHIVE.find((art) => art.id === pieceId)?.category;
-}
-
-function coverImageFor(pieceId: string): string | undefined {
-  return FULL_ARCHIVE.find((art) => art.id === pieceId)?.coverImage;
-}
-
-function cityLabelFor(cityId: string | null | undefined): string | undefined {
-  if (!cityId) return undefined;
-  const c = CITIES_BY_ID.get(cityId);
-  if (!c) return undefined;
-  return formatPlaceLabel(c);
-}
-
-/** Universal Language card number for a piece, when it has one (1–64). */
-function cardNumberFor(pieceId: string): number | undefined {
-  const a = FULL_ARCHIVE.find((art) => art.id === pieceId);
-  if (!a || a.series !== 'Universal Language') return undefined;
-  return ulCardNumber(a.coverImage) ?? undefined;
-}
-
-/** Signature-piece flag from the archive, so its sigil reads `SG` everywhere. */
-function signatureFor(pieceId: string): boolean | undefined {
-  return FULL_ARCHIVE.find((art) => art.id === pieceId)?.isSignaturePiece;
-}
-
-/** Curated sigil-number lock from the archive, when one is pinned. */
-function sigilNumberFor(pieceId: string): number | undefined {
-  return FULL_ARCHIVE.find((art) => art.id === pieceId)?.sigilNumber;
-}
-
-/** The ledger kind facet for an atlas-state piece — the server-derived `kind`
- *  when present, else derived from the archive. 'sixty-four' pieces belong to
- *  the code index; everything else groups under its kind in OTHER KINDS. */
-function kindForPiece(
-  pieceId: string,
-  serverKind?: string,
-  category?: string,
-  pieceType?: 'mandala' | 'other',
-): string | null {
-  if (serverKind) return serverKind;
-  const art = FULL_ARCHIVE.find((a) => a.id === pieceId);
-  if (art) {
-    if (art.series === 'Universal Language') return 'sixty-four';
-    if (art.series === 'Mandala' || pieceType === 'mandala') return 'mandala';
-    if (art.isSignaturePiece) return 'signature';
-    if (art.category === 'Jewelry') return 'jewelry';
-    if (art.category) {
-      return art.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    }
-  }
-  if (category) {
-    return category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  }
-  return null;
-}
+/* The record's assembly — helpers, the code index, the kind sections — lives in
+   lib/atlas/record.ts so the registry page reads the same one record from the
+   same two public sources. */
 
 /* ─── Component ────────────────────────────────────────────────────────────── */
 const AtlasPage: React.FC = () => {
@@ -1165,103 +1098,19 @@ const AtlasPage: React.FC = () => {
      filters: it is a fixed catalogue of the whole language, so its counts stay
      honest regardless of what the globe above is currently showing. Only UL
      pieces (those carrying a code number) belong here. */
-  const codeEntries: CodeIndexEntry[] = useMemo(() => {
-    const out: CodeIndexEntry[] = [];
-    for (const p of enriched) {
-      const cardNumber = cardNumberFor(p.pieceId);
-      if (typeof cardNumber !== 'number') continue;
-      out.push({
-        cardNumber,
-        key: p.key,
-        pieceId: p.pieceId,
-        editionNumber: p.editionNumber,
-        title: p.title,
-        status: p.status,
-        cityLabel: cityLabelFor(p.cityId),
-        cityName: p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined,
-        // The public dream rides only on placed public pieces; the ledger
-        // writes it inline (Part II.6, ruling 2).
-        intention: p.intention,
-        signedBy: p.signedBy,
-        // Sort keys for the ledger's "most recently anchored" order.
-        placedAt: p.placedAt,
-        claimOrdinal: p.claimOrdinal,
-      });
-    }
-    return out;
-  }, [enriched]);
+  const codeEntries: CodeIndexEntry[] = useMemo(
+    () => buildCodeEntries(enriched),
+    [enriched],
+  );
 
   /* OTHER KINDS sections (Part II.6, ruling 2): mandalas, signature pieces,
-     jewelry, and any data-driven extras, merged from the public atlas state
-     (status, city, dream) and the public catalog (title, kind, city). Keyed by
-     pieceId so a catalogued piece already placed on the map is not doubled. The
-     sixty-four stay in the code index above; only non-'sixty-four' kinds land
-     here. Kinds with no real rows fall back to placeholders inside TheLedger. */
-  const kindSections: LedgerKindSection[] = useMemo(() => {
-    const byKind = new Map<string, LedgerRow[]>();
-    const seen = new Set<string>();
-    const push = (kind: string, row: LedgerRow) => {
-      const arr = byKind.get(kind);
-      if (arr) arr.push(row);
-      else byKind.set(kind, [row]);
-    };
-
-    for (const p of enriched) {
-      const k = kindForPiece(p.pieceId, p.kind, p.category ?? categoryFor(p.pieceId), p.pieceType);
-      if (!k || k === 'sixty-four') continue;
-      seen.add(p.pieceId);
-      push(
-        k,
-        atlasPieceToRow({
-          key: p.key,
-          pieceId: p.pieceId,
-          editionNumber: p.editionNumber,
-          title: p.title,
-          status: p.status,
-          cityName: p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined,
-          cityLabel: cityLabelFor(p.cityId),
-          intention: p.intention,
-          signedBy: p.signedBy,
-          placedAt: p.placedAt,
-          claimOrdinal: p.claimOrdinal,
-        }),
-      );
-    }
-
-    for (const e of catalog) {
-      if (seen.has(e.id)) continue;
-      const k = e.kind === 'other' ? 'other' : e.kind; // mandala/signature/jewelry align
-      const stated = enriched.find((pp) => pp.pieceId === e.id);
-      const cityId = e.cityId ?? stated?.cityId ?? undefined;
-      push(k, {
-        key: `${e.id}:0`,
-        pieceId: e.id,
-        title: cleanLedgerTitle(e.title),
-        norm: stated ? normFromAtlasStatus(stated.status) : normFromCatalogStatus(e.status),
-        cityName: cityId ? CITIES_BY_ID.get(cityId)?.city : undefined,
-        cityLabel: cityId ? cityLabelFor(cityId) : undefined,
-        dream:
-          stated?.intention && stated.intention.trim()
-            ? stated.intention.trim()
-            : undefined,
-        onGlobe:
-          !!stated && (stated.status === 'placed' || stated.status === 'unawakened'),
-        placedAt: stated?.placedAt,
-        claimOrdinal: stated?.claimOrdinal,
-      });
-    }
-
-    const sections: LedgerKindSection[] = [];
-    for (const k of LEDGER_KIND_ORDER) {
-      sections.push({ kind: k, label: ledgerKindLabel(k), rows: byKind.get(k) ?? [] });
-      byKind.delete(k);
-    }
-    for (const k of Array.from(byKind.keys()).sort()) {
-      if (k === 'sixty-four') continue;
-      sections.push({ kind: k, label: ledgerKindLabel(k), rows: byKind.get(k) ?? [] });
-    }
-    return sections;
-  }, [enriched, catalog]);
+     jewelry, and any data-driven extras, merged from the public atlas state and
+     the public catalog. The registry page assembles the same two sections from
+     the same builders (lib/atlas/record.ts). */
+  const kindSections: LedgerKindSection[] = useMemo(
+    () => buildKindSections(enriched, catalog),
+    [enriched, catalog],
+  );
 
   /* The wall's cards: the same one record (the sixty-four + the kind
      sections), each row joined to its catalog plate — cover image, year,
@@ -2521,6 +2370,15 @@ const AtlasPage: React.FC = () => {
                   the ledger
                 </button>
               </div>
+              {/* The third reading is a page of its own (the whole record as
+                  one table, no globe), so it is a quiet door held away from
+                  the switch rather than a third option inside it. */}
+              <Link
+                to="/atlas/registry"
+                className="ml-auto font-label text-[12px] lowercase tracking-[0.06em] text-bronze-700 hover:text-bronze-600 transition-colors"
+              >
+                the registry →
+              </Link>
             </div>
 
             {ledgerView ? (
