@@ -694,8 +694,14 @@ as an additional view reached by a quiet link.
   work, place, the dream's opening), the dream unfolding inline on
   touch, the same filters, "the atlas →" to return. The ledger header
   carries "the registry →". Built to hold three hundred rows.
-- The code-grouped sixty-four index retires from the atlas surface; its
-  totality lives in the registry. It can return if Adrian misses it.
+- Reconciliation (2026-07-19, after building the registry against a main
+  that had advanced through parallel sessions): the sixty-four code index
+  never retired and STAYS (Adrian's parallel stream kept it); the wall as
+  built is a richer flip-card design than this ruling sketched and is the
+  standing truth; the atlas's written record below the globe moved to the
+  paper register while the registry ships on night as Adrian saw it in the
+  chosen mockup. One open eye-call for Adrian: whether the registry stays
+  night or follows the written record onto paper.
 
 ## Part III: Build order
 
