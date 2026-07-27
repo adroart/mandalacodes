@@ -1,4 +1,5 @@
 import corpusData from './oracle-corpus.json';
+import presentationData from './oracle-presentation.json';
 import type { CanonicalCard } from '../lib/oracle/types';
 
 /* ─── Stable browser-facing types ───────────────────────────────────────── */
@@ -56,6 +57,20 @@ export interface CodonRing {
 
 const canonicalCards = (corpusData as { cards: CanonicalCard[] }).cards;
 
+interface OraclePresentationMetadata {
+  number: number;
+  element: string;
+  traditional_colors: string;
+  color_inspiration: string;
+}
+
+// Compatibility-only display metadata. Authored Oracle prose still comes
+// exclusively from the generated Markdown corpus above.
+const presentationByNumber = new Map<number, OraclePresentationMetadata>(
+  (presentationData as { cards: OraclePresentationMetadata[] }).cards
+    .map(card => [card.number, card]),
+);
+
 export const ORACLE_META = {
   title: 'Universal Language Oracle',
   version: 'markdown-corpus-v1',
@@ -63,15 +78,13 @@ export const ORACLE_META = {
   description: 'The 64-card Universal Language Oracle.',
 };
 
-function trigramLabel(value?: string): string {
-  return (value ?? '').replace(/\s*\([^)]*\)\s*$/, '').trim();
-}
-
 function toOracleCard(card: CanonicalCard): OracleCard {
   const upper = card.iching.upper_trigram ?? {};
   const lower = card.iching.lower_trigram ?? {};
-  const upperLabel = trigramLabel(upper.name);
-  const lowerLabel = trigramLabel(lower.name);
+  const presentation = presentationByNumber.get(card.number);
+  if (!presentation) {
+    throw new Error(`Missing Oracle presentation metadata for card ${card.number}`);
+  }
 
   return {
     number: card.number,
@@ -90,8 +103,8 @@ function toOracleCard(card: CanonicalCard): OracleCard {
         nature: lower.nature ?? '',
       },
     },
-    element: upperLabel === lowerLabel ? upperLabel : `${upperLabel} over ${lowerLabel}`,
-    traditional_colors: '',
+    element: presentation.element,
+    traditional_colors: presentation.traditional_colors,
     nature: card.iching.trigram_combination ?? card.iching.reading ?? '',
     gene_keys: {
       shadow: card.gene_keys.shadow_name ?? '',
@@ -105,7 +118,7 @@ function toOracleCard(card: CanonicalCard): OracleCard {
       keyword: card.human_design.gate_keyword ?? '',
       description: card.human_design.gate ?? '',
     },
-    color_inspiration: '',
+    color_inspiration: presentation.color_inspiration,
     ring_name: card.ring_name,
     ring_tarot: card.ring_tarot ?? '',
     ring_description: card.relations.codon_ring.teaching,

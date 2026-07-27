@@ -4,6 +4,14 @@ import { describe, expect, it } from 'vitest';
 
 import { getSynthesis } from '../../data/synthesisData';
 import { ALL_CARDS } from '../../data/oracleData';
+import legacyOracleData from '../../oracle/oracle_cards_complete.json';
+
+interface LegacyPresentationCard {
+  number: number;
+  element: string;
+  traditional_colors: string;
+  color_inspiration: string;
+}
 
 describe('browser Oracle Markdown source contract', () => {
   it('contains no runtime imports or globs for legacy prose sources', async () => {
@@ -33,6 +41,26 @@ describe('browser Oracle Markdown source contract', () => {
       gene_keys: { shadow: 'Chaos', gift: 'Innovation', siddhi: 'Innocence' },
       human_design: { gate: 3, keyword: 'Ordering' },
     });
+  });
+
+  it('preserves established presentation metadata for all 64 browser cards', () => {
+    const expected = legacyOracleData.codon_rings
+      .flatMap(ring => ring.cards as LegacyPresentationCard[])
+      .sort((left, right) => left.number - right.number)
+      .map(({ number, element, traditional_colors, color_inspiration }) => ({
+        number,
+        element,
+        traditional_colors,
+        color_inspiration,
+      }));
+
+    expect(expected).toHaveLength(64);
+    expect(ALL_CARDS.map(({
+      number,
+      element,
+      traditional_colors,
+      color_inspiration,
+    }) => ({ number, element, traditional_colors, color_inspiration }))).toEqual(expected);
   });
 
   it('builds all 64 complete browser synthesis objects from card Markdown', async () => {
