@@ -32,7 +32,7 @@ import {
 const fieldLabel =
     'font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold block mb-2';
 const fieldInput =
-    'w-full border border-wood-300 bg-white px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
+    'w-full border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
 const fieldTextarea = `${fieldInput} resize-y`;
 const sectionTitle = 'font-title text-2xl text-wood-900 mb-2 tracking-[0.05em]';
 const sectionLead = 'font-reading text-sm text-wood-500 mb-6';
@@ -352,7 +352,7 @@ const PieceContentEditor: React.FC = () => {
     };
 
     return (
-        <div className="bg-white border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
             <h2 className={sectionTitle}>Piece</h2>
             <p className={sectionLead}>
                 Pick a piece, then write its story, materials, provenance, and
@@ -439,7 +439,7 @@ const PieceContentEditor: React.FC = () => {
                         <p className="font-reading italic text-sm text-stone-600">{saveError}</p>
                     )}
                     {savedAt && (
-                        <p className="font-label text-[11px] uppercase tracking-[0.15em] text-sage-700 font-semibold">
+                        <p className="font-label text-[11px] uppercase tracking-[0.15em] text-green-800 font-semibold">
                             Saved · {savedAt}
                         </p>
                     )}

@@ -21,6 +21,7 @@
   --rule: rgba(205, 164, 94, 0.16);
   --rule-2: rgba(205, 164, 94, 0.1);
   --acc: #cda45e;     /* app dark bronze-500 */
+  --acc-decoration: #cda45e;
   --frame: rgba(222, 188, 126, 0.3);
   --mat: rgba(205, 164, 94, 0.26);
 }
@@ -28,14 +29,15 @@
 [data-theme='light'] {
   --bg: #f3efe7;      /* app paper-50 */
   --bg-2: #eae4d7;    /* app paper-100 */
-  --bg-3: #fffdf8;
+  --bg-3: #faf7f0;
   --ink: #272219;     /* app wood-900 ink */
-  --body: #6b6357;
+  --body: #625746;
   --body-strong: #2f2a23;
-  --faint: #8a8175;
+  --faint: #6b6253;
   --rule: #ded5c2;    /* app wood-200 */
   --rule-2: #e9e2d3;
-  --acc: #a37b38;     /* app bronze-500 */
+  --acc: #7a5a22;     /* contrast-safe bronze text/control role */
+  --acc-decoration: #a37b38;
   --frame: rgba(163, 123, 56, 0.28);
   --mat: #e6e0d2;
 }

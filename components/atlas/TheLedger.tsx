@@ -94,11 +94,10 @@ function placeholdersFor(kind: string): LedgerRow[] {
 /** The DOM id a section anchors on, so the jump rail can reach it. */
 const anchorId = (id: string) => `ledger-${id}`;
 
-/* The sticky controls need the stage behind them. The atlas is always the dark
-   stage (AtlasPage's root is `dark ... bg-atlas-night`), so there is one colour
-   to match, not two. Fully opaque: at 95% the dream text passing underneath
-   still ghosted through the controls, which is worse than a hard edge. */
-const STICKY_SURFACE = 'bg-atlas-night';
+/* The sticky controls need the page surface behind them. The globe is its own
+   dark room now; the written ledger follows Daybook/Nightfall with the rest of
+   the site. Fully opaque so dream text never ghosts through the controls. */
+const STICKY_SURFACE = 'bg-paper-50';
 
 const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe }) => {
   const [searchParams, setSearchParams] = useSearchParams();

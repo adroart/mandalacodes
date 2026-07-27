@@ -1,18 +1,43 @@
 /* Source-owned Oracle overrides. Generated EB markup consumes shared theme roles. */
 html.oracle-card-page, html.oracle-card-page body { overflow-x: clip; }
 .eb-reading, .eb-entrance,
-.eb-reading[data-palette="daybook"], .eb-entrance[data-palette="daybook"],
+.eb-reading[data-palette="daybook"], .eb-entrance[data-palette="daybook"] {
+  --l-bg:#f3efe7; --l-1:#272219; --l-2:#6b6253; --l-3:#a39a89;
+  --l-rule:rgba(39,34,25,.14); --l-soft:#eae4d7;
+  --d-bg:#e6ddc9; --d-1:#2a2419; --d-2:#6f6552; --d-3:#9c917a;
+  --d-rule:rgba(39,34,25,.13); --d-soft:#ddd3bd;
+  --accent:#a37b38; --accent-d:#956e2a;
+  --oracle-section-main:#f3efe7;
+  --oracle-section-iching:#e6ddc9;
+  --oracle-section-genekeys:#eae4d7;
+  --oracle-section-humandesign:#ddd3bd;
+  --oracle-section-body:#e0d8c6;
+  --oracle-section-relations:#ddd3bd;
+  --oracle-inset-start:#eee7da;
+  --oracle-inset-end:#e2d6c0;
+  --oracle-footer:#e0d8c6;
+}
 .eb-reading[data-palette="nightfall"], .eb-entrance[data-palette="nightfall"] {
   --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#80735f;
   --l-rule:rgba(168,135,77,.18); --l-soft:#1b160f;
   --d-bg:#100d09; --d-1:#f3ead9; --d-2:#cdc0a8; --d-3:#80735f;
   --d-rule:rgba(168,135,77,.2); --d-soft:#17120c;
   --accent:#a8874d; --accent-d:#c6a667;
+  --oracle-section-main:#14100b;
+  --oracle-section-iching:#110e0a;
+  --oracle-section-genekeys:#17120c;
+  --oracle-section-humandesign:#120f0b;
+  --oracle-section-body:#18130d;
+  --oracle-section-relations:#100d09;
+  --oracle-inset-start:#1d1810;
+  --oracle-inset-end:#15110b;
+  --oracle-footer:#0a0805;
 }
-html.oracle-card-page, html.oracle-card-page body { background:#14100b !important; }
+html.oracle-card-page, html.oracle-card-page body { background:#f3efe7 !important; }
+html.dark.oracle-card-page, html.dark.oracle-card-page body { background:#14100b !important; }
 html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mobile > section > div > footer) { display:none !important; }
-.eb-reading[data-oracle-reader] { min-height:100vh; padding-top:var(--nav-height,64px); padding-bottom:calc(58px + env(safe-area-inset-bottom,0px)); background:#14100b; overflow:clip; }
-.oracle-reading-progress { position:sticky; z-index:91; top:var(--nav-height,64px); color:var(--l-1); background:var(--l-bg); background:color-mix(in oklab,var(--l-bg) 86%,transparent); border-bottom:1px solid rgba(168,135,77,.14); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+.eb-reading[data-oracle-reader] { min-height:100vh; padding-top:var(--nav-height,64px); padding-bottom:calc(58px + env(safe-area-inset-bottom,0px)); background:var(--l-bg); overflow:clip; }
+.oracle-reading-progress { position:sticky; z-index:91; top:var(--nav-height,64px); color:var(--l-1); background:color-mix(in oklab,var(--l-bg) 86%,transparent); border-bottom:1px solid var(--l-rule); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
 .oracle-reading-progress__jumps { display:flex; align-items:center; justify-content:center; gap:4px; width:min(100%,1180px); min-height:64px; margin:0 auto; padding:0 clamp(8px,2vw,20px); overflow-x:auto; scrollbar-width:none; }
 .oracle-reading-progress__jumps::-webkit-scrollbar { display:none; }
 .oracle-reading-progress__jumps button { display:flex; flex:0 0 auto; min-width:0; min-height:64px; align-items:center; justify-content:center; padding:0 clamp(10px,1.25vw,18px); border:0; background:none; color:var(--l-3); font-family:var(--font-label); font-size:.8125rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase; white-space:nowrap; cursor:pointer; transition:color 240ms ease,background-color 240ms ease; }
@@ -22,12 +47,12 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
 .oracle-reading-progress__track > span { display:block; width:100%; height:100%; background:var(--accent); transform-origin:left center; transition:transform 90ms linear; }
 .eb-reading nav[aria-label="Reading by system"] { display:none !important; }
 .eb-reading [data-oracle-flow] { display:flex !important; flex-direction:column !important; flex-wrap:nowrap !important; width:100% !important; overflow:visible !important; scroll-snap-type:none !important; overscroll-behavior:auto !important; }
-.eb-reading [data-oracle-flow] > section[data-chapter] { flex:0 0 auto !important; width:100% !important; min-width:0 !important; scroll-snap-align:none !important; scroll-snap-stop:normal !important; background:#14100b !important; box-shadow:inset 0 1px rgba(168,135,77,.07); }
-.eb-reading [data-oracle-flow] > section[data-chapter="iching"] { background:#110e0a !important; }
-.eb-reading [data-oracle-flow] > section[data-chapter="genekeys"] { background:#17120c !important; }
-.eb-reading [data-oracle-flow] > section[data-chapter="humandesign"] { background:#120f0b !important; }
-.eb-reading [data-oracle-flow] > section[data-chapter="body"] { background:#18130d !important; }
-.eb-reading [data-oracle-flow] > section[data-chapter="relations"] { background:#100d09 !important; }
+.eb-reading [data-oracle-flow] > section[data-chapter] { flex:0 0 auto !important; width:100% !important; min-width:0 !important; scroll-snap-align:none !important; scroll-snap-stop:normal !important; background:var(--oracle-section-main) !important; box-shadow:inset 0 1px var(--l-rule); }
+.eb-reading [data-oracle-flow] > section[data-chapter="iching"] { background:var(--oracle-section-iching) !important; }
+.eb-reading [data-oracle-flow] > section[data-chapter="genekeys"] { background:var(--oracle-section-genekeys) !important; }
+.eb-reading [data-oracle-flow] > section[data-chapter="humandesign"] { background:var(--oracle-section-humandesign) !important; }
+.eb-reading [data-oracle-flow] > section[data-chapter="body"] { background:var(--oracle-section-body) !important; }
+.eb-reading [data-oracle-flow] > section[data-chapter="relations"] { background:var(--oracle-section-relations) !important; }
 .eb-reading .ul-hero-section { padding-top:clamp(42px,6vw,72px) !important; }
 .eb-reading .ul-hero-grid > figure { background:var(--l-bg) !important; }
 .eb-reading:is([data-oracle-choreography="entrance"],[data-oracle-choreography="exiting"]) .ul-hero-section > .ul-title-mobile,
@@ -124,7 +149,7 @@ html.oracle-entrance-active [data-oracle-grain] { z-index:1001; }
 .eb-reading section[data-chapter="iching"] .ul-ji > div {
   box-sizing:border-box; width:calc(100% - clamp(16px,4vw,40px)); margin-inline:auto;
   padding:clamp(24px,4vw,34px) !important; border:1px solid rgba(168,135,77,.18) !important;
-  border-radius:4px; background:linear-gradient(160deg,#1d1810,#15110b);
+  border-radius:4px; background:linear-gradient(160deg,var(--oracle-inset-start),var(--oracle-inset-end));
 }
 .eb-reading section[data-chapter="genekeys"] [data-gk] { box-sizing:border-box; width:100%; max-width:680px; margin-right:auto !important; margin-left:auto !important; }
 @media (min-width:900px) {

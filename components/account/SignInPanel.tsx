@@ -207,8 +207,8 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
 
       {error && (
         <div style={{
-          marginBottom: 16, padding: '8px 12px', border: '1px solid #d99',
-          background: '#fbeaea', color: '#8a2a2a', fontFamily: 'var(--font-ui)', fontSize: 13,
+          marginBottom: 16, padding: '8px 12px', border: '1px solid var(--color-danger-border)',
+          background: 'var(--color-danger-surface)', color: 'var(--color-danger-text)', fontFamily: 'var(--font-ui)', fontSize: 13,
         }}>
           {error}
         </div>

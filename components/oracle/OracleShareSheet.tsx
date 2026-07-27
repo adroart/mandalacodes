@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ulCardPublicId } from '../../utils/universalLanguage';
 import { themeCanvasFont } from '../../shared/themeFonts';
+import { useDarkMode } from '../../DarkModeContext';
 
 /* The Share panel as it was on the version live before the Earth's Breath
    rebuild — the richer sheet with brand icons (Copy link / WhatsApp / Telegram /
@@ -54,6 +55,7 @@ export const OracleShareSheet: React.FC<{
   open: boolean; onClose: () => void;
   cardName: string; cardNumber: number; keywords: string[];
 }> = ({ open, onClose, cardName, cardNumber, keywords }) => {
+  const { isDarkMode } = useDarkMode();
   const [copied, setCopied] = useState(false);
   const [storyLoading, setStoryLoading] = useState(false);
   const storyFileRef = useRef<File | null>(null);
@@ -98,7 +100,7 @@ export const OracleShareSheet: React.FC<{
 
   const tile = 'flex items-center gap-3 px-4 py-3 bg-paper-50 hover:bg-paper-100 border border-wood-200/60 hover:border-wood-300 transition-colors';
   return (
-    <div className="eb-reading fixed inset-0 z-[300] flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label={`Share ${cardName}`} data-palette="daybook">
+    <div className="eb-reading fixed inset-0 z-[300] flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label={`Share ${cardName}`} data-palette={isDarkMode ? 'nightfall' : 'daybook'}>
       <button type="button" aria-label="Dismiss" onClick={onClose} className="absolute inset-0 bg-stone-900/55 backdrop-blur-[2px]" style={{ animation: 'ulFadeIn 200ms ease both' }} />
       <div className="relative w-full sm:max-w-[460px] bg-paper-100 border border-wood-200/60 sm:rounded-lg overflow-hidden" style={{ animation: 'ulRise 320ms cubic-bezier(.16,1,.3,1) both' }}>
         <div className="flex items-baseline justify-between px-5 pt-5 pb-3">

@@ -211,7 +211,7 @@ const MakePage: React.FC = () => {
                         name="make-size"
                         checked={size === s}
                         onChange={() => setSize(s)}
-                        className="accent-[#8a6d3f]"
+                        className="accent-bronze-700"
                       />
                       {s}
                     </label>

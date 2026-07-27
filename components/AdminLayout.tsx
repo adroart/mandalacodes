@@ -97,7 +97,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-paper-50">
-      <div className="border-b border-wood-200 bg-white px-6 py-3 flex items-center justify-between">
+      <div className="border-b border-wood-200 bg-wood-50 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-5">
           <Link
             to="/admin/atlas"

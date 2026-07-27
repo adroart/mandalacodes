@@ -26,16 +26,18 @@ export const DarkModeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (isDarkMode) {
             root.classList.add('dark');
             root.classList.remove('light-mode');
+            root.setAttribute('data-theme', 'dark');
         } else {
             root.classList.remove('dark');
             root.classList.add('light-mode');
+            root.setAttribute('data-theme', 'light');
         }
         localStorage.setItem('dark-mode', String(isDarkMode));
 
         // Keep the mobile browser chrome (Safari URL bar, Chrome address bar)
         // tinted to match the nav, so there's no visible strip above the top bar
         // when theme-color differs from the page background.
-        const themeColor = isDarkMode ? '#141210' : '#f5f4f0';
+        const themeColor = isDarkMode ? '#141210' : '#f3efe7';
         let meta = document.querySelector('meta[name="theme-color"]');
         if (!meta) {
             meta = document.createElement('meta');

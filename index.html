@@ -6,8 +6,19 @@
          there is never a white frame on load/navigation. Light mode removes
          the class below. This inline style beats the CSS-file load gap. -->
     <style>
-      html { background-color: #171310; }
-      html.light-mode { background-color: #f5f4f0; }
+      html {
+        --loader-bg: #171310;
+        --loader-ink: #f3ecde;
+        --loader-rule: #514a3c;
+        --loader-accent: #c4aa7c;
+        background-color: var(--loader-bg);
+      }
+      html.light-mode {
+        --loader-bg: #f3efe7;
+        --loader-ink: #272219;
+        --loader-rule: #cfc4ad;
+        --loader-accent: #7a5a22;
+      }
       /* Skip link: must be invisible from the FIRST frame, so its hiding lives
          here inline — the compiled stylesheet arrives too late during the
          initial loading screen and the link would flash as a raw blue anchor.
@@ -29,7 +40,7 @@
 
     <meta name="description" content="A reading deck of 64 mandalas. Each card connects to a hexagram from the I Ching, a Gene Key, and a Human Design gate. Open a card and receive what it holds." />
     <meta name="author" content="Adrian Rasmussen" />
-    <meta name="theme-color" content="#262321" />
+    <meta name="theme-color" content="#141210" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Mandala Codes" />
@@ -85,7 +96,7 @@
 }
 </script>
   </head>
-  <body class="bg-[#262321]">
+  <body>
     <!-- CSP: the inline script below is allowlisted by sha256 hash in
          public/_headers (script-src). Editing ANY byte of its body changes the
          hash — recompute and update _headers, or the browser blocks it. -->
@@ -94,18 +105,19 @@
         // Default to dark (matches DarkModeProvider). Only light when the
         // visitor has explicitly chosen it — applied before first paint so
         // there is no dark->light->dark flash on navigation.
-        if (localStorage.getItem('dark-mode') !== 'false') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.add('light-mode');
-        }
+        var dark = localStorage.getItem('dark-mode') !== 'false';
+        var root = document.documentElement;
+        root.classList.add(dark ? 'dark' : 'light-mode');
+        root.setAttribute('data-theme', dark ? 'dark' : 'light');
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', dark ? '#141210' : '#f3efe7');
       })();
     </script>
     <a href="#main-content" class="skip-link" style="font-family:var(--font-ui);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;">Skip to main content</a>
     <div id="root">
-        <div class="initial-loader" style="height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; background-color: #262321; color: #f5f4f0; font-family: var(--font-technical); flex-direction: column; gap: 20px;">
-            <div style="width: 40px; height: 40px; border: 2px solid #524330; border-top-color: #b0966b; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-            <div id="loader-status" style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #b0966b;">Opening the deck...</div>
+        <div class="initial-loader" style="height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; background-color: var(--loader-bg); color: var(--loader-ink); font-family: var(--font-technical); flex-direction: column; gap: 20px;">
+            <div style="width: 40px; height: 40px; border: 2px solid var(--loader-rule); border-top-color: var(--loader-accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <div id="loader-status" style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--loader-accent);">Opening the deck...</div>
             <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
         </div>
     </div>

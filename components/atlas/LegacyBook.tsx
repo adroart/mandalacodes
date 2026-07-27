@@ -685,7 +685,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                 className={`min-h-[44px] px-4 py-2 border font-reading text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                   kind === k
                     ? 'bg-bronze-100 border-bronze-500 text-wood-900'
-                    : 'bg-white border-wood-300 text-wood-700 hover:bg-paper-100'
+                    : 'bg-wood-50 border-wood-300 text-wood-700 hover:bg-paper-100'
                 }`}
               >
                 {KIND_LABELS[k]}
@@ -699,7 +699,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             maxLength={2000}
             aria-label="Your entry"
             placeholder="What should this piece carry forward?"
-            className="w-full border border-wood-300 bg-white px-4 py-3 font-display text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 mb-3"
+            className="w-full border border-wood-300 bg-wood-50 px-4 py-3 font-display text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 mb-3"
           />
           <div className="mb-3">
             <label
@@ -713,7 +713,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                 id="seal-mode"
                 value={sealMode}
                 onChange={(e) => setSealMode(e.target.value as typeof sealMode)}
-                className="min-h-[44px] border border-wood-300 bg-white px-3 py-2 font-reading text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                className="min-h-[44px] border border-wood-300 bg-wood-50 px-3 py-2 font-reading text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
               >
                 <option value="none">Open — readable now</option>
                 <option value="date">Sealed until a date</option>
@@ -725,7 +725,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                   value={sealDate}
                   onChange={(e) => setSealDate(e.target.value)}
                   aria-label="Seal opens on"
-                  className="min-h-[44px] border border-wood-300 bg-white px-3 py-2 font-reading text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                  className="min-h-[44px] border border-wood-300 bg-wood-50 px-3 py-2 font-reading text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
                 />
               )}
             </div>
@@ -904,7 +904,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               onChange={(e) => setHeirEmail(e.target.value)}
               placeholder="heir@example.com"
               aria-label="Heir email"
-              className="flex-1 min-w-[200px] min-h-[44px] border border-wood-300 bg-white px-4 py-2 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="flex-1 min-w-[200px] min-h-[44px] border border-wood-300 bg-wood-50 px-4 py-2 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             />
             <input
               type="text"
@@ -912,12 +912,12 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               onChange={(e) => setHeirName(e.target.value)}
               placeholder="Name (optional)"
               aria-label="Heir name"
-              className="flex-1 min-w-[140px] min-h-[44px] border border-wood-300 bg-white px-4 py-2 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="flex-1 min-w-[140px] min-h-[44px] border border-wood-300 bg-wood-50 px-4 py-2 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             />
             <button
               type="submit"
               disabled={heirBusy}
-              className="min-h-[44px] px-5 py-2 border border-wood-300 bg-white font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 font-semibold hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+              className="min-h-[44px] px-5 py-2 border border-wood-300 bg-wood-50 font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 font-semibold hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
             >
               Register
             </button>
@@ -939,14 +939,14 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             <button
               type="button"
               onClick={handleDownload}
-              className="min-h-[44px] px-5 py-2 border border-wood-300 bg-white font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 font-semibold hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="min-h-[44px] px-5 py-2 border border-wood-300 bg-wood-50 font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 font-semibold hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             >
               Download the book (JSON)
             </button>
             <button
               type="button"
               onClick={() => window.print()}
-              className="min-h-[44px] px-5 py-2 border border-wood-300 bg-white font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 font-semibold hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="min-h-[44px] px-5 py-2 border border-wood-300 bg-wood-50 font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 font-semibold hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             >
               Print / save as PDF
             </button>

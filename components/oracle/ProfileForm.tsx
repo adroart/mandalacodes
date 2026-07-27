@@ -275,7 +275,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           border-color: var(--color-bronze-500);
         }
         .profile-form__input[aria-invalid='true'] {
-          border-color: #a04040;
+          border-color: var(--color-danger-border);
         }
         .profile-form__help {
           font-family: var(--font-ui);
@@ -285,7 +285,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
         .profile-form__error {
           font-family: var(--font-ui);
           font-size: 12px;
-          color: #a04040;
+          color: var(--color-danger-text);
         }
         .profile-form__suggestions {
           position: absolute;

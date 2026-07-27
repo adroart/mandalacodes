@@ -74,7 +74,7 @@ html {
      before body/React paint. Light mode opts back out below. */
   background-color: #171310;
 }
-html:not(.dark) { background-color: #f5f4f0; }
+html:not(.dark) { background-color: #f3efe7; }
 
 /* Smooth scroll globally — respects reduced-motion preference */
 @media (prefers-reduced-motion: no-preference) {
