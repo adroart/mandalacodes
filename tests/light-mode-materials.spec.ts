@@ -84,7 +84,7 @@ for (const theme of [
     await setTheme(page, theme.dark);
     await page.goto(`${BASE}/universal-language/22`);
 
-    const share = page.locator('[data-bar-share]:visible, [data-bar-tab="share"]:visible');
+    const share = page.locator('[data-bar-share], [data-bar-tab="share"]');
     await expect(share).toBeVisible();
     await share.click();
 
