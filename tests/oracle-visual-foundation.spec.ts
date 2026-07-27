@@ -360,8 +360,8 @@ test('iOS Oracle surface uses the fine real-paper texture after entry', async ({
   expect(texture.backgroundRepeat).toBe('no-repeat');
   expect(texture.backgroundSize).toBe('cover');
   expect(texture.mixBlendMode).toBe('multiply');
-  expect(texture.opacity).toBeGreaterThanOrEqual(0.45);
-  expect(texture.opacity).toBeLessThanOrEqual(0.5);
+  expect(texture.opacity).toBeGreaterThanOrEqual(0.29);
+  expect(texture.opacity).toBeLessThanOrEqual(0.3);
   await expect(page.locator('[data-oracle-generated-grain]')).toBeHidden();
   await expect(page.locator('[data-reader] > svg')).toBeHidden();
 });
