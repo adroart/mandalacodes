@@ -359,9 +359,9 @@ test('iOS Oracle surface uses the fine real-paper texture after entry', async ({
   expect(texture.backgroundImage).toContain('/oracle/oracle-paper-fine.webp');
   expect(texture.backgroundRepeat).toBe('no-repeat');
   expect(texture.backgroundSize).toBe('cover');
-  expect(texture.mixBlendMode).toBe('multiply');
-  expect(texture.opacity).toBeGreaterThanOrEqual(0.39);
-  expect(texture.opacity).toBeLessThanOrEqual(0.4);
+  expect(texture.mixBlendMode).toBe('screen');
+  expect(texture.opacity).toBeGreaterThanOrEqual(0.33);
+  expect(texture.opacity).toBeLessThanOrEqual(0.34);
   await expect(page.locator('[data-oracle-generated-grain]')).toBeHidden();
   await expect(page.locator('[data-reader] > svg')).toBeHidden();
 });
@@ -377,9 +377,13 @@ test('iOS Oracle surface keeps paper restrained in light mode', async ({ page })
 
   const grain = page.locator('[data-oracle-grain]');
   await expect(grain).toBeVisible();
-  const opacity = await grain.evaluate((element) => Number.parseFloat(getComputedStyle(element).opacity));
-  expect(opacity).toBeGreaterThanOrEqual(0.15);
-  expect(opacity).toBeLessThanOrEqual(0.16);
+  const texture = await grain.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return { mixBlendMode: styles.mixBlendMode, opacity: Number.parseFloat(styles.opacity) };
+  });
+  expect(texture.mixBlendMode).toBe('multiply');
+  expect(texture.opacity).toBeGreaterThanOrEqual(0.15);
+  expect(texture.opacity).toBeLessThanOrEqual(0.16);
 });
 
 test('keeps the reading action bar fixed at the bottom', async ({ page }) => {
