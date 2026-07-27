@@ -264,7 +264,7 @@ test('iOS Oracle surface uses exact warm-dark chapter colors and inset I Ching e
   expect(geometry.borderLeft).toBe(1);
 });
 
-test('iOS Oracle surface keeps a restrained grain after entry', async ({ page }) => {
+test('iOS Oracle surface keeps a visible source-owned grain after entry', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE}${CARD}?ref=qr`);
   const ritual = page.getByRole('dialog', { name: 'Card entrance. Tap to begin.' });
@@ -275,7 +275,10 @@ test('iOS Oracle surface keeps a restrained grain after entry', async ({ page })
   const grain = page.locator('[data-oracle-grain]');
   await expect(grain).toHaveCount(1);
   await expect(grain).toBeVisible();
-  expect(await grain.evaluate((element) => Number.parseFloat(getComputedStyle(element).opacity))).toBeLessThanOrEqual(0.08);
+  const opacity = await grain.evaluate((element) => Number.parseFloat(getComputedStyle(element).opacity));
+  expect(opacity).toBeGreaterThanOrEqual(0.075);
+  expect(opacity).toBeLessThanOrEqual(0.08);
+  await expect(page.locator('[data-oracle-generated-grain]')).toBeHidden();
   await expect(page.locator('[data-reader] > svg')).toBeHidden();
 });
 
