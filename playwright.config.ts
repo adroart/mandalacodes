@@ -20,7 +20,7 @@ export default defineConfig({
     {
       name: 'Mobile Safari',
       use: { ...devices['iPhone 13'] },
-      grep: /administrator hold replaces|a short tap remains|native mobile menu|captures the touch pointer/,
+      grep: /administrator hold replaces|a short tap remains|native mobile menu|captures the touch pointer|iOS Oracle surface/,
     },
     {
       name: 'Desktop Chrome',

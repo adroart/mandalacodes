@@ -7,6 +7,7 @@
 import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { themeCanvasFont } from '../../../../shared/themeFonts';
+import { OracleEntrancePortal } from '../OracleEntrancePortal';
 import { EBReadingMarkup } from './EBReading.generated';
 
 export interface EBData {
@@ -60,6 +61,8 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   revealScanFrame: number | null = null;
   revealTargets = new WeakSet<HTMLElement>();
   glyphTargets = new WeakSet<HTMLElement>();
+  rootAriaHidden: string | null = null;
+  rootWasInert = false;
 
   state = {
     entranceDismissed: false,
@@ -116,7 +119,13 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   toggleChartPreview = () => this.setState({ chartPreview: !this.state.chartPreview });
   submitChart = (e: any) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ chartSubmitted: true }); };
   registerChartInput = (el: any) => { this.chartInputEl = el; };
-  registerRoot = (el: any) => { this.rootEl = el; };
+  registerRoot = (el: any) => {
+    this.rootEl = el;
+    if (!el) return;
+    const generatedLayers = Array.from(el.children).filter((child: any) => child.getAttribute('aria-hidden') === 'true').slice(0, 2) as HTMLElement[];
+    generatedLayers[0]?.setAttribute('data-oracle-generated-grain', '');
+    generatedLayers[1]?.setAttribute('data-oracle-generated-veil', '');
+  };
   registerVeil = (el: any) => { this.veilEl = el; };
   registerNavInd = (el: any) => { this.navIndEl = el; };
   registerNavScroll = (el: any) => { this.navScrollEl = el; };
@@ -159,6 +168,10 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   }
 
   componentDidMount() {
+    const appRoot = document.getElementById('root');
+    this.rootAriaHidden = appRoot?.getAttribute('aria-hidden') ?? null;
+    this.rootWasInert = !!appRoot?.hasAttribute('inert');
+    this.syncEntranceLayer();
     this.setBodyLock(this.isLocked());
     this.updateNav(this.state.active);
     this.onKey = (e: any) => {
@@ -232,11 +245,13 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   }
 
   componentDidUpdate() {
+    this.syncEntranceLayer();
     this.setBodyLock(this.isLocked());
     this.invocationRoot?.render(this.props.invocationSlot ?? null);
     if (this.state.choreography === 'reading') this.scheduleRevealScan();
   }
   componentWillUnmount() {
+    this.restoreEntranceLayer();
     window.removeEventListener('keydown', this.onKey);
     if (this.observer) this.observer.disconnect();
     if (this.revealObs) this.revealObs.disconnect();
@@ -257,6 +272,26 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   }
 
   entranceActive() { return (this.props.showEntrance ?? true) && !this.state.entranceDismissed; }
+  syncEntranceLayer = () => {
+    const active = this.entranceActive();
+    document.documentElement.classList.toggle('oracle-entrance-active', active);
+    const appRoot = document.getElementById('root');
+    if (!appRoot) return;
+    if (active) {
+      appRoot.setAttribute('inert', '');
+      appRoot.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    if (this.rootWasInert) appRoot.setAttribute('inert', ''); else appRoot.removeAttribute('inert');
+    if (this.rootAriaHidden === null) appRoot.removeAttribute('aria-hidden'); else appRoot.setAttribute('aria-hidden', this.rootAriaHidden);
+  };
+  restoreEntranceLayer = () => {
+    document.documentElement.classList.remove('oracle-entrance-active');
+    const appRoot = document.getElementById('root');
+    if (!appRoot) return;
+    if (this.rootWasInert) appRoot.setAttribute('inert', ''); else appRoot.removeAttribute('inert');
+    if (this.rootAriaHidden === null) appRoot.removeAttribute('aria-hidden'); else appRoot.setAttribute('aria-hidden', this.rootAriaHidden);
+  };
   isLocked() { return this.state.choreography !== 'reading' || this.state.lightbox || this.state.share || this.state.buy || !!this.state.overlay || this.state.index; }
   setBodyLock(on: boolean) { try { document.body.style.overflow = on ? 'hidden' : ''; } catch (e) {} }
 
@@ -715,6 +750,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
 
     return {
       ...T, // card-bound prose (UL reading/invocation, I Ching, GK, HD, Body) merged in
+      cardName: this.props.data.cardName,
       palette: this.props.palette ?? 'daybook',
       accent: this.props.accent ?? 'bronze',
       motion: motionOff,
@@ -839,7 +875,9 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       ['body', 'Body', 'Body'],
       ['relations', 'Relations', null],
     ];
+    const vals = this.renderVals();
     return (
+      <>
       <div className="eb-reading" data-oracle-reader data-oracle-choreography={this.state.choreography} data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
         <nav className="oracle-reading-progress" data-oracle-progress-nav aria-label="Oracle reading">
           <div className="oracle-reading-progress__jumps" role="navigation" aria-label="Jump to system">
@@ -855,8 +893,22 @@ export class EBReadingHost extends React.Component<HostProps, any> {
             <span data-oracle-progress-fill style={{ transform: `scaleX(${this.state.readingProgress / 100})` }} />
           </div>
         </nav>
-        <EBReadingMarkup vals={this.renderVals()} />
+        <EBReadingMarkup vals={{ ...vals, entranceActive: false, registerVeil: () => {} }} />
       </div>
+      <OracleEntrancePortal
+        active={this.entranceActive()}
+        choreography={this.state.choreography}
+        cardName={vals.cardName}
+        keywords={vals.keywords}
+        entranceRing={vals.entranceRing}
+        entranceCenter={vals.entranceCenter}
+        palette={vals.palette}
+        accent={vals.accent}
+        motion={vals.motion}
+        onDismiss={this.dismissEntrance}
+        registerVeil={this.registerVeil}
+      />
+      </>
     );
   }
 }
