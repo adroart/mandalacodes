@@ -360,10 +360,26 @@ test('iOS Oracle surface uses the fine real-paper texture after entry', async ({
   expect(texture.backgroundRepeat).toBe('no-repeat');
   expect(texture.backgroundSize).toBe('cover');
   expect(texture.mixBlendMode).toBe('multiply');
-  expect(texture.opacity).toBeGreaterThanOrEqual(0.29);
-  expect(texture.opacity).toBeLessThanOrEqual(0.3);
+  expect(texture.opacity).toBeGreaterThanOrEqual(0.39);
+  expect(texture.opacity).toBeLessThanOrEqual(0.4);
   await expect(page.locator('[data-oracle-generated-grain]')).toBeHidden();
   await expect(page.locator('[data-reader] > svg')).toBeHidden();
+});
+
+test('iOS Oracle surface keeps paper restrained in light mode', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('dark-mode', 'false');
+    sessionStorage.setItem('eb-skip-entrance', '1');
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${BASE}${CARD}`);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+
+  const grain = page.locator('[data-oracle-grain]');
+  await expect(grain).toBeVisible();
+  const opacity = await grain.evaluate((element) => Number.parseFloat(getComputedStyle(element).opacity));
+  expect(opacity).toBeGreaterThanOrEqual(0.15);
+  expect(opacity).toBeLessThanOrEqual(0.16);
 });
 
 test('keeps the reading action bar fixed at the bottom', async ({ page }) => {
