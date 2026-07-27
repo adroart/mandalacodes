@@ -581,7 +581,7 @@ const StewardEdit: React.FC = () => {
                     className={`min-h-[44px] px-4 py-2 border font-reading text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                       active
                         ? 'bg-bronze-100 border-bronze-500 text-wood-900'
-                        : 'bg-white border-wood-300 text-wood-700 hover:bg-paper-100'
+                        : 'bg-wood-50 border-wood-300 text-wood-700 hover:bg-paper-100'
                     }`}
                   >
                     {label}
@@ -773,7 +773,7 @@ const StewardEdit: React.FC = () => {
                       onChange={e => setSigName(e.target.value)}
                       onBlur={handleSignatureFieldCommit}
                       disabled={sigSaving}
-                      className="w-full border border-wood-300 bg-white px-3 py-2 font-reading text-base text-wood-900 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                      className="w-full border border-wood-300 bg-wood-50 px-3 py-2 font-reading text-base text-wood-900 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
                     />
                   </label>
                   <label className="block">
@@ -789,7 +789,7 @@ const StewardEdit: React.FC = () => {
                       onChange={e => setSigLink(e.target.value)}
                       onBlur={handleSignatureFieldCommit}
                       disabled={sigSaving}
-                      className="w-full border border-wood-300 bg-white px-3 py-2 font-reading text-base text-wood-900 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                      className="w-full border border-wood-300 bg-wood-50 px-3 py-2 font-reading text-base text-wood-900 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
                     />
                   </label>
                 </div>

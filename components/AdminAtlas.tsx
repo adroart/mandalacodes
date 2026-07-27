@@ -42,7 +42,7 @@ function useAdminFetch(): (input: string, init?: RequestInit) => Promise<Respons
 const fieldLabel =
     'font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold block mb-2';
 const fieldInput =
-    'w-full border border-wood-300 bg-white px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
+    'w-full border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
 const sectionTitle =
     'font-title text-2xl text-wood-900 mb-2 tracking-[0.05em]';
 const sectionLead =
@@ -454,7 +454,7 @@ const SeedEventSection: React.FC = () => {
     };
 
     return (
-        <div className="bg-white border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
             <h2 className={sectionTitle}>Seed Event</h2>
             <p className={sectionLead}>
                 Append a new event to the per-piece ledger. The hash chain is
@@ -668,7 +668,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
     };
 
     return (
-        <div className="bg-white border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
             <h2 className={sectionTitle}>Add Steward</h2>
             <p className={sectionLead}>
                 Bind a piece to a collector's email. They sign in to
@@ -1007,7 +1007,7 @@ const PendingSalesSection: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-white border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
             <h2 className={sectionTitle}>Pending Sales</h2>
             <p className={sectionLead}>
                 Checkouts reported by adrianrasmussen.com, waiting for your
@@ -1189,7 +1189,7 @@ const TendingSection: React.FC = () => {
     );
 
     return (
-        <div className="bg-white border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
             <h2 className={sectionTitle}>Tending</h2>
             <p className={sectionLead}>
                 Entries a steward has let ride the map of dreams. Sorting, not
@@ -1294,7 +1294,7 @@ const ClaimRequestsSection: React.FC = () => {
     const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
 
     return (
-        <div className="bg-white border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
             <h2 className={sectionTitle}>Claim Requests</h2>
             <p className={sectionLead}>
                 Self-serve stewardship requests. Approving an unclaimed piece
@@ -1655,7 +1655,7 @@ const HomecomingSection: React.FC = () => {
     const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
 
     return (
-        <div className="bg-white border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
             <h2 className={sectionTitle}>Homecoming</h2>
             <p className={sectionLead}>
                 People who hold a piece the atlas has never heard of. Recognize
@@ -1812,7 +1812,7 @@ const StewardRoster: React.FC<{
     };
 
     return (
-        <div className="bg-white border border-wood-200 p-8">
+        <div className="bg-wood-50 border border-wood-200 p-8">
             <h2 className={sectionTitle}>Steward Roster</h2>
             <p className={sectionLead}>
                 Bound and pending collectors. Status flips from "invited" to
@@ -1912,7 +1912,7 @@ const StewardRoster: React.FC<{
                                                         .value as StewardRecord['outreachStatus'],
                                                 )
                                             }
-                                            className="font-reading text-sm text-wood-700 border border-wood-300 bg-white px-2 py-1.5 focus:outline-none focus:border-bronze-400 disabled:opacity-40"
+                                            className="font-reading text-sm text-wood-700 border border-wood-300 bg-wood-50 px-2 py-1.5 focus:outline-none focus:border-bronze-400 disabled:opacity-40"
                                         >
                                             {s.outreachStatus === 'claimed' && (
                                                 <option value="claimed" disabled>
@@ -2039,7 +2039,7 @@ const MakeRequestsSection: React.FC = () => {
     const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
 
     return (
-        <div className="bg-white border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
             <h2 className={sectionTitle}>Make Requests</h2>
             <p className={sectionLead}>
                 Notes from the /make door: someone wants a piece made (code,
@@ -2821,7 +2821,7 @@ const CatalogSection: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-white border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
             <h2 className={sectionTitle}>Catalog</h2>
             <p className={sectionLead}>
                 Every work you have made, entered once. Each piece receives a

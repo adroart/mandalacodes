@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useDarkMode } from '../../DarkModeContext';
 import type { ProfileInputs } from '../../lib/profile/storage';
 import ProfileForm from './ProfileForm';
 
@@ -20,15 +19,16 @@ import ProfileForm from './ProfileForm';
  * `showCardOption` controls whether "back to this card" is offered (true on a
  * card, false on the index where there is no single card).
  */
-const LIGHT = {
-  surface: '#ffffff', field: '#f3f1ec', ink: '#262321', sub: '#8a7a5e',
-  bronze: '#8a744e', onBronze: '#f7f5f1', fieldBorder: '#d2c7b4',
-  line: '#e3ddd1', glow: 'rgba(196,170,124,0.18)',
-};
-const DARK = {
-  surface: '#241e17', field: '#1d1813', ink: '#f0ece4', sub: '#a99a82',
-  bronze: '#dabd8b', onBronze: '#241e17', fieldBorder: 'rgba(196,170,124,0.30)',
-  line: 'rgba(196,170,124,0.18)', glow: 'rgba(196,170,124,0.16)',
+const C = {
+  surface: 'var(--color-wood-50)',
+  field: 'var(--color-paper-100)',
+  ink: 'var(--color-wood-900)',
+  sub: 'var(--color-wood-700)',
+  bronze: 'var(--color-bronze-700)',
+  onBronze: 'var(--color-paper-50)',
+  fieldBorder: 'var(--color-wood-300)',
+  line: 'var(--color-wood-200)',
+  glow: 'color-mix(in oklab, var(--color-bronze-500) 18%, transparent)',
 };
 
 const BirthTimeModal: React.FC<{
@@ -53,8 +53,6 @@ const BirthTimeModal: React.FC<{
   onBackToCard,
   onSave,
 }) => {
-  const { isDarkMode } = useDarkMode();
-  const C = isDarkMode ? DARK : LIGHT;
   const [step, setStep] = useState<'form' | 'confirm'>('form');
 
   useEffect(() => {

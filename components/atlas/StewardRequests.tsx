@@ -112,7 +112,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
 
       <ul className="space-y-4">
         {forThisPiece.map((r) => (
-          <li key={r.id} className="border border-wood-200 bg-white p-5">
+          <li key={r.id} className="border border-wood-200 bg-wood-50 p-5">
             <p className="font-reading text-sm text-wood-900 mb-1">
               {r.requesterEmail}
             </p>
@@ -141,7 +141,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
                         className={`min-h-[44px] px-4 py-2 border font-reading text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                           transferKind === kind
                             ? 'bg-bronze-100 border-bronze-500 text-wood-900'
-                            : 'bg-white border-wood-300 text-wood-700 hover:bg-paper-100'
+                            : 'bg-wood-50 border-wood-300 text-wood-700 hover:bg-paper-100'
                         }`}
                       >
                         {kind === 'sale' ? 'I sold it' : 'I gave it'}

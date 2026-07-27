@@ -122,7 +122,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         className={
           stage
             ? 'px-2 py-7 mb-8 border-y'
-            : 'border border-wood-200 bg-white px-6 py-7 mb-8'
+            : 'border border-wood-200 bg-wood-50 px-6 py-7 mb-8'
         }
         style={stage ? { borderColor: 'rgba(196,170,124,0.22)' } : undefined}
       >
@@ -170,7 +170,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
             maxLength={2000}
             disabled={submitting}
             placeholder="A few words, if you like."
-            className="w-full border border-wood-300 bg-white px-4 py-3 font-display text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 disabled:opacity-60"
+            className="w-full border border-wood-300 bg-wood-50 px-4 py-3 font-display text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 disabled:opacity-60"
           />
           <p className="font-display text-sm text-stone-600 mt-2">
             Optional, kept in your piece&rsquo;s private book.

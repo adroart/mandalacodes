@@ -68,9 +68,9 @@ export interface TypeaheadPickerProps<T> {
 
 const VARIANT_INPUT: Record<'admin' | 'book', string> = {
   admin:
-    'w-full border border-wood-300 bg-white px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400',
+    'w-full border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400',
   book:
-    'w-full min-h-[44px] border border-wood-300 bg-white px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400',
+    'w-full min-h-[44px] border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400',
 };
 
 const VARIANT_LIST_MAX_HEIGHT: Record<'admin' | 'book', string> = {
@@ -205,7 +205,7 @@ function TypeaheadPickerInner<T>({
         <ul
           id={listId}
           role="listbox"
-          className={`absolute z-10 left-0 right-0 mt-1 ${listMaxHeightClassName ?? VARIANT_LIST_MAX_HEIGHT[variant]} overflow-y-auto bg-white border border-wood-300 shadow-sm`}
+          className={`absolute z-10 left-0 right-0 mt-1 ${listMaxHeightClassName ?? VARIANT_LIST_MAX_HEIGHT[variant]} overflow-y-auto bg-wood-50 border border-wood-300 shadow-sm`}
         >
           {matches.map((item, i) => {
             const key = itemKey(item);
@@ -233,7 +233,7 @@ function TypeaheadPickerInner<T>({
       {open && matches.length === 0 && emptyMessage && (
         <ul
           role="listbox"
-          className="absolute z-10 left-0 right-0 mt-1 bg-white border border-wood-300 shadow-sm"
+          className="absolute z-10 left-0 right-0 mt-1 bg-wood-50 border border-wood-300 shadow-sm"
         >
           <li className="px-4 py-2 font-reading italic text-sm text-stone-600">{emptyMessage}</li>
         </ul>

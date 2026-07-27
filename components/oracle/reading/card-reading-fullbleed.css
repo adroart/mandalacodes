@@ -13,11 +13,30 @@
 
 /* ── The frame ─────────────────────────────────────────────────────────── */
 
+/* The generated shell predates the site theme and ships with Nightfall
+   literals. Define the same palette contract on the shell that the live
+   reading uses inside it, then let the structural overrides below consume it.
+   Artwork mats remain explicitly dark. */
+.card-reading {
+  --l-bg:#f3efe7; --l-1:#272219; --l-2:#6b6253; --l-3:#8a8070;
+  --l-rule:rgba(39,34,25,.14); --l-soft:#eae4d7;
+  --accent:#a37b38; --accent-d:#956e2a;
+  --oracle-footer:#e0d8c6;
+}
+
+html.dark .card-reading {
+  --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#80735f;
+  --l-rule:rgba(168,135,77,.18); --l-soft:#191510;
+  --accent:#a8874d; --accent-d:#c6a667;
+  --oracle-footer:#0a0805;
+}
+
 .card-reading--mobile > section,
 .card-reading--desktop > section {
   padding: 0 !important;
   min-height: 100dvh;
   overflow: hidden;
+  background: var(--l-bg) !important;
 }
 
 /* The panel: fixed width/height and mockup styling become a full viewport. */
@@ -29,6 +48,45 @@
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  background: var(--l-bg) !important;
+  color: var(--l-1) !important;
+}
+
+.card-reading--desktop > section > div > header {
+  background: var(--l-soft) !important;
+  border-bottom-color: var(--l-rule) !important;
+}
+
+.card-reading--desktop > section > div > header :is(a, span) {
+  color: var(--l-1) !important;
+}
+
+.card-reading--desktop > section > div > header nav a {
+  color: var(--l-2) !important;
+}
+
+.card-reading--desktop > section > div > header nav a[style*="color"]:first-of-type {
+  color: var(--accent) !important;
+}
+
+.card-reading--desktop [data-reader],
+.card-reading--mobile [data-reader],
+.card-reading [data-scroll] {
+  background: var(--l-bg) !important;
+}
+
+.card-reading--desktop aside {
+  background: var(--l-soft) !important;
+  border-right-color: var(--l-rule) !important;
+  color: var(--l-2) !important;
+}
+
+.card-reading--desktop aside :is(dt, dd, a, span) {
+  color: inherit !important;
+}
+
+.card-reading--desktop aside dt {
+  color: var(--l-3) !important;
 }
 
 /* ── The meta list ─────────────────────────────────────────────────────── */
@@ -46,8 +104,8 @@
 /* Darker than the reading above it, so it reads as a floor rather than another
    band of the page, and slimmer so it takes less of the screen. */
 .card-reading > section > div > footer {
-  background: #0a0805 !important;
-  border-top: 1px solid rgba(168, 135, 77, 0.18) !important;
+  background: var(--oracle-footer, var(--l-soft)) !important;
+  border-top: 1px solid var(--l-rule) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
   height: 58px !important;
@@ -56,6 +114,14 @@
 .card-reading--mobile > section > div > footer {
   height: 54px !important;
   padding-bottom: 0 !important;
+}
+
+.card-reading > section > div > footer [data-bar-tab] {
+  color: var(--l-2) !important;
+}
+
+.card-reading > section > div > footer [data-bar-tab="all"] {
+  color: var(--accent) !important;
 }
 
 /* ── Artwork ───────────────────────────────────────────────────────────── */
@@ -161,7 +227,7 @@
    the scroller and onto the reading, so it is filled with the reading's colour
    rather than showing the frame through it. */
 .card-reading .eb-reading:not(.oracle-bottom-nav) {
-  background: #100d09 !important;
+  background: var(--oracle-section-relations, var(--l-bg)) !important;
   padding-bottom: 80px !important;
 }
 
@@ -218,6 +284,27 @@
 
 .card-reading__designed-header {
   margin-bottom: -10px;
+  color: var(--l-2);
+  background: var(--l-bg);
+}
+
+.card-reading__designed-header [data-sec="ul"] > div > div:first-child > p,
+.card-reading__designed-header [data-sec="ul"] > div > div[aria-hidden="true"] span,
+.card-reading__designed-header [data-sec="ul"] > div > div:nth-child(5) span {
+  color: var(--accent) !important;
+}
+
+.card-reading__designed-header [data-sec="ul"] h1 {
+  color: var(--l-1) !important;
+}
+
+.card-reading__designed-header [data-sec="ul"] > div > p,
+.card-reading__designed-header [data-chart-cta] span {
+  color: var(--l-2) !important;
+}
+
+.card-reading__designed-header [data-sec="ul"] i {
+  background-color: var(--accent) !important;
 }
 
 /* On the wide layout the column beside the artwork already carries "For me,
@@ -303,7 +390,7 @@
 /* Light brown rather than gold, fading up from nothing on the left so the
    start of the reading reads as empty rather than as a short gold stub. */
 .card-reading [data-progressfill-h] {
-  background: linear-gradient(to right, rgba(150, 116, 79, 0), #b98f63) !important;
+  background: linear-gradient(to right, transparent, var(--accent)) !important;
 }
 
 /* A smaller diamond, in the same brown, with its glow toned to match. It sits
@@ -312,7 +399,7 @@
 .card-reading [data-comet] {
   width: 5px !important;
   height: 5px !important;
-  background: #c9a47a !important;
+  background: var(--accent) !important;
   animation: none !important;
   box-shadow: 0 0 6px 1px rgba(185, 143, 99, 0.5) !important;
 }
@@ -339,10 +426,24 @@
    going solid costs nothing visually and kills the bleed. */
 .card-reading--mobile [data-jumpbar] {
   height: 65px !important;
-  background: #14100b !important;
-  border-bottom: 1px solid rgba(168, 135, 77, 0.14) !important;
+  background: var(--l-soft) !important;
+  border-bottom: 1px solid var(--l-rule) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+.card-reading--desktop [data-jumpbar] {
+  background: var(--l-soft) !important;
+  border-bottom: 1px solid var(--l-rule) !important;
+}
+
+.card-reading [data-nav] {
+  color: var(--l-3) !important;
+}
+
+.card-reading [data-nav][style*="color"]:hover,
+.card-reading [data-nav][aria-current="true"] {
+  color: var(--accent) !important;
 }
 
 .card-reading--mobile [data-pills] {
@@ -527,7 +628,7 @@
   gap: 18px !important;
   padding: 14px 22px !important;
   background: transparent !important;
-  border: 1px solid rgba(198, 166, 103, 0.32);
+  border: 1px solid color-mix(in oklab, var(--accent) 32%, transparent);
   border-radius: 2px !important;
   transition: border-color .35s ease, background .35s ease !important;
 }
@@ -539,8 +640,8 @@
 }
 
 .card-reading [data-chart-cta]:hover {
-  background: rgba(198, 166, 103, 0.06) !important;
-  border-color: rgba(198, 166, 103, 0.55);
+  background: color-mix(in oklab, var(--accent) 6%, transparent) !important;
+  border-color: color-mix(in oklab, var(--accent) 55%, transparent);
 }
 
 /* The entrance mark. The filled gold disc read as a notification badge; this is
@@ -550,15 +651,15 @@
   width: 34px !important;
   height: 34px !important;
   background: transparent !important;
-  border: 1px solid rgba(198, 166, 103, 0.45);
-  color: #c6a667 !important;
+  border: 1px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  color: var(--accent) !important;
   font-size: 15px;
   line-height: 1;
   transition: border-color .35s ease, transform .35s cubic-bezier(.4, 0, .2, 1);
 }
 
 .card-reading [data-chart-cta]:hover [data-chart-arrow] {
-  border-color: rgba(198, 166, 103, 0.85);
+  border-color: color-mix(in oklab, var(--accent) 85%, transparent);
   transform: translateX(3px);
 }
 

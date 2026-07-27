@@ -53,12 +53,47 @@ test('renders the six systems as one continuous vertical reading', async ({ page
   expect(layout.chapterTops).toEqual([...layout.chapterTops].sort((a, b) => a - b));
 });
 
-test('pins the reading to Teajia espresso', async ({ page }) => {
-  await page.emulateMedia({ colorScheme: 'light' });
-  await openReading(page);
-  const reader = page.locator('.eb-reading').first();
-  await expect(reader).toHaveCSS('background-color', 'rgb(20, 16, 11)');
-});
+for (const palette of [
+  {
+    mode: 'light',
+    reader: 'rgb(221, 211, 189)',
+    main: 'rgb(243, 239, 231)',
+    recess: 'rgb(230, 221, 201)',
+    shell: 'rgb(243, 239, 231)',
+    rail: 'rgb(234, 228, 215)',
+    title: 'rgb(39, 34, 25)',
+  },
+  {
+    mode: 'dark',
+    reader: 'rgb(16, 13, 9)',
+    main: 'rgb(20, 16, 11)',
+    recess: 'rgb(17, 14, 10)',
+    shell: 'rgb(20, 16, 11)',
+    rail: 'rgb(25, 21, 16)',
+    title: 'rgb(237, 228, 212)',
+  },
+] as const) {
+  test(`uses the ${palette.mode === 'light' ? 'Daybook' : 'Nightfall'} reading palette in ${palette.mode} mode`, async ({ page }) => {
+    await page.addInitScript((mode) => {
+      localStorage.setItem('dark-mode', mode === 'dark' ? 'true' : 'false');
+      sessionStorage.setItem('eb-skip-entrance', '1');
+    }, palette.mode);
+    await openReading(page);
+
+    const reader = page.locator('.eb-reading[data-oracle-reader]');
+    const mainChapter = page.locator('section[data-chapter="ul"]');
+    const recessedChapter = page.locator('section[data-chapter="iching"]');
+    const shell = page.locator('.card-reading > section > div');
+    const rail = page.locator('.card-reading [data-jumpbar]');
+    const title = page.locator('.card-reading__designed-header h1');
+    await expect(reader).toHaveCSS('background-color', palette.reader);
+    await expect(mainChapter).toHaveCSS('background-color', palette.main);
+    await expect(recessedChapter).toHaveCSS('background-color', palette.recess);
+    await expect(shell).toHaveCSS('background-color', palette.shell);
+    await expect(rail).toHaveCSS('background-color', palette.rail);
+    await expect(title).toHaveCSS('color', palette.title);
+  });
+}
 
 test('keeps the artwork clear of the mobile system rail on the same surface', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });

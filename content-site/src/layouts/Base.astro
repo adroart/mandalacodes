@@ -117,7 +117,7 @@ const base = import.meta.env.BASE_URL
           // frame around the page holds its color across the crossing.
           var meta = document.createElement('meta')
           meta.name = 'theme-color'
-          meta.content = dark ? '#141210' : '#f5f4f0'
+          meta.content = dark ? '#141210' : '#f3efe7'
           document.head.appendChild(meta)
         } catch (e) {
           document.documentElement.classList.add('dark')
@@ -135,7 +135,7 @@ const base = import.meta.env.BASE_URL
       <NavigationStatic client:load />
     </div>
 
-    <div class="lp-page" data-r="page" data-motion="on" style={accent ? `--acc: ${accent}` : undefined}>
+    <div class="lp-page" data-r="page" data-motion="on" style={accent ? `--field-accent: ${accent}` : undefined}>
       <div class="lp-grain" data-r="grain"></div>
 
       <slot />

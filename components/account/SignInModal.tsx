@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useDarkMode } from '../../DarkModeContext';
 import {
   sendSignInCode,
   verifySignInCode,
@@ -32,15 +31,18 @@ import {
  * Theme-aware: follows the active light/dark mode.
  */
 
-const LIGHT = {
-  surface: '#ffffff', field: '#f3f1ec', border: '#e3ddd1', ink: '#262321',
-  sub: '#8a7a5e', bronze: '#8a744e', onBronze: '#f7f5f1', fieldBorder: '#d2c7b4',
-  faint: '#a89070', line: '#e3ddd1', glow: 'rgba(196,170,124,0.18)',
-};
-const DARK = {
-  surface: '#241e17', field: '#1d1813', border: 'rgba(196,170,124,0.26)', ink: '#f0ece4',
-  sub: '#a99a82', bronze: '#dabd8b', onBronze: '#241e17', fieldBorder: 'rgba(196,170,124,0.30)',
-  faint: '#8c7f6b', line: 'rgba(196,170,124,0.18)', glow: 'rgba(196,170,124,0.16)',
+const C = {
+  surface: 'var(--color-wood-50)',
+  field: 'var(--color-paper-100)',
+  border: 'var(--color-wood-200)',
+  ink: 'var(--color-wood-900)',
+  sub: 'var(--color-wood-700)',
+  bronze: 'var(--color-bronze-700)',
+  onBronze: 'var(--color-paper-50)',
+  fieldBorder: 'var(--color-wood-300)',
+  faint: 'var(--color-wood-600)',
+  line: 'var(--color-wood-200)',
+  glow: 'color-mix(in oklab, var(--color-bronze-500) 18%, transparent)',
 };
 
 type Mode = 'welcome' | 'email' | 'password' | 'code';
@@ -51,8 +53,6 @@ const SignInModal: React.FC<{
   onSignedIn?: () => void;
   context?: SignInContext;
 }> = ({ onClose, onSignedIn, context = 'default' }) => {
-  const { isDarkMode } = useDarkMode();
-  const C = isDarkMode ? DARK : LIGHT;
   const [mode, setMode] = useState<Mode>('welcome');
   const [createNew, setCreateNew] = useState(false); // password panel: create vs log in
   const [email, setEmail] = useState('');
@@ -259,9 +259,9 @@ const SignInModal: React.FC<{
         {error && (
           <div style={{
             marginBottom: 16, padding: '8px 12px', borderRadius: 10, textAlign: 'left',
-            border: `1px solid ${isDarkMode ? 'rgba(220,150,150,0.4)' : '#e0b3b3'}`,
-            background: isDarkMode ? 'rgba(138,42,42,0.18)' : '#fbeaea',
-            color: isDarkMode ? '#e6a6a6' : '#8a2a2a',
+            border: '1px solid var(--color-danger-border)',
+            background: 'var(--color-danger-surface)',
+            color: 'var(--color-danger-text)',
             fontFamily: 'var(--font-ui)', fontSize: 13,
           }}>
             {error}

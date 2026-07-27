@@ -94,7 +94,13 @@
   --color-bronze-500: #a37b38;   /* --accent */
   --color-bronze-600: #956e2a;   /* --accent-d */
   --color-bronze-700: #7a5a22;
+  --color-bronze-800: #624719;
   --color-bronze-900: #4a3614;
+
+  /* Colors: validation states */
+  --color-danger-surface: #f4e4df;
+  --color-danger-border: #c88f7e;
+  --color-danger-text: #7d2f26;
 
   /* ─── Atlas stage palette ──────────────────────────────────────────────
      The Atlas globe stage (dark, immersive) is a different surface from
@@ -231,7 +237,12 @@
   --color-bronze-500: #cda45e;   /* --accent */
   --color-bronze-600: #debc7e;
   --color-bronze-700: #b08f54;
+  --color-bronze-800: #e5c98b;
   --color-bronze-900: #3a2c16;
+
+  --color-danger-surface: #321d19;
+  --color-danger-border: #8f594e;
+  --color-danger-text: #efb2a2;
 
   /* Availability: invert for dark-bg readability */
   --color-avail-ready: #e0e0e0;
