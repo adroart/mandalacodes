@@ -29,7 +29,42 @@ export function OracleEntrancePortal({
   registerVeil,
 }: OracleEntrancePortalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const grainRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    let scroller: HTMLElement | null = null;
+    let connectFrame = 0;
+    let syncFrame = 0;
+    let disposed = false;
+
+    const syncPaper = () => {
+      syncFrame = 0;
+      if (!scroller || !grainRef.current) return;
+      grainRef.current.style.setProperty('--oracle-paper-scroll-y', `${-scroller.scrollTop}px`);
+    };
+    const queueSync = () => {
+      if (!syncFrame) syncFrame = requestAnimationFrame(syncPaper);
+    };
+    const connect = () => {
+      if (disposed) return;
+      scroller = document.querySelector<HTMLElement>('.card-reading [data-scroll]');
+      if (!scroller) {
+        connectFrame = requestAnimationFrame(connect);
+        return;
+      }
+      scroller.addEventListener('scroll', queueSync, { passive: true });
+      syncPaper();
+    };
+
+    connect();
+    return () => {
+      disposed = true;
+      if (connectFrame) cancelAnimationFrame(connectFrame);
+      if (syncFrame) cancelAnimationFrame(syncFrame);
+      scroller?.removeEventListener('scroll', queueSync);
+    };
+  }, []);
 
   useEffect(() => {
     if (!active) return;
@@ -58,7 +93,7 @@ export function OracleEntrancePortal({
 
   return createPortal(
     <>
-      <div data-oracle-grain aria-hidden="true" />
+      <div ref={grainRef} data-oracle-grain="reading" aria-hidden="true" />
       <div ref={registerVeil} data-oracle-veil aria-hidden="true" />
       {active ? (
         <div

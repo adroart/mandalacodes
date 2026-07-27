@@ -114,13 +114,13 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
 [data-oracle-grain] {
   position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.16; mix-blend-mode:multiply;
   background-image:url('/oracle/oracle-paper-fine.webp');
-  background-position:center;
-  background-repeat:no-repeat;
-  background-size:cover;
+  background-position:center var(--oracle-paper-scroll-y,0px);
+  background-repeat:repeat;
+  background-size:768px 768px;
 }
-html:is(.dark,[data-theme='dark']) [data-oracle-grain],
-html.oracle-entrance-active [data-oracle-grain] { opacity:.34; mix-blend-mode:screen; }
-html.oracle-entrance-active [data-oracle-grain] { z-index:1001; }
+html:is(.dark,[data-theme='dark']) [data-oracle-grain="reading"],
+html.oracle-entrance-active [data-oracle-grain="reading"] { opacity:.34; mix-blend-mode:screen; }
+html.oracle-entrance-active [data-oracle-grain="reading"] { z-index:1001; }
 [data-oracle-veil] { position:fixed; inset:0; z-index:999; pointer-events:none; opacity:0; background:#14100b; }
 .oracle-entrance-portal {
   --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#80735f; --accent:#a8874d;
