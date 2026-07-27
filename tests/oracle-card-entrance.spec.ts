@@ -66,6 +66,20 @@ test('iOS Oracle surface entrance is edge-to-edge without a focus frame', async 
   });
 });
 
+test('iOS Oracle surface QR entrance follows a saved light-mode choice', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('dark-mode', 'false'));
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${CARD}?ref=qr`);
+
+  const ritual = entrance(page);
+  await expect(ritual).toBeVisible();
+  await expect(ritual).toHaveAttribute('data-palette', 'daybook');
+  await expect(ritual).toHaveCSS('background-color', 'rgb(243, 239, 231)');
+
+  const grain = page.locator('[data-oracle-grain="reading"]');
+  await expect(grain).toHaveCSS('mix-blend-mode', 'multiply');
+});
+
 test('iOS Oracle surface hides mobile shell chrome until the entrance becomes a reading', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${CARD}?ref=qr`);
