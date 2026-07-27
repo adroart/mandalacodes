@@ -20,6 +20,55 @@ export interface CardArtwork {
   availability?: string;
 }
 
+/** Markdown-native kinship data shared by the browser, corpus, REST, and MCP. */
+export interface OracleRelations {
+  number: number;
+  card_name: string;
+  status?: string;
+  unity_line: string;
+  pair: {
+    number: number;
+    card_name?: string;
+    hexagram_name?: string;
+    teaching: string;
+  };
+  inverse: {
+    number: number;
+    is_self_inverse: boolean;
+    teaching: string;
+  };
+  programming_partner: {
+    number: number;
+    card_name?: string;
+    teaching: string;
+  };
+  codon_ring: {
+    name: string;
+    tarot?: string;
+    siblings: number[];
+    teaching: string;
+  };
+  tarot?: {
+    card?: string;
+    teaching: string;
+  };
+  sky?: {
+    value: string;
+    type?: string;
+    teaching: string;
+  };
+  immortals?: {
+    upper: { trigram?: string; name: string };
+    lower: { trigram?: string; name: string };
+    same_trigram: boolean;
+    teaching: string;
+  };
+  hebrew_letter?: {
+    letter: string;
+    teaching: string;
+  };
+}
+
 export interface CanonicalCard {
   number: number;
   card_name: string;
@@ -65,11 +114,7 @@ export interface CanonicalCard {
 
   body: { physiology?: string; amino_acid?: string };
 
-  relations: {
-    programming_partner_number?: number | null;
-    programming_partner?: string;
-    codon_ring_siblings: number[];
-  };
+  relations: OracleRelations;
 
   reference?: Record<string, unknown>;
 

@@ -8,6 +8,7 @@
  */
 import { rank, type SearchDoc } from './ranker';
 import { castHexagram } from './cast';
+import { getLineResult } from './tool-results';
 import type { CanonicalCard, Voice } from './types';
 
 export interface HostedData {
@@ -66,10 +67,7 @@ export function dispatch(name: string, a: any, data: HostedData): unknown {
     case 'get_line': {
       const card = resolveCard(data, a);
       if (!card) throw new ToolError('card not found');
-      const line = card.iching.lines.find((l) => l.line === a.line);
-      return line
-        ? { code: card.number, card_name: card.card_name, ...line }
-        : { code: card.number, line: a.line, note: 'This line is not yet authored for this code.' };
+      return getLineResult(card, a.line);
     }
 
     case 'list_cards': {

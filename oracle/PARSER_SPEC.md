@@ -1,66 +1,114 @@
-# Markdown card parser — build spec
+# Oracle Markdown parser and runtime contract
 
-> The task: make the live card render from `oracle/cards/NN.md` (one Markdown
-> file per card, all six sections) instead of the per-section JSON overlays.
-> Markdown becomes the single source of truth; Adrian edits the `.md`, the app
-> reflects it. No generated JSON intermediate.
+`oracle/cards/01.md` through `oracle/cards/64.md` are the sole authored-prose
+source for the Universal Language cards. Edit a manuscript once; the browser,
+local MCP corpus, and generated hosted artifacts must all reflect that file.
 
-## The format (locked — `oracle/cards/03.md` is the reference)
+This contract is fail-closed. Missing, duplicated, or malformed required
+content is an error. Runtime code must never silently refill prose from the
+older aggregate, synthesis, section, or generated JSON collections.
 
-One file per card: `oracle/cards/NN.md` (zero-padded, e.g. `03.md`).
-- **Frontmatter (YAML)**: number, card_name, hexagram_name, per-section `status`
-  map, trigrams, gene_keys (shadow/gift/siddhi names), human_design
-  (gate_number/keyword/centre/channel), body (organ/amino_acid/codon_ring),
-  relations_data (pair, partner, ring + siblings, tarot_ring_arcana,
-  tarot_upper_trigram {trigram,cards[]}, tarot_lower_trigram, immortals, sky,
-  hebrew_letter), line_change_targets[], iching_lines[] (line→becomes).
-- **Body**: `## ICHING`, `## KEYS`, `## DESIGN`, `## BODY`, `## RELATIONS`
-  (and later `## CODE`). Each has `###` subheadings with prose underneath.
-  - ICHING: Combination, Upper trigram, Lower trigram, Reading, Judgement
-    (bullets), Image (bullets), Moving lines (six `**Line N** · _image:_ … →
-    becomes … ` then prose).
-  - KEYS: Shadow — <name>, Repressive nature — <name>, Reactive nature — <name>,
-    Gift — <name>, Siddhi — <name>.
-  - DESIGN: The drive — Gate N, <kw> / Where it lives — the <Centre> / What
-    completes it — the <Channel> (N–M).
-  - BODY: Physiology, Amino acid.
-  - RELATIONS: Pair, Programming partner, Codon ring, Tarot (intro + bullets),
-    Immortals, Deeper correlation.
+## Manuscript format
 
-## What to build
+Each zero-padded `oracle/cards/NN.md` file contains YAML frontmatter followed by
+these six required top-level lenses:
 
-1. **A frontmatter + section parser** (`data/cardMarkdown.ts` or similar). NO new
-   npm dependency — write a small frontmatter parser (the YAML used is simple:
-   key: value, nested maps, inline `{a: b}` objects, and `[1,2,3]` arrays).
-   Vite 5 supports `import.meta.glob('../oracle/cards/*.md', { query: '?raw',
-   import: 'default' })` for raw text — use that, no build step.
-2. **Map parsed Markdown → the EXISTING section types** that `getSynthesis()`
-   already merges: `IchingSection`, `KeysSection`, `DesignSection`,
-   `BodySection`, and the RELATIONS shape. Do NOT change the merge/overlay/cache
-   logic or the card components — only change what FEEDS them. The parser
-   produces the same objects the JSON loaders did.
-3. **DUAL-PATH SAFETY:** keep the JSON loaders in place. Prefer `oracle/cards/NN.md`
-   when it exists; fall back to the JSON overlays when it does not. This means
-   card 3 renders from Markdown, the other 63 keep rendering from JSON until
-   their `.md` exists. Nothing breaks mid-migration.
-4. Field mapping notes (match the current overlay code in `data/synthesisData.ts`):
-   - KEYS → gene_keys {shadow, repressive, reactive, gift, siddhi}
-   - DESIGN bridge: gate→plate1, centre→plate2 (`channel` slot), channel→plate3
-     (`circuit` slot). (See the existing design overlay ~line 212.)
-   - ICHING → {combination→trigram_combination, reading, judgement_lines,
-     image_lines, plus the full extended object incl. moving lines}.
-   - BODY → {physiology, amino_acid}.
+1. `## CODE`
+2. `## ICHING`
+3. `## KEYS`
+4. `## DESIGN`
+5. `## BODY`
+6. `## RELATIONS`
 
-## Verification (MANDATORY before reporting done)
+Frontmatter carries the card number and name, editorial status, trigrams,
+system labels, structural relationships, and six moving-line destinations.
+The body carries the authored reading. `oracle/cards/03.md` is the most useful
+reference for the complete shape, but its `status` values are not defaults for
+other cards.
 
-- Run the dev server, load UL 3's card, and confirm ALL SIX panels render with
-  the Markdown content (the Zhun ideogram in ICHING combination, "Repressive
-  nature — Anal" in KEYS, "Gate 3, Ordering" in DESIGN, the Tarot 3-axis web in
-  RELATIONS). Take a screenshot to `test-results/`.
-- Confirm a card WITHOUT a `.md` (e.g. UL 7) still renders from JSON (dual-path
-  works).
-- Report: files changed, the screenshot path, and any field that did not map
-  cleanly.
+Important rules:
 
-Do NOT mark done on a typecheck pass alone — the card must visibly render from
-Markdown. A blank panel = not done.
+- The filename number and frontmatter `number` must match and be within 1–64.
+- Every required lens must occur once. Duplicate top-level lenses are errors.
+- Every I Ching lens must map moving lines 1–6 in order.
+- HTML comments are editorial/source notes and are removed before runtime
+  mapping; they must not leak into browser, REST, search, or MCP output.
+- `status: scaffold` does not hide substantial prose. It records editorial
+  state and must not be promoted to `final` without editorial approval.
+- Relations prose comes from `## RELATIONS`; `relations_data` supplies its
+  structural numbers and labels.
+
+## Parser boundaries
+
+- `lib/oracle/card-markdown.ts` is the runtime-neutral parser and six-lens
+  mapper. It has no Vite or filesystem dependency.
+- `data/cardMarkdown.ts` is the browser adapter. It supplies raw Markdown with
+  `import.meta.glob`, caching, and moving-line lookup.
+- `data/synthesisData.ts` maps all six browser panels from Markdown. There is
+  no JSON prose fallback.
+- `mcp/oracle-server/src/corpus.ts` reads and validates all 64 manuscripts for
+  Node, then builds the shared `CanonicalCard` representation.
+
+The shared mapping preserves the existing public shapes:
+
+- CODE → keywords, glance reading, and essence.
+- ICHING → name, trigrams, reading, judgement, image, and six moving lines.
+- KEYS → Shadow, repressive/reactive natures, Gift, and Siddhi.
+- DESIGN → gate/drive, centre, and channel.
+- BODY → physiology and amino acid.
+- RELATIONS → unity line, pair, inverse, programming partner, codon ring,
+  Tarot, Immortals, sky, and Hebrew-letter material when authored.
+
+## Linked and separate data
+
+Two systems deliberately remain outside the card manuscripts:
+
+- `data/mockData.ts` links artwork identifiers and presentation metadata to a
+  card number. It is linked metadata, not authored Oracle prose.
+- Personal/live invocations use the reflection composer and its versioned D1
+  metadata/live pointer plus private R2 Markdown artifact. Invocations are not
+  merged into the canonical card corpus.
+
+## Browser, REST, search, and MCP flow
+
+```text
+oracle/cards/01.md … 64.md
+        ├── Vite raw-Markdown adapter ──> browser reader
+        └── validated Node corpus
+                ├── local stdio Oracle MCP
+                ├── data/oracle-corpus.json ──> REST + hosted MCP card tools
+                └── data/oracle-search-index.json ──> browser/REST/hosted search
+```
+
+The JSON files under `data/` are deterministic deployment artifacts. They are
+never editing surfaces. Regenerate them after any manuscript or artwork-link
+change:
+
+```bash
+npm run build:oracle-corpus
+npm run build:search-index
+```
+
+The complete search fields are retained so hosted search and local MCP search
+rank the same manuscript text.
+
+## Validation and verification
+
+The corpus loader rejects missing files, filename/frontmatter mismatches,
+duplicates, out-of-range numbers, unknown trigrams, duplicate six-line binary
+structures, missing lenses, missing required prose, and incomplete moving
+lines. Do not replace these failures with compatibility fallbacks.
+
+Before reporting parser or runtime work complete, run:
+
+```bash
+npm run typecheck
+npm run test:unit
+npm --prefix mcp/oracle-server run typecheck
+npm --prefix mcp/oracle-server run smoke
+npm run build
+```
+
+For browser-facing changes, also inspect representative rendered cards,
+including Relations and moving lines, on desktop and mobile. A typecheck alone
+does not prove the reader is visually correct.
