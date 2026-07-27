@@ -179,6 +179,42 @@ test('shows one sticky document progress indicator', async ({ page }) => {
   await expect(page.getByRole('navigation', { name: 'Reading by system' })).toBeHidden();
 });
 
+test('keeps the iPhone reading marker locked to touch scroll without catch-up', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openReading(page);
+
+  const scroller = page.locator('.card-reading--mobile [data-scroll]');
+  await expect(scroller).toHaveCount(1);
+
+  const marker = await scroller.evaluate(async (element) => {
+    const reader = element.closest<HTMLElement>('[data-reader]')!;
+    const fill = reader.querySelector<HTMLElement>('[data-progressfill-h]')!;
+    const comet = reader.querySelector<HTMLElement>('[data-comet]')!;
+    const maxScroll = element.scrollHeight - element.clientHeight;
+    element.scrollTop = maxScroll * 0.42;
+    element.dispatchEvent(new Event('scroll'));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const readerBounds = reader.getBoundingClientRect();
+    const fillBounds = fill.getBoundingClientRect();
+    const cometBounds = comet.getBoundingClientRect();
+    const expectedX = (element.scrollTop / maxScroll) * readerBounds.width;
+
+    return {
+      expectedX,
+      fillX: fillBounds.right - readerBounds.left,
+      cometX: cometBounds.left + cometBounds.width / 2 - readerBounds.left,
+      fillTransition: getComputedStyle(fill).transitionDuration,
+      cometTransition: getComputedStyle(comet).transitionDuration,
+    };
+  });
+
+  expect(Math.abs(marker.fillX - marker.expectedX)).toBeLessThanOrEqual(2);
+  expect(Math.abs(marker.cometX - marker.expectedX)).toBeLessThanOrEqual(2);
+  expect(marker.fillTransition).toBe('0s');
+  expect(marker.cometTransition).toBe('0s');
+});
+
 test('matches the system rail typography to the primary navigation', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openReading(page);
