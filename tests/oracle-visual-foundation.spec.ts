@@ -214,6 +214,42 @@ test('shows one sticky document progress indicator', async ({ page }) => {
   await expect(page.getByRole('navigation', { name: 'Reading by system' })).toBeHidden();
 });
 
+test('keeps the iPhone reading marker locked to touch scroll without catch-up', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openReading(page);
+
+  const scroller = page.locator('.card-reading--mobile [data-scroll]');
+  await expect(scroller).toHaveCount(1);
+
+  const marker = await scroller.evaluate(async (element) => {
+    const reader = element.closest<HTMLElement>('[data-reader]')!;
+    const fill = reader.querySelector<HTMLElement>('[data-progressfill-h]')!;
+    const comet = reader.querySelector<HTMLElement>('[data-comet]')!;
+    const maxScroll = element.scrollHeight - element.clientHeight;
+    element.scrollTop = maxScroll * 0.42;
+    element.dispatchEvent(new Event('scroll'));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const readerBounds = reader.getBoundingClientRect();
+    const fillBounds = fill.getBoundingClientRect();
+    const cometBounds = comet.getBoundingClientRect();
+    const expectedX = (element.scrollTop / maxScroll) * readerBounds.width;
+
+    return {
+      expectedX,
+      fillX: fillBounds.right - readerBounds.left,
+      cometX: cometBounds.left + cometBounds.width / 2 - readerBounds.left,
+      fillTransition: getComputedStyle(fill).transitionDuration,
+      cometTransition: getComputedStyle(comet).transitionDuration,
+    };
+  });
+
+  expect(Math.abs(marker.fillX - marker.expectedX)).toBeLessThanOrEqual(2);
+  expect(Math.abs(marker.cometX - marker.expectedX)).toBeLessThanOrEqual(2);
+  expect(marker.fillTransition).toBe('0s');
+  expect(marker.cometTransition).toBe('0s');
+});
+
 test('matches the system rail typography to the primary navigation', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openReading(page);
@@ -299,7 +335,7 @@ test('iOS Oracle surface uses exact warm-dark chapter colors and inset I Ching e
   expect(geometry.borderLeft).toBe(1);
 });
 
-test('iOS Oracle surface keeps a visible source-owned grain after entry', async ({ page }) => {
+test('iOS Oracle surface uses the fine real-paper texture after entry', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE}${CARD}?ref=qr`);
   const ritual = page.getByRole('dialog', { name: 'Card entrance. Tap to begin.' });
@@ -310,9 +346,22 @@ test('iOS Oracle surface keeps a visible source-owned grain after entry', async 
   const grain = page.locator('[data-oracle-grain]');
   await expect(grain).toHaveCount(1);
   await expect(grain).toBeVisible();
-  const opacity = await grain.evaluate((element) => Number.parseFloat(getComputedStyle(element).opacity));
-  expect(opacity).toBeGreaterThanOrEqual(0.075);
-  expect(opacity).toBeLessThanOrEqual(0.08);
+  const texture = await grain.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return {
+      backgroundImage: styles.backgroundImage,
+      backgroundRepeat: styles.backgroundRepeat,
+      backgroundSize: styles.backgroundSize,
+      mixBlendMode: styles.mixBlendMode,
+      opacity: Number.parseFloat(styles.opacity),
+    };
+  });
+  expect(texture.backgroundImage).toContain('/oracle/oracle-paper-fine.webp');
+  expect(texture.backgroundRepeat).toBe('no-repeat');
+  expect(texture.backgroundSize).toBe('cover');
+  expect(texture.mixBlendMode).toBe('multiply');
+  expect(texture.opacity).toBeGreaterThanOrEqual(0.45);
+  expect(texture.opacity).toBeLessThanOrEqual(0.5);
   await expect(page.locator('[data-oracle-generated-grain]')).toBeHidden();
   await expect(page.locator('[data-reader] > svg')).toBeHidden();
 });
