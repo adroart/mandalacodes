@@ -35,6 +35,37 @@ test('iOS Oracle surface portals the QR entrance above the mobile reader at 390x
   expect(await ritual.evaluate((element) => !element.closest('[data-scroll], [data-oracle-reader]'))).toBe(true);
 });
 
+test('iOS Oracle surface entrance is edge-to-edge without a focus frame', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${CARD}?ref=qr`);
+
+  const ritual = entrance(page);
+  await expect(ritual).toBeVisible();
+  const surface = await ritual.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const styles = getComputedStyle(element);
+    return {
+      top: rect.top,
+      right: innerWidth - rect.right,
+      bottom: innerHeight - rect.bottom,
+      left: rect.left,
+      borderWidths: [styles.borderTopWidth, styles.borderRightWidth, styles.borderBottomWidth, styles.borderLeftWidth],
+      outlineWidth: styles.outlineWidth,
+      boxShadow: styles.boxShadow,
+    };
+  });
+
+  expect(surface).toEqual({
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderWidths: ['0px', '0px', '0px', '0px'],
+    outlineWidth: '0px',
+    boxShadow: 'none',
+  });
+});
+
 test('iOS Oracle surface hides mobile shell chrome until the entrance becomes a reading', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${CARD}?ref=qr`);
@@ -82,6 +113,21 @@ test('returns direct QR focus to the reading after the entrance closes', async (
   await entrance(page).click();
   await expect(page.locator('[data-oracle-choreography="reading"]')).toBeAttached({ timeout: 2_500 });
   expect(await page.evaluate(() => !!(document.activeElement as HTMLElement | null)?.closest('[data-oracle-reader]'))).toBe(true);
+});
+
+test('iOS Oracle surface direct QR focus does not leave a native outline across the reading', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${CARD}?ref=qr`);
+  await entrance(page).click();
+  await expect(page.locator('[data-oracle-choreography="reading"]')).toBeAttached({ timeout: 2_500 });
+
+  const focusedSurface = await page.evaluate(() => {
+    const active = document.activeElement as HTMLElement | null;
+    if (!active?.closest('[data-oracle-reader]')) return null;
+    const styles = getComputedStyle(active);
+    return { outlineWidth: styles.outlineWidth, boxShadow: styles.boxShadow };
+  });
+  expect(focusedSurface).toEqual({ outlineWidth: '0px', boxShadow: 'none' });
 });
 
 test('reduced motion moves directly from the ritual into the reading', async ({ page }) => {
