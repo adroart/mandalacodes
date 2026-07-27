@@ -112,7 +112,7 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
 .eb-reading section[data-chapter] button[style*="border: 1px"] { border-color:color-mix(in oklab,var(--accent) 22%,transparent) !important; }
 .eb-reading [data-oracle-generated-grain], .eb-reading [data-oracle-generated-veil] { display:none !important; }
 [data-oracle-grain] {
-  position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.48; mix-blend-mode:multiply;
+  position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.30; mix-blend-mode:multiply;
   background-image:url('/oracle/oracle-paper-fine.webp');
   background-position:center;
   background-repeat:no-repeat;
