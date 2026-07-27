@@ -672,6 +672,31 @@ living-art-legacy.md; "anchor" is the verb for a dream entering a piece;
    reserved Ring 4 identity fields through the book, in the keeper's own
    control.
 
+### The ledger's form, ruled (Adrian, 2026-07-19)
+
+Four rendered options were put before Adrian (folio, wall of dreams,
+stream of voices, registry; evidence in the session mockups). He ruled:
+the WALL OF DREAMS is the ledger's primary form, and the REGISTRY joins
+as an additional view reached by a quiet link.
+
+- The wall: every piece a small certificate card on the night; the
+  artwork plate first (ArtworkPlate with the warm fallback), the title
+  line "{sigil} · {title}", the tail "alive in {city} · the Nth light",
+  the dream beneath clamped to about six lines with a quiet ellipsis,
+  the keeper's signature line when shown. The whole card opens its page;
+  placed pieces carry a small "on the globe →" link in the tail row.
+  Ghost cards stand in for kinds with no entries yet. The existing
+  kind/state/search filter bar stays above the wall. Default order:
+  lit dreams by founding ordinal, then unawakened, then seeking and
+  at-rest, placeholders last.
+- The registry: its own quiet page (/atlas/registry, night stage, no
+  globe): the fine catalog table, one hairline row per work (sigil,
+  work, place, the dream's opening), the dream unfolding inline on
+  touch, the same filters, "the atlas →" to return. The ledger header
+  carries "the registry →". Built to hold three hundred rows.
+- The code-grouped sixty-four index retires from the atlas surface; its
+  totality lives in the registry. It can return if Adrian misses it.
+
 ## Part III: Build order
 
 Sequenced so each step is visible on the live URL, per the standing rules
