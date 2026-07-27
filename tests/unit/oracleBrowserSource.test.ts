@@ -2,23 +2,26 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+import presentationData from '../../data/oracle-presentation.json';
 import { getSynthesis } from '../../data/synthesisData';
 import { ALL_CARDS } from '../../data/oracleData';
-import legacyOracleData from '../../oracle/oracle_cards_complete.json';
-
-interface LegacyPresentationCard {
-  number: number;
-  element: string;
-  traditional_colors: string;
-  color_inspiration: string;
-}
+import { elementForCard } from '../../lib/oracle/elements';
 
 describe('browser Oracle Markdown source contract', () => {
+  it('does not depend on the legacy aggregate as a test authority', async () => {
+    const testSource = await readFile(resolve('tests/unit/oracleBrowserSource.test.ts'), 'utf8');
+    const legacyAggregatePath = ['oracle/oracle', 'cards', 'complete.json'].join('_');
+
+    expect(testSource).not.toContain(legacyAggregatePath);
+  });
+
   it('contains no runtime imports or globs for legacy prose sources', async () => {
     const source = (await Promise.all([
+      'data/cardMarkdown.ts',
       'data/synthesisData.ts',
       'data/oracleData.ts',
       'components/UniversalLanguageCard.tsx',
+      'lib/oracle/card-markdown.ts',
     ].map(file => readFile(resolve(file), 'utf8')))).join('\n');
 
     expect(source).not.toMatch(/oracle\/synthesis/i);
@@ -43,24 +46,57 @@ describe('browser Oracle Markdown source contract', () => {
     });
   });
 
-  it('preserves established presentation metadata for all 64 browser cards', () => {
-    const expected = legacyOracleData.codon_rings
-      .flatMap(ring => ring.cards as LegacyPresentationCard[])
-      .sort((left, right) => left.number - right.number)
-      .map(({ number, element, traditional_colors, color_inspiration }) => ({
-        number,
-        element,
-        traditional_colors,
-        color_inspiration,
-      }));
+  it('defines complete, substantive presentation metadata for exactly 64 cards', () => {
+    expect(Object.keys(presentationData).sort()).toEqual(['_meta', 'cards']);
+    expect(presentationData.cards).toHaveLength(64);
+    expect(new Set(presentationData.cards.map(card => card.number)).size).toBe(64);
+    expect(presentationData.cards.map(card => card.number).sort((a, b) => a - b)).toEqual(
+      Array.from({ length: 64 }, (_, index) => index + 1),
+    );
 
-    expect(expected).toHaveLength(64);
+    for (const card of presentationData.cards) {
+      expect(Object.keys(card).sort()).toEqual([
+        'color_inspiration',
+        'element',
+        'number',
+        'traditional_colors',
+      ]);
+      expect(card.element.trim().length).toBeGreaterThan(0);
+      expect(card.traditional_colors.trim().length).toBeGreaterThan(20);
+      expect(card.color_inspiration.trim().length).toBeGreaterThan(20);
+    }
+  });
+
+  it('uses the presentation manifest as the browser metadata source', () => {
     expect(ALL_CARDS.map(({
       number,
       element,
       traditional_colors,
       color_inspiration,
-    }) => ({ number, element, traditional_colors, color_inspiration }))).toEqual(expected);
+    }) => ({
+      number,
+      element,
+      traditional_colors,
+      color_inspiration,
+    }))).toEqual(presentationData.cards);
+  });
+
+  it('preserves representative element filter and tint classifications', () => {
+    expect(ALL_CARDS[0].element).toBe(
+      'Metal, the Transformative Moment of autumn and inward gathering',
+    );
+    expect(ALL_CARDS[2].element).toBe('Water over Wood');
+    expect(ALL_CARDS[8].element).toBe('Wood/Wind over Metal');
+    expect(ALL_CARDS[13].element).toBe('Fire over Metal');
+    expect(ALL_CARDS[23].element).toBe('Earth over Wood');
+
+    expect([1, 3, 9, 14, 24].map(elementForCard)).toEqual([
+      'Metal',
+      'Water',
+      'Wood',
+      'Fire',
+      'Earth',
+    ]);
   });
 
   it('builds all 64 complete browser synthesis objects from card Markdown', async () => {
