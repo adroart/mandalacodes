@@ -6,7 +6,9 @@
         so a desktop host mounted elsewhere can never be wired twice,
      3. the sample nav/tabs constants are injected from `props.data` so all 64
         cards drive it.
-   Scroll, parallax, comet and jump-bar logic is unchanged from the design file. */
+   The scroll engine is adapted for production iPhones: layout is measured only
+   when its geometry changes, while marker updates are coalesced to one
+   compositor-only write per animation frame. */
 import React from 'react';
 import { CardReadingMobileMarkup } from './CardReadingMobile.generated';
 
@@ -64,6 +66,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
   _wired: WeakSet<Element> = new WeakSet();
   _timer: ReturnType<typeof setTimeout> | null = null;
   _anim: ReturnType<typeof setInterval> | null = null;
+  _readerCleanup: Array<() => void> = [];
 
   renderVals() {
     const data = this.props.data ?? {};
@@ -119,7 +122,12 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
     tick();
   }
 
-  componentWillUnmount() { if (this._timer) clearTimeout(this._timer); if (this._anim) clearInterval(this._anim); }
+  componentWillUnmount() {
+    if (this._timer) clearTimeout(this._timer);
+    if (this._anim) clearInterval(this._anim);
+    this._readerCleanup.forEach((cleanup) => cleanup());
+    this._readerCleanup = [];
+  }
 
   /* Section lookup: the live reading marks its six chapters with data-chapter,
      the imported design used data-sec. The engine accepts either so the shell
@@ -140,11 +148,10 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
 
 
     const navs = Array.from(reader.querySelectorAll('[data-nav]')) as any[];
-    const pills = reader.querySelector('[data-pills]');
     const jb = reader.querySelector('[data-jumpbar]');
-    const hfill = reader.querySelector('[data-progressfill-h]');
-    const comet = reader.querySelector('[data-comet]');
-    const artPar = reader.querySelector('[data-artparallax]');
+    const hfill = reader.querySelector('[data-progressfill-h]') as HTMLElement | null;
+    const comet = reader.querySelector('[data-comet]') as HTMLElement | null;
+    const artPar = reader.querySelector('[data-artparallax]') as HTMLElement | null;
     if (!navs.length) return;
 
     const setActive = (idx: number) => {
@@ -156,6 +163,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
 
     let secList: any[] = [];
     let breaks: number[] = [];
+    let trackWidth = 0;
     const layout = () => {
       const sTop = scroll.getBoundingClientRect().top;
       secList = navs.map((n: any) => {
@@ -165,13 +173,23 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
         return { id, top, btn: n };
       }).sort((a: any, b: any) => a.top - b.top);
       breaks = secList.map((s: any) => s.top);
-      const jbLeft = jb ? jb.getBoundingClientRect().left : 0;
-      secList.forEach((s: any) => { const rr = s.btn.getBoundingClientRect(); const padL = parseFloat(getComputedStyle(s.btn).paddingLeft) || 0; s.cx = rr.left - jbLeft + padL; });
+      trackWidth = reader.getBoundingClientRect().width;
     };
 
+    if (hfill) {
+      hfill.style.width = '100%';
+      hfill.style.transformOrigin = 'left center';
+      hfill.style.transition = 'none';
+      hfill.style.willChange = 'transform';
+    }
+    if (comet) {
+      comet.style.left = '0px';
+      comet.style.transition = 'none';
+      comet.style.willChange = 'transform';
+    }
+
     let lastActive = -1;
-    const onScroll = () => {
-      layout();
+    const renderScroll = () => {
       const n = breaks.length;
       if (!n) return;
       const pos = scroll.scrollTop;
@@ -182,10 +200,9 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       /* Progress marker: the bar and its diamond track scroll across the full
          width of the reader, empty at the top and complete at the bottom, rather
          than hopping between section anchors. */
-      const track = reader.getBoundingClientRect().width;
-      const x = frac * track;
-      if (hfill) hfill.style.width = x + 'px';
-      if (comet) comet.style.left = x + 'px';
+      const x = frac * trackWidth;
+      if (hfill) hfill.style.transform = 'scaleX(' + frac + ')';
+      if (comet) comet.style.transform = 'translate3d(' + x + 'px,0,0) translate(-50%,-50%) rotate(45deg)';
       let ak = 0;
       const jumpTop = jb ? jb.getBoundingClientRect().height : 0;
       for (let i = 0; i < n; i++) { if (pos + jumpTop + 20 >= breaks[i]) ak = i; }
@@ -193,14 +210,35 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       if (idx !== lastActive) { lastActive = idx; setActive(idx); }
     };
 
+    let scrollFrame: number | null = null;
+    const onScroll = () => {
+      if (scrollFrame !== null) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = null;
+        renderScroll();
+      });
+    };
+    const relayout = () => {
+      layout();
+      onScroll();
+    };
+
     layout();
-    onScroll();
+    renderScroll();
     scroll.addEventListener('scroll', onScroll, { passive: true });
-    setTimeout(() => { layout(); onScroll(); }, 500);
-    setTimeout(() => { layout(); onScroll(); }, 1400);
+    const settleTimers = [
+      setTimeout(relayout, 500),
+      setTimeout(relayout, 1400),
+    ];
+    let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
-      const ro = new ResizeObserver(() => { layout(); onScroll(); });
-      ro.observe(scroll); ro.observe(reader);
+      ro = new ResizeObserver(relayout);
+      ro.observe(scroll);
+      ro.observe(reader);
+      secList.forEach((section) => {
+        const element = secFor(section.id);
+        if (element) ro?.observe(element);
+      });
     }
 
     const smoothTo = (to: number) => {
@@ -217,7 +255,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
         if (p >= 1) { clearInterval(this._anim as any); this._anim = null; }
       }, 16);
     };
-    reader.addEventListener('click', (e: any) => {
+    const onReaderClick = (e: any) => {
       const btn = e.target.closest && e.target.closest('[data-nav]');
       if (!btn || !reader.contains(btn)) return;
       const target = secFor(btn.getAttribute('data-nav'));
@@ -226,6 +264,14 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - jumpH - 8;
       const max = scroll.scrollHeight - scroll.clientHeight;
       smoothTo(Math.max(0, Math.min(top, max)));
+    };
+    reader.addEventListener('click', onReaderClick);
+    this._readerCleanup.push(() => {
+      scroll.removeEventListener('scroll', onScroll);
+      reader.removeEventListener('click', onReaderClick);
+      if (scrollFrame !== null) cancelAnimationFrame(scrollFrame);
+      settleTimers.forEach((timer) => clearTimeout(timer));
+      ro?.disconnect();
     });
   }
 
