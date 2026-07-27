@@ -119,7 +119,7 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
   background-size:cover;
 }
 html:is(.dark,[data-theme='dark']) [data-oracle-grain],
-html.oracle-entrance-active [data-oracle-grain] { opacity:.40; }
+html.oracle-entrance-active [data-oracle-grain] { opacity:.34; mix-blend-mode:screen; }
 html.oracle-entrance-active [data-oracle-grain] { z-index:1001; }
 [data-oracle-veil] { position:fixed; inset:0; z-index:999; pointer-events:none; opacity:0; background:#14100b; }
 .oracle-entrance-portal {
