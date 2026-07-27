@@ -357,8 +357,8 @@ test('iOS Oracle surface uses the fine real-paper texture after entry', async ({
     };
   });
   expect(texture.backgroundImage).toContain('/oracle/oracle-paper-fine.webp');
-  expect(texture.backgroundRepeat).toBe('no-repeat');
-  expect(texture.backgroundSize).toBe('cover');
+  expect(texture.backgroundRepeat).toBe('repeat');
+  expect(texture.backgroundSize).toBe('768px 768px');
   expect(texture.mixBlendMode).toBe('screen');
   expect(texture.opacity).toBeGreaterThanOrEqual(0.33);
   expect(texture.opacity).toBeLessThanOrEqual(0.34);
@@ -384,6 +384,35 @@ test('iOS Oracle surface keeps paper restrained in light mode', async ({ page })
   expect(texture.mixBlendMode).toBe('multiply');
   expect(texture.opacity).toBeGreaterThanOrEqual(0.15);
   expect(texture.opacity).toBeLessThanOrEqual(0.16);
+});
+
+test('iOS Oracle surface moves its paper texture with the internal scroller', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openReading(page);
+
+  const scroller = page.locator('.card-reading--mobile [data-scroll]');
+  const grain = page.locator('[data-oracle-grain="reading"]');
+  await expect(scroller).toHaveCount(1);
+  await expect(grain).toHaveCount(1);
+  await expect(grain).toHaveCSS('position', 'fixed');
+  await expect(grain).toHaveCSS('background-repeat', 'repeat');
+  await expect(grain).toHaveCSS('background-size', '768px 768px');
+
+  const movement = await scroller.evaluate(async (element) => {
+    const paper = document.querySelector<HTMLElement>('[data-oracle-grain="reading"]')!;
+    const before = Number.parseFloat(getComputedStyle(paper).backgroundPositionY);
+    const distance = Math.min(900, element.scrollHeight - element.clientHeight);
+    element.scrollTop = distance;
+    element.dispatchEvent(new Event('scroll'));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    const after = Number.parseFloat(getComputedStyle(paper).backgroundPositionY);
+    return {
+      distance,
+      travelled: before - after,
+    };
+  });
+
+  expect(Math.abs(movement.travelled - movement.distance)).toBeLessThanOrEqual(2);
 });
 
 test('keeps the reading action bar fixed at the bottom', async ({ page }) => {
