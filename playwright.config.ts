@@ -17,6 +17,18 @@ export default defineConfig({
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
     },
+    // Narrowest and widest phone/tablet widths a layout has to survive.
+    // 320 is where long words and image-bearing grid tracks blow out; 768 is
+    // where two-column section heads fail to collapse. Neither failure shows
+    // at the Pixel 5's 393, which is why one width was not enough.
+    {
+      name: 'Mobile 320',
+      use: { ...devices['Pixel 5'], viewport: { width: 320, height: 568 } },
+    },
+    {
+      name: 'Tablet 768',
+      use: { ...devices['Pixel 5'], viewport: { width: 768, height: 1024 } },
+    },
     {
       name: 'Mobile Safari',
       use: { ...devices['iPhone 13'] },
