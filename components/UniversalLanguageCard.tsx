@@ -243,7 +243,7 @@ const UniversalLanguageCard: React.FC = () => {
         showEntrance={showEntrance}
         onAcquire={() => setBuyOpen(true)}
         onShare={() => setShareOpen(true)}
-        headerActionsSlot={isAccountLoaded && !isSignedIn ? (
+        headerActionsSlot={isAccountLoaded && !isSignedIn && !profile ? (
           <ChartHeroBox
             hexGlyph={String.fromCodePoint(0x4DBF + card.number)}
             code={card.number}

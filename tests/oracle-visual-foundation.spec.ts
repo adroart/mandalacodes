@@ -150,6 +150,21 @@ test('keeps the chart prompt direct and visually subordinate to the hexagram', a
   expect(typeScale.number).toBeLessThanOrEqual(typeScale.glyph * 0.2);
 });
 
+test('removes the chart prompt as soon as a birth moment is added', async ({ page }) => {
+  await openReading(page);
+  // The generated reader keeps a desktop and mobile header mounted together;
+  // invoke the chart action directly so the test follows the shared behavior.
+  await page.locator('.ul-hero-box--chart').evaluate((button: HTMLButtonElement) => button.click());
+  await page.fill('#profile-date', '1990-06-15');
+  await page.fill('#profile-time', '1430');
+  await page.fill('#profile-place', 'Jakarta');
+  await page.locator('.profile-form__suggestion').first().click();
+  await page.getByRole('button', { name: 'Build my profile' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Your chart is lit' })).toBeVisible();
+  await expect(page.locator('.ul-hero-box--chart')).toHaveCount(0);
+});
+
 test('does not ask signed-in readers whether the code is in their chart', async ({ page }) => {
   const now = new Date().toISOString();
   await page.route('**/api/auth/get-session', (route) => route.fulfill({
