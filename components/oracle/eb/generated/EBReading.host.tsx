@@ -33,6 +33,7 @@ interface HostProps {
   showEntrance?: boolean;
   onAcquire?: () => void;     // bridge to the app BuySheet (the previous Acquire panel)
   onShare?: () => void;       // bridge to the app share sheet (the previous Share panel)
+  onOpenCode: (code: number) => void; // route from a cast directly to its resulting code
   chartSlot?: React.ReactNode; // the real profile-aware "in your chart" callout (legacy bottom mount)
   headerChartSlot?: React.ReactNode; // the in-your-chart line in the header, under Acquire/Share
   headerActionsSlot?: React.ReactNode; // the two hero action boxes (art + chart), replacing the built-in Acquire/Share pair
@@ -768,7 +769,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       // With several lines moving, each line's own `becomes` is NOT the
       // destination above — it is where that line would lead alone. Label it so.
       castMultiMoving: movingNums.length > 1,
-      openRelating: () => { if (centerHex) this.setState({ index: true, indexFocus: centerHex.num, share: false }); },
+      openRelating: () => { if (centerHex) this.props.onOpenCode(centerHex.num); },
       entranceActive: this.entranceActive(),
       dismissEntrance: this.dismissEntrance,
       entranceRing: this.buildRing(),
