@@ -18,6 +18,7 @@ import { searchCorpus, type Voice } from './search.ts';
 import { composeReading } from './reading.ts';
 import { castHexagram } from './cast.ts';
 import { loadReadings } from './readings-cache.ts';
+import { localGetLineResult } from './local-tools.ts';
 
 const VOICES: Voice[] = ['glance', 'iching', 'gene_keys', 'human_design', 'tarot', 'body'];
 
@@ -191,9 +192,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
     case 'get_line': {
       const card = resolveCard(a);
       if (!card) return err('card not found');
-      const line = card.iching.lines.find((l) => l.line === a.line);
-      if (!line) return text({ code: card.number, line: a.line, note: 'This line is not yet authored for this code.' });
-      return text({ code: card.number, card_name: card.card_name, ...line });
+      return text(localGetLineResult(card, a.line));
     }
 
     case 'list_cards': {

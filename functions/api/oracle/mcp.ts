@@ -38,7 +38,7 @@ const rpcResult = (id: unknown, result: unknown) => json({ jsonrpc: '2.0', id, r
 const rpcError = (id: unknown, code: number, message: string) =>
   json({ jsonrpc: '2.0', id: id ?? null, error: { code, message } });
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   // optional shared-secret gate
   const required = env.ORACLE_MCP_TOKEN;
   if (required) {
@@ -84,5 +84,5 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 };
 
 // A friendly GET so hitting the URL in a browser explains the endpoint.
-export const onRequestGet: PagesFunction = async () =>
+export const onRequestGet = async () =>
   json({ server: 'oracle', transport: 'streamable-http (stateless)', tools: PUBLIC_TOOL_DEFS.map((t) => t.name) });

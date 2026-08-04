@@ -7,7 +7,8 @@ The Universal Language oracle — a reading deck of 64 mandalas connecting the I
 - Vite + React 18 + TypeScript + Tailwind CSS 4 + React Router v7
 - Cloudflare Pages (auto-deploys from `main`)
 - Cloudflare Functions for `/qr/:n` redirects + per-card OG meta injection
-- Source of truth for the 64 cards: `oracle/oracle_cards_complete.json`
+- Authored source of truth for all 64 cards: `oracle/cards/01.md` through `64.md`
+- Deterministic hosted artifacts: `data/oracle-corpus.json` and `data/oracle-search-index.json`
 
 ## Run locally
 
@@ -16,6 +17,14 @@ npm install
 npm run dev      # http://localhost:2222
 npm run build    # production build to dist/
 ```
+
+The browser reads the card Markdown directly. The REST API and hosted MCP read
+generated artifacts built from the same validated Markdown corpus; the local
+MCP reads the manuscripts from disk. Artwork metadata is linked separately
+from `data/mockData.ts`, and live personal invocations remain in their versioned
+D1/private-R2 publication system. See [`oracle/INDEX.md`](oracle/INDEX.md) for
+the human-and-agent infrastructure map and [`oracle/PARSER_SPEC.md`](oracle/PARSER_SPEC.md)
+for the runtime contract.
 
 ## Writing (Learn library)
 

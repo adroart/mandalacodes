@@ -1,0 +1,143 @@
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+import presentationData from '../../data/oracle-presentation.json';
+import { getSynthesis } from '../../data/synthesisData';
+import { ALL_CARDS } from '../../data/oracleData';
+import { elementForCard } from '../../lib/oracle/elements';
+
+describe('browser Oracle Markdown source contract', () => {
+  it('does not depend on the legacy aggregate as a test authority', async () => {
+    const testSource = await readFile(resolve('tests/unit/oracleBrowserSource.test.ts'), 'utf8');
+    const legacyAggregatePath = ['oracle/oracle', 'cards', 'complete.json'].join('_');
+
+    expect(testSource).not.toContain(legacyAggregatePath);
+  });
+
+  it('contains no runtime imports or globs for legacy prose sources', async () => {
+    const source = (await Promise.all([
+      'data/cardMarkdown.ts',
+      'data/synthesisData.ts',
+      'data/oracleData.ts',
+      'components/UniversalLanguageCard.tsx',
+      'lib/oracle/card-markdown.ts',
+    ].map(file => readFile(resolve(file), 'utf8')))).join('\n');
+
+    expect(source).not.toMatch(/oracle\/synthesis/i);
+    expect(source).not.toMatch(/oracle\/sections/i);
+    expect(source).not.toMatch(/oracle\/generated/i);
+    expect(source).not.toMatch(/oracle_cards_complete/i);
+    expect(source).not.toMatch(/dual[- ]path/i);
+    expect(source).not.toMatch(/expandedOracleData/i);
+    expect(source).not.toMatch(/(?:getLineText|data\/ichingLines)/i);
+  });
+
+  it('builds the synchronous browser card registry from the canonical generated artifact', () => {
+    expect(ALL_CARDS).toHaveLength(64);
+    expect(ALL_CARDS.map(card => card.number)).toEqual(
+      Array.from({ length: 64 }, (_, index) => index + 1),
+    );
+    expect(ALL_CARDS[2]).toMatchObject({
+      card_name: 'Messengers of the Infinite',
+      iching: { hexagram_name: 'Difficulty at the Beginning' },
+      gene_keys: { shadow: 'Chaos', gift: 'Innovation', siddhi: 'Innocence' },
+      human_design: { gate: 3, keyword: 'Ordering' },
+    });
+  });
+
+  it('defines complete, substantive presentation metadata for exactly 64 cards', () => {
+    expect(Object.keys(presentationData).sort()).toEqual(['_meta', 'cards']);
+    expect(presentationData.cards).toHaveLength(64);
+    expect(new Set(presentationData.cards.map(card => card.number)).size).toBe(64);
+    expect(presentationData.cards.map(card => card.number).sort((a, b) => a - b)).toEqual(
+      Array.from({ length: 64 }, (_, index) => index + 1),
+    );
+
+    for (const card of presentationData.cards) {
+      expect(Object.keys(card).sort()).toEqual([
+        'color_inspiration',
+        'element',
+        'number',
+        'traditional_colors',
+      ]);
+      expect(card.element.trim().length).toBeGreaterThan(0);
+      expect(card.traditional_colors.trim().length).toBeGreaterThan(20);
+      expect(card.color_inspiration.trim().length).toBeGreaterThan(20);
+    }
+  });
+
+  it('uses the presentation manifest as the browser metadata source', () => {
+    expect(ALL_CARDS.map(({
+      number,
+      element,
+      traditional_colors,
+      color_inspiration,
+    }) => ({
+      number,
+      element,
+      traditional_colors,
+      color_inspiration,
+    }))).toEqual(presentationData.cards);
+  });
+
+  it('preserves representative element filter and tint classifications', () => {
+    expect(ALL_CARDS[0].element).toBe(
+      'Metal, the Transformative Moment of autumn and inward gathering',
+    );
+    expect(ALL_CARDS[2].element).toBe('Water over Wood');
+    expect(ALL_CARDS[8].element).toBe('Wood/Wind over Metal');
+    expect(ALL_CARDS[13].element).toBe('Fire over Metal');
+    expect(ALL_CARDS[23].element).toBe('Earth over Wood');
+
+    expect([1, 3, 9, 14, 24].map(elementForCard)).toEqual([
+      'Metal',
+      'Water',
+      'Wood',
+      'Fire',
+      'Earth',
+    ]);
+  });
+
+  it('builds all 64 complete browser synthesis objects from card Markdown', async () => {
+    const cards = await Promise.all(
+      Array.from({ length: 64 }, (_, index) => getSynthesis(index + 1)),
+    );
+
+    expect(cards).toHaveLength(64);
+    expect(cards.every(Boolean)).toBe(true);
+    expect(cards.map(card => card?.number)).toEqual(
+      Array.from({ length: 64 }, (_, index) => index + 1),
+    );
+
+    for (const card of cards) {
+      expect(card?.keywords?.length).toBeGreaterThan(0);
+      expect(card?.essence).not.toBe('');
+      expect(card?.synthesis.iching.reading).not.toBe('');
+      expect(card?.synthesis.gene_keys.shadow).not.toBe('');
+      expect(card?.synthesis.human_design.gate).not.toBe('');
+      expect(card?.synthesis.body.physiology).not.toBe('');
+      expect(card?.synthesis.tarot.ring_role).not.toBe('');
+      expect(card?.relations?.unity_line).not.toBe('');
+    }
+
+    expect(cards[2]).toMatchObject({
+      number: 3,
+      card_name: 'Messengers of the Infinite',
+      ring_name: 'Ring of Life and Death',
+      keywords: expect.arrayContaining(['New Beginnings']),
+      essence: expect.stringContaining('Something has begun in you'),
+      synthesis: {
+        gene_keys: { gift: expect.stringContaining('Stop outrunning the unsettled feeling') },
+        human_design: { gate: expect.stringContaining('giving form to something that has only just arrived') },
+        body: { physiology: expect.stringContaining('soft middle where the news of impermanence is felt') },
+      },
+    });
+  });
+
+  it('fails closed when the required numbered Markdown manuscript is absent', async () => {
+    await expect(getSynthesis(65)).rejects.toThrow(
+      /oracle\/cards\/65\.md.*missing Markdown source/i,
+    );
+  });
+});
