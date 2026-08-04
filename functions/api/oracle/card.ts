@@ -26,9 +26,9 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-export const onRequestOptions: PagesFunction = async () => new Response(null, { headers: CORS });
+export const onRequestOptions = async () => new Response(null, { headers: CORS });
 
-export const onRequestGet: PagesFunction = async ({ request }) => {
+export const onRequestGet = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
   const n = Number(url.searchParams.get('n'));
   const name = url.searchParams.get('name');

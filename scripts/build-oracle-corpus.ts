@@ -1,10 +1,14 @@
 /**
  * Build the hosted full-corpus artifact (data/oracle-corpus.json).
  *
- * Runs the same corpus merge the MCP server uses, then strips the heavy
- * `searchText` blob (the search index already carries the search fields). The
- * Cloudflare Functions import this for get_card / get_voice / find_artworks /
- * cast — they can't read the 64 source files at the edge.
+ * Runs the same fail-closed Markdown corpus loader as the local MCP, then
+ * strips the derived `searchText` blob (the search artifact carries those
+ * fields). Cloudflare Functions import this for card tools because the edge
+ * runtime cannot read oracle/cards/01.md through 64.md from a filesystem.
+ *
+ * This JSON is a deterministic deployment artifact, never an authoring source.
+ * Artwork metadata is linked from data/mockData.ts by the loader. Versioned
+ * live invocations remain separate and are not included.
  *
  *   npx tsx scripts/build-oracle-corpus.ts
  */

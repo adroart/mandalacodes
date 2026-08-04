@@ -2,9 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { CARD_BY_NUMBER } from '../data/oracleData';
 import { HexagramSVG, hexagramLineBooleans } from './oracle/HexagramGlyph';
-import { getExpandedCard } from '../data/expandedOracleData';
 import { getSynthesis, type CardSynthesis } from '../data/synthesisData';
-import { getLineText } from '../data/ichingLines';
 import { getParsedCard, mapIching, type MdIchingLine } from '../data/cardMarkdown';
 import { HEXAGRAM_CHINESE } from '../data/hexagramChinese';
 import { ulCardImageUrl, ulCardPublicId } from '../utils/universalLanguage';
@@ -51,7 +49,6 @@ const UniversalLanguageCard: React.FC = () => {
   const { isDarkMode } = useDarkMode();
   const cardNum = parseInt(number ?? '', 10);
   const card = CARD_BY_NUMBER.get(cardNum);
-  const expanded = getExpandedCard(cardNum);
   const [synthesis, setSynthesis] = useState<CardSynthesis | undefined>(undefined);
   const [liveInvocationState, setLiveInvocationState] = useState<{ cardNum: number; value: LiveInvocation | null }>({ cardNum, value: null });
   const liveInvocation = liveInvocationState.cardNum === cardNum ? liveInvocationState.value : null;
@@ -122,7 +119,7 @@ const UniversalLanguageCard: React.FC = () => {
   const trigName = (s: string) => s.replace(/\s*\(([^)]+)\)\s*$/, ' · $1').trim();
   // Six hexagram lines top→bottom for the I Ching glyph; matches the printed plaque.
   const hexLines = hexagramLineBooleans(card.iching.upper_trigram.symbol, card.iching.lower_trigram.symbol);
-  const keywords = synthesis?.keywords ?? expanded?.keywords ?? [];
+  const keywords = synthesis?.keywords ?? [];
   const hexChar = HEXAGRAM_CHINESE[card.number]?.char ?? String(card.number);
   const imageUrl = ulCardImageUrl(card.number, 1080);
 
@@ -135,13 +132,11 @@ const UniversalLanguageCard: React.FC = () => {
     keywords,
     shareUrl: typeof window !== 'undefined' ? window.location.href : `https://mandalacodes.com/universal-language/${card.number}`,
     shareText: `${card.card_name} · Code ${card.number} · Universal Language Oracle by Adrian Rasmussen`,
-    // moving lines: the six line readings for this hexagram. The authored source
-    // is the parsed card markdown (image + reading + becomes); fall back to the
-    // ichingLines stub for text, and leave a quiet placeholder when nothing is
-    // written yet so a moving line never renders as a blank row.
+    // Moving lines come only from the parsed card manuscript. Leave a quiet
+    // placeholder when a line is absent so the UI never renders a blank row.
     moving: [1, 2, 3, 4, 5, 6].map(n => {
       const md = ichingLines.find(l => l.line === n);
-      const text = (md?.reading || getLineText(card.number, n) || '').trim();
+      const text = (md?.reading ?? '').trim();
       const becomes = md?.becomes?.hexagram
         ? `Hexagram ${md.becomes.hexagram}${md.becomes.name ? ` · ${md.becomes.name}` : ''}`
         : '';
@@ -152,13 +147,13 @@ const UniversalLanguageCard: React.FC = () => {
         text: text || 'This line’s reading is being written.',
       };
     }),
-    // relations data (pair/codon/tarot/etc.) — minimal live mapping; bodies fall back to synthesis
-    reldata: buildReldata(card, synthesis, expanded),
-    kin: buildKin(card, synthesis, expanded),
+    // Relations and kinship are mapped from the same card manuscript.
+    reldata: buildReldata(card, synthesis),
+    kin: buildKin(card, synthesis),
     overlays: OVERLAYS,
     text: (() => {
       const P = (s?: string): string[] => (s ?? '').split('\n\n').map(x => x.trim()).filter(Boolean);
-      const ulP = (synthesis?.essence ?? expanded?.creator_voice?.personal_reading ?? '').split('\n\n').map(s => s.trim()).filter(Boolean);
+      const ulP = (synthesis?.essence ?? '').split('\n\n').map(s => s.trim()).filter(Boolean);
       const first = ulP[0] ?? '';
       return {
         cardName: card.card_name,
@@ -194,26 +189,26 @@ const UniversalLanguageCard: React.FC = () => {
         ichingJudgement: (synthesis?.synthesis.iching.judgement_lines ?? []).join('\n'),
         ichingImage: (synthesis?.synthesis.iching.image_lines ?? []).join('\n'),
 
-        // Gene Keys — names from the card, prose from synthesis (fallback to expanded)
+        // Gene Keys — names and prose from the Markdown-derived card layers.
         gkShadowName: card.gene_keys.shadow,
         gkGiftName: card.gene_keys.gift,
         gkSiddhiName: card.gene_keys.siddhi,
         gkShadowName2: card.gene_keys.shadow,
         gkGiftName2: card.gene_keys.gift,
         gkSiddhiName2: card.gene_keys.siddhi,
-        gkShadowSub: expanded?.gene_keys.shadow?.contemplation_title ?? '',
-        gkGiftSub: expanded?.gene_keys.gift?.contemplation_title ?? '',
-        gkSiddhiSub: expanded?.gene_keys.siddhi?.contemplation_title ?? '',
-        gkShadowParas: P(synthesis?.synthesis.gene_keys.shadow ?? expanded?.gene_keys.shadow?.expanded?.text ?? card.gene_keys.description),
-        gkGiftParas: P(synthesis?.synthesis.gene_keys.gift ?? expanded?.gene_keys.gift?.expanded?.text),
-        gkSiddhiParas: P(synthesis?.synthesis.gene_keys.siddhi ?? expanded?.gene_keys.siddhi?.expanded?.text),
+        gkShadowSub: '',
+        gkGiftSub: '',
+        gkSiddhiSub: '',
+        gkShadowParas: P(synthesis?.synthesis.gene_keys.shadow),
+        gkGiftParas: P(synthesis?.synthesis.gene_keys.gift),
+        gkSiddhiParas: P(synthesis?.synthesis.gene_keys.siddhi),
 
         // Human Design
         hdGate: String(card.human_design.gate),
         hdDriveName: `Gate ${card.human_design.gate} · ${synthesis?.reference?.hd_keyword ?? card.human_design.keyword}`,
         hdCentreName: synthesis?.reference?.hd_center ?? 'Where it lives',
         hdChannelName: synthesis?.reference?.hd_harmonic_gate ? `Channel · Gate ${card.human_design.gate}–${synthesis.reference.hd_harmonic_gate}` : 'What completes it',
-        hdDriveParas: P(synthesis?.synthesis.human_design.gate ?? card.human_design.description),
+        hdDriveParas: P(synthesis?.synthesis.human_design.gate),
         hdCentreParas: P(synthesis?.synthesis.human_design.channel),
         hdChannelParas: P(synthesis?.synthesis.human_design.circuit),
 
@@ -224,7 +219,7 @@ const UniversalLanguageCard: React.FC = () => {
         bodyAminoParas: P(synthesis?.synthesis.body.amino_acid),
 
         // Relations intro
-        relationsIntro: synthesis?.relations?.unity_line ?? (expanded ? expanded.i_ching.hexagrams_in_pairs.context.text : ''),
+        relationsIntro: synthesis?.relations?.unity_line ?? '',
       };
     })(),
   };
@@ -428,15 +423,15 @@ const heroActionStyles = `
 `;
 
 /* ── light data mappers (live, with graceful fallback) ── */
-function buildReldata(card: any, syn?: CardSynthesis, exp?: any): EBData['reldata'] {
+function buildReldata(card: any, syn?: CardSynthesis): EBData['reldata'] {
   const rel = syn?.relations;
-  const pairNum = rel?.pair?.number ?? exp?.i_ching?.hexagrams_in_pairs?.pair_hexagram;
+  const pairNum = rel?.pair?.number;
   const pairCard = pairNum != null ? CARD_BY_NUMBER.get(pairNum) : undefined;
   const tarot = rel?.tarot?.teaching ?? syn?.synthesis.tarot.tarot_resonance ?? '';
   return {
     self: { kicker: 'Inverse · Its Own Reflection', kind: 'Itself', name: 'Its Own Reflection', body: [rel?.inverse?.teaching ?? 'The same lines turned, the situation seen from the other side.'] },
-    pair: { kicker: 'The Pair · Programming Partner', kind: 'Complement', name: pairCard ? `UL ${pairCard.number} · ${pairCard.card_name}` : 'The Pair', body: [rel?.pair?.teaching ?? (exp?.i_ching?.hexagrams_in_pairs?.context?.text ?? '')].filter(Boolean) },
-    ring14: { kicker: 'Codon Ring', kind: 'Codon kin', name: rel?.codon_ring?.name ?? exp?.gene_keys?.codon_ring?.name ?? 'Codon Ring', body: [rel?.codon_ring?.teaching ?? exp?.gene_keys?.codon_ring?.relationship_context ?? ''].filter(Boolean) },
+    pair: { kicker: 'The Pair · Programming Partner', kind: 'Complement', name: pairCard ? `UL ${pairCard.number} · ${pairCard.card_name}` : 'The Pair', body: [rel?.pair?.teaching ?? ''].filter(Boolean) },
+    ring14: { kicker: 'Codon Ring', kind: 'Codon kin', name: rel?.codon_ring?.name ?? 'Codon Ring', body: [rel?.codon_ring?.teaching ?? ''].filter(Boolean) },
     tarot: { kicker: 'Tarot', kind: 'Arcana', name: rel?.tarot?.card ?? syn?.reference?.tarot_card ?? card.ring_tarot ?? 'Tarot', body: [tarot].filter(Boolean) },
     immortal: { kicker: 'The Eight Immortals', kind: 'Daoist', name: rel?.immortals ? (rel.immortals.same_trigram ? rel.immortals.upper.name : `${rel.immortals.upper.name} · ${rel.immortals.lower.name}`) : 'The Immortal', body: [rel?.immortals?.teaching ?? ''].filter(Boolean) },
     hebrew: { kicker: 'Hebrew Letter', kind: 'The Letter', name: rel?.hebrew_letter?.letter ?? syn?.reference?.hebrew_letter ?? 'Hebrew Letter', body: [rel?.hebrew_letter?.teaching ?? ''].filter(Boolean) },
@@ -444,9 +439,9 @@ function buildReldata(card: any, syn?: CardSynthesis, exp?: any): EBData['reldat
   };
 }
 
-function buildKin(card: any, syn?: CardSynthesis, exp?: any): EBData['kin'] {
+function buildKin(card: any, syn?: CardSynthesis): EBData['kin'] {
   const rel = syn?.relations;
-  const pairNum = rel?.pair?.number ?? exp?.i_ching?.hexagrams_in_pairs?.pair_hexagram;
+  const pairNum = rel?.pair?.number;
   const pairCard = pairNum != null ? CARD_BY_NUMBER.get(pairNum) : undefined;
   const sibs = card.codon_ring_siblings ?? [];
   const ringCard = sibs.length ? CARD_BY_NUMBER.get(sibs[0]) : undefined;
