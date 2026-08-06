@@ -25,9 +25,13 @@ export function useViewportHeightVar(): void {
   useEffect(() => {
     holders += 1;
     const root = document.documentElement;
+    let published = 0;
     const update = () => {
       const height = window.innerHeight;
-      if (height > 0) root.style.setProperty('--app-vh', `${height}px`);
+      if (height > 0 && height !== published) {
+        published = height;
+        root.style.setProperty('--app-vh', `${height}px`);
+      }
     };
     update();
 
@@ -38,10 +42,28 @@ export function useViewportHeightVar(): void {
        window resize settles, so both are heard. */
     viewport?.addEventListener('resize', update);
 
+    /* iOS can report the height it had mid-load, and the correcting resize does
+       not always arrive. Two settle passes catch that without waiting on the
+       reader to touch anything. */
+    const settle = [setTimeout(update, 400), setTimeout(update, 1_600)];
+
+    /* Last line of defence, and the one readers found by themselves: a scroll
+       proves the viewport is whatever it is right now. Coalesced to one frame
+       and a no-op unless the number actually moved. */
+    let frame: number | null = null;
+    const onScroll = () => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(() => { frame = null; update(); });
+    };
+    document.addEventListener('scroll', onScroll, { passive: true, capture: true });
+
     return () => {
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
       viewport?.removeEventListener('resize', update);
+      document.removeEventListener('scroll', onScroll, { capture: true } as EventListenerOptions);
+      settle.forEach(clearTimeout);
+      if (frame !== null) cancelAnimationFrame(frame);
       holders -= 1;
       if (holders === 0) root.style.removeProperty('--app-vh');
     };

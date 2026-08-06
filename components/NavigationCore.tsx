@@ -202,19 +202,25 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
   useEffect(() => {
     const el = navRef.current;
     if (!el) return;
+    // Whether this pass has yet seen the bar at a real height. Until it has,
+    // the chase below keeps watching instead of giving up.
+    let measured = false;
     const update = () => {
       const height = el.getBoundingClientRect().height;
       // Zero is never a real bar height — it means the bar is display:none,
       // which is how the card entrance hides it while the ritual plays. Writing
-      // 0 collapses the top space every page reserves with var(--nav-height),
-      // and the sub-bars that stick to it then sit UNDER the bar once it comes
+      // 0 collapsed the top space every page reserves with var(--nav-height),
+      // and the sub-bars that stick to it then sat UNDER the bar once it came
       // back: on a QR arrival the reading's lens rail landed at y=0, behind the
       // site bar, and the reading scrolled under the bar with no rail in sight.
-      // The observer is meant to restore the real height on the display:none →
-      // visible transition, but WebKit does not reliably fire it for that, and
-      // no rAF chase is running by then. Holding the last real height means the
-      // reserved space is never wrong, whether or not the observer fires.
-      if (height > 0) document.documentElement.style.setProperty('--nav-height', `${height}px`);
+      // It stayed that way until something wrote the variable again — which
+      // only happens when a scroll flips isScrolled and re-runs this effect.
+      // That is the "scroll down and the top comes back" the bug reports
+      // describe, and it is why the reserved space must never be written from a
+      // hidden bar.
+      if (height <= 0) return;
+      measured = true;
+      document.documentElement.style.setProperty('--nav-height', `${height}px`);
     };
     update();
     // rAF chase: follow the height through the 500ms transition to its settled
@@ -224,7 +230,12 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
     const chase = (t: number) => {
       if (!start) start = t;
       update();
-      if (t - start < 560) raf = requestAnimationFrame(chase);
+      // Past the transition window the chase keeps going while the bar is still
+      // hidden, so the real height is published the moment it returns rather
+      // than waiting on the observer — WebKit does not reliably fire one across
+      // display:none. The cap is a backstop for a bar that is hidden for good;
+      // in the ordinary case this stops at 560ms having measured on frame one.
+      if (t - start < 560 || (!measured && t - start < 30_000)) raf = requestAnimationFrame(chase);
     };
     raf = requestAnimationFrame(chase);
     let ro: ResizeObserver | undefined;

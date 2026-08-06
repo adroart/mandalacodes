@@ -91,6 +91,35 @@ test('a QR arrival never collapses the top space the lens rail sits in', async (
   expect(chrome.railTop).toBeGreaterThanOrEqual(chrome.barBottom - 1);
 });
 
+/* The bug as readers actually hit it. The site bar restores its own height
+   through a ResizeObserver when the entrance stops hiding it — and WebKit does
+   not reliably fire one across display:none, which is why this only ever showed
+   on an iPhone. With the observer silenced the failure reproduces anywhere:
+   the rail lands behind the bar and stays there until a scroll happens to
+   rewrite --nav-height, which is exactly the "scroll down and the top comes
+   back" readers described. Nothing may depend on that scroll. */
+test('a QR arrival restores the top without waiting for a scroll', async ({ page }) => {
+  await page.addInitScript(() => {
+    class Silent { observe() {} unobserve() {} disconnect() {} }
+    Object.defineProperty(window, 'ResizeObserver', { configurable: true, writable: true, value: Silent });
+  });
+  await page.setViewportSize(PHONE);
+  await page.goto(`${CARD}?ref=qr`);
+  await expect(entrance(page)).toBeVisible();
+  await entrance(page).click();
+  await expect(page.locator('[data-oracle-choreography="reading"]')).toBeAttached({ timeout: 2_500 });
+  await page.waitForTimeout(1_500);
+
+  const chrome = await page.evaluate(() => {
+    const bar = document.querySelector('.site-bar-root')!.getBoundingClientRect();
+    const rail = document.querySelector('[data-jumpbar]')!.getBoundingClientRect();
+    return { barBottom: bar.bottom, barHeight: bar.height, railTop: rail.top };
+  });
+  expect(chrome.barHeight).toBeGreaterThan(0);
+  // Flush against the bar, not underneath it — and without anyone scrolling.
+  expect(chrome.railTop).toBeCloseTo(chrome.barBottom, 0);
+});
+
 test('the lens rail stays pinned under the site bar at any scroll depth', async ({ page }) => {
   await openReading(page);
   await page.evaluate(() => { document.querySelector('[data-scroll]')!.scrollTop = 2_400; });
