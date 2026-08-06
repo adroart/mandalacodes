@@ -203,7 +203,18 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
     const el = navRef.current;
     if (!el) return;
     const update = () => {
-      document.documentElement.style.setProperty('--nav-height', `${el.getBoundingClientRect().height}px`);
+      const height = el.getBoundingClientRect().height;
+      // Zero is never a real bar height — it means the bar is display:none,
+      // which is how the card entrance hides it while the ritual plays. Writing
+      // 0 collapses the top space every page reserves with var(--nav-height),
+      // and the sub-bars that stick to it then sit UNDER the bar once it comes
+      // back: on a QR arrival the reading's lens rail landed at y=0, behind the
+      // site bar, and the reading scrolled under the bar with no rail in sight.
+      // The observer is meant to restore the real height on the display:none →
+      // visible transition, but WebKit does not reliably fire it for that, and
+      // no rAF chase is running by then. Holding the last real height means the
+      // reserved space is never wrong, whether or not the observer fires.
+      if (height > 0) document.documentElement.style.setProperty('--nav-height', `${height}px`);
     };
     update();
     // rAF chase: follow the height through the 500ms transition to its settled

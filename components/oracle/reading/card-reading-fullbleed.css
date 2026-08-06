@@ -21,7 +21,6 @@
   --l-bg:#f3efe7; --l-1:#272219; --l-2:#6b6253; --l-3:#8a8070;
   --l-rule:rgba(39,34,25,.14); --l-soft:#eae4d7;
   --accent:#a37b38; --accent-d:#956e2a;
-  --oracle-footer:#e0d8c6;
   background:var(--l-bg) !important;
   color:var(--l-1);
 }
@@ -30,13 +29,18 @@ html.dark .card-reading {
   --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#80735f;
   --l-rule:rgba(168,135,77,.18); --l-soft:#191510;
   --accent:#a8874d; --accent-d:#c6a667;
-  --oracle-footer:#0a0805;
 }
 
+/* --app-vh is the viewport's measured height, published by
+   hooks/useViewportHeightVar while a reading is mounted. 100dvh is the same
+   idea in pure CSS and stays as the fallback, but iOS resolves it a toolbar
+   state behind: in Safari and in the in-app browser a QR scan opens, the shell
+   could end short of the screen, which lifted the bottom bar off the floor and
+   left a dead band beneath it. The measured height is never stale. */
 .card-reading--mobile > section,
 .card-reading--desktop > section {
   padding: 0 !important;
-  min-height: 100dvh;
+  min-height: var(--app-vh, 100dvh);
   overflow: hidden;
   background: var(--l-bg) !important;
 }
@@ -46,7 +50,7 @@ html.dark .card-reading {
 .card-reading--desktop > section > div {
   width: 100% !important;
   max-width: none !important;
-  height: 100dvh !important;
+  height: var(--app-vh, 100dvh) !important;
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
@@ -103,19 +107,30 @@ html.dark .card-reading {
 
 /* ── The bottom bar ────────────────────────────────────────────────────── */
 
-/* Darker than the reading above it, so it reads as a floor rather than another
-   band of the page, and slimmer so it takes less of the screen. */
+/* The reading's own ground, carried to the bottom edge of the screen. It used
+   to be --oracle-footer, a near-black slab meant to read as a floor; against
+   the warm reading above it that landed as a second colour cutting across the
+   bottom of the page, which is the opposite of a floor. The hairline stays —
+   it is what keeps the labels legible when prose scrolls up behind them — and
+   it is the only thing dividing the bar from the page now.
+
+   Slimmer than the design's 72px so it takes less of the screen. */
 .card-reading > section > div > footer {
-  background: var(--oracle-footer, var(--l-soft)) !important;
+  background: var(--l-bg) !important;
   border-top: 1px solid var(--l-rule) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
   height: 58px !important;
 }
 
+/* The home-indicator strip takes the bar's colour too, so the ground really
+   does run to the bottom edge rather than stopping at the labels. In a browser
+   the inset is 0 and this is exactly the bar it was before; it only fills when
+   the reading is the whole screen (installed to the Home Screen, or under a
+   browser that leaves the inset to the page). */
 .card-reading--mobile > section > div > footer {
-  height: 54px !important;
-  padding-bottom: 0 !important;
+  height: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
 }
 
 .card-reading > section > div > footer [data-bar-tab] {
@@ -230,11 +245,19 @@ html.dark .card-reading {
    rather than showing the frame through it. */
 .card-reading .eb-reading:not(.oracle-bottom-nav) {
   background: var(--oracle-section-relations, var(--l-bg)) !important;
-  padding-bottom: 80px !important;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 .card-reading [data-scroll] {
   padding-bottom: 0 !important;
+  /* The design file carries -webkit-overflow-scrolling: touch, which has been
+     redundant since iOS 13 — momentum is the default — but still puts WebKit on
+     the legacy scrolling path, where position: sticky inside the scroller is
+     only reconciled when the scroll settles. The lens rail is that sticky
+     element, and a flick left it scrolled away with the prose instead of pinned
+     under the site bar. `auto` is the modern path; nothing about the feel of
+     the scroll changes. */
+  -webkit-overflow-scrolling: auto !important;
 }
 
 /* The whole top area comes from the design now: its artwork in the shell, and
