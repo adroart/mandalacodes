@@ -387,13 +387,13 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               Three coins, six times. The throw shows which lines are moving for you now, the places this hexagram is already turning into another.
               </p>
               <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px", perspective: "560px" }}>
-                <div ref={vals.registerCoins} style={{ display: "flex", gap: "14px" }}>
+                <button type="button" className="ul-coin-cast" ref={vals.registerCoins} onClick={vals.doCast} disabled={vals.casting} aria-label="Cast the coins" style={{ display: "flex", gap: "14px" }}>
                   {[0, 1, 2].map((coinIdx) => (
                     // The animated element is this HTML span, not the SVG inside
                     // it. HTML boxes get their own GPU layer for 3D transforms;
                     // rotating the SVG directly re-rasterizes the vector every
                     // frame, which is what made the toss lag.
-                    <span key={coinIdx} style={{ display: "inline-flex", willChange: "transform", backfaceVisibility: "hidden", transformStyle: "preserve-3d" }}>
+                    <span key={coinIdx} style={{ display: "inline-flex", willChange: "transform", backfaceVisibility: "visible", transformStyle: "preserve-3d" }}>
                       <svg width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true">
                         <circle cx="23" cy="23" r="22" stroke="var(--d-rule)" strokeWidth="1" />
                         <circle cx="23" cy="23" r="17" stroke="var(--d-rule)" strokeWidth="1" opacity="0.55" />
@@ -401,7 +401,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                       </svg>
                     </span>
                   ))}
-                </div>
+                </button>
               </div>
             </>
           ) : null}
@@ -459,7 +459,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           {(vals.noCast) ? (
             <>
               <div style={{ display: "flex", justifyContent: "center" }}>
-                <button onClick={vals.doCast} style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--d-bg)", background: "var(--accent-d)", border: "none", cursor: "pointer", padding: "14px 32px" }}>
+                <button type="button" onClick={vals.doCast} disabled={vals.casting} style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--d-bg)", background: "var(--accent-d)", border: "none", cursor: vals.casting ? "wait" : "pointer", opacity: vals.casting ? "0.62" : "1", padding: "14px 32px" }}>
                 Cast the coins
                 </button>
               </div>

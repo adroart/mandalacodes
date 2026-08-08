@@ -59,6 +59,8 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   entranceExitTimer: ReturnType<typeof setTimeout> | null = null;
   heroTimer: ReturnType<typeof setTimeout> | null = null;
   choreographySafetyTimer: ReturnType<typeof setTimeout> | null = null;
+  castTimer: ReturnType<typeof setTimeout> | null = null;
+  castInFlight = false;
   revealScanFrame: number | null = null;
   revealTargets = new WeakSet<HTMLElement>();
   glyphTargets = new WeakSet<HTMLElement>();
@@ -70,6 +72,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     choreography: ((this.props.showEntrance ?? true) ? 'entrance' : 'reading') as ChoreographyPhase,
     active: 'ul',
     cast: null as any,
+    casting: false,
     lightbox: false,
     share: false,
     buy: false,
@@ -260,6 +263,8 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     if (this.entranceExitTimer) clearTimeout(this.entranceExitTimer);
     if (this.heroTimer) clearTimeout(this.heroTimer);
     if (this.choreographySafetyTimer) clearTimeout(this.choreographySafetyTimer);
+    if (this.castTimer) clearTimeout(this.castTimer);
+    this.castInFlight = false;
     if (this.revealScanFrame !== null) cancelAnimationFrame(this.revealScanFrame);
     this.invocationObserver?.disconnect();
     this.invocationObserver = null;
@@ -501,6 +506,10 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   }
 
   doCast = () => {
+    if (this.castInFlight || this.state.cast) return;
+    this.castInFlight = true;
+    this.setState({ casting: true });
+
     // The card carries the hexagram. The coins only resolve which of ITS lines
     // are moving — throwing a fresh hexagram would leave the reading below
     // describing a hexagram the reader never cast.
@@ -513,16 +522,22 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     for (let i = 0; i < 6; i++) {
       lines.push({ yang: bits[i] === '1', moving: Math.random() < 0.25 });
     }
-    // The coins tumble first, then the result takes their place. Setting the
-    // cast immediately would unmount the coins mid-throw.
+    const finishCast = () => {
+      this.castTimer = null;
+      this.castInFlight = false;
+      this.setState({ cast: { lines }, casting: false });
+    };
+
+    // The coins flip once, then the result takes their place. The final
+    // sibling lands at 370ms, leaving one frame before the result appears.
     if (this.coinsEl && !this.props.reduceMotion) {
       Array.from(this.coinsEl.children).forEach((c: any, i: number) => {
         c.style.animation = 'none'; void c.offsetWidth;
-        c.style.animation = `ulCoinTumble 720ms cubic-bezier(.2,.7,.2,1) ${i * 90}ms both`;
+        c.style.animation = `ulCoinTumble 300ms cubic-bezier(.16,1,.3,1) ${i * 35}ms both`;
       });
-      setTimeout(() => this.setState({ cast: { lines } }), 900);
+      this.castTimer = setTimeout(finishCast, 380);
     } else {
-      this.setState({ cast: { lines } });
+      finishCast();
     }
   };
 
@@ -800,6 +815,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       selUpper: () => this.selectIv('upper'),
       selLower: () => this.selectIv('lower'),
       doCast: this.doCast,
+      casting: !!this.state.casting,
       hasCast: !!this.state.cast,
       noCast: !this.state.cast,
       castDisplay, castSummary,
