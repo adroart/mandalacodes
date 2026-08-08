@@ -22,6 +22,7 @@ The folder structure:
 ```
 _design/
 ├── _INDEX.md                    ← you are here
+├── ORACLE-CONTEXT-BUNDLE.md     ← portable Claude Design context bundle
 ├── PROJECT_ARCHITECTURE.md      ← the participation ladder & anchor strategy
 ├── GRAPHICS_BRIEF.md            ← vector graphics needed, for Adrian to create
 ├── CARD_UI_LOCKED.md            ← what's been decided across all panels
@@ -64,6 +65,12 @@ read `oracle/MARKETING_POSITIONING.md` §IV before designing — see
 
 The canonical summary of every locked design rule across all panels and the
 whole card chrome. Read this to know what is "settled" and what is still open.
+
+### "What context should I import into Claude Design?"
+→ [`ORACLE-CONTEXT-BUNDLE.md`](ORACLE-CONTEXT-BUNDLE.md)
+
+A portable, byte-exact bundle of the Oracle concept, vision, project plan,
+writing method, and three complete sample card manuscripts.
 
 ### "What's the participation ladder / anchor strategy?"
 → [`PROJECT_ARCHITECTURE.md`](PROJECT_ARCHITECTURE.md)
