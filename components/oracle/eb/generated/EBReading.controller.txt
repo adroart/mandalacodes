@@ -4,6 +4,7 @@ class Component extends DCLogic {
     entranceDismissed: false,
     active: 'ul',
     cast: null,
+    casting: false,
     lightbox: false,
     share: false,
     buy: false,
@@ -16,6 +17,9 @@ class Component extends DCLogic {
     indexFocus: 1,
     relSel: 'pair',
   };
+
+  castTimer = null;
+  castInFlight = false;
 
   openIndex = () => this.setState({ index: true, indexFocus: 1, share: false });
   closeIndex = () => this.setState({ index: false });
@@ -257,6 +261,8 @@ class Component extends DCLogic {
     if (this.observer) this.observer.disconnect();
     if (this.revealObs) this.revealObs.disconnect();
     if (this.glyphObs) this.glyphObs.disconnect();
+    if (this.castTimer) clearTimeout(this.castTimer);
+    this.castInFlight = false;
     if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
     this.setBodyLock(false);
   }
@@ -334,18 +340,30 @@ class Component extends DCLogic {
   }
 
   doCast = () => {
+    if (this.castInFlight || this.state.cast) return;
+    this.castInFlight = true;
+    this.setState({ casting: true });
+
     const lines = [];
     for (let i = 0; i < 6; i++) {
       let sum = 0; for (let c = 0; c < 3; c++) sum += (Math.random() < 0.5 ? 2 : 3);
       lines.push({ yang: sum === 7 || sum === 9, moving: sum === 6 || sum === 9 });
     }
-    this.setState({ cast: { lines } });
+    const finishCast = () => {
+      this.castTimer = null;
+      this.castInFlight = false;
+      this.setState({ cast: { lines }, casting: false });
+    };
+
     if (this.coinsEl && !this.props.reduceMotion) {
       Array.from(this.coinsEl.children).forEach((c, i) => {
         c.style.animation = 'none';
         void c.offsetWidth;
-        c.style.animation = `ulCoinTumble 720ms cubic-bezier(.2,.7,.2,1) ${i * 90}ms both`;
+        c.style.animation = `ulCoinTumble 300ms cubic-bezier(.16,1,.3,1) ${i * 35}ms both`;
       });
+      this.castTimer = setTimeout(finishCast, 380);
+    } else {
+      finishCast();
     }
   };
 
@@ -475,6 +493,7 @@ class Component extends DCLogic {
       selLower: () => this.selectIv('lower'),
 
       doCast: this.doCast,
+      casting: !!this.state.casting,
       hasCast: !!this.state.cast,
       noCast: !this.state.cast,
       castDisplay,
