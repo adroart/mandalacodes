@@ -89,7 +89,7 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
       `SELECT p.computed_json AS computed_json
          FROM profiles p
          JOIN users u ON u.id = p.user_id
-        WHERE u.clerk_user_id = ?1`,
+        WHERE u.auth_user_id = ?1`,
     )
       .bind(record.clerkUserId)
       .first<ProfileRow>();

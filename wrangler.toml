@@ -4,12 +4,12 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
-# R2 bucket for the Atlas ledger (city-level world map of where every UL piece lives).
-# Provisioned 2026-05-24 via `wrangler r2 bucket create mandalacodes-atlas`.
-# Three JSON objects live in here:
-#   atlas/ledger.json   — append-only LedgerEvent[]
-#   atlas/stewards.json — private StewardRecord[] (never served publicly)
-#   atlas/public.json   — derived PublicAtlasState, regenerated after every write
+# Historical Atlas R2 evidence, frozen 2026-08-09. Adrian-Website now owns the
+# canonical collector record; Mandala's /api/atlas middleware rejects all
+# mutations and GET /api/atlas proxies https://adrianrasmussen.com/api/atlas.
+# ATLAS_CANONICAL_URL may override that read source in the Pages environment.
+# Keep this binding only to preserve/read old evidence for explicit archival
+# work. Never resume writes or treat any object here as canonical.
 [[r2_buckets]]
 binding = "ATLAS_BUCKET"
 bucket_name = "mandalacodes-atlas"

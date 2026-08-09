@@ -63,7 +63,7 @@ export interface InsertInscriptionInput {
   id: string;
   pieceId: string;
   editionNumber?: number;
-  authorClerkId: string;
+  authorUserId: string;
   kind: string;
   body: string;
   bodyHash: string;
@@ -79,7 +79,7 @@ export async function insertInscription(
   await db
     .prepare(
       `INSERT INTO atlas_inscriptions
-         (id, piece_id, edition_number, author_clerk_id, kind, body,
+         (id, piece_id, edition_number, author_user_id, kind, body,
           body_hash, content_salt, sealed_until, created_at)
        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)`,
     )
@@ -87,7 +87,7 @@ export async function insertInscription(
       input.id,
       input.pieceId,
       input.editionNumber ?? 0,
-      input.authorClerkId,
+      input.authorUserId,
       input.kind,
       input.body,
       input.bodyHash,
@@ -160,7 +160,7 @@ export async function convertPendingFirstInscription(
         id: plan.inscriptionId,
         pieceId: record.pieceId,
         editionNumber: record.editionNumber,
-        authorClerkId: record.clerkUserId,
+        authorUserId: record.clerkUserId,
         kind: 'intention',
         body: pending.text,
         bodyHash,

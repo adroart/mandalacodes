@@ -1,12 +1,20 @@
 # Atlas Ledger API
 
-> **Historical — do not implement from this doc (2026-06-10).** The
-> endpoints were since built with different auth and storage: Clerk JWTs
-> (not `steward_session` cookies) and the `ATLAS_BUCKET` R2 binding (not
-> `MUSIC_BUCKET`). Clerk was itself replaced by self-owned Better Auth on
-> 2026-06-15. For current work, read the code under
-> `functions/api/atlas/` and the plan at
-> [todo/plans/living-art-legacy.md](../todo/plans/living-art-legacy.md).
+> **Historical API, frozen 2026-08-09. Do not implement writes from this
+> document.** Adrian-Website is the canonical collector system. Mandala Codes
+> retains read-only Atlas and Universal Language kinship presentation. Its
+> `GET /api/atlas` proxies the compatible public JSON at
+> `https://adrianrasmussen.com/api/atlas` (overridable with the Pages variable
+> `ATLAS_CANONICAL_URL`). `GET` and `HEAD` may continue through the Atlas route
+> tree, `OPTIONS` receives a safe preflight response, and every other method
+> under `/api/atlas` returns a machine-readable `410 atlas_moved` response.
+>
+> The old `mandalacodes-atlas` R2 objects are historical evidence only. They
+> are not canonical and must never receive new ownership or ceremony writes.
+> The configured live ledger key was absent at the freeze and the live public
+> endpoint returned an empty state, so there was no data payload to invent or
+> silently seed. The contract below is retained only as a record of the retired
+> implementation.
 
 This is the contract for the downstream agents who will implement the
 Cloudflare Functions backing the `/atlas` page. The data layer (types,
@@ -14,6 +22,9 @@ projection, hashing) is already built. The endpoints below are not yet
 implemented — this doc is the spec.
 
 ## Storage
+
+**Retired storage model.** The keys in this section describe the system before
+the 2026-08-09 move. Do not restore them as Mandala's source of truth.
 
 All Atlas state lives in the existing R2 bucket bound as `MUSIC_BUCKET`
 (same bucket as poems, just different keys):
@@ -58,9 +69,9 @@ Public, no auth. Cached for 60 seconds via `Cache-Control` header.
 }
 ```
 
-Implementation: read `atlas/public.json` if fresh, otherwise re-project
-from `atlas/ledger.json` and write back. The projection is built with
-`utils/ledgerProjection.toPublicState` from already-existing code.
+Current implementation: proxy the canonical Adrian-Website endpoint and pass
+through its status, headers, and JSON. Never fall back to Mandala R2. The old
+R2 projection behavior described here was retired at the freeze.
 
 ---
 
@@ -249,6 +260,9 @@ is never accepted from stewards — only admin events carry notes.
 ---
 
 ## Implementation notes for the downstream agent
+
+These notes are historical and are not instructions for current work. The
+read-only middleware is the governing boundary.
 
 - Mirror the structure of `functions/api/poems.js`: tiny helpers
   (`getCookie`, `isAuthed`, `readJson`, `writeJson`), then one exported

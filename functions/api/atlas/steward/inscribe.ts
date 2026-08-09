@@ -127,7 +127,7 @@ export async function onRequestPost(
       id: inscriptionId,
       pieceId,
       editionNumber,
-      authorClerkId: userId,
+      authorUserId: userId,
       kind: input.value.kind,
       body: input.value.body,
       bodyHash: contentHash,

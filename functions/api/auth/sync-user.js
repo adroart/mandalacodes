@@ -2,7 +2,7 @@
  * POST /api/auth/sync-user
  *
  * Called once per session after Better Auth reports a signed-in user.
- * Idempotent: upserts the D1 users row by clerk_user_id (the Better Auth
+ * Idempotent: upserts the D1 users row by auth_user_id (the Better Auth
  * user id), returns the persisted row.
  *
  * Mandala Codes scope: no Stripe customer creation, no guest-order relink.
@@ -31,7 +31,7 @@ export async function onRequest(context) {
   }
 
   const user = await upsertUser(env.DB, {
-    clerkUserId: auth.userId,
+    authUserId: auth.userId,
     email,
   });
 

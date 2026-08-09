@@ -11,36 +11,34 @@
  * Look up a user row by their auth user id. Returns null when the user
  * has not yet been synced (first sign-in hasn't called /api/auth/sync-user).
  *
- * NOTE: the `clerk_user_id` column name is retained as the generic
- * external-auth-id; it now stores the Better Auth `user.id`.
  * @param {D1Database} db
- * @param {string} clerkUserId  Better Auth user id
+ * @param {string} authUserId  Better Auth user id
  */
-export async function getUserByClerkId(db, clerkUserId) {
+export async function getUserByAuthId(db, authUserId) {
   return db
-    .prepare('SELECT * FROM users WHERE clerk_user_id = ?1')
-    .bind(clerkUserId)
+    .prepare('SELECT * FROM users WHERE auth_user_id = ?1')
+    .bind(authUserId)
     .first();
 }
 
 /**
- * Upsert by clerk_user_id (the Better Auth user id). Used by
+ * Upsert by auth_user_id (the Better Auth user id). Used by
  * /api/auth/sync-user on first sign-in.
  * @param {D1Database} db
- * @param {{ clerkUserId: string; email: string }} input
+ * @param {{ authUserId: string; email: string }} input
  */
-export async function upsertUser(db, { clerkUserId, email }) {
+export async function upsertUser(db, { authUserId, email }) {
   await db
     .prepare(
-      `INSERT INTO users (clerk_user_id, email)
+      `INSERT INTO users (auth_user_id, email)
        VALUES (?1, ?2)
-       ON CONFLICT(clerk_user_id) DO UPDATE SET
+       ON CONFLICT(auth_user_id) DO UPDATE SET
          email = excluded.email,
          updated_at = unixepoch()`,
     )
-    .bind(clerkUserId, email)
+    .bind(authUserId, email)
     .run();
-  return getUserByClerkId(db, clerkUserId);
+  return getUserByAuthId(db, authUserId);
 }
 
 /**
@@ -48,11 +46,11 @@ export async function upsertUser(db, { clerkUserId, email }) {
  * CASCADE). Called by the Better Auth account-deletion hook
  * (lib/account/auth.server.js), which replaced the retired Clerk webhook.
  * @param {D1Database} db
- * @param {string} clerkUserId  Better Auth user id
+ * @param {string} authUserId  Better Auth user id
  */
-export async function deleteUserByClerkId(db, clerkUserId) {
+export async function deleteUserByAuthId(db, authUserId) {
   await db
-    .prepare('DELETE FROM users WHERE clerk_user_id = ?1')
-    .bind(clerkUserId)
+    .prepare('DELETE FROM users WHERE auth_user_id = ?1')
+    .bind(authUserId)
     .run();
 }

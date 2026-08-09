@@ -17,13 +17,17 @@
  * dream is never read here, so it can never appear in a preview.
  */
 
-import type { AtlasEnv } from '../api/atlas/_helpers';
-import { readPublicState, readLedger, regeneratePublicState } from '../api/atlas/_helpers';
+import type { PublicAtlasState } from '../../types';
+import {
+  canonicalAtlasUrl,
+  isMandalaAtlasLoop,
+  type CanonicalAtlasEnv,
+} from '../api/atlas/_canonical';
 import { FULL_ARCHIVE } from '../../data/mockData';
 import { pieceCode } from '../../utils/pieceCode';
 import { ulCardNumber } from '../../utils/universalLanguage';
 
-interface PieceMetaEnv extends AtlasEnv {
+interface PieceMetaEnv extends CanonicalAtlasEnv {
   ASSETS: { fetch: (req: Request | string) => Promise<Response> };
 }
 
@@ -87,11 +91,15 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
   let pubCategory: string | undefined;
   let foundInState = false;
   try {
-    let state = await readPublicState(env);
-    if (!state) {
-      const events = await readLedger(env);
-      state = await regeneratePublicState(env, events);
-    }
+    const source = canonicalAtlasUrl(env);
+    if (!source || isMandalaAtlasLoop(source, request)) throw new Error('Invalid Atlas source');
+    const atlasResponse = await fetch(
+      new Request(source, { headers: { Accept: 'application/json' } }),
+    );
+    if (!atlasResponse.ok) throw new Error('Canonical Atlas unavailable');
+    const payload = (await atlasResponse.json()) as { state?: PublicAtlasState };
+    const state = payload.state;
+    if (!state || !Array.isArray(state.pieces)) throw new Error('Invalid Atlas response');
     const piece =
       typeof editionNumber === 'number'
         ? state.pieces.find((p) => p.pieceId === pieceId && (p.editionNumber ?? 0) === editionNumber)

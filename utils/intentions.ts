@@ -89,7 +89,7 @@ const ELIGIBILITY_MESSAGES: Record<ShareEligibilityError, string> = {
 export function checkShareEligibility(
   row: Pick<
     InscriptionRow,
-    'kind' | 'author_clerk_id' | 'body' | 'erased_at' | 'sealed_until' | 'created_at'
+    'kind' | 'author_user_id' | 'body' | 'erased_at' | 'sealed_until' | 'created_at'
   > | null,
   userId: string,
   chain: readonly LedgerEvent[],
@@ -101,7 +101,7 @@ export function checkShareEligibility(
   if (row.kind !== 'intention') {
     return { ok: false, error: 'wrong-kind', message: ELIGIBILITY_MESSAGES['wrong-kind'] };
   }
-  if (row.author_clerk_id !== userId) {
+  if (row.author_user_id !== userId) {
     return { ok: false, error: 'not-author', message: ELIGIBILITY_MESSAGES['not-author'] };
   }
   if (row.erased_at || row.body === null) {
