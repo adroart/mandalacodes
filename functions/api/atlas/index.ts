@@ -7,9 +7,7 @@
  */
 
 import {
-  atlasReadError,
-  canonicalAtlasUrl,
-  isMandalaAtlasLoop,
+  fetchCanonicalAtlas,
   type CanonicalAtlasEnv,
 } from './_canonical';
 
@@ -21,23 +19,7 @@ interface AtlasReadContext {
 async function proxyCanonicalAtlas(
   context: AtlasReadContext,
 ): Promise<Response> {
-  const source = canonicalAtlasUrl(context.env);
-  if (!source) return atlasReadError('atlas_source_invalid', 503);
-  if (isMandalaAtlasLoop(source, context.request)) {
-    return atlasReadError('atlas_source_loop', 503);
-  }
-
-  let upstream: Response;
-  try {
-    upstream = await fetch(
-      new Request(source, {
-        method: context.request.method === 'HEAD' ? 'HEAD' : 'GET',
-        headers: { Accept: 'application/json' },
-      }),
-    );
-  } catch {
-    return atlasReadError('atlas_source_unavailable', 502);
-  }
+  const upstream = await fetchCanonicalAtlas(context.request, context.env);
 
   return new Response(context.request.method === 'HEAD' ? null : upstream.body, {
     status: upstream.status,

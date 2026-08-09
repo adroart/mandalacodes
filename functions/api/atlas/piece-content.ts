@@ -12,24 +12,15 @@
  * piece, or a malformed row. Unlike the admin write endpoint, a public piece
  * page must never break because the editorial layer isn't there yet.
  *
- * Rate limited per IP like /api/atlas/holder-chart, so a scraper can't grind
- * through every pieceId. Cached for 60s, same convention as GET /api/atlas.
+ * Cached for 60s, same convention as GET /api/atlas.
  */
 
 import type { PagesContext } from './_helpers';
 import { isMissingTableError, json } from './_helpers';
 import { rowToPieceContent, type PieceContentRow } from '../../../utils/pieceContent';
-import { checkRateLimit, clientIp, tooManyRequests } from '../_lib/rate-limit.js';
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
   const { request, env } = context;
-
-  const { ok: withinLimit, retryAfterSec } = await checkRateLimit(
-    env,
-    `atlas:piece-content:${clientIp(request)}`,
-    { limit: 120, windowMs: 60 * 60 * 1000 },
-  );
-  if (!withinLimit) return tooManyRequests(retryAfterSec);
 
   const url = new URL(request.url);
   const pieceId = url.searchParams.get('pieceId') ?? '';

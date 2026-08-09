@@ -25,9 +25,11 @@
  */
 
 import { ImageResponse } from 'workers-og';
-import type { AtlasEnv } from '../_helpers';
-import { readPublicState, readLedger, regeneratePublicState } from '../_helpers';
 import type { PublicAtlasState } from '../../../../types';
+import {
+  readCanonicalAtlasState,
+  type CanonicalAtlasEnv,
+} from '../_canonical';
 import { FULL_ARCHIVE } from '../../../../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../../../../data/cities';
 import { pieceCode } from '../../../../utils/pieceCode';
@@ -38,7 +40,7 @@ import { buildShareCardElement } from '../../../../utils/atlas/shareCard';
 /** The static-asset binding every Pages Function receives, used to read the
  *  embedded fonts from /public/fonts (same accessor the UL/piece meta
  *  functions use for index.html). */
-interface CardEnv extends AtlasEnv {
+interface CardEnv extends CanonicalAtlasEnv {
   ASSETS: { fetch: (req: Request | string) => Promise<Response> };
 }
 
@@ -104,13 +106,15 @@ async function artworkDataUri(coverImage: string | undefined): Promise<string | 
   }
 }
 
-async function loadState(env: CardEnv): Promise<PublicAtlasState> {
-  let state = await readPublicState(env);
-  if (!state) {
-    const events = await readLedger(env);
-    state = await regeneratePublicState(env, events);
-  }
-  return state;
+async function loadState(request: Request, env: CardEnv): Promise<PublicAtlasState> {
+  return (
+    (await readCanonicalAtlasState(request, env)) ?? {
+      generatedAt: new Date().toISOString(),
+      schemaVersion: 2,
+      pieces: [],
+      cities: [],
+    }
+  );
 }
 
 export async function onRequestGet(ctx: PagesFn): Promise<Response> {
@@ -130,7 +134,7 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
   const art = FULL_ARCHIVE.find((a) => a.id === pieceId);
   if (!art) return new Response('Not found', { status: 404 });
 
-  const state = await loadState(env);
+  const state = await loadState(request, env);
   // Public-piece lookup (inlined so this function pulls in no React from
   // lib/atlas/state): match on pieceId, honouring an explicit edition.
   const piece =

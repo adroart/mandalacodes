@@ -17,10 +17,8 @@
  * dream is never read here, so it can never appear in a preview.
  */
 
-import type { PublicAtlasState } from '../../types';
 import {
-  canonicalAtlasUrl,
-  isMandalaAtlasLoop,
+  readCanonicalAtlasState,
   type CanonicalAtlasEnv,
 } from '../api/atlas/_canonical';
 import { FULL_ARCHIVE } from '../../data/mockData';
@@ -91,15 +89,8 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
   let pubCategory: string | undefined;
   let foundInState = false;
   try {
-    const source = canonicalAtlasUrl(env);
-    if (!source || isMandalaAtlasLoop(source, request)) throw new Error('Invalid Atlas source');
-    const atlasResponse = await fetch(
-      new Request(source, { headers: { Accept: 'application/json' } }),
-    );
-    if (!atlasResponse.ok) throw new Error('Canonical Atlas unavailable');
-    const payload = (await atlasResponse.json()) as { state?: PublicAtlasState };
-    const state = payload.state;
-    if (!state || !Array.isArray(state.pieces)) throw new Error('Invalid Atlas response');
+    const state = await readCanonicalAtlasState(request, env);
+    if (!state) throw new Error('Canonical Atlas unavailable');
     const piece =
       typeof editionNumber === 'number'
         ? state.pieces.find((p) => p.pieceId === pieceId && (p.editionNumber ?? 0) === editionNumber)

@@ -17,9 +17,8 @@
  *     derived from the chain ("first steward", "second steward"), never by
  *     name or email.
  *
- * Also runs the idempotent pendingFirstInscription conversion (M2 → M3),
- * so the claim-ritual answer surfaces as the book's first intention the
- * first time the steward opens their legacy view.
+ * Pending first-inscription conversion belongs to an explicit mutation path.
+ * GET only returns inscriptions that are already stored.
  *
  * Each projected entry also carries `shared: boolean` (M6, Lens 2) — true
  * when a LIVE shared-intention entry currently mirrors that inscription, so
@@ -40,7 +39,6 @@ import {
 } from '../_helpers';
 import {
   chainKey,
-  convertPendingFirstInscription,
   selectInscriptionsForPiece,
 } from '../_inscriptions';
 import { requireUser, isAuthResponse } from '../../_lib/auth';
@@ -79,16 +77,7 @@ export async function onRequestGet(
     return json({ ok: false, error: 'forbidden' }, 403);
   }
 
-  // M2 → M3 conversion (idempotent; no-op for records without the field).
-  let events = await readLedger(env);
-  const converted = await convertPendingFirstInscription(env, record, events);
-  if (converted instanceof Response) return converted;
-  if (record.pendingFirstInscription) {
-    // The conversion may have appended a chain event — re-read so the
-    // freshly-landed entry projects with its commitment in view.
-    events = await readLedger(env);
-  }
-
+  const events = await readLedger(env);
   const chain = groupChains(events).get(chainKey(pieceId, editionNumber)) ?? [];
 
   let rows;

@@ -30,9 +30,10 @@ export async function getUserByAuthId(db, authUserId) {
 export async function upsertUser(db, { authUserId, email }) {
   await db
     .prepare(
-      `INSERT INTO users (auth_user_id, email)
-       VALUES (?1, ?2)
+      `INSERT INTO users (auth_user_id, clerk_user_id, email)
+       VALUES (?1, ?1, ?2)
        ON CONFLICT(auth_user_id) DO UPDATE SET
+         clerk_user_id = excluded.clerk_user_id,
          email = excluded.email,
          updated_at = unixepoch()`,
     )

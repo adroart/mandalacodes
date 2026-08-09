@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it, vi } from 'vitest';
 import * as dbHelpers from '../../functions/api/_lib/db.js';
 
@@ -46,7 +47,7 @@ describe('vendor-neutral D1 auth identity', () => {
     expect(observed.bound).toEqual([['auth-user-1']]);
   });
 
-  it('upserts authUserId into auth_user_id and reads the persisted row back', async () => {
+  it('upserts authUserId into both rollout identity columns', async () => {
     const observed = recordingDb({ id: 7, auth_user_id: 'auth-user-1' });
 
     await dbHelpers.upsertUser(observed.db, {
@@ -54,13 +55,65 @@ describe('vendor-neutral D1 auth identity', () => {
       email: 'keeper@example.com',
     });
 
-    expect(observed.sql[0]).toContain('INSERT INTO users (auth_user_id, email)');
+    expect(observed.sql[0]).toContain(
+      'INSERT INTO users (auth_user_id, clerk_user_id, email)',
+    );
     expect(observed.sql[0]).toContain('ON CONFLICT(auth_user_id)');
-    expect(observed.sql[0]).not.toContain('clerk_user_id');
     expect(observed.bound).toEqual([
       ['auth-user-1', 'keeper@example.com'],
       ['auth-user-1'],
     ]);
+  });
+
+  it('satisfies the retained NOT NULL legacy column in a real SQLite schema', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    sqlite.exec(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        auth_user_id TEXT NOT NULL UNIQUE,
+        clerk_user_id TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL,
+        updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+      )
+    `);
+
+    const d1 = {
+      prepare(sql: string) {
+        const statement = sqlite.prepare(sql);
+        type SqliteInput = null | number | bigint | string | NodeJS.ArrayBufferView;
+        let values: SqliteInput[] = [];
+        return {
+          bind(...next: SqliteInput[]) {
+            values = next;
+            return this;
+          },
+          async run() {
+            statement.run(...values);
+            return { success: true };
+          },
+          async first() {
+            return statement.get(...values) ?? null;
+          },
+        };
+      },
+    };
+
+    try {
+      await dbHelpers.upsertUser(d1, {
+        authUserId: 'auth-user-sqlite',
+        email: 'keeper@example.com',
+      });
+      const row = sqlite
+        .prepare('SELECT auth_user_id, clerk_user_id, email FROM users')
+        .get() as Record<string, unknown>;
+      expect(row).toEqual({
+        auth_user_id: 'auth-user-sqlite',
+        clerk_user_id: 'auth-user-sqlite',
+        email: 'keeper@example.com',
+      });
+    } finally {
+      sqlite.close();
+    }
   });
 
   it('deletes app users by auth_user_id through deleteUserByAuthId', async () => {
@@ -106,7 +159,6 @@ describe('vendor-neutral D1 auth identity', () => {
     for (const legacyName of [
       'getUserByClerkId',
       'deleteUserByClerkId',
-      'clerk_user_id',
       'author_clerk_id',
       'authorClerkId',
     ]) {

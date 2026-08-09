@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { onRequestGet } from '../../functions/api/atlas/index';
+import { onRequestGet, onRequestHead } from '../../functions/api/atlas/index';
 import { onRequestGet as onRequestPieceGet } from '../../functions/piece/[[path]]';
 import { FULL_ARCHIVE } from '../../data/mockData';
 
@@ -102,6 +102,27 @@ describe('Mandala Codes public Atlas read', () => {
       ok: false,
       error: 'unavailable',
     });
+  });
+
+  it('implements public HEAD by fetching canonical JSON with GET and stripping the body', async () => {
+    const fetch = vi.fn(async () =>
+      Response.json({ ok: true, state: { pieces: [] } }, {
+        headers: { 'X-Canonical-Atlas': 'true' },
+      }),
+    );
+    vi.stubGlobal('fetch', fetch);
+
+    const response = await onRequestHead({
+      request: new Request('https://mandalacodes.com/api/atlas', { method: 'HEAD' }),
+      env: {},
+    });
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.objectContaining({ url: CANONICAL_ATLAS_URL, method: 'GET' }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get('X-Canonical-Atlas')).toBe('true');
+    await expect(response.text()).resolves.toBe('');
   });
 
   it('keeps public piece metadata alive from canonical state without rewriting historical R2', async () => {

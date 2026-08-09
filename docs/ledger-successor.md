@@ -39,18 +39,18 @@ everything after it.
 
 ## Where everything lives
 
-**Canonical collector system: Adrian-Website** — registration, ownership,
+**Canonical collector system: Adrian-Website.** Registration, ownership,
 ceremony, and all future collector record changes belong there. Its public
 `/api/atlas` JSON is the source Mandala reads. Start in that repository for any
 collector-system repair or evolution.
 
-**Mandala Codes Cloudflare project** — this project hosts the read-only Atlas
+**Mandala Codes Cloudflare project.** This project hosts the read-only Atlas
 and Universal Language kinship presentation. Keep it running for those public
 surfaces, but do not use it to mutate collector state. The optional Pages
 variable `ATLAS_CANONICAL_URL` may point reads at an Adrian-Website preview;
 it defaults to `https://adrianrasmussen.com/api/atlas`.
 
-**Historical R2 bucket: `mandalacodes-atlas`** — frozen 2026-08-09. These
+**Historical R2 bucket: `mandalacodes-atlas`.** Frozen 2026-08-09. These
 objects are evidence from the retired system, not live mutable state:
 
 | Key | What it holds |
@@ -66,7 +66,7 @@ Do not write, regenerate, or restore these objects into service. `public.json`
 Ledger events contain opaque IDs, never names or emails — but `stewards.json`
 contains real contact information. Never let it leave the bucket.
 
-**Shared D1 database: `adrian-website`** — historically, Mandala used this
+**Shared D1 database: `adrian-website`.** Historically, Mandala used this
 database for two legacy Atlas tables. The read-only boundary now prevents
 Mandala Atlas handlers from mutating them:
 
@@ -87,7 +87,7 @@ from that checkout with `wrangler d1 migrations apply adrian-website --remote`.
 need to understand the code to keep the system running; you only need to know
 where things are.
 
-**Authentication (Better Auth)** — Mandala authentication still supports its
+**Authentication (Better Auth).** Mandala authentication still supports its
 remaining non-Atlas surfaces. Atlas collector and admin write access on this
 site is retired regardless of credentials because the middleware blocks every
 mutation before a route handler runs.

@@ -138,7 +138,7 @@ async function getLetters(bucket: ReturnType<typeof createFakeBucket>, pieceId: 
 
 const NOW_OVER_A_YEAR_AFTER_SHARE = '2025-07-10T00:00:00.000Z';
 
-describe('GET /api/atlas/steward/letters — words-anniversary derive-on-read', () => {
+describe('GET /api/atlas/steward/letters read-only boundary', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(NOW_OVER_A_YEAR_AFTER_SHARE));
@@ -148,7 +148,7 @@ describe('GET /api/atlas/steward/letters — words-anniversary derive-on-read', 
     vi.useRealTimers();
   });
 
-  it('generates exactly one words-anniversary letter for a live intention over a year old, and none on a second GET', async () => {
+  it('does not derive a words-anniversary letter on GET even when one is due', async () => {
     const bucket = createFakeBucket({
       [KEY_LEDGER]: ledgerFor(PIECE_ID, '2024-06-10T00:00:00.000Z'),
       [KEY_STEWARDS]: [stewardFor(PIECE_ID)],
@@ -156,22 +156,14 @@ describe('GET /api/atlas/steward/letters — words-anniversary derive-on-read', 
       [KEY_LETTERS]: [],
     });
 
-    const first = await getLetters(bucket, PIECE_ID);
-    expect(first.res.status).toBe(200);
-    expect(first.body.ok).toBe(true);
-    const wordsLettersAfterFirst = first.body.letters.filter(
+    const result = await getLetters(bucket, PIECE_ID);
+    expect(result.res.status).toBe(200);
+    expect(result.body.ok).toBe(true);
+    const wordsLetters = result.body.letters.filter(
       (l) => l.kind === 'words-anniversary',
     );
-    expect(wordsLettersAfterFirst).toHaveLength(1);
-    expect(wordsLettersAfterFirst[0].body).toContain('A dream about open water');
-
-    const second = await getLetters(bucket, PIECE_ID);
-    const wordsLettersAfterSecond = second.body.letters.filter(
-      (l) => l.kind === 'words-anniversary',
-    );
-    // Idempotent: the second open must not append a duplicate.
-    expect(wordsLettersAfterSecond).toHaveLength(1);
-    expect(wordsLettersAfterSecond[0].id).toBe(wordsLettersAfterFirst[0].id);
+    expect(wordsLetters).toHaveLength(0);
+    expect(bucket.dump<AtlasLetter[]>(KEY_LETTERS)).toEqual([]);
   });
 
   it('never generates the ask for a rehomed intention', async () => {
