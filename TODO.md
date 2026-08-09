@@ -2,7 +2,23 @@
 
 Living list of what's outstanding on the oracle. Loose priority order, top items block more than bottom items.
 
-## Go-live ops (you-required — needs your credentials, nothing here is agent-doable)
+## Go-live ops — ON HOLD 2026-08-09, do not run
+
+**The ownership record moved to the Adrian Rasmussen site.** Adrian ratified on 2026-08-09 that the
+registry there is the record of who holds a piece, and that the ceremony layer built here (the four
+rings, the dream, letters from the piece, the globe) rehomes onto it. See
+[the-collector-journey.md](../Adrian-Website/todo/plans/the-collector-journey.md) and
+[the-collector-build.md](../Adrian-Website/todo/plans/the-collector-build.md).
+
+**Every item in this section would write new records into the ledger being retired.** Claiming light
+number one in particular is not reversible: it stamps a permanent claim-order number into a chain
+that is about to be migrated. Run none of it until the migration lands.
+
+The ledger holds 18 pieces and no real collector exists on either side, which is why the move is
+cheap right now and gets more expensive with every claim added.
+
+**What is still worth doing here:** writing the 64 piece stories. Those words are yours, they carry
+over unchanged, and they are needed either way.
 
 Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO-LIVE-RUNBOOK.md). Check them off in [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md)'s status ledger as you go.
 

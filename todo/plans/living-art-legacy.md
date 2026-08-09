@@ -1,15 +1,43 @@
 ---
 name: living-art-legacy
-status: built-pending-ops
+status: placement-superseded
 created: 2026-06-10
-last_updated: 2026-07-02
-owner: mandalacodes
-also_touches: adrian-website
+last_updated: 2026-08-09
+owner: adrian-website
+also_touches: mandalacodes
+superseded_by: ../../../Adrian-Website/todo/plans/the-collector-journey.md
 source_conversation: 2026-06-10 — "item ledgers and certificates" → became the living-history legacy + planetary atlas vision. The piece carries an ever-growing record; the planet is the global mandala; holders place pieces on a map, opt into charts/identity, and a future social gallery of art owners forms.
 review: 2026-06-10 — v2 after a six-agent adversarial review (ground-truth vs code, security/privacy red-team, product/UX walkthrough, architecture, strategy stress-test, repo sweep). Every finding is folded in below; superseded v1 decisions are marked REVISED with the reason.
 ---
 
 # Plan — The living art legacy: every piece carries an ever-growing history, the planet is the global mandala
+
+> **PLACEMENT SUPERSEDED 2026-08-09. The design below is the best thinking in either system and
+> is being rehomed, not discarded — but it no longer lives here.**
+>
+> **Adrian ratified on 2026-08-09 that the ownership record lives in the Adrian-Website registry.**
+> The ledger, stewards, and claim flow move there. The ceremony layer this document designed — the
+> four rings, the dream and its yearly ritual, letters from the piece, claim-as-ritual, Founding
+> Lights, the globe — rehomes onto that registry.
+>
+> Two facts overturned the placement, neither known when settled decision #1 was ratified. **One:**
+> the Atlas holds every artwork Adrian has ever sold, filterable by series, of which the 64 are one
+> series among five in a catalog of 173 — filing all of it under a mandala-branded domain is a scope
+> inversion. **Two:** a second, complete ownership system already existed on Adrian-Website
+> (`keeper_pieces`, its own hash chain enforced by database triggers, encrypted ownership codes, and
+> a deliberately severed dependency on commerce). Neither plan referenced the other. Two records of
+> who owns a piece is the one thing a provenance system cannot have.
+>
+> **What mandalacodes keeps:** the oracle, the 64 as a deck, and the kinship between them — trigram
+> matching only works for pieces that carry a trigram. It becomes a portal into the registry.
+>
+> **Read `Adrian-Website/todo/plans/the-collector-journey.md` before building from anything here.**
+> The rings, the dream rules (no approval gate, no visible support counts), the heir hardening, the
+> claim-window discipline, and the chain-content invariant all survive the move intact.
+
+---
+
+## Original document follows
 
 > Owned by mandalacodes (ledger, atlas, steward, piece pages all live here).
 > Adrian-Website only feeds the first sale event in via the sale → ledger bridge,
