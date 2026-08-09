@@ -20,17 +20,13 @@ describe('Atlas client state truth', () => {
     await expect(loadAtlasState()).resolves.toEqual(canonical);
   });
 
-  it('represents canonical failure without invented placements, ordinals, or dreams', async () => {
+  it('rejects canonical failure instead of inventing a snapshot or empty success', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => {
       throw new Error('offline');
     }));
     const { loadAtlasState } = await import('../../lib/atlas/state');
 
-    const state = await loadAtlasState();
-
-    expect(state.servedFallback).toBe(true);
-    expect(state.pieces).toEqual([]);
-    expect(state.cities).toEqual([]);
+    await expect(loadAtlasState()).rejects.toThrow('offline');
   });
 
   it('keeps fixtures explicit and development-only', async () => {
@@ -38,5 +34,6 @@ describe('Atlas client state truth', () => {
 
     expect(source).not.toContain("from '../../data/atlasSeed'");
     expect(source).toContain('import.meta.env.DEV');
+    expect(source).not.toContain('servedFallback');
   });
 });

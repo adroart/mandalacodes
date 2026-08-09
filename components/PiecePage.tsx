@@ -41,9 +41,9 @@ import type { Artwork, LedgerEvent, PublicAtlasState } from '../types';
  * what is still unwritten — the hollow marks that carry the invitations.
  * The page ends on one band with two doors (claim it / have one made).
  * It NEVER shows private events,
- * notes, or holder identity: everything comes from the *public* projection
- * (fetched with the same seed fallback AtlasPage uses), so a slightly-stale
- * cache still renders.
+ * notes, or holder identity: everything comes from Adrian-Website's canonical
+ * public projection. When that source is unavailable, the page says so
+ * explicitly.
  *
  * Register: the page follows the site theme and DEFAULTS DARK (the site
  * default): nightfall paper, cream ink, antique gold — the same register as
@@ -76,6 +76,7 @@ const Rule: React.FC<{ className?: string }> = ({ className = '' }) => (
 
 type LoadState =
   | { kind: 'loading' }
+  | { kind: 'error' }
   | { kind: 'not-found' }
   | {
       kind: 'ready';
@@ -299,42 +300,46 @@ const PiecePage: React.FC = () => {
     const editionNumber =
       edition !== undefined && /^\d+$/.test(edition) ? parseInt(edition, 10) : undefined;
 
-    Promise.all([loadAtlasState(), loadPublicCatalog()]).then(([state, catalog]) => {
-      if (!active) return;
-      setAtlasState(state);
-      const piece = findPublicPiece(state, pieceId, editionNumber);
-      const catalogEntry = findCatalogEntry(catalog, pieceId);
-      // Dead-end only when the piece is in NONE of the archive, the public
-      // state, or the catalog. A shipped piece present in public state or the
-      // catalog still renders its certificate (forever contract): the catalog
-      // row supplies its real title/year/dimensions/images, and a piece in
-      // public state alone renders by sigil.
-      if (!art && !piece && !catalogEntry) {
-        setLoad({ kind: 'not-found' });
-        return;
-      }
-      const catalogArt = catalogEntry
-        ? publicCatalogEntryToArtwork(catalogEntry)
-        : null;
-      const resolved: PublicPiece =
-        piece ?? {
-          pieceId,
-          editionNumber,
-          series: art?.series ?? catalogArt?.series,
-          category: art?.category ?? catalogArt?.category,
-          cityId: null,
-          status: 'seeking',
-        };
-      // Archive wins; else the catalog row's real fields; else the sigil-only
-      // fallback for a piece present in public state but neither store.
-      const resolvedArt = art ?? catalogArt ?? fallbackArtFromPublic(resolved);
-      setLoad({
-        kind: 'ready',
-        piece: resolved,
-        art: resolvedArt,
-        catalog: catalogEntry ?? null,
+    Promise.all([loadAtlasState(), loadPublicCatalog()])
+      .then(([state, catalog]) => {
+        if (!active) return;
+        setAtlasState(state);
+        const piece = findPublicPiece(state, pieceId, editionNumber);
+        const catalogEntry = findCatalogEntry(catalog, pieceId);
+        // Dead-end only when the piece is in NONE of the archive, the public
+        // state, or the catalog. A shipped piece present in public state or the
+        // catalog still renders its certificate (forever contract): the catalog
+        // row supplies its real title/year/dimensions/images, and a piece in
+        // public state alone renders by sigil.
+        if (!art && !piece && !catalogEntry) {
+          setLoad({ kind: 'not-found' });
+          return;
+        }
+        const catalogArt = catalogEntry
+          ? publicCatalogEntryToArtwork(catalogEntry)
+          : null;
+        const resolved: PublicPiece =
+          piece ?? {
+            pieceId,
+            editionNumber,
+            series: art?.series ?? catalogArt?.series,
+            category: art?.category ?? catalogArt?.category,
+            cityId: null,
+            status: 'seeking',
+          };
+        // Archive wins; else the catalog row's real fields; else the sigil-only
+        // fallback for a piece present in public state but neither store.
+        const resolvedArt = art ?? catalogArt ?? fallbackArtFromPublic(resolved);
+        setLoad({
+          kind: 'ready',
+          piece: resolved,
+          art: resolvedArt,
+          catalog: catalogEntry ?? null,
+        });
+      })
+      .catch(() => {
+        if (active) setLoad({ kind: 'error' });
       });
-    });
     return () => {
       active = false;
     };
@@ -399,6 +404,25 @@ const PiecePage: React.FC = () => {
         <p className={`${LABEL} text-wood-500`} aria-live="polite">
           Opening the certificate
         </p>
+      </section>
+    );
+  }
+
+  if (load.kind === 'error') {
+    return (
+      <section className="min-h-screen bg-paper-100 flex flex-col items-center justify-center px-6 text-center">
+        <h1
+          className="font-display text-3xl text-wood-900 font-medium mb-4"
+          style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
+        >
+          The Atlas record is briefly out of reach.
+        </h1>
+        <p className="font-reading text-lg text-wood-700 max-w-md leading-[1.6] mb-8">
+          We could not reach the canonical record. Please try again shortly.
+        </p>
+        <Link to="/atlas" className={LINK}>
+          Return to the Atlas →
+        </Link>
       </section>
     );
   }

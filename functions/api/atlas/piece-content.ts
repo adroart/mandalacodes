@@ -19,6 +19,21 @@ import type { PagesContext } from './_helpers';
 import { isMissingTableError, json } from './_helpers';
 import { rowToPieceContent, type PieceContentRow } from '../../../utils/pieceContent';
 
+type CacheAwareContext = PagesContext & {
+  waitUntil?: (promise: Promise<unknown>) => void;
+};
+
+function storeAtEdge(
+  context: CacheAwareContext,
+  cache: Cache | null,
+  response: Response,
+): Response {
+  if (cache && context.waitUntil) {
+    context.waitUntil(cache.put(context.request, response.clone()).catch(() => undefined));
+  }
+  return response;
+}
+
 export async function onRequestGet(context: PagesContext): Promise<Response> {
   const { request, env } = context;
 
@@ -26,11 +41,38 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
   const pieceId = url.searchParams.get('pieceId') ?? '';
   if (!pieceId) return json({ ok: false, error: 'Missing pieceId' }, 400);
 
-  const cacheHeaders = { 'Cache-Control': 'public, max-age=60' };
+  // The Cache API is a derived edge cache, not application state. It keeps a
+  // hot public piece from querying D1 on every request and fails open where
+  // the Pages preview/local runtime does not expose `caches.default`.
+  let edgeCache: Cache | null = null;
+  try {
+    edgeCache =
+      typeof caches === 'undefined'
+        ? null
+        : (caches as unknown as { default: Cache }).default;
+    const cached = edgeCache ? await edgeCache.match(request) : undefined;
+    if (cached) return cached;
+  } catch {
+    edgeCache = null;
+  }
+
+  // Cloudflare's shared edge cache absorbs repeated public lookups without
+  // writing D1 rate-limit counters on GET. Browsers keep a short copy; the
+  // edge may hold it for five minutes and serve stale during revalidation.
+  const cacheHeaders = {
+    'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400',
+    'CDN-Cache-Control': 'public, max-age=300, stale-while-revalidate=86400',
+  };
 
   // No D1 / migration not applied → degrade to an empty result, not a 503:
   // the piece page must render fine before this table ever exists.
-  if (!env.DB) return json({ ok: true, content: null }, 200, cacheHeaders);
+  if (!env.DB) {
+    return storeAtEdge(
+      context as CacheAwareContext,
+      edgeCache,
+      json({ ok: true, content: null }, 200, cacheHeaders),
+    );
+  }
 
   let row: PieceContentRow | null = null;
   try {
@@ -42,11 +84,27 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
       .bind(pieceId)
       .first<PieceContentRow>();
   } catch (err) {
-    if (isMissingTableError(err)) return json({ ok: true, content: null }, 200, cacheHeaders);
+    if (isMissingTableError(err)) {
+      return storeAtEdge(
+        context as CacheAwareContext,
+        edgeCache,
+        json({ ok: true, content: null }, 200, cacheHeaders),
+      );
+    }
     throw err;
   }
 
-  if (!row) return json({ ok: true, content: null }, 200, cacheHeaders);
+  if (!row) {
+    return storeAtEdge(
+      context as CacheAwareContext,
+      edgeCache,
+      json({ ok: true, content: null }, 200, cacheHeaders),
+    );
+  }
 
-  return json({ ok: true, content: rowToPieceContent(row) }, 200, cacheHeaders);
+  return storeAtEdge(
+    context as CacheAwareContext,
+    edgeCache,
+    json({ ok: true, content: rowToPieceContent(row) }, 200, cacheHeaders),
+  );
 }

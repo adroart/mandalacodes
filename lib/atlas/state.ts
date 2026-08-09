@@ -9,21 +9,16 @@ import { ulCardNumber } from '../../utils/universalLanguage';
 /* Shared atlas-state loader. The Atlas page and the card page's "On the
  * Atlas" seat both read the same public state; fetching it once per session
  * keeps the two surfaces telling the same story. Valid empty state stays
- * empty. Failure returns a marked empty state, never invented placements. */
+ * empty. Failure rejects so every surface can render an explicit unavailable
+ * state instead of presenting invented or unsnapshotted data. */
 
 let atlasStatePromise: Promise<PublicAtlasState> | null = null;
 
-/** The seed/fallback state carries this marker so surfaces can tell an honest
- *  "showing the last gathered sky" chip and offer a retry (interface law 6).
- *  A live fetch never sets it; a forced retry that succeeds clears it. */
-export type LoadedAtlasState = PublicAtlasState & { servedFallback?: boolean };
-
 /**
  * Load the public atlas. Pass `force` to bypass the per-session cache and
- * refetch. On failure a marked empty state lets the caller surface the retry
- * notice without manufacturing placements, ordinals, or dreams.
+ * refetch. Canonical failure rejects; there is no local production snapshot.
  */
-export function loadAtlasState(force = false): Promise<LoadedAtlasState> {
+export function loadAtlasState(force = false): Promise<PublicAtlasState> {
   // ── TEMPORARY PLACEHOLDER (remove at launch) ──
   // Verification override: `?placeholder` on the URL forces the placeholder
   // state, so Adrian can preview it locally where the dev server otherwise
@@ -51,15 +46,6 @@ export function loadAtlasState(force = false): Promise<LoadedAtlasState> {
           throw new Error('atlas malformed');
         }
         return state;
-      })
-      .catch(() => {
-        return {
-          generatedAt: new Date().toISOString(),
-          schemaVersion: 2,
-          pieces: [],
-          cities: [],
-          servedFallback: true,
-        } satisfies LoadedAtlasState;
       });
   }
   return atlasStatePromise;
@@ -134,9 +120,13 @@ export function useCardPlacement(cardNumber: number): CardPlacement | null {
   useEffect(() => {
     let active = true;
     setPlacement(null);
-    loadAtlasState().then((state) => {
-      if (active) setPlacement(findPlacementForCard(state, cardNumber));
-    });
+    loadAtlasState()
+      .then((state) => {
+        if (active) setPlacement(findPlacementForCard(state, cardNumber));
+      })
+      .catch(() => {
+        if (active) setPlacement(null);
+      });
     return () => {
       active = false;
     };

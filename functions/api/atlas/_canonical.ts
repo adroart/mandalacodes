@@ -31,8 +31,27 @@ export function isMandalaAtlasLoop(source: URL, request: Request): boolean {
   return isMandalaHost || source.origin === requestUrl.origin;
 }
 
+function isAdrianCanonicalHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return host === 'adrianrasmussen.com' || host.endsWith('.adrianrasmussen.com');
+}
+
+function isSafeCanonicalRedirect(next: URL, current: URL, configured: URL): boolean {
+  if (next.protocol !== 'https:' || next.username || next.password) return false;
+  if (next.origin === current.origin) return true;
+  return (
+    isAdrianCanonicalHost(configured.hostname) &&
+    isAdrianCanonicalHost(next.hostname)
+  );
+}
+
 export function atlasReadError(
-  error: 'atlas_source_invalid' | 'atlas_source_loop' | 'atlas_source_unavailable',
+  error:
+    | 'atlas_source_invalid'
+    | 'atlas_source_loop'
+    | 'atlas_source_redirect_unsafe'
+    | 'atlas_source_redirect_limit'
+    | 'atlas_source_unavailable',
   status: number,
 ): Response {
   return Response.json(
@@ -62,16 +81,45 @@ export async function fetchCanonicalAtlas(
     return atlasReadError('atlas_source_loop', 503);
   }
 
-  try {
-    return await fetch(
-      new Request(source, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-      }),
-    );
-  } catch {
-    return atlasReadError('atlas_source_unavailable', 502);
+  let current = source;
+  const maxRedirects = 3;
+  for (let redirects = 0; redirects <= maxRedirects; redirects += 1) {
+    let response: Response;
+    try {
+      response = await fetch(
+        new Request(current, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          redirect: 'manual',
+        }),
+      );
+    } catch {
+      return atlasReadError('atlas_source_unavailable', 502);
+    }
+
+    if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+    if (redirects === maxRedirects) {
+      return atlasReadError('atlas_source_redirect_limit', 503);
+    }
+
+    const location = response.headers.get('Location');
+    let next: URL;
+    try {
+      if (!location) throw new Error('missing redirect location');
+      next = new URL(location, current);
+    } catch {
+      return atlasReadError('atlas_source_redirect_unsafe', 503);
+    }
+    if (isMandalaAtlasLoop(next, request)) {
+      return atlasReadError('atlas_source_loop', 503);
+    }
+    if (!isSafeCanonicalRedirect(next, current, source)) {
+      return atlasReadError('atlas_source_redirect_unsafe', 503);
+    }
+    current = next;
   }
+
+  return atlasReadError('atlas_source_redirect_limit', 503);
 }
 
 /** Parse a compatible canonical response for internal read-only consumers.

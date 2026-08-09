@@ -104,6 +104,98 @@ describe('Mandala Codes public Atlas read', () => {
     });
   });
 
+  it('handles safe canonical redirects manually', async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(null, {
+          status: 302,
+          headers: { Location: 'https://registry.adrianrasmussen.com/api/atlas' },
+        }),
+      )
+      .mockResolvedValueOnce(Response.json({ ok: true, state: { pieces: [], cities: [] } }));
+    vi.stubGlobal('fetch', fetch);
+
+    const response = await onRequestGet({
+      request: new Request('https://mandalacodes.com/api/atlas'),
+      env: {},
+    });
+
+    expect(response.status).toBe(200);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ redirect: 'manual' }),
+    );
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        url: 'https://registry.adrianrasmussen.com/api/atlas',
+        redirect: 'manual',
+      }),
+    );
+  });
+
+  it('rejects a canonical redirect back to Mandala Codes', async () => {
+    const fetch = vi.fn(async () =>
+      new Response(null, {
+        status: 302,
+        headers: { Location: 'https://mandalacodes.com/api/atlas' },
+      }),
+    );
+    vi.stubGlobal('fetch', fetch);
+
+    const response = await onRequestGet({
+      request: new Request('https://mandalacodes.com/api/atlas'),
+      env: {},
+    });
+
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ error: 'atlas_source_loop' });
+  });
+
+  it('rejects unsafe redirect protocols', async () => {
+    const fetch = vi.fn(async () =>
+      new Response(null, {
+        status: 302,
+        headers: { Location: 'http://registry.adrianrasmussen.com/api/atlas' },
+      }),
+    );
+    vi.stubGlobal('fetch', fetch);
+
+    const response = await onRequestGet({
+      request: new Request('https://mandalacodes.com/api/atlas'),
+      env: {},
+    });
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'atlas_source_redirect_unsafe',
+    });
+  });
+
+  it('rejects a cross-site redirect outside the configured canonical trust boundary', async () => {
+    const fetch = vi.fn(async () =>
+      new Response(null, {
+        status: 302,
+        headers: { Location: 'https://unrelated.example/api/atlas' },
+      }),
+    );
+    vi.stubGlobal('fetch', fetch);
+
+    const response = await onRequestGet({
+      request: new Request('https://mandalacodes.com/api/atlas'),
+      env: {},
+    });
+
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'atlas_source_redirect_unsafe',
+    });
+  });
+
   it('implements public HEAD by fetching canonical JSON with GET and stripping the body', async () => {
     const fetch = vi.fn(async () =>
       Response.json({ ok: true, state: { pieces: [] } }, {

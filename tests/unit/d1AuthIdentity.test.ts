@@ -3,6 +3,10 @@ import { resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it, vi } from 'vitest';
 import * as dbHelpers from '../../functions/api/_lib/db.js';
+import {
+  selectInscription,
+  selectInscriptionsForPiece,
+} from '../../functions/api/atlas/_inscriptions';
 
 interface PreparedStatement {
   bind: ReturnType<typeof vi.fn>;
@@ -30,6 +34,33 @@ function recordingDb(firstResult: unknown = null) {
     }),
   };
   return { db, sql, bound, statements };
+}
+
+type SqliteInput = null | number | bigint | string | NodeJS.ArrayBufferView;
+
+function sqliteD1(sqlite: DatabaseSync) {
+  return {
+    prepare(sql: string) {
+      const statement = sqlite.prepare(sql);
+      let values: SqliteInput[] = [];
+      return {
+        bind(...next: SqliteInput[]) {
+          values = next;
+          return this;
+        },
+        async run() {
+          statement.run(...values);
+          return { success: true };
+        },
+        async first<T>() {
+          return (statement.get(...values) as T | undefined) ?? null;
+        },
+        async all<T>() {
+          return { results: statement.all(...values) as T[] };
+        },
+      };
+    },
+  };
 }
 
 describe('vendor-neutral D1 auth identity', () => {
@@ -77,26 +108,7 @@ describe('vendor-neutral D1 auth identity', () => {
       )
     `);
 
-    const d1 = {
-      prepare(sql: string) {
-        const statement = sqlite.prepare(sql);
-        type SqliteInput = null | number | bigint | string | NodeJS.ArrayBufferView;
-        let values: SqliteInput[] = [];
-        return {
-          bind(...next: SqliteInput[]) {
-            values = next;
-            return this;
-          },
-          async run() {
-            statement.run(...values);
-            return { success: true };
-          },
-          async first() {
-            return statement.get(...values) ?? null;
-          },
-        };
-      },
-    };
+    const d1 = sqliteD1(sqlite);
 
     try {
       await dbHelpers.upsertUser(d1, {
@@ -115,6 +127,86 @@ describe('vendor-neutral D1 auth identity', () => {
       sqlite.close();
     }
   });
+
+  it('falls back only on missing neutral columns against the legacy users schema', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    sqlite.exec(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        clerk_user_id TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL,
+        updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+      )
+    `);
+    const d1 = sqliteD1(sqlite);
+
+    try {
+      const inserted = await dbHelpers.upsertUser(d1, {
+        authUserId: 'auth-user-legacy',
+        email: 'first@example.com',
+      });
+      expect(inserted).toMatchObject({
+        auth_user_id: 'auth-user-legacy',
+        clerk_user_id: 'auth-user-legacy',
+        email: 'first@example.com',
+      });
+
+      await dbHelpers.upsertUser(d1, {
+        authUserId: 'auth-user-legacy',
+        email: 'updated@example.com',
+      });
+      await expect(dbHelpers.getUserByAuthId(d1, 'auth-user-legacy')).resolves.toMatchObject({
+        auth_user_id: 'auth-user-legacy',
+        email: 'updated@example.com',
+      });
+      await dbHelpers.deleteUserByAuthId(d1, 'auth-user-legacy');
+      expect(sqlite.prepare('SELECT COUNT(*) AS count FROM users').get()).toEqual({ count: 0 });
+    } finally {
+      sqlite.close();
+    }
+  });
+
+  it.each(['author_user_id', 'author_clerk_id'])(
+    'reads inscriptions through the %s schema during rollout',
+    async (authorColumn) => {
+      const sqlite = new DatabaseSync(':memory:');
+      sqlite.exec(`
+        CREATE TABLE atlas_inscriptions (
+          id TEXT PRIMARY KEY,
+          piece_id TEXT NOT NULL,
+          edition_number INTEGER NOT NULL,
+          ${authorColumn} TEXT,
+          kind TEXT NOT NULL,
+          body TEXT,
+          body_hash TEXT NOT NULL,
+          content_salt TEXT,
+          sealed_until TEXT,
+          created_at TEXT NOT NULL,
+          erased_at TEXT,
+          erase_reason TEXT
+        );
+        INSERT INTO atlas_inscriptions
+          (id, piece_id, edition_number, ${authorColumn}, kind, body, body_hash, created_at)
+        VALUES
+          ('ins-1', 'UL-1', 0, 'auth-author', 'intention', 'A dream', 'hash', '2026-01-01T00:00:00.000Z');
+      `);
+      const d1 = sqliteD1(sqlite);
+
+      try {
+        await expect(selectInscription(d1 as never, 'ins-1')).resolves.toMatchObject({
+          id: 'ins-1',
+          author_user_id: 'auth-author',
+        });
+        await expect(
+          selectInscriptionsForPiece(d1 as never, 'UL-1', undefined),
+        ).resolves.toEqual([
+          expect.objectContaining({ id: 'ins-1', author_user_id: 'auth-author' }),
+        ]);
+      } finally {
+        sqlite.close();
+      }
+    },
+  );
 
   it('deletes app users by auth_user_id through deleteUserByAuthId', async () => {
     const helpers = dbHelpers as unknown as {
@@ -159,7 +251,6 @@ describe('vendor-neutral D1 auth identity', () => {
     for (const legacyName of [
       'getUserByClerkId',
       'deleteUserByClerkId',
-      'author_clerk_id',
       'authorClerkId',
     ]) {
       expect(activeRuntime, legacyName).not.toContain(legacyName);

@@ -25,7 +25,6 @@
  */
 
 import { ImageResponse } from 'workers-og';
-import type { PublicAtlasState } from '../../../../types';
 import {
   readCanonicalAtlasState,
   type CanonicalAtlasEnv,
@@ -106,17 +105,6 @@ async function artworkDataUri(coverImage: string | undefined): Promise<string | 
   }
 }
 
-async function loadState(request: Request, env: CardEnv): Promise<PublicAtlasState> {
-  return (
-    (await readCanonicalAtlasState(request, env)) ?? {
-      generatedAt: new Date().toISOString(),
-      schemaVersion: 2,
-      pieces: [],
-      cities: [],
-    }
-  );
-}
-
 export async function onRequestGet(ctx: PagesFn): Promise<Response> {
   const { env, request, params } = ctx;
   const segments = Array.isArray(params.path)
@@ -134,7 +122,13 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
   const art = FULL_ARCHIVE.find((a) => a.id === pieceId);
   if (!art) return new Response('Not found', { status: 404 });
 
-  const state = await loadState(request, env);
+  const state = await readCanonicalAtlasState(request, env);
+  if (!state) {
+    return Response.json(
+      { ok: false, error: 'atlas_source_unavailable' },
+      { status: 502, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
   // Public-piece lookup (inlined so this function pulls in no React from
   // lib/atlas/state): match on pieceId, honouring an explicit edition.
   const piece =

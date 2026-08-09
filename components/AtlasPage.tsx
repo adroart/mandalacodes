@@ -6,7 +6,6 @@ import PieceSidePanel, {
   ordinalLabel,
   type KinEntry,
   type SelectedPiece,
-  type HolderChartSummary,
 } from './atlas/PieceSidePanel';
 import { type CodeIndexEntry } from './atlas/CodesIndex';
 import TheLedger, { type LedgerKindSection } from './atlas/TheLedger';
@@ -43,7 +42,6 @@ import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
 import { useProfile } from '../lib/profile/context';
-import { useAccount } from '../lib/account/useAccount';
 import { useCollections } from '../lib/collections/context';
 import { buildKinshipIndex, MAX_KINSHIP_ARCS } from '../utils/kinship';
 import { buildDreamRoute } from '../utils/dreamStream';
@@ -408,50 +406,9 @@ const AtlasPage: React.FC = () => {
     return set;
   }, [profile]);
 
-  /* Signed-in personalization: the pieces you steward and the cards you
-     saved. Own pieces come from the idempotent Phase A bind call, the same
-     one StewardEdit makes on mount; saved cards ride the collections
-     context. Signed out (or accounts unconfigured), no fetch fires and both
-     stay empty, so the globe is unchanged. */
-  const { available: accountAvailable, isLoaded, isSignedIn, fetchAuthed } = useAccount();
-  const [ownedKeys, setOwnedKeys] = useState<Set<string>>(() => new Set());
-  useEffect(() => {
-    if (!accountAvailable || !isLoaded || !isSignedIn) {
-      setOwnedKeys((prev) => (prev.size === 0 ? prev : new Set()));
-      return;
-    }
-    let cancelled = false;
-    fetchAuthed('/api/atlas/steward/claim', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then(
-        (
-          data: {
-            claimed?: Array<{
-              steward: { pieceId: string; editionNumber?: number | null };
-            }>;
-          } | null,
-        ) => {
-          if (cancelled || !data?.claimed) return;
-          setOwnedKeys(
-            new Set(
-              data.claimed.map((c) =>
-                makeKey(c.steward.pieceId, c.steward.editionNumber ?? undefined),
-              ),
-            ),
-          );
-        },
-      )
-      .catch(() => {
-        /* quiet: personalization only */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [accountAvailable, isLoaded, isSignedIn, fetchAuthed]);
-
+  /* Saved-card personalization remains local to the account collection.
+     Ownership highlighting is disabled until Adrian-Website exposes a
+     canonical holder reader. */
   const { collections } = useCollections();
   const savedCards = useMemo(() => {
     const set = new Set<number>();
@@ -474,21 +431,18 @@ const AtlasPage: React.FC = () => {
      it to place itself off the globe's projected limb. */
   const [stageDims, setStageDims] = useState({ width: 0, height: 0 });
 
-  /* Fetch the live atlas via the shared loader (falls back to the local
-     seed on any failure so the page always renders something). The card
-     page's "On the Atlas" seat reads the same cached state. */
-  // Honest states (law 6): when the loader served the local seed after a fetch
-  // failure it flags `servedFallback`, and a quiet chip near the caption offers
-  // a retry that refetches the live sky.
-  const [servedFallback, setServedFallback] = useState(false);
+  /* Fetch the canonical public Atlas. Failure is an explicit unavailable
+     state because Mandala has no canonical snapshot to display. */
   const [retrying, setRetrying] = useState(false);
   useEffect(() => {
     let active = true;
-    loadAtlasState().then((data) => {
-      if (!active) return;
-      setState({ kind: 'ready', data });
-      setServedFallback(data.servedFallback === true);
-    });
+    loadAtlasState()
+      .then((data) => {
+        if (active) setState({ kind: 'ready', data });
+      })
+      .catch(() => {
+        if (active) setState({ kind: 'error' });
+      });
     return () => {
       active = false;
     };
@@ -512,11 +466,12 @@ const AtlasPage: React.FC = () => {
   const retryAtlasFetch = () => {
     if (retrying) return;
     setRetrying(true);
+    setState({ kind: 'loading' });
     loadAtlasState(true)
       .then((data) => {
         setState({ kind: 'ready', data });
-        setServedFallback(data.servedFallback === true);
       })
+      .catch(() => setState({ kind: 'error' }))
       .finally(() => setRetrying(false));
   };
 
@@ -727,10 +682,9 @@ const AtlasPage: React.FC = () => {
         // and then flows through untouched.
         sizeBand: sizeBandByPiece.get(p.pieceId) ?? undefined,
         category: p.category ?? categoryFor(p.pieceId),
-        // "Your codes" lights pieces whose gate sits in your profile OR whose
-        // card you saved to a collection; "owned" marks pieces you steward.
+        // "Your codes" lights pieces whose gate sits in your profile or whose
+        // card the visitor saved to a collection.
         yours: num != null && (yourGates.has(num) || savedCards.has(num)),
-        owned: ownedKeys.has(p.key),
         // The dream rides only on lit ('placed') lights; the sky is written by
         // the pieces that have come to rest with a keeper.
         intention: p.status === 'placed' ? p.intention : undefined,
@@ -748,7 +702,7 @@ const AtlasPage: React.FC = () => {
       });
     }
     return nodes;
-  }, [seriesFiltered, status, birthPlace, yourGates, savedCards, ownedKeys, sizeBandByPiece]);
+  }, [seriesFiltered, status, birthPlace, yourGates, savedCards, sizeBandByPiece]);
 
   /* ─── Dream Stream ───────────────────────────────────────────────────────
      The ordered route across the dream-bearing lights (placed, carrying a
@@ -928,9 +882,8 @@ const AtlasPage: React.FC = () => {
         seriesList,
         // Ignition order: the city ignites with its earliest-claimed member.
         ordinal: ordinals.length > 0 ? Math.min(...ordinals) : undefined,
-        // The lens answers at the cluster level: yours/owned if ANY member is.
+        // The lens answers at the cluster level when any member is yours.
         yours: members.some((m) => m.yours === true),
-        owned: members.some((m) => m.owned === true),
         count: members.length,
         memberKeys: members.map((m) => m.id),
       });
@@ -1363,30 +1316,6 @@ const AtlasPage: React.FC = () => {
       });
   }, [selectedKey, kinshipIndex]);
 
-  /* Holder chart (M5) — "held by a chart of…". Derived, non-identifying
-     fields only; the endpoint returns chart: null unless the steward opted
-     into Ring 3 and has a profile. Fetched per selected piece; cleared
-     between selections so one piece's chart never bleeds onto another. */
-  const [holderChart, setHolderChart] = useState<HolderChartSummary | null>(null);
-  useEffect(() => {
-    setHolderChart(null);
-    if (!selectedPiece || selectedPiece.status !== 'placed') return;
-    let active = true;
-    const params = new URLSearchParams({ pieceId: selectedPiece.pieceId });
-    if (typeof selectedPiece.editionNumber === 'number') {
-      params.set('editionNumber', String(selectedPiece.editionNumber));
-    }
-    fetch(`/api/atlas/holder-chart?${params.toString()}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { chart?: HolderChartSummary | null } | null) => {
-        if (active && data?.chart) setHolderChart(data.chart);
-      })
-      .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, [selectedPiece]);
-
   /* ─── Render ─────────────────────────────────────────────────────────────── */
   // Which series currently have placed pieces on the map — drives the legend.
   const legendSeries: string[] = useMemo(() => {
@@ -1399,21 +1328,6 @@ const AtlasPage: React.FC = () => {
   }, [globeNodes]);
 
   const hasBirthOrigin = globeNodes.some((n) => n.status === 'origin');
-
-  /* Your light (law 4, the thread made visible): the signed-in steward's own
-     lights currently on the globe. Tapping the control flies to the first and
-     opens its inscription; repeated taps cycle through the rest. */
-  const ownedOnGlobe = useMemo(
-    () => globeNodes.filter((n) => n.owned && n.status !== 'origin').map((n) => n.id),
-    [globeNodes],
-  );
-  const yourLightIdxRef = useRef(0);
-  const flyToYourLight = () => {
-    if (ownedOnGlobe.length === 0) return;
-    const idx = yourLightIdxRef.current % ownedOnGlobe.length;
-    yourLightIdxRef.current = idx + 1;
-    selectPiece(ownedOnGlobe[idx]);
-  };
 
   // Chrome tiers with opacity floors (law 3). Orientation chrome (the thesis
   // caption and the primary controls) never rests below 0.6; secondary chrome
@@ -1779,42 +1693,6 @@ const AtlasPage: React.FC = () => {
                     </p>
                   )}
 
-                  {/* The door (Adrian, 2026-07-18): shows only to visitors who
-                      steward no piece; a signed-in steward sees `your light` in
-                      the control cluster instead, never both. It is the one
-                      thing in the band a visitor is asked to do, so it carries a
-                      standing underline: a link that looks like a link. */}
-                  {ownedKeys.size === 0 && (
-                    <div className="mt-3.5">
-                      <Link
-                        to="/atlas/claim"
-                        className="inline-block font-display text-[14px] leading-snug text-atlas-gold border-b border-[rgba(196,170,124,0.35)] pb-0.5 hover:border-[rgba(196,170,124,0.9)] transition-colors"
-                      >
-                        Keep a piece? Anchor your dream into it →
-                      </Link>
-                    </div>
-                  )}
-
-                  {/* Honest state (law 6), in the system's own voice. It used to
-                      wear the same caps, tracking and colour as the piece count,
-                      so a degraded-data warning and an inventory fact were
-                      indistinguishable; and `retry` sat in lowercase roman with
-                      no affordance, reading as a typo rather than a control. It
-                      now sits last, unlettered, in the muted wood, with retry as
-                      a real underlined button. */}
-                  {servedFallback && (
-                    <p className="mt-3.5 font-label text-[11px] leading-snug text-wood-500">
-                      Showing the last gathered sky.
-                      <button
-                        type="button"
-                        onClick={retryAtlasFetch}
-                        disabled={retrying}
-                        className="ml-1.5 underline underline-offset-2 decoration-[rgba(221,212,194,0.55)] text-wood-700 hover:text-atlas-gold transition-colors disabled:opacity-60 disabled:no-underline"
-                      >
-                        {retrying ? 'retrying' : 'retry'}
-                      </button>
-                    </p>
-                  )}
                 </div>
               </div>
             )}
@@ -1847,16 +1725,6 @@ const AtlasPage: React.FC = () => {
                 {lastControlGlossRef.current ? GLOSS_TEXT[lastControlGlossRef.current] : ''}
               </p>
               <div className="flex items-center gap-4 sm:gap-6">
-                {ownedOnGlobe.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={flyToYourLight}
-                    title="Fly to your own light"
-                    className="font-label text-[11px] uppercase tracking-[0.2em] text-atlas-kept hover:text-atlas-kept transition-colors"
-                  >
-                    your light
-                  </button>
-                )}
                 {/* Parked lenses (Adrian, 2026-07-18): the dream-hop drift and
                     the threads toggle return only behind ?lenses=1. Without the
                     flag the cluster is `filter` plus contextual. The kinship
@@ -2170,7 +2038,6 @@ const AtlasPage: React.FC = () => {
                     inSheet={isPhone}
                     kin={kinForSelected}
                     onSelectKin={(key) => selectPiece(key)}
-                    holderChart={holderChart}
                     onRelease={closeSelection}
                     onBack={selectedFromCity ? backToCity : undefined}
                     carriesYourCode={
@@ -2296,7 +2163,6 @@ const AtlasPage: React.FC = () => {
                   piece={selectedPiece}
                   kin={kinForSelected}
                   onSelectKin={(key) => selectPiece(key)}
-                  holderChart={holderChart}
                 />
               </div>
             </div>
@@ -2316,12 +2182,20 @@ const AtlasPage: React.FC = () => {
         )}
 
         {state.kind === 'error' && (
-          <p
+          <div
             className="font-display italic text-lg text-wood-700 py-24 text-center"
             aria-live="polite"
           >
-            the atlas is briefly out of reach.
-          </p>
+            <p>the atlas is briefly out of reach.</p>
+            <button
+              type="button"
+              onClick={retryAtlasFetch}
+              disabled={retrying}
+              className="mt-3 font-label not-italic text-[11px] uppercase tracking-[0.18em] underline underline-offset-4"
+            >
+              {retrying ? 'retrying' : 'retry'}
+            </button>
+          </div>
         )}
 
         {state.kind === 'ready' && (

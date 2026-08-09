@@ -32,6 +32,7 @@ vi.mock('../../functions/api/atlas/_email', () => ({
 import { onRequestGet as getCard } from '../../functions/api/atlas/card/[[path]]';
 import { onRequestGet as getInscriptions } from '../../functions/api/atlas/steward/inscriptions';
 import { onRequestGet as getLetters } from '../../functions/api/atlas/steward/letters';
+import { onRequestGet as getPieceContent } from '../../functions/api/atlas/piece-content';
 import { sendLetterEmail } from '../../functions/api/atlas/_email';
 import {
   KEY_LEDGER,
@@ -146,6 +147,48 @@ describe('surviving Atlas GET routes are side-effect-free', () => {
     },
   );
 
+  it('protects the surviving public D1 metadata read with shared edge-cache headers', async () => {
+    const db = readOnlyDb();
+
+    const response = await getPieceContent({
+      request: new Request(
+        `https://mandalacodes.com/api/atlas/piece-content?pieceId=${PIECE_ID}`,
+      ),
+      env: { DB: db },
+    } as never);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Cache-Control')).toContain('s-maxage=300');
+    expect(response.headers.get('CDN-Cache-Control')).toContain('max-age=300');
+    expect(db.writes).toEqual([]);
+  });
+
+  it('serves a Cloudflare edge-cache hit without querying D1', async () => {
+    const cached = Response.json(
+      { ok: true, content: { pieceId: PIECE_ID, story: 'Cached at the edge.' } },
+      { headers: { 'Cache-Control': 'public, max-age=60' } },
+    );
+    const cache = {
+      match: vi.fn(async () => cached),
+      put: vi.fn(async () => undefined),
+    };
+    vi.stubGlobal('caches', { default: cache });
+    const prepare = vi.fn(() => {
+      throw new Error('edge-cache hit queried D1');
+    });
+
+    const response = await getPieceContent({
+      request: new Request(
+        `https://mandalacodes.com/api/atlas/piece-content?pieceId=${PIECE_ID}`,
+      ),
+      env: { DB: { prepare } },
+    } as never);
+
+    expect(response).toBe(cached);
+    expect(cache.match).toHaveBeenCalledOnce();
+    expect(prepare).not.toHaveBeenCalled();
+  });
+
   it('renders a card from canonical public state without touching historical R2', async () => {
     const canonical: PublicAtlasState = {
       generatedAt: '2026-08-09T00:00:00.000Z',
@@ -181,6 +224,25 @@ describe('surviving Atlas GET routes are side-effect-free', () => {
         method: 'GET',
       }),
     );
+  });
+
+  it('returns an uncached 502 card response when canonical state is unavailable', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('unavailable', { status: 503 })));
+    const bucket = readonlyBucket({});
+
+    const response = await getCard({
+      request: new Request(`https://mandalacodes.com/api/atlas/card/${PIECE_ID}`),
+      params: { path: [PIECE_ID] },
+      env: {
+        ATLAS_BUCKET: bucket,
+        ASSETS: { fetch: vi.fn(async () => new Response(new Uint8Array([1]))) },
+      },
+    } as never);
+
+    expect(response.status).toBe(502);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+    expect(bucket.get).not.toHaveBeenCalled();
+    expect(bucket.put).not.toHaveBeenCalled();
   });
 
   it('reads stored inscriptions without converting a pending first inscription', async () => {

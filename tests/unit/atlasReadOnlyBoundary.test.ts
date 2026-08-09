@@ -57,17 +57,62 @@ describe('Atlas read-only boundary', () => {
     },
   );
 
-  it.each(['GET', 'HEAD'])(
-    'continues %s reads to the existing Atlas and kinship routes',
-    async (method) => {
-      const { context, next } = middlewareContext(method);
+  it.each([
+    '/api/atlas',
+    '/api/atlas/card/UL-1',
+    '/api/atlas/piece-content?pieceId=UL-1',
+  ])('continues the surviving canonical public GET %s', async (path) => {
+      const { context, next } = middlewareContext('GET', path);
 
       const response = await onRequest(context);
 
       expect(next).toHaveBeenCalledOnce();
       expect(response.status).toBe(200);
-    },
-  );
+  });
+
+  it.each([
+    '/api/atlas/steward/certificate?piece=UL-1',
+    '/api/atlas/steward/inscriptions?pieceId=UL-1',
+    '/api/atlas/steward/export?pieceId=UL-1',
+    '/api/atlas/steward/letters?pieceId=UL-1',
+    '/api/atlas/holder-chart?pieceId=UL-1',
+    '/api/atlas/stewards',
+    '/api/atlas/claim-requests',
+    '/api/atlas/steward/claim-requests',
+    '/api/atlas/catalog',
+    '/api/atlas/catalog/admin',
+    '/api/atlas/make',
+    '/api/atlas/homecoming',
+    '/api/atlas/intentions',
+    '/api/atlas/sales',
+    '/api/atlas/admin/piece-content?pieceId=UL-1',
+  ])('retires legacy Atlas GET %s before frozen authority can be read', async (path) => {
+    const { context, next } = middlewareContext('GET', path);
+
+    const response = await onRequest(context);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(response.status).toBe(410);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: 'atlas_reader_moved',
+      destination: CANONICAL_ATLAS_URL,
+    });
+  });
+
+  it('retires legacy HEAD without a response body', async () => {
+    const { context, next } = middlewareContext(
+      'HEAD',
+      '/api/atlas/steward/certificate?piece=UL-1',
+    );
+
+    const response = await onRequest(context);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(response.status).toBe(410);
+    await expect(response.text()).resolves.toBe('');
+  });
 
   it('answers OPTIONS without invoking a write handler', async () => {
     const { context, next } = middlewareContext('OPTIONS');
