@@ -8,6 +8,12 @@ import { ALL_CARDS } from '../../data/oracleData';
 import { elementForCard } from '../../lib/oracle/elements';
 
 describe('browser Oracle Markdown source contract', () => {
+  it('bundles only zero-padded numbered legacy manuscripts', async () => {
+    const source = await readFile(resolve('data/cardMarkdown.ts'), 'utf8');
+    expect(source).toContain("../oracle/cards/[0-9][0-9].md");
+    expect(source).not.toContain("../oracle/cards/*.md");
+  });
+
   it('does not depend on the legacy aggregate as a test authority', async () => {
     const testSource = await readFile(resolve('tests/unit/oracleBrowserSource.test.ts'), 'utf8');
     const legacyAggregatePath = ['oracle/oracle', 'cards', 'complete.json'].join('_');

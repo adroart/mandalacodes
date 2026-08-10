@@ -22,6 +22,7 @@ import {
   type ParsedCard,
   type YamlValue,
 } from '../../../lib/oracle/card-markdown.ts';
+import { parseLegacyStatusMap } from '../../../lib/oracle/manuscript-schema.ts';
 import type { CanonicalCard, MovingLine, CardArtwork } from '../../../lib/oracle/types.ts';
 import { ORACLE_DIR, pad2 } from './paths.ts';
 
@@ -144,6 +145,12 @@ function validateCard(parsed: ParsedCard, expected: number, file: string): strin
 
   if (!asString(parsed.frontmatter.card_name)) {
     issues.push(`${file}: card_name is required`);
+  }
+
+  try {
+    parseLegacyStatusMap(parsed.frontmatter.status, file);
+  } catch (error) {
+    issues.push((error as Error).message);
   }
 
   for (const lens of ['CODE', 'ICHING', 'KEYS', 'DESIGN', 'BODY', 'RELATIONS']) {

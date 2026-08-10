@@ -24,7 +24,6 @@ export interface CardArtwork {
 export interface OracleRelations {
   number: number;
   card_name: string;
-  status?: string;
   unity_line: string;
   pair: {
     number: number;
