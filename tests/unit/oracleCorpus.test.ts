@@ -117,6 +117,42 @@ describe('Markdown-only Oracle corpus', () => {
     );
   });
 
+  it('fails closed on an unknown editorial status key', async () => {
+    const cardsDir = await copiedCards();
+    const file = join(cardsDir, '23.md');
+    const raw = await readFile(file, 'utf8');
+    await writeFile(file, raw.replace(
+      '  relations: scaffold\n',
+      '  relations: scaffold\n  editorial_note: scaffold\n',
+    ), 'utf8');
+
+    await expect(loadCorpusFromDirectory(cardsDir, new Map())).rejects.toThrow(
+      /23\.md.*unknown status keys.*editorial_note/i,
+    );
+  });
+
+  it('fails closed when the relations editorial status is missing', async () => {
+    const cardsDir = await copiedCards();
+    const file = join(cardsDir, '24.md');
+    const raw = await readFile(file, 'utf8');
+    await writeFile(file, raw.replace('  relations: scaffold\n', ''), 'utf8');
+
+    await expect(loadCorpusFromDirectory(cardsDir, new Map())).rejects.toThrow(
+      /24\.md.*status\.relations.*missing/i,
+    );
+  });
+
+  it('fails closed on an invalid relations editorial status', async () => {
+    const cardsDir = await copiedCards();
+    const file = join(cardsDir, '25.md');
+    const raw = await readFile(file, 'utf8');
+    await writeFile(file, raw.replace('  relations: scaffold\n', '  relations: done\n'), 'utf8');
+
+    await expect(loadCorpusFromDirectory(cardsDir, new Map())).rejects.toThrow(
+      /25\.md.*status\.relations.*done.*scaffold.*in-progress.*final/i,
+    );
+  });
+
   it('fails closed when any required authored lens is missing', async () => {
     const cardsDir = await copiedCards();
     const file = join(cardsDir, '12.md');
