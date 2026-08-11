@@ -1,5 +1,5 @@
 
-import card1 from '../oracle/cards/1.json';
+import card1 from '../oracle/_archive/examples/1.json';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 

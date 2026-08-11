@@ -10,8 +10,21 @@ import {
   mapKeys,
   parseCardMarkdown,
 } from '../../lib/oracle/card-markdown';
+import { parseLegacyStatusMap } from '../../lib/oracle/manuscript-schema';
 
 describe('Oracle card Markdown parser', () => {
+  it('rejects unknown, missing, and invalid lens statuses', () => {
+    expect(() => parseLegacyStatusMap({
+      code: 'scaffold', iching: 'scaffold', keys: 'scaffold',
+      design: 'scaffold', body: 'scaffold', relations: 'done',
+    }, 'oracle/cards/23.md')).toThrow(/relations.*done.*scaffold.*in-progress.*final/i);
+
+    expect(() => parseLegacyStatusMap({
+      code: 'scaffold', iching: 'scaffold', keys: 'scaffold',
+      design: 'scaffold', body: 'scaffold',
+    }, 'oracle/cards/23.md')).toThrow(/relations.*missing/i);
+  });
+
   it('maps every authored lens from Card 3', async () => {
     const path = resolve('oracle/cards/03.md');
     const raw = await readFile(path, 'utf8');

@@ -806,7 +806,6 @@ export function mapRelations(parsed: ParsedCard): OracleRelations | undefined {
   if (!section) return undefined;
 
   const relationsData = map(parsed.frontmatter['relations_data']);
-  const statusData = map(parsed.frontmatter['status']);
   const trigrams = map(parsed.frontmatter['trigrams']);
   const pairNumber = num(relationsData?.['pair']);
   const inverseNumber = num(relationsData?.['inverse']);
@@ -840,7 +839,6 @@ export function mapRelations(parsed: ParsedCard): OracleRelations | undefined {
   return {
     number: num(parsed.frontmatter['number']),
     card_name: str(parsed.frontmatter['card_name']),
-    status: str(statusData?.['relations']) || undefined,
     unity_line: cleanRelationsProse(section.intro.join('\n\n')),
     pair: {
       number: pairNumber,

@@ -6,7 +6,11 @@ import {
 
 export * from '../lib/oracle/card-markdown';
 
-const cardMarkdownModules = import.meta.glob('../oracle/cards/*.md', {
+const cardMarkdownModules = import.meta.glob([
+  '../oracle/cards/0[1-9].md',
+  '../oracle/cards/[1-5][0-9].md',
+  '../oracle/cards/6[0-4].md',
+], {
   query: '?raw',
   import: 'default',
 }) as Record<string, () => Promise<string>>;
