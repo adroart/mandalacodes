@@ -7,21 +7,9 @@
  * letters are addressed to the PIECE (recipientKey), so a transferred piece
  * carries its unread letters to whoever now holds it.
  *
- * GET derives-on-read (no cron exists):
- *   - Anniversary letters: when a claim anniversary has passed since the last
- *     'anniversary' letter, generate one — at most one per call, one per year
- *     (idempotent via anniversaryYearDue counting prior letters).
- *   - Transfer letters: when the CURRENT holder arrived via a `transferred`
- *     event (their userId is a toRef on the chain) and no 'transfer' letter
- *     exists yet, generate one for their first visit.
- *   - Words-anniversary letters (Phase 2 item D): when the piece has a
- *     `status: 'live'` shared intention (atlas/sharedIntentions.json) and a
- *     year has passed since it went live since the last 'words-anniversary'
- *     letter, generate one (idempotent via wordsAnniversaryYearDue, the same
- *     rule as the claim anniversary, keyed off `sharedAt`). Rehomed and
- *     withdrawn intentions never generate this ask.
- * Then returns every letter for the piece, newest first, with the unread
- * count.
+ * GET is read-only. It returns every already-stored letter for the piece,
+ * newest first, with the unread count. Letter derivation and courtesy email
+ * belong to explicit mutation/event paths.
  *
  * POST marks the piece's letters read (mark-on-open). Body is whitelisted.
  *
@@ -30,34 +18,19 @@
  * ordinal, a count of years): no name, email, or opaque ref ever appears.
  */
 
-import { groupChains } from '../../../../utils/ledger';
-import { projectPiece } from '../../../../utils/ledgerProjection';
 import {
-  anniversaryYearDue,
-  buildLetter,
-  composeAnniversaryBody,
-  composeTransferBody,
-  composeWordsAnniversaryBody,
   letterRecipientKey,
   lettersForRecipient,
   unreadCount,
-  wordsAnniversaryYearDue,
-  wordsExcerpt,
 } from '../../../../utils/letters';
-import { intentionChainKey } from '../../../../utils/intentions';
-import type { AtlasLetter, StewardRecord } from '../../../../types';
-import { getCityById, formatPlaceLabel } from '../../../../data/cities';
+import type { StewardRecord } from '../../../../types';
 import type { PagesContext } from '../_helpers';
 import {
   json,
   mutateLetters,
-  readLedger,
   readLetters,
-  readSharedIntentions,
   readStewards,
 } from '../_helpers';
-import { letterEmailBody, letterEmailSubject, sendLetterEmail } from '../_email';
-import type { LetterEmailEnv } from '../_email';
 import { requireUser, isAuthResponse } from '../../_lib/auth';
 
 interface RouteArgs {
@@ -80,11 +53,7 @@ type AuthorizeResult =
   | { ok: true; record: StewardRecord }
   | { ok: false; response: Response };
 
-/**
- * Confirms the bearer owns the steward record for this piece and returns it
- * (the caller needs the bound email for the courtesy letter-email copy —
- * see onRequestGet below).
- */
+/** Confirms the bearer owns the steward record for this piece. */
 async function authorize(
   env: PagesContext['env'],
   userId: string,
@@ -113,137 +82,8 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
 
   const auth2 = await authorize(env, userId, args);
   if (auth2.ok === false) return auth2.response;
-  const stewardRecord = auth2.record;
 
   const recipientKey = letterRecipientKey(args.pieceId, args.editionNumber);
-  const now = new Date().toISOString();
-
-  // Resolve the piece's chain for the derived-on-read letters.
-  const events = await readLedger(env);
-  const chain = groupChains(events).get(recipientKey) ?? [];
-
-  if (chain.length > 0) {
-    const record = projectPiece(chain);
-
-    // Public city label for the anniversary body — only when the piece is
-    // currently ring2-public. A private piece's location never enters a body,
-    // so we pass null and the prose omits the place.
-    const cityLabel =
-      record.isPublic && record.currentCityId
-        ? (() => {
-            const city = getCityById(record.currentCityId as string);
-            return city ? formatPlaceLabel(city) : null;
-          })()
-        : null;
-
-    // Did the CURRENT holder arrive by transfer? The piece has changed hands
-    // if the chain carries ANY `transferred` event, and the bound steward is
-    // by definition the CURRENT holder — so a transfer in the history means
-    // this viewer is a post-transfer holder. We deliberately do NOT require
-    // toRef === userId: after a secondary sale the `transferred.toRef` may be
-    // `sale:<saleId>` (not a userId) until the buyer claims, and the buyer's
-    // Phase B consent — not a new event — is their return signal (M4 fact).
-    const arrivedByTransfer = chain.some((e) => e.type === 'transferred');
-
-    // The one live shared-intention entry for this piece (M6, Lens 2's
-    // "map of dreams"), if any. This is the only thing that can make a
-    // words-anniversary letter due. Read once, before the mutator, so the
-    // idempotency check inside it reads consistent state; only a 'live'
-    // entry qualifies. Rehomed and withdrawn intentions never generate
-    // this ask.
-    const sharedIntentions = await readSharedIntentions(env);
-    const liveIntention = sharedIntentions.find(
-      (si) =>
-        si.status === 'live' &&
-        intentionChainKey(si.pieceId, si.editionNumber) === recipientKey,
-    );
-
-    // Generate the due derived letters in one mutator pass so the existing-
-    // letters checks (idempotency) read fresh, concurrent-safe state. The
-    // mutator may retry on a write conflict, so the generated list is
-    // threaded out through `result` rather than emailed from inside the
-    // closure — a retry must never send a duplicate courtesy email.
-    const genOutcome = await mutateLetters(env, (current) => {
-      const mine = current.filter((l) => l.recipientKey === recipientKey);
-      const toAppend: AtlasLetter[] = [];
-
-      if (record.claimedAt) {
-        const priorAnniversaries = mine.filter((l) => l.kind === 'anniversary');
-        const yearDue = anniversaryYearDue(record.claimedAt, priorAnniversaries, now);
-        if (yearDue !== null) {
-          toAppend.push(
-            buildLetter({
-              recipientKey,
-              kind: 'anniversary',
-              createdAt: now,
-              body: composeAnniversaryBody({ years: yearDue, cityLabel, seed: recipientKey }),
-            }),
-          );
-        }
-      }
-
-      if (arrivedByTransfer && !mine.some((l) => l.kind === 'transfer')) {
-        toAppend.push(
-          buildLetter({
-            recipientKey,
-            kind: 'transfer',
-            createdAt: now,
-            body: composeTransferBody({ seed: recipientKey }),
-          }),
-        );
-      }
-
-      if (liveIntention) {
-        const priorWordsLetters = mine.filter((l) => l.kind === 'words-anniversary');
-        const wordsYearDue = wordsAnniversaryYearDue(
-          liveIntention.sharedAt,
-          priorWordsLetters,
-          now,
-        );
-        if (wordsYearDue !== null) {
-          toAppend.push(
-            buildLetter({
-              recipientKey,
-              kind: 'words-anniversary',
-              createdAt: now,
-              body: composeWordsAnniversaryBody({
-                years: wordsYearDue,
-                excerpt: wordsExcerpt(liveIntention.text),
-                seed: recipientKey,
-              }),
-            }),
-          );
-        }
-      }
-
-      if (toAppend.length === 0) return { next: current, result: toAppend };
-      return { next: [...current, ...toAppend], result: toAppend };
-    });
-
-    // Courtesy email copy (decision record, GO-LIVE-RUNBOOK.md 2026-07-02):
-    // fire-and-forget, sent only to this piece's own bound steward email —
-    // the authorized viewer themselves, never a third party. Never blocks or
-    // fails the response. Prefer context.waitUntil when the runtime exposes
-    // it (PagesContext doesn't declare the field, so it's read defensively);
-    // otherwise a detached promise with .catch, same as the public-state
-    // GitHub mirror side-effect elsewhere in this API.
-    const newLetters = genOutcome instanceof Response ? [] : genOutcome.result;
-    if (newLetters.length > 0 && stewardRecord.email) {
-      const waitUntil = (context as unknown as {
-        waitUntil?: (p: Promise<unknown>) => void;
-      }).waitUntil;
-      for (const letter of newLetters) {
-        // See functions/api/atlas/_letters.ts for why this cast is needed:
-        // AtlasEnv and LetterEmailEnv share no property names by design.
-        const send = sendLetterEmail(env as unknown as LetterEmailEnv, {
-          to: stewardRecord.email,
-          subject: letterEmailSubject(letter.kind),
-          body: letterEmailBody(letter.body),
-        }).catch(() => undefined);
-        if (typeof waitUntil === 'function') waitUntil.call(context, send);
-      }
-    }
-  }
 
   const letters = await readLetters(env);
   return json({

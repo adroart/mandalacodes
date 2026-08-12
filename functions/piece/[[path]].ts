@@ -17,13 +17,15 @@
  * dream is never read here, so it can never appear in a preview.
  */
 
-import type { AtlasEnv } from '../api/atlas/_helpers';
-import { readPublicState, readLedger, regeneratePublicState } from '../api/atlas/_helpers';
+import {
+  readCanonicalAtlasState,
+  type CanonicalAtlasEnv,
+} from '../api/atlas/_canonical';
 import { FULL_ARCHIVE } from '../../data/mockData';
 import { pieceCode } from '../../utils/pieceCode';
 import { ulCardNumber } from '../../utils/universalLanguage';
 
-interface PieceMetaEnv extends AtlasEnv {
+interface PieceMetaEnv extends CanonicalAtlasEnv {
   ASSETS: { fetch: (req: Request | string) => Promise<Response> };
 }
 
@@ -87,11 +89,8 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
   let pubCategory: string | undefined;
   let foundInState = false;
   try {
-    let state = await readPublicState(env);
-    if (!state) {
-      const events = await readLedger(env);
-      state = await regeneratePublicState(env, events);
-    }
+    const state = await readCanonicalAtlasState(request, env);
+    if (!state) throw new Error('Canonical Atlas unavailable');
     const piece =
       typeof editionNumber === 'number'
         ? state.pieces.find((p) => p.pieceId === pieceId && (p.editionNumber ?? 0) === editionNumber)

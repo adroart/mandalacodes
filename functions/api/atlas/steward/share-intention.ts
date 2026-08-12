@@ -174,7 +174,7 @@ export async function onRequestPost(
     // Ownership is still checked so a steward can't withdraw someone else's
     // entry by inscriptionId guessing — but a missing/foreign row simply
     // means "nothing of yours is live," not an error.
-    if (!row || row.author_clerk_id !== userId) {
+    if (!row || row.author_user_id !== userId) {
       return json({ ok: true, shared: false });
     }
     const outcome = await mutateSharedIntentions(env, (current) => ({

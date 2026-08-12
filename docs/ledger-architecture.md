@@ -1,12 +1,14 @@
 # Atlas Ledger, Architecture Decisions
 
-> **Partially superseded (2026-06-10).** The "Why steward keys instead of
-> accounts" section below describes the pre-Clerk recovery model; recovery
-> is now account-based (self-owned Better Auth, since 2026-06-15, replacing
-> Clerk), and the current consent/privacy/PII rules
-> live in [todo/plans/living-art-legacy.md](../todo/plans/living-art-legacy.md)
-> — in particular the chain content invariant (no personal data in the
-> hashed payload, ever). The hash-chain rationale below still stands.
+> **Historical architecture, frozen 2026-08-09.** Adrian-Website now owns the
+> canonical collector record. Mandala Codes keeps the Atlas presentation and
+> Universal Language kinship, but `GET /api/atlas` reads the public projection
+> from `https://adrianrasmussen.com/api/atlas` and the entire Mandala
+> `/api/atlas` subtree rejects mutations. The old `mandalacodes-atlas` R2
+> objects are historical evidence only, never a writable or canonical store.
+> At the freeze, the configured live ledger key was absent and the public Atlas
+> response was empty, so no ownership data was inferred or manufactured during
+> the move. The sections below preserve the reasoning behind the retired design.
 
 A short record of the choices behind the ledger and the reasoning that
 led to each one. The intent is that a future contributor (or a future
@@ -35,7 +37,7 @@ break is detectable in one pass by `verifyChain` in `utils/ledger.ts`.
 This is the same primitive that backs both git and most blockchains,
 without the rest of the apparatus either of them carries.
 
-## Why JSON in R2 instead of a database
+## Why JSON in R2 instead of a database (historical)
 
 The write rate is tiny. New events happen on the order of weeks, not
 seconds. A database would be more machinery than the workload demands,
@@ -45,6 +47,11 @@ trivially diffable, trivially mirrorable, and trivially auditable. The
 trade is that we cannot do partial updates or transactions, but the
 write path is single-threaded (one Worker invocation per change) and
 the file size is small for the foreseeable life of the project.
+
+That write path was retired on 2026-08-09. Any Atlas objects later recovered
+from Mandala's bucket must be preserved as evidence and reconciled by a human
+against the canonical Adrian-Website record. They must not be made live or
+treated as an automatic migration source.
 
 ## Why a public GitHub mirror (and not blockchain)
 
@@ -95,6 +102,10 @@ the steward roster, and the outreach status. Three views, three levels
 of trust, one ledger underneath. Splitting them at the API boundary
 (rather than the data boundary) keeps the system simple: there is one
 ledger, and the three endpoints just project different slices of it.
+
+This paragraph describes the pre-move topology. The current split is by site:
+Adrian-Website owns collector registration and record changes; Mandala Codes
+retains read-only Atlas and kinship presentation.
 
 ## What is deferred to later phases
 

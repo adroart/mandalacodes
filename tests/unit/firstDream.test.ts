@@ -59,7 +59,7 @@ function convertedRow(record: StewardRecord): InscriptionRow {
     id: pendingInscriptionId(record.pieceId, record.editionNumber, record.clerkUserId!),
     piece_id: record.pieceId,
     edition_number: record.editionNumber ?? 0,
-    author_clerk_id: record.clerkUserId!,
+    author_user_id: record.clerkUserId!,
     kind: 'intention',
     body: pending.text,
     body_hash: 'c'.repeat(64),

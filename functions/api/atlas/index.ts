@@ -1,35 +1,41 @@
 /**
  * GET /api/atlas
  *
- * Public, no auth. Returns the cached PublicAtlasState. If the cache is
- * missing (cold bucket, or post-deploy), regenerate from the raw ledger.
- *
- * Cached for 60s via Cache-Control per the spec.
+ * Public, no auth. Mandala Codes keeps the Atlas / Universal Language
+ * presentation, while Adrian-Website owns the canonical collector record.
+ * Proxy that public JSON without consulting Mandala's frozen R2 objects.
  */
 
-import type { PagesContext } from './_helpers';
 import {
-  readPublicState,
-  readLedger,
-  regeneratePublicState,
-} from './_helpers';
+  fetchCanonicalAtlas,
+  type CanonicalAtlasEnv,
+} from './_canonical';
+
+interface AtlasReadContext {
+  request: Request;
+  env: CanonicalAtlasEnv;
+}
+
+async function proxyCanonicalAtlas(
+  context: AtlasReadContext,
+): Promise<Response> {
+  const upstream = await fetchCanonicalAtlas(context.request, context.env);
+
+  return new Response(context.request.method === 'HEAD' ? null : upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers: upstream.headers,
+  });
+}
 
 export async function onRequestGet(
-  context: PagesContext,
+  context: AtlasReadContext,
 ): Promise<Response> {
-  const { env } = context;
+  return proxyCanonicalAtlas(context);
+}
 
-  let state = await readPublicState(env);
-  if (!state) {
-    const events = await readLedger(env);
-    state = await regeneratePublicState(env, events);
-  }
-
-  return new Response(JSON.stringify({ ok: true, state }), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=60',
-    },
-  });
+export async function onRequestHead(
+  context: AtlasReadContext,
+): Promise<Response> {
+  return proxyCanonicalAtlas(context);
 }

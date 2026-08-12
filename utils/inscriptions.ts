@@ -240,7 +240,7 @@ export interface InscriptionRow {
   id: string;
   piece_id: string;
   edition_number: number;
-  author_clerk_id: string | null;
+  author_user_id: string | null;
   kind: string;
   body: string | null;
   body_hash: string;
@@ -390,12 +390,12 @@ export function projectInscription(
   const kind = (INSCRIPTION_KINDS as readonly string[]).includes(row.kind)
     ? (row.kind as InscriptionKind)
     : 'story';
-  const authoredByYou = row.author_clerk_id === viewerRef;
+  const authoredByYou = row.author_user_id === viewerRef;
   const base = {
     id: row.id,
     kind,
     createdAt: row.created_at,
-    attribution: attributionFor(row.author_clerk_id, viewerRef, chain),
+    attribution: attributionFor(row.author_user_id, viewerRef, chain),
     authoredByYou,
     contentHash: row.body_hash,
     shared: liveSharedInscriptionIds?.has(row.id) ?? false,

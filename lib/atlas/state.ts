@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import type { PublicAtlasState } from '../../types';
-import { buildSeedAtlasState } from '../../data/atlasSeed';
 // ── TEMPORARY PLACEHOLDER (remove at launch) ── see data/atlasPlaceholder.ts
 import { buildPlaceholderAtlasState } from '../../data/atlasPlaceholder';
 import { CITIES_BY_ID, formatPlaceLabel } from '../../data/cities';
@@ -9,28 +8,23 @@ import { ulCardNumber } from '../../utils/universalLanguage';
 
 /* Shared atlas-state loader. The Atlas page and the card page's "On the
  * Atlas" seat both read the same public state; fetching it once per session
- * keeps the two surfaces telling the same story. On any failure (dev server
- * without the Functions runtime, ledger not yet seeded, network blip) the
- * local seed keeps every surface rendering. */
+ * keeps the two surfaces telling the same story. Valid empty state stays
+ * empty. Failure rejects so every surface can render an explicit unavailable
+ * state instead of presenting invented or unsnapshotted data. */
 
 let atlasStatePromise: Promise<PublicAtlasState> | null = null;
 
-/** The seed/fallback state carries this marker so surfaces can tell an honest
- *  "showing the last gathered sky" chip and offer a retry (interface law 6).
- *  A live fetch never sets it; a forced retry that succeeds clears it. */
-export type LoadedAtlasState = PublicAtlasState & { servedFallback?: boolean };
-
 /**
  * Load the public atlas. Pass `force` to bypass the per-session cache and
- * refetch (the honest-state retry). On any failure the local seed is served
- * with `servedFallback: true` so the caller can surface a quiet notice.
+ * refetch. Canonical failure rejects; there is no local production snapshot.
  */
-export function loadAtlasState(force = false): Promise<LoadedAtlasState> {
+export function loadAtlasState(force = false): Promise<PublicAtlasState> {
   // ── TEMPORARY PLACEHOLDER (remove at launch) ──
   // Verification override: `?placeholder` on the URL forces the placeholder
   // state, so Adrian can preview it locally where the dev server otherwise
   // seeds 20 pieces. Guarded for SSR/no-window. Delete this block at launch.
   if (
+    import.meta.env.DEV &&
     typeof window !== 'undefined' &&
     new URLSearchParams(window.location.search).has('placeholder')
   ) {
@@ -43,29 +37,15 @@ export function loadAtlasState(force = false): Promise<LoadedAtlasState> {
     atlasStatePromise = fetch('/api/atlas')
       .then(async (res) => {
         if (!res.ok) throw new Error(`atlas ${res.status}`);
-        const body = await res.json();
-        if (!body || body.ok !== true || !body.state) {
+        const body = (await res.json()) as { ok?: unknown; state?: unknown };
+        if (!body || body.ok !== true || !body.state || typeof body.state !== 'object') {
           throw new Error('atlas malformed');
         }
         const state = body.state as PublicAtlasState;
-        // ── TEMPORARY PRE-LAUNCH SEED (remove at launch) ──
-        // The live public mirror is not seeded yet: /api/atlas answers ok:true
-        // with zero pieces, which the error→seed fallback below never catches
-        // (it is a valid, empty body). Until the real mirror is populated,
-        // stand the full local seed in its place so the atlas — globe, ledger,
-        // and wall — reads as the intended body of work rather than three bare
-        // dots. Auto-hides the instant any real piece lands. Swap back to
-        // buildPlaceholderAtlasState() (or delete this block) at launch.
-        if (state.pieces.length === 0) {
-          return buildSeedAtlasState();
+        if (!Array.isArray(state.pieces) || !Array.isArray(state.cities)) {
+          throw new Error('atlas malformed');
         }
-        // ── end TEMPORARY PRE-LAUNCH SEED ──
         return state;
-      })
-      .catch(() => {
-        const seed = buildSeedAtlasState() as LoadedAtlasState;
-        seed.servedFallback = true;
-        return seed;
       });
   }
   return atlasStatePromise;
@@ -140,9 +120,13 @@ export function useCardPlacement(cardNumber: number): CardPlacement | null {
   useEffect(() => {
     let active = true;
     setPlacement(null);
-    loadAtlasState().then((state) => {
-      if (active) setPlacement(findPlacementForCard(state, cardNumber));
-    });
+    loadAtlasState()
+      .then((state) => {
+        if (active) setPlacement(findPlacementForCard(state, cardNumber));
+      })
+      .catch(() => {
+        if (active) setPlacement(null);
+      });
     return () => {
       active = false;
     };

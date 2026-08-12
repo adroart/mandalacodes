@@ -40,7 +40,7 @@ function row(overrides: Partial<InscriptionRow> = {}): InscriptionRow {
     id: 'ins-1',
     piece_id: 'UL-1',
     edition_number: 0,
-    author_clerk_id: AUTHOR,
+    author_user_id: AUTHOR,
     kind: 'intention',
     body: 'May this piece hold our family together.',
     body_hash: 'a'.repeat(64),

@@ -26,6 +26,7 @@ import {
   mutateLedger,
   mutateStewards,
 } from './_helpers';
+import { isMissingColumnError } from '../_lib/db.js';
 
 export function chainKey(pieceId: string, editionNumber?: number): string {
   return `${pieceId}:${editionNumber ?? 0}`;
@@ -33,14 +34,35 @@ export function chainKey(pieceId: string, editionNumber?: number): string {
 
 // ---------- Row I/O ----------
 
+function inscriptionSelect(authorColumn: 'author_user_id' | 'author_clerk_id'): string {
+  return `id, piece_id, edition_number,
+          ${authorColumn} AS author_user_id,
+          kind, body, body_hash, content_salt, sealed_until,
+          created_at, erased_at, erase_reason`;
+}
+
 export async function selectInscription(
   db: AtlasD1Database,
   id: string,
 ): Promise<InscriptionRow | null> {
-  return db
-    .prepare('SELECT * FROM atlas_inscriptions WHERE id = ?1')
-    .bind(id)
-    .first<InscriptionRow>();
+  try {
+    return await db
+      .prepare(
+        `SELECT ${inscriptionSelect('author_user_id')}
+           FROM atlas_inscriptions WHERE id = ?1`,
+      )
+      .bind(id)
+      .first<InscriptionRow>();
+  } catch (error) {
+    if (!isMissingColumnError(error, 'author_user_id')) throw error;
+    return db
+      .prepare(
+        `SELECT ${inscriptionSelect('author_clerk_id')}
+           FROM atlas_inscriptions WHERE id = ?1`,
+      )
+      .bind(id)
+      .first<InscriptionRow>();
+  }
 }
 
 export async function selectInscriptionsForPiece(
@@ -48,22 +70,29 @@ export async function selectInscriptionsForPiece(
   pieceId: string,
   editionNumber: number | undefined,
 ): Promise<InscriptionRow[]> {
-  const { results } = await db
-    .prepare(
-      `SELECT * FROM atlas_inscriptions
-       WHERE piece_id = ?1 AND edition_number = ?2
-       ORDER BY created_at ASC, id ASC`,
-    )
-    .bind(pieceId, editionNumber ?? 0)
-    .all<InscriptionRow>();
-  return results;
+  const query = async (authorColumn: 'author_user_id' | 'author_clerk_id') =>
+    db
+      .prepare(
+        `SELECT ${inscriptionSelect(authorColumn)}
+           FROM atlas_inscriptions
+          WHERE piece_id = ?1 AND edition_number = ?2
+          ORDER BY created_at ASC, id ASC`,
+      )
+      .bind(pieceId, editionNumber ?? 0)
+      .all<InscriptionRow>();
+  try {
+    return (await query('author_user_id')).results;
+  } catch (error) {
+    if (!isMissingColumnError(error, 'author_user_id')) throw error;
+    return (await query('author_clerk_id')).results;
+  }
 }
 
 export interface InsertInscriptionInput {
   id: string;
   pieceId: string;
   editionNumber?: number;
-  authorClerkId: string;
+  authorUserId: string;
   kind: string;
   body: string;
   bodyHash: string;
@@ -79,7 +108,7 @@ export async function insertInscription(
   await db
     .prepare(
       `INSERT INTO atlas_inscriptions
-         (id, piece_id, edition_number, author_clerk_id, kind, body,
+         (id, piece_id, edition_number, author_user_id, kind, body,
           body_hash, content_salt, sealed_until, created_at)
        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)`,
     )
@@ -87,7 +116,7 @@ export async function insertInscription(
       input.id,
       input.pieceId,
       input.editionNumber ?? 0,
-      input.authorClerkId,
+      input.authorUserId,
       input.kind,
       input.body,
       input.bodyHash,
@@ -160,7 +189,7 @@ export async function convertPendingFirstInscription(
         id: plan.inscriptionId,
         pieceId: record.pieceId,
         editionNumber: record.editionNumber,
-        authorClerkId: record.clerkUserId,
+        authorUserId: record.clerkUserId,
         kind: 'intention',
         body: pending.text,
         bodyHash,

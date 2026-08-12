@@ -9,7 +9,7 @@
  */
 
 import { requireUser, jsonResponse } from '../_lib/auth.js';
-import { getUserByClerkId } from '../_lib/db.js';
+import { getUserByAuthId } from '../_lib/db.js';
 import { PROFILE_KEYS } from '../../../data/profileKeys.js';
 
 function validInputs(x) {
@@ -59,7 +59,7 @@ export async function onRequest(context) {
     return jsonResponse({ error: 'invalid_computed' }, { status: 400 }, request, env);
   }
 
-  const user = await getUserByClerkId(env.DB, auth.userId);
+  const user = await getUserByAuthId(env.DB, auth.userId);
   if (!user) {
     // Should not happen post sync-user; surface for debugging.
     return jsonResponse({ error: 'user_not_synced' }, { status: 409 }, request, env);

@@ -4,10 +4,8 @@
  * Validates the self-owned Better Auth session cookie. Return contract:
  * `{ userId, email, emailVerified, session, user }` or a 401 Response.
  *
- * `userId` is the Better Auth user id; the D1 users row stores it in the
- * `clerk_user_id` column — a legacy column name still scheduled for rename,
- * now holding the Better Auth id as the generic external-auth-id, so
- * `getUserByClerkId(env.DB, auth.userId)` keeps working until that rename.
+ * `userId` is the Better Auth user id; the app's D1 users row stores it in
+ * the vendor-neutral `auth_user_id` column.
  */
 
 import { createAuth } from '../../../lib/account/auth.server.js';

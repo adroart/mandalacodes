@@ -1,5 +1,18 @@
 # A letter to the person who comes next
 
+> **Read this first, system moved 2026-08-09.** The canonical collector record
+> now lives with Adrian-Website. Mandala Codes still presents the Atlas and the
+> Universal Language kinship, but it is read-only: its public Atlas endpoint
+> reads `https://adrianrasmussen.com/api/atlas`, and middleware rejects every
+> ownership or ceremony mutation under `/api/atlas` with `410 atlas_moved`.
+> The `mandalacodes-atlas` R2 objects described below are historical evidence
+> only. Never resume writes to them or treat them as canonical.
+>
+> At the freeze, the configured production ledger key was absent and the live
+> public Atlas response was empty. No collector history was guessed, generated,
+> or seeded during the move. If old objects are discovered later, preserve them
+> unchanged and reconcile them manually against Adrian-Website.
+
 If you are reading this, Adrian has either passed the stewardship of this work
 to you, or circumstances have done it for him. Either way: welcome. The system
 you are inheriting is intentionally small, heavily documented, and built to
@@ -26,30 +39,36 @@ everything after it.
 
 ## Where everything lives
 
-**Cloudflare account** — the whole system runs under one Cloudflare account.
-Mandalacodes (the site you are administering) is a Cloudflare Pages project.
-The domain, build pipeline, and storage all live here. Keep the account active
-and the payment method valid. Adrian's password manager holds the credentials;
-ask his estate or the person he named as literary executor.
+**Canonical collector system: Adrian-Website.** Registration, ownership,
+ceremony, and all future collector record changes belong there. Its public
+`/api/atlas` JSON is the source Mandala reads. Start in that repository for any
+collector-system repair or evolution.
 
-**R2 bucket: `mandalacodes-atlas`** — all mutable state lives here as JSON
-objects. Five keys matter:
+**Mandala Codes Cloudflare project.** This project hosts the read-only Atlas
+and Universal Language kinship presentation. Keep it running for those public
+surfaces, but do not use it to mutate collector state. The optional Pages
+variable `ATLAS_CANONICAL_URL` may point reads at an Adrian-Website preview;
+it defaults to `https://adrianrasmussen.com/api/atlas`.
+
+**Historical R2 bucket: `mandalacodes-atlas`.** Frozen 2026-08-09. These
+objects are evidence from the retired system, not live mutable state:
 
 | Key | What it holds |
 |---|---|
-| `atlas/ledger.json` | The append-only hash chain. Every event ever recorded, in every piece's history. Source of truth. |
+| `atlas/ledger.json` | Historical append-only hash chain, if present. Not the current source of truth. |
 | `atlas/stewards.json` | The private collector roster. Names, emails, consent records, heir hints. Never make this public. |
 | `atlas/public.json` | A regenerated projection of what may be shown on the website. Built automatically; never edit by hand. |
 | `atlas/claimRequests.json` | Pending self-serve stewardship requests (secondary sales, gifts, inheritance). |
 | `atlas/letters.json` | Letters the pieces write back to their stewards — kin-claim notifications, anniversaries, transfer welcomes. |
 
-`public.json` (and only `public.json`) may reach the public GitHub mirror.
+Do not write, regenerate, or restore these objects into service. `public.json`
+(and only `public.json`) was eligible for the historical public GitHub mirror.
 Ledger events contain opaque IDs, never names or emails — but `stewards.json`
 contains real contact information. Never let it leave the bucket.
 
-**Shared D1 database: `adrian-website`** — a SQLite database shared between
-mandalacodes and the adrianrasmussen.com Pages project. Mandalacodes uses it
-for two tables added by migration `003_atlas_legacy.sql`:
+**Shared D1 database: `adrian-website`.** Historically, Mandala used this
+database for two legacy Atlas tables. The read-only boundary now prevents
+Mandala Atlas handlers from mutating them:
 
 - `atlas_inscriptions` — the mutable, erasable bodies of Ring 1 legacy entries.
   The chain holds only a salted commitment; the body itself lives here and can
@@ -68,12 +87,10 @@ from that checkout with `wrangler d1 migrations apply adrian-website --remote`.
 need to understand the code to keep the system running; you only need to know
 where things are.
 
-**Authentication (Better Auth)** — collector accounts and admin sign-in both use
-the site's self-owned Better Auth (Google + email/password + email code). The
-admin allowlist is the `ADMIN_EMAILS` environment variable: a comma-separated
-list of email addresses that have full atlas admin access. To add a new admin,
-add their email to this variable and redeploy. To remove one, remove them and
-redeploy. No auth-provider change is needed for admin access specifically.
+**Authentication (Better Auth).** Mandala authentication still supports its
+remaining non-Atlas surfaces. Atlas collector and admin write access on this
+site is retired regardless of credentials because the middleware blocks every
+mutation before a route handler runs.
 
 ---
 
@@ -201,6 +218,9 @@ server will run forever.
 
 ## How to back up
 
+This is now an evidence-preservation procedure, not a live-state backup or a
+restore path.
+
 The backup script is at `scripts/backup-atlas.ts`. Run it with:
 
 ```bash
@@ -216,7 +236,8 @@ the other three are optional and skipped with a note if not yet created.
 You need a wrangler login with access to the bucket first (`npx wrangler
 login`).
 
-Run this before any structural change ships. Move long-term copies to
+Do not seed missing objects in order to make this script succeed. If historical
+objects are present, move long-term copies to
 artist-controlled offline storage — the `backups/` folder is gitignored and
 must never be committed, as `stewards.json` and `claimRequests.json` contain
 collector contact information.
@@ -254,21 +275,22 @@ is what provides external tamper evidence.
 
 Here are the steps, in order:
 
-1. **Get access.** Adrian's password manager holds the Cloudflare account
+1. **Start with Adrian-Website.** Verify its canonical collector system and
+   public `/api/atlas` response before investigating Mandala's presentation.
+
+2. **Get access.** Adrian's password manager holds the Cloudflare account
    credentials and the Infisical master key. His estate or literary executor
    is the fallback.
 
-2. **Verify the chain.** After getting access, run `npm run test:unit` to
+3. **Preserve historical evidence.** After getting access, run
+   `npm run test:unit` to
    confirm the local utilities are sound. Then download the current
-   `atlas/ledger.json` (`npm run backup:atlas`) and audit it: check that
-   `verifyChain` returns `{ ok: true }` for every piece's chain.
+   `atlas/ledger.json`, if one exists, with `npm run backup:atlas`. Keep the
+   original unchanged. Verification can establish internal chain integrity,
+   but it does not make the old object canonical.
 
-3. **Update `ADMIN_EMAILS`.** Add your own email address to the `ADMIN_EMAILS`
-   environment variable on the Cloudflare Pages project. Remove Adrian's email
-   only when you are confident in the handover. A broken or missing `ADMIN_EMAILS`
-   value locks you out of the admin interface immediately.
-
-4. **Update the auth config.** Sign-in is self-owned Better Auth, configured by
+4. **Update the auth config only for remaining Mandala surfaces.** Sign-in is
+   self-owned Better Auth, configured by
    the `BETTER_AUTH_*`, `GOOGLE_*`, and `RESEND_*` environment variables on the
    Cloudflare Pages project (no third-party auth dashboard). To manage Google
    sign-in you need access to the Google Cloud OAuth client; everything else is
@@ -278,11 +300,9 @@ Here are the steps, in order:
    repository is still public. Do not delete it. As long as it is public, the
    Software Heritage Foundation archives it.
 
-6. **Transfer `SALE_WEBHOOK_SECRET`.** This secret is shared with the
-   adrianrasmussen.com side. Whoever handles that site will need the value to
-   keep the sale queue working. If you need to rotate it, set the new value on
-   mandalacodes first, then immediately on Adrian-Website; in-flight signed
-   requests will 401 and retry with the new secret automatically.
+6. **Treat old Atlas integration secrets as historical.** Do not restore a
+   Mandala sale queue or rotate credentials as a way to re-enable Atlas writes.
+   Manage current collector integrations from Adrian-Website.
 
 7. **Back up the R2 objects.** Run `npm run backup:atlas` and move the output
    to offline storage before making any structural change.
@@ -294,13 +314,16 @@ Here are the steps, in order:
 
 ## What not to do
 
+- Never remove or bypass `functions/api/atlas/_middleware.ts` to revive old
+  write endpoints. Ownership and ceremony writes belong on Adrian-Website.
+
 - Never rewrite history. Every event references the one before it by hash.
   Changing a past event invalidates every hash after it. Rewriting R2 and
   recomputing hashes is technically possible — the GitHub mirror commit history
   is the external evidence that this has not happened.
 
-- Never edit `atlas/ledger.json` by hand. Use the admin interface. The
-  interface computes hashes correctly; direct edits almost certainly will not.
+- Never edit `atlas/ledger.json` by hand or restore it into the live read path.
+  Preserve any recovered object byte-for-byte as historical evidence.
 
 - Never mirror anything except `public.json`. The ledger and steward files
   contain or reference personal data. The current code in `_mirror.ts` mirrors
