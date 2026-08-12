@@ -302,7 +302,7 @@ function flushParagraph(buf: string[], paragraphs: string[]): void {
   buf.length = 0;
 }
 
-function parseBody(body: string, context: string): Record<string, MdSection> {
+export function parseBody(body: string, context: string): Record<string, MdSection> {
   const lines = body.split('\n');
   const sections: Record<string, MdSection> = {};
   let curSection: MdSection | null = null;

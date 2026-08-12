@@ -23,6 +23,7 @@
     "test:mobile": "npx playwright test --project='Mobile Chrome' --reporter=list",
     "test:live-oracle": "LIVE_ORACLE_BASE_URL=https://mandalacodes.com playwright test tests/live-oracle-cards.spec.ts",
     "test:unit": "vitest run",
+    "check:migrate-oracle-card": "tsx scripts/migrate-oracle-card.ts --check",
     "backup:atlas": "tsx scripts/backup-atlas.ts",
     "postbuild": "node scripts/build-csp-headers.mjs"
   },
@@ -42,7 +43,8 @@
     "react-router-dom": "^7.13.0",
     "three": "^0.166.1",
     "three-globe": "^2.31.0",
-    "workers-og": "^0.0.27"
+    "workers-og": "^0.0.27",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260528.1",
