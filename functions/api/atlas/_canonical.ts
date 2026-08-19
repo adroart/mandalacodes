@@ -1,4 +1,5 @@
 import type { PublicAtlasState } from '../../../types';
+import { adaptCollectorFieldState } from './_collectorField';
 
 export const ATLAS_MOVE_DATE = '2026-08-09';
 export const DEFAULT_CANONICAL_ATLAS_URL =
@@ -134,7 +135,8 @@ export async function readCanonicalAtlasState(
     const body = (await response.json()) as { ok?: unknown; state?: unknown };
     if (body?.ok !== true || !body.state || typeof body.state !== 'object') return null;
     const state = body.state as PublicAtlasState;
-    return Array.isArray(state.pieces) && Array.isArray(state.cities) ? state : null;
+    if (Array.isArray(state.pieces) && Array.isArray(state.cities)) return state;
+    return adaptCollectorFieldState(body.state);
   } catch {
     return null;
   }
