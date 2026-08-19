@@ -33,6 +33,8 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 ## Soon
 
+- [ ] Give the empty Atlas its own line of copy — with zero placed pieces it says "Nothing matches. Loosen a filter.", which is wrong when there are no filters to loosen; it needs a quiet awaiting-the-first-light line instead _(band: you-required)_ _(effort: quick)_
+
 - [ ] Verify the /make note form end to end on the deployed preview after merging the piece-page branch (auth + R2 queue cannot run under plain Vite; a note should appear in AdminAtlas "Make Requests") _(band: agent-runnable)_ _(effort: quick)_ → Plan: [piece-page-acquisition.md](todo/plans/piece-page-acquisition.md)
 
 - [ ] Flip finished pieces to the take-it-home door: in the Catalog Room set status available + acquireUrl; the piece page reads it automatically _(band: you-required)_ _(effort: quick)_
