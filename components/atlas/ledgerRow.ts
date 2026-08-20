@@ -41,6 +41,11 @@ export interface LedgerRow {
   /** A quietly-marked placeholder standing in until real works are entered:
    *  carries no links and no dream (data/atlasPlaceholder.ts). */
   placeholder?: boolean;
+  /** TEMPORARY LAUNCH SAMPLES — true when this row comes from the sample
+   *  state (PublicAtlasState.placeholder). The status tail carries a small
+   *  "sample" tag so no surface presents a sample as a real piece. Remove
+   *  with data/atlasPlaceholder.ts. */
+  sample?: boolean;
   /** The kind facet this row belongs to, so a flat pool can be regrouped. */
   kind?: string;
   /** The frozen sigil the piece is known by (`UL № 1`). Filled by the record
@@ -321,14 +326,20 @@ export function groupLedgerRows(
  *  their own placeholder line (see data/atlasPlaceholder.ts); this speaks only
  *  for real rows. */
 export function ledgerStatusLine(row: LedgerRow): string {
+  let line: string;
   switch (row.norm) {
     case 'placed':
-      return row.cityName ? `alive in ${row.cityName}` : 'alive';
+      line = row.cityName ? `alive in ${row.cityName}` : 'alive';
+      break;
     case 'seeking':
-      return 'seeking ground';
+      line = 'seeking ground';
+      break;
     case 'at-rest':
-      return 'at rest with the artist';
+      line = 'at rest with the artist';
+      break;
   }
+  // TEMPORARY LAUNCH SAMPLES: a sample row always says so, everywhere it reads.
+  return row.sample ? `${line} · sample` : line;
 }
 
 /** Strip the trailing "- N" edition suffix a title may carry. */
@@ -372,6 +383,8 @@ export interface LedgerPieceLike {
   cardNumber?: number;
   placedAt?: string;
   claimOrdinal?: number;
+  /** TEMPORARY LAUNCH SAMPLES — see LedgerRow.sample. */
+  sample?: boolean;
 }
 
 export function atlasPieceToRow(p: LedgerPieceLike): LedgerRow {
@@ -389,5 +402,6 @@ export function atlasPieceToRow(p: LedgerPieceLike): LedgerRow {
     cardNumber: p.cardNumber,
     placedAt: p.placedAt,
     claimOrdinal: p.claimOrdinal,
+    sample: p.sample,
   };
 }

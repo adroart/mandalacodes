@@ -8,9 +8,11 @@ import { ulCardNumber } from '../../utils/universalLanguage';
 
 /* Shared atlas-state loader. The Atlas page and the card page's "On the
  * Atlas" seat both read the same public state; fetching it once per session
- * keeps the two surfaces telling the same story. Valid empty state stays
- * empty. Failure rejects so every surface can render an explicit unavailable
- * state instead of presenting invented or unsnapshotted data. */
+ * keeps the two surfaces telling the same story. A valid empty state resolves
+ * to the marked SAMPLE state (temporary, see data/atlasPlaceholder.ts) until
+ * the first real piece reaches the canonical feed. Failure rejects so every
+ * surface can render an explicit unavailable state instead of presenting
+ * invented or unsnapshotted data. */
 
 let atlasStatePromise: Promise<PublicAtlasState> | null = null;
 
@@ -45,6 +47,17 @@ export function loadAtlasState(force = false): Promise<PublicAtlasState> {
         if (!Array.isArray(state.pieces) || !Array.isArray(state.cities)) {
           throw new Error('atlas malformed');
         }
+        // ── TEMPORARY LAUNCH SAMPLES (remove at launch) ──
+        // A canonical SUCCESS with zero pieces means the registry is real but
+        // still empty: stand the five marked sample pieces in (state carries
+        // `placeholder: true`, and every surface captions them as samples).
+        // They auto-hide the moment the feed carries any real piece. A
+        // canonical FAILURE still rejects above — samples never mask a broken
+        // feed. See data/atlasPlaceholder.ts.
+        if (state.pieces.length === 0) {
+          return buildPlaceholderAtlasState();
+        }
+        // ── end TEMPORARY LAUNCH SAMPLES ──
         return state;
       });
   }

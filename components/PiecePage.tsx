@@ -85,6 +85,10 @@ type LoadState =
       /** The public catalog row, when one exists — carries status and (for an
        *  'available' piece) the public price + acquire link. */
       catalog: PublicCatalogEntry | null;
+      /** TEMPORARY LAUNCH SAMPLES — true when the piece resolved out of the
+       *  marked sample state (data/atlasPlaceholder.ts), so the page can say
+       *  so in one line. Remove at launch. */
+      sample?: boolean;
     };
 
 /** Spine entry: a single public, non-personal moment in the piece's life. */
@@ -335,6 +339,9 @@ const PiecePage: React.FC = () => {
           piece: resolved,
           art: resolvedArt,
           catalog: catalogEntry ?? null,
+          // TEMPORARY LAUNCH SAMPLES: only a piece that actually came out of
+          // the sample state is a sample — an archive/catalog fallback is not.
+          sample: state.placeholder === true && !!piece,
         });
       })
       .catch(() => {
@@ -454,7 +461,7 @@ const PiecePage: React.FC = () => {
     );
   }
 
-  const { piece, art, catalog } = load;
+  const { piece, art, catalog, sample } = load;
   const cardNumber =
     art.series === 'Universal Language' ? ulCardNumber(art.coverImage) : null;
   const card = cardNumber != null ? CARD_BY_NUMBER.get(cardNumber) : undefined;
@@ -551,6 +558,15 @@ const PiecePage: React.FC = () => {
           <span aria-hidden className="text-wood-400">/</span>
           <span className="text-wood-900">{cleanTitle}</span>
         </nav>
+
+        {/* ── TEMPORARY LAUNCH SAMPLES notice (remove at launch) ── see
+            data/atlasPlaceholder.ts. One quiet line, only when this piece
+            resolved out of the marked sample state. */}
+        {sample && (
+          <p className="mb-5 font-label text-[11px] uppercase tracking-[0.16em] text-wood-500">
+            a sample piece · shown until the first real light is claimed
+          </p>
+        )}
 
         {/* ═══════════════════ THE CERTIFICATE ═══════════════════
             Warm paper, engraved grammar, generous margins. The artwork crowns

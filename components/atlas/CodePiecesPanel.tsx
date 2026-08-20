@@ -29,6 +29,8 @@ export interface CodePiece {
    *  can order the record by recency. */
   placedAt?: string;
   claimOrdinal?: number;
+  /** TEMPORARY LAUNCH SAMPLES — see LedgerRow.sample in ledgerRow.ts. */
+  sample?: boolean;
 }
 
 interface Props {
