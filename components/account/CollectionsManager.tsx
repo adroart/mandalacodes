@@ -27,13 +27,17 @@ const itemLink = (item: CollectionItem): string => {
  * no matching piece return null and render no join line at all. */
 const placementLine = (placement: CardPlacement | null): string | null => {
   if (!placement) return null;
-  if (placement.status === 'seeking') return 'seeking ground';
-  if (placement.status === 'unawakened') {
-    return placement.cityLabel
-      ? `at rest in ${placement.cityLabel}, awaiting its keeper`
-      : 'awaiting its keeper';
-  }
-  return placement.cityLabel ? `rests in ${placement.cityLabel}` : null;
+  const line = (() => {
+    if (placement.status === 'seeking') return 'seeking ground';
+    if (placement.status === 'unawakened') {
+      return placement.cityLabel
+        ? `at rest in ${placement.cityLabel}, awaiting its keeper`
+        : 'awaiting its keeper';
+    }
+    return placement.cityLabel ? `rests in ${placement.cityLabel}` : null;
+  })();
+  if (!line) return null;
+  return placement.sample ? `${line} · sample` : line;
 };
 
 /* The atlas link only makes sense once a piece is actually mapped to a city

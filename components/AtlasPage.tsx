@@ -15,13 +15,13 @@ import {
   buildCodeEntries,
   buildKindSections,
   cardNumberFor,
+  enrichPieces,
   categoryFor,
   cityLabelFor,
   coverImageFor,
   makeKey,
   signatureFor,
   sigilNumberFor,
-  titleFor,
   type EnrichedPiece,
 } from '../lib/atlas/record';
 import { loadPublicCatalog } from '../lib/atlas/catalog';
@@ -478,11 +478,9 @@ const AtlasPage: React.FC = () => {
   /* Enrich pieces with titles, build the series list for the filter. */
   const enriched: EnrichedPiece[] = useMemo(() => {
     if (state.kind !== 'ready') return [];
-    return state.data.pieces.map((p) => ({
-      ...p,
-      key: makeKey(p.pieceId, p.editionNumber),
-      title: titleFor(p.pieceId),
-    }));
+    // enrichPieces also carries the TEMPORARY sample flag through to every
+    // row (data/atlasPlaceholder.ts) so a sample never reads as a real piece.
+    return enrichPieces(state.data);
   }, [state]);
 
   const availableSeries: string[] = useMemo(() => {
@@ -576,8 +574,8 @@ const AtlasPage: React.FC = () => {
      of strangers. A "light" is a claimed piece (carries an ordinal); the
      collective framing earns its place as density grows. */
   const totalCount = enriched.length;
-  // ── TEMPORARY PLACEHOLDER caption ── see data/atlasPlaceholder.ts. True only
-  // while the placeholder dots stand in for an unseeded mirror; delete at launch.
+  // ── TEMPORARY SAMPLE caption ── see data/atlasPlaceholder.ts. True only
+  // while the five sample pieces stand in for an empty registry; delete at launch.
   const isPlaceholder = state.kind === 'ready' && state.data.placeholder === true;
   const lightsLit = useMemo(
     () => enriched.filter((p) => typeof p.claimOrdinal === 'number').length,
@@ -1641,13 +1639,13 @@ const AtlasPage: React.FC = () => {
                       it leads and the inventory total trails it as a quiet tail
                       rather than sharing its weight. */}
                   <p className="font-label text-[13px] sm:text-[14px] uppercase tracking-[0.16em] text-atlas-gold">
-                    {/* ── TEMPORARY PLACEHOLDER caption ── see
+                    {/* ── TEMPORARY SAMPLE caption ── see
                         data/atlasPlaceholder.ts. Delete this branch at launch. */}
                     {isPlaceholder ? (
                       <>
-                        placeholder pieces
+                        sample sky
                         <span className="ml-2 normal-case tracking-[0.02em] text-[12px] text-wood-500">
-                          shown until the first works find their ground
+                          these five are placeholders until the first real light is claimed
                         </span>
                       </>
                     ) : (

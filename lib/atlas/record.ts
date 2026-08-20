@@ -129,13 +129,19 @@ export function sigilFor(
 export type EnrichedPiece = PublicAtlasState['pieces'][number] & {
   key: string;
   title: string;
+  /** TEMPORARY LAUNCH SAMPLES — true when the whole state is the marked
+   *  sample state (PublicAtlasState.placeholder), so every row built from
+   *  this piece carries its "sample" tag. Remove with data/atlasPlaceholder.ts. */
+  sample?: boolean;
 };
 
 export function enrichPieces(data: PublicAtlasState): EnrichedPiece[] {
+  const sample = data.placeholder === true ? true : undefined;
   return data.pieces.map((p) => ({
     ...p,
     key: makeKey(p.pieceId, p.editionNumber),
     title: titleFor(p.pieceId),
+    sample,
   }));
 }
 
@@ -166,6 +172,7 @@ export function buildCodeEntries(enriched: readonly EnrichedPiece[]): CodeIndexE
       // Sort keys for the ledger's "most recently anchored" order.
       placedAt: p.placedAt,
       claimOrdinal: p.claimOrdinal,
+      sample: p.sample,
     });
   }
   return out;
@@ -213,6 +220,7 @@ export function buildKindSections(
         signedBy: p.signedBy,
         placedAt: p.placedAt,
         claimOrdinal: p.claimOrdinal,
+        sample: p.sample,
       }),
       sigil: sigilFor(p.pieceId, {
         series: p.series,

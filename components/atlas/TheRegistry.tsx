@@ -155,7 +155,8 @@ const RegistryLine: React.FC<{
             row.dream ? 'md:hidden' : ''
           }`}
         >
-          {stateLine}
+          {/* TEMPORARY LAUNCH SAMPLES: a sample row always says so. */}
+          {row.sample ? `${stateLine} · sample` : stateLine}
         </span>
       </span>
       {/* the dream's opening — the fourth column on the table, its own line
