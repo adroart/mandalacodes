@@ -146,6 +146,75 @@ describe('collector-field → PublicAtlasState adapter', () => {
     expect(state?.cities).toEqual([]);
   });
 
+  it('keys an edition-less identity ("Original") under :0 and keeps its tip', () => {
+    const state = adaptCollectorFieldState({
+      generatedAt: '2026-08-19T07:54:41.273Z',
+      schemaVersion: 3,
+      lights: [
+        {
+          artworkId: 'SG-7',
+          title: 'Signature Work',
+          series: 'Signature',
+          year: 2023,
+          identity: [
+            {
+              publicCode: 'AR-ORIG0001',
+              editionLabel: 'Original',
+              status: 'registered',
+              ordinal: 1,
+              city: null,
+            },
+          ],
+        },
+      ],
+      chainTips: { 'SG-7:0': 'origtip-dddd' },
+    });
+
+    expect(state?.pieces).toHaveLength(1);
+    // No "Edition N" label parses to no editionNumber: the piece-key
+    // convention (`pieceId:editionNumber ?? 0`) puts its tip under :0.
+    expect(state?.pieces[0]?.editionNumber).toBeUndefined();
+    expect(state?.chainTips).toEqual({ 'SG-7:0': 'origtip-dddd' });
+  });
+
+  it('writes one :0 tip when two edition-less identities share an artwork (first wins)', () => {
+    const state = adaptCollectorFieldState({
+      generatedAt: '2026-08-19T07:54:41.273Z',
+      schemaVersion: 3,
+      lights: [
+        {
+          artworkId: 'SG-7',
+          title: 'Signature Work',
+          series: 'Signature',
+          year: 2023,
+          identity: [
+            {
+              publicCode: 'AR-ORIG0001',
+              editionLabel: 'Original',
+              status: 'registered',
+              ordinal: 1,
+              city: null,
+            },
+            {
+              publicCode: 'AR-ORIG0002',
+              editionLabel: 'Artist Proof',
+              status: 'registered',
+              ordinal: 2,
+              city: null,
+            },
+          ],
+        },
+      ],
+      chainTips: { 'SG-7:0': 'origtip-dddd' },
+    });
+
+    // Both identities cross the seam as pieces...
+    expect(state?.pieces).toHaveLength(2);
+    // ...but the shared :0 tip is written once, by the first identity —
+    // matching the pieces array's first-match lookup convention.
+    expect(state?.chainTips).toEqual({ 'SG-7:0': 'origtip-dddd' });
+  });
+
   it('rejects payloads that are neither shape', () => {
     expect(adaptCollectorFieldState({ nonsense: true })).toBeNull();
   });
