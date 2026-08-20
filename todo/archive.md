@@ -1,3 +1,6 @@
+## 2026-08-20
+- [x] Give the empty Atlas its own line of copy — shipped: wall, ledger, and registry now show "the sky is waiting for its first light." when the ledger is truly empty; "Nothing matches. Loosen a filter." only appears when filters reduced a non-empty set. Wording is Adrian's to retune.
+
 ## 2026-06-14
 - [<] Publish the four Phase 1 SEO articles (what is mandala art, sacred geometry, laser-cut wooden mandalas, commissioning a mandala)   → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(parked → TODO.md)_
 - [<] Build the /about stance page and the /artists hub with Adrian's first featured artist page   → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(parked → TODO.md)_
