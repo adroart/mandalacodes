@@ -75,6 +75,9 @@ export interface CardPlacement {
   status: 'seeking' | 'placed' | 'unawakened';
   /** "Lisbon, Portugal" — present only when placed in a known city. */
   cityLabel?: string;
+  /** True when this placement came from the sample (placeholder) sky, so
+   *  every seat that speaks it can mark it as a sample. */
+  sample?: boolean;
 }
 
 export function findPlacementForCard(
@@ -91,6 +94,7 @@ export function findPlacementForCard(
       editionNumber: piece.editionNumber,
       status: piece.status,
       cityLabel: city ? formatPlaceLabel(city) : undefined,
+      ...(state.placeholder ? { sample: true } : {}),
     };
   }
   return null;
