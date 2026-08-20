@@ -117,8 +117,13 @@ export function adaptCollectorFieldState(state: unknown): PublicAtlasState | nul
         ...(ordinal !== undefined ? { claimOrdinal: ordinal } : {}),
       });
       const tipKey = `${light.artworkId}:${editionNumber ?? 0}`;
-      const tip = sourceTips[tipKey] || sourceTips[`${tipKey}:native`];
-      if (typeof tip === 'string' && tip) chainTips[tipKey] = tip;
+      /* Two edition-less identities of one artwork both key to `:0`. First
+       * wins — the same convention the pieces array's first-match lookup
+       * follows — so a later identity never silently overwrites the tip. */
+      if (!(tipKey in chainTips)) {
+        const tip = sourceTips[tipKey] || sourceTips[`${tipKey}:native`];
+        if (typeof tip === 'string' && tip) chainTips[tipKey] = tip;
+      }
     }
   }
 

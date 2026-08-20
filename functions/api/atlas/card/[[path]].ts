@@ -122,19 +122,20 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
   const art = FULL_ARCHIVE.find((a) => a.id === pieceId);
   if (!art) return new Response('Not found', { status: 404 });
 
+  // Fail-soft: when the canonical upstream is unreachable, degrade to the
+  // archive-only certificate (null piece — no dream, no city, no founding
+  // line; every read of the piece below is already optional-chained) rather
+  // than failing the unfurl. An unknown pieceId stays a genuine 404 above.
   const state = await readCanonicalAtlasState(request, env);
-  if (!state) {
-    return Response.json(
-      { ok: false, error: 'atlas_source_unavailable' },
-      { status: 502, headers: { 'Cache-Control': 'no-store' } },
-    );
-  }
   // Public-piece lookup (inlined so this function pulls in no React from
   // lib/atlas/state): match on pieceId, honouring an explicit edition.
-  const piece =
-    (typeof editionNumber === 'number'
-      ? state.pieces.find((p) => p.pieceId === pieceId && (p.editionNumber ?? 0) === editionNumber)
-      : state.pieces.find((p) => p.pieceId === pieceId)) ?? null;
+  const piece = state
+    ? ((typeof editionNumber === 'number'
+        ? state.pieces.find(
+            (p) => p.pieceId === pieceId && (p.editionNumber ?? 0) === editionNumber,
+          )
+        : state.pieces.find((p) => p.pieceId === pieceId)) ?? null)
+    : null;
 
   const cardNumber = art.series === 'Universal Language' ? ulCardNumber(art.coverImage) : null;
   const cleanTitle = art.title.replace(/\s*-\s*\d+$/, '');
@@ -171,11 +172,13 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
 
   // Re-wrap so the card carries a cache header (ImageResponse sets only the
   // content type). A short public TTL keeps a freshly-shared dream appearing
-  // quickly while still sparing repeated renders.
+  // quickly while still sparing repeated renders. A degraded (archive-only)
+  // card is never cached, so a recovered upstream restores the full card on
+  // the next fetch.
   return new Response(image.body, {
     headers: {
       'Content-Type': image.headers.get('content-type') ?? 'image/png',
-      'Cache-Control': 'public, max-age=300, s-maxage=300',
+      'Cache-Control': state ? 'public, max-age=300, s-maxage=300' : 'no-store',
     },
   });
 }

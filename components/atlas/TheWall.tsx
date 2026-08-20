@@ -1109,9 +1109,17 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
       </div>
 
       {visible.length === 0 ? (
-        <p className="font-reading text-base text-wood-600 leading-[1.7] py-8">
-          Nothing matches. Loosen a filter.
-        </p>
+        cards.length === 0 ? (
+          /* An empty atlas, not an over-narrowed one: no filter reduced this
+             to nothing, so there is nothing to loosen. */
+          <p className="font-display italic text-lg text-wood-700 py-8">
+            the sky is waiting for its first light.
+          </p>
+        ) : (
+          <p className="font-reading text-base text-wood-600 leading-[1.7] py-8">
+            Nothing matches. Loosen a filter.
+          </p>
+        )
       ) : (
         <ul
           ref={gridRef}

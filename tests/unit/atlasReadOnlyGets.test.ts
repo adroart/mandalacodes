@@ -226,7 +226,7 @@ describe('surviving Atlas GET routes are side-effect-free', () => {
     );
   });
 
-  it('returns an uncached 502 card response when canonical state is unavailable', async () => {
+  it('degrades to an uncached archive-only card when canonical state is unavailable', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('unavailable', { status: 503 })));
     const bucket = readonlyBucket({});
 
@@ -239,10 +239,30 @@ describe('surviving Atlas GET routes are side-effect-free', () => {
       },
     } as never);
 
-    expect(response.status).toBe(502);
+    // Fail-soft: the certificate still renders (null piece, archive data
+    // only), but is never cached so a recovered upstream restores the full
+    // card on the next fetch.
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Content-Type')).toContain('image/png');
     expect(response.headers.get('Cache-Control')).toBe('no-store');
     expect(bucket.get).not.toHaveBeenCalled();
     expect(bucket.put).not.toHaveBeenCalled();
+  });
+
+  it('keeps an unknown piece a 404 even when canonical state is unavailable', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('unavailable', { status: 503 })));
+    const bucket = readonlyBucket({});
+
+    const response = await getCard({
+      request: new Request('https://mandalacodes.com/api/atlas/card/NOT-A-PIECE'),
+      params: { path: ['NOT-A-PIECE'] },
+      env: {
+        ATLAS_BUCKET: bucket,
+        ASSETS: { fetch: vi.fn(async () => new Response(new Uint8Array([1]))) },
+      },
+    } as never);
+
+    expect(response.status).toBe(404);
   });
 
   it('reads stored inscriptions without converting a pending first inscription', async () => {
