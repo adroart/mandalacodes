@@ -53,7 +53,8 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 - [ ] Finish The Field: the procession (guided founding-story tour) and the piece's yearly ask about its shared words; the three lenses, dream share flow, and tending queue shipped 2026-07-04 on the globe branch _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) § M6
 
-- [ ] Fix the five pre-existing flaky mobile tests (card-page theme walk times out on networkidle; the three oracle entry-codes checks fail the same way on main) _(band: agent-runnable)_ _(effort: quick)_
+- [ ] The mobile test suite is far redder than "five flaky tests" — re-measure it honestly, then fix _(band: agent-runnable)_ _(effort: deep)_
+  Measured 2026-08-21 against a local dev server on a clean main checkout: dozens of Mobile Chrome specs fail, not five. Spot-checked `typography-contract` and `oracle-entry-codes` fail identically on plain main and on a merge branch, so this is the suite own state, not a regression from any one change. The suite also runs serially (`fullyParallel: false`) and takes over nine minutes, long enough that a full run gets truncated before reaching the later specs — which is why the count kept reading as five. Get one honest full-suite number first, then triage. Until that exists, "the mobile tests pass" is not a claim anyone can make.
 
 - [ ] Make Mandala Codes the go-to mandala authority site (multi-phase content, outreach, and press campaign)   → Plan: [mandala-authority.md](todo/plans/mandala-authority.md) _(band: you-required)_ _(effort: moderate)_
 
