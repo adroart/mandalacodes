@@ -41,6 +41,12 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 - [ ] RequestStewardship still uses bg-white inputs, slightly glaring on the new dark piece page; retoken to paper like the /make fields _(band: agent-runnable)_ _(effort: quick)_
 
+- [ ] **Verify offline oracle on a real device** — the service worker + full-deck background warming shipped on `claude/mandala-codes-offline-oracle-soqy5o`; confirm on an actual phone/tablet in airplane mode that card artwork really caches (the sandbox that built it couldn't reach Cloudinary to check) _(band: you-required)_ _(effort: quick)_ → Plan: [docs/offline-oracle.md](docs/offline-oracle.md)
+  Card text/data offline was verified with a headless browser (a card never explicitly opened rendered correctly after the background warm), but the Cloudinary artwork-caching path was only configured, not live-checked, since this environment's proxy blocks outbound requests to the CDN. Done when a device that visited the oracle once, then went into airplane mode, shows both the text and the art for a card it never opened.
+
+- [ ] **Offline oracle polish pass** — add a `registration.update()` check on tab refocus so a device left open for days actually notices new deploys, call `navigator.storage.persist()` once the deck finishes warming, and decide whether to add the one quiet "works without a connection" sentence that was considered and deliberately left out of the first pass _(band: agent-runnable)_ _(effort: quick)_ → Plan: [docs/offline-oracle.md](docs/offline-oracle.md)
+  Phase 1 (the offline shell) and the background deck-warming pass are live; these are the small remaining niceties from the original three-phase plan. Done when the update-check hook is wired and you've decided the quiet-sentence question one way or the other.
+
 - [ ] Rewrite the 64 opening readings so each speaks the whole code (all traditions as lenses on one energy) and ends lifting, not heavy _(band: you-required)_ _(effort: deep)_ → Plan: [reading-rewrite.md](todo/plans/reading-rewrite.md)
 
 - [ ] Scrub the remaining soft source-name phrases in card prose ("the lineage calls this", "the text calls this", "the Eranos source calls this" on cards 1, 4, 5, 6, 13, 40, 60) — your call, since "the lineage" may read as acceptable in-world voice _(band: you-required)_ _(effort: quick)_

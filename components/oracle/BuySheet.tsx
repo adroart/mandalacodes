@@ -69,6 +69,7 @@ export const BuySheet: React.FC<{
               className={`w-24 h-24 object-contain flex-shrink-0 ${
                 ulCardArtFloatsFree(cardNumber) ? '' : 'border border-wood-300/40'
               }`}
+              crossOrigin="anonymous"
             />
             <div className="min-w-0 flex-1 space-y-2">
               {piece?.dimensions && (

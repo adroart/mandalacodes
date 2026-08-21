@@ -288,7 +288,9 @@ function isApprovedFontShorthand(value: string): boolean {
     .replace(/[-+]?\d*\.?\d+(?:%|[a-z]+)?/gi, '')
     .replace(/[\s/,]+/g, ' ')
     .trim();
-  const words = residual.match(/[a-z][\w-]*/gi) ?? [];
+  // Annotated: adding vite-plugin-pwa pulls @types/trusted-types, which makes the
+  // union of RegExpMatchArray | never[] infer the callback param as never.
+  const words: string[] = residual.match(/[a-z][\w-]*/gi) ?? [];
 
   return words.every((word) => FONT_SHORTHAND_KEYWORDS.has(word.toLowerCase()));
 }
