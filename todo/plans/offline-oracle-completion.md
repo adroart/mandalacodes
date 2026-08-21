@@ -1,123 +1,129 @@
 # Finishing the offline oracle
 
-> What shipped 2026-08-21 is the first half: the site's shell and every card's
-> text and artwork can be cached, and a reader who has opened the deck once gets
-> all 64 cards warmed quietly in the background. What has **not** happened is
-> anyone confirming that on a real phone with the network genuinely off. That
-> gap, plus four smaller pieces, is what this plan covers.
+> Half of this shipped on 2026-08-21 and it is a better half than "unfinished"
+> suggests — most of the oracle turns out to be computed on the device already.
+> But nobody has ever watched it work with a phone genuinely offline, and the
+> parts that do need a connection have never been thought through as an
+> experience. That is what is left.
 >
-> Design and mechanics live in [docs/offline-oracle.md](../../docs/offline-oracle.md).
-> This file is the remaining work only.
-
-## The honest status
-
-| Piece | State |
-|---|---|
-| Offline app shell (site loads with no connection) | Built, verified in a headless browser |
-| Card text and data cached | Built, verified — a card never opened rendered after the background warm |
-| Card artwork cached from Cloudinary | **Configured only.** The machine that built it could not reach Cloudinary, so this was never seen working |
-| Background warm of all 64 cards | Built |
-| Noticing a new deploy on a long-open tab | Not built |
-| Asking the browser to keep the cache | Not built |
-| Any automated test that the offline path works | Does not exist |
-
-The single most important line above is the artwork one. Everything else is
-polish; that one is the difference between "the oracle works offline" and "the
-oracle works offline except you can't see the art."
+> Mechanics live in [docs/offline-oracle.md](../../docs/offline-oracle.md).
+> This file is the remaining work and the open questions.
 
 ---
 
-## 1. Prove it on a real device — yours to do, nobody else can
+## What is actually true today
 
-**Why it needs you:** an agent's sandbox cannot reach the image CDN, which is
-exactly the path in question. A headless browser proved the text; only a real
-phone can prove the art.
+Audited 2026-08-21 by reading the code, not by trusting the notes.
 
-**The test:**
+**Works with no connection, once the device has visited once:**
 
-1. On your phone, open the oracle and let one or two cards load.
-2. Wait ten seconds without navigating away — that is the background warm running.
-3. Turn on airplane mode.
-4. Reload the page, then open a card you never touched.
+- The site itself loads — shell, fonts, styles.
+- All 64 card readings: their words and their artwork. A background pass pulls
+  the whole deck quietly after the first visit, so a reading can land on any
+  card, not only ones already opened.
+- Casting coins, and the Today and Year energy panels. All computed locally.
+- A personal profile from a birth moment — the astrology runs on the device, and
+  the birth-place search reads a city list that ships with the site rather than
+  calling out.
 
-**It passes if** both the words and the artwork appear. **It fails if** the text
-appears and the art is blank or broken — that means the Cloudinary caching path
-is wrong, and nothing below matters until it is fixed.
+That last point matters more than it looks: **a complete personal reading is
+possible with no connection at all.** That was not a stated goal; it fell out of
+how the oracle was already built.
 
-**If it fails,** the likely cause is the `crossOrigin="anonymous"` attribute on a
-card-art image tag somewhere that was missed. Every call site was audited when
-this was built, and the attribute is now also recorded in the design source file
-so re-generating the entry page cannot silently drop it. A new call site added
-since would be the thing to look for.
+**Needs a connection:**
 
-## 2. Notice a new deploy on a tab left open for days
+- The live invocation composer.
+- Sending a recorded reflection. Recordings are held on the device in a queue
+  and are not lost, but nothing has been tested about what happens when that
+  queue tries to drain on a bad connection.
+- Atlas, the account pages, admin, and individual piece pages. None are cached
+  on purpose. Opening one offline shows a quiet line saying that part needs a
+  connection, rather than crashing.
 
-A device that keeps the oracle open — a gallery iPad, a phone that never closes
-tabs — will keep serving the version it cached until something forces a check.
-Call `registration.update()` when the tab regains focus so it looks for a new
-release on return rather than only on a cold start.
-
-There is already a safety net for the related case: if a lazy-loaded part of the
-app fails to arrive while online, the app reloads itself once. This is the
-missing half — checking *before* something breaks rather than recovering after.
-
-## 3. Ask the browser to keep the cache
-
-Call `navigator.storage.persist()` once the 64-card warm finishes. Without it the
-cache is "best effort" and the browser may clear it under storage pressure. With
-it, the browser is asked to treat the oracle's cache as worth keeping.
-
-This does not solve the iOS limit below, but it is the one lever the web gives.
-
-## 4. The iOS seven-day fact — a decision, not a bug
-
-iOS clears cached storage after roughly seven days with no visit, unless the site
-has been added to the home screen. So on iPhone and iPad, "works offline" honestly
-means "works offline if visited at least weekly, or if installed."
-
-There are deliberately **no install prompts** — the app never asks to be added to
-the home screen, on the grounds that offline-on-return is the feature and
-installing is something the browser already offers in its own menu.
-
-**Your call:** for a gallery iPad that sits unvisited between shows, that default
-means the oracle will be online-only when it matters. If that surface is real,
-the answer is a one-time manual "add to home screen" on that device, not a prompt
-added to the site for every visitor.
-
-## 5. The sentence that was left out
-
-The first pass considered, and deliberately omitted, one quiet line telling the
-reader the oracle works without a connection. Nothing says so today. The argument
-for leaving it out is that the feature should be felt, not announced; the argument
-for adding it is that a reader in a place with no signal will not try.
-
-**Your call, and it is a voice question, not a technical one.**
-
-## 6. Write one automated test so this cannot rot
-
-No test anywhere covers the offline path — this feature ships on the strength of
-its design, not on anything that fails loudly when broken. The right shape is a
-Playwright test that navigates for real, then takes the browser context offline
-and reloads, asserting a card renders with its art.
-
-Note before starting: the mobile suite is currently red in bulk on main
-(see the separate to-do item), so a new test there needs its own honest baseline
-rather than being dropped into a suite nobody trusts.
+**Never verified anywhere:** all of it, on a real device.
 
 ---
 
-## Things to not break
+## The one thing that must happen first — yours
 
-- `/sw.js`, `/registerSW.js` and `/index.html` must keep their no-cache headers,
-  or the edge can serve a stale service worker after a deploy and no amount of
-  client-side correctness will help.
-- Any new card-art image tag needs `crossOrigin="anonymous"`. Without it the
-  browser makes an opaque request the service worker cannot safely cache, and
-  Chrome charges several megabytes of quota per opaque entry.
-- `/api/*` and `/qr/*` are deliberately excluded from the offline fallback —
-  they are live endpoints and the printed-plaque redirects, and must never be
-  answered from cache.
-- Atlas, admin, account, piece pages and the LED product are not cached by
-  design. Opening one offline lands on a quiet "this part needs a connection"
-  message rather than a crash. If any of those should work offline, that is new
-  scope, not a fix.
+Nobody has confirmed the artwork actually caches. The machine that built this
+could not reach the image host, so that path was configured and reasoned about
+but never seen working. Everything else here is wasted effort if it is wrong.
+
+On your phone: open the oracle, let a card load, wait ten seconds without
+navigating away, then turn on airplane mode, reload, and open a card you never
+touched. **Both the words and the picture should be there.**
+
+If the words appear and the picture does not, stop and say so — the cause is
+almost certainly a card-art image tag missing its cross-origin attribute, and it
+is a small fix, but nothing below is worth doing until it is made.
+
+---
+
+## The open questions — these are yours, and they are why this is not just a build
+
+**1. What is the promise?** Right now the site says nothing about working
+offline. A reader in a place with no signal has no reason to try. The first pass
+deliberately left the sentence out on the grounds that the feature should be
+felt rather than announced. That was a real argument, not an oversight — but it
+means the feature only ever helps someone who happens to try. Decide whether the
+oracle says it, and if so, where and in what voice.
+
+**2. What should a reader see when they reach for something that needs a
+connection?** Today they get one quiet sentence. That is honest and unobtrusive,
+and it is also the same response whether they tapped Atlas out of curiosity or
+tried to send a reflection they had just spoken. Those probably deserve
+different answers.
+
+**3. Is the gallery iPad real?** iPhones and iPads clear cached sites after
+about a week unused, unless the site has been added to the home screen. So for a
+tablet that sits between shows, offline will have quietly expired by the time it
+matters. There is no install prompt, on purpose. If a gallery device is a real
+plan, the answer is adding it to the home screen once on that device — not
+adding a prompt every visitor sees.
+
+**4. Should a reflection recorded offline be a first-class thing?** The recorder
+already holds recordings on the device rather than dropping them. Nobody has
+decided whether a reader should be told that, or shown it, or whether it should
+just quietly send later. This is the piece with the most room in it.
+
+---
+
+## The build work, once the above is settled
+
+**Notice a new release on a tab left open.** A device that never closes the tab
+keeps serving the version it cached. Check for a new release when the tab comes
+back into focus. There is already a recovery path if something breaks; this is
+the missing half that checks before it breaks.
+
+**Ask the browser to keep the cache.** One call once the 64-card pass finishes,
+asking the browser to treat this cache as worth keeping rather than clearing it
+under pressure. It is the only lever the web offers, and it does not solve the
+iPhone limit above.
+
+**Write one test that fails loudly.** Nothing anywhere tests the offline path, so
+it can break silently on any deploy. The right shape drives a real browser,
+takes it offline, and checks a card renders with its picture. Note before
+starting: the phone test suite is currently red in bulk on main (separate to-do
+item), so this needs its own honest baseline rather than being dropped into a
+suite nobody trusts.
+
+**Decide about the reflection queue.** Whatever question 4 settles, the draining
+behaviour on a poor connection has never been exercised.
+
+---
+
+## Things that will silently break this
+
+- The three files that bootstrap the offline layer must keep their no-cache
+  headers, or the network edge can serve a stale copy after a deploy and no
+  amount of correctness on the device will help.
+- Any new card-art image needs its cross-origin attribute. Without it the
+  browser makes a request the offline layer cannot safely store, and the browser
+  charges several megabytes of quota for each one. The attribute is now recorded
+  in the design source too, so re-generating the entry page should keep it.
+- The live endpoints and the printed-plaque redirects are deliberately excluded
+  from the offline fallback. They must never be answered from cache.
+- The city list is regenerated by a script. If that script's output order ever
+  stops being stable, every deploy re-ships four megabytes to every visitor even
+  when nothing changed.
