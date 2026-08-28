@@ -86,13 +86,13 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 - [ ] Decide whether to commit the full deep-pass rewrite for the remaining 61 I Ching and Body cards   → Plan: [oracle/TODO.md](oracle/TODO.md) _(band: you-required)_ _(effort: moderate)_
 
-- [ ] Start writing the 384 changing-line texts for the oracle via `/cast-content`   → PR: [#6](https://github.com/technicianofthesacred/mandalacodes/pull/6) _(band: you-required)_ _(effort: moderate)_
+- [ ] Start writing the 384 changing-line texts for the oracle via `/cast-content`   → PR: [#6](https://github.com/adroart/mandalacodes/pull/6) _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Decide what to do with the leftover local atlas work branch and its uncommitted files _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Pick the canonical web address: redirect www to the bare domain for SEO _(band: you-required)_ _(effort: moderate)_
 
-- [ ] Close Adrian-Website PR #110 in favour of the newer PR #113   → PRs: [#110](https://github.com/technicianofthesacred/Adrian-Website/pull/110), [#113](https://github.com/technicianofthesacred/Adrian-Website/pull/113) _(band: you-required)_ _(effort: moderate)_
+- [ ] Close Adrian-Website PR #110 in favour of the newer PR #113   → PRs: [#110](https://github.com/adroart/Adrian-Website/pull/110), [#113](https://github.com/adroart/Adrian-Website/pull/113) _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Reprint the physical cards so the QR codes point at the new mandalacodes.com domain _(band: you-required)_ _(effort: moderate)_
 
@@ -115,14 +115,14 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Reprint QR cards** — physical cards so the QR codes point at the new mandalacodes.com domain _(you · quick)_ _(routed → Backlog)_
   The printed plaques still encode the old URL, so scanners may land on a stale path. Done when a fresh batch encoding `mandalacodes.com/qr/:n` is printed and verified.
 - [x] **Launch sign-in** — DONE 2026-06-15. Account sign-in is live on mandalacodes.com via self-owned Better Auth (email code + password + Google), same-origin, sharing the `adrian-website` collector DB. The old Clerk plan is superseded (see Phase 1b below).
-- [ ] **Close PR #110** — supersede the older Adrian-Website PR #110 with the newer PR #113 _(you · quick)_ → PRs: [#110](https://github.com/technicianofthesacred/Adrian-Website/pull/110), [#113](https://github.com/technicianofthesacred/Adrian-Website/pull/113) _(routed → Backlog)_
-  Two overlapping PRs exist; the newer one replaces the old, so the stale one should be closed to avoid confusion. Done when [#110](https://github.com/technicianofthesacred/Adrian-Website/pull/110) is closed in favour of [#113](https://github.com/technicianofthesacred/Adrian-Website/pull/113).
+- [ ] **Close PR #110** — supersede the older Adrian-Website PR #110 with the newer PR #113 _(you · quick)_ → PRs: [#110](https://github.com/adroart/Adrian-Website/pull/110), [#113](https://github.com/adroart/Adrian-Website/pull/113) _(routed → Backlog)_
+  Two overlapping PRs exist; the newer one replaces the old, so the stale one should be closed to avoid confusion. Done when [#110](https://github.com/adroart/Adrian-Website/pull/110) is closed in favour of [#113](https://github.com/adroart/Adrian-Website/pull/113).
 - [ ] **Canonical domain** — redirect www to the bare domain so SEO consolidates on one address _(you · quick)_ _(routed → Backlog)_
   Serving both www and bare domains splits link equity and confuses crawlers. Done when www.mandalacodes.com 301-redirects to the bare mandalacodes.com.
 - [ ] **Atlas work branch** — decide what to do with the leftover local atlas/Clerk branch and its uncommitted files _(you · moderate)_ _(routed → Backlog)_
   Unmerged local work risks being lost or duplicating effort already shipped elsewhere. Done when the branch is either merged, archived, or discarded and the working tree is clean.
-- [ ] **Changing-line texts** — start writing the 384 I Ching changing-line texts via `/cast-content` _(you · deep)_ → PR: [#6](https://github.com/technicianofthesacred/mandalacodes/pull/6) _(routed → Backlog)_
-  Casts that produce moving lines have no per-line reading until these are authored in Adrian's voice. Done when the 384 line texts are drafted via `/cast-content` and landed through PR [#6](https://github.com/technicianofthesacred/mandalacodes/pull/6).
+- [ ] **Changing-line texts** — start writing the 384 I Ching changing-line texts via `/cast-content` _(you · deep)_ → PR: [#6](https://github.com/adroart/mandalacodes/pull/6) _(routed → Backlog)_
+  Casts that produce moving lines have no per-line reading until these are authored in Adrian's voice. Done when the 384 line texts are drafted via `/cast-content` and landed through PR [#6](https://github.com/adroart/mandalacodes/pull/6).
 - [ ] **Verify interconnection** — click through the interconnection branch on a preview deploy (Relations seats, atlas deep links, birth-place marker, steward picker) before merging _(you · quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify _(routed → Backlog)_
   The deck↔atlas↔profile bridges need a human pass on a real preview before they reach main. Done when each listed surface is confirmed working on a preview deploy. See [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify.
 
@@ -143,7 +143,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 ### Done
 
 - ~~Decouple `ClerkProvider` from the accounts launch flag~~, branch `claude/migration-completion-requirements-eaDFz`, 2026-06-02. Provider now mounts whenever a Clerk key is present so admin sign-in + atlas steward pages stop throwing "must be wrapped in ClerkProvider"; the accounts flag gates the public surface via `available`. Also fixed stale Stripe comments, the `wrangler.toml` "no tables yet" note, and the missing `CLERK_WEBHOOK_SECRET` in the secrets-sync script/doc.
-- ~~Remove dead oracle code from Adrian-Website~~, Adrian-Website PR #113 ([link](https://github.com/technicianofthesacred/Adrian-Website/pull/113)), 2026-05-29. Deletes all oracle components / data / scripts / assets, replaces `/oracle` with a directory page that links to mandalacodes, 301-redirects every old card URL via `_redirects`. Awaiting merge.
+- ~~Remove dead oracle code from Adrian-Website~~, Adrian-Website PR #113 ([link](https://github.com/adroart/Adrian-Website/pull/113)), 2026-05-29. Deletes all oracle components / data / scripts / assets, replaces `/oracle` with a directory page that links to mandalacodes, 301-redirects every old card URL via `_redirects`. Awaiting merge.
 
 ## Oracle deck content (Universal Language)
 

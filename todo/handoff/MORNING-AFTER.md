@@ -135,7 +135,7 @@ To activate:
 2. Generate a fine-grained PAT with Contents: Read/Write on that repo.
 3. Set these three environment variables on the **mandalacodes** Pages project:
    - `GITHUB_MIRROR_TOKEN` — the PAT (encrypted)
-   - `GITHUB_MIRROR_REPO` — `owner/repo` (e.g. `technicianofthesacred/adrian-atlas-mirror`)
+   - `GITHUB_MIRROR_REPO` — `owner/repo` (e.g. `adroart/adrian-atlas-mirror`)
    - `GITHUB_MIRROR_PATH` — path inside the repo (e.g. `atlas/public.json`)
 4. Redeploy.
 

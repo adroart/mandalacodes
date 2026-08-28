@@ -148,7 +148,7 @@ bold "Remaining — manual, browser / other-repo (cannot be scripted)"
 # ----------------------------------------------------------------------------
 cat <<'MANUAL'
   A) GitHub mirror (external tamper evidence):
-     1. Create a public repo, e.g. technicianofthesacred/adrian-atlas-mirror
+     1. Create a public repo, e.g. adroart/adrian-atlas-mirror
      2. Fine-grained PAT, Contents: Read/Write, that repo only
      3. Set on the mandalacodes Pages project, then redeploy:
           echo "<PAT>"                       | wrangler pages secret put GITHUB_MIRROR_TOKEN --project-name mandalacodes

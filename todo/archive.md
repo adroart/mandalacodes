@@ -13,10 +13,10 @@
 - [<] (Optional) Add embeddings via Workers AI + Vectorize if the concept ontology misses real queries   → Plan: [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md) _(parked → TODO.md)_
 - [<] Reprint the physical cards so the QR codes point at the new mandalacodes.com domain _(parked → TODO.md)_
 - [<] Launch sign-in on the live Mandala Codes site   → Plan: [clerk-launch.md](todo/plans/clerk-launch.md) _(parked → TODO.md)_
-- [<] Close Adrian-Website PR #110 in favour of the newer PR #113   → PRs: [#110](https://github.com/technicianofthesacred/Adrian-Website/pull/110), [#113](https://github.com/technicianofthesacred/Adrian-Website/pull/113) _(parked → TODO.md)_
+- [<] Close Adrian-Website PR #110 in favour of the newer PR #113   → PRs: [#110](https://github.com/adroart/Adrian-Website/pull/110), [#113](https://github.com/adroart/Adrian-Website/pull/113) _(parked → TODO.md)_
 - [<] Pick the canonical web address: redirect www to the bare domain for SEO _(parked → TODO.md)_
 - [<] Decide what to do with the leftover local atlas/Clerk work branch and its uncommitted files _(parked → TODO.md)_
-- [<] Start writing the 384 changing-line texts for the oracle via `/cast-content`   → PR: [#6](https://github.com/technicianofthesacred/mandalacodes/pull/6) _(parked → TODO.md)_
+- [<] Start writing the 384 changing-line texts for the oracle via `/cast-content`   → PR: [#6](https://github.com/adroart/mandalacodes/pull/6) _(parked → TODO.md)_
 - [<] Take mandalacodes login to production with its OWN free Clerk instance (own domain + DNS + Google OAuth), still pointed at the shared `adrian-website` D1 so collectors stay unified. NO paid satellite.   → Plan: [clerk-production-launch.md](../Adrian-Website/todo/plans/clerk-production-launch.md) § D _(parked → TODO.md)_
 - [<] Apply the D1 schema to the remote database: `wrangler d1 migrations apply mandalacodes-oracle --remote` (until then every account Function returns `503 db_not_configured`)   → Schema: [migrations/001_init.sql](migrations/001_init.sql) _(parked → TODO.md)_
 - [<] Set the Clerk env vars on Cloudflare Pages, including `CLERK_WEBHOOK_SECRET` (now wired into the secrets-sync script + doc)   → Plan: [docs/secrets-sync.md](docs/secrets-sync.md) _(parked → TODO.md)_

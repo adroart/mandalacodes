@@ -5,7 +5,7 @@ import { config, collection, fields } from '@keystatic/core'
 // src/content/articles/ — commit and push to publish.
 //
 // To edit from the browser in production later, switch to GitHub mode:
-//   storage: { kind: 'github', repo: { owner: 'technicianofthesacred', name: 'mandalacodes' } }
+//   storage: { kind: 'github', repo: { owner: 'adroart', name: 'mandalacodes' } }
 // and change each collection path to 'content-site/src/content/articles/*'
 // (GitHub mode resolves paths from the repo root, local mode from this folder).
 // That also requires creating the Keystatic GitHub App — see

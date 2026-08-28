@@ -77,7 +77,7 @@ Until set: `/api/atlas/sale` and `/api/atlas/claim-bridge` return 503
 
 ## 3. GitHub mirror (MORNING-AFTER step e) — tamper evidence
 
-1. Create a public repo, e.g. `technicianofthesacred/adrian-atlas-mirror`.
+1. Create a public repo, e.g. `adroart/adrian-atlas-mirror`.
 2. Fine-grained PAT, Contents: Read/Write, that repo only.
 3. Set on the mandalacodes Pages project: `GITHUB_MIRROR_TOKEN` (encrypted),
    `GITHUB_MIRROR_REPO` (`owner/repo`), `GITHUB_MIRROR_PATH`

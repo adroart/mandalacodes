@@ -13,7 +13,7 @@ energy, the art match — the recommendation API), **money on Adrian Rasmussen**
 This work spans two repos. A Claude session scoped to `mandalacodes` can't see
 the art site; add it:
 
-- The repo is **`technicianofthesacred/Adrian-Website`**.
+- The repo is **`adroart/Adrian-Website`**.
 - In a session, run `list_repos` (mcp**claude-code-remote**list_repos) to confirm
   it's available, then `add_repo` to pull it into scope. (Or start a session with
   both repos.)

@@ -4,13 +4,29 @@
  * no-ops unless GITHUB_MIRROR_TOKEN, GITHUB_MIRROR_REPO, and
  * GITHUB_MIRROR_PATH env vars are all present.
  *
- * Repo shape expected: a public GitHub repo where the file at
- * GITHUB_MIRROR_PATH (e.g. "atlas/public.json") is overwritten on each
- * write. Software Heritage Foundation archives all public GitHub repos
- * indefinitely, giving us free multi-region redundancy.
+ * Repo shape expected: a GitHub repo where the file at GITHUB_MIRROR_PATH
+ * (e.g. "atlas/public.json") is overwritten on each write.
+ *
+ * DURABILITY CAVEAT (2026-08-28): the original design rested on Software
+ * Heritage Foundation archiving all PUBLIC GitHub repos indefinitely, which
+ * gave free multi-region redundancy and external tamper-evidence. The mirror
+ * repo (adroart/adrian-atlas-mirror) was made PRIVATE during the GitHub
+ * account split. Software Heritage only ingests public repositories, so that
+ * archival property NO LONGER HOLDS. Writes still succeed — a PAT with access
+ * can push to a private repo — but the mirror is now a second copy under the
+ * same owner, not an independently archived one.
+ *
+ * The trade cuts both ways: private means the projection is now ERASABLE,
+ * which is strictly safer for anything personal that leaks into it. What is
+ * lost is the external tamper-evidence the ledger architecture assumes. If
+ * that property matters, the repo must go public again; if it does not,
+ * docs/ledger-architecture.md and docs/ledger-successor.md should stop
+ * asserting it. Unresolved as of this comment — the mirror has never been
+ * configured (the repo is empty), so nothing is broken today.
  *
  * Setup steps (for the successor doc):
- *   1. Create a public GitHub repo (e.g. adrian-atlas-mirror).
+ *   1. Create the mirror repo (e.g. adrian-atlas-mirror). See the caveat
+ *      above before deciding public vs private.
  *   2. Generate a fine-grained PAT with Contents: Read/Write on that repo.
  *   3. Set GITHUB_MIRROR_TOKEN, GITHUB_MIRROR_REPO (e.g. "user/repo"),
  *      GITHUB_MIRROR_PATH on the Cloudflare Pages project.

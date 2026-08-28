@@ -58,7 +58,7 @@ Current set (updated 2026-07-15 — auth is self-owned Better Auth, not Clerk):
 | `SALE_WEBHOOK_SECRET` | encrypted | **both** | HMAC-SHA256 verification of sale webhooks from adrianrasmussen.com; mandalacodes verifies, adrianrasmussen.com signs. Same value on both projects. Generate with `openssl rand -hex 32`. See `todo/handoff/adrian-website/sale-webhook-spec.md`. |
 | `CLAIM_BRIDGE_SECRET` | encrypted | **both** | HMAC-SHA256 verification of the contested-claim bridge (`functions/api/atlas/claim-bridge.ts`): adrianrasmussen.com signs the request, mandalacodes verifies. Same value on both projects. Distinct from `SALE_WEBHOOK_SECRET` — do not reuse it. Generate with `openssl rand -hex 32`. |
 | `GITHUB_MIRROR_TOKEN` | encrypted | mandalacodes | Fine-grained GitHub PAT (Contents: Read/Write) for the public `public.json` mirror. Together with the two vars below, activates the durability mirror in `functions/api/atlas/_mirror.ts`. |
-| `GITHUB_MIRROR_REPO` | plaintext | mandalacodes | `owner/repo` of the public mirror repository (e.g. `technicianofthesacred/adrian-atlas-mirror`). |
+| `GITHUB_MIRROR_REPO` | plaintext | mandalacodes | `owner/repo` of the public mirror repository (e.g. `adroart/adrian-atlas-mirror`). |
 | `GITHUB_MIRROR_PATH` | plaintext | mandalacodes | Path inside the mirror repo (e.g. `atlas/public.json`). Only `public.json` is ever mirrored — never the ledger or stewards files. |
 
 The sync script `[skip]`s any var with no value in Infisical, so an

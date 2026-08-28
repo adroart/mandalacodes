@@ -203,7 +203,7 @@ Not required to launch (everything degrades gracefully without it), but
 listed in both handoff docs as part of go-live:
 
 ```bash
-# 1. Create a public repo, e.g. technicianofthesacred/adrian-atlas-mirror
+# 1. Create a public repo, e.g. adroart/adrian-atlas-mirror
 # 2. Generate a fine-grained PAT, Contents: Read/Write, scoped to that repo only
 # 3. Set on the mandalacodes Pages project:
 echo "<PAT>"                       | wrangler pages secret put GITHUB_MIRROR_TOKEN --project-name mandalacodes
