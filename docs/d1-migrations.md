@@ -47,6 +47,33 @@ command against `adrian-website`.
    confirm the filename you're about to add doesn't collide with one
    already used (or about to be used) in the other repo.
 
+## Reconciled 2026-08-31
+
+The journal had drifted from the database and was one command away from doing
+damage. It held all 48 of Adrian-Website's filenames and none of this repo's, so
+`wrangler d1 migrations list` from here reported 002 through 005 as pending
+while every table and index they create already existed. Anyone who took that
+report at face value and ran `migrations apply` would have re-run the auth
+migration against a live database.
+
+What was checked, and what it showed:
+
+- Every object all five files create was looked up in the live database. All of
+  them exist, including `idx_account_userId` and `idx_session_userId`, which a
+  case-sensitive first check wrongly reported missing. Nothing needed creating.
+- `001_init.sql` is the collision this document describes. It is in the journal
+  under Adrian-Website's file, not this one, and its six objects
+  (users, profiles, collections, collection_items and their two indexes) are all
+  present, so the shadowing did no harm here. It stays as it is: renaming an
+  applied file is rule 2 above.
+- `003_rate_limit.sql` was applied by hand with `d1 execute --file` on
+  2026-08-31, because `migrations apply` would have taken 002, 004 and 005 with
+  it. That is why it was missing from the journal.
+
+002 through 005 are now recorded as applied, and both checkouts report nothing
+pending. The recommendation below is still the real fix; this only stops the
+journal from lying in the meantime.
+
 ## Recommended long-term fix
 
 Consolidate all migrations for the `adrian-website` database into one repo
