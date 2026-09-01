@@ -32,13 +32,16 @@ binding = "AI"
 # (used here) plus orders/cart/invoices (used only on adrianrasmussen.com).
 # Apply/evolve the schema from the Adrian-Website repo, NOT from here, so the
 # two never diverge. The old mandalacodes-oracle DB (c8d07902…) is retired.
-# In practice this repo's migrations/ dir also targets this DB (see
-# docs/d1-migrations.md for the resulting filename-collision hazard and the
-# safe-apply rules before running any migration here).
+# That is now enforced rather than merely stated: this repo's migrations/ dir was
+# consolidated into Adrian-Website on 2026-09-01 and removed here, so there is no
+# second directory able to claim a filename in the one shared journal.
 # The public oracle reader is stateless; only the /api/{auth,profile,collections}
 # Functions and the atlas rate-limiter query this DB.
 [[d1_databases]]
 binding = "DB"
 database_name = "adrian-website"
 database_id = "d0e93f04-203c-4dbd-945a-e14a9a364dd5"
-migrations_dir = "migrations"
+# No migrations_dir on purpose. Adrian-Website owns this schema and holds every
+# migration for it. Two repos migrating one database share a single journal keyed
+# by filename, so the first repo to use a name silently locks the other out of it,
+# with no error. Consolidated 2026-09-01; see docs/d1-migrations.md.

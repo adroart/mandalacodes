@@ -1,86 +1,45 @@
-# D1 migration hazard: shared `adrian-website` database, two repos
+# D1 migrations for `adrian-website`: one repo owns them
 
-This doc exists because the setup below can silently corrupt a fresh
-database with no error. Read it before running any `wrangler d1 migrations`
-command against `adrian-website`.
+**This repo no longer has a `migrations/` directory, and its `wrangler.toml` no
+longer names one.** Every migration for the shared `adrian-website` database
+lives in the Adrian-Website repo. Add new ones there and apply them from there.
 
-## The hazard
+## Why it works this way
 
-- The `adrian-website` D1 database (binding `DB`, id
-  `d0e93f04-203c-4dbd-945a-e14a9a364dd5`) is shared between this repo
-  (mandalacodes) and the Adrian-Website repo.
-- Both repos have their own `migrations/` directory pointed at the same
-  database. D1 tracks which migrations have run in a `d1_migrations` journal
-  table **keyed by filename**, not by content or by repo.
-- Both repos independently define a file named `001_init.sql`, and the two
-  files have **different content** (different tables). On a fresh database,
-  whichever repo applies its migrations first "claims" the filename
-  `001_init.sql` in the journal. The other repo's `001_init.sql` is then
-  considered already-applied and is silently skipped, its tables are never
-  created, and `wrangler` reports no error.
-- The same collision risk exists for any future filename the two repos
-  happen to reuse (e.g. `002_*.sql`), not just `001_init.sql`.
+The `adrian-website` D1 database (binding `DB`, id
+`d0e93f04-203c-4dbd-945a-e14a9a364dd5`) is used by both this site and
+Adrian-Website. D1 records which migrations have run in a `d1_migrations`
+journal **keyed by filename** — not by content, and not by repo. One database,
+one journal, shared by whoever points at it.
 
-## Stated policy vs. reality
+So two repos with their own migrations against it is not a tidiness problem, it
+is a correctness one: the first repo to use a filename claims it, and the other
+repo's file of that name is then considered already applied and silently
+skipped. Its tables are never created and `wrangler` reports no error.
 
-- `wrangler.toml` in this repo states the policy: Adrian-Website owns the
-  schema, and migrations should be applied/evolved from that repo, not this
-  one.
-- Reality: this repo also has a `migrations/` directory
-  (`migrations_dir = "migrations"`) targeting the same `adrian-website`
-  database, and it does get used, most recently for
-  `003_rate_limit.sql`. The policy is aspirational, not enforced by tooling.
+That is not hypothetical. Both repos defined `001_init.sql` with different
+content. Adrian-Website's ran; this repo's never did, and never could.
 
-## Safe operating rules
+## What was done, 2026-09-01
 
-1. **Never apply migrations to a fresh `adrian-website` database** without
-   first reconciling both repos' journals. Check what's already applied in
-   each checkout before running anything.
-2. **Never rename an already-applied migration file.** D1 matches by
-   filename; a rename makes D1 think the migration hasn't run and reapplies
-   it (which can fail on `CREATE TABLE` or duplicate data).
-3. **Before applying any future migration, check both repos first:**
-   ```bash
-   wrangler d1 migrations list adrian-website --remote
-   ```
-   Run this from BOTH checkouts (mandalacodes and Adrian-Website) and
-   confirm the filename you're about to add doesn't collide with one
-   already used (or about to be used) in the other repo.
+- `002_better_auth.sql`, `003_rate_limit.sql`,
+  `004_mandalacodes_oracle_reflections.sql` and
+  `005_mandalacodes_oracle_invocations.sql` moved to
+  `Adrian-Website/migrations/` **under their exact filenames**. The journal
+  matches on the name, so keeping it is what makes them still count as applied.
+  Renaming any of them would make D1 run them again.
+- `001_init.sql` was deleted rather than moved. Adrian-Website's `001_init.sql`
+  is a superset of it — the same users, profiles, collections and
+  collection_items plus the cart and order tables — and it is the one that
+  actually ran. Every column this repo's version declared was confirmed present
+  in the live database before deleting it. It stays in this repo's git history.
+- Both checkouts were checked afterwards: no migrations pending from either.
 
-## Reconciled 2026-08-31
+## Adding a migration now
 
-The journal had drifted from the database and was one command away from doing
-damage. It held all 48 of Adrian-Website's filenames and none of this repo's, so
-`wrangler d1 migrations list` from here reported 002 through 005 as pending
-while every table and index they create already existed. Anyone who took that
-report at face value and ran `migrations apply` would have re-run the auth
-migration against a live database.
+Add the file in `Adrian-Website/migrations/`, apply it from that checkout, and
+give it a name no existing file uses. If it is for a Mandala Codes feature, say
+so in the name (`NNN_mandalacodes_*.sql`) so its origin stays readable.
 
-What was checked, and what it showed:
-
-- Every object all five files create was looked up in the live database. All of
-  them exist, including `idx_account_userId` and `idx_session_userId`, which a
-  case-sensitive first check wrongly reported missing. Nothing needed creating.
-- `001_init.sql` is the collision this document describes. It is in the journal
-  under Adrian-Website's file, not this one, and its six objects
-  (users, profiles, collections, collection_items and their two indexes) are all
-  present, so the shadowing did no harm here. It stays as it is: renaming an
-  applied file is rule 2 above.
-- `003_rate_limit.sql` was applied by hand with `d1 execute --file` on
-  2026-08-31, because `migrations apply` would have taken 002, 004 and 005 with
-  it. That is why it was missing from the journal.
-
-002 through 005 are now recorded as applied, and both checkouts report nothing
-pending. The recommendation below is still the real fix; this only stops the
-journal from lying in the meantime.
-
-## Recommended long-term fix
-
-Consolidate all migrations for the `adrian-website` database into one repo
-(Adrian-Website, per the stated schema-ownership policy) and delete the
-`migrations/` directory here once that's done.
-
-Until that happens, give any new migration file in this repo a
-repo-distinct name so a filename collision becomes impossible, e.g. prefix
-mandalacodes-originated files clearly (`004_mandalacodes_*.sql`) rather than
-reusing the plain sequential names both repos have used so far.
+The two rules that outlive this note: **never rename an applied migration**, and
+**never give this database a second migrations directory.**
