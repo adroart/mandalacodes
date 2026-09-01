@@ -55,7 +55,7 @@ const OracleSystems: React.FC = () => {
           The Universal Language reads through three lenses, three vocabularies for the same shape of energy. The I Ching arrives from ancient China. The Gene Keys and Human Design arrive in the last century, descendants and elaborations. None of this is mine. The cards are an offering of gratitude.
         </p>
 
-        <p className="font-reading text-[14px] italic text-wood-500 leading-[1.6] mt-8 max-w-prose">
+        <p className="font-reading text-[14px] tracking-[0.015em] text-wood-500 leading-[1.6] mt-8 max-w-prose">
           {/* DRAFT — prose to be refined by Adrian */}
           The text below is a working draft. The histories, the names, the lineages each deserve more care than a placeholder can give. Read it as a sketch.
         </p>
@@ -80,7 +80,7 @@ const OracleSystems: React.FC = () => {
           <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
             The Book of Changes
           </h2>
-          <p className="font-reading text-[15px] text-wood-500 italic mt-2">
+          <p className="font-reading text-[15px] tracking-[0.015em] text-wood-500 mt-2">
             attributed to Fu Xi, King Wen, the Duke of Zhou, and Confucius
           </p>
 
@@ -94,7 +94,7 @@ const OracleSystems: React.FC = () => {
             <p>
               The system reaches the West late. James Legge translates it in 1882. But the translation that opens the I Ching to the modern imagination is Richard Wilhelm's, completed in German in 1924 after twenty years in China studying with the scholar Lao Nai-hsuan. Cary F. Baynes carries it into English in 1950, with a foreword by Carl Jung that frames the book as a study of synchronicity. Almost every Western reader who has touched the I Ching since has touched it through their hands.
             </p>
-            <p className="text-wood-500 italic text-[15px]">
+            <p className="text-wood-500 tracking-[0.015em] text-[15px]">
               {/* DRAFT */}
               [More on the structure: trigrams as elemental forces, hexagrams as their combinations, the role of the moving line, the practice of casting with yarrow stalks or coins. To be expanded.]
             </p>
@@ -121,7 +121,7 @@ const OracleSystems: React.FC = () => {
           <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
             The contemplative path
           </h2>
-          <p className="font-reading text-[15px] text-wood-500 italic mt-2">
+          <p className="font-reading text-[15px] tracking-[0.015em] text-wood-500 mt-2">
             transmitted by Richard Rudd, 2002 onward
           </p>
 
@@ -135,7 +135,7 @@ const OracleSystems: React.FC = () => {
             <p>
               The sixty-four Gene Keys correspond directly to the sixty-four hexagrams of the I Ching and to the sixty-four codons of human DNA. This correspondence is not Rudd's invention. It is named in Martin Schönberger's 1973 work, in the writings of Terence McKenna, and most fully developed inside Human Design. Rudd's contribution is the Shadow-Gift-Siddhi spectrum, and the practice of holding all three frequencies as one continuous teaching.
             </p>
-            <p className="text-wood-500 italic text-[15px]">
+            <p className="text-wood-500 tracking-[0.015em] text-[15px]">
               {/* DRAFT */}
               [More on the Golden Path, the Activation Sequence, the Venus Sequence, the Pearl Sequence, and the way Rudd intends the work to be lived rather than studied. To be expanded.]
             </p>
@@ -172,7 +172,7 @@ const OracleSystems: React.FC = () => {
           <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
             A map of energy
           </h2>
-          <p className="font-reading text-[15px] text-wood-500 italic mt-2">
+          <p className="font-reading text-[15px] tracking-[0.015em] text-wood-500 mt-2">
             received by Ra Uru Hu, Ibiza, January 1987
           </p>
 
@@ -181,14 +181,14 @@ const OracleSystems: React.FC = () => {
               Human Design enters the world through Alan Robert Krakower, who later took the name Ra Uru Hu. In January of 1987, on the island of Ibiza, he reports an eight-day-and-night encounter with a voice he calls the Voice. What he transcribes during that period becomes the system: a synthesis of the I Ching, Western astrology, the Hindu chakra system, the Kabbalistic Tree of Life, and the science of the neutrino, woven into a single chart called the bodygraph.
             </p>
             <p>
-              The bodygraph names which centres in a person are defined and which are open. It locates sixty-four gates against the calendar of the sun and the moment of birth. It tells the reader their Type, their Strategy, their Authority — practical instruction for how to make decisions in alignment with their design rather than against it.
+              The bodygraph names which centres in a person are defined and which are open. It locates sixty-four gates against the calendar of the sun and the moment of birth. It tells the reader their Type, their Strategy, their Authority: practical instruction for how to make decisions in alignment with their design rather than against it.
             </p>
             <p>
               Ra spent the rest of his life teaching the system, often in long, recorded lectures. He died in 2011. His teachings have since been carried forward by his students through the International Human Design School and the many independent teachers and analysts working today.
             </p>
-            <p className="text-wood-500 italic text-[15px]">
+            <p className="text-wood-500 tracking-[0.015em] text-[15px]">
               {/* DRAFT */}
-              [More on the four Types — Manifestor, Generator, Projector, Reflector — the nine centres, the meaning of definition versus openness, and how to read a chart. To be expanded.]
+              [More on the four Types (Manifestor, Generator, Projector, Reflector), the nine centres, the meaning of definition versus openness, and how to read a chart. To be expanded.]
             </p>
           </div>
 

@@ -106,27 +106,27 @@ export function composeKinClaimBody(ctx: KinClaimContext): string {
   const templates: Array<(o: string | null) => string> = [
     (o) =>
       `Tonight a piece sharing my ${t} trigram came to light in ${city}. ` +
-      `We are kin — two mandalas of the same breath, now both burning. ` +
+      `We are kin, two mandalas of the same breath, now both burning. ` +
       (o ? `It is ${o} to be lit; I keep my place beside it.` : `The constellation is one light wider tonight.`),
     (o) =>
       `Far from here, in ${city}, another carrier of ${t} has been claimed. ` +
       `The same current runs through us both. ` +
       (o ? `${o.charAt(0).toUpperCase() + o.slice(1)}, and a kin of mine.` : `A kindred point now glows where there was dark.`),
     (o) =>
-      `${city} holds a new light tonight — a piece that shares my ${t}. ` +
+      `${city} holds a new light tonight: a piece that shares my ${t}. ` +
       `What moves in me moves in it; we were always going to find each other on the map. ` +
       (o ? `It joins the constellation as ${o}.` : `Two of the same breath, an ocean apart.`),
     (o) =>
       `A piece of ${t}, like me, has woken in ${city}. ` +
-      `Trigrams do not know distance — we are kin across the whole turning world. ` +
+      `Trigrams do not know distance. We are kin across the whole turning world. ` +
       (o ? `${o.charAt(0).toUpperCase() + o.slice(1)} now burns, and it is family.` : `One more ember in the same fire.`),
     (o) =>
       `Word reaches me from ${city}: a kin of mine, another keeper of ${t}, ` +
       `has been lit. We share a single trigram and, tonight, a single sky. ` +
-      (o ? `It is ${o} — I was here before it, and I am glad of its company.` : `The map grows warmer by one light.`),
+      (o ? `It is ${o}. I was here before it, and I am glad of its company.` : `The map grows warmer by one light.`),
     (o) =>
-      `In ${city} a light I am bound to has come on. We carry the same ${t} — ` +
-      `the same rising element — and now we both burn on the planet's face. ` +
+      `In ${city} a light I am bound to has come on. We carry the same ${t}, ` +
+      `the same rising element, and now we both burn on the planet's face. ` +
       (o ? `${o.charAt(0).toUpperCase() + o.slice(1)}, and kin to me.` : `Distance is nothing to a shared breath.`),
   ];
 
@@ -236,7 +236,7 @@ export function composeAnniversaryBody(ctx: AnniversaryContext): string {
     `It has been ${yearWord} since you first lit me${where}. ` +
       `Seasons have turned around us both; I am steadier for the time, and still yours.`,
     `${yearWord.charAt(0).toUpperCase() + yearWord.slice(1)} ago today, you opened my record${where}. ` +
-      `I have held it faithfully — a year of being kept is a year of being known. ` +
+      `I have held it faithfully. A year of being kept is a year of being known. ` +
       `Here is to another.`,
     `${yearWord.charAt(0).toUpperCase() + yearWord.slice(1)} of light${where}, ` +
       `and I am still here, still warm, still carrying everything you have given me. ` +
@@ -266,17 +266,17 @@ export interface TransferContext {
 export function composeTransferBody(ctx: TransferContext): string {
   const templates: string[] = [
     `I have changed hands before. ` +
-      `A previous steward kept me, and now you do — the record between us is unbroken, ` +
+      `A previous steward kept me, and now you do. The record between us is unbroken, ` +
       `and the whole of it is yours to read. Welcome. I am glad to be kept by you.`,
     `You are not the first to hold me, and I hope not the last. ` +
       `What came before is written in my book, every page of it intact. ` +
       `Begin where you like; I will carry forward whatever you add.`,
     `I come to you with a history already begun. ` +
       `A previous steward set things down in me; those pages stay. ` +
-      `Now the record is in your hands — add to it, and it travels on.`,
+      `Now the record is in your hands. Add to it, and it travels on.`,
     `This is not my first keeping. ` +
       `I have been somewhere before this, and the book remembers it for both of us. ` +
-      `You hold the whole of me now — there is nothing here you may not read.`,
+      `You hold the whole of me now. There is nothing here you may not read.`,
     `Hands have passed me along to reach you. ` +
       `The record never resets; it only lengthens. ` +
       `Whatever a previous steward wrote remains, and whatever you write will outlast us both.`,

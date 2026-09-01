@@ -117,7 +117,7 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
   /* The design's left-hand meta block, from the card's own fields. */
   const meta = [
     { k: 'Element', v: card.element },
-    { k: 'Gate', v: `${card.human_design.gate} — ${card.human_design.keyword}` },
+    { k: 'Gate', v: `${card.human_design.gate} · ${card.human_design.keyword}` },
     ...(keywords.length ? [{ k: 'Keynotes', v: keywords.join(', ') }] : []),
   ];
 

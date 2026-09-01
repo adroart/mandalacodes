@@ -128,7 +128,7 @@ const BirthTimeModal: React.FC<{
               Enter your birth time
             </h2>
             <p style={{
-              fontFamily: 'var(--font-reading)', fontStyle: 'italic', fontSize: 17,
+              fontFamily: 'var(--font-reading)', letterSpacing: '0.015em', fontSize: 17,
               color: C.sub, lineHeight: 1.35, margin: '0 0 18px',
             }}>
               See which cards are most relevant to you, lit throughout the oracle.
@@ -163,7 +163,7 @@ const BirthTimeModal: React.FC<{
               Your chart is lit
             </h2>
             <p style={{
-              fontFamily: 'var(--font-reading)', fontStyle: 'italic', fontSize: 17,
+              fontFamily: 'var(--font-reading)', letterSpacing: '0.015em', fontSize: 17,
               color: C.sub, lineHeight: 1.35, margin: '0 0 22px',
             }}>
               Your placement now glows across all sixty-four. Where to next?

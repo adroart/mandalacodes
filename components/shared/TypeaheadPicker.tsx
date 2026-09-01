@@ -235,7 +235,7 @@ function TypeaheadPickerInner<T>({
           role="listbox"
           className="absolute z-10 left-0 right-0 mt-1 bg-wood-50 border border-wood-300 shadow-sm"
         >
-          <li className="px-4 py-2 font-reading italic text-sm text-stone-600">{emptyMessage}</li>
+          <li className="px-4 py-2 font-reading tracking-[0.015em] text-sm text-stone-600">{emptyMessage}</li>
         </ul>
       )}
     </div>

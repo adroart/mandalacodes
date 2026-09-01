@@ -195,7 +195,7 @@ const LightweaverLanding: React.FC = () => {
           </h2>
           <ul className="space-y-3 text-sm text-wood-700 leading-relaxed list-disc pl-5">
             <li>
-              Each piece is its own small computer. It plays patterns on its own — no internet, no
+              Each piece is its own small computer. It plays patterns on its own: no internet, no
               account, no app required.
             </li>
             <li>
@@ -266,7 +266,7 @@ const LightweaverLanding: React.FC = () => {
             >
               hello@mandalacodes.com
             </a>
-            {' '}— I read every message.
+            {'. '}I read every message.
           </p>
         </section>
 

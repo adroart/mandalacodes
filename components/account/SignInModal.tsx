@@ -250,7 +250,7 @@ const SignInModal: React.FC<{
           {headline}
         </h2>
         <p style={{
-          fontFamily: 'var(--font-reading)', fontStyle: 'italic', fontSize: 17,
+          fontFamily: 'var(--font-reading)', letterSpacing: '0.015em', fontSize: 17,
           color: C.sub, lineHeight: 1.35, margin: '0 0 22px',
         }}>
           {subline}

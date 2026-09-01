@@ -76,7 +76,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               <dt style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".16em", textTransform: "uppercase", color: "#80735f", alignSelf: "center" } as unknown as React.CSSProperties}>
               {m.k}
               </dt>
-              <dd style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "17px", color: "#cdc0a8", lineHeight: "1.2" } as unknown as React.CSSProperties}>
+              <dd style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "17px", color: "#cdc0a8", lineHeight: "1.2" } as unknown as React.CSSProperties}>
               {m.v}
               </dd>
             </React.Fragment>
@@ -96,7 +96,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".14em", textTransform: "uppercase", color: "#c6a667" } as unknown as React.CSSProperties}>
             For Me
             </span>
-            <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "15px", color: "#cdc0a8", marginTop: "2px" } as unknown as React.CSSProperties}>
+            <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "#cdc0a8", marginTop: "2px" } as unknown as React.CSSProperties}>
             See where this code lives in your chart
             </span>
           </span>
@@ -109,7 +109,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".14em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
             The Piece
             </span>
-            <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "15px", color: "#80735f", marginTop: "2px" } as unknown as React.CSSProperties}>
+            <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "#80735f", marginTop: "2px" } as unknown as React.CSSProperties}>
             The physical work, made by hand
             </span>
           </span>
@@ -122,7 +122,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".14em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
             Family
             </span>
-            <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "15px", color: "#80735f", marginTop: "2px" } as unknown as React.CSSProperties}>
+            <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "#80735f", marginTop: "2px" } as unknown as React.CSSProperties}>
             People, places, and the living collection
             </span>
           </span>
@@ -136,7 +136,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <i style={{ height: "1px", flex: "1", background: "rgba(168,135,77,.18)" } as unknown as React.CSSProperties}>
           </i>
         </div>
-        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "15px", color: "#80735f", margin: "0" } as unknown as React.CSSProperties}>
+        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "#80735f", margin: "0" } as unknown as React.CSSProperties}>
         One artwork within a family of 64.
         </p>
       </aside>
@@ -168,7 +168,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "15px", letterSpacing: ".08em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
           Family
           </span>
-          <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
+          <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
           People &amp; places
           </span>
         </span>
@@ -186,7 +186,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "15px", letterSpacing: ".08em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
           For Me
           </span>
-          <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
+          <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
           Your chart
           </span>
         </span>
@@ -232,7 +232,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "15px", letterSpacing: ".08em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
           62 · All 64
           </span>
-          <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
+          <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
           Discover the codes
           </span>
         </span>
@@ -248,7 +248,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "15px", letterSpacing: ".08em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
           The Piece
           </span>
-          <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
+          <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
           Physical artwork
           </span>
         </span>
@@ -262,7 +262,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "15px", letterSpacing: ".08em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
           Share
           </span>
-          <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
+          <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
           Keep it moving
           </span>
         </span>

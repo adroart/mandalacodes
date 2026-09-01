@@ -80,3 +80,49 @@ lines, left by a malformed agent write and committed to HEAD long before tonight
 The build is fail-closed on MISSING prose but not on stray text, so both shipped
 into the live corpus. Removed. Backups at `$TMPDIR/42.bak` and `55.bak`.
 Worth a repo-wide scan for this class of artifact outside `oracle/cards/`.
+
+---
+
+## Where the night ended
+
+Two commits on `claude/site-audit-improvement-a7ba4c`, pushed to origin.
+Branch NOT merged and NOT deployed, by choice. Adrian reviews first.
+
+- `17bca2b` the writing pass, all 64 cards plus the rebuilt corpus and the
+  repaired parser tests.
+- `d6477ae` the site fixes: honest empty globe, the moved-record boundary
+  across ten screens, collections wired, the offline QR path, dead code out.
+
+Measured at the end, by me, not reported by an agent:
+- `npm run typecheck` clean.
+- `npx vitest run tests/unit` 725 pass, 1 fail in the sandbox. That one fails
+  only because `tsx` cannot bind an IPC socket here; run outside the sandbox it
+  passes, so the true number is **726 of 726**.
+- Every targeted prose formula measures zero across all 64 cards.
+
+## Checked and found NOT to be a problem
+
+An agent flagged "client-side navigation into a card route renders blank".
+Not reproducible. The deck tile is a flip card by design: the first click flips
+it, the second opens the reading. Driven properly on the live server it lands on
+`/universal-language/1` with the full reading. Do not go hunting for this bug.
+
+## Still open when the night ended
+
+The italics and em dash sweep was running against the live page. Before numbers
+on `/universal-language/1` were 29 italic text nodes and 3 em dashes in visible
+copy. If that agent did not finish, re-measure before redoing anything.
+
+One trap recorded for whoever picks it up: most of the ~1,583 em dashes in
+`oracle/cards/*.md` are STRUCTURAL DELIMITERS the parser splits on, as in
+`### The drive — Gate 24`. Removing those breaks the deck. "1 — Self-Expression"
+reaching a reader is a RENDERER fault, not a source fault. Only fix an em dash
+in the markdown after proving it sits inside prose.
+
+## Left deliberately untidy
+
+A stash tagged `dead-code-removal-wip` holds deletions that are now committed in
+HEAD, so it is redundant. It was left rather than dropped because its agent had
+not reported and might still have been holding it. Safe to drop after confirming
+nothing is running: find it by tag, never by index, since the stash stack is
+shared with other worktrees.

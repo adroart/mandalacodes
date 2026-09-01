@@ -92,8 +92,8 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   <div style={{ margin: "58px 0", textAlign: "center" } as unknown as React.CSSProperties}>
     <span style={{ display: "block", width: "44px", height: "1px", background: "rgba(168,135,77,.4)", margin: "0 auto 24px" } as unknown as React.CSSProperties}>
     </span>
-    <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontWeight: "500", fontSize: "31px", lineHeight: "1.32", color: "#e6d9be", margin: "0 auto", maxWidth: "22ch", textWrap: "balance" } as unknown as React.CSSProperties}>
-    The word becomes the thing itself — not a description of it.
+    <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.015em", fontWeight: "500", fontSize: "31px", lineHeight: "1.32", color: "#e6d9be", margin: "0 auto", maxWidth: "22ch", textWrap: "balance" } as unknown as React.CSSProperties}>
+    The word becomes the thing itself, not a description of it.
     </p>
     <span style={{ display: "block", width: "44px", height: "1px", background: "rgba(168,135,77,.4)", margin: "24px auto 0" } as unknown as React.CSSProperties}>
     </span>
@@ -109,7 +109,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <div style={{ fontFamily: "'Cinzel',serif", fontWeight: "500", fontSize: "15px", letterSpacing: ".2em", textTransform: "uppercase", color: "#c6a667" } as unknown as React.CSSProperties}>
         I Ching
         </div>
-        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "19px", color: "#8a7c60", marginTop: "6px" } as unknown as React.CSSProperties}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "19px", color: "#8a7c60", marginTop: "6px" } as unknown as React.CSSProperties}>
         {vals.hexName}
         </div>
       </div>
@@ -248,7 +248,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <p style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "10px", letterSpacing: ".28em", textTransform: "uppercase", color: "#a8874d", margin: "0 0 11px" } as unknown as React.CSSProperties}>
           The Judgement
           </p>
-          <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "20px", lineHeight: "1.5", color: "#ede4d4", margin: "0" } as unknown as React.CSSProperties}>
+          <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.015em", fontSize: "20px", lineHeight: "1.5", color: "#ede4d4", margin: "0" } as unknown as React.CSSProperties}>
           {vals.icJudge}
           </p>
         </div>
@@ -258,7 +258,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <p style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "10px", letterSpacing: ".28em", textTransform: "uppercase", color: "#a8874d", margin: "0 0 11px" } as unknown as React.CSSProperties}>
           The Image
           </p>
-          <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "20px", lineHeight: "1.5", color: "#ede4d4", margin: "0" } as unknown as React.CSSProperties}>
+          <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.015em", fontSize: "20px", lineHeight: "1.5", color: "#ede4d4", margin: "0" } as unknown as React.CSSProperties}>
           {vals.icImage}
           </p>
         </div>
@@ -281,8 +281,8 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "25px", color: "#f3ecde", margin: "0 0 6px" } as unknown as React.CSSProperties}>
         Cast the coins
         </p>
-        <p style={{ fontFamily: "'Iowan Old Style Web',serif", fontStyle: "italic", fontSize: "15px", color: "#8a7c60", margin: "0 auto 20px", maxWidth: "40ch", lineHeight: "1.5" } as unknown as React.CSSProperties}>
-        See which lines are moving for you now — where this hexagram is already turning into another.
+        <p style={{ fontFamily: "'Iowan Old Style Web',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "#8a7c60", margin: "0 auto 20px", maxWidth: "40ch", lineHeight: "1.5" } as unknown as React.CSSProperties}>
+        See which lines are moving for you now, and where this hexagram is already turning into another.
         </p>
         <a href="#top" style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".24em", textTransform: "uppercase", color: "#c6a667", borderBottom: "1px solid rgba(198,166,103,.4)", paddingBottom: "5px" } as unknown as React.CSSProperties}>
         Throw the coins →
@@ -306,7 +306,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <div style={{ fontFamily: "'Cinzel',serif", fontWeight: "500", fontSize: "15px", letterSpacing: ".2em", textTransform: "uppercase", color: "#c6a667" } as unknown as React.CSSProperties}>
         Gene Keys
         </div>
-        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "19px", color: "#8a7c60", marginTop: "6px" } as unknown as React.CSSProperties}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "19px", color: "#8a7c60", marginTop: "6px" } as unknown as React.CSSProperties}>
         {vals.gkGiftName}
         </div>
       </div>
@@ -431,7 +431,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <div style={{ fontFamily: "'Cinzel',serif", fontWeight: "500", fontSize: "15px", letterSpacing: ".2em", textTransform: "uppercase", color: "#c6a667" } as unknown as React.CSSProperties}>
         Human Design
         </div>
-        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "19px", color: "#8a7c60", marginTop: "6px" } as unknown as React.CSSProperties}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "19px", color: "#8a7c60", marginTop: "6px" } as unknown as React.CSSProperties}>
         {vals.hdCentre}
         </div>
       </div>
@@ -499,7 +499,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <div style={{ fontFamily: "'Cinzel',serif", fontWeight: "500", fontSize: "15px", letterSpacing: ".2em", textTransform: "uppercase", color: "#c6a667" } as unknown as React.CSSProperties}>
         Body
         </div>
-        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "19px", color: "#8a7c60", marginTop: "6px" } as unknown as React.CSSProperties}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "19px", color: "#8a7c60", marginTop: "6px" } as unknown as React.CSSProperties}>
         {vals.bodySite}
         </div>
       </div>
@@ -538,7 +538,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   <div style={{ margin: "58px 0", textAlign: "center" } as unknown as React.CSSProperties}>
     <span style={{ display: "block", width: "44px", height: "1px", background: "rgba(168,135,77,.4)", margin: "0 auto 24px" } as unknown as React.CSSProperties}>
     </span>
-    <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontWeight: "500", fontSize: "31px", lineHeight: "1.32", color: "#e6d9be", margin: "0 auto", maxWidth: "22ch", textWrap: "balance" } as unknown as React.CSSProperties}>
+    <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.015em", fontWeight: "500", fontSize: "31px", lineHeight: "1.32", color: "#e6d9be", margin: "0 auto", maxWidth: "22ch", textWrap: "balance" } as unknown as React.CSSProperties}>
     The world is speaking continuously. Your task is to become a better listener.
     </p>
     <span style={{ display: "block", width: "44px", height: "1px", background: "rgba(168,135,77,.4)", margin: "24px auto 0" } as unknown as React.CSSProperties}>
@@ -556,7 +556,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <div style={{ fontFamily: "'Cinzel',serif", fontWeight: "500", fontSize: "15px", letterSpacing: ".2em", textTransform: "uppercase", color: "#c6a667" } as unknown as React.CSSProperties}>
         Relations
         </div>
-        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: "19px", color: "#8a7c60", marginTop: "6px" } as unknown as React.CSSProperties}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "19px", color: "#8a7c60", marginTop: "6px" } as unknown as React.CSSProperties}>
         {vals.relTitle}
         </div>
       </div>
@@ -584,7 +584,7 @@ export const CardReadingBodyMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   <div style={{ margin: "64px auto 8px", maxWidth: "772px", padding: "0 var(--read-pad,44px)", textAlign: "center" } as unknown as React.CSSProperties}>
     <span style={{ display: "block", width: "40px", height: "1px", background: "rgba(168,135,77,.4)", margin: "0 auto 24px" } as unknown as React.CSSProperties}>
     </span>
-    <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontWeight: "500", fontSize: "26px", lineHeight: "1.35", color: "#e6d9be", margin: "0 auto 22px", maxWidth: "24ch", textWrap: "balance" } as unknown as React.CSSProperties}>
+    <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.015em", fontWeight: "500", fontSize: "26px", lineHeight: "1.35", color: "#e6d9be", margin: "0 auto 22px", maxWidth: "24ch", textWrap: "balance" } as unknown as React.CSSProperties}>
     The word becomes the thing itself. What is said from here cannot be unsaid.
     </p>
     <div style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "26px", color: "#c6a667", marginBottom: "24px" } as unknown as React.CSSProperties}>

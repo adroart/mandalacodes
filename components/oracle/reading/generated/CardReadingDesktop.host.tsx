@@ -74,7 +74,7 @@ const DEFAULT_HEADER_LABELS: CardReadingDesktopHeaderLabel[] = [
 
 const DEFAULT_META: CardReadingDesktopMetaItem[] = [
   { k: 'Element', v: 'Wind / Thunder' },
-  { k: 'Gate', v: '62 — Precision' },
+  { k: 'Gate', v: '62 · Precision' },
   { k: 'Keynotes', v: 'Discernment, Pattern, Truth' },
 ];
 

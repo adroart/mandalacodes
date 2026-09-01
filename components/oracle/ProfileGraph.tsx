@@ -507,7 +507,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .pg__detail-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
         .pg__detail-name { font-family: var(--font-display); font-size: 22px; font-weight: 500; line-height: 1.05; color: var(--color-wood-900); margin: 0; }
         .pg__detail-gate { font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.12em; color: var(--color-bronze-600); }
-        .pg__detail-art { font-family: var(--font-reading); font-size: 15px; font-style: italic; color: var(--color-wood-700); margin-top: 5px; }
+        .pg__detail-art { font-family: var(--font-reading); font-size: 15px; letter-spacing: .015em; color: var(--color-wood-700); margin-top: 5px; }
         .pg__detail-role { font-family: var(--font-reading); font-size: 15px; line-height: 1.45; color: var(--color-wood-700); margin: 13px 0 0; }
         .pg__detail-open { margin-top: 13px; border: 0; background: transparent; padding: 0; cursor: pointer; font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-bronze-600); }
         .pg__detail-open:hover { color: var(--color-bronze-700, var(--color-bronze-600)); }
@@ -546,7 +546,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         .pg__row-gate { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.18em; color: var(--color-bronze-600); }
         .pg__row-art { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.06em; color: var(--color-wood-600); margin-top: 2px; }
         .pg__row-triad { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-family: var(--font-ui); font-size: 11px; }
-        .pg__row-role { font-family: var(--font-reading); font-size: 14px; font-style: italic; color: var(--color-wood-700); margin: 8px 0 0; }
+        .pg__row-role { font-family: var(--font-reading); font-size: 14px; letter-spacing: .015em; color: var(--color-wood-700); margin: 8px 0 0; }
 
         @media (prefers-reduced-motion: reduce) {
           .pg__circle, .pg__ring, .pg__channel, .pg__node { transition: none; }

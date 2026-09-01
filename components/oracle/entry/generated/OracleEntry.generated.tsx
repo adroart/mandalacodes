@@ -53,7 +53,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: "500", fontSize: "clamp(30px,5.2vw,48px)", lineHeight: "1.04", letterSpacing: "-.01em", margin: "0 0 8px", color: "var(--ink,#262321)" }}>
           Universal Language
           </h1>
-          <p style={{ margin: "0 0 clamp(30px,4vw,48px)", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "clamp(16px,2.1vw,22px)", lineHeight: "1.3", color: "var(--accent,#8a744e)" }}>
+          <p style={{ margin: "0 0 clamp(30px,4vw,48px)", fontFamily: 'var(--font-reading)', fontStyle: "normal", textTransform: "uppercase", letterSpacing: "0.18em", fontSize: "clamp(11px,1.3vw,13px)", lineHeight: "1.6", color: "var(--accent,#8a744e)" }}>
           exploring the sixty-four
           </p>
           <div style={{ maxWidth: "min(94vw,640px)", margin: "0 auto", display: "flex", flexDirection: "column", gap: "clamp(18px,2.4vw,28px)" }}>
@@ -96,19 +96,19 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Universal Language
             </p>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "clamp(16px,2.2vw,26px)", maxWidth: "17em", margin: "0 auto" }}>
-              <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
+              <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.015em", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
               Let this oracle be an instrument of attunement to the light within, as we move through the unfolding of this mystery.
               </p>
               <span aria-hidden="true" style={{ color: "var(--accent,#8a744e)", fontSize: "13px", opacity: ".7" }}>
               ◆
               </span>
-              <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
+              <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.015em", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
               Let it nurture harmony, clarity, and compassion in thought, word, and action.
               </p>
               <span aria-hidden="true" style={{ color: "var(--accent,#8a744e)", fontSize: "13px", opacity: ".7" }}>
               ◆
               </span>
-              <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
+              <p style={{ margin: "0", fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.015em", fontWeight: "500", fontSize: "clamp(24px,4.2vw,38px)", lineHeight: "1.36", color: "var(--ink,#262321)", textWrap: "balance" }}>
               Let us move beyond thoughts and in through the heart, in devotion and celebration of the perfection of this moment.
               </p>
             </div>
@@ -193,7 +193,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             {(vals.gridCards ?? []).map((c, cIdx) => (
               <React.Fragment key={cIdx}>
                 <div data-oe-yours={c.yours ? "1" : undefined} data-oe-num={c.cardNum} style={{ position: "relative", display: "flex", flexDirection: "column" }}>
-                  <button type="button" onClick={c.onTile} aria-label={c.yours ? c.aria + " — your " + c.codeLabel : c.aria} style={{ all: "unset", cursor: "pointer", display: "block", perspective: "760px" }}>
+                  <button type="button" onClick={c.onTile} aria-label={c.yours ? c.aria + ". Your " + c.codeLabel : c.aria} style={{ all: "unset", cursor: "pointer", display: "block", perspective: "760px" }}>
                     {/* Connection label — sits ~5px above the top of the hexagram
                         bars (the glyph is centered in the square; its top edge is
                         ~21% down). Absolute so it never shifts the grid; a paler
@@ -245,7 +245,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <div data-oe="artgrid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "6px", padding: "18px 0 8px" }}>
             {(vals.gridCards ?? []).map((c, cIdx) => (
               <React.Fragment key={cIdx}>
-                <button type="button" onClick={c.onRead} aria-label={c.yours ? c.aria + " — one of your codes" : c.aria} data-oe-yours={c.yours ? "1" : undefined} style={{ all: "unset", cursor: "pointer", position: "relative", display: "block", width: "100%", aspectRatio: "1/1", overflow: "hidden" }}>
+                <button type="button" onClick={c.onRead} aria-label={c.yours ? c.aria + ". One of your codes." : c.aria} data-oe-yours={c.yours ? "1" : undefined} style={{ all: "unset", cursor: "pointer", position: "relative", display: "block", width: "100%", aspectRatio: "1/1", overflow: "hidden" }}>
                   <span style={{ position: "absolute", inset: "0", background: `${c.grad ?? ""}` }}>
                   </span>
                   <img src={c.art} alt={c.name} loading="lazy" decoding="async" crossOrigin="anonymous" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", filter: "saturate(1.08) brightness(1.03)", transition: "transform .5s ease" }} />

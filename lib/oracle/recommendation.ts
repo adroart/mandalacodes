@@ -29,14 +29,14 @@ import { PROFILE_KEYS } from '../../data/profileKeys.js';
  * for Adrian: worth a follow-up decision on which is correct.
  */
 const SPHERE_COPY: Record<ProfileKey, { label: string; role: string; sequence: string }> = {
-  lifesWork:  { label: "Life's Work", role: 'Your genius — how you are here to shine outwardly.',         sequence: 'Activation' },
+  lifesWork:  { label: "Life's Work", role: 'Your genius: how you are here to shine outwardly.',          sequence: 'Activation' },
   evolution:  { label: 'Evolution',   role: 'The core challenge that grows you; your central lesson.',     sequence: 'Activation' },
-  radiance:   { label: 'Radiance',    role: 'Your vitality and health — how you light up when aligned.',   sequence: 'Activation' },
+  radiance:   { label: 'Radiance',    role: 'Your vitality and health: how you light up when aligned.',    sequence: 'Activation' },
   purpose:    { label: 'Purpose',     role: 'The deeper purpose your life quietly serves.',                sequence: 'Activation' },
   attraction: { label: 'Attraction',  role: 'What magnetises relationship and love toward you.',           sequence: 'Venus' },
-  iq:         { label: 'IQ',          role: 'Your mental intelligence — how you think and know.',          sequence: 'Venus' },
-  eq:         { label: 'EQ',          role: 'Your emotional intelligence — how you feel and relate.',       sequence: 'Venus' },
-  sq:         { label: 'SQ',          role: 'Your spiritual intelligence — how you sense the whole.',       sequence: 'Venus' },
+  iq:         { label: 'IQ',          role: 'Your mental intelligence: how you think and know.',           sequence: 'Venus' },
+  eq:         { label: 'EQ',          role: 'Your emotional intelligence: how you feel and relate.',        sequence: 'Venus' },
+  sq:         { label: 'SQ',          role: 'Your spiritual intelligence: how you sense the whole.',        sequence: 'Venus' },
   core:       { label: 'Core',        role: 'The core wound, and the gift hidden inside it.',              sequence: 'Venus' },
   culture:    { label: 'Culture',     role: 'How your gifts move out into community and the world.',        sequence: 'Pearl' },
   pearl:      { label: 'Pearl',       role: 'Your prosperity and right livelihood.',                       sequence: 'Pearl' },
