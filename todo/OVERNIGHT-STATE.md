@@ -126,3 +126,40 @@ HEAD, so it is redundant. It was left rather than dropped because its agent had
 not reported and might still have been holding it. Safe to drop after confirming
 nothing is running: find it by tag, never by index, since the stash stack is
 shared with other worktrees.
+
+---
+
+## Final state, 2026-09-02
+
+Five commits on `claude/site-audit-improvement-a7ba4c`, all pushed. Remote HEAD
+matches local. Nothing merged, nothing deployed.
+
+Verified by the coordinator at the end, not taken from any agent's report:
+- typecheck clean
+- 725 of 726 unit tests pass in the sandbox; the one failure is `tsx` unable to
+  bind an IPC socket and PASSES when run outside the sandbox, so 726 of 726
+- every targeted prose formula reads 0 across all 64 cards
+- "One of one" reads 0
+- the underscore lead-ins read 0
+
+Everything in the launch-readiness plan's first tier is done, both halves.
+
+## Deliberately not done, and why
+
+- **The Design section**, "where this drive lives" on 51 of 64. Adrian named
+  I-Ching, Body and Relations. Design was outside that scope. Filed in TODO.md
+  with the method that worked.
+- **The skeleton-and-trim pass** on the opening third paragraphs. It is gated on
+  Adrian's decision about re-scoping the reading rewrite, which is his call.
+- **`EBReading.controller.txt`** still carries card 1's old prose as the design
+  tool's baked-in sample. It is not live prose and editing it risks the
+  dc-import round trip for no reader benefit.
+- **Restoring the editorial ledger** and rescuing the orphaned invocation. Both
+  are restoration tasks where what was lost is not knowable from here.
+
+## Corrections made to earlier claims in this file
+
+The unit baseline quoted at the top of this file as "696/696" was wrong. It came
+from the engineering audit lane and did not hold in this worktree; the real
+baseline was 688 passing with 8 failing, and an agent caught it. The 8 were the
+generated corpus being stale against rewritten source, which the rebuild fixed.
