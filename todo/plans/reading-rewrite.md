@@ -4,6 +4,55 @@ Status: planned, waiting for Adrian to be home. Do not start writing cards until
 
 > **↑ In-OS home (2026-07-06).** This is the CONTENT spec (what a reading must be). The MACHINERY that will hold and enforce it lives in i64os: **WordForge**, whose master plan is `i64os/todo/plans/wordforge-metabolism.md` (detail spec `oracle-cards-guided-templates.md`). The oracle deck is WordForge's declared *expression proving series*. The failure this rewrite exists to fix — "the writing guide sat beside the process, nothing in the machinery held it, so it got thrown out" — is the SAME failure WordForge's *machine-held constitution* is being built to solve (both diagnosed 2026-07-05). So: the four-questions synthesis + "ends risen" + the lens-validation rubric in this file BECOME the oracle expression template's overarching guide + CODE-section acceptance rubric inside WordForge (workstreams M0 author-the-constitution, M8 the oracle series + Gate 23 first). Develop the reading INSIDE WordForge (a living template + the card-set pillar body accreting), not as a one-shot markdown rewrite. Do not run a parallel hand-writing track that bypasses the constitution — that bypass is exactly what failed in June.
 
+## 2026-09-02 — Adrian's own diagnosis, which sharpens everything below
+
+Asked directly, after the overnight measurement showed the readings are the
+best-written section in the deck and that most already end lifting:
+
+> "I found they were a bit more on the negative side rather than a balance
+> between positive and negative. It was approaching everything as if it was a
+> problem. But not the energy of the Card as much as the problems."
+
+**This is a different fault from the one recorded in 2026-07-05, and it is the
+governing one.** The older note says the ENDING does not lift. Adrian's note says
+the whole FRAMING is wrong: a reading arrives at its card as a problem to be
+solved rather than as an energy to be met, so even a reading that ends well has
+spent its length in the wrong register.
+
+That distinction matters for scoping. Fixing an ending is a last-paragraph job.
+Fixing the register is a whole-reading job, and it cannot be done by an agent
+pass over the existing text, because the existing text is already good prose
+saying the wrong kind of thing.
+
+**Balance, not positivity.** He asked for a balance between positive and
+negative, not for the negative to be removed. A reading that only celebrates the
+card is the same failure inverted. The shadow material stays; what changes is
+that it sits inside the card's energy rather than standing in for it.
+
+**Test for any candidate reading.** Read it and ask what it is mainly about. If
+the answer is a problem the reader has, it fails. If the answer is a live energy
+that has a difficult face and a gifted face, it passes.
+
+### Route: build these in WordForge, not as a markdown pass
+
+Decided 2026-09-02. Adrian wants the 64 readings set up in WordForge so the
+interface itself carries the process, and so this is the work that proves that
+interface on something real. This is the same conclusion the in-OS note at the
+top of this file already reached; his decision confirms it and moves it from
+plan to next action.
+
+WordForge already indexes this series: all 64 cards and their six lenses load in
+its Series view. So the next step is setup and framing, not construction.
+
+What the next session does, in order:
+1. Confirm what WordForge already holds for this series, by opening it, not by
+   reading about it.
+2. Put the diagnosis above into the series' own guiding template, in Adrian's
+   words, as the standard a reading is judged against.
+3. Set up the 64 readings so he can work them one at a time in that interface.
+4. Stop there. Do not write or rewrite reading prose. The writing is his, and the
+   point of this step is that he does it inside the tool.
+
 ## What this is
 
 The opening reading on every card page (the three paragraphs under "The Reading") must be rewritten for all 64 cards. Diagnosis from the 2026-07-05 session:
