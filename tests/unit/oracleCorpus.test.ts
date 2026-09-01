@@ -41,17 +41,19 @@ describe('Markdown-only Oracle corpus', () => {
     expect(card.number).toBe(3);
     expect(card.card_name).toBe('Messengers of the Infinite');
     expect(card.keywords).toContain('New Beginnings');
-    expect(card.glance.reading).toContain('Something has begun in you');
+    // Deliberately mid-paragraph prose fixtures (see cardMarkdown.test.ts) so an
+    // editorial pass on opening sentences cannot break the parser contract.
+    expect(card.glance.reading).toContain('pressing up the way a sprout forces the crust of the ground');
     expect(card.glance.invocation).toBeUndefined();
-    expect(card.iching.reading).toContain('moment just after a thing has begun');
+    expect(card.iching.reading).toContain('child in the long labour of being born');
     expect(card.iching.lines).toHaveLength(6);
     expect(card.iching.lines[0]?.becomes).toEqual({ hexagram: 8, name: 'Holding Together' });
     expect(card.iching.upper_trigram).toMatchObject({ symbol: '☵', name: "Water (K'an)" });
     expect(card.iching.lower_trigram).toMatchObject({ symbol: '☳', name: 'Thunder (Chen)' });
     expect(card.reference?.binary).toBe('100010');
-    expect(card.gene_keys.gift).toContain('Stop outrunning the unsettled feeling');
-    expect(card.human_design.gate).toContain('giving form to something that has only just arrived');
-    expect(card.body.physiology).toContain('soft middle where the news of impermanence is felt');
+    expect(card.gene_keys.gift).toContain('an acorn keeps working toward a shape of tree it has never seen');
+    expect(card.human_design.gate).toContain('holding the insight until the world can receive it');
+    expect(card.body.physiology).toContain('pulls the breath up out of the abdomen');
     expect(card.relations.codon_ring.name).toBe('Ring of Life and Death');
     expect(card.relations.unity_line).toContain(
       'the whole arc of first arrival, the breakthrough and the long apprenticeship',

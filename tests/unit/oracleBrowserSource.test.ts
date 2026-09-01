@@ -135,11 +135,13 @@ describe('browser Oracle Markdown source contract', () => {
       card_name: 'Messengers of the Infinite',
       ring_name: 'Ring of Life and Death',
       keywords: expect.arrayContaining(['New Beginnings']),
-      essence: expect.stringContaining('Something has begun in you'),
+      // Deliberately mid-paragraph prose fixtures (see cardMarkdown.test.ts), so a
+      // rewrite of opening sentences does not break the browser synthesis contract.
+      essence: expect.stringContaining('pressing up the way a sprout forces the crust of the ground'),
       synthesis: {
-        gene_keys: { gift: expect.stringContaining('Stop outrunning the unsettled feeling') },
-        human_design: { gate: expect.stringContaining('giving form to something that has only just arrived') },
-        body: { physiology: expect.stringContaining('soft middle where the news of impermanence is felt') },
+        gene_keys: { gift: expect.stringContaining('an acorn keeps working toward a shape of tree it has never seen') },
+        human_design: { gate: expect.stringContaining('holding the insight until the world can receive it') },
+        body: { physiology: expect.stringContaining('pulls the breath up out of the abdomen') },
       },
     });
   });

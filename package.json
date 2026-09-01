@@ -32,7 +32,6 @@
     "@fontsource/karla": "^5.2.8",
     "@fontsource/lora": "^5.2.8",
     "@react-three/fiber": "^8.18.0",
-    "@react-three/postprocessing": "^2.19.1",
     "astronomy-engine": "^2.1.19",
     "better-auth": "^1.6.18",
     "cobe": "^2.0.1",
@@ -42,7 +41,6 @@
     "react-globe.gl": "^2.27.0",
     "react-router-dom": "^7.13.0",
     "three": "^0.166.1",
-    "three-globe": "^2.31.0",
     "workers-og": "^0.0.27",
     "yaml": "^2.9.0"
   },
@@ -60,7 +58,6 @@
     "@types/three": "^0.166.0",
     "@types/topojson-client": "^3.1.5",
     "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.24",
     "d3-geo": "^3.1.1",
     "fake-indexeddb": "^6.2.5",
     "postcss": "^8.5.6",

@@ -1,8 +1,10 @@
 import { getSynthesis } from '../../data/synthesisData';
 import { getParsedCard } from '../../data/cardMarkdown';
-import { ulCardImageUrl } from '../../utils/universalLanguage';
+import { ulCardHeroImageUrl } from '../../utils/universalLanguage';
 
 const WARM_FLAG_KEY = 'mc-oracle-warmed-v1';
+
+export const DECK_SIZE = 64;
 
 function idle(fn: () => void): void {
   const withIdle = window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void };
@@ -15,7 +17,7 @@ function idle(fn: () => void): void {
 
 /** Loads an image via a plain Image element (governed by img-src, not
  * connect-src) so the runtime CacheFirst route for res.cloudinary.com
- * picks it up as a real — not opaque — cached response. */
+ * picks it up as a real, not opaque, cached response. */
 function prefetchImage(url: string): Promise<void> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -26,12 +28,38 @@ function prefetchImage(url: string): Promise<void> {
   });
 }
 
-async function warmOne(number: number): Promise<void> {
+/**
+ * One card's whole offline footprint: its prose chunk and the artwork URL its
+ * reading actually requests (see ulCardHeroImageUrl, which both sides read).
+ */
+export async function warmCard(number: number): Promise<void> {
   await Promise.allSettled([
     getSynthesis(number),
     getParsedCard(number),
-    prefetchImage(ulCardImageUrl(number, 1080)),
+    prefetchImage(ulCardHeroImageUrl(number)),
   ]);
+}
+
+/**
+ * The order the deck is warmed in. Starting at the card the visitor is
+ * actually looking at matters for a plaque scan: that card is the one they
+ * will reopen, and warming from 1 every time left it up to sixty-three cards
+ * away from being stored. Every card still gets warmed, exactly once.
+ */
+export function deckWarmOrder(startAt?: number): number[] {
+  const first = Number.isInteger(startAt) && (startAt as number) >= 1 && (startAt as number) <= DECK_SIZE
+    ? (startAt as number)
+    : 1;
+  return Array.from({ length: DECK_SIZE }, (_, i) => ((first - 1 + i) % DECK_SIZE) + 1);
+}
+
+export interface WarmOptions {
+  /**
+   * The card on screen. Warmed first, and warmed even when the full pass has
+   * already finished, so the card a visitor is holding in their hand is never
+   * the one the device is missing.
+   */
+  startAt?: number;
 }
 
 /**
@@ -39,26 +67,42 @@ async function warmOne(number: number): Promise<void> {
  * card's text and hero artwork, one at a time, on the browser's idle
  * schedule, once per device. This is what turns "the cards you've already
  * opened work offline" (the service worker's runtime cache does that for
- * free) into "the whole deck works offline" — the actual ask, since a
+ * free) into "the whole deck works offline", the actual ask, since a
  * reading can land on any of the 64.
  *
- * No UI, no progress indicator, no "downloading for offline" banner — the
+ * Called from the deck index and from a card page, because a printed plaque
+ * sends a visitor straight to a card and never past the index. A scan is the
+ * likeliest moment for signal to be poor, so it is the last arrival that
+ * should be left unwarmed.
+ *
+ * No UI, no progress indicator, no "downloading for offline" banner: the
  * oracle simply becomes available; it doesn't announce that it's doing so.
  */
-export function warmOracleForOffline(): void {
+export function warmOracleForOffline(options: WarmOptions = {}): void {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
   if (!('serviceWorker' in navigator)) return;
   if (!navigator.onLine) return;
-  if (window.localStorage.getItem(WARM_FLAG_KEY)) return;
 
-  let n = 1;
+  const { startAt } = options;
+  const hasStart = Number.isInteger(startAt) && (startAt as number) >= 1 && (startAt as number) <= DECK_SIZE;
+
+  if (window.localStorage.getItem(WARM_FLAG_KEY)) {
+    /* The deck is already stored. Re-warming the card on screen is close to
+       free (it answers from the cache) and covers the one case the flag lies
+       about: a card whose artwork was added or replaced since the pass ran. */
+    if (hasStart) idle(() => { void warmCard(startAt as number); });
+    return;
+  }
+
+  const order = deckWarmOrder(hasStart ? startAt : undefined);
+  let i = 0;
   const step = () => {
-    if (n > 64) {
+    if (i >= order.length) {
       window.localStorage.setItem(WARM_FLAG_KEY, '1');
       return;
     }
-    const current = n++;
-    warmOne(current).finally(() => idle(step));
+    const current = order[i++];
+    warmCard(current).finally(() => idle(step));
   };
   idle(step);
 }

@@ -15,6 +15,8 @@ import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
 import BirthTimeModal from './oracle/BirthTimeModal';
 import SignInModal from './account/SignInModal';
+import SaveToCollectionButton from './account/SaveToCollectionButton';
+import { cardCollectionItem } from '../lib/collections/items';
 import { useProfile } from '../lib/profile/context';
 import { useAccount } from '../lib/account/useAccount';
 import { ulPieceForCard } from '../utils/universalLanguage';
@@ -29,7 +31,7 @@ import { consumeCardEntranceRequest, requestsCardEntrance } from '../lib/oracle/
 
 /* Earth's Breath card reading. The visible component is GENERATED from the
    imported design file (components/oracle/eb/generated/*) by the dc-import
-   converter — no hand-typed markup. This wrapper only builds the per-card data
+   converter, with no hand-typed markup. This wrapper only builds the per-card data
    bag (EBData) from the live oracle data and hands it to the generated host. */
 
 function prefersReducedMotion(): boolean {
@@ -115,7 +117,7 @@ const UniversalLanguageCard: React.FC = () => {
   }
 
   const cleanTrig = (s: string) => s.replace(/\s*\([^)]*\)\s*/g, '').trim();
-  // "Heaven (Ch'ien)" → "Heaven · Ch'ien" — keep the romanisation, lose the parens.
+  // "Heaven (Ch'ien)" becomes "Heaven · Ch'ien": keep the romanisation, lose the parens.
   const trigName = (s: string) => s.replace(/\s*\(([^)]+)\)\s*$/, ' · $1').trim();
   // Six hexagram lines top→bottom for the I Ching glyph; matches the printed plaque.
   const hexLines = hexagramLineBooleans(card.iching.upper_trigram.symbol, card.iching.lower_trigram.symbol);
@@ -164,7 +166,7 @@ const UniversalLanguageCard: React.FC = () => {
         heroImage: ulCardImageUrl(card.number, 1100),
         lightboxImage: ulCardImageUrl(card.number, 1600),
         buyImage: ulCardImageUrl(card.number, 700),
-        // hero uses the HEXAGRAM SYMBOL glyph (䷀ U+4DC0+n-1), like the file —
+        // hero uses the HEXAGRAM SYMBOL glyph (䷀ U+4DC0+n-1), like the file,
         // not the Chinese name character. The I Ching header keeps the name char.
         heroGlyph: String.fromCodePoint(0x4DBF + card.number),
         ichingGlyph: hexChar,
@@ -189,7 +191,7 @@ const UniversalLanguageCard: React.FC = () => {
         ichingJudgement: (synthesis?.synthesis.iching.judgement_lines ?? []).join('\n'),
         ichingImage: (synthesis?.synthesis.iching.image_lines ?? []).join('\n'),
 
-        // Gene Keys — names and prose from the Markdown-derived card layers.
+        // Gene Keys: names and prose from the Markdown-derived card layers.
         gkShadowName: card.gene_keys.shadow,
         gkGiftName: card.gene_keys.gift,
         gkSiddhiName: card.gene_keys.siddhi,
@@ -229,6 +231,30 @@ const UniversalLanguageCard: React.FC = () => {
   return (
     <>
       <CardReadingShell cardNumber={card.number} reading={
+      <>
+      {/* The save control, at the head of the reading column.
+
+          Where this wanted to go, and why it does not: the generated reading
+          carries an Acquire and Share pair in its own hero, and the wiring plan
+          aimed this button at the slot directly under that pair. That hero is
+          hidden outright by the shell this page now renders inside
+          (card-reading-fullbleed.css hides .ul-hero-section), so both of the
+          host's header slots reach nobody. The live Acquire and Share doors are
+          the shell's own rails, whose five slots are fixed by its design.
+
+          So it lands here instead: the first thing under the designed header,
+          directly below the card name and its keywords, wearing the same
+          hairline box, display-face title and small uppercase line the hero's
+          Acquire and Share buttons use. The .eb-reading wrapper carries the
+          reading's palette variables to it, the same way the bottom bar does. */}
+      <div className="eb-reading ul-save-row" data-palette={palette}>
+        <SaveToCollectionButton
+          item={cardCollectionItem(card.number)}
+          label="Save"
+          variant="panel"
+        />
+        <style>{saveRowStyles}</style>
+      </div>
       <EBReadingHost
         key={card.number}
         data={data}
@@ -254,6 +280,7 @@ const UniversalLanguageCard: React.FC = () => {
         }
         invocationSlot={<PublicInvocation invocation={liveInvocation} />}
       />
+      </>
       } />
       <BuySheet
         open={buyOpen}
@@ -294,11 +321,33 @@ const UniversalLanguageCard: React.FC = () => {
   );
 };
 
-/* The quiet actions row in the header slot. Palette-aware through the EB
-   reading's own variables (--l-3 muted ink, --accent bronze), so it holds in
-   both Day Book and Nightfall. The save button is SaveToCollectionButton's
-   own markup, restyled here to plain label text: the override selector is
-   more specific than the component's .stc__btn rules. */
+/* The save row's own seat. The button inside it carries the panel styling
+   (SaveToCollectionButton's "panel" variant), drawn from the same --l-rule,
+   --l-1, --l-3 and --accent variables the generated Acquire and Share buttons
+   use, so it matches in both Day Book and Nightfall without a second palette.
+   This rule only places the row in the reading column. The side inset is the
+   reading's own: 44px once the shell is on its two-column layout, 10px below
+   that, measured against where the prose beneath actually starts so the box
+   and the first paragraph share a left edge. The breakpoint is the shell's
+   own (CardReading.tsx, 820px). */
+const saveRowStyles = `
+  .ul-save-row {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 44px clamp(18px, 3vw, 28px);
+    background: none;
+  }
+  /* On the wide layout the box takes half the prose measure, so it stays a
+     quiet act rather than a banner. On the phone it spans the column, matching
+     the chart invitation directly above it. */
+  @media (min-width: 820px) {
+    .ul-save-row .stc--panel { max-width: 340px; }
+  }
+  @media (max-width: 819px) {
+    .ul-save-row { padding-left: 10px; padding-right: 10px; }
+  }
+`;
+
 /* The single hero box: the chart question, with THIS code's hexagram as the
    feature on the left. The glyph + number scale to the HEIGHT of the text block
    beside them (measured live), so the feature always reads as tall as the copy
@@ -501,7 +550,7 @@ function AstrologyGlyph({ value }: { value: string }) {
 }
 
 // System overlays are the same three short essays for every card (about the systems,
-// not the card) — verbatim from the template.
+// not the card), verbatim from the template.
 const OVERLAYS: EBData['overlays'] = {
   iching: { kicker: 'The Book of Changes', title: 'I Ching', sub: 'attributed to Fu Xi, King Wen, the Duke of Zhou, and Confucius', gratitude: 'Richard Wilhelm and Cary F. Baynes', paras: [
     'The I Ching is the oldest text in active spiritual use anywhere in the world. Its earliest layers are attributed to the legendary Fu Xi, who is said to have seen, in eight three-line figures, the structure of the cosmos.',

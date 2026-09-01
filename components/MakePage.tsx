@@ -3,6 +3,12 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useAccount } from '../lib/account/useAccount';
 import SignInTrigger from './account/SignInTrigger';
 import { SITE } from '../constants';
+import AtlasMovedNotice from './atlas/AtlasMovedNotice';
+import {
+  atlasFailureMessage,
+  readAtlasBoundary,
+  type AtlasBoundary,
+} from '../lib/atlas/boundary';
 
 /**
  * /make — "Begin your piece": the creation journey's front door.
@@ -79,6 +85,7 @@ const MakePage: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [movedBoundary, setMovedBoundary] = useState<AtlasBoundary | null>(null);
 
   const submit = async () => {
     setBusy(true);
@@ -95,9 +102,16 @@ const MakePage: React.FC = () => {
           ...(note.trim() ? { note: note.trim() } : {}),
         }),
       });
+      const boundary = await readAtlasBoundary(res);
+      if (boundary) {
+        setMovedBoundary(boundary);
+        return;
+      }
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) {
-        setError(data?.error ?? 'Something went wrong, please try again.');
+        setError(
+          atlasFailureMessage(res.status, data, 'Something went wrong, please try again.'),
+        );
         return;
       }
       setSent(true);
@@ -154,7 +168,9 @@ const MakePage: React.FC = () => {
             beginning of a conversation.
           </p>
 
-          {sent ? (
+          {movedBoundary ? (
+            <AtlasMovedNotice boundary={movedBoundary} align="left" />
+          ) : sent ? (
             <p className="font-reading text-lg text-wood-800 leading-[1.6]">
               The note is with the studio. Adrian reads every one and will
               reply to your email within a few days. The next line of a

@@ -36,10 +36,12 @@ describe('empty-atlas copy vs over-narrowed copy', () => {
       expect(guardAt).toBeLessThan(awaitingAt);
       expect(awaitingAt).toBeLessThan(nothingAt);
 
-      // Tone contract: the awaiting line is a quiet font-display italic,
-      // like the page's other liminal states.
+      // Tone contract: the awaiting line is a quiet font-display serif, like
+      // the page's other liminal states. Never italic: italic body text is
+      // hard to read and is barred from user-facing copy here.
       const styleWindow = source.slice(Math.max(0, awaitingAt - 400), awaitingAt);
-      expect(styleWindow).toContain('font-display italic');
+      expect(styleWindow).toContain('font-display text-lg');
+      expect(styleWindow).not.toContain('italic');
     });
   }
 });

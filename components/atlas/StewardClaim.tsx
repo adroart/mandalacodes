@@ -19,6 +19,8 @@ import { groupClaimCode, normalizeClaimCode } from '../../utils/claimCode';
 import ClaimCeremony from './ClaimCeremony';
 import RequestStewardship from './RequestStewardship';
 import ArtworkPlate from './ArtworkPlate';
+import AtlasMovedNotice from './AtlasMovedNotice';
+import { readAtlasBoundary, type AtlasBoundary } from '../../lib/atlas/boundary';
 import { ATLAS_GOLD, ATLAS_NIGHT } from './stageColors';
 
 /**
@@ -64,6 +66,9 @@ type ClaimEntry = {
   needsConsent?: boolean;
 };
 
+/** 'moved' is the honest boundary: the record lives on the artist site now. */
+type ClaimOutcome = 'ok' | 'moved' | 'failed';
+
 type ClaimResponse = {
   ok: boolean;
   claimed: ClaimEntry[];
@@ -78,7 +83,30 @@ type Beat =
   | 'anchoring'
   | 'ignition'
   | 'no-record'
+  | 'moved'
   | 'error';
+
+/**
+ * Which beat a failed claim lands on. Pure, so the one case that used to be
+ * wrong can be pinned by a test: the claim route is retired (410), and sending
+ * that to the 'error' beat handed the collector a "try again" button that
+ * re-fired the identical doomed request forever.
+ *
+ *   410           , 'moved'     (one sentence, one door, no retry)
+ *   404           , 'no-record' (unchanged: the homecoming path)
+ *   anything else , 'error'     (unchanged: genuinely transient)
+ *
+ * 410 means gone for good, so it goes to 'moved' on the status alone, whether
+ * or not the body reads back. A retry can never be the right answer to it.
+ */
+export function claimBeatForFailure(
+  status: number,
+  _body?: unknown,
+): 'moved' | 'no-record' | 'error' {
+  if (status === 410) return 'moved';
+  if (status === 404) return 'no-record';
+  return 'error';
+}
 
 function prefersReducedMotion(): boolean {
   return (
@@ -659,6 +687,8 @@ const StewardClaim: React.FC = () => {
   const [arrivalStatus, setArrivalStatus] = useState<'signin' | 'claiming'>('signin');
   const [entries, setEntries] = useState<ClaimEntry[]>([]);
   const [creatorMessage, setCreatorMessage] = useState<string | undefined>();
+  // Set when the server answers the moved boundary; carries the door it named.
+  const [movedBoundary, setMovedBoundary] = useState<AtlasBoundary | null>(null);
 
   // ── The claim-code arrival (Adrian, 2026-07-18): with piece context the
   //    arrival asks for the code printed on the piece's back insert first,
@@ -773,11 +803,10 @@ const StewardClaim: React.FC = () => {
           setCodeStep('enter');
           return;
         }
-        if (res.status === 404) {
-          setBeat('no-record');
-        } else {
-          setBeat('error');
-        }
+        const boundary = await readAtlasBoundary(res);
+        if (cancelled) return;
+        if (boundary) setMovedBoundary(boundary);
+        setBeat(claimBeatForFailure(res.status));
       } catch {
         if (!cancelled) setBeat('error');
       }
@@ -832,7 +861,7 @@ const StewardClaim: React.FC = () => {
   // Phase B: the single consent + inscription POST. Consent (map presence) and
   // the dream travel together, exactly as before. Returns whether it landed;
   // the caller advances to ignition (after the anchoring settle) on success.
-  const runClaim = async (inscription?: string): Promise<boolean> => {
+  const runClaim = async (inscription?: string): Promise<ClaimOutcome> => {
     setSubmitting(true);
     setDreamError(null);
     try {
@@ -845,15 +874,21 @@ const StewardClaim: React.FC = () => {
         }),
       });
       if (!res.ok) {
+        const boundary = await readAtlasBoundary(res);
+        if (boundary) {
+          // Not a stumble: the record moved. Say so once and stop asking.
+          setMovedBoundary(boundary);
+          return 'moved';
+        }
         setDreamError('Something went wrong. Please try again.');
-        return false;
+        return 'failed';
       }
       const data: ClaimResponse = await res.json().catch(() => ({}) as ClaimResponse);
       setCreatorMessage(data.creatorMessage);
-      return true;
+      return 'ok';
     } catch {
       setDreamError('Something went wrong. Please try again.');
-      return false;
+      return 'failed';
     } finally {
       setSubmitting(false);
     }
@@ -861,8 +896,9 @@ const StewardClaim: React.FC = () => {
 
   // "inscribe later": commit with no dream, straight to ignition.
   const inscribeLater = async () => {
-    const ok = await runClaim(undefined);
-    if (ok) setBeat('ignition');
+    const outcome = await runClaim(undefined);
+    if (outcome === 'ok') setBeat('ignition');
+    else if (outcome === 'moved') setBeat('moved');
   };
 
   // "inscribe": the dream settles into the ledger (anchoring beat) while the
@@ -877,11 +913,11 @@ const StewardClaim: React.FC = () => {
     setCommittedDream(text);
     setBeat('anchoring');
     const settleMs = prefersReducedMotion() ? 300 : 560;
-    const [ok] = await Promise.all([
+    const [outcome] = await Promise.all([
       runClaim(text),
       new Promise<void>((resolve) => setTimeout(resolve, settleMs)),
     ]);
-    setBeat(ok ? 'ignition' : 'dream');
+    setBeat(outcome === 'ok' ? 'ignition' : outcome === 'moved' ? 'moved' : 'dream');
   };
 
   // ── Dev / steward rehearsal + replay ──
@@ -1001,6 +1037,22 @@ const StewardClaim: React.FC = () => {
             >
               try again
             </button>
+            <Link
+              to="/atlas"
+              className="font-label text-[11px] uppercase tracking-[0.18em] text-bronze-300 hover:text-bronze-200 transition-colors"
+            >
+              Back to the map
+            </Link>
+          </div>
+        </FadeIn>
+      )}
+
+      {/* The honest boundary. The claim route is retired, so this beat carries
+          one sentence and one door and offers nothing to press again. */}
+      {beat === 'moved' && movedBoundary && (
+        <FadeIn key="moved" className="text-center">
+          <AtlasMovedNotice boundary={movedBoundary} tone="night" />
+          <div className="mt-8 flex flex-col items-center">
             <Link
               to="/atlas"
               className="font-label text-[11px] uppercase tracking-[0.18em] text-bronze-300 hover:text-bronze-200 transition-colors"

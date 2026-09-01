@@ -230,10 +230,10 @@ const OracleEntryPage: React.FC = () => {
           </div>
           <div className="px-8 pt-2 pb-3.5">
             {[
-              ['I Ching', "The 64 hexagrams. Each card's six-line figure — the ancient Book of Changes, read here as living code."],
-              ['Gene Keys', 'Shadow, Gift, and Siddhi — the spectrum each code travels, from reactive pattern to its realized essence.'],
-              ['Human Design', 'The gate — where the code lives in the bodygraph, and how its energy wants to move through a life.'],
-              ['Tarot', 'The codon rings gather the 64 into the Major Arcana — the archetypal throughline that orders the deck.'],
+              ['I Ching', "The 64 hexagrams. Each card's six-line figure, the ancient Book of Changes, read here as living code."],
+              ['Gene Keys', 'Shadow, Gift, and Siddhi: the spectrum each code travels, from reactive pattern to its realized essence.'],
+              ['Human Design', 'The gate, where the code lives in the bodygraph, and how its energy wants to move through a life.'],
+              ['Tarot', 'The codon rings gather the 64 into the Major Arcana, the archetypal throughline that orders the deck.'],
             ].map(([label, body], i, arr) => (
               <div key={label} className={`flex gap-4 py-[18px] ${i < arr.length - 1 ? 'border-b border-wood-100' : ''}`}>
                 <span className="flex-[0_0_84px] font-label text-[11px] font-bold uppercase tracking-[0.14em] text-wood-700 pt-[3px]">{label}</span>
@@ -242,7 +242,7 @@ const OracleEntryPage: React.FC = () => {
             ))}
           </div>
           <div className="px-8 pt-5 pb-[30px] bg-paper-100">
-            <p className="m-0 mb-[18px] font-reading italic text-lg leading-[1.5] text-wood-700">
+            <p className="m-0 mb-[18px] font-reading text-lg leading-[1.5] tracking-[0.015em] text-wood-700">
               Every card is one frequency spoken in four languages. The connections between them are the grammar of the whole.
             </p>
             <div className="flex flex-wrap items-center gap-4">

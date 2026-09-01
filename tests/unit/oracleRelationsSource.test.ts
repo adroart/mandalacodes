@@ -94,7 +94,9 @@ describe('Markdown-native Oracle Relations', () => {
       lower: { trigram: 'Water', name: 'Li Tie Guai' },
       same_trigram: false,
     });
-    expect(relations.immortals?.teaching).toContain('last crossing');
+    // Mid-paragraph on purpose: names the immortal's own attribute rather than the
+    // teaching's opening line, which editorial passes rewrite.
+    expect(relations.immortals?.teaching).toContain('carries his medicine in a gourd');
     expect(relations.sky).toMatchObject({ value: 'Mercury' });
     expect(relations.sky?.teaching).toContain('quick intelligence');
     expect(relations.hebrew_letter).toMatchObject({ letter: 'Beth' });

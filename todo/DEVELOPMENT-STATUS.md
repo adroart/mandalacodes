@@ -1,5 +1,38 @@
 # Development status — everything not fully fleshed out
 
+> **RE-MEASURED 2026-09-02. Read this box before trusting anything below it.**
+>
+> This document was compiled 2026-07-10 and has drifted, consistently in your
+> favour: more is built than it credits. An eight lane audit on 2026-09-01
+> checked it against the code.
+>
+> **Section 0 names the wrong cause.** It says a keepsake-book ops gate of
+> database tables and secrets is holding finished features hostage. The secrets
+> are provisioned on the production project. The actual reason no collector can
+> claim anything is that the journey is live on NEITHER site: this repo retired
+> its collector write path deliberately on 2026-08-09 when the record moved,
+> and the replacement on adrianrasmussen.com is fully built and switched off at
+> `launchFlags.ts` `livingLegacy: false`. That flag is the gate.
+>
+> **Five of the six "quick wins" in section 1 had already shipped** by the time
+> anyone read them. The Today and Year energy panels are live in the profile,
+> the gateway has its birth-chart link, the kinship thread count is surfaced,
+> "founding light" is explained, and the trigram comment is corrected. Item 1,
+> the save-to-collection button, shipped on 2026-09-01 and Collections now
+> works end to end.
+>
+> One file this document points at, `AdminPieces.tsx`, no longer exists.
+>
+> Fixed on 2026-09-01 and not described anywhere below: the globe was showing
+> five fabricated pieces with an invented dream, every card's image described
+> itself as card 1, the reading claimed "one of one", a scanned plaque went
+> blank offline, and every collector screen ended in a retry loop that could
+> not succeed.
+>
+> The current map is [plans/launch-readiness.md](plans/launch-readiness.md).
+> Spot-check any line here against the code before acting on it.
+
+
 _Compiled 2026-07-10 by a five-way audit of every plan file against the actual code on `main`
 (the working tree is at parity with `main`, so what's here is what's live). This is the
 "where are we, what's left" map for building a single bring-it-together plan. Each item says

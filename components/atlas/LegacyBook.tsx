@@ -10,6 +10,12 @@ import type {
 import type { InscriptionView, InscriptionKind } from '../../utils/inscriptions';
 import { getCityById, formatPlaceLabel } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
+import AtlasMovedNotice from './AtlasMovedNotice';
+import {
+  atlasFailureMessage,
+  readAtlasBoundary,
+  type AtlasBoundary,
+} from '../../lib/atlas/boundary';
 
 /**
  * LegacyBook — the Ring 1 living record inside the steward edit page (M3).
@@ -158,6 +164,10 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
   // Letters — the piece writes back (M5). Generated on the server lazily on
   // read (anniversary / transfer) and on kin claims elsewhere; here we load,
   // show the unread badge, and mark read when the steward opens the section.
+  /* The collector record moved to the artist site. Any call that says so
+     replaces the whole book with the one boundary surface: the book's rows and
+     its write controls would all be pointing at a door that is closed. */
+  const [movedBoundary, setMovedBoundary] = useState<AtlasBoundary | null>(null);
   const [letters, setLetters] = useState<AtlasLetter[] | null>(null);
   const [lettersOpen, setLettersOpen] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -183,10 +193,20 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
     [fetchAuthed],
   );
 
+  /* Read a failed atlas response once. A moved boundary takes over the book;
+     anything else falls through to the section's own words. */
+  const takeBoundary = useCallback(async (res: Response): Promise<boolean> => {
+    const boundary = await readAtlasBoundary(res);
+    if (!boundary) return false;
+    setMovedBoundary(boundary);
+    return true;
+  }, []);
+
   const loadInscriptions = useCallback(async () => {
     setLoadNote(null);
     try {
       const res = await authedFetch(`/api/atlas/steward/inscriptions?${query}`);
+      if (await takeBoundary(res)) return;
       if (res.status === 503) {
         setInscriptions([]);
         setLoadNote('The written record opens once the archive is ready.');
@@ -203,7 +223,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       setInscriptions([]);
       setLoadNote('Could not load the written record right now.');
     }
-  }, [authedFetch, query]);
+  }, [authedFetch, query, takeBoundary]);
 
   useEffect(() => {
     setInscriptions(null);
@@ -238,6 +258,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
   const loadLetters = useCallback(async () => {
     try {
       const res = await authedFetch(`/api/atlas/steward/letters?${query}`);
+      if (await takeBoundary(res)) return;
       if (!res.ok) {
         setLetters([]);
         setUnread(0);
@@ -250,7 +271,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       setLetters([]);
       setUnread(0);
     }
-  }, [authedFetch, query]);
+  }, [authedFetch, query, takeBoundary]);
 
   useEffect(() => {
     setLetters(null);
@@ -351,9 +372,12 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
         setFormError('The archive is not ready yet — your entry was not saved.');
         return;
       }
+      if (await takeBoundary(res)) return;
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
-        setFormError(data?.error ?? 'Something went wrong, please try again.');
+        setFormError(
+          atlasFailureMessage(res.status, data, 'Something went wrong, please try again.'),
+        );
         return;
       }
       setBody('');
@@ -389,13 +413,18 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           share: nextShare,
         }),
       });
+      if (await takeBoundary(res)) return;
       const data = (await res.json().catch(() => null)) as
         | { ok?: boolean; shared?: boolean; error?: string }
         | null;
       if (!res.ok || !data?.ok) {
         setShareError((prev) => ({
           ...prev,
-          [view.id]: data?.error ?? 'Something went wrong, please try again.',
+          [view.id]: atlasFailureMessage(
+            res.status,
+            data,
+            'Something went wrong, please try again.',
+          ),
         }));
         return;
       }
@@ -453,11 +482,14 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           ...payload,
         }),
       });
+      if (await takeBoundary(res)) return;
       const data = (await res.json().catch(() => null)) as
         | { ok?: boolean; steward?: StewardView; error?: string }
         | null;
       if (!res.ok || !data?.ok || !data.steward) {
-        setHeirError(data?.error ?? 'Something went wrong, please try again.');
+        setHeirError(
+          atlasFailureMessage(res.status, data, 'Something went wrong, please try again.'),
+        );
         return;
       }
       onStewardUpdate(data.steward);
@@ -494,6 +526,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
     setExportError(null);
     try {
       const res = await authedFetch(`/api/atlas/steward/export?${query}`);
+      if (await takeBoundary(res)) return;
       if (!res.ok) {
         setExportError('Could not export the book right now.');
         return;
@@ -645,6 +678,16 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       </li>
     );
   };
+
+  // The honest boundary. Every page and every control in the book below reads
+  // or writes the record, so when it has moved the book is the notice.
+  if (movedBoundary) {
+    return (
+      <div className="mb-10 pt-10 border-t border-wood-200">
+        <AtlasMovedNotice boundary={movedBoundary} align="left" className="max-w-md" />
+      </div>
+    );
+  }
 
   return (
     <>

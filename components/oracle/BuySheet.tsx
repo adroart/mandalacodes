@@ -88,7 +88,7 @@ export const BuySheet: React.FC<{
           </div>
 
           {piece?.description && (
-            <p className="font-reading text-[14px] text-wood-700 italic leading-[1.55] mt-4">
+            <p className="font-reading text-[14px] text-wood-700 tracking-[0.015em] leading-[1.55] mt-4">
               {piece.description}
             </p>
           )}

@@ -24,7 +24,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <ul style={{ listStyle: "none", padding: "0", margin: "0", display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}>
               {(vals.keywords ?? []).map((kw, kwIdx) => (
                 <React.Fragment key={kwIdx}>
-                  <li style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "17px", color: "var(--l-2)", lineHeight: "1.3", letterSpacing: "0.02em", animation: "ulRise 760ms cubic-bezier(.16,1,.3,1) both" }}>
+                  <li style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", fontSize: "17px", color: "var(--l-2)", lineHeight: "1.3", letterSpacing: "0.02em", animation: "ulRise 760ms cubic-bezier(.16,1,.3,1) both" }}>
                   {kw}
                   </li>
                 </React.Fragment>
@@ -32,7 +32,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </ul>
           </div>
         </div>
-        <p style={{ position: "absolute", left: "0", right: "0", bottom: "max(34px,env(safe-area-inset-bottom))", textAlign: "center", fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "clamp(19px,2.4vw,24px)", color: "var(--l-3)", margin: "0", animation: "ulPulse 3.4s ease-in-out 1.8s infinite" }}>
+        <p style={{ position: "absolute", left: "0", right: "0", bottom: "max(34px,env(safe-area-inset-bottom))", textAlign: "center", fontFamily: 'var(--font-reading)', fontStyle: "normal", textTransform: "uppercase", letterSpacing: "0.22em", fontSize: "clamp(11px,1.3vw,13px)", color: "var(--l-3)", margin: "0", animation: "ulPulse 3.4s ease-in-out 1.8s infinite" }}>
         tap to begin
         </p>
       </div>
@@ -76,10 +76,10 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     </header>
     <div className="ul-hero-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: "clamp(26px,4vw,52px)", alignItems: "center" }}>
       <figure onClick={vals.openLightbox} role="button" tabIndex={0} aria-label="Enlarge artwork" style={{ margin: "0", position: "relative", aspectRatio: "1/1", cursor: "zoom-in", overflow: "hidden", background: "var(--l-soft)", boxShadow: "0 1px 0 rgba(255,255,255,0.04),0 30px 80px -30px rgba(20,15,8,0.5)" }}>
-        <div aria-hidden="true" style={{ position: "absolute", inset: "0", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: 'var(--font-display)', fontStyle: "italic", color: "var(--l-3)", fontSize: "16px" }}>
+        <div aria-hidden="true" style={{ position: "absolute", inset: "0", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: 'var(--font-display)', fontStyle: "normal", letterSpacing: "0.01em", color: "var(--l-3)", fontSize: "16px" }}>
         {vals.cardName}
         </div>
-        <img crossOrigin="anonymous" src={vals.heroImage} alt="Earth's Breath, Universal Language 1. Original multidimensional wooden sculpture by Adrian Rasmussen." onError={vals.onImgError} loading="eager" decoding="async" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover" }} />
+        <img crossOrigin="anonymous" src={vals.heroImage} alt={vals.heroAlt} onError={vals.onImgError} loading="eager" decoding="async" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover" }} />
       </figure>
       <div style={{ textAlign: "left" }}>
         <h1 className="ul-title-desktop" style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(26px,3.4vw,48px)", lineHeight: "1.04", letterSpacing: "-0.015em", color: "var(--l-1)", margin: "0 0 18px", whiteSpace: "nowrap" }}>
@@ -239,7 +239,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 <span style={{ color: "var(--accent-d)" }}>
                 Your Pearl sits on Line 3.
                 </span>
-              The dragon working by day, wary by night — watch for it among the moving lines below.
+              The dragon working by day, wary by night. Watch for it among the moving lines below.
               </p>
             </div>
           </>
@@ -361,7 +361,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 14px" }}>
             The Judgement
             </p>
-            <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "18px", lineHeight: "1.75", color: "var(--d-1)", margin: "0" }}>
+            <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.015em", fontSize: "18px", lineHeight: "1.75", color: "var(--d-1)", margin: "0" }}>
             {vals.ichingJudgement}
             </p>
           </div>
@@ -369,7 +369,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 14px" }}>
             The Image
             </p>
-            <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "18px", lineHeight: "1.75", color: "var(--d-1)", margin: "0" }}>
+            <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.015em", fontSize: "18px", lineHeight: "1.75", color: "var(--d-1)", margin: "0" }}>
             {vals.ichingImage}
             </p>
           </div>
@@ -686,7 +686,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               </span>
               <p style={{ fontFamily: 'var(--font-reading)', fontSize: "12.5px", lineHeight: "1.45", color: "var(--d-2)", margin: "0" }}>
                 <span style={{ color: "var(--accent-d)" }}>
-                This code is in your chart — your Pearl.
+                This code is in your chart, as your Pearl.
                 </span>
               Gate 1 sits at the close of your profile: the gift your life is quietly working toward.
               </p>
@@ -774,7 +774,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 <span style={{ color: "var(--accent)" }}>
                 Carried in your chart,
                 </span>
-              this code’s renewal runs through your own metabolism — the liver’s slow, hidden forge.
+              this code’s renewal runs through your own metabolism, the liver’s slow, hidden forge.
               </p>
             </div>
           </>
@@ -828,7 +828,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(30px,4vw,40px)", lineHeight: "1.1", color: "var(--l-1)", textAlign: "center", margin: "0 0 24px" }}>
         Its Kin
         </h2>
-        <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "clamp(18px,2.2vw,22px)", lineHeight: "1.55", color: "var(--l-2)", textAlign: "center", maxWidth: "46ch", margin: "0 auto clamp(36px,5vw,52px)" }}>
+        <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.015em", fontSize: "clamp(18px,2.2vw,22px)", lineHeight: "1.55", color: "var(--l-2)", textAlign: "center", maxWidth: "46ch", margin: "0 auto clamp(36px,5vw,52px)" }}>
         {vals.relationsIntro}
         </p>
         {(vals.chartPreview) ? (
@@ -840,7 +840,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 <span style={{ color: "var(--accent)" }}>
                 Your Pearl is partnered by UL 2,
                 </span>
-              the Receptive — look there for what completes this code in you.
+              the Receptive. Look there for what completes this code in you.
               </p>
             </div>
           </>
@@ -896,7 +896,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </p>
           {(vals.kinBodyParas ?? []).map((para, paraIdx) => (
             <React.Fragment key={paraIdx}>
-              <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "clamp(18px,2.4vw,21px)", lineHeight: "1.62", letterSpacing: "0.01em", color: "var(--l-2)", margin: "0 0 14px" }}>
+              <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", fontSize: "clamp(18px,2.4vw,21px)", lineHeight: "1.62", letterSpacing: "0.015em", color: "var(--l-2)", margin: "0 0 14px" }}>
               {para}
               </p>
             </React.Fragment>
@@ -968,17 +968,17 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       <div onClick={vals.closeBuy} role="dialog" aria-modal="true" aria-label="Acquire the original" style={{ position: "fixed", inset: "0", zIndex: "300", background: "rgba(10,8,5,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", animation: "ulFadeIn 250ms ease both" }}>
         <div onClick={vals.stop} style={{ width: "100%", maxWidth: "460px", background: "var(--l-bg)", border: "1px solid var(--l-rule)", overflow: "hidden", animation: "ulOverlay 420ms cubic-bezier(.16,1,.3,1) both" }}>
           <div style={{ aspectRatio: "16/10", background: "var(--l-soft)", overflow: "hidden" }}>
-            <img crossOrigin="anonymous" src={vals.buyImage} alt="Earth's Breath original artwork" onError={vals.onImgError} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img crossOrigin="anonymous" src={vals.buyImage} alt={vals.heroAlt} onError={vals.onImgError} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <div style={{ padding: "26px 24px" }}>
             <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 8px" }}>
-            The Original · Available
+            The Piece · Available
             </p>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: "28px", color: "var(--l-1)", margin: "0 0 8px" }}>
             {vals.cardName}
             </h3>
-            <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "16px", color: "var(--l-2)", margin: "0 0 20px", lineHeight: "1.5" }}>
-            An original multidimensional wooden sculpture, hand-made by Adrian Rasmussen. One of one.
+            <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.01em", fontSize: "16px", color: "var(--l-2)", margin: "0 0 20px", lineHeight: "1.5" }}>
+            A multidimensional wooden sculpture, made by hand by Adrian Rasmussen. One of the 64 designs.
             </p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--l-rule)", borderBottom: "1px solid var(--l-rule)", padding: "14px 0", marginBottom: "20px" }}>
               <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--l-3)" }}>
@@ -1009,7 +1009,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(26px,3.4vw,34px)", color: "var(--l-1)", margin: "0 0 6px" }}>
           {vals.overlayTitle}
           </h3>
-          <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "15px", color: "var(--l-3)", margin: "0 0 20px" }}>
+          <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "var(--l-3)", margin: "0 0 20px" }}>
           {vals.overlaySub}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -1040,7 +1040,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: "400", fontSize: "clamp(24px,4vw,32px)", color: "#ECE4D5", margin: "0 0 4px", textAlign: "center" }}>
         The Sixty-Four Codes
         </h3>
-        <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "italic", fontSize: "14px", color: "rgba(236,228,213,0.5)", margin: "0 0 18px", textAlign: "center" }}>
+        <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.01em", fontSize: "14px", color: "rgba(236,228,213,0.5)", margin: "0 0 18px", textAlign: "center" }}>
         Tap any figure to read where it stands.
         </p>
         <div onClick={vals.stop} style={{ position: "relative", width: "min(86vw,540px)", aspectRatio: "1/1" }}>

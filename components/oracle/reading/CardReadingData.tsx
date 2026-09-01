@@ -11,9 +11,11 @@
 import React, { useEffect, useState } from 'react';
 import { CARD_BY_NUMBER } from '../../../data/oracleData';
 import { getSynthesis, type CardSynthesis } from '../../../data/synthesisData';
-import { ulCardArtFloatsFree, ulCardImageUrl, ulPieceForCard } from '../../../utils/universalLanguage';
+import { ulCardArtFloatsFree, ulCardHeroImageUrl, ulPieceForCard } from '../../../utils/universalLanguage';
 import CardReading, { type CardReadingLens } from './CardReading';
 import Navigation from '../../Navigation';
+import { isChunkLoadError } from '../../ChunkErrorBoundary';
+import { warmOracleForOffline } from '../../../lib/oracle/offlineWarm';
 import { hexagramLineBooleans } from '../HexagramGlyph';
 import CardReadingBodyHost, { type CardReadingBodyData } from './generated/CardReadingBody.host';
 
@@ -77,13 +79,34 @@ interface Props {
 export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading: readingBody }) => {
   const card = CARD_BY_NUMBER.get(cardNumber);
   const [syn, setSyn] = useState<CardSynthesis | undefined>();
+  const [loadFailure, setLoadFailure] = useState<unknown>(null);
 
   useEffect(() => {
     let cancelled = false;
     setSyn(undefined);
-    getSynthesis(cardNumber).then((d) => { if (!cancelled) setSyn(d); }).catch(() => {});
+    setLoadFailure(null);
+    getSynthesis(cardNumber)
+      .then((d) => { if (!cancelled) setSyn(d); })
+      .catch((error: unknown) => { if (!cancelled) setLoadFailure(error); });
     return () => { cancelled = true; };
   }, [cardNumber]);
+
+  /* A printed plaque sends its visitor straight here, never past the deck
+     index, so this is where the deck has to be warmed for offline as well.
+     Warming only from the index left a scanned card as the one card that
+     could go blank the moment signal dropped. */
+  useEffect(() => {
+    warmOracleForOffline({ startAt: cardNumber });
+  }, [cardNumber]);
+
+  /* A card's prose is a chunk fetched on demand, so on a device that reached
+     this card before the warm pass stored it, offline, that fetch simply
+     fails. Swallowing it rendered every lens permanently empty and said
+     nothing. Hand it up to the boundary that already owns this exact case and
+     already has the sentence for it. Only failures that boundary accepts are
+     rethrown; anything else (a malformed manuscript, say) is not a connection
+     problem and must not be dressed as one. */
+  if (loadFailure !== null && isChunkLoadError(loadFailure)) throw loadFailure;
 
   if (!card) return null;
 
@@ -94,7 +117,7 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
   /* The design's left-hand meta block, from the card's own fields. */
   const meta = [
     { k: 'Element', v: card.element },
-    { k: 'Gate', v: `${card.human_design.gate} — ${card.human_design.keyword}` },
+    { k: 'Gate', v: `${card.human_design.gate} · ${card.human_design.keyword}` },
     ...(keywords.length ? [{ k: 'Keynotes', v: keywords.join(', ') }] : []),
   ];
 
@@ -127,7 +150,7 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
      box. The slot's fixed height is released in card-reading-fullbleed.css. */
   const artwork = (
     <img
-      src={ulCardImageUrl(card.number, 1080)}
+      src={ulCardHeroImageUrl(card.number)}
       alt={`${card.card_name} · Code ${card.number}`}
       style={{ width: '100%', height: 'auto', display: 'block' }}
       crossOrigin="anonymous"

@@ -6,6 +6,12 @@ import TypeaheadPicker from '../shared/TypeaheadPicker';
 import { ATLAS_PLACES, getCityById, isCountryPlace } from '../../data/cities';
 import type { CityCentroid } from '../../types';
 import { HOMECOMING_MAX_PHOTOS } from '../../lib/atlas/homecoming';
+import AtlasMovedNotice from './AtlasMovedNotice';
+import {
+  atlasFailureMessage,
+  readAtlasBoundary,
+  type AtlasBoundary,
+} from '../../lib/atlas/boundary';
 
 /**
  * The Homecoming (Phase 2.5): /atlas/homecoming.
@@ -63,6 +69,7 @@ const Homecoming: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [movedBoundary, setMovedBoundary] = useState<AtlasBoundary | null>(null);
 
   const setPhotoAt = (i: number, value: string) => {
     setPhotoUrls((prev) => {
@@ -90,9 +97,20 @@ const Homecoming: React.FC = () => {
           ...(note.trim() ? { note: note.trim() } : {}),
         }),
       });
+      const boundary = await readAtlasBoundary(res);
+      if (boundary) {
+        setMovedBoundary(boundary);
+        return;
+      }
       const data = await res.json();
       if (!res.ok || !data?.ok) {
-        setError(data?.error ?? 'Something did not go through. Please try again.');
+        setError(
+          atlasFailureMessage(
+            res.status,
+            data,
+            'Something did not go through. Please try again.',
+          ),
+        );
         return;
       }
       setSent(true);
@@ -128,7 +146,9 @@ const Homecoming: React.FC = () => {
           yet, this is its way home.
         </p>
 
-        {sent ? (
+        {movedBoundary ? (
+          <AtlasMovedNotice boundary={movedBoundary} />
+        ) : sent ? (
           <div className="text-center">
             <p
               className="font-display text-[1.0625rem] leading-relaxed text-wood-700 mb-4"

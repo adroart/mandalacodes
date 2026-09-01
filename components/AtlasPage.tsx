@@ -478,8 +478,8 @@ const AtlasPage: React.FC = () => {
   /* Enrich pieces with titles, build the series list for the filter. */
   const enriched: EnrichedPiece[] = useMemo(() => {
     if (state.kind !== 'ready') return [];
-    // enrichPieces also carries the TEMPORARY sample flag through to every
-    // row (data/atlasPlaceholder.ts) so a sample never reads as a real piece.
+    // Every row here comes from the canonical record. Nothing is stood in
+    // for an absent piece, so a row on this page is always a real piece.
     return enrichPieces(state.data);
   }, [state]);
 
@@ -574,9 +574,10 @@ const AtlasPage: React.FC = () => {
      of strangers. A "light" is a claimed piece (carries an ordinal); the
      collective framing earns its place as density grows. */
   const totalCount = enriched.length;
-  // ── TEMPORARY SAMPLE caption ── see data/atlasPlaceholder.ts. True only
-  // while the five sample pieces stand in for an empty registry; delete at launch.
-  const isPlaceholder = state.kind === 'ready' && state.data.placeholder === true;
+  /* A record that resolved and holds nothing: no piece has been claimed yet.
+     The pulse says exactly that rather than reading out a row of zeroes, and
+     nothing is ever stood in for the absent lights. */
+  const emptySky = state.kind === 'ready' && totalCount === 0;
   const lightsLit = useMemo(
     () => enriched.filter((p) => typeof p.claimOrdinal === 'number').length,
     [enriched],
@@ -1582,8 +1583,15 @@ const AtlasPage: React.FC = () => {
 
                 One voice in the caption slot (Adrian, 2026-07-18): while the
                 mandala speaks, or a birth place is selected, the whole band
-                rests. */}
-            {!mandala && totalCount > 0 && selectedKey !== BIRTH_KEY && (
+                rests.
+
+                The band also stands for an EMPTY record (2026-09-01). A dark
+                globe with no word at all reads as broken rather than waiting,
+                so the pulse carries the awaiting line instead of a row of
+                zeroes. Every other child here gates itself off with no dream
+                and no piece, so what remains is that one line, the thesis, and
+                the vision. */}
+            {!mandala && (totalCount > 0 || emptySky) && selectedKey !== BIRTH_KEY && (
               <div
                 className="pointer-events-auto absolute inset-x-0 bottom-0 sm:inset-x-auto sm:left-8 sm:bottom-6 sm:max-w-xl"
                 style={{ opacity: orientationOpacity, transition: chromeTierTransition }}
@@ -1639,13 +1647,14 @@ const AtlasPage: React.FC = () => {
                       it leads and the inventory total trails it as a quiet tail
                       rather than sharing its weight. */}
                   <p className="font-label text-[13px] sm:text-[14px] uppercase tracking-[0.16em] text-atlas-gold">
-                    {/* ── TEMPORARY SAMPLE caption ── see
-                        data/atlasPlaceholder.ts. Delete this branch at launch. */}
-                    {isPlaceholder ? (
+                    {/* The empty record speaks for itself: no count to read
+                        out, and nothing invented to fill the silence. Same
+                        awaiting line the wall, ledger and registry carry. */}
+                    {emptySky ? (
                       <>
-                        sample sky
+                        no lights yet
                         <span className="ml-2 normal-case tracking-[0.02em] text-[12px] text-wood-500">
-                          these five are placeholders until the first real light is claimed
+                          the sky is waiting for its first light
                         </span>
                       </>
                     ) : (

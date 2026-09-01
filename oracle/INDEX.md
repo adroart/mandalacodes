@@ -33,12 +33,77 @@ The central rule is:
 > do not hand-edit, hosted artifacts. Use i64 OS to remember, study, compose,
 > and coordinate.**
 
+## Before you write any card prose
+
+**Read these four, in this order, before drafting or rewriting anything.** This
+gate exists because `AGENTS.md` sends every agent here, and for a while this
+page listed only the older doctrine set. An agent that stopped at the table
+below would follow a spec that has been superseded since 2026-07-06 and would
+reintroduce the exact faults two later passes had to remove.
+
+1. [`CONCEPT.md`](CONCEPT.md) — what the deck is.
+2. [`00_MASTER_WRITING_GUIDE.md`](00_MASTER_WRITING_GUIDE.md) — how a card is
+   built, and the six companion guides `01` to `06` beneath it.
+3. [`WRITING_METHOD.md`](WRITING_METHOD.md) and
+   [`sections/_TEMPLATE_01_CODE_N.md`](sections/_TEMPLATE_01_CODE_N.md) — the
+   per-section method and template. **Both carry a supersession notice. Honour it.**
+4. [`../todo/plans/reading-rewrite.md`](../todo/plans/reading-rewrite.md) —
+   the current spec for the OPENING READING.
+
+### The supersession, stated plainly
+
+The three-movement opening-reading shape (lit face, then other face, then the
+ask, ending a beat early) in `WRITING_METHOD.md` §1.4b and §3, and in
+`sections/_TEMPLATE_01_CODE_N.md` §4.3, is **retired**. It produced 64 readings
+that read as downers and recompressed Gene Keys instead of speaking the whole
+code. Never write or review an opening reading from it. The live spec is
+`../todo/plans/reading-rewrite.md`.
+
+### The anti-formula rules, added 2026-09-01
+
+A survey found one sentence opening the same field on up to 64 of 64 cards,
+because every batch agent had copied the single worked sample in its brief.
+Four passes were needed to clear it. The rules that finally worked, and that
+any future batch must follow:
+
+- **Ban stems, never phrases.** Banning "the body seats this code in the chest"
+  produced "at the chest" on 23 cards and passed every check. Ban the first four
+  or five words regardless of what follows, and measure the same way.
+- **Give every writing agent one test.** Take the new first five words and ask
+  whether that sentence would work unchanged on any of the other 63 cards. If
+  yes, it is a formula whatever its grammar.
+- **A worked sample teaches its own opening.** If a brief must carry one,
+  say explicitly that its first sentence is off limits.
+- **Reference entries are supposed to repeat.** Trigram definitions, the eight
+  Immortals' name sentences, ring labels and the inward and outward face labels
+  describe the same thing wherever they appear. A reference that varies is a
+  broken reference. Never diversify them.
+- **A banned phrase is a construction, not a string.** "Held together, they are"
+  totalling up a field is the formula; "a group held together by a bond nobody
+  can see" is writing. Seven such keeps are recorded with their reasoning in
+  [`sections/_DIVERSIFY_PASS_FOUR.md`](sections/_DIVERSIFY_PASS_FOUR.md).
+
+Full method: [`sections/_DIVERSIFY_BRIEF.md`](sections/_DIVERSIFY_BRIEF.md),
+[`sections/_DIVERSIFY_PASS_THREE.md`](sections/_DIVERSIFY_PASS_THREE.md),
+[`sections/_DIVERSIFY_PASS_FOUR.md`](sections/_DIVERSIFY_PASS_FOUR.md).
+
+### Two house rules that apply to every word
+
+- **Never the em dash character in prose.** Comma, period, colon, or a new
+  sentence. The em dashes already in `oracle/cards/*.md` headings are
+  STRUCTURAL DELIMITERS the parser splits on, as in `### The drive — Gate 24`.
+  Removing those breaks the deck. Only change an em dash after proving it sits
+  inside a sentence.
+- **No italics, and no underscore emphasis, in anything a reader meets.**
+
 ## What is authoritative
 
 | Material | Authoritative location | How to use it |
 | --- | --- | --- |
 | The 64 current card manuscripts | `oracle/cards/NN.md` | Make every new card-prose edit here. |
-| Writing philosophy and method | `oracle/CONCEPT.md`, `00_MASTER_WRITING_GUIDE.md`, guides `01`–`06`, and `WRITE.md` | Read before drafting or substantially rewriting. |
+| Writing philosophy and method | `CONCEPT.md`, `00_MASTER_WRITING_GUIDE.md`, guides `01`–`06`, `WRITING_METHOD.md`, `sections/_TEMPLATE_01_CODE_N.md`, and `WRITE.md` | Read before drafting or substantially rewriting. The last three carry supersession notices; see the gate above. |
+| The current opening-reading spec | `../todo/plans/reading-rewrite.md` | Authoritative for the opening reading. The older three-movement shape is retired. |
+| Anti-formula method for batch writing | `sections/_DIVERSIFY_BRIEF.md`, `_DIVERSIFY_PASS_THREE.md`, `_DIVERSIFY_PASS_FOUR.md` | Read before any pass that touches the same field across many cards. |
 | I Ching, Gene Keys, Human Design, Tarot, body, and moving-line research | `~/Documents/Obsidian Vault/oracle/` | Verify claims and preserve source lineage. |
 | Personal voice and early Oracle conception | Adrian's identity vault | Sovereign reference material; do not auto-edit. |
 | Artwork linkage | `data/mockData.ts` | Linked artwork metadata, not authored Oracle prose. |

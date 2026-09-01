@@ -33,6 +33,23 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 ## Soon
 
+### Found in the overnight audit, 2026-09-01
+
+- [ ] The Design section repeats one opening on 51 of the 64 cards, the same fault just fixed everywhere else _(band: agent-runnable)_ _(effort: deep)_
+  "Where this drive lives in..." across three variants. The I-Ching, Body and Relations sections were cleaned on 2026-09-01 and measure zero; Design was outside that scope and was never swept. The method that worked is written down in [_DIVERSIFY_PASS_THREE.md](oracle/sections/_DIVERSIFY_PASS_THREE.md) and [_DIVERSIFY_PASS_FOUR.md](oracle/sections/_DIVERSIFY_PASS_FOUR.md): ban stems not phrases, and give every agent the test "would this sentence work unchanged on another card".
+
+- [ ] The mobile test suite reads as broadly red because nothing starts the app before it runs _(band: agent-runnable)_ _(effort: moderate)_
+  `playwright.config.ts` has no `webServer` block, so against a cold checkout every spec fails on connection refused before the app exists. That is what has been inflating the count that earlier notes called "dozens red". Real app-level failures exist too, but the suite has never been measured honestly. Add the block, then get one true number, then triage.
+
+- [ ] The sign-in modal is headlined "Keep your chart" no matter what the visitor clicked _(band: you-required)_ _(effort: quick)_
+  It now reads oddly after clicking Save on a card, which is a new door as of 2026-09-01. Changing it touches the modal site-wide, so it wants your call on the wording rather than an agent's guess.
+
+- [ ] The registry lists five waiting rows for mandalas, signature pieces and jewelry _(band: you-required)_ _(effort: quick)_
+  They claim nothing and count as nothing, so they are honest, but while they are there the registry's own "awaiting first light" line never appears. Keep them or drop them, your call.
+
+- [ ] Refresh the two status documents, both of which now undercount what is built _(band: agent-runnable)_ _(effort: quick)_
+  Measured 2026-09-01: five of the six "quick wins" in [DEVELOPMENT-STATUS.md](todo/DEVELOPMENT-STATUS.md) had already shipped, and one file it points at no longer exists. Its section 0 blames an ops gate of database tables and secrets for holding features hostage; the secrets are in fact provisioned, and the real cause is two launch flags on the other repo.
+
 - [ ] Verify the /make note form end to end on the deployed preview after merging the piece-page branch (auth + R2 queue cannot run under plain Vite; a note should appear in AdminAtlas "Make Requests") _(band: agent-runnable)_ _(effort: quick)_ → Plan: [piece-page-acquisition.md](todo/plans/piece-page-acquisition.md)
 
 - [ ] Flip finished pieces to the take-it-home door: in the Catalog Room set status available + acquireUrl; the piece page reads it automatically _(band: you-required)_ _(effort: quick)_

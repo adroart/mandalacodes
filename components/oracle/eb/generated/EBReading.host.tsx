@@ -578,7 +578,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       ctx.fillStyle = '#ABA08C'; ctx.font = themeCanvasFont('400', 30, 'ui');
       ctx.fillText(this.props.data.keywords.slice(0, 3).join(' · '), W / 2, 1492);
       ctx.strokeStyle = '#3a342b'; ctx.beginPath(); ctx.moveTo(390, 1556); ctx.lineTo(690, 1556); ctx.stroke();
-      ctx.fillStyle = '#7A7160'; ctx.font = themeCanvasFont('italic 400', 30, 'reading');
+      ctx.fillStyle = '#7A7160'; ctx.font = themeCanvasFont('400', 30, 'reading');
       ctx.fillText('Open the reading and receive what it holds.', W / 2, 1620);
       const blob: Blob = await new Promise((res) => c.toBlob(res as any, 'image/jpeg', 0.92));
       const url = URL.createObjectURL(blob);
@@ -695,7 +695,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     return React.createElement('div', { style: { textAlign: 'center', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', maxWidth: '150px' } },
       React.createElement('div', { style: { fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '0.24em', textTransform: 'uppercase', color: 'var(--accent-d)' } }, isCurrent ? 'This card' : 'Code ' + focus),
       React.createElement('div', { style: { fontFamily: 'var(--font-display)', fontSize: '44px', lineHeight: 1, color: '#ECE4D5' } }, String(focus)),
-      React.createElement('div', { style: { fontFamily: 'var(--font-reading)', fontStyle: 'italic', fontSize: '17px', lineHeight: 1.2, color: 'rgba(236,228,213,0.8)' } }, hx[1]),
+      React.createElement('div', { style: { fontFamily: 'var(--font-reading)', letterSpacing: '0.01em', fontSize: '17px', lineHeight: 1.2, color: 'rgba(236,228,213,0.8)' } }, hx[1]),
       action);
   }
 
@@ -767,6 +767,11 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     return {
       ...T, // card-bound prose (UL reading/invocation, I Ching, GK, HD, Body) merged in
       cardName: this.props.data.cardName,
+      // Alt text names THIS card. It was hardcoded to card 1, so all 64 cards
+      // announced themselves as Earth's Breath to screen readers and crawlers.
+      // 'Handmade', never 'original' or 'one of one': pieces are made to order
+      // and a design can exist in numbered editions. See utils/universalLanguage.ts.
+      heroAlt: `${this.props.data.cardName}, Universal Language ${this.props.data.code}. Handmade multi-dimensional wooden sculpture by Adrian Rasmussen.`,
       palette: this.props.palette ?? 'daybook',
       accent: this.props.accent ?? 'bronze',
       motion: motionOff,

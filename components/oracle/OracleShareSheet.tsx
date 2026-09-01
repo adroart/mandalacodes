@@ -46,7 +46,7 @@ async function generateStoryBlob(number: number, cardName: string, keywords: str
   ctx.fillStyle = '#ABA08C'; fitText(ctx, keywords, 900, 30, 22, s => themeCanvasFont('400', s, 'ui'));
   ctx.fillText(keywords, cx, 1492);
   ctx.strokeStyle = '#3a342b'; ctx.beginPath(); ctx.moveTo(390, 1556); ctx.lineTo(690, 1556); ctx.stroke();
-  ctx.fillStyle = '#7A7160'; ctx.font = themeCanvasFont('italic 400', 30, 'reading');
+  ctx.fillStyle = '#7A7160'; ctx.font = themeCanvasFont('400', 30, 'reading');
   ctx.fillText('Open the reading and receive what it holds.', cx, 1620);
   return new Promise<Blob>((res, rej) => canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob')), 'image/jpeg', 0.92));
 }

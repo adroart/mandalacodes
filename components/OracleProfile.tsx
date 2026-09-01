@@ -113,7 +113,7 @@ const OracleProfile: React.FC = () => {
               to="/atlas?piece=__birth-place__"
               style={{ color: 'var(--color-bronze-600)', textDecoration: 'none' }}
             >
-              {profile!.inputs.place.label} — on the Atlas →
+              {profile!.inputs.place.label} · on the Atlas →
             </Link>
           </div>
         )}

@@ -424,7 +424,7 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
         pool.length === 0 ? (
           /* An empty atlas, not an over-narrowed one: no filter reduced this
              to nothing, so there is nothing to loosen. */
-          <p className="font-display italic text-lg text-wood-700 py-8">
+          <p className="font-display text-lg text-wood-700 py-8">
             the sky is waiting for its first light.
           </p>
         ) : (
