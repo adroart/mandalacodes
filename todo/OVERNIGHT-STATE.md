@@ -163,3 +163,31 @@ The unit baseline quoted at the top of this file as "696/696" was wrong. It came
 from the engineering audit lane and did not hold in this worktree; the real
 baseline was 688 passing with 8 failing, and an agent caught it. The 8 were the
 generated corpus being stale against rewritten source, which the rebuild fixed.
+
+---
+
+## Near miss worth writing down
+
+The dead-code agent set out to park only its own four files. A typo in the path
+list meant the command matched nothing it named, so it stashed the ENTIRE
+working tree, which at that moment held the unfinished work of several other
+agents. It then dropped that stash before noticing.
+
+It recovered the dropped object with `git fsck` and nothing was lost. Verified
+independently afterwards: tree clean, local and remote at the same commit, all
+64 cards present, every targeted formula reading zero in both the markdown and
+the built corpus, tests unchanged.
+
+**The rule this adds.** The workspace already says never use bare `git stash`.
+This is the sharper version: *a scoped stash whose paths do not match is an
+unscoped stash, silently.* The scoping lives in an argument nobody checks, and
+the failure looks identical to success until you read what came back. Before
+dropping any stash, diff it against the working tree, and never drop one while
+other sessions are writing to the same tree.
+
+**The deeper point.** Ten agents were writing into one shared working tree at
+once. That is what turned one agent's typo into everyone's risk. Splitting by
+file kept the EDITS safe; it did nothing about a whole-tree git command, because
+git operates on the tree and not on the split. Parallel writing agents need
+either separate worktrees or a standing rule that none of them runs a
+tree-scoped git command at all.
