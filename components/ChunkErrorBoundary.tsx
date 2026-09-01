@@ -2,7 +2,13 @@ import React from 'react';
 
 const RELOAD_GUARD_KEY = 'mc-chunk-reload-once';
 
-function isChunkLoadError(error: unknown): boolean {
+/**
+ * Whether a failure is one this boundary knows how to answer: a chunk or a
+ * fetch that never arrived. Exported so code that catches such a failure
+ * itself can check before rethrowing, and so nothing throws an error at this
+ * boundary that it would decline and pass on as a blank screen.
+ */
+export function isChunkLoadError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return /dynamically imported module|Failed to fetch|Loading chunk|ChunkLoadError/i.test(message);
 }
@@ -19,10 +25,15 @@ interface State {
  *
  *  - A stale deploy: the visitor's tab still references a chunk hash that a
  *    later deploy removed. Reload once (sessionStorage guards against a
- *    loop) — the fresh shell has the current manifest.
+ *    loop). The fresh shell has the current manifest.
  *  - Genuinely offline, asking for a route this device never cached (e.g.
  *    the Atlas globe before it's been visited on a connection): reloading
  *    won't help, so say so in one on-brand sentence instead of retrying.
+ *
+ * The card reading rethrows its own failed prose load here (see
+ * components/oracle/reading/CardReadingData.tsx) rather than growing a second
+ * error style: a card's words are a chunk like any other, and a visitor who
+ * scanned a plaque and lost signal is the same visitor in the same situation.
  */
 class ChunkErrorBoundary extends React.Component<{ children: React.ReactNode }, State> {
   state: State = { hasError: false, offline: false };
@@ -62,7 +73,9 @@ class ChunkErrorBoundary extends React.Component<{ children: React.ReactNode }, 
               maxWidth: 380,
             }}
           >
-            This part of the oracle needs a connection — it hasn't been opened on this device yet.
+            This part of the oracle needs a connection. It has not been opened on this device yet,
+            so there is nothing stored here to read. The cards you have already opened are still
+            here, and this one will arrive the next time you have signal.
           </p>
         </div>
       );

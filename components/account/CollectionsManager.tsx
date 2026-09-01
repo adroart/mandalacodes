@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import AccountLayout from './AccountLayout';
 import { useCollections, type CollectionItem } from '../../lib/collections/context';
+import { cardNumberFromItem } from '../../lib/collections/items';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
 import { Link } from 'react-router-dom';
 import { loadAtlasState, findPlacementForCard, type CardPlacement } from '../../lib/atlas/state';
 import type { PublicAtlasState } from '../../types';
 
+/* Cards saved from the card page arrive through cardCollectionItem, so the
+ * same helper resolves them back here. An item that does not resolve to a real
+ * code still gets a readable row rather than a blank one. */
 const itemLabel = (item: CollectionItem): string => {
-  if (item.kind === 'card') {
-    const card = CARD_BY_NUMBER.get(Number(item.ref));
-    return card ? `${card.card_name} · Card ${card.number}` : `Card ${item.ref}`;
+  const cardNumber = cardNumberFromItem(item);
+  if (cardNumber !== null) {
+    const card = CARD_BY_NUMBER.get(cardNumber);
+    return card ? `${card.card_name} · Card ${card.number}` : `Card ${cardNumber}`;
   }
+  if (item.kind === 'card') return `Card ${item.ref}`;
   if (item.kind === 'artwork') return `Artwork · ${item.ref}`;
   return `Product · ${item.ref}`;
 };
@@ -36,12 +42,11 @@ const placementLine = (placement: CardPlacement | null): string | null => {
     }
     return placement.cityLabel ? `rests in ${placement.cityLabel}` : null;
   })();
-  if (!line) return null;
-  return placement.sample ? `${line} · sample` : line;
+  return line;
 };
 
 /* The atlas link only makes sense once a piece is actually mapped to a city
- * (placed or unawakened-but-placed) — mirrors the card page's
+ * (placed or unawakened-but-placed), mirroring the card page's
  * `placementOnGlobe` gate exactly, so a link from either surface always
  * lands on a selected piece rather than an empty globe. */
 const atlasHrefFor = (placement: CardPlacement | null): string | null => {
@@ -62,7 +67,7 @@ const CollectionsManagerInner: React.FC = () => {
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState('');
-  /* Loaded once per mount and reused across every collection/item below —
+  /* Loaded once per mount and reused across every collection/item below:
    * 64 cards max, so a synchronous map over items is simpler than a hook
    * per item. If it fails, atlasState stays null and every join line is
    * simply absent; the rest of the page renders exactly as today. */
@@ -84,8 +89,8 @@ const CollectionsManagerInner: React.FC = () => {
 
   const placementForItem = (item: CollectionItem): CardPlacement | null => {
     if (!atlasState || item.kind !== 'card') return null;
-    const cardNumber = Number(item.ref);
-    if (!Number.isFinite(cardNumber)) return null;
+    const cardNumber = cardNumberFromItem(item);
+    if (cardNumber === null) return null;
     return findPlacementForCard(atlasState, cardNumber);
   };
 
@@ -179,7 +184,7 @@ const CollectionsManagerInner: React.FC = () => {
                 </button>
               </header>
               {c.items.length === 0 ? (
-                <p className="font-reading text-sm text-wood-600 italic">No items yet.</p>
+                <p className="font-reading text-sm text-wood-600">No items yet.</p>
               ) : (
                 <>
                   {(() => {
@@ -209,14 +214,14 @@ const CollectionsManagerInner: React.FC = () => {
                               {itemLabel(item)}
                             </Link>
                             {line && (
-                              <p className="font-reading text-xs italic text-wood-500 truncate">
+                              <p className="font-reading text-xs text-wood-500 truncate">
                                 {line}
                                 {atlasHref && (
                                   <>
                                     {' · '}
                                     <Link
                                       to={atlasHref}
-                                      className="not-italic font-label text-[10px] uppercase tracking-[0.14em] text-bronze-600 hover:text-bronze-700"
+                                      className="font-label text-[10px] uppercase tracking-[0.14em] text-bronze-600 hover:text-bronze-700"
                                     >
                                       On the Atlas
                                     </Link>

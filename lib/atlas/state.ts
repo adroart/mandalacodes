@@ -1,38 +1,48 @@
 import { useEffect, useState } from 'react';
 import type { PublicAtlasState } from '../../types';
-// ── TEMPORARY PLACEHOLDER (remove at launch) ── see data/atlasPlaceholder.ts
-import { buildPlaceholderAtlasState } from '../../data/atlasPlaceholder';
 import { CITIES_BY_ID, formatPlaceLabel } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
 import { ulCardNumber } from '../../utils/universalLanguage';
 
 /* Shared atlas-state loader. The Atlas page and the card page's "On the
  * Atlas" seat both read the same public state; fetching it once per session
- * keeps the two surfaces telling the same story. A valid empty state resolves
- * to the marked SAMPLE state (temporary, see data/atlasPlaceholder.ts) until
- * the first real piece reaches the canonical feed. Failure rejects so every
- * surface can render an explicit unavailable state instead of presenting
- * invented or unsnapshotted data. */
+ * keeps the two surfaces telling the same story.
+ *
+ * The record is the premise: a light means a life is attached to a real
+ * piece. So a valid EMPTY canonical state passes straight through and the sky
+ * stands empty, waiting for its first light. Nothing is ever stood in for it.
+ * Failure rejects, so every surface can render an explicit unavailable state
+ * instead of presenting invented or unsnapshotted data. */
 
 let atlasStatePromise: Promise<PublicAtlasState> | null = null;
+
+/** An empty record: the shape the canonical feed returns before the first
+ *  piece is claimed. Used only by the development preview below. */
+function emptyAtlasState(): PublicAtlasState {
+  return {
+    generatedAt: new Date().toISOString(),
+    schemaVersion: 2,
+    pieces: [],
+    cities: [],
+  };
+}
 
 /**
  * Load the public atlas. Pass `force` to bypass the per-session cache and
  * refetch. Canonical failure rejects; there is no local production snapshot.
  */
 export function loadAtlasState(force = false): Promise<PublicAtlasState> {
-  // ── TEMPORARY PLACEHOLDER (remove at launch) ──
-  // Verification override: `?placeholder` on the URL forces the placeholder
-  // state, so Adrian can preview it locally where the dev server otherwise
-  // seeds 20 pieces. Guarded for SSR/no-window. Delete this block at launch.
+  // Development-only preview: `?emptysky` resolves an empty record, so the
+  // honest empty state can be read locally where the dev server otherwise
+  // seeds pieces. Gated on import.meta.env.DEV and on a window, so it cannot
+  // reach a production build. It invents nothing; it only withholds.
   if (
     import.meta.env.DEV &&
     typeof window !== 'undefined' &&
-    new URLSearchParams(window.location.search).has('placeholder')
+    new URLSearchParams(window.location.search).has('emptysky')
   ) {
-    return Promise.resolve(buildPlaceholderAtlasState());
+    return Promise.resolve(emptyAtlasState());
   }
-  // ── end TEMPORARY PLACEHOLDER ──
 
   if (force) atlasStatePromise = null;
   if (!atlasStatePromise) {
@@ -47,24 +57,16 @@ export function loadAtlasState(force = false): Promise<PublicAtlasState> {
         if (!Array.isArray(state.pieces) || !Array.isArray(state.cities)) {
           throw new Error('atlas malformed');
         }
-        // ── TEMPORARY LAUNCH SAMPLES (remove at launch) ──
-        // A canonical SUCCESS with zero pieces means the registry is real but
-        // still empty: stand the five marked sample pieces in (state carries
-        // `placeholder: true`, and every surface captions them as samples).
-        // They auto-hide the moment the feed carries any real piece. A
-        // canonical FAILURE still rejects above — samples never mask a broken
-        // feed. See data/atlasPlaceholder.ts.
-        if (state.pieces.length === 0) {
-          return buildPlaceholderAtlasState();
-        }
-        // ── end TEMPORARY LAUNCH SAMPLES ──
+        // A canonical SUCCESS with zero pieces is the truth, not a gap to
+        // fill: the registry is real and nothing has been claimed yet. It
+        // passes through untouched and every surface says so plainly.
         return state;
       });
   }
   return atlasStatePromise;
 }
 
-/* ─── Card → placement lookup ─────────────────────────────────────────────
+/* ─── Card to placement lookup ────────────────────────────────────────────
  * Where the physical piece behind a Universal Language card has come to
  * rest. The atlas keys pieces by archive pieceId; the bridge back to a card
  * number runs through the artwork's coverImage naming. */
@@ -73,11 +75,8 @@ export interface CardPlacement {
   pieceId: string;
   editionNumber?: number;
   status: 'seeking' | 'placed' | 'unawakened';
-  /** "Lisbon, Portugal" — present only when placed in a known city. */
+  /** "Lisbon, Portugal", present only when placed in a known city. */
   cityLabel?: string;
-  /** True when this placement came from the sample (placeholder) sky, so
-   *  every seat that speaks it can mark it as a sample. */
-  sample?: boolean;
 }
 
 export function findPlacementForCard(
@@ -94,7 +93,6 @@ export function findPlacementForCard(
       editionNumber: piece.editionNumber,
       status: piece.status,
       cityLabel: city ? formatPlaceLabel(city) : undefined,
-      ...(state.placeholder ? { sample: true } : {}),
     };
   }
   return null;
@@ -111,8 +109,8 @@ export type PublicPiece = PublicAtlasState['pieces'][number];
 /**
  * Find a single public piece by pieceId and (optional) edition number.
  * When `editionNumber` is omitted, matches the first piece for that pieceId
- * (the `:0`/no-edition fallback). Returns null when absent from public state
- * — i.e. seeking-but-private, withdrawn, retired, or simply not in the ledger.
+ * (the `:0`/no-edition fallback). Returns null when absent from public state,
+ * i.e. seeking-but-private, withdrawn, retired, or simply not in the ledger.
  */
 export function findPublicPiece(
   state: PublicAtlasState,

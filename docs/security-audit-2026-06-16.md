@@ -166,5 +166,3 @@ Verification: `npm run test:unit` → **159/159 pass**; `tsc --noEmit` clean for
 4. **O1** — fix the secrets-sync script/guard + docs so deploys don't fail closed on removed Clerk vars.
 5. **L1** — tighten CSP off `'unsafe-inline'` (verify app + `/design/*` still load).
 6. **O3 + D1/D2/D3** — rename `clerk.*` helpers, drop dead `bearerToken`, finish the doc/TODO cleanup, restore the INDEX generator. Low-risk, do with tests.
-</content>
-</invoke>

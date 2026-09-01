@@ -155,8 +155,7 @@ const RegistryLine: React.FC<{
             row.dream ? 'md:hidden' : ''
           }`}
         >
-          {/* TEMPORARY LAUNCH SAMPLES: a sample row always says so. */}
-          {row.sample ? `${stateLine} · sample` : stateLine}
+          {stateLine}
         </span>
       </span>
       {/* the dream's opening — the fourth column on the table, its own line
@@ -444,7 +443,7 @@ const TheRegistry: React.FC = () => {
               pool.length === 0 ? (
                 /* An empty atlas, not an over-narrowed one: no filter reduced
                    this to nothing, so there is nothing to loosen. */
-                <p className="font-display italic text-lg text-wood-700 py-8">
+                <p className="font-display text-lg text-wood-700 py-8">
                   the sky is waiting for its first light.
                 </p>
               ) : (

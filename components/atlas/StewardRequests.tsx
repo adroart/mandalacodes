@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import type { StewardRecord } from '../../types';
+import AtlasMovedNotice from './AtlasMovedNotice';
+import {
+  atlasFailureMessage,
+  readAtlasBoundary,
+  type AtlasBoundary,
+} from '../../lib/atlas/boundary';
 
 /**
  * Holder-facing claim requests (M4) — rendered inside StewardEdit for the
@@ -40,13 +46,20 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [transferKind, setTransferKind] = useState<'sale' | 'gift'>('sale');
   const [error, setError] = useState<string | null>(null);
+  const [movedBoundary, setMovedBoundary] = useState<AtlasBoundary | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const res = await fetchAuthed('/api/atlas/steward/claim-requests');
-        if (cancelled || !res.ok) return;
+        if (cancelled) return;
+        const boundary = await readAtlasBoundary(res);
+        if (boundary) {
+          if (!cancelled) setMovedBoundary(boundary);
+          return;
+        }
+        if (!res.ok) return;
         const data = await res.json();
         if (cancelled || !data?.ok) return;
         setRequests(data.requests ?? []);
@@ -64,6 +77,13 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
       r.pieceId === steward.pieceId &&
       (r.editionNumber ?? undefined) === (steward.editionNumber ?? undefined),
   );
+  if (movedBoundary) {
+    return (
+      <div className="mb-10 print:hidden">
+        <AtlasMovedNotice boundary={movedBoundary} align="left" />
+      </div>
+    );
+  }
   if (forThisPiece.length === 0) return null;
 
   const resolve = async (requestId: string, approve: boolean) => {
@@ -81,9 +101,16 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
           ...(approve ? { transferKind } : {}),
         }),
       });
+      const boundary = await readAtlasBoundary(res);
+      if (boundary) {
+        setMovedBoundary(boundary);
+        return;
+      }
       const data = await res.json();
       if (!res.ok || !data?.ok) {
-        setError(data?.error ?? 'Something went wrong. Please try again.');
+        setError(
+          atlasFailureMessage(res.status, data, 'Something went wrong. Please try again.'),
+        );
         return;
       }
       setRequests(prev => prev.filter(r => r.id !== requestId));

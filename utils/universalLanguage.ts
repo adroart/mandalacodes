@@ -126,3 +126,27 @@ export function ulCardImageUrl(number: number, size: number): string {
     backgroundRemoval,
   });
 }
+
+/**
+ * The widths the reading asks Cloudinary for. Named here, once, because a
+ * width is part of the URL: the same artwork at 1080 and at 1100 are two
+ * different addresses and so two different entries in the offline cache.
+ * Warming one and rendering the other is why a reading opened with no signal
+ * used to show a small framed tile above a broken main image. Anything that
+ * warms artwork ahead of time and anything that displays it must read the
+ * width from here rather than typing a number.
+ */
+export const UL_CARD_ART_WIDTH = {
+  /** The reading's own artwork, framed in the shell and full bleed in the hero. */
+  hero: 1100,
+  /** The lightbox's larger plate, opened by hand and never warmed. */
+  lightbox: 1600,
+} as const;
+
+/**
+ * The artwork URL a card's reading requests, and therefore the one the offline
+ * warm pass has to store. Single source for both sides of that agreement.
+ */
+export function ulCardHeroImageUrl(number: number): string {
+  return ulCardImageUrl(number, UL_CARD_ART_WIDTH.hero);
+}

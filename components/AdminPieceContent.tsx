@@ -4,6 +4,7 @@ import AdminLayout from './AdminLayout';
 import TypeaheadPicker from './shared/TypeaheadPicker';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { img } from '../utils/cloudinary';
+import { atlasFailureMessage } from '../lib/atlas/boundary';
 import {
     isValidImageId,
     MAX_IMAGES,
@@ -301,7 +302,7 @@ const PieceContentEditor: React.FC = () => {
                             : EMPTY_FORM,
                     );
                 } else {
-                    setLoadError(data?.error || 'Could not load this piece\'s content.');
+                    setLoadError(atlasFailureMessage(res.status, data, 'Could not load this piece\'s content.'));
                 }
             } catch {
                 if (active) setLoadError('Network error. Check your connection.');
@@ -342,7 +343,7 @@ const PieceContentEditor: React.FC = () => {
             if (data?.ok) {
                 setSavedAt(new Date().toLocaleTimeString());
             } else {
-                setSaveError(data?.error || 'Could not save.');
+                setSaveError(atlasFailureMessage(res.status, data, 'Could not save.'));
             }
         } catch {
             setSaveError('Network error. Check your connection.');

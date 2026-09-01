@@ -15,6 +15,12 @@ import ArtworkPlate from './ArtworkPlate';
 import BookLightBand from './BookLightBand';
 import { ordinalLabel } from './PieceSidePanel';
 import AccountLayout from '../account/AccountLayout';
+import AtlasMovedNotice from './AtlasMovedNotice';
+import {
+  atlasFailureMessage,
+  readAtlasBoundary,
+  type AtlasBoundary,
+} from '../../lib/atlas/boundary';
 import TypeaheadPicker from '../shared/TypeaheadPicker';
 import Toggle from '../shared/Toggle';
 
@@ -80,6 +86,9 @@ const StewardEdit: React.FC = () => {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // The record moved to the artist site. When any call says so, the whole page
+  // becomes the boundary: one sentence, one door, nothing to press again.
+  const [movedBoundary, setMovedBoundary] = useState<AtlasBoundary | null>(null);
   // Signed in, but no piece bound to this account (a 404, or an empty claim).
   // Not a redirect and not a dead-end: the three-door no-record screen.
   const [noRecord, setNoRecord] = useState(false);
@@ -107,6 +116,15 @@ const StewardEdit: React.FC = () => {
   // stacks, lingers across pieces, or shows on error.
   const [placeNudge, setPlaceNudge] = useState<'shine' | 'below' | null>(null);
 
+  /* Read a failed atlas response once. A moved boundary takes over the page;
+     anything else falls through to the screen's own words. */
+  const takeBoundary = async (res: Response): Promise<boolean> => {
+    const boundary = await readAtlasBoundary(res);
+    if (!boundary) return false;
+    setMovedBoundary(boundary);
+    return true;
+  };
+
   // Load claimed pieces via authed claim call.
   useEffect(() => {
     if (!isLoaded) return;
@@ -130,6 +148,11 @@ const StewardEdit: React.FC = () => {
         }
         if (res.status === 404) {
           setNoRecord(true);
+          return;
+        }
+        const boundary = await readAtlasBoundary(res);
+        if (boundary) {
+          if (!cancelled) setMovedBoundary(boundary);
           return;
         }
         if (!res.ok) {
@@ -230,6 +253,7 @@ const StewardEdit: React.FC = () => {
         navigate('/atlas/claim', { replace: true });
         return;
       }
+      if (await takeBoundary(res)) return;
       if (!res.ok) {
         setSaveError('Something went wrong, please try again.');
         return;
@@ -289,6 +313,7 @@ const StewardEdit: React.FC = () => {
         navigate('/atlas/claim', { replace: true });
         return;
       }
+      if (await takeBoundary(res)) return;
       const data = (await res.json().catch(() => null)) as
         | { ok?: boolean; steward?: StewardRecord }
         | null;
@@ -352,11 +377,14 @@ const StewardEdit: React.FC = () => {
         navigate('/atlas/claim', { replace: true });
         return;
       }
+      if (await takeBoundary(res)) return;
       const data = (await res.json().catch(() => null)) as
         | { ok?: boolean; steward?: StewardRecord; error?: string }
         | null;
       if (!res.ok || !data?.ok || !data.steward) {
-        setSaveError(data?.error ?? 'Something went wrong, please try again.');
+        setSaveError(
+          atlasFailureMessage(res.status, data, 'Something went wrong, please try again.'),
+        );
         return;
       }
       const updated = data.steward;
@@ -421,6 +449,7 @@ const StewardEdit: React.FC = () => {
         navigate('/atlas/claim', { replace: true });
         return;
       }
+      if (await takeBoundary(res)) return;
       if (!res.ok) {
         setConsentError('Something went wrong. Please try again.');
         return;
@@ -485,6 +514,15 @@ const StewardEdit: React.FC = () => {
     );
   }
 
+  // The honest boundary: the collector record moved to the artist site.
+  if (movedBoundary) {
+    return (
+      <AccountLayout title="Your pieces">
+        <AtlasMovedNotice boundary={movedBoundary} align="left" className="max-w-md" />
+      </AccountLayout>
+    );
+  }
+
   // Signed in, but nothing bound yet — a door, not a wall (interface law 6).
   if (noRecord) {
     return (
@@ -523,7 +561,7 @@ const StewardEdit: React.FC = () => {
     return (
       <AccountLayout title="Your pieces">
         <div className="max-w-md space-y-4">
-          <p className="font-display italic text-base text-stone-600">
+          <p className="font-display text-base text-stone-600">
             {loadError ?? 'Could not load your piece.'}
           </p>
           <button

@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAccount } from '../../lib/account/useAccount';
 import SignInTrigger from '../account/SignInTrigger';
+import AtlasMovedNotice from './AtlasMovedNotice';
+import {
+  atlasFailureMessage,
+  readAtlasBoundary,
+  type AtlasBoundary,
+} from '../../lib/atlas/boundary';
 
 /**
  * "Request stewardship" (M4): the self-serve path for whoever holds the
@@ -33,6 +39,7 @@ const RequestStewardship: React.FC<{
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [movedBoundary, setMovedBoundary] = useState<AtlasBoundary | null>(null);
 
   const submit = async () => {
     setBusy(true);
@@ -49,9 +56,16 @@ const RequestStewardship: React.FC<{
           ...(note.trim() ? { note: note.trim() } : {}),
         }),
       });
+      const boundary = await readAtlasBoundary(res);
+      if (boundary) {
+        setMovedBoundary(boundary);
+        return;
+      }
       const data = await res.json();
       if (!res.ok || !data?.ok) {
-        setError(data?.error ?? 'Something went wrong. Please try again.');
+        setError(
+          atlasFailureMessage(res.status, data, 'Something went wrong. Please try again.'),
+        );
         return;
       }
       setSent(true);
@@ -61,6 +75,11 @@ const RequestStewardship: React.FC<{
       setBusy(false);
     }
   };
+
+  // The honest boundary: stewardship requests live on the artist site now.
+  if (movedBoundary) {
+    return <AtlasMovedNotice boundary={movedBoundary} align="left" className="mt-4" />;
+  }
 
   if (sent) {
     return (

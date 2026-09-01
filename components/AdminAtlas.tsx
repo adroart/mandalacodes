@@ -8,6 +8,7 @@ import { pieceCode } from '../utils/pieceCode';
 import type { SaleQueueItem } from '../utils/saleBridge';
 import type { HomecomingRequest } from '../lib/atlas/homecoming';
 import type { MakeRequest } from '../lib/atlas/make';
+import { atlasFailureMessage } from '../lib/atlas/boundary';
 import {
     CATALOG_KINDS,
     CATALOG_KIND_LABELS,
@@ -444,7 +445,7 @@ const SeedEventSection: React.FC = () => {
                 setResult(data.event as LedgerEvent);
                 setForm({ ...EMPTY_EVENT, date: formatNow() });
             } else {
-                setError(data?.error || 'Could not append event.');
+                setError(atlasFailureMessage(res.status, data, 'Could not append event.'));
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -654,7 +655,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                 setForm(EMPTY_STEWARD);
                 onIssued();
             } else {
-                setError(data?.error || 'Could not add steward.');
+                setError(atlasFailureMessage(res.status, data, 'Could not add steward.'));
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -860,7 +861,7 @@ const PendingSaleRow: React.FC<{
             if (data?.ok) {
                 onResolved();
             } else {
-                setError(data?.error || 'Request failed.');
+                setError(atlasFailureMessage(res.status, data, 'Request failed.'));
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -992,7 +993,7 @@ const PendingSalesSection: React.FC = () => {
                 setPending(data.pending || []);
                 setResolved(data.resolved || []);
             } else {
-                setError(data?.error || 'Could not load the sale queue.');
+                setError(atlasFailureMessage(res.status, data, 'Could not load the sale queue.'));
             }
         } catch {
             setError('Could not load the sale queue.');
@@ -1092,7 +1093,7 @@ const TendingSection: React.FC = () => {
             if (data?.ok) {
                 setIntentions(data.intentions || []);
             } else {
-                setError(data?.error || 'Could not load the map of dreams.');
+                setError(atlasFailureMessage(res.status, data, 'Could not load the map of dreams.'));
             }
         } catch {
             setError('Could not load the map of dreams.');
@@ -1123,7 +1124,7 @@ const TendingSection: React.FC = () => {
             if (data?.ok) {
                 await load();
             } else {
-                setError(data?.error || 'Could not tend the entry.');
+                setError(atlasFailureMessage(res.status, data, 'Could not tend the entry.'));
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -1250,7 +1251,7 @@ const ClaimRequestsSection: React.FC = () => {
             if (data?.ok) {
                 setRequests(data.requests || []);
             } else {
-                setError(data?.error || 'Could not load claim requests.');
+                setError(atlasFailureMessage(res.status, data, 'Could not load claim requests.'));
             }
         } catch {
             setError('Could not load claim requests.');
@@ -1281,7 +1282,7 @@ const ClaimRequestsSection: React.FC = () => {
             if (data?.ok) {
                 await load();
             } else {
-                setError(data?.error || 'Could not resolve the request.');
+                setError(atlasFailureMessage(res.status, data, 'Could not resolve the request.'));
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -1426,7 +1427,7 @@ const HomecomingRow: React.FC<{
                     onResolved();
                 }
             } else {
-                setError(data?.error || 'Could not resolve the request.');
+                setError(atlasFailureMessage(res.status, data, 'Could not resolve the request.'));
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -1637,7 +1638,7 @@ const HomecomingSection: React.FC = () => {
             if (data?.ok) {
                 setRequests(data.requests || []);
             } else {
-                setError(data?.error || 'Could not load homecomings.');
+                setError(atlasFailureMessage(res.status, data, 'Could not load homecomings.'));
             }
         } catch {
             setError('Could not load homecomings.');
@@ -1762,7 +1763,7 @@ const StewardRoster: React.FC<{
                 setReissued({ code: data.claimCode, sigil: resolvePieceSigil(s.pieceId), pieceId: s.pieceId, editionNumber: s.editionNumber });
                 await onReload();
             } else {
-                setRowError(data?.error || 'Could not reissue the code.');
+                setRowError(atlasFailureMessage(res.status, data, 'Could not reissue the code.'));
             }
         } catch {
             setRowError('Network error. Check your connection.');
@@ -1800,7 +1801,7 @@ const StewardRoster: React.FC<{
             }
             const data = await res.json();
             if (!data?.ok) {
-                setRowError(data?.error || 'Could not update status.');
+                setRowError(atlasFailureMessage(res.status, data, 'Could not update status.'));
                 await onReload();
             }
         } catch {
@@ -1995,7 +1996,7 @@ const MakeRequestsSection: React.FC = () => {
             if (data?.ok) {
                 setRequests(data.requests || []);
             } else {
-                setError(data?.error || 'Could not load make requests.');
+                setError(atlasFailureMessage(res.status, data, 'Could not load make requests.'));
             }
         } catch {
             setError('Could not load make requests.');
@@ -2026,7 +2027,7 @@ const MakeRequestsSection: React.FC = () => {
             if (data?.ok) {
                 await load();
             } else {
-                setError(data?.error || 'Could not resolve the request.');
+                setError(atlasFailureMessage(res.status, data, 'Could not resolve the request.'));
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -2252,7 +2253,7 @@ const CatalogForm: React.FC<{
                 onCreated({ ...data.entry, sigil: data.sigil }, data.sigil);
                 setForm(EMPTY_CATALOG_FORM);
             } else {
-                setError(data?.error || 'Could not add the piece.');
+                setError(atlasFailureMessage(res.status, data, 'Could not add the piece.'));
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -2524,7 +2525,7 @@ const CatalogRow: React.FC<{
             const data = await res.json();
             // A 409 "genesis already exists" is fine — the piece is in the world.
             if (!data?.ok && res.status !== 409) {
-                setError(data?.error || 'Could not enter the world.');
+                setError(atlasFailureMessage(res.status, data, 'Could not enter the world.'));
                 return;
             }
             // A placed event anchors it when it rests with a keeper at a city.
@@ -2578,7 +2579,7 @@ const CatalogRow: React.FC<{
                 setNote('invitation sent');
                 onChanged();
             } else {
-                setError(data?.error || 'Could not send the invitation.');
+                setError(atlasFailureMessage(res.status, data, 'Could not send the invitation.'));
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -2609,7 +2610,7 @@ const CatalogRow: React.FC<{
             if (data?.ok && data.claimCode) {
                 setCodeRef(data.claimCode);
             } else {
-                setError(data?.error || 'Could not mint the code.');
+                setError(atlasFailureMessage(res.status, data, 'Could not mint the code.'));
             }
         } catch {
             setError('Network error. Check your connection.');
@@ -2805,7 +2806,7 @@ const CatalogSection: React.FC = () => {
             if (data?.ok) {
                 setEntries(data.entries || []);
             } else {
-                setError(data?.error || 'Could not load the catalog.');
+                setError(atlasFailureMessage(res.status, data, 'Could not load the catalog.'));
             }
         } catch {
             setError('Could not load the catalog.');
@@ -2886,7 +2887,7 @@ const AdminAtlas: React.FC = () => {
             if (data?.ok) {
                 setStewards(data.stewards || []);
             } else {
-                setRosterError(data?.error || 'Could not load roster.');
+                setRosterError(atlasFailureMessage(res.status, data, 'Could not load roster.'));
             }
         } catch {
             setRosterError('Could not load roster.');

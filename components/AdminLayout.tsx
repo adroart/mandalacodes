@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAccount } from '../lib/account/useAccount';
 import { signOut } from '../lib/account/authClient';
+import AtlasMovedNotice from './atlas/AtlasMovedNotice';
+import { readAtlasBoundary, type AtlasBoundary } from '../lib/atlas/boundary';
 
 /**
  * Wraps admin routes. Checks Better Auth session client-side, then verifies
@@ -19,6 +21,11 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [adminVerified, setAdminVerified] = useState<'checking' | 'yes' | 'no'>('checking');
+  /* The allowlist ping runs against a route that is now retired. A 410 there
+     says nothing about who is signed in, so it must never be read as "not an
+     admin" — that told the one person who IS the admin the opposite of the
+     truth. It gets the boundary instead. */
+  const [movedBoundary, setMovedBoundary] = useState<AtlasBoundary | null>(null);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -38,6 +45,11 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       try {
         const res = await fetchAuthed('/api/atlas/stewards');
         if (cancelled) return;
+        const boundary = await readAtlasBoundary(res);
+        if (boundary) {
+          if (!cancelled) setMovedBoundary(boundary);
+          return;
+        }
         if (res.ok) {
           setAdminVerified('yes');
         } else {
@@ -56,6 +68,14 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     await signOut();
     navigate('/admin/login', { replace: true });
   };
+
+  if (movedBoundary) {
+    return (
+      <div className="min-h-screen bg-paper-50 flex items-center justify-center px-6">
+        <AtlasMovedNotice boundary={movedBoundary} className="max-w-md" />
+      </div>
+    );
+  }
 
   if (!isLoaded || adminVerified === 'checking') {
     return (

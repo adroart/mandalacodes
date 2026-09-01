@@ -31,7 +31,8 @@ describe('hosted Oracle REST parity', () => {
 
     expect(hosted).toEqual(local.map(withoutSearchText));
     expect(hosted[2]).toMatchObject({
-      glance: { reading: expect.stringContaining('Something has begun in you') },
+      // Mid-paragraph prose fixture on purpose (see cardMarkdown.test.ts).
+      glance: { reading: expect.stringContaining('pressing up the way a sprout forces the crust of the ground') },
       relations: { codon_ring: { name: 'Ring of Life and Death' } },
     });
   });
