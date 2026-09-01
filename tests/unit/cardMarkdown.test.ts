@@ -33,13 +33,17 @@ describe('Oracle card Markdown parser', () => {
     expect(card.frontmatter.number).toBe(3);
     expect(card.frontmatter.card_name).toBe('Messengers of the Infinite');
 
+    // Prose fixtures below are deliberately mid-paragraph phrases, not opening
+    // sentences: editorial passes rewrite how a paragraph opens, so an opening-line
+    // assertion breaks on every rewrite. Each phrase still appears in exactly one
+    // field of oracle/cards/03.md, so a mis-mapped section still fails this test.
     const code = mapCode(card);
     expect(code?.keywords).toContain('New Beginnings');
-    expect(code?.reading).toContain('Something has begun in you');
+    expect(code?.reading).toContain('pressing up the way a sprout forces the crust of the ground');
 
     const iching = mapIching(card);
     expect(iching?.hexagram_name).toBe('Difficulty at the Beginning');
-    expect(iching?.reading).toContain('moment just after a thing has begun');
+    expect(iching?.reading).toContain('child in the long labour of being born');
     expect(iching?.lines).toHaveLength(6);
     expect(iching?.lines[0]?.becomes).toEqual({
       hexagram: 8,
@@ -48,11 +52,11 @@ describe('Oracle card Markdown parser', () => {
 
     const keys = mapKeys(card);
     expect(keys?.shadow_name).toBe('Chaos');
-    expect(keys?.gift).toContain('Stop outrunning the unsettled feeling');
+    expect(keys?.gift).toContain('an acorn keeps working toward a shape of tree it has never seen');
 
     const design = mapDesign(card);
     expect(design?.gate_number).toBe(3);
-    expect(design?.gate).toContain('giving form to something that has only just arrived');
+    expect(design?.gate).toContain('holding the insight until the world can receive it');
 
     const body = mapBody(card);
     expect(body?.meta).toEqual({
@@ -60,7 +64,7 @@ describe('Oracle card Markdown parser', () => {
       amino_acid_name: 'Leucine',
       codon_ring: 'Ring of Life and Death',
     });
-    expect(body?.physiology).toContain('soft middle where the news of impermanence is felt');
+    expect(body?.physiology).toContain('pulls the breath up out of the abdomen');
   });
 
   it('parses inline maps and nested arrays from frontmatter', () => {

@@ -44,15 +44,17 @@ describe('generated Oracle artifacts', () => {
     const searchDoc = searchDocs.find(candidate => candidate.number === 3);
 
     expect(card?.keywords).toContain('New Beginnings');
-    expect(card?.glance.reading).toContain('Something has begun in you');
-    expect(card?.iching.reading).toContain('moment just after a thing has begun');
-    expect(card?.gene_keys.gift).toContain('Stop outrunning the unsettled feeling');
-    expect(card?.human_design.gate).toContain('giving form to something that has only just arrived');
-    expect(card?.body.physiology).toContain('soft middle where the news of impermanence is felt');
+    // Deliberately mid-paragraph prose fixtures, one per lens, each unique to its
+    // own field in oracle/cards/03.md. Opening sentences get rewritten; these do not.
+    expect(card?.glance.reading).toContain('pressing up the way a sprout forces the crust of the ground');
+    expect(card?.iching.reading).toContain('child in the long labour of being born');
+    expect(card?.gene_keys.gift).toContain('an acorn keeps working toward a shape of tree it has never seen');
+    expect(card?.human_design.gate).toContain('holding the insight until the world can receive it');
+    expect(card?.body.physiology).toContain('pulls the breath up out of the abdomen');
 
     expect(searchDoc?.keywords).toContain('New Beginnings');
-    expect(searchDoc?.fields.glance).toContain('Something has begun in you');
-    expect(searchDoc?.fields.iching).toContain('moment just after a thing has begun');
+    expect(searchDoc?.fields.glance).toContain('pressing up the way a sprout forces the crust of the ground');
+    expect(searchDoc?.fields.iching).toContain('child in the long labour of being born');
   });
 
   it('retains rich Markdown Relations and the Markdown-authoritative Card 29 pair', async () => {
@@ -65,7 +67,8 @@ describe('generated Oracle artifacts', () => {
       name: 'Ring of Life and Death',
       siblings: [20, 23, 24, 27, 42],
     });
-    expect(card3?.relations.tarot?.teaching).toContain('The Tarot meets this hexagram on two axes');
+    // Mid-paragraph on purpose: the Tarot teaching's opening line is editorial.
+    expect(card3?.relations.tarot?.teaching).toContain('Water above as the High Priestess and the Hanged Man');
     expect(card3?.relations.sky).toMatchObject({ value: 'Scorpio' });
     expect(card3?.relations.immortals?.teaching).toContain('Li Tie Guai stands above');
     expect(card3?.relations.hebrew_letter).toMatchObject({ letter: 'Nun' });
