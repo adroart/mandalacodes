@@ -39,13 +39,23 @@ spine) do not appear in the prose. Ever.
 - Mid-conversation framing: "Half a circuit", "A gate is only half...",
   "As a gate, this code is..." Open from the felt truth of what this code
   does in a person.
+- **Attributing a name to a lineage.** "The lineage calls this...", "the
+  lineage names this...", or any sentence whose subject is a tradition doing
+  the naming. This is the source-naming ban in
+  `00_MASTER_WRITING_GUIDE.md` §6 ("NEVER — name a source in the writing"),
+  and it binds here too. An earlier version of this brief permitted the
+  construction once per card; that permission produced the same sentence on
+  49 of 64 cards and was cut on 2026-09-02. **Ban the stem, not the phrase:**
+  any opening that makes a tradition the namer is out, however it continues.
 
 **Allowed** (carefully):
 - The gate's keyword (e.g. "Self-Expression", "Direction of the Self") if it
   is needed once to name what the code is about.
-- The channel's lineage name (e.g. "the channel of inspiration") if needed
-  once, framed as something the lineage calls this connection — not as a
-  technical term the reader is expected to recognise.
+- The connection's name (e.g. "a channel of inspiration") stated once as the
+  deck's own plain word for what the two codes make together, never credited
+  to anyone and never framed as a term the reader is expected to recognise.
+  Vary the sentence shape per card: if your sentence would work unchanged on
+  another card, it is a formula, whatever its grammar.
 - Body language: liver, heart, breath, gut, throat (as the throat, not as
   "the throat centre"). The body is the bridge; the chart of the body is
   not.
