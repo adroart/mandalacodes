@@ -74,7 +74,7 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
         aria-label="Selected piece"
         className="bg-paper-100 border border-wood-200 p-6 sm:p-8 min-h-[16rem] flex items-center justify-center"
       >
-        <p className="font-reading italic text-base text-wood-600 max-w-xs text-center leading-[1.7]">
+        <p className="font-reading text-base text-wood-600 max-w-xs text-center leading-[1.7]">
           Tap a point on the globe to see where that piece has come to rest.
         </p>
       </aside>
@@ -134,7 +134,7 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
         </p>
         <p
           className={`font-reading text-lg leading-snug ${
-            isSeeking || isUnawakened ? 'italic text-wood-700' : 'text-wood-900'
+            isSeeking || isUnawakened ? 'text-wood-700' : 'text-wood-900'
           }`}
         >
           {statusLine}
@@ -149,7 +149,7 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
           <p className="font-reading text-lg text-wood-900 leading-snug">
             The {ordinalLabel(piece.claimOrdinal)} light
           </p>
-          <p className="font-reading italic text-sm text-wood-600 leading-snug mt-1">
+          <p className="font-reading text-sm text-wood-600 leading-snug mt-1">
             A founding light marks the order in which a piece was claimed by its keeper.
           </p>
         </div>

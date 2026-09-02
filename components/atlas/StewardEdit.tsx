@@ -507,7 +507,7 @@ const StewardEdit: React.FC = () => {
   if (loading) {
     return (
       <AccountLayout title="Your pieces">
-        <p className="font-display italic text-base text-stone-600">
+        <p className="font-display text-base text-stone-600">
           loading your piece
         </p>
       </AccountLayout>
@@ -633,7 +633,7 @@ const StewardEdit: React.FC = () => {
         {!piece ? (
           /* Claimed steward record but no ledger projection yet — nothing to
              edit until an event exists for this piece. */
-          <p className="font-display italic text-base text-stone-600 text-center mb-12">
+          <p className="font-display text-base text-stone-600 text-center mb-12">
             This piece doesn't have an atlas record yet. Ask Adrian to seed it
             and it will appear here.
           </p>
@@ -851,7 +851,7 @@ const StewardEdit: React.FC = () => {
             <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
               Join the constellation of keepers
             </span>
-            <p className="font-display italic text-sm text-stone-600 mb-4">
+            <p className="font-display text-sm text-stone-600 mb-4">
               Turn this on and your piece joins the kinship constellation; arcs
               may connect it to other consenting pieces that share its trigrams.
               No name and no birth data are ever shown — only the elemental
@@ -879,7 +879,7 @@ const StewardEdit: React.FC = () => {
             </span>
           )}
           {!savedAt && saveError && (
-            <span className="font-display italic text-base text-stone-600">{saveError}</span>
+            <span className="font-display text-base text-stone-600">{saveError}</span>
           )}
         </div>
         </>

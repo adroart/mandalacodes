@@ -649,7 +649,6 @@ html.oracle-card-page body {
     width: 168px;
     font-family: var(--font-display);
     font-size: 1rem;
-    font-style: italic;
     color: var(--color-wood-600);
     line-height: 1.45;
     border-left: 1px solid rgba(196,170,124,0.4);

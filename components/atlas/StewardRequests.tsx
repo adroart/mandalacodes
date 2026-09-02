@@ -134,7 +134,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
       </p>
 
       {error && (
-        <p className="font-reading italic text-sm text-stone-600 mb-3">{error}</p>
+        <p className="font-reading text-sm text-stone-600 mb-3">{error}</p>
       )}
 
       <ul className="space-y-4">
@@ -147,7 +147,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
               {new Date(r.createdAt).toLocaleDateString()}
             </p>
             {r.note && (
-              <p className="font-reading italic text-sm text-wood-700 mb-4">
+              <p className="font-reading text-sm text-wood-700 mb-4">
                 “{r.note}”
               </p>
             )}
@@ -176,7 +176,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
                     ))}
                   </div>
                 </div>
-                <p className="font-reading italic text-sm text-stone-600">
+                <p className="font-reading text-sm text-stone-600">
                   This passes the piece — and its book — to them. The record
                   of your time with it stays in the piece's history.
                 </p>

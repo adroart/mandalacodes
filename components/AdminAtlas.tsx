@@ -463,7 +463,7 @@ const SeedEventSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-reading italic text-sm text-stone-600 mb-4">
+                <p className="font-reading text-sm text-stone-600 mb-4">
                     {error}
                 </p>
             )}
@@ -678,7 +678,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
             </p>
 
             {error && (
-                <p className="font-reading italic text-sm text-stone-600 mb-4">
+                <p className="font-reading text-sm text-stone-600 mb-4">
                     {error}
                 </p>
             )}
@@ -909,7 +909,7 @@ const PendingSaleRow: React.FC<{
             </p>
 
             {error && (
-                <p className="font-reading italic text-sm text-stone-600 mb-3">{error}</p>
+                <p className="font-reading text-sm text-stone-600 mb-3">{error}</p>
             )}
 
             <div className="space-y-3">
@@ -1018,7 +1018,7 @@ const PendingSalesSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-reading italic text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading text-sm text-stone-600 mb-4">{error}</p>
             )}
             {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
             {!loading && !error && pending.length === 0 && (
@@ -1160,7 +1160,7 @@ const TendingSection: React.FC = () => {
                     </span>
                 )}
             </div>
-            <p className="font-reading italic text-base text-wood-700 mb-4">
+            <p className="font-reading text-base text-wood-700 mb-4">
                 “{i.text}”
             </p>
             <div className="flex gap-3">
@@ -1199,7 +1199,7 @@ const TendingSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-reading italic text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading text-sm text-stone-600 mb-4">{error}</p>
             )}
             {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
             {!loading && !error && live.length === 0 && (
@@ -1306,7 +1306,7 @@ const ClaimRequestsSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-reading italic text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading text-sm text-stone-600 mb-4">{error}</p>
             )}
             {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
             {!loading && !error && pending.length === 0 && (
@@ -1339,7 +1339,7 @@ const ClaimRequestsSection: React.FC = () => {
                             {formatRelative(r.createdAt)}
                         </p>
                         {r.note && (
-                            <p className="font-reading italic text-sm text-wood-700 mb-4">
+                            <p className="font-reading text-sm text-wood-700 mb-4">
                                 “{r.note}”
                             </p>
                         )}
@@ -1823,13 +1823,13 @@ const StewardRoster: React.FC<{
             </p>
 
             {error && (
-                <p className="font-reading italic text-sm text-stone-600">
+                <p className="font-reading text-sm text-stone-600">
                     {error}
                 </p>
             )}
 
             {rowError && (
-                <p className="font-reading italic text-sm text-stone-600 mb-4">
+                <p className="font-reading text-sm text-stone-600 mb-4">
                     {rowError}
                 </p>
             )}
@@ -2269,7 +2269,7 @@ const CatalogForm: React.FC<{
             </h3>
 
             {error && (
-                <p className="font-reading italic text-sm text-stone-600 mb-4">
+                <p className="font-reading text-sm text-stone-600 mb-4">
                     {error}
                 </p>
             )}
@@ -2642,7 +2642,7 @@ const CatalogRow: React.FC<{
   .plaque { width: 340px; margin: 24px auto; padding: 34px 26px; background: #f5f0e8;
     border: 1px solid #c6bca6; text-align: center; color: #2c2c2c; }
   .sigil { font-size: 13px; letter-spacing: 0.26em; text-transform: uppercase; color: #8b6914; }
-  .title { font-style: italic; font-size: 26px; margin: 20px 10px 8px; }
+  .title { font-size: 26px; margin: 20px 10px 8px; }
   .whisper { font-size: 12px; letter-spacing: 0.1em; color: #5a4a35; }
   .qr { margin: 22px auto 6px; }
   .qr img { width: 190px; height: 190px; }
@@ -2691,7 +2691,7 @@ const CatalogRow: React.FC<{
             </div>
 
             {error && (
-                <p className="font-reading italic text-sm text-stone-600 mb-2">
+                <p className="font-reading text-sm text-stone-600 mb-2">
                     {error}
                 </p>
             )}
@@ -2838,7 +2838,7 @@ const CatalogSection: React.FC = () => {
             />
 
             {error && (
-                <p className="font-reading italic text-sm text-stone-600 mb-4">
+                <p className="font-reading text-sm text-stone-600 mb-4">
                     {error}
                 </p>
             )}
