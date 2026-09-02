@@ -854,15 +854,17 @@ const PiecePage: React.FC = () => {
         </article>
 
         {/* ═══════════════════ HOW THIS WORKS ═══════════════════
-            The stranger's on-ramp in one breath: three short statements,
-            each grounding one invented word (hand, dream, ledger).
-            Compressed hard (Adrian, 2026-07-26: "so much text... easy to
-            get fatigued and just skip") — the longer teaching lives on
-            /make and in the certificate itself. */}
+            The stranger's on-ramp in one breath: two short statements, each
+            grounding one invented word (dream, ledger). The making used to
+            be a third one here, but the certificate above now says how the
+            piece is made in its own voice, and the two lines sat close
+            enough to repeat each other (Adrian, 2026-09-02). Compressed
+            hard (Adrian, 2026-07-26: "so much text... easy to get fatigued
+            and just skip") — the longer teaching lives on /make and in the
+            certificate itself. */}
         <section className="mt-10 sm:mt-12">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-8 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8 text-center">
             {[
-              { lead: 'Made by hand', body: 'One artist, layer by layer, to order.' },
               { lead: 'One dream', body: 'Written by its keeper, kept for life.' },
               { lead: 'Never lost', body: 'Its whole story in a sealed ledger.' },
             ].map((item) => (
