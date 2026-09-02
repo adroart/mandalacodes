@@ -101,7 +101,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             Acquire
             </span>
             <span style={{ display: "block", fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)", marginTop: "3px" }}>
-            The original · available
+            The piece · available
             </span>
           </button>
           <span aria-hidden="true" style={{ flexShrink: "0", alignSelf: "stretch", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "5px", color: "var(--accent)" }}>
@@ -965,7 +965,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   ) : null}
   {(vals.buyOpen) ? (
     <>
-      <div onClick={vals.closeBuy} role="dialog" aria-modal="true" aria-label="Acquire the original" style={{ position: "fixed", inset: "0", zIndex: "300", background: "rgba(10,8,5,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", animation: "ulFadeIn 250ms ease both" }}>
+      <div onClick={vals.closeBuy} role="dialog" aria-modal="true" aria-label="Acquire the piece" style={{ position: "fixed", inset: "0", zIndex: "300", background: "rgba(10,8,5,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", animation: "ulFadeIn 250ms ease both" }}>
         <div onClick={vals.stop} style={{ width: "100%", maxWidth: "460px", background: "var(--l-bg)", border: "1px solid var(--l-rule)", overflow: "hidden", animation: "ulOverlay 420ms cubic-bezier(.16,1,.3,1) both" }}>
           <div style={{ aspectRatio: "16/10", background: "var(--l-soft)", overflow: "hidden" }}>
             <img crossOrigin="anonymous" src={vals.buyImage} alt={vals.heroAlt} onError={vals.onImgError} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -978,7 +978,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             {vals.cardName}
             </h3>
             <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.01em", fontSize: "16px", color: "var(--l-2)", margin: "0 0 20px", lineHeight: "1.5" }}>
-            A multidimensional wooden sculpture, made by hand by Adrian Rasmussen. One of the 64 designs.
+            Layers of wood cut to exact depth, each surface painted by hand. One of 64 designs.
             </p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--l-rule)", borderBottom: "1px solid var(--l-rule)", padding: "14px 0", marginBottom: "20px" }}>
               <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--l-3)" }}>

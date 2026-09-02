@@ -105,7 +105,7 @@ export const BuySheet: React.FC<{
                 <div className="px-5 py-4 flex items-center justify-between gap-4">
                   <div className="min-w-0">
                     <p className="font-reading text-[17px] text-wood-900 group-hover:text-bronze-700 leading-tight">
-                      View the original
+                      View the sculpture
                     </p>
                     <p className="font-label text-[10px] uppercase tracking-[0.22em] text-wood-500 mt-1.5">
                       On adrianrasmussen.com · Acquire or commission

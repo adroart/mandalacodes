@@ -826,9 +826,21 @@ const PiecePage: React.FC = () => {
             </div>
           )}
 
+          {/* ── How it is made, in the certificate's own voice: the human
+              sentence that reads before the engraved particulars below it.
+              True of every piece in the series, so it is stated here rather
+              than carried in each piece's record. Never "original" or "one of
+              one": the layers are cut, then painted and assembled by hand,
+              pieces are made to order, and a design can exist in numbered
+              editions. ── */}
+          <p className="font-reading text-lg text-wood-700 leading-[1.7] text-center max-w-[46ch] mx-auto mt-12 sm:mt-14">
+            Layers of wood cut to exact depth, each surface painted by hand.
+            One of 64 designs.
+          </p>
+
           {/* ── The plate line: the certificate's engraved last line, the
               formal particulars in banknote grammar. ── */}
-          <p className="font-label text-[10px] uppercase tracking-[0.28em] text-wood-500 text-center leading-[1.9] mt-12 sm:mt-14">
+          <p className="font-label text-[10px] uppercase tracking-[0.28em] text-wood-500 text-center leading-[1.9] mt-6 sm:mt-7">
             {[
               sigil,
               piece.series ?? art.series,

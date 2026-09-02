@@ -125,7 +125,7 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
   const title = art ? `${cleanTitle} · ${sigil}` : sigil;
   const seriesLine =
     `${series ? `${series}` : sigil}${cardNumber != null ? ` · Code ${cardNumber}` : ''}. ` +
-    `An original work by Adrian Rasmussen.`;
+    `Painted and assembled by hand by Adrian Rasmussen.`;
   const description = clip(dream ?? seriesLine);
 
   const origin = new URL(request.url).origin;

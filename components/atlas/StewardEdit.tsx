@@ -665,7 +665,7 @@ const StewardEdit: React.FC = () => {
               <div className="bg-[#151311] p-2.5 shadow-[0_2px_20px_-8px_rgba(0,0,0,0.55)]">
                 <ArtworkPlate
                   src={img(artwork.coverImage, { w: 700, crop: 'fit' })}
-                  alt={`${artwork.title}. Original work by Adrian Rasmussen.`}
+                  alt={`${artwork.title}. Hand-painted multi-dimensional wooden sculpture by Adrian Rasmussen.`}
                   title={artwork.title}
                   loading="eager"
                 />

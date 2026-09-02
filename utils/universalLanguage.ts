@@ -22,15 +22,16 @@ export function ulCardNumber(coverImage: string): number | null {
 
 /**
  * SEO-optimised alt text for a Universal Language artwork.
- * Pattern: "[Piece Name], Universal Language [Number]. Handmade multi-dimensional wooden sculpture by Adrian Rasmussen."
- * ("Handmade", never "original" or "one of one": pieces are made to order
- * and a design can exist in numbered editions.)
+ * Pattern: "[Piece Name], Universal Language [Number]. Hand-painted multi-dimensional wooden sculpture by Adrian Rasmussen."
+ * ("Hand-painted", never "original" or "one of one": layers are laser-cut,
+ * then painted and assembled by hand, pieces are made to order, and a design
+ * can exist in numbered editions.)
  */
 export function ulAltText(art: Artwork, number?: number | null): string {
   const num = number ?? ulCardNumber(art.coverImage);
   const numberPart = num != null ? ` ${num}` : '';
   const cleanTitle = art.title.replace(/\s*-\s*\d+$/, '');
-  return `${cleanTitle}, Universal Language${numberPart}. Handmade multi-dimensional wooden sculpture by Adrian Rasmussen.`;
+  return `${cleanTitle}, Universal Language${numberPart}. Hand-painted multi-dimensional wooden sculpture by Adrian Rasmussen.`;
 }
 
 /**
@@ -42,10 +43,10 @@ export function ulMetaDescription(art: Artwork): string {
   if (num != null) {
     const card = CARD_BY_NUMBER.get(num);
     if (card) {
-      return `Handmade multi-dimensional wooden sculpture, connected to ${card.iching.hexagram_name} (Hexagram ${num}) of the I Ching and Gene Key ${num}: ${card.gene_keys.gift}. One of 64 designs by Adrian Rasmussen.`;
+      return `Hand-painted multi-dimensional wooden sculpture, connected to ${card.iching.hexagram_name} (Hexagram ${num}) of the I Ching and Gene Key ${num}: ${card.gene_keys.gift}. One of 64 designs by Adrian Rasmussen.`;
     }
   }
-  return `Handmade multi-dimensional wooden sculpture. One of 64 designs in the Universal Language series by Adrian Rasmussen, each connected to a hexagram of the I Ching and a corresponding Gene Key.`;
+  return `Hand-painted multi-dimensional wooden sculpture. One of 64 designs in the Universal Language series by Adrian Rasmussen, each connected to a hexagram of the I Ching and a corresponding Gene Key.`;
 }
 
 /**
