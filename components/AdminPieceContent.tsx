@@ -245,7 +245,7 @@ const ImagesEditor: React.FC<{
                 </button>
             </div>
             {error && (
-                <p className="font-reading italic text-sm text-stone-600 mt-2">{error}</p>
+                <p className="font-reading text-sm text-stone-600 mt-2">{error}</p>
             )}
         </div>
     );
@@ -368,23 +368,23 @@ const PieceContentEditor: React.FC = () => {
             </div>
 
             {!pieceId && (
-                <p className="font-reading italic text-sm text-wood-500">
+                <p className="font-reading text-sm text-wood-500">
                     Choose a piece above to begin.
                 </p>
             )}
 
             {pieceId && loading && (
-                <p className="font-reading italic text-sm text-wood-500">Loading…</p>
+                <p className="font-reading text-sm text-wood-500">Loading…</p>
             )}
 
             {pieceId && !loading && (
                 <div className="space-y-6">
                     {loadError && (
-                        <p className="font-reading italic text-sm text-stone-600">{loadError}</p>
+                        <p className="font-reading text-sm text-stone-600">{loadError}</p>
                     )}
 
                     {staticInfo?.staticDescription && (
-                        <p className="font-reading italic text-sm text-wood-500 border-l-2 border-wood-200 pl-3">
+                        <p className="font-reading text-sm text-wood-500 border-l-2 border-wood-200 pl-3">
                             Current placeholder · {staticInfo.staticDescription}
                         </p>
                     )}
@@ -437,7 +437,7 @@ const PieceContentEditor: React.FC = () => {
                     />
 
                     {saveError && (
-                        <p className="font-reading italic text-sm text-stone-600">{saveError}</p>
+                        <p className="font-reading text-sm text-stone-600">{saveError}</p>
                     )}
                     {savedAt && (
                         <p className="font-label text-[11px] uppercase tracking-[0.15em] text-green-800 font-semibold">

@@ -429,7 +429,6 @@ export default function GlobeGL({
           opacity: mandala ? 1 : 0,
           transition: 'opacity 1.4s ease',
           fontFamily: 'var(--font-reading)',
-          fontStyle: 'italic',
           fontSize: 17,
           letterSpacing: '0.04em',
           color: 'rgb(196, 170, 124)',
