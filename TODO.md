@@ -164,6 +164,9 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 ## Oracle deck content (Universal Language)
 
+- [ ] Two formulas left standing in the Design section after the 2026-09-02 opening sweep _(band: agent-runnable)_ _(effort: moderate)_
+  "That placement is the teaching" closes Where it lives on 31 cards, and "This code is the ..." opens The drive on 21. Both are over the five-card threshold. The method that clears them is in [oracle/sections/_DIVERSIFY_PASS_THREE.md](oracle/sections/_DIVERSIFY_PASS_THREE.md) and [_DIVERSIFY_PASS_FOUR.md](oracle/sections/_DIVERSIFY_PASS_FOUR.md): ban the stem, not the phrase.
+
 - [ ] **Deep-pass rewrite** — decide whether to commit the full deep-pass rewrite for the remaining 61 I Ching and Body cards _(you · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
   A drafted deeper rewrite exists for most cards but hasn't been committed pending Adrian's call on quality. Done when the rewrite is either committed for the 61 cards or explicitly set aside. See [oracle/TODO.md](oracle/TODO.md).
 - [ ] **Write invocations** — write invocations for cards 2 to 64 in Adrian's own voice (not delegable) _(you · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
