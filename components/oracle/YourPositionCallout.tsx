@@ -15,20 +15,16 @@ import SignInModal from '../account/SignInModal';
 interface Props {
   /** The card's Human Design gate (1..64). */
   gate: number;
-  /** When true, render only the matched "in your chart" state; suppress the
-      no-chart invite (the header hero box carries that invite instead). */
-  matchOnly?: boolean;
 }
 
 /**
- * The in-your-chart box in the reading header, under Acquire / Share. It is
- * built from the same hairline box as those actions, with a bronze hairline
- * seated along the inside bottom edge: faint before a chart exists, lit once the
- * card is in your chart.
+ * The in-your-chart box, centred under the card name and its keywords on the
+ * card page. A hairline box with a bronze rule seated along its inside bottom
+ * edge: faint before a chart exists, lit once the code is in your chart.
  *
  * The flow is birthday-first, then save:
  *
- *   1. No birthday yet → "See this card in your chart." Opens the birth-time
+ *   1. No birthday yet → "Is this code in your chart?" Opens the birth-time
  *      form inline; the chart computes locally, no account needed.
  *   2. Birthday entered and this card is in your chart → "Your Pearl · Line 3."
  *      Opens a short popup with what the placement means; the popup carries the
@@ -37,7 +33,7 @@ interface Props {
  *
  * Accounts being off, or the launch flag being off, hides everything.
  */
-const YourPositionCallout: React.FC<Props> = ({ gate, matchOnly = false }) => {
+const YourPositionCallout: React.FC<Props> = ({ gate }) => {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { available, isSignedIn } = useAccount();
@@ -57,13 +53,27 @@ const YourPositionCallout: React.FC<Props> = ({ gate, matchOnly = false }) => {
 
   if (!LAUNCH_FLAGS.hologeneticProfile || !available) return null;
 
-  // ── No chart yet: invite the birthday. Opens the birth-time popup; on save,
-  //    the second screen offers to keep it (the Welcome sign-in). No account is
-  //    asked for to compute the chart, only to save it. ──
-  if (!profile) {
-    if (matchOnly) return null;
-    return (
-      <div className="ypc-wrap">
+  const primary = matches[0];
+  const meta = primary ? POSITIONS_BY_KEY[primary.key as ProfileKey] : null;
+  const titleText = !meta
+    ? ''
+    : matches.length > 1
+      ? `Your ${meta.label} and ${matches.length - 1} more`
+      : `Your ${meta.label} · Line ${primary.line}`;
+
+  // Which of the two boxes, if either, this card earns. A chart that does not
+  // hold this code gets neither: silence is the honest answer there.
+  const asking = !profile;
+  const holding = !!profile && matches.length > 0;
+
+  /* The popups sit OUTSIDE that choice on purpose. Building a chart flips
+     asking to false in the same render, so a popup owned by the asking branch
+     would unmount mid-flow and swallow its own "your chart is lit" screen. */
+  if (!asking && !holding && !formOpen && !popupOpen && !saveOpen) return null;
+
+  return (
+    <div className={`ypc-wrap${asking || holding ? '' : ' ypc-wrap--boxless'}`}>
+      {asking && (
         <button
           type="button"
           className="ypc ypc--out"
@@ -71,71 +81,57 @@ const YourPositionCallout: React.FC<Props> = ({ gate, matchOnly = false }) => {
         >
           <span className="ypc__mid">
             <span className="ypc__title ypc__title--out">
-              See this card in your chart
+              Is this code in your chart?
             </span>
           </span>
           <span aria-hidden="true" className="ypc__go">
             →
           </span>
         </button>
+      )}
 
-        {formOpen && (
-          <BirthTimeModal
-            showCardOption
-            onClose={() => setFormOpen(false)}
-            onLogIn={() => { setFormOpen(false); setSaveOpen(true); }}
-            onSeeChart={() => { setFormOpen(false); navigate('/profile'); }}
-            onBackToCard={() => setFormOpen(false)}
-            onSave={() => { setFormOpen(false); setSaveOpen(true); }}
-          />
-        )}
+      {holding && (
+        <button
+          type="button"
+          className="ypc ypc--in"
+          onClick={() => setPopupOpen(true)}
+          aria-label={`This card is in your chart: ${titleText}. Read what it means.`}
+        >
+          <span className="ypc__mid">
+            <span className="ypc__eyebrow">In your chart</span>
+            <span className="ypc__title">{titleText}</span>
+          </span>
+          <span aria-hidden="true" className="ypc__go">
+            Read →
+          </span>
+        </button>
+      )}
 
-        {saveOpen && (
-          <SignInModal
-            context="reading"
-            onClose={() => setSaveOpen(false)}
-            onSignedIn={() => setSaveOpen(false)}
-          />
-        )}
+      {formOpen && (
+        <BirthTimeModal
+          showCardOption
+          onClose={() => setFormOpen(false)}
+          onLogIn={() => { setFormOpen(false); setSaveOpen(true); }}
+          onSeeChart={() => { setFormOpen(false); navigate('/profile'); }}
+          onBackToCard={() => setFormOpen(false)}
+          onSave={() => { setFormOpen(false); setSaveOpen(true); }}
+        />
+      )}
 
-        <Styles />
-      </div>
-    );
-  }
-
-  // Signed in or out, but this card isn't in their chart: stay quiet.
-  if (matches.length === 0) return null;
-
-  const primary = matches[0];
-  const meta = POSITIONS_BY_KEY[primary.key as ProfileKey];
-  const titleText =
-    matches.length > 1
-      ? `Your ${meta.label} and ${matches.length - 1} more`
-      : `Your ${meta.label} · Line ${primary.line}`;
-
-  return (
-    <div className="ypc-wrap">
-      <button
-        type="button"
-        className="ypc ypc--in"
-        onClick={() => setPopupOpen(true)}
-        aria-label={`This card is in your chart: ${titleText}. Read what it means.`}
-      >
-        <span className="ypc__mid">
-          <span className="ypc__eyebrow">In your chart</span>
-          <span className="ypc__title">{titleText}</span>
-        </span>
-        <span aria-hidden="true" className="ypc__go">
-          Read →
-        </span>
-      </button>
-
-      {popupOpen && (
+      {popupOpen && holding && (
         <YourPositionPopup
           gate={gate}
           matches={matches}
           canSave={!isSignedIn}
           onClose={() => setPopupOpen(false)}
+        />
+      )}
+
+      {saveOpen && (
+        <SignInModal
+          context="reading"
+          onClose={() => setSaveOpen(false)}
+          onSignedIn={() => setSaveOpen(false)}
         />
       )}
 
@@ -147,6 +143,7 @@ const YourPositionCallout: React.FC<Props> = ({ gate, matchOnly = false }) => {
 const Styles: React.FC = () => (
   <style>{`
     .ypc-wrap { width: 100%; }
+    .ypc-wrap--boxless { display: none; }
     .ypc {
       position: relative;
       display: flex;
