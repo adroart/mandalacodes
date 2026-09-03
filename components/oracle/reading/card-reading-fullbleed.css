@@ -332,11 +332,12 @@ html.dark .card-reading {
   background-color: var(--accent) !important;
 }
 
-/* On the wide layout the column beside the artwork already carries "For me,
-   see where this code lives in your chart", so the header's copy of the same
-   invitation would be the second one on screen. The phone has no such column,
-   so it keeps it. */
-.card-reading--desktop .card-reading__designed-header [data-chart-cta] {
+/* The design's chart invitation is a fixed link to the profile page: it can
+   only ever ask the question, never answer it. The live callout mounted under
+   this header asks the same question when there is no chart, and names the
+   placement once the code is actually in one, so it stands in for this on both
+   layouts and this copy would be the second one on screen. */
+.card-reading .card-reading__designed-header [data-chart-cta] {
   display: none !important;
 }
 

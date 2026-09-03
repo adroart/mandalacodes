@@ -129,32 +129,46 @@ test('omits the visible drop cap', async ({ page }) => {
   expect(typography.ownColor).toBe(typography.parentColor);
 });
 
-test('keeps the chart prompt direct and visually subordinate to the hexagram', async ({ page }) => {
+test('asks the chart question once, centred under the header', async ({ page }) => {
   await openReading(page);
-  const prompt = page.locator('.ul-hero-box--chart');
+  const prompt = page.locator('.ul-chart-row .ypc--out');
   await expect(prompt).toBeVisible();
-  await expect(prompt.locator('.ul-hero-box__eyebrow')).toHaveCount(0);
-  await expect(prompt.locator('.ul-hero-box__title')).toHaveText('Is this code in your chart?');
-  await expect(prompt.locator('.ul-hero-box__line')).toHaveText(
-    'See your birth chart and understand where all 64 codes land in the Oracle.',
-  );
+  await expect(prompt.locator('.ypc__title')).toHaveText('Is this code in your chart?');
 
-  const typeScale = await prompt.evaluate((element) => {
-    const glyph = element.querySelector<HTMLElement>('.ul-hero-hex__glyph')!;
-    const number = element.querySelector<HTMLElement>('.ul-hero-hex__num')!;
+  // The design file carries a fixed chart link of its own. The live callout
+  // supersedes it on every layout, so exactly one question is on screen.
+  await expect(page.locator('[data-chart-cta]:visible')).toHaveCount(0);
+
+  const placement = await prompt.evaluate((element) => {
+    const row = element.closest('.ul-chart-row')!;
+    const box = element.getBoundingClientRect();
+    const seat = row.getBoundingClientRect();
     return {
-      glyph: parseFloat(getComputedStyle(glyph).fontSize),
-      number: parseFloat(getComputedStyle(number).fontSize),
+      offCentre: Math.abs((box.left + box.right) / 2 - (seat.left + seat.right) / 2),
+      widthRatio: box.width / seat.width,
     };
   });
-  expect(typeScale.number).toBeLessThanOrEqual(typeScale.glyph * 0.2);
+  // Centred in its seat, and sized to its words rather than spanning them.
+  expect(placement.offCentre).toBeLessThanOrEqual(1);
+  expect(placement.widthRatio).toBeLessThan(0.9);
+});
+
+test('offers keeping the code as the quieter second line', async ({ page }) => {
+  await openReading(page);
+  const save = page.locator('.ul-chart-row .stc__btn');
+  await expect(save).toHaveText('Save this code');
+  const sizes = await page.locator('.ul-chart-row').evaluate((row) => ({
+    question: parseFloat(getComputedStyle(row.querySelector('.ypc__title')!).fontSize),
+    save: parseFloat(getComputedStyle(row.querySelector('.stc__btn')!).fontSize),
+  }));
+  expect(sizes.save).toBeLessThan(sizes.question);
 });
 
 test('removes the chart prompt as soon as a birth moment is added', async ({ page }) => {
   await openReading(page);
   // The generated reader keeps a desktop and mobile header mounted together;
   // invoke the chart action directly so the test follows the shared behavior.
-  await page.locator('.ul-hero-box--chart').evaluate((button: HTMLButtonElement) => button.click());
+  await page.locator('.ul-chart-row .ypc--out').evaluate((button: HTMLButtonElement) => button.click());
   await page.fill('#profile-date', '1990-06-15');
   await page.fill('#profile-time', '1430');
   await page.fill('#profile-place', 'Jakarta');
@@ -162,7 +176,7 @@ test('removes the chart prompt as soon as a birth moment is added', async ({ pag
   await page.getByRole('button', { name: 'Build my profile' }).click();
 
   await expect(page.getByRole('heading', { name: 'Your chart is lit' })).toBeVisible();
-  await expect(page.locator('.ul-hero-box--chart')).toHaveCount(0);
+  await expect(page.locator('.ypc--out')).toHaveCount(0);
 });
 
 test('does not ask signed-in readers whether the code is in their chart', async ({ page }) => {
@@ -206,7 +220,7 @@ test('does not ask signed-in readers whether the code is in their chart', async 
 
   await openReading(page);
 
-  await expect(page.locator('.ul-hero-box--chart')).toHaveCount(0);
+  await expect(page.locator('.ypc--out')).toHaveCount(0);
   await expect(page.getByText("Your Life's Work · Line 3")).toBeVisible();
 });
 

@@ -13,12 +13,8 @@ import CardReadingShell from './oracle/reading/CardReadingData';
 import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
-import BirthTimeModal from './oracle/BirthTimeModal';
-import SignInModal from './account/SignInModal';
 import SaveToCollectionButton from './account/SaveToCollectionButton';
 import { cardCollectionItem } from '../lib/collections/items';
-import { useProfile } from '../lib/profile/context';
-import { useAccount } from '../lib/account/useAccount';
 import { ulPieceForCard } from '../utils/universalLanguage';
 import { astrologyGlyph, hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
 import './oracle/eb/eb-template.css';
@@ -70,10 +66,6 @@ const UniversalLanguageCard: React.FC = () => {
   const showSafariHandoff = new URLSearchParams(location.search).get('ref') === 'qr' && isAppleMobileDevice();
   const [buyOpen, setBuyOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [chartFormOpen, setChartFormOpen] = useState(false);
-  const [signInOpen, setSignInOpen] = useState(false);
-  const { profile } = useProfile();
-  const { isLoaded: isAccountLoaded, isSignedIn } = useAccount();
   useEffect(() => {
     if (showEntrance) consumeCardEntranceRequest();
   }, [entranceKey, showEntrance]);
@@ -232,28 +224,29 @@ const UniversalLanguageCard: React.FC = () => {
     <>
       <CardReadingShell cardNumber={card.number} reading={
       <>
-      {/* The save control, at the head of the reading column.
+      {/* The one act under the designed header: is this code in your chart?
 
           Where this wanted to go, and why it does not: the generated reading
-          carries an Acquire and Share pair in its own hero, and the wiring plan
-          aimed this button at the slot directly under that pair. That hero is
-          hidden outright by the shell this page now renders inside
+          carries these boxes in a hero of its own, and that hero is hidden
+          outright by the shell this page renders inside
           (card-reading-fullbleed.css hides .ul-hero-section), so both of the
-          host's header slots reach nobody. The live Acquire and Share doors are
-          the shell's own rails, whose five slots are fixed by its design.
+          host's header slots reach nobody. So the act lands here instead,
+          directly below the card name and its keywords. The .eb-reading
+          wrapper carries the reading's palette variables to it, the same way
+          the bottom bar does.
 
-          So it lands here instead: the first thing under the designed header,
-          directly below the card name and its keywords, wearing the same
-          hairline box, display-face title and small uppercase line the hero's
-          Acquire and Share buttons use. The .eb-reading wrapper carries the
-          reading's palette variables to it, the same way the bottom bar does. */}
-      <div className="eb-reading ul-save-row" data-palette={palette}>
+          The pull is the chart question, not the filing cabinet. A visitor
+          wants to know whether this code is theirs; keeping it is the quiet
+          second line beneath. The callout carries all three states on its own:
+          no chart yet asks the question, a chart with this code in it names
+          the placement, a chart without it says nothing. */}
+      <div className="eb-reading ul-chart-row" data-palette={palette}>
+        <YourPositionCallout gate={card.number} />
         <SaveToCollectionButton
           item={cardCollectionItem(card.number)}
-          label="Save"
-          variant="panel"
+          label="Save this code"
         />
-        <style>{saveRowStyles}</style>
+        <style>{chartRowStyles}</style>
       </div>
       <EBReadingHost
         key={card.number}
@@ -265,19 +258,6 @@ const UniversalLanguageCard: React.FC = () => {
         onAcquire={() => setBuyOpen(true)}
         onShare={() => setShareOpen(true)}
         onOpenCode={(code) => navigate(`/universal-language/${code}`)}
-        headerActionsSlot={isAccountLoaded && !isSignedIn && !profile ? (
-          <ChartHeroBox
-            hexGlyph={String.fromCodePoint(0x4DBF + card.number)}
-            code={card.number}
-            onOpen={() => { if (profile) navigate('/profile'); else setChartFormOpen(true); }}
-          />
-        ) : null}
-        headerChartSlot={
-          /* Only the matched "in your chart" line remains here; it shows once a
-             code actually sits in the visitor's chart. The old quiet strip
-             (save, see the painting, on the map) has been removed. */
-          <YourPositionCallout gate={card.number} matchOnly />
-        }
         invocationSlot={<PublicInvocation invocation={liveInvocation} />}
       />
       </>
@@ -298,177 +278,94 @@ const UniversalLanguageCard: React.FC = () => {
         cardNumber={card.number}
         keywords={keywords}
       />
-      {chartFormOpen && (
-        <BirthTimeModal
-          showCardOption
-          onClose={() => setChartFormOpen(false)}
-          onLogIn={() => { setChartFormOpen(false); setSignInOpen(true); }}
-          onSeeChart={() => { setChartFormOpen(false); navigate('/profile'); }}
-          onBackToCard={() => setChartFormOpen(false)}
-          onSave={() => { setChartFormOpen(false); setSignInOpen(true); }}
-        />
-      )}
-      {signInOpen && (
-        <SignInModal
-          context="reading"
-          onClose={() => setSignInOpen(false)}
-          onSignedIn={() => setSignInOpen(false)}
-        />
-      )}
 
       <OracleBottomNavigation current={card} palette={palette} pieceId={piece ? String(piece.id) : null} onShare={() => setShareOpen(true)} onInvocationPublished={() => void refreshInvocation()} showSafariHandoff={showSafariHandoff} />
     </>
   );
 };
 
-/* The save row's own seat. The button inside it carries the panel styling
-   (SaveToCollectionButton's "panel" variant), drawn from the same --l-rule,
-   --l-1, --l-3 and --accent variables the generated Acquire and Share buttons
-   use, so it matches in both Day Book and Nightfall without a second palette.
-   This rule only places the row in the reading column. The side inset is the
-   reading's own: 44px once the shell is on its two-column layout, 10px below
-   that, measured against where the prose beneath actually starts so the box
-   and the first paragraph share a left edge. The breakpoint is the shell's
-   own (CardReading.tsx, 820px). */
-const saveRowStyles = `
-  .ul-save-row {
+/* The chart row's own seat. It holds two things, stacked and centred: the
+   chart question, and under it the small chip that keeps the code. Both draw
+   on the reading's own --l-rule, --l-1, --l-3 and --accent variables, so they
+   follow Day Book and Nightfall without a second palette. The side inset is
+   the reading's own: 44px once the shell is on its two-column layout, 10px
+   below that (CardReading.tsx's own 820px breakpoint). */
+const chartRowStyles = `
+  .ul-chart-row {
     max-width: 1180px;
     margin: 0 auto;
     padding: 0 44px clamp(18px, 3vw, 28px);
     background: none;
-  }
-  /* On the wide layout the box takes half the prose measure, so it stays a
-     quiet act rather than a banner. On the phone it spans the column, matching
-     the chart invitation directly above it. */
-  @media (min-width: 820px) {
-    .ul-save-row .stc--panel { max-width: 340px; }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
   }
   @media (max-width: 819px) {
-    .ul-save-row { padding-left: 10px; padding-right: 10px; }
+    .ul-chart-row { padding-left: 10px; padding-right: 10px; }
   }
-`;
 
-/* The single hero box: the chart question, with THIS code's hexagram as the
-   feature on the left. The glyph + number scale to the HEIGHT of the text block
-   beside them (measured live), so the feature always reads as tall as the copy
-   it sits next to, at any screen size. Opens the birthday/login flow, or the
-   chart itself once one exists. */
-const ChartHeroBox: React.FC<{
-  hexGlyph: string;
-  code: number;
-  onOpen: () => void;
-}> = ({ hexGlyph, code, onOpen }) => {
-  const bodyRef = useRef<HTMLSpanElement>(null);
-  const [glyphPx, setGlyphPx] = useState(46);
-  useEffect(() => {
-    const el = bodyRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(() => {
-      const h = el.getBoundingClientRect().height;
-      // Glyph sits at roughly three-quarters of the copy-block height, with the
-      // number beneath; clamp so it never gets absurd on very short/tall wraps.
-      setGlyphPx(Math.max(40, Math.min(88, h * 0.78)));
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-  return (
-    <div className="ul-hero-actions">
-      <button type="button" className="ul-hero-box ul-hero-box--chart" onClick={onOpen}>
-        <span className="ul-hero-hex" aria-hidden="true">
-          <span className="ul-hero-hex__glyph" style={{ fontSize: glyphPx }}>{hexGlyph}</span>
-          <span
-            className="ul-hero-hex__num"
-            style={{ fontSize: Math.max(8, Math.round(glyphPx * 0.18)), marginTop: Math.round(glyphPx * -0.04) }}
-          >
-            {String(code).padStart(2, '0')}
-          </span>
-        </span>
-        <span className="ul-hero-box__body" ref={bodyRef}>
-          <span className="ul-hero-box__title">Is this code in your chart?</span>
-          <span className="ul-hero-box__line">
-            See your birth chart and understand where all 64 codes land in the Oracle.
-          </span>
-        </span>
-        <style>{heroActionStyles}</style>
-      </button>
-    </div>
-  );
-};
+  /* The question sizes itself to its words and sits in the middle of the
+     column, rather than spanning it. Smaller than the panel it replaces on
+     purpose: one quiet offer, not a banner. */
+  .ul-chart-row .ypc-wrap { width: auto; max-width: 100%; }
+  .ul-chart-row .ypc {
+    width: auto;
+    justify-content: center;
+    text-align: center;
+    gap: 10px;
+    padding: 10px 18px;
+  }
+  .ul-chart-row .ypc__mid { flex: 0 1 auto; align-items: center; gap: 3px; }
+  .ul-chart-row .ypc__title { font-size: 16px; }
+  .ul-chart-row .ypc__title--out { font-size: 15px; }
+  .ul-chart-row .ypc__go { font-size: 9px; letter-spacing: 0.16em; }
 
-/* The chart question uses the old action row's hairline box, palette-aware
-   through the EB reading's own variables. Serif copy, no label, no italics. */
-const heroActionStyles = `
-  .ul-hero-actions { display: block; }
-  /* Horizontal: the hexagram sits on the left (its number centred beneath it),
-     what the box is sits on the right. The glyph is a quiet mark here, roughly
-     half the previous size, not a billboard. */
-  .ul-hero-box {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: clamp(12px, 3vw, 18px);
-    text-align: left;
-    width: 100%;
+  /* Keeping the code is the second line. The chip's own colors are the account
+     surfaces' paper ones, so they are traded here for the reading's, chooser
+     included, since this one sits on the reading. */
+  .ul-chart-row .stc__btn {
+    font-size: 10px;
+    padding: 6px 12px;
+    /* --l-3 is the palette's faintest step. On Day Book it lands at 1.9 to 1
+       against the reader's own paper, which is unreadable at this size, so the
+       quiet step here is --l-2: still subordinate to the question above, still
+       legible in both palettes. */
+    color: var(--l-2);
+    border-color: var(--l-rule, rgba(180,150,110,0.22));
+  }
+  .ul-chart-row .stc__btn:hover {
     background: none;
-    border: 1px solid var(--l-rule, rgba(180,150,110,0.22));
-    cursor: pointer;
-    padding: 15px clamp(15px, 3.5vw, 22px);
-    transition: border-color .25s, background .25s;
-  }
-  .ul-hero-box:hover {
     border-color: color-mix(in oklab, var(--accent, #C99A5B) 55%, var(--l-rule, rgba(180,150,110,0.22)));
   }
-  .ul-hero-box--chart { position: relative; overflow: hidden; }
-  .ul-hero-box--chart::after {
-    content: "";
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: 2px;
-    background: linear-gradient(to right, var(--accent, #C99A5B), color-mix(in oklab, var(--accent, #C99A5B) 25%, transparent));
-    opacity: .32;
+  .ul-chart-row .stc__menu {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(280px, 100%);
+    z-index: 90;
+    background: var(--l-bg);
+    border-color: var(--l-rule, rgba(180,150,110,0.22));
+    border-radius: 0;
   }
-  .ul-hero-hex {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: var(--accent, #C99A5B);
+  .ul-chart-row .stc__menu-empty { color: var(--l-2); }
+  .ul-chart-row .stc__menu-item { color: var(--l-1); border-radius: 0; }
+  .ul-chart-row .stc__menu-item:hover {
+    background: color-mix(in oklab, var(--accent, #C99A5B) 12%, transparent);
   }
-  /* Glyph + number sizes are set inline from the measured text-block height
-     (see ChartHeroBox); these are just fallbacks before the measure lands. */
-  .ul-hero-hex__glyph {
-    font-family: var(--font-cjk);
-    font-size: 46px;
-    line-height: 1;
-  }
-  .ul-hero-hex__num {
-    font-family: var(--font-ui);
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    margin-top: 7px;
-    text-indent: 0.12em;
-  }
-  .ul-hero-box__body {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 0;
-  }
-  .ul-hero-box__title {
-    font-family: var(--font-display);
-    font-size: 20px;
-    line-height: 1.12;
+  .ul-chart-row .stc__create { border-top-color: var(--l-rule, rgba(180,150,110,0.22)); }
+  .ul-chart-row .stc__input {
     color: var(--l-1);
-    margin-bottom: 6px;
+    background: none;
+    border-color: var(--l-rule, rgba(180,150,110,0.22));
+    border-radius: 0;
   }
-  .ul-hero-box__line {
-    font-family: var(--font-reading);
-    font-size: 15px;
-    line-height: 1.4;
-    color: var(--l-2, #C9BDA9);
+  .ul-chart-row .stc__create-btn {
+    color: var(--l-bg);
+    background: var(--accent, #C99A5B);
+    border-radius: 0;
   }
+
 `;
 
 /* ── light data mappers (live, with graceful fallback) ── */
