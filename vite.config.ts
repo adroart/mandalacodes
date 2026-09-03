@@ -67,6 +67,20 @@ const vitePWA = VitePWA({
     navigateFallback: '/index.html',
     navigateFallbackDenylist: [/^\/api\//, /^\/qr\//],
     cleanupOutdatedCaches: true,
+    /* Without these two the worker installs and then SITS in "waiting" until
+       every tab of the site is closed, because the only skipWaiting workbox
+       writes by default is one that fires on a SKIP_WAITING message nobody
+       sends (injectRegister: 'script-defer' registers the worker and nothing
+       else). Measured on the live site: a new worker stayed waiting through a
+       full navigation and the browser kept serving the previous build's
+       index.html out of the precache, so anyone who leaves a tab open, or has
+       the app installed, is frozen on whatever version they first arrived on.
+       skipWaiting activates the new worker at once, clientsClaim hands it the
+       pages already open, and the next navigation serves the new build. Safe
+       here because every chunk filename is content-hashed: a page mid-session
+       that asks for an old chunk still finds it in the runtime cache. */
+    skipWaiting: true,
+    clientsClaim: true,
     runtimeCaching: [
       {
         // Every other same-origin JS/CSS chunk (the 64 card readings, the
