@@ -95,19 +95,25 @@ const vitePWA = VitePWA({
           expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 180 },
         },
       },
-      {
-        // Card artwork. Every <img> that renders one already sets
-        // crossOrigin="anonymous" so the cached response is a real (not
-        // opaque) one — opaque entries can't be size-checked and would
-        // pad the storage quota by tens of MB apiece.
-        urlPattern: ({ url }) => url.hostname === 'res.cloudinary.com',
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'oracle-artwork',
-          expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 180 },
-          cacheableResponse: { statuses: [0, 200] },
-        },
-      },
+      // The artwork is deliberately NOT cached by the worker.
+      //
+      // It was, under CacheFirst, and the rule rested on a premise that is not
+      // true: the comment said every <img> rendering a piece sets
+      // crossOrigin="anonymous", so every cached response would be a real one.
+      // Seven img tags fetch the same host without it (AdminAtlas,
+      // AdminPieceContent, PiecePage, ArtworkPlate, StewardClaim), so opaque
+      // and CORS responses shared one cache under the same keys, and a return
+      // visit replayed an entry the request could not accept.
+      //
+      // Measured on the live site, twice, before and after the skipWaiting
+      // change landed: a first visit loaded the card artwork and lost 37 to 57
+      // of the prefetched images, and the return visit rendered 0 of 2, both
+      // of them broken. Firefox reported it as the worker rejecting the fetch
+      // and then the image failing CORS; Chrome as a bare ERR_FAILED.
+      //
+      // The browser's own cache already holds these immutable, far-future
+      // Cloudinary URLs, so nothing is lost on a normal repeat visit. What is
+      // given up is artwork while fully offline, which was not working anyway.
     ],
   },
 });
