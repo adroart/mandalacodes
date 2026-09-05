@@ -95,19 +95,35 @@ const vitePWA = VitePWA({
           expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 180 },
         },
       },
-      {
-        // Card artwork. Every <img> that renders one already sets
-        // crossOrigin="anonymous" so the cached response is a real (not
-        // opaque) one — opaque entries can't be size-checked and would
-        // pad the storage quota by tens of MB apiece.
-        urlPattern: ({ url }) => url.hostname === 'res.cloudinary.com',
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'oracle-artwork',
-          expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 180 },
-          cacheableResponse: { statuses: [0, 200] },
-        },
-      },
+      // The artwork is deliberately NOT cached by the worker.
+      //
+      // It was, under CacheFirst, and the rule rested on a premise that is not
+      // true: the comment said every <img> rendering a piece sets
+      // crossOrigin="anonymous", so every cached response would be a real one.
+      // Seven img tags fetch the same host without it (AdminAtlas,
+      // AdminPieceContent, PiecePage, ArtworkPlate, StewardClaim), so opaque
+      // and CORS responses shared one cache under the same keys, and a return
+      // visit replayed an entry the request could not accept.
+      //
+      // Measured on the live site, twice, before and after the skipWaiting
+      // change landed: a first visit loaded the card artwork and lost 37 to 57
+      // of the prefetched images, and the return visit rendered 0 of 2, both
+      // of them broken. Firefox reported it as the worker rejecting the fetch
+      // and then the image failing CORS; Chrome as a bare ERR_FAILED.
+      //
+      // Nothing is given up by removing it, and that was worth measuring
+      // rather than assuming, because the obvious objection is that offline
+      // artwork is lost. Warm the worker on the live site and then read its
+      // caches: there is no oracle-artwork cache. Not a thin one, none, while
+      // the precache holds 31 entries and the chunk cache 82. The rule was
+      // storing nothing and breaking the request on the way past, which fits
+      // its own original comment: opaque entries cannot be size-checked, so
+      // the expiration plugin rejects them and the fetch fails with them.
+      // Offline, with the rule live, the deck and the card render 0 of 66.
+      //
+      // So this removes a rule that cost every visitor their artwork and
+      // bought nobody an offline image. The browser's own cache still holds
+      // these immutable, far-future Cloudinary URLs on a repeat visit.
     ],
   },
 });
