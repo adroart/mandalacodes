@@ -1,4 +1,4 @@
-# Minimal CI: typecheck + unit tests on every push and PR.
+# Minimal CI: typecheck + unit tests on main pushes and PRs.
 # The Playwright e2e suite is not run here — it needs a built site and
 # browsers; this workflow guards the pure logic (ledger, projection,
 # kinship, privacy) that the Atlas depends on.
@@ -6,11 +6,17 @@ name: test
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+concurrency:
+  group: test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
