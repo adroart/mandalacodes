@@ -20,6 +20,7 @@ const OracleProfile = lazy(() => import('./components/OracleProfile'));
 const SharedProfile = lazy(() => import('./components/SharedProfile'));
 const AccountDashboard = lazy(() => import('./components/AccountDashboard'));
 const CollectionsManager = lazy(() => import('./components/account/CollectionsManager'));
+const AccountPieces = lazy(() => import('./components/account/AccountPieces'));
 const NotFound = lazy(() => import('./components/NotFound'));
 const LightweaverLanding = lazy(() => import('./components/lightweaver/LightweaverLanding'));
 
@@ -148,6 +149,7 @@ const AppInner: React.FC = () => {
 
                 {/* Account dashboard + collections (only reachable when accounts flag is on) */}
                 <Route path="/account" element={<AccountDashboard />} />
+                <Route path="/account/pieces" element={<AccountPieces />} />
                 <Route path="/account/collections" element={<CollectionsManager />} />
 
                 {/* Lightweaver — kept for backward compatibility; the live home

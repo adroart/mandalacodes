@@ -32,7 +32,7 @@ const AccountDashboard: React.FC = () => {
         </Link>
 
         <Link
-          to="/atlas/edit"
+          to="/account/pieces"
           className="block p-6 border border-wood-200 rounded hover:border-bronze-500/60 transition-colors"
         >
           <div className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
@@ -42,8 +42,7 @@ const AccountDashboard: React.FC = () => {
             The artwork you hold
           </div>
           <p className="font-reading text-sm text-wood-700">
-            Record where your piece rests, set your intention, and tend its
-            living book.
+            See where each piece rests, its inscribed intention, and its reading.
           </p>
         </Link>
 
