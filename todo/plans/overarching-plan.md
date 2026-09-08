@@ -1,0 +1,103 @@
+# The overarching plan
+
+Written 2026-09-08 from seven fresh survey agents across both repos (routes, backend and security, content and status, writing quality, writing pipeline, collector journey across both sites, atlas against the intention statement). Every claim below traces to a file or a live probe. This sits above [launch-readiness.md](launch-readiness.md) (2026-09-01) and does not repeat it: where that plan already names the move, this one points at it.
+
+## The shape of it
+
+Three things, in this order, because each one is the ground the next stands on:
+
+1. **The writing is the product and nothing in it is finished.** All 64 cards, all six lenses, still carry `status: scaffold`. The one artifact marked `final` breaks both absolute house rules. No machine checks any voice rule. Until the writing has a working loop, everything else is a frame around an empty room.
+2. **The collector journey is built and switched off, and the wire between the sites is cut.** Buy, register, claim, place, inscribe: every step exists on the art site behind `livingLegacy: false`. The sale hand-off from the art site posts to an address on this site that now refuses it. No "all my pieces" view exists anywhere. One login does not carry across the two domains.
+3. **The site around the oracle has three measurable gaps** (phones without 3D see only a footer, search engines cannot find any of the 64 card pages, nine pages reachable only by URL) and everything else has been audited since June.
+
+## Track A: the writing. Owner: you, with the loop built by agents first.
+
+The measured state, 2026-09-08:
+
+- Every lens on every card is scaffold. Not one CODE reading is final. Two Gene Keys, three Human Design, two Relations sections are final. Changing-line texts: 0 of 384.
+- The one finished reference piece, `oracle/readings/UL-122.md`, uses italics twice and sentence-internal em-dashes twice. The house style is documented, not enforced.
+- Card 64 ships an editorial flag inside the Relations prose a reader meets, in italics, with an em-dash.
+- The Design lens carries the generic-wellness vocabulary your voice profile bans: five "alignment", one "vibration", two "sacred", two "invited". The other five lenses are nearly clean.
+- Openings: zero repeated first-six-words across 64 cards. The anti-formula pass held. But every CODE opening is the same shape: "You [verb]" declarative in second person. Clean in phrase, formulaic in structure.
+- Your own diagnosis in [reading-rewrite.md](reading-rewrite.md) ("approaches everything as if it were a problem") is unresolved on all 64 CODE sections.
+- Pipeline: source is markdown, build is fail-closed on presence (all six lenses, 17 required fields) and blind on quality. No prose lint, no repetition detector, no preview, no per-card brief, no progress tracker beyond hand-edited `oracle/TODO.md`, no in-app editor. WordForge is named as the writing room in the docs; the hand-off is not in this repo.
+
+The moves, in order:
+
+### A1. Build the enforcement before writing another sentence _(agent-runnable, moderate)_
+A prose lint over `oracle/cards/*.md` and `oracle/readings/*.md` that fails the build on: italics in prose, sentence-internal em-dash, the banned-vocabulary list from the voice profile, an editorial flag left in shipped text, and repeated opening stems per lens. Wire it into `npm run build` beside the corpus validator. Run it once and fix what it catches (UL-122, card 64, the Design lens words). Done when the build goes red on a planted violation and green on the deck.
+
+### A2. Decide the reading rewrite from the live page _(you, one hour)_
+Already scoped as Decision two in launch-readiness. Read the five pilot cards on the live site. Whole, or one tradition wearing four names. That decision sets whether the CODE lens is a trim pass or a rewrite inside WordForge.
+
+### A3. A per-card brief and a tracker _(agent-runnable, moderate)_
+For each of 64 cards, one short brief: the four-question synthesis answers, the anchor image, the one thing this card is not. Generated from the frontmatter and the I Ching lens, reviewed by you in batches of eight. A tracker that reads frontmatter status and shows 64 rows by lens, so "how far along am I" is a glance and not a grep.
+
+### A4. Your voice passes, lens by lens _(you, weeks)_
+The long pole. Order: CODE (your rejected shape), then Design (the leaky lens), then Keys, Relations, Body, I Ching. Changing lines last, migrated from scaffold as drafts. Invocations for cards 2 to 64 are non-delegable and sit in their own lane.
+
+## Track B: the collection and the intention. Owner: agents on the wiring, you on two switches.
+
+The measured state, 2026-09-08:
+
+- The art site's sale hand-off posts to `mandalacodes.com/api/atlas/sale`. This site's atlas middleware refuses every non-read request with a 410 since the 2026-08-09 move of the canonical record to the art site. Probed live today: 410. The sender retries three times and gives up silently. **The art site's TODO still tells you to set a shared secret to switch this chain on. Setting it will do nothing. That item is stale.**
+- Registration, claim, intention ritual, and steward binding are all built on the art site and mount only when `livingLegacy` is on. It is off. The public reaches none of it.
+- `adrianrasmussen.com/atlas` hard-redirects to `mandalacodes.com/atlas`. The record lives on the art site, the globe lives here, and the visitor is bounced from the canonical site to the read-only one. Backwards from your stated intent.
+- No endpoint on either site answers "every piece this person holds." Collections on this site hold local saves of cards and artworks; the card kind no longer links. No oracle reading is tied to an owned piece anywhere.
+- Both sites share one database, so the same email resolves to one account row, but each site runs its own login and the two domains cannot share a cookie. A collector signs in twice.
+- The five invented placements are gone from the public globe. The globe shows one control at rest. Good.
+- Against your intention statement, the atlas contradicts itself in three places: the filter panel reads as software, dreams float on the globe and then again in the card (your rule 47 says the card is the dream's only home), and the page carries engagement mechanics (once-per-visitor glosses, dream drift, lens toggles) you said the atlas should not have.
+
+The moves, in order:
+
+### B1. Repoint the sale hand-off, or retire it _(agent-runnable, quick)_
+The receiver is on the art site now. Either the art site records the sale locally and this site reads it through the existing proxy, or the sender is deleted. One session in the art-site repo. Done when a test sale lands as a pending row somewhere that is not a 410. Fix the art-site TODO in the same commit.
+
+### B2. One "my pieces" surface _(agent-runnable, deep)_
+One endpoint on the canonical site returning every piece a steward holds, with the card number of each. One page on this site under the account that lists them and opens the card reading for each piece. This is the missing spine of "the collection of all these art pieces." Plan file when started.
+
+### B3. Turn the atlas redirect around _(you decide, agent runs, quick)_
+Either the globe moves to the art site, or the art site's atlas page stays and reads the record it owns instead of bouncing. Recommendation: keep the globe here, remove the bounce, and give the art site a quiet "see it on the atlas" link. The record stays canonical where it is.
+
+### B4. The intention layer, reachable _(you decide, then agents)_
+The intention ritual exists and mounts nowhere public. Decide where a collector anchors intention: at claim on the art site (built), or on the card here. Then it gets one entrance from live navigation. Not two.
+
+### B5. Bring the atlas back to the intention statement _(you, then agents, moderate)_
+Three cuts to review from your own words: the filter panel, the on-globe dream text, the drift and gloss mechanics. Each is one deletion. You decide which of the three survive; agents remove the rest. See [atlas-interface-redesign.md](atlas-interface-redesign.md) for prior thinking; do not reopen it from scratch.
+
+### B6. One login across both sites _(park until B2 ships)_
+Genuinely new architecture, and worthless until there is a collection view worth signing in for.
+
+### The two switches only you can flip
+- `livingLegacy` on the art site. Nothing in Track B is visible to a collector until it is on. Flip it after B1 lands and the journey is walked once behind the flag.
+- `shopEnabled` on the art site. Your own note says logistics, not code. That stays your call.
+
+## Track C: the site around the oracle. Owner: agents.
+
+Already audited and fixed since June: security (2026-06-16), registration and legacy (2026-07-02), the nine launch-readiness audits (2026-09-01). Do not re-run those. What remains measurable:
+
+### C1. Phones without 3D see only a footer _(agent-runnable, moderate)_
+The fallback globe and side panel exist and are imported but never mounted when WebGL is absent. Mount them. Done when an iPhone with WebGL disabled shows the globe.
+
+### C2. Search engines cannot find any of the 64 card pages _(agent-runnable, moderate)_
+Card routes are client-rendered only and absent from every sitemap. A prerender step or a generated sitemap plus per-card meta gives the oracle a public face in search. The learn section already does this through Astro; copy the shape.
+
+### C3. Nine pages reachable only by URL _(you decide, agent runs, quick)_
+`/family`, `/atlas/claim`, `/atlas/homecoming`, `/atlas/registry`, `/atlas/edit`, `/profile`, `/profile/shared`, plus 2,200 lines of orphaned reading code. Each is keep-and-link, or delete. One list, one pass.
+
+### C4. The launch-readiness "do first" five
+Still the right five. [launch-readiness.md](launch-readiness.md) owns them. Item one (invented pieces) is done.
+
+## What I would do first, this week
+
+1. A1, the prose lint. It is the cheapest thing on this page and it makes every later writing hour count.
+2. B1, the sale hand-off. It is the one place the plan and the other repo's TODO actively disagree, and the wrong one is telling you to do work.
+3. A2, your one hour on the five pilot cards. Everything in Track A after it waits on that answer.
+
+Then C1 and C2 in the background while you write.
+
+## What this plan does not do
+
+- It does not restate the launch-readiness five or its three decisions. They stand.
+- It does not propose an in-app editor. The lint, the brief, and the tracker are enough loop for markdown. WordForge is the room if the rewrite is chosen.
+- It does not propose the cross-domain login before there is something to log in for.
