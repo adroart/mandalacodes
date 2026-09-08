@@ -14,9 +14,21 @@
  * and rewrites the script-src / script-src-elem hash set inside dist/_headers.
  * public/_headers stays the human-edited template; dist/_headers is generated
  * truth. 'inline-speculation-rules' is included for the prerender hint blocks.
+ *
+ * `_headers` is a Cloudflare Pages convention: it is only ever applied to
+ * static assets. Anything a Pages Function produces (functions/**) — the
+ * social-meta rewrites for /universal-language/:number and /piece/:id, every
+ * QR redirect, every /api/* route — skips it entirely and ships with none of
+ * these headers. functions/_middleware.ts fills that gap, but it runs inside
+ * the Workers runtime and cannot read a file at request time, so it needs its
+ * own copy of this same header set baked in at build time. Rather than let
+ * that copy be hand-maintained (and drift, the exact failure mode this whole
+ * script exists to close for the script hashes), this step parses the `/*`
+ * block out of the very `dist/_headers` text just written above and emits it
+ * as a generated module the middleware imports directly.
  */
 import { createHash } from 'node:crypto'
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 const DIST = 'dist'
@@ -64,3 +76,40 @@ if (rewritten === headers && hashes.size > 0) {
 }
 writeFileSync(headersPath, rewritten)
 console.log(`[csp] ${scanned} pages scanned, ${hashes.size} inline scripts allowlisted in dist/_headers`)
+
+/* ─── Emit the generated middleware module ──────────────────────────────── */
+
+function parseHeaderBlock(text, pathPattern) {
+  const lines = text.split('\n')
+  const start = lines.findIndex((line) => line.trim() === pathPattern)
+  if (start === -1) {
+    throw new Error(`[csp] no "${pathPattern}" block found in dist/_headers while generating security-headers.ts`)
+  }
+  const block = {}
+  for (let i = start + 1; i < lines.length; i++) {
+    const match = lines[i].match(/^  ([A-Za-z-]+):\s(.*)$/)
+    if (!match) break
+    block[match[1]] = match[2]
+  }
+  return block
+}
+
+const rootHeaders = parseHeaderBlock(rewritten, '/*')
+const GENERATED_DIR = join('functions', '_generated')
+const GENERATED_PATH = join(GENERATED_DIR, 'security-headers.ts')
+mkdirSync(GENERATED_DIR, { recursive: true })
+writeFileSync(
+  GENERATED_PATH,
+  `/**\n` +
+    ` * GENERATED FILE — do not hand-edit.\n` +
+    ` *\n` +
+    ` * Written by scripts/build-csp-headers.mjs (npm run build's postbuild step),\n` +
+    ` * parsed straight out of the same dist/_headers text that script just wrote,\n` +
+    ` * so functions/_middleware.ts can never carry a security header — CSP script\n` +
+    ` * hash included — that has drifted from what Cloudflare Pages serves for\n` +
+    ` * every static asset. Regenerate with \`npm run build\`.\n` +
+    ` */\n` +
+    `\n` +
+    `export const SECURITY_HEADERS: Record<string, string> = ${JSON.stringify(rootHeaders, null, 2)};\n`,
+)
+console.log(`[csp] wrote ${GENERATED_PATH} (${Object.keys(rootHeaders).length} headers)`)
