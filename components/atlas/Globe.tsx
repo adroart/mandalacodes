@@ -133,6 +133,63 @@ const SELECT_ANIM_MS = 800;
 // Click-pick threshold in CSS pixels.
 const PICK_THRESHOLD_PX = 18;
 
+// ─── No-WebGL fallback: a flat SVG constellation ───────────────────────────
+// cobe (the globe drawn above) requires a WebGL context and, when it can't
+// get one, silently no-ops — no error, no draw call, just a blank canvas
+// forever. A visitor whose browser truly has no WebGL (not "no 3D", no
+// WebGL at all) was seeing an empty box here, the title and side panel
+// intact around it. When that happens we skip cobe entirely and paint the
+// same lights as flat SVG circles, reusing `projectMarker` below so the
+// rotation and selection tweens stay pixel-identical to the WebGL path.
+
+let cachedHasWebGL: boolean | null = null;
+
+/** Whether this browser can hand a canvas a WebGL context at all. Cached
+ *  for the session — it cannot change while the page is open. */
+function supportsWebGLContext(): boolean {
+  if (cachedHasWebGL !== null) return cachedHasWebGL;
+  try {
+    const c = document.createElement('canvas');
+    cachedHasWebGL = !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch {
+    cachedHasWebGL = false;
+  }
+  return cachedHasWebGL;
+}
+
+// Marker sizes in CSS pixels for the SVG path (the WebGL sizes above are in
+// cobe's own unit-sphere scale and don't translate directly to pixels).
+const PLACED_SIZE_PX = 4.5;
+const UNAWAKENED_SIZE_PX = 3;
+const SEEKING_SIZE_PX = 3.5;
+const ORIGIN_SIZE_PX = 5;
+const OWNED_SIZE_PX = 6;
+
+function rgbCss([r, g, b]: [number, number, number], alpha = 1): string {
+  const R = Math.round(r * 255);
+  const G = Math.round(g * 255);
+  const B = Math.round(b * 255);
+  return alpha === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${alpha})`;
+}
+
+/** Same priority order as the cobe `markers` list below, resolved to CSS. */
+function nodeMarkerColorCss(n: GlobeNode): string {
+  if (n.status === 'origin') return rgbCss(ORIGIN_COLOR);
+  if (n.owned) return rgbCss(OWNED_COLOR);
+  if (n.status === 'seeking') return rgbCss(SEEKING_COLOR);
+  if (n.status === 'unawakened') return rgbCss(UNAWAKENED_COLOR);
+  if (n.pieceType === 'other') return rgbCss(OTHER_COLOR);
+  return rgbCss(MARKER_COLOR);
+}
+
+function nodeMarkerRadiusPx(n: GlobeNode): number {
+  if (n.owned && n.status !== 'origin') return OWNED_SIZE_PX;
+  if (n.status === 'placed') return PLACED_SIZE_PX;
+  if (n.status === 'unawakened') return UNAWAKENED_SIZE_PX;
+  if (n.status === 'origin') return ORIGIN_SIZE_PX;
+  return SEEKING_SIZE_PX;
+}
+
 /**
  * Project a (lat, lng) onto canvas-CSS-pixel coordinates given cobe's current
  * phi (longitude offset, radians) and theta (latitude tilt, radians).
@@ -198,6 +255,16 @@ export default function Globe({
 }: GlobeProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Computed once: whether cobe has any WebGL context to draw into. When it
+  // doesn't, we never call createGlobe and paint the SVG constellation
+  // below instead (see "No-WebGL fallback" above `Globe`).
+  const [hasWebGL] = useState<boolean>(supportsWebGLContext);
+  // SVG-path marker elements, keyed by node id, mutated directly by the
+  // rotation clock below (never through React state — same pattern
+  // KinshipLayer uses for its 60fps arc redraw, so neither loop causes a
+  // reconciliation pass).
+  const markerElsRef = useRef<Map<string, SVGCircleElement>>(new Map());
 
   // Live size in CSS pixels.
   const [size, setSize] = useState({ width: 600, height: 600 });
@@ -301,6 +368,7 @@ export default function Globe({
 
   // ─── Create / recreate the globe whenever size or markers change
   useEffect(() => {
+    if (!hasWebGL) return; // painted by the SVG fallback clock instead
     const canvas = canvasRef.current;
     if (!canvas) return;
     if (size.width === 0 || size.height === 0) return;
@@ -354,7 +422,60 @@ export default function Globe({
     const globe = createGlobe(canvas, opts as COBEOptions);
 
     return () => globe.destroy();
-  }, [size.width, size.height, markers]);
+  }, [hasWebGL, size.width, size.height, markers]);
+
+  // ─── SVG fallback rotation clock (no WebGL) ────────────────────────────
+  // Mirrors cobe's onRender above exactly — same rotation speed, same tween
+  // easing — so KinshipLayer's independently re-derived clock (see that
+  // file's header) stays in sync whichever renderer is actually painting.
+  // Runs every animation frame (never throttled) for the same reason: a
+  // throttled clock would drift out of lockstep with KinshipLayer's 60fps
+  // loop. Marker positions are written straight to the DOM via refs, not
+  // React state, so this never triggers a reconciliation pass.
+  useEffect(() => {
+    if (hasWebGL) return;
+    if (size.width === 0 || size.height === 0) return;
+
+    let raf = 0;
+    const tick = () => {
+      const now = performance.now();
+
+      const tween = tweenRef.current;
+      if (tween) {
+        const t = Math.min(1, (now - tween.startedAt) / tween.duration);
+        const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        phiRef.current = tween.fromPhi + (tween.toPhi - tween.fromPhi) * e;
+        thetaRef.current = tween.fromTheta + (tween.toTheta - tween.fromTheta) * e;
+        if (t >= 1) tweenRef.current = null;
+      } else if (!pausedRef.current) {
+        phiRef.current += ROTATION_SPEED;
+      }
+
+      for (const n of nodes) {
+        const el = markerElsRef.current.get(n.id);
+        if (!el) continue;
+        const p = projectMarker(
+          n.lat,
+          n.lng,
+          phiRef.current,
+          thetaRef.current,
+          size.width,
+          size.height,
+        );
+        if (!p) {
+          el.style.display = 'none';
+          continue;
+        }
+        el.style.display = '';
+        el.setAttribute('cx', String(p.x));
+        el.setAttribute('cy', String(p.y));
+      }
+
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [hasWebGL, nodes, size.width, size.height]);
 
   // ─── Click-on-marker (manual pick)
   const handleCanvasClick = useCallback(
@@ -403,22 +524,80 @@ export default function Globe({
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      <canvas
-        ref={canvasRef}
-        onClick={handleCanvasClick}
-        style={{
-          width: size.width,
-          height: size.height,
-          maxWidth: '100%',
-          maxHeight: '100%',
-          display: 'block',
-          margin: '0 auto',
-          cursor: onSelect ? 'pointer' : 'default',
-          contain: 'layout paint size',
-        }}
-        aria-label="Interactive globe showing where Adrian Rasmussen's artworks are placed in the world."
-        role="img"
-      />
+      {hasWebGL ? (
+        <canvas
+          ref={canvasRef}
+          onClick={handleCanvasClick}
+          style={{
+            width: size.width,
+            height: size.height,
+            maxWidth: '100%',
+            maxHeight: '100%',
+            display: 'block',
+            margin: '0 auto',
+            cursor: onSelect ? 'pointer' : 'default',
+            contain: 'layout paint size',
+          }}
+          aria-label="Interactive globe showing where Adrian Rasmussen's artworks are placed in the world."
+          role="img"
+        />
+      ) : (
+        // No WebGL anywhere in this browser: cobe would draw nothing (see
+        // "No-WebGL fallback" above). A flat constellation instead — the
+        // same lights, the same rotation, no continent texture or glow.
+        <svg
+          viewBox={`0 0 ${size.width} ${size.height}`}
+          width={size.width}
+          height={size.height}
+          style={{
+            width: size.width,
+            height: size.height,
+            maxWidth: '100%',
+            maxHeight: '100%',
+            display: 'block',
+            margin: '0 auto',
+          }}
+          aria-label="A constellation of Adrian Rasmussen's artworks resting across the world."
+          role="img"
+        >
+          <circle
+            cx={size.width / 2}
+            cy={size.height / 2}
+            r={Math.max(0, Math.min(size.width, size.height) / 2 - 1)}
+            fill="none"
+            stroke={rgbCss(BASE_COLOR, 0.25)}
+            strokeWidth={1}
+          />
+          {nodes.map(n => {
+            const initial = projectMarker(
+              n.lat,
+              n.lng,
+              phiRef.current,
+              thetaRef.current,
+              size.width,
+              size.height,
+            );
+            return (
+              <circle
+                key={n.id}
+                ref={el => {
+                  if (el) markerElsRef.current.set(n.id, el);
+                  else markerElsRef.current.delete(n.id);
+                }}
+                cx={initial ? initial.x : size.width / 2}
+                cy={initial ? initial.y : size.height / 2}
+                r={nodeMarkerRadiusPx(n)}
+                fill={nodeMarkerColorCss(n)}
+                style={{
+                  display: initial ? undefined : 'none',
+                  cursor: onSelect ? 'pointer' : 'default',
+                }}
+                onClick={() => onSelect?.(n.id)}
+              />
+            );
+          })}
+        </svg>
+      )}
     </div>
   );
 }
