@@ -87,3 +87,34 @@ export function jsonResponse(body, init = {}, request = null, env = null) {
     headers: { 'Content-Type': 'application/json', ...cors, ...(init.headers || {}) },
   });
 }
+
+/**
+ * Coerce a post-handoff redirect target to a SAME-SITE relative path.
+ * Rejects absolute URLs and protocol-relative (`//host`) / backslash tricks
+ * so `?next=` on the login handoff (functions/api/auth/handoff.js and
+ * functions/api/auth/handoff/accept.js) can never become an open redirect.
+ * Mirrors the equivalent helper in Adrian-Website's functions/api/_lib/auth.ts.
+ */
+export function safeReturnPath(value, fallback = '/') {
+  const safeFallback =
+    typeof fallback === 'string' &&
+    fallback.startsWith('/') &&
+    !fallback.startsWith('//') &&
+    !fallback.includes('\\')
+      ? fallback
+      : '/';
+
+  if (typeof value !== 'string') return safeFallback;
+  const candidate = value.trim();
+  if (!candidate.startsWith('/') || candidate.startsWith('//') || candidate.includes('\\')) {
+    return safeFallback;
+  }
+
+  try {
+    const parsed = new URL(candidate, 'https://internal.invalid');
+    if (parsed.origin !== 'https://internal.invalid') return safeFallback;
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return safeFallback;
+  }
+}
