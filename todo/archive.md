@@ -1,6 +1,15 @@
 ## 2026-08-20
 - [x] Give the empty Atlas its own line of copy — shipped: wall, ledger, and registry now show "the sky is waiting for its first light." when the ledger is truly empty; "Nothing matches. Loosen a filter." only appears when filters reduced a non-empty set. Wording is Adrian's to retune.
 
+## 2026-09-08 · Design section opening sweep (PR #180)
+
+- [x] The Design section repeats one opening on 51 of the 64 cards, the same fault just fixed everywhere else _(band: agent-runnable)_ _(effort: deep)_
+  "Where this drive lives in..." across three variants. The I-Ching, Body and Relations sections were cleaned on 2026-09-01 and measure zero; Design was outside that scope and was never swept. The method that worked is written down in [_DIVERSIFY_PASS_THREE.md](oracle/sections/_DIVERSIFY_PASS_THREE.md) and [_DIVERSIFY_PASS_FOUR.md](oracle/sections/_DIVERSIFY_PASS_FOUR.md): ban stems not phrases, and give every agent the test "would this sentence work unchanged on another card".
+
+- [x] Two formulas left standing in the Design section after the 2026-09-02 opening sweep _(band: agent-runnable)_ _(effort: moderate)_
+  "That placement is the teaching" closes Where it lives on 31 cards, and "This code is the ..." opens The drive on 21. Both are over the five-card threshold. The method that clears them is in [oracle/sections/_DIVERSIFY_PASS_THREE.md](oracle/sections/_DIVERSIFY_PASS_THREE.md) and [_DIVERSIFY_PASS_FOUR.md](oracle/sections/_DIVERSIFY_PASS_FOUR.md): ban the stem, not the phrase.
+  Done 2026-09-08: 35 Drive openings on the "This code is the" stem rewritten card by card, the 21 "That placement is the teaching" signposts removed, the 5 "On its own this" openings varied. Prose lint reports no repeated opening stem in any lens.
+
 ## 2026-06-14
 - [<] Publish the four Phase 1 SEO articles (what is mandala art, sacred geometry, laser-cut wooden mandalas, commissioning a mandala)   → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(parked → TODO.md)_
 - [<] Build the /about stance page and the /artists hub with Adrian's first featured artist page   → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(parked → TODO.md)_
