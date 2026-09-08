@@ -52,6 +52,14 @@ class ChunkErrorBoundary extends React.Component<{ children: React.ReactNode }, 
     window.location.reload();
   }
 
+  /* Retry does not reload the page: it clears the boundary's own error state
+     so React remounts the children fresh, which repeats the failed fetch
+     (CardReadingData's prose load, or a lazy route's own import) on its own.
+     Signal can return between one look at this screen and the next tap. */
+  private retry = () => {
+    this.setState({ hasError: false, offline: false });
+  };
+
   render() {
     if (this.state.hasError && this.state.offline) {
       return (
@@ -65,18 +73,38 @@ class ChunkErrorBoundary extends React.Component<{ children: React.ReactNode }, 
             padding: 24,
           }}
         >
-          <p
-            style={{
-              fontFamily: 'var(--font-reading)',
-              fontSize: 16,
-              color: 'var(--color-wood-700)',
-              maxWidth: 380,
-            }}
-          >
-            This part of the oracle needs a connection. It has not been opened on this device yet,
-            so there is nothing stored here to read. The cards you have already opened are still
-            here, and this one will arrive the next time you have signal.
-          </p>
+          <div style={{ maxWidth: 380 }}>
+            <p
+              style={{
+                fontFamily: 'var(--font-reading)',
+                fontSize: 16,
+                color: 'var(--color-wood-700)',
+                margin: 0,
+              }}
+            >
+              This part of the oracle needs a connection: it has not been opened on this device
+              yet, but the cards you have already opened are still here.
+            </p>
+            <button
+              type="button"
+              onClick={this.retry}
+              style={{
+                marginTop: 18,
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                font: 'inherit',
+                fontFamily: 'var(--font-ui)',
+                fontSize: 11,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: 'var(--color-bronze-600)',
+                cursor: 'pointer',
+              }}
+            >
+              Retry
+            </button>
+          </div>
         </div>
       );
     }
