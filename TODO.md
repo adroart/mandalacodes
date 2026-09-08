@@ -42,9 +42,6 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 ### Found in the overnight audit, 2026-09-01
 
-- [ ] The Design section repeats one opening on 51 of the 64 cards, the same fault just fixed everywhere else _(band: agent-runnable)_ _(effort: deep)_
-  "Where this drive lives in..." across three variants. The I-Ching, Body and Relations sections were cleaned on 2026-09-01 and measure zero; Design was outside that scope and was never swept. The method that worked is written down in [_DIVERSIFY_PASS_THREE.md](oracle/sections/_DIVERSIFY_PASS_THREE.md) and [_DIVERSIFY_PASS_FOUR.md](oracle/sections/_DIVERSIFY_PASS_FOUR.md): ban stems not phrases, and give every agent the test "would this sentence work unchanged on another card".
-
 - [ ] The mobile test suite reads as broadly red because nothing starts the app before it runs _(band: agent-runnable)_ _(effort: moderate)_
   `playwright.config.ts` has no `webServer` block, so against a cold checkout every spec fails on connection refused before the app exists. That is what has been inflating the count that earlier notes called "dozens red". Real app-level failures exist too, but the suite has never been measured honestly. Add the block, then get one true number, then triage.
 
@@ -170,9 +167,6 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - ~~Remove dead oracle code from Adrian-Website~~, Adrian-Website PR #113 ([link](https://github.com/adroart/Adrian-Website/pull/113)), 2026-05-29. Deletes all oracle components / data / scripts / assets, replaces `/oracle` with a directory page that links to mandalacodes, 301-redirects every old card URL via `_redirects`. Awaiting merge.
 
 ## Oracle deck content (Universal Language)
-
-- [ ] Two formulas left standing in the Design section after the 2026-09-02 opening sweep _(band: agent-runnable)_ _(effort: moderate)_
-  "That placement is the teaching" closes Where it lives on 31 cards, and "This code is the ..." opens The drive on 21. Both are over the five-card threshold. The method that clears them is in [oracle/sections/_DIVERSIFY_PASS_THREE.md](oracle/sections/_DIVERSIFY_PASS_THREE.md) and [_DIVERSIFY_PASS_FOUR.md](oracle/sections/_DIVERSIFY_PASS_FOUR.md): ban the stem, not the phrase.
 
 - [ ] **Deep-pass rewrite** — decide whether to commit the full deep-pass rewrite for the remaining 61 I Ching and Body cards _(you · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
   A drafted deeper rewrite exists for most cards but hasn't been committed pending Adrian's call on quality. Done when the rewrite is either committed for the 61 cards or explicitly set aside. See [oracle/TODO.md](oracle/TODO.md).
