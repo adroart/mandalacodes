@@ -16,7 +16,7 @@ interface HeldPiece {
 }
 
 const AccountPiecesInner: React.FC = () => {
-  const { fetchAuthed } = useAccount();
+  const { fetchAuthed, isSignedIn } = useAccount();
   const [pieces, setPieces] = useState<HeldPiece[] | null>(null);
   const [error, setError] = useState(false);
 
@@ -53,7 +53,13 @@ const AccountPiecesInner: React.FC = () => {
       <p className="font-reading text-lg text-wood-700 leading-relaxed max-w-md">
         No pieces held under this account yet.{' '}
         <a
-          href="https://adrianrasmussen.com/creations/multidimensional-art/universal-language"
+          href={
+            isSignedIn
+              ? `/api/auth/handoff?next=${encodeURIComponent(
+                  '/creations/multidimensional-art/universal-language',
+                )}`
+              : 'https://adrianrasmussen.com/creations/multidimensional-art/universal-language'
+          }
           className="text-bronze-600 hover:text-bronze-700"
         >
           See the work
