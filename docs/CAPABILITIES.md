@@ -2,9 +2,9 @@
 
 > **GENERATED — do not edit by hand.** Rerun
 > `npx tsx scripts/gen-capabilities-portable.ts`. It reads the code, so it cannot drift.
-> Generated 2026-09-08T05:58:12.488Z.
+> Generated 2026-09-08T06:02:10.325Z.
 
-**At a glance:** 22 commands.
+**At a glance:** 23 commands.
 
 ## Commands (how to use it)
 
@@ -15,7 +15,8 @@
 | `npm run build:search-index` | `tsx scripts/build-search-index.ts` |
 | `npm run build:oracle-corpus` | `tsx scripts/build-oracle-corpus.ts` |
 | `npm run build:content` | `npm --prefix content-site install --no-audit --no-fund && npm --prefix content-site run build && rm -rf public/learn && cp -R content-site/dist public/learn` |
-| `npm run prebuild` | `tsx scripts/build-search-index.ts && tsx scripts/build-oracle-corpus.ts && npm run build:content` |
+| `npm run lint:prose` | `tsx scripts/lint-oracle-prose.ts` |
+| `npm run prebuild` | `tsx scripts/build-search-index.ts && tsx scripts/build-oracle-corpus.ts && npm run lint:prose && npm run build:content` |
 | `npm run write` | `npm --prefix content-site install --no-audit --no-fund && npm --prefix content-site run dev` |
 | `npm run build` | `vite build` |
 | `npm run build:designer` | `cd ../led/lightweaver && npx vite build --base=/design/ && rm -rf ../../mandalacodes/public/design && mkdir -p ../../mandalacodes/public/design && cp -R dist/. ../../mandalacodes/public/design/ && rm -f ../../mandalacodes/public/design/_headers ../../mandalacodes/public/design/_redirects` |
