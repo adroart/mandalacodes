@@ -1,3 +1,6 @@
+## 2026-09-08
+- [x] Give the mobile test suite a `webServer` so it stops reading as broadly red — `playwright.config.ts` now boots `vite --port <PLAYWRIGHT_BASE_URL's port>` (default 2222) before any spec runs, and also runs `npm run build:content` once if `public/learn` is missing (the two `/learn` specs 404'd without it). Wired `test:mobile` into CI as its own job (`.github/workflows/test.yml`, Chromium only, uploads `test-results/` on failure). True baseline measured on a clean run: 67 passed, 9 skipped, 38 failed/timed-out out of 114 (was: every spec failing on connection-refused). See TODO.md "Found in the 2026-09-08 mobile suite audit" for what the 38 failures actually are — most trace to one 2026-07-20 redesign, not new regressions. Branch `claude/mobile-suite-server`.
+
 ## 2026-08-20
 - [x] Give the empty Atlas its own line of copy — shipped: wall, ledger, and registry now show "the sky is waiting for its first light." when the ledger is truly empty; "Nothing matches. Loosen a filter." only appears when filters reduced a non-empty set. Wording is Adrian's to retune.
 

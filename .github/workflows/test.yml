@@ -1,7 +1,4 @@
-# Minimal CI: typecheck + unit tests on main pushes and PRs.
-# The Playwright e2e suite is not run here — it needs a built site and
-# browsers; this workflow guards the pure logic (ledger, projection,
-# kinship, privacy) that the Atlas depends on.
+# CI: typecheck + unit tests + the mobile Playwright suite on main pushes and PRs.
 name: test
 
 on:
@@ -29,3 +26,42 @@ jobs:
       - run: npm ci --prefix mcp/oracle-server
       - run: npm run typecheck
       - run: npm run test:unit
+
+  # The mobile Playwright suite, on Chromium only (playwright.config.ts's
+  # `Mobile Chrome` project). It was reading as broadly red because nothing
+  # started the app before it ran (2026-09-02 decision, TODO.md) — the config
+  # now boots the Vite dev server itself (webServer block) before any test
+  # runs. Measured locally at ~9.5 minutes for this one project, almost all of
+  # it 30s test-timeouts in tests/oracle-reflection-recorder.spec.ts: that
+  # file's admin recorder bar shares a CSS class (`.oracle-bottom-nav`) that
+  # card-reading-fullbleed.css force-hides for every reading page (see the
+  # 2026-07-20 "one bottom bar, not two" redesign), so its controls are
+  # unreachable by a real click and most of its tests were never green after
+  # that commit. That is a real, pre-existing product/test mismatch (not
+  # something this job introduces or should paper over) — see this branch's
+  # PR description for the full list. Left enabled deliberately so CI reflects
+  # the true state rather than hiding it; a 20-minute budget covers it.
+  test-mobile:
+    runs-on: ubuntu-latest
+    # Reports without blocking until the 35 pre-existing failures listed in
+    # TODO.md ("Found in the 2026-09-08 mobile suite audit") are resolved, so
+    # main's status stays a true signal from the checks that can pass.
+    continue-on-error: true
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:mobile
+        env:
+          CI: true
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-mobile-report
+          path: test-results/
+          retention-days: 7
