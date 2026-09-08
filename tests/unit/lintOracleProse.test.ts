@@ -107,6 +107,33 @@ describe('checkEditorialFlags', () => {
   it('does not flag ordinary prose', () => {
     expect(checkEditorialFlags('The turn comes not from fighting it but from meeting it.')).toHaveLength(0);
   });
+
+  // 2026-09-08 revision (PR #171): a sourcing aside that survived the
+  // previous pass's italics-removal as a bare parenthetical, exactly the
+  // shape found leaked into oracle/cards 09/11/15/16/17/20/24/25/28/30/31/
+  // 32/36/40/44/45/55/56/57/60/61 before this fix.
+  it.each([
+    '(FLAG: trigram-axis Tarot unsourced, vault stub files empty.)',
+    "(Both immortal source files are empty stubs; names verified against the vault index.)",
+    '(The figures\' attributes here use established Eight Immortals lore; the vault\'s immortal detail files are empty stubs, so only the names are vault-confirmed.)',
+    "(Tsade derived from The Star's Golden Dawn attribution; the older reference file's Resh traced to the stale Sun Arcana.)",
+    '(carried from per_card_reference; the Emperor\'s tarot file is an empty stub, so not re-derivable in-vault.)',
+  ])('flags the sourcing-leak phrase in %s', (text) => {
+    expect(checkEditorialFlags(text).length).toBeGreaterThan(0);
+  });
+
+  // False positives this rule must NOT catch: "derived" alone is ordinary
+  // vocabulary (a shape "derived from" a trigram is legitimate manuscript
+  // prose, see oracle/cards/36.md's Sky bullet), and "flag"/"flagged" shows
+  // up as a plain English word in several cards' body text (18, 44, 49)
+  // with no bracket or parenthesis anywhere near it.
+  it.each([
+    'The pattern here is derived from patience, not force.',
+    'The same awareness that flags a threat flags a flaw.',
+    'The kind of revolution that just installs the old cruelty under a new flag.',
+  ])('does not flag plain prose using "derived" or "flag": %s', (text) => {
+    expect(checkEditorialFlags(text)).toHaveLength(0);
+  });
 });
 
 describe('checkVocab (warning only)', () => {

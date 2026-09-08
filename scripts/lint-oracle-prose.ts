@@ -19,7 +19,15 @@
  *      in a heading line (`### The drive — Gate 24`) or inside the leading
  *      bold label of a `- **Label — Value**` bullet (`- **Sky — Mercury:**
  *      …`). An em dash anywhere else on the line is an error.
- *   3. An editorial flag left in shipped text: `[FLAG`, `TODO`, `_[`, `[[`.
+ *   3. An editorial flag or sourcing-note leak left in shipped text:
+ *      `[FLAG`, `(FLAG`, `TODO`, `_[`, `[[`, plus a phrase list of
+ *      sourcing/audit-trail vocabulary that has repeatedly leaked out of
+ *      frontmatter/comments into visible prose as a plain aside (see
+ *      `EDITORIAL_LEAK_PHRASES` below — "vault index", "empty stub",
+ *      "Golden Dawn attribution", etc.). Deliberately excludes generic
+ *      connector phrases like "derived from" / "carried from" that also
+ *      occur in legitimate prose — those are caught by manual review, not
+ *      this gate.
  *
  * WARNINGS print but do not fail the build:
  *   4. Banned vocabulary from the voice-profile AGAINST list (generic
@@ -239,9 +247,39 @@ export function checkEmDash(line: string): number[] {
 
 const FLAG_PATTERNS: Array<{ needle: string; label: string }> = [
   { needle: '[FLAG', label: '[FLAG' },
+  { needle: '(FLAG', label: '(FLAG' },
   { needle: 'TODO', label: 'TODO' },
   { needle: '_[', label: '_[' },
   { needle: '[[', label: '[[' },
+];
+
+/**
+ * Editorial-leak phrases: sourcing/audit-trail vocabulary from the
+ * manuscript's `meta:sourcing` blocks and `_hexagram-NN.md`-style vault
+ * cross-references that has, in practice, leaked out of frontmatter/comments
+ * and into shipped prose as a plain aside (cards 09, 11, 15, 16, 17, 20, 24,
+ * 25, 28, 30, 31, 32, 36, 40, 44, 45, 55, 56, 57, 60, 61 — see the 2026-09-08
+ * revision of PR #171). None of these terms occur in the deck's own reading
+ * voice, so a hit is always a leak, never a false positive on real prose.
+ * Deliberately narrower than it could be: "derived from" / "carried from"
+ * are NOT included here even though they appear in several of those same
+ * leaks, because both phrases also occur in legitimate manuscript sentences
+ * (a shape "derived from" a trigram, a virtue "carried from" a myth) and
+ * banning them outright would fail prose that was never an editorial note.
+ * Catch those only by manual review, not by this automated gate.
+ */
+const EDITORIAL_LEAK_PHRASES: string[] = [
+  'source file',
+  'empty stub',
+  'frontmatter-only',
+  'vault index',
+  'vault-confirmed',
+  'reference file',
+  'per_card_reference',
+  'needs verification',
+  'not re-derivable',
+  'sourcing_log',
+  'golden dawn attribution',
 ];
 
 export function checkEditorialFlags(line: string): Array<{ index: number; label: string }> {
@@ -251,6 +289,14 @@ export function checkEditorialFlags(line: string): Array<{ index: number; label:
     while (idx !== -1) {
       hits.push({ index: idx, label });
       idx = line.indexOf(needle, idx + 1);
+    }
+  }
+  const lower = line.toLowerCase();
+  for (const phrase of EDITORIAL_LEAK_PHRASES) {
+    let idx = lower.indexOf(phrase);
+    while (idx !== -1) {
+      hits.push({ index: idx, label: phrase });
+      idx = lower.indexOf(phrase, idx + 1);
     }
   }
   return hits.sort((a, b) => a.index - b.index);
