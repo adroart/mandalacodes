@@ -39,6 +39,33 @@ const learnStatic = (): Plugin => ({
   },
 });
 
+/**
+ * `vite preview` parity for the prerendered card pages (Track C2). In
+ * production, public/_routes.json sends /universal-language/:number to
+ * functions/universal-language/[number].js, which explicitly serves
+ * dist/universal-language/{number}/index.html — so the trailing slash never
+ * matters there. `vite preview`'s static file server has no such function:
+ * given the exact route path with no trailing slash it falls through to the
+ * SPA's dist/index.html instead of resolving the directory index, which
+ * would make a local `npm run preview` lie about what a card page serves.
+ * This rewrites the request before the static handler sees it so preview
+ * matches the deployed behaviour for a plain card number.
+ */
+const previewPrerenderedCards = (): Plugin => ({
+  name: 'preview-prerendered-cards',
+  configurePreviewServer(server) {
+    server.middlewares.use((req, res, next) => {
+      const url = (req.url ?? '').split('?')[0];
+      const match = url.match(/^\/universal-language\/(\d+)$/);
+      if (!match) return next();
+      const number = Number(match[1]);
+      if (!Number.isInteger(number) || number < 1 || number > 64) return next();
+      req.url = `/universal-language/${number}/index.html${req.url?.slice(url.length) ?? ''}`;
+      next();
+    });
+  },
+});
+
 // Offline support for the oracle (reading deck + Hologenetic Profile), scoped
 // by what gets cached rather than by route — see docs/offline-oracle.md.
 // Precache is deliberately narrow (the always-needed shell + the birth-place
@@ -129,7 +156,7 @@ const vitePWA = VitePWA({
 });
 
 export default defineConfig({
-  plugins: [react(), learnStatic(), vitePWA],
+  plugins: [react(), learnStatic(), previewPrerenderedCards(), vitePWA],
   resolve: {
     alias: {
       '@': '/',
