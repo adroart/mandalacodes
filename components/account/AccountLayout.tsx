@@ -12,7 +12,7 @@ interface AccountLayoutProps {
 const NAV: Array<{ to: string; label: string }> = [
   { to: '/account', label: 'Overview' },
   { to: '/profile', label: 'Your chart' },
-  { to: '/atlas/edit', label: 'Your pieces' },
+  { to: '/account/pieces', label: 'Your pieces' },
   { to: '/account/collections', label: 'Collections' },
 ];
 
@@ -29,10 +29,10 @@ const SIGNED_OUT_FEATURES: Array<{
     body: 'Eleven positions, drawn from your birth data, that follow you through every reading.',
   },
   {
-    to: '/atlas/edit',
+    to: '/account/pieces',
     kicker: 'Your pieces',
     title: 'The artwork you hold',
-    body: 'If you own a physical piece: record where it rests, set your intention, and tend its living book.',
+    body: 'If you own a physical piece: see it here, where it rests, and its inscribed intention.',
   },
   {
     to: '/account/collections',
