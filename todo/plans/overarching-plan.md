@@ -127,3 +127,7 @@ Fable directs: writes each brief, reviews every branch against this plan and the
 4. The voice passes, weeks, in WordForge.
 
 **Gate on every branch**: Fable reads the diff against the brief, runs the checks CI runs, and merges only what proves itself on the live page.
+
+## Wave 1 log
+
+- 2026-09-08 · WordForge survey measured: 776 core and 265 web unit tests pass; the save path writes the card into a throwaway copy and stops (push and draft-PR functions exist, tested, never called); no brief, no preview. Two oracle write systems exist inside WordForge: the series tab with the publish pipeline (wired) and the Oracle Editorial Desk (dry-run only, no UI, wrong target path). Decision: build on the wired one, leave the desk untouched this pass, reconcile later as its own item. Phase two scope signed: land the save as a draft PR, brief above the editor, rendered preview beside it, status reflected in the grid.
