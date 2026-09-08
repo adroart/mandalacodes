@@ -101,3 +101,29 @@ Then C1 and C2 in the background while you write.
 - It does not restate the launch-readiness five or its three decisions. They stand.
 - It does not propose an in-app editor. The lint, the brief, and the tracker are enough loop for markdown. WordForge is the room if the rewrite is chosen.
 - It does not propose the cross-domain login before there is something to log in for.
+
+## The build plan (added 2026-09-08)
+
+Fable directs: writes each brief, reviews every branch against this plan and the intention statement, does the final read. Fable does not write code. Model rule: Opus for hard implementation, Sonnet for mechanical work, Fable for taste and review. Each agent works in its own worktree on its own files; nothing overlapping runs in parallel.
+
+**Wave 1, parallel, four worktrees, about a day**
+- Opus, i64os: survey WordForge as it stands, then finish it to "Adrian can open a card, read the brief, write, and save back to markdown". Survey report to Fable first; build only after Fable signs the scope.
+- Sonnet, mandalacodes: the prose lint (A1), wired into the build, run once, violations fixed.
+- Sonnet, Adrian-Website: the sale hand-off (B1), repointed or retired, stale TODO corrected.
+- Sonnet, mandalacodes: mount the non-3D globe fallback (C1).
+
+**Wave 2, after wave 1 lands, three worktrees, two to three days**
+- Opus, both repos: the "my pieces" endpoint and page (B2).
+- Sonnet, mandalacodes: search visibility for the 64 card pages (C2).
+- Sonnet, mandalacodes: per-card briefs and the lens tracker (A3), briefs reviewed by Fable in batches of eight before Adrian sees them.
+
+**Wave 3, after Adrian's vetoes, one to two days**
+- Sonnet: atlas redirect turned around (B3), the three atlas cuts (B5), the orphan sweep (C3), one entrance for intention (B4).
+
+**Adrian's slots, in order**
+1. The five pilot cards, one hour, after wave 1 (WordForge is the room).
+2. Veto pass on wave 2 and 3 defaults, thirty minutes.
+3. The two art-site switches, when B1 is proven.
+4. The voice passes, weeks, in WordForge.
+
+**Gate on every branch**: Fable reads the diff against the brief, runs the checks CI runs, and merges only what proves itself on the live page.
