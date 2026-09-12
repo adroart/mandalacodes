@@ -599,19 +599,31 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <div className="ul-natures" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "18px", paddingTop: "18px" }}>
               <div>
                 <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 7px" }}>
-                Repressive · Depressive
+                {vals.gkRepressiveName}
                 </p>
-                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.74", color: "var(--l-2)", margin: "0" }}>
-                Some people meet the numbness by going still. They stop reaching for anything, decide this flatness is simply who they are, and let the fire bank down further. It looks like calm. It is not calm.
-                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {(vals.gkRepressiveParas ?? []).map((para, paraIdx) => (
+                    <React.Fragment key={paraIdx}>
+                      <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.74", color: "var(--l-2)", margin: "0" }}>
+                      {para}
+                      </p>
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
               <div>
                 <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 7px" }}>
-                Reactive · Frenetic
+                {vals.gkReactiveName}
                 </p>
-                <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.74", color: "var(--l-2)", margin: "0" }}>
-                Others meet it by speeding up. They fill the calendar, stay in motion, keep the noise high enough that the silence underneath cannot be heard. They look productive. Inside, nothing has warmed.
-                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {(vals.gkReactiveParas ?? []).map((para, paraIdx) => (
+                    <React.Fragment key={paraIdx}>
+                      <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.74", color: "var(--l-2)", margin: "0" }}>
+                      {para}
+                      </p>
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
             </div>
           </details>
@@ -746,14 +758,18 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "24px" }}>
           <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
-          Gate 1
+          {vals.hdGateChip}
           </span>
-          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
-          Identity Center
-          </span>
-          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
-          Channel of Inspiration 1–8
-          </span>
+          {(vals.hdCentreChip) ? (
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
+            {vals.hdCentreChip}
+            </span>
+          ) : null}
+          {(vals.hdChannelChip) ? (
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
+            {vals.hdChannelChip}
+            </span>
+          ) : null}
         </div>
       </div>
     </section>
@@ -787,12 +803,12 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           {vals.bodyAminoChip}
           </span>
           <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
-          Ring of Fire
+          {vals.bodyRingChip}
           </span>
         </div>
         <div style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
           <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 14px" }}>
-          Physiology · The Liver
+          {vals.bodyPhysHeading}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(vals.bodyPhysParas ?? []).map((para, paraIdx) => (
@@ -806,7 +822,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </div>
         <div style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
           <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 14px" }}>
-          Amino Acid · Lysine
+          {vals.bodyAminoHeading}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(vals.bodyAminoParas ?? []).map((para, paraIdx) => (
@@ -908,7 +924,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
   {(vals.lightboxOpen) ? (
     <>
       <div onClick={vals.closeLightbox} role="dialog" aria-modal="true" aria-label="Artwork" style={{ position: "fixed", inset: "0", zIndex: "300", background: "rgba(10,8,5,0.94)", display: "flex", alignItems: "center", justifyContent: "center", padding: "28px", cursor: "zoom-out", animation: "ulFadeIn 300ms ease both" }}>
-        <img crossOrigin="anonymous" src={vals.lightboxImage} alt="Earth's Breath, Universal Language 1." style={{ maxWidth: "96vw", maxHeight: "90vh", objectFit: "contain", boxShadow: "0 40px 120px -30px rgba(0,0,0,0.8)", animation: "ulOverlay 420ms cubic-bezier(.16,1,.3,1) both" }} />
+        <img crossOrigin="anonymous" src={vals.lightboxImage} alt={vals.heroAlt} style={{ maxWidth: "96vw", maxHeight: "90vh", objectFit: "contain", boxShadow: "0 40px 120px -30px rgba(0,0,0,0.8)", animation: "ulOverlay 420ms cubic-bezier(.16,1,.3,1) both" }} />
         <button onClick={vals.closeLightbox} aria-label="Close" style={{ position: "absolute", top: "20px", right: "24px", background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: "30px", cursor: "pointer", lineHeight: "1" }}>
         ×
         </button>

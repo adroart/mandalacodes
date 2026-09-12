@@ -124,6 +124,14 @@ describe('browser Oracle Markdown source contract', () => {
       expect(card?.essence).not.toBe('');
       expect(card?.synthesis.iching.reading).not.toBe('');
       expect(card?.synthesis.gene_keys.shadow).not.toBe('');
+      // The shadow's two named faces, and the reference fields the card
+      // page's tag chips and section headers bind. Every card carries them.
+      expect(card?.synthesis.gene_keys.repressive_name).not.toBe('');
+      expect(card?.synthesis.gene_keys.reactive_name).not.toBe('');
+      expect(card?.reference?.hd_center).toMatch(/Cent(er|re)$/);
+      expect(card?.reference?.hd_channel_label).toMatch(/^(Channels? of|Integration cluster)/);
+      expect(card?.reference?.body_physiology).not.toBe('');
+      expect(card?.reference?.body_amino_acid).not.toBe('');
       expect(card?.synthesis.human_design.gate).not.toBe('');
       expect(card?.synthesis.body.physiology).not.toBe('');
       expect(card?.synthesis.tarot.ring_role).not.toBe('');
@@ -144,6 +152,39 @@ describe('browser Oracle Markdown source contract', () => {
         body: { physiology: expect.stringContaining('pulls the breath up out of the abdomen') },
       },
     });
+  });
+
+  it('binds the card page panels per card instead of carrying Earth\'s Breath literals', async () => {
+    // The generated reading markup once hard-coded card 1's repressive and
+    // reactive prose, its Human Design chips, and its Body headers, so all 64
+    // cards read as Earth's Breath in those three places. Each must be bound.
+    const markup = await readFile(resolve('components/oracle/eb/generated/EBReading.generated.tsx'), 'utf8');
+    for (const literal of [
+      'Repressive · Depressive',
+      'Reactive · Frenetic',
+      'meet the numbness by going still',
+      'Identity Center',
+      'Channel of Inspiration 1–8',
+      'Ring of Fire',
+      'Physiology · The Liver',
+      'Amino Acid · Lysine',
+      "alt=\"Earth's Breath",
+    ]) {
+      expect(markup, literal).not.toContain(literal);
+    }
+    for (const binding of [
+      'vals.gkRepressiveName', 'vals.gkRepressiveParas', 'vals.gkReactiveName', 'vals.gkReactiveParas',
+      'vals.hdGateChip', 'vals.hdCentreChip', 'vals.hdChannelChip',
+      'vals.bodyRingChip', 'vals.bodyPhysHeading', 'vals.bodyAminoHeading',
+    ]) {
+      expect(markup, binding).toContain(binding);
+    }
+
+    const [c23, c47] = await Promise.all([getSynthesis(23), getSynthesis(47)]);
+    expect(c23?.synthesis.gene_keys).toMatchObject({ repressive_name: 'Dumb', reactive_name: 'Fragmented' });
+    expect(c23?.reference).toMatchObject({ hd_center: 'Throat Center', hd_harmonic_gate: '43', body_physiology: 'Throat (thyroid)', body_amino_acid: 'Leucine' });
+    expect(c47?.synthesis.gene_keys).toMatchObject({ repressive_name: 'Hopeless', reactive_name: 'Dogmatic' });
+    expect(c47?.reference).toMatchObject({ hd_center: 'Ajna Center', hd_channel_label: 'Channel of Abstraction (47–64)', body_physiology: 'Neocortex' });
   });
 
   it('fails closed when the required numbered Markdown manuscript is absent', async () => {

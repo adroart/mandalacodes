@@ -508,6 +508,9 @@ export interface MdDesignSection {
   channel: string;
   /** New, MD-only: the full "Gate N, Keyword" tail of the drive heading. */
   drive_label: string;
+  /** New, MD-only: the tail of the "What completes it" heading, e.g.
+      "the Channel of Inspiration (1–8)" or "the Integration cluster (10, 20, 57)". */
+  channel_label: string;
 }
 
 export function mapDesign(parsed: ParsedCard): MdDesignSection | undefined {
@@ -537,6 +540,7 @@ export function mapDesign(parsed: ParsedCard): MdDesignSection | undefined {
     centre_field: para(livesSub),
     channel: para(completesSub),
     drive_label: headingTail(driveSub?.heading ?? ''),
+    channel_label: headingTail(completesSub?.heading ?? ''),
   };
 }
 
