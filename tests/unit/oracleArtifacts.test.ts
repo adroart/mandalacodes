@@ -68,7 +68,7 @@ describe('generated Oracle artifacts', () => {
       siblings: [20, 23, 24, 27, 42],
     });
     // Mid-paragraph on purpose: the Tarot teaching's opening line is editorial.
-    expect(card3?.relations.tarot?.teaching).toContain('Water above as the High Priestess and the Hanged Man');
+    expect(card3?.relations.tarot?.teaching).toContain('five faces wait in that weather');
     expect(card3?.relations.sky).toMatchObject({ value: 'Scorpio' });
     expect(card3?.relations.immortals?.teaching).toContain('Li Tie Guai, the healer');
     expect(card3?.relations.hebrew_letter).toMatchObject({ letter: 'Nun' });

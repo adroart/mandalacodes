@@ -1025,48 +1025,98 @@ is a family and lives in RELATIONS.
 
 ## 11. Relations
 
-The doorway out. Outward relating only: the code does not stand alone, here is
-the family it belongs to and what it forms with its kin. The true final section.
+Its question: who else carries this, and what does it become when it meets
+its kin. Not the energy itself (the five sections above have it), but the
+energy beside others, so its edges show. The doorway out and the true final
+section.
 
-**Subsections.** Pair (the King Wen sequence pair, the hexagram the frontmatter
-lists as `pair`; the line-negated opposite is a different fact and the
-Programming partner paragraph may name it), Inverse (the hexagram turned
-over; a separate subsection only when it differs from the pair, one merged
-subsection when they are the same hexagram, and a self-inverse heading for the
-eight cards that meet their own reflection), Programming partner (the Gene Keys
-polar partner), Codon ring (the family and siblings), Tarot (the ring's arcana
-and the two trigram arcana; the lead sentence is the card's one callback slot
-for the scene), Immortals, Deeper correlation (sky and Hebrew letter). Each 50
-to 130 words; Tarot longer because it holds three parts. The trigram tarot
-stays under Tarot and sky and letter stay under Deeper correlation; that is
-how all 64 cards already have it, and the older guide's other placement is
-retired.
+**The frame.** Relations is read one kin at a time. The panel shows this
+card at the centre and its kin around it, and a reader taps one node and
+reads one text. So each kin's paragraph stands alone: it names its kin in a
+sentence a stranger can place, says what the two energies make together, and
+says why you would open that card next. No paragraph refers to another
+("these five," "read together," "also carries"), and no sentence totals the
+section ("between them they hold," "six voices and one message").
 
-**Teach the bond, hide the machinery.** Name the kin card by its name, and say
-what the bond means. Never "codon," "amino acid," a ring index, "defined" or
-"undefined," or any mechanic in the prose. Nothing the reader must decode.
+**Assume nobody knows any card but this one.** A kin is named by its card
+name and then placed in plain words in the same sentence (Veils of
+Knowledge, the not-knowing that has moved into the head). Never a name
+alone, and never a list of names. Lineages may be named here and nowhere
+else on the card ("the Gene Keys pair this with," "the I Ching turns this
+over into"), without a book title. Never the mechanics: no codon, amino
+acid, ring index, gate number, defined or undefined, upright or reversed.
 
-**Lineages may be named here.** This is the teaching layer and the one place
-on the card where a tradition can be called by its name ("the Gene Keys pair
-this code with"), with respect and without a book title. The flat "never name
-a source" rule in the old master guide was stricter than the concept intended;
-the two-tier rule wins. The other five sections never name a tradition.
+**Never claim the chart.** The channel partner is kin here as on every card;
+the prose never says whether the reader carries the other half. The panel
+shows a signed-in reader that from their own chart.
 
-**Reference entries repeat.** The trigram definitions, the Immortals' name
-sentences, the ring labels describe the same thing wherever they appear. Do not
-diversify them. But the Immortals subsection opening "[Name] stands above" on
-52 of 64 cards is a chosen sentence, not a reference, and is retired.
+**Subsections and lengths.** Pair, 50 to 90 words: the same energy a season
+on. Inverse, only when it differs from the pair (one merged Pair when they
+are the same hexagram, a self-inverse heading for the eight cards that meet
+their own reflection). Programming partner, 50 to 90: the opposite pole, the
+two low faces feeding each other, why open it. Codon ring, 50 to 90: the
+family, what the members share, where this card sits, siblings by plain
+theme. Channel partner, 30 to 50, once the compiler carries the heading.
+Tarot: one lead sentence as the card's single scene callback, then the ring
+arcana bullet at 30 to 50 words and each trigram bullet at 25 to 45.
+Immortals, 40 to 70. Deeper correlation, two bullets of 20 to 35. Under 650
+words for the section, and under 400 in the kin that matter (pair, partner,
+ring, channel).
 
-**One card, three bonds.** When the pair, the inverse and the partner are the
-same card (64 with 63), say so once and write the bond once, the way card 64
-does it; three subsections that say the same thing are wallpaper.
+**Read with five questions, per kin.** Before a sentence is written, answer
+from the kin card's own finished sections and the ring or trigram file: who
+this kin is; what the two make together; why you would open it next; what it
+feels like to meet it; what it is not. A kin paragraph is done when a reader
+who has read only this card could say which card to open and why.
 
-**When the source is empty.** Trigram meaning, Immortal lore and the tarot
-cross-mapping have no file in the vault; every card that wrote them imported
-lore from outside and said so in its sheet. Until those files are authored
-(section 13), that is the practice: write from established lore, keep it to
-what is commonly agreed, and record "established lore, not vault-sourced" in
-the sheet.
+**Voice.** The ten rules and the two-minute check. To you throughout. One
+picture per kin. The measured checks apply here as everywhere: under 15
+words a sentence, under three commas per hundred words, no sentence with
+three commas, no list of nouns. This has been the deck's worst-measured
+section; card 3's Relations ran 25 words a sentence and eight commas per
+hundred before today.
+
+**What it must not do.** Re-teach the scene, the arc, the drive or the organ
+(the one callback is the Tarot lead sentence, and the Pair may glance at the
+scene when the pair is its other half). Describe the kin card in full; one
+sentence places it, and the panel links it. Stack teaching on a
+correspondence two hops away. Name the reader's chart. Total the section.
+
+**Retired here.** "[Name] stands above" (52 cards). "Between them they hold,"
+"six voices, one message" and every totalling closer. "Read together." "X
+also carries Y" and "the ring gives one Major" inside a bullet. The arcana
+inventory paragraph before the bullets (the lead is one sentence). "Keep this
+crossing" as a stock Immortals opener. The Alone-then-Joined turn.
+
+**Reference entries repeat.** The trigram definitions, the Immortals' placing
+sentences and the ring's shared-theme sentence describe the same thing
+wherever they appear and are not diversified. They come from the reference
+files below, once those exist.
+
+**The one-time preparation.** Three sets of files, made once, then read by
+every card that shares them. The 22 ring files each gain a shared-theme
+paragraph of about 80 words in the card's voice (what the members share,
+where each sits), drawn from the members' Gene Keys chapters and the 64
+Ways essays, which is the only place the theme is stated; Fable writes them
+because the theme is a reading, not a fact, and Adrian reads them once. The
+eight trigram files each gain about 150 words: the trigram's meaning in a
+person (the deck's ICHING trigram paragraphs already do this well and can be
+harvested), its classical body part from the Shuogua (already gathered in
+`trigram-body-research.md`), its two arcana with the plain reason for each,
+and its Immortal; Sonnet drafts, Fable checks the voice. The eight Immortal
+files each gain the placing sentence and one story line of about 60 words
+from commonly agreed lore, labelled as such; a Sonnet job. Then the per-card
+packet is assembled by script with no model in it: the pair card's CODE, the
+partner card's CODE, the channel partner's CODE, the ring file, the two
+trigram files, the ring arcana's tarot reference card, and `relations_data`.
+About 2,500 words. The Deeper correlation needs no file; its two facts are on
+the tarot reference card. Until the files exist, the practice stands: write
+from established lore, keep to what is commonly agreed, record "established
+lore, not vault-sourced" in the sheet.
+
+**Names.** Kin names and numbers, the ring, the arcana, the Immortals, the
+sky and the letter are facts from `relations_data`, kept as labels in the
+headings and bullets, never inferred.
 
 ---
 
