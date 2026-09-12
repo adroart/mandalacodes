@@ -1442,9 +1442,15 @@ ratifies or strikes the essence, and makes the card his. That pass is the one
 that takes a section to final, and it is the point of everything above. The
 AI layer's job is to make that pass short.
 
-**Who writes (decided 2026-09-12).** Opus writes the card, one fresh agent
-per card, with `oracle/WRITERS-BRIEF.md` (this document's rules without its
-reasoning, about 5,000 words), card 3 and the card's packet
+**Who writes (decided 2026-09-12, confirmed 2026-09-13).** Fable writes
+the template and nothing else: `oracle/WRITERS-BRIEF.md` is Fable's, under
+1,900 words, positive, written in the register it teaches, and its one idea
+is "say it to one person before you write it." Opus writes every card from
+it; Fable never writes a card. (Fable's one trial section, card 1's Gene
+Keys of 2026-09-13, is kept at `oracle/_archive/card-01-keys-fable-sample-2026-09-13.md`
+as the sample the brief was written beside; the card itself is Opus's.) Opus writes the card, one fresh
+agent per card, with the brief, card 3 and card 1's Gene Keys, and the
+card's packet
 (`node scripts/oracle-packet.mjs NN`, about 35,000 words, no model) as its
 whole world, at the session's default effort. Two cards per agent at most:
 the fixed reading is shared, and the third card in a long context loses
