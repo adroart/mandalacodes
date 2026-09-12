@@ -265,6 +265,9 @@ const UniversalLanguageCard: React.FC = () => {
           no chart yet asks the question, a chart with this code in it names
           the placement, a chart without it says nothing. */}
       <div className="eb-reading ul-chart-row" data-palette={palette}>
+        {synthesis?.summary ? (
+          <p className="ul-essence">{synthesis.summary}</p>
+        ) : null}
         <YourPositionCallout gate={card.number} />
         <SaveToCollectionButton
           item={cardCollectionItem(card.number)}
@@ -324,6 +327,16 @@ const chartRowStyles = `
     flex-direction: column;
     align-items: center;
     gap: 10px;
+  }
+  .ul-essence {
+    font-family: var(--font-reading);
+    font-size: clamp(17px, 1.6vw, 20px);
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    color: var(--d-1);
+    text-align: center;
+    max-width: 620px;
+    margin: 0 0 clamp(14px, 2vw, 22px);
   }
   @media (max-width: 819px) {
     .ul-chart-row { padding-left: 10px; padding-right: 10px; }
