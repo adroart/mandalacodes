@@ -1390,8 +1390,12 @@ that takes a section to final, and it is the point of everything above. The
 AI layer's job is to make that pass short.
 
 **Who writes (decided 2026-09-12).** Opus writes the card, one fresh agent
-per card, with this document and the card's packet as its whole world, at
-the session's default effort. Fable is not the writer; its cost is not
+per card, with `oracle/WRITERS-BRIEF.md` (this document's rules without its
+reasoning, about 5,000 words), card 3 and the card's packet
+(`node scripts/oracle-packet.mjs NN`, about 35,000 words, no model) as its
+whole world, at the session's default effort. Two cards per agent at most:
+the fixed reading is shared, and the third card in a long context loses
+quality. Fable is not the writer; its cost is not
 justified by the writing once the template holds, and card 3 was mostly
 written by Opus under Adrian's reading. Scripts, with no model, do
 everything measurable: the packet, the punctuation numbers, word counts,

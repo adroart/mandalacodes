@@ -36,3 +36,5 @@ backups/
 # teammate's machine-specific override and wins over the shared file.
 .conductor/settings.local.toml
 scripts/.refill-tmp/
+
+oracle/_packets/
