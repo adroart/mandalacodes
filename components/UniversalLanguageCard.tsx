@@ -13,6 +13,7 @@ import CardReadingShell from './oracle/reading/CardReadingData';
 import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
+import ChannelStatusLine from './oracle/ChannelStatusLine';
 import SaveToCollectionButton from './account/SaveToCollectionButton';
 import { cardCollectionItem } from '../lib/collections/items';
 import { ulPieceForCard } from '../utils/universalLanguage';
@@ -284,6 +285,7 @@ const UniversalLanguageCard: React.FC = () => {
         onShare={() => setShareOpen(true)}
         onOpenCode={(code) => navigate(`/universal-language/${code}`)}
         invocationSlot={<PublicInvocation invocation={liveInvocation} />}
+        hdChannelSlot={<ChannelStatusLine gate={card.human_design.gate} />}
       />
       </>
       } />
