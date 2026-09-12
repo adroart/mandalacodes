@@ -39,7 +39,7 @@ describe('Oracle card Markdown parser', () => {
     // field of oracle/cards/03.md, so a mis-mapped section still fails this test.
     const code = mapCode(card);
     expect(code?.keywords).toContain('New Beginnings');
-    expect(code?.reading).toContain('a hum under the ribs that said yes before you decided anything');
+    expect(code?.reading).toContain('Something new is already alive in you and it does not have a shape yet');
 
     const iching = mapIching(card);
     expect(iching?.hexagram_name).toBe('Difficulty at the Beginning');

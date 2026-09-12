@@ -46,14 +46,14 @@ describe('generated Oracle artifacts', () => {
     expect(card?.keywords).toContain('New Beginnings');
     // Deliberately mid-paragraph prose fixtures, one per lens, each unique to its
     // own field in oracle/cards/03.md. Opening sentences get rewritten; these do not.
-    expect(card?.glance.reading).toContain('a hum under the ribs that said yes before you decided anything');
+    expect(card?.glance.reading).toContain('Something new is already alive in you and it does not have a shape yet');
     expect(card?.iching.reading).toContain('it will not yet hold its shape');
     expect(card?.gene_keys.gift).toContain('the mess begins to mean something');
     expect(card?.human_design.gate).toContain('yours to give a shape to');
     expect(card?.body.physiology).toContain('where a beginning was once made the hard way');
 
     expect(searchDoc?.keywords).toContain('New Beginnings');
-    expect(searchDoc?.fields.glance).toContain('a hum under the ribs that said yes before you decided anything');
+    expect(searchDoc?.fields.glance).toContain('Something new is already alive in you and it does not have a shape yet');
     expect(searchDoc?.fields.iching).toContain('it will not yet hold its shape');
   });
 

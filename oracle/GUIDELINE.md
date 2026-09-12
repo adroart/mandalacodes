@@ -30,9 +30,10 @@ sixth voice, the first the reader meets, is the deck itself speaking the energy
 plainly with no tradition named.
 
 Three laws follow. No voice is a compression of another; each says what only it
-can say. A deeper voice never restates a shallower one; the reader who swipes
-from one panel to the next should find the question the last panel raised
-being answered, never re-read. And the card is its own thing: a reader should
+can say. A deeper voice never restates a shallower one, and the first voice never
+pre-says a deeper one; the reader who swipes from one panel to the next should
+find the question the last panel raised being answered, never re-read, and
+never already answered. And the card is its own thing: a reader should
 finish it feeling they met one energy whole, not that they toured five
 reference books about it.
 
@@ -204,7 +205,10 @@ fail is the fix, applied on the spot. Built from the deck's own tells (section
     card's yet.
 11. Read it aloud. If it sounds like a memo, say the worst sentence in your own
     words to someone, then tighten the grammar without losing what you said.
-12. Check the ending of the section. Does it resolve its own tension in one
+12. Split every sentence at its commas. Does each half carry its own idea?
+    Then they are two sentences. Count adjectives: more than one on a noun is
+    a fail.
+13. Check the ending of the section. Does it resolve its own tension in one
     tidy sentence? If a real conversation on this would end on the open part,
     end there.
 
@@ -230,23 +234,25 @@ This is the chapter the older documents did not have. They governed connection
 only by subtraction (do not repeat what belongs elsewhere). This chapter says
 what the sections owe each other.
 
-**The scene governs; CODE shows it first.** The I Ching's scene is the one
+**The scene governs; ICHING shows it.** The I Ching's scene is the one
 picture all the traditions already share: Rudd named his keys from the
 hexagram lines, Human Design kept the hexagram numbers, the tarot mapping hangs
 off the trigrams. So the scene is the card's picture, and a writer who invents
 a different governing picture (the wave on card 47) is building a fifth
-tradition. CODE shows the scene first, in plain clothes: no hexagram named, no
-dragon called a dragon if the word would name the system, but the fire, the
-ground, the leaving, the last step, in the reader's own week. ICHING then
-teaches the scene whole, with its trigrams, its judgement, its lines. The
-reader who swipes from CODE to ICHING should feel they have found where the
-picture came from.
+tradition. ICHING shows the scene whole, with its trigrams, its judgement, its
+lines. CODE may hold one piece of it, in plain clothes: no hexagram named, no
+dragon called a dragon if the word would name the system, but the fire, or the
+ground, or the last step, one of them and never the list, and only when that
+one piece carries the energy by itself. The reader who swipes from CODE to
+ICHING should feel they have found where the picture came from, not that they
+have already read it.
 
 **How the scene travels.** Four ways, and each section gets one.
 
-Restate belongs to CODE and ICHING only. CODE states the scene plainly; ICHING
-restates it in the tradition's clothes at full length. This is the only
-permitted restatement on the card.
+Restate belongs to ICHING alone. CODE may hold one glimpse of the scene;
+ICHING shows the scene. A glimpse in CODE and the whole picture in ICHING is
+the only place a picture appears twice on the card, and the glimpse is a
+piece, never a summary.
 
 Vary belongs to the moving lines and to KEYS. The lines vary the scene six
 times (the dragon hidden, in the field, in the sky, too high). KEYS varies it
@@ -293,9 +299,10 @@ the writer's picture lives everywhere else, and nothing joins them.
 
 **What each section owes its neighbours.**
 
-CODE owes ICHING the scene, unnamed, and owes KEYS the two faces, felt rather
-than listed. It owes every section the rule that none of its sentences may be
-theirs.
+CODE owes the sections nothing in advance. It may hold one glimpse of the
+scene for ICHING to open and one plain picture of the difficult face for KEYS
+to unfold. Everything else it owes them is silence: none of its sentences and
+none of its content may be theirs.
 
 ICHING owes CODE the scene's origin, and owes KEYS a hand-off in its last
 paragraph, the way card 33 does it ("a deeper layer hears another word inside
@@ -356,65 +363,78 @@ two cards nearest it.
 
 The reading is the card's front door, and the whole card for anyone who reads
 nothing else. It is written last, from the centre, after the five teaching
-sections exist.
+sections exist. It is guidance: it names the energy of this cycle of change and
+shows how to stand in it well.
 
-**What it is mainly about.** Adrian, 2026-09-02: "I found they were a bit more
-on the negative side rather than a balance between positive and negative. It
-was approaching everything as if it was a problem. But not the energy of the
-Card as much as the problems." And 2026-09-12: the reading is "focused on
-really understanding and clarifying the energy and how to work with it to best
-step into a relation with this that is healthy." So the reading is about the
-energy: what it is when it is in balance and in alignment, and how to work with
-it. The shadow is in it, as the challenges of the current cycle the reader is
-in, and understanding the unhealthy face is part of finding the healthy
-relation. But it is not what the reading is about. Balance, not positivity: a
-reading that only celebrates the card is the same failure inverted.
+**It is about the energy, not the reader's week.** No "this week," no "today,"
+no event. The reading names a phase every life passes through, and the reader
+supplies the moment. Adrian, 2026-09-12: "we dont need to talk about the week
+first or day this is about the energy of the cycles of change."
 
-The test is his: read it and ask what it is mainly about. If the answer is a
-problem you have, it fails. If the answer is a live energy with a difficult
-face and a gifted face, it passes.
+**Assume the reader knows nothing.** No system, no hexagram, no other section.
+Every sentence must make sense to a stranger with nothing else on the page.
+A sentence that leans on a picture the reader has not been given yet ("the
+picture changes," "the horse will not go") is a fail.
 
-**Why the old readings failed.** They were digests. On four of six cards read
-closely the reading was assembled from sentences already sitting in KEYS,
-DESIGN, BODY or ICHING, and a reading built from the Shadow is about a problem
-because the Shadow is. That is the mechanism under the register fault. So the
-first rule of the reading is provenance: not one sentence of it comes from the
-five sections behind it. It is written from the centre and the sheet, and the
-sections are what it does not say.
+**One sentence, one concept.** If a sentence needs a comma to carry a second
+thing, the second thing is the next sentence. At most one adjective, and only
+when the noun cannot stand alone. But fewer ideas, not more full stops: a
+paragraph of ten short sentences is chopping, not writing. Three to five whole
+thoughts per paragraph.
 
-**Shape.** Three paragraphs, roughly 200 to 260 words, in one voice, to you.
+**Clarity over completeness.** The card has a vast amount of knowledge behind
+it. The reading uses none of it as inventory. One clear picture at most, never
+the scene's elements stacked ("cloud, thunder, rain still holding off"). If the
+sentence is trying to be true to every tradition at once, it is trying too
+hard; cut to the one thing.
 
-The first paragraph is the energy awake in a person on a good day, this week,
-anchored in the body and in a lived moment. It is the essence: shown alone in
-search, after a cast, in every tool, so it must be the whole energy by itself.
-Always lit, even on the dark codes (47, 23, 36). This is where the scene
-appears in plain clothes.
+**Nothing the sections say later is said here first.** The reading brings the
+energy together; the sections unfold it. The sacral yes belongs to Human
+Design, the gripping to the Gene Keys, the judgement's counsel to the I Ching.
+Pre-emption test, sentence by sentence: if a later section will say this, cut
+it here. The reading owes the sections silence, not a preview.
 
-The second paragraph is the other face, as a picture rather than a diagnosis:
-the fox that wets its tail, the fire banked low, the mare that sets herself
-first and loses her companions. Not the two natures listed, not the Shadow
-text shortened. Felt, and left standing inside the energy rather than in place
-of it.
+**The stance.** The reading speaks from balance. The difficult face is named as
+the pull the cycle brings, never as the reader giving in to it. "The challenge
+of this stretch is the pull to hurry," not "you explain the thing before it can
+explain itself." Never narrate the reader failing; name the pull, then answer
+it in the same paragraph with the balanced stance. The shadow stays present as
+the challenge; the guidance always points toward the healthy relation.
+Adrian's test: read it and ask what it is mainly about. If the answer is a
+problem the reader has, it fails. If it is a live energy with a difficult face
+and a gifted face, it passes.
 
-The third paragraph is the turn and the ask in one breath, ending up. The
-centre sentence lives here. End plain and a beat early, but end up. The Tarot
-face may quietly govern the closing picture. The old "end a beat early, no
-neat bow" rule still holds; what changed is the direction of the last line.
+**Shape.** Three paragraphs, 130 to 180 words, one voice, to you.
 
-Card 64's shape with card 01's provenance is the target: 64 has the lit first
-paragraph, the fox as the low face, and the ask ending up, but its sentences
-are borrowed from its own sections; 01 invents every sentence but spends two
-paragraphs in the dark.
+The first names the energy of this cycle as it is when in balance: what it is,
+what it feels like from the inside. It is the essence, shown alone in search
+and after a cast, so it must be the whole energy by itself. Always lit, even on
+the dark codes. It may hold one glimpse of the scene, one piece and never the
+list, and only when that piece carries the energy alone.
 
-**Lens check, after writing.** Would a reader who knows only the I Ching
-recognise this as hexagram N? Only the Gene Keys? Only Human Design? Only the
-tarot? All four must say yes and none may say "this is mine." Then: no phrase
-shared with the card's own sections; no source named; no borrowed prose. Then
-the one-minute test from section 4.
+The second names the pull, the challenge this cycle brings, as one plain
+picture from ordinary life, and answers it in the same breath. The stance
+stays balanced throughout.
 
-**Sheet entry.** The reading gets a sourcing entry like every other section
-(section 13): which vault files the scene, the body-feel and the closing
-picture trace to. Its absence was one of the five causes of the first failure.
+The third is the guidance, ending up. The centre sentence lives here. End
+plain and a beat early, but end up.
+
+**Provenance.** Not one sentence and not one piece of content comes from the
+five sections behind it. It is written from the centre and the sheet. A reading
+whose sourcing list names a file from every tradition was written from the
+traditions, and the list is the tell.
+
+**Checks, after writing, in this order.** The stranger test. The one-sentence
+one-concept test. The pre-emption test. The stance test (is the reader ever
+shown failing). The recognition test, which runs the other way from the old
+lens check: a reader who knows only the I Ching should recognise this energy
+as hexagram N with no hexagram furniture in the text, and the same for the
+Gene Keys, Human Design and the tarot. Recognition, never inventory. Then
+Adrian's mainly-about test.
+
+**Sheet entry.** The reading gets a sourcing entry (section 13): which vault
+files the energy, the difficult face and the closing trace to, and which one
+piece of the scene, if any, it holds.
 
 ---
 

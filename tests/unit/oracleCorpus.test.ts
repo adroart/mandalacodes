@@ -43,7 +43,7 @@ describe('Markdown-only Oracle corpus', () => {
     expect(card.keywords).toContain('New Beginnings');
     // Deliberately mid-paragraph prose fixtures (see cardMarkdown.test.ts) so an
     // editorial pass on opening sentences cannot break the parser contract.
-    expect(card.glance.reading).toContain('a hum under the ribs that said yes before you decided anything');
+    expect(card.glance.reading).toContain('Something new is already alive in you and it does not have a shape yet');
     expect(card.glance.invocation).toBeUndefined();
     expect(card.iching.reading).toContain('it will not yet hold its shape');
     expect(card.iching.lines).toHaveLength(6);
