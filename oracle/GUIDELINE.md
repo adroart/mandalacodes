@@ -712,9 +712,12 @@ verdict.
 the Siddhi; the card is not a course they take in order. The Gift opens on
 what the gift is and does, as something the reader may have been born with.
 The Siddhi opens on the height itself. Neither is written as the exit from the
-one before ("when you stop fighting the fear" is retired as an opener). The
-shadow may be referred to at the end of the Gift as what dissolves where the
-gift is alive, never as the door the reader came through.
+one before ("when you stop fighting the fear" is retired as an opener). Then,
+in its second paragraph, each height names the state below it as its fuel: the
+Gift grows out of the very fear under the Shadow; the Siddhi is what the Gift
+becomes when even the maker lets go. Someone coming up from the lower state
+sees their fear as the raw material of this exact gift. Fuel, growth,
+transition, never the door the reader came through.
 
 **The movement is the section.** The Shadow paragraph carries the seed and the
 first turn (what it is like to feel it instead of pushing it down). The Gift
