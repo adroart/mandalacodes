@@ -48,8 +48,10 @@ reading each pass on the page, 2026-09-12.
 10. Read it on the page, not in the file. What looked right in Markdown read
     as six documents on the screen. The page is the test.
 
-The worked reference is card 3's I Ching section (`oracle/cards/03.md`), the
-only section so far that has been through this loop to the end.
+The worked reference is card 3 (`oracle/cards/03.md`): its reading, I Ching,
+Gene Keys, Human Design, Body, keynotes and essence have each been through
+this loop to the end with Adrian reading every pass on the page. Relations
+has not.
 
 ---
 
@@ -97,6 +99,15 @@ The card as it exists on disk and on screen, which the writing must respect:
 - The six panels are swiped in order: Universal, I Ching, Gene Keys, Human
   Design, Body, Relations. A reader can stop after any one. Each must be
   complete, and each must reward going on.
+- Under the name and keynotes, before the chart question, the page shows the
+  card's essence from the sheet. Each system panel carries a one-line frame
+  under its name and a popup behind its glyph that explains the system once
+  (the I Ching essay, Adrian's Gene Keys essay, the Human Design essay). The
+  I Ching popup shows this card's symbol above the essay. The Image sits
+  before the Judgement, both with plain subtitles. The coins carry a stranger's
+  explanation and, after a throw, "Your throw," "Turning into," "The lines in
+  motion," "Turned over, it leads to." Body shows organ and amino acid only.
+  Nothing in the prose repeats what these carry.
 
 Two words the deck uses precisely. The **scene** is the I Ching's picture in
 words: the dragon in the field, the mare on the ground, the fox at the ford,
@@ -387,19 +398,14 @@ has one; a section teaching a fact another section teaches (the magnetite on
 card 02, the thyroid on card 33); any sentence in CODE that also stands in
 another section of the same card; the same sentence on two cards.
 
-**Where the centre lives and where it recurs.** The essence lives in
-CODE's third paragraph, as the turn, in words a stranger could repeat. Not in
-the first paragraph, because the first paragraph is the essence, the energy
-lit, and the counsel is what the essence leaves you wanting. It may recur
-verbatim once, at the far end of the card: the last sentence of BODY's amino
-acid paragraph or of ICHING's reading, so the card closes on what it opened
-with, from the floor or from the root. Card 64 uses its centre as a refrain in
-three sections; that is the ceiling, allowed only when the sentence is the
-counsel itself, is under twelve words, and never sits in adjacent panels.
-Everywhere else the centre is varied, not repeated: "never yours to command"
-becomes "the fire was never yours" becomes "the fire is fed before it is lit."
-A card that says its truth the same way four times has one good sentence and
-five panels of wallpaper.
+**Where the essence lives and where it recurs.** The essence is shown once,
+on the page under the keynotes, in its own three sentences. Nowhere on the
+card is it repeated verbatim. The reading carries its way in other words in
+the third paragraph; the sections vary it, never restate it: "never yours to
+command" becomes "the fire was never yours" becomes "the fire is fed before
+it is lit." Card 64's three-fold refrain of its old centre is retired as a
+model. A card that says its truth the same way four times has one good
+sentence and five panels of wallpaper.
 
 **The mechanism.** The six cards that hold together do it by four different
 means, and the sheet names which one this card uses: a picture at different
@@ -474,7 +480,7 @@ two cards nearest it.
 ## 5. The reading
 
 The reading is the card's front door, and the whole card for anyone who reads
-nothing else. It is written last, from the centre, after the five teaching
+nothing else. It is written last, from the essence, after the five teaching
 sections exist. It is guidance: it names the energy of this cycle of change and
 shows how to stand in it well.
 
@@ -528,11 +534,13 @@ The second names the pull, the challenge this cycle brings, as one plain
 picture from ordinary life, and answers it in the same breath. The stance
 stays balanced throughout.
 
-The third is the guidance, ending up. The essence lives here. End
+The third is the guidance, ending up. The essence's way is carried here in
+other words; the essence itself is shown on the page under the keynotes, so
+the reading never repeats it verbatim. End
 plain and a beat early, but end up.
 
 **Provenance.** Not one sentence and not one piece of content comes from the
-five sections behind it. It is written from the centre and the sheet. A reading
+five sections behind it. It is written from the essence and the sheet. A reading
 whose sourcing list names a file from every tradition was written from the
 traditions, and the list is the tell.
 
@@ -1170,7 +1178,7 @@ The ten places two older documents disagreed, answered once.
    correlation. As the cards already have it.
 4. The card has six prose sections including DESIGN and BODY. The master
    guide's five-part anatomy is retired.
-5. There is one centre sentence per card, distilled after the sections are
+5. There is one essence per card, three short sentences, distilled after the sections are
    written, ratified by Adrian, living in CODE's third paragraph. The two
    truths were always one.
 6. ICHING Reading: 200 to 300 words.
@@ -1195,30 +1203,48 @@ their locked KEYS, DESIGN and RELATIONS status in the move to Markdown and
 carry `scaffold` where they should carry what he decided; that is re-set by
 hand, not re-earned.
 
-**The order of passes on a card.** The AI layer first, in this order:
+**The order of passes on a card.** The AI layer first, one section at a
+time, each read by Adrian on the page before the next begins. The pilot on
+card 3 (2026-09-12) established the loop: write, put it on the page, read,
+correct, crystallise the correction into this document, then the next
+section. Never a whole card in one pass.
 
-1. Read the sheet if one exists, and every source file the card may draw on.
+1. Read the sheet if one exists, and every source file the section may draw
+   on; for Human Design and Body, the per-gate packet and the reference files
+   (sections 9 and 10).
 2. ICHING, from the six translations and the Eranos philology: the scene
-   whole.
-3. KEYS, from the chapter, the essay and the reference row: the scene at
-   three heats.
-4. DESIGN, from the gate essay, the articles and the centre chapter: where the
-   scene presses.
-5. BODY, having read KEYS: what the tissue is doing.
-6. RELATIONS, from the facts and the established lore: the field.
-7. Distil the centre from the five. Record it, the scene and the mechanism on
-   the sheet.
-8. The reading, from the centre, with no sentence from the five.
-9. Keywords, from the finished card.
-10. The one-minute test on every section against the ring sibling and the
-    channel partner; the lens check on the reading; the measurement script
-    across the deck.
-11. The sheet: sources per section, complete.
+   whole, then the symbol for the popup, then the six lines checked back
+   against their sources.
+3. KEYS, from the chapter, the essay and the reference row, with the five
+   questions answered per height and the thread word found.
+4. DESIGN, from the packet: the drive as the gift first, where it lives with
+   the operating conditions, the channel short.
+5. BODY, having read KEYS and DESIGN: the entry, then the tissue and the
+   building block, two checkable facts.
+6. RELATIONS, from the facts and the established lore, once section 11 has
+   been through the loop.
+7. Distil the essence from the five: three short sentences, energy, challenge,
+   way. Record it, the scene and the mechanism on the sheet. Adrian ratifies.
+8. The reading, from the essence, with no sentence from the five.
+9. Keynotes, from the finished card.
+10. On every section: the two-minute check, the punctuation script, the
+    one-minute test against the ring sibling and the channel partner; on the
+    reading, the recognition test; across the deck, the measurement script.
+11. The sheet: sources per section, complete. Regenerate the corpus and the
+    search index. Repoint any content-pinning test.
+12. On the page: every panel loaded and read, the popups opened, the coins
+    thrown once.
 
 Then the human layer: Adrian reads the card on the live page, not in Markdown,
-ratifies or strikes the centre, and makes the card his. That pass is the one
+ratifies or strikes the essence, and makes the card his. That pass is the one
 that takes a section to final, and it is the point of everything above. The
 AI layer's job is to make that pass short.
+
+**Who writes.** Fable writes card copy and reviews it; Sonnet builds tooling,
+assembles packets and runs checks; Opus plans. A Fable run per section per
+card, not per card; the one-time references (nine centres, the principles,
+the amino acids, the organs, the connective layer for Relations) are made once
+and reused sixty-four times.
 
 **Batches.** Never all 64 blind in one day; that was the failure of June. Pilot
 on five (3, one bright, one dark, one body-led, one of Adrian's choosing), read
