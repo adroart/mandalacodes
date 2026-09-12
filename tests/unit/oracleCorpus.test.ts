@@ -43,20 +43,20 @@ describe('Markdown-only Oracle corpus', () => {
     expect(card.keywords).toContain('New Beginnings');
     // Deliberately mid-paragraph prose fixtures (see cardMarkdown.test.ts) so an
     // editorial pass on opening sentences cannot break the parser contract.
-    expect(card.glance.reading).toContain('pressing up the way a sprout forces the crust of the ground');
+    expect(card.glance.reading).toContain('a hum under the ribs that said yes before you decided anything');
     expect(card.glance.invocation).toBeUndefined();
-    expect(card.iching.reading).toContain('child in the long labour of being born');
+    expect(card.iching.reading).toContain('it will not yet hold its shape');
     expect(card.iching.lines).toHaveLength(6);
     expect(card.iching.lines[0]?.becomes).toEqual({ hexagram: 8, name: 'Holding Together' });
     expect(card.iching.upper_trigram).toMatchObject({ symbol: '☵', name: "Water (K'an)" });
     expect(card.iching.lower_trigram).toMatchObject({ symbol: '☳', name: 'Thunder (Chen)' });
     expect(card.reference?.binary).toBe('100010');
-    expect(card.gene_keys.gift).toContain('an acorn keeps working toward a shape of tree it has never seen');
-    expect(card.human_design.gate).toContain('holding the insight until the world can receive it');
-    expect(card.body.physiology).toContain('pulls the breath up out of the abdomen');
+    expect(card.gene_keys.gift).toContain('the mess begins to mean something');
+    expect(card.human_design.gate).toContain('yours to give a shape to');
+    expect(card.body.physiology).toContain('where a beginning was once made the hard way');
     expect(card.relations.codon_ring.name).toBe('Ring of Life and Death');
     expect(card.relations.unity_line).toContain(
-      'the whole arc of first arrival, the breakthrough and the long apprenticeship',
+      'the whole arc of first arrival, the birth that comes in a storm and the long apprenticeship',
     );
     expect(card.artworks).toContainEqual(expect.objectContaining({ id: 'UL-124', title: 'Messengers of the Infinite - 3' }));
   });

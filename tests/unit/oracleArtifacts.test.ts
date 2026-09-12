@@ -46,15 +46,15 @@ describe('generated Oracle artifacts', () => {
     expect(card?.keywords).toContain('New Beginnings');
     // Deliberately mid-paragraph prose fixtures, one per lens, each unique to its
     // own field in oracle/cards/03.md. Opening sentences get rewritten; these do not.
-    expect(card?.glance.reading).toContain('pressing up the way a sprout forces the crust of the ground');
-    expect(card?.iching.reading).toContain('child in the long labour of being born');
-    expect(card?.gene_keys.gift).toContain('an acorn keeps working toward a shape of tree it has never seen');
-    expect(card?.human_design.gate).toContain('holding the insight until the world can receive it');
-    expect(card?.body.physiology).toContain('pulls the breath up out of the abdomen');
+    expect(card?.glance.reading).toContain('a hum under the ribs that said yes before you decided anything');
+    expect(card?.iching.reading).toContain('it will not yet hold its shape');
+    expect(card?.gene_keys.gift).toContain('the mess begins to mean something');
+    expect(card?.human_design.gate).toContain('yours to give a shape to');
+    expect(card?.body.physiology).toContain('where a beginning was once made the hard way');
 
     expect(searchDoc?.keywords).toContain('New Beginnings');
-    expect(searchDoc?.fields.glance).toContain('pressing up the way a sprout forces the crust of the ground');
-    expect(searchDoc?.fields.iching).toContain('child in the long labour of being born');
+    expect(searchDoc?.fields.glance).toContain('a hum under the ribs that said yes before you decided anything');
+    expect(searchDoc?.fields.iching).toContain('it will not yet hold its shape');
   });
 
   it('retains rich Markdown Relations and the Markdown-authoritative Card 29 pair', async () => {
@@ -70,7 +70,7 @@ describe('generated Oracle artifacts', () => {
     // Mid-paragraph on purpose: the Tarot teaching's opening line is editorial.
     expect(card3?.relations.tarot?.teaching).toContain('Water above as the High Priestess and the Hanged Man');
     expect(card3?.relations.sky).toMatchObject({ value: 'Scorpio' });
-    expect(card3?.relations.immortals?.teaching).toContain('Li Tie Guai stands above');
+    expect(card3?.relations.immortals?.teaching).toContain('Li Tie Guai, the healer');
     expect(card3?.relations.hebrew_letter).toMatchObject({ letter: 'Nun' });
   });
 

@@ -88,7 +88,7 @@ describe('Markdown-native Oracle Relations', () => {
     const serialized = JSON.stringify(relations);
 
     expect(relations.tarot).toMatchObject({ card: 'I · The Magician' });
-    expect(relations.tarot?.teaching).toContain('worker over the four tools');
+    expect(relations.tarot?.teaching).toContain('the maker with one hand raised');
     expect(relations.immortals).toMatchObject({
       upper: { trigram: 'Fire', name: 'Lu Dong Bin' },
       lower: { trigram: 'Water', name: 'Li Tie Guai' },
@@ -96,11 +96,11 @@ describe('Markdown-native Oracle Relations', () => {
     });
     // Mid-paragraph on purpose: names the immortal's own attribute rather than the
     // teaching's opening line, which editorial passes rewrite.
-    expect(relations.immortals?.teaching).toContain('carries his medicine in a gourd');
+    expect(relations.immortals?.teaching).toContain('keeps his medicine in a gourd');
     expect(relations.sky).toMatchObject({ value: 'Mercury' });
-    expect(relations.sky?.teaching).toContain('quick intelligence');
+    expect(relations.sky?.teaching).toContain('quick messenger');
     expect(relations.hebrew_letter).toMatchObject({ letter: 'Beth' });
-    expect(relations.hebrew_letter?.teaching).toContain('vessel that focuses will');
+    expect(relations.hebrew_letter?.teaching).toContain('the room that gives a work four walls');
     expect(serialized).not.toMatch(/SOURCING LOG|sourcing_log|meta:fact_check|<!--|-->/i);
   });
 

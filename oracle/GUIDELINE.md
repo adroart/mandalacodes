@@ -577,7 +577,9 @@ sibling before anything else.
 The doorway out. Outward relating only: the code does not stand alone, here is
 the family it belongs to and what it forms with its kin. The true final section.
 
-**Subsections.** Pair (the I Ching opposite), Inverse (the hexagram turned
+**Subsections.** Pair (the King Wen sequence pair, the hexagram the frontmatter
+lists as `pair`; the line-negated opposite is a different fact and the
+Programming partner paragraph may name it), Inverse (the hexagram turned
 over; a separate subsection only when it differs from the pair, one merged
 subsection when they are the same hexagram, and a self-inverse heading for the
 eight cards that meet their own reflection), Programming partner (the Gene Keys

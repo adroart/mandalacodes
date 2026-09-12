@@ -66,7 +66,7 @@ describe('hosted and local Oracle MCP parity', () => {
       shared,
     );
     expect(localGetLineResult(local, 1)).toEqual(shared);
-    expect(line.reading).toContain('soapnut tree');
+    expect(line.image).toContain('soapnut');
     expect(line.becomes).toEqual({ hexagram: 8, name: 'Holding Together' });
   });
 

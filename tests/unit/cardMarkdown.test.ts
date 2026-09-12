@@ -39,11 +39,11 @@ describe('Oracle card Markdown parser', () => {
     // field of oracle/cards/03.md, so a mis-mapped section still fails this test.
     const code = mapCode(card);
     expect(code?.keywords).toContain('New Beginnings');
-    expect(code?.reading).toContain('pressing up the way a sprout forces the crust of the ground');
+    expect(code?.reading).toContain('a hum under the ribs that said yes before you decided anything');
 
     const iching = mapIching(card);
     expect(iching?.hexagram_name).toBe('Difficulty at the Beginning');
-    expect(iching?.reading).toContain('child in the long labour of being born');
+    expect(iching?.reading).toContain('it will not yet hold its shape');
     expect(iching?.lines).toHaveLength(6);
     expect(iching?.lines[0]?.becomes).toEqual({
       hexagram: 8,
@@ -52,11 +52,11 @@ describe('Oracle card Markdown parser', () => {
 
     const keys = mapKeys(card);
     expect(keys?.shadow_name).toBe('Chaos');
-    expect(keys?.gift).toContain('an acorn keeps working toward a shape of tree it has never seen');
+    expect(keys?.gift).toContain('the mess begins to mean something');
 
     const design = mapDesign(card);
     expect(design?.gate_number).toBe(3);
-    expect(design?.gate).toContain('holding the insight until the world can receive it');
+    expect(design?.gate).toContain('yours to give a shape to');
 
     const body = mapBody(card);
     expect(body?.meta).toEqual({
@@ -64,7 +64,7 @@ describe('Oracle card Markdown parser', () => {
       amino_acid_name: 'Leucine',
       codon_ring: 'Ring of Life and Death',
     });
-    expect(body?.physiology).toContain('pulls the breath up out of the abdomen');
+    expect(body?.physiology).toContain('where a beginning was once made the hard way');
   });
 
   it('parses inline maps and nested arrays from frontmatter', () => {
