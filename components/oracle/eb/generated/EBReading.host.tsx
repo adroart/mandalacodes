@@ -753,7 +753,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const rel = this.RELDATA[this.state.relSel] || this.RELDATA.pair;
     const enc = encodeURIComponent;
     const movingShown = (cast && movingNums.length) ? this.MOVING.filter((m) => movingNums.includes(m.n)) : this.MOVING;
-    const movingHeading = (cast && movingNums.length) ? 'Your Moving Lines' : 'The Six Moving Lines';
+    const movingHeading = (cast && movingNums.length) ? 'The lines in motion' : 'The six stages';
     // Say the mechanic in plain words. A reader who has never cast before has
     // to be told what a moving line is, and that flipping these is what turns
     // one hexagram into the other.
@@ -762,12 +762,12 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     // Two sentences. Define the term, then name the consequence.
     let movingSub;
     if (cast && movingNums.length) {
-      movingSub = countWord + ' of the six lines came up unstable, ' +
-        (many ? 'places already in motion. Flip them and ' : 'a place already in motion. Flip it and ') +
-        (primaryHex ? primaryHex.name : 'this hexagram') + ' becomes ' +
-        (relatingHex ? relatingHex.name : 'the next hexagram') + '.';
+      movingSub = countWord + (many ? ' lines landed in motion. ' : ' line landed in motion. ') +
+        'Each carries its own reading. Turned over, ' +
+        (primaryHex ? primaryHex.name : 'this card') + ' becomes ' +
+        (relatingHex ? relatingHex.name : 'the next card') + '.';
     } else {
-      movingSub = 'The arc of the lines, from the deep to one step too high.';
+      movingSub = 'The six stages of this situation, from the start at the bottom to the end at the top.';
     }
 
     return {
@@ -785,7 +785,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       movingLines: movingShown,
       movingHeading, movingSub,
       showMovingLines: !!(cast && movingNums.length),
-      castHexKicker: relatingHex ? 'Moving toward' : 'Your cast',
+      castHexKicker: relatingHex ? 'Turning into' : 'Your throw',
       castHexGlyph: centerHex ? centerHex.glyph : '',
       castHexLabel: centerHex ? ('Hexagram ' + centerHex.num + ' · ' + centerHex.name) : '',
       // The hexagram the throw actually landed on, named under its own glyph.

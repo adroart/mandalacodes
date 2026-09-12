@@ -420,7 +420,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                   stylesheet force-left-aligns every p in a flex column. */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", animation: "ulFadeIn 500ms ease both" }}>
                 <div style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--d-3)", marginBottom: "26px" }}>
-                Your cast
+                Your throw
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "9px", alignItems: "center" }}>
                   {(vals.castDisplay ?? []).map((ln, lnIdx) => (
@@ -447,7 +447,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                       {vals.castHexLabel}
                       </span>
                       <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "4px", marginTop: "16px" }}>
-                      Read where it stands →
+                      Open that card →
                       </span>
                     </button>
                   </>
@@ -505,7 +505,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                           </p>
                           {ml.becomes ? (
                             <p style={{ fontFamily: 'var(--font-ui)', fontSize: "9.5px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--d-3)", margin: "0" }}>
-                            {vals.castMultiMoving ? 'This line alone' : 'Flipped'} → {ml.becomes}
+                            Turned over, it leads to {ml.becomes}
                             </p>
                           ) : null}
                         </div>
