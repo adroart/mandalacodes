@@ -125,8 +125,15 @@ const stack = (page: Page) => page.locator('section[data-chapter="relations"] [d
 /** Swipe the reading to the Relations chapter. */
 async function showRelations(page: Page) {
   await page.getByRole('button', { name: 'Relations', exact: true }).first().click();
+  // On a phone the chapters stack and this one is simply attached; on a
+  // desktop they are a horizontal scroll-snap inside the right column, so
+  // wait for the chapter to settle at its container's left edge.
   const panel = page.locator('section[data-chapter="relations"]');
-  await expect.poll(async () => Math.abs((await panel.boundingBox())?.x ?? 999)).toBeLessThan(2);
+  await expect.poll(async () => panel.evaluate((el) => {
+    const mine = el.getBoundingClientRect().x;
+    const parent = el.parentElement!.getBoundingClientRect().x;
+    return Math.abs(mine - parent);
+  })).toBeLessThan(2);
   await expect(stack(page)).toBeAttached();
 }
 
