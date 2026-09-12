@@ -708,6 +708,14 @@ they have it. The two natures are two pictures of a person, one who goes still
 and one who lashes out, each a whole person in three sentences, never a
 verdict.
 
+**Each height stands on its own.** A reader may already live at the Gift or
+the Siddhi; the card is not a course they take in order. The Gift opens on
+what the gift is and does, as something the reader may have been born with.
+The Siddhi opens on the height itself. Neither is written as the exit from the
+one before ("when you stop fighting the fear" is retired as an opener). The
+shadow may be referred to at the end of the Gift as what dissolves where the
+gift is alive, never as the door the reader came through.
+
 **The movement is the section.** The Shadow paragraph carries the seed and the
 first turn (what it is like to feel it instead of pushing it down). The Gift
 carries the standing-with and the giving. The Siddhi carries the letting go of
