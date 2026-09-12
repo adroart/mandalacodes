@@ -109,6 +109,15 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
 .eb-reading section[data-chapter] :is(p,span,button,summary)[style*="text-transform: uppercase"] { font-family:var(--font-ui) !important; }
 .eb-reading section[data-chapter] :is(h1,h2,h3), .eb-reading .ul-title-mobile, .eb-reading .ul-title-desktop { font-family:var(--font-display) !important; }
 .eb-reading section[data-chapter] :is(button,details,[data-gk]) { border-radius:4px; }
+/* The two faces of the shadow: the strip that opens the disclosure is the summary
+   itself, so the names are the control. Open and closed states swap the footer line. */
+.eb-reading .ul-faces-strip::-webkit-details-marker { display:none; }
+.eb-reading .ul-faces-strip { border-radius:4px; transition:background 160ms ease; }
+.eb-reading .ul-faces-strip:hover { background:color-mix(in oklab,var(--accent) 8%,transparent); }
+.eb-reading .ul-faces-strip:focus-visible { outline:1px solid var(--accent-d); outline-offset:2px; }
+.eb-reading .ul-faces:not([open]) .ul-faces-close { display:none; }
+.eb-reading .ul-faces[open] .ul-faces-open { display:none; }
+.eb-reading .ul-faces[open] .ul-faces-chevron { transform:rotate(180deg); }
 .eb-reading section[data-chapter] button[style*="border: 1px"] { border-color:color-mix(in oklab,var(--accent) 22%,transparent) !important; }
 .eb-reading [data-oracle-generated-grain], .eb-reading [data-oracle-generated-veil] { display:none !important; }
 [data-oracle-grain] {

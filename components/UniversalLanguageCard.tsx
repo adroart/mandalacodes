@@ -202,6 +202,10 @@ const UniversalLanguageCard: React.FC = () => {
         // (the "Repressive nature" subheading), prose from the same section.
         gkRepressiveName: synthesis?.synthesis.gene_keys.repressive_name ? `Repressive · ${synthesis.synthesis.gene_keys.repressive_name}` : 'Repressive',
         gkReactiveName: synthesis?.synthesis.gene_keys.reactive_name ? `Reactive · ${synthesis.synthesis.gene_keys.reactive_name}` : 'Reactive',
+        // Bare names for the two-cell strip that opens the disclosure; the
+        // names above carry the "Repressive ·" prefix for the column headers.
+        gkRepressiveFace: synthesis?.synthesis.gene_keys.repressive_name || 'Held in',
+        gkReactiveFace: synthesis?.synthesis.gene_keys.reactive_name || 'Thrown out',
         gkRepressiveParas: P(synthesis?.synthesis.gene_keys.repressive),
         gkReactiveParas: P(synthesis?.synthesis.gene_keys.reactive),
 
