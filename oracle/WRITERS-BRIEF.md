@@ -492,6 +492,18 @@ list of nouns.
     it rises. Nothing in it strikes."; "real as a feeling and false as a
     fact"): a matched pair is the tidiest thing a model writes. Break one
     or cut it.
+15. Put CODE and the I Ching Reading beside the Judgement, the Image and the
+    six lines and compare by meaning, not wording: a counsel rendered twice
+    in different clothes is still rendered twice. Cut the later one.
+16. Read the Siddhi's whole closing paragraph, not its last sentence: a
+    decorative final line does not excuse a paradox or a pair of absences
+    two sentences earlier.
+17. In Body, circle every "all," "only," "never," "always," every fixed
+    number or duration, and every "then X takes over" sequence. Each needs
+    evidence at exactly that scope or is softened to what is known.
+18. Across a batch, read each section's last sentences in a row, card after
+    card. Interchangeable wisdom and a repeated grammatical template fail
+    even when their first five words differ.
 
 Then the punctuation script per section, then from the repo root
 `node todo/plans/writing-guideline/measure.mjs`, and confirm this card's
@@ -504,7 +516,12 @@ Under `meta:` in the frontmatter: `centre` (the essence), `scene` (with
 what was set aside), `mechanism`, `sources` with one entry per section
 (code, iching, keys, design, body, relations) listing the packet filenames
 each section's sentences trace to, and `lore` naming anything written from
-established lore rather than a file. Keep any existing `sourcing_note` or
+established lore rather than a file. Order matters: the app's own
+frontmatter parser stops reading `meta` at the first folded block (a key
+whose value is `>`), so `centre`, `scene`, `mechanism` and `sources`
+come first under `meta:`, and every folded block (`lore`, `sourcing_note`,
+`fact_check`) comes after them; card 10's essence vanished from the page
+for this reason. Keep any existing `sourcing_note` or
 `fact_check` as history; delete a trailing HTML comment block after the
 prose (its content is now `meta.sources`). Leave every `status:` value as
 `scaffold`; final is Adrian's decision on the page. Do not run builds,

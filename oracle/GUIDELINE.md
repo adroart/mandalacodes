@@ -367,6 +367,19 @@ fail is the fix, applied on the spot. Built from the deck's own tells (section
     ("Nothing in it rises. Nothing in it strikes."; "real as a feeling and
     false as a fact"). A matched pair is the tidiest thing a model writes.
     Break one of the two or cut it.
+15. Put CODE and the I Ching Reading beside the Judgement, the Image and the
+    six lines and compare by meaning, not wording: a counsel rendered twice
+    in different clothes is still rendered twice. Record the duplicated
+    proposition and cut the later one.
+16. Read the Siddhi's whole closing paragraph, not its last sentence: a
+    decorative final line does not excuse a paradox or a pair of absences
+    two sentences earlier.
+17. In Body, circle every "all," "only," "never," "always," every fixed
+    number or duration, and every "then X takes over" sequence. Each needs
+    evidence at exactly that scope or is softened to what is known.
+18. Across a batch, read each section's last sentences in a row, card after
+    card. Interchangeable wisdom and a repeated grammatical template fail
+    even when their first five words differ.
 
 **Constructions, not strings.** The retired closers and stems in this document
 are families, not spellings. "The misread is to call this" and "people will
@@ -1332,7 +1345,11 @@ centre chapters). Paraphrase, never quote at length; names, ring membership
 and correspondence tables are facts and may be stated directly. Rudd's coined
 phrases are his; the Shadow, Gift and Siddhi names are kept lineage.
 
-**The sheet.** Every card records, in frontmatter under `meta:`, one entry per
+**The sheet.** The app's frontmatter parser (`lib/oracle/card-markdown.ts`,
+a hand-written YAML subset) stops reading `meta` at the first folded block
+(`key: >`); `centre`, `scene`, `mechanism` and `sources` therefore come
+first under `meta:` and every folded block after them, or the essence never
+reaches the page (card 10, 2026-09-12). Every card records, in frontmatter under `meta:`, one entry per
 section naming the vault files its sentences trace to, the essence, the
 scene, the mechanism, and any place it wrote from established lore rather than
 a file. One convention, replacing the two in use (the older `sourcing_note`
@@ -1473,6 +1490,19 @@ two inventions (section 7); the Siddhi closed on paired absences (section
 passed every check (3a.14). Everything measurable passed first time: all
 six sections under the punctuation line, every length in range, no shared
 opening. The faults the scripts cannot see are the ones this list is for.
+
+**What cards 1, 4, 5 and 10 taught (2026-09-12, night, written from the
+brief and the packets, checked by Codex at
+`todo/plans/writing-guideline/codex-review-five-cards.md`).** The
+mechanical faults were fixed before Adrian read them: a sheet written
+outside the frontmatter, one-paragraph amino sections on all four, "today"
+twice, a five-word keynote, the retired Siddhi paradox on card 10, and
+physiological absolutes ("never touched," "about ten seconds," "then the
+slower fuels take over"). The rest of that review is judgment and waits for
+Adrian on the page. Four checks were added (3a.15 to 3a.18) because more
+than one card broke the same thing: counsel rendered twice by meaning,
+the Siddhi's closing paragraph, Body's absolutes, and last sentences read
+across a batch.
 
 **Re-measure after every pass.** `node todo/plans/writing-guideline/measure.mjs`
 from the repo root reports word counts, shared openings and cross-references.
