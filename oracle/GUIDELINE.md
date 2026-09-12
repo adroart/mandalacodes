@@ -154,9 +154,67 @@ it meant has its last sentence cut.
 triads, even paragraphs), no summary sentence, plain vocabulary by default, end
 a beat early. Keep the lopsided rhythm a person has: a doubled "and," a
 fragment, a rough landing. A sentence that could close a hundred different
-paragraphs unchanged is not this paragraph's sentence. The fuller checklist for
-this, built from what people outside the project have found works, lives in
-section 3a once the research lands; until then these rules are the checklist.
+paragraphs unchanged is not this paragraph's sentence. The two-minute check
+below is the operational form of this.
+
+**Rhythm is a second layer.** A word list alone does not make a voice; the
+outside research on this (2026-09-12, `todo/plans/writing-guideline/not-ai-research.md`)
+converges on one point: you can give a model the vocabulary, the tone and the
+favourite pictures and still get four-four time. So the deck has an explicit
+rhythm rule as well as a word rule. In every section, one sentence runs long
+and one lands short, on purpose and not in the same place each time; the short
+one is not always the last. Three consecutive sentences within five words of
+each other is a fail. And one paragraph per section may end on a punch; the
+others end flat, mid-thought, or on the open part, the way a real conversation
+does.
+
+### 3a. The two-minute check
+
+Run on one paragraph at a time, before anything else. Each line is a test; a
+fail is the fix, applied on the spot. Built from the deck's own tells (section
+3, section 12) and from what people outside the project found works.
+
+1. Find every "Not X. It is Y" and every "not just X, it's Y." Was the reader
+   assuming X before this sentence? If not, cut the negation and keep Y. One
+   such hinge per card, total.
+2. Count the items in every list of three. Does the third add what the first
+   two did not already promise? If not, cut to two.
+3. Read the last sentence. Could its shape have been predicted before reading
+   it (a summary, a moral, "which is how you know," "that is the teaching")?
+   If yes, cut it and let the paragraph end a beat early.
+4. Circle the weighted and elevated words: profound, journey, embrace,
+   navigate, essence, transformative, sacred, divine, awakening, tapestry,
+   resonate. Would you say this word to the person across the table? If not,
+   the plain word.
+5. Find any sentence that announces significance instead of showing it
+   ("there is a teaching in that," "this is where," "the whole teaching is").
+   Delete the announcement. Does what is left still stand? Keep only what is
+   left.
+6. Measure three consecutive sentences. All within five words of each other?
+   Cut one hard or let one run.
+7. Find every colon setup and every "what makes this X is" opener. Delete
+   everything before the colon or the "is." Meaning lost, or only runway?
+8. Count inanimate subjects doing human verbs in a row (the code asks, the
+   ring teaches, the chemistry says). Three in a row: put you back in one of
+   them.
+9. Take the first five words. Would they open the same subsection on another
+   card unchanged? Then they are a formula, whatever follows.
+10. Cover the labels and take the first and last sentence. Strike the names.
+    Still true on the ring sibling or the channel partner? Then it is not this
+    card's yet.
+11. Read it aloud. If it sounds like a memo, say the worst sentence in your own
+    words to someone, then tighten the grammar without losing what you said.
+12. Check the ending of the section. Does it resolve its own tension in one
+    tidy sentence? If a real conversation on this would end on the open part,
+    end there.
+
+**Constructions, not strings.** The retired closers and stems in this document
+are families, not spellings. "The misread is to call this" and "people will
+call this" are the same move; "runs all the way down to this" and "goes all the
+way to the root" are the same move. A text search catches the spelling already
+caught; the eye catches the next word in the same slot. When a new tell is
+found, record it with its family and the reason, the way the diversify passes
+recorded their keeps.
 
 **Specificity.** Write from one concrete instance and let the general follow;
 never the reverse. Card 64's "a vast tower of iron in the middle of my city"
