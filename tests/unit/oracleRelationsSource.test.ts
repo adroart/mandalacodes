@@ -23,17 +23,17 @@ describe('Markdown-native Oracle Relations', () => {
     expect(relations.number).toBe(1);
     expect(relations.card_name).toBe("Earth's Breath");
     expect(relations.unity_line).toBe(
-      'Around you here stand the things a force this size needs before it is any use, the ground that takes it and the fuel that keeps it and the hand that pours it out.',
+      'Around you here stand the things a strength like this needs and cannot make for itself: the ground that takes it, the fire it belongs to, and the hand that measures it out.',
     );
     expect(relations.pair).toMatchObject({
       number: 2,
       card_name: 'Beyond the Shell',
       hexagram_name: 'The Receptive',
     });
-    expect(relations.pair.teaching).toContain('this same force a season on');
+    expect(relations.pair.teaching).toContain('the ground this strength comes down onto');
     expect(relations.inverse.number).toBe(1);
     expect(relations.inverse.is_self_inverse).toBe(true);
-    expect(relations.inverse.teaching).toContain('one of eight that do');
+    expect(relations.inverse.teaching).toContain('one of only eight that do');
   });
 
   it('reuses a referenced UL heading for Card 3 pair and inverse', async () => {
