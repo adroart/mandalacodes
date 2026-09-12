@@ -930,6 +930,15 @@ in words a stranger could repeat to a friend.
   on their own, one sentence that lets them; when they do not, the paragraph
   ends on the fact. Under 330 words for the section.
 
+**The entry, and the paragraphs.** Body opens like every section, from the
+energy through this lens: "Seen through the body, the energy of beginning
+sits at the navel, the one place on you where a beginning was once made under
+a cut supply." Then the thing itself. It is never a bare anatomy paragraph
+with no connection to the energy or the reader. Two paragraphs per
+subsection: the entry with the thing, then the mechanism the reader can
+check. Not one block, and not four; an entry sentence standing alone is a
+stub, and a mechanism split in two breaks its motion.
+
 **Read with five questions, for the organ and again for the amino acid.**
 Before a sentence is written, answer from the two reference entries and the
 card's KEYS and DESIGN: what it is; what it does; what it is doing while

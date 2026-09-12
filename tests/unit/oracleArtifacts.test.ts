@@ -50,7 +50,7 @@ describe('generated Oracle artifacts', () => {
     expect(card?.iching.reading).toContain('does not yet have ground to stand on');
     expect(card?.gene_keys.gift).toContain('making something new out of what is changing');
     expect(card?.human_design.gate).toContain('a shape that can last');
-    expect(card?.body.physiology).toContain('The navel is a scar and every person carries one');
+    expect(card?.body.physiology).toContain('The navel is a scar, and every person carries one');
 
     expect(searchDoc?.keywords).toContain('New Beginnings');
     expect(searchDoc?.fields.glance).toContain('Something new is already alive in you and it does not have a shape yet');

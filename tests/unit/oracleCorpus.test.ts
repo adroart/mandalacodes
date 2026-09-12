@@ -53,7 +53,7 @@ describe('Markdown-only Oracle corpus', () => {
     expect(card.reference?.binary).toBe('100010');
     expect(card.gene_keys.gift).toContain('making something new out of what is changing');
     expect(card.human_design.gate).toContain('a shape that can last');
-    expect(card.body.physiology).toContain('The navel is a scar and every person carries one');
+    expect(card.body.physiology).toContain('The navel is a scar, and every person carries one');
     expect(card.relations.codon_ring.name).toBe('Ring of Life and Death');
     expect(card.relations.unity_line).toContain(
       'the whole arc of first arrival, the birth that comes in a storm and the long apprenticeship',

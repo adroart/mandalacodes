@@ -64,7 +64,7 @@ describe('Oracle card Markdown parser', () => {
       amino_acid_name: 'Leucine',
       codon_ring: 'Ring of Life and Death',
     });
-    expect(body?.physiology).toContain('The navel is a scar and every person carries one');
+    expect(body?.physiology).toContain('The navel is a scar, and every person carries one');
   });
 
   it('parses inline maps and nested arrays from frontmatter', () => {

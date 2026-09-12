@@ -149,7 +149,7 @@ describe('browser Oracle Markdown source contract', () => {
       synthesis: {
         gene_keys: { gift: expect.stringContaining('making something new out of what is changing') },
         human_design: { gate: expect.stringContaining('a shape that can last') },
-        body: { physiology: expect.stringContaining('The navel is a scar and every person carries one') },
+        body: { physiology: expect.stringContaining('The navel is a scar, and every person carries one') },
       },
     });
   });
