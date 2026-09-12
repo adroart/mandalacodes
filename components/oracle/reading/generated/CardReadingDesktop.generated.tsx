@@ -62,83 +62,60 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </div>
           </div>
         </div>
-        <div style={{ textAlign: "center", marginTop: "-15px" } as unknown as React.CSSProperties}>
-          <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "10px", letterSpacing: ".24em", textTransform: "uppercase", color: "#80735f", marginTop: "5px" } as unknown as React.CSSProperties}>
-          {vals.cardKicker}
-          </span>
-          <span style={{ fontFamily: "'Cinzel',serif", fontSize: "12px", letterSpacing: ".28em", textTransform: "uppercase", color: "#c6a667" } as unknown as React.CSSProperties}>
-          {vals.cardName}
-          </span>
+        <div style={{ display: "grid", gridTemplateColumns: "96px 1fr", gap: "0 22px", alignItems: "start", marginTop: "4px" } as unknown as React.CSSProperties}>
+          <a href={vals.hexHref} data-jump="iching" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", color: "inherit", paddingTop: "4px" } as unknown as React.CSSProperties}>
+            <span style={{ display: "flex", flexDirection: "column", gap: "6px" } as unknown as React.CSSProperties}>
+              {(vals.hexLines ?? []).map((ln: any, lIdx: number) => (
+                <React.Fragment key={lIdx}>
+                  {ln.solid ? <span style={{ display: "block", width: "56px", height: "5px", background: "#c6a667" } as unknown as React.CSSProperties}></span> : <span style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", width: "56px" } as unknown as React.CSSProperties}><span style={{ display: "block", height: "5px", background: "#c6a667" } as unknown as React.CSSProperties}></span><span style={{ display: "block", height: "5px", background: "#c6a667" } as unknown as React.CSSProperties}></span></span>}
+                </React.Fragment>
+              ))}
+            </span>
+            <span style={{ fontFamily: "'Cinzel',serif", fontSize: "26px", lineHeight: "1", color: "#a8874d" } as unknown as React.CSSProperties}>
+            {vals.cardNumber}
+            </span>
+          </a>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" } as unknown as React.CSSProperties}>
+            <span style={{ fontFamily: "'Cinzel',serif", fontSize: "24px", letterSpacing: ".1em", textTransform: "uppercase", color: "#ede4d4", lineHeight: "1.25" } as unknown as React.CSSProperties}>
+            {vals.cardName}
+            </span>
+            <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", fontSize: "22px", color: "#c6a667", lineHeight: "1.3" } as unknown as React.CSSProperties}>
+            {vals.elementLine}
+            </span>
+            <span style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "10px", letterSpacing: ".24em", textTransform: "uppercase", color: "#80735f" } as unknown as React.CSSProperties}>
+            {vals.gateLine}
+            </span>
+          </div>
         </div>
-        <dl style={{ margin: "0", display: "grid", gridTemplateColumns: "auto 1fr", gap: "11px 22px" } as unknown as React.CSSProperties}>
-          {(vals.meta ?? []).map((m: any, mIdx: number) => (
-            <React.Fragment key={mIdx}>
-              <dt style={{ fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".16em", textTransform: "uppercase", color: "#80735f", alignSelf: "center" } as unknown as React.CSSProperties}>
-              {m.k}
-              </dt>
-              <dd style={{ margin: "0", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "17px", color: "#cdc0a8", lineHeight: "1.2" } as unknown as React.CSSProperties}>
-              {m.v}
-              </dd>
-            </React.Fragment>
-          ))}
-        </dl>
-        <div style={{ display: "flex", alignItems: "center", gap: "14px", margin: "2px 0" } as unknown as React.CSSProperties}>
-          <i style={{ height: "1px", flex: "1", background: "rgba(168,135,77,.18)" } as unknown as React.CSSProperties}>
-          </i>
-          <span style={{ color: "#80735f", fontSize: "11px" } as unknown as React.CSSProperties}>
-          ❀
-          </span>
-          <i style={{ height: "1px", flex: "1", background: "rgba(168,135,77,.18)" } as unknown as React.CSSProperties}>
-          </i>
-        </div>
-        <a href={vals.forMeHref} className="dcw-cardreadingdesktop-h0" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", border: "1px solid rgba(168,135,77,.28)", padding: "13px 15px", transition: "border-color .3s,transform .3s,background .3s" } as unknown as React.CSSProperties}>
-          <span>
-            <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".14em", textTransform: "uppercase", color: "#c6a667" } as unknown as React.CSSProperties}>
-            For Me
-            </span>
-            <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "#cdc0a8", marginTop: "2px" } as unknown as React.CSSProperties}>
-            See where this code lives in your chart
-            </span>
-          </span>
-          <span style={{ color: "#c6a667", fontSize: "15px" } as unknown as React.CSSProperties}>
-          →
-          </span>
-        </a>
-        <a href={vals.pieceHref} className="dcw-cardreadingdesktop-h1" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", transition: "transform .3s ease" } as unknown as React.CSSProperties}>
-          <span>
-            <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".14em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
-            The Piece
-            </span>
-            <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "#80735f", marginTop: "2px" } as unknown as React.CSSProperties}>
-            The physical work, made by hand
-            </span>
-          </span>
-          <span style={{ color: "#a8874d", fontSize: "15px" } as unknown as React.CSSProperties}>
-          →
-          </span>
-        </a>
-        <a href={vals.familyHref} className="dcw-cardreadingdesktop-h2" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", transition: "transform .3s ease" } as unknown as React.CSSProperties}>
-          <span>
-            <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "11px", letterSpacing: ".14em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
-            Family
-            </span>
-            <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "#80735f", marginTop: "2px" } as unknown as React.CSSProperties}>
-            People, places, and the living collection
-            </span>
-          </span>
-          <span style={{ color: "#a8874d", fontSize: "15px" } as unknown as React.CSSProperties}>
-          →
-          </span>
-        </a>
-        <div style={{ display: "flex", alignItems: "center", gap: "14px", margin: "2px 0" } as unknown as React.CSSProperties}>
-          <i style={{ height: "1px", flex: "1", background: "rgba(168,135,77,.18)" } as unknown as React.CSSProperties}>
-          </i>
-          <i style={{ height: "1px", flex: "1", background: "rgba(168,135,77,.18)" } as unknown as React.CSSProperties}>
-          </i>
-        </div>
-        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "#80735f", margin: "0" } as unknown as React.CSSProperties}>
-        One artwork within a family of 64.
+        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "21px", color: "#cdc0a8", lineHeight: "1.45", margin: "4px 0 0" } as unknown as React.CSSProperties}>
+        {vals.keynotesLine}
         </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" } as unknown as React.CSSProperties}>
+        <a href={vals.forMeHref} className="dcw-cardreadingdesktop-h0" style={{ display: "flex", justifyContent: "center", alignItems: "baseline", gap: "14px", padding: "18px 20px", border: "1px solid #c6a667", transition: "border-color .3s, background .3s" } as unknown as React.CSSProperties}>
+          <span style={{ fontFamily: "'Cinzel',serif", fontSize: "14px", letterSpacing: ".2em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
+          For Me
+          </span>
+          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "16px", color: "#c6a667" } as unknown as React.CSSProperties}>
+          Where this code lives in your chart
+          </span>
+        </a>
+        <a href={vals.pieceHref} className="dcw-cardreadingdesktop-h1" style={{ display: "flex", justifyContent: "center", alignItems: "baseline", gap: "14px", padding: "18px 20px", border: "1px solid rgba(168,135,77,.32)", transition: "border-color .3s, background .3s" } as unknown as React.CSSProperties}>
+          <span style={{ fontFamily: "'Cinzel',serif", fontSize: "14px", letterSpacing: ".2em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
+          The Piece
+          </span>
+          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "16px", color: "#80735f" } as unknown as React.CSSProperties}>
+          The physical work, made by hand
+          </span>
+        </a>
+        <a href={vals.familyHref} className="dcw-cardreadingdesktop-h2" style={{ display: "flex", justifyContent: "center", alignItems: "baseline", gap: "14px", padding: "18px 20px", border: "1px solid rgba(168,135,77,.32)", transition: "border-color .3s, background .3s" } as unknown as React.CSSProperties}>
+          <span style={{ fontFamily: "'Cinzel',serif", fontSize: "14px", letterSpacing: ".2em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
+          Family
+          </span>
+          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "16px", color: "#80735f" } as unknown as React.CSSProperties}>
+          People, places, and the living collection
+          </span>
+        </a>
+        </div>
       </aside>
       <svg data-grain="" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ position: "absolute", left: "40%", right: "0", top: "49px", bottom: "0", width: "60%", pointerEvents: "none", zIndex: "2", opacity: ".05", mixBlendMode: "overlay", transition: "left .3s ease" } as unknown as React.CSSProperties}>
         <filter id="grainf">
