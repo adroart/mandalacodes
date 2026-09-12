@@ -204,6 +204,14 @@ follows from the one before; a paragraph is one thought leading on, not a row
 of true statements. The punctuation numbers are necessary and not sufficient:
 a paragraph can pass them and still read as chopped.
 
+**One claim per sentence, and pronouns point at one thing.** "Following from
+the last sentence" means the next claim comes next, not that two claims are
+joined by "and where." A sentence that carries three claims ("the unease is a
+beginning, and where the hands stop closing on it, it turns into material")
+fails even at eleven words, and its two "it"s point at different things. Split
+it. A picture reused from an earlier paragraph is named again ("when you stop
+holding on"), never pointed at with "it."
+
 **The punctuation check, measured.** A section passes when it averages under
 15 words a sentence, carries under three commas per hundred words, and has no
 sentence with three or more commas. The reading Adrian approved runs 11 words
