@@ -270,10 +270,17 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     this.invocationObserver?.disconnect();
     this.invocationObserver = null;
     if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
-    this.invocationRoot?.unmount();
+    // The host unmounts inside a React render whenever one card routes to
+    // another (the page keys the host by card number), and unmounting a
+    // nested root synchronously there is a React warning. Defer it a tick.
+    const invocationRoot = this.invocationRoot;
+    const invocationMount = this.invocationMount;
     this.invocationRoot = null;
-    this.invocationMount?.remove();
     this.invocationMount = null;
+    setTimeout(() => {
+      invocationRoot?.unmount();
+      invocationMount?.remove();
+    }, 0);
     if (this.updateReadingProgress) window.removeEventListener('scroll', this.updateReadingProgress);
     this.setBodyLock(false);
   }
