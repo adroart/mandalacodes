@@ -811,9 +811,6 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
           {vals.bodyAminoChip}
           </span>
-          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
-          {vals.bodyRingChip}
-          </span>
         </div>
         <div style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
           <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: "600", color: "var(--accent)", margin: "0 0 14px" }}>
