@@ -661,33 +661,63 @@ without crediting them; write each moving line from its own line file's scene.
 
 ## 8. Gene Keys
 
-One energy at three altitudes. Describe the energy, never diagnose the reader:
-not "you are numb" but "numbness is." Each frequency carries its own
-resolution woven in, never tacked on. Commit to the card's scene and carry it
-across the arc at three heats.
+Its question: what does this energy become, at its lowest and its highest.
+Not the situation (the I Ching has it), not where it presses (Human Design has
+it). One energy at three heights, and the movement between them.
 
-**Subsections and lengths.** Shadow, 180 to 230 words. Repressive nature and
-Reactive nature, 30 to 55 each, two distinct people, the one who goes still and
-the one who speeds up. Gift, 180 to 230. Siddhi, 135 to 200, present tense,
-spacious. The longer shape wins over the older 230-word total; the deck is
-already written to it.
+**The guidance, never stated.** Adrian's own reading of the three heights,
+2026-09-12, is the model every Gene Keys section is written to, and no card
+says it. The Shadow is the seed: under the earth, surrounded by what has died,
+pushed down or lashed out from, and it moves only when it is learned from. The
+Gift is the plant: you stop fighting the energy, stand with it, and it starts
+to give. The Siddhi is the flower: you stop holding it as yours, it is a force
+moving through you, and you are what it moves through. The reason to learn the
+Shadow at all is to recognise it in yourself and move: through the pushing
+down, into feeling it, holding it, letting the stories around it go, and up.
+This arc is woven through every paragraph as its shape and direction. The
+words seed, plant, flower do not appear on a card; the arc lives once, in the
+page's "Gene Keys · about" essay, in Adrian's words.
 
-**What this section owns.** The self-mishandling beat: what you do with your
-own low season. Not the misnaming by others; that is DESIGN's.
+**Assume nobody knows the Gene Keys.** Shadow, Gift and Siddhi are shown as
+labels. The prose never explains the system and never uses those three words
+as terms of art; "at its lowest," "when it is met," "at its height" do the
+work. No Rudd, no "the 64th Gene Key," no coined phrases.
 
-**Retired here.** The stems "The inward face of the Shadow" and "The outward
-face of the Shadow" (36 of 64 cards open both natures with them). The Siddhi
-that ends by looking back down the road to declare the Shadow was the raw
-material (four of six cards). The stock paradox of effortless arrival.
+**Describe the energy, never diagnose the reader.** "Numbness is," not "you
+are numb." The Shadow is written as recognition: what this energy is like when
+it is held down, so a reader can find it in themselves without being told
+they have it. The two natures are two pictures of a person, one who goes still
+and one who lashes out, each a whole person in three sentences, never a
+verdict.
 
-**The body in this section.** When Rudd locates the work in the body, say so
-once as where the work goes, never as a seat. The seat is DESIGN's.
+**The movement is the section.** The Shadow paragraph carries the seed and the
+first turn (what it is like to feel it instead of pushing it down). The Gift
+carries the standing-with and the giving. The Siddhi carries the letting go of
+ownership and the force moving through. The reader should feel one thing
+rising through three heights, not three descriptions.
 
-**Names.** The Shadow, Gift and Siddhi names are kept lineage and are shown as
-labels. The repressive and reactive names come from the source, never
-inferred: card 64 carries "Anxious" and "Manic" where the source says
-"Imitating" and "Confused," because the reference row was empty when it was
-written. The reference rows are full now; check them.
+**Subsections and lengths.** Shadow, 150 to 200 words. Repressive nature and
+Reactive nature, 35 to 55 each. Gift, 150 to 200. Siddhi, 110 to 160, present
+tense, spacious. Shorter than the pilot's 600; the older cards packed the
+chapter in.
+
+**Voice.** The ten rules. One picture per paragraph, carried across the three
+heights at three temperatures; never a new picture per paragraph. Complete
+sentences. No "not X but Y" beyond the card's one hinge. The Siddhi does not
+end by looking back at the Shadow as raw material, and does not close on a
+paradox of effortless arrival.
+
+**Retired here.** "The inward face of the Shadow," "the outward face of the
+Shadow" (36 cards). "Most people treat this as a fault." The look-back closer.
+The stock paradox.
+
+**The body in this section.** When the source locates the work in the body,
+say so once as where the work goes, never as a seat. The seat is Human
+Design's.
+
+**Names.** The Shadow, Gift and Siddhi names are kept lineage, shown as labels.
+The repressive and reactive names come from the reference row in the vault,
+never inferred; the rows are full for all 64 now.
 
 ---
 

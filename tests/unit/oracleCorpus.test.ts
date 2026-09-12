@@ -51,7 +51,7 @@ describe('Markdown-only Oracle corpus', () => {
     expect(card.iching.upper_trigram).toMatchObject({ symbol: '☵', name: "Water (K'an)" });
     expect(card.iching.lower_trigram).toMatchObject({ symbol: '☳', name: 'Thunder (Chen)' });
     expect(card.reference?.binary).toBe('100010');
-    expect(card.gene_keys.gift).toContain('the mess begins to mean something');
+    expect(card.gene_keys.gift).toContain('it starts to give');
     expect(card.human_design.gate).toContain('yours to give a shape to');
     expect(card.body.physiology).toContain('where a beginning was once made the hard way');
     expect(card.relations.codon_ring.name).toBe('Ring of Life and Death');

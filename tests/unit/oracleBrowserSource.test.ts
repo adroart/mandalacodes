@@ -147,7 +147,7 @@ describe('browser Oracle Markdown source contract', () => {
       // rewrite of opening sentences does not break the browser synthesis contract.
       essence: expect.stringContaining('Something new is already alive in you and it does not have a shape yet'),
       synthesis: {
-        gene_keys: { gift: expect.stringContaining('the mess begins to mean something') },
+        gene_keys: { gift: expect.stringContaining('it starts to give') },
         human_design: { gate: expect.stringContaining('yours to give a shape to') },
         body: { physiology: expect.stringContaining('where a beginning was once made the hard way') },
       },

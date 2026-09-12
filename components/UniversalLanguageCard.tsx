@@ -479,9 +479,11 @@ const OVERLAYS: EBData['overlays'] = {
     'The lower three lines are what is happening inside you. The upper three are what you are meeting in the world.',
     'When you cast, the lines that turn are where you stand now.' ] },
   genekeys: { kicker: 'A contemplative path', title: 'Gene Keys', sub: 'transmitted by Richard Rudd, 2002 onward', gratitude: 'Richard Rudd', paras: [
-    'The Gene Keys are the youngest of the three systems. Richard Rudd received the transmission over a long, contemplative period beginning in the early 2000s.',
-    'Each of the sixty-four keys names three frequencies of the same archetype: the Shadow, the Gift, and the Siddhi.',
-    'The sixty-four Gene Keys correspond directly to the sixty-four hexagrams of the I Ching and to the sixty-four codons of human DNA.' ] },
+    'Each of the sixty-four keys names one energy at three heights: the Shadow, the Gift, and the Siddhi.',
+    'The Shadow is the seed. It sits under the earth, surrounded by what has died, and it gets pushed down or lashed out from. Learned from, it begins to move.',
+    'The Gift is the plant. You stop fighting the energy and start to stand with it, and it starts to give.',
+    'The Siddhi is the flower. You stop holding it as yours at all. It is a force moving through you, and you are what it moves through.',
+    'The point of learning the Shadow is to recognise it in yourself: to feel it instead of pushing it down, to hold it, to let the stories around it go, and to move up.' ] },
   humandesign: { kicker: 'A map of energy', title: 'Human Design', sub: 'received by Ra Uru Hu, Ibiza, January 1987', gratitude: 'Ra Uru Hu', paras: [
     'Human Design enters the world through Ra Uru Hu, who in January of 1987 reports an eight-day-and-night encounter with a voice he calls the Voice.',
     'It is a synthesis of the I Ching, Western astrology, the Hindu chakra system, the Kabbalistic Tree of Life, and the science of the neutrino, woven into a single chart called the bodygraph.',
