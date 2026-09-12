@@ -21,14 +21,14 @@ export function channelSentence(s: ChannelStatus, named = false): string {
   switch (s.status) {
     case 'defined':
       return named
-        ? `${name}, defined in your chart: you carry gate ${s.gate} and gate ${s.partner}.`
-        : `This channel is defined in your chart: you carry gate ${s.gate} and gate ${s.partner}.`;
+        ? `${name}, defined in your profile: you carry gate ${s.gate} and gate ${s.partner}.`
+        : `This channel is defined in your profile: you carry gate ${s.gate} and gate ${s.partner}.`;
     case 'gate-only':
       return `${named ? `${name}: you` : 'You'} carry gate ${s.gate}; the channel completes in someone who carries gate ${s.partner}.`;
     case 'partner-only':
       return `${named ? `${name}: you` : 'You'} carry gate ${s.partner}; the channel completes in someone who carries gate ${s.gate}.`;
     default:
-      return `${named ? `${name}: neither` : 'Neither'} gate is in your chart.`;
+      return `${named ? `${name}: neither` : 'Neither'} gate is in your profile.`;
   }
 }
 
@@ -98,7 +98,7 @@ const ChannelStatusLine: React.FC<Props> = ({ gate }) => {
         <p data-channel-status="signed-out" style={lineStyle}>
           <SignInTrigger>
             <button type="button" style={linkStyle}>
-              Sign in to see whether this channel is defined in your chart.
+              Sign in to see whether this channel is defined in your profile.
             </button>
           </SignInTrigger>
         </p>
@@ -107,7 +107,7 @@ const ChannelStatusLine: React.FC<Props> = ({ gate }) => {
       status = (
         <p data-channel-status="no-chart" style={lineStyle}>
           <Link to="/profile" style={linkStyle}>
-            Enter your birth data to see whether this channel is defined in your chart.
+            Enter your birth data to see whether this channel is defined in your profile.
           </Link>
         </p>
       );
