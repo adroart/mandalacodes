@@ -335,7 +335,8 @@ const chartRowStyles = `
     letter-spacing: 0.01em;
     color: var(--d-1);
     text-align: center;
-    max-width: 620px;
+    text-wrap: balance;
+    max-width: 560px;
     margin: 0 0 clamp(14px, 2vw, 22px);
   }
   @media (max-width: 819px) {
