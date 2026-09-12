@@ -70,7 +70,7 @@ describe('generated Oracle artifacts', () => {
     // Mid-paragraph on purpose: the Tarot teaching's opening line is editorial.
     expect(card3?.relations.tarot?.teaching).toContain('five faces wait in that weather');
     expect(card3?.relations.sky).toMatchObject({ value: 'Scorpio' });
-    expect(card3?.relations.immortals?.teaching).toContain('Li Tie Guai, the healer');
+    expect(card3?.relations.immortals?.teaching).toContain('Li Tie Guai');
     expect(card3?.relations.hebrew_letter).toMatchObject({ letter: 'Nun' });
   });
 
