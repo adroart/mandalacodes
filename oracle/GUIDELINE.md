@@ -48,10 +48,30 @@ reading each pass on the page, 2026-09-12.
 10. Read it on the page, not in the file. What looked right in Markdown read
     as six documents on the screen. The page is the test.
 
-The worked reference is card 3 (`oracle/cards/03.md`): its reading, I Ching,
-Gene Keys, Human Design, Body, keynotes and essence have each been through
-this loop to the end with Adrian reading every pass on the page. Relations
-has not.
+**The exceptions, all of them, so the ten rules can be trusted alone.** The
+general voice rules apply unless this paragraph names the exception. Human
+Design may name and explain its gate, centre, channel and defined or open
+states in plain language, because that section's whole job is to teach the
+wiring; it must not infer the reader's chart or tell the reader how to
+decide. Relations may name lineages, never book titles. I Ching may say "the
+traditional character draws" on the nine cards where the character is a true
+picture, and may describe the symbol inside its popup. The two Gene Keys
+natures describe another person; everywhere else the card addresses you
+without assigning you a history. The Judgement and Image lines speak as the
+classical text. Complete sentences are the default; a deliberate fragment is
+allowed when it improves the spoken rhythm, and it is rare. Rule 5's "never
+narrate the reader failing" governs the reading; the Shadow, the two natures
+and the moving lines describe mishandling as recognition, still without a
+verdict. Rule 7's "says what no other unit says" is about teaching and
+interpretation; a fact that is true on both cards (an amino acid stays
+essential, a trigram keeps its nature) may be stated on both, in different
+sentences. Any further exception is recorded in section 15 with the card,
+the date and the reason.
+
+The worked reference is card 3 (`oracle/cards/03.md`): every section, the
+keynotes and the essence have been through this loop to the end with Adrian
+reading each pass on the page (2026-09-12); Relations was written last and
+read once.
 
 ---
 
@@ -76,26 +96,34 @@ reference books about it.
 The card as it exists on disk and on screen, which the writing must respect:
 
 - One Markdown file per card, `oracle/cards/NN.md`. Six `##` sections in fixed
-  order (CODE, ICHING, KEYS, DESIGN, BODY, RELATIONS) and twenty-seven fixed
-  `###` subsections. The compiler refuses a card that is missing any of them,
-  so this shape is a constraint, not a preference. The `### Label — Tail`
-  headings use an em dash as a parser delimiter; that is the one place the
-  character is allowed.
+  order (CODE, ICHING, KEYS, DESIGN, BODY, RELATIONS) and the `###`
+  subsections card 3 carries, in its order. The compiler refuses a card that
+  is missing a required one, so this shape is a constraint, not a preference.
+  Optional: `### The symbol` under ICHING. The `### Label — Tail` headings use
+  an em dash as a parser delimiter; that is the one place the character is
+  allowed. The `_Keywords:_` line, the `_Shadow:_ · _Gift:_ · _Siddhi:_` line,
+  the one-line underscore intro under RELATIONS (the compiler requires it),
+  the Judgement and Image bullets, the `**Line N** · _image:_` markers and the
+  `- **Label — Value:**` bullets under Tarot and Deeper correlation are
+  structure the parser consumes, not emphasis, and the markdown rule below
+  does not apply to them.
 - The reader meets the card name, the hexagram name and glyph, the keywords,
   the gate number and the three Gene Keys names as labels before any prose.
   Prose never re-announces them. A first sentence that says "this is Gate 1"
   or "your shadow is Entropy" has wasted itself.
 - No markdown survives to the page. Bold, italics, lists and quotes inside
   prose render as literal characters or collapse into one block. Plain
-  paragraphs only. The `_Keywords:_` line, the Judgement and Image bullets,
-  and the `**Line N** · _image:_` markers are structure the parser consumes.
-- The first paragraph of CODE is the card's essence everywhere else: the
-  search anchor, the summary a tool returns, the text a cast shows for the
-  hexagram it lands on. It is the most load-bearing paragraph on the card and
-  must stand alone as the whole energy.
+  paragraphs only.
+- Two short texts stand for the card, and they are different texts with
+  different jobs. The essence is the three sentences on the sheet
+  (`meta.centre`), shown on the page under the keynotes (section 2). The
+  first paragraph of CODE is the card's standalone introduction: the search
+  anchor, the summary a tool returns, the text a cast shows for the hexagram
+  it lands on. It is not a second essence and does not repeat it; it must
+  stand alone as the whole energy in prose.
 - A cast happens inside the card page and shows the reader one moving line by
-  itself, plus that essence. Every moving line is therefore written to be read
-  alone.
+  itself, plus that first paragraph. Every moving line is therefore written
+  to be read alone.
 - The six panels are swiped in order: Universal, I Ching, Gene Keys, Human
   Design, Body, Relations. A reader can stop after any one. Each must be
   complete, and each must reward going on.
@@ -236,11 +264,16 @@ people at your table, the body you wake in" are the usual cause. Run
 showing a section; it prints the three numbers per section. Fewer ideas per
 sentence, not more full stops: a run of four-word sentences is chopping.
 
-**No examples, no time filler.** "Anyone who has started a piece of work or a
-family knows this hour" sorts readers into those who have and have not, picks
-one writer's example, and says nothing with "this hour." Describe the state
-itself, to you, and let the reader recognise it. Retired: "anyone who has,"
-"this hour," "this stretch," "this season" as filler, "we all know."
+**No biography for the reader, no time filler.** "Anyone who has started a
+piece of work or a family knows this hour" sorts readers into those who have
+and have not, picks one writer's example, and says nothing with "this hour."
+Describe the state itself, to you, and let the reader recognise it. Retired:
+"anyone who has," "this hour," "this stretch," "this season" as filler, "we
+all know." The distinction that matters: an illuminating instance (a horse
+saddled and standing still, a tower of iron in a city) is a picture the
+reader looks at and is wanted (see Specificity, below); a scenario that
+assigns the reader a life ("you started a family," "for years nothing in
+there has been allowed to change") is a biography and is cut.
 
 **Every unit says what no other unit says.** The reading names the energy.
 The Combination gives the picture. The trigrams give the forces as
@@ -268,12 +301,15 @@ below is the operational form of this.
 outside research on this (2026-09-12, `todo/plans/writing-guideline/not-ai-research.md`)
 converges on one point: you can give a model the vocabulary, the tone and the
 favourite pictures and still get four-four time. So the deck has an explicit
-rhythm rule as well as a word rule. In every section, one sentence runs long
-and one lands short, on purpose and not in the same place each time; the short
-one is not always the last. Three consecutive sentences within five words of
-each other is a fail. And one paragraph per section may end on a punch; the
-others end flat, mid-thought, or on the open part, the way a real conversation
-does.
+rhythm rule as well as a word rule. In every subsection, one sentence runs long
+(over twenty words) and one lands short (under seven), on purpose and not in
+the same place each time; the short one is not always the last. Three
+consecutive sentences within five words of each other is the signal to read
+the passage aloud; it is a fail only if the ear hears the beat. Approved
+passages on card 3 carry such triples and read well, so this one is an ear
+check, unlike the punctuation numbers, which are gates. And one paragraph per
+subsection may end on a punch; the others end flat, mid-thought, or on the
+open part, the way a real conversation does.
 
 ### 3a. The two-minute check
 
@@ -298,7 +334,7 @@ fail is the fix, applied on the spot. Built from the deck's own tells (section
    Delete the announcement. Does what is left still stand? Keep only what is
    left.
 6. Measure three consecutive sentences. All within five words of each other?
-   Cut one hard or let one run.
+   Read them aloud; if the ear hears the beat, cut one hard or let one run.
 7. Find every colon setup and every "what makes this X is" opener. Delete
    everything before the colon or the "is." Meaning lost, or only runway?
 8. Count inanimate subjects doing human verbs in a row (the code asks, the
@@ -396,7 +432,18 @@ Pair paragraph may call back too when the pair is the scene's other half.
 Forbidden: a section opening its own picture from nothing when the card already
 has one; a section teaching a fact another section teaches (the magnetite on
 card 02, the thyroid on card 33); any sentence in CODE that also stands in
-another section of the same card; the same sentence on two cards.
+another section of the same card; the same interpretive sentence on two
+cards. Exempt from that last one: approved trigram definitions, the
+Immortals' placing sentences, ring-theme sentences and necessary facts, which
+may recur across cards in their own words.
+
+**When the sources disagree.** The six translations and the philology do not
+always give one scene, and the Gene Keys and Human Design do not always read
+the hexagram the same way. Choose the scene the most translations share and
+the one the card's energy actually needs, record the choice on the sheet
+(`meta.scene`) with what was set aside, and do not bend the other sections
+to support the picture. Assimilate first means the sources are allowed to
+disagree; the card chooses, and the sheet says so.
 
 **Where the essence lives and where it recurs.** The essence is shown once,
 on the page under the keynotes, in its own three sentences. Nowhere on the
@@ -419,13 +466,15 @@ the writer's picture lives everywhere else, and nothing joins them.
 
 CODE owes the sections nothing in advance. It may hold one glimpse of the
 scene for ICHING to open and one plain picture of the difficult face for KEYS
-to unfold. Everything else it owes them is silence: none of its sentences and
-none of its content may be theirs.
+to unfold. Everything else it owes them is silence: it shares their central
+meaning, because it is distilled from them through the essence, but none of
+their explanations, distinctive sentences or detailed counsel.
 
-ICHING owes CODE the scene's origin, and owes KEYS a hand-off in its last
+ICHING owes CODE the scene's origin, and may hand to KEYS in its last
 paragraph, the way card 33 does it ("a deeper layer hears another word inside
-the withdrawal: forgetting"). It owes the caster six lines that each stand
-alone beside the essence.
+the withdrawal: forgetting"); the hand-off is optional and is cut when it
+reads as a preview. It owes the caster six lines that each stand alone
+beside CODE's first paragraph.
 
 KEYS owes ICHING silence about the situation, and owes DESIGN the body
 unlocated: the arc is felt, but KEYS does not say where. When the source
@@ -473,7 +522,10 @@ either sentence is still true there, the section is not this card's yet. Run
 it on the sibling and the partner specifically, because that is where the
 lifts are (the glycine paragraph on 47 and 64, the thyroid sentence on 23 and
 33). A section passes when its first and last sentences would be false on the
-two cards nearest it.
+two cards nearest it. The test is of interpretation, not of fact: a shared
+fact (leucine is eaten, not made; Thunder moves) does not fail because it
+stays true on the sibling. If the sentence is only a shared fact, the test
+moves to the next sentence that interprets.
 
 ---
 
@@ -520,15 +572,18 @@ it in the same paragraph with the balanced stance. The shadow stays present as
 the challenge; the guidance always points toward the healthy relation.
 Adrian's test: read it and ask what it is mainly about. If the answer is a
 problem the reader has, it fails. If it is a live energy with a difficult face
-and a gifted face, it passes.
+and a gifted face, it passes. This stance rule is the reading's. The Shadow,
+the two natures and the moving lines describe mishandling, as recognition
+and never as a verdict; section 8 says how.
 
 **Shape.** Three paragraphs, 130 to 180 words, one voice, to you.
 
 The first names the energy of this cycle as it is when in balance: what it is,
-what it feels like from the inside. It is the essence, shown alone in search
-and after a cast, so it must be the whole energy by itself. Always lit, even on
-the dark codes. It may hold one glimpse of the scene, one piece and never the
-list, and only when that piece carries the energy alone.
+what it feels like from the inside. It is shown alone in search and after a
+cast, so it must be the whole energy by itself. Always lit, even on the dark
+codes. It may hold one glimpse of the scene, one piece and never the list,
+and only when that piece carries the energy alone. It is not the essence
+and does not restate it; the essence is on the page above it.
 
 The second names the pull, the challenge this cycle brings, as one plain
 picture from ordinary life, and answers it in the same breath. The stance
@@ -539,10 +594,13 @@ other words; the essence itself is shown on the page under the keynotes, so
 the reading never repeats it verbatim. End
 plain and a beat early, but end up.
 
-**Provenance.** Not one sentence and not one piece of content comes from the
-five sections behind it. It is written from the essence and the sheet. A reading
-whose sourcing list names a file from every tradition was written from the
-traditions, and the list is the tell.
+**Provenance.** The reading is written from the essence and the sheet, after
+the five sections, and it is distilled from them through the essence, so it
+shares their central meaning and keeps honest provenance on the sheet. What
+it may not do is repeat their explanations, their distinctive sentences or
+their detailed counsel. The tell is not a sourcing list that names several
+traditions; the tell is a paragraph a reader meets again, in different
+clothes, three panels later.
 
 **Checks, after writing, in this order.** The stranger test. The one-sentence
 one-concept test. The pre-emption test. The stance test (is the reader ever
@@ -563,14 +621,14 @@ piece of the scene, if any, it holds.
 The card name is two to four words, a third thing, a concrete picture, no
 system's vocabulary. The names exist for all 64 and are not revisited here.
 
-**Keynotes are the card in seven words.** They are the first thing a reader
+**Keynotes are the card in seven short phrases.** They are the first thing a reader
 sees after the name, on the page and on the card face, before any prose. A
 reader who reads nothing else has to understand what this energy is about
 from them alone. Adrian, 2026-09-12: "they need to be understandable, they
 need to be something that I can really understand what this is about,
 without going into it."
 
-**Written last, from the finished card.** Five to seven, one to three words
+**Written last, from the finished card.** Five to seven, one to four words
 each. Each keynote points at something the finished card actually says, in
 the card's own words where it has them ("Root Before Shoot," "Small Rough
 Moves," "The Pull to Hurry" on card 3). A keynote that could sit on twenty
@@ -885,7 +943,12 @@ strategy, authority and profile are the reader's chart and are never taught.
   called, what the two make together, and that the other half may sit in you
   or in someone near you. Short, because the partner's own material lives on
   the partner's card, which the page links, and the your-chart line beneath
-  says whether it is defined in you.
+  says whether it is defined in you. Some gates sit in more than one
+  channel; the card writes the channel its frontmatter names
+  (`design.channel`) and says "one of the wirings" rather than implying a
+  unique completion. The packet and the one-minute test use that partner.
+  Describing what the wiring does is the section's job; telling the reader
+  how to make decisions is not, whatever the books say about authority.
 
 **The five questions, adapted to a gate.** Before writing, answer from the
 gate article, the gate essay, the channel article and the centre reference:
@@ -950,8 +1013,9 @@ in words a stranger could repeat to a friend.
   the throat and thyroid) the region is already spent in Design, and this
   paragraph writes only the tissue and what it does.
 - Amino acid, 100 to 150 words: the one amino acid, what it is (made by the
-  body or eaten), what it builds or signals, where it comes from, and the one
-  thing true of it alone. Facts a reader could take into a kitchen, stated as
+  body or eaten), what it builds or signals, where it comes from, and one
+  fact about it that is relevant to this card and not the obvious lead on
+  its ring siblings. Facts a reader could take into a kitchen, stated as
   facts and never as advice. Then, when the card's scene and the fact rhyme
   on their own, one sentence that lets them; when they do not, the paragraph
   ends on the fact. Under 330 words for the section.
@@ -959,11 +1023,24 @@ in words a stranger could repeat to a friend.
 **The entry, and the paragraphs.** Body opens like every section, from the
 energy through this lens: "Seen through the body, the energy of beginning
 sits at the navel, the one place on you where a beginning was once made under
-a cut supply." Then the thing itself. It is never a bare anatomy paragraph
-with no connection to the energy or the reader. Two paragraphs per
-subsection: the entry with the thing, then the mechanism the reader can
-check. Not one block, and not four; an entry sentence standing alone is a
-stub, and a mechanism split in two breaks its motion.
+a cut supply." The lens is named, so the placing is the lens's and not a
+claim that the energy lives in the organ; that is the one place a location
+is given, and the prohibition below is on bare seat claims ("this code is
+seated in," "the body holds this energy at"). Then the thing itself. It is
+never a bare anatomy paragraph with no connection to the energy or the
+reader. Two paragraphs per subsection: the entry with the thing, then the
+mechanism the reader can check. Not one block, and not four; an entry
+sentence standing alone is a stub, and a mechanism split in two breaks its
+motion. Adrian approved the two-paragraph shape on the page; it is the one
+required shape in this chapter, and the order inside the paragraphs is the
+card's own.
+
+**Only what the reference supports.** Every physiological claim traces to
+the organ entry or the amino acid entry, at the claim's own scope. "The
+strongest signal a cell gets" needs the entry to say so; a neighbouring fact
+or an oracle metaphor is not evidence. A claim the entry does not support is
+softened to what it does support or cut. Nothing asserts that the energy
+causes a physiological change.
 
 **Read with five questions, for the organ and again for the amino acid.**
 Before a sentence is written, answer from the two reference entries and the
@@ -985,11 +1062,12 @@ hand to your throat and swallow" on card 33 is the model register). One
 picture per paragraph, and the picture is the mechanism itself, never a
 second picture of the scene. The measured checks apply here as everywhere:
 under 15 words a sentence, under three commas per hundred words, no sentence
-with three commas, no list of nouns. Card 3's Body measures 21 words a
-sentence with three list sentences today.
+with three commas, no list of nouns. Card 3's Body measured 16.4 words a
+sentence and 4.4 commas per hundred on 2026-09-12, over the line; Adrian
+read it on the page and kept it, recorded in section 15 as an exception.
 
 **What it must not do.** Describe the region a second time; name the centre;
-say the energy is in the organ or that the organ is its seat; claim the
+make a bare seat claim outside the lens entry above; claim the
 amino acid is the card's chemistry, or that contemplating the card affects
 it, or that eating more of it serves the card; mention supplements, illness
 or healing; call any of it old ("the old maps," "the old yogas," "the old
@@ -1036,7 +1114,10 @@ reads one text. So each kin's paragraph stands alone: it names its kin in a
 sentence a stranger can place, says what the two energies make together, and
 says why you would open that card next. No paragraph refers to another
 ("these five," "read together," "also carries"), and no sentence totals the
-section ("between them they hold," "six voices and one message").
+section ("between them they hold," "six voices and one message"). The one
+exception is the one-line underscore intro under the heading, which the
+compiler requires: one sentence, to you, saying what this card's kin have in
+common, with no "this card" and no totalling closer.
 
 **Assume nobody knows any card but this one.** A kin is named by its card
 name and then placed in plain words in the same sentence (Veils of
@@ -1056,7 +1137,9 @@ are the same hexagram, a self-inverse heading for the eight cards that meet
 their own reflection). Programming partner, 50 to 90: the opposite pole, the
 two low faces feeding each other, why open it. Codon ring, 50 to 90: the
 family, what the members share, where this card sits, siblings by plain
-theme. Channel partner, 30 to 50, once the compiler carries the heading.
+theme. Channel partner, 30 to 50, once the compiler carries the heading;
+until then the partner is named once inside the Human Design section and
+nowhere in Relations.
 Tarot: one lead sentence as the card's single scene callback, then the ring
 arcana bullet at 30 to 50 words and each trigram bullet at 25 to 45.
 Immortals, 40 to 70. Deeper correlation, two bullets of 20 to 35. Under 650
@@ -1064,7 +1147,9 @@ words for the section, and under 400 in the kin that matter (pair, partner,
 ring, channel).
 
 **Read with five questions, per kin.** Before a sentence is written, answer
-from the kin card's own finished sections and the ring or trigram file: who
+from the kin card's kin brief (a short source-checked note per card, made
+once, so this section never waits on the kin's own finished sections) and
+the ring or trigram file: who
 this kin is; what the two make together; why you would open it next; what it
 feels like to meet it; what it is not. A kin paragraph is done when a reader
 who has read only this card could say which card to open and why.
@@ -1108,8 +1193,9 @@ files each gain the placing sentence and one story line of about 60 words
 from commonly agreed lore, labelled as such; a Sonnet job. Then the per-card
 packet is assembled by script with no model in it: the pair card's CODE, the
 partner card's CODE, the channel partner's CODE, the ring file, the two
-trigram files, the ring arcana's tarot reference card, and `relations_data`.
-About 2,500 words. The Deeper correlation needs no file; its two facts are on
+trigram files, the ring arcana's tarot reference card, the Immortal
+references for this card's pair, the inverse when it differs from the
+opposite, and `relations_data`. About 2,500 words. The Deeper correlation needs no file; its two facts are on
 the tarot reference card. Until the files exist, the practice stands: write
 from established lore, keep to what is commonly agreed, record "established
 lore, not vault-sourced" in the sheet.
@@ -1143,6 +1229,11 @@ fresh words: organ, then floor, then climb; fact, then teaching, then "runs all
 the way down"; drive, then misread; alone, then joined; Siddhi, then the look
 back. The test extends from the first five words to the section's spine: if
 the paragraph order could be described identically for another card, vary it.
+Required content is not a required order. Chapters 7, 9 and 10 say what each
+subsection must contain (the trigram as itself and as the reader knows it,
+the drive and where it lives, the organ and its mechanism); they do not fix
+the order those things arrive in, except Body's two paragraphs, which Adrian
+approved as a shape. Card 3 shows one order; the next card finds its own.
 
 **Test the neighbours first.** Cross-card lifts cluster on ring siblings and
 channel partners because they share facts. Run the one-minute test against
@@ -1228,10 +1319,14 @@ The ten places two older documents disagreed, answered once.
    correlation. As the cards already have it.
 4. The card has six prose sections including DESIGN and BODY. The master
    guide's five-part anatomy is retired.
-5. There is one essence per card, three short sentences, distilled after the sections are
-   written, ratified by Adrian, living in CODE's third paragraph. The two
-   truths were always one.
-6. ICHING Reading: 200 to 300 words.
+5. There is one essence per card, three short sentences, distilled after the
+   sections are written, ratified by Adrian, stored in `meta.centre` and
+   shown on the page under the keynotes. CODE's first paragraph is the
+   standalone introduction the search and the coins show; CODE's third
+   paragraph carries the essence's way in other words. Three texts, three
+   jobs, and none repeats another.
+6. ICHING Reading: 180 to 260 words, as section 7 gives it. Over 260 is a
+   review, not a rejection; over 300 is cut.
 7. The word in prose is "code" for the thing and "you" for the reader. The
    heading `## CODE`, the title `UL N` and the pill label "Universal" are
    structure and are not prose questions.
@@ -1253,11 +1348,15 @@ their locked KEYS, DESIGN and RELATIONS status in the move to Markdown and
 carry `scaffold` where they should carry what he decided; that is re-set by
 hand, not re-earned.
 
-**The order of passes on a card.** The AI layer first, one section at a
-time, each read by Adrian on the page before the next begins. The pilot on
-card 3 (2026-09-12) established the loop: write, put it on the page, read,
-correct, crystallise the correction into this document, then the next
-section. Never a whole card in one pass.
+**The order of passes on a card.** The pilot on card 3 (2026-09-12) built
+this document one section at a time, each read by Adrian on the page before
+the next began: write, put it on the page, read, correct, crystallise the
+correction here, then the next section. That loop is what this document
+now carries, so production runs differently: the AI layer writes the whole
+card in one sitting in the order below, the scripts check what can be
+measured, and Adrian reads it on the page one section at a time, with every
+correction still crystallised here before the next card is written. A
+correction that is only this card's is recorded as an exception (below).
 
 1. Read the sheet if one exists, and every source file the section may draw
    on; for Human Design and Body, the per-gate packet and the reference files
@@ -1290,15 +1389,38 @@ ratifies or strikes the essence, and makes the card his. That pass is the one
 that takes a section to final, and it is the point of everything above. The
 AI layer's job is to make that pass short.
 
-**Who writes.** Fable writes card copy and reviews it; Sonnet builds tooling,
-assembles packets and runs checks; Opus plans. A Fable run per section per
-card, not per card; the one-time references (nine centres, the principles,
-the amino acids, the organs, the connective layer for Relations) are made once
-and reused sixty-four times.
+**Who writes (decided 2026-09-12).** Opus writes the card, one fresh agent
+per card, with this document and the card's packet as its whole world, at
+the session's default effort. Fable is not the writer; its cost is not
+justified by the writing once the template holds, and card 3 was mostly
+written by Opus under Adrian's reading. Scripts, with no model, do
+everything measurable: the packet, the punctuation numbers, word counts,
+shared openings, banned stems, system words outside their sections, em
+dashes, italics, the frontmatter facts. Codex, on its own plan, gives one
+independent review per batch if wanted. Adrian on the page is the only
+human gate and the one that takes a section to final. Sonnet assembles
+packets and references. The one-time references (nine centres, the
+principles, the amino acids, the organs, the trigrams, the Immortals, the
+rings, and a short source-checked kin brief per card so Relations can be
+written before its kin are finished) are made once and reused sixty-four
+times; each records its sources, its version and who checked it, and a
+changed reference reopens only the claims that depend on it.
 
-**Batches.** Never all 64 blind in one day; that was the failure of June. Pilot
-on five (3, one bright, one dark, one body-led, one of Adrian's choosing), read
-them on the live page, and lock or iterate before the rest.
+**Batches.** Never all 64 blind in one day; that was the failure of June.
+Card 2 is the test of whether the template alone carries a card: if Adrian's
+corrections on it are few and local, the rest runs in batches of four with
+rings and centres mixed (never two siblings in one batch, so lifts cannot
+hide); if they are structural, the template was not ready and the batch
+waits. Cards 14, 47, 52 and 64 were written before the loop and are brought
+up to this document as migration cases before any new batch.
+
+**Exceptions and versions.** Adrian may keep a passage that fails a written
+rule; the exception is recorded here with the card, the section, the date
+and the reason, and the rule is not loosened for it. A recorded exception
+is not a precedent. Every approval is dated; a measurement quoted here
+carries its date, and one older than the manuscript it describes is stale
+and re-run before it is cited. Recorded so far: card 3 Body, 2026-09-12,
+16.4 words a sentence and 4.4 commas per hundred, kept as read on the page.
 
 **Re-measure after every pass.** `node todo/plans/writing-guideline/measure.mjs`
 from the repo root reports word counts, shared openings and cross-references.
