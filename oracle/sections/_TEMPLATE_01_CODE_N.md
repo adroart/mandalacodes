@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](../GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # TEMPLATE — Section 1 · Code N (the opening face)
 
 > **⚠ SUPERSESSION NOTICE (2026-07-06): §4.3 (`code.reading`) is superseded by

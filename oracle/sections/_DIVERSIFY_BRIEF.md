@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](../GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # Opening-diversification brief — ICHING, BODY, RELATIONS
 
 The sibling brief in `keys/_DIVERSIFY_BRIEF.md` fixed this problem for the Gene

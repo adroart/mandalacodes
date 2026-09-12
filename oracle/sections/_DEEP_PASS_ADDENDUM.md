@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](../GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # Deep-pass addendum — ICHING + BODY
 
 > Read after the section's own `_BRIEF.md`. This applies to the **deep-pass**

@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # Universal Language Oracle — Master Writing Guide
 
 The document you open first *after* `CONCEPT.md`. `CONCEPT.md` says what the

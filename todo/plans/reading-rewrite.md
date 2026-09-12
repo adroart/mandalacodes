@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](../../oracle/GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # Rewrite the 64 opening readings — synthesis of the whole code, with lift
 
 Status: planned, waiting for Adrian to be home. Do not start writing cards until the pilot gate (step 3) passes.

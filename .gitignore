@@ -35,3 +35,4 @@ backups/
 # Conductor: settings.toml is shared (tracked); settings.local.toml is each
 # teammate's machine-specific override and wins over the shared file.
 .conductor/settings.local.toml
+scripts/.refill-tmp/

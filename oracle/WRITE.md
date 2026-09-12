@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # WRITE.md — the enforced loader for all oracle card writing
 
 > **⚠ SUPERSESSION NOTICE (2026-07-06) — the OPENING READING spec below is
