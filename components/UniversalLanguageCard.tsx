@@ -14,6 +14,7 @@ import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
 import RelationsStack from './oracle/RelationsStack';
+import ChannelStatusLine from './oracle/ChannelStatusLine';
 import SaveToCollectionButton from './account/SaveToCollectionButton';
 import { cardCollectionItem } from '../lib/collections/items';
 import { ulPieceForCard } from '../utils/universalLanguage';
@@ -289,6 +290,7 @@ const UniversalLanguageCard: React.FC = () => {
             channelProse={synthesis?.synthesis.human_design.circuit}
           />
         )}
+        hdChannelSlot={<ChannelStatusLine gate={card.human_design.gate} />}
       />
       </>
       } />

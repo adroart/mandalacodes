@@ -778,6 +778,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               </React.Fragment>
             ))}
           </div>
+          {vals.hdChannelSlot}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "24px" }}>
           <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>
