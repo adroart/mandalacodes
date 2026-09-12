@@ -631,6 +631,17 @@ rules as the Reading: complete sentences, no system words, no source announced
 hexagram. Inside this section the thing is a hexagram, never a code. Card 3's
 six lines are the reference.
 
+How a line is made, and the check that it is faithful: read the line in all
+six translations and the Eranos gloss; keep every element of the scene the
+sources agree on (the horse standing, the suitors not raiders, the ten years);
+translate the compressed verdict into what it asks of a person ("advantageous
+to be made a feudal ruler" becomes "set something down that stays put, a place
+people can find you"); cut any detail a stranger cannot use (the soapnut tree).
+Then check the line back against the source: every element of the original
+scene should be findable in the rewrite, and nothing should be there that the
+sources do not carry. A line that reads well but drops the scene is a
+paraphrase, not a translation.
+
 **The hand-off.** The last paragraph of the Reading may hand to the Gene Key by
 naming the shadow's word inside the situation, never by naming the system.
 
