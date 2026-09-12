@@ -164,6 +164,12 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
       meta={meta}
       cardKicker={`No. ${card.number} · Universal Language`}
       cardName={card.card_name}
+      hexLines={hexagramLineBooleans(card.iching.upper_trigram.symbol, card.iching.lower_trigram.symbol).map((solid) => ({ solid, broken: !solid }))}
+      hexHref="#iching"
+      cardNumber={String(card.number)}
+      elementLine={card.element}
+      gateLine={`Gate ${card.human_design.gate} · ${card.human_design.keyword} · Universal Language`}
+      keynotesLine={keywords.join(', ')}
       forMeHref="/profile"
       pieceHref={pieceHref}
       familyHref="/family"
