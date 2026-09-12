@@ -1,3 +1,7 @@
+## 2026-09-12
+
+- [x] Card page side column, round two: the keynotes read as one sentence; set them as separate words, slightly smaller, more space between, and give each block (title plate, keynotes, the three links) its own close background tone and text colour so they read as different things at a glance. Adrian's words 2026-09-12 after the title plate shipped in #195 _(band: agent-runnable)_ _(effort: moderate)_ → shipped 2026-09-12
+
 ## 2026-09-08
 - [x] Give the mobile test suite a `webServer` so it stops reading as broadly red — `playwright.config.ts` now boots `vite --port <PLAYWRIGHT_BASE_URL's port>` (default 2222) before any spec runs, and also runs `npm run build:content` once if `public/learn` is missing (the two `/learn` specs 404'd without it). Wired `test:mobile` into CI as its own job (`.github/workflows/test.yml`, Chromium only, uploads `test-results/` on failure). True baseline measured on a clean run: 67 passed, 9 skipped, 38 failed/timed-out out of 114 (was: every spec failing on connection-refused). See TODO.md "Found in the 2026-09-08 mobile suite audit" for what the 38 failures actually are — most trace to one 2026-07-20 redesign, not new regressions. Branch `claude/mobile-suite-server`.
 

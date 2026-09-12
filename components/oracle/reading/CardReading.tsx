@@ -64,7 +64,7 @@ export interface CardReadingProps {
   cardNumber?: string;
   elementLine?: string;
   gateLine?: string;
-  keynotesLine?: string;
+  keynotes?: string[];
   /* The side column's three links. */
   forMeHref?: string;
   pieceHref?: string;
@@ -117,7 +117,7 @@ function useIsDesktop(forced?: 'mobile' | 'desktop') {
 }
 
 export const CardReading: React.FC<CardReadingProps> = ({
-  lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork, artFloatsFree, cardKicker, cardName, hexLines, hexHref, cardNumber, elementLine, gateLine, keynotesLine, topNav, forMeHref, pieceHref, familyHref,
+  lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork, artFloatsFree, cardKicker, cardName, hexLines, hexHref, cardNumber, elementLine, gateLine, keynotes, topNav, forMeHref, pieceHref, familyHref,
 }) => {
   const isDesktop = useIsDesktop(variant);
   /* The shell fills the screen and pins a bar to its bottom edge, so it needs
@@ -148,7 +148,7 @@ export const CardReading: React.FC<CardReadingProps> = ({
     cardNumber,
     elementLine,
     gateLine,
-    keynotesLine,
+    keynotes,
     forMeHref,
     pieceHref,
     familyHref,
