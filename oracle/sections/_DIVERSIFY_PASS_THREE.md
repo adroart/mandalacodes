@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](../GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # Diversify pass three, the stem ban
 
 ## Why there is a third pass

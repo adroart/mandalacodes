@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # 04 — The I-Ching Translation Method
 
 How the classic layer of each card (the Judgment and the Image — see

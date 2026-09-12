@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # Universal Language Oracle — The Writing Method
 
 > **⚠ SUPERSESSION NOTICE (2026-07-06): §1.4b and §3 SECTION 1 — the opening

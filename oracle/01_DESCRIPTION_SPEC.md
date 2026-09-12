@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # 01 — The Description Spec
 
 How to write the `gene_keys.description` field on all 64 cards.

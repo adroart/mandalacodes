@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # 03 — The I-Ching Guide
 
 How to write the I-Ching section on all 64 cards.

@@ -7,6 +7,7 @@
     "dev": "vite --port 2222",
     "dev:full": "npm run build && wrangler pages dev dist --port 2222 --ip 127.0.0.1",
     "build:search-index": "tsx scripts/build-search-index.ts",
+    "refill:extracts": "node scripts/refill-vault-extracts.mjs",
     "build:oracle-corpus": "tsx scripts/build-oracle-corpus.ts",
     "build:content": "npm --prefix content-site install --no-audit --no-fund && npm --prefix content-site run build && rm -rf public/learn && cp -R content-site/dist public/learn",
     "lint:prose": "tsx scripts/lint-oracle-prose.ts",

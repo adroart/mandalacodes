@@ -35,65 +35,25 @@ The central rule is:
 
 ## Before you write any card prose
 
-**Read these four, in this order, before drafting or rewriting anything.** This
-gate exists because `AGENTS.md` sends every agent here, and for a while this
-page listed only the older doctrine set. An agent that stopped at the table
-below would follow a spec that has been superseded since 2026-07-06 and would
-reintroduce the exact faults two later passes had to remove.
+**Read [`GUIDELINE.md`](GUIDELINE.md). It is the one writing document
+(2026-09-12).** It replaces `CONCEPT.md`'s method sections, the master guide,
+guides `01` to `06`, `WRITING_METHOD.md`, `WRITE.md`, the section template, the
+deep-pass addendum, the diversify briefs and `todo/plans/reading-rewrite.md`.
+Each of those now carries a supersession line; they stay for history and for
+the reasoning behind a rule, never as the rule. Where any of them disagrees
+with the guideline, the guideline wins.
 
-1. [`CONCEPT.md`](CONCEPT.md) — what the deck is.
-2. [`00_MASTER_WRITING_GUIDE.md`](00_MASTER_WRITING_GUIDE.md) — how a card is
-   built, and the six companion guides `01` to `06` beneath it.
-3. [`WRITING_METHOD.md`](WRITING_METHOD.md) and
-   [`sections/_TEMPLATE_01_CODE_N.md`](sections/_TEMPLATE_01_CODE_N.md) — the
-   per-section method and template. **Both carry a supersession notice. Honour it.**
-4. [`../todo/plans/reading-rewrite.md`](../todo/plans/reading-rewrite.md) —
-   the current spec for the OPENING READING.
+The survey that produced it, the Fable pass, the source-file map and the
+measurement script are at `todo/plans/writing-guideline.md` and the folder
+beside it.
 
-### The supersession, stated plainly
-
-The three-movement opening-reading shape (lit face, then other face, then the
-ask, ending a beat early) in `WRITING_METHOD.md` §1.4b and §3, and in
-`sections/_TEMPLATE_01_CODE_N.md` §4.3, is **retired**. It produced 64 readings
-that read as downers and recompressed Gene Keys instead of speaking the whole
-code. Never write or review an opening reading from it. The live spec is
-`../todo/plans/reading-rewrite.md`.
-
-### The anti-formula rules, added 2026-09-01
-
-A survey found one sentence opening the same field on up to 64 of 64 cards,
-because every batch agent had copied the single worked sample in its brief.
-Four passes were needed to clear it. The rules that finally worked, and that
-any future batch must follow:
-
-- **Ban stems, never phrases.** Banning "the body seats this code in the chest"
-  produced "at the chest" on 23 cards and passed every check. Ban the first four
-  or five words regardless of what follows, and measure the same way.
-- **Give every writing agent one test.** Take the new first five words and ask
-  whether that sentence would work unchanged on any of the other 63 cards. If
-  yes, it is a formula whatever its grammar.
-- **A worked sample teaches its own opening.** If a brief must carry one,
-  say explicitly that its first sentence is off limits.
-- **Reference entries are supposed to repeat.** Trigram definitions, the eight
-  Immortals' name sentences, ring labels and the inward and outward face labels
-  describe the same thing wherever they appear. A reference that varies is a
-  broken reference. Never diversify them.
-- **A banned phrase is a construction, not a string.** "Held together, they are"
-  totalling up a field is the formula; "a group held together by a bond nobody
-  can see" is writing. Seven such keeps are recorded with their reasoning in
-  [`sections/_DIVERSIFY_PASS_FOUR.md`](sections/_DIVERSIFY_PASS_FOUR.md).
-
-Full method: [`sections/_DIVERSIFY_BRIEF.md`](sections/_DIVERSIFY_BRIEF.md),
-[`sections/_DIVERSIFY_PASS_THREE.md`](sections/_DIVERSIFY_PASS_THREE.md),
-[`sections/_DIVERSIFY_PASS_FOUR.md`](sections/_DIVERSIFY_PASS_FOUR.md).
-
-### Two house rules that apply to every word
+Two house rules that apply to every word, restated because they are the ones
+most often broken:
 
 - **Never the em dash character in prose.** Comma, period, colon, or a new
-  sentence. The em dashes already in `oracle/cards/*.md` headings are
-  STRUCTURAL DELIMITERS the parser splits on, as in `### The drive — Gate 24`.
-  Removing those breaks the deck. Only change an em dash after proving it sits
-  inside a sentence.
+  sentence. The em dashes in `oracle/cards/*.md` headings are STRUCTURAL
+  DELIMITERS the parser splits on, as in `### The drive — Gate 24`. Removing
+  those breaks the deck.
 - **No italics, and no underscore emphasis, in anything a reader meets.**
 
 ## What is authoritative
@@ -101,9 +61,8 @@ Full method: [`sections/_DIVERSIFY_BRIEF.md`](sections/_DIVERSIFY_BRIEF.md),
 | Material | Authoritative location | How to use it |
 | --- | --- | --- |
 | The 64 current card manuscripts | `oracle/cards/NN.md` | Make every new card-prose edit here. |
-| Writing philosophy and method | `CONCEPT.md`, `00_MASTER_WRITING_GUIDE.md`, guides `01`–`06`, `WRITING_METHOD.md`, `sections/_TEMPLATE_01_CODE_N.md`, and `WRITE.md` | Read before drafting or substantially rewriting. The last three carry supersession notices; see the gate above. |
-| The current opening-reading spec | `../todo/plans/reading-rewrite.md` | Authoritative for the opening reading. The older three-movement shape is retired. |
-| Anti-formula method for batch writing | `sections/_DIVERSIFY_BRIEF.md`, `_DIVERSIFY_PASS_THREE.md`, `_DIVERSIFY_PASS_FOUR.md` | Read before any pass that touches the same field across many cards. |
+| Writing method, voice, structure, sources | `GUIDELINE.md` | The one writing document. Read before drafting or rewriting anything. |
+| Deck measurements | `../todo/plans/writing-guideline/measure.mjs` | Re-run after any pass that touches many cards. |
 | I Ching, Gene Keys, Human Design, Tarot, body, and moving-line research | `~/Documents/Obsidian Vault/Mandala Codes/oracle/` | Verify claims and preserve source lineage. |
 | Personal voice and early Oracle conception | Adrian's identity vault | Sovereign reference material; do not auto-edit. |
 | Artwork linkage | `data/mockData.ts` | Linked artwork metadata, not authored Oracle prose. |
@@ -149,21 +108,12 @@ destinations, and the editorial status of every lens.
 
 ## How the writing is meant to be made
 
-Read these in order when beginning substantial card work:
-
-1. [`CONCEPT.md`](CONCEPT.md) — what the Oracle is and why it exists.
-2. [`00_MASTER_WRITING_GUIDE.md`](00_MASTER_WRITING_GUIDE.md) — governing method.
-3. [`01_DESCRIPTION_SPEC.md`](01_DESCRIPTION_SPEC.md) — teaching structure.
-4. [`02_INVOCATION_GUIDE.md`](02_INVOCATION_GUIDE.md) — spoken invocation form.
-5. [`03_ICHING_GUIDE.md`](03_ICHING_GUIDE.md) — I Ching treatment.
-6. [`04_TRANSLATION_METHOD.md`](04_TRANSLATION_METHOD.md) — sources and translation.
-7. [`05_KEYWORDS_GUIDE.md`](05_KEYWORDS_GUIDE.md) — keyword discipline.
-8. [`06_CONNECTIONS_GUIDE.md`](06_CONNECTIONS_GUIDE.md) — relationships between codes.
-9. [`WRITE.md`](WRITE.md) — standing operational workflow.
-
-The code itself is the spine. The traditions remain distinct voices; none
-should become a compressed paraphrase of the others. The Oracle should guide
-immediately and deepen into genuine teaching.
+[`GUIDELINE.md`](GUIDELINE.md), start to finish. Its section 15 gives the order
+of passes on a card: the five teaching sections from the sources, then the
+centre distilled from them, then the reading from the centre, then keywords,
+then the tests and the sheet, then Adrian's pass on the live page. The code
+itself is the spine; the traditions are lenses on it; none becomes a
+compressed paraphrase of another.
 
 ## Research corpus and sovereign voice
 
@@ -323,12 +273,12 @@ seeded into the live i64 OS environment during this session.
 
 For card `NN`:
 
-1. Read this index and [`CONCEPT.md`](CONCEPT.md).
+1. Read this index and [`GUIDELINE.md`](GUIDELINE.md).
 2. Open `oracle/cards/NN.md`; note every lens's editorial status.
 3. Open the operational-vault dossier at
    `oracle/hexagrams/NN/_hexagram-NN.md`.
 4. Read the actual sources for the lens; do not rely only on an older synthesis.
-5. Follow the corresponding writing guide.
+5. Follow the guideline: the section chapter, then section 4 (how one energy crosses six sections), then the one-minute test.
 6. Distinguish sourced fact, inherited interpretation, and new synthesis.
 7. Preserve attribution, YAML provenance, and the distinct purpose of each
    tradition.
@@ -354,7 +304,7 @@ For a new personal invocation:
 ## Instructions for AI agents
 
 1. Treat this file as the infrastructure front door.
-2. Treat `CONCEPT.md` as intent and the numbered guides as method.
+2. Treat `GUIDELINE.md` as the method and `CONCEPT.md` as the intent behind it.
 3. Treat `oracle/cards/NN.md` as the only authored card manuscript.
 4. Treat the operational vault as research, not a deployment copy.
 5. Treat identity-vault material as sovereign and reference-only.
@@ -373,9 +323,9 @@ For a new personal invocation:
 Copyable starting instruction:
 
 ```text
-Begin by reading mandalacodes/oracle/INDEX.md and oracle/CONCEPT.md.
+Begin by reading mandalacodes/oracle/INDEX.md and oracle/GUIDELINE.md.
 For card NN, inspect oracle/cards/NN.md and the operational-vault dossier
-oracle/hexagrams/NN/_hexagram-NN.md. Follow the relevant numbered writing guide.
+oracle/hexagrams/NN/_hexagram-NN.md. Follow the guideline, section by section, and run its one-minute test.
 Make authored prose changes only in oracle/cards/NN.md. Preserve citations and
 editorial status; do not edit sovereign identity-vault material or generated
 JSON. Regenerate the hosted artifacts and verify browser, REST/search, hosted
@@ -394,7 +344,7 @@ card-prose authoring or runtime fallback sources:
 | `oracle/sections/{iching,keys,design,body,relations}/NN.json` | Older per-lens representations; not prose fallbacks. |
 | `oracle/oracle_cards_complete.json` | Older aggregate/short-form structure; not the card authority. |
 | `oracle/generated/01.json` | Early static invocation pilot; not the living invocation workflow. |
-| `oracle/_archive/` | Historical batches and prior manuscripts. |
+| `oracle/_archive/` | Historical batches and prior manuscripts, including the per-lens `manuscripts-2026-07/` and `editorial-receipts-2026-07/` snapshots from the JSON-to-Markdown migration. |
 | Adrian-Website Oracle routes | Compatibility redirects and artwork registry, not a second reader authority. |
 | Workspace `_archive/light-codes/` | Separate archived 68-card Light Codes deck. |
 | Vault root `hexagrams/` | Incomplete predecessor, not the complete research corpus. |

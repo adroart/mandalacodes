@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](../GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # Diversify pass four, the closing sentences
 
 Passes one to three fixed the OPENINGS of the I-Ching Reading, both Body fields,

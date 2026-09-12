@@ -1,3 +1,5 @@
+> **Superseded 2026-09-12.** The one writing guideline is [GUIDELINE.md](GUIDELINE.md); where this file disagrees with it, the guideline wins. Kept for history.
+
 # The Universal Language Oracle — The Concept
 
 The vision document. What the deck *is*, before any guide says how to write it.

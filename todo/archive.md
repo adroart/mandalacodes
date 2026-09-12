@@ -49,3 +49,5 @@
 - [<] Integrate the Light Codes deck (route is reserved, content lives in the archive) _(parked → TODO.md)_
 - [<] Add more decks beyond Universal Language and Light Codes as they emerge _(parked → TODO.md)_
 - [<] Make Mandala Codes the go-to mandala authority site (multi-phase content, outreach, and press campaign)   → Plan: [mandala-authority.md](todo/plans/mandala-authority.md) _(parked → TODO.md)_
+- [x] Write the one writing guideline for the deck; `oracle/GUIDELINE.md`, 2026-09-12, from the survey, the Fable pass and Adrian's five answers; sixteen older documents now carry supersession lines.
+- [x] Refill the 39 empty vault extract files in hexagrams 50 to 64; `npm run refill:extracts`, 2026-09-12, pdftotext with OCR fallback for the ten broken Wilhelm chapters, no model involved.
