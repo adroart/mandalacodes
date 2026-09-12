@@ -17,7 +17,7 @@ not been deployed to production in this work session.
 There are four distinct layers:
 
 1. **Research truth** lives in the operational Obsidian vault at
-   `~/Documents/Obsidian Vault/oracle/`.
+   `~/Documents/Obsidian Vault/Mandala Codes/oracle/`.
 2. **Authored card truth** lives in this repository at `oracle/cards/01.md`
    through `oracle/cards/64.md`.
 3. **Reader and Oracle transports** live in Mandala Codes: browser, REST,
@@ -104,7 +104,7 @@ Full method: [`sections/_DIVERSIFY_BRIEF.md`](sections/_DIVERSIFY_BRIEF.md),
 | Writing philosophy and method | `CONCEPT.md`, `00_MASTER_WRITING_GUIDE.md`, guides `01`–`06`, `WRITING_METHOD.md`, `sections/_TEMPLATE_01_CODE_N.md`, and `WRITE.md` | Read before drafting or substantially rewriting. The last three carry supersession notices; see the gate above. |
 | The current opening-reading spec | `../todo/plans/reading-rewrite.md` | Authoritative for the opening reading. The older three-movement shape is retired. |
 | Anti-formula method for batch writing | `sections/_DIVERSIFY_BRIEF.md`, `_DIVERSIFY_PASS_THREE.md`, `_DIVERSIFY_PASS_FOUR.md` | Read before any pass that touches the same field across many cards. |
-| I Ching, Gene Keys, Human Design, Tarot, body, and moving-line research | `~/Documents/Obsidian Vault/oracle/` | Verify claims and preserve source lineage. |
+| I Ching, Gene Keys, Human Design, Tarot, body, and moving-line research | `~/Documents/Obsidian Vault/Mandala Codes/oracle/` | Verify claims and preserve source lineage. |
 | Personal voice and early Oracle conception | Adrian's identity vault | Sovereign reference material; do not auto-edit. |
 | Artwork linkage | `data/mockData.ts` | Linked artwork metadata, not authored Oracle prose. |
 | Hosted card/search JSON | `data/oracle-corpus.json`, `data/oracle-search-index.json` | Deterministic deployment artifacts; regenerate, never author. |
@@ -170,13 +170,13 @@ immediately and deepen into genuine teaching.
 Operational-vault front door:
 
 ```text
-/Users/adrianrasmussen/Documents/Obsidian Vault/oracle/_INDEX.md
+/Users/adrianrasmussen/Documents/Obsidian Vault/Mandala Codes/oracle/_INDEX.md
 ```
 
 For card `NN`, begin with:
 
 ```text
-/Users/adrianrasmussen/Documents/Obsidian Vault/oracle/hexagrams/NN/_hexagram-NN.md
+/Users/adrianrasmussen/Documents/Obsidian Vault/Mandala Codes/oracle/hexagrams/NN/_hexagram-NN.md
 ```
 
 The operational corpus contains all 64 hexagram dossiers, 384 moving-line
@@ -422,7 +422,7 @@ These are infrastructure tasks, not permission to rewrite the card corpus.
 ## Where to begin
 
 - **Write or revise a card:** `oracle/cards/NN.md` plus its vault dossier.
-- **Research a correspondence:** `~/Documents/Obsidian Vault/oracle/`.
+- **Research a correspondence:** `~/Documents/Obsidian Vault/Mandala Codes/oracle/`.
 - **Refine purpose or voice:** `CONCEPT.md` plus sovereign voice references.
 - **Create a spoken invocation:** the private reflection/invocation composer.
 - **Regenerate hosted data:** `npm run build:oracle-corpus` and

@@ -176,6 +176,10 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 
 ## Oracle deck content (Universal Language)
 
+- [ ] Write the one writing guideline for the deck, from the 2026-09-12 survey: run the Fable pass, settle the ten spec contradictions, supersede the sixteen guides _(band: you-required)_ _(effort: deep)_ → Plan: [writing-guideline.md](todo/plans/writing-guideline.md)
+- [ ] Sweep KEYS for the Repressive/Reactive opening formula (36 of 64 cards) and the Immortals "stands above" opener (52 of 64), the same stem-ban method as the DESIGN sweep _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [writing-guideline.md](todo/plans/writing-guideline.md) § 3
+- [ ] Re-lock cards 1 and 2: their KEYS, DESIGN and RELATIONS were final in the source JSON and ship as scaffold in `oracle/cards/` _(band: you-required)_ _(effort: quick)_
+- [ ] Refill the 39 empty vault extract files in hexagrams 50 to 64 before any batch touches those cards _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [survey-sources.md](todo/plans/writing-guideline/survey-sources.md) § 1
 - [ ] **Deep-pass rewrite** — decide whether to commit the full deep-pass rewrite for the remaining 61 I Ching and Body cards _(you · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
   A drafted deeper rewrite exists for most cards but hasn't been committed pending Adrian's call on quality. Done when the rewrite is either committed for the 61 cards or explicitly set aside. See [oracle/TODO.md](oracle/TODO.md).
 - [ ] **Write invocations** — write invocations for cards 2 to 64 in Adrian's own voice (not delegable) _(you · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
