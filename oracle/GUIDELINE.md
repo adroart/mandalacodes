@@ -204,12 +204,16 @@ follows from the one before; a paragraph is one thought leading on, not a row
 of true statements. The punctuation numbers are necessary and not sufficient:
 a paragraph can pass them and still read as chopped.
 
-**One claim per sentence, and pronouns point at one thing.** "Following from
-the last sentence" means the next claim comes next, not that two claims are
-joined by "and where." A sentence that carries three claims ("the unease is a
+**One claim per sentence, two when the second is the first's consequence.**
+"You try things, and most of them fail." "Nothing is yours to keep, so nothing
+can be taken." Two claims, one thought, because the second follows from the
+first and the joint is "and" or "so." Test: cover the second half. If the
+first half stands as a whole thought and the second is its consequence, keep
+them together. If the second half brings in a new thing or a new picture, it
+is the next sentence. A sentence carrying three claims ("the unease is a
 beginning, and where the hands stop closing on it, it turns into material")
-fails even at eleven words, and its two "it"s point at different things. Split
-it. A picture reused from an earlier paragraph is named again ("when you stop
+fails even at eleven words, and its two "it"s point at different things. A
+picture reused from an earlier paragraph is named again ("when you stop
 holding on"), never pointed at with "it."
 
 **The punctuation check, measured.** A section passes when it averages under
