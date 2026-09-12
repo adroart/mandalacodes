@@ -196,6 +196,16 @@ compressed; the card is not. "Ready, and staying" is a note. "Be ready to go,
 and stay where you are" is a sentence. Translate the compression into
 complete thoughts a stranger can follow, without changing what is said.
 
+**The punctuation check, measured.** A section passes when it averages under
+15 words a sentence, carries under three commas per hundred words, and has no
+sentence with three or more commas. The reading Adrian approved runs 11 words
+and almost no commas; the first Gene Keys draft ran 15 words and six commas
+per hundred and read as broken, and lists like "the work, the house, the
+people at your table, the body you wake in" are the usual cause. Run
+`node todo/plans/writing-guideline/punctuation.mjs oracle/cards/NN.md` before
+showing a section; it prints the three numbers per section. Fewer ideas per
+sentence, not more full stops: a run of four-word sentences is chopping.
+
 **No examples, no time filler.** "Anyone who has started a piece of work or a
 family knows this hour" sorts readers into those who have and have not, picks
 one writer's example, and says nothing with "this hour." Describe the state
