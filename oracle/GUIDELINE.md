@@ -163,6 +163,16 @@ distilled from what those sections turned out to say; the reading is written
 last, from the essence; the keynotes last of all, from the finished card.
 Until the sections exist, nobody knows what the essence is.
 
+**Each sentence passes the stranger test alone.** The essence is the first
+prose a reader meets, above the reading, so each of its three sentences must
+land with no card behind it. The challenge names the pull as the reader
+feels it, in ordinary words ("The pull is to push ahead and set the
+direction yourself"). A source idea folded into a phrase fails even at two
+words: card 2's first essence said "Coming second feels like being lost,"
+which was the mare who follows rather than leads, and Adrian read it as a
+race placing (2026-09-12). No pronoun in the essence points at a thing named
+only in another sentence.
+
 There is one essence per card. It is recorded on the card's sheet
 (`meta.centre`) and Adrian ratifies it there. Its test: if it is right, the
 situation, the body, the arc and the field click around it without any of
@@ -353,6 +363,10 @@ fail is the fix, applied on the spot. Built from the deck's own tells (section
 13. Check the ending of the section. Does it resolve its own tension in one
     tidy sentence? If a real conversation on this would end on the open part,
     end there.
+14. Find every pair of sentences or clauses built to the same shape
+    ("Nothing in it rises. Nothing in it strikes."; "real as a feeling and
+    false as a fact"). A matched pair is the tidiest thing a model writes.
+    Break one of the two or cut it.
 
 **Constructions, not strings.** The retired closers and stems in this document
 are families, not spellings. "The misread is to call this" and "people will
@@ -694,10 +708,19 @@ says something the others do not.
   world, then in a person, then its risk. Nothing about this card's situation;
   that belongs to Combination and Reading. The same trigram reads alike on
   every card that carries it; these are reference entries and are meant to
-  repeat.
+  repeat. On the eight cards that double a trigram, the upper entry carries
+  the reference text and the lower entry says what it is to have the same
+  force underneath as well, in the same register; two unrelated Earths (card
+  2's field above, seed below) are two inventions where one reference was
+  wanted.
 - Reading, 180 to 260 words, to you: the situation as a person lives it, what
   it asks, the body once, the posture. Never the picture again in the
   Combination's words. Never "lines," "trigram," or "hexagram" as parts.
+  Never a Judgement line rendered a second time (card 2's Reading closed a
+  paragraph on the Judgement's own "rest in what is steady, and it goes
+  well"), and never a moving line's scene (the frost, the tied sack); the
+  lines are read alone after a throw, and a Reading that spends them has
+  spent the throw.
 - The symbol, optional, two short paragraphs, this hexagram's lines only:
   where the whole lines sit, where the open ones, what that shape says. It
   lives in the popup behind the glyph, above the general essay, never in the
@@ -858,8 +881,10 @@ chapter in.
 **Voice.** The ten rules. One picture per paragraph, carried across the three
 heights at three temperatures; never a new picture per paragraph. Complete
 sentences. No "not X but Y" beyond the card's one hinge. The Siddhi does not
-end by looking back at the Shadow as raw material, and does not close on a
-paradox of effortless arrival.
+end by looking back at the Shadow as raw material, does not close on a
+paradox of effortless arrival, and does not close on a pair of absences
+("nothing here to reach and nothing here to lose"); the last sentence of the
+card's highest paragraph names something present.
 
 **Retired here.** "The inward face of the Shadow," "the outward face of the
 Shadow" (36 cards). "Most people treat this as a fault." The look-back closer.
@@ -905,9 +930,16 @@ system and never says "with this card drawn" or "this card." It says
 
 **It is a lens, not the energy.** The energy is the thing; Human Design is one
 lens on it. Every subsection opens from the energy as this lens sees it, never
-from the system. Gate, centre and channel are named once each because readers
+from the system. That is a move, not a string: card 3's "Through this lens,
+the energy of beginning is" and "Seen through this lens" are card 3's
+openings, and the first-five-words test (section 12) applies to them as to
+anything else. Card 2 repeated them and the measurement flagged both
+(2026-09-12); each card enters the lens in its own words. Gate, centre and channel are named once each because readers
 who know the system expect them and the labels show them, and each is
-explained in body terms the first time.
+explained in body terms the first time. The name arrives inside a sentence
+that does work ("Gate 2 is the part of you that knows which way your life
+faces"), never as a bare re-announcement of the heading ("Gate 2 is called
+the Direction of the Self," "The place is called the Identity Centre").
 
 **Embodied education, both at once.** Adrian wants readers to learn Human
 Design through the cards and to embody the energy better. So the mechanics
@@ -974,7 +1006,8 @@ never read for the cards.
 **Voice.** The ten rules, the punctuation check, the plain thing first. No
 "Gate N is the Gate of" opener. No "the misread is to call this" stem (40
 cards). No "the whole teaching" (27). No Alone-then-Joined turn closing the
-channel (52). No coaching close on every paragraph; the operating conditions
+channel (52); "Together they make" and "The two of them make" are the same
+move. No coaching close on every paragraph; the operating conditions
 appear once, in Where it lives.
 
 **The reference.** Card 3's Design section.
@@ -1021,9 +1054,12 @@ in words a stranger could repeat to a friend.
   ends on the fact. Under 330 words for the section.
 
 **The entry, and the paragraphs.** Body opens like every section, from the
-energy through this lens: "Seen through the body, the energy of beginning
-sits at the navel, the one place on you where a beginning was once made under
-a cut supply." The lens is named, so the placing is the lens's and not a
+energy through this lens. Card 3's entry: "Seen through the body, the energy
+of beginning sits at the navel, the one place on you where a beginning was
+once made under a cut supply." Those are card 3's words; the next card
+enters the same way in its own (the first-five-words test applies, and card
+2's copy of the opening was flagged, 2026-09-12). The lens is named, so the
+placing is the lens's and not a
 claim that the energy lives in the organ; that is the one place a location
 is given, and the prohibition below is on bare seat claims ("this code is
 seated in," "the body holds this energy at"). Then the thing itself. It is
@@ -1425,6 +1461,18 @@ is not a precedent. Every approval is dated; a measurement quoted here
 carries its date, and one older than the manuscript it describes is stale
 and re-run before it is cited. Recorded so far: card 3 Body, 2026-09-12,
 16.4 words a sentence and 4.4 commas per hundred, kept as read on the page.
+
+**What card 2 taught (2026-09-12, the first card written whole from this
+document by a fresh agent).** Eight faults, all now rules above: the essence
+folded a source idea into a phrase (section 2); the mandated lens openers
+became a formula across cards (sections 9, 10, 12); gate and centre names
+were re-announced bare (section 9); the Reading rendered a Judgement line
+twice and spent two moving lines' scenes (section 7); a doubled trigram got
+two inventions (section 7); the Siddhi closed on paired absences (section
+8); "Together they make" closed the channel (section 9); matched pairs
+passed every check (3a.14). Everything measurable passed first time: all
+six sections under the punctuation line, every length in range, no shared
+opening. The faults the scripts cannot see are the ones this list is for.
 
 **Re-measure after every pass.** `node todo/plans/writing-guideline/measure.mjs`
 from the repo root reports word counts, shared openings and cross-references.

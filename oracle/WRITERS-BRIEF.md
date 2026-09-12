@@ -212,10 +212,14 @@ sentences that say the same thing ("What this asks of you is simple," not
 - Upper and lower trigram, 70 to 110 words each: the force as itself, in the
   world, in a person, and its risk, in whatever order. Nothing about this
   card's situation. These are reference entries; the same trigram reads alike
-  on every card that carries it.
+  on every card that carries it. On a card that doubles a trigram, the upper
+  entry carries the reference text and the lower says what it is to have the
+  same force underneath as well; not two unrelated inventions.
 - Reading, 180 to 260 words, to you: the situation as a person lives it,
   what it asks, the body once, the posture. Never the Combination's picture
-  in its words. Never "lines," "trigram," "hexagram" as parts. The body, once,
+  in its words. Never "lines," "trigram," "hexagram" as parts. Never a
+  Judgement line rendered a second time, and never a moving line's scene;
+  the lines are read alone after a throw. The body, once,
   near the end, with its reason turned toward the reader: Heaven the head,
   Earth the belly, Thunder the foot, Wind the thigh, Water the ear, Fire the
   eye, Mountain the hand, Lake the mouth. Say "these two forces each have a
@@ -273,8 +277,9 @@ each, each a whole person in three sentences, one who goes still and one
 who lashes out, never a verdict, and their names from the reference row's
 frontmatter (`repressed:`, `reactive:`), never inferred; Gift 150 to 200;
 Siddhi 110 to 160, present tense, spacious. The Siddhi does not end by
-looking back at the Shadow and does not close on a paradox of effortless
-arrival. Retired: "the inward face of the Shadow," "the outward face of the
+looking back at the Shadow, does not close on a paradox of effortless
+arrival, and does not close on a pair of absences ("nothing to reach and
+nothing to lose"); its last sentence names something present. Retired: "the inward face of the Shadow," "the outward face of the
 Shadow," "Most people treat this as a fault."
 
 ## 6. Human Design
@@ -287,10 +292,14 @@ it and what such people have had to learn: where it sits, what it drives,
 what it needs to run, what starves it.
 
 It is a lens, not the energy. Every subsection opens from the energy as this
-lens sees it ("Through this lens, the energy of ..."; "Seen through this
-lens, ..."), never from the system, never "this card" or "with this card
-drawn." Gate, centre and channel are named once each and explained in body
-terms the first time. Both kinds of sentence are needed: the mechanic
+lens sees it, never from the system, never "this card" or "with this card
+drawn." Card 3's "Through this lens, the energy of beginning is" are card
+3's words and fail the first-five-words test on any other card; enter the
+lens in this card's own words. Gate, centre and channel are named once each
+and explained in body terms the first time, inside a sentence that does work
+("Gate 2 is the part of you that knows which way your life faces"), never
+as a bare re-announcement of the heading ("Gate 2 is called the Direction
+of the Self," "The place is called the Identity Centre"). Both kinds of sentence are needed: the mechanic
 ("Gate 3 sits in the Sacral") and the same fact as the reader lives it
 ("something in you is trying to begin, and this is the place it begins
 from"). Never claim the chart: never say the reader has this gate, lacks the
@@ -313,7 +322,7 @@ never tells the reader how to make decisions.
   you. Short: the partner's card is linked on the page and a your-chart line
   sits beneath. Where a gate sits in more than one channel, write the one
   the frontmatter names and say "one of the wirings." No Alone-then-Joined
-  turn ("On its own ... Joined they make").
+  turn ("On its own ... Joined they make," "Together they make").
 
 Five questions first, from the gate file, the channel file, the centre file
 and the principles: what this energy is through this lens; what it does in a
@@ -331,10 +340,11 @@ never names a codon, a ring, a chart, a centre or a system.
 
 Each subsection is two paragraphs, the one required shape on the card: the
 entry with the thing, then the mechanism the reader can check. Not one
-block, not four. The entry opens through the lens, as card 3 does ("Seen
-through the body, the energy of beginning sits at the navel ..."); the lens
-is named, so that placing is the lens's, and it is the only place a location
-is given. Never a bare seat claim ("this code is seated in").
+block, not four. The entry opens through the lens in this card's own words
+(card 3's "Seen through the body, the energy of beginning sits at the
+navel" is card 3's opening and fails the first-five-words test elsewhere);
+the lens is named, so that placing is the lens's, and it is the only place
+a location is given. Never a bare seat claim ("this code is seated in").
 
 - Physiology, 120 to 180 words: the organ or gland, what it is in plain
   words, what it is doing while this energy is felt, told as something
@@ -404,7 +414,11 @@ room more than it needs a plan." Found after the five sections are written,
 not decided in advance: if it is right, the situation, the body, the arc and
 the field click around it without any being bent. A name, a recognition, a
 way; never counsel dressed as description. It is shown once on the page and
-never repeated verbatim anywhere on the card.
+never repeated verbatim anywhere on the card. Each sentence lands with no
+card behind it: the challenge names the pull as the reader feels it, in
+ordinary words ("The pull is to push ahead and set the direction yourself"),
+never a source idea folded into a phrase ("coming second" for
+following-not-leading failed). No pronoun points outside its own sentence.
 
 ## 10. The reading (CODE)
 
@@ -474,6 +488,10 @@ list of nouns.
     Then two sentences. More than one adjective on a noun is a fail.
 13. The section's ending: does it resolve its own tension in one tidy
     sentence? If a real conversation would end on the open part, end there.
+14. Every pair of sentences or clauses built to the same shape ("Nothing in
+    it rises. Nothing in it strikes."; "real as a feeling and false as a
+    fact"): a matched pair is the tidiest thing a model writes. Break one
+    or cut it.
 
 Then the punctuation script per section, then from the repo root
 `node todo/plans/writing-guideline/measure.mjs`, and confirm this card's
