@@ -29,6 +29,8 @@ export interface SynthesisReference {
   hd_center: string;
   hd_circuit: string;
   hd_harmonic_gate: string;
+  /** The authored "What completes it" label, with its leading "the" dropped. */
+  hd_channel_label: string;
   body_physiology: string;
   body_amino_acid: string;
   programming_partner: number | null;
@@ -45,6 +47,9 @@ export interface SynthesisGeneKeys {
   shadow: string;
   repressive: string;
   reactive: string;
+  /** The named faces of the shadow ("Depressive", "Frenetic"), from the KEYS subheadings. */
+  repressive_name: string;
+  reactive_name: string;
   gift: string;
   siddhi: string;
   programming_partner: string;
@@ -168,6 +173,7 @@ function referenceFor(
     hd_center: design.centre,
     hd_circuit: design.channel_keywords.join(' · '),
     hd_harmonic_gate: harmonicGate(parsed, design.gate_number),
+    hd_channel_label: design.channel_label.replace(/^the\s+/i, ''),
     body_physiology: body.meta?.organ ?? '',
     body_amino_acid: body.meta?.amino_acid_name ?? '',
     programming_partner: relations.programming_partner.number || null,
@@ -241,6 +247,8 @@ function buildSynthesis(parsed: ParsedCard, cardNumber: number, context: string)
         shadow: keys.shadow,
         repressive: keys.repressive,
         reactive: keys.reactive,
+        repressive_name: keys.repressive_name,
+        reactive_name: keys.reactive_name,
         gift: keys.gift,
         siddhi: keys.siddhi,
         programming_partner: relations.programming_partner.teaching,

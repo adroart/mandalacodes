@@ -196,6 +196,14 @@ const UniversalLanguageCard: React.FC = () => {
         gkShadowParas: P(synthesis?.synthesis.gene_keys.shadow),
         gkGiftParas: P(synthesis?.synthesis.gene_keys.gift),
         gkSiddhiParas: P(synthesis?.synthesis.gene_keys.siddhi),
+        // The two faces of the shadow, inside the "go deeper" disclosure. The
+        // markup carried card 1's prose as literals, so all 64 cards read as
+        // Earth's Breath there. Names come from the KEYS subheadings
+        // (the "Repressive nature" subheading), prose from the same section.
+        gkRepressiveName: synthesis?.synthesis.gene_keys.repressive_name ? `Repressive · ${synthesis.synthesis.gene_keys.repressive_name}` : 'Repressive',
+        gkReactiveName: synthesis?.synthesis.gene_keys.reactive_name ? `Reactive · ${synthesis.synthesis.gene_keys.reactive_name}` : 'Reactive',
+        gkRepressiveParas: P(synthesis?.synthesis.gene_keys.repressive),
+        gkReactiveParas: P(synthesis?.synthesis.gene_keys.reactive),
 
         // Human Design
         hdGate: String(card.human_design.gate),
@@ -205,12 +213,25 @@ const UniversalLanguageCard: React.FC = () => {
         hdDriveParas: P(synthesis?.synthesis.human_design.gate),
         hdCentreParas: P(synthesis?.synthesis.human_design.channel),
         hdChannelParas: P(synthesis?.synthesis.human_design.circuit),
+        // The three tag chips under the panel: gate, centre, channel. The
+        // channel reads "Channel of Inspiration 1–8" when the manuscript names
+        // one gate pair; the integration cards (20, 34, 57) name a cluster
+        // instead, so they fall back to the authored heading label.
+        hdGateChip: `Gate ${card.human_design.gate}`,
+        hdCentreChip: synthesis?.reference?.hd_center ?? '',
+        hdChannelChip: synthesis?.reference?.hd_circuit && synthesis.reference.hd_harmonic_gate
+          ? `${synthesis.reference.hd_circuit} ${card.human_design.gate}–${synthesis.reference.hd_harmonic_gate}`
+          : (synthesis?.reference?.hd_channel_label ?? ''),
 
         // Body
         bodyOrganChip: synthesis?.reference?.body_physiology ? `Organ · ${synthesis.reference.body_physiology}` : 'The Body',
         bodyAminoChip: synthesis?.reference?.body_amino_acid ? `Amino acid · ${synthesis.reference.body_amino_acid}` : '',
         bodyPhysParas: P(synthesis?.synthesis.body.physiology),
         bodyAminoParas: P(synthesis?.synthesis.body.amino_acid),
+        // Ring tag + the two section headers, from the card's own frontmatter.
+        bodyRingChip: card.ring_name,
+        bodyPhysHeading: synthesis?.reference?.body_physiology ? `Physiology · ${synthesis.reference.body_physiology}` : 'Physiology',
+        bodyAminoHeading: synthesis?.reference?.body_amino_acid ? `Amino Acid · ${synthesis.reference.body_amino_acid}` : 'Amino Acid',
 
         // Relations intro
         relationsIntro: synthesis?.relations?.unity_line ?? '',
