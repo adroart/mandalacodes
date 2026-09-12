@@ -870,77 +870,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.015em", fontSize: "clamp(18px,2.2vw,22px)", lineHeight: "1.55", color: "var(--l-2)", textAlign: "center", maxWidth: "46ch", margin: "0 auto clamp(36px,5vw,52px)" }}>
         {vals.relationsIntro}
         </p>
-        {(vals.chartPreview) ? (
-          <>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", border: "1px solid var(--l-rule)", background: "var(--l-bg)", padding: "11px 14px", margin: "0 auto clamp(28px,4vw,40px)", maxWidth: "560px" }}>
-              <span aria-hidden="true" style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--accent)", flexShrink: "0" }}>
-              </span>
-              <p style={{ fontFamily: 'var(--font-reading)', fontSize: "12.5px", lineHeight: "1.45", color: "var(--l-2)", margin: "0" }}>
-                <span style={{ color: "var(--accent)" }}>
-                Your Pearl is partnered by UL 2,
-                </span>
-              the Receptive. Look there for what completes this code in you.
-              </p>
-            </div>
-          </>
-        ) : null}
-        <div className="ul-kin-wrap" style={{ margin: "0 auto clamp(22px,3.5vw,34px)", maxWidth: "540px" }}>
-          <div style={{ position: "relative", width: "100%", aspectRatio: "1/1", overflow: "visible" }}>
-            {vals.kinLines}
-            <button onClick={vals.selectKinSelf} aria-label={`${vals.cardName ?? ""}, returns to itself`} style={{ position: "absolute", left: "50%", top: "50%", width: "clamp(72px,18.5vw,94px)", height: "clamp(72px,18.5vw,94px)", transform: "translate(-50%,-50%)", zIndex: "3", display: "block", background: "none", border: "none", borderRadius: "50%", cursor: "pointer", padding: "0" }}>
-              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", borderRadius: "50%", background: "var(--l-bg)", border: "1.5px solid var(--accent)", boxShadow: "0 0 0 7px color-mix(in oklab,var(--accent) 7%,transparent),0 12px 32px -14px rgba(40,34,25,0.55)", fontFamily: 'var(--font-cjk)', fontSize: "clamp(32px,8.5vw,46px)", lineHeight: "1", color: "var(--accent)" }}>
-              {vals.heroGlyph}
-              </span>
-              <span style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", width: "160px", fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", textAlign: "center", color: "var(--l-2)" }}>
-              {vals.cardName}
-              </span>
-            </button>
-            {(vals.kinNodes ?? []).map((node, nodeIdx) => (
-              <React.Fragment key={nodeIdx}>
-                <button onClick={node.onSelect} aria-label={node.name} style={{ position: "absolute", left: `${node.x ?? ""}`, top: `${node.y ?? ""}`, width: `${node.dim ?? ""}`, height: `${node.dim ?? ""}`, transform: "translate(-50%,-50%)", zIndex: "3", display: "block", background: "none", border: "none", borderRadius: "50%", cursor: "pointer", padding: "0" }}>
-                  <span data-font-role={node.fontRole} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", borderRadius: "50%", background: "var(--l-bg)", border: `1px solid ${node.border ?? ""}`, fontSize: `${node.size ?? ""}`, lineHeight: "1", color: `${node.glyphColor ?? ""}`, boxShadow: "0 3px 12px -5px rgba(40,34,25,0.4)" }}>
-                  {node.glyph}
-                  </span>
-                  <span style={{ position: "absolute", top: "calc(100% + 5px)", left: "50%", transform: "translateX(-50%)", width: "96px", fontFamily: 'var(--font-ui)', fontSize: "8.5px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--l-3)", lineHeight: "1.3", textAlign: "center" }}>
-                  {node.label}
-                  </span>
-                </button>
-              </React.Fragment>
-            ))}
-          </div>
-          <div style={{ display: "flex", justifyContent: "center", gap: "22px", marginTop: "14px", flexWrap: "wrap" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: "7px", fontFamily: 'var(--font-ui)', fontSize: "9.5px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-3)" }}>
-              <span style={{ width: "18px", borderTop: "2px solid var(--accent)" }}>
-              </span>
-            Kin in the deck
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: "7px", fontFamily: 'var(--font-ui)', fontSize: "9.5px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--l-3)" }}>
-              <span style={{ width: "18px", borderTop: "1.5px dashed var(--l-3)" }}>
-              </span>
-            Correspondence
-            </span>
-          </div>
-        </div>
-        <div style={{ borderTop: "1px solid var(--l-rule)", borderBottom: "1px solid var(--l-rule)", padding: "24px 0" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px", margin: "0 0 7px", flexWrap: "wrap" }}>
-            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", margin: "0" }}>
-            {vals.kinKicker}
-            </p>
-            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--l-3)", border: "1px solid var(--l-rule)", padding: "3px 9px", borderRadius: "999px", whiteSpace: "nowrap" }}>
-            {vals.kinKind}
-            </span>
-          </div>
-          <p style={{ fontFamily: 'var(--font-reading)', fontSize: "clamp(23px,3.4vw,28px)", lineHeight: "1.12", color: "var(--l-1)", margin: "0 0 14px" }}>
-          {vals.kinName}
-          </p>
-          {(vals.kinBodyParas ?? []).map((para, paraIdx) => (
-            <React.Fragment key={paraIdx}>
-              <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", fontSize: "clamp(18px,2.4vw,21px)", lineHeight: "1.62", letterSpacing: "0.015em", color: "var(--l-2)", margin: "0 0 14px" }}>
-              {para}
-              </p>
-            </React.Fragment>
-          ))}
-        </div>
+        {vals.relationsSlot}
       </div>
     </section>
   </div>

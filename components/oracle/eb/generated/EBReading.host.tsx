@@ -1,9 +1,11 @@
 /* Host for the generated Earth's Breath markup. The controller below is the
    template's own `class Component` (controller.txt) ported VERBATIM — only two
    changes: it extends React.Component and renders <EBReadingMarkup vals={...}/>,
-   and the Card-1 constants (KEYWORDS / MOVING / RELDATA / OVERLAYS / KIN /
-   SHARE / CURRENT_CODE / image) are injected from `props.data` so all 64 cards
-   work. Animation + interaction logic is unchanged from the file. */
+   and the Card-1 constants (KEYWORDS / MOVING / OVERLAYS / SHARE /
+   CURRENT_CODE / image) are injected from `props.data` so all 64 cards work.
+   Animation + interaction logic is unchanged from the file, except that the
+   Relations panel’s orbit (KIN / RELDATA / relSel) is gone: the panel now
+   mounts `relationsSlot`, a React component with its own state. */
 import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { themeCanvasFont } from '../../../../shared/themeFonts';
@@ -18,8 +20,6 @@ export interface EBData {
   shareUrl: string;
   shareText: string;
   moving: { n: number; image: string; becomes: string; text: string }[];
-  reldata: Record<string, { kicker: string; kind: string; name: string; body: string[] }>;
-  kin: { key: string; x: number; y: number; kind: string; glyph: React.ReactNode; fontRole: 'display' | 'cjk'; size: string; dim: string; svgR: number; label: string }[];
   overlays: Record<string, { kicker: string; title: string; sub: string; gratitude: string; paras: string[] }>;
   // UL panel reading + invocation, I Ching reading/judgement/image/combination, GK, HD, Body — bound text
   text: Record<string, any>;
@@ -38,6 +38,7 @@ interface HostProps {
   headerChartSlot?: React.ReactNode; // the in-your-chart line in the header, under Acquire/Share
   headerActionsSlot?: React.ReactNode; // the two hero action boxes (art + chart), replacing the built-in Acquire/Share pair
   invocationSlot?: React.ReactNode; // hand-authored live invocation, mounted immediately after UL prose
+  relationsSlot?: React.ReactNode; // the Relations panel’s body: the stack of kin under the intro line
 }
 
 type ChoreographyPhase = 'entrance' | 'exiting' | 'hero' | 'reading';
@@ -83,15 +84,12 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     chartSubmitted: false,
     index: false,
     indexFocus: 1,
-    relSel: 'pair',
     readingProgress: 0,
   };
 
   // Card-specific constants now come from props.data (was hardcoded Card 1).
   get MOVING() { return this.props.data.moving; }
   get KEYWORDS() { return this.props.data.keywords; }
-  get KIN() { return this.props.data.kin; }
-  get RELDATA() { return this.props.data.reldata; }
   get OVERLAYS() { return this.props.data.overlays; }
   get CURRENT_CODE() { return this.props.data.code; }
   get SHARE_URL() { return this.props.data.shareUrl; }
@@ -142,34 +140,6 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     const se = document.scrollingElement || document.documentElement;
     se.scrollTop = top; window.scrollTo(0, top);
   };
-
-  selectKin = (k: string) => this.setState({ relSel: k });
-
-  buildKinLines() {
-    const sel = this.state.relSel;
-    const E = React.createElement;
-    const els: any[] = [];
-    const ACC = 'var(--accent)', RULE = 'var(--l-rule)', SOFT = 'var(--l-3)';
-    els.push(E('circle', { key: 'ro', cx: 50, cy: 50, r: 40, fill: 'none', stroke: RULE, strokeWidth: 0.3, opacity: 0.9 }));
-    els.push(E('circle', { key: 'ri', cx: 50, cy: 50, r: 26, fill: 'none', stroke: RULE, strokeWidth: 0.3, opacity: 0.65 }));
-    for (let i = 0; i < 24; i++) {
-      const a = (i / 24) * 2 * Math.PI;
-      const r2 = i % 2 === 0 ? 38.3 : 39.1;
-      els.push(E('line', { key: 't' + i, x1: 50 + 40 * Math.cos(a), y1: 50 + 40 * Math.sin(a), x2: 50 + r2 * Math.cos(a), y2: 50 + r2 * Math.sin(a), stroke: SOFT, strokeWidth: 0.22, opacity: 0.3 }));
-    }
-    this.KIN.forEach((n) => {
-      const on = sel === n.key;
-      const isKin = n.kind === 'kin';
-      els.push(E('line', { key: 'l-' + n.key, x1: 50, y1: 50, x2: n.x, y2: n.y, stroke: on || isKin ? ACC : SOFT, strokeWidth: on ? 0.85 : (isKin ? 0.5 : 0.32), strokeDasharray: isKin ? 'none' : '1.3 1.7', opacity: on ? 1 : (isKin ? 0.5 : 0.26), strokeLinecap: 'round' }));
-    });
-    const selNode = this.KIN.find((n) => n.key === sel);
-    if (selNode) {
-      els.push(E('circle', { key: 'sg', cx: selNode.x, cy: selNode.y, r: selNode.svgR + 3, fill: ACC, opacity: 0.12 }));
-      els.push(E('circle', { key: 'sr', cx: selNode.x, cy: selNode.y, r: selNode.svgR + 2, fill: 'none', stroke: ACC, strokeWidth: 0.5, opacity: 0.85 }));
-    }
-    if (sel === 'self') els.push(E('circle', { key: 'hls', cx: 50, cy: 50, r: 12.5, fill: 'none', stroke: ACC, strokeWidth: 0.5, strokeDasharray: '1.2 1.5', opacity: 0.85 }));
-    return E('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'xMidYMid meet', style: { position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, overflow: 'visible', pointerEvents: 'none' } }, els);
-  }
 
   componentDidMount() {
     const appRoot = document.getElementById('root');
@@ -744,7 +714,6 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     else castSummary = '';
 
     const ov = this.state.overlay ? this.OVERLAYS[this.state.overlay] : null;
-    const rel = this.RELDATA[this.state.relSel] || this.RELDATA.pair;
     const enc = encodeURIComponent;
     const movingShown = (cast && movingNums.length) ? this.MOVING.filter((m) => movingNums.includes(m.n)) : this.MOVING;
     const movingHeading = (cast && movingNums.length) ? 'Your Moving Lines' : 'The Six Moving Lines';
@@ -867,13 +836,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       toggleChartPreview: this.toggleChartPreview,
       submitChart: this.submitChart,
       registerChartInput: this.registerChartInput,
-      kinLines: this.buildKinLines(),
-      kinNodes: this.KIN.map((n) => ({ key: n.key, x: n.x + '%', y: n.y + '%', glyph: n.glyph, fontRole: n.fontRole, size: n.size, dim: n.dim, glyphColor: n.kind === 'kin' ? 'var(--accent)' : 'var(--l-1)', border: n.kind === 'kin' ? 'var(--accent)' : 'var(--l-rule)', label: n.label, name: (this.RELDATA[n.key] || ({} as any)).name || n.label, onSelect: () => this.selectKin(n.key) })),
-      selectKinSelf: () => this.selectKin('self'),
-      kinKicker: rel.kicker,
-      kinKind: rel.kind,
-      kinName: rel.name,
-      kinBodyParas: rel.body,
+      relationsSlot: this.props.relationsSlot ?? null,
       stop: (e: any) => { if (e && e.stopPropagation) e.stopPropagation(); },
       chartSlot: this.props.chartSlot ?? null,
       headerChartSlot: this.props.headerChartSlot ?? null,
