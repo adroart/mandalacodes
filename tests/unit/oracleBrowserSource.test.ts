@@ -173,7 +173,7 @@ describe('browser Oracle Markdown source contract', () => {
       expect(markup, literal).not.toContain(literal);
     }
     for (const binding of [
-      'vals.gkRepressiveName', 'vals.gkRepressiveParas', 'vals.gkReactiveName', 'vals.gkReactiveParas',
+      'vals.gkRepressiveName', 'vals.gkRepressiveFace', 'vals.gkRepressiveParas', 'vals.gkReactiveName', 'vals.gkReactiveFace', 'vals.gkReactiveParas',
       'vals.hdGateChip', 'vals.hdCentreChip', 'vals.hdChannelChip',
       'vals.bodyRingChip', 'vals.bodyPhysHeading', 'vals.bodyAminoHeading',
     ]) {
