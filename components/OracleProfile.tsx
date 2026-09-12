@@ -5,6 +5,7 @@ import ProfileForm from './oracle/ProfileForm';
 import ProfileGraph from './oracle/ProfileGraph';
 import TodayEnergyPanel from './oracle/TodayEnergyPanel';
 import YearEnergyPanel from './oracle/YearEnergyPanel';
+import YourChannels from './account/YourChannels';
 import { encodeSharedProfile } from '../lib/profile/share';
 import { useMetaTags } from '../hooks/useMetaTags';
 
@@ -148,6 +149,7 @@ const OracleProfile: React.FC = () => {
       ) : (
         <>
           <ProfileGraph profile={profile!.computed} />
+          <YourChannels profile={profile!.computed} />
         </>
       )}
 
