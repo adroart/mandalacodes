@@ -731,6 +731,13 @@ becomes when even the maker lets go. Someone coming up from the lower state
 sees their fear as the raw material of this exact gift. Fuel, growth,
 transition, never the door the reader came through.
 
+**Open on what is present.** The first sentence of any height says what the
+energy is, never what is absent. "Nobody in you is holding anything and
+nothing needs holding" describes two absences, and a reader cannot feel an
+absence. "Innocence: meeting whatever comes as if for the first time, with
+nothing to protect" is something they have felt. Negation belongs later, if
+at all.
+
 **The movement is the section.** The Shadow paragraph carries the seed and the
 first turn (what it is like to feel it instead of pushing it down). The Gift
 carries the standing-with and the giving. The Siddhi carries the letting go of
