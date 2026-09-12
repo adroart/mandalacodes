@@ -38,6 +38,7 @@ interface HostProps {
   headerChartSlot?: React.ReactNode; // the in-your-chart line in the header, under Acquire/Share
   headerActionsSlot?: React.ReactNode; // the two hero action boxes (art + chart), replacing the built-in Acquire/Share pair
   invocationSlot?: React.ReactNode; // hand-authored live invocation, mounted immediately after UL prose
+  hdChannelSlot?: React.ReactNode; // the is-this-channel-in-your-chart line, under What Completes It on the Human Design panel
 }
 
 type ChoreographyPhase = 'entrance' | 'exiting' | 'hero' | 'reading';
@@ -876,6 +877,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       kinBodyParas: rel.body,
       stop: (e: any) => { if (e && e.stopPropagation) e.stopPropagation(); },
       chartSlot: this.props.chartSlot ?? null,
+      hdChannelSlot: this.props.hdChannelSlot ?? null,
       headerChartSlot: this.props.headerChartSlot ?? null,
       headerActionsSlot: this.props.headerActionsSlot ?? null,
     };
