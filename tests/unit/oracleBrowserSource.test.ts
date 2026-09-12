@@ -149,7 +149,7 @@ describe('browser Oracle Markdown source contract', () => {
       synthesis: {
         gene_keys: { gift: expect.stringContaining('making something new out of what is changing') },
         human_design: { gate: expect.stringContaining('a shape that can last') },
-        body: { physiology: expect.stringContaining('where a beginning was once made the hard way') },
+        body: { physiology: expect.stringContaining('The navel is a scar and every person carries one') },
       },
     });
   });
@@ -175,7 +175,7 @@ describe('browser Oracle Markdown source contract', () => {
     for (const binding of [
       'vals.gkRepressiveName', 'vals.gkRepressiveParas', 'vals.gkReactiveName', 'vals.gkReactiveParas',
       'vals.hdGateChip', 'vals.hdCentreChip', 'vals.hdChannelChip',
-      'vals.bodyRingChip', 'vals.bodyPhysHeading', 'vals.bodyAminoHeading',
+      'vals.bodyPhysHeading', 'vals.bodyAminoHeading',
     ]) {
       expect(markup, binding).toContain(binding);
     }

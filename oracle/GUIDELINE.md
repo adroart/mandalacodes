@@ -894,30 +894,97 @@ appear once, in Where it lives.
 
 ## 10. Body
 
-The literal floor the other systems were describing. Spoken as a layer of the
-oracle, never as a biology explainer. The deepest inward point of the card,
-written after KEYS, having read it.
+Its question: what is my body doing while I feel this. Not where it presses
+(Human Design has it), not what it becomes (the Gene Keys have it). One
+literal thing in the body and one literal building block, and what each is
+doing.
 
-**Subsections and lengths.** Physiology, 150 to 250 words: the organ or gland
-this code is seated in and what it is doing while the energy is felt. Amino
-acid, 120 to 200: the one amino acid, one real fact about it, and what it
-means that the code runs this deep.
+**The frame.** Body is the floor. Every other section describes the energy
+as it is lived; this one hands the reader a fact they can check outside the
+card, in their own body, and it lands because it is true whether or not any
+of the systems are. It is spoken as a layer of the oracle, never as a biology
+explainer, and never as a healer. The deepest inward point of the card,
+written after KEYS and after DESIGN, having read both.
 
-**Boundary.** Tissue and mechanism, never the centre. BODY names the organ;
-DESIGN names the region.
+**Assume nobody knows any of it.** The organ and the amino acid are named in
+the two subsection headings and as labels. The prose never explains where
+the assignments came from, never names a codon, a ring, a chart, a centre or
+a system, and never says "this code is seated in." It says what the organ is
+and what it is doing, and what the amino acid is and what it does, to you,
+in words a stranger could repeat to a friend.
 
-**The shape is optional now.** The three beats (organ, "the shadow has its
-bodily floor here," the climb out) and the two beats (fact, "there is a
-teaching in that") are retired as required shapes; a section that runs
-organ-then-floor-then-climb on all 64 cards is a formula with fresh words.
+**The two subsections, each giving one thing.**
 
-**The ring rule.** Ring siblings share the amino acid (glycine on 6, 40, 47,
-64), so the amino paragraph is written per card from the card's own scene, and
-the shared fact is stated in one clause. Run the one-minute test against the
-sibling before anything else.
+- Physiology, 120 to 180 words: the organ or gland, what it is in plain
+  words, and what it is doing while this energy is felt. Open on the thing
+  itself, never on the region ("put a hand below the navel" is Design's
+  gesture now). One mechanism, told as something happening in you right
+  now, that a reader could notice inside a minute. When the organ is a
+  Human Design centre by another name (the sacral plexus, the solar plexus,
+  the throat and thyroid) the region is already spent in Design, and this
+  paragraph writes only the tissue and what it does.
+- Amino acid, 100 to 150 words: the one amino acid, what it is (made by the
+  body or eaten), what it builds or signals, where it comes from, and the one
+  thing true of it alone. Facts a reader could take into a kitchen, stated as
+  facts and never as advice. Then, when the card's scene and the fact rhyme
+  on their own, one sentence that lets them; when they do not, the paragraph
+  ends on the fact. Under 330 words for the section.
 
-**Retired here.** "Bodily floor" (32 cards). "There is a teaching in that" (39).
-"The code runs all the way down to this" (45). "Deeper than the organ."
+**Read with five questions, for the organ and again for the amino acid.**
+Before a sentence is written, answer from the two reference entries and the
+card's KEYS and DESIGN: what it is; what it does; what it is doing while
+this energy is felt (for the amino acid: what it signals); what a reader
+could notice or use; what it is not, which for the organ is the region and
+for the amino acid is the ring's meaning. The section is done only when it
+answers all five for both without the references open.
+
+**The ring rule.** Ring siblings share the amino acid (leucine on 3, 20, 23,
+24, 27, 42). The shared facts (made or eaten, what it signals) are stated in
+one clause at most, and the paragraph is written from this card's scene; run
+the one-minute test against the two nearest siblings before anything else.
+Today three leucine cards carry the same two facts as their lead, which is
+the fault this rule exists for.
+
+**Voice.** The ten rules and the two-minute check. To you throughout ("put a
+hand to your throat and swallow" on card 33 is the model register). One
+picture per paragraph, and the picture is the mechanism itself, never a
+second picture of the scene. The measured checks apply here as everywhere:
+under 15 words a sentence, under three commas per hundred words, no sentence
+with three commas, no list of nouns. Card 3's Body measures 21 words a
+sentence with three list sentences today.
+
+**What it must not do.** Describe the region a second time; name the centre;
+say the energy is in the organ or that the organ is its seat; claim the
+amino acid is the card's chemistry, or that contemplating the card affects
+it, or that eating more of it serves the card; mention supplements, illness
+or healing; call any of it old ("the old maps," "the old yogas," "the old
+teaching" are retired here with the rest); explain or defend the
+hexagram-to-codon correspondence; invent anatomy (every mechanism traces to
+the organ entry or is cut); and end by stepping back to say what it meant.
+
+**Retired here.** "Bodily floor" (32 cards). "There is a teaching in that"
+(39). "The code runs all the way down to this" (45). "Deeper than the organ."
+"The old teaching puts," "the old maps tie," "the old yogas watched." "The
+shadow has a bodily floor here too." "The climb out is also bodily." "The
+letter this code is written in" and "the letter under this code" as the
+amino acid's introduction on every card. "One real fact about it" as a
+required beat: a paragraph is not one fact plus a moral.
+
+**The shape is optional.** The three beats (organ, the shadow's floor, the
+climb out) and the two beats (fact, teaching) are retired as required
+shapes. A section that runs organ-then-floor-then-climb on all 64 cards is a
+formula with fresh words.
+
+**The reference.** Two files in the vault, made once: the amino acid entries
+(twenty-two, one per ring) and the organ entries (about thirty-five), each
+with a `sources:` list, drawn from clinical and anatomical references and
+not from any of the three systems. The packet per card is the two frontmatter
+words, the two entries, and the card's finished KEYS and DESIGN.
+`todo/plans/writing-guideline/body-guidance.md` holds the reasoning.
+
+**Names.** The organ and the amino acid are the chapter's two words, kept as
+labels from the card's frontmatter (`body:`), never inferred. The codon ring
+is a family and lives in RELATIONS.
 
 ---
 
