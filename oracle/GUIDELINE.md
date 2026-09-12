@@ -19,6 +19,40 @@ this that is healthy." Everything below serves those two sentences.
 
 ---
 
+## 0. The ten rules, before anything else
+
+Everything below elaborates these. A writer who holds these ten and reads
+nothing else will produce something close. Learned on card 3 with Adrian
+reading each pass on the page, 2026-09-12.
+
+1. Written for someone who knows nothing. No system word in prose, no
+   explaining the system. The page explains each system once, behind a tap.
+2. Never say where it came from. Give the picture, the counsel, the fact as
+   your own to give. No "the tradition," "the old text," "the translators."
+3. One sentence, one concept, and every sentence complete with its connecting
+   words in. Translate the classical compression; never chop it.
+4. Describe the state, to you. No "anyone who has," no examples that sort
+   readers, no "this hour" filler. Let the reader recognise themselves.
+5. The energy, not the problem. Name the pull the cycle brings and answer it
+   in the same breath. Never narrate the reader failing.
+6. Symbols land on a person. A trigram, a character, a line is given as
+   itself in a few words and then as the reader knows it. Never the diagram
+   alone.
+7. Every unit says what no other unit says. Six panels, six questions, one
+   each. A sentence that answers an earlier panel's question is cut.
+8. Clarity over completeness. One clear picture, never the scene's inventory.
+   If a sentence is being true to every tradition at once, cut to the one
+   thing.
+9. Nothing pre-said. The reading names the energy; the sections unfold it.
+   The reading owes them silence, not a preview.
+10. Read it on the page, not in the file. What looked right in Markdown read
+    as six documents on the screen. The page is the test.
+
+The worked reference is card 3's I Ching section (`oracle/cards/03.md`), the
+only section so far that has been through this loop to the end.
+
+---
+
 ## 1. What a card is
 
 A card is one energy, one of sixty-four, spoken in six voices. The voices are
@@ -161,6 +195,12 @@ character draws," on the nine cards where that is true (section 7).
 compressed; the card is not. "Ready, and staying" is a note. "Be ready to go,
 and stay where you are" is a sentence. Translate the compression into
 complete thoughts a stranger can follow, without changing what is said.
+
+**No examples, no time filler.** "Anyone who has started a piece of work or a
+family knows this hour" sorts readers into those who have and have not, picks
+one writer's example, and says nothing with "this hour." Describe the state
+itself, to you, and let the reader recognise it. Retired: "anyone who has,"
+"this hour," "this stretch," "this season" as filler, "we all know."
 
 **Every unit says what no other unit says.** The reading names the energy.
 The Combination gives the picture. The trigrams give the forces as
@@ -581,11 +621,15 @@ lines, each "Line 2 · in motion" then "Turned over, it leads to Hexagram 60 ·
 Limitation." Retired: "cast" as a noun, "moving toward," "unstable," "flipped."
 
 **Moving lines.** Each is read alone after a throw, beside the essence, so each
-is a self-contained micro-reading: the scene of that line, what it asks, and
-the counsel in its last sentence, with the hexagram it becomes named plainly.
-The same rules as the Reading: complete sentences, no system words, no source
-announced. The lines never re-teach the whole hexagram. Inside this section
-the thing is a hexagram, never a code.
+is a self-contained micro-reading, 50 to 70 words: the scene of that line as a
+person lives it, what it asks, and the counsel in its last sentence, with the
+hexagram it becomes named plainly. The `_image:_` marker is the scene in one
+plain clause, shown on its own after a throw, so it must make sense alone
+("a post set in the ground, the marker that will not be moved"). The same
+rules as the Reading: complete sentences, no system words, no source announced
+("the old commentary jokes" is retired). The lines never re-teach the whole
+hexagram. Inside this section the thing is a hexagram, never a code. Card 3's
+six lines are the reference.
 
 **The hand-off.** The last paragraph of the Reading may hand to the Gene Key by
 naming the shadow's word inside the situation, never by naming the system.
