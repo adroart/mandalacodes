@@ -107,34 +107,33 @@ itself, and nothing in the prose is called an image. The older guides said
 
 ---
 
-## 2. The centre
+## 2. The essence
 
-Every card has a centre: the energy itself, named in one plain sentence such
-that all the traditions click around it without forcing. The I Ching's
-situation, the Gene Keys' arc, Human Design's pressure, the body's mechanism,
-the kin's field all turn out to be describing the same thing, and the sentence
-says what that thing is.
+Every card has an essence: the whole energy in three short sentences. The
+first names the energy. The second names its challenge. The third names its
+way. Each sentence is short and whole; three sentences that read as one run-on
+have failed. Card 3's:
 
-The centre is found, not decided in advance. This is the change from the older
-plan, which wanted the sentence ratified before any prose was written. Adrian's
-order (2026-09-12): assimilate first, distil after. So the five teaching
-sections are written from the sources first, each faithful to its own
-tradition; the centre is distilled from what those five sections turned out to
-say; and the reading is written last, from the centre. Until the sections
-exist, nobody knows what the centre is, and a sentence written earlier would be
-a guess dressed as a decision.
+> A beginning is real long before it is settled. You are full of what is
+> coming, with nothing to show. It needs room more than it needs a plan.
 
-The centre is one sentence. It is the same sentence wherever the card needs it;
-there are not two (the old master guide's card-wide truth and the old rewrite
-plan's reading-only truth were always meant to be one). It is recorded on the
-card's sheet in the frontmatter (`meta.centre`) and Adrian ratifies it there in
-his own pass. Its test is this: if the sentence is right, the situation, the
-body-feel, the arc and the field snap into place around it without any of them
-having to be bent. If one has to be bent, the sentence is wrong.
+The essence is found, not decided in advance. Adrian's order (2026-09-12):
+assimilate first, distil after. The five teaching sections are written from
+the sources first, each faithful to its own tradition; the essence is
+distilled from what those sections turned out to say; the reading is written
+last, from the essence; the keynotes last of all, from the finished card.
+Until the sections exist, nobody knows what the essence is.
 
-Alongside the centre the sheet records the scene (which of the I Ching's
-pictures this card carries), the mechanism the card will hold together by (see
-section 4), and where the centre recurs (section 4 again).
+There is one essence per card. It is recorded on the card's sheet
+(`meta.centre`) and Adrian ratifies it there. Its test: if it is right, the
+situation, the body, the arc and the field click around it without any of
+them being bent. The tone is the card's tone: a name, a recognition, a way,
+never counsel dressed as description ("the new thing in you grows by small
+rough moves" was counsel and was replaced).
+
+Alongside the essence the sheet records the scene (which of the I Ching's
+pictures this card carries), the mechanism the card holds together by (see
+section 4), and where the essence recurs (section 4 again).
 
 ---
 
@@ -388,7 +387,7 @@ has one; a section teaching a fact another section teaches (the magnetite on
 card 02, the thyroid on card 33); any sentence in CODE that also stands in
 another section of the same card; the same sentence on two cards.
 
-**Where the centre lives and where it recurs.** The centre sentence lives in
+**Where the centre lives and where it recurs.** The essence lives in
 CODE's third paragraph, as the turn, in words a stranger could repeat. Not in
 the first paragraph, because the first paragraph is the essence, the energy
 lit, and the counsel is what the essence leaves you wanting. It may recur
@@ -529,7 +528,7 @@ The second names the pull, the challenge this cycle brings, as one plain
 picture from ordinary life, and answers it in the same breath. The stance
 stays balanced throughout.
 
-The third is the guidance, ending up. The centre sentence lives here. End
+The third is the guidance, ending up. The essence lives here. End
 plain and a beat early, but end up.
 
 **Provenance.** Not one sentence and not one piece of content comes from the
@@ -1149,7 +1148,7 @@ and correspondence tables are facts and may be stated directly. Rudd's coined
 phrases are his; the Shadow, Gift and Siddhi names are kept lineage.
 
 **The sheet.** Every card records, in frontmatter under `meta:`, one entry per
-section naming the vault files its sentences trace to, the centre sentence, the
+section naming the vault files its sentences trace to, the essence, the
 scene, the mechanism, and any place it wrote from established lore rather than
 a file. One convention, replacing the two in use (the older `sourcing_note`
 field and the newer trailing HTML comment). Fifty-two cards carry no trail
