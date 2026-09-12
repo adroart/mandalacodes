@@ -744,6 +744,28 @@ carries the standing-with and the giving. The Siddhi carries the letting go of
 ownership and the force moving through. The reader should feel one thing
 rising through three heights, not three descriptions.
 
+**Read with five questions, per height.** Before a sentence is written, answer
+from the chapter and the essay, for the Shadow, the Gift and the Siddhi: what
+it is; what it does; what it asks you to do; what it feels like; what it is
+not. The section is done only when it answers all five for each height without
+the source open. The first card 3 draft answered the first three and skipped
+the last two, and every serious loss sat in those two: the Gift had none of the
+delight the source insists on, and the Siddhi opened on the newborn's
+innocence, the one kind the source says it is not.
+
+**Find the thread word and carry it to every height.** Read the last paragraph
+of the Shadow and the last of the Siddhi in both texts and see what they share.
+On key 3 it is love: clinging at the bottom, the centre at the top. That word
+appears once at each height in its plainest form. "There was an order under
+the fear the whole time, and it was holding you" becomes "What was under the
+fear was love, and it had been holding you the whole time."
+
+**Earn the label.** Cover the label and read the paragraph. If a stranger would
+guess a neighbour (Fear, Clinging) rather than the name (Chaos), the paragraph
+has described the neighbour. Rudd's answer for Chaos is that the disorder you
+dread is the shaking of your own grip, and a threat shows it rather than causes
+it; the section has to make that join.
+
 **Subsections and lengths.** Shadow, 150 to 200 words. Repressive nature and
 Reactive nature, 35 to 55 each. Gift, 150 to 200. Siddhi, 110 to 160, present
 tense, spacious. Shorter than the pilot's 600; the older cards packed the
