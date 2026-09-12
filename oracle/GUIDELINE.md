@@ -551,20 +551,39 @@ piece of the scene, if any, it holds.
 
 ---
 
-## 6. Card name and keywords
+## 6. Card name and keynotes
 
 The card name is two to four words, a third thing, a concrete picture, no
 system's vocabulary. The names exist for all 64 and are not revisited here.
 
-Keywords are five to seven, one to three words each, written last because they
-distil the finished card. No quota per tradition; one test only, does it hold
-the energy. The stranger test stands: a stranger with no framework must get it
-cold in under a second. Four automatic fails: a word not used in ordinary
-speech; a keyword that only makes sense after reading the card; a keyword that
-names the shadow rather than the energy; an instruction rather than a naming.
+**Keynotes are the card in seven words.** They are the first thing a reader
+sees after the name, on the page and on the card face, before any prose. A
+reader who reads nothing else has to understand what this energy is about
+from them alone. Adrian, 2026-09-12: "they need to be understandable, they
+need to be something that I can really understand what this is about,
+without going into it."
 
-The keywords are shown as labels before any prose, so no section opens by
-saying one of them.
+**Written last, from the finished card.** Five to seven, one to three words
+each. Each keynote points at something the finished card actually says, in
+the card's own words where it has them ("Root Before Shoot," "Small Rough
+Moves," "The Pull to Hurry" on card 3). A keynote that could sit on twenty
+cards ("Right Timing," "Fresh Ideas") is cut. A word lifted from one height
+without its context ("Play" from the Siddhi) is cut.
+
+**Both faces.** The set covers the energy in balance and its challenge, in
+the reading's proportion: most of the seven name the energy, one or two name
+the pull ("Not Yet Settled," "The Pull to Hurry"). None names the shadow as
+a verdict.
+
+**The stranger test stands.** A stranger with no framework must get each one
+cold in under a second. Four automatic fails: a word not used in ordinary
+speech; a keynote that only makes sense after reading the card; a keynote
+that names the shadow rather than the energy; an instruction rather than a
+naming. Read the seven aloud in a row; they should sound like one energy
+described from seven sides, not a list of nouns.
+
+The keynotes are shown as labels before any prose, so no section opens by
+saying one of them. The reference: card 3's seven.
 
 ---
 
