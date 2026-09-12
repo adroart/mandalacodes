@@ -695,6 +695,9 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px", marginTop: "10px" }}>
             Human Design · about
             </span>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", textTransform: "none", color: "var(--d-2)", marginTop: "10px" }}>
+            where this presses in you, what it drives
+            </span>
           </button>
         </header>
         {(vals.chartPreview) ? (

@@ -800,32 +800,95 @@ never inferred; the rows are full for all 64 now.
 
 ## 9. Human Design
 
-The code as a pressure in the body: a gate, the centre it sits in, the channel
-it forms. This chapter is mostly new; the older guides denied the section
-existed.
+Its question: where does this energy press in me, and what does it drive me to
+do. The I Ching reads the situation and the Gene Keys read what the energy
+becomes; neither says where in you it is happening or what it makes your
+hands do. Human Design is the one tradition that put the sixty-four on a body,
+and that is this section's job. Worked through on card 3 with Adrian,
+2026-09-12; the plan and the audit are in
+`todo/plans/writing-guideline/human-design-guidance.md`.
 
-**Subsections and lengths.** The drive, 120 to 200 words: what this code is as
-a felt pressure, from experience, never opening "Gate N is the Gate of."
-Where it lives, 120 to 200: the centre as a felt region and function, and why
-the placement is the teaching. What completes it, 120 to 200: the channel it
-forms with its partner gate, as internal relating. The partner gate is named
-here; the partner card as a card belongs to RELATIONS.
+**The frame: borrowed wiring.** A gate is about always and a reading is about
+now. The bridge is the system's own claim that everyone meets every gate's
+theme through the people near them and the turning of the year. So the
+section describes this energy from inside a body that carries it, and what
+the people built for it have had to learn: where it sits, what it drives, what
+it needs to run, what starves it. The page carries the frame line once under
+the panel's name ("where this presses in you, what it drives") and the system
+once in the "Human Design · about" popup. The prose never explains the
+system and never says "with this card drawn" or "this card." It says
+"through this lens" or names the energy.
 
-**The bridge rule.** Gate, centre and channel names live in the headings (the
-parser reads the name off the heading's tail) and as labels. In the prose,
-open from the body and the situation; the mechanics stay quiet.
+**It is a lens, not the energy.** The energy is the thing; Human Design is one
+lens on it. Every subsection opens from the energy as this lens sees it, never
+from the system. Gate, centre and channel are named once each because readers
+who know the system expect them and the labels show them, and each is
+explained in body terms the first time.
 
-**What this section owns.** The misnaming beat: what a person carrying this
-drive gets called. Without the retired stem.
+**Embodied education, both at once.** Adrian wants readers to learn Human
+Design through the cards and to embody the energy better. So the mechanics
+are real (the centre named, defined and open told apart, the pulse, the
+response) and every mechanic is felt in the body as it is taught and related
+to the reader and to this energy. "Gate 3 sits in the Sacral" is a fact;
+"something in you is trying to begin, and this is the place it begins from"
+is the same fact as the reader lives it. Both sentences are needed.
 
-**What it does not name.** No organ, gland or chemical in the centre paragraph;
-that is BODY's. The centre paragraph answers the question the scene raised
-(where is this felt, what does it press you to do) rather than describing the
-centre in general.
+**Never claim the chart.** The prose never says the reader has this gate,
+lacks the partner gate, or has this centre defined or open. It says what each
+case is like ("if your Sacral is defined, as it is in seven people in ten; if
+it is open"). The page shows a signed-in reader which case is theirs and
+links the partner card; a signed-out reader is invited to sign in. Types,
+strategy, authority and profile are the reader's chart and are never taught.
 
-**Retired here.** "The misread is to call this" (40 cards). "The whole teaching"
-(27). The Alone-then-Joined turn closing the channel paragraph (52): "alone,
-this code is X; joined, it becomes Y."
+**The three subsections, each entering deeper.**
+
+- The drive, 150 to 200 words: enter the energy through this lens. Open on
+  what the energy is as Human Design sees it and what it is for (the gift
+  first: gate 3 is the drive that gives new things a form that can last),
+  then what it does in you, then the name it gets called from outside and
+  what is really happening. Ends on recognition, never on instruction. Not a
+  paragraph about the misnaming; the first draft spent its length there and
+  read as all negative.
+- Where it lives, 180 to 240 words: enter the body. Where the energy runs
+  (the centre named and located), what that place does, what it is like when
+  it is defined and when it is open, what this energy needs to run there and
+  what starves it, and how it moves (steady, pulsed). The operating conditions
+  are spent here once. No organs or glands; that is Body's.
+- What completes it, 70 to 100 words: enter the circuit. What this pressure
+  needs from outside itself, the partner gate named once with what it is
+  called, what the two make together, and that the other half may sit in you
+  or in someone near you. Short, because the partner's own material lives on
+  the partner's card, which the page links, and the your-chart line beneath
+  says whether it is defined in you.
+
+**The five questions, adapted to a gate.** Before writing, answer from the
+gate article, the gate essay, the channel article and the centre reference:
+what this energy is through this lens; what it does in a person; what it
+presses you to do; what it feels like from inside; what it is not. Done only
+when the section answers all five without the sources open.
+
+**Sources and the packet.** The seven Human Design books in the vault are
+460,000 words and organised by chapter, not by gate. The one-time preparation
+is a reference for each of the nine centres (about 450 words, in the card's
+voice, no organs) and one for the system's principles, distilled from Winn's
+centre chapter, Parker's centre chapter and one function line each from the
+Modern Guide and the 2021 guide, read by Adrian, then reused. A script with
+no model assembles the per-gate packet: gate article, gate essay, channel
+article, the partner's essay, the Modern Guide's per-gate and per-channel
+entries, the centre chapter's lines on that gate, the centre reference, the
+principles reference, about 4,900 words. The sacral and principles references
+are drafted at `oracle/human-design/centers/_reference-sacral.md` and
+`oracle/human-design/_reference-principles.md` in the vault. Understanding
+the Profiles, Understanding Your Clients and most of You and the Shadow are
+never read for the cards.
+
+**Voice.** The ten rules, the punctuation check, the plain thing first. No
+"Gate N is the Gate of" opener. No "the misread is to call this" stem (40
+cards). No "the whole teaching" (27). No Alone-then-Joined turn closing the
+channel (52). No coaching close on every paragraph; the operating conditions
+appear once, in Where it lives.
+
+**The reference.** Card 3's Design section.
 
 ---
 

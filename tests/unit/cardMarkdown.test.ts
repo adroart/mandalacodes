@@ -56,7 +56,7 @@ describe('Oracle card Markdown parser', () => {
 
     const design = mapDesign(card);
     expect(design?.gate_number).toBe(3);
-    expect(design?.gate).toContain('yours to give a shape to');
+    expect(design?.gate).toContain('a shape that can last');
 
     const body = mapBody(card);
     expect(body?.meta).toEqual({

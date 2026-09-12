@@ -485,9 +485,9 @@ const OVERLAYS: EBData['overlays'] = {
     'The Siddhi is the flower. You stop holding it as yours at all. It is a force moving through you, and you are what it moves through.',
     'The point of learning the Shadow is to recognise it in yourself: to feel it instead of pushing it down, to hold it, to let the stories around it go, and to move up.' ] },
   humandesign: { kicker: 'A map of energy', title: 'Human Design', sub: 'received by Ra Uru Hu, Ibiza, January 1987', gratitude: 'Ra Uru Hu', paras: [
-    'Human Design enters the world through Ra Uru Hu, who in January of 1987 reports an eight-day-and-night encounter with a voice he calls the Voice.',
-    'It is a synthesis of the I Ching, Western astrology, the Hindu chakra system, the Kabbalistic Tree of Life, and the science of the neutrino, woven into a single chart called the bodygraph.',
-    'The bodygraph names which centres in a person are defined and which are open, and locates sixty-four gates against the calendar of the sun and the moment of birth.' ] },
+    'Human Design says you were born with a body wired a particular way. Nine centres, each a place where a kind of energy lives. Sixty-four gates, each a pressure or a theme that energy moves through. Thirty-six channels, each two gates joined into one working circuit.',
+    'Some of it is fixed in you from birth. A centre or a gate that is defined in your chart runs all the time, and it is the most reliable thing you have. One that is open takes on the energy of whoever is near.',
+    'Everyone meets every gate\'s theme, through the people around them and the turning of the year. So a card can tell you where an energy presses and what it drives, and only your chart can tell you whether it is yours all the time.' ] },
 };
 
 export default UniversalLanguageCard;

@@ -148,7 +148,7 @@ describe('browser Oracle Markdown source contract', () => {
       essence: expect.stringContaining('Something new is already alive in you and it does not have a shape yet'),
       synthesis: {
         gene_keys: { gift: expect.stringContaining('making something new out of what is changing') },
-        human_design: { gate: expect.stringContaining('yours to give a shape to') },
+        human_design: { gate: expect.stringContaining('a shape that can last') },
         body: { physiology: expect.stringContaining('where a beginning was once made the hard way') },
       },
     });
