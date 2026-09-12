@@ -15,6 +15,9 @@ export interface OracleIChing {
   essence: string;
   upper_trigram: OracleTrigram;
   lower_trigram: OracleTrigram;
+  /** Optional per-card "how THIS hexagram's six lines read" paragraphs.
+   *  Undefined for the cards without a `### The symbol` subsection yet. */
+  symbol?: string;
 }
 
 export interface OracleGeneKeys {
@@ -102,6 +105,7 @@ function toOracleCard(card: CanonicalCard): OracleCard {
         name: lower.name ?? '',
         nature: lower.nature ?? '',
       },
+      symbol: card.iching.symbol,
     },
     element: presentation.element,
     traditional_colors: presentation.traditional_colors,

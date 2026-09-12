@@ -43,7 +43,7 @@ describe('Oracle card Markdown parser', () => {
 
     const iching = mapIching(card);
     expect(iching?.hexagram_name).toBe('Difficulty at the Beginning');
-    expect(iching?.reading).toContain('it will not yet hold its shape');
+    expect(iching?.reading).toContain('does not yet have ground to stand on');
     expect(iching?.lines).toHaveLength(6);
     expect(iching?.lines[0]?.becomes).toEqual({
       hexagram: 8,

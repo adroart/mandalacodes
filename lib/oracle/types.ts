@@ -87,6 +87,10 @@ export interface CanonicalCard {
     upper_trigram?: { symbol?: string; name?: string; nature?: string };
     lower_trigram?: { symbol?: string; name?: string; nature?: string };
     lines: MovingLine[];
+    /** Optional per-card "how THIS hexagram's six lines read" paragraphs, from
+     *  an optional `### The symbol` subsection under `## ICHING`. Most cards
+     *  do not have one yet. */
+    symbol?: string;
   };
 
   gene_keys: {

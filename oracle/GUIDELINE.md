@@ -144,6 +144,32 @@ card read, in every section. It is allowed once per card, at the one hinge
 where the correction is the point. Everywhere else say the true thing without
 first saying the false one.
 
+**Written for someone who knows nothing.** Every sentence on the card makes
+sense to a reader who has never heard of the I Ching, the Gene Keys or Human
+Design and has read no other section. No system word in prose: no "hexagram"
+except in the I Ching section's own heading terms, no "lines," "trigram,"
+"gate," "centre," "shadow" as a term of art, no "the six lines show." If a
+sentence needs the system to be understood, it is rewritten so it does not.
+The page explains each system once, behind its own tap; the prose never does.
+
+**Never say where it came from.** No "the tradition says," "the old text,"
+"the translators," "the teaching gives." Give the picture, the counsel, the
+fact, as if it were yours to give. The one exception is "the traditional
+character draws," on the nine cards where that is true (section 7).
+
+**Complete sentences, connecting words in.** The classical sources are
+compressed; the card is not. "Ready, and staying" is a note. "Be ready to go,
+and stay where you are" is a sentence. Translate the compression into
+complete thoughts a stranger can follow, without changing what is said.
+
+**Every unit says what no other unit says.** The reading names the energy.
+The Combination gives the picture. The trigrams give the forces as
+themselves. The Reading gives the counsel. Gene Keys gives the arc. Human
+Design gives the pressure. Body gives the tissue. Relations gives the kin. A
+sentence that says what an earlier unit already said, in different clothes,
+is cut from the later one. Three texts a screen apart describing the same
+situation is the fault this rule exists for.
+
 **Retired closers.** "The maker gets made." "It takes most of a life." "What
 this asks is small." "So the work is to." "Both are true at once, which is how
 you know." "There is no technique for arriving." "The code runs all the way
@@ -232,7 +258,24 @@ body, the dark) are not banned, but a card made only of them could be any card.
 
 This is the chapter the older documents did not have. They governed connection
 only by subtraction (do not repeat what belongs elsewhere). This chapter says
-what the sections owe each other.
+what the sections owe each other, and it starts with the rule that makes depth
+possible without repetition.
+
+**Six questions, one each.** Each panel answers one question only it can
+answer, and never another panel's. The reader goes deeper because each panel is
+a new question, not a new wording.
+
+- The reading: what is this energy, and how do I stand in it?
+- I Ching: what is the situation, and what does it counsel?
+- Gene Keys: what does this energy become, at its lowest and its highest?
+- Human Design: where does it press in me, and what does it drive me to do?
+- Body: what is my body doing while I feel this?
+- Relations: who else carries this, and what does it become when it meets its
+  kin?
+
+The test: a sentence that answers a question belonging to an earlier panel is
+cut. Each panel has its strength and reveals something a little deeper; none
+retells.
 
 **The scene governs; ICHING shows it.** The I Ching's scene is the one
 picture all the traditions already share: Rudd named his keys from the
@@ -457,46 +500,107 @@ saying one of them.
 
 ## 7. I Ching
 
-The section that carries the scene whole. It is the only section on all six
-cards read that was written fresh every time, because it is the only one with
-six translations and a scene behind it. Formula grows where the source is one
-line; here the source is deep, and the writing shows it.
+The section that carries the scene whole. The oldest voice on the card, and
+the one with the most behind it: six translations, the philology, the lines.
+That depth is the point, and it is also the trap: this section must never read
+as a history book. Worked through on card 3, 2026-09-12, with Adrian reading
+each pass on the page; the rules below are what survived.
 
-**Subsections and lengths** (typical, not gates): Combination, 60 to 90 words,
-what the two trigrams make together and the scene it produces. Upper trigram
-and Lower trigram, 30 to 50 each; these are reference entries and are meant to
-repeat across the deck, one text per trigram in each position (a reference
-that varies is broken). Reading, 200 to 300, the situation and how the scene
-unlocks it; the section's centre of gravity, to you. Judgement, two to five
-short lines; Image, two to four; both rendered fresh from the six translations
-by the classical-text method below, in original wording, and the one place the
-tradition speaks rather than you being spoken to. Six moving lines, 40 to 70
-words each.
+**The Reading is the wisdom.** Nothing in this section explains the system,
+names a source, or refers to the figure's parts. No "a hexagram is," no "the
+six lines show," no "the tradition returns to," no "the translators." The page
+carries one short essay behind the glyph for anyone who wants the system, and
+it is written once. Every sentence here is the wisdom of this hexagram for the
+person reading, given as if it were the writer's own to give.
 
-**The deep-pass standard** stands for this section and for BODY: carry the
-philology inside the teaching rather than announcing it (no "the Chinese
-character means"); no bare transliteration standing alone; carry the named
-figures from the Practical Guide without crediting the source; write each
-moving line from its own line file's scene, never from "the position" in
-general.
+**Symbols land on a person.** Every element (the two trigrams, the character,
+the Judgement, the lines) earns its place only if it gives the reader something
+to feel, recognise or do. "A firm line struck under two open ones" describes a
+diagram. "The part of you that has already started moving, before there is
+anywhere to move to" is the same trigram as a person knows it. Never the
+diagram alone.
 
-**Moving lines.** Each is read alone after a cast, beside the essence, so each
+**Old words brought up to date.** "The counsel is plain" means nothing to a
+stranger; "What this asks of you is simple" does. Every classical phrase is
+translated into a complete modern sentence with its connecting words in. Do not
+change what is said; make it followable.
+
+**One unit, one job, no retelling.** On the page the reader meets, in order:
+the glyph (tap for the symbol and the essay), the Combination, the two
+trigrams behind tabs, the Reading, the Image, the Judgement, the coins. Each
+says something the others do not.
+
+- Combination, 40 to 70 words: the picture the two forces make together. No
+  "you," no counsel, no situation described as the reader's. On the nine cards
+  whose character is a true picture (3, 18, 27, 42, 47, 48, 49, 50, 56, per
+  `todo/plans/writing-guideline/hexagram-characters.md`) it may close with
+  "The traditional character draws X." Nowhere else is the character mentioned,
+  and never "the old character" or "the name means."
+- Upper and lower trigram, 70 to 110 words each: the force as itself, in the
+  world, then in a person, then its risk. Nothing about this card's situation;
+  that belongs to Combination and Reading. The same trigram reads alike on
+  every card that carries it; these are reference entries and are meant to
+  repeat.
+- Reading, 180 to 260 words, to you: the situation as a person lives it, what
+  it asks, the body once, the posture. Never the picture again in the
+  Combination's words. Never "lines," "trigram," or "hexagram" as parts.
+- The symbol, optional, two short paragraphs, this hexagram's lines only:
+  where the whole lines sit, where the open ones, what that shape says. It
+  lives in the popup behind the glyph, above the general essay, never in the
+  flow. Written only where the shape teaches something.
+- The Image, then the Judgement, then the coins. The Image sits first because
+  it continues the Reading's posture (a scene, then how to act in it); the
+  Judgement's ruling sits beside the throw whose moving lines qualify it.
+
+**The body, once, with its reason.** The Shuogua, the I Ching's own appendix,
+gives each trigram a body part: Heaven the head, Earth the belly, Thunder the
+foot, Wind the thigh, Water the ear, Fire the eye, Mountain the hand, Lake the
+mouth. Real tradition, and it may be used. It appears once per card, near the
+end of the Reading, never in the trigram texts, with the reason (the foot steps
+first; the ear takes in what the eye cannot yet see) turned toward the reader:
+feel for it now. Say "these two forces each have a place in the body," not "the
+tradition gives." Organs are not this section's: the five-phase organ mapping
+is later and contested and belongs to Body if anywhere. The body is one aspect
+of the reading, never the reading.
+
+**The labels carry the meaning.** The classical names stay, and a plain
+subtitle beneath each says what the thing is in eight words or fewer: "The
+Judgement" over "the ruling on this situation"; "The Image" over "the scene,
+and how to act in it." "The oracle's answer" is false (the Judgement is King
+Wen's verdict on the situation, not a reply) and is retired. The classical
+lines themselves are rendered fresh by the method below and are never
+annotated; the frame explains, the text never does.
+
+**The coins.** The widget throws against this card's own lines; the reader
+already holds the card. The copy says what casting is to a stranger and makes
+them want to: what people have done for three thousand years, that this card is
+already their answer, that the throw shows where they are in it and what it is
+turning into. Two or three sentences. After the throw: "Your throw" over the
+bars, "Turning into" over the becoming hexagram, "The lines in motion" over the
+lines, each "Line 2 · in motion" then "Turned over, it leads to Hexagram 60 ·
+Limitation." Retired: "cast" as a noun, "moving toward," "unstable," "flipped."
+
+**Moving lines.** Each is read alone after a throw, beside the essence, so each
 is a self-contained micro-reading: the scene of that line, what it asks, and
 the counsel in its last sentence, with the hexagram it becomes named plainly.
-The lines never re-teach the whole hexagram. Inside this section the thing is
-a hexagram, never a code.
+The same rules as the Reading: complete sentences, no system words, no source
+announced. The lines never re-teach the whole hexagram. Inside this section
+the thing is a hexagram, never a code.
 
 **The hand-off.** The last paragraph of the Reading may hand to the Gene Key by
-naming the shadow's word inside the situation ("a deeper layer hears another
-word inside the withdrawal: forgetting"), never by naming the system.
+naming the shadow's word inside the situation, never by naming the system.
 
 **The classical-text method** for the Judgement and Image lines: assemble the
 six translations (Legge, Wilhelm, Huang, Cleary Taoist, Cleary Buddhist, Deng)
 and the Eranos philology; map where they converge and where they fork; form
 the sense before drafting; draft the fresh rendering last; check it back for
-faithfulness. The worksheet of contested forks stays in the vault dossier, not
-on the card. Wilhelm is in the vault for all 64 now and is cited; before
-2026-09-12 no card had used it.
+faithfulness. The Image's second line opens on its hinge word (So, Thus).
+Wilhelm is in the vault for all 64 now and is cited.
+
+**The deep-pass standard** stands for this section and for BODY: carry the
+philology inside the teaching rather than announcing it; no bare
+transliteration standing alone; carry the named figures from the sources
+without crediting them; write each moving line from its own line file's scene.
 
 ---
 

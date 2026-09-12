@@ -45,7 +45,7 @@ describe('Markdown-only Oracle corpus', () => {
     // editorial pass on opening sentences cannot break the parser contract.
     expect(card.glance.reading).toContain('Something new is already alive in you and it does not have a shape yet');
     expect(card.glance.invocation).toBeUndefined();
-    expect(card.iching.reading).toContain('it will not yet hold its shape');
+    expect(card.iching.reading).toContain('does not yet have ground to stand on');
     expect(card.iching.lines).toHaveLength(6);
     expect(card.iching.lines[0]?.becomes).toEqual({ hexagram: 8, name: 'Holding Together' });
     expect(card.iching.upper_trigram).toMatchObject({ symbol: '☵', name: "Water (K'an)" });

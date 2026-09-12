@@ -21,6 +21,9 @@ export interface EBData {
   reldata: Record<string, { kicker: string; kind: string; name: string; body: string[] }>;
   kin: { key: string; x: number; y: number; kind: string; glyph: React.ReactNode; fontRole: 'display' | 'cjk'; size: string; dim: string; svgR: number; label: string }[];
   overlays: Record<string, { kicker: string; title: string; sub: string; gratitude: string; paras: string[] }>;
+  // This card's own hexagram-symbol reading, shown first in the I Ching
+  // overlay above the general essay. Empty for cards without one yet.
+  ichingSymbolParas: string[];
   // UL panel reading + invocation, I Ching reading/judgement/image/combination, GK, HD, Body — bound text
   text: Record<string, any>;
 }
@@ -744,6 +747,9 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     else castSummary = '';
 
     const ov = this.state.overlay ? this.OVERLAYS[this.state.overlay] : null;
+    // The I Ching overlay leads with THIS card's own symbol reading, when
+    // authored, before the general "how to read any hexagram" essay.
+    const symbolParas = this.state.overlay === 'iching' ? (this.props.data.ichingSymbolParas ?? []) : [];
     const rel = this.RELDATA[this.state.relSel] || this.RELDATA.pair;
     const enc = encodeURIComponent;
     const movingShown = (cast && movingNums.length) ? this.MOVING.filter((m) => movingNums.includes(m.n)) : this.MOVING;
@@ -853,6 +859,12 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       overlaySub: ov ? ov.sub : '',
       overlayParas: ov ? ov.paras : [],
       overlayGratitude: ov ? ov.gratitude : '',
+      // This card's symbol reading (when authored) plus the labels that
+      // frame it and the essay that follows. Empty when there is none, so
+      // the overlay renders exactly as before for the other 63 cards.
+      overlaySymbolLabel: symbolParas.length ? 'This hexagram' : '',
+      overlaySymbolParas: symbolParas,
+      overlayEssayLabel: symbolParas.length ? 'How to read any hexagram' : '',
       indexOpen: this.state.index,
       openIndex: this.openIndex,
       closeIndex: this.closeIndex,

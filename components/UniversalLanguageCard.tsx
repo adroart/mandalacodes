@@ -145,6 +145,9 @@ const UniversalLanguageCard: React.FC = () => {
     reldata: buildReldata(card, synthesis),
     kin: buildKin(card, synthesis),
     overlays: OVERLAYS,
+    // This card's own hexagram-symbol reading, when authored (`### The
+    // symbol` under `## ICHING`). Most cards do not have one yet.
+    ichingSymbolParas: (card.iching.symbol ?? '').split('\n\n').map(s => s.trim()).filter(Boolean),
     text: (() => {
       const P = (s?: string): string[] => (s ?? '').split('\n\n').map(x => x.trim()).filter(Boolean);
       const ulP = (synthesis?.essence ?? '').split('\n\n').map(s => s.trim()).filter(Boolean);
@@ -471,9 +474,10 @@ function AstrologyGlyph({ value }: { value: string }) {
 // not the card), verbatim from the template.
 const OVERLAYS: EBData['overlays'] = {
   iching: { kicker: 'The Book of Changes', title: 'I Ching', sub: 'attributed to Fu Xi, King Wen, the Duke of Zhou, and Confucius', gratitude: 'Richard Wilhelm and Cary F. Baynes', paras: [
-    'The I Ching is the oldest text in active spiritual use anywhere in the world. Its earliest layers are attributed to the legendary Fu Xi, who is said to have seen, in eight three-line figures, the structure of the cosmos.',
-    'King Wen of Zhou ordered the sixty-four hexagrams and named each one. His son, the Duke of Zhou, wrote the line statements. Confucius and his school added the Ten Wings, turning the oracle into a philosophical text.',
-    'The translation that opens the I Ching to the modern imagination is Richard Wilhelm’s, carried into English by Cary F. Baynes in 1950 with a foreword by Carl Jung.' ] },
+    'A hexagram is six lines, read from the bottom up. Bottom is where the situation starts. Top is where it ends.',
+    'A whole line pushes. A broken line gives way.',
+    'The lower three lines are what is happening inside you. The upper three are what you are meeting in the world.',
+    'When you cast, the lines that turn are where you stand now.' ] },
   genekeys: { kicker: 'A contemplative path', title: 'Gene Keys', sub: 'transmitted by Richard Rudd, 2002 onward', gratitude: 'Richard Rudd', paras: [
     'The Gene Keys are the youngest of the three systems. Richard Rudd received the transmission over a long, contemplative period beginning in the early 2000s.',
     'Each of the sixty-four keys names three frequencies of the same archetype: the Shadow, the Gift, and the Siddhi.',
