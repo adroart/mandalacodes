@@ -142,6 +142,14 @@ async function showChannelLine(page: Page) {
   return line;
 }
 
+/** The partner-card link sits above the chart line for every reader. */
+async function expectPartnerLink(page: Page, partner: number) {
+  const link = page.locator(`[data-channel-partner-link="${partner}"]`);
+  await expect(link).toHaveText(`Read gate ${partner} →`);
+  await expect(link).toHaveAttribute('href', `/universal-language/${partner}`);
+  await expect(link).toBeInViewport();
+}
+
 test.describe('the channel line on the card page', () => {
   test('signed in, both gates: the channel is defined', async ({ page }) => {
     const errors = collectErrors(page);
@@ -153,6 +161,7 @@ test.describe('the channel line on the card page', () => {
     await expect(line).toHaveAttribute('data-channel-status', 'defined');
     await expect(line).toHaveText('This channel is defined in your chart: you carry gate 3 and gate 60.');
     await expect(page.locator('[data-channel-status]')).toHaveCount(1);
+    await expectPartnerLink(page, 60);
 
     await page.screenshot({ path: 'test-results/channel-line-defined.png' });
     await assertFourStandardChecks(page, errors);
@@ -201,6 +210,7 @@ test.describe('the channel line on the card page', () => {
     await expect(lines.nth(0)).toHaveText('Channel of Awakening: you carry gate 20; the channel completes in someone who carries gate 10.');
     await expect(lines.nth(1)).toHaveText('Channel of Charisma: you carry gate 20; the channel completes in someone who carries gate 34.');
     await expect(lines.nth(2)).toHaveText('Channel of the Brainwave, defined in your chart: you carry gate 20 and gate 57.');
+    for (const partner of [10, 34, 57]) await expectPartnerLink(page, partner);
 
     await page.screenshot({ path: 'test-results/channel-line-integration.png' });
     await assertFourStandardChecks(page, errors);
@@ -216,8 +226,15 @@ test.describe('the channel line on the card page', () => {
     const line = await showChannelLine(page);
     await expect(line).toHaveAttribute('data-channel-status', 'signed-out');
     await expect(line).toHaveText('Sign in to see whether this channel is defined in your chart.');
+    await expectPartnerLink(page, 60);
 
     await page.screenshot({ path: 'test-results/channel-line-signed-out.png' });
+
+    await page.locator('[data-channel-partner-link="60"]').click();
+    await expect(page).toHaveURL(/\/universal-language\/60$/);
+    await expect(page.locator('[data-channel-partner-link="3"]')).toHaveText('Read gate 3 →');
+    await page.goBack();
+    await showChannelLine(page);
 
     await line.getByRole('button').click();
     await expect(page.getByText('Keep your chart')).toBeVisible();
