@@ -48,7 +48,7 @@ describe('generated Oracle artifacts', () => {
     // own field in oracle/cards/03.md. Opening sentences get rewritten; these do not.
     expect(card?.glance.reading).toContain('Something new is already alive in you and it does not have a shape yet');
     expect(card?.iching.reading).toContain('does not yet have ground to stand on');
-    expect(card?.gene_keys.gift).toContain('It starts to give');
+    expect(card?.gene_keys.gift).toContain('Change becomes something you can work with');
     expect(card?.human_design.gate).toContain('yours to give a shape to');
     expect(card?.body.physiology).toContain('where a beginning was once made the hard way');
 

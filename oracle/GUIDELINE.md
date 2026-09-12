@@ -196,6 +196,14 @@ compressed; the card is not. "Ready, and staying" is a note. "Be ready to go,
 and stay where you are" is a sentence. Translate the compression into
 complete thoughts a stranger can follow, without changing what is said.
 
+**The plain thing first, then one picture.** Never a metaphor explained by a
+second metaphor illustrated by a list ("a grip," then "on loan," then "the
+work, the house, the body"). Say what it is in plain words, then give one
+picture for it, then let the next sentence explain the picture. Every sentence
+follows from the one before; a paragraph is one thought leading on, not a row
+of true statements. The punctuation numbers are necessary and not sufficient:
+a paragraph can pass them and still read as chopped.
+
 **The punctuation check, measured.** A section passes when it averages under
 15 words a sentence, carries under three commas per hundred words, and has no
 sentence with three or more commas. The reading Adrian approved runs 11 words
@@ -724,6 +732,13 @@ The stock paradox.
 **The body in this section.** When the source locates the work in the body,
 say so once as where the work goes, never as a seat. The seat is Human
 Design's.
+
+**The reference.** Card 3's Gene Keys section, written from the whole
+chapter by the method in `todo/plans/writing-guideline/gene-keys-guidance.md`:
+read the chapter and the essay completely, say what each height teaches in the
+plainest words, keep the source's insistences (being changed by what happens;
+joining rather than standing alone), leave out what a stranger cannot use, then
+write with one picture across the three heights.
 
 **Names.** The Shadow, Gift and Siddhi names are kept lineage, shown as labels.
 The repressive and reactive names come from the reference row in the vault,

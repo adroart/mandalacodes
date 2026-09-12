@@ -52,7 +52,7 @@ describe('Oracle card Markdown parser', () => {
 
     const keys = mapKeys(card);
     expect(keys?.shadow_name).toBe('Chaos');
-    expect(keys?.gift).toContain('It starts to give');
+    expect(keys?.gift).toContain('Change becomes something you can work with');
 
     const design = mapDesign(card);
     expect(design?.gate_number).toBe(3);
