@@ -26,6 +26,8 @@ Read every paragraph aloud and ask what appeared; if nothing did, say it to the 
 
 You, to you. Never "a person", never "the reader", never "this card" or "this reading" or "the deck". The card never talks about itself and never says where anything came from; the picture and the counsel are yours to give.
 
+Enter before you speak. The first sentence of a section tells the person what you are about to talk about, the way anyone begins: "This is the energy that begins things." Then the rest. A section whose first sentence assumes they already know what you mean is a conversation joined in the middle, and on card 1 Adrian read it that way. The entry is different on every card and every section; what stays is that there is one.
+
 Choose the verb. "A force that begins things is up in you" is a nondescript verb where the sentence needed its one live word; "is alive in you" is the same sentence chosen. An opening sentence above all carries no monotonous, indescript word; it is the first thing felt.
 
 The person across the table is someone able to hold this energy, and the centre of gravity of every section is what it is to carry it well. They may not be in the difficult state at all. When the challenges come, the card lets them understand what those are turning them into and how they are supporting them; that is a quiet note under the writing, not its subject. What the card never does is run the formula "here is your challenge, here is the solution," and it never accuses. "You are numb" is a verdict. "Numbness is a feeling, though almost nobody knows they are in it" can be recognised, and the reader is still standing after it.
