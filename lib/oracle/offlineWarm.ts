@@ -1,6 +1,5 @@
 import { getSynthesis } from '../../data/synthesisData';
 import { getParsedCard } from '../../data/cardMarkdown';
-import { ulCardHeroImageUrl } from '../../utils/universalLanguage';
 
 const WARM_FLAG_KEY = 'mc-oracle-warmed-v1';
 
@@ -15,28 +14,25 @@ function idle(fn: () => void): void {
   }
 }
 
-/** Loads an image via a plain Image element (governed by img-src, not
- * connect-src) so the runtime CacheFirst route for res.cloudinary.com
- * picks it up as a real, not opaque, cached response. */
-function prefetchImage(url: string): Promise<void> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve();
-    img.onerror = () => resolve();
-    img.src = url;
-  });
-}
-
 /**
- * One card's whole offline footprint: its prose chunk and the artwork URL its
- * reading actually requests (see ulCardHeroImageUrl, which both sides read).
+ * One card's offline footprint: its prose chunks. Both are same-origin,
+ * content-hashed assets the service worker's runtime route stores on first
+ * fetch (vite.config.ts, oracle-app-chunks).
+ *
+ * The artwork is deliberately NOT part of this. The worker no longer caches
+ * res.cloudinary.com at all (see the long note in vite.config.ts), so
+ * prefetching the 64 hero images stored nothing and cost every fresh browser
+ * about 17 MB of Cloudinary bandwidth. Measured 2026-09-13: the Playwright
+ * suite alone, opening card pages ~75 times a run across ~35 CI runs a day,
+ * drove 200K image deliveries and 70 GB in one day, nearly three times the
+ * free plan's monthly allowance. If artwork is to work offline again, the
+ * worker has to cache it first; only then does a prefetch have somewhere to
+ * put what it fetches.
  */
 export async function warmCard(number: number): Promise<void> {
   await Promise.allSettled([
     getSynthesis(number),
     getParsedCard(number),
-    prefetchImage(ulCardHeroImageUrl(number)),
   ]);
 }
 
@@ -63,8 +59,8 @@ export interface WarmOptions {
 }
 
 /**
- * Quietly makes the full 64-card deck available offline: fetches every
- * card's text and hero artwork, one at a time, on the browser's idle
+ * Quietly makes the full 64-card deck's text available offline: fetches
+ * every card's prose chunks, one card at a time, on the browser's idle
  * schedule, once per device. This is what turns "the cards you've already
  * opened work offline" (the service worker's runtime cache does that for
  * free) into "the whole deck works offline", the actual ask, since a
@@ -89,7 +85,7 @@ export function warmOracleForOffline(options: WarmOptions = {}): void {
   if (window.localStorage.getItem(WARM_FLAG_KEY)) {
     /* The deck is already stored. Re-warming the card on screen is close to
        free (it answers from the cache) and covers the one case the flag lies
-       about: a card whose artwork was added or replaced since the pass ran. */
+       about: a card whose prose was rewritten since the pass ran. */
     if (hasStart) idle(() => { void warmCard(startAt as number); });
     return;
   }

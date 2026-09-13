@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 const CARDS = [1, 3, 23, 47, 52, 64];
 const BASE = process.env.LIVE_ORACLE_BASE_URL ?? '';

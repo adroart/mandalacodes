@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 const CARD = '/universal-language/1';
 const SYSTEMS = ['ul', 'iching', 'genekeys', 'humandesign', 'body', 'tarot'];

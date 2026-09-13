@@ -11,7 +11,7 @@
 
    Same shape as tests/live-oracle-cards.spec.ts (skip-if-unset, not part of
    the default `npm test` run against the dev server, which has no dist/). */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 const BASE = process.env.PRERENDER_BASE_URL ?? '';
 
