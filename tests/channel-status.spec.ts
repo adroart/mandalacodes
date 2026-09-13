@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 /* "You carry this channel": the one line under "What completes it" on the
  * card's Human Design panel, and the "Your channels" block on /profile.

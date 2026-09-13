@@ -4,7 +4,7 @@
    frame came apart on an iPhone — a bar in its own colour cutting across the
    bottom of the page, a bar floating above the bottom edge, and a lens rail
    that vanished under the site bar after a QR arrival. */
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 const CARD = '/universal-language/22';
 const PHONE = { width: 390, height: 844 };

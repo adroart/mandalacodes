@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page } from './fixtures';
 
 /* Drive the real birth-data form to create a profile, then assert the chart.
    (localStorage seeding doesn't survive a reload in headless here, so we use

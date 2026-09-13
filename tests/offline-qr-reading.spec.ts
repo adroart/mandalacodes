@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 /* A plaque's QR code lands a visitor straight on a card page, never the deck
  * index (docs/offline-oracle.md, todo/plans/launch-readiness.md site item 3).

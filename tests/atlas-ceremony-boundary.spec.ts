@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 /* The honest boundary on the closed collector routes (todo/plans/honest-boundary.md,
  * launch-readiness.md item 2, overarching-plan.md Track C3).
