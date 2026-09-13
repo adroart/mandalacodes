@@ -28,11 +28,23 @@ const ONE_PIXEL_PNG = Buffer.from(
   'base64',
 );
 
+/* crossOrigin="anonymous" images are CORS requests; a stub without this
+   header is refused by the browser and logged as ERR_FAILED, which the
+   "no console errors" checks would then count. */
+const CORS = { 'access-control-allow-origin': '*' };
+
 export const test = base.extend({
   context: async ({ context }, use) => {
-    await context.route(/https?:\/\/res\.cloudinary\.com\//, (route) =>
-      route.fulfill({ status: 200, contentType: 'image/png', body: ONE_PIXEL_PNG }),
-    );
+    await context.route(/https?:\/\/res\.cloudinary\.com\//, (route) => {
+      /* Decided by what the page asked for, not by the URL: a poster frame is
+         an <img> under /video/upload/, and it has to load like any image. An
+         empty body for a <video> makes it report an unsupported source and
+         stop, with no network error in the console. */
+      if (route.request().resourceType() === 'media') {
+        return route.fulfill({ status: 204, headers: CORS });
+      }
+      return route.fulfill({ status: 200, contentType: 'image/png', headers: CORS, body: ONE_PIXEL_PNG });
+    });
     await use(context);
   },
 });
