@@ -12,6 +12,10 @@ That is the whole brief. What follows is how, then the few facts the card cannot
 
 Read the packet at `oracle/_packets/NN.md` whole, card 3 at `oracle/cards/03.md` once, and card 1 (`oracle/cards/01.md`) once more slowly: it is the first card written whole under this brief. Then shut everything and tell a friend what this energy is at its lowest and its height, in its situation, in the body, among its kin. If you cannot say it plainly you do not have it yet.
 
+## Before any section: list the true things
+
+With the packet open, write down, for the section you are about to write, every specific true thing the sources say about this energy, as plain statements a stranger could understand: "creativity cannot be forced; when it is absent there is nothing to do but wait." "Trying to find the reason for a low is what turns it into a long one." "Everything original arrives through hundreds of mistakes." Ten to twenty lines. Then write the section from that list and nothing else, keeping every line that earns its place. A section written without the list comes out as voice with nothing inside; a section written from the list carries the wisdom the reader came for. The list is the work; the sentences are the finish.
+
 ## How a sentence is made
 
 The plain thing first, in the words you would use across the table. "The days go flat." Then, if it helps, one picture, and let the next sentence say what the picture was for. The plain sentence governs and the picture serves it. A picture the reader has to decode is not felt.
