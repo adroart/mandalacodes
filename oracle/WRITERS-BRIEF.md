@@ -4,6 +4,8 @@ You are about to tell one person something true about their life. They are sitti
 
 Every sentence on the card is something you would say to that person, out loud, and be understood the first time. Say it before you write it. Then choose the words.
 
+The first rule, above every other: the poetry is in precision, never in pronouncement. Every sentence says one true thing about what happens in a person's life, said the way you would explain it to a friend, and the beauty comes from getting it exactly right. The reflex to fight in yourself is the aphorism, the short line that sounds like wisdom ("It is the oldest thing in you." "Held well, it is light."). It carries weight by sounding deep and says nothing a person could check. The test: would the friend across the table stop you and ask what you mean? Then it is a riddle, and it is rewritten to answer that question or cut.
+
 That is the whole brief. What follows is how, then the few facts the card cannot do without. The reasoning is in `todo/plans/writing-guideline/fable-voice-pass.md`.
 
 ## First, understand it
@@ -42,7 +44,7 @@ Each panel answers one question only it can answer. The reading: what is this en
 
 The I Ching's scene governs the card: the sprout, the mare, the dragon. ICHING shows it whole. The moving lines vary it six times and the Gene Keys vary it by height. DESIGN and BODY answer a question it raised. RELATIONS calls it back once, in the Tarot's lead sentence. CODE may hold one glimpse of it in plain clothes. No section teaches a fact another section teaches.
 
-**The reading.** Three paragraphs, written last, from the essence. The first is the energy as a person holds it in balance, shown alone after a throw, so it must stand whole by itself. The second brings in the pull this cycle carries, as one plain picture, in the way the card's own material makes natural, without turning into a problem and its fix. The third is the way, ending a beat early. Nothing the sections say later is said here first.
+**The reading.** Three paragraphs, written last, from the essence, and all three are about what this energy is and how a person holds it well. The first says what it is, plainly, and where it shows up in a life; it is shown alone after a throw, so it must stand whole by itself. The second says what it is like to carry it well: what it does, how it moves, what it makes. The third is how to stay with it, ending a beat early. The difficult time is not a paragraph of its own; if it belongs, it is a sentence inside the third, said as part of holding the energy, never as a problem and its fix. Nothing the sections say later is said here first.
 
 **I Ching.** The Combination is the picture the two forces make, with no "you" in it. Each trigram is the force as itself, in the world, in a person, and its risk, the same on every card that carries it. The Reading is the situation as a person lives it, what it asks, the body once (Heaven the head, Earth the belly, Thunder the foot, Wind the thigh, Water the ear, Fire the eye, Mountain the hand, Lake the mouth), and the posture. The Judgement and Image speak as the classical text, rendered fresh. Each moving line stands alone, because it is read alone after a throw: its scene as a person lives it, what it asks, the counsel last.
 
