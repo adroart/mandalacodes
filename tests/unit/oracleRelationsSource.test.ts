@@ -23,7 +23,7 @@ describe('Markdown-native Oracle Relations', () => {
     expect(relations.number).toBe(1);
     expect(relations.card_name).toBe("Earth's Breath");
     expect(relations.unity_line).toBe(
-      'Around you here stand the things a strength like this needs and cannot make for itself: the ground that takes it, the fire it belongs to, and the hand that measures it out.',
+      'The kin here are what a beginning needs and does not have: somewhere to land, something to feed, and a hand on the measure.',
     );
     expect(relations.pair).toMatchObject({
       number: 2,

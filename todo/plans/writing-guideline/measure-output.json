@@ -40,7 +40,7 @@
     "ICHING": {
       "min": 854,
       "median": 1000.5,
-      "max": 1264,
+      "max": 1525,
       "minCards": [
         6
       ],
@@ -51,13 +51,13 @@
     },
     "KEYS": {
       "min": 606,
-      "median": 741.5,
-      "max": 814,
+      "median": 743,
+      "max": 948,
       "minCards": [
         10
       ],
       "maxCards": [
-        62
+        1
       ],
       "n": 64
     },
@@ -114,7 +114,7 @@
     "ICHING > Upper trigram": {
       "min": 40,
       "median": 52,
-      "max": 117,
+      "max": 119,
       "minCards": [
         6
       ],
@@ -126,7 +126,7 @@
     "ICHING > Lower trigram": {
       "min": 39,
       "median": 51,
-      "max": 112,
+      "max": 122,
       "minCards": [
         61
       ],
@@ -137,7 +137,7 @@
     },
     "ICHING > Reading": {
       "min": 202,
-      "median": 269.5,
+      "median": 270.5,
       "max": 309,
       "minCards": [
         3
@@ -149,7 +149,7 @@
     },
     "ICHING > Judgement": {
       "min": 16,
-      "median": 31.5,
+      "median": 32,
       "max": 61,
       "minCards": [
         10,
@@ -163,7 +163,7 @@
     },
     "ICHING > Image": {
       "min": 18,
-      "median": 26,
+      "median": 26.5,
       "max": 34,
       "minCards": [
         6
@@ -177,7 +177,7 @@
     "ICHING > Moving lines": {
       "min": 396,
       "median": 471.5,
-      "max": 666,
+      "max": 835,
       "minCards": [
         60
       ],
@@ -188,20 +188,20 @@
     },
     "KEYS > Shadow": {
       "min": 174,
-      "median": 225.5,
-      "max": 262,
+      "median": 226,
+      "max": 269,
       "minCards": [
         5
       ],
       "maxCards": [
-        62
+        1
       ],
       "n": 64
     },
     "KEYS > Repressive nature": {
       "min": 46,
       "median": 53,
-      "max": 64,
+      "max": 82,
       "minCards": [
         20,
         53
@@ -213,50 +213,49 @@
     },
     "KEYS > Reactive nature": {
       "min": 43,
-      "median": 53,
-      "max": 61,
+      "median": 53.5,
+      "max": 72,
       "minCards": [
         54
       ],
       "maxCards": [
-        27
+        1
       ],
       "n": 64
     },
     "KEYS > Gift": {
       "min": 191,
-      "median": 219,
-      "max": 251,
+      "median": 219.5,
+      "max": 294,
       "minCards": [
         6
       ],
       "maxCards": [
-        37
+        1
       ],
       "n": 64
     },
     "KEYS > Siddhi": {
       "min": 116,
-      "median": 184.5,
-      "max": 209,
+      "median": 185,
+      "max": 223,
       "minCards": [
         10
       ],
       "maxCards": [
-        13,
-        63
+        1
       ],
       "n": 64
     },
     "DESIGN > The drive": {
       "min": 144,
       "median": 175.5,
-      "max": 205,
+      "max": 230,
       "minCards": [
         45
       ],
       "maxCards": [
-        22
+        1
       ],
       "n": 64
     },
@@ -350,17 +349,17 @@
     "RELATIONS > Codon ring": {
       "min": 55,
       "median": 69.5,
-      "max": 95,
+      "max": 105,
       "minCards": [
         6
       ],
       "maxCards": [
-        26
+        1
       ],
       "n": 64
     },
     "RELATIONS > Tarot": {
-      "min": 81,
+      "min": 94,
       "median": 330,
       "max": 401,
       "minCards": [
@@ -373,7 +372,7 @@
     },
     "RELATIONS > Immortals": {
       "min": 55,
-      "median": 69.5,
+      "median": 70,
       "max": 106,
       "minCards": [
         57
@@ -1053,13 +1052,13 @@
       "cardNameRefs": 1,
       "codeWordRefs": 4,
       "trigramRefs": 25,
-      "geneKeysTermRefs": 55,
+      "geneKeysTermRefs": 56,
       "hdGateRefs": 25,
       "organAminoRefs": 7,
       "cardsWithCardNameRef": 1,
       "cardsWithCodeWordRef": 4,
       "cardsWithTrigramRef": 14,
-      "cardsWithGeneKeysRef": 29,
+      "cardsWithGeneKeysRef": 30,
       "cardsWithHdRef": 15,
       "cardsWithOrganAminoRef": 4,
       "totalCards": 64
@@ -1067,7 +1066,7 @@
     "ICHING": {
       "cardNameRefs": 0,
       "codeWordRefs": 1,
-      "trigramRefs": 804,
+      "trigramRefs": 800,
       "geneKeysTermRefs": 71,
       "hdGateRefs": 44,
       "organAminoRefs": 3,
@@ -1083,7 +1082,7 @@
       "cardNameRefs": 3,
       "codeWordRefs": 14,
       "trigramRefs": 50,
-      "geneKeysTermRefs": 614,
+      "geneKeysTermRefs": 612,
       "hdGateRefs": 32,
       "organAminoRefs": 3,
       "cardsWithCardNameRef": 3,
@@ -1115,7 +1114,7 @@
       "trigramRefs": 30,
       "geneKeysTermRefs": 130,
       "hdGateRefs": 28,
-      "organAminoRefs": 211,
+      "organAminoRefs": 210,
       "cardsWithCardNameRef": 0,
       "cardsWithCodeWordRef": 57,
       "cardsWithTrigramRef": 10,
@@ -1128,13 +1127,13 @@
       "cardNameRefs": 1,
       "codeWordRefs": 261,
       "trigramRefs": 775,
-      "geneKeysTermRefs": 180,
+      "geneKeysTermRefs": 181,
       "hdGateRefs": 53,
       "organAminoRefs": 4,
       "cardsWithCardNameRef": 1,
       "cardsWithCodeWordRef": 58,
       "cardsWithTrigramRef": 63,
-      "cardsWithGeneKeysRef": 48,
+      "cardsWithGeneKeysRef": 49,
       "cardsWithHdRef": 20,
       "cardsWithOrganAminoRef": 3,
       "totalCards": 64
