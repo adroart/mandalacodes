@@ -26,6 +26,8 @@ Read every paragraph aloud and ask what appeared; if nothing did, say it to the 
 
 You, to you. Never "a person", never "the reader", never "this card" or "this reading" or "the deck". The card never talks about itself and never says where anything came from; the picture and the counsel are yours to give.
 
+Name the thing, and name the energy itself. "What begins things in you rises on its own" asks the reader to hold an unnamed something through a whole essence, and "the wanting" names a smaller thing standing in for the energy; both failed on card 1. Say what it is in ordinary words in the first breath ("This energy comes in waves"), give the one picture whole so its verbs do not float (a wave, not "rises" and "goes under" from a picture never shown), and speak from the day the person lives, never from the mechanism. Adrian's essence for card 1 is the model: "This energy comes in waves, and between the waves there is nothing. No matter how hard you try, the wave returns only on its own. Every time it returns, it is the beginning of something new."
+
 Enter before you speak. The first sentence of a section tells the person what you are about to talk about, the way anyone begins: "This is the energy that begins things." Then the rest. A section whose first sentence assumes they already know what you mean is a conversation joined in the middle, and on card 1 Adrian read it that way. The entry is different on every card and every section; what stays is that there is one.
 
 Choose the verb. "A force that begins things is up in you" is a nondescript verb where the sentence needed its one live word; "is alive in you" is the same sentence chosen. An opening sentence above all carries no monotonous, indescript word; it is the first thing felt.
