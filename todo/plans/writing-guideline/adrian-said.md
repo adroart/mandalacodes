@@ -613,3 +613,6 @@ I'm looking at the shadow entropy and it feels a little elongated. For example, 
 
 [2026-09-15]
 Move on to the I Ching section, it feels too long.
+
+[2026-09-15]
+Move on to the Gene Keys section.
