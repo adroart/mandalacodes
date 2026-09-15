@@ -619,3 +619,6 @@ Move on to the Gene Keys section.
 
 [2026-09-15]
 Move on to the Human Design section.
+
+[2026-09-15]
+Move on to the Body section.
