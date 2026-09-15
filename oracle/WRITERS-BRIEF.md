@@ -54,6 +54,8 @@ Describe the state; never assign a life. "Anyone who has started a piece of work
 
 No riddle, no pronouncement. "It is the oldest thing in you. Held well, it is light." sounds like wisdom and says nothing a person could check. The test is whether the reader can say what it means, then test it against their own life. If not, say the thing or cut it.
 
+Two examples at most, and words every culture uses. From card 1's Shadow: "You will do nearly anything rather than feel it: reach for the phone, the fridge, someone to ring, the next thing to do, and each one works for about a minute." Adrian: "I wouldn't do four examples," and "I would use someone to call." One example carries a sentence; two is the limit; a list of four is padding that reads as a list. "Ring" is one country's word; "call" is everyone's. When a word has a regional form and a universal one, the universal one. The sentence, repaired: "You will do nearly anything rather than feel it, reach for the phone or call someone, and each works for about a minute."
+
 Read it back as a person who loves English. Find the sentence a good novel would keep; find the one that is chat, then rewrite it. Find the chain of ands, the word that says nothing, the accusation, then break, choose, turn.
 
 ## One energy, six voices

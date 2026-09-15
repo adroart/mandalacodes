@@ -607,3 +607,6 @@ t is the push in you to make something that was not there before, and to make it
 
 [2026-09-14, after the extract]
 One thing I don't want to start sentences with and or have two and's in a sentence.
+
+[2026-09-15]
+I'm looking at the shadow entropy and it feels a little elongated. For example, "you will do nearly anything rather than feel it. Reach for the phone, the fridge, someone to ring, the next thing to do, and each one works for about a minute." First off I would use someone to call, but I also wouldn't do four examples. I also would never start with and for a sentence. Maybe lose proper English, but it's not my way.
