@@ -616,3 +616,6 @@ Move on to the I Ching section, it feels too long.
 
 [2026-09-15]
 Move on to the Gene Keys section.
+
+[2026-09-15]
+Move on to the Human Design section.
