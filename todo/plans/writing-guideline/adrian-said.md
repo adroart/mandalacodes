@@ -622,3 +622,9 @@ Move on to the Human Design section.
 
 [2026-09-15]
 Move on to the Body section.
+
+[2026-09-15]
+The liver doesn't make a lot of sense. It's not very digestible.
+
+[2026-09-15]
+Okay, this sounds like it should be a connection between the three of them. So write this in that way and make sure you have a way to reproduce it. Since we are gonna have to do this sixty-four times. Make sure it is good.
