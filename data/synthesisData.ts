@@ -80,6 +80,8 @@ export interface CardSynthesis {
   ring_name: string;
   keywords?: string[];
   essence?: string;
+  /** The card's essence: three short sentences from the sheet (meta.centre), shown under the keynotes. */
+  summary?: string;
   reference?: SynthesisReference;
   synthesis: {
     iching: SynthesisIching;
@@ -235,6 +237,7 @@ function buildSynthesis(parsed: ParsedCard, cardNumber: number, context: string)
     ring_name: relations.codon_ring.name,
     keywords: code.keywords,
     essence: code.reading,
+    summary: asString(asMap(parsed.frontmatter.meta)?.centre) || undefined,
     reference: referenceFor(parsed, cardNumber, design, body, relations, context),
     synthesis: {
       iching: {

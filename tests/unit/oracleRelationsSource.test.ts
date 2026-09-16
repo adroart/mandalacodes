@@ -23,17 +23,17 @@ describe('Markdown-native Oracle Relations', () => {
     expect(relations.number).toBe(1);
     expect(relations.card_name).toBe("Earth's Breath");
     expect(relations.unity_line).toBe(
-      'Met by UL 2, this is the world coming into form, the creative force and the field that receives it moving as one.',
+      "What begins here needs what it cannot give itself: ground to land on, something to feed, and a hand on the measure.",
     );
     expect(relations.pair).toMatchObject({
       number: 2,
       card_name: 'Beyond the Shell',
       hexagram_name: 'The Receptive',
     });
-    expect(relations.pair.teaching).toContain('pure creative force; the other is pure receptive ground');
+    expect(relations.pair.teaching).toContain("Beyond the Shell is the ground this stre");
     expect(relations.inverse.number).toBe(1);
     expect(relations.inverse.is_self_inverse).toBe(true);
-    expect(relations.inverse.teaching).toContain('one of only eight in the deck');
+    expect(relations.inverse.teaching).toContain("Turn the six lines over and they come ba");
   });
 
   it('reuses a referenced UL heading for Card 3 pair and inverse', async () => {
@@ -88,7 +88,7 @@ describe('Markdown-native Oracle Relations', () => {
     const serialized = JSON.stringify(relations);
 
     expect(relations.tarot).toMatchObject({ card: 'I · The Magician' });
-    expect(relations.tarot?.teaching).toContain('worker over the four tools');
+    expect(relations.tarot?.teaching).toContain('the maker with one hand raised');
     expect(relations.immortals).toMatchObject({
       upper: { trigram: 'Fire', name: 'Lu Dong Bin' },
       lower: { trigram: 'Water', name: 'Li Tie Guai' },
@@ -96,11 +96,11 @@ describe('Markdown-native Oracle Relations', () => {
     });
     // Mid-paragraph on purpose: names the immortal's own attribute rather than the
     // teaching's opening line, which editorial passes rewrite.
-    expect(relations.immortals?.teaching).toContain('carries his medicine in a gourd');
+    expect(relations.immortals?.teaching).toContain('keeps his medicine in a gourd');
     expect(relations.sky).toMatchObject({ value: 'Mercury' });
-    expect(relations.sky?.teaching).toContain('quick intelligence');
+    expect(relations.sky?.teaching).toContain('quick messenger');
     expect(relations.hebrew_letter).toMatchObject({ letter: 'Beth' });
-    expect(relations.hebrew_letter?.teaching).toContain('vessel that focuses will');
+    expect(relations.hebrew_letter?.teaching).toContain('the room that gives a work four walls');
     expect(serialized).not.toMatch(/SOURCING LOG|sourcing_log|meta:fact_check|<!--|-->/i);
   });
 

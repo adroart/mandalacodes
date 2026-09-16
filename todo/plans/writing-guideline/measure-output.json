@@ -2,7 +2,6 @@
   "cardsWithTrailingComment": [
     9,
     11,
-    14,
     15,
     16,
     17,
@@ -17,23 +16,21 @@
     40,
     44,
     45,
-    52,
     55,
     56,
     57,
     59,
     60,
     61,
-    62,
-    64
+    62
   ],
   "sectionSummary": {
     "CODE": {
-      "min": 293,
-      "median": 323.5,
+      "min": 163,
+      "median": 320,
       "max": 379,
       "minCards": [
-        53
+        3
       ],
       "maxCards": [
         24
@@ -41,73 +38,73 @@
       "n": 64
     },
     "ICHING": {
-      "min": 825,
-      "median": 991.5,
-      "max": 1073,
+      "min": 854,
+      "median": 1000.5,
+      "max": 1504,
       "minCards": [
-        1
+        6
       ],
       "maxCards": [
-        63
+        1
       ],
       "n": 64
     },
     "KEYS": {
-      "min": 623,
-      "median": 741.5,
-      "max": 814,
+      "min": 606,
+      "median": 743,
+      "max": 924,
       "minCards": [
-        1
+        10
       ],
       "maxCards": [
-        62
+        1
       ],
       "n": 64
     },
     "DESIGN": {
-      "min": 368,
-      "median": 472,
-      "max": 530,
+      "min": 409,
+      "median": 478.5,
+      "max": 600,
       "minCards": [
-        1
+        13
       ],
       "maxCards": [
-        22
+        64
       ],
       "n": 64
     },
     "BODY": {
-      "min": 340,
-      "median": 390,
-      "max": 442,
+      "min": 278,
+      "median": 388,
+      "max": 433,
       "minCards": [
-        29
+        5
       ],
       "maxCards": [
-        4
+        13
       ],
       "n": 64
     },
     "RELATIONS": {
-      "min": 476,
-      "median": 700.5,
-      "max": 801,
+      "min": 502,
+      "median": 701.5,
+      "max": 939,
       "minCards": [
-        1
+        60
       ],
       "maxCards": [
-        49
+        47
       ],
       "n": 64
     }
   },
   "subsectionSummary": {
     "ICHING > Combination": {
-      "min": 66,
-      "median": 92,
+      "min": 37,
+      "median": 90,
       "max": 114,
       "minCards": [
-        6
+        3
       ],
       "maxCards": [
         49
@@ -115,35 +112,36 @@
       "n": 64
     },
     "ICHING > Upper trigram": {
-      "min": 39,
-      "median": 51,
-      "max": 64,
+      "min": 40,
+      "median": 52,
+      "max": 108,
       "minCards": [
-        1
+        6
       ],
       "maxCards": [
-        9
+        2,
+        5
       ],
       "n": 64
     },
     "ICHING > Lower trigram": {
       "min": 39,
-      "median": 50,
-      "max": 64,
+      "median": 51,
+      "max": 124,
       "minCards": [
         61
       ],
       "maxCards": [
-        18
+        1
       ],
       "n": 64
     },
     "ICHING > Reading": {
-      "min": 215,
+      "min": 202,
       "median": 270.5,
       "max": 309,
       "minCards": [
-        1
+        3
       ],
       "maxCards": [
         55
@@ -152,20 +150,21 @@
     },
     "ICHING > Judgement": {
       "min": 16,
-      "median": 31.5,
-      "max": 45,
+      "median": 32,
+      "max": 61,
       "minCards": [
+        10,
         56,
         60
       ],
       "maxCards": [
-        48
+        2
       ],
       "n": 64
     },
     "ICHING > Image": {
       "min": 18,
-      "median": 26,
+      "median": 26.5,
       "max": 34,
       "minCards": [
         6
@@ -177,72 +176,72 @@
       "n": 64
     },
     "ICHING > Moving lines": {
-      "min": 384,
-      "median": 463.5,
-      "max": 518,
+      "min": 396,
+      "median": 471.5,
+      "max": 800,
       "minCards": [
-        1
+        60
       ],
       "maxCards": [
-        63
+        1
       ],
       "n": 64
     },
     "KEYS > Shadow": {
-      "min": 197,
-      "median": 226.5,
-      "max": 262,
+      "min": 174,
+      "median": 226,
+      "max": 268,
       "minCards": [
-        3
+        5
       ],
       "maxCards": [
-        62
+        1
       ],
       "n": 64
     },
     "KEYS > Repressive nature": {
-      "min": 40,
+      "min": 46,
       "median": 53,
-      "max": 63,
+      "max": 79,
       "minCards": [
-        3
+        20,
+        53
       ],
       "maxCards": [
-        15,
-        24
+        1
       ],
       "n": 64
     },
     "KEYS > Reactive nature": {
-      "min": 38,
-      "median": 52,
-      "max": 61,
+      "min": 43,
+      "median": 53.5,
+      "max": 69,
       "minCards": [
-        1
+        54
       ],
       "maxCards": [
-        27
+        1
       ],
       "n": 64
     },
     "KEYS > Gift": {
       "min": 191,
-      "median": 219,
-      "max": 251,
+      "median": 219.5,
+      "max": 294,
       "minCards": [
         6
       ],
       "maxCards": [
-        37
+        1
       ],
       "n": 64
     },
     "KEYS > Siddhi": {
-      "min": 135,
-      "median": 185.5,
+      "min": 116,
+      "median": 185,
       "max": 209,
       "minCards": [
-        1
+        10
       ],
       "maxCards": [
         13,
@@ -251,47 +250,48 @@
       "n": 64
     },
     "DESIGN > The drive": {
-      "min": 123,
-      "median": 175,
-      "max": 221,
+      "min": 144,
+      "median": 175.5,
+      "max": 217,
       "minCards": [
-        1
+        45
       ],
       "maxCards": [
-        3
+        1
       ],
       "n": 64
     },
     "DESIGN > Where it lives": {
-      "min": 116,
-      "median": 150,
-      "max": 177,
-      "minCards": [
-        1
-      ],
-      "maxCards": [
-        6
-      ],
-      "n": 64
-    },
-    "DESIGN > What completes it": {
-      "min": 126,
-      "median": 143,
-      "max": 177,
+      "min": 122,
+      "median": 151,
+      "max": 238,
       "minCards": [
         13
       ],
       "maxCards": [
+        2,
         10
       ],
       "n": 64
     },
+    "DESIGN > What completes it": {
+      "min": 87,
+      "median": 143,
+      "max": 203,
+      "minCards": [
+        3
+      ],
+      "maxCards": [
+        64
+      ],
+      "n": 64
+    },
     "BODY > Physiology": {
-      "min": 188,
+      "min": 167,
       "median": 225,
       "max": 254,
       "minCards": [
-        29
+        3
       ],
       "maxCards": [
         45
@@ -299,11 +299,11 @@
       "n": 64
     },
     "BODY > Amino acid": {
-      "min": 143,
-      "median": 166,
+      "min": 104,
+      "median": 164.5,
       "max": 196,
       "minCards": [
-        59
+        5
       ],
       "maxCards": [
         7
@@ -311,89 +311,102 @@
       "n": 64
     },
     "RELATIONS > Pair": {
-      "min": 43,
-      "median": 62,
-      "max": 77,
+      "min": 47,
+      "median": 64,
+      "max": 107,
       "minCards": [
-        4
+        6,
+        50
       ],
       "maxCards": [
-        63
+        14,
+        47
       ],
       "n": 61
     },
     "RELATIONS > Inverse": {
-      "min": 36,
-      "median": 50.5,
-      "max": 83,
+      "min": 18,
+      "median": 53,
+      "max": 85,
       "minCards": [
-        64
+        10
       ],
       "maxCards": [
-        27
+        14
       ],
       "n": 28
     },
     "RELATIONS > Programming partner": {
-      "min": 39,
-      "median": 61.5,
-      "max": 78,
+      "min": 49,
+      "median": 64,
+      "max": 132,
       "minCards": [
-        1
+        34
       ],
       "maxCards": [
-        51
+        52
       ],
       "n": 64
     },
     "RELATIONS > Codon ring": {
-      "min": 48,
-      "median": 68,
-      "max": 95,
+      "min": 55,
+      "median": 69.5,
+      "max": 118,
       "minCards": [
-        1
+        6
       ],
       "maxCards": [
-        26
+        1
       ],
       "n": 64
     },
     "RELATIONS > Tarot": {
-      "min": 136,
-      "median": 331,
-      "max": 379,
-      "minCards": [
-        1,
-        60
-      ],
-      "maxCards": [
-        26
-      ],
-      "n": 64
-    },
-    "RELATIONS > Immortals": {
-      "min": 48,
-      "median": 68.5,
-      "max": 96,
+      "min": 90,
+      "median": 330,
+      "max": 401,
       "minCards": [
         1
       ],
       "maxCards": [
-        28
+        47
+      ],
+      "n": 64
+    },
+    "RELATIONS > Immortals": {
+      "min": 55,
+      "median": 70,
+      "max": 106,
+      "minCards": [
+        57
+      ],
+      "maxCards": [
+        47
       ],
       "n": 64
     },
     "RELATIONS > Deeper correlation": {
       "min": 53,
       "median": 70,
-      "max": 97,
+      "max": 100,
       "minCards": [
         31
       ],
       "maxCards": [
-        49
+        47
       ],
       "n": 64
+    },
+    "ICHING > The symbol": {
+      "min": 62,
+      "median": 62,
+      "max": 62,
+      "minCards": [
+        3
+      ],
+      "maxCards": [
+        3
+      ],
+      "n": 1
     },
     "RELATIONS > Pair and inverse": {
       "min": 102,
@@ -486,9 +499,7 @@
       {
         "opening": "heaven qian",
         "cards": [
-          1,
           6,
-          10,
           12,
           13,
           25,
@@ -499,7 +510,6 @@
       {
         "opening": "earth kun",
         "cards": [
-          2,
           7,
           11,
           15,
@@ -512,27 +522,12 @@
       {
         "opening": "water kan",
         "cards": [
-          3,
-          5,
           8,
           29,
           39,
           48,
           60,
           63
-        ]
-      },
-      {
-        "opening": "mountain gen",
-        "cards": [
-          4,
-          18,
-          22,
-          23,
-          26,
-          27,
-          41,
-          52
         ]
       },
       {
@@ -585,43 +580,30 @@
           49,
           58
         ]
+      },
+      {
+        "opening": "mountain gen",
+        "cards": [
+          18,
+          22,
+          23,
+          26,
+          27,
+          41,
+          52
+        ]
       }
     ],
     "Lower trigram": [
       {
-        "opening": "thunder zhen",
-        "cards": [
-          3,
-          17,
-          21,
-          24,
-          25,
-          27,
-          51
-        ]
-      },
-      {
         "opening": "water kan",
         "cards": [
-          4,
           6,
           7,
           40,
           47,
           59,
           64
-        ]
-      },
-      {
-        "opening": "heaven qian",
-        "cards": [
-          5,
-          9,
-          11,
-          14,
-          26,
-          34,
-          43
         ]
       },
       {
@@ -637,16 +619,14 @@
         ]
       },
       {
-        "opening": "lake dui",
+        "opening": "heaven qian",
         "cards": [
-          10,
-          19,
-          38,
-          41,
-          54,
-          58,
-          60,
-          61
+          9,
+          11,
+          14,
+          26,
+          34,
+          43
         ]
       },
       {
@@ -676,6 +656,17 @@
         ]
       },
       {
+        "opening": "thunder zhen",
+        "cards": [
+          17,
+          21,
+          24,
+          25,
+          27,
+          51
+        ]
+      },
+      {
         "opening": "wind xun",
         "cards": [
           18,
@@ -684,17 +675,44 @@
           44,
           48
         ]
+      },
+      {
+        "opening": "lake dui",
+        "cards": [
+          19,
+          38,
+          41,
+          54,
+          58,
+          60,
+          61
+        ]
       }
     ],
     "Moving lines": [
       {
-        "opening": "**line 1** · _image_ the",
+        "opening": "**line 1** · _image_ a",
         "cards": [
           1,
-          4,
+          3,
+          11,
+          16,
+          28,
+          31,
+          36,
+          37,
+          44,
+          45,
+          48,
+          59,
+          62
+        ]
+      },
+      {
+        "opening": "**line 1** · _image_ the",
+        "cards": [
           7,
           8,
-          10,
           13,
           17,
           18,
@@ -711,25 +729,7 @@
           53,
           54,
           56,
-          63,
-          64
-        ]
-      },
-      {
-        "opening": "**line 1** · _image_ a",
-        "cards": [
-          3,
-          11,
-          16,
-          28,
-          31,
-          36,
-          37,
-          44,
-          45,
-          48,
-          59,
-          62
+          63
         ]
       }
     ],
@@ -737,17 +737,11 @@
       {
         "opening": "the inward face of the",
         "cards": [
-          1,
-          2,
-          3,
-          4,
-          5,
           6,
           7,
           11,
           12,
           13,
-          14,
           15,
           18,
           21,
@@ -761,9 +755,7 @@
           38,
           45,
           46,
-          47,
           48,
-          52,
           53,
           55,
           57,
@@ -771,8 +763,7 @@
           59,
           61,
           62,
-          63,
-          64
+          63
         ]
       },
       {
@@ -789,17 +780,11 @@
       {
         "opening": "the outward face of the",
         "cards": [
-          1,
-          2,
-          3,
-          4,
-          5,
           6,
           7,
           11,
           12,
           13,
-          14,
           15,
           18,
           21,
@@ -813,9 +798,7 @@
           38,
           45,
           46,
-          47,
           48,
-          52,
           53,
           55,
           57,
@@ -823,8 +806,7 @@
           59,
           61,
           62,
-          63,
-          64
+          63
         ]
       },
       {
@@ -840,20 +822,29 @@
       {
         "opening": "what is left when the",
         "cards": [
-          14,
           25,
           49,
           57
         ]
       }
     ],
-    "Amino acid": [
+    "The drive": [
       {
-        "opening": "deeper than the organ this",
+        "opening": "through this lens the energy",
         "cards": [
           1,
-          4,
-          6
+          2,
+          3
+        ]
+      }
+    ],
+    "Where it lives": [
+      {
+        "opening": "seen through this lens the",
+        "cards": [
+          1,
+          2,
+          3
         ]
       }
     ],
@@ -870,19 +861,9 @@
     ],
     "Inverse": [
       {
-        "opening": "turn this code upside down",
-        "cards": [
-          1,
-          2,
-          27,
-          59
-        ]
-      },
-      {
         "opening": "turn this codes lines over",
         "cards": [
           8,
-          10,
           19,
           38,
           41,
@@ -894,20 +875,8 @@
     ],
     "Codon ring": [
       {
-        "opening": "within the ring of life",
-        "cards": [
-          3,
-          20,
-          23,
-          24,
-          27,
-          42
-        ]
-      },
-      {
         "opening": "within the codon ring of",
         "cards": [
-          10,
           11,
           25,
           38,
@@ -951,19 +920,21 @@
         ]
       },
       {
+        "opening": "within the ring of life",
+        "cards": [
+          20,
+          23,
+          24,
+          27,
+          42
+        ]
+      },
+      {
         "opening": "within the ring of divinity",
         "cards": [
           22,
           36,
           37
-        ]
-      },
-      {
-        "opening": "within the ring of seeking",
-        "cards": [
-          39,
-          52,
-          58
         ]
       }
     ],
@@ -971,8 +942,6 @@
       {
         "opening": "li tie guai stands above",
         "cards": [
-          3,
-          5,
           8,
           39,
           48,
@@ -993,17 +962,6 @@
         ]
       },
       {
-        "opening": "han xiangzi stands above the",
-        "cards": [
-          10,
-          12,
-          13,
-          25,
-          33,
-          44
-        ]
-      },
-      {
         "opening": "lan cai he stands above",
         "cards": [
           11,
@@ -1015,15 +973,13 @@
         ]
       },
       {
-        "opening": "lu dong bin stands above",
+        "opening": "han xiangzi stands above the",
         "cards": [
-          14,
-          21,
-          35,
-          38,
-          50,
-          56,
-          64
+          12,
+          13,
+          25,
+          33,
+          44
         ]
       },
       {
@@ -1045,7 +1001,6 @@
           31,
           43,
           45,
-          47,
           49
         ]
       },
@@ -1059,6 +1014,16 @@
           27,
           41
         ]
+      },
+      {
+        "opening": "lu dong bin stands above",
+        "cards": [
+          21,
+          35,
+          38,
+          50,
+          56
+        ]
       }
     ]
   },
@@ -1066,7 +1031,6 @@
     {
       "opening": "what this asks is small",
       "cards": [
-        4,
         12,
         16,
         20,
@@ -1076,14 +1040,6 @@
         46,
         48,
         56
-      ]
-    },
-    {
-      "opening": "so the work is small",
-      "cards": [
-        5,
-        22,
-        47
       ]
     },
     {
@@ -1117,42 +1073,42 @@
     "CODE": {
       "cardNameRefs": 1,
       "codeWordRefs": 4,
-      "trigramRefs": 29,
-      "geneKeysTermRefs": 66,
-      "hdGateRefs": 27,
+      "trigramRefs": 25,
+      "geneKeysTermRefs": 57,
+      "hdGateRefs": 25,
       "organAminoRefs": 7,
       "cardsWithCardNameRef": 1,
       "cardsWithCodeWordRef": 4,
-      "cardsWithTrigramRef": 17,
-      "cardsWithGeneKeysRef": 32,
+      "cardsWithTrigramRef": 14,
+      "cardsWithGeneKeysRef": 30,
       "cardsWithHdRef": 15,
       "cardsWithOrganAminoRef": 4,
       "totalCards": 64
     },
     "ICHING": {
       "cardNameRefs": 0,
-      "codeWordRefs": 2,
-      "trigramRefs": 825,
-      "geneKeysTermRefs": 74,
-      "hdGateRefs": 47,
-      "organAminoRefs": 4,
+      "codeWordRefs": 1,
+      "trigramRefs": 800,
+      "geneKeysTermRefs": 71,
+      "hdGateRefs": 44,
+      "organAminoRefs": 3,
       "cardsWithCardNameRef": 0,
-      "cardsWithCodeWordRef": 2,
+      "cardsWithCodeWordRef": 1,
       "cardsWithTrigramRef": 64,
-      "cardsWithGeneKeysRef": 15,
+      "cardsWithGeneKeysRef": 17,
       "cardsWithHdRef": 9,
       "cardsWithOrganAminoRef": 2,
       "totalCards": 64
     },
     "KEYS": {
       "cardNameRefs": 3,
-      "codeWordRefs": 15,
-      "trigramRefs": 49,
-      "geneKeysTermRefs": 639,
-      "hdGateRefs": 35,
+      "codeWordRefs": 14,
+      "trigramRefs": 50,
+      "geneKeysTermRefs": 613,
+      "hdGateRefs": 32,
       "organAminoRefs": 3,
       "cardsWithCardNameRef": 3,
-      "cardsWithCodeWordRef": 13,
+      "cardsWithCodeWordRef": 12,
       "cardsWithTrigramRef": 19,
       "cardsWithGeneKeysRef": 64,
       "cardsWithHdRef": 13,
@@ -1161,52 +1117,57 @@
     },
     "DESIGN": {
       "cardNameRefs": 0,
-      "codeWordRefs": 255,
+      "codeWordRefs": 211,
       "trigramRefs": 14,
-      "geneKeysTermRefs": 83,
-      "hdGateRefs": 161,
-      "organAminoRefs": 12,
+      "geneKeysTermRefs": 80,
+      "hdGateRefs": 152,
+      "organAminoRefs": 13,
       "cardsWithCardNameRef": 0,
-      "cardsWithCodeWordRef": 64,
+      "cardsWithCodeWordRef": 54,
       "cardsWithTrigramRef": 5,
-      "cardsWithGeneKeysRef": 32,
-      "cardsWithHdRef": 44,
-      "cardsWithOrganAminoRef": 7,
+      "cardsWithGeneKeysRef": 29,
+      "cardsWithHdRef": 41,
+      "cardsWithOrganAminoRef": 8,
       "totalCards": 64
     },
     "BODY": {
       "cardNameRefs": 0,
-      "codeWordRefs": 239,
-      "trigramRefs": 31,
-      "geneKeysTermRefs": 152,
-      "hdGateRefs": 31,
-      "organAminoRefs": 211,
+      "codeWordRefs": 207,
+      "trigramRefs": 30,
+      "geneKeysTermRefs": 130,
+      "hdGateRefs": 28,
+      "organAminoRefs": 210,
       "cardsWithCardNameRef": 0,
-      "cardsWithCodeWordRef": 64,
-      "cardsWithTrigramRef": 9,
-      "cardsWithGeneKeysRef": 57,
+      "cardsWithCodeWordRef": 57,
+      "cardsWithTrigramRef": 10,
+      "cardsWithGeneKeysRef": 53,
       "cardsWithHdRef": 20,
       "cardsWithOrganAminoRef": 63,
       "totalCards": 64
     },
     "RELATIONS": {
-      "cardNameRefs": 0,
-      "codeWordRefs": 297,
-      "trigramRefs": 795,
-      "geneKeysTermRefs": 185,
-      "hdGateRefs": 55,
-      "organAminoRefs": 5,
-      "cardsWithCardNameRef": 0,
-      "cardsWithCodeWordRef": 64,
-      "cardsWithTrigramRef": 64,
+      "cardNameRefs": 1,
+      "codeWordRefs": 261,
+      "trigramRefs": 775,
+      "geneKeysTermRefs": 181,
+      "hdGateRefs": 53,
+      "organAminoRefs": 4,
+      "cardsWithCardNameRef": 1,
+      "cardsWithCodeWordRef": 58,
+      "cardsWithTrigramRef": 63,
       "cardsWithGeneKeysRef": 49,
       "cardsWithHdRef": 20,
-      "cardsWithOrganAminoRef": 4,
+      "cardsWithOrganAminoRef": 3,
       "totalCards": 64
     }
   },
   "missingReport": [],
   "deviationReport": [
+    {
+      "card": 3,
+      "section": "ICHING",
+      "subsection": "The symbol"
+    },
     {
       "card": 32,
       "section": "ICHING",

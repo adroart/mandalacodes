@@ -148,6 +148,9 @@ const UniversalLanguageCard: React.FC = () => {
     reldata: buildReldata(card, synthesis),
     kin: buildKin(card, synthesis),
     overlays: OVERLAYS,
+    // This card's own hexagram-symbol reading, when authored (`### The
+    // symbol` under `## ICHING`). Most cards do not have one yet.
+    ichingSymbolParas: (card.iching.symbol ?? '').split('\n\n').map(s => s.trim()).filter(Boolean),
     text: (() => {
       const P = (s?: string): string[] => (s ?? '').split('\n\n').map(x => x.trim()).filter(Boolean);
       const ulP = (synthesis?.essence ?? '').split('\n\n').map(s => s.trim()).filter(Boolean);
@@ -269,6 +272,9 @@ const UniversalLanguageCard: React.FC = () => {
           no chart yet asks the question, a chart with this code in it names
           the placement, a chart without it says nothing. */}
       <div className="eb-reading ul-chart-row" data-palette={palette}>
+        {synthesis?.summary ? (
+          <p className="ul-essence">{synthesis.summary}</p>
+        ) : null}
         <YourPositionCallout gate={card.number} />
         <SaveToCollectionButton
           item={cardCollectionItem(card.number)}
@@ -337,6 +343,17 @@ const chartRowStyles = `
     flex-direction: column;
     align-items: center;
     gap: 10px;
+  }
+  .ul-essence {
+    font-family: var(--font-reading);
+    font-size: clamp(17px, 1.6vw, 20px);
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    color: var(--d-1);
+    text-align: center;
+    text-wrap: balance;
+    max-width: 560px;
+    margin: 0 0 clamp(14px, 2vw, 22px);
   }
   @media (max-width: 819px) {
     .ul-chart-row { padding-left: 10px; padding-right: 10px; }
@@ -487,17 +504,20 @@ function AstrologyGlyph({ value }: { value: string }) {
 // not the card), verbatim from the template.
 const OVERLAYS: EBData['overlays'] = {
   iching: { kicker: 'The Book of Changes', title: 'I Ching', sub: 'attributed to Fu Xi, King Wen, the Duke of Zhou, and Confucius', gratitude: 'Richard Wilhelm and Cary F. Baynes', paras: [
-    'The I Ching is the oldest text in active spiritual use anywhere in the world. Its earliest layers are attributed to the legendary Fu Xi, who is said to have seen, in eight three-line figures, the structure of the cosmos.',
-    'King Wen of Zhou ordered the sixty-four hexagrams and named each one. His son, the Duke of Zhou, wrote the line statements. Confucius and his school added the Ten Wings, turning the oracle into a philosophical text.',
-    'The translation that opens the I Ching to the modern imagination is Richard Wilhelm’s, carried into English by Cary F. Baynes in 1950 with a foreword by Carl Jung.' ] },
+    'A hexagram is six lines, read from the bottom up. Bottom is where the situation starts. Top is where it ends.',
+    'A whole line pushes. A broken line gives way.',
+    'The lower three lines are what is happening inside you. The upper three are what you are meeting in the world.',
+    'When you cast, the lines that turn are where you stand now.' ] },
   genekeys: { kicker: 'A contemplative path', title: 'Gene Keys', sub: 'transmitted by Richard Rudd, 2002 onward', gratitude: 'Richard Rudd', paras: [
-    'The Gene Keys are the youngest of the three systems. Richard Rudd received the transmission over a long, contemplative period beginning in the early 2000s.',
-    'Each of the sixty-four keys names three frequencies of the same archetype: the Shadow, the Gift, and the Siddhi.',
-    'The sixty-four Gene Keys correspond directly to the sixty-four hexagrams of the I Ching and to the sixty-four codons of human DNA.' ] },
+    'Each of the sixty-four keys names one energy at three heights: the Shadow, the Gift, and the Siddhi.',
+    'The Shadow is the seed. It sits under the earth, surrounded by what has died, and it gets pushed down or lashed out from. Learned from, it begins to move.',
+    'The Gift is the plant. You stop fighting the energy and start to stand with it, and it starts to give.',
+    'The Siddhi is the flower. You stop holding it as yours at all. It is a force moving through you, and you are what it moves through.',
+    'The point of learning the Shadow is to recognise it in yourself: to feel it instead of pushing it down, to hold it, to let the stories around it go, and to move up.' ] },
   humandesign: { kicker: 'A map of energy', title: 'Human Design', sub: 'received by Ra Uru Hu, Ibiza, January 1987', gratitude: 'Ra Uru Hu', paras: [
-    'Human Design enters the world through Ra Uru Hu, who in January of 1987 reports an eight-day-and-night encounter with a voice he calls the Voice.',
-    'It is a synthesis of the I Ching, Western astrology, the Hindu chakra system, the Kabbalistic Tree of Life, and the science of the neutrino, woven into a single chart called the bodygraph.',
-    'The bodygraph names which centres in a person are defined and which are open, and locates sixty-four gates against the calendar of the sun and the moment of birth.' ] },
+    'Human Design says you were born with a body wired a particular way. Nine centres, each a place where a kind of energy lives. Sixty-four gates, each a pressure or a theme that energy moves through. Thirty-six channels, each two gates joined into one working circuit.',
+    'Some of it is fixed in you from birth. A centre or a gate that is defined in your chart runs all the time, and it is the most reliable thing you have. One that is open takes on the energy of whoever is near.',
+    'Everyone meets every gate\'s theme, through the people around them and the turning of the year. So a card can tell you where an energy presses and what it drives, and only your chart can tell you whether it is yours all the time.' ] },
 };
 
 export default UniversalLanguageCard;

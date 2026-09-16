@@ -32,7 +32,7 @@ describe('hosted Oracle REST parity', () => {
     expect(hosted).toEqual(local.map(withoutSearchText));
     expect(hosted[2]).toMatchObject({
       // Mid-paragraph prose fixture on purpose (see cardMarkdown.test.ts).
-      glance: { reading: expect.stringContaining('pressing up the way a sprout forces the crust of the ground') },
+      glance: { reading: expect.stringContaining('Something new is already alive in you and it does not have a shape yet') },
       relations: { codon_ring: { name: 'Ring of Life and Death' } },
     });
   });
@@ -46,18 +46,18 @@ describe('hosted Oracle REST parity', () => {
 
   it('searches the same complete Markdown-derived fields as the local MCP', async () => {
     const corpus = await loadCorpus();
-    const localHits = searchCorpus(corpus, 'cows field', { limit: 8, expand: false })
+    const localHits = searchCorpus(corpus, 'steady mess', { limit: 8, expand: false })
       .map(withoutLocalSearchExtras);
     const response = await searchCards({
-      request: new Request('https://example.test/api/oracle/search?q=cows%20field&limit=8&literal=1'),
+      request: new Request('https://example.test/api/oracle/search?q=steady%20mess&limit=8&literal=1'),
     } as never);
     const body = await response.json() as { query: string; hits: unknown[] };
 
-    expect(body.query).toBe('cows field');
+    expect(body.query).toBe('steady mess');
     expect(body.hits).toEqual(localHits);
     expect(body.hits).toContainEqual(expect.objectContaining({
       number: 3,
-      matched: expect.arrayContaining(['cows']),
+      matched: expect.arrayContaining(['steady']),
     }));
   });
 });

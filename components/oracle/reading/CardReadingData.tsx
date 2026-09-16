@@ -23,15 +23,18 @@ import CardReadingBodyHost, { type CardReadingBodyData } from './generated/CardR
 const paras = (s?: string): string[] =>
   (s ?? '').split('\n\n').map((p) => p.trim()).filter(Boolean);
 
-/* The six lenses, in the order the design's rail expects them. */
-const LENSES: CardReadingLens[] = [
+import { RELATIONS_PANEL_ENABLED } from '../eb/generated/EBReading.host';
+
+/* The six lenses, in the order the design's rail expects them. Relations is
+   paused (2026-09-16) and drops out of every jump bar while the flag is off. */
+const LENSES: CardReadingLens[] = ([
   { id: 'ul', label: 'Universal Language', tab: 'UL', glyph: 'star' },
   { id: 'iching', label: 'I Ching', tab: 'I Ching', glyph: 'hex' },
   { id: 'genekeys', label: 'Gene Keys', tab: 'Gene Keys', glyph: 'sprout' },
   { id: 'humandesign', label: 'Human Design', tab: 'Human Design', glyph: 'diamond' },
   { id: 'body', label: 'Body', tab: 'Body', glyph: 'circle' },
   { id: 'relations', label: 'Relations', tab: 'Relations', glyph: 'rings' },
-];
+] as CardReadingLens[]).filter((l) => RELATIONS_PANEL_ENABLED || l.id !== 'relations');
 
 
 /* The design's own top block: kicker, card name, the hexagram divider and the

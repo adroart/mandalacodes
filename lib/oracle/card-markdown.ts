@@ -561,6 +561,9 @@ export interface MdIchingSection {
   judgement_lines: string[];
   image_lines: string[];
   lines: MdIchingLine[];
+  /** Optional per-card symbol reading, from `### The symbol` (paragraphs
+   *  joined by "\n\n"). Undefined when the card has no such subsection. */
+  symbol?: string;
 }
 
 /**
@@ -644,6 +647,8 @@ export function mapIching(parsed: ParsedCard): MdIchingSection | undefined {
   const judgementSub = findSub(sec, 'Judgement');
   const imageSub = findSub(sec, 'Image');
   const movingSub = findSub(sec, 'Moving lines');
+  const symbolSub = findSub(sec, 'The symbol');
+  const symbol = symbolSub ? para(symbolSub) : '';
 
   return {
     number: num(parsed.frontmatter['number']),
@@ -655,6 +660,7 @@ export function mapIching(parsed: ParsedCard): MdIchingSection | undefined {
     judgement_lines: judgementSub?.bullets ?? [],
     image_lines: imageSub?.bullets ?? [],
     lines: parseMovingLines(movingSub, parsed.frontmatter['iching_lines']),
+    symbol: symbol || undefined,
   };
 }
 

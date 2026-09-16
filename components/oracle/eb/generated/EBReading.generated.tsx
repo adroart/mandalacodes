@@ -359,18 +359,24 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <div className="ul-ji" style={{ marginTop: "clamp(36px,4vw,48px)", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: "28px" }}>
           <div style={{ borderTop: "1px solid var(--d-rule)", paddingTop: "18px" }}>
             <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 14px" }}>
-            The Judgement
+            The Image
+            </p>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", textTransform: "none", color: "var(--d-2)", margin: "-8px 0 14px" }}>
+            the scene, and how to act in it
             </p>
             <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.015em", fontSize: "18px", lineHeight: "1.75", color: "var(--d-1)", margin: "0" }}>
-            {vals.ichingJudgement}
+            {vals.ichingImage}
             </p>
           </div>
           <div style={{ borderTop: "1px solid var(--d-rule)", paddingTop: "18px" }}>
             <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--accent-d)", margin: "0 0 14px" }}>
-            The Image
+            The Judgement
+            </p>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", textTransform: "none", color: "var(--d-2)", margin: "-8px 0 14px" }}>
+            the ruling on this situation
             </p>
             <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.015em", fontSize: "18px", lineHeight: "1.75", color: "var(--d-1)", margin: "0" }}>
-            {vals.ichingImage}
+            {vals.ichingJudgement}
             </p>
           </div>
         </div>
@@ -384,7 +390,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               Cast the coins
               </h3>
               <p style={{ fontFamily: 'var(--font-reading)', fontSize: "16px", color: "var(--d-3)", textAlign: "center", margin: "0 auto 24px", maxWidth: "42ch" }}>
-              Three coins, six times. The throw shows which lines are moving for you now, the places this hexagram is already turning into another.
+              For three thousand years people have thrown coins to ask the I Ching a question. You already have your answer: this card. Throw the coins to find where you are in it right now, and what it is turning into.
               </p>
               <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px", perspective: "560px" }}>
                 <button type="button" className="ul-coin-cast" ref={vals.registerCoins} onClick={vals.doCast} disabled={vals.casting} aria-label="Cast the coins" style={{ display: "flex", gap: "14px" }}>
@@ -414,7 +420,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                   stylesheet force-left-aligns every p in a flex column. */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", animation: "ulFadeIn 500ms ease both" }}>
                 <div style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--d-3)", marginBottom: "26px" }}>
-                Your cast
+                Your throw
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "9px", alignItems: "center" }}>
                   {(vals.castDisplay ?? []).map((ln, lnIdx) => (
@@ -441,7 +447,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                       {vals.castHexLabel}
                       </span>
                       <span style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "4px", marginTop: "16px" }}>
-                      Read where it stands →
+                      Open that card →
                       </span>
                     </button>
                   </>
@@ -499,7 +505,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                           </p>
                           {ml.becomes ? (
                             <p style={{ fontFamily: 'var(--font-ui)', fontSize: "9.5px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--d-3)", margin: "0" }}>
-                            {vals.castMultiMoving ? 'This line alone' : 'Flipped'} → {ml.becomes}
+                            Turned over, it leads to {ml.becomes}
                             </p>
                           ) : null}
                         </div>
@@ -712,6 +718,9 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px", marginTop: "10px" }}>
             Human Design · about
             </span>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", textTransform: "none", color: "var(--d-2)", marginTop: "10px" }}>
+            where this presses in you, what it drives
+            </span>
           </button>
         </header>
         {(vals.chartPreview) ? (
@@ -825,9 +834,6 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </span>
           <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
           {vals.bodyAminoChip}
-          </span>
-          <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--l-2)", border: "1px solid var(--l-rule)", padding: "7px 14px" }}>
-          {vals.bodyRingChip}
           </span>
         </div>
         <div style={{ borderTop: "1px solid var(--l-rule)", padding: "24px 0" }}>
@@ -1056,6 +1062,25 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.01em", fontSize: "15px", color: "var(--l-3)", margin: "0 0 20px" }}>
           {vals.overlaySub}
           </p>
+          {(vals.overlaySymbolParas ?? []).length > 0 ? (
+          <>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-3)", margin: "0 0 10px" }}>
+            {vals.overlaySymbolLabel}
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "22px" }}>
+              {(vals.overlaySymbolParas ?? []).map((p, pIdx) => (
+                <React.Fragment key={pIdx}>
+                  <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.78", color: "var(--l-2)", margin: "0" }}>
+                  {p}
+                  </p>
+                </React.Fragment>
+              ))}
+            </div>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: "10px", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--l-3)", margin: "0 0 10px" }}>
+            {vals.overlayEssayLabel}
+            </p>
+          </>
+          ) : null}
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             {(vals.overlayParas ?? []).map((p, pIdx) => (
               <React.Fragment key={pIdx}>

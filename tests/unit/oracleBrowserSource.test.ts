@@ -145,11 +145,11 @@ describe('browser Oracle Markdown source contract', () => {
       keywords: expect.arrayContaining(['New Beginnings']),
       // Deliberately mid-paragraph prose fixtures (see cardMarkdown.test.ts), so a
       // rewrite of opening sentences does not break the browser synthesis contract.
-      essence: expect.stringContaining('pressing up the way a sprout forces the crust of the ground'),
+      essence: expect.stringContaining('Something new is already alive in you and it does not have a shape yet'),
       synthesis: {
-        gene_keys: { gift: expect.stringContaining('an acorn keeps working toward a shape of tree it has never seen') },
-        human_design: { gate: expect.stringContaining('holding the insight until the world can receive it') },
-        body: { physiology: expect.stringContaining('pulls the breath up out of the abdomen') },
+        gene_keys: { gift: expect.stringContaining('making something new out of what is changing') },
+        human_design: { gate: expect.stringContaining('a shape that can last') },
+        body: { physiology: expect.stringContaining('The navel is a scar, and every person carries one') },
       },
     });
   });
@@ -175,7 +175,7 @@ describe('browser Oracle Markdown source contract', () => {
     for (const binding of [
       'vals.gkRepressiveName', 'vals.gkRepressiveFace', 'vals.gkRepressiveParas', 'vals.gkReactiveName', 'vals.gkReactiveFace', 'vals.gkReactiveParas',
       'vals.hdGateChip', 'vals.hdCentreChip', 'vals.hdChannelChip',
-      'vals.bodyRingChip', 'vals.bodyPhysHeading', 'vals.bodyAminoHeading',
+      'vals.bodyPhysHeading', 'vals.bodyAminoHeading',
     ]) {
       expect(markup, binding).toContain(binding);
     }

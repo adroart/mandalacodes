@@ -32,6 +32,8 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
 
 ## Soon
+- [ ] Relations section: paused 2026-09-16, panel hidden by RELATIONS_PANEL_ENABLED in components/oracle/eb/generated/EBReading.host.tsx; needs its own deeper dive to be relational before it is written under the brief and shown again _(band: you-required)_ _(effort: deep)_ → Plan: [relations-guidance.md](todo/plans/writing-guideline/relations-guidance.md)
+- [ ] Write the organ and amino acid reference entries for the 64 (about 35 organs, 21 amino acids) in the vault under body/organs and body/amino-acids, in the shape of liver.md and lysine.md, so every Body section is written from its entry _(band: agent-runnable)_ _(effort: deep)_
 
 ### Found in the 2026-09-08 audit and build day
 - [ ] Card 57 shows a dangling dash for its two Gene Keys nature headings because the source names are empty _(band: you-required)_ _(effort: quick)_

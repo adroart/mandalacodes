@@ -12,6 +12,11 @@ import { themeCanvasFont } from '../../../../shared/themeFonts';
 import { OracleEntrancePortal } from '../OracleEntrancePortal';
 import { EBReadingMarkup } from './EBReading.generated';
 
+// Relations is paused (Adrian, 2026-09-16): the section needs a deeper dive
+// before it is relational. Nothing is removed; the panel, its nav button and
+// its jump are hidden until this is true again.
+export const RELATIONS_PANEL_ENABLED = false;
+
 export interface EBData {
   cardName: string;
   code: number;
@@ -23,6 +28,9 @@ export interface EBData {
   reldata: Record<string, { kicker: string; kind: string; name: string; body: string[] }>;
   kin: { key: string; x: number; y: number; kind: string; glyph: React.ReactNode; fontRole: 'display' | 'cjk'; size: string; dim: string; svgR: number; label: string }[];
   overlays: Record<string, { kicker: string; title: string; sub: string; gratitude: string; paras: string[] }>;
+  // This card's own hexagram-symbol reading, shown first in the I Ching
+  // overlay above the general essay. Empty for cards without one yet.
+  ichingSymbolParas: string[];
   // UL panel reading + invocation, I Ching reading/judgement/image/combination, GK, HD, Body — bound text
   text: Record<string, any>;
 }
@@ -755,10 +763,13 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     else castSummary = '';
 
     const ov = this.state.overlay ? this.OVERLAYS[this.state.overlay] : null;
+    // The I Ching overlay leads with THIS card's own symbol reading, when
+    // authored, before the general "how to read any hexagram" essay.
+    const symbolParas = this.state.overlay === 'iching' ? (this.props.data.ichingSymbolParas ?? []) : [];
     const rel = this.RELDATA[this.state.relSel] || this.RELDATA.pair;
     const enc = encodeURIComponent;
     const movingShown = (cast && movingNums.length) ? this.MOVING.filter((m) => movingNums.includes(m.n)) : this.MOVING;
-    const movingHeading = (cast && movingNums.length) ? 'Your Moving Lines' : 'The Six Moving Lines';
+    const movingHeading = (cast && movingNums.length) ? 'The lines in motion' : 'The six stages';
     // Say the mechanic in plain words. A reader who has never cast before has
     // to be told what a moving line is, and that flipping these is what turns
     // one hexagram into the other.
@@ -767,12 +778,12 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     // Two sentences. Define the term, then name the consequence.
     let movingSub;
     if (cast && movingNums.length) {
-      movingSub = countWord + ' of the six lines came up unstable, ' +
-        (many ? 'places already in motion. Flip them and ' : 'a place already in motion. Flip it and ') +
-        (primaryHex ? primaryHex.name : 'this hexagram') + ' becomes ' +
-        (relatingHex ? relatingHex.name : 'the next hexagram') + '.';
+      movingSub = countWord + (many ? ' lines landed in motion. ' : ' line landed in motion. ') +
+        'Each carries its own reading. Turned over, ' +
+        (primaryHex ? primaryHex.name : 'this card') + ' becomes ' +
+        (relatingHex ? relatingHex.name : 'the next card') + '.';
     } else {
-      movingSub = 'The arc of the lines, from the deep to one step too high.';
+      movingSub = 'The six stages of this situation, from the start at the bottom to the end at the top.';
     }
 
     return {
@@ -790,7 +801,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       movingLines: movingShown,
       movingHeading, movingSub,
       showMovingLines: !!(cast && movingNums.length),
-      castHexKicker: relatingHex ? 'Moving toward' : 'Your cast',
+      castHexKicker: relatingHex ? 'Turning into' : 'Your throw',
       castHexGlyph: centerHex ? centerHex.glyph : '',
       castHexLabel: centerHex ? ('Hexagram ' + centerHex.num + ' · ' + centerHex.name) : '',
       // The hexagram the throw actually landed on, named under its own glyph.
@@ -864,6 +875,12 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       overlaySub: ov ? ov.sub : '',
       overlayParas: ov ? ov.paras : [],
       overlayGratitude: ov ? ov.gratitude : '',
+      // This card's symbol reading (when authored) plus the labels that
+      // frame it and the essay that follows. Empty when there is none, so
+      // the overlay renders exactly as before for the other 63 cards.
+      overlaySymbolLabel: symbolParas.length ? 'This hexagram' : '',
+      overlaySymbolParas: symbolParas,
+      overlayEssayLabel: symbolParas.length ? 'How to read any hexagram' : '',
       indexOpen: this.state.index,
       openIndex: this.openIndex,
       closeIndex: this.closeIndex,
@@ -909,11 +926,11 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       ['humandesign', 'Human Design', 'Human Design'],
       ['body', 'Body', 'Body'],
       ['relations', 'Relations', null],
-    ];
+    ].filter(([key]) => RELATIONS_PANEL_ENABLED || key !== 'relations');
     const vals = this.renderVals();
     return (
       <>
-      <div className="eb-reading" data-oracle-reader data-oracle-choreography={this.state.choreography} data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
+      <div className="eb-reading" data-relations={RELATIONS_PANEL_ENABLED ? 'on' : 'off'} data-oracle-reader data-oracle-choreography={this.state.choreography} data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
         <nav className="oracle-reading-progress" data-oracle-progress-nav aria-label="Oracle reading">
           <div className="oracle-reading-progress__jumps" role="navigation" aria-label="Jump to system">
             {systems.map(([key, label, text]) => (

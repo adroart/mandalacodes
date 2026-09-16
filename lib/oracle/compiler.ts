@@ -204,6 +204,7 @@ export function compileParsedCard(
         nature: lowerTrigram.nature,
       },
       lines: iching.lines,
+      symbol: iching.symbol,
     },
 
     gene_keys: {
@@ -260,6 +261,7 @@ export function buildSearchText(card: CanonicalCard): string {
     card.iching.hexagram_name,
     card.iching.trigram_combination,
     card.iching.reading,
+    card.iching.symbol,
     ...card.iching.judgement_lines ?? [],
     ...card.iching.image_lines ?? [],
     ...card.iching.lines.flatMap(line => [line.image, line.reading, line.becomes?.name]),
