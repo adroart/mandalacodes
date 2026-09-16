@@ -1,3 +1,7 @@
+## 2026-09-16
+
+- [x] Write the organ and amino acid reference entries for the 64 (about 35 organs, 21 amino acids) in the vault under body/organs and body/amino-acids, in the shape of liver.md and lysine.md, so every Body section is written from its entry _(band: agent-runnable)_ _(effort: deep)_ → done 2026-09-16: 21 amino acid entries (20 plus the terminator codon) and 32 organ entries in the vault, every card's frontmatter organ and amino acid covered; cards 23, 33, 62 (throat + thyroid), 56 (thyroid + parathyroid) and 48 (lymphatic system + spleen) draw on two organ entries; card-vs-Gene-Keys physiology-row mismatches recorded inside the entries for cards 12, 50, 53, 57; the source gives the amino acid a reason only for tryptophan (35), methionine (41), glutamine (13), histidine (55) and the terminator codon (12, 33, 56), and every other entry says so plainly; the classical Neijing and Nanjing chapter citations were checked against the chapters (one course error fixed in parathyroid.md); Deadman and Maciocia page references remain unchecked because neither text is on the machine
+
 ## 2026-09-12
 
 - [x] Card page side column, round two: the keynotes read as one sentence; set them as separate words, slightly smaller, more space between, and give each block (title plate, keynotes, the three links) its own close background tone and text colour so they read as different things at a glance. Adrian's words 2026-09-12 after the title plate shipped in #195 _(band: agent-runnable)_ _(effort: moderate)_ → shipped 2026-09-12
