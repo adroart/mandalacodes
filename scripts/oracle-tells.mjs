@@ -38,11 +38,13 @@ for (const f of files) {
       .join('\n');
   const text = prose(noRel);
   const sents = text.replace(/\s+/g, ' ').match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [];
-  const c = { card: f.slice(0, 2), sentences: sents.length };
+  const c = { card: f.slice(0, 2), sentences: sents.length, stems: [] };
   for (const k of KEYS) c[k] = 0;
   for (const s0 of sents) {
     const s = s0.trim();
     if (/^And\b/.test(s)) c.startAnd++;
+    const w = s.toLowerCase().replace(/[^a-z' ]/g, '').split(/\s+/).filter(Boolean);
+    if (w.length >= 6) c.stems.push(w.slice(0, 6).join(' '));
     if ((s.match(/\band\b/g) || []).length >= 2) c.twoAnds++;
     if ((s.match(/,/g) || []).length >= 3) c.threeCommas++;
     if (s.split(/\s+/).length > 30) c.long30++;
@@ -66,19 +68,41 @@ for (const f of files) {
   perCard.push(c);
 }
 
+// Deck-wide: a sentence opening (first six words, lowercased) found on three or
+// more cards is a template copy, wherever it sits. Found by the wave 1 agents:
+// "People who carry this all their lives" on 40 cards, "Whether the other half
+// sits in you" on 44, "Notice where you are holding yourself" on 26.
+const stemCards = new Map();
+for (const c of perCard) {
+  for (const stem of c.stems) {
+    if (!stemCards.has(stem)) stemCards.set(stem, new Set());
+    stemCards.get(stem).add(c.card);
+  }
+}
+const sharedStems = [...stemCards.entries()].filter(([, set]) => set.size >= 3).sort((a, b) => b[1].size - a[1].size);
+tot.sharedStems = sharedStems.length;
+for (const c of perCard) c.sharedStems = c.stems.filter((st) => (stemCards.get(st) || new Set()).size >= 3).length;
+
 const pct = (n) => (tot.sentences ? ((100 * n) / tot.sentences).toFixed(1) + '%' : '0%');
 
 if (json) {
   console.log(JSON.stringify({ ...tot, threeCommasPct: pct(tot.threeCommas), long30Pct: pct(tot.long30) }));
 } else if (only.length) {
-  for (const c of perCard) console.log(JSON.stringify(c));
+  for (const c of perCard) {
+    const { stems, ...rest } = c;
+    console.log(JSON.stringify(rest));
+    for (const st of new Set(stems.filter((x) => (stemCards.get(x) || new Set()).size >= 3)))
+      console.log(`  shared stem "${st}" on ${stemCards.get(st).size} cards`);
+  }
 } else {
   console.log(
     `${tot.cards} cards, ${tot.sentences} sentences. startAnd ${tot.startAnd}, twoAnds ${tot.twoAnds}, notXItIsY ${tot.notXItIsY}, heightOpeners ${tot.heightOpeners}, wayIsTo ${tot.wayIsTo}, thisIsTheEnergy ${tot.thisIsTheEnergy}, systemWord ${tot.systemWord}, itAlso ${tot.itAlso}, cardTalk ${tot.cardTalk}, threeCommas ${tot.threeCommas} (${pct(tot.threeCommas)}), long30 ${tot.long30} (${pct(tot.long30)})`,
   );
-  const score = (c) => c.twoAnds + c.startAnd + c.heightOpeners + c.wayIsTo + c.systemWord;
+  const score = (c) => c.twoAnds + c.startAnd + c.heightOpeners + c.wayIsTo + c.systemWord + c.sharedStems;
   const worst = [...perCard].sort((a, b) => score(b) - score(a)).slice(0, 6);
   console.log('worst: ' + worst.map((c) => `${c.card}(${score(c)})`).join(' '));
   const clean = perCard.filter((c) => score(c) === 0).map((c) => c.card);
+  console.log(`shared sentence stems (3+ cards): ${sharedStems.length}`);
+  for (const [st, set] of sharedStems.slice(0, 12)) console.log(`  ${set.size}  ${st}`);
   console.log(`cards with none of the hard tells: ${clean.length} of ${tot.cards}: ${clean.join(' ')}`);
 }

@@ -28,3 +28,13 @@ One page, read after oracle/WRITERS-BRIEF.md and before the two cards. This is t
 ## Final message
 
 Short, one block per card: the tells line before and after; what side_by_side recorded; how many sentences you cut, split, or replaced; the count of suspect sentences in the report; anything in the sources that contradicted the frontmatter; the one place you were least sure.
+
+## Addendum, same day: the mechanical pass (Sonnet, cards 17 to 64)
+
+Adrian asked for the rest at lower cost. From card 17 on, the pass is split: a Sonnet agent does the mechanical part on two cards, and Fable writes the step 5 reports for the whole deck afterwards in one reading pass. So for the mechanical agent:
+
+- Do steps 1 to 4 only. Do NOT run the packet script, do not read the packet, do not write the report file. The sources are not needed to remove a tell.
+- Step 1 now includes deck-wide copied sentence openings. `node scripts/oracle-tells.mjs NN` prints every sentence stem on your card that three or more cards share ("in a family it is the" is on 53 cards, "whether the other half sits in" on 50, "in the body this energy is" on 48, "people who carry this all their" on 39, "notice where you are holding yourself" on 26). Each one is a template copy. Rework each so the sentence opens in this card's own words and carries the same fact, in the fewest changed words; or cut it where the paragraph already said the thing. The DESIGN channel sentences ("its other half is gate", "together they make the channel of") carry a structural fact: keep the fact, vary the sentence.
+- The "Not X. It is Y" hinge is on almost every card, lowercase too ("The fog is not the wall. It is the door"). At most one per card stays; rework the rest as single finished thoughts.
+- Measure of done for your card: `node scripts/oracle-tells.mjs NN` shows twoAnds 0, notXItIsY at most 1, heightOpeners 0, wayIsTo 0, thisIsTheEnergy 0, systemWord 0, sharedStems 0; `node --import tsx scripts/lint-oracle-prose.ts` shows no banned word and no stem pair for your card; `node todo/plans/writing-guideline/punctuation.mjs oracle/cards/NN.md` passes.
+- Final message: the tells line before and after for each card, the side_by_side you recorded, and the count of sentences cut, split, or replaced. Nothing else.
