@@ -55,3 +55,5 @@
 - [<] Make Mandala Codes the go-to mandala authority site (multi-phase content, outreach, and press campaign)   → Plan: [mandala-authority.md](todo/plans/mandala-authority.md) _(parked → TODO.md)_
 - [x] Write the one writing guideline for the deck; `oracle/GUIDELINE.md`, 2026-09-12, from the survey, the Fable pass and Adrian's five answers; sixteen older documents now carry supersession lines.
 - [x] Refill the 39 empty vault extract files in hexagrams 50 to 64; `npm run refill:extracts`, 2026-09-12, pdftotext with OCR fallback for the ten broken Wilhelm chapters, no model involved.
+
+- [x] Relations section: paused 2026-09-16, unpaused the same day. Adrian chose "where this energy goes next", Fable wrote the craft and card 1, he read it on the preview and said it holds; brief paragraph locked, panel and stack on (PR #221). Plan: [relations-guidance.md](plans/writing-guideline/relations-guidance.md)
