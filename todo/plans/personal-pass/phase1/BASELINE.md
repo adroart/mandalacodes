@@ -17,3 +17,17 @@ Two agents found the script under-counting. "Not X. It is Y" only matched a capi
     notXItIsY 92, systemWord 3 (DESIGN excluded)
 
 Cards 03 to 08 were passed against the old count; the closing mop-up wave re-runs the tells on them.
+
+## After the pass, 2026-09-16 22:10 WITA
+
+Measured on the branch after all 64 cards, with the corrected script (hinge counts lowercase, skips has-not; way-is-to matches the instruction frame only; copied openings counted deck-wide but no longer required):
+
+    64 cards, 9330 sentences. startAnd 0, twoAnds 2, notXItIsY 49, heightOpeners 2, wayIsTo 1, thisIsTheEnergy 2, systemWord 1, itAlso 0, cardTalk 0, threeCommas 1060 (11.4%), long30 780 (8.4%)
+    lint:prose: 0 errors; 18 banned-word hits, all inside RELATIONS (paused, untouchable) or cards 01 and 02
+    every residual hard tell is on card 01 or 02 (Adrian's; report only, no edits), except two counted hinges on 46 and 61 that are not hinges
+
+What moved: "Not X. It is Y" 92 to 49 (one allowed per card), "The way is to" 38 to 1, two-ands 17 to 2, copied Body openers reworded on 03 to 28 only (then dropped as cosmetic; see the second addendum). Three-comma and thirty-word sentences barely moved (11.9 to 11.4 percent, 9.1 to 8.4) because the pass split only where two thoughts shared a sentence; the plan's 5 percent target was a guess and is not met, on purpose.
+
+What was NOT done from the plan's clean line: copied openings to zero (dropped, cosmetic), comma and length under 5 percent (not chased), the Fable four-card read (next step, with the deck-wide suspect lists). Reports (step 5) exist for cards 01 to 16 only; the Fable reading pass writes the other 48.
+
+Cost, measured: Opus pairs 310k to 420k tokens each (8 pairs); Sonnet pairs 150k to 215k (24 pairs). About 7.5M tokens in agents for the pass.
