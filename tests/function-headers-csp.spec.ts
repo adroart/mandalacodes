@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 /* todo/plans/overarching-plan.md Track C, follow-up named in the C2 wave log
  * entry (2026-09-08): functions/_middleware.ts gives every Pages Function

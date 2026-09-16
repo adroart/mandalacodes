@@ -33,8 +33,6 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 ## Soon
 
-- [ ] Card page side column, round two: the keynotes read as one sentence; set them as separate words, slightly smaller, more space between, and give each block (title plate, keynotes, the three links) its own close background tone and text colour so they read as different things at a glance. Adrian's words 2026-09-12 after the title plate shipped in #195 _(band: agent-runnable)_ _(effort: moderate)_
-
 ### Found in the 2026-09-08 audit and build day
 - [ ] Card 57 shows a dangling dash for its two Gene Keys nature headings because the source names are empty _(band: you-required)_ _(effort: quick)_
 - [ ] The cast-content command still points at the deleted changing-lines placeholder; point it at the six lines inside each card's I Ching section _(band: agent-runnable)_ _(effort: quick)_

@@ -51,7 +51,7 @@ export interface CardReadingDesktopData {
   cardNumber?: string;
   elementLine?: string;
   gateLine?: string;
-  keynotesLine?: string;
+  keynotes?: string[];
   /* The side column's three links. The piece one is per-card. */
   forMeHref?: string;
   pieceHref?: string;
@@ -129,7 +129,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       cardNumber: data.cardNumber ?? '62',
       elementLine: data.elementLine ?? 'Wind / Thunder',
       gateLine: data.gateLine ?? 'Gate 62 · Precision · Universal Language',
-      keynotesLine: data.keynotesLine ?? 'Discernment, Pattern, Truth',
+      keynotes: data.keynotes ?? ['Discernment', 'Pattern', 'Truth'],
       forMeHref: data.forMeHref ?? '/profile',
       pieceHref: data.pieceHref ?? '/universal-language',
       familyHref: data.familyHref ?? '/family',

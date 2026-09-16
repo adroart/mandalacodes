@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 /* /atlas without WebGL (todo/plans/overarching-plan.md Track C1).
  *

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { buildHologeneticProfile } from '../lib/astrology/profile';
 import { placeToUtc } from '../lib/astrology/places';
 import { POSITION_KEYS } from '../data/profilePositions';

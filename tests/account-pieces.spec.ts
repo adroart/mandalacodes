@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 /* /account/pieces (todo/plans/overarching-plan.md Track B2) — the missing
  * "every piece this person holds" surface. Session is injected the same way
