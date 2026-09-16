@@ -1,19 +1,22 @@
 /* Host for the generated Earth's Breath markup. The controller below is the
    template's own `class Component` (controller.txt) ported VERBATIM — only two
    changes: it extends React.Component and renders <EBReadingMarkup vals={...}/>,
-   and the Card-1 constants (KEYWORDS / MOVING / RELDATA / OVERLAYS / KIN /
-   SHARE / CURRENT_CODE / image) are injected from `props.data` so all 64 cards
-   work. Animation + interaction logic is unchanged from the file. */
+   and the Card-1 constants (KEYWORDS / MOVING / OVERLAYS / SHARE /
+   CURRENT_CODE / image) are injected from `props.data` so all 64 cards work.
+   Animation + interaction logic is unchanged from the file, except that the
+   Relations panel mounts `relationsSlot` (a React component with its own
+   state) when one is passed, else the template’s orbit (KIN / RELDATA / relSel). */
 import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { themeCanvasFont } from '../../../../shared/themeFonts';
 import { OracleEntrancePortal } from '../OracleEntrancePortal';
 import { EBReadingMarkup } from './EBReading.generated';
 
-// Relations is paused (Adrian, 2026-09-16): the section needs a deeper dive
-// before it is relational. Nothing is removed; the panel, its nav button and
-// its jump are hidden until this is true again.
-export const RELATIONS_PANEL_ENABLED = false;
+// Relations was paused on 2026-09-16 while the section got its deeper dive,
+// and lifted the same day once the stack (LAUNCH_FLAGS.relationsStack) shipped.
+// Set this false to hide the panel, its nav button and its jump again; nothing
+// else needs to move.
+export const RELATIONS_PANEL_ENABLED = true;
 
 export interface EBData {
   cardName: string;
@@ -46,6 +49,7 @@ interface HostProps {
   headerChartSlot?: React.ReactNode; // the in-your-chart line in the header, under Acquire/Share
   headerActionsSlot?: React.ReactNode; // the two hero action boxes (art + chart), replacing the built-in Acquire/Share pair
   invocationSlot?: React.ReactNode; // hand-authored live invocation, mounted immediately after UL prose
+  relationsSlot?: React.ReactNode; // the Relations panel’s body: the stack of kin under the intro line
   hdChannelSlot?: React.ReactNode; // the is-this-channel-in-your-chart line, under What Completes It on the Human Design panel
 }
 
@@ -892,6 +896,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       toggleChartPreview: this.toggleChartPreview,
       submitChart: this.submitChart,
       registerChartInput: this.registerChartInput,
+      relationsSlot: this.props.relationsSlot ?? null,
       kinLines: this.buildKinLines(),
       kinNodes: this.KIN.map((n) => ({ key: n.key, x: n.x + '%', y: n.y + '%', glyph: n.glyph, fontRole: n.fontRole, size: n.size, dim: n.dim, glyphColor: n.kind === 'kin' ? 'var(--accent)' : 'var(--l-1)', border: n.kind === 'kin' ? 'var(--accent)' : 'var(--l-rule)', label: n.label, name: (this.RELDATA[n.key] || ({} as any)).name || n.label, onSelect: () => this.selectKin(n.key) })),
       selectKinSelf: () => this.selectKin('self'),

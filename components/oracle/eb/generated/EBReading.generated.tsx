@@ -877,6 +877,8 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", letterSpacing: "0.015em", fontSize: "clamp(18px,2.2vw,22px)", lineHeight: "1.55", color: "var(--l-2)", textAlign: "center", maxWidth: "46ch", margin: "0 auto clamp(36px,5vw,52px)" }}>
         {vals.relationsIntro}
         </p>
+        {vals.relationsSlot ? vals.relationsSlot : (
+          <>
         {(vals.chartPreview) ? (
           <>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", border: "1px solid var(--l-rule)", background: "var(--l-bg)", padding: "11px 14px", margin: "0 auto clamp(28px,4vw,40px)", maxWidth: "560px" }}>
@@ -948,6 +950,8 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </React.Fragment>
           ))}
         </div>
+          </>
+        )}
       </div>
     </section>
   </div>

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { CARD_BY_NUMBER } from '../data/oracleData';
 import { HexagramSVG, hexagramLineBooleans } from './oracle/HexagramGlyph';
+import { astrologyGlyph, hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
 import { getSynthesis, type CardSynthesis } from '../data/synthesisData';
 import { getParsedCard, mapIching, type MdIchingLine } from '../data/cardMarkdown';
 import { HEXAGRAM_CHINESE } from '../data/hexagramChinese';
@@ -13,11 +14,12 @@ import CardReadingShell from './oracle/reading/CardReadingData';
 import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
+import RelationsStack from './oracle/RelationsStack';
+import { LAUNCH_FLAGS } from '../launchFlags';
 import ChannelStatusLine from './oracle/ChannelStatusLine';
 import SaveToCollectionButton from './account/SaveToCollectionButton';
 import { cardCollectionItem } from '../lib/collections/items';
 import { ulPieceForCard } from '../utils/universalLanguage';
-import { astrologyGlyph, hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
 import './oracle/eb/eb-template.css';
 import './oracle/eb/oracle-foundation.css';
 import OracleBottomNavigation from './oracle/OracleBottomNavigation';
@@ -291,6 +293,14 @@ const UniversalLanguageCard: React.FC = () => {
         onShare={() => setShareOpen(true)}
         onOpenCode={(code) => navigate(`/universal-language/${code}`)}
         invocationSlot={<PublicInvocation invocation={liveInvocation} />}
+        relationsSlot={LAUNCH_FLAGS.relationsStack ? (
+          <RelationsStack
+            code={card.number}
+            gate={card.human_design.gate}
+            relations={synthesis?.relations}
+            channelProse={synthesis?.synthesis.human_design.circuit}
+          />
+        ) : undefined}
         hdChannelSlot={<ChannelStatusLine gate={card.human_design.gate} />}
       />
       </>
