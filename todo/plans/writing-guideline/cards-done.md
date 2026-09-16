@@ -8,6 +8,10 @@ Pairs are chosen by shared organ or amino acid, so the order is not 1 to 64. The
 
 - 01 Earth's Breath: read by Adrian section by section, the reference. https://2acf6b39.mandalacodes.pages.dev/universal-language/1
 - 02 Beyond the Shell: written whole under the locked brief, reading and heights corrected by Adrian. https://dd3d87c1.mandalacodes.pages.dev/universal-language/2
+- 14 Ancestors Bloom: written whole under the locked brief (migration session). https://ca17c750.mandalacodes.pages.dev/universal-language/14
+- 47 Garden of Alchemy: written whole under the locked brief (migration session). https://ca17c750.mandalacodes.pages.dev/universal-language/47
+- 52 Timeless Blossom: written whole under the locked brief (migration session). https://ca17c750.mandalacodes.pages.dev/universal-language/52
+- 64 Communion: written whole under the locked brief, natures Imitating and Confused confirmed against the reference row (migration session). https://ca17c750.mandalacodes.pages.dev/universal-language/64
 
 ## Queue (two cards per agent, four agents at a time)
 
@@ -20,4 +24,4 @@ Wave 6: 40+47 (glycine) · 41+16 (methionine, cysteine) · 44+50 (glutamic acid)
 Wave 7: 49+55 (histidine, solar plexus) · 53+54 (serine, adrenals, tailbone) · 58+52 (serine, perineum) · 61+20 (isoleucine, leucine)
 Wave 8: 12+33 (terminator codon, throat) · 56+14 (terminator, lysine) · 64 (glycine, pineal; with the migration session)
 
-Cards 3, 14, 47, 52 and 64 are also being brought under the brief by the migration session; whichever finishes first wins, the other skips.
+Cards 14, 47, 52 and 64 landed from the migration session on 2026-09-16 (d3f16b2); the batch skips them in waves 6 to 8. Card 3 landed from claude/card-writing first, so the migration session skipped it.
