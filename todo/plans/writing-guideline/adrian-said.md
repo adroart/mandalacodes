@@ -646,3 +646,6 @@ When you say "this energy is given lysine" it does not make a lot of sense to me
 
 [2026-09-16]
 Go back to source. I think you are not keeping the source relevant here. Can you find the agent that went to source and give it what you wrote and ask why it is not working.
+
+[2026-09-16]
+Possible to make it more relatable, keeping in mind the source? Something is missing.
