@@ -179,7 +179,7 @@ test.describe('the Relations stack', () => {
 
     // No chart yet: no chart words anywhere, and the header offers the chart.
     await expect(s.locator('[data-chart-line]')).toHaveCount(0);
-    await expect(s.locator('[data-chart-summary]')).toHaveText('Add your chart');
+    await expect(s.locator('[data-chart-summary]')).toHaveText('Add your profile');
     await expect(s.locator('[data-chart-summary]')).toHaveAttribute('href', '/profile');
 
     await page.screenshot({ path: 'test-results/relations-stack-stranger.png', fullPage: false });
@@ -227,31 +227,31 @@ test.describe('the Relations stack', () => {
     const s = stack(page);
 
     // Eight kin gates in the deck family (4, 50, 60 and the five ring siblings); the chart carries 4, 60, 24, 42.
-    await expect(s.locator('[data-chart-summary]')).toHaveText('4 of 8 in your chart');
+    await expect(s.locator('[data-chart-summary]')).toHaveText('4 of 8 in your profile');
 
     // The open pair: gate 4 sits at the Pearl.
     const pair = await bringIntoView(page, '[data-bar="pair"]');
-    await expect(pair.locator('[data-chart-line]')).toHaveText('In your chart, your Pearl');
+    await expect(pair.locator('[data-chart-line]')).toHaveText('In your profile, your Pearl');
     await expect(pair).toHaveClass(/is-lit/);
 
     // Folded bars carry the verdict: the partner is not in the chart, the channel is defined.
-    await expect(s.locator('[data-bar="partner"] .ul-rs-bar__chart')).toHaveText('Not in chart');
+    await expect(s.locator('[data-bar="partner"] .ul-rs-bar__chart')).toHaveText('Not in profile');
     await expect(s.locator('[data-bar="partner"]')).not.toHaveClass(/is-lit/);
-    await expect(s.locator('[data-bar="channel"] .ul-rs-bar__chart')).toHaveText('Defined in your chart');
+    await expect(s.locator('[data-bar="channel"] .ul-rs-bar__chart')).toHaveText('Defined in your profile');
     await expect(s.locator('[data-bar="channel"]')).toHaveClass(/is-lit/);
-    await expect(s.locator('[data-bar="ring"] .ul-rs-bar__chart')).toHaveText('3 of 6 in your chart');
+    await expect(s.locator('[data-bar="ring"] .ul-rs-bar__chart')).toHaveText('3 of 6 in your profile');
 
     // Open the channel: the full sentence from channelStatusFor.
     await s.locator('[data-bar="channel"]').click();
     const channel = await bringIntoView(page, '[data-bar="channel"]');
-    await expect(channel.locator('[data-chart-line]')).toHaveText('Defined in your chart: you carry gate 3 and gate 60');
+    await expect(channel.locator('[data-chart-line]')).toHaveText('Defined in your profile: you carry gate 3 and gate 60');
     await expect(channel.locator('.ul-rs-open__kin a')).toHaveAttribute('href', '/universal-language/60');
 
     // Open the ring: each member says whether the chart carries it.
     await s.locator('[data-bar="ring"]').click();
     const ring = await bringIntoView(page, '[data-bar="ring"]');
-    await expect(ring.locator('[data-member="24"] .ul-rs-member__chart')).toHaveText('In your chart');
-    await expect(ring.locator('[data-member="20"] .ul-rs-member__chart')).toHaveText('Not in chart');
+    await expect(ring.locator('[data-member="24"] .ul-rs-member__chart')).toHaveText('In your profile');
+    await expect(ring.locator('[data-member="20"] .ul-rs-member__chart')).toHaveText('Not in profile');
 
     await page.screenshot({ path: 'test-results/relations-stack-chart.png', fullPage: false });
     await assertFourStandardChecks(page, errors);

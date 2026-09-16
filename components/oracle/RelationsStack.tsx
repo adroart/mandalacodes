@@ -145,27 +145,27 @@ export function buildBars(code: number, gate: number, relations: OracleRelations
 
 /** The short chart word for one gate: which positions carry it. */
 function chartWordFor(matches: ProfileKey[]): string {
-  if (matches.length === 0) return 'Not in chart';
-  if (matches.length === 1) return `In your chart, your ${POSITIONS_BY_KEY[matches[0]].label}`;
-  return `In your chart, ${matches.length} times`;
+  if (matches.length === 0) return 'Not in profile';
+  if (matches.length === 1) return `In your profile, your ${POSITIONS_BY_KEY[matches[0]].label}`;
+  return `In your profile, ${matches.length} times`;
 }
 
 function channelWord(s: ChannelStatus | undefined, gate: number): string {
   if (!s) return '';
   switch (s.status) {
-    case 'defined': return `Defined in your chart: you carry gate ${gate} and gate ${s.partner}`;
+    case 'defined': return `Defined in your profile: you carry gate ${gate} and gate ${s.partner}`;
     case 'gate-only': return `You carry gate ${gate}; gate ${s.partner} completes it`;
     case 'partner-only': return `You carry gate ${s.partner}; gate ${gate} completes it`;
-    default: return 'Neither gate in your chart';
+    default: return 'Neither gate in your profile';
   }
 }
 
 /** The folded bar has room for a few words: keep the verdict, drop the where. */
 function shortLine(line: string): string {
-  if (line.startsWith('Defined')) return 'Defined in your chart';
-  if (line.startsWith('In your chart')) return 'In your chart';
+  if (line.startsWith('Defined')) return 'Defined in your profile';
+  if (line.startsWith('In your profile')) return 'In your profile';
   if (line.startsWith('You carry')) return line.split(';')[0];
-  if (line.startsWith('Neither')) return 'Not in chart';
+  if (line.startsWith('Neither')) return 'Not in profile';
   return line;
 }
 
@@ -215,7 +215,7 @@ const RelationsStack: React.FC<Props> = ({ code, gate, relations, channelProse }
     if (b.channel) return channelWord(channelStatuses.find((s) => s.partner === b.channel!.partner), gate);
     if (b.members) {
       const n = b.members.filter((m) => inChart(m.code)).length + (inChart(code) ? 1 : 0);
-      return `${n} of ${b.members.length + 1} in your chart`;
+      return `${n} of ${b.members.length + 1} in your profile`;
     }
     if (b.gate != null) return chartWordFor(positionsByGate.get(b.gate) ?? []);
     return '';
@@ -279,7 +279,7 @@ const RelationsStack: React.FC<Props> = ({ code, gate, relations, channelProse }
                     <span className="ul-rs-member__name">{m.name}</span>
                     <span className="ul-rs-member__code">Code {m.code}</span>
                   </span>
-                  {hasChart ? <span className={`ul-rs-member__chart${on ? ' is-lit' : ''}`}>{on ? 'In your chart' : 'Not in chart'}</span> : null}
+                  {hasChart ? <span className={`ul-rs-member__chart${on ? ' is-lit' : ''}`}>{on ? 'In your profile' : 'Not in profile'}</span> : null}
                   <span className="ul-rs-member__open">Open</span>
                 </Link>
               );
@@ -303,8 +303,8 @@ const RelationsStack: React.FC<Props> = ({ code, gate, relations, channelProse }
   };
 
   const chartLink = !chartOn ? null : hasChart
-    ? <Link to="/profile" className="ul-rs-group__link" data-chart-summary>{carried} of {deckGates.length} in your chart</Link>
-    : <Link to="/profile" className="ul-rs-group__link" data-chart-summary>Add your chart</Link>;
+    ? <Link to="/profile" className="ul-rs-group__link" data-chart-summary>{carried} of {deckGates.length} in your profile</Link>
+    : <Link to="/profile" className="ul-rs-group__link" data-chart-summary>Add your profile</Link>;
 
   return (
     <div className="ul-rs" data-relations-stack>
