@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 /* The Relations panel's stack of kin (components/oracle/RelationsStack.tsx):
  * two families of bars, one open at a time, every kin card a link, and, for
