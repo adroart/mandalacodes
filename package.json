@@ -29,7 +29,8 @@
     "check:migrate-oracle-card": "tsx scripts/migrate-oracle-card.ts --check",
     "backup:atlas": "tsx scripts/backup-atlas.ts",
     "postbuild": "node scripts/build-csp-headers.mjs",
-    "lint:tells": "node scripts/oracle-tells.mjs"
+    "lint:tells": "node scripts/oracle-tells.mjs",
+    "workbook": "tsx scripts/oracle-workbook.ts"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",
@@ -64,6 +65,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "d3-geo": "^3.1.1",
     "fake-indexeddb": "^6.2.5",
+    "pdf-lib": "^1.17.1",
     "postcss": "^8.5.6",
     "qrcode": "^1.5.4",
     "satori": "^0.28.0",

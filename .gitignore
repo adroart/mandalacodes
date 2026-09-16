@@ -38,3 +38,6 @@ backups/
 scripts/.refill-tmp/
 
 oracle/_packets/
+
+# printed workbook output (npm run workbook)
+workbook/
