@@ -46,7 +46,7 @@ for (const f of files) {
     if (s.split(/\s+/).length > 30) c.long30++;
   }
   c.notXItIsY =
-    (text.match(/\bNot [^.]{1,40}\. It is\b/g) || []).length +
+    (text.match(/\b[Nn]ot [^.]{1,60}\. It is\b/g) || []).length +
     (text.match(/\bnot (just|only) [^.]{1,40}, (it is|it's|but)\b/gi) || []).length;
   const keys = (body.split(/\n## KEYS/)[1] || '').split(/\n## DESIGN/)[0];
   c.heightOpeners = (keys.match(/\n(At its (lowest|best|height|highest)|Met, this energy|Held well)/g) || []).length;
@@ -56,7 +56,7 @@ for (const f of files) {
   c.itAlso = (text.match(/\bIt also\b/g) || []).length;
   c.cardTalk = (text.match(/\b(this card|this reading|the deck|the oracle)\b/gi) || []).length;
   c.systemWord = (
-    text.replace(/\n## DESIGN[\s\S]*?(?=\n## BODY)/, '').match(/\b(hexagram|trigram|siddhi|shadow|gift|codon)\b/gi) || []
+    noRel.replace(/\n## DESIGN[\s\S]*?(?=\n## BODY)/, '').replace(/^#.*$/gm, '').match(/\b(hexagram|trigram|siddhi|shadow|gift|codon)\b/gi) || []
   ).length;
   tot.cards++;
   tot.sentences += c.sentences;
