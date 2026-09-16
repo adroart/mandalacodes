@@ -17,10 +17,13 @@ const args = process.argv.slice(2);
 const json = args.includes('--json');
 const only = args.filter((a) => /^\d\d$/.test(a));
 const dir = 'oracle/cards';
+// Every card is always read, so a shared opening is measured against the
+// whole deck even when only one card is asked for; `only` filters the output.
 const files = fs
   .readdirSync(dir)
-  .filter((f) => /^\d\d\.md$/.test(f) && (only.length === 0 || only.includes(f.slice(0, 2))))
+  .filter((f) => /^\d\d\.md$/.test(f))
   .sort();
+const wanted = (c) => only.length === 0 || only.includes(c.card);
 
 const KEYS = ['startAnd', 'twoAnds', 'notXItIsY', 'heightOpeners', 'wayIsTo', 'thisIsTheEnergy', 'threeCommas', 'long30', 'itAlso', 'cardTalk', 'systemWord'];
 const tot = { cards: 0, sentences: 0 };
@@ -70,9 +73,6 @@ for (const f of files) {
   c.systemWord = (
     prose(noRel.replace(/\n## DESIGN[\s\S]*?(?=\n## BODY)/, '')).match(/\b(hexagram|trigram|siddhi|shadow|gift|codon)\b/gi) || []
   ).length;
-  tot.cards++;
-  tot.sentences += c.sentences;
-  for (const k of KEYS) tot[k] += c[k];
   perCard.push(c);
 }
 
@@ -91,12 +91,18 @@ const sharedStems = [...stemCards.entries()].filter(([, set]) => set.size >= 3).
 tot.sharedStems = sharedStems.length;
 for (const c of perCard) c.sharedStems = c.stems.filter((st) => (stemCards.get(st) || new Set()).size >= 3).length;
 
+for (const c of perCard.filter(wanted)) {
+  tot.cards++;
+  tot.sentences += c.sentences;
+  for (const k of KEYS) tot[k] += c[k];
+}
+
 const pct = (n) => (tot.sentences ? ((100 * n) / tot.sentences).toFixed(1) + '%' : '0%');
 
 if (json) {
   console.log(JSON.stringify({ ...tot, threeCommasPct: pct(tot.threeCommas), long30Pct: pct(tot.long30) }));
 } else if (only.length) {
-  for (const c of perCard) {
+  for (const c of perCard.filter(wanted)) {
     const { stems, ...rest } = c;
     console.log(JSON.stringify(rest));
     for (const st of new Set(stems.filter((x) => (stemCards.get(x) || new Set()).size >= 3)))
