@@ -29,6 +29,15 @@ test('uses the Teajia reading type roles and measure', async ({ page }) => {
   expect(styles.width).toBeLessThanOrEqual(680);
 });
 
+/* Relations is paused (2026-09-16): the panel stays in the DOM but is hidden and
+   drops out of the jump bars while RELATIONS_PANEL_ENABLED is false in
+   components/oracle/eb/generated/EBReading.host.tsx. The page carries the
+   state as data-relations on .eb-reading, so the specs read it rather than
+   importing the flag. */
+async function relationsOn(page: import('@playwright/test').Page): Promise<boolean> {
+  return (await page.locator('.eb-reading[data-relations]').first().getAttribute('data-relations')) !== 'off';
+}
+
 test('renders the six systems as one continuous vertical reading', async ({ page }) => {
   await openReading(page);
   const flow = page.locator('[data-oracle-flow]');
@@ -45,7 +54,7 @@ test('renders the six systems as one continuous vertical reading', async ({ page
       clientWidth: element.clientWidth,
     };
   });
-  expect(layout.chapterCount).toBe(6);
+  expect(layout.chapterCount).toBe(6); // the paused Relations section stays in the DOM, hidden
   expect(layout.direction).toBe('column');
   expect(layout.overflowX).not.toBe('auto');
   expect(layout.snap).toBe('none');
@@ -237,7 +246,7 @@ test('shows one sticky document progress indicator', async ({ page }) => {
   await expect(nav.locator('.oracle-reading-progress__inner')).toHaveCount(0);
   await expect(systems.getByRole('button', { name: 'Universal Language' })).toContainText('UL');
   await expect(systems.getByRole('button', { name: 'I Ching' })).toContainText('I Ching');
-  await expect(systems.getByRole('button', { name: 'Relations' }).locator('[data-system-icon="connection"]')).toHaveCount(1);
+  await expect(systems.getByRole('button', { name: 'Relations' }).locator('[data-system-icon="connection"]')).toHaveCount((await relationsOn(page)) ? 1 : 0);
   await systems.getByRole('button', { name: 'Gene Keys' }).click();
   await expect(page.locator('section[data-chapter="genekeys"]')).toBeInViewport();
   await expect(page.getByRole('navigation', { name: 'Reading by system' })).toBeHidden();
@@ -495,6 +504,7 @@ test('keeps the desktop title on one line and prose panels narrow', async ({ pag
     .evaluate((element) => element.getBoundingClientRect().width);
   expect(chapterWidth).toBeLessThanOrEqual(680);
 
+  const withRelations = await relationsOn(page);
   const proseSelectors = [
     { chapter: 'ul', selector: 'section[data-chapter="ul"] [data-oracle-reading-prose] > p' },
     { chapter: 'iching', selector: 'section[data-chapter="iching"] div[style*="flex-direction: column"] > p' },
@@ -502,7 +512,7 @@ test('keeps the desktop title on one line and prose panels narrow', async ({ pag
     { chapter: 'humandesign', selector: 'section[data-chapter="humandesign"] div[style*="flex-direction: column"] > p' },
     { chapter: 'body', selector: 'section[data-chapter="body"] div[style*="flex-direction: column"] > p' },
     { chapter: 'relations', selector: 'section[data-chapter="relations"] > div > div[style*="border-top"] > p[style*="font-style: italic"]' },
-  ];
+  ].filter((entry) => withRelations || entry.chapter !== 'relations');
 
   for (const { chapter, selector } of proseSelectors) {
     const paragraphs = page.locator(selector);
@@ -556,7 +566,7 @@ test('reveals Oracle prose as individual authored beats', async ({ page }) => {
     'section[data-chapter="genekeys"] [data-gk] div[style*="flex-direction: column"] > p',
     'section[data-chapter="humandesign"] div[style*="flex-direction: column"] > p',
     'section[data-chapter="body"] div[style*="flex-direction: column"] > p',
-    'section[data-chapter="relations"] div[style*="flex-direction: column"] > p',
+    ...((await relationsOn(page)) ? ['section[data-chapter="relations"] div[style*="flex-direction: column"] > p'] : []),
   ].join(','));
   expect(await laterSystemParagraphs.count()).toBeGreaterThan(5);
   for (const paragraph of await laterSystemParagraphs.all()) {

@@ -43,18 +43,18 @@ describe('generated Oracle artifacts', () => {
     const card = cards.find(candidate => candidate.number === 3);
     const searchDoc = searchDocs.find(candidate => candidate.number === 3);
 
-    expect(card?.keywords).toContain('New Beginnings');
+    expect(card?.keywords).toContain('Something Just Begun');
     // Deliberately mid-paragraph prose fixtures, one per lens, each unique to its
     // own field in oracle/cards/03.md. Opening sentences get rewritten; these do not.
-    expect(card?.glance.reading).toContain('Something new is already alive in you and it does not have a shape yet');
-    expect(card?.iching.reading).toContain('does not yet have ground to stand on');
-    expect(card?.gene_keys.gift).toContain('making something new out of what is changing');
-    expect(card?.human_design.gate).toContain('a shape that can last');
-    expect(card?.body.physiology).toContain('The navel is a scar, and every person carries one');
+    expect(card?.glance.reading).toContain('What looks like chaos is only what a beginning looks like from inside it');
+    expect(card?.iching.reading).toContain('Hurrying is the one thing that turns difficulty into danger');
+    expect(card?.gene_keys.gift).toContain('the way a child sorting buttons into boxes stumbles on a new game');
+    expect(card?.human_design.gate).toContain('tries form after form until one holds');
+    expect(card?.body.physiology).toContain('the scar that closed the opening');
 
-    expect(searchDoc?.keywords).toContain('New Beginnings');
-    expect(searchDoc?.fields.glance).toContain('Something new is already alive in you and it does not have a shape yet');
-    expect(searchDoc?.fields.iching).toContain('does not yet have ground to stand on');
+    expect(searchDoc?.keywords).toContain('Something Just Begun');
+    expect(searchDoc?.fields.glance).toContain('What looks like chaos is only what a beginning looks like from inside it');
+    expect(searchDoc?.fields.iching).toContain('Hurrying is the one thing that turns difficulty into danger');
   });
 
   it('retains rich Markdown Relations and the Markdown-authoritative Card 29 pair', async () => {
