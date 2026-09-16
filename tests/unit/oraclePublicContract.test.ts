@@ -37,7 +37,7 @@ describe('Oracle public contract', () => {
       number: 23,
       card_name: 'Beneath the Surface',
       ring_name: 'Ring of Life and Death',
-      keywords: expect.arrayContaining(['Simplicity', 'Speaking Clearly', 'Right Timing']),
+      keywords: expect.arrayContaining(['Cutting Back to What Matters', 'Knowing Before the Words Come', 'Room to Breathe']),
       relations: {
         pair: { number: 24 },
         inverse: { number: 24 },
