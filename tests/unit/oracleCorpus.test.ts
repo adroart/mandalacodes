@@ -40,20 +40,20 @@ describe('Markdown-only Oracle corpus', () => {
 
     expect(card.number).toBe(3);
     expect(card.card_name).toBe('Messengers of the Infinite');
-    expect(card.keywords).toContain('Something Just Begun');
+    expect(card.keywords).toContain('New Beginnings');
     // Deliberately mid-paragraph prose fixtures (see cardMarkdown.test.ts) so an
     // editorial pass on opening sentences cannot break the parser contract.
-    expect(card.glance.reading).toContain('What looks like chaos is only what a beginning looks like from inside it');
+    expect(card.glance.reading).toContain('fullness and not knowing in one breath');
     expect(card.glance.invocation).toBeUndefined();
-    expect(card.iching.reading).toContain('Hurrying is the one thing that turns difficulty into danger');
+    expect(card.iching.reading).toContain('twist them into one cord you can hold');
     expect(card.iching.lines).toHaveLength(6);
     expect(card.iching.lines[0]?.becomes).toEqual({ hexagram: 8, name: 'Holding Together' });
     expect(card.iching.upper_trigram).toMatchObject({ symbol: '☵', name: "Water (K'an)" });
     expect(card.iching.lower_trigram).toMatchObject({ symbol: '☳', name: 'Thunder (Chen)' });
     expect(card.reference?.binary).toBe('100010');
-    expect(card.gene_keys.gift).toContain('the way a child sorting buttons into boxes stumbles on a new game');
-    expect(card.human_design.gate).toContain('tries form after form until one holds');
-    expect(card.body.physiology).toContain('the scar that closed the opening');
+    expect(card.gene_keys.gift).toContain('the failing is how the shape is found');
+    expect(card.human_design.gate).toContain('finds the form it can live in');
+    expect(card.body.physiology).toContain('the scar that closed it');
     expect(card.relations.codon_ring.name).toBe('Ring of Life and Death');
     expect(card.relations.unity_line).toContain(
       'the whole arc of first arrival, the birth that comes in a storm and the long apprenticeship',

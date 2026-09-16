@@ -57,4 +57,4 @@ Wave 6: 40+47 (glycine) · 41+16 (methionine, cysteine) · 44+50 (glutamic acid)
 Wave 7: 49+55 (histidine, solar plexus) · 53+54 (serine, adrenals, tailbone) · 58+52 (serine, perineum) · 61+20 (isoleucine, leucine)
 Wave 8: 12+33 (terminator codon, throat) · 56+14 (terminator, lysine) · 64 (glycine, pineal; with the migration session)
 
-Cards 14, 47, 52 and 64 landed from the migration session on 2026-09-16 (d3f16b2); the batch skips them in waves 6 to 8. Card 3 landed from claude/card-writing first, so the migration session skipped it.
+Cards 14, 47, 52 and 64 landed from the migration session on 2026-09-16 (d3f16b2); the batch skips them in waves 6 to 8. Card 3: Adrian chose the migration session's version (his approved essence and keynotes kept byte for byte) over the card-writing branch's, landed 2026-09-16.

@@ -43,18 +43,18 @@ describe('generated Oracle artifacts', () => {
     const card = cards.find(candidate => candidate.number === 3);
     const searchDoc = searchDocs.find(candidate => candidate.number === 3);
 
-    expect(card?.keywords).toContain('Something Just Begun');
+    expect(card?.keywords).toContain('New Beginnings');
     // Deliberately mid-paragraph prose fixtures, one per lens, each unique to its
     // own field in oracle/cards/03.md. Opening sentences get rewritten; these do not.
-    expect(card?.glance.reading).toContain('What looks like chaos is only what a beginning looks like from inside it');
-    expect(card?.iching.reading).toContain('Hurrying is the one thing that turns difficulty into danger');
-    expect(card?.gene_keys.gift).toContain('the way a child sorting buttons into boxes stumbles on a new game');
-    expect(card?.human_design.gate).toContain('tries form after form until one holds');
-    expect(card?.body.physiology).toContain('the scar that closed the opening');
+    expect(card?.glance.reading).toContain('fullness and not knowing in one breath');
+    expect(card?.iching.reading).toContain('twist them into one cord you can hold');
+    expect(card?.gene_keys.gift).toContain('the failing is how the shape is found');
+    expect(card?.human_design.gate).toContain('finds the form it can live in');
+    expect(card?.body.physiology).toContain('the scar that closed it');
 
-    expect(searchDoc?.keywords).toContain('Something Just Begun');
-    expect(searchDoc?.fields.glance).toContain('What looks like chaos is only what a beginning looks like from inside it');
-    expect(searchDoc?.fields.iching).toContain('Hurrying is the one thing that turns difficulty into danger');
+    expect(searchDoc?.keywords).toContain('New Beginnings');
+    expect(searchDoc?.fields.glance).toContain('fullness and not knowing in one breath');
+    expect(searchDoc?.fields.iching).toContain('twist them into one cord you can hold');
   });
 
   it('retains rich Markdown Relations and the Markdown-authoritative Card 29 pair', async () => {
