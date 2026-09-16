@@ -31,10 +31,12 @@ for (const f of files) {
   const raw = fs.readFileSync(path.join(dir, f), 'utf8');
   const body = raw.replace(/^---\n[\s\S]*?\n---\n/, '');
   const noRel = body.split(/\n## RELATIONS/)[0];
-  const lines = noRel
-    .split('\n')
-    .filter((l) => l.trim() && !/^#/.test(l) && !/^_/.test(l) && !/^- /.test(l) && !/^\*\*Line/.test(l));
-  const text = lines.join('\n');
+  const prose = (s) =>
+    s
+      .split('\n')
+      .filter((l) => l.trim() && !/^#/.test(l) && !/^_/.test(l) && !/^- /.test(l) && !/^\*\*Line/.test(l))
+      .join('\n');
+  const text = prose(noRel);
   const sents = text.replace(/\s+/g, ' ').match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [];
   const c = { card: f.slice(0, 2), sentences: sents.length };
   for (const k of KEYS) c[k] = 0;
@@ -56,7 +58,7 @@ for (const f of files) {
   c.itAlso = (text.match(/\bIt also\b/g) || []).length;
   c.cardTalk = (text.match(/\b(this card|this reading|the deck|the oracle)\b/gi) || []).length;
   c.systemWord = (
-    noRel.replace(/\n## DESIGN[\s\S]*?(?=\n## BODY)/, '').replace(/^#.*$/gm, '').match(/\b(hexagram|trigram|siddhi|shadow|gift|codon)\b/gi) || []
+    prose(noRel.replace(/\n## DESIGN[\s\S]*?(?=\n## BODY)/, '')).match(/\b(hexagram|trigram|siddhi|shadow|gift|codon)\b/gi) || []
   ).length;
   tot.cards++;
   tot.sentences += c.sentences;

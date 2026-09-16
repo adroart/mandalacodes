@@ -9,3 +9,11 @@ Measured on main at 2f2aa2c (after PR #211, the entrance rewrite) with `npm run 
 The clean line (from todo/plans/personal-pass.md, Phase 1): twoAnds 0, heightOpeners 0, systemWord 0, notXItIsY at most one per card, no CODE paragraph opener and no lens entry stem shared by more than two cards, threeCommas under 5%, long30 under 5%, lint:prose zero repeated-stem pairs, side-by-side test recorded on every card's sheet, unit tests green.
 
 Per-card reports land beside this file as NN.md, one per card, written by the pass agent: every sentence it suspects says nothing, quoted, with the source line it thinks the sentence should have carried. Those are not rewritten; they print in the workbook margin.
+
+## Correction, same day, after wave 1
+
+Two agents found the script under-counting. "Not X. It is Y" only matched a capital Not, so the deck reads 92 of them (about 1.4 a card), not 1; and system words were never excluded from DESIGN because the section split ran after the headings were stripped. Both fixed in the script at this commit. Corrected baseline on the deck before wave 2 (cards 03 to 06 already passed):
+
+    notXItIsY 92, systemWord 3 (DESIGN excluded)
+
+Cards 03 to 08 were passed against the old count; the closing mop-up wave re-runs the tells on them.
