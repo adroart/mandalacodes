@@ -67,7 +67,11 @@ const STRIP_MARKS = ['line through: cut', 'circle, word above: swap', 'caret, nu
 // the binding margin is on the left and the pen margin is on the right.
 // Lined pages are the backs of text pages, so their margins are mirrored.
 const M = { top: 22, bottom: 24, bind: 18, outer: 14 };
-const MEASURE = 118; // the text column, about 62 characters of Charter at 9 pt
+// Text pages run two columns across the full width (Adrian's call, 2026-09-16:
+// the most words a page, the lined page carries the pen). The lined page
+// rules in the same two columns.
+const COLUMN_GAP = 8;
+const CONTENT_W = 210 - M.bind - M.outer; // 178
 
 // ---------- helpers ----------
 
@@ -326,30 +330,30 @@ function frontMatter(booklet: number, cards: CardStat[]): string {
 const CSS = `
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-body { font-family: Charter, "Iowan Old Style", Georgia, serif; font-size: 9pt; line-height: 1.5; color: #111; -webkit-print-color-adjust: exact; }
+body { font-family: Charter, "Iowan Old Style", Georgia, serif; font-size: 8.5pt; line-height: 1.42; color: #111; -webkit-print-color-adjust: exact; }
 .lab, .num, .fm-kicker, .lined .head { font-family: Helvetica, Arial, sans-serif; }
 .page { break-before: page; }
 .page:first-of-type { break-before: auto; }
-p { margin: 0 0 3mm; hyphens: none; orphans: 2; widows: 2; }
+p { margin: 0 0 2.6mm; hyphens: none; orphans: 2; widows: 2; }
 b { font-weight: bold; }
 
-/* text pages: a column of ${MEASURE}mm, the rest of the width for the pen */
-.lens { width: ${MEASURE}mm; }
-.lens h2 { font-size: 15pt; font-weight: normal; margin: 0 0 6mm; letter-spacing: 0.01em; }
-h3 { font-size: 9pt; font-weight: bold; margin: 5mm 0 1.5mm; break-after: avoid; }
-h3 .tail { font-weight: normal; color: #666; margin-left: 2.2mm; }
-p.line { margin-top: 4mm; break-after: avoid; }
+/* text pages: two columns across the width, small type, tight but open */
+.lens { column-count: 2; column-gap: ${COLUMN_GAP}mm; column-fill: auto; }
+.lens h2 { column-span: all; font-size: 16pt; font-weight: bold; margin: 0 0 5mm; padding-bottom: 1.5mm; border-bottom: 0.5pt solid #111; letter-spacing: -0.005em; }
+h3 { font-family: Helvetica, Arial, sans-serif; font-weight: normal; text-transform: uppercase; letter-spacing: 0.12em; font-size: 6.4pt; margin: 3.5mm 0 1.2mm; break-after: avoid; }
+h3 .tail { color: #8a8a8a; margin-left: 2mm; letter-spacing: 0.06em; }
+p.line { margin-top: 3mm; break-after: avoid; }
 p.line .ln { font-weight: bold; margin-right: 1mm; }
 p.line .becomes { color: #666; }
-p.quote { padding-left: 4mm; margin-bottom: 1.5mm; }
+p.quote { padding-left: 3mm; margin-bottom: 1.2mm; }
 p.marker { color: #666; }
-.s .n { font-size: 5.5pt; color: #8a8a8a; vertical-align: 0.45em; margin-right: 0.5mm; letter-spacing: 0.02em; white-space: nowrap; }
-.s .n .mark { display: inline-block; width: 1.3mm; height: 1.3mm; background: #111; margin-right: 0.6mm; vertical-align: -0.05em; }
+.s .n { font-size: 5pt; color: #8a8a8a; vertical-align: 0.45em; margin-right: 0.5mm; letter-spacing: 0.02em; white-space: nowrap; }
+.s .n .mark { display: inline-block; width: 1.2mm; height: 1.2mm; background: #111; margin-right: 0.5mm; vertical-align: -0.05em; }
 
 /* ruled lines for his hand, with a small label sitting on the first line */
 .ruled { position: relative; margin: 1.5mm 0 4mm; }
 .ruled .lab { position: absolute; left: 0; top: 0.6mm; font-size: 5.5pt; color: #8a8a8a; }
-.ruled .rule { border-bottom: 0.35pt solid #9a9a9a; height: 8mm; }
+.ruled .rule { border-bottom: 0.35pt solid #9a9a9a; height: 7.5mm; }
 
 /* cover */
 .cover .art { display: block; width: 100%; max-height: 124mm; object-fit: contain; object-position: left; margin: 0 0 6mm; }
@@ -365,7 +369,7 @@ p.marker { color: #666; }
 .cover .ruled .lab { left: -24mm; }
 
 /* front matter */
-.fm { width: 138mm; }
+.fm { width: 138mm; font-size: 9pt; line-height: 1.5; }
 .fm h1 { font-size: 24pt; font-weight: normal; margin: 26mm 0 5mm; }
 .fm h2 { font-size: 15pt; font-weight: normal; margin: 0 0 6mm; }
 .fm h3 { margin-top: 5mm; }
@@ -381,11 +385,11 @@ p.marker { color: #666; }
 .box { border: 0.35pt solid #555; height: 10mm; margin-bottom: 2.5mm; padding: 2mm 2mm 0 11mm; position: relative; font-size: 9.5pt; }
 .box::before { content: ""; position: absolute; left: 2.2mm; top: 2.4mm; width: 4.6mm; height: 4.6mm; border: 0.5pt solid #555; }
 
-/* lined pages: the back of a text page, facing the next one */
+/* lined pages: the back of a text page, ruled in the same two columns */
 .lined .head { display: flex; justify-content: space-between; font-size: 6.5pt; color: #8a8a8a; height: 8mm; letter-spacing: 0.02em; }
-.lined .lines { position: relative; }
-.lined .l { border-bottom: 0.3pt solid #b0b0b0; height: 8mm; }
-.lined .col { position: absolute; top: 0; bottom: 0; left: 12mm; border-left: 0.3pt solid #b0b0b0; }
+.lined .cols { display: flex; gap: ${COLUMN_GAP}mm; }
+.lined .col { flex: 1; }
+.lined .l { border-bottom: 0.3pt solid #b0b0b0; height: 7mm; }
 `;
 
 function document(body: string): string {
@@ -439,10 +443,10 @@ interface TextPage {
 
 /** One lined page per text page, each headed with the page it will face. */
 function linedDocument(facing: (string | null)[]): string {
-  const lines = '<div class="l"></div>'.repeat(29);
+  const col = `<div class="col">${'<div class="l"></div>'.repeat(34)}</div>`;
   return document(
     facing
-      .map((f) => `<section class="page lined"><div class="head"><span>${f ? esc(f) : ''}</span><span>${f ? 'facing page' : 'end of booklet'}</span></div><div class="lines"><div class="col"></div>${lines}</div></section>`)
+      .map((f) => `<section class="page lined"><div class="head"><span>${f ? esc(f) : ''}</span><span>${f ? 'facing page' : 'end of booklet'}</span></div><div class="cols">${col}${col}</div></section>`)
       .join(''),
   );
 }
