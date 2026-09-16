@@ -28,7 +28,8 @@
     "test:unit": "vitest run",
     "check:migrate-oracle-card": "tsx scripts/migrate-oracle-card.ts --check",
     "backup:atlas": "tsx scripts/backup-atlas.ts",
-    "postbuild": "node scripts/build-csp-headers.mjs"
+    "postbuild": "node scripts/build-csp-headers.mjs",
+    "lint:tells": "node scripts/oracle-tells.mjs"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",
