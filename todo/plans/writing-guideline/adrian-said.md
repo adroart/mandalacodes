@@ -631,3 +631,6 @@ Okay, this sounds like it should be a connection between the three of them. So w
 
 [2026-09-16]
 When I read the liver again it is a little confusing. "What begins things in you is built to begin again" is a little tricky. Also "it sits just under the muscle that draws each breath, so breathing in pushes it down towards your fingers, where some people can feel its edge arrive, and on the breath out it rises as it has all your life." We are getting into this super highly abstract where it can be hard for me to follow, and I am not sure what to actually connect this to. Whatever you simplified of the original, you have lost the consistency, where when I am reading it I feel like I am wasting my time rather than reading something meaningful and creating a deeper relationship.
+
+[2026-09-16]
+Okay, the liver is great, but the amino acid talks about this, but I do not understand fully in relation to me.
