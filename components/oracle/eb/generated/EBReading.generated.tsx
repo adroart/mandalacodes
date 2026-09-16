@@ -595,14 +595,37 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               </React.Fragment>
             ))}
           </div>
-          <details style={{ marginTop: "18px", borderTop: "1px solid var(--l-rule)", paddingTop: "14px" }}>
-            <summary style={{ cursor: "pointer", listStyle: "none", fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", display: "flex", alignItems: "center", gap: "8px" }}>
-              Repressive · Reactive
-              <span style={{ color: "var(--l-3)" }}>
-              · go deeper
+          <details className="ul-faces" style={{ marginTop: "22px" }}>
+            <summary className="ul-faces-strip" style={{ cursor: "pointer", listStyle: "none", display: "grid", gridTemplateColumns: "repeat(2,1fr)", border: "1px solid color-mix(in oklab,var(--accent) 22%,transparent)" }}>
+              <span style={{ padding: "16px 12px", textAlign: "center", borderRight: "1px solid var(--l-rule)", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)" }}>
+                Repressive
+                </span>
+                <span style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--l-1)" }}>
+                {vals.gkRepressiveFace}
+                </span>
+              </span>
+              <span style={{ padding: "16px 12px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)" }}>
+                Reactive
+                </span>
+                <span style={{ fontFamily: 'var(--font-reading)', fontSize: "21px", color: "var(--l-1)" }}>
+                {vals.gkReactiveFace}
+                </span>
+              </span>
+              <span style={{ gridColumn: "1 / -1", borderTop: "1px solid var(--l-rule)", padding: "11px 12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", textAlign: "center", fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--accent-d)" }}>
+                <span className="ul-faces-open">
+                Read the two faces of this shadow
+                </span>
+                <span className="ul-faces-close">
+                Close the two faces
+                </span>
+                <svg className="ul-faces-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3.5 6 L8 10.5 L12.5 6" />
+                </svg>
               </span>
             </summary>
-            <div className="ul-natures" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "18px", paddingTop: "18px" }}>
+            <div className="ul-natures" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "18px", paddingTop: "22px" }}>
               <div>
                 <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 7px" }}>
                 {vals.gkRepressiveName}
@@ -764,6 +787,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               </React.Fragment>
             ))}
           </div>
+          {vals.hdChannelSlot}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "24px" }}>
           <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.12em", color: "var(--d-2)", border: "1px solid var(--d-rule)", padding: "7px 13px" }}>

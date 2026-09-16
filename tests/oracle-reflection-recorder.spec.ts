@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 const CARD = '/universal-language/22';
 const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:2222';

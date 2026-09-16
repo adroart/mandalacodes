@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 /* The card reading's save control (todo/plans/repair/phase-1-wiring-queue.md
  * item 05, landed in components/UniversalLanguageCard.tsx by PR #165 as the

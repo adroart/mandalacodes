@@ -46,6 +46,7 @@ interface HostProps {
   headerChartSlot?: React.ReactNode; // the in-your-chart line in the header, under Acquire/Share
   headerActionsSlot?: React.ReactNode; // the two hero action boxes (art + chart), replacing the built-in Acquire/Share pair
   invocationSlot?: React.ReactNode; // hand-authored live invocation, mounted immediately after UL prose
+  hdChannelSlot?: React.ReactNode; // the is-this-channel-in-your-chart line, under What Completes It on the Human Design panel
 }
 
 type ChoreographyPhase = 'entrance' | 'exiting' | 'hero' | 'reading';
@@ -277,10 +278,17 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     this.invocationObserver?.disconnect();
     this.invocationObserver = null;
     if (this.repositionNav) window.removeEventListener('resize', this.repositionNav);
-    this.invocationRoot?.unmount();
+    // The host unmounts inside a React render whenever one card routes to
+    // another (the page keys the host by card number), and unmounting a
+    // nested root synchronously there is a React warning. Defer it a tick.
+    const invocationRoot = this.invocationRoot;
+    const invocationMount = this.invocationMount;
     this.invocationRoot = null;
-    this.invocationMount?.remove();
     this.invocationMount = null;
+    setTimeout(() => {
+      invocationRoot?.unmount();
+      invocationMount?.remove();
+    }, 0);
     if (this.updateReadingProgress) window.removeEventListener('scroll', this.updateReadingProgress);
     this.setBodyLock(false);
   }
@@ -893,6 +901,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       kinBodyParas: rel.body,
       stop: (e: any) => { if (e && e.stopPropagation) e.stopPropagation(); },
       chartSlot: this.props.chartSlot ?? null,
+      hdChannelSlot: this.props.hdChannelSlot ?? null,
       headerChartSlot: this.props.headerChartSlot ?? null,
       headerActionsSlot: this.props.headerActionsSlot ?? null,
     };

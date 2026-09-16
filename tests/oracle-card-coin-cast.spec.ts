@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test('card reading has one coin-casting ritual inside the I Ching panel', async ({ page }) => {
   const base = process.env.TEST_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? '';

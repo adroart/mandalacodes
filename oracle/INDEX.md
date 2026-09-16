@@ -62,7 +62,7 @@ most often broken:
 | --- | --- | --- |
 | The 64 current card manuscripts | `oracle/cards/NN.md` | Make every new card-prose edit here. |
 | Writing method, voice, structure, sources | `GUIDELINE.md` | The one writing document. Read before drafting or rewriting anything. |
-| The rules alone, for the agent writing a card | `WRITERS-BRIEF.md` | A 5,000-word cut of the guideline with the reasoning left out; the guideline wins where they differ. |
+| The rules alone, for the agent writing a card | `WRITERS-BRIEF.md` | The locked template the 64 are written from (Fable, 2026-09-14, locked 2026-09-16); the guideline holds the reasoning and history. |
 | The per-card source packet | `../scripts/oracle-packet.mjs NN` | Writes `oracle/_packets/NN.md` (gitignored) from the vault with no model: the variable part of what a writer reads. |
 | Deck measurements | `../todo/plans/writing-guideline/measure.mjs` | Re-run after any pass that touches many cards. |
 | I Ching, Gene Keys, Human Design, Tarot, body, and moving-line research | `~/Documents/Obsidian Vault/Mandala Codes/oracle/` | Verify claims and preserve source lineage. |

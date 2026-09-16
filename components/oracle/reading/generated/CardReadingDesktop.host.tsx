@@ -43,6 +43,15 @@ export interface CardReadingDesktopData {
   cardKicker?: string;
   /* Header title block. "Voice of Nature" */
   cardName?: string;
+  /* The side column's title plate: hexagram lines (top to bottom), the card
+     number under them, the element line in gold, the small gate line, and the
+     keynotes as one sentence. */
+  hexLines?: { solid: boolean; broken: boolean }[];
+  hexHref?: string;
+  cardNumber?: string;
+  elementLine?: string;
+  gateLine?: string;
+  keynotes?: string[];
   /* The side column's three links. The piece one is per-card. */
   forMeHref?: string;
   pieceHref?: string;
@@ -78,6 +87,9 @@ const DEFAULT_META: CardReadingDesktopMetaItem[] = [
   { k: 'Keynotes', v: 'Discernment, Pattern, Truth' },
 ];
 
+/* Hexagram 62, thunder over mountain, top line first. */
+const DEFAULT_HEX_LINES = [false, false, true, true, false, false].map((solid) => ({ solid, broken: !solid }));
+
 const DEFAULT_NAV: CardReadingDesktopNavItem[] = [
   { id: 'ul', label: 'Universal Language', sum: '62', tab: 'UL', gStar: true },
   { id: 'iching', label: 'I Ching', sum: 'Hexagram 62', tab: 'I Ching', gHex: true },
@@ -112,6 +124,12 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       nav: data.nav ?? DEFAULT_NAV,
       cardKicker: data.cardKicker ?? 'No. 62 · Universal Language',
       cardName: data.cardName ?? 'Voice of Nature',
+      hexLines: data.hexLines ?? DEFAULT_HEX_LINES,
+      hexHref: data.hexHref ?? '#iching',
+      cardNumber: data.cardNumber ?? '62',
+      elementLine: data.elementLine ?? 'Wind / Thunder',
+      gateLine: data.gateLine ?? 'Gate 62 · Precision · Universal Language',
+      keynotes: data.keynotes ?? ['Discernment', 'Pattern', 'Truth'],
       forMeHref: data.forMeHref ?? '/profile',
       pieceHref: data.pieceHref ?? '/universal-language',
       familyHref: data.familyHref ?? '/family',
@@ -305,10 +323,13 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
     };
     // Delegate on the stable reader element so clicks survive template re-renders.
     reader.addEventListener('click', (e: any) => {
-      const btn = e.target.closest && e.target.closest('[data-nav]');
+      // [data-nav] is a rail label; [data-jump] is any other element (the side
+      // column's hexagram) that scrolls to a section without joining the rail.
+      const btn = e.target.closest && e.target.closest('[data-nav], [data-jump]');
       if (!btn || !reader.contains(btn)) return;
-      const target = secFor(btn.getAttribute('data-nav'));
+      const target = secFor(btn.getAttribute('data-nav') || btn.getAttribute('data-jump'));
       if (!target) return;
+      if (btn.tagName === 'A') e.preventDefault();
       const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - 12;
       const max = scroll.scrollHeight - scroll.clientHeight;
       smoothTo(Math.max(0, Math.min(top, max)));
