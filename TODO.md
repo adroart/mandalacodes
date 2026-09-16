@@ -32,6 +32,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
 
 ## Soon
+- [ ] The mobile browser lane in CI has been red on main since at least 15 Sep and nobody sees it, because the run still says success; find the shared cause and make the lane count _(band: agent-runnable)_ _(effort: deep)_ → Plan: [ci-mobile-lane-red.md](todo/plans/ci-mobile-lane-red.md)
 - [ ] Relations section: shown again 2026-09-16 as the stack of kin (the pause switch stays in the host, off is one line); the prose still needs its own deeper dive to be relational before it is written under the brief _(band: you-required)_ _(effort: deep)_ → Plan: [relations-guidance.md](todo/plans/writing-guideline/relations-guidance.md)
 - [ ] Write the organ and amino acid reference entries for the 64 (about 35 organs, 21 amino acids) in the vault under body/organs and body/amino-acids, in the shape of liver.md and lysine.md, so every Body section is written from its entry _(band: agent-runnable)_ _(effort: deep)_
 
