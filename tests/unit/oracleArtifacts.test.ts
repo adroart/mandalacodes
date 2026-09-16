@@ -46,15 +46,15 @@ describe('generated Oracle artifacts', () => {
     expect(card?.keywords).toContain('New Beginnings');
     // Deliberately mid-paragraph prose fixtures, one per lens, each unique to its
     // own field in oracle/cards/03.md. Opening sentences get rewritten; these do not.
-    expect(card?.glance.reading).toContain('Something new is already alive in you and it does not have a shape yet');
-    expect(card?.iching.reading).toContain('does not yet have ground to stand on');
-    expect(card?.gene_keys.gift).toContain('making something new out of what is changing');
-    expect(card?.human_design.gate).toContain('a shape that can last');
-    expect(card?.body.physiology).toContain('The navel is a scar, and every person carries one');
+    expect(card?.glance.reading).toContain('fullness and not knowing in one breath');
+    expect(card?.iching.reading).toContain('twist them into one cord you can hold');
+    expect(card?.gene_keys.gift).toContain('the failing is how the shape is found');
+    expect(card?.human_design.gate).toContain('finds the form it can live in');
+    expect(card?.body.physiology).toContain('the scar that closed it');
 
     expect(searchDoc?.keywords).toContain('New Beginnings');
-    expect(searchDoc?.fields.glance).toContain('Something new is already alive in you and it does not have a shape yet');
-    expect(searchDoc?.fields.iching).toContain('does not yet have ground to stand on');
+    expect(searchDoc?.fields.glance).toContain('fullness and not knowing in one breath');
+    expect(searchDoc?.fields.iching).toContain('twist them into one cord you can hold');
   });
 
   it('retains rich Markdown Relations and the Markdown-authoritative Card 29 pair', async () => {
