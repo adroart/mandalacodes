@@ -31,3 +31,7 @@ What moved: "Not X. It is Y" 92 to 49 (one allowed per card), "The way is to" 38
 What was NOT done from the plan's clean line: copied openings to zero (dropped, cosmetic), comma and length under 5 percent (not chased), the Fable four-card read (next step, with the deck-wide suspect lists). Reports (step 5) exist for cards 01 to 16 only; the Fable reading pass writes the other 48.
 
 Cost, measured: Opus pairs 310k to 420k tokens each (8 pairs); Sonnet pairs 150k to 215k (24 pairs). About 7.5M tokens in agents for the pass.
+
+## The reading pass, 2026-09-16 23:00 WITA
+
+Fable read cards 17 to 64 in six batches of eight (about 185k tokens a batch, 1.1M in all) and wrote the step 5 report for each; Opus had written 01 to 16 during its pass. All 64 reports are in this folder. Each carries: the suspect sentences (quoted, with what they would need to carry), the propositions said twice on the card, the unsure ones, and the formula slots (openings shared with three or more cards) for the workbook margin. Two deck-level finds from the reading: card 39 carries a Root-centre paragraph copied word for word from card 38; the "said twice" count runs 3 to 7 a card, mostly CODE against Gift or DESIGN.
