@@ -637,3 +637,6 @@ Okay, the liver is great, but the amino acid talks about this, but I do not unde
 
 [2026-09-16]
 This is the weakest section (the amino acid). Send the writing to Fable and ask why it is very hard to understand and how to write it in a way that it is applicable to the card, and get a plan for the template.
+
+[2026-09-16]
+Go back to the same Fable. "This energy is given lysine, and the reason is the pull. Every move you make begins as a pull, a hand closing or a foot pushing off." I still do not relate.
