@@ -66,7 +66,7 @@ for (const f of files) {
   const keys = (body.split(/\n## KEYS/)[1] || '').split(/\n## DESIGN/)[0];
   c.heightOpeners = (keys.match(/\n(At its (lowest|best|height|highest)|Met, this energy|Held well)/g) || []).length;
   const code = (body.split(/\n## CODE/)[1] || '').split(/\n## ICHING/)[0];
-  c.wayIsTo = (code.match(/\n(The way is|The way here is)/g) || []).length;
+  c.wayIsTo = (code.match(/\n(The way is to|The way here is to)\b/g) || []).length;
   c.thisIsTheEnergy = (code.match(/\nThis is the energy of/g) || []).length;
   c.itAlso = (text.match(/\bIt also\b/g) || []).length;
   c.cardTalk = (text.match(/\b(this card|this reading|the deck|the oracle)\b/gi) || []).length;
