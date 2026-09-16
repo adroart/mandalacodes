@@ -1,6 +1,6 @@
 # Cards written under the locked template
 
-One line per card, with the address to read it on. All 64 are on one address, the live site since the batch merged to main (PR 208, 2026-09-16): https://mandalacodes.com/universal-language/N
+One line per card, with the address to read it on. All 64 are live on the production site since 2026-09-16 (PR #208 the cards, #211 the entrances, #213 card 3 back to Adrian's line): https://mandalacodes.com/universal-language/N
 
 Order is card number. Cards 1 and 2 were read section by section by Adrian; 3, 14, 47, 52 and 64 came from the migration session; the other 57 were written by the autonomous batch, two cards per Opus agent, four agents at a time, paired by shared organ or amino acid.
 
@@ -70,6 +70,10 @@ Order is card number. Cards 1 and 2 were read section by section by Adrian; 3, 1
 - 62 Voice of Nature: written whole under the locked brief (autonomous batch, 2026-09-16). https://mandalacodes.com/universal-language/62
 - 63 Adornments of Time: written whole under the locked brief (autonomous batch, 2026-09-16). https://mandalacodes.com/universal-language/63
 - 64 Communion: written whole under the locked brief, natures Imitating and Confused confirmed against the reference row (migration session). https://mandalacodes.com/universal-language/64
+
+## The entrance pass (2026-09-16, after the batch)
+
+Adrian read card 46 and found the entrance was the reading's first sentence again. Every entrance on cards 2 to 64 was rewritten as a taste of its card (card 46 first as the model, approved on the page; card 1 and card 3 keep the lines Adrian chose). The rule is in the brief under "The entrance". The writers were least sure of 4, 10, 22, 30, 39, 42, 50 and 61.
 
 ## Batch record
 
