@@ -38,6 +38,8 @@ Then allot the lines across the six sections so each is said once, where it belo
 
 Three paragraphs, written last, with every source open, from the whole list and never from the essence alone. It is the whole card for a person who reads nothing else. It says what this energy is and what it is to carry it in balance. The first paragraph names it, says what it is, and says where it lives in a life; it is shown alone after a throw, so it stands whole by itself. The second says what it is like to carry it well, with the nuggets in it. The third is the rhythm or the way, ending a beat early.
 
+Before the reading is done, put it beside the I Ching Reading. A sentence that could sit in either loses its place in one of them; on card 2 both said "not yours to start, go first and you are lost, come behind," and Adrian read the two panels as the same page. The reading holds what the energy is and how it is carried; the I Ching holds the situation and its counsel, the scene, the kind you keep to, the body once. A sentence that carried the previous card's I Ching (card 1's "everything that starts passes through four seasons") is not this card's, even where the source repeats it.
+
 The difficult time is not a paragraph. Some readers are not in it. Where it belongs it is a sentence or two inside the third paragraph, said as part of holding the energy, so a reader who meets it can understand what it is turning them into. Never the formula "here is your challenge, here is the solution." Never a verdict. "You are numb" accuses. "Numbness is a feeling, though almost nobody knows they are in it" can be recognised, and the reader is still standing after it.
 
 ## How a sentence is made
