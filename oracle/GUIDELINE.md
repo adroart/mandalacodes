@@ -1469,6 +1469,8 @@ written before its kin are finished) are made once and reused sixty-four
 times; each records its sources, its version and who checked it, and a
 changed reference reopens only the claims that depend on it.
 
+**Locked 2026-09-16.** `oracle/WRITERS-BRIEF.md` is locked as the template the 64 are written from, after card 1 went through the loop section by section on the page. Relations is paused and hidden on the page (`RELATIONS_PANEL_ENABLED`) until it has its own deeper dive; the other five sections and the essence, keynotes and reading are the production shape. Body is written from the organ and amino acid reference entries in the vault (`body/organs/`, `body/amino-acids/`), which the packet script pulls in and which are written once per organ and per amino acid before the cards that carry them.
+
 **Batches.** Never all 64 blind in one day; that was the failure of June.
 Card 2 is the test of whether the template alone carries a card: if Adrian's
 corrections on it are few and local, the rest runs in batches of four with

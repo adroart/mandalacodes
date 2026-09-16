@@ -10,6 +10,11 @@ import { themeCanvasFont } from '../../../../shared/themeFonts';
 import { OracleEntrancePortal } from '../OracleEntrancePortal';
 import { EBReadingMarkup } from './EBReading.generated';
 
+// Relations is paused (Adrian, 2026-09-16): the section needs a deeper dive
+// before it is relational. Nothing is removed; the panel, its nav button and
+// its jump are hidden until this is true again.
+export const RELATIONS_PANEL_ENABLED = false;
+
 export interface EBData {
   cardName: string;
   code: number;
@@ -908,11 +913,11 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       ['humandesign', 'Human Design', 'Human Design'],
       ['body', 'Body', 'Body'],
       ['relations', 'Relations', null],
-    ];
+    ].filter(([key]) => RELATIONS_PANEL_ENABLED || key !== 'relations');
     const vals = this.renderVals();
     return (
       <>
-      <div className="eb-reading" data-oracle-reader data-oracle-choreography={this.state.choreography} data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
+      <div className="eb-reading" data-relations={RELATIONS_PANEL_ENABLED ? 'on' : 'off'} data-oracle-reader data-oracle-choreography={this.state.choreography} data-palette={palette} data-accent={this.props.accent ?? 'bronze'} data-motion={motion}>
         <nav className="oracle-reading-progress" data-oracle-progress-nav aria-label="Oracle reading">
           <div className="oracle-reading-progress__jumps" role="navigation" aria-label="Jump to system">
             {systems.map(([key, label, text]) => (

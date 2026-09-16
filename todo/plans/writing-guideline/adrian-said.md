@@ -649,3 +649,6 @@ Go back to source. I think you are not keeping the source relevant here. Can you
 
 [2026-09-16]
 Possible to make it more relatable, keeping in mind the source? Something is missing.
+
+[2026-09-16]
+I think Relations we are gonna want to pause for a little bit. Can we temporarily disable them without removing anything? It needs a deeper dive for it to be relational. And then lock in the template.

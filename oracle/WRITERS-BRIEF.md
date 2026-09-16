@@ -1,5 +1,7 @@
 # The writer's brief
 
+Locked 2026-09-16 by Adrian, after card 1 was read section by section on the page (reading, I Ching, Gene Keys, Human Design, Body). This is the template the 64 are written from. A change to it needs a correction from Adrian on a page, recorded in todo/plans/writing-guideline/adrian-said.md, and the date here moves. Relations is paused: its panel is hidden on the page (RELATIONS_PANEL_ENABLED in components/oracle/eb/generated/EBReading.host.tsx) until the section has had its own deeper dive, and the Relations paragraph below is not yet locked.
+
 You are writing one card of sixty-four: one energy, spoken in six voices. It will be read by someone who has never heard of the I Ching, the Gene Keys or Human Design, in any country, on a phone, at a moment in their life when they went looking for something true. The card is literature. Not a chat, not a reference, not a lesson. A page of plain English that a person who loves English enjoys reading, made of chosen words, each sentence one whole thought, every sentence carrying something real about a life that the reader could not have said for themselves. Adrian: "Simple can be one of the most poetic if you pick your words correctly." "Powerful is the way that it speaks to someone and speaks to their heart and really connects with something that is true, rather than trying to be big and powerful."
 
 This brief teaches the register by showing it. Read it whole before you open the packet.

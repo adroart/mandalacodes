@@ -106,3 +106,7 @@
     margin: 2px 0 20px !important;
   }
 }
+
+/* Relations paused (2026-09-16): hidden, not removed. Flip RELATIONS_PANEL_ENABLED in components/oracle/eb/generated/EBReading.host.tsx. */
+.eb-reading[data-relations="off"] [data-chapter="relations"],
+.eb-reading[data-relations="off"] [data-key="relations"] { display: none !important; }
