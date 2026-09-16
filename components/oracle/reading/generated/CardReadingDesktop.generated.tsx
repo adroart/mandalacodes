@@ -90,7 +90,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "baseline", gap: "2px 14px", margin: "-6px 0 0", padding: "0 10px" } as unknown as React.CSSProperties}>
           {(vals.keynotes ?? []).map((k: any, kIdx: number) => (
             <React.Fragment key={kIdx}>
-              {kIdx > 0 ? <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", fontSize: "18px", color: "#a8874d", lineHeight: "1.5" } as unknown as React.CSSProperties}>·</span> : null}
+              {kIdx > 0 ? <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", fontSize: "18px", color: "#6f6148", lineHeight: "1.5" } as unknown as React.CSSProperties}>·</span> : null}
               <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", fontSize: "18px", fontWeight: "600", color: "#e2d6bf", whiteSpace: "nowrap", lineHeight: "1.5" } as unknown as React.CSSProperties}>
               {k}
               </span>
