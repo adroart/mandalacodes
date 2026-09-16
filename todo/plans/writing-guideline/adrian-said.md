@@ -652,3 +652,9 @@ Possible to make it more relatable, keeping in mind the source? Something is mis
 
 [2026-09-16]
 I think Relations we are gonna want to pause for a little bit. Can we temporarily disable them without removing anything? It needs a deeper dive for it to be relational. And then lock in the template.
+
+[2026-09-16]
+The writing of number two seems very similar. Both the reading and the I Ching feel almost the same. Are you using the right template?
+
+[2026-09-16]
+Okay. This is great. It feels complete. Avoid being formulaic. In the Gene Keys, where it says "at its lowest", "at its best", "at its height", I do not want that a part of the template.
