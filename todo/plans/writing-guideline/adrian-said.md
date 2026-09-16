@@ -640,3 +640,6 @@ This is the weakest section (the amino acid). Send the writing to Fable and ask 
 
 [2026-09-16]
 Go back to the same Fable. "This energy is given lysine, and the reason is the pull. Every move you make begins as a pull, a hand closing or a foot pushing off." I still do not relate.
+
+[2026-09-16]
+When you say "this energy is given lysine" it does not make a lot of sense to me. Is there a better way to enter this? It makes it sound like something that is just made up.
