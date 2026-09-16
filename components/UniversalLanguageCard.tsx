@@ -15,6 +15,7 @@ import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
 import RelationsStack from './oracle/RelationsStack';
+import { RELATIONS_PREVIEW } from './oracle/eb/generated/EBReading.host';
 import { LAUNCH_FLAGS } from '../launchFlags';
 import ChannelStatusLine from './oracle/ChannelStatusLine';
 import SaveToCollectionButton from './account/SaveToCollectionButton';
@@ -293,7 +294,7 @@ const UniversalLanguageCard: React.FC = () => {
         onShare={() => setShareOpen(true)}
         onOpenCode={(code) => navigate(`/universal-language/${code}`)}
         invocationSlot={<PublicInvocation invocation={liveInvocation} />}
-        relationsSlot={LAUNCH_FLAGS.relationsStack ? (
+        relationsSlot={LAUNCH_FLAGS.relationsStack || RELATIONS_PREVIEW ? (
           <RelationsStack
             code={card.number}
             gate={card.human_design.gate}

@@ -30,9 +30,14 @@ interface RingMember {
 /** One bar of the stack: a bond, the kin it names, and what to do with it. */
 interface Bar {
   key: string;
-  /** The word on the folded bar: Pair, Partner, Channel, Ring, Tarot ... */
+  /**
+   * The word on the folded bar, in a life's words (Where it goes, What it
+   * lacks, Its family, What completes it), never the lineage's. Chosen with
+   * the Relations direction of 2026-09-16: each kin is a direction the energy
+   * moves in a life, and the label names the road, not the bond.
+   */
   label: string;
-  /** The kicker on the open bar: the bond spelled out. */
+  /** The kicker on the open bar: the bond spelled out in the lineage's word. */
   bond: string;
   /** The kin's name, the largest line of the open bar. */
   kin: string;
@@ -80,7 +85,7 @@ export function buildBars(code: number, gate: number, relations: OracleRelations
   if (pairNum != null) {
     const sameInverse = inverse && !inverse.is_self_inverse && inverse.number === pairNum;
     const samePartner = partnerNum === pairNum;
-    const label = samePartner ? 'Pair and partner' : 'Pair';
+    const label = samePartner ? 'Where it goes, what it lacks' : 'Where it goes';
     const bond = [sameInverse ? 'Pair and inverse' : 'Pair', samePartner ? 'partner in the Gene Keys' : ''].filter(Boolean).join(', ');
     const body = [r?.pair?.teaching, samePartner ? r?.programming_partner?.teaching : ''].filter((t) => t && t.trim());
     out.push({ key: 'pair', label, bond, kin: cardName(pairNum), detail: detailFor(pairNum), paras: body.flatMap(paras), code: pairNum, gate: pairNum, group: 'deck' });
@@ -90,14 +95,14 @@ export function buildBars(code: number, gate: number, relations: OracleRelations
   // reflection bar when the card is its own inverse.
   if (inverse) {
     if (inverse.is_self_inverse) {
-      out.push({ key: 'inverse', label: 'Inverse', bond: 'Inverse, its own reflection', kin: 'Itself, turned over', detail: 'One of eight codes that meet their own reflection', paras: paras(inverse.teaching), group: 'deck' });
+      out.push({ key: 'inverse', label: 'No other side', bond: 'Inverse, its own reflection', kin: 'Itself, turned over', detail: 'One of eight codes that meet their own reflection', paras: paras(inverse.teaching), group: 'deck' });
     } else if (inverse.number !== pairNum) {
-      out.push({ key: 'inverse', label: 'Inverse', bond: 'Inverse', kin: cardName(inverse.number), detail: detailFor(inverse.number), paras: paras(inverse.teaching), code: inverse.number, gate: inverse.number, group: 'deck' });
+      out.push({ key: 'inverse', label: 'The other side', bond: 'Inverse', kin: cardName(inverse.number), detail: detailFor(inverse.number), paras: paras(inverse.teaching), code: inverse.number, gate: inverse.number, group: 'deck' });
     }
   }
 
   if (partnerNum != null && partnerNum !== pairNum) {
-    out.push({ key: 'partner', label: 'Partner', bond: 'Partner in the Gene Keys', kin: cardName(partnerNum), detail: detailFor(partnerNum), paras: paras(r?.programming_partner?.teaching), code: partnerNum, gate: partnerNum, group: 'deck' });
+    out.push({ key: 'partner', label: 'What it lacks', bond: 'Partner in the Gene Keys', kin: cardName(partnerNum), detail: detailFor(partnerNum), paras: paras(r?.programming_partner?.teaching), code: partnerNum, gate: partnerNum, group: 'deck' });
   }
 
   // The Human Design channel: the gate's partner gate is a card on this deck.
@@ -107,7 +112,7 @@ export function buildBars(code: number, gate: number, relations: OracleRelations
     const partner = ch.gates[0] === gate ? ch.gates[1] : ch.gates[0];
     out.push({
       key: channels.length > 1 ? `channel-${partner}` : 'channel',
-      label: 'Channel',
+      label: 'What completes it',
       bond: ch.name,
       kin: cardName(partner),
       detail: detailFor(partner),
@@ -121,7 +126,7 @@ export function buildBars(code: number, gate: number, relations: OracleRelations
 
   if (r?.codon_ring) {
     const members = (r.codon_ring.siblings ?? []).filter((n) => n !== code).map((n) => ({ code: n, name: cardName(n) }));
-    out.push({ key: 'ring', label: 'Ring', bond: 'Codon ring', kin: r.codon_ring.name, detail: `${members.length + 1} codes, one family`, paras: paras(r.codon_ring.teaching), members, group: 'deck' });
+    out.push({ key: 'ring', label: 'Its family', bond: 'Codon ring', kin: r.codon_ring.name, detail: `${members.length + 1} codes, one family`, paras: paras(r.codon_ring.teaching), members, group: 'deck' });
   }
 
   if (r?.tarot?.teaching) {
