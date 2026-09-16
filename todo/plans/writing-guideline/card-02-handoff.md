@@ -1,0 +1,16 @@
+# Card 2, the first card written under the locked template
+
+Start here in a fresh session opened in this worktree (branch `claude/card-02`, cut from `claude/oracle-pilot` at the merge of main on 2026-09-16).
+
+What is locked: `oracle/WRITERS-BRIEF.md` (the template; do not edit it without a correction from Adrian on the page, recorded in `todo/plans/writing-guideline/adrian-said.md`). What is the reference: `oracle/cards/01.md`, read section by section by Adrian on the page. What is paused: Relations (hidden by `RELATIONS_PANEL_ENABLED`); write nothing for it, leave card 2's `## RELATIONS` as it stands.
+
+The order for card 2:
+1. Write the two reference entries card 2 needs, in the shape of the models: `~/Documents/Obsidian Vault/Mandala Codes/oracle/body/organs/sternum.md` (model: `body/organs/liver.md`, three threads: the Gene Keys row, the Human Design centre's biology, Chinese medicine; then the join in plain words, the checkable anatomy at scope, and Not this) and `body/amino-acids/phenylalanine.md` (model: `body/amino-acids/lysine.md`; every source line with its file and page; a join paragraph per card that carries it, 2 and 8; the facts usable in one clause and never as reasons). One Opus agent, then Adrian reads them once.
+2. `node scripts/oracle-packet.mjs 2` (already run once; rerun after the entries exist so section 5 carries them).
+3. One fresh Opus agent writes card 2 whole from the brief and the packet, all sections but Relations: the list of true things first, allotted across the sections; sizes as the brief gives them; the essence, the keynotes, then the reading last. The brief for that agent is the pattern in the pilot session's scratchpad: read the brief whole, then the packet, then card 1 once; keep frontmatter, headings and structural lines; sheet fields before any folded block; run punctuation.mjs and measure.mjs and report numbers as information; no builds, no commit.
+4. Regenerate (`node --import tsx scripts/build-oracle-corpus.ts` and `build-search-index.ts`), run `npx vitest run tests/unit`, repoint content pins if a card 2 pin breaks, commit, push the branch, wait for the Cloudflare preview of that commit (`npx wrangler pages deployment list --project-name mandalacodes`, the row for the commit), and send Adrian that deployment's own address (not the branch alias, which his phone caches). He reads on the phone.
+5. Every correction he makes goes into `adrian-said.md` verbatim and, if it is a rule, into the brief, with the lock date moved.
+
+Sizes to hold (from the brief): Combination 40 to 70; trigrams 70 to 110 each; I Ching Reading 180 to 260; lines 50 to 70 each; Shadow 150 to 200; natures 35 to 55 each; Gift 150 to 200; Siddhi 110 to 160; The drive 150 to 200; Where it lives 180 to 240; What completes it 70 to 100; Physiology 120 to 180 and Amino acid 100 to 150, two paragraphs each; the reading three paragraphs.
+
+The three rules Adrian named most often, hold them in every sentence: never begin a sentence with And, never two ands in one sentence; at most two examples, never a list of four; words every culture uses ("call" not "ring"). The poetry is in precision, never in pronouncement; a sentence a friend would ask "what do you mean" about is a riddle; the reader is in every sentence; never announce an assignment; never invent a reason the source did not give.

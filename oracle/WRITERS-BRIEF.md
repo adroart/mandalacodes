@@ -88,7 +88,17 @@ Relations: where this energy goes next. The five sections above look into one en
 
 ## The order and the sheet
 
-Write ICHING, KEYS, DESIGN, BODY, RELATIONS, then find the essence, then CODE from every source, then the keynotes. The essence is three whole sentences in `meta.centre`: the first names the energy, the second its rhythm or its challenge as the reader feels it, the third its way. The keynotes, five to seven on the `_Keywords:_` line, each name a state of a life that a stranger could say yes to with nothing else on the page.
+Write ICHING, KEYS, DESIGN, BODY, RELATIONS, then CODE from every source, then the keynotes, then the entrance last of all. The keynotes, five to seven on the `_Keywords:_` line, each name a state of a life that a stranger could say yes to with nothing else on the page.
+
+## The entrance
+
+The entrance is the sentence or two in `meta.centre` that sits under the keynotes, the first prose a person reads. It is a taste of the card, not the card: two sentences, three at most, that leave someone wanting the rest. It is written last, from the finished card alone, with the reading open beside it.
+
+The reading's first paragraph names the energy and says what it is. The entrance therefore does not; the one job it may not do is define. It comes in from somewhere else on the card: a moment, a picture, a feeling in the body, the thing people say about you, the turn the card makes. It borrows no phrase from any section, no image the reading spends (if the reading tells the rainmaker, the entrance does not mention rain), and no opening word the reading opens with. Read the two together before you finish: if the entrance could be the reading's first sentence, or the reading's first sentence could be the entrance, start again.
+
+It still says what this energy is, in the reader's life, so a stranger holding only the card name and these sentences would understand what the card is about. It is plain, chosen, in words every culture uses. Card 1's is the register, written by Adrian: "Creation itself moves through you, the power that makes something from nothing. This energy comes in waves, and between the waves there is nothing. No matter how hard you try, the wave will only return on its own." Card 46's, written to this rule while its reading opens "Lightness is the energy you carry": "Some people are simply lucky, and the luck is not a gift: it is what life does around a body that has stopped fighting it. This energy is that ease, and the moment you clench around how things must go it leaves you; the moment you let go it returns."
+
+Why this rule exists: the first sixty cards were written with the entrance told to "name the energy" and the reading told to "name it and say what it is," so both said the same thing, short then long, and the page opened by repeating itself.
 
 The sheet under `meta:`, in this order: `centre`; `scene` (the picture chosen, with what was set aside); `mechanism` (how the card holds together); `sources` (one list per section of the packet files it draws on); then any folded block (`lore`, `sourcing_note`, `fact_check`), because the app stops reading `meta` at the first one. Leave every `status:` as `scaffold`. Do not run builds, regenerate data, touch another card, or commit.
 

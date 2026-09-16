@@ -12,10 +12,10 @@ import { themeCanvasFont } from '../../../../shared/themeFonts';
 import { OracleEntrancePortal } from '../OracleEntrancePortal';
 import { EBReadingMarkup } from './EBReading.generated';
 
-// Relations was paused on 2026-09-16 (hidden, not removed) until the section
-// was relational, and unhidden the same day when Adrian read card 1's rewrite
-// on a preview and said it holds. Set false to hide the panel, its nav button
-// and its jump again without removing anything.
+// Relations was paused on 2026-09-16 while the section got its deeper dive,
+// and lifted the same day once the stack (LAUNCH_FLAGS.relationsStack) shipped.
+// Set this false to hide the panel, its nav button and its jump again; nothing
+// else needs to move.
 export const RELATIONS_PANEL_ENABLED = true;
 
 export interface EBData {

@@ -80,6 +80,9 @@ jobs:
       # includes mcp/oracle-server/src, so its deps must be present.
       - run: npm ci --prefix mcp/oracle-server
       - run: npm run typecheck
+      # Deck-wide count of the writer's brief never-dos; a report, not a gate,
+      # until Phase 1 of todo/plans/personal-pass.md brings it to its clean line.
+      - run: npm run lint:tells
       - run: npm run test:unit
 
   # The mobile Playwright suite, on Chromium only (playwright.config.ts's
