@@ -11,6 +11,7 @@
  *   npm run workbook -- --booklet 1          cards 1 to 4
  *   npm run workbook -- --cards 3,14,47,52   any cards, in that order
  *   npm run workbook -- --all                all sixteen booklets
+ *   npm run workbook -- --book               all sixty-four cards in one book
  *   npm run workbook -- --booklet 1 --html   also keep the HTML beside the PDF
  *
  * Output: workbook/booklet-NN.pdf (gitignored). The script reads
@@ -87,12 +88,27 @@ function renderSubheading(sub: MdSubheading): string {
   return html;
 }
 
-/** The six lines of the card's hexagram, top to bottom, drawn as bars. */
+/**
+ * The six lines of the card's hexagram, top to bottom, as inline SVG with
+ * the same geometry the site's Hexagram element draws (a filled shape
+ * prints everywhere; CSS backgrounds do not).
+ */
 function hexagramGlyph(n: number): string {
   const bits = bitsForCard(n);
   if (!bits) return '';
-  const bars = [...bits].reverse().map((yang) => (yang ? '<i class="y"></i>' : '<i class="n"></i>')).join('');
-  return `<span class="hex">${bars}</span>`;
+  const LH = 9.6;
+  const GAP = 6.2;
+  const y0 = (100 - (6 * LH + 5 * GAP)) / 2;
+  const rects = [...bits]
+    .reverse()
+    .map((yang, i) => {
+      const y = (y0 + i * (LH + GAP)).toFixed(1);
+      return yang
+        ? `<rect x="8" y="${y}" width="84" height="${LH}" fill="#111"/>`
+        : `<rect x="8" y="${y}" width="34" height="${LH}" fill="#111"/><rect x="58" y="${y}" width="34" height="${LH}" fill="#111"/>`;
+    })
+    .join('');
+  return `<svg class="hex" viewBox="0 0 100 100" aria-hidden="true">${rects}</svg>`;
 }
 
 function renderCard(n: number): { html: string; name: string } {
@@ -139,11 +155,9 @@ const CSS = `
 html, body { margin: 0; padding: 0; }
 body { font-family: Charter, "Iowan Old Style", Georgia, serif; font-size: 8.5pt; line-height: 1.35; color: #111; }
 p { margin: 0 0 1.8mm; hyphens: none; orphans: 2; widows: 2; }
-p.meta { color: #555; }
+p.meta { color: #555; break-after: avoid; }
 h1 { font-size: 14pt; font-weight: bold; margin: 6mm 0 1.5mm; break-after: avoid; display: flex; align-items: center; gap: 3mm; }
-.hex { display: inline-flex; flex-direction: column; gap: 1mm; width: 8mm; }
-.hex i { display: block; height: 1.1mm; background: #111; }
-.hex i.n { background: none; border-left: 3.2mm solid #111; border-right: 3.2mm solid #111; }
+.hex { display: block; width: 9mm; height: 9mm; flex: 0 0 9mm; }
 .card:first-child h1 { margin-top: 0; }
 h2 { font-size: 10.5pt; font-weight: bold; margin: 4mm 0 1.5mm; break-after: avoid; }
 h3 { font-size: 8.5pt; font-weight: bold; margin: 2.8mm 0 0.8mm; break-after: avoid; }
@@ -158,7 +172,7 @@ function document(body: string): string {
 
 async function renderPdf(page: Page, html: string): Promise<PDFDocument> {
   await page.setContent(html, { waitUntil: 'load' });
-  const bytes = await page.pdf({ format: 'A4', printBackground: false, margin: { top: '12mm', bottom: '14mm', left: '14mm', right: '12mm' } });
+  const bytes = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '12mm', bottom: '14mm', left: '14mm', right: '12mm' } });
   return PDFDocument.load(bytes);
 }
 
@@ -189,7 +203,7 @@ async function renderCardPdf(page: Page, html: string): Promise<PDFDocument> {
 
 async function buildBooklet(browser: Browser, booklet: number, cards: number[], keepHtml: boolean): Promise<void> {
   fs.mkdirSync(OUT, { recursive: true });
-  const tag = String(booklet).padStart(2, '0');
+  const tag = booklet === 0 ? 'book' : String(booklet).padStart(2, '0');
   const rendered = cards.map((n) => ({ n, ...renderCard(n) }));
   if (keepHtml) fs.writeFileSync(path.join(OUT, `booklet-${tag}.html`), document(rendered.map((r) => r.html).join('')));
 
@@ -211,10 +225,11 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
     p.drawText(label, { x: p.getWidth() - mmToPt(12) - font.widthOfTextAtSize(label, size), y: mmToPt(7), size, font, color: rgb(0.54, 0.54, 0.54) });
   });
 
-  const file = path.join(OUT, `booklet-${tag}.pdf`);
+  const file = path.join(OUT, booklet === 0 ? 'universal-language-workbook.pdf' : `booklet-${tag}.pdf`);
   fs.writeFileSync(file, await out.save());
   const pages = out.getPageCount();
-  console.log(`[workbook] booklet ${booklet}: cards ${rendered.map((r) => `${r.n} ${r.name}`).join(', ')} → ${path.relative(ROOT, file)} (${pages} pages, ${Math.ceil(pages / 2)} sheets)`);
+  const what = booklet === 0 ? `${cards.length} cards` : `booklet ${booklet}: cards ${rendered.map((r) => `${r.n} ${r.name}`).join(', ')}`;
+  console.log(`[workbook] ${what} → ${path.relative(ROOT, file)} (${pages} pages, ${Math.ceil(pages / 2)} sheets)`);
 }
 
 async function main(): Promise<void> {
@@ -228,9 +243,13 @@ async function main(): Promise<void> {
   const bookletArg = get('--booklet');
   const browser = await chromium.launch();
   try {
+    if (args.includes('--book')) {
+      await buildBooklet(browser, 0, Array.from({ length: 64 }, (_, i) => i + 1), keepHtml);
+      return;
+    }
     if (cardsArg) {
       const cards = cardsArg.split(',').map((s) => Number(s.trim())).filter((n) => n >= 1 && n <= 64);
-      await buildBooklet(browser, Number(bookletArg || 0), cards, keepHtml);
+      await buildBooklet(browser, Number(bookletArg || 99), cards, keepHtml);
       return;
     }
     const booklets = args.includes('--all') ? Array.from({ length: BOOKLETS }, (_, i) => i + 1) : [Number(bookletArg || 1)];
