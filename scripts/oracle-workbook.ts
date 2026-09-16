@@ -2,10 +2,11 @@
  * The printed workbook for Adrian's hand pass over the 64 cards.
  * Phase 2 of todo/plans/personal-pass.md, section 1, as Adrian settled it
  * on 2026-09-16: just the words, the way they read on the website, set
- * like a text document. One column, small margins, small type, the cards
- * running on one after another with no page breaks, nothing on the page
- * that is not the card: no artwork, no numbers, no marks, no strip.
- * The one thing that is not card text is a page number at the foot.
+ * like a text document. One column, small margins, small type, nothing on
+ * the page that is not the card: no artwork, no numbers, no marks, no
+ * strip, no moving lines (those are a separate book). Each card starts on a fresh page, and whatever is left of the
+ * last page of a card is ruled for the pen. The one other thing on the
+ * page is a page number at the foot.
  *
  *   npm run workbook -- --booklet 1          cards 1 to 4
  *   npm run workbook -- --cards 3,14,47,52   any cards, in that order
@@ -14,13 +15,17 @@
  *
  * Output: workbook/booklet-NN.pdf (gitignored). The script reads
  * oracle/cards/NN.md through the same parser the card page uses and
- * writes nothing back. Chromium (Playwright) renders the PDF.
+ * writes nothing back. Chromium (Playwright) renders each card as its own
+ * PDF; the ruling is found by trying rule counts until one more would add
+ * a page; pdf-lib joins the cards into the booklet.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium, type Browser } from 'playwright';
+import { chromium, type Browser, type Page } from 'playwright';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { parseCardMarkdown, type MdSubheading, type ParsedCard } from '../lib/oracle/card-markdown';
+import { bitsForCard } from '../utils/ichingCasting';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'workbook');
@@ -82,13 +87,21 @@ function renderSubheading(sub: MdSubheading): string {
   return html;
 }
 
+/** The six lines of the card's hexagram, top to bottom, drawn as bars. */
+function hexagramGlyph(n: number): string {
+  const bits = bitsForCard(n);
+  if (!bits) return '';
+  const bars = [...bits].reverse().map((yang) => (yang ? '<i class="y"></i>' : '<i class="n"></i>')).join('');
+  return `<span class="hex">${bars}</span>`;
+}
+
 function renderCard(n: number): { html: string; name: string } {
   const raw = fs.readFileSync(path.join(ROOT, 'oracle/cards', `${String(n).padStart(2, '0')}.md`), 'utf8');
   const card: ParsedCard = parseCardMarkdown(raw, `card ${n}`);
   const fm = card.frontmatter as Record<string, any>;
   const meta = (fm.meta || {}) as Record<string, any>;
   const name = String(fm.card_name || '');
-  let html = `<h1>${n}. ${esc(name)}</h1>`;
+  let html = `<h1>${hexagramGlyph(n)}${n}. ${esc(name)}</h1>`;
   html += `<p class="meta">${esc(String(fm.hexagram_name || ''))}</p>`;
   if (meta.centre) html += `<p>${esc(String(meta.centre))}</p>`;
   for (const lens of LENSES) {
@@ -113,6 +126,7 @@ function renderCard(n: number): { html: string; name: string } {
     flush();
     for (const sub of sec.subheadings) {
       if (lens.key === 'CODE' && /keywords/i.test(sub.heading)) continue;
+      if (lens.key === 'ICHING' && /^Moving lines/i.test(sub.heading)) continue; // a separate book
       html += renderSubheading(sub);
     }
   }
@@ -126,41 +140,80 @@ html, body { margin: 0; padding: 0; }
 body { font-family: Charter, "Iowan Old Style", Georgia, serif; font-size: 8.5pt; line-height: 1.35; color: #111; }
 p { margin: 0 0 1.8mm; hyphens: none; orphans: 2; widows: 2; }
 p.meta { color: #555; }
-h1 { font-size: 14pt; font-weight: bold; margin: 6mm 0 1.5mm; break-after: avoid; }
+h1 { font-size: 14pt; font-weight: bold; margin: 6mm 0 1.5mm; break-after: avoid; display: flex; align-items: center; gap: 3mm; }
+.hex { display: inline-flex; flex-direction: column; gap: 1mm; width: 8mm; }
+.hex i { display: block; height: 1.1mm; background: #111; }
+.hex i.n { background: none; border-left: 3.2mm solid #111; border-right: 3.2mm solid #111; }
 .card:first-child h1 { margin-top: 0; }
 h2 { font-size: 10.5pt; font-weight: bold; margin: 4mm 0 1.5mm; break-after: avoid; }
 h3 { font-size: 8.5pt; font-weight: bold; margin: 2.8mm 0 0.8mm; break-after: avoid; }
 p.line { margin-top: 2.2mm; break-after: avoid; }
+.rules { margin-top: 4mm; }
+.rules div { height: 7mm; border-bottom: 0.3pt solid #b0b0b0; }
 `;
 
 function document(body: string): string {
   return `<!doctype html><html><head><meta charset="utf-8"><title>Universal Language workbook</title><style>${CSS}</style></head><body>${body}</body></html>`;
 }
 
-const footer = `<div style="width:100%; margin:0 12mm 6mm; text-align:right; font-family:Charter, Georgia, serif; font-size:7pt; color:#8a8a8a;"><span class="pageNumber"></span></div>`;
+async function renderPdf(page: Page, html: string): Promise<PDFDocument> {
+  await page.setContent(html, { waitUntil: 'load' });
+  const bytes = await page.pdf({ format: 'A4', printBackground: false, margin: { top: '12mm', bottom: '14mm', left: '14mm', right: '12mm' } });
+  return PDFDocument.load(bytes);
+}
+
+const MAX_RULES = 40; // more than a whole page holds at 7 mm
+const mmToPt = (mm: number) => (mm * 72) / 25.4;
+
+/**
+ * Render one card, then rule whatever is left of its last page: the most
+ * rules that fit without the render growing by a page.
+ */
+async function renderCardPdf(page: Page, html: string): Promise<PDFDocument> {
+  const withRules = (k: number) => document(html.replace('</section>', `<div class="rules">${'<div></div>'.repeat(k)}</div></section>`));
+  const base = await renderPdf(page, withRules(0));
+  const pages = base.getPageCount();
+  let lo = 0;
+  let hi = MAX_RULES;
+  let best = base;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    const trial = await renderPdf(page, withRules(mid));
+    if (trial.getPageCount() === pages) {
+      lo = mid;
+      best = trial;
+    } else hi = mid - 1;
+  }
+  return best;
+}
 
 async function buildBooklet(browser: Browser, booklet: number, cards: number[], keepHtml: boolean): Promise<void> {
   fs.mkdirSync(OUT, { recursive: true });
   const tag = String(booklet).padStart(2, '0');
   const rendered = cards.map((n) => ({ n, ...renderCard(n) }));
-  const html = document(rendered.map((r) => r.html).join(''));
-  if (keepHtml) fs.writeFileSync(path.join(OUT, `booklet-${tag}.html`), html);
+  if (keepHtml) fs.writeFileSync(path.join(OUT, `booklet-${tag}.html`), document(rendered.map((r) => r.html).join('')));
 
   const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'load' });
-  const bytes = await page.pdf({
-    format: 'A4',
-    printBackground: false,
-    displayHeaderFooter: true,
-    headerTemplate: '<div></div>',
-    footerTemplate: footer,
-    margin: { top: '12mm', bottom: '14mm', left: '14mm', right: '12mm' },
-  });
+  const out = await PDFDocument.create();
+  for (const r of rendered) {
+    const pdf = await renderCardPdf(page, r.html);
+    const pages = await out.copyPages(pdf, pdf.getPageIndices());
+    for (const p of pages) out.addPage(p);
+  }
   await page.close();
 
+  // Page numbers run through the booklet, so pdf-lib writes them after the
+  // cards are joined (each Chromium render would start again at 1).
+  const font = await out.embedFont(StandardFonts.TimesRoman);
+  out.getPages().forEach((p, i) => {
+    const label = String(i + 1);
+    const size = 7;
+    p.drawText(label, { x: p.getWidth() - mmToPt(12) - font.widthOfTextAtSize(label, size), y: mmToPt(7), size, font, color: rgb(0.54, 0.54, 0.54) });
+  });
+
   const file = path.join(OUT, `booklet-${tag}.pdf`);
-  fs.writeFileSync(file, bytes);
-  const pages = (bytes.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
+  fs.writeFileSync(file, await out.save());
+  const pages = out.getPageCount();
   console.log(`[workbook] booklet ${booklet}: cards ${rendered.map((r) => `${r.n} ${r.name}`).join(', ')} → ${path.relative(ROOT, file)} (${pages} pages, ${Math.ceil(pages / 2)} sheets)`);
 }
 
