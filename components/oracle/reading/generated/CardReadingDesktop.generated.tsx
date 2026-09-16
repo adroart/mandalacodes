@@ -87,17 +87,15 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             </span>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px", margin: "0 -12px", padding: "20px 18px 22px", background: "rgba(198,166,103,.055)", border: "1px solid rgba(168,135,77,.10)" } as unknown as React.CSSProperties}>
-          <span style={{ fontFamily: "'Cinzel',serif", fontSize: "10px", letterSpacing: ".24em", textTransform: "uppercase", color: "#a8874d" } as unknown as React.CSSProperties}>
-          Keynotes
-          </span>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 22px" } as unknown as React.CSSProperties}>
-            {(vals.keynotes ?? []).map((k: any, kIdx: number) => (
-              <span key={kIdx} style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", fontSize: "18px", letterSpacing: ".02em", color: "#e2d6bf", lineHeight: "1.3", whiteSpace: "nowrap" } as unknown as React.CSSProperties}>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "baseline", gap: "2px 14px", margin: "-6px 0 0", padding: "0 10px" } as unknown as React.CSSProperties}>
+          {(vals.keynotes ?? []).map((k: any, kIdx: number) => (
+            <React.Fragment key={kIdx}>
+              {kIdx > 0 ? <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", fontSize: "18px", color: "#a8874d", lineHeight: "1.5" } as unknown as React.CSSProperties}>·</span> : null}
+              <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", fontSize: "18px", fontWeight: "600", color: "#e2d6bf", whiteSpace: "nowrap", lineHeight: "1.5" } as unknown as React.CSSProperties}>
               {k}
               </span>
-            ))}
-          </div>
+            </React.Fragment>
+          ))}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", margin: "8px -12px 0" } as unknown as React.CSSProperties}>
         <a href={vals.forMeHref} className="dcw-cardreadingdesktop-h0" style={{ display: "flex", justifyContent: "center", alignItems: "baseline", gap: "14px", padding: "18px 20px", background: "#0e0b08", border: "1px solid #c6a667", transition: "border-color .3s, background .3s" } as unknown as React.CSSProperties}>
