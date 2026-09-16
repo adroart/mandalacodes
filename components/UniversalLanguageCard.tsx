@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { CARD_BY_NUMBER } from '../data/oracleData';
-import { hexagramLineBooleans } from './oracle/HexagramGlyph';
+import { HexagramSVG, hexagramLineBooleans } from './oracle/HexagramGlyph';
+import { astrologyGlyph, hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
 import { getSynthesis, type CardSynthesis } from '../data/synthesisData';
 import { getParsedCard, mapIching, type MdIchingLine } from '../data/cardMarkdown';
 import { HEXAGRAM_CHINESE } from '../data/hexagramChinese';
@@ -14,6 +15,7 @@ import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
 import RelationsStack from './oracle/RelationsStack';
+import { LAUNCH_FLAGS } from '../launchFlags';
 import ChannelStatusLine from './oracle/ChannelStatusLine';
 import SaveToCollectionButton from './account/SaveToCollectionButton';
 import { cardCollectionItem } from '../lib/collections/items';
@@ -142,6 +144,9 @@ const UniversalLanguageCard: React.FC = () => {
         text: text || 'This line’s reading is being written.',
       };
     }),
+    // Relations and kinship are mapped from the same card manuscript.
+    reldata: buildReldata(card, synthesis),
+    kin: buildKin(card, synthesis),
     overlays: OVERLAYS,
     text: (() => {
       const P = (s?: string): string[] => (s ?? '').split('\n\n').map(x => x.trim()).filter(Boolean);
@@ -282,14 +287,14 @@ const UniversalLanguageCard: React.FC = () => {
         onShare={() => setShareOpen(true)}
         onOpenCode={(code) => navigate(`/universal-language/${code}`)}
         invocationSlot={<PublicInvocation invocation={liveInvocation} />}
-        relationsSlot={(
+        relationsSlot={LAUNCH_FLAGS.relationsStack ? (
           <RelationsStack
             code={card.number}
             gate={card.human_design.gate}
             relations={synthesis?.relations}
             channelProse={synthesis?.synthesis.human_design.circuit}
           />
-        )}
+        ) : undefined}
         hdChannelSlot={<ChannelStatusLine gate={card.human_design.gate} />}
       />
       </>
@@ -401,6 +406,83 @@ const chartRowStyles = `
 `;
 
 /* ── light data mappers (live, with graceful fallback) ── */
+function buildReldata(card: any, syn?: CardSynthesis): EBData['reldata'] {
+  const rel = syn?.relations;
+  const pairNum = rel?.pair?.number;
+  const pairCard = pairNum != null ? CARD_BY_NUMBER.get(pairNum) : undefined;
+  const tarot = rel?.tarot?.teaching ?? syn?.synthesis.tarot.tarot_resonance ?? '';
+  return {
+    self: { kicker: 'Inverse · Its Own Reflection', kind: 'Itself', name: 'Its Own Reflection', body: [rel?.inverse?.teaching ?? 'The same lines turned, the situation seen from the other side.'] },
+    pair: { kicker: 'The Pair · Programming Partner', kind: 'Complement', name: pairCard ? `UL ${pairCard.number} · ${pairCard.card_name}` : 'The Pair', body: [rel?.pair?.teaching ?? ''].filter(Boolean) },
+    ring14: { kicker: 'Codon Ring', kind: 'Codon kin', name: rel?.codon_ring?.name ?? 'Codon Ring', body: [rel?.codon_ring?.teaching ?? ''].filter(Boolean) },
+    tarot: { kicker: 'Tarot', kind: 'Arcana', name: rel?.tarot?.card ?? syn?.reference?.tarot_card ?? card.ring_tarot ?? 'Tarot', body: [tarot].filter(Boolean) },
+    immortal: { kicker: 'The Eight Immortals', kind: 'Daoist', name: rel?.immortals ? (rel.immortals.same_trigram ? rel.immortals.upper.name : `${rel.immortals.upper.name} · ${rel.immortals.lower.name}`) : 'The Immortal', body: [rel?.immortals?.teaching ?? ''].filter(Boolean) },
+    hebrew: { kicker: 'Hebrew Letter', kind: 'The Letter', name: rel?.hebrew_letter?.letter ?? syn?.reference?.hebrew_letter ?? 'Hebrew Letter', body: [rel?.hebrew_letter?.teaching ?? ''].filter(Boolean) },
+    sky: { kicker: 'The Sky', kind: 'Astrology', name: rel?.sky?.value ?? syn?.reference?.astrology ?? 'The Sky', body: [rel?.sky?.teaching ?? ''].filter(Boolean) },
+  };
+}
+
+function buildKin(card: any, syn?: CardSynthesis): EBData['kin'] {
+  const rel = syn?.relations;
+  const pairNum = rel?.pair?.number;
+  const pairCard = pairNum != null ? CARD_BY_NUMBER.get(pairNum) : undefined;
+  const sibs = card.codon_ring_siblings ?? [];
+  const ringCard = sibs.length ? CARD_BY_NUMBER.get(sibs[0]) : undefined;
+  const pairHexagram = pairCard ? (
+    <HexagramSVG
+      upper={pairCard.iching.upper_trigram.symbol}
+      lower={pairCard.iching.lower_trigram.symbol}
+      color="currentColor"
+      width={27}
+    />
+  ) : '·';
+  const tarotCard = rel?.tarot?.card ?? syn?.reference?.tarot_card ?? card.ring_tarot ?? '';
+  const letterName = rel?.hebrew_letter?.letter ?? syn?.reference?.hebrew_letter ?? '';
+  const letterGlyph = hebrewLetterGlyph(letterName);
+  const skyValue = rel?.sky?.value ?? syn?.reference?.astrology ?? '';
+  const skyGlyph = astrologyGlyph(skyValue);
+  return [
+    { key: 'pair', x: 24, y: 50, kind: 'kin', glyph: pairHexagram, fontRole: 'display', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: pairCard ? `UL ${pairCard.number}` : 'Pair' },
+    { key: 'ring14', x: 76, y: 50, kind: 'kin', glyph: <CodonRingGlyph />, fontRole: 'display', size: 'clamp(26px,6.8vw,34px)', dim: 'clamp(54px,13.5vw,66px)', svgR: 6.4, label: ringCard ? `UL ${ringCard.number}` : 'Ring' },
+    { key: 'sky', x: 21.7, y: 21.7, kind: 'corr', glyph: skyGlyph ? <AstrologyGlyph value={skyValue} /> : '·', fontRole: 'display', size: 'clamp(22px,5.6vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: skyValue || 'Sky' },
+    { key: 'tarot', x: 78.3, y: 21.7, kind: 'corr', glyph: tarotNumeral(tarotCard) || '·', fontRole: 'display', size: 'clamp(15px,4vw,19px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: tarotCard || 'Tarot' },
+    { key: 'hebrew', x: 21.7, y: 78.3, kind: 'corr', glyph: letterGlyph ? <HebrewGlyph glyph={letterGlyph} /> : '·', fontRole: 'display', size: 'clamp(23px,6vw,30px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: letterName || 'Letter' },
+    { key: 'immortal', x: 78.3, y: 78.3, kind: 'corr', glyph: '笛', fontRole: 'cjk', size: 'clamp(22px,5.8vw,28px)', dim: 'clamp(46px,11.5vw,56px)', svgR: 5.4, label: 'Immortal' },
+  ];
+}
+
+function CodonRingGlyph() {
+  return (
+    <svg width="31" height="31" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <circle cx="16" cy="10.5" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="11" cy="19.5" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="21" cy="19.5" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="16" cy="16" r="2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function HebrewGlyph({ glyph }: { glyph: string }) {
+  return (
+    <svg width="28" height="32" viewBox="0 0 28 32" fill="none" aria-hidden="true" focusable="false">
+      <text x="14" y="23" textAnchor="middle" direction="rtl" fontFamily="var(--font-display)" fontSize="23" fill="currentColor">
+        {glyph}
+      </text>
+    </svg>
+  );
+}
+
+function AstrologyGlyph({ value }: { value: string }) {
+  const glyph = astrologyGlyph(value);
+  return (
+    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true" focusable="false">
+      <text x="15" y="22" textAnchor="middle" fontFamily="Times New Roman, Georgia, serif" fontSize="22" fill="currentColor">
+        {`${glyph}\uFE0E`}
+      </text>
+    </svg>
+  );
+}
+
 // System overlays are the same three short essays for every card (about the systems,
 // not the card), verbatim from the template.
 const OVERLAYS: EBData['overlays'] = {

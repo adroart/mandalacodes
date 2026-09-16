@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './fixtures';
+import { LAUNCH_FLAGS } from '../launchFlags';
 
 /* The Relations panel's stack of kin (components/oracle/RelationsStack.tsx):
  * two families of bars, one open at a time, every kin card a link, and, for
@@ -156,6 +157,10 @@ async function bringIntoView(page: Page, selector: string) {
 }
 
 test.describe('the Relations stack', () => {
+  // The stack ships behind LAUNCH_FLAGS.relationsStack, off until Adrian has
+  // worked it up; these cases run when it is on, the orbit case below when off.
+  test.skip(!LAUNCH_FLAGS.relationsStack, 'relationsStack is off');
+
   test('a stranger sees seven bars in two families, the pair open, every kin a link', async ({ page }) => {
     const errors = collectErrors(page);
     await openCard(page);
@@ -264,5 +269,22 @@ test.describe('the Relations stack', () => {
     await open.getByRole('link', { name: 'Open the card' }).click();
     await expect(page).toHaveURL(/\/universal-language\/4$/);
     await expect(page.locator('section[data-chapter="relations"]')).toBeAttached();
+  });
+});
+
+test.describe('the Relations orbit, while the stack is off', () => {
+  test.skip(LAUNCH_FLAGS.relationsStack, 'relationsStack is on');
+
+  test('the template orbit still renders: six kin nodes and the pair teaching', async ({ page }) => {
+    const errors = collectErrors(page);
+    await openCard(page);
+    await page.getByRole('button', { name: 'Relations', exact: true }).first().click();
+    const panel = page.locator('section[data-chapter="relations"]');
+    await expect(panel.locator('[data-relations-stack]')).toHaveCount(0);
+    await expect(panel.locator('.ul-kin-wrap')).toBeAttached();
+    // The six orbit nodes plus the centre: pair, ring, sky, tarot, letter, immortal.
+    await expect(panel.locator('.ul-kin-wrap button')).toHaveCount(7);
+    await expect(panel.getByText('Veils of Knowledge', { exact: false }).first()).toBeAttached();
+    await assertFourStandardChecks(page, errors);
   });
 });

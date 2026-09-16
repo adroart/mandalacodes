@@ -45,6 +45,7 @@
     "selHex",
     "selLower",
     "selUpper",
+    "selectKinSelf",
     "stop",
     "toggleChartPreview",
     "toggleShare"
@@ -76,6 +77,8 @@
     "hdDriveParas as para",
     "ichingReading as para",
     "keywords as kw",
+    "kinBodyParas as para",
+    "kinNodes as node",
     "movingLines as ml",
     "overlayParas as p",
     "ulReadingRest as para"
