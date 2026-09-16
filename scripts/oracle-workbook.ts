@@ -16,13 +16,14 @@
  * Phase 1 report at todo/plans/personal-pass/phase1/NN.md for the marks.
  * It writes nothing back.
  *
- * How the pages are made. Every unit that starts a fresh page (the front
- * matter, each cover, each lens) is rendered by Chromium as its own small
- * PDF, so the script knows exactly which pages belong to which lens. The
- * running head and the strip are Chromium's print header and footer, which
- * is the one way to put them on every page including overflow pages. Then
- * pdf-lib puts a lined page behind every text page, labelled with the page
- * it will face once the sheets are printed both sides and bound on the left.
+ * How the pages are made. Dense by Adrian's call (2026-09-16): no artwork,
+ * one card is one continuous flow of two columns printed both sides, the
+ * five lenses running on without page breaks, and one ruled page at the
+ * end of each card for the rewrites. Each card renders as its own PDF so
+ * the running head can count its pages; the running head and the strip
+ * are Chromium's print header and footer, which is the one way to put
+ * them on every page. pdf-lib then assembles front matter, cards and
+ * ruled pages, keeping every card starting on a right-hand page.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -60,18 +61,14 @@ const STRIP_CHECKS = [
   'would I use this word',
   'held well, not only the trouble',
 ];
-const STRIP_MARKS = ['line through: cut', 'circle, word above: swap', 'caret, number: insert, text on the facing page', 'star: true, keep, fixed', 'question mark: back to the source'];
+const STRIP_MARKS = ['line through: cut', 'circle, word above: swap', 'caret, number: insert, text on the ruled page', 'star: true, keep, fixed', 'question mark: back to the source'];
 
 // ---------- page geometry (mm) ----------
-// Text pages are right-hand pages once the booklet is bound on the left, so
-// the binding margin is on the left and the pen margin is on the right.
-// Lined pages are the backs of text pages, so their margins are mirrored.
-const M = { top: 22, bottom: 24, bind: 18, outer: 14 };
-// Text pages run two columns across the full width (Adrian's call, 2026-09-16:
-// the most words a page, the lined page carries the pen). The lined page
-// rules in the same two columns.
+// Text runs on both sides of the sheet, so the margins are the same left
+// and right: 18 mm is enough for the coil on one edge and for a star, a
+// question mark or a circled word on the other.
+const M = { top: 22, bottom: 24, side: 18 };
 const COLUMN_GAP = 8;
-const CONTENT_W = 210 - M.bind - M.outer; // 178
 
 // ---------- helpers ----------
 
@@ -171,68 +168,52 @@ function cardKeywords(card: ParsedCard): string[] {
   return line.replace(/^_?Keywords:_?\s*/i, '').split('·').map((s) => s.trim()).filter(Boolean);
 }
 
-function renderCover(n: number, card: ParsedCard): string {
+function renderHead(n: number, card: ParsedCard): string {
   const fm = card.frontmatter as Record<string, any>;
   const meta = (fm.meta || {}) as Record<string, any>;
-  const pid = ulCardPublicId(n);
-  const img = pid ? `https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_1400,c_fit/${pid}` : '';
   const kw = cardKeywords(card);
   const essence = String(meta.centre || '');
   return `
-<section class="cover">
-  ${img ? `<img class="art" src="${img}" alt="">` : '<div class="art blank"></div>'}
-  <div class="cover-text">
-    <div class="num">Card ${n}</div>
-    <h1>${esc(String(fm.card_name || ''))}</h1>
-    <div class="row"><span class="lab">hexagram</span><span class="val">${esc(String(fm.hexagram_name || ''))}</span></div>
-    ${ruled(1, 'my gloss')}
-    <div class="row"><span class="lab">keynotes</span><span class="val">${kw.map(esc).join(', ')}</span></div>
-    ${ruled(1, 'mine')}
-    <div class="row"><span class="lab">essence</span><span class="val essence">${esc(essence)}</span></div>
-    ${ruled(3, 'in my words')}
+<div class="head">
+  <h1>${esc(String(fm.card_name || ''))}</h1>
+  <div class="grid">
+    <div class="cell"><div class="row"><span class="lab">hexagram</span><span class="val">${esc(String(fm.hexagram_name || ''))}</span></div>${ruled(1, 'my gloss')}</div>
+    <div class="cell"><div class="row"><span class="lab">keynotes</span><span class="val">${kw.map(esc).join(', ')}</span></div>${ruled(1, 'mine')}</div>
   </div>
-</section>`;
+  <div class="row"><span class="lab">essence</span><span class="val essence">${esc(essence)}</span></div>
+  ${ruled(2, 'in my words')}
+</div>`;
 }
 
-interface Unit {
-  kind: 'cover' | 'lens';
-  card: number;
-  name: string;
-  lens?: string;
-  html: string;
-}
-
-function renderCard(n: number): { units: Unit[]; sentences: number; suspects: number; name: string } {
+function renderCard(n: number): { html: string; sentences: number; suspects: number; name: string } {
   const raw = fs.readFileSync(path.join(ROOT, 'oracle/cards', `${String(n).padStart(2, '0')}.md`), 'utf8');
   const card = parseCardMarkdown(raw, `card ${n}`);
   const suspects = loadSuspects(n);
   const name = String(card.frontmatter.card_name || '');
-  const units: Unit[] = [{ kind: 'cover', card: n, name, html: renderCover(n, card) }];
   let total = 0;
-  let susCount = 0;
+  let body = '';
   for (const lens of LENSES) {
     const sec = card.sections[lens.key];
     if (!sec) continue;
     const counter: Counter = { n: 0 };
-    let body = '';
+    body += `<h2>${lens.title}</h2>`;
     // The `_Shadow:_ a · _Gift:_ b · _Siddhi:_ c` line is a label, not a
     // sentence; it prints grey and unnumbered, the way the heights read on
-    // the card page. Keywords are on the cover.
+    // the card page. Keywords are in the head.
     const intro = sec.intro.filter((l) => !/^_?Keywords:_?/i.test(l.trim()));
     const labels = intro.filter((l) => /^_[A-Za-z ]+:_/.test(l.trim()));
     const prose = intro.filter((l) => !labels.includes(l));
     for (const l of labels) body += `<p class="marker">${esc(l.trim().replace(/_/g, '').replace(/\s*·\s*/g, ', '))}</p>`;
     if (prose.length) body += `<p>${renderSentences(prose.join(' '), lens.prefix, counter, suspects)}</p>`;
     for (const sub of sec.subheadings) {
-      if (lens.key === 'CODE' && /keywords/i.test(sub.heading)) continue; // on the cover
+      if (lens.key === 'CODE' && /keywords/i.test(sub.heading)) continue; // in the head
       body += renderSubheading(sub, lens.prefix, counter, suspects);
       if (lens.key === 'KEYS' && /^(Shadow|Gift|Siddhi)/.test(sub.heading)) body += ruled(1, 'my name for this height');
     }
     total += counter.n;
-    susCount += (body.match(/class="s sus"/g) || []).length;
-    units.push({ kind: 'lens', card: n, name, lens: lens.title, html: `<section class="lens"><h2>${lens.title}</h2>${body}</section>` });
   }
-  return { units, sentences: total, suspects: susCount, name };
+  const susCount = (body.match(/class="s sus"/g) || []).length;
+  return { html: `<section class="card">${renderHead(n, card)}<div class="flow">${body}</div></section>`, sentences: total, suspects: susCount, name };
 }
 
 // ---------- front matter ----------
@@ -252,7 +233,7 @@ function frontMatter(booklet: number, cards: CardStat[]): string {
   <h1>Booklet ${booklet} of ${BOOKLETS}</h1>
   <div class="big">${list}</div>
   <p class="inherit">The reading pass marked ${marked} sentences across these ${cards.length} cards.</p>
-  <p>One card is one sitting. The text is on the right-hand page; the lined page on the left is yours. Every sentence carries a small number so a note can point at it without copying it. The square before a number means the reading pass thought that sentence says nothing a reader could check against a life; start there, do not end there.</p>
+  <p>One card is one sitting. The text runs on both sides of the sheet; the margin takes the marks, and the ruled page at the end of each card is yours. Every sentence carries a small number so a note can point at it without copying it. The square before a number means the reading pass thought that sentence says nothing a reader could check against a life; start there, do not end there.</p>
   <p>The two lines at the foot of every page are the coach: the seven checks, and the five marks.</p>
 </section>
 <section class="page fm">
@@ -261,7 +242,7 @@ function frontMatter(booklet: number, cards: CardStat[]): string {
     <li>The artwork first, two minutes, before any prose. What did you see when you named the piece? That is the one source no packet holds.</li>
     <li>The card with the seven checks, 30 to 40 minutes. Mark; do not yet rewrite.</li>
     <li>For each lens that failed check 4 or 5, the one or two source texts on the shelf page, in full, 15 to 25 minutes a lens. Read until you could shut the book and tell a friend what this energy is at its lowest and its highest in your own words.</li>
-    <li>Then rewrite: on the line for a sentence, on the facing page for a paragraph. Never with the card text in view; cover it with a hand and write from the sources and the piece.</li>
+    <li>Then rewrite: on the line for a sentence, on the ruled page at the end of the card for a paragraph. Never with the card text in view; cover it with a hand and write from the sources and the piece.</li>
     <li>One memo on the phone, three to five minutes, headed "card NN in my life": what this energy is when you have lived it, one concrete instance. The only material in the whole system that is unambiguously yours.</li>
   </ol>
   <p class="note">Every rewritten paragraph is read aloud once before the sitting ends. At the start of each booklet, re-read the last card of the previous one against the checks, ten minutes, cold.</p>
@@ -302,7 +283,7 @@ function frontMatter(booklet: number, cards: CardStat[]): string {
   <ol>
     <li><b>A line through:</b> cut.</li>
     <li><b>A word circled with the word above:</b> swap.</li>
-    <li><b>A caret with a number:</b> insert here; the text is on the facing page under that number.</li>
+    <li><b>A caret with a number:</b> insert here; the text is on the ruled page at the end of the card under that number.</li>
     <li><b>A star in the margin:</b> true, keep, fixed from now on.</li>
     <li><b>A question mark in the margin:</b> back to the source, not done; a resume marker for the next sitting.</li>
   </ol>
@@ -330,17 +311,30 @@ function frontMatter(booklet: number, cards: CardStat[]): string {
 const CSS = `
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-body { font-family: Charter, "Iowan Old Style", Georgia, serif; font-size: 8.5pt; line-height: 1.42; color: #111; -webkit-print-color-adjust: exact; }
+body { font-family: Charter, "Iowan Old Style", Georgia, serif; font-size: 8.3pt; line-height: 1.38; color: #111; -webkit-print-color-adjust: exact; }
 .lab, .num, .fm-kicker, .lined .head { font-family: Helvetica, Arial, sans-serif; }
 .page { break-before: page; }
 .page:first-of-type { break-before: auto; }
-p { margin: 0 0 2.6mm; hyphens: none; orphans: 2; widows: 2; }
+p { margin: 0 0 2.2mm; hyphens: none; orphans: 2; widows: 2; }
 b { font-weight: bold; }
 
-/* text pages: two columns across the width, small type, tight but open */
-.lens { column-count: 2; column-gap: ${COLUMN_GAP}mm; column-fill: auto; }
-.lens h2 { column-span: all; font-size: 16pt; font-weight: bold; margin: 0 0 5mm; padding-bottom: 1.5mm; border-bottom: 0.5pt solid #111; letter-spacing: -0.005em; }
-h3 { font-family: Helvetica, Arial, sans-serif; font-weight: normal; text-transform: uppercase; letter-spacing: 0.12em; font-size: 6.4pt; margin: 3.5mm 0 1.2mm; break-after: avoid; }
+/* the card head: number, name, and his lines, across the full width */
+.head { margin-bottom: 4mm; }
+.head h1 { font-size: 18pt; font-weight: normal; margin: 0 0 2.5mm; letter-spacing: 0.005em; }
+.head .grid { display: flex; gap: ${COLUMN_GAP}mm; }
+.head .cell { flex: 1; }
+.head .row { display: flex; gap: 3mm; align-items: baseline; margin: 0 0 0.5mm; }
+.head .row .lab { flex: 0 0 15mm; font-size: 5.5pt; color: #8a8a8a; }
+.head .val { flex: 1; font-size: 9pt; line-height: 1.45; }
+.head .ruled { margin: 0.5mm 0 2.5mm 18mm; }
+.head .ruled .lab { left: -18mm; }
+.head .ruled .rule { height: 7mm; }
+
+/* the flow: five lenses in two columns, no page breaks between them */
+.flow { column-count: 2; column-gap: ${COLUMN_GAP}mm; column-fill: auto; }
+.flow h2 { font-size: 11.5pt; font-weight: bold; margin: 3.5mm 0 2mm; padding-top: 2mm; border-top: 0.5pt solid #111; break-after: avoid; }
+.flow h2:first-child { margin-top: 0; }
+h3 { font-family: Helvetica, Arial, sans-serif; font-weight: normal; text-transform: uppercase; letter-spacing: 0.12em; font-size: 6.2pt; margin: 3mm 0 1mm; break-after: avoid; }
 h3 .tail { color: #8a8a8a; margin-left: 2mm; letter-spacing: 0.06em; }
 p.line { margin-top: 3mm; break-after: avoid; }
 p.line .ln { font-weight: bold; margin-right: 1mm; }
@@ -351,22 +345,9 @@ p.marker { color: #666; }
 .s .n .mark { display: inline-block; width: 1.2mm; height: 1.2mm; background: #111; margin-right: 0.5mm; vertical-align: -0.05em; }
 
 /* ruled lines for his hand, with a small label sitting on the first line */
-.ruled { position: relative; margin: 1.5mm 0 4mm; }
+.ruled { position: relative; margin: 1.5mm 0 3mm; }
 .ruled .lab { position: absolute; left: 0; top: 0.6mm; font-size: 5.5pt; color: #8a8a8a; }
 .ruled .rule { border-bottom: 0.35pt solid #9a9a9a; height: 7.5mm; }
-
-/* cover */
-.cover .art { display: block; width: 100%; max-height: 124mm; object-fit: contain; object-position: left; margin: 0 0 6mm; }
-.cover .art.blank { height: 124mm; border: 0.35pt solid #bbb; }
-.cover-text { width: 150mm; }
-.cover .num { font-size: 6.5pt; color: #8a8a8a; letter-spacing: 0.1em; text-transform: uppercase; }
-.cover h1 { font-size: 22pt; font-weight: normal; margin: 0.5mm 0 4mm; letter-spacing: 0.005em; }
-.cover .row { display: flex; gap: 4mm; align-items: baseline; margin: 0 0 1mm; }
-.cover .row .lab { flex: 0 0 20mm; font-size: 5.5pt; color: #8a8a8a; }
-.cover .val { flex: 1; font-size: 10pt; }
-.cover .val.essence { line-height: 1.55; }
-.cover .ruled { margin-left: 24mm; }
-.cover .ruled .lab { left: -24mm; }
 
 /* front matter */
 .fm { width: 138mm; font-size: 9pt; line-height: 1.5; }
@@ -385,7 +366,7 @@ p.marker { color: #666; }
 .box { border: 0.35pt solid #555; height: 10mm; margin-bottom: 2.5mm; padding: 2mm 2mm 0 11mm; position: relative; font-size: 9.5pt; }
 .box::before { content: ""; position: absolute; left: 2.2mm; top: 2.4mm; width: 4.6mm; height: 4.6mm; border: 0.5pt solid #555; }
 
-/* lined pages: the back of a text page, ruled in the same two columns */
+/* the ruled page at the end of each card, ruled in the same two columns */
 .lined .head { display: flex; justify-content: space-between; font-size: 6.5pt; color: #8a8a8a; height: 8mm; letter-spacing: 0.02em; }
 .lined .cols { display: flex; gap: ${COLUMN_GAP}mm; }
 .lined .col { flex: 1; }
@@ -415,40 +396,23 @@ const emptyHead = '<div></div>';
 
 // ---------- build ----------
 
-interface RenderOpts {
-  head?: string;
-  mirrored?: boolean;
-}
-
-async function renderPdf(page: Page, html: string, opts: RenderOpts = {}): Promise<Uint8Array> {
-  const bind = opts.mirrored ? M.outer : M.bind;
-  const outer = opts.mirrored ? M.bind : M.outer;
+async function renderPdf(page: Page, html: string, head = emptyHead): Promise<Uint8Array> {
   await page.setContent(html, { waitUntil: 'networkidle' });
   const bytes = await page.pdf({
     format: 'A4',
     printBackground: true,
     displayHeaderFooter: true,
-    headerTemplate: opts.head || emptyHead,
-    footerTemplate: footerStrip(bind, outer),
-    margin: { top: `${M.top}mm`, bottom: `${M.bottom}mm`, left: `${bind}mm`, right: `${outer}mm` },
+    headerTemplate: head,
+    footerTemplate: footerStrip(M.side, M.side),
+    margin: { top: `${M.top}mm`, bottom: `${M.bottom}mm`, left: `${M.side}mm`, right: `${M.side}mm` },
   });
   return new Uint8Array(bytes);
 }
 
-interface TextPage {
-  pdf: PDFDocument;
-  index: number; // page index inside that pdf
-  label: string; // what the page is, for the lined page that will face it
-}
-
-/** One lined page per text page, each headed with the page it will face. */
-function linedDocument(facing: (string | null)[]): string {
+/** The ruled pages at the end of each card, one section per page. */
+function ruledDocument(labels: string[]): string {
   const col = `<div class="col">${'<div class="l"></div>'.repeat(34)}</div>`;
-  return document(
-    facing
-      .map((f) => `<section class="page lined"><div class="head"><span>${f ? esc(f) : ''}</span><span>${f ? 'facing page' : 'end of booklet'}</span></div><div class="cols">${col}${col}</div></section>`)
-      .join(''),
-  );
+  return document(labels.map((l) => `<section class="page lined"><div class="head"><span>${esc(l)}</span><span>by sentence number</span></div><div class="cols">${col}${col}</div></section>`).join(''));
 }
 
 async function buildBooklet(browser: Browser, booklet: number, cards: number[], keepHtml: boolean): Promise<void> {
@@ -461,46 +425,48 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
   const fmHtml = document(frontMatter(booklet, stats));
   if (keepHtml) {
     fs.writeFileSync(path.join(OUT, `booklet-${tag}-front.html`), fmHtml);
-    fs.writeFileSync(path.join(OUT, `booklet-${tag}-cards.html`), document(rendered.flatMap((r) => r.units).map((u) => `<div class="page">${u.html}</div>`).join('')));
+    fs.writeFileSync(path.join(OUT, `booklet-${tag}-cards.html`), document(rendered.map((r) => `<div class="page">${r.html}</div>`).join('')));
   }
 
   const out = await PDFDocument.create();
   const fmPdf = await PDFDocument.load(await renderPdf(page, fmHtml));
   const fmPages = await out.copyPages(fmPdf, fmPdf.getPageIndices());
   for (const p of fmPages) out.addPage(p);
-  if (fmPages.length % 2 === 1) out.addPage(); // the first card cover lands on a right-hand page
+  if (fmPages.length % 2 === 1) out.addPage(); // the first card starts on a right-hand page
 
-  // Every cover and every lens is its own render, so the running head can
-  // carry the lens and its page count, and so we know which page faces
-  // which once the lined pages go in.
-  const textPages: TextPage[] = [];
+  // Each card is its own render so the running head can count its pages.
+  // After the text comes one ruled page for the rewrites, and a second
+  // when that is what it takes for the next card to start on a right-hand
+  // page. Never a blank.
+  const cardPdfs: { pdf: PDFDocument; ruledCount: number }[] = [];
+  const ruledLabels: string[] = [];
+  let textPages = 0;
   for (const r of rendered) {
-    for (const u of r.units) {
-      const head = u.kind === 'lens' ? runningHead(`Card ${u.card}, ${esc(u.name)}`, `${esc(u.lens || '')}, page <span class="pageNumber"></span> of <span class="totalPages"></span>`, M.bind, M.outer) : emptyHead;
-      const pdf = await PDFDocument.load(await renderPdf(page, document(u.html), { head }));
-      const count = pdf.getPageCount();
-      for (let i = 0; i < count; i++) {
-        const label = u.kind === 'cover' ? `Card ${u.card}, ${u.name}, the cover` : `Card ${u.card}, ${u.name}, ${u.lens}, page ${i + 1} of ${count}`;
-        textPages.push({ pdf, index: i, label });
-      }
-    }
+    const head = runningHead(`Card ${r.n}, ${esc(r.name)}`, `page <span class="pageNumber"></span> of <span class="totalPages"></span>`, M.side, M.side);
+    const pdf = await PDFDocument.load(await renderPdf(page, document(r.html), head));
+    const count = pdf.getPageCount();
+    textPages += count;
+    const ruledCount = (count + 1) % 2 === 0 ? 1 : 2;
+    cardPdfs.push({ pdf, ruledCount });
+    for (let i = 0; i < ruledCount; i++) ruledLabels.push(`Card ${r.n}, ${r.name}, rewrites${ruledCount > 1 ? ` ${i + 1} of ${ruledCount}` : ''}`);
   }
-  // The lined page behind text page i faces text page i + 1.
-  const facing = textPages.map((_, i) => (i + 1 < textPages.length ? textPages[i + 1].label : null));
-  const linedPdf = await PDFDocument.load(await renderPdf(page, linedDocument(facing), { mirrored: true }));
+  const ruledPdf = await PDFDocument.load(await renderPdf(page, ruledDocument(ruledLabels)));
 
-  for (let i = 0; i < textPages.length; i++) {
-    const [tp] = await out.copyPages(textPages[i].pdf, [textPages[i].index]);
-    out.addPage(tp);
-    const [lp] = await out.copyPages(linedPdf, [i]);
-    out.addPage(lp);
+  let ruledCursor = 0;
+  for (const c of cardPdfs) {
+    const pages = await out.copyPages(c.pdf, c.pdf.getPageIndices());
+    for (const p of pages) out.addPage(p);
+    for (let i = 0; i < c.ruledCount; i++) {
+      const [rp] = await out.copyPages(ruledPdf, [ruledCursor++]);
+      out.addPage(rp);
+    }
   }
   await page.close();
 
   const bytes = await out.save();
   const file = path.join(OUT, `booklet-${tag}.pdf`);
   fs.writeFileSync(file, bytes);
-  console.log(`[workbook] booklet ${booklet}: cards ${cards.join(', ')} → ${path.relative(ROOT, file)} (${fmPages.length} front pages, ${textPages.length} text pages, ${out.getPageCount()} pages in all)`);
+  console.log(`[workbook] booklet ${booklet}: cards ${cards.join(', ')} → ${path.relative(ROOT, file)} (${fmPages.length} front pages, ${textPages} text pages, ${ruledLabels.length} ruled pages, ${out.getPageCount()} pages in all, ${Math.ceil(out.getPageCount() / 2)} sheets)`);
   for (const r of rendered) console.log(`  card ${r.n}: ${r.sentences} sentences, ${r.suspects} marked`);
 }
 
