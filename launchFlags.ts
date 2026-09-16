@@ -27,4 +27,12 @@ export const LAUNCH_FLAGS = {
    * only when accounts is on and the user is signed in.
    */
   hologeneticProfile: true,
+
+  /**
+   * RELATIONS STACK — the card page's Relations panel as a stack of kin in
+   * two families (components/oracle/RelationsStack.tsx), replacing the orbit
+   * diagram. Off: the template's orbit renders as before. On: the stack.
+   * Built 2026-09-12; Adrian holds it off main until he has worked it up.
+   */
+  relationsStack: false,
 };
