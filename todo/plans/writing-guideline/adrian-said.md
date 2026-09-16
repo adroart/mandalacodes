@@ -643,3 +643,6 @@ Go back to the same Fable. "This energy is given lysine, and the reason is the p
 
 [2026-09-16]
 When you say "this energy is given lysine" it does not make a lot of sense to me. Is there a better way to enter this? It makes it sound like something that is just made up.
+
+[2026-09-16]
+Go back to source. I think you are not keeping the source relevant here. Can you find the agent that went to source and give it what you wrote and ask why it is not working.
