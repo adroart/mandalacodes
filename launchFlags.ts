@@ -32,7 +32,8 @@ export const LAUNCH_FLAGS = {
    * RELATIONS STACK — the card page's Relations panel as a stack of kin in
    * two families (components/oracle/RelationsStack.tsx), replacing the orbit
    * diagram. Off: the template's orbit renders as before. On: the stack.
-   * Built 2026-09-12; Adrian holds it off main until he has worked it up.
+   * Built 2026-09-12; on since 2026-09-16, when Adrian read card 1's
+   * Relations rewrite in the stack on a preview and said it holds.
    */
-  relationsStack: false,
+  relationsStack: true,
 };

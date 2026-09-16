@@ -1152,6 +1152,12 @@ is a family and lives in RELATIONS.
 
 ## 11. Relations
 
+Governed since 2026-09-16 by the Relations paragraph of oracle/WRITERS-BRIEF.md
+(locked): each kin is a direction the energy moves in a life, and every kin
+paragraph opens on a moment the reader is in before it names a card. Where a
+rule below opens a paragraph on the kin card or the lineage's mechanics, the
+brief wins; card 1 is the reference.
+
 Its question: who else carries this, and what does it become when it meets
 its kin. Not the energy itself (the five sections above have it), but the
 energy beside others, so its edges show. The doorway out and the true final

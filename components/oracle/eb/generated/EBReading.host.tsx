@@ -12,15 +12,11 @@ import { themeCanvasFont } from '../../../../shared/themeFonts';
 import { OracleEntrancePortal } from '../OracleEntrancePortal';
 import { EBReadingMarkup } from './EBReading.generated';
 
-// Relations is paused (Adrian, 2026-09-16): the section needs a deeper dive
-// before it is relational. Nothing is removed; the panel, its nav button and
-// its jump are hidden until this is true again. While it is paused, a preview
-// reader opens the section with `?relations=on` on the card address, so a
-// rewrite can be read on a deploy of its own commit without unhiding it here.
-export const RELATIONS_PREVIEW =
-  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('relations') === 'on';
-// Set to true (dropping the preview switch) when Adrian says the section holds.
-export const RELATIONS_PANEL_ENABLED = RELATIONS_PREVIEW;
+// Relations was paused on 2026-09-16 (hidden, not removed) until the section
+// was relational, and unhidden the same day when Adrian read card 1's rewrite
+// on a preview and said it holds. Set false to hide the panel, its nav button
+// and its jump again without removing anything.
+export const RELATIONS_PANEL_ENABLED = true;
 
 export interface EBData {
   cardName: string;

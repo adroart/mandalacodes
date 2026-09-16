@@ -658,3 +658,9 @@ The writing of number two seems very similar. Both the reading and the I Ching f
 
 [2026-09-16]
 Okay. This is great. It feels complete. Avoid being formulaic. In the Gene Keys, where it says "at its lowest", "at its best", "at its height", I do not want that a part of the template.
+
+[2026-09-16]
+(Given three ways to make Relations relational: where this energy goes next, the energy in company, what is alive in you.) 1
+
+[2026-09-16]
+(After reading card 1's Relations on the preview.) It holds, open the PR
