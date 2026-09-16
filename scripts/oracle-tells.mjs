@@ -36,15 +36,23 @@ for (const f of files) {
       .split('\n')
       .filter((l) => l.trim() && !/^#/.test(l) && !/^_/.test(l) && !/^- /.test(l) && !/^\*\*Line/.test(l))
       .join('\n');
+  const c = { card: f.slice(0, 2), sentences: 0, stems: [] };
   const text = prose(noRel);
+  // The eight trigram subsections repeat one trigram's facts on sixteen cards
+  // each (the eldest daughter, the risk of a wind), so they are left out of the
+  // copied-opening check; the rest of the card is not.
+  const noTrigrams = prose(noRel.replace(/\n### (Upper|Lower) trigram[\s\S]*?(?=\n### |\n## )/g, ''));
+  const stemSents = noTrigrams.replace(/\s+/g, ' ').match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [];
+  for (const s0 of stemSents) {
+    const w = s0.trim().toLowerCase().replace(/[^a-z' ]/g, '').split(/\s+/).filter(Boolean);
+    if (w.length >= 6) c.stems.push(w.slice(0, 6).join(' '));
+  }
   const sents = text.replace(/\s+/g, ' ').match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [];
-  const c = { card: f.slice(0, 2), sentences: sents.length, stems: [] };
   for (const k of KEYS) c[k] = 0;
+  c.sentences = sents.length;
   for (const s0 of sents) {
     const s = s0.trim();
     if (/^And\b/.test(s)) c.startAnd++;
-    const w = s.toLowerCase().replace(/[^a-z' ]/g, '').split(/\s+/).filter(Boolean);
-    if (w.length >= 6) c.stems.push(w.slice(0, 6).join(' '));
     if ((s.match(/\band\b/g) || []).length >= 2) c.twoAnds++;
     if ((s.match(/,/g) || []).length >= 3) c.threeCommas++;
     if (s.split(/\s+/).length > 30) c.long30++;
