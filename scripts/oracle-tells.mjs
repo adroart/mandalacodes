@@ -61,7 +61,7 @@ for (const f of files) {
     if (s.split(/\s+/).length > 30) c.long30++;
   }
   c.notXItIsY =
-    (text.match(/\b[Nn]ot [^.]{1,60}\. It is\b/g) || []).length +
+    (text.match(/(?<!\b(?:has|have|had|does|do|did|will|would|could|can|should|must|might) )\b[Nn]ot [^.]{1,60}\. It is\b/g) || []).length +
     (text.match(/\bnot (just|only) [^.]{1,40}, (it is|it's|but)\b/gi) || []).length;
   const keys = (body.split(/\n## KEYS/)[1] || '').split(/\n## DESIGN/)[0];
   c.heightOpeners = (keys.match(/\n(At its (lowest|best|height|highest)|Met, this energy|Held well)/g) || []).length;
