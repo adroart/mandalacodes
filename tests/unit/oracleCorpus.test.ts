@@ -56,7 +56,7 @@ describe('Markdown-only Oracle corpus', () => {
     expect(card.body.physiology).toContain('the scar that closed it');
     expect(card.relations.codon_ring.name).toBe('Ring of Life and Death');
     expect(card.relations.unity_line).toContain(
-      'the whole arc of first arrival, the birth that comes in a storm and the long apprenticeship',
+      'A beginning has a before and an after, and these are the nearest.',
     );
     expect(card.artworks).toContainEqual(expect.objectContaining({ id: 'UL-124', title: 'Messengers of the Infinite - 3' }));
   });
