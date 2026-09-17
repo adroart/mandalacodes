@@ -24,7 +24,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser, type Page } from 'playwright';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 import { parseCardMarkdown, type MdSubheading, type ParsedCard } from '../lib/oracle/card-markdown';
 import { bitsForCard } from '../utils/ichingCasting';
 
@@ -36,7 +37,7 @@ const BOOKLETS = 16;
 // The lenses in the order Adrian reads them on the live page. RELATIONS is
 // paused and left out.
 const LENSES: { key: string; title: string }[] = [
-  { key: 'CODE', title: 'Universal' },
+  { key: 'CODE', title: 'Universal Language' },
   { key: 'ICHING', title: 'I Ching' },
   { key: 'KEYS', title: 'Gene Keys' },
   { key: 'DESIGN', title: 'Human Design' },
@@ -74,7 +75,7 @@ function renderSubheading(sub: MdSubheading): string {
     }
     if (/^- /.test(t)) {
       flush();
-      html += `<p>${esc(t.slice(2))}</p>`;
+      html += `<p class="quote">${esc(t.slice(2))}</p>`;
       continue;
     }
     if (/^_.*_$/.test(t)) {
@@ -117,74 +118,110 @@ function renderCard(n: number): { html: string; name: string } {
   const fm = card.frontmatter as Record<string, any>;
   const meta = (fm.meta || {}) as Record<string, any>;
   const name = String(fm.card_name || '');
-  let html = `<h1>${hexagramGlyph(n)}${n}. ${esc(name)}</h1>`;
+  // The keywords line lives at the top of the CODE section in the file; on
+  // the page it belongs with the name, above the essence.
+  const keywords = (card.sections.CODE?.intro || []).find((l) => /^_?Keywords:_?/i.test(l.trim()));
+  // The three Gene Keys states sit at the top too, under the hexagram name.
+  const heights = (card.sections.KEYS?.intro || []).find((l) => /^_Shadow:_/i.test(l.trim()));
+  // The hexagram on the left; the name, the hexagram name and the three
+  // states stacked beside it, the name level with the top of the hexagram.
+  let html = `<div class="title">${hexagramGlyph(n)}<div><h1>${n}. ${esc(name)}</h1>`;
   html += `<p class="meta">${esc(String(fm.hexagram_name || ''))}</p>`;
+  if (heights) html += `<p class="meta">${esc(plain(heights).replace(/\s*·\s*/g, ', '))}</p>`;
+  html += `</div></div>`;
+  html += `<div class="entrance">`;
+  if (keywords) html += `<p class="meta">${esc(plain(keywords).replace(/^Keywords:\s*/i, '').replace(/\s*·\s*/g, ', '))}</p>`;
   if (meta.centre) html += `<p>${esc(String(meta.centre))}</p>`;
+  html += `</div>`;
   for (const lens of LENSES) {
     const sec = card.sections[lens.key];
     if (!sec) continue;
     html += `<h2>${lens.title}</h2>`;
-    // The intro holds the keywords line and, in KEYS, the heights line
-    // (grey, the way the site shows them), and in CODE the reading itself.
-    const buf: string[] = [];
-    const flush = () => {
-      if (buf.length) html += `<p>${esc(buf.join(' '))}</p>`;
-      buf.length = 0;
-    };
+    // The parser hands the intro as paragraphs: in CODE the reading itself,
+    // in KEYS the heights line (grey, the way the site shows it).
     for (const l of sec.intro) {
       const t = l.trim();
-      if (!t) flush();
-      else if (/^_/.test(t)) {
-        flush();
-        html += `<p class="meta">${esc(plain(t).replace(/\s*·\s*/g, ', '))}</p>`;
-      } else buf.push(t);
+      if (!t || t === keywords?.trim() || t === heights?.trim()) continue;
+      if (/^_/.test(t)) html += `<p class="meta">${esc(plain(t).replace(/\s*·\s*/g, ', '))}</p>`;
+      else html += `<p>${esc(t.replace(/\s+/g, ' '))}</p>`;
     }
-    flush();
     for (const sub of sec.subheadings) {
       if (lens.key === 'CODE' && /keywords/i.test(sub.heading)) continue;
       if (lens.key === 'ICHING' && /^Moving lines/i.test(sub.heading)) continue; // a separate book
       html += renderSubheading(sub);
+    }
+    // The lens's first paragraph opens with its first three words in small
+    // caps, the old way of marking a start without a gap.
+    const at = html.indexOf('<p>', html.lastIndexOf(`<h2>${lens.title}</h2>`));
+    if (at >= 0) {
+      const end = html.indexOf('</p>', at);
+      const body = html.slice(at + 3, end);
+      html = html.slice(0, at + 3) + body.replace(/^((?:\S+\s+){2}\S+)/, '<span class="lead">$1</span>') + html.slice(end);
     }
   }
   return { html: `<section class="card">${html}</section>`, name };
 }
 
 // One face, Charter, made for small sizes on paper. Nothing else on the page.
-const CSS = `
+// Everything sits on a 12 pt baseline grid: the leading is 12 pt, every
+// margin and every ruled line is a multiple of it, so the two columns'
+// lines meet across the page and across the sheet.
+const U = 11.5; // pt
+let BODY_FONT = '"Iowan Old Style", Charter, Georgia, serif';
+const CSS = () => `
+@page { size: A4; margin: 15mm 12mm 15mm 18mm; }
+@page :left { margin-left: 12mm; margin-right: 18mm; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-body { font-family: Charter, "Iowan Old Style", Georgia, serif; font-size: 8.5pt; line-height: 1.35; color: #111; }
-p { margin: 0 0 1.8mm; hyphens: none; orphans: 2; widows: 2; }
+body { font-family: ${BODY_FONT}; font-size: 8.5pt; line-height: ${U}pt; color: #111; font-variant-numeric: oldstyle-nums; font-kerning: normal; }
+.card { column-count: 2; column-gap: 8mm; column-fill: auto; }
+p { margin: 0; text-indent: 4mm; text-align: justify; hyphens: auto; hyphenate-limit-chars: 6 3 3; word-spacing: -0.04em; orphans: 2; widows: 2; }
+p.quote { text-indent: 0; }
+p.quote + p.quote { margin-top: ${U / 2}pt; }
+.lead { font-variant-caps: small-caps; letter-spacing: 0.04em; }
+h1 + p, h2 + p, h3 + p, p.meta + p, p.meta { text-indent: 0; }
 p.meta { color: #555; break-after: avoid; }
-h1 { font-size: 14pt; font-weight: bold; margin: 6mm 0 1.5mm; break-after: avoid; display: flex; align-items: center; gap: 3mm; }
-.hex { display: block; width: 9mm; height: 9mm; flex: 0 0 9mm; }
-.card:first-child h1 { margin-top: 0; }
-h2 { font-size: 10.5pt; font-weight: bold; margin: 4mm 0 1.5mm; break-after: avoid; }
-h3 { font-size: 8.5pt; font-weight: bold; margin: 2.8mm 0 0.8mm; break-after: avoid; }
-p.line { margin-top: 2.2mm; break-after: avoid; }
-.rules { margin-top: 4mm; }
-.rules div { height: 7mm; border-bottom: 0.3pt solid #b0b0b0; }
+/* the opener spans both columns: the hexagram, the name, then a thick rule */
+.title { display: flex; align-items: flex-start; gap: 4mm; height: ${U * 5}pt; padding-bottom: ${U / 2}pt; border-bottom: 0.8pt solid #777; margin-bottom: ${U}pt; break-after: avoid; }
+.title .hex { display: block; width: 15mm; height: 15mm; flex: 0 0 15mm; }
+.title h1 { font-size: 19pt; font-weight: bold; line-height: ${U * 2}pt; margin: 0 0 ${U / 4}pt; }
+.title p.meta { line-height: ${U}pt; }
+h2 { font-size: 13pt; font-weight: normal; font-variant-caps: small-caps; letter-spacing: 0.06em; line-height: ${U * 1.5}pt; padding-bottom: 0; border-bottom: 0.4pt solid #999; margin: ${U * 2}pt 0 ${U * 0.75}pt; break-after: avoid; }
+h3 { font-size: 8.5pt; line-height: ${U}pt; font-weight: normal; font-variant-caps: small-caps; letter-spacing: 0.08em; margin: ${U}pt 0 0; break-after: avoid; }
+p.line { margin-top: ${U}pt; text-indent: 0; break-after: avoid; }
+.entrance { margin-top: ${U}pt; font-size: 10pt; line-height: ${U * 1.25}pt; }
+.entrance p.meta { margin-bottom: ${U}pt; color: #8a8a8a; }
+.rules { margin-top: ${U}pt; }
+.rules div, .ruled-page div { height: ${U * 2}pt; border-bottom: 0.3pt solid #c8c8c8; }
 `;
+const RULED_PAGE_CSS = `@page { margin-left: 12mm; margin-right: 18mm; }`; // a ruled page is always a left-hand page
 
-function document(body: string): string {
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Universal Language workbook</title><style>${CSS}</style></head><body>${body}</body></html>`;
+function document(body: string, extraCss = ''): string {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Universal Language workbook</title><style>${CSS()}${extraCss}</style></head><body>${body}</body></html>`;
 }
 
 async function renderPdf(page: Page, html: string): Promise<PDFDocument> {
   await page.setContent(html, { waitUntil: 'load' });
-  const bytes = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '12mm', bottom: '14mm', left: '14mm', right: '12mm' } });
+  // Margins come from @page so left and right pages can mirror.
+  const bytes = await page.pdf({ preferCSSPageSize: true, printBackground: true });
   return PDFDocument.load(bytes);
 }
 
 const MAX_RULES = 40; // more than a whole page holds at 7 mm
+// Every card on a right-hand page costs a ruled page behind each odd card,
+// about 60 pages over the book; off keeps it under 200 (Adrian, 2026-09-17).
+const RIGHT_HAND_STARTS = false;
 const mmToPt = (mm: number) => (mm * 72) / 25.4;
 
 /**
  * Render one card, then rule whatever is left of its last page: the most
  * rules that fit without the render growing by a page.
  */
-async function renderCardPdf(page: Page, html: string): Promise<PDFDocument> {
-  const withRules = (k: number) => document(html.replace('</section>', `<div class="rules">${'<div></div>'.repeat(k)}</div></section>`));
+async function renderCardPdf(page: Page, html: string, startsOnLeft: boolean): Promise<PDFDocument> {
+  // Chromium mirrors margins by page position, so a card that will sit on a
+  // left-hand page renders behind a throwaway first page, dropped below.
+  const lead = startsOnLeft ? '<div style="break-after: page"></div>' : '';
+  const withRules = (k: number) => document(lead + html.replace('</section>', `<div class="rules">${'<div></div>'.repeat(k)}</div></section>`));
   const base = await renderPdf(page, withRules(0));
   const pages = base.getPageCount();
   let lo = 0;
@@ -201,6 +238,11 @@ async function renderCardPdf(page: Page, html: string): Promise<PDFDocument> {
   return best;
 }
 
+/** A page of nothing but rules, for the back of a card that ends on a right-hand page. */
+function ruledPage(): string {
+  return document(`<div class="ruled-page">${'<div></div>'.repeat(30)}</div>`, RULED_PAGE_CSS);
+}
+
 async function buildBooklet(browser: Browser, booklet: number, cards: number[], keepHtml: boolean): Promise<void> {
   fs.mkdirSync(OUT, { recursive: true });
   const tag = booklet === 0 ? 'book' : String(booklet).padStart(2, '0');
@@ -208,21 +250,77 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
   if (keepHtml) fs.writeFileSync(path.join(OUT, `booklet-${tag}.html`), document(rendered.map((r) => r.html).join('')));
 
   const page = await browser.newPage();
-  const out = await PDFDocument.create();
+  // Each card is rendered knowing which side of the sheet it starts on.
+  const cardPdfs: { pdf: PDFDocument; indices: number[] }[] = [];
+  let pageIndex = 0;
   for (const r of rendered) {
-    const pdf = await renderCardPdf(page, r.html);
-    const pages = await out.copyPages(pdf, pdf.getPageIndices());
-    for (const p of pages) out.addPage(p);
+    const startsOnLeft = pageIndex % 2 === 1;
+    const pdf = await renderCardPdf(page, r.html, startsOnLeft);
+    const indices = pdf.getPageIndices().slice(startsOnLeft ? 1 : 0);
+    cardPdfs.push({ pdf, indices });
+    pageIndex += indices.length + (RIGHT_HAND_STARTS ? indices.length % 2 : 0);
   }
+  const ruled = await renderPdf(page, ruledPage());
+
   await page.close();
 
-  // Page numbers run through the booklet, so pdf-lib writes them after the
-  // cards are joined (each Chromium render would start again at 1).
-  const font = await out.embedFont(StandardFonts.TimesRoman);
+  const out = await PDFDocument.create();
+  const foot: { card?: { n: number; name: string }; first?: boolean }[] = [];
+  const addRuled = async () => {
+    const [rp] = await out.copyPages(ruled, [0]);
+    out.addPage(rp);
+  };
+  // Every card starts on a right-hand page: a card with an odd number of
+  // pages gets a ruled page behind it.
+  for (let i = 0; i < rendered.length; i++) {
+    const pages = await out.copyPages(cardPdfs[i].pdf, cardPdfs[i].indices);
+    pages.forEach((pg, j) => {
+      out.addPage(pg);
+      foot.push({ card: { n: rendered[i].n, name: rendered[i].name }, first: j === 0 });
+    });
+    if (RIGHT_HAND_STARTS && pages.length % 2 === 1) {
+      await addRuled();
+      foot.push({ card: { n: rendered[i].n, name: rendered[i].name } });
+    }
+  }
+
+  // Running heads the way books set them: the book on left-hand pages, the
+  // card (with its hexagram) on right-hand pages, the page number at the
+  // outer edge of the foot. Drawn by pdf-lib once the pages are joined.
+  out.registerFontkit(fontkit);
+  const font = await out.embedFont(fs.readFileSync('/System/Library/Fonts/Supplemental/Georgia.ttf'), { subset: true });
+  const grey = rgb(0.54, 0.54, 0.54);
+  const size = 7;
   out.getPages().forEach((p, i) => {
-    const label = String(i + 1);
-    const size = 7;
-    p.drawText(label, { x: p.getWidth() - mmToPt(12) - font.widthOfTextAtSize(label, size), y: mmToPt(7), size, font, color: rgb(0.54, 0.54, 0.54) });
+    const w = p.getWidth();
+    const recto = i % 2 === 0;
+    const outer = mmToPt(12);
+    const inner = mmToPt(18);
+    const y = mmToPt(8);
+    const num = String(i + 1);
+    // page number in the middle of the foot; the card, with its hexagram, at the right
+    void recto;
+    void inner;
+    p.drawText(num, { x: (w - font.widthOfTextAtSize(num, size)) / 2, y, size, font, color: grey });
+    const f = foot[i];
+    if (!f?.card) return;
+    // the hexagram at the left corner, the name and number at the right corner
+    const name = `${f.card.name} - ${f.card.n}`;
+    const nameW = font.widthOfTextAtSize(name, size);
+    const hexW = mmToPt(2.6);
+    const x0 = outer;
+    p.drawText(name, { x: w - outer - nameW, y, size, font, color: grey });
+    const bits = bitsForCard(f.card.n) || [];
+    const bar = mmToPt(0.32);
+    const gap = mmToPt(0.2);
+    [...bits].reverse().forEach((yang, k) => {
+      const by = y + mmToPt(2.6) - k * (bar + gap);
+      if (yang) p.drawRectangle({ x: x0, y: by, width: hexW, height: bar, color: grey });
+      else {
+        p.drawRectangle({ x: x0, y: by, width: hexW * 0.4, height: bar, color: grey });
+        p.drawRectangle({ x: x0 + hexW * 0.6, y: by, width: hexW * 0.4, height: bar, color: grey });
+      }
+    });
   });
 
   const file = path.join(OUT, booklet === 0 ? 'universal-language-workbook.pdf' : `booklet-${tag}.pdf`);
@@ -241,6 +339,8 @@ async function main(): Promise<void> {
   };
   const cardsArg = get('--cards');
   const bookletArg = get('--booklet');
+  const fontArg = get('--font');
+  if (fontArg) BODY_FONT = `"${fontArg}", ${BODY_FONT}`;
   const browser = await chromium.launch();
   try {
     if (args.includes('--book')) {
