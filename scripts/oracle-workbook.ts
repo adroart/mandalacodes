@@ -125,14 +125,11 @@ function renderCard(n: number): { html: string; name: string } {
   const heights = (card.sections.KEYS?.intro || []).find((l) => /^_Shadow:_/i.test(l.trim()));
   // The hexagram on the left; the name, the hexagram name and the three
   // states stacked beside it, the name level with the top of the hexagram.
-  let html = `<div class="title">${hexagramGlyph(n)}<div><h1>${n}. ${esc(name)}</h1>`;
-  html += `<p class="meta">${esc(String(fm.hexagram_name || ''))}</p>`;
-  if (heights) html += `<p class="meta">${esc(plain(heights).replace(/\s*·\s*/g, ', '))}</p>`;
-  html += `</div></div>`;
-  html += `<div class="entrance">`;
-  if (keywords) html += `<p class="meta">${esc(plain(keywords).replace(/^Keywords:\s*/i, '').replace(/\s*·\s*/g, ', '))}</p>`;
-  if (meta.centre) html += `<p>${esc(String(meta.centre))}</p>`;
-  html += `</div>`;
+  const kw = keywords ? plain(keywords).replace(/^Keywords:\s*/i, '').split(/\s*·\s*/).filter(Boolean) : [];
+  // the number at the left, the name centred, the hexagram at the right, all one height
+  let html = `<div class="head"><div class="lead-cell"><div class="title-row"><h1 class="num">${n}</h1><h1 class="name">${esc(name)}</h1>${hexagramGlyph(n)}</div>`;
+  if (meta.centre) html += `<p class="sentence">${esc(String(meta.centre))}</p>`;
+  html += `</div><div class="kw-cell">${kw.map((k) => `<div>${esc(k)}</div>`).join('')}</div></div>`;
   for (const lens of LENSES) {
     const sec = card.sections[lens.key];
     if (!sec) continue;
@@ -167,9 +164,12 @@ function renderCard(n: number): { html: string; name: string } {
 // margin and every ruled line is a multiple of it, so the two columns'
 // lines meet across the page and across the sheet.
 const U = 11.5; // pt
+// The bottom quarter of every page is a ruled box for the pen (Adrian, 2026-09-17).
+const PEN_BAND = 66; // mm
+const KW_BOX = true; // the keywords on a light grey panel (Adrian, 2026-09-17); false puts them behind a rule
 let BODY_FONT = '"Iowan Old Style", Charter, Georgia, serif';
 const CSS = () => `
-@page { size: A4; margin: 15mm 12mm 15mm 18mm; }
+@page { size: A4; margin: 15mm 12mm ${PEN_BAND + 12}mm 18mm; }
 @page :left { margin-left: 12mm; margin-right: 18mm; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -181,16 +181,21 @@ p.quote + p.quote { margin-top: ${U / 2}pt; }
 .lead { font-variant-caps: small-caps; letter-spacing: 0.04em; }
 h1 + p, h2 + p, h3 + p, p.meta + p, p.meta { text-indent: 0; }
 p.meta { color: #555; break-after: avoid; }
-/* the opener spans both columns: the hexagram, the name, then a thick rule */
-.title { display: flex; align-items: flex-start; gap: 4mm; height: ${U * 5}pt; padding-bottom: ${U / 2}pt; border-bottom: 0.8pt solid #777; margin-bottom: ${U}pt; break-after: avoid; }
-.title .hex { display: block; width: 15mm; height: 15mm; flex: 0 0 15mm; }
-.title h1 { font-size: 19pt; font-weight: bold; line-height: ${U * 2}pt; margin: 0 0 ${U / 4}pt; }
-.title p.meta { line-height: ${U}pt; }
+/* the head spans both columns: the name and the sentence at the left, the keywords stacked at the right */
+/* two hairlines hold the head; everything inside sits the same 2.5 mm from them */
+.head { column-span: all; display: flex; gap: 4mm; align-items: stretch; padding: 0; border-top: 0.3pt solid #aaa; border-bottom: 0.3pt solid #aaa; margin-bottom: ${U * 1.5}pt; }
+.head + h2 { margin-top: 0; }
+.head .lead-cell { flex: 1; padding: 2.5mm 0; }
+.head .title-row { display: flex; align-items: center; gap: 3mm; margin: 0 0 ${U / 2}pt; }
+.head .title-row .hex { display: block; width: 8.5mm; height: 8.5mm; flex: 0 0 8.5mm; }
+.head .title-row .name { flex: 1; text-align: center; white-space: nowrap; }
+${KW_BOX ? '.head .kw-cell { border-left: none; background: #efefef; padding: 2.5mm 4mm; margin-top: 0; -webkit-print-color-adjust: exact; }' : ''}
+.head .kw-cell { flex: 0 0 58mm; font-variant-caps: small-caps; letter-spacing: 0.01em; font-size: 8.5pt; line-height: ${U}pt; color: #444; ${KW_BOX ? '' : 'border-left: 0.4pt solid #999; padding-left: 4mm; margin-top: 2pt;'} }
+.head h1 { font-size: 20pt; font-weight: bold; line-height: ${U * 2.5}pt; margin: 0; font-variant-numeric: lining-nums; }
+.head .sentence { font-size: 10pt; line-height: ${U * 1.25}pt; text-indent: 0; }
 h2 { font-size: 13pt; font-weight: normal; font-variant-caps: small-caps; letter-spacing: 0.06em; line-height: ${U * 1.5}pt; padding-bottom: 0; border-bottom: 0.4pt solid #999; margin: ${U * 2}pt 0 ${U * 0.75}pt; break-after: avoid; }
 h3 { font-size: 8.5pt; line-height: ${U}pt; font-weight: normal; font-variant-caps: small-caps; letter-spacing: 0.08em; margin: ${U}pt 0 0; break-after: avoid; }
 p.line { margin-top: ${U}pt; text-indent: 0; break-after: avoid; }
-.entrance { margin-top: ${U}pt; font-size: 10pt; line-height: ${U * 1.25}pt; }
-.entrance p.meta { margin-bottom: ${U}pt; color: #8a8a8a; }
 .rules { margin-top: ${U}pt; }
 .rules div, .ruled-page div { height: ${U * 2}pt; border-bottom: 0.3pt solid #c8c8c8; }
 `;
@@ -222,20 +227,8 @@ async function renderCardPdf(page: Page, html: string, startsOnLeft: boolean): P
   // left-hand page renders behind a throwaway first page, dropped below.
   const lead = startsOnLeft ? '<div style="break-after: page"></div>' : '';
   const withRules = (k: number) => document(lead + html.replace('</section>', `<div class="rules">${'<div></div>'.repeat(k)}</div></section>`));
-  const base = await renderPdf(page, withRules(0));
-  const pages = base.getPageCount();
-  let lo = 0;
-  let hi = MAX_RULES;
-  let best = base;
-  while (lo < hi) {
-    const mid = Math.ceil((lo + hi) / 2);
-    const trial = await renderPdf(page, withRules(mid));
-    if (trial.getPageCount() === pages) {
-      lo = mid;
-      best = trial;
-    } else hi = mid - 1;
-  }
-  return best;
+  void MAX_RULES;
+  return renderPdf(page, withRules(0));
 }
 
 /** A page of nothing but rules, for the back of a card that ends on a right-hand page. */
@@ -298,29 +291,22 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
     const inner = mmToPt(18);
     const y = mmToPt(8);
     const num = String(i + 1);
+    // the pen box: a grey outline over the bottom quarter, ruled every 8 mm
+    const left = recto ? inner : outer;
+    const boxW = w - inner - outer;
+    const boxY = mmToPt(12);
+    const boxH = mmToPt(PEN_BAND - 4);
+    for (let ry = boxY + mmToPt(8); ry < boxY + boxH - mmToPt(2); ry += mmToPt(8)) {
+      p.drawLine({ start: { x: left, y: ry }, end: { x: left + boxW, y: ry }, thickness: 0.3, color: rgb(0.82, 0.82, 0.82) });
+    }
     // page number in the middle of the foot; the card, with its hexagram, at the right
     void recto;
     void inner;
     p.drawText(num, { x: (w - font.widthOfTextAtSize(num, size)) / 2, y, size, font, color: grey });
     const f = foot[i];
     if (!f?.card) return;
-    // the hexagram at the left corner, the name and number at the right corner
     const name = `${f.card.name} - ${f.card.n}`;
-    const nameW = font.widthOfTextAtSize(name, size);
-    const hexW = mmToPt(2.6);
-    const x0 = outer;
-    p.drawText(name, { x: w - outer - nameW, y, size, font, color: grey });
-    const bits = bitsForCard(f.card.n) || [];
-    const bar = mmToPt(0.32);
-    const gap = mmToPt(0.2);
-    [...bits].reverse().forEach((yang, k) => {
-      const by = y + mmToPt(2.6) - k * (bar + gap);
-      if (yang) p.drawRectangle({ x: x0, y: by, width: hexW, height: bar, color: grey });
-      else {
-        p.drawRectangle({ x: x0, y: by, width: hexW * 0.4, height: bar, color: grey });
-        p.drawRectangle({ x: x0 + hexW * 0.6, y: by, width: hexW * 0.4, height: bar, color: grey });
-      }
-    });
+    p.drawText(name, { x: w - outer - font.widthOfTextAtSize(name, size), y, size, font, color: grey });
   });
 
   const file = path.join(OUT, booklet === 0 ? 'universal-language-workbook.pdf' : `booklet-${tag}.pdf`);
