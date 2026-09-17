@@ -142,13 +142,18 @@ async function showRelations(page: Page) {
  * top of the viewport. An open bar can be taller than a phone screen, so the
  * test asks for its head, not the whole of it. The chapter jump keeps
  * adjusting the container for a moment after a click, so scroll, then check,
- * until it stays put. */
+ * until it stays put. The last folded bars sit at the foot of the page, and
+ * on a tablet the container runs out of scroll before they reach the upper
+ * part of the screen, so a bar that is on screen with the scroller at its
+ * end counts too. */
 async function bringIntoView(page: Page, selector: string) {
   const el = stack(page).locator(selector).first();
   await expect.poll(async () => el.evaluate((node) => {
     const main = node.closest('main') ?? document.scrollingElement!;
     const r = node.getBoundingClientRect();
     if (r.top >= 0 && r.top < window.innerHeight * 0.4) return true;
+    const atEnd = main.scrollTop + main.clientHeight >= main.scrollHeight - 1;
+    if (atEnd && r.top >= 0 && r.top < window.innerHeight) return true;
     main.scrollBy({ top: r.top - 90, behavior: 'instant' as ScrollBehavior });
     return false;
   }), { intervals: [300], timeout: 10_000 }).toBe(true);

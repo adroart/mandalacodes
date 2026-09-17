@@ -32,10 +32,11 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
 
 ## Soon
+- [ ] Rewrite card 3's Relations under the locked brief once claude/card-writing lands (that branch owns card 3 today; card 1 is the reference, card 2 follows it) _(band: agent-runnable)_ _(effort: moderate)_
+- [ ] Write the organ and amino acid reference entries for the 64 (about 35 organs, 21 amino acids) in the vault under body/organs and body/amino-acids, in the shape of liver.md and lysine.md, so every Body section is written from its entry _(band: agent-runnable)_ _(effort: deep)_
 - [ ] The packet script cannot find the body entries for compound names (Throat, thyroid; Sacral plexus, sexual organs; Adrenal glands; Glutamic; none, terminator codon) and reports them MISSING, so a writer must open the vault by hand; map those names to the entries that exist _(band: agent-runnable)_ _(effort: quick)_
 - [ ] The entrance rule, standing for every card: the two or three sentences under the keynotes are a taste of the card, written last from the finished card, from an angle the reading does not use, sharing no phrase or image with any section, never a definition; the reading's first paragraph is the one that names the energy. Cards 1 and 3 keep the lines Adrian chose on the page; any card he corrects goes back through this rule, not the reading _(band: you-required)_ _(effort: quick)_ → Rule: [WRITERS-BRIEF.md, The entrance](oracle/WRITERS-BRIEF.md) · Brief: [entrance-brief.md](todo/plans/writing-guideline/entrance-brief.md)
 - [ ] The mobile browser lane in CI has been red on main since at least 15 Sep and nobody sees it, because the run still says success; find the shared cause and make the lane count _(band: agent-runnable)_ _(effort: deep)_ → Plan: [ci-mobile-lane-red.md](todo/plans/ci-mobile-lane-red.md)
-- [ ] Relations section: shown again 2026-09-16 as the stack of kin (the pause switch stays in the host, off is one line); the prose still needs its own deeper dive to be relational before it is written under the brief _(band: you-required)_ _(effort: deep)_ → Plan: [relations-guidance.md](todo/plans/writing-guideline/relations-guidance.md)
 
 ### Found in the 2026-09-08 audit and build day
 - [ ] Card 57 shows a dangling dash for its two Gene Keys nature headings because the source names are empty _(band: you-required)_ _(effort: quick)_
