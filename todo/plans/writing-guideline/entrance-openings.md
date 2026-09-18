@@ -1,37 +1,26 @@
-Rule: the card's Universal Language title in quotation marks, then a verb meaning the energy passes through the artwork, then the whole card (I Ching, Human Design drive, Gene Keys gift together) in one phrase a reader has felt, under 20 words, each verb at most eight times across the deck and never on two cards in a row (oracle/WRITERS-BRIEF.md, "The entrance"). Grouped by verb so the ones that begin the same way sit together.
-2026-09-18. Cards 1, 38 and 46 are fixed (Adrian's, Adrian's, approved); 17, 53 and 58 are the title forms written with him. The other 58 are for review: strike the ones that fail.
+Rule: the card's Universal Language title in quotation marks, then a verb meaning the energy passes through the artwork, then the whole card (I Ching, Human Design drive, Gene Keys gift together) in one phrase a reader has felt, under 20 words, each verb on at most four cards across the deck and never on two cards in a row (oracle/WRITERS-BRIEF.md, "The entrance"). Grouped by verb so the ones that begin the same way sit together.
+2026-09-18, second pass. All 64 are in the title form now, including 1, 38 and 46 (their alternatives are at the foot). Seven verbs are new today, since thirteen at four each covers only 52 cards: transmits, reveals, radiates, awakens, breathes, releases, conveys. Strike the ones that fail.
 
-## expresses (7)
+## expresses (4)
 
 03 · "Messengers of the Infinite" expresses a beginning that finds its shape by trying.
-07 · "Essential Nexus" expresses the guidance that gathers scattered people into one body by listening.
-18 · "Liberation of the Greater" expresses the drive to mend what was spoiled before it reached you.
-22 · "Treasure of the Way" expresses the grace of feeling everything and leaving the other person lighter.
 37 · "Journey Home" expresses the warmth of belonging to a few people who feed one another.
 53 · "Creation Oscillation" expresses the urge to start something new.
 58 · "Rhythm of Life" expresses joy that grows by being shared.
 
-## embodies (8)
+## embodies (4)
 
 10 · "Internal Treasure" embodies the ease of walking as yourself with nothing to defend.
 13 · "Universal Crest" embodies the listening that strangers trust with what they have told no one.
-20 · "Emerging as the Code" embodies the ease of seeing your whole life as it happens.
-25 · "The Mysteries Play" embodies a love with no favourites that lets what comes be as it is.
-29 · "All In" embodies the yes given all the way and kept through everything that tests it.
 44 · "Sophia's Orchestra" embodies knowing your own people the moment you meet.
-59 · "Mystics Treasures" embodies the honesty that lets another person all the way in.
 62 · "Voice of Nature" embodies the care that puts the small thing right and finds the word for it.
 
-## carries (8)
+## carries (4)
 
 02 · "Beyond the Shell" carries the direction that comes when you stop steering.
-05 · "The Space Between Time" carries the wait for what is on its way while you keep your hours.
 17 · "Pearl of Christos" carries the sense of where something is heading.
 24 · "Frequency Flutter" carries the thought that returns until something new arrives.
-34 · "Sublime Power" carries strength that waits for something real and spends the whole of itself on it.
 39 · "Nobel Spark" carries the charge that presses on whatever has gone still until something moves.
-49 · "Union in the Ashes" carries the change that begins in you when an agreement has died.
-54 · "Everlasting Bounty" carries the wish to rise that starts at the bottom and keeps its honesty.
 
 ## brings through (4)
 
@@ -61,9 +50,10 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 33 · "Echos of Time" gives voice to what the past means once you have stepped back from it.
 63 · "Adornments of Time" gives voice to the question that checks whether a finished thing will hold.
 
-## makes visible (3)
+## makes visible (4)
 
 06 · "Harmonious Mirage" makes visible the friction between two people that turns into closeness.
+15 · "Ordinary Valiance" makes visible the modesty that draws people to a large life lived at its own pace.
 32 · "Art of Living" makes visible the patience that keeps what will last and lets the rest go.
 55 · "Untouched Perfection" makes visible the fullness of a life at its height, felt all the way through.
 
@@ -74,35 +64,69 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 47 · "Garden of Alchemy" brings to life the strength that grows from facing what you were born carrying.
 57 · "Flight of the Tao" brings to life the hunch that finds the way in before you can say why.
 
-## opens onto (5)
+## opens onto (4)
 
 35 · "Navigational Star" opens onto the appetite for life that meets each day as new.
 40 · "Eternal Wellspring" opens onto the strength that refills once you hold what is yours and let the rest go.
-48 · "Doorways of the Unknown" opens onto the depth you draw on when asked for more than you know.
 61 · "Celestial Remembrance" opens onto the knowing that arrives without proof and changes how you see.
 64 · "Communion" opens onto the last stretch of not knowing before an idea arrives whole.
 
-## is the frequency of (2)
+## is the frequency of (3)
 
 21 · "Beyond Binary" is the frequency of the will to take charge and carry what follows.
+29 · "All In" is the frequency of the yes that rises from the belly and stays to the end.
 45 · "Tribal Tapestry" is the frequency of the pull to gather people and share what there is.
 
-## holds (7)
+## holds (3)
 
-04 · "Veils of Knowledge" holds the young mind that asks until understanding comes on its own.
-08 · "Odyssey of Freedom" holds being yourself among others until the people who are yours find you.
 12 · "Petals of Freedom" holds the heart that tells real from fake and opens in its own season.
-15 · "Ordinary Valiance" holds real size kept low and moving at the pace of living things.
 27 · "Inner Majesty" holds the care that knows whom to feed and wants nothing back.
-41 · "Beginning and the End" holds the hunger for a better life, felt before it arrives.
 60 · "Woven Light" holds the limit that lets something new take shape.
 
 ## is aligned to (1)
 
 52 · "Timeless Blossom" is aligned to the stillness that waits for its season to move.
 
-## fixed, no title form (3)
+## transmits (2)
 
-01 · "Earth's Breath" · Creation itself moves through you, the power that makes something from nothing.
-38 · "Inner Light Symphony" · Everything that lasts was held by someone who chose to stay and show up for what is important to them.
-46 · "Fountain of Light" · Some people are simply lucky, and the luck is not a gift: it is what life does around a body that has stopped fighting it.
+01 · "Earth's Breath" transmits creation itself, the power that makes something from nothing.
+54 · "Everlasting Bounty" transmits the will to rise that begins where you stand and reaches past any goal.
+
+## reveals (3)
+
+04 · "Veils of Knowledge" reveals the wish to make sense of a thing until understanding comes on its own.
+38 · "Inner Light Symphony" reveals what lasts: someone chose to stay and show up for what is important to them.
+59 · "Mystics Treasures" reveals the honest reach that gets through to another person until both are known.
+
+## radiates (3)
+
+08 · "Odyssey of Freedom" radiates the way of being only you have, which the ones you belong with recognise.
+34 · "Sublime Power" radiates strength that waits for a true yes and moves with all of you behind it.
+46 · "Fountain of Light" radiates luck, what life does around a body that has stopped fighting it.
+
+## awakens (3)
+
+18 · "Liberation of the Greater" awakens the pleasure of mending from the heart once the help is wanted.
+25 · "The Mysteries Play" awakens the innocence that moves before any scheme and loves everything alike.
+41 · "Beginning and the End" awakens the pull toward a fuller life, felt before it arrives.
+
+## breathes (2)
+
+05 · "The Space Between Time" breathes the patience that lets what is on its way come at its own hour.
+20 · "Emerging as the Code" breathes the presence that sees your whole life at once and acts in the moment.
+
+## releases (1)
+
+49 · "Union in the Ashes" releases the change that starts in you and remakes a bond on what is needed.
+
+## conveys (3)
+
+07 · "Essential Nexus" conveys the direction people follow once each of them has been heard.
+22 · "Treasure of the Way" conveys the warmth of feeling everything and putting none of it on whoever is listening.
+48 · "Doorways of the Unknown" conveys the answer that comes when you are asked for more than you have.
+
+## alternatives for Adrian's three
+
+38 (b) · "Inner Light Symphony" reveals what lasts: the choice to stay and show up for what is important to you.
+01 (b) · "Earth's Breath" releases creation itself through you, the power that makes something from nothing.
+46 (b) · "Fountain of Light" breathes the luck that life does around a body that has stopped fighting it.
