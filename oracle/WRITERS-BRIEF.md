@@ -58,9 +58,10 @@ Locked with Adrian on card 27's I Ching, 2026-09-18, standing for every card:
 - Nothing on the page that is not in the vault source for that card, and any fact about a sign or a system points to the page it came from in the meta sheet. "Do not make things up. It will make me lose credibility."
 - The picture of the sign is printed beside the text, so the words never describe how it is drawn. They say what it means and why that matters in a life.
 - A symbol gets one sentence; every sentence after it is about the reader.
+- Where the sources disagree on a word, the card gives the readings as readings ("has been translated as the jaws, the corners of the mouth and nourishment") or leaves the word out. Nothing with more than one translation is stated as fact.
 - What a system is (six lines, solid and broken, trigrams, gates, centres, shadow, gift, siddhi) is explained once, in a primer the reader can close, in the app and at the front of the book, never on a card. The card assumes the primer.
 - Card 27's three I Ching openings are the register for these sections:
-  Combination: "Mountain sits over Thunder. Stillness rests on top of movement. The name means the jaw. The solid lines above and below are read as two jaws and the broken lines between them as teeth, so the sign is a mouth. Feeding is its whole meaning."
+  Combination: "Mountain sits over Thunder. Stillness rests on top of movement. The name has been translated as the jaws, the corners of the mouth and nourishment. The solid lines above and below are read as two jaws and the broken lines between them as teeth, so the sign is a mouth. Feeding is its whole meaning."
   Upper: "Mountain is the stillness on top. In you it is the part that knows when to stop taking, whether food, work or what people ask of you. Without it everything gets in."
   Lower: "Thunder is the movement underneath. In you it is appetite, the reach for what you need before you have thought. Without the stillness above it the reaching never ends. You take everything and stay hungry."
 
