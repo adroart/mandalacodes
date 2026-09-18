@@ -1,5 +1,9 @@
 Rule: the card's Universal Language title in quotation marks, then a verb meaning the energy passes through the artwork, then the whole card (I Ching, Human Design drive, Gene Keys gift together) in one phrase a reader has felt, under 20 words, each verb on at most four cards across the deck and never on two cards in a row (oracle/WRITERS-BRIEF.md, "The entrance"). Grouped by verb so the ones that begin the same way sit together.
-2026-09-18, second pass. All 64 are in the title form now, including 1, 38 and 46 (their alternatives are at the foot). Seven verbs are new today, since thirteen at four each covers only 52 cards: transmits, reveals, radiates, awakens, breathes, releases, conveys. Strike the ones that fail.
+2026-09-18, second pass. All 64 are in the title form now. Card 1 is Adrian's (is the spark of, 2026-09-18); 38 is carried whole with two alternatives at the foot, 46 has one. Seven verbs are new today, since thirteen at four each covers only 52 cards: transmits, reveals, radiates, awakens, breathes, releases, conveys. Strike the ones that fail.
+
+## is the spark of (1)
+
+01 · "Earth's Breath" is the spark of creation, the power that makes something from nothing.
 
 ## expresses (4)
 
@@ -20,7 +24,7 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 02 · "Beyond the Shell" carries the direction that comes when you stop steering.
 17 · "Pearl of Christos" carries the sense of where something is heading.
 24 · "Frequency Flutter" carries the thought that returns until something new arrives.
-39 · "Nobel Spark" carries the charge that presses on whatever has gone still until something moves.
+38 · "Inner Light Symphony" carries everything that lasts, held by someone who chose to stay and show up for what is important to them.
 
 ## brings through (4)
 
@@ -89,13 +93,12 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 
 ## transmits (2)
 
-01 · "Earth's Breath" transmits creation itself, the power that makes something from nothing.
+39 · "Nobel Spark" transmits the charge that presses on whatever has gone still until something moves.
 54 · "Everlasting Bounty" transmits the will to rise that begins where you stand and reaches past any goal.
 
-## reveals (3)
+## reveals (2)
 
 04 · "Veils of Knowledge" reveals the wish to make sense of a thing until understanding comes on its own.
-38 · "Inner Light Symphony" reveals what lasts: someone chose to stay and show up for what is important to them.
 59 · "Mystics Treasures" reveals the honest reach that gets through to another person until both are known.
 
 ## radiates (3)
@@ -125,8 +128,8 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 22 · "Treasure of the Way" conveys the warmth of feeling everything and putting none of it on whoever is listening.
 48 · "Doorways of the Unknown" conveys the answer that comes when you are asked for more than you have.
 
-## alternatives for Adrian's three
+## alternatives for 38 and 46
 
-38 (b) · "Inner Light Symphony" reveals what lasts: the choice to stay and show up for what is important to you.
-01 (b) · "Earth's Breath" releases creation itself through you, the power that makes something from nothing.
+38 (c) · "Inner Light Symphony" is the frequency of everything that lasts, held by someone who chose to stay and show up for what is important to them.
+38 (d) · "Inner Light Symphony" awakens the choice to stay and show up for what is important to you.
 46 (b) · "Fountain of Light" breathes the luck that life does around a body that has stopped fighting it.
