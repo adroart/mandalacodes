@@ -72,19 +72,19 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 
 05 · "The Space Between Time" frames the patience to let what is coming arrive when it is ready.
 41 · "Beginning and the End" frames the pull toward a fuller life, felt before it arrives.
-54 · "Everlasting Bounty" frames the will to rise above the place you were given and keep your trust as you go.
+54 · "Everlasting Bounty" frames the will to rise above the place you were given and keep your trust.
 62 · "Voice of Nature" frames the care that puts small things right and finds the words for them.
 
 ## lights up (4)
 
 11 · "Sol Star" lights up the picture of how things could be, the one a whole life rises toward.
 18 · "Liberation of the Greater" lights up the pleasure of mending things from the heart, once the help is wanted.
-30 · "Sparking the Blaze" lights up the desire to feel everything and hold to what is true with a light heart.
+30 · "Sparking the Blaze" lights up the desire to feel everything and stay true with a light heart.
 39 · "Nobel Spark" lights up the charge that presses on whatever has gone still until something moves.
 
 ## gives a glimpse of (1)
 
-25 · "The Mysteries Play" gives a glimpse of the innocence that acts before there is any plan and loves everything alike.
+25 · "The Mysteries Play" gives a glimpse of the innocence that acts before any plan and loves everything alike.
 
 ## lets you see (2)
 
