@@ -1,9 +1,10 @@
 Rule: the card's Universal Language title in quotation marks, then a verb meaning the energy passes through the artwork, then the whole card (I Ching, Human Design drive, Gene Keys gift together) in one phrase a reader has felt, under 20 words, each verb on at most four cards across the deck and never on two cards in a row (oracle/WRITERS-BRIEF.md, "The entrance"). Grouped by verb so the ones that begin the same way sit together.
-2026-09-18, third pass. All 64 are in the title form now. Card 1 is Adrian's (emanates, 2026-09-18); 38 is the energy of that which lasts, his sentence whole after the verb, with two alternatives at the foot; 46 has one. Seven verbs are new today, since thirteen at four each covers only 52 cards: transmits, reveals, radiates, awakens, breathes, releases, conveys. Strike the ones that fail.
+2026-09-18, third pass. All 64 are in the title form now. Card 1 is Adrian's (emanates, 2026-09-18); 38 is the energy of that which lasts, his sentence whole after the verb, with two alternatives at the foot; 46 has one. Seven verbs are new today, since thirteen at four each covers only 52 cards: transmits, reveals, radiates, awakens, breathes, releases, emanates. Strike the ones that fail.
 
-## emanates (2)
+## emanates (3)
 
 01 · "Earth's Breath" emanates the spark of creation, the power that makes something from nothing.
+31 · "Theater of Truth" emanates the influence of saying, when asked, what everyone felt before anyone found the words.
 38 · "Inner Light Symphony" emanates the energy of that which lasts, held by someone who chose to stay and show up for what is important to them.
 
 ## expresses (4)
@@ -39,8 +40,9 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 42 · "Moving to Perfection" gives form to the wish to see a thing through and let it go.
 56 · "Infinite Journey" gives form to the taste for life that enriches you and comes back as a story.
 
-## channels (2)
+## channels (3)
 
+07 · "Essential Nexus" channels the direction people follow once each of them has been heard.
 09 · "Ease in This" channels great strength into one small step at a time.
 43 · "Cipher of Knowledge" channels the sudden knowing that waits for its moment to be said.
 
@@ -64,9 +66,10 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 47 · "Garden of Alchemy" brings to life the understanding that grows from staying with the past until it changes state.
 57 · "Flight of the Tao" brings to life the hunch that finds the way in before you can say why.
 
-## opens onto (3)
+## opens onto (4)
 
 40 · "Eternal Wellspring" opens onto the strength that refills once you hold what is yours and let the rest go.
+48 · "Doorways of the Unknown" opens onto the answer that comes when you are asked for more than you have.
 61 · "Celestial Remembrance" opens onto the knowing that arrives without proof and changes how you see.
 64 · "Communion" opens onto the last stretch of not knowing before an idea arrives whole.
 
@@ -121,12 +124,6 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 ## releases (1)
 
 49 · "Union in the Ashes" releases the change you make in yourself, once you see what is needed.
-
-## conveys (3)
-
-07 · "Essential Nexus" conveys the direction people follow once each of them has been heard.
-31 · "Theater of Truth" conveys the influence of saying, when asked, what everyone felt before anyone found the words.
-48 · "Doorways of the Unknown" conveys the answer that comes when you are asked for more than you have.
 
 ## alternatives for 38 and 46
 
