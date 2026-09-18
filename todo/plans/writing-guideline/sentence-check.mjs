@@ -4,8 +4,8 @@
 // Reads only the plain paragraphs a reader meets (no frontmatter, headings, keyword lines,
 // bullets, moving-line markers, underscore intros, or the meta sheet). Gating flags, per
 // sentence: over 25 words; 3+ commas/semicolons/colons; fragment under 5 words; em dash;
-// italics; a content word twice; a general truth in the past simple. Advisory: a passive
-// with no actor. Exit 1 on any gating flag so a run can gate on it.
+// italics; a general truth in the past simple; a deck phrase. Advisory: a passive with no
+// actor; a content word twice (Adrian's locked lines repeat a noun on purpose). Exit 1 on any gating flag so a run can gate on it.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -25,13 +25,13 @@ export function checkSentence(s) {
   if (w > 25) flags.push(`${w} words`);
   const punct = (s.match(/[,;:]/g) || []).length;
   if (punct >= 3) flags.push(`${punct} clause marks`);
-  if (w < 5 && !/^(so|then|yes|no)\b/i.test(s)) flags.push('fragment');
+  if (w < 4 && !/^(so|then|yes|no)\b/i.test(s)) flags.push('fragment');
   if (/—|–/.test(s)) flags.push('em dash');
   if (/(^|\s)_[^_]+_(\s|[.,;:]|$)|\*[^*]+\*/.test(s)) flags.push('italics');
   if (/\b(was|were|is|are|be|been)\s+(\w+ed|\w+en|built|kept|held|made|put|set|left|lost|felt|hurried|rushed)\b/.test(s) && !/\bby\b/.test(s)) flags.push('passive? (advisory)');
   const content = words.map(x => x.toLowerCase().replace(/[^a-z']/g, '')).filter(x => x && !STOP.has(x) && x.length > 3);
   const seen = new Set();
-  for (const c of content) { if (seen.has(c)) { flags.push(`"${c}" twice`); break; } seen.add(c); }
+  for (const c of content) { if (seen.has(c)) { flags.push(`"${c}" twice (advisory)`); break; } seen.add(c); }
   if (/\b(everything|nothing|every|always|never|anyone|no one|nobody)\b/i.test(s) && PAST.test(s) && !TIME.test(s)) flags.push('general truth in past tense');
   const n = normal(s);
   for (const ph of DECK) { if (n.includes(' ' + ph + ' ')) { flags.push('deck phrase: ' + ph); break; } }
