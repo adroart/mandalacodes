@@ -1,3 +1,7 @@
+## 2026-09-18
+
+- [x] Build the printed workbook for Adrian's hand pass over the 64: the render script (one card per spread, every sentence numbered, facing rewrite page per lens, the seven checks and the sitting ritual in the front matter, the Phase 1 suspect marks and formula slots in the margin), then eight booklets of eight to the printer _(band: agent-runnable)_ _(effort: deep)_ → Plan: [personal-pass.md](todo/plans/personal-pass.md), Phase 2 section 1 (shipped 2026-09-18, PR #222: one book of all 64, just the words as they read on the site, Charter 8.5 pt, each card on a fresh page with the leftover ruled; the settings drifted from this line during the design pass, on Adrian's call)
+
 ## 2026-09-16
 
 - [x] The packet script cannot find the body entries for compound names (Throat, thyroid; Sacral plexus, sexual organs; Adrenal glands; Glutamic; none, terminator codon) and reports them MISSING, so a writer must open the vault by hand; map those names to the entries that exist _(band: agent-runnable)_ _(effort: quick)_ → done 2026-09-16 in PR #219: a canonical-name map in scripts/oracle-packet.mjs; 10 cards reported MISSING before, 0 after
