@@ -1,9 +1,10 @@
 Rule: the card's Universal Language title in quotation marks, then a verb meaning the energy passes through the artwork, then the whole card (I Ching, Human Design drive, Gene Keys gift together) in one phrase a reader has felt, under 20 words, each verb on at most four cards across the deck and never on two cards in a row (oracle/WRITERS-BRIEF.md, "The entrance"). Grouped by verb so the ones that begin the same way sit together.
-2026-09-18, second pass. All 64 are in the title form now. Card 1 is Adrian's (is the spark of, 2026-09-18); 38 is carried whole with two alternatives at the foot, 46 has one. Seven verbs are new today, since thirteen at four each covers only 52 cards: transmits, reveals, radiates, awakens, breathes, releases, conveys. Strike the ones that fail.
+2026-09-18, second pass. All 64 are in the title form now. Card 1 is Adrian's (emanates, 2026-09-18); 38 is the energy of that which lasts, his sentence whole after the verb, with two alternatives at the foot; 46 has one. Seven verbs are new today, since thirteen at four each covers only 52 cards: transmits, reveals, radiates, awakens, breathes, releases, conveys. Strike the ones that fail.
 
-## is the spark of (1)
+## emanates (2)
 
-01 · "Earth's Breath" is the spark of creation, the power that makes something from nothing.
+01 · "Earth's Breath" emanates the spark of creation, the power that makes something from nothing.
+38 · "Inner Light Symphony" emanates the energy of that which lasts, held by someone who chose to stay and show up for what is important to them.
 
 ## expresses (4)
 
@@ -19,12 +20,11 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 44 · "Sophia's Orchestra" embodies knowing your own people the moment you meet.
 62 · "Voice of Nature" embodies the care that puts the small thing right and finds the word for it.
 
-## carries (4)
+## carries (3)
 
 02 · "Beyond the Shell" carries the direction that comes when you stop steering.
 17 · "Pearl of Christos" carries the sense of where something is heading.
 24 · "Frequency Flutter" carries the thought that returns until something new arrives.
-38 · "Inner Light Symphony" carries everything that lasts, held by someone who chose to stay and show up for what is important to them.
 
 ## brings through (4)
 
@@ -130,6 +130,6 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 
 ## alternatives for 38 and 46
 
-38 (c) · "Inner Light Symphony" is the frequency of everything that lasts, held by someone who chose to stay and show up for what is important to them.
-38 (d) · "Inner Light Symphony" awakens the choice to stay and show up for what is important to you.
+38 (c) · "Inner Light Symphony" is the frequency of that which lasts, held by someone who chose to stay and show up for what is important to them.
+38 (d) · "Inner Light Symphony" breathes the energy of that which lasts, held by someone who chose to stay and show up for what is important to them.
 46 (b) · "Fountain of Light" breathes the luck that life does around a body that has stopped fighting it.
