@@ -179,7 +179,6 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 
 ## Oracle deck content (Universal Language)
 
-- [ ] Build the printed workbook for Adrian's hand pass over the 64: the render script (one card per spread, every sentence numbered, facing rewrite page per lens, the seven checks and the sitting ritual in the front matter, the Phase 1 suspect marks and formula slots in the margin), then eight booklets of eight to the printer _(band: agent-runnable)_ _(effort: deep)_ → Plan: [personal-pass.md](todo/plans/personal-pass.md), Phase 2 section 1
 - [ ] Do the hand pass: read, mark, rewrite the 64 by hand in the printed workbook, without AI, one card a sitting, in the booklet order the plan sets _(band: you-required)_ _(effort: deep)_ → Plan: [personal-pass.md](todo/plans/personal-pass.md), Phase 2 sections 2, 3 and 5
 - [ ] Build the typist loop that carries the handwriting back into the cards: the photo intake folder in the vault, the one-page transcript brief, the no-model apply script that patches by sentence number, and the approved-lines file with its unit test _(band: agent-runnable)_ _(effort: deep)_ → Plan: [personal-pass.md](todo/plans/personal-pass.md), Phase 2 section 4
 - [ ] Card 39 carries a Root-centre paragraph copied word for word from card 38; the two DESIGN sections read as one page. Found by the Phase 1 reading pass; fix in the hand pass or before the workbook prints _(band: you-required)_ _(effort: quick)_
