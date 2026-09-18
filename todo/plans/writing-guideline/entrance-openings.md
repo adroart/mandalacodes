@@ -1,129 +1,90 @@
-Rule: the card's Universal Language title in quotation marks, then a verb meaning the energy passes through the artwork, then the whole card (I Ching, Human Design drive, Gene Keys gift together) in one phrase a reader has felt, under 20 words, each verb on at most four cards across the deck and never on two cards in a row (oracle/WRITERS-BRIEF.md, "The entrance"). Grouped by verb so the ones that begin the same way sit together.
-2026-09-18, sixth pass. Fable's rule: say the sentence with "this painting" in place of the title; it passes only if the listener could nod without asking "the what?" or "how does a painting do that?". Frames struck; 05, 13, 14, 18, 19, 41, 54, 62 rewritten to the rule; Fable's fail list for the rest is in the PR. Every verb is now a way to see the energy; the artwork is never the energy itself (Adrian). All 64 are in the title form. Card 1 is Adrian's (emanates, 2026-09-18); 38 is the energy of that which lasts, his sentence whole after the verb, with two alternatives at the foot; 46 has one. Verbs in use: emanates, is a window to, opens a door to, opens onto, reveals, makes visible, shows, mirrors, reflects, points to, frames, lights up, gives a glimpse of, lets you see, brings into view, is a view of, gives form to, gives voice to, brings to life, is aligned to. Strike the ones that fail.
+Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, Fable 2026-09-18): "Title", one seeing verb (the painting is a way of seeing the energy, never the energy itself), the energy in a word a person says they feel, then what it does in a life. Test: say it with "this painting" for the title; name the energy in one word and what it does, one second each. No verb cap; sameness and padding are the faults.
+2026-09-18, seventh pass. 01, 38, 48 are Adrian's; 46's phrase is his; 53, 17, 58 approved; 05, 13, 19 Fable's; the rest written by Opus to the rule and read by Fable against the test. Grouped by verb.
 
-## emanates (3)
+## emanates (4)
 
 01 · "Earth's Breath" emanates the spark of creation, the power that makes something from nothing.
-31 · "Theater of Truth" emanates the influence of saying what everyone feels once you are asked, before anyone else has the words.
+16 · "Grand Rising" emanates enthusiasm, the surge that carries a plan out of your head into the world.
+34 · "Sublime Power" emanates the strength that waits for a real yes, then pours the whole of itself in.
 38 · "Inner Light Symphony" emanates the energy of that which lasts, held by someone who chose to stay and show up for what is important to them.
 
-## is a window to (4)
+## is a window to (3)
 
-07 · "Essential Nexus" is a window to the direction people follow once each of them has been heard.
-09 · "Ease in This" is a window to great strength taken one small step at a time.
-43 · "Cipher of Knowledge" is a window to the sudden knowing that waits for its moment to be said.
-45 · "Tribal Tapestry" is a window to the pull to gather people and share what there is.
+05 · "The Space Between Time" is a window to the readiness that keeps its hours until what you wait for calls.
+07 · "Essential Nexus" is a window to the influence that gathers scattered people behind the one who listens.
+55 · "Untouched Perfection" is a window to the fullness of a life at its height, given while it lasts.
 
-## opens a door to (4)
+## opens a door to (1)
 
-19 · "Solection" opens a door to the closeness that comes from feeling what someone needs before a word is said.
-44 · "Sophia's Orchestra" opens a door to knowing your own people the moment you meet.
 48 · "Doorways of the Unknown" opens a door to the answer that comes when you are asked for more than you have.
-62 · "Voice of Nature" opens a door to the small thing done well and the pause before the right word.
 
-## opens onto (4)
+## shows (26)
 
-28 · "Becoming the Mystery" opens onto the need to live for something worth the whole of you.
-40 · "Eternal Wellspring" opens onto the strength that refills once you hold what is yours and let the rest go.
-61 · "Celestial Remembrance" opens onto the knowing that arrives without proof and changes how you see.
-64 · "Communion" opens onto the last stretch of not knowing before an idea arrives whole.
+02 · "Beyond the Shell" shows the ground in you that takes in whatever is given and turns it into growth.
+03 · "Messengers of the Infinite" shows the surge of something new that finds its shape by trying.
+09 · "Ease in This" shows the great strength that goes furthest one small step at a time.
+11 · "Sol Star" shows the dream of how things could be, the one every choice arranges itself around.
+14 · "Ancestors Bloom" shows the appetite to make more than you need from work you love.
+19 · "Solection" shows the pull to go where the warmth is missing, felt before a word is said.
+21 · "Beyond Binary" shows the will to take charge, which acts where others stall and carries what follows.
+23 · "Beneath the Surface" shows the clarity that cuts away everything but what matters.
+24 · "Frequency Flutter" shows the pull back to where a thing began, so it can start again.
+26 · "Lighter Than a Feather" shows the drive to make things happen, which grows by being held in.
+27 · "Inner Majesty" shows the full heart that feeds whatever cannot yet feed itself.
+28 · "Becoming the Mystery" shows the hunger for purpose that asks of every day whether it mattered.
+29 · "All In" shows the yes that goes all the way in before you can see where it leads.
+30 · "Sparking the Blaze" shows the desire that heats a life from inside and burns on whatever it holds to.
+36 · "Crystal Creation" shows the drop in the stomach that, met open, brings people to you with their worst hour.
+39 · "Nobel Spark" shows the pressure that disturbs whatever has gone still to find out whether it is alive.
+41 · "Beginning and the End" shows the hunger that pictures a better life and sets out to feel it.
+42 · "Moving to Perfection" shows the pull to carry a thing to its end so the next has room.
+44 · "Sophia's Orchestra" shows the recognition that knows who belongs near you in the first seconds.
+45 · "Tribal Tapestry" shows the pull to gather people around what there is and share it out.
+46 · "Fountain of Light" shows luck, what life does around a body that has stopped fighting it.
+49 · "Union in the Ashes" shows the heat that builds under what no longer fits until the whole thing changes.
+53 · "Creation Oscillation" shows the urge to start something new.
+56 · "Infinite Journey" shows the taste for life that takes the world in and hands it back as a story.
+59 · "Mystics Treasures" shows the longing to be known that breaks through whatever stands between two people.
+63 · "Adornments of Time" shows the doubt that checks a finished thing and catches the wrong note first.
 
-## reveals (4)
+## reveals (12)
 
 04 · "Veils of Knowledge" reveals the wish to make sense of things until understanding comes on its own.
-20 · "Emerging as the Code" reveals the presence that sees your whole life at once and acts in the moment.
-51 · "Unshakable Arrival" reveals the charge to take the first step where nobody has walked.
-59 · "Mystics Treasures" reveals the honesty that reaches another person until you are both known.
+13 · "Universal Crest" reveals the quiet in you where strangers set down what they have told no one.
+15 · "Ordinary Valiance" reveals the draw that grows as you slow, until people come toward you without knowing why.
+18 · "Liberation of the Greater" reveals the instinct for what has gone wrong, which mends what reached you spoiled.
+22 · "Treasure of the Way" reveals the warmth in a person who has felt everything and blames no one for it.
+32 · "Art of Living" reveals the sense of what will last, keeping a thing alive after the newness wears off.
+33 · "Echos of Time" reveals the pull to step back until what happened makes sense, then to tell it.
+43 · "Cipher of Knowledge" reveals the certainty that arrives whole from the direction you were not facing.
+47 · "Garden of Alchemy" reveals the pressure that turns old fear into strength.
+51 · "Unshakable Arrival" reveals the charge to go first, off the edge of what anyone has done.
+57 · "Flight of the Tao" reveals the hunch that knows the way before you can say why.
+64 · "Communion" reveals the confusion that comes before an idea and clears only in its own time.
 
-## makes visible (4)
+## mirrors (5)
 
-06 · "Harmonious Mirage" makes visible how friction between two people turns into closeness.
-15 · "Ordinary Valiance" makes visible the modesty that draws people to a large life lived at its own pace.
-32 · "Art of Living" makes visible the patience that keeps what will last and lets the rest go.
-55 · "Untouched Perfection" makes visible the fullness of a life at its height, felt all the way through.
+08 · "Odyssey of Freedom" mirrors the freedom of being yourself, which the ones who are yours recognise.
+12 · "Petals of Freedom" mirrors the sense that tells real from fake by what the heart does.
+31 · "Theater of Truth" mirrors the pull that moves people to follow whoever says what they already felt.
+54 · "Everlasting Bounty" mirrors the drive to rise above the place you were given.
+62 · "Voice of Nature" mirrors the wish to get the small thing right, which says the one word and stops.
 
-## shows (4)
+## reflects (10)
 
-03 · "Messengers of the Infinite" shows a beginning that finds its shape by trying.
-21 · "Beyond Binary" shows the will to take charge and carry what follows.
-29 · "All In" shows the yes that rises from the belly and stays to the end.
-53 · "Creation Oscillation" shows the urge to start something new.
+06 · "Harmonious Mirage" reflects the friction between two people that turns into closeness.
+10 · "Internal Treasure" reflects the ease of being at home in yourself, which lightens every step you take.
+20 · "Emerging as the Code" reflects the calm that decides in the moment, through the whole of you.
+25 · "The Mysteries Play" reflects the love that goes to everything alike, with no plan in it.
+37 · "Journey Home" reflects the warmth that gathers a few people around one table, so none of them stands alone.
+40 · "Eternal Wellspring" reflects the will that carries a life through and refills only at rest.
+50 · "Melt Into Perfection" reflects the sense of what feeds the people near you.
+52 · "Timeless Blossom" reflects the quiet that waits for its season to move.
+58 · "Rhythm of Life" reflects joy that grows by being shared.
+60 · "Woven Light" reflects the limit, this far and no further, that gives a piece of work its shape.
 
-## mirrors (4)
+## points to (3)
 
-08 · "Odyssey of Freedom" mirrors a way of being that is yours alone, which the people you belong with recognise.
-12 · "Petals of Freedom" mirrors the heart that tells real from fake and opens in its own season.
-24 · "Frequency Flutter" mirrors the thought that returns until something new arrives.
-34 · "Sublime Power" mirrors strength that waits for a true yes and moves with all of you behind it.
-
-## reflects (4)
-
-10 · "Internal Treasure" reflects the ease of walking as yourself with nothing to defend.
-22 · "Treasure of the Way" reflects the warmth of feeling everything and putting none of it on whoever is listening.
-27 · "Inner Majesty" reflects the care that knows who to feed and wants nothing back.
-50 · "Melt Into Perfection" reflects the balance that keeps the people near you well.
-
-## points to (4)
-
-02 · "Beyond the Shell" points to the direction that comes when you stop steering.
 17 · "Pearl of Christos" points to the sense of where something is heading.
-26 · "Lighter Than a Feather" points to the power to make things happen once there is something true to give.
-35 · "Navigational Star" points to the appetite for life that meets each day as new.
-
-## lights up (3)
-
-11 · "Sol Star" lights up the picture of how things could be, the one a whole life rises toward.
-30 · "Sparking the Blaze" lights up the desire to feel everything and stay true with a light heart.
-39 · "Nobel Spark" lights up the charge that presses on whatever has gone still until something moves.
-
-## gives a glimpse of (4)
-
-05 · "The Space Between Time" gives a glimpse of the wait for something real that comes on its own.
-14 · "Ancestors Bloom" gives a glimpse of how plenty spent on work you love comes back as more.
-25 · "The Mysteries Play" gives a glimpse of the innocence that acts before any plan and loves everything alike.
-54 · "Everlasting Bounty" gives a glimpse of what it is to want more and stay honest while you climb.
-
-## lets you see (4)
-
-13 · "Universal Crest" lets you see how strangers come to trust someone who hears them to the end.
-18 · "Liberation of the Greater" lets you see how someone who waits to be asked puts a spoiled thing right.
-41 · "Beginning and the End" lets you see the hunger for a fuller life and the sense of it coming.
-58 · "Rhythm of Life" lets you see joy that grows by being shared.
-
-## brings into view (2)
-
-49 · "Union in the Ashes" brings into view the change you make in yourself, once you see what is needed.
-60 · "Woven Light" brings into view the limit that lets something new take shape.
-
-## is a view of (2)
-
-37 · "Journey Home" is a view of the warmth of belonging to a few people who feed one another.
-46 · "Fountain of Light" is a view of luck, which is what life does around a body that has stopped fighting it.
-
-## gives form to (3)
-
-36 · "Crystal Creation" gives form to the heart that feels the whole of a crisis and stays open.
-42 · "Moving to Perfection" gives form to the wish to see something through and let it go.
-56 · "Infinite Journey" gives form to the taste for life that enriches you and comes back as a story.
-
-## gives voice to (3)
-
-23 · "Beneath the Surface" gives voice to the knack of cutting things back to what matters.
-33 · "Echos of Time" gives voice to what the past means once you have stepped back from it.
-63 · "Adornments of Time" gives voice to the question of whether something finished will hold.
-
-## brings to life (3)
-
-16 · "Grand Rising" brings to life the enthusiasm that leaps at a new thing and learns on the way.
-47 · "Garden of Alchemy" brings to life the understanding that grows from staying with the past until it changes.
-57 · "Flight of the Tao" brings to life the hunch that finds the way in before you can say why.
-
-## is aligned to (1)
-
-52 · "Timeless Blossom" is aligned to the stillness that waits for its season to move.
-
-## alternatives for 38 and 46
-
-38 (c) · "Inner Light Symphony" is the frequency of that which lasts, held by someone who chose to stay and show up for what is important to them.
-38 (d) · "Inner Light Symphony" breathes the energy of that which lasts, held by someone who chose to stay and show up for what is important to them.
-46 (b) · "Fountain of Light" breathes the luck that life does around a body that has stopped fighting it.
+35 · "Navigational Star" points to the hunger for life that meets an ordinary morning as new.
+61 · "Celestial Remembrance" points to the sureness without proof that moves people more than any argument could.
