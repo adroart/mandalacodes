@@ -1,5 +1,5 @@
 Rule: the card's Universal Language title in quotation marks, then a verb meaning the energy passes through the artwork, then the whole card (I Ching, Human Design drive, Gene Keys gift together) in one phrase a reader has felt, under 20 words, each verb on at most four cards across the deck and never on two cards in a row (oracle/WRITERS-BRIEF.md, "The entrance"). Grouped by verb so the ones that begin the same way sit together.
-2026-09-18, fifth pass: every line read aloud, word order fixed where a listener would have to wait. Every verb is now a way to see the energy; the artwork is never the energy itself (Adrian). All 64 are in the title form. Card 1 is Adrian's (emanates, 2026-09-18); 38 is the energy of that which lasts, his sentence whole after the verb, with two alternatives at the foot; 46 has one. Verbs in use: emanates, is a window to, opens a door to, opens onto, reveals, makes visible, shows, mirrors, reflects, points to, frames, lights up, gives a glimpse of, lets you see, brings into view, is a view of, gives form to, gives voice to, brings to life, is aligned to. Strike the ones that fail.
+2026-09-18, sixth pass. Fable's rule: say the sentence with "this painting" in place of the title; it passes only if the listener could nod without asking "the what?" or "how does a painting do that?". Frames struck; 05, 13, 14, 18, 19, 41, 54, 62 rewritten to the rule; Fable's fail list for the rest is in the PR. Every verb is now a way to see the energy; the artwork is never the energy itself (Adrian). All 64 are in the title form. Card 1 is Adrian's (emanates, 2026-09-18); 38 is the energy of that which lasts, his sentence whole after the verb, with two alternatives at the foot; 46 has one. Verbs in use: emanates, is a window to, opens a door to, opens onto, reveals, makes visible, shows, mirrors, reflects, points to, frames, lights up, gives a glimpse of, lets you see, brings into view, is a view of, gives form to, gives voice to, brings to life, is aligned to. Strike the ones that fail.
 
 ## emanates (3)
 
@@ -14,10 +14,12 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 43 · "Cipher of Knowledge" is a window to the sudden knowing that waits for its moment to be said.
 45 · "Tribal Tapestry" is a window to the pull to gather people and share what there is.
 
-## opens a door to (2)
+## opens a door to (4)
 
+19 · "Solection" opens a door to the closeness that comes from feeling what someone needs before a word is said.
 44 · "Sophia's Orchestra" opens a door to knowing your own people the moment you meet.
 48 · "Doorways of the Unknown" opens a door to the answer that comes when you are asked for more than you have.
+62 · "Voice of Nature" opens a door to the small thing done well and the pause before the right word.
 
 ## opens onto (4)
 
@@ -68,32 +70,28 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 26 · "Lighter Than a Feather" points to the power to make things happen once there is something true to give.
 35 · "Navigational Star" points to the appetite for life that meets each day as new.
 
-## frames (4)
-
-05 · "The Space Between Time" frames the patience to let what is coming arrive when it is ready.
-41 · "Beginning and the End" frames the pull toward a fuller life, felt before it arrives.
-54 · "Everlasting Bounty" frames the will to rise above the place you were given and keep your trust.
-62 · "Voice of Nature" frames the care that puts small things right and finds the words for them.
-
-## lights up (4)
+## lights up (3)
 
 11 · "Sol Star" lights up the picture of how things could be, the one a whole life rises toward.
-18 · "Liberation of the Greater" lights up the pleasure of mending things from the heart, once the help is wanted.
 30 · "Sparking the Blaze" lights up the desire to feel everything and stay true with a light heart.
 39 · "Nobel Spark" lights up the charge that presses on whatever has gone still until something moves.
 
-## gives a glimpse of (1)
+## gives a glimpse of (4)
 
+05 · "The Space Between Time" gives a glimpse of the wait for something real that comes on its own.
+14 · "Ancestors Bloom" gives a glimpse of how plenty spent on work you love comes back as more.
 25 · "The Mysteries Play" gives a glimpse of the innocence that acts before any plan and loves everything alike.
+54 · "Everlasting Bounty" gives a glimpse of what it is to want more and stay honest while you climb.
 
-## lets you see (2)
+## lets you see (4)
 
-13 · "Universal Crest" lets you see the listening that strangers trust with things they have told no one.
+13 · "Universal Crest" lets you see how strangers come to trust someone who hears them to the end.
+18 · "Liberation of the Greater" lets you see how someone who waits to be asked puts a spoiled thing right.
+41 · "Beginning and the End" lets you see the hunger for a fuller life and the sense of it coming.
 58 · "Rhythm of Life" lets you see joy that grows by being shared.
 
-## brings into view (3)
+## brings into view (2)
 
-14 · "Ancestors Bloom" brings into view the abundance that comes back when you spend it on work you love.
 49 · "Union in the Ashes" brings into view the change you make in yourself, once you see what is needed.
 60 · "Woven Light" brings into view the limit that lets something new take shape.
 
@@ -114,10 +112,9 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 33 · "Echos of Time" gives voice to what the past means once you have stepped back from it.
 63 · "Adornments of Time" gives voice to the question of whether something finished will hold.
 
-## brings to life (4)
+## brings to life (3)
 
 16 · "Grand Rising" brings to life the enthusiasm that leaps at a new thing and learns on the way.
-19 · "Solection" brings to life the pull toward a closeness that knows what the other person needs.
 47 · "Garden of Alchemy" brings to life the understanding that grows from staying with the past until it changes.
 57 · "Flight of the Tao" brings to life the hunch that finds the way in before you can say why.
 
