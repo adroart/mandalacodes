@@ -32,8 +32,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
 
 ## Soon
-- [ ] Write the organ and amino acid reference entries for the 64 (about 35 organs, 21 amino acids) in the vault under body/organs and body/amino-acids, in the shape of liver.md and lysine.md, so every Body section is written from its entry _(band: agent-runnable)_ _(effort: deep)_
-- [ ] The packet script cannot find the body entries for compound names (Throat, thyroid; Sacral plexus, sexual organs; Adrenal glands; Glutamic; none, terminator codon) and reports them MISSING, so a writer must open the vault by hand; map those names to the entries that exist _(band: agent-runnable)_ _(effort: quick)_
+- [ ] Check the Deadman and Maciocia point and page references in the 32 organ entries (body/organs in the vault) once the two PDFs are on this Mac; the Neijing and Nanjing chapter citations were checked 2026-09-16, those two books were not, because no copy could be found on disk or in the vault _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] The mobile browser lane in CI has been red on main since at least 15 Sep and nobody sees it, because the run still says success; find the shared cause and make the lane count _(band: agent-runnable)_ _(effort: deep)_ → Plan: [ci-mobile-lane-red.md](todo/plans/ci-mobile-lane-red.md)
 
 ### Found in the 2026-09-08 audit and build day
