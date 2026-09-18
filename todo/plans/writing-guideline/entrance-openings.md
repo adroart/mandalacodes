@@ -7,6 +7,16 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 31 · "Theater of Truth" emanates the influence of saying, when asked, what everyone felt before anyone found the words.
 38 · "Inner Light Symphony" emanates the energy of that which lasts, held by someone who chose to stay and show up for what is important to them.
 
+## is a window to (3)
+
+07 · "Essential Nexus" is a window to the direction people follow once each of them has been heard.
+09 · "Ease in This" is a window to great strength taken one small step at a time.
+43 · "Cipher of Knowledge" is a window to the sudden knowing that waits for its moment to be said.
+
+## opens a door to (1)
+
+48 · "Doorways of the Unknown" opens a door to the answer that comes when you are asked for more than you have.
+
 ## expresses (4)
 
 03 · "Messengers of the Infinite" expresses a beginning that finds its shape by trying.
@@ -40,12 +50,6 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 42 · "Moving to Perfection" gives form to the wish to see a thing through and let it go.
 56 · "Infinite Journey" gives form to the taste for life that enriches you and comes back as a story.
 
-## channels (3)
-
-07 · "Essential Nexus" channels the direction people follow once each of them has been heard.
-09 · "Ease in This" channels great strength into one small step at a time.
-43 · "Cipher of Knowledge" channels the sudden knowing that waits for its moment to be said.
-
 ## gives voice to (3)
 
 23 · "Beneath the Surface" gives voice to the knack of cutting a thing back to what matters.
@@ -66,10 +70,9 @@ Rule: the card's Universal Language title in quotation marks, then a verb meanin
 47 · "Garden of Alchemy" brings to life the understanding that grows from staying with the past until it changes state.
 57 · "Flight of the Tao" brings to life the hunch that finds the way in before you can say why.
 
-## opens onto (4)
+## opens onto (3)
 
 40 · "Eternal Wellspring" opens onto the strength that refills once you hold what is yours and let the rest go.
-48 · "Doorways of the Unknown" opens onto the answer that comes when you are asked for more than you have.
 61 · "Celestial Remembrance" opens onto the knowing that arrives without proof and changes how you see.
 64 · "Communion" opens onto the last stretch of not knowing before an idea arrives whole.
 
