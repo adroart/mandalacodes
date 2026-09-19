@@ -85,12 +85,12 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, Fable 2026-09-18): 
 42 · "Moving to Perfection" points to the pull to carry a thing to its end so the next has room.
 61 · "Celestial Remembrance" points to the sureness without proof that moves people more than any argument could.
 
-## hints at (4)
+## portrays (4)
 
-02 · "Beyond the Shell" hints at the ground in you that takes in whatever is given and turns it into growth.
-26 · "Lighter Than a Feather" hints at the drive to make things happen, which grows by being held in.
-36 · "Crystal Creation" hints at the drop in the stomach that, met open, brings people to you with their worst hour.
-39 · "Nobel Spark" hints at the pressure that disturbs whatever has gone still to find out whether it is alive.
+02 · "Beyond the Shell" portrays the ground in you that takes in whatever is given and turns it into growth.
+26 · "Lighter Than a Feather" portrays the drive to make things happen, which grows by being held in.
+36 · "Crystal Creation" portrays the drop in the stomach that, met open, brings people to you with their worst hour.
+39 · "Nobel Spark" portrays the pressure that disturbs whatever has gone still to find out whether it is alive.
 
 ## captures (4)
 
