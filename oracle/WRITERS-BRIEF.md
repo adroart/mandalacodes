@@ -94,37 +94,27 @@ Write ICHING, KEYS, DESIGN, BODY, RELATIONS, then CODE from every source, then t
 
 Three prime directives, in this order, and a card fails on any one of them: it describes the energy EMBODIED, the person living it well and what it gives (never the lack, the fix, the struggle, the wound, the guard); it is RELATABLE, grounded in something the reader has felt, so they are inside the first sentence; and it is PROPER ENGLISH, complete sentences, tenses agreeing, the words Adrian would say aloud.
 
-The shape. Three short sentences, four at most, each carrying one idea, connected so each grows out of the one before, the way card 1's do. Sentence one is the card's Universal Language title in quotation marks, then one plain verb that says the painting is a way of seeing the energy, then the energy, then what it does.
+The shape. Three short sentences, four at most, each carrying one idea, connected so each grows out of the one before, the way card 1's do. Sentence one has the energy as its subject. The painting is not in it.
 
-The painting is a way of seeing the energy. It is never the energy, never its source, and never doing what the energy does. Adrian, 2026-09-19: the paintings are not the miracle, they are just sharing. So the verb keeps the painting passive and the person looking, and there are four, his: emanates, is a window to, opens a door to, gives us a glimpse of. With four verbs on 64 cards each sits on thirteen to eighteen, never on two cards in a row. Struck the same day for putting the painting in the actor's or the oracle's seat: shows, reveals, uncovers, unveils, mirrors, reflects, echoes, points to, brings out, opens onto, portrays, captures, pictures, hints at, sheds light on, and the sharing verbs (shares, speaks of, tells of, offers, holds up, reminds you of, calls to mind, touches on, is about, describes, names, carries a sense of). Struck by Adrian for making the painting the energy or its bearer: is, expresses, embodies, carries, holds, channels, transmits, radiates, breathes, releases, awakens, conveys, is the frequency of, frames. Struck for padding: lets you see, brings into view, gives a glimpse of, makes visible, lights up, brings to life, gives form to, gives voice to. Each of those is three words for one, and each smuggles in a noun of its own (a view, a glimpse, a light, a life) that the reader must hold beside the energy. "Lights up the pleasure" is two pictures. "A glimpse of the wait" is a riddle.
+Why (Adrian with Fable, 2026-09-19). The paintings are not the miracle; they are just sharing. The painting is a window to the energy: it does nothing, the person looks. That relation is true sixty-four times identically, so it is said once, for the whole deck, and never on a card. On the page the entrance sits under the artwork beneath the header "Message at a glance"; the header carries the join. The title is the artwork's name, shown on the page as a label; it does not open the sentence, does not act, and does not appear in the entrance at all. Two days of putting the title in front ("Earth's Breath" emanates ..., "Rhythm of Life" expresses ...) failed nine times for one reason: a painting that by rule does nothing has no verb, so every verb was wrong and every line wore the same mould. With the energy as the subject there is no slot to fill and nothing to rotate: creation moves, readiness keeps, a quiet is where, joy grows. Sixty-four energies make sixty-four different sentences on their own.
 
-The energy is a thing a person already says they feel: joy, luck, a spark, an urge, a pull, hunger, warmth, a sense, a charge, a wish, a yes, a readiness, a quiet. It is named once, in that word, straight after the verb, and nothing else may stand there. Not a virtue (patience, honesty, modesty, care), which is the name given afterwards to what a person did. Not an action in a noun's coat (the wait, the listening, the mending, the reaching), which is what the energy makes a person do. Not a lesson. The actions belong on the card, after the energy is named, as what it does.
+The shape. The energy, named in a word a person already says they feel (joy, luck, a spark, an urge, a pull, hunger, warmth, a sense, a charge, a wish, a yes, a readiness, a quiet), as the subject of a whole plain sentence that says what it does in a life, as something you could watch. The person may be in it as where the energy acts ("moves through you", "in you") or as the one carrying it ("held by someone who chose to stay"). Not a virtue for the energy (patience, honesty, modesty, care are the names given afterwards to what a person did). Not an action in a noun's coat (the wait, the listening, the mending). Not a lesson. Not a fragment: the line is a sentence, so the two that follow can lean on it. Under 20 words.
 
-What it does comes last, as something you could watch happen in a life: the spark makes something from nothing, joy grows by being shared, the answer comes when you are asked for more than you have. Or what a person does with it: the energy of that which lasts, held by someone who chose to stay. This clause is the card in one line, checked against the I Ching, the Human Design and the Gene Keys sections; sentence one need not carry all three, the entrance as a whole must.
+The test, before any line is kept. Say it aloud at a table. Name the energy in one word and what it does, one second each. If the listener would ask "the what?", or either answer takes longer than a second, the line fails, even when every word is English. The six ways it fails: a virtue for an energy; an action wearing a noun; a lesson in the tail; a word chosen for variety rather than for this line; sameness across the deck (twenty cards opening on "the urge"); checking by counting instead of by understanding.
 
-Verbs. Four verbs across the deck, and a line has two verbs with a job, the painting's and the energy's, and each is chosen because it makes the line clearer than any other word would. A third verb, or one padded out to three words, dilutes the line into a riddle: the reader is now working out what is being said instead of understanding it, and the line ends up saying nothing. Adrian: "When you add more you dilute the ability to understand it, it becomes a riddle." Write the verb that fits this card, then read the deck. Sameness is a fault. A count is not.
+Banned outright: the title in the sentence; any verb for the painting; a virtue for an energy; an action in a noun's coat; a lesson in the tail; a list joined by "and" carrying three systems; "some people"; any claim about the reader's situation or character; a scene; the em dash.
 
-The test, before any line is kept. Say it aloud with "this painting" in place of the title. Then answer two questions, one second each: which energy, in one word; what does it do. If the listener would ask "the what?", or either answer takes longer than a second, the line fails, and it fails even when every word is English and the grammar parses. The six ways it fails:
+The model is Adrian's, and the three he wrote were always in this shape:
 
-1. The energy is a virtue. Say "I felt a ___ today". A joy, a pull, an urge, a hunger, a readiness pass. A patience, a listening, an integrity do not. Find what rose in the person before anyone named the virtue.
-2. The energy is an action wearing a noun. Anything ending in -ing, or a verb behind "the" (the wait, the reach), is a doing. Name what makes a person do it, then put the doing after.
-3. The tail is a lesson. "Once the help is wanted" and "and the waiting is part of it" tell the reader what to do. The tail is what happens, watched: grows, comes, makes, keeps.
-4. The verb fills a slot. A verb picked from a list to avoid a repeat was picked wrong. Choose it for the line, then check the deck.
-5. Sameness. Twenty cards opening on "the urge to". Each card's energy word is its own, found in that card and not in a neighbour.
-6. Checking by counting. Words, verbs per deck, adjacent repeats: none of them asks whether the line can be understood. Only the two questions do.
+Creation itself moves through you, the power that makes something from nothing. (1)
+Everything that lasts was held by someone who chose to stay and show up for what is important to them. (38)
+The luck is not a gift: it is what life does around a body that has stopped fighting it. (46, his second clause standing alone; "some people are simply lucky" is banned now and was his opening only)
+The answer comes when you are asked for more than you have. (48, his)
+Readiness keeps its hours in you until what you wait for calls. (5)
+The quiet in you is where strangers set down what they have told no one. (13)
+Joy grows by being shared. (58)
 
-Banned outright: padded verbs; a virtue for an energy; an action in a noun's coat; a lesson in the tail; a list joined by "and" carrying three systems; "some people"; any claim about the reader's situation or character; a scene; the title buried at the end or acting again after sentence one; the em dash.
-
-The model is Adrian's. The phrase after the verb is his in every line; the verbs on 53, 17 and 58 are the deck's, and none of the six is edited:
-
-"Earth's Breath" emanates the spark of creation, the power that makes something from nothing.
-"Inner Light Symphony" emanates the energy of that which lasts, held by someone who chose to stay and show up for what is important to them.
-"Doorways of the Unknown" opens a door to the answer that comes when you are asked for more than you have.
-"Rhythm of Life" reflects joy that grows by being shared.
-"Creation Oscillation" shows the urge to start something new.
-"Pearl of Christos" points to the sense of where something is heading.
-
-Read the six as one thing. The noun after the verb is always the energy, and everything after the noun is what it does. Spark, makes. Joy, grows. Urge, start. Sense, of where. Answer, comes. Never once the other way round.
+Read the seven as one thing. The subject is always the energy, and the rest of the sentence is what it does. Never once the other way round.
 
 Sentence two says how it behaves, one fact. The last sentence is the choice and what grows from it, said as what will happen: "So wait to be asked and your words will be received as support." Never "this energy" as a subject in the body of the entrance; the frame is given once, if at all, as "The energy of this code is".
 
@@ -136,7 +126,7 @@ The three that hold, on the page: card 1 (Adrian): "Creation itself moves throug
 
 - 53: "The urge to start something new is a force of its own. It comes before any plan or any agreement. So begin when all of you agree and then let the thing grow in its own time."
 - 17: "The sense of where something is heading is a force of its own. It often comes long before anyone is ready to hear it. So wait to be asked and your words will be received as support."
-- 58: "Rhythm of Life expresses joy that grows by being shared. It wants to make things better for the people around you. So give it away and it will come back to you as more life."
+- 58: "Joy grows by being shared. It wants to make things better for the people around you. So give it away and it will come back to you as more life."
 
 Why this rule exists. Three rounds in two days. The first sixty entrances repeated the reading. The 2026-09-16 rule forbade defining and sent writers to "a moment, a picture", and 44 came back as stories. The 2026-09-17 morning rule made the energy the subject and asked for its law, and 61 came back as clause chains that had to be decoded, then as identity claims ("you are the one who starts"), then as the struggle. Adrian, reading them: "It is more about understanding the energy." "This is what you're experiencing, but it's not a definition of who you are." "Focus on the embodied side." "Why are you using so many words when less would be fine?"
 
