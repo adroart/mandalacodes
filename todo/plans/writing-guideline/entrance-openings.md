@@ -24,7 +24,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 19 · The pull to go where the warmth is missing rises in you before a word is said.  (Solection)
 20 · Calm decides in the moment, through the whole of you, and what comes out is clear.  (Emerging as the Code)
 21 · The will in you takes charge where others stall and carries the whole of what follows.  (Beyond Binary)
-22 · Warmth leaves whoever sits with you lighter, the warmth of someone who has felt everything and blames no one.  (Treasure of the Way)
+22 · Warmth leaves whoever sits with you lighter than they came.  (Treasure of the Way)
 23 · Clarity in you cuts away everything but what matters, and the plain thing left goes the whole way in.  (Beneath the Surface)
 24 · A pull takes you back to where a thing began so it can start again.  (Frequency Flutter)
 25 · Love goes from you to everything alike, with no plan in it.  (The Mysteries Play)
