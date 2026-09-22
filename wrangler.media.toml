@@ -1,0 +1,19 @@
+name = "mandalacodes-media"
+main = "workers/media.ts"
+compatibility_date = "2024-09-23"
+workers_dev = true
+
+[images]
+binding = "IMAGES"
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "mandalacodes-media"
+
+[[routes]]
+pattern = "mandalacodes.com/media/*"
+zone_name = "mandalacodes.com"
+
+[[routes]]
+pattern = "www.mandalacodes.com/media/*"
+zone_name = "mandalacodes.com"
