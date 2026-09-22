@@ -37,7 +37,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 ### Found in the 2026-09-08 audit and build day
 - [ ] Card 57 shows a dangling dash for its two Gene Keys nature headings because the source names are empty _(band: you-required)_ _(effort: quick)_
-- [ ] The cast-content command still points at the deleted changing-lines placeholder; point it at the six lines inside each card's I Ching section _(band: agent-runnable)_ _(effort: quick)_
+- [x] The cast-content command still points at the deleted changing-lines placeholder; point it at the six lines inside each card's I Ching section — done: `.claude/commands/cast-content.md` now points at the `### Moving lines` subsection of `oracle/cards/<NN>.md`, verified against all 64 cards (all already carry their six lines).
 - [ ] The atlas status buttons clip off the right edge on desktop, seen in the no-3D screenshots _(band: agent-runnable)_ _(effort: quick)_
 - [ ] Decide where a collector anchors intention, at claim on the art site or on the card here, then give it one entrance from live navigation _(band: you-required)_ _(effort: moderate)_ → Plan: [overarching-plan.md](todo/plans/overarching-plan.md) B4
 - [ ] The three atlas cuts against the intention statement: the filter panel, dream text on the globe, the drift and gloss mechanics _(band: you-required)_ _(effort: moderate)_ → Plan: [overarching-plan.md](todo/plans/overarching-plan.md) B5
