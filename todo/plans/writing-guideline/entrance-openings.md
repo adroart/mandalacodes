@@ -54,7 +54,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 49 · A heat builds in you under what no longer fits, until one day the whole thing turns.  (Union in the Ashes)
 50 · A sense knows what will feed the people near you, and what has gone off.  (Melt Into Perfection)
 51 · A charge sends you first, off the edge of what anyone has done.  (Unshakable Arrival)
-52 · Stillness settles in you when something you have been pushing at is finished.  (Timeless Blossom)
+52 · Stillness comes over you when a piece of work is done.  (Timeless Blossom)
 53 · The urge to start something new is a force of its own.  (Creation Oscillation)
 54 · The drive to rise above the place you were given built the cities, and it has not stopped.  (Everlasting Bounty)
 55 · A fullness swells in you at a life's height, so that what you make comes out of plenty.  (Untouched Perfection)
@@ -83,4 +83,4 @@ Desire was in you before you had anything to want. The reach under every shape i
 Sudden knowing arrives whole before you have any way to say how it came. It comes as a flash from the one direction you were not facing. So leave some quiet in the day and it will find you there.
 
 52 · Timeless Blossom
-Stillness settles in you when something you have been pushing at is finished. The outside goes quiet so the inside can work. So stay where you are and what comes next will be clear.
+Stillness comes over you when a piece of work is done. Nothing much happens outside while the inside catches up. So stay where you are and what comes next will be clear.
