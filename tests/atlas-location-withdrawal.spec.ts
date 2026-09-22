@@ -1,5 +1,8 @@
 import { test, expect } from './fixtures';
 
+// Preserve action/teardown evidence if this complete withdrawal flow times out.
+test.use({ trace: 'retain-on-failure' });
+
 const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:2222';
 
 async function releaseOverture(page: import('@playwright/test').Page) {
@@ -37,28 +40,36 @@ test('withdrawing public locations keeps claimed lights but removes their map in
     contentType: 'application/json',
     body: JSON.stringify(atlasState(locationsWithdrawn)),
   }));
-  await page.goto(`${BASE}/atlas`, { waitUntil: 'networkidle' });
-  await releaseOverture(page);
+  await test.step('open the atlas with public locations', async () => {
+    await page.goto(`${BASE}/atlas`, { waitUntil: 'networkidle' });
+    await releaseOverture(page);
+  });
 
   // Two claimed keepers at public locations make the normal desktop guidance
   // applicable. The count comes from claim ordinals, not map coordinates.
-  const publicPulse = page.getByText('2 lights lit', { exact: false });
-  await expect(publicPulse).toBeVisible();
-  await expect(page.getByText('of 2 pieces', { exact: false })).toBeVisible();
-  await expect(page.getByText('touch a light to read its dream', { exact: false })).toBeVisible();
-  await publicPulse.screenshot({ path: testInfo.outputPath('before-withdrawal-pulse.png') });
+  await test.step('verify the public map invitation', async () => {
+    const publicPulse = page.getByText('2 lights lit', { exact: false });
+    await expect(publicPulse).toBeVisible();
+    await expect(page.getByText('of 2 pieces', { exact: false })).toBeVisible();
+    await expect(page.getByText('touch a light to read its dream', { exact: false })).toBeVisible();
+    await publicPulse.screenshot({ path: testInfo.outputPath('before-withdrawal-pulse.png') });
+  });
 
-  locationsWithdrawn = true;
-  await page.reload({ waitUntil: 'networkidle' });
-  await releaseOverture(page);
+  await test.step('reload the atlas after locations are withdrawn', async () => {
+    locationsWithdrawn = true;
+    await page.reload({ waitUntil: 'networkidle' });
+    await releaseOverture(page);
+  });
 
   // The claims and their order remain in the public total, while no eligible
   // piece marker remains for the instruction to describe.
-  const withdrawnPulse = page.getByText('2 lights lit', { exact: false });
-  await expect(withdrawnPulse).toBeVisible();
-  await expect(page.getByText('of 2 pieces', { exact: false })).toBeVisible();
-  await expect(page.getByText('touch a light to read its dream', { exact: false })).toHaveCount(0);
-  await expect(page.getByText('Lisbon', { exact: false })).toHaveCount(0);
-  await expect(page.getByText('Denpasar', { exact: false })).toHaveCount(0);
-  await withdrawnPulse.screenshot({ path: testInfo.outputPath('after-withdrawal-pulse.png') });
+  await test.step('verify claims remain while the map invitation is private', async () => {
+    const withdrawnPulse = page.getByText('2 lights lit', { exact: false });
+    await expect(withdrawnPulse).toBeVisible();
+    await expect(page.getByText('of 2 pieces', { exact: false })).toBeVisible();
+    await expect(page.getByText('touch a light to read its dream', { exact: false })).toHaveCount(0);
+    await expect(page.getByText('Lisbon', { exact: false })).toHaveCount(0);
+    await expect(page.getByText('Denpasar', { exact: false })).toHaveCount(0);
+    await withdrawnPulse.screenshot({ path: testInfo.outputPath('after-withdrawal-pulse.png') });
+  });
 });
