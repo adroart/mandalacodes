@@ -197,6 +197,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       if (artPar) artPar.style.transform = 'scale(1.12) translateY(' + (pos * 0.12) + 'px)';
       const den = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
       const frac = Math.max(0, Math.min(1, pos / den));
+      if (hfill) hfill.setAttribute('aria-valuenow', String(Math.round(frac * 100)));
 
       /* Progress marker: the bar and its diamond track scroll across the full
          width of the reader, empty at the top and complete at the bottom, rather

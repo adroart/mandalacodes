@@ -54,12 +54,12 @@ a{color:#c6a667;text-decoration:none;}a:hover{color:#debc7e;}
     <!-- body -->
     <div data-reader="" style="flex:1;min-height:0;position:relative;">
       <!-- top jump bar -->
-      <div data-jumpbar="" style="position:absolute;left:0;right:0;top:0;height:49px;z-index:5;display:flex;align-items:stretch;justify-content:center;background:#191510;overflow:hidden;transition:height .3s ease,background .3s ease,box-shadow .3s ease;">
+      <div data-jumpbar="" role="navigation" aria-label="Reading by system" style="position:absolute;left:0;right:0;top:0;height:49px;z-index:5;display:flex;align-items:stretch;justify-content:center;background:#191510;overflow:hidden;transition:height .3s ease,background .3s ease,box-shadow .3s ease;">
         <div data-nostyle-scroll="" style="position:relative;display:flex;justify-content:center;overflow-x:auto;">
           <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6"><button type="button" data-nav="{{ n.id }}" style="flex:0 0 auto;background:none;border:0;cursor:pointer;padding:0 clamp(9px,1.3vw,18px);font-family:'Iowan Old Style Web',serif;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#80735f;white-space:nowrap;transition:color .25s;">{{ n.tab }}</button></sc-for>
         </div>
       </div>
-      <span data-progressfill-h style="position:absolute;left:0;top:0;height:2px;width:0;background:linear-gradient(to right,rgba(198,166,103,.12),#debc7e);z-index:6;transition:width .12s linear,top .3s ease;"></span>
+      <span data-progressfill-h role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="position:absolute;left:0;top:0;height:2px;width:0;background:linear-gradient(to right,rgba(198,166,103,.12),#debc7e);z-index:6;transition:width .12s linear,top .3s ease;"></span>
       <span data-comet style="position:absolute;left:0;top:1px;width:7px;height:7px;transform:translate(-50%,-50%) rotate(45deg);border-radius:1px;background:#f0d9a8;z-index:7;animation:cometGlow 2.4s ease-in-out infinite;transition:left .12s linear,top .3s ease;"></span>
       <!-- LEFT meta rail -->
       <aside data-nostyle-scroll="" style="position:absolute;left:0;top:49px;bottom:0;width:40%;overflow-y:auto;border-right:1px solid rgba(168,135,77,.16);padding:34px 32px;display:flex;flex-direction:column;gap:24px;transition:top .3s ease;-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - 36px),transparent);">
@@ -252,6 +252,7 @@ class Component extends DCLogic {
       // section, so it stays aligned to the labels AND spans top -> bottom.
       const den = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
       const frac = Math.max(0, Math.min(1, pos / den));
+      if (hfill) hfill.setAttribute('aria-valuenow', String(Math.round(frac * 100)));
       const barH = pos > 24 ? 38 : 49;
       if (jb) { jb.style.height = barH + 'px'; jb.style.background = pos > 24 ? '#15110c' : '#191510'; jb.style.boxShadow = pos > 24 ? '0 1px 0 rgba(168,135,77,.28)' : 'none'; }
       [aside, scroll, grain].forEach((el) => { if (el) el.style.top = barH + 'px'; });

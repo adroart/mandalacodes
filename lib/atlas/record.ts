@@ -240,6 +240,7 @@ export function buildKindSections(
         !!stated && (stated.status === 'placed' || stated.status === 'unawakened'),
       placedAt: stated?.placedAt,
       claimOrdinal: stated?.claimOrdinal,
+      availableForClaim: !stated && e.status === 'available',
       sigil: sigilFor(e.id, {
         series: e.series,
         category: e.kind === 'jewelry' ? 'Jewelry' : undefined,

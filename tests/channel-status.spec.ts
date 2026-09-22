@@ -117,25 +117,31 @@ async function openCard(page: Page, path = CARD) {
   }
 }
 
-/** Swipe the reading to the Human Design chapter and bring the line on screen. */
+/** Open the Human Design chapter and bring its status line into view. */
 async function showChannelLine(page: Page) {
   await page.getByRole('button', { name: 'Human Design', exact: true }).first().click();
-  // The chapters are a horizontal scroll-snap; wait for this one to settle
-  // at the left edge (the panel is taller than the viewport, so an
-  // intersection ratio would never reach a useful threshold).
+  // The current frame animates chapter jumps for 500ms, even under reduced
+  // motion. Wait for the chapter to reach the rail before scrolling farther
+  // down; otherwise the still-running jump can undo the status-line scroll.
   const panel = page.locator('section[data-chapter="humandesign"]');
-  await expect.poll(async () => Math.abs((await panel.boundingBox())?.x ?? 999)).toBeLessThan(2);
+  await expect.poll(() => panel.evaluate((element) => {
+    const reader = element.closest('.card-reading')!;
+    const scroller = reader.querySelector('[data-scroll]')!;
+    const rail = reader.querySelector('[data-jumpbar]')!;
+    return Math.abs(element.getBoundingClientRect().top - scroller.getBoundingClientRect().top - rail.getBoundingClientRect().height - 8);
+  })).toBeLessThan(2);
   const line = page.locator('[data-channel-status]').first();
-  // The reading scrolls inside its own <main>, and the chapter jump keeps
-  // adjusting that container for a moment after the click, so a single
-  // scroll can be undone. Scroll, then check, until the line stays put.
-  await expect.poll(async () => line.evaluate((el) => {
-    const main = el.closest('main') ?? document.scrollingElement!;
-    const r = el.getBoundingClientRect();
-    if (r.top >= 0 && r.bottom <= window.innerHeight) return true;
-    main.scrollBy({ top: r.top - window.innerHeight / 2, behavior: 'instant' as ScrollBehavior });
-    return false;
-  }), { intervals: [300], timeout: 10_000 }).toBe(true);
+  await expect(line).toBeVisible();
+  // A browser Back can restore the document's previous scroll position after
+  // the chapter jump. Scroll the actual element into view until that restore
+  // has settled, rather than assuming a horizontal panel or inner scroller.
+  await expect.poll(async () => {
+    await line.scrollIntoViewIfNeeded();
+    return line.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return r.top >= 0 && r.bottom <= window.innerHeight;
+    });
+  }, { intervals: [300], timeout: 10_000 }).toBe(true);
   // On screen, not merely in the DOM: a screenshot taken with the wrong
   // chapter under the viewport proves nothing.
   await expect(line).toBeInViewport();
@@ -235,9 +241,10 @@ test.describe('the channel line on the card page', () => {
     await expect(page).toHaveURL(/\/universal-language\/60$/);
     await expect(page.locator('[data-channel-partner-link="3"]')).toHaveText('Read gate 3 →');
     await page.goBack();
-    await showChannelLine(page);
+    await expect(page).toHaveURL(/\/universal-language\/3$/);
+    const returnedLine = await showChannelLine(page);
 
-    await line.getByRole('button').click();
+    await returnedLine.getByRole('button').click();
     await expect(page.getByText('Keep your chart')).toBeVisible();
     await assertFourStandardChecks(page, errors);
   });

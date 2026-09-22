@@ -24,6 +24,7 @@
     "generate:land-dots": "tsx scripts/generate-land-dots.ts",
     "test": "npx playwright test",
     "test:mobile": "npx playwright test --project='Mobile Chrome' --reporter=list",
+    "test:pwa": "playwright test --config=playwright.pwa.config.ts",
     "test:live-oracle": "LIVE_ORACLE_BASE_URL=https://mandalacodes.com playwright test tests/live-oracle-cards.spec.ts",
     "test:unit": "vitest run",
     "check:migrate-oracle-card": "tsx scripts/migrate-oracle-card.ts --check",

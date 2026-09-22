@@ -9,6 +9,39 @@ async function dismissEntrance(page: Page) {
   if (await entrance.isVisible()) await entrance.click();
 }
 
+async function expectRecorderStateFits(page: Page, expectedText: RegExp, mobileFontSize = '7px') {
+  const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
+  const state = recorder.locator('.reflection-recorder-bar__state');
+  await expect(state).toHaveText(expectedText);
+  const geometry = await state.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return {
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      fontSize: styles.fontSize,
+      letterSpacing: styles.letterSpacing,
+      parentWidth: element.parentElement?.clientWidth,
+      gridTemplate: getComputedStyle(element.parentElement?.parentElement as Element).gridTemplateColumns,
+    };
+  });
+  expect(geometry.scrollWidth, JSON.stringify(geometry)).toBeLessThanOrEqual(geometry.clientWidth);
+  if (await page.evaluate(() => innerWidth <= 400)) {
+    expect(geometry.fontSize).toBe(mobileFontSize);
+    expect(geometry.letterSpacing).toBe(mobileFontSize === '6px' ? 'normal' : '0.28px');
+    const controls = await recorder.locator('.reflection-recorder-bar__control').evaluateAll((elements) => elements.map((element) => ({
+      width: element.getBoundingClientRect().width,
+      labelFits: (() => {
+        const label = element.querySelector<HTMLElement>('.oracle-bottom-nav__label');
+        return Boolean(label && label.scrollWidth <= label.clientWidth);
+      })(),
+    })));
+    expect(controls.every(({ width, labelFits }) => width >= 44 && labelFits)).toBe(true);
+  }
+  await expect(recorder.getByRole('button', { name: /Pause and save|Resume recording/ })).toBeVisible();
+  await expect(recorder.getByRole('button', { name: 'Finish private reflection' })).toBeVisible();
+  await expect(recorder.getByRole('button', { name: /Journal/ })).toBeVisible();
+}
+
 async function mockAdminRecorder(page: Page, segment: { transcript?: string; transcriptionStatus?: string; transcriptionError?: string | null; transcriptionStartedAt?: string | null } = {}) {
   await page.addInitScript(() => {
     const track = { stop() {} };
@@ -48,6 +81,7 @@ test('administrator hold replaces only the sticky footer with the compact record
 });
 
 test('administrator can start from the visible frame deck control with the keyboard', async ({ page }) => {
+  if (test.info().project.name === 'Mobile Chrome') await page.setViewportSize({ width: 393, height: 851 });
   await mockAdminRecorder(page);
   await page.goto(`${BASE}${CARD}`);
   await dismissEntrance(page);
@@ -61,8 +95,14 @@ test('administrator can start from the visible frame deck control with the keybo
   await page.keyboard.press('Space');
   await expect(page.getByRole('navigation', { name: 'Private reflection recorder' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Private reflection recorder' })).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expectRecorderStateFits(page, /^Recording$/);
   await expect(center).toBeHidden();
   await page.screenshot({ path: test.info().outputPath('admin-recorder.png') });
+  if (test.info().project.name === 'Mobile Chrome') {
+    await page.setViewportSize({ width: 320, height: 760 });
+    await expectRecorderStateFits(page, /^Recording$/);
+    await page.screenshot({ path: test.info().outputPath('admin-recorder-320.png') });
+  }
 });
 
 test('administrator Enter keeps ordinary deck navigation', async ({ page }) => {
@@ -128,6 +168,10 @@ test('saved feedback, Resume emphasis, and Journal count come from local persist
   await expect(recorder.getByRole('button', { name: 'Journal, 1 saved segment' })).toBeVisible();
   await expect(recorder.locator('.reflection-recorder-bar__badge')).toHaveText('1');
   await expect(recorder.locator('.reflection-recorder-bar__meter')).toHaveCount(0);
+  await expectRecorderStateFits(page, /^Saved privately$/, '6px');
+  await page.screenshot({ path: test.info().outputPath('recorder-saved.png') });
+  await recorder.getByRole('button', { name: 'Resume recording a new segment' }).click();
+  await expectRecorderStateFits(page, /^Recording$/);
 });
 
 test('saved recorder surfaces a non-final transcription response without losing the audio', async ({ page }) => {
@@ -143,6 +187,8 @@ test('saved recorder surfaces a non-final transcription response without losing 
   await recorder.getByRole('button', { name: 'Pause and save this segment' }).click();
   await expect(recorder.locator('.reflection-recorder-bar__announcement')).toHaveText('Groq rate limit reached; retry later');
   await expect(recorder.locator('.reflection-recorder-bar__state')).toContainText('Transcript retry');
+  await expectRecorderStateFits(page, /^Transcript retry$/, '6px');
+  await page.screenshot({ path: test.info().outputPath('recorder-transcript-retry.png') });
   const notice = recorder.locator('.reflection-recorder-bar__transcription-notice');
   await expect(notice).toBeVisible();
   await expect(notice).toContainText('Audio saved privately');
@@ -182,6 +228,8 @@ test('Finish cannot strand the recorder while microphone permission is pending',
   const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
   await expect(recorder.getByRole('button', { name: 'Finish private reflection' })).toBeDisabled();
   await expect(recorder.locator('.reflection-recorder-bar__state')).toContainText('Requesting mic');
+  await expectRecorderStateFits(page, /^Requesting mic$/);
+  await page.screenshot({ path: test.info().outputPath('recorder-requesting-mic.png') });
   await page.evaluate(() => {
     Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
     document.dispatchEvent(new Event('visibilitychange'));

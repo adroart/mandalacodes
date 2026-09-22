@@ -26,6 +26,15 @@ async function expectComputedFontRole(element: Locator, role: FontRole) {
   expect(normalizeFontFamily(actual)).toEqual(normalizeFontFamily(expected));
 }
 
+async function expectComputedFontRoleFace(element: Locator, role: FontRole) {
+  await expect(element).toBeVisible();
+  const { actual, expected } = await element.evaluate((node, customProperty) => {
+    const styles = getComputedStyle(node);
+    return { actual: styles.fontFamily, expected: styles.getPropertyValue(customProperty) };
+  }, role);
+  expect(normalizeFontFamily(actual)[0]).toBe(normalizeFontFamily(expected)[0]);
+}
+
 async function waitForFonts(page: Page) {
   await page.evaluate(() => document.fonts.ready);
 }
@@ -46,12 +55,14 @@ test('the oracle reading resolves typography through the shared roles', async ({
   await waitForFonts(page);
 
   const visibleTitle = page
-    .locator('.eb-reading .ul-title-mobile:visible h1, .eb-reading .ul-title-desktop:visible')
+    .locator('.card-reading__designed-header h1:visible')
     .first();
   const prose = page.locator('.eb-reading section[data-chapter] p:has(.ul-dropcap)').first();
   const navigation = await visibleSharedNavigationLabel(page);
 
-  await expectComputedFontRole(visibleTitle, '--font-display');
+  // The imported current frame declares the shared display face with its own
+  // shorter fallback list; the contract is the selected shared face.
+  await expectComputedFontRoleFace(visibleTitle, '--font-display');
   await expectComputedFontRole(prose, '--font-reading');
   await expectComputedFontRole(navigation, '--font-ui');
 });

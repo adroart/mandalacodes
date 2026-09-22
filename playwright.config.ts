@@ -22,7 +22,9 @@ export default defineConfig({
   testDir: './tests',
   // tests/unit is vitest territory; importing vitest under the playwright
   // runner crashes the whole suite.
-  testIgnore: ['**/unit/**'],
+  // Production service-worker cases run in playwright.pwa.config.ts. Running
+  // them here would wait forever for a worker that Vite dev never installs.
+  testIgnore: ['**/unit/**', '**/offline-qr-reading.spec.ts', '**/pwa-learn.spec.ts'],
   fullyParallel: false,
   retries: 0,
   reporter: 'list',

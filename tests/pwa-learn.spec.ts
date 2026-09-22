@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
 
 test('controlled Oracle navigation preserves the Astro Learn library and article', async ({ page, context }) => {
-  test.skip(!test.info().config.metadata.pwa, 'Requires the production worker build and playwright.pwa.config.ts');
+  expect(test.info().config.metadata.pwa, 'Use the built-worker playwright.pwa.config.ts lane').toBe(true);
   // This server serves only built files; provider/API calls are all synthetic.
   await context.route('**/api/**', route => route.fulfill({ status: 200, contentType: 'application/json', body: 'null' }));
   await context.route(/^https:\/\//, route => route.abort());

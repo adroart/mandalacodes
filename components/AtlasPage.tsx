@@ -878,6 +878,14 @@ const AtlasPage: React.FC = () => {
     return out;
   }, [globeNodes]);
 
+  // The birth-place origin is not a public artwork location. The desktop
+  // invitation belongs only when the current filters leave a piece marker
+  // that a visitor can actually open.
+  const hasVisiblePieceMarker = useMemo(
+    () => cityClusters.some((node) => node.status !== 'origin'),
+    [cityClusters],
+  );
+
   /* Which cluster each piece key belongs to (piece key → cluster id). A single
      piece maps to itself; a member of a multi-piece city maps to `city:<id>`. */
   const clusterByMember = useMemo(() => {
@@ -1650,7 +1658,7 @@ const AtlasPage: React.FC = () => {
                         {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
                         <span className="ml-2 normal-case tracking-[0.02em] text-[12px] text-wood-500">
                           of {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
-                          {!isPhone && ' · touch a light to read its dream'}
+                          {!isPhone && hasVisiblePieceMarker && ' · touch a light to read its dream'}
                         </span>
                       </>
                     )}
