@@ -10,7 +10,7 @@
  *
  * Gate N == oracle code N == artwork piece N, so the alignment is by number.
  */
-import { img } from '../../utils/cloudinary';
+import { img } from '../../utils/media';
 import type { CanonicalCard } from './types';
 import type { HologeneticProfile, ProfileKey, GateLine } from '../astrology/types';
 import { PROFILE_KEYS } from '../../data/profileKeys.js';

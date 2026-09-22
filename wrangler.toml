@@ -4,6 +4,10 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "mandalacodes-media"
+
 # Historical Atlas R2 evidence, frozen 2026-08-09. Adrian-Website now owns the
 # canonical collector record; Mandala's /api/atlas middleware rejects all
 # mutations and GET /api/atlas proxies https://adrianrasmussen.com/api/atlas.

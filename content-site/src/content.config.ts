@@ -17,7 +17,7 @@ const articles = defineCollection({
     field: z.string().optional(),
     /** Cultural origin shown beside the field, e.g. "Tibet", "Universal". */
     culture: z.string().optional(),
-    /** Cloudinary public id of the cover artwork, e.g. "1_o8tafh". Falls back to a deck plate when omitted. */
+    /** Media object ID of the cover artwork, e.g. "1_o8tafh". Falls back to a deck plate when omitted. */
     cover: z.string().optional(),
     /** Estimated reading time, e.g. "9 min". Computed from body length when omitted. */
     readTime: z.string().optional(),

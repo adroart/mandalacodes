@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 const SITE_ORIGIN = 'https://mandalacodes.com';
-const DEFAULT_SEO_IMAGE = 'https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/48_ttflpq';
+const DEFAULT_SEO_IMAGE = `${SITE_ORIGIN}/media/image/48_ttflpq?w=1200&h=630`;
 
 const ROUTE_META: Record<string, { title: string; description: string }> = {
   '/': {

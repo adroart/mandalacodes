@@ -33,7 +33,7 @@ import { FULL_ARCHIVE } from '../../../../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../../../../data/cities';
 import { pieceCode } from '../../../../utils/pieceCode';
 import { ulCardNumber } from '../../../../utils/universalLanguage';
-import { img } from '../../../../utils/cloudinary';
+import { img } from '../../../../utils/media';
 import { buildShareCardElement } from '../../../../utils/atlas/shareCard';
 
 /** The static-asset binding every Pages Function receives, used to read the

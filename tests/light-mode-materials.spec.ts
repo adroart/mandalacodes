@@ -9,6 +9,33 @@ async function setTheme(page: import('@playwright/test').Page, dark: boolean) {
   }, dark);
 }
 
+/* Under a plain `vite` dev server there is no Functions runtime, so
+ * `/api/atlas` never answers, Atlas state never leaves `loading`, and
+ * `[data-atlas-stage]` never mounts. Mock it the way `atlas-no-webgl.spec.ts`
+ * does so these theme assertions can reach the stage. */
+const mockAtlasState = {
+  ok: true,
+  state: {
+    generatedAt: '2026-09-08T00:00:00.000Z',
+    schemaVersion: 2,
+    cities: [
+      { id: 'lisbon-pt', city: 'Lisbon', country: 'Portugal', countryCode: 'PT', lat: 38.7223, lng: -9.1393 },
+    ],
+    pieces: [
+      { pieceId: 'UL-01', editionNumber: 1, series: 'Universal Language', cityId: 'lisbon-pt', status: 'placed', pieceType: 'mandala', claimOrdinal: 1, kind: 'sixty-four' },
+    ],
+  },
+};
+
+async function mockAtlasEndpoint(page: import('@playwright/test').Page) {
+  await page.route('**/api/atlas', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockAtlasState) }),
+  );
+  await page.route('**/api/atlas/catalog', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, entries: [] }) }),
+  );
+}
+
 test('new visitors start in Nightfall across the SPA', async ({ page }) => {
   await page.goto(`${BASE}/universal-language`);
 
@@ -92,6 +119,7 @@ test('the Oracle reading frame follows Daybook while the artwork mat stays dark'
 
 test('Atlas keeps the globe dark while its ledger follows light mode', async ({ page }) => {
   await setTheme(page, false);
+  await mockAtlasEndpoint(page);
   await page.goto(`${BASE}/atlas?view=ledger`);
 
   const pageSurface = page.locator('[data-atlas-page]');
@@ -106,6 +134,7 @@ test('Atlas keeps the globe dark while its ledger follows light mode', async ({ 
 
 test('dark mode retains Nightfall without changing the Atlas stage', async ({ page }) => {
   await setTheme(page, true);
+  await mockAtlasEndpoint(page);
   await page.goto(`${BASE}/atlas?view=ledger`);
 
   const pageSurface = page.locator('[data-atlas-page]');

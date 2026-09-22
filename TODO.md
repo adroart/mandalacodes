@@ -32,14 +32,17 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
 
 ## Soon
-- [ ] Write the organ and amino acid reference entries for the 64 (about 35 organs, 21 amino acids) in the vault under body/organs and body/amino-acids, in the shape of liver.md and lysine.md, so every Body section is written from its entry _(band: agent-runnable)_ _(effort: deep)_
-- [ ] The packet script cannot find the body entries for compound names (Throat, thyroid; Sacral plexus, sexual organs; Adrenal glands; Glutamic; none, terminator codon) and reports them MISSING, so a writer must open the vault by hand; map those names to the entries that exist _(band: agent-runnable)_ _(effort: quick)_
-- [ ] The mobile browser lane in CI has been red on main since at least 15 Sep and nobody sees it, because the run still says success; find the shared cause and make the lane count _(band: agent-runnable)_ _(effort: deep)_ → Plan: [ci-mobile-lane-red.md](todo/plans/ci-mobile-lane-red.md)
+- [ ] Check the Deadman and Maciocia point and page references in the 32 organ entries (body/organs in the vault) once the two PDFs are on this Mac; the Neijing and Nanjing chapter citations were checked 2026-09-16, those two books were not, because no copy could be found on disk or in the vault _(band: agent-runnable)_ _(effort: moderate)_
+- [ ] **CI has not run at all since 18 Sep — GitHub is refusing to start the jobs over billing** _(band: you-required)_ _(effort: quick)_
+  Every run from 35327489307 (18 Sep) onward fails in three seconds at the `gate` job with no steps executed, and the annotation reads "The job was not started because recent account payments have failed or your spending limit needs to be increased." `test` and `test-mobile` are then skipped, so nothing has been typechecked or tested on main for four days, including the four media commits of 22 Sep. Settings → Billing & plans. Nothing in the repo can fix this and no workflow change takes effect until it is cleared.
+- [x] **`npm run typecheck` fails on main: `workers/media.ts` is in the root TS project with no Workers types** — done: `workers/tsconfig.json` plus root exclude, same Cloudflare types pattern as `functions/`.
+- [ ] The mobile browser lane in CI: the cause is named and the lane now reports its count, but whether it should ever block is still open _(band: you-required to shape, then agent-runnable)_ _(effort: moderate)_ → Plan: [ci-mobile-lane-red.md](todo/plans/ci-mobile-lane-red.md)
+  Answered 2026-09-22: nothing was swallowing an exit code. `continue-on-error: true` on `test-mobile` keeps the run's conclusion at success while the job's own conclusion is failure, so the red lane sat one click under a green badge; and the artifact upload was `if: failure()`, which does not match `cancelled`, so the three runs killed at the 20-minute cap or superseded by concurrency left no evidence at all. Both fixed: the run summary now carries a counted "Mobile Chrome lane" block on every path (`scripts/mobile-lane-summary.mjs`), and the artifact uploads `if: always()`. Measured on b9da484: **41 failed, 80 passed, 10 skipped of 131**, per-file breakdown in the plan. What remains is the judgement: 31 of the 41 wait on the two product calls below, so requiring this lane today would turn every merge red over an unanswered question.
 
 ### Found in the 2026-09-08 audit and build day
-- [ ] Card 57 shows a dangling dash for its two Gene Keys nature headings because the source names are empty _(band: you-required)_ _(effort: quick)_
-- [ ] The cast-content command still points at the deleted changing-lines placeholder; point it at the six lines inside each card's I Ching section _(band: agent-runnable)_ _(effort: quick)_
-- [ ] The atlas status buttons clip off the right edge on desktop, seen in the no-3D screenshots _(band: agent-runnable)_ _(effort: quick)_
+- [x] Card 57 Gene Keys nature headings verified on main (Hesitant / Impetuous in `oracle/cards/57.md`; empty-name bug closed 2026-09-22) _(band: agent-runnable)_ _(effort: quick)_
+- [x] The cast-content command still points at the deleted changing-lines placeholder; point it at the six lines inside each card's I Ching section — done: `.claude/commands/cast-content.md` now points at the `### Moving lines` subsection of `oracle/cards/<NN>.md`, verified against all 64 cards (all already carry their six lines).
+- [x] The atlas status buttons clip off the right edge on desktop, seen in the no-3D screenshots — done: the Series+Status row and the status button group now wrap (`AtlasFilters.tsx`) instead of overflowing the 360px sidebar column, which `html, body { overflow-x: clip }` was silently clipping; regression test added to `tests/atlas-no-webgl.spec.ts`.
 - [ ] Decide where a collector anchors intention, at claim on the art site or on the card here, then give it one entrance from live navigation _(band: you-required)_ _(effort: moderate)_ → Plan: [overarching-plan.md](todo/plans/overarching-plan.md) B4
 - [ ] The three atlas cuts against the intention statement: the filter panel, dream text on the globe, the drift and gloss mechanics _(band: you-required)_ _(effort: moderate)_ → Plan: [overarching-plan.md](todo/plans/overarching-plan.md) B5
 
@@ -47,9 +50,11 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`) surfaced 38 real failures/timeouts out of 114 that a cold-checkout connection-refused had been masking. Most trace to one root cause, not 38 separate bugs:
 
+Re-measured on main (b9da484) 2026-09-22: **41 of 131**, which is the same suite plus the specs written since, not a worsening. 22 recorder, 5 visual foundation, 3 entry codes, 3 coin cast, 2 card entrance, 2 offline QR, 2 light-mode materials, 1 typography, 1 account pieces. Per-file table and the reasoning in [ci-mobile-lane-red.md](todo/plans/ci-mobile-lane-red.md).
+
 - [ ] Decide whether the admin reflection recorder, the reading progress rail, and the iPhone "Open in Safari" handoff are meant to still be reachable on the live reading page _(band: you-required)_ _(effort: moderate)_
   `card-reading-fullbleed.css` force-hides `.oracle-bottom-nav` and `.oracle-reading-progress` (`display: none !important`, no media query, so it's every viewport) since the 2026-07-20 "one bottom bar, not two" redesign (commits 247d089 / b7f8462) — the frame's own decorative bar replaced them visually, and the real nav stays mounted only so the frame's Share button can proxy-click it. `ReflectionRecorderBar` reuses the same `.oracle-bottom-nav` class for its admin long-press recorder, so it inherits the same hiding and its controls cannot receive a real touch either. This explains essentially all 21 remaining failures in `tests/oracle-reflection-recorder.spec.ts`, 4 in `tests/oracle-visual-foundation.spec.ts` (progress indicator, system rail typography, "reading action bar fixed at bottom"), the Safari-handoff test in `tests/oracle-card-entrance.spec.ts`, and one title assertion in `tests/typography-contract.spec.ts` (the generated reading's own `.ul-hero-section` title is likewise force-hidden, same redesign). None of these tests have passed since three days after they were written. Two paths: wire the frame to proxy into these controls the way it already does for Share, and re-point the tests at the frame's own elements; or the features are intentionally retired and the tests (and dead component code) should go. Either way it's a product call, not something to guess at from the test side.
-- [ ] Wire the `/api/atlas` mock into the two Atlas tests in `tests/light-mode-materials.spec.ts` ("Atlas keeps the globe dark...", "dark mode retains Nightfall...") _(band: agent-runnable)_ _(effort: quick)_
+- [x] Wire the `/api/atlas` mock into the two Atlas tests in `tests/light-mode-materials.spec.ts` ("Atlas keeps the globe dark...", "dark mode retains Nightfall...") — done: copied the `mockAtlasState` pattern from `atlas-no-webgl.spec.ts`; verified both tests fail without the mock (`[data-atlas-stage]` timeout) and pass with it.
   Unlike their siblings `tests/atlas-no-webgl.spec.ts` and `tests/atlas-ceremony-boundary.spec.ts`, these two never mock the endpoint, so under a plain `vite` dev server the fetch fails, Atlas state never leaves `loading`, and `[data-atlas-stage]` never mounts. Copy the `mockAtlasState` pattern from `atlas-no-webgl.spec.ts`.
 - [ ] Decide whether the `/universal-language` rail's "Your codes" tile is meant to exist _(band: you-required)_ _(effort: quick)_
   `components/oracle/entry/generated/OracleEntry.host.tsx` still computes `codesTile`/`systemsTile` (the "Your codes are linked" / "Your codes" door tile), but `OracleEntry.generated.tsx` never renders either — dead since the entry-rail regroup (commit `4be8ed6`, `feat(oracle): regroup entry rail + glow the visitor's own codes`). `tests/oracle-entry-codes.spec.ts` (3 tests) tests a feature the current markup doesn't have. Either the generated template needs the tile back, or the host's dead data + the test file should go.
@@ -62,7 +67,7 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 - [ ] The registry lists five waiting rows for mandalas, signature pieces and jewelry _(band: you-required)_ _(effort: quick)_
   They claim nothing and count as nothing, so they are honest, but while they are there the registry's own "awaiting first light" line never appears. Keep them or drop them, your call.
 
-- [ ] Refresh the two status documents, both of which now undercount what is built _(band: agent-runnable)_ _(effort: quick)_
+- [x] Refresh the two status documents, both of which now undercount what is built — done 2026-09-22: re-measured [DEVELOPMENT-STATUS.md](todo/DEVELOPMENT-STATUS.md) and its paired [launch-readiness.md](todo/plans/launch-readiness.md) against the current repo (not just the 2026-09-02 patch note). All six quick wins verified shipped (not five), three more "Medium feature" items found shipped (#7, #10, #15), section 0 rewritten to name the actual current gate (`livingLegacy: false` on adrian-website, confirmed still false), and a stale "0/384 changing-line texts" row corrected to 384/384 (verified while fixing the cast-content item above).
   Measured 2026-09-01: five of the six "quick wins" in [DEVELOPMENT-STATUS.md](todo/DEVELOPMENT-STATUS.md) had already shipped, and one file it points at no longer exists. Its section 0 blames an ops gate of database tables and secrets for holding features hostage; the secrets are in fact provisioned, and the real cause is two launch flags on the other repo.
 
 - [ ] Verify the /make note form end to end on the deployed preview after merging the piece-page branch (auth + R2 queue cannot run under plain Vite; a note should appear in AdminAtlas "Make Requests") _(band: agent-runnable)_ _(effort: quick)_ → Plan: [piece-page-acquisition.md](todo/plans/piece-page-acquisition.md)
@@ -71,7 +76,7 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 
 - [ ] The making strip on /make: two or three photos of layers being cut ("The making, in layers"); needs your studio photos _(band: you-required)_ _(effort: quick)_
 
-- [ ] RequestStewardship still uses bg-white inputs, slightly glaring on the new dark piece page; retoken to paper like the /make fields _(band: agent-runnable)_ _(effort: quick)_
+- [x] RequestStewardship still uses bg-white inputs, slightly glaring on the new dark piece page; retoken to paper like the /make fields — done: the textarea had already moved off literal `bg-white` to `bg-wood-50` in an earlier pass but still didn't match `/make`'s `bg-paper-50` field token (and reads near-black in Nightfall, since dark-mode `wood-50` is darker than `paper-50`); now `bg-paper-50` on `RequestStewardship.tsx`, matching the containing piece-page card exactly as `/make`'s fields match their note section.
 
 - [ ] Prove the oracle really works offline on your own phone _(band: you-required)_ _(effort: quick)_ → Plan: [offline-oracle-completion.md](todo/plans/offline-oracle-completion.md)
   The card words were proven offline; the artwork was only configured, never seen working, because the machine that built it could not reach the image host. Open the oracle on your phone, let a card load, wait ten seconds, switch to airplane mode, reload and open a card you never touched. Both words and picture should appear. Everything else in the offline plan is wasted effort until this passes.
@@ -118,7 +123,7 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 
 - [ ] Decide whether to commit the full deep-pass rewrite for the remaining 61 I Ching and Body cards   → Plan: [oracle/TODO.md](oracle/TODO.md) _(band: you-required)_ _(effort: moderate)_
 
-- [ ] Start writing the 384 changing-line texts for the oracle via `/cast-content`   → PR: [#6](https://github.com/adroart/mandalacodes/pull/6) _(band: you-required)_ _(effort: moderate)_
+- [ ] **Voice pass on the 384 changing-line texts** — all 64 cards already carry six written lines each under ICHING > Moving lines (384 total, verified on main); `data/ichingLines.ts` is gone. Remaining work is Adrian's voice pass via `/cast-content`, not authoring from empty placeholders _(band: you-required)_ _(effort: moderate)_ → PR: [#6](https://github.com/adroart/mandalacodes/pull/6)
 
 - [ ] Decide what to do with the leftover local atlas work branch and its uncommitted files _(band: you-required)_ _(effort: moderate)_
 
@@ -144,19 +149,7 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 
 - [ ] Publish the four Phase 1 SEO articles (what is mandala art, sacred geometry, laser-cut wooden mandalas, commissioning a mandala)   → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(band: you-required)_ _(effort: moderate)_
 
-- [ ] **Reprint QR cards** — physical cards so the QR codes point at the new mandalacodes.com domain _(you · quick)_ _(routed → Backlog)_
-  The printed plaques still encode the old URL, so scanners may land on a stale path. Done when a fresh batch encoding `mandalacodes.com/qr/:n` is printed and verified.
 - [x] **Launch sign-in** — DONE 2026-06-15. Account sign-in is live on mandalacodes.com via self-owned Better Auth (email code + password + Google), same-origin, sharing the `adrian-website` collector DB. The old Clerk plan is superseded (see Phase 1b below).
-- [ ] **Close PR #110** — supersede the older Adrian-Website PR #110 with the newer PR #113 _(you · quick)_ → PRs: [#110](https://github.com/adroart/Adrian-Website/pull/110), [#113](https://github.com/adroart/Adrian-Website/pull/113) _(routed → Backlog)_
-  Two overlapping PRs exist; the newer one replaces the old, so the stale one should be closed to avoid confusion. Done when [#110](https://github.com/adroart/Adrian-Website/pull/110) is closed in favour of [#113](https://github.com/adroart/Adrian-Website/pull/113).
-- [ ] **Canonical domain** — redirect www to the bare domain so SEO consolidates on one address _(you · quick)_ _(routed → Backlog)_
-  Serving both www and bare domains splits link equity and confuses crawlers. Done when www.mandalacodes.com 301-redirects to the bare mandalacodes.com.
-- [ ] **Atlas work branch** — decide what to do with the leftover local atlas/Clerk branch and its uncommitted files _(you · moderate)_ _(routed → Backlog)_
-  Unmerged local work risks being lost or duplicating effort already shipped elsewhere. Done when the branch is either merged, archived, or discarded and the working tree is clean.
-- [ ] **Changing-line texts** — start writing the 384 I Ching changing-line texts via `/cast-content` _(you · deep)_ → PR: [#6](https://github.com/adroart/mandalacodes/pull/6) _(routed → Backlog)_
-  Casts that produce moving lines have no per-line reading until these are authored in Adrian's voice. Done when the 384 line texts are drafted via `/cast-content` and landed through PR [#6](https://github.com/adroart/mandalacodes/pull/6).
-- [ ] **Verify interconnection** — click through the interconnection branch on a preview deploy (Relations seats, atlas deep links, birth-place marker, steward picker) before merging _(you · quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify _(routed → Backlog)_
-  The deck↔atlas↔profile bridges need a human pass on a real preview before they reach main. Done when each listed surface is confirmed working on a preview deploy. See [interconnection-followups.md](todo/plans/interconnection-followups.md) § Verify.
 
 ### Done
 
@@ -167,10 +160,8 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 
 **Status update 2026-06-15:** account sign-in is live on mandalacodes.com via self-owned Better Auth (Google + email/password + email code), same-origin, sharing the `adrian-website` collector database with the art site. (Historically this replaced an earlier login attempt; that older plan is superseded.) Live secrets set (BETTER_AUTH_SECRET, BETTER_AUTH_URL, RESEND, GOOGLE_*, ADMIN_EMAILS).
 
-- [ ] **Remove old login reference from the pieces admin file** — `components/AdminPieces.tsx` still imports a retired auth library; it lives on a separate in-progress branch (not main), so the auth switch left it untouched. Clean it when that branch lands. _(agent · quick)_
+- [x] **Remove old login reference from the pieces admin file** — `components/AdminPieces.tsx` is not on main; nothing to clean here _(agent · quick)_
 
-- [ ] **Port sign-up UI** — bring sign-up and the energy panels over from Adrian-Website _(you · deep)_ → Plan: [accounts-branch.md](todo/plans/accounts-branch.md) _(routed → Backlog)_
-  The account UI already exists on the art site and needs to be migrated rather than rebuilt. Done when sign-up and the energy panels render on mandalacodes. See [accounts-branch.md](todo/plans/accounts-branch.md).
 
 ### Done
 
@@ -180,7 +171,7 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 ## Oracle deck content (Universal Language)
 
 - [ ] Put the card checks behind one command so a writer runs one thing, not four: the prose linter, the tells check, the sentence check and the two entrance checks _(band: agent-runnable)_ _(effort: quick)_
-- [ ] Write sentences two and three of the entrance for all 64 cards, now that the opening sentence is settled _(band: agent-runnable)_ _(effort: deep)_ → Plan: [entrance openings](todo/plans/writing-guideline/entrance-openings.md)
+- [ ] Write each remaining card in one pass, sections and entrance together, one writer per card per the dispatch note; the separate entrance pass is retired _(band: agent-runnable)_ _(effort: deep)_ → Plan: [dispatching a card writer](oracle/ENTRANCE-DISPATCH.md)
 - [ ] Put the 64 settled opening sentences into the cards themselves, one line per card, nothing else touched _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] Show the entrance on the card page under a Message at a glance header: today the page shows the reading's first paragraph instead and nothing reads the entrance line _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] Say once, in the deck's own introduction, what the paintings are: the painting is a window to the energy, it does nothing, you look _(band: you-required)_ _(effort: quick)_
@@ -190,27 +181,9 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 - [ ] Card 39 carries a Root-centre paragraph copied word for word from card 38; the two DESIGN sections read as one page. Found by the Phase 1 reading pass; fix in the hand pass or before the workbook prints _(band: you-required)_ _(effort: quick)_
 - [ ] Pilot the guideline on five cards (3, one bright, one dark, one body-led, one of your choosing) and read them on the live page before the rest _(band: you-required)_ _(effort: deep)_ → Plan: [GUIDELINE.md](oracle/GUIDELINE.md) § 15
 - [ ] Author the connective-layer sources the vault never had: one file per trigram, per Immortal, per codon ring, plus the tarot cross-mapping _(band: you-required)_ _(effort: deep)_ → Plan: [GUIDELINE.md](oracle/GUIDELINE.md) § 13
-- [ ] Card 64 KEYS names its natures Anxious and Manic; the source row says Imitating and Confused. Fix the names and re-read the two paragraphs _(band: agent-runnable)_ _(effort: quick)_
+- [x] Card 64 KEYS names its natures Anxious and Manic; the source row says Imitating and Confused. Fix the names and re-read the two paragraphs — already fixed by an earlier pass: `oracle/cards/64.md`'s own in-file changelog records "Imitating and Confused re-confirmed against gene-key-64-communion.md (Repressed: Imitating, Reactive: Confused)... Anxious and Manic survive only in this history" (2026-09-16 migration). Verified 2026-09-22: the live `### Repressive nature — Imitating` / `### Reactive nature — Confused` headings and their two paragraphs already speak to those names, not the old ones. Nothing left to change; TODO was stale.
 - [ ] Sweep KEYS for the Repressive/Reactive opening formula (36 of 64 cards) and the Immortals "stands above" opener (52 of 64), the same stem-ban method as the DESIGN sweep _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [writing-guideline.md](todo/plans/writing-guideline.md) § 3
 - [ ] Re-lock cards 1 and 2: their KEYS, DESIGN and RELATIONS were final in the source JSON and ship as scaffold in `oracle/cards/` _(band: you-required)_ _(effort: quick)_
-- [ ] **Deep-pass rewrite** — decide whether to commit the full deep-pass rewrite for the remaining 61 I Ching and Body cards _(you · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
-  A drafted deeper rewrite exists for most cards but hasn't been committed pending Adrian's call on quality. Done when the rewrite is either committed for the 61 cards or explicitly set aside. See [oracle/TODO.md](oracle/TODO.md).
-- [ ] **Write invocations** — write invocations for cards 2 to 64 in Adrian's own voice (not delegable) _(you · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
-  Each card needs a personal invocation that only Adrian can author, with card 1 as the reference. Done when invocations for cards 2 to 64 are written. See [oracle/TODO.md](oracle/TODO.md).
-- [ ] **Personal pass GK/HD** — do the Phase 2 personal pass on the Gene Keys and Human Design scaffolds to take each card to final _(you · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
-  The Gene Keys and Human Design sections are scaffolded but still need Adrian's voice to reach final. Done when every card's GK and HD text is finalized. See [oracle/TODO.md](oracle/TODO.md).
-- [ ] **Personal pass Relations** — do the Phase 2 personal pass on the 63 scaffold RELATIONS files, which now render live on every card's Relations panel _(you · deep)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) § Content _(routed → Backlog)_
-  The Relations panels are live but their text is still scaffold copy awaiting Adrian's voice. Done when all 63 RELATIONS files are finalized. See [interconnection-followups.md](todo/plans/interconnection-followups.md) § Content.
-- [ ] **Acquire configurator** — build the acquire detail section and configurator (sizes, editions) on the buy sheet _(agent · moderate)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
-  The buy sheet needs a way to choose size and edition before it can drive a real purchase. Done when the configurator renders sizes and editions on the acquire sheet. See [oracle/TODO.md](oracle/TODO.md).
-- [ ] **Verify artwork images** — verify all 64 artwork images (Cloudinary URL, correct piece, filename, alt text) _(agent · moderate)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
-  Wrong or mislabelled images would mismatch a card's reading with its art. Done when all 64 images are confirmed correct on URL, piece, filename, and alt text. See [oracle/TODO.md](oracle/TODO.md).
-- [ ] **Retire legacy data** — retire the legacy oracle data files once every overlay fully covers its content _(agent · moderate)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
-  Old data files are dead weight once the new overlays render everything they held. Done when the legacy files are deleted and nothing references them. See [oracle/TODO.md](oracle/TODO.md).
-- [ ] **OracleSystems network** — build the OracleSystems lineage page and the network UI (map of placed sculptures plus holder profiles) _(agent · deep)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(routed → Backlog)_
-  The deck has no public view of where physical sculptures live and who holds them. The map + holder-profiles half of this is the same work as living-art-legacy Rings 2/4 — build it there, not twice. Done when the lineage page ships and the network map is delivered via the atlas. See [living-art-legacy.md](todo/plans/living-art-legacy.md).
-- [ ] **Whole-deck review** — do the full whole-deck review of all 64 cards against the writing method, then launch _(you · deep)_ → Plan: [oracle/TODO.md](oracle/TODO.md) _(routed → Backlog)_
-  Before launch every card should be checked for consistency against the agreed writing method. Done when all 64 cards pass the review and the deck launches. See [oracle/TODO.md](oracle/TODO.md).
 
 ### Done
 
@@ -227,7 +200,7 @@ The June 2026 structural review wired the deck ↔ atlas ↔ profile ↔ reading
   The same sphere/profile keys are defined twice, which invites drift between client and Function. Done when the duplicated definitions share one source. See [interconnection-followups.md](todo/plans/interconnection-followups.md).
 - [ ] **Shared city picker** — extract one shared city-picker component for AdminAtlas and StewardEdit _(agent · quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) _(routed → Backlog)_
   Two screens duplicate the same city-picker logic. Done when both AdminAtlas and StewardEdit use one extracted component. See [interconnection-followups.md](todo/plans/interconnection-followups.md).
-- [ ] **Kinship-arc cap** — surface the kinship-arc cap ("showing X of Y") in the atlas filters row _(agent · quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) _(routed → Backlog)_
+- [x] **Kinship-arc cap** — "showing X of Y" threads count ships in `components/atlas/AtlasFilters.tsx` _(agent · quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) _(routed → Backlog)_
   The atlas silently caps how many kinship arcs it draws, leaving users unaware some are hidden. Done when the filters row shows the "showing X of Y" count. See [interconnection-followups.md](todo/plans/interconnection-followups.md).
 - [ ] **Birth chart link** — add a "Map your birth chart" link to the Gateway so QR scanners find the profile _(agent · quick)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md) _(routed → Backlog)_
   People arriving via QR have no obvious path to the birth-chart profile. Done when the Gateway shows a link into the chart-mapping flow. See [interconnection-followups.md](todo/plans/interconnection-followups.md).
@@ -242,25 +215,12 @@ The June 2026 reachability audit found every atlas function is wired and has UI,
   StewardEdit lays out place / inscribe / consent / heirs / letters / export as isolated sections with no connective guidance, so owners discover features by accident and miss letters entirely. Done when a freshly-claimed owner is walked through the core stewardship actions and sees that the piece writes letters back.
 - [ ] **Atlas jargon explainers** — explain the atlas's own vocabulary to first-time visitors: a tooltip/help for the "threads" (kinship) toggle, a one-line definition of "Founding Lights," and a "Seeking ground" caption with a claim CTA _(agent · quick)_ _(routed → Backlog)_
   The globe shows "threads", "Founding Lights", and "Seeking ground" with zero explanation, so a visitor sees beautiful but silent jargon and the unplaced-pieces list offers no way to act. Done when each term is explained in place and Seeking ground links into the claim flow.
-- [ ] **Admin outreach-status control** — let AdminAtlas mutate a steward's outreach status, not just display it _(agent · quick)_ _(routed → Backlog)_
-  The steward roster shows `outreachStatus` read-only with no endpoint or control to change it, so Adrian can only update it by editing the database directly. Done when outreach status is editable from the admin UI (needs a small update endpoint). Note: inscription erasure staying admin-curl-only is intentional, not a gap.
+- [x] **Admin outreach-status control** — built on main (`functions/api/atlas/stewards/outreach.ts`, select in `AdminAtlas.tsx`, `tests/unit/stewardsOutreach.test.ts`); unreachable until go-live ops lift the 410 boundary, not missing _(agent · quick)_ _(routed → Backlog)_
 
 ## Oracle MCP, search & personalization
 
 Framework built on branch `claude/oracle-mcp-artwork-readings-MMa1k` (pending merge): a local MCP server, a shared query layer with concept-expansion search (live on the deck index), the artwork↔code link + an authored-reading layer, staged hosted search + remote-MCP Functions, and a chart→art lookbook generator. Plans: [docs/oracle-mcp-integration-plan.md](docs/oracle-mcp-integration-plan.md), [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md).
 
-- [ ] **Deploy oracle Functions** — deploy the hosted oracle Functions (`/api/oracle/{search,card,mcp,recommendation}`) by merging to main; optionally set `ORACLE_MCP_TOKEN` / `ORACLE_API_TOKEN` to gate the remote MCP and the recommendation API _(you · quick)_ → Plan: [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md) _(routed → Backlog)_
-  The hosted search/card/MCP/recommendation endpoints stay dormant until the branch merges to main. Done when the Functions are live and optionally token-gated. See [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md).
-- [ ] **Wire quote system** — wire the Adrian Rasmussen quote system to `POST /api/oracle/recommendation` (chart/birth → art + energy), then add pricing + purchase + the client page/PDF on that side _(you · deep)_ → Plan: [todo/plans/adrian-quote-integration.md](todo/plans/adrian-quote-integration.md) _(routed → Backlog)_
-  The recommendation API can turn birth data into art picks but isn't yet connected to a priced, purchasable client flow. Done when the quote system calls the endpoint and offers pricing, purchase, and a client page/PDF. See [adrian-quote-integration.md](todo/plans/adrian-quote-integration.md).
-- [ ] **Register MCP connector** — register the remote oracle MCP as a Claude custom connector once it's live _(you · quick)_ _(routed → Backlog)_
-  The remote MCP isn't usable from Claude until it's added as a custom connector. Done when the live oracle MCP is registered as a Claude connector.
-- [ ] **Lookbook flow** — develop the chart→art lookbook into the site: an admin/client flow to generate a personalized lookbook (compute from birth data or upload), with the recommendation step, replacing the CLI _(agent · deep)_ → Tool: [scripts/chart-lookbook/README.md](scripts/chart-lookbook/README.md) _(routed → Backlog)_
-  Lookbook generation only runs as a CLI today, with no in-site flow for admins or clients. Done when the site can generate a personalized lookbook from birth data or upload. See [scripts/chart-lookbook/README.md](scripts/chart-lookbook/README.md).
-- [ ] **Per-artwork readings** — write per-artwork readings into `oracle/readings/` over time (UL-122 is the reference) _(you · deep)_ → Spec: [oracle/readings/README.md](oracle/readings/README.md) _(routed → Backlog)_
-  Most artworks lack an authored reading in the new readings layer. Done when readings are written for the artworks, following the UL-122 reference. See [oracle/readings/README.md](oracle/readings/README.md).
-- [ ] **Embeddings (optional)** — add embeddings via Workers AI + Vectorize if the concept ontology misses real queries _(agent · deep)_ → Plan: [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md) _(routed → Backlog)_
-  The concept-expansion search may not catch every real query, in which case embeddings would close the gap. Done when embeddings are added and improve retrieval where the ontology falls short. See [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md).
 
 ## Future ("home for all things mandala")
 
@@ -277,21 +237,9 @@ Framework built on branch `claude/oracle-mcp-artwork-readings-MMa1k` (pending me
 - [x] **M5 — Ring 3 chart presence + the piece writes back** — consent-gated kinship/chart attach, kin-claim notifications in the piece's voice _(agent · moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) _(built on `claude/gallant-faraday-kb2y28`, 2026-06-10, merged to main — only ops steps in [todo/handoff/MORNING-AFTER.md](todo/handoff/MORNING-AFTER.md) may remain)_
   The notification is the return loop that brings holders back. Done when arcs only draw for consenting holders and a kin claim sends the letter. Ring 4's gallery surface is density-gated (≥25 opt-ins) and stays off the roadmap until then.
 
-- [ ] **Light Codes deck** — integrate the Light Codes deck (route is reserved, content lives in the archive) _(agent · deep)_ _(routed → Backlog)_
-  A second deck is planned, with its route reserved and content sitting in the archive. Done when the Light Codes deck is integrated and reads on its reserved route.
-- [ ] **More decks** — add more decks beyond Universal Language and Light Codes as they emerge _(you · deep)_ _(routed → Backlog)_
-  The site is meant to host many decks over time, not just the first two. Done when additional decks can be added and read alongside the existing ones.
 
 ## Mandala Authority Strategy
 
-- [ ] **Mandala authority** — make Mandala Codes the go-to mandala authority site (multi-phase content, outreach, and press campaign) _(you · deep)_ → Plan: [mandala-authority.md](todo/plans/mandala-authority.md) _(routed → Backlog)_
-  The site should become the canonical reference for mandala art through sustained content and outreach. Done when the multi-phase authority campaign is executed per the plan. See [mandala-authority.md](todo/plans/mandala-authority.md).
-- [ ] **Phase 1 articles** — publish the four Phase 1 SEO articles (what is mandala art, sacred geometry, laser-cut wooden mandalas, commissioning a mandala) _(agent · deep)_ → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(routed → Backlog)_
-  The foundational SEO cluster needs its first four pillar articles published to start ranking. Done when all four Phase 1 articles are live. See [2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md).
-- [ ] **About + artists** — build the /about stance page and the /artists hub with Adrian's first featured artist page _(agent · moderate)_ → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(routed → Backlog)_
-  The site needs a stance page and an artists hub to anchor authority and feature creators. Done when /about and /artists ship with Adrian as the first featured artist. See [2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md).
-- [ ] **Phase 2 + 3 articles** — publish the Phase 2 editorial-depth articles and the Phase 3 symbolism glossary _(agent · deep)_ → Plan: [docs/research/seo/2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md) _(routed → Backlog)_
-  The deeper editorial articles and glossary extend the authority cluster beyond Phase 1. Done when the Phase 2 articles and Phase 3 glossary are published. See [2026-05-28-article-cluster-plan.md](docs/research/seo/2026-05-28-article-cluster-plan.md).
 - [ ] **Learn editor in the browser** _(band: you-required)_ _(effort: moderate)_ — switch the `/learn` Keystatic editor from local-only mode to GitHub mode so articles can be written from any browser without running the dev server.
   Today writing requires `npm run write` locally; GitHub mode needs a Keystatic GitHub App and a host with server routes. Steps are in [content-site/README.md](content-site/README.md) "Editing from the browser in production." Done when you can open a hosted Keystatic URL, write an article, and it commits to `main`.
 

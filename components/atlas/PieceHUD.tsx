@@ -17,7 +17,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ordinalLabel, type SelectedPiece, type KinEntry, type HolderChartSummary } from './PieceSidePanel';
-import { img } from '../../utils/cloudinary';
+import { img } from '../../utils/media';
 import { ATLAS_GOLD, ATLAS_KEPT } from './stageColors';
 import ArtworkPlate from './ArtworkPlate';
 import DreamSignature, { type DreamSignatureValue } from './DreamSignature';

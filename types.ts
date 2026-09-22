@@ -124,7 +124,7 @@ export interface Track {
   openingLine?: string;      // first line, used as the index entry (falls back to poem[0].lines[0])
   audioUrl: string;          // https://audio.adrianrasmussen.com/<file>
   poem: Stanza[];            // the poem as structured stanzas
-  coverImage?: string;       // Cloudinary public_id or full URL — rendered as a small seal, not a hero
+  coverImage?: string;       // Media object ID or full URL — rendered as a small seal, not a hero
   duration?: string;         // '3:42'
   durationSeconds?: number;
   releaseDate: string;       // ISO
@@ -566,7 +566,7 @@ export interface CatalogEntry {
   year?: string;
   dimensions?: string;
   material?: string;
-  /** Cloudinary public_id (or full URL) for the cover; the merge feeds it to
+  /** Media object ID (or full URL) for the cover; the merge feeds it to
    *  the certificate plate and the share card. */
   coverImage?: string;
   images?: string[];

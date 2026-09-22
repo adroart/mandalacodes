@@ -108,7 +108,7 @@ const PaperFilters: React.FC<AtlasFiltersProps> = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         {/* Series filter — native select keeps it light and accessible. */}
         <div className="flex items-center gap-3">
           <label
@@ -140,9 +140,12 @@ const PaperFilters: React.FC<AtlasFiltersProps> = ({
           </div>
         </div>
 
-        {/* Status filter — segmented buttons matching site convention. */}
-        <div className="flex flex-col gap-2 sm:items-end">
-          <div role="group" aria-label="Status filter" className="flex items-center">
+        {/* Status filter — segmented buttons matching site convention. Wraps
+            rather than overflowing the right edge when the sidebar column
+            (as narrow as 360px in the no-3D layout) is too tight for all
+            three segments on one line. */}
+        <div className="flex flex-col gap-2 sm:items-end max-w-full">
+          <div role="group" aria-label="Status filter" className="flex flex-wrap items-center max-w-full">
             {STATUS_OPTIONS.map((opt, i) => {
               const isActive = status === opt.value;
               return (

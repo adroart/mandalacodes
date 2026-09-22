@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ulCardPublicId } from '../../utils/universalLanguage';
 import { themeCanvasFont } from '../../shared/themeFonts';
 import { useDarkMode } from '../../DarkModeContext';
+import { img } from '../../utils/media';
 
 /* The Share panel as it was on the version live before the Earth's Breath
    rebuild — the richer sheet with brand icons (Copy link / WhatsApp / Telegram /
    X / Email / Instagram Story), the Instagram-story image export included.
    Restored per request; opens as a centered card over a scrim. */
 
-const CLOUDINARY_BASE = 'https://res.cloudinary.com/dobbosnda/image/upload';
 const LABEL = 'font-label text-[14px] uppercase tracking-[0.2em] font-bold';
 
 function fitText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxSize: number, minSize: number, makeFont: (s: number) => string) {
@@ -24,7 +24,7 @@ async function generateStoryBlob(number: number, cardName: string, keywords: str
     document.fonts.load(themeCanvasFont('400', 32, 'ui')),
     document.fonts.load(themeCanvasFont('400', 32, 'reading')),
   ]).catch(() => {});
-  const imgUrl = `${CLOUDINARY_BASE}/f_jpg,q_auto,w_1080,h_1080,c_fill,g_center/${publicId}`;
+  const imgUrl = img(publicId, { w: 1100, h: 1100, crop: 'fill', gravity: 'center', format: 'jpg' });
   const cardImg = await new Promise<HTMLImageElement>((resolve, reject) => {
     const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = () => resolve(i); i.onerror = reject; i.src = imgUrl;
   });

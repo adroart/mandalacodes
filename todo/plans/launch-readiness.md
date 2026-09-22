@@ -2,6 +2,17 @@
 
 Written 2026-09-01 from nine measured audit reports (site, API, UI, collector journey, writing pipeline, writing quality, reader experience, engineering health, cross-repo). Every claim below traces to a measurement, not a doc. Where two reports disagreed, the disagreement is resolved here in one line, not listed twice.
 
+> **Re-measured 2026-09-22.** Three "Do first" site items below are now verified shipped, marked
+> inline rather than removed so the plan still reads as a record: #1 (invented pieces off the public
+> record — now guarded by its own regression test, `tests/unit/atlasStateTruth.test.ts`), #2 (the
+> broken-ceremony boundary — `tests/atlas-ceremony-boundary.spec.ts` passes end to end for
+> `/atlas/claim`, `/atlas/edit`, `/atlas/homecoming`, `/atlas/registry`), and #4 (save-to-collection,
+> same item as `todo/DEVELOPMENT-STATUS.md` section 1's #1). Item #3 (offline QR blanking) and item #5
+> (italics/em-dash sweep) were not re-verified this pass and should be treated as of their original
+> 2026-09-01 status until someone measures them directly. Nothing in "Half two: the writing" or "The
+> decisions only you can make" was re-checked; those depend on Adrian's own reading and calls, not on
+> code state.
+
 ## The verdict
 
 The oracle itself is launchable now. Arrive, browse, open any of 64 cards, read six complete lenses, cast the coins, compute a birth chart, share with a real preview image: all of it works, asks for nothing first, and the build, tests, and content pipeline behind it are clean.
@@ -13,9 +24,9 @@ The path: one short pass makes the site honest, one template pass fixes the writ
 ## What is already good. Do not spend a day here.
 
 - The build compiles clean, typecheck passes, all 696 unit tests pass. The one "failure" was a sandbox artifact.
-- Nothing is blocked on secrets or provisioning. Every production secret is set. The ops-gate section of the status doc is stale and points at the wrong cause.
+- Nothing is blocked on secrets or provisioning. Every production secret is set. The ops-gate section of the status doc pointed at the wrong cause; rewritten 2026-09-22 to name the actual gate (the `livingLegacy` flag on the other repo).
   Detail: todo/DEVELOPMENT-STATUS.md section 0; report 04 measured the secret names live.
-- Five of the six "quick wins" the status doc lists as broken already shipped: energy panels, kinship count, gateway birth-chart link, founding-light explainer, trigram comment.
+- All six of the "quick wins" the status doc lists as broken have already shipped (re-verified 2026-09-22, one more than this report's original count): the save-to-collection button, energy panels, kinship count, gateway birth-chart link, founding-light explainer, and the trigram comment.
 - All 64 cards carry complete prose in all six lenses, enforced by a fail-closed build validator. The generated card data is byte-identical to a fresh rebuild.
 - Auth is sound everywhere: no missing admin or steward gate was found in 87 API files. Sign-in works live.
 - The card share preview is real edge-rendered art. The QR path to a piece page is intact end to end. The birth-chart math verified against a real fixture, 11 of 11 positions.
@@ -29,14 +40,14 @@ Owner: agents, on your veto. Clock: days, not weeks.
 
 ## Do first
 
-### 1. Take the five invented pieces off the public record
+### 1. Take the five invented pieces off the public record — **SHIPPED, verified 2026-09-22**
 Agent. Two hours.
-Detail: lib/atlas/state.ts swaps in data/atlasPlaceholder.ts when the feed is empty; the file's own header names the removal steps.
+Detail: `lib/atlas/state.ts` no longer references `atlasPlaceholder` or `data/atlasPlaceholder.ts` at all; the loader fetches `/api/atlas` and rejects on failure, with no fabricated-data fallback. `tests/unit/atlasStateTruth.test.ts` asserts the source contains neither `buildPlaceholderAtlasState` nor `atlasPlaceholder`, and that no branch reacts to a zero-length `pieces` array — so this cannot silently regress. The dev-only `?emptysky` preview resolves an honest empty record, never an invented one.
 The record is the product's whole premise, and today it is five fabricated placements and a dream signed "a sample steward." When done, the globe stands empty and honest. Your own words: the globe is piece zero; light means a life is attached. An empty globe keeps that promise. Five invented lights break it.
 
-### 2. Close the broken ceremony on every collector screen
+### 2. Close the broken ceremony on every collector screen — **SHIPPED, verified 2026-09-22**
 Agent. One to two days.
-Detail: about twenty screens still call the endpoints retired 2026-08-09 and render raw strings like "atlas_moved"; the 410 response already carries the canonical destination, and the UI throws it away. Worst cases: the claim page's infinite retry loop, and claim and edit bouncing a signed-in collector between two error screens forever.
+Detail: about twenty screens still call the endpoints retired 2026-08-09 and render raw strings like "atlas_moved"; the 410 response already carries the canonical destination, and the UI throws it away. Worst cases: the claim page's infinite retry loop, and claim and edit bouncing a signed-in collector between two error screens forever. `tests/atlas-ceremony-boundary.spec.ts` now drives `/atlas/claim`, `/atlas/edit`, `/atlas/homecoming`, and `/atlas/registry` against a mocked 410 and passes on every project, asserting each shows the honest boundary sentence and the destination link rather than a raw code or a retry loop.
 When done, a collector or visitor who reaches any retired surface sees one calm sentence saying the record now lives on the artist's site, with a working door there. No error codes, no loops, no dead buttons. This is the honest boundary until the other repo's switch flips; it is not a rebuild, and no retired endpoint gets revived here.
 
 ### 3. Stop the reading from silently blanking for QR arrivals offline
@@ -44,9 +55,9 @@ Agent. Half a day.
 Detail: the offline warm-up runs only on the deck index, never on the card page, which is the QR arrival surface; a failed prose fetch is swallowed and the reading renders permanently empty with no message. The honest on-brand message already exists in the chunk error boundary; extend it to this path and warm from the card page too.
 When done, someone who scans a plaque with a weak connection sees either the full reading or one clear sentence, never a stripped page that looks broken.
 
-### 4. Let a visitor actually save a card to a collection
+### 4. Let a visitor actually save a card to a collection — **SHIPPED, verified 2026-09-22**
 Agent. Two hours.
-Detail: the save button exists, the wiring plan exists at todo/plans/repair/phase-1-wiring-queue.md, and nothing renders it; Collections is currently a dead end a visitor can create but never fill.
+Detail: `SaveToCollectionButton` is rendered directly in `UniversalLanguageCard.tsx`'s chart row, and `CollectionsManager.tsx` joins saved cards to live atlas placement (see `todo/DEVELOPMENT-STATUS.md` section 1, items #1 and #7 for the same finding from that document's own pass).
 When done, the account area's one interactive feature works instead of quietly humiliating anyone who tries it.
 
 ### 5. Sweep the italics and em-dashes out of visitor-facing and admin text

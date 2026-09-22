@@ -385,7 +385,7 @@ class Component extends DCLogic {
         const im = new Image();
         im.crossOrigin = 'anonymous';
         im.onload = () => res(im); im.onerror = rej;
-        im.src = 'https://res.cloudinary.com/dobbosnda/image/upload/f_jpg,q_auto,w_1080,h_1080,c_fill,g_center/1_o8tafh';
+        im.src = '/media/image/1_o8tafh?w=1100&h=1100&gravity=center&format=jpg';
       });
       const W = 1080, H = 1920;
       const c = document.createElement('canvas'); c.width = W; c.height = H;
