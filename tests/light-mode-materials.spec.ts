@@ -100,7 +100,7 @@ test('light mode reaches every remaining paper route family', async ({ page }) =
   await expect(page.locator('html')).toHaveCSS('background-color', 'rgb(243, 239, 231)');
 });
 
-test('the Oracle reading frame follows Daybook while the artwork mat stays dark', async ({ page }, testInfo) => {
+test('the Oracle reading frame follows Daybook while the artwork mat stays dark', async ({ page }) => {
   await setTheme(page, false);
   await page.goto(`${BASE}/universal-language/14`);
 
@@ -113,7 +113,7 @@ test('the Oracle reading frame follows Daybook while the artwork mat stays dark'
   await expect(frame.locator('.card-reading__designed-header h1')).toHaveCSS('color', 'rgb(39, 34, 25)');
   await expect(artworkMat).toHaveCSS(
     'background-color',
-    testInfo.project.name === 'Mobile Chrome' ? 'rgb(20, 16, 11)' : 'rgb(16, 13, 9)',
+    await frame.evaluate(element => element.classList.contains('card-reading--mobile')) ? 'rgb(20, 16, 11)' : 'rgb(16, 13, 9)',
   );
 });
 

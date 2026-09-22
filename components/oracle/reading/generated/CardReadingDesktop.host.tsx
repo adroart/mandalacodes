@@ -210,6 +210,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
     const setActive = (idx: number) => {
       navs.forEach((n: any, i: number) => {
         n.style.color = i === idx ? '#c6a667' : '#80735f';
+        n.setAttribute('aria-current', i === idx ? 'true' : 'false');
         n.style.transition = 'color .3s ease, transform .35s cubic-bezier(.4,0,.2,1)';
         n.style.transformOrigin = 'center';
         n.style.display = 'inline-block';

@@ -18,6 +18,10 @@ test('uses the Teajia reading type roles and measure', async ({ page }) => {
   await openReading(page);
   const reading = page.locator('[data-reading-prose] p').first();
   await expect(reading).toBeVisible();
+  await expect(reading).toHaveCSS('text-align', 'justify');
+  await expect(reading).toHaveCSS('text-align-last', 'start');
+  await reading.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `test-results/justified-reading-${test.info().project.name}.png` });
   const styles = await reading.evaluate((element) => {
     const computed = getComputedStyle(element);
     return { family: computed.fontFamily, size: parseFloat(computed.fontSize), lineHeight: parseFloat(computed.lineHeight), width: element.getBoundingClientRect().width };
@@ -65,9 +69,9 @@ test('renders the six systems as one continuous vertical reading', async ({ page
 for (const palette of [
   {
     mode: 'light',
-    reader: 'rgb(221, 211, 189)',
+    reader: 'rgb(238, 235, 229)',
     main: 'rgb(243, 239, 231)',
-    recess: 'rgb(230, 221, 201)',
+    recess: 'rgb(239, 235, 228)',
     shell: 'rgb(243, 239, 231)',
     rail: 'rgb(234, 228, 215)',
     title: 'rgb(39, 34, 25)',

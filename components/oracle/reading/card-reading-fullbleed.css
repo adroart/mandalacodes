@@ -701,3 +701,58 @@ html.dark .card-reading {
 .card-reading--mobile > section > div > div:last-child {
   display: none !important;
 }
+
+/* Daybook shell: imported panels use Nightfall literals. Keep artwork mats
+   dark, while matching functional surfaces and text to the parchment reader. */
+html:not(.dark) .card-reading {
+  --l-2:#5f5647;
+  --l-3:#655b4b;
+  --accent:#72541f;
+  --accent-d:#72541f;
+}
+html:not(.dark) .card-reading--desktop aside > div:has(> [data-jump="iching"]),
+html:not(.dark) .card-reading--desktop aside a[class^="dcw-cardreadingdesktop-h"] {
+  background:var(--l-bg) !important;
+  border-color:var(--l-rule) !important;
+}
+html:not(.dark) .card-reading--desktop aside > div:has(> [data-jump="iching"]) > div > span:first-child,
+html:not(.dark) .card-reading--desktop aside a[class^="dcw-cardreadingdesktop-h"] > span:first-child {
+  color:var(--l-1) !important;
+}
+html:not(.dark) .card-reading--desktop aside > div:has(> [data-jump="iching"]) > div > span:nth-child(2),
+html:not(.dark) .card-reading--desktop aside [data-jump="iching"] > span:last-child {
+  color:var(--accent) !important;
+}
+html:not(.dark) .card-reading--desktop aside [data-jump="iching"] span[style*="background"] {
+  background:var(--accent) !important;
+}
+html:not(.dark) .card-reading--desktop aside a[class^="dcw-cardreadingdesktop-h"]:hover {
+  background:var(--l-soft) !important;
+  border-color:var(--accent) !important;
+}
+html:not(.dark) .card-reading--desktop > section > div > header nav > span {
+  background:var(--l-rule) !important;
+}
+html:not(.dark) .card-reading--desktop > section > div > header nav a > span {
+  background:var(--accent) !important;
+}
+html:not(.dark) .card-reading--desktop > section > div > footer > a {
+  color:var(--accent) !important;
+  border-color:var(--l-rule) !important;
+}
+html:not(.dark) .card-reading--desktop > section > div > footer > a > span > span:first-child {
+  color:var(--l-1) !important;
+}
+html:not(.dark) .card-reading--desktop > section > div > footer > a > span > span:last-child {
+  color:var(--l-2) !important;
+}
+html:not(.dark) .card-reading--desktop > section > div > footer svg {
+  stroke:currentColor;
+}
+html:not(.dark) .card-reading [data-nav][aria-current="true"] {
+  color:var(--accent) !important;
+}
+html:not(.dark) .card-reading :is(a,button):focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+}
