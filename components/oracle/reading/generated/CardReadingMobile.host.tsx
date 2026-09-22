@@ -213,6 +213,27 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       if (idx !== lastActive) { lastActive = idx; setActive(idx); }
     };
 
+    // Keep an explicit tab choice anchored while its manuscript/font layout
+    // arrives. A wheel, touch, scrollbar or scroll key returns control to the reader.
+    let selectedSection: string | null = null;
+    const selectedTop = () => {
+      const target = selectedSection ? secFor(selectedSection) : null;
+      if (!target) return scroll.scrollTop;
+      const jumpH = jb ? jb.getBoundingClientRect().height : 0;
+      const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - jumpH - 8;
+      return Math.max(0, Math.min(top, scroll.scrollHeight - scroll.clientHeight));
+    };
+    const releaseSelection = () => {
+      selectedSection = null;
+      if (this._anim) { clearInterval(this._anim); this._anim = null; }
+    };
+    const onScrollKey = (event: KeyboardEvent) => {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) releaseSelection();
+    };
+    scroll.addEventListener('wheel', releaseSelection, { passive: true });
+    scroll.addEventListener('pointerdown', releaseSelection, { passive: true });
+    reader.addEventListener('keydown', onScrollKey);
+
     let scrollFrame: number | null = null;
     const onScroll = () => {
       if (scrollFrame !== null) return;
@@ -223,6 +244,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
     };
     const relayout = () => {
       layout();
+      if (selectedSection && !this._anim) scroll.scrollTop = selectedTop();
       onScroll();
     };
 
@@ -244,16 +266,16 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       });
     }
 
-    const smoothTo = (to: number) => {
+    const smoothTo = (section: string) => {
+      selectedSection = section;
       const start = scroll.scrollTop;
-      const dist = to - start;
       const dur = 500;
       const t0 = Date.now();
       const ease = (p: number) => 1 - Math.pow(1 - p, 3);
       if (this._anim) clearInterval(this._anim);
       this._anim = setInterval(() => {
         const p = Math.min(1, (Date.now() - t0) / dur);
-        scroll.scrollTop = start + dist * ease(p);
+        scroll.scrollTop = start + (selectedTop() - start) * ease(p);
         onScroll();
         if (p >= 1) { clearInterval(this._anim as any); this._anim = null; }
       }, 16);
@@ -261,16 +283,16 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
     const onReaderClick = (e: any) => {
       const btn = e.target.closest && e.target.closest('[data-nav]');
       if (!btn || !reader.contains(btn)) return;
-      const target = secFor(btn.getAttribute('data-nav'));
-      if (!target) return;
-      const jumpH = jb ? jb.getBoundingClientRect().height : 0;
-      const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - jumpH - 8;
-      const max = scroll.scrollHeight - scroll.clientHeight;
-      smoothTo(Math.max(0, Math.min(top, max)));
+      const section = btn.getAttribute('data-nav');
+      if (!section || !secFor(section)) return;
+      smoothTo(section);
     };
     reader.addEventListener('click', onReaderClick);
     this._readerCleanup.push(() => {
       scroll.removeEventListener('scroll', onScroll);
+      scroll.removeEventListener('wheel', releaseSelection);
+      scroll.removeEventListener('pointerdown', releaseSelection);
+      reader.removeEventListener('keydown', onScrollKey);
       reader.removeEventListener('click', onReaderClick);
       if (scrollFrame !== null) cancelAnimationFrame(scrollFrame);
       settleTimers.forEach((timer) => clearTimeout(timer));

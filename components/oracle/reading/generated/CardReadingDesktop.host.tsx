@@ -104,6 +104,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
   _wired: WeakSet<Element> = new WeakSet();
   _timer: ReturnType<typeof setTimeout> | null = null;
   _anim: ReturnType<typeof setInterval> | null = null;
+  _readerCleanup: Array<() => void> = [];
 
   renderVals() {
     const data = this.props.data ?? {};
@@ -173,7 +174,12 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
     tick();
   }
 
-  componentWillUnmount() { if (this._timer) clearTimeout(this._timer); if (this._anim) clearInterval(this._anim); }
+  componentWillUnmount() {
+    if (this._timer) clearTimeout(this._timer);
+    if (this._anim) clearInterval(this._anim);
+    this._readerCleanup.forEach((cleanup) => cleanup());
+    this._readerCleanup = [];
+  }
 
   /* Section lookup: the live reading marks its six chapters with data-chapter,
      the imported design used data-sec. The engine accepts either so the shell
@@ -207,6 +213,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
     const artPar = reader.querySelector('[data-artparallax]');
     const comet = reader.querySelector('[data-comet]');
     const grain = reader.querySelector('[data-grain]');
+    const landingInset = 12;
     const setActive = (idx: number) => {
       navs.forEach((n: any, i: number) => {
         n.style.color = i === idx ? '#c6a667' : '#80735f';
@@ -217,9 +224,10 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
         n.style.transform = i === idx ? 'scale(1.06)' : 'scale(1)';
       });
     };
-    if (aside && artPar) aside.addEventListener('scroll', () => {
+    const onAsideScroll = () => {
       artPar.style.transform = 'scale(1.14) translateY(' + (aside.scrollTop * 0.06) + 'px)';
-    }, { passive: true });
+    };
+    if (aside && artPar) aside.addEventListener('scroll', onAsideScroll, { passive: true });
 
     // Map each label to its section's real position in the reading, so the rail
     // is a proportional map (Gene Keys occupies more of it because it's longer).
@@ -262,7 +270,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       if (hfill) hfill.style.top = '0px';
       if (comet) comet.style.top = '1px';
       let ak = 0;
-      for (let i = 0; i < n; i++) { if (pos >= breaks[i]) ak = i; }
+      for (let i = 0; i < n; i++) { if (pos + landingInset + 1 >= breaks[i]) ak = i; }
 
     /* Progress marker: the bar and its diamond track scroll across the full
        width of the reader, empty at the top and complete at the bottom, rather
@@ -274,20 +282,56 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       setActive(navs.indexOf(secList[ak].btn));
     };
 
+    // Keep the most recently chosen rail/jump destination anchored while
+    // delayed manuscript prose and fonts change section geometry. Direct
+    // reader input gives free scrolling back immediately.
+    let selectedSection: string | null = null;
+    const selectedTop = () => {
+      const target = selectedSection ? secFor(selectedSection) : null;
+      if (!target) return scroll.scrollTop;
+      const top = target.getBoundingClientRect().top
+        - scroll.getBoundingClientRect().top + scroll.scrollTop - landingInset;
+      return Math.max(0, Math.min(top, scroll.scrollHeight - scroll.clientHeight));
+    };
+    const releaseSelection = () => {
+      selectedSection = null;
+      if (this._anim) { clearInterval(this._anim); this._anim = null; }
+    };
+    const onScrollKey = (event: KeyboardEvent) => {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) releaseSelection();
+    };
+    scroll.addEventListener('wheel', releaseSelection, { passive: true });
+    scroll.addEventListener('pointerdown', releaseSelection, { passive: true });
+    reader.addEventListener('keydown', onScrollKey);
+
+    const relayout = () => {
+      layout();
+      if (selectedSection && !this._anim) scroll.scrollTop = selectedTop();
+      onScroll();
+    };
+
     layout();
     onScroll();
     scroll.addEventListener('scroll', onScroll, { passive: true });
     // Re-measure once fonts/images settle (they change section heights).
-    setTimeout(() => { layout(); onScroll(); }, 500);
-    setTimeout(() => { layout(); onScroll(); }, 1400);
+    const settleTimers = [
+      setTimeout(relayout, 500),
+      setTimeout(relayout, 1400),
+    ];
+    let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
-      const ro = new ResizeObserver(() => { layout(); onScroll(); });
+      ro = new ResizeObserver(relayout);
       ro.observe(scroll);
       ro.observe(reader);
+      secList.forEach((section) => {
+        const element = secFor(section.id);
+        if (element) ro?.observe(element);
+      });
     }
     // gentle section reveal as each enters view
+    let io2: IntersectionObserver | null = null;
     if (typeof IntersectionObserver !== 'undefined') {
-      const io2 = new IntersectionObserver((es) => {
+      io2 = new IntersectionObserver((es) => {
         es.forEach((e: any) => {
           if (!e.isIntersecting) return;
           e.target.style.opacity = '1';
@@ -298,7 +342,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
             k.style.opacity = '0'; k.style.transform = 'translateY(10px)';
             requestAnimationFrame(() => requestAnimationFrame(() => { k.style.opacity = '1'; k.style.transform = 'none'; }));
           });
-          io2.unobserve(e.target);
+          io2?.unobserve(e.target);
         });
       }, { root: scroll, threshold: 0.08 });
       secs.forEach((s: any) => {
@@ -309,32 +353,43 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       });
     }
 
-    const smoothTo = (to: number) => {
+    const smoothTo = (section: string) => {
+      selectedSection = section;
       const start = scroll.scrollTop;
-      const dist = to - start;
       const dur = 500;
       const t0 = Date.now();
       const ease = (p: number) => 1 - Math.pow(1 - p, 3);
       if (this._anim) clearInterval(this._anim);
       this._anim = setInterval(() => {
         const p = Math.min(1, (Date.now() - t0) / dur);
-        scroll.scrollTop = start + dist * ease(p);
+        scroll.scrollTop = start + (selectedTop() - start) * ease(p);
         onScroll();
         if (p >= 1) { clearInterval(this._anim as any); this._anim = null; }
       }, 16);
     };
     // Delegate on the stable reader element so clicks survive template re-renders.
-    reader.addEventListener('click', (e: any) => {
+    const onReaderClick = (e: any) => {
       // [data-nav] is a rail label; [data-jump] is any other element (the side
       // column's hexagram) that scrolls to a section without joining the rail.
       const btn = e.target.closest && e.target.closest('[data-nav], [data-jump]');
       if (!btn || !reader.contains(btn)) return;
-      const target = secFor(btn.getAttribute('data-nav') || btn.getAttribute('data-jump'));
-      if (!target) return;
+      const section = btn.getAttribute('data-nav') || btn.getAttribute('data-jump');
+      if (!section || !secFor(section)) return;
       if (btn.tagName === 'A') e.preventDefault();
-      const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - 12;
-      const max = scroll.scrollHeight - scroll.clientHeight;
-      smoothTo(Math.max(0, Math.min(top, max)));
+      smoothTo(section);
+    };
+    reader.addEventListener('click', onReaderClick);
+    this._readerCleanup.push(() => {
+      scroll.removeEventListener('scroll', onScroll);
+      scroll.removeEventListener('wheel', releaseSelection);
+      scroll.removeEventListener('pointerdown', releaseSelection);
+      reader.removeEventListener('keydown', onScrollKey);
+      reader.removeEventListener('click', onReaderClick);
+      if (aside && artPar) aside.removeEventListener('scroll', onAsideScroll);
+      settleTimers.forEach((timer) => clearTimeout(timer));
+      ro?.disconnect();
+      io2?.disconnect();
+      releaseSelection();
     });
   }
 
