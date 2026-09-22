@@ -14,6 +14,12 @@ That retires the separate entrance pass. The entrance is the last thing the card
 writer does, after the sections, because it is a summary of the totality and
 cannot be written before the totality exists.
 
+## Which card to take
+
+Open [`CARD-PROGRESS.md`](CARD-PROGRESS.md) and take the first unticked card in
+"not started". One session works down from 64, the other up from 1, so the two
+never open the same file. Nothing outside your own card is yours to edit.
+
 ## What one writer reads, once
 
 `oracle/WRITERS-BRIEF.md` (the shape of every section and of the entrance),
