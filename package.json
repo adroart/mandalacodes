@@ -17,7 +17,7 @@
     "build": "vite build && tsx scripts/prerender-cards.ts",
     "build:designer": "cd ../led/lightweaver && npx vite build --base=/design/ && rm -rf ../../mandalacodes/public/design && mkdir -p ../../mandalacodes/public/design && cp -R dist/. ../../mandalacodes/public/design/ && rm -f ../../mandalacodes/public/design/_headers ../../mandalacodes/public/design/_redirects",
     "build:all": "npm run build:designer && npm run build",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p workers/tsconfig.json",
     "preview": "vite preview",
     "generate:qr": "tsx scripts/generate-ul-qr.ts",
     "verify:profile": "tsx scripts/verify-profile-math.ts",
