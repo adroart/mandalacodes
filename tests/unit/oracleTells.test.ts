@@ -54,8 +54,8 @@ describe('oracle-tells subsection openers', () => {
     const openers = countSubsectionOpeners();
     expect(openers.cards).toBe(64);
     expect(openers.keysInwardFace).toBe(0);
-    expect(openers.repressiveThisPerson).toBe(41);
-    expect(openers.reactiveHere).toBe(26);
+    expect(openers.repressiveThisPerson).toBe(40);
+    expect(openers.reactiveHere).toBe(25);
     expect(openers.immortalsStandsAbove).toBe(49);
   });
 
