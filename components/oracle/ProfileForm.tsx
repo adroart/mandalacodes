@@ -36,6 +36,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchRetry, setSearchRetry] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const listRef = useRef<HTMLUListElement | null>(null);
@@ -68,22 +71,32 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
     }
   };
 
-  // Debounced place lookup as the user types.
+  // A failed download is distinct from a successful search with no matches.
   useEffect(() => {
+    let active = true;
+    setSearchError(null);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (!placeQuery || placeQuery === place?.label) {
       setSuggestions([]);
+      setSearching(false);
       return;
     }
+    setSearching(true);
     debounceRef.current = setTimeout(async () => {
-      const results = await searchPlaces(placeQuery, 24);
-      setSuggestions(results);
-      setActiveIndex(-1);
+      try {
+        const results = await searchPlaces(placeQuery, 24);
+        if (active) { setSuggestions(results); setActiveIndex(-1); }
+      } catch (err) {
+        if (active) { setSuggestions([]); setSearchError(err instanceof Error ? err.message : 'City search is unavailable. Try again.'); }
+      } finally {
+        if (active) setSearching(false);
+      }
     }, 180);
     return () => {
+      active = false;
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [placeQuery, place]);
+  }, [placeQuery, place, searchRetry]);
 
   const canSubmit = !!date && isValidTime(time) && !!place && !submitting;
 
@@ -221,7 +234,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
             </ul>
           ) : (
             <p className="profile-form__suggestions-empty">
-              No match yet. Try the nearest larger city or town.
+              {searchError ?? (searching ? 'Searching cities…' : 'No match yet. Try the nearest larger city or town.')}
+              {searchError && <button type="button" className="underline ml-2" onMouseDown={event => event.preventDefault()} onClick={() => setSearchRetry(value => value + 1)}>Retry city search</button>}
             </p>
           )
         )}

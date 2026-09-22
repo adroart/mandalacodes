@@ -42,10 +42,10 @@ function artworkFor(pieceId) {
 export async function onRequestGet(context) {
   const { request, env } = context;
 
+  if (!env.DB) return json({ ok: false, error: 'pieces_unavailable' }, 503);
+
   const auth = await requireUser(request, env);
   if (auth instanceof Response) return auth;
-
-  if (!env.DB) return json({ ok: true, pieces: [] });
 
   let pieceRows;
   try {
@@ -60,10 +60,16 @@ export async function onRequestGet(context) {
       .all();
     pieceRows = result.results ?? [];
   } catch (err) {
-    // Migration not yet applied on this environment (local dev, a preview
-    // branch): the honest answer is "nothing to show", not a 500.
-    if (isMissingTableError(err)) return json({ ok: true, pieces: [] });
-    throw err;
+    if (isMissingTableError(err)) return json({ ok: false, error: 'pieces_unavailable' }, 503);
+    return json({ ok: false, error: 'pieces_unavailable' }, 500);
+  }
+
+  // Check the companion schema even for a steward with no pieces. A missing
+  // table means the shared binding is unavailable, not an empty collection.
+  try {
+    await env.DB.prepare('SELECT 1 FROM keeper_intentions LIMIT 1').all();
+  } catch (err) {
+    return json({ ok: false, error: 'pieces_unavailable' }, isMissingTableError(err) ? 503 : 500);
   }
 
   if (pieceRows.length === 0) return json({ ok: true, pieces: [] });
@@ -92,9 +98,7 @@ export async function onRequestGet(context) {
       if (!intentionByPiece.has(key)) intentionByPiece.set(key, row);
     }
   } catch (err) {
-    if (!isMissingTableError(err)) throw err;
-    // No keeper_intentions table yet: pieces still render, just with no
-    // intention text.
+    return json({ ok: false, error: 'pieces_unavailable' }, isMissingTableError(err) ? 503 : 500);
   }
 
   const pieces = pieceRows.map((row) => {

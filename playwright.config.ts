@@ -16,6 +16,7 @@ import { defineConfig, devices } from '@playwright/test';
 // need this server.
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:2222';
 const PORT = new URL(BASE_URL).port || '80';
+const HOST = new URL(BASE_URL).hostname;
 
 export default defineConfig({
   testDir: './tests',
@@ -37,7 +38,7 @@ export default defineConfig({
     // one-time, ~15s cost (content-site's own install + astro build), skipped
     // once public/learn exists, so this only pays the price on a fresh
     // checkout or CI runner rather than on every run.
-    command: `sh -c 'test -d public/learn || npm run build:content; npx vite --port ${PORT} --strictPort'`,
+    command: `sh -c 'test -d public/learn || npm run build:content; npx vite --host ${HOST} --port ${PORT} --strictPort'`,
     url: BASE_URL,
     // Locally, reuse a server a developer already has running on this port.
     // In CI there is never a pre-existing server, and reusing one would mask

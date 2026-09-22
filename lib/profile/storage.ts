@@ -19,43 +19,50 @@ export interface StoredProfile {
   updatedAt: string; // ISO 8601
 }
 
-const KEY = 'ul.profile.v1';
+const GUEST_KEY = 'ul.profile.v1';
+const USER_KEY_PREFIX = 'ul.profile.v1.user.';
+
+function keyFor(ownerId: string | null): string {
+  return ownerId ? `${USER_KEY_PREFIX}${encodeURIComponent(ownerId)}` : GUEST_KEY;
+}
+
+function parseProfile(raw: string | null): StoredProfile | null {
+  if (!raw) return null;
+  const parsed = JSON.parse(raw) as StoredProfile;
+  // Minimal shape check so a stale schema doesn't crash the UI. We require
+  // the chart itself so an older or partial profile is discarded and rebuilt.
+  if (!parsed?.inputs?.place?.tzId || !parsed?.computed?.lifesWork) return null;
+  return parsed;
+}
 
 /**
  * Read the saved profile from localStorage. Returns null if no profile is
  * saved or the stored shape can't be parsed.
  */
-export function loadProfile(): StoredProfile | null {
+export function loadProfile(ownerId: string | null = null): StoredProfile | null {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as StoredProfile;
-    // Minimal shape check so a stale schema doesn't crash the UI. We require
-    // the newest keys (venusCore, brand) too, so a profile saved before the
-    // 13-sphere chart is discarded and recomputed rather than rendered with
-    // missing positions.
-    if (!parsed?.inputs?.place?.tzId || !parsed?.computed?.lifesWork) return null;
-    return parsed;
+    return parseProfile(window.localStorage.getItem(keyFor(ownerId)));
   } catch {
     return null;
   }
 }
 
-export function saveProfile(profile: StoredProfile): void {
+export function saveProfile(profile: StoredProfile, ownerId: string | null = null): void {
   if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify(profile));
-  } catch {
-    // Quota or privacy mode; swallow and surface via UI state.
-  }
+  window.localStorage.setItem(keyFor(ownerId), JSON.stringify(profile));
 }
 
-export function clearProfile(): void {
+export function clearProfile(ownerId: string | null = null): void {
   if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.removeItem(KEY);
-  } catch {
-    // ignore
-  }
+  window.localStorage.removeItem(keyFor(ownerId));
+}
+
+/** Move a real guest profile into an account slot when that guest signs in. */
+export function claimGuestProfile(ownerId: string): StoredProfile | null {
+  const guest = loadProfile(null);
+  if (!guest) return null;
+  saveProfile(guest, ownerId);
+  clearProfile(null);
+  return guest;
 }

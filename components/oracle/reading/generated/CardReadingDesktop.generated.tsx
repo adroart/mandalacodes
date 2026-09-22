@@ -175,7 +175,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </span>
         </span>
       </a>
-      <a href={vals.deckHref} className="dcw-cardreadingdesktop-h5" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
+      <a href={vals.deckHref} data-bar-deck="" data-current-hexagram="" className="dcw-cardreadingdesktop-h5" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
         <svg width="30" height="30" viewBox="0 0 40 40" fill="#a8874d">
           <g>
             <circle cx="10" cy="10" r="1.6">
@@ -214,7 +214,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </svg>
         <span>
           <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "15px", letterSpacing: ".08em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
-          62 · All 64
+          {vals.cardNumber} · All 64
           </span>
           <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
           Discover the codes

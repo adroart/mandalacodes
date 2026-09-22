@@ -30,7 +30,7 @@ test('the coins are the primary fast cast control', async ({ page }) => {
   await castControls.first().click();
   await expect(castControls.first()).toBeDisabled();
   await expect(castControls.last()).toBeDisabled();
-  await expect(page.getByText('Your cast', { exact: true })).toBeVisible();
+  await expect(page.getByText('Hexagram 22 · Grace', { exact: true })).toBeVisible();
   expect(Date.now() - startedAt).toBeLessThan(650);
 });
 
@@ -46,7 +46,7 @@ test('the coin control casts from the keyboard without motion', async ({ page })
   await coinControl.focus();
   await page.keyboard.press('Enter');
 
-  await expect(page.getByText('Your cast', { exact: true })).toBeVisible();
+  await expect(page.getByText('Hexagram 22 · Grace', { exact: true })).toBeVisible();
 });
 
 test('the resulting hexagram opens its reading directly', async ({ page }) => {
@@ -61,7 +61,7 @@ test('the resulting hexagram opens its reading directly', async ({ page }) => {
   if (await entrance.isVisible()) await entrance.click();
 
   await page.getByRole('button', { name: 'Cast the coins', exact: true }).first().click();
-  await page.getByRole('button', { name: /Moving toward Hexagram 47.*Read where it stands/i }).click();
+  await page.getByRole('button', { name: /Turning into Hexagram 47.*Open that card/i }).click();
 
   await expect(page).toHaveURL(/\/universal-language\/47$/);
   await expect(page.getByRole('dialog', { name: 'The 64 Codes' })).toHaveCount(0);

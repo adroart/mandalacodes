@@ -73,6 +73,7 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
       : [];
   const pieceId = (segments[0] || '').trim();
   const editionRaw = segments[1];
+  if (editionRaw !== undefined && (!/^\d+$/.test(editionRaw) || !Number.isSafeInteger(Number(editionRaw)) || Number(editionRaw) < 1)) return respond();
   const editionNumber =
     editionRaw !== undefined && /^\d+$/.test(editionRaw) ? parseInt(editionRaw, 10) : undefined;
 
@@ -88,6 +89,7 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
   let pubSeries: string | undefined;
   let pubCategory: string | undefined;
   let foundInState = false;
+  const physicalRequest = editionRaw !== undefined || new URL(request.url).searchParams.get('ref') === 'qr';
   try {
     const state = await readCanonicalAtlasState(request, env);
     if (!state) throw new Error('Canonical Atlas unavailable');
@@ -105,12 +107,12 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
     /* series line stands */
   }
 
-  if (!art && !foundInState) return respond();
+  if ((!art || physicalRequest) && !foundInState) return respond();
 
   const series = art?.series ?? pubSeries;
   const category = art?.category ?? pubCategory;
   const cardNumber =
-    art && art.series === 'Universal Language' ? ulCardNumber(art.coverImage) : null;
+    art && art.series === 'Universal Language' ? art.cardNumber ?? null : null;
   const sigil = pieceCode({
     pieceId,
     series,
@@ -126,7 +128,7 @@ export async function onRequestGet(ctx: PagesFn): Promise<Response> {
   const seriesLine =
     `${series ? `${series}` : sigil}${cardNumber != null ? ` · Code ${cardNumber}` : ''}. ` +
     `Painted and assembled by hand by Adrian Rasmussen.`;
-  const description = clip(dream ?? seriesLine);
+  const description = clip(physicalRequest ? dream ?? seriesLine : `${seriesLine} Artwork design; physical pieces have their own public code and Piece Record.`);
 
   const origin = new URL(request.url).origin;
   const cardPath = `/api/atlas/card/${encodeURIComponent(pieceId)}${

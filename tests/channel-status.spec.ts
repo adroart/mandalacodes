@@ -7,8 +7,9 @@ import { expect, test, type Page } from './fixtures';
  * intercept Better Auth's /api/auth/get-session so the app believes it is
  * signed in. The chart is injected straight into localStorage under the
  * profile store's key (lib/profile/storage.ts) via addInitScript, never
- * through the birth-data form. The remote profile fetch is answered with
- * 404 so the local chart is the one the page reads. */
+ * through the birth-data form. The remote profile fetch answers 204, the
+ * real empty-profile contract, so the guest chart is claimed into this
+ * signed-in owner's local slot. */
 
 const CARD = '/universal-language/3';
 const INTEGRATION_CARD = '/universal-language/20';
@@ -65,7 +66,7 @@ async function signIn(page: Page) {
     }),
   }));
   await page.route('**/api/auth/sync-user', (route) => route.fulfill({ status: 204 }));
-  await page.route('**/api/profile/get', (route) => route.fulfill({ status: 404 }));
+  await page.route('**/api/profile/get', (route) => route.fulfill({ status: 204 }));
   await page.route('**/api/profile/put', (route) => route.fulfill({ status: 204 }));
   await page.route('**/api/collections/**', (route) => route.fulfill({
     status: 200, contentType: 'application/json', body: '[]',

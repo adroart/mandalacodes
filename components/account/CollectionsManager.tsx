@@ -62,11 +62,12 @@ const atlasHrefFor = (placement: CardPlacement | null): string | null => {
 };
 
 const CollectionsManagerInner: React.FC = () => {
-  const { collections, isLoading, createCollection, deleteCollection, removeItem, renameCollection } =
+  const { collections, isLoading, error, reload, createCollection, deleteCollection, removeItem, renameCollection } =
     useCollections();
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState('');
+  const [mutationError, setMutationError] = useState<string | null>(null);
   /* Loaded once per mount and reused across every collection/item below:
    * 64 cards max, so a synchronous map over items is simpler than a hook
    * per item. If it fails, atlasState stays null and every join line is
@@ -107,8 +108,8 @@ const CollectionsManagerInner: React.FC = () => {
           onChange={(e) => setNewName(e.target.value)}
           onKeyDown={async (e) => {
             if (e.key === 'Enter' && newName.trim()) {
-              await createCollection(newName.trim());
-              setNewName('');
+              try { await createCollection(newName.trim()); setNewName(''); setMutationError(null); }
+              catch (err) { setMutationError(err instanceof Error ? err.message : 'Could not create that collection. Try again.'); }
             }
           }}
           placeholder="New collection name"
@@ -119,8 +120,8 @@ const CollectionsManagerInner: React.FC = () => {
           className="font-label text-[11px] uppercase tracking-[0.22em] px-4 py-2 bg-bronze-600 text-paper-50 rounded disabled:opacity-50"
           onClick={async () => {
             if (newName.trim()) {
-              await createCollection(newName.trim());
-              setNewName('');
+              try { await createCollection(newName.trim()); setNewName(''); setMutationError(null); }
+              catch (err) { setMutationError(err instanceof Error ? err.message : 'Could not create that collection. Try again.'); }
             }
           }}
           disabled={!newName.trim()}
@@ -128,6 +129,7 @@ const CollectionsManagerInner: React.FC = () => {
           Create
         </button>
       </div>
+      {(error || mutationError) && <p className="font-reading text-rose-800" role="alert">{mutationError || error} <button type="button" className="underline" onClick={() => void reload()}>Retry</button></p>}
 
       {collections.length === 0 ? (
         <p className="font-reading text-wood-700">
@@ -145,14 +147,15 @@ const CollectionsManagerInner: React.FC = () => {
                     onChange={(e) => setEditingName(e.target.value)}
                     onKeyDown={async (e) => {
                       if (e.key === 'Enter' && editingName.trim()) {
-                        await renameCollection(c.id, editingName.trim());
-                        setEditingId(null);
+                        try { await renameCollection(c.id, editingName.trim()); setMutationError(null); setEditingId(null); }
+                        catch (err) { setMutationError(err instanceof Error ? err.message : 'Could not rename that collection. Try again.'); }
                       }
                       if (e.key === 'Escape') setEditingId(null);
                     }}
                     onBlur={async () => {
                       if (editingName.trim() && editingName !== c.name) {
-                        await renameCollection(c.id, editingName.trim());
+                        try { await renameCollection(c.id, editingName.trim()); setMutationError(null); }
+                        catch (err) { setMutationError(err instanceof Error ? err.message : 'Could not rename that collection. Try again.'); }
                       }
                       setEditingId(null);
                     }}
@@ -176,7 +179,8 @@ const CollectionsManagerInner: React.FC = () => {
                   className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 hover:text-wood-900"
                   onClick={async () => {
                     if (window.confirm(`Delete the collection "${c.name}"?`)) {
-                      await deleteCollection(c.id);
+                      try { await deleteCollection(c.id); setMutationError(null); }
+                      catch (err) { setMutationError(err instanceof Error ? err.message : 'Could not delete that collection. Try again.'); }
                     }
                   }}
                 >
@@ -233,7 +237,7 @@ const CollectionsManagerInner: React.FC = () => {
                           <button
                             type="button"
                             className="font-label text-[10px] uppercase tracking-[0.16em] text-wood-500 hover:text-wood-900 flex-shrink-0"
-                            onClick={() => removeItem(c.id, item)}
+                            onClick={async () => { try { await removeItem(c.id, item); setMutationError(null); } catch (err) { setMutationError(err instanceof Error ? err.message : 'Could not remove this item. Try again.'); } }}
                           >
                             Remove
                           </button>

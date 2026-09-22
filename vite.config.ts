@@ -56,6 +56,15 @@ const previewPrerenderedCards = (): Plugin => ({
   configurePreviewServer(server) {
     server.middlewares.use((req, res, next) => {
       const url = (req.url ?? '').split('?')[0];
+      // Preview's static server does not resolve bare directory URLs the way
+      // Pages does. Exercise the real Astro document for both /learn and slugs.
+      if (/^\/learn(?:\/[a-zA-Z0-9_-]+)*\/?$/.test(url)) {
+        const relative = `${url.replace(/\/$/, '')}/index.html`;
+        if (fs.existsSync(path.join(__dirname, 'dist', relative))) {
+          req.url = `${relative}${req.url?.slice(url.length) ?? ''}`;
+        }
+        return next();
+      }
       const match = url.match(/^\/universal-language\/(\d+)$/);
       if (!match) return next();
       const number = Number(match[1]);
@@ -92,7 +101,10 @@ const vitePWA = VitePWA({
       'data/cities-index.json',
     ],
     navigateFallback: '/index.html',
-    navigateFallbackDenylist: [/^\/api\//, /^\/qr\//],
+    // Learn and the LED designer are independently built static applications.
+    // Their document navigations must reach their own HTML, even in an
+    // already controlled Oracle tab (including bare paths and query strings).
+    navigateFallbackDenylist: [/^\/api(?:\/|$)/, /^\/qr(?:\/|$)/, /^\/learn(?:\/|$)/, /^\/design(?:\/|$)/],
     cleanupOutdatedCaches: true,
     /* Without these two the worker installs and then SITS in "waiting" until
        every tab of the site is closed, because the only skipWaiting workbox

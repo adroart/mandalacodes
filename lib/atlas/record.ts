@@ -20,7 +20,6 @@ import { pieceCode } from '../../utils/pieceCode';
 import type { PublicCatalogEntry } from '../../utils/catalog';
 import type { PublicAtlasState } from '../../types';
 import { loadAtlasState } from './state';
-import { loadPublicCatalog } from './catalog';
 import {
   atlasPieceToRow,
   cleanLedgerTitle,
@@ -288,14 +287,14 @@ export function useAtlasRecord(): AtlasRecord {
 
   useEffect(() => {
     let active = true;
-    Promise.all([loadAtlasState(), loadPublicCatalog()])
-      .then(([data, catalog]) => {
+    loadAtlasState()
+      .then((data) => {
         if (!active) return;
         const enriched = enrichPieces(data);
         setRecord({
           status: 'ready',
           codeEntries: buildCodeEntries(enriched),
-          kindSections: buildKindSections(enriched, catalog),
+          kindSections: buildKindSections(enriched, []),
           generatedAt: data.generatedAt,
         });
       })

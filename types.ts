@@ -191,6 +191,8 @@ export interface PublicAtlasState {
   schemaVersion: number;
   pieces: Array<{
     pieceId: string;
+    /** Canonical public instance code, never an ownership credential. */
+    publicCode?: string;
     editionNumber?: number;
     series?: string;
     category?: string;

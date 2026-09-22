@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { CARD_BY_NUMBER } from '../data/oracleData';
@@ -9,7 +9,6 @@ import { pieceCode } from '../utils/pieceCode';
 import { stewardOrdinalLabel } from '../utils/inscriptions';
 import { HexagramSVG } from './oracle/HexagramGlyph';
 import { ordinalLabel } from './atlas/PieceSidePanel';
-import RequestStewardship from './atlas/RequestStewardship';
 import ArtworkPlate from './atlas/ArtworkPlate';
 import DreamSignature from './atlas/DreamSignature';
 import {
@@ -17,11 +16,10 @@ import {
   findPublicPiece,
   type PublicPiece,
 } from '../lib/atlas/state';
-import { loadPublicCatalog, findCatalogEntry } from '../lib/atlas/catalog';
+import ArtworkDesignPage from './ArtworkDesignPage';
+import { artDesignHref, artInstanceHref, ART_ORIGIN } from '../lib/atlas/artSite';
 import type { PublicCatalogEntry } from '../utils/catalog';
-import { publicCatalogEntryToArtwork } from '../utils/catalog';
 import { buildKinshipIndex } from '../utils/kinship';
-import { useAccount } from '../lib/account/useAccount';
 import type { PieceContent } from '../utils/pieceContent';
 import type { Artwork, LedgerEvent, PublicAtlasState } from '../types';
 
@@ -183,83 +181,7 @@ function buildSpine(piece: PublicPiece, art: Artwork): SpineEntry[] {
   return spine;
 }
 
-/* ─── The keeper's layer ──────────────────────────────────────────────────
- * Served only to the piece's bound steward by
- * /api/atlas/steward/certificate — the price, the full private spine, the
- * door to the book. Everyone else gets exactly the public certificate above.
- * ──────────────────────────────────────────────────────────────────────── */
-
-interface KeeperCertificate {
-  acquisition: { amount: number | null; currency: string | null; saleDate: string } | null;
-  history: LedgerEvent[];
-  claimedAt?: string;
-  firstInscriptionAt?: string;
-}
-
-/** Keeper-voice labels for the fuller (private) spine. 'Created', 'Placed',
- *  and 'Came to light' already read on the public certificate; the rest are
- *  first shown here (flagged for Fable copy review). */
-const KEEPER_EVENT_LABEL: Record<LedgerEvent['type'], string> = {
-  created: 'Created',
-  placed: 'Placed',
-  moved: 'Moved',
-  withdrawn: 'Taken from the map',
-  revealed: 'Shown on the map',
-  retired: 'Retired',
-  claimed: 'Came to light',
-  inscribed: 'A dream inscribed',
-  transferred: 'Passed on',
-};
-
-/** The fuller spine, one entry per sanitized event, in the certificate's
- *  label/detail grammar. */
-function buildKeeperSpine(history: readonly LedgerEvent[]): SpineEntry[] {
-  return history.map((e) => {
-    const bits: string[] = [];
-    if (e.type === 'transferred' && e.transferKind) bits.push(e.transferKind);
-    const city = cityLabel(e.cityId);
-    if (city) bits.push(city);
-    const year = yearOf(e.date);
-    if (year) bits.push(year);
-    return {
-      label: KEEPER_EVENT_LABEL[e.type] ?? e.type,
-      detail: bits.length ? bits.join(' · ') : undefined,
-    };
-  });
-}
-
-/** Format the acquisition price for the keeper line. Returns null when the
- *  confirmed row carried no price (many will not). `amount` is minor units. */
-function formatAcquisitionAmount(
-  acq: { amount: number | null; currency: string | null },
-): string | null {
-  if (acq.amount == null) return null;
-  const major = acq.amount / 100;
-  if (acq.currency) {
-    try {
-      return new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: acq.currency,
-      }).format(major);
-    } catch {
-      /* invalid currency code — fall through to a plain number */
-    }
-  }
-  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(major);
-}
-
-/** "Came to you {date}" date — a readable full date in the paper grammar. */
-function formatSaleDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
-
-const PiecePage: React.FC = () => {
+const PhysicalPiecePage: React.FC = () => {
   const { pieceId, edition } = useParams<{ pieceId: string; edition?: string }>();
   const navigate = useNavigate();
   /* Is there somewhere inside the app to step back to? react-router stamps an
@@ -271,13 +193,9 @@ const PiecePage: React.FC = () => {
      more hooks than during the previous render". */
   const routerIdx = (window.history.state as { idx?: number } | null)?.idx;
   const cameFromApp = typeof routerIdx === 'number' ? routerIdx > 0 : window.history.length > 1;
-  const { isLoaded, isSignedIn, fetchAuthed } = useAccount();
   const [load, setLoad] = useState<LoadState>({ kind: 'loading' });
   const [content, setContent] = useState<PieceContent | null>(null);
   const [atlasState, setAtlasState] = useState<PublicAtlasState | null>(null);
-  /* The keeper's private layer — set ONLY after a positive authenticated
-     response, so a non-keeper never sees a flash of it. All failures silent. */
-  const [keeper, setKeeper] = useState<KeeperCertificate | null>(null);
 
   useEffect(() => {
     if (!pieceId) return;
@@ -292,7 +210,7 @@ const PiecePage: React.FC = () => {
 
   useEffect(() => {
     let active = true;
-    if (!pieceId) {
+    if (!pieceId || (edition !== undefined && (!/^\d+$/.test(edition) || !Number.isSafeInteger(Number(edition)) || Number(edition) < 1))) {
       setLoad({ kind: 'not-found' });
       return;
     }
@@ -300,42 +218,18 @@ const PiecePage: React.FC = () => {
     const editionNumber =
       edition !== undefined && /^\d+$/.test(edition) ? parseInt(edition, 10) : undefined;
 
-    Promise.all([loadAtlasState(), loadPublicCatalog()])
-      .then(([state, catalog]) => {
+    loadAtlasState()
+      .then((state) => {
         if (!active) return;
         setAtlasState(state);
         const piece = findPublicPiece(state, pieceId, editionNumber);
-        const catalogEntry = findCatalogEntry(catalog, pieceId);
-        // Dead-end only when the piece is in NONE of the archive, the public
-        // state, or the catalog. A shipped piece present in public state or the
-        // catalog still renders its certificate (forever contract): the catalog
-        // row supplies its real title/year/dimensions/images, and a piece in
-        // public state alone renders by sigil.
-        if (!art && !piece && !catalogEntry) {
+        // An explicit edition must resolve to an actual public identity.
+        // Catalogue presence alone never stands in for an issued object.
+        if (!piece) {
           setLoad({ kind: 'not-found' });
           return;
         }
-        const catalogArt = catalogEntry
-          ? publicCatalogEntryToArtwork(catalogEntry)
-          : null;
-        const resolved: PublicPiece =
-          piece ?? {
-            pieceId,
-            editionNumber,
-            series: art?.series ?? catalogArt?.series,
-            category: art?.category ?? catalogArt?.category,
-            cityId: null,
-            status: 'seeking',
-          };
-        // Archive wins; else the catalog row's real fields; else the sigil-only
-        // fallback for a piece present in public state but neither store.
-        const resolvedArt = art ?? catalogArt ?? fallbackArtFromPublic(resolved);
-        setLoad({
-          kind: 'ready',
-          piece: resolved,
-          art: resolvedArt,
-          catalog: catalogEntry ?? null,
-        });
+        setLoad({ kind: 'ready', piece, art: art ?? fallbackArtFromPublic(piece), catalog: null });
       })
       .catch(() => {
         if (active) setLoad({ kind: 'error' });
@@ -373,31 +267,6 @@ const PiecePage: React.FC = () => {
       });
   }, [atlasState, pieceId, edition]);
 
-  /* The keeper's layer: only when signed in, and only revealed on a positive
-     response. A non-keeper gets a 404 and nothing renders; every failure is
-     silent, so the certificate stays byte-identical to the public view. */
-  useEffect(() => {
-    setKeeper(null);
-    if (load.kind !== 'ready' || !isLoaded || !isSignedIn) return;
-    let active = true;
-    const pieceParam = `${load.piece.pieceId}${
-      typeof load.piece.editionNumber === 'number' ? `:${load.piece.editionNumber}` : ''
-    }`;
-    fetchAuthed(
-      `/api/atlas/steward/certificate?piece=${encodeURIComponent(pieceParam)}`,
-    )
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: (KeeperCertificate & { ok?: boolean }) | null) => {
-        if (active && data && data.ok) setKeeper(data);
-      })
-      .catch(() => {
-        /* quiet: the keeper section simply doesn't render */
-      });
-    return () => {
-      active = false;
-    };
-  }, [load, isLoaded, isSignedIn, fetchAuthed]);
-
   if (load.kind === 'loading') {
     return (
       <section className="min-h-screen bg-paper-100 flex items-center justify-center px-6">
@@ -434,20 +303,20 @@ const PiecePage: React.FC = () => {
           className="font-display text-3xl text-wood-900 font-medium mb-4"
           style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
         >
-          This piece isn't on the map yet
+          This physical piece could not be found
         </h1>
         <p className="font-reading text-lg text-wood-700 max-w-md leading-[1.6] mb-8">
-          The code you scanned doesn't resolve to a known piece. If you hold one
-          of Adrian's works, you can still bring it into the record.
+          This link does not resolve to a public physical record. Collector
+          registration is not open here.
         </p>
         <div className="flex flex-col items-center gap-4">
           <Link to="/atlas/claim" className={LINK}>
-            Claim a piece you hold →
+            Registration information →
           </Link>
           {/* The homecoming door — the single highest-leverage line in the
               redesign: the launch letter will send exactly these people here. */}
           <Link to="/atlas/homecoming" className={LINK}>
-            Holding a piece we do not know? Bring it home →
+            About an unlisted piece →
           </Link>
         </div>
       </section>
@@ -456,7 +325,7 @@ const PiecePage: React.FC = () => {
 
   const { piece, art, catalog } = load;
   const cardNumber =
-    art.series === 'Universal Language' ? ulCardNumber(art.coverImage) : null;
+    art.series === 'Universal Language' ? art.cardNumber ?? null : null;
   const card = cardNumber != null ? CARD_BY_NUMBER.get(cardNumber) : undefined;
   const spine = buildSpine(piece, art);
 
@@ -606,9 +475,8 @@ const PiecePage: React.FC = () => {
             {/* The stranger's first ground: one plain sentence that names the
                 maker and what this page is, before any invented word lands. */}
             <p className="font-reading text-[15px] text-wood-600 leading-[1.6] max-w-md mx-auto mt-5">
-              Made by hand by Adrian Rasmussen. This page is its certificate:
-              what it is, the dream it keeps, and the hands it has passed
-              through.
+              Made by hand by Adrian Rasmussen. This is a public summary of
+              this physical piece. Its canonical Piece Record is held on the artist site.
             </p>
           </div>
 
@@ -775,56 +643,12 @@ const PiecePage: React.FC = () => {
             )}
           </div>
 
-          {/* ── For the keeper: the private layer, beneath the seal. Renders
-              only for the signed-in bound steward, only after a positive
-              authenticated response — never a flash for anyone else. Carries
-              the acquisition line, the fuller (private) spine, and the one
-              door to the book. ── */}
-          {keeper && (
-            <div className="mt-12 sm:mt-16 pt-10 border-t border-wood-300">
-              <p className={`${LABEL} text-center mb-8`}>For the keeper</p>
-
-              {keeper.acquisition && (
-                <p className="font-reading text-lg text-wood-700 text-center mb-8">
-                  Came to you {formatSaleDate(keeper.acquisition.saleDate)}
-                  {formatAcquisitionAmount(keeper.acquisition)
-                    ? ` · ${formatAcquisitionAmount(keeper.acquisition)}`
-                    : ''}
-                </p>
-              )}
-
-              {keeper.history.length > 0 && (
-                <ol className="relative ml-[3px] border-l border-wood-300 space-y-5 pb-1 mb-8">
-                  {buildKeeperSpine(keeper.history).map((entry, i) => (
-                    <li key={i} className="relative pl-6">
-                      <span
-                        aria-hidden
-                        className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
-                        style={{ transform: 'translateX(-4px)' }}
-                      />
-                      <span className="font-reading text-lg text-wood-900 leading-snug">
-                        {entry.label}
-                        {entry.detail && (
-                          <span className="text-wood-600"> · {entry.detail}</span>
-                        )}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              )}
-
-              <div className="text-center">
-                {/* The carried-away promise lives here, with the person it is
-                    for, not on the public seal. */}
-                <p className="font-reading text-base text-wood-600 leading-[1.6] mb-4">
-                  The book is yours. You can always carry the whole record away.
-                </p>
-                <Link to="/atlas/edit" className={LINK}>
-                  open your book →
-                </Link>
-              </div>
-            </div>
-          )}
+          <div className="mt-10 text-center">
+            <p className="font-reading text-base text-wood-600">Private collector records are managed on the artist site.</p>
+            <a className={LINK} href={artInstanceHref(piece.pieceId, piece.publicCode) ?? `${ART_ORIGIN}/atlas`}>
+              {piece.publicCode ? 'View this physical Piece Record' : 'View the public artwork atlas'} →
+            </a>
+          </div>
 
           {/* ── How it is made, in the certificate's own voice: the human
               sentence that reads before the engraved particulars below it.
@@ -865,8 +689,8 @@ const PiecePage: React.FC = () => {
         <section className="mt-10 sm:mt-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8 text-center">
             {[
-              { lead: 'One dream', body: 'Written by its keeper, kept for life.' },
-              { lead: 'Never lost', body: 'Its whole story in a sealed ledger.' },
+              { lead: 'Public record', body: 'What its keeper has chosen to share.' },
+              { lead: 'Physical identity', body: 'The artist site holds the canonical Piece Record.' },
             ].map((item) => (
               <div key={item.lead} className="border-t border-wood-300 pt-4">
                 <p className="font-display text-xl text-wood-900 font-semibold leading-snug">
@@ -1084,21 +908,15 @@ const PiecePage: React.FC = () => {
             <div className="p-6 sm:p-7 border-b sm:border-b-0 sm:border-r border-wood-200">
               <p className={`${LABEL} mb-3`}>Hold this piece?</p>
               <p className="font-reading text-base text-wood-700 leading-[1.6] mb-5">
-                Claim it: place it on the map, write the dream it will keep.
+                Collector registration is not open here.
               </p>
               <Link to={claimHref} className={BUTTON}>
-                Claim your piece
+                Registration information
               </Link>
               <p className="font-reading text-sm text-wood-600 mt-3 leading-[1.6]">
-                Sign in with the email it was registered to.
+                The artist site manages physical ownership records.
               </p>
-              <div className="mt-5 pt-4 border-t border-wood-200">
-                <RequestStewardship
-                  pieceId={piece.pieceId}
-                  editionNumber={piece.editionNumber}
-                  leadIn="An auction, a gift, an inheritance?"
-                />
-              </div>
+
             </div>
             <div className="p-6 sm:p-7">
               <p className={`${LABEL} mb-3`}>Want one made?</p>
@@ -1119,6 +937,14 @@ const PiecePage: React.FC = () => {
       </div>
     </div>
   );
+};
+
+const PiecePage: React.FC = () => {
+  const { pieceId, edition } = useParams<{ pieceId: string; edition?: string }>();
+  const { search } = useLocation();
+  const art = FULL_ARCHIVE.find(item => item.id === pieceId);
+  if (edition === undefined && new URLSearchParams(search).get('ref') !== 'qr' && art) return <ArtworkDesignPage art={art} />;
+  return <PhysicalPiecePage key={`${pieceId}:${edition ?? ''}`} />;
 };
 
 export default PiecePage;

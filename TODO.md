@@ -32,6 +32,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
 
 ## Soon
+- [ ] Finish full mobile-lane disposition and authorized publication of the implemented 22 September reliability repairs → [execution checklist](todo/plans/audit-2026-09-22.md). Existing collector/offline/editorial plans retain their scope; no launch flags are enabled.
 - [ ] Check the Deadman and Maciocia point and page references in the 32 organ entries (body/organs in the vault) once the two PDFs are on this Mac; the Neijing and Nanjing chapter citations were checked 2026-09-16, those two books were not, because no copy could be found on disk or in the vault _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] The mobile browser lane in CI has been red on main since at least 15 Sep and nobody sees it, because the run still says success; find the shared cause and make the lane count _(band: agent-runnable)_ _(effort: deep)_ → Plan: [ci-mobile-lane-red.md](todo/plans/ci-mobile-lane-red.md)
 

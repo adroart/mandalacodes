@@ -40,6 +40,7 @@ const SaveToCollectionButton: React.FC<Props> = ({
   const { collections, createCollection, addItem, removeItem } = useCollections();
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   if (!account.available) return null;
 
@@ -71,18 +72,29 @@ const SaveToCollectionButton: React.FC<Props> = ({
       : `In ${holding.length} of your collections`;
 
   const handleToggle = async (collectionId: number, alreadyHolds: boolean) => {
-    if (alreadyHolds) await removeItem(collectionId, item);
-    else await addItem(collectionId, item);
-    setOpen(false);
+    try {
+      if (alreadyHolds) await removeItem(collectionId, item);
+      else await addItem(collectionId, item);
+      setError(null);
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save this item. Try again.');
+    }
   };
 
   const handleCreate = async () => {
     const name = newName.trim();
     if (!name) return;
-    const created = await createCollection(name);
-    if (created) await addItem(created.id, item);
-    setNewName('');
-    setOpen(false);
+    try {
+      const created = await createCollection(name);
+      if (!created) return;
+      await addItem(created.id, item);
+      setError(null);
+      setNewName('');
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not create that collection. Try again.');
+    }
   };
 
   // Signed in: the collection chooser.
@@ -137,6 +149,7 @@ const SaveToCollectionButton: React.FC<Props> = ({
               Save
             </button>
           </div>
+          {error && <p className="stc__error" role="alert">{error}</p>}
         </div>
       )}
       <style>{stcStyles}</style>
@@ -223,6 +236,7 @@ const stcStyles = `
           cursor: pointer;
         }
         .stc__create-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .stc__error { font-family: var(--font-ui); font-size: 12px; color: #9f1239; margin: 8px 6px 2px; }
 
         /* ── panel variant ──
            The card page's Acquire and Share controls: a full-width hairline box,

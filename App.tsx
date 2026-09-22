@@ -11,10 +11,7 @@ const AdminLogin = lazy(() => import('./components/AdminLogin'));
 const AdminAtlas = lazy(() => import('./components/AdminAtlas'));
 const AdminPieceContent = lazy(() => import('./components/AdminPieceContent'));
 const PiecePage = lazy(() => import('./components/PiecePage'));
-const MakePage = lazy(() => import('./components/MakePage'));
-const StewardClaim = lazy(() => import('./components/atlas/StewardClaim'));
-const StewardEdit = lazy(() => import('./components/atlas/StewardEdit'));
-const Homecoming = lazy(() => import('./components/atlas/Homecoming'));
+const CollectorBoundaryPage = lazy(() => import('./components/atlas/CollectorBoundaryPage'));
 const TheRegistry = lazy(() => import('./components/atlas/TheRegistry'));
 const OracleProfile = lazy(() => import('./components/OracleProfile'));
 const SharedProfile = lazy(() => import('./components/SharedProfile'));
@@ -120,10 +117,10 @@ const AppInner: React.FC = () => {
 
                 {/* Atlas — globe of placed Universal Language pieces with kinship arcs */}
                 <Route path="/atlas" element={<AtlasPage />} />
-                <Route path="/atlas/claim" element={<StewardClaim />} />
+                <Route path="/atlas/claim" element={<CollectorBoundaryPage />} />
                 {/* The Homecoming, the way home for a piece the atlas has no
                     record of (Phase 2.5). */}
-                <Route path="/atlas/homecoming" element={<Homecoming />} />
+                <Route path="/atlas/homecoming" element={<CollectorBoundaryPage />} />
                 {/* The registry — the ledger's companion: the whole record as
                     one quiet table, no globe. */}
                 <Route path="/atlas/registry" element={<TheRegistry />} />
@@ -132,10 +129,10 @@ const AppInner: React.FC = () => {
                     the artwork, story, edition, Founding Lights ordinal, and
                     the public history spine. `/piece/:pieceId` resolves via the
                     `:0` no-edition fallback; `/piece/:pieceId/:edition` pins one. */}
-                <Route path="/make" element={<MakePage />} />
+                <Route path="/make" element={<CollectorBoundaryPage />} />
                 <Route path="/piece/:pieceId" element={<PiecePage />} />
                 <Route path="/piece/:pieceId/:edition" element={<PiecePage />} />
-                <Route path="/atlas/edit" element={<StewardEdit />} />
+                <Route path="/atlas/edit" element={<CollectorBoundaryPage />} />
 
                 {/* Admin — atlas ledger + steward key issuance */}
                 <Route path="/admin" element={<Navigate to="/admin/atlas" replace />} />

@@ -100,6 +100,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       share:'<svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M10 30c0-9 6-13 15-13M18 10l8 7-8 7"/></svg>'
     };
     this._wired = new WeakSet();
+    this.rootEl?.querySelector('[data-bar-tab="deck"]')?.setAttribute('data-current-hexagram', '');
     let tries = 0;
     const tick = () => {
       let pending = false;
