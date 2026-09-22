@@ -35,7 +35,7 @@ test('a chosen system stays selected when its delayed manuscript arrives', async
   await expect(nav).toBeEnabled();
   await nav.click();
   release();
-  await expect(page.locator('[data-chapter="genekeys"] p').first()).not.toBeEmpty();
+  await expect(page.locator('[data-gk="shadow"] > div > p').first()).not.toBeEmpty();
   await expect(nav).toHaveAttribute('aria-current', 'true');
   await expect(page.locator('[data-chapter="genekeys"]')).toBeInViewport();
   await expect(nav).toBeFocused();
@@ -49,7 +49,7 @@ test('the latest tab wins and manual scrolling releases its layout anchor', asyn
   const body = page.locator('.card-reading [data-nav="body"]');
   await body.click();
   release();
-  await expect(page.locator('[data-chapter="genekeys"] p').first()).not.toBeEmpty();
+  await expect(page.locator('[data-gk="shadow"] > div > p').first()).not.toBeEmpty();
   await expect(body).toHaveAttribute('aria-current', 'true');
   await expect(page.locator('[data-chapter="body"]')).toBeInViewport();
   await page.screenshot({ path: testInfo.outputPath('latest-system.png') });
@@ -71,4 +71,41 @@ test('the latest tab wins and manual scrolling releases its layout anchor', asyn
   await expect(body).toHaveAttribute('aria-current', 'false');
   await assertHealthy(page, errors);
   await page.screenshot({ path: testInfo.outputPath('manual-scroll.png') });
+});
+
+test('a mounted reader observes the new card after browser navigation', async ({ page }, testInfo) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/oracle/cards/23.md?*', async route => { await held; await route.continue(); });
+  await page.goto('/universal-language/22');
+  await expect(page.locator('[data-gk="shadow"] > div > p').first()).not.toBeEmpty();
+  const geneKeys = page.locator('.card-reading [data-nav="genekeys"]');
+  await geneKeys.click();
+  await expect(geneKeys).toHaveAttribute('aria-current', 'true');
+  // Exercise the browser-history route on the mounted shell, not a page reload
+  // or a test-only React remount. Keep the exact DOM node as custody evidence.
+  await page.locator('.card-reading').evaluate(element => {
+    (window as any).__readerBeforeNavigation = element;
+    history.pushState({}, '', '/universal-language/23');
+    dispatchEvent(new PopStateEvent('popstate'));
+  });
+  await expect(page).toHaveURL(/\/universal-language\/23$/);
+  await expect(page.locator('.card-reading__designed-header')).toContainText('Universal Language 23');
+  expect(await page.locator('.card-reading').evaluate(element => element === (window as any).__readerBeforeNavigation)).toBe(true);
+  const body = page.locator('.card-reading [data-nav="body"]');
+  await body.click();
+  await expect(body).toHaveAttribute('aria-current', 'true');
+  // Model a response arriving after the 500ms navigation animation and the
+  // initial 1400ms settling timer, so observing the new chapters is necessary.
+  await page.waitForTimeout(1600);
+  const previousText = await page.locator('[data-gk="shadow"] > div > p').first().textContent();
+  release();
+  await expect(page.locator('[data-gk="shadow"] > div > p').first()).not.toHaveText(previousText ?? '');
+  await expect(body).toHaveAttribute('aria-current', 'true');
+  await expect(page.locator('[data-chapter="body"]')).toBeInViewport();
+  await assertHealthy(page, errors);
+  await page.screenshot({ path: testInfo.outputPath('new-card-system.png') });
 });

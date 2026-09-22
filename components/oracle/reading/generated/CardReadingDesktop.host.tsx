@@ -155,6 +155,19 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
   };
 
   componentDidMount() {
+    this.startReaders();
+  }
+
+  componentDidUpdate(previous: HostProps) {
+    if (previous.data?.cardNumber === this.props.data?.cardNumber) return;
+    // The outer shell survives card routes while its keyed chapters are replaced.
+    // Keep its scroll position, but discard the old card's pending navigation
+    // and reconnect observers to the new chapters. Prose updates keep their anchor.
+    this.stopReaders();
+    this.startReaders();
+  }
+
+  startReaders() {
     this._wired = new WeakSet();
     let tries = 0;
     const tick = () => {
@@ -175,8 +188,14 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
   }
 
   componentWillUnmount() {
+    this.stopReaders();
+  }
+
+  stopReaders() {
     if (this._timer) clearTimeout(this._timer);
     if (this._anim) clearInterval(this._anim);
+    this._timer = null;
+    this._anim = null;
     this._readerCleanup.forEach((cleanup) => cleanup());
     this._readerCleanup = [];
   }

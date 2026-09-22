@@ -25,6 +25,7 @@ export interface CardReadingMobileTabItem {
 }
 
 export interface CardReadingMobileData {
+  cardNumber?: string;
   nav?: CardReadingMobileNavItem[];
   tabs?: CardReadingMobileTabItem[];
 }
@@ -99,6 +100,19 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       piece:'<svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="8" y="9" width="24" height="22"/><path d="M8 9l12 11 12-11"/></svg>',
       share:'<svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M10 30c0-9 6-13 15-13M18 10l8 7-8 7"/></svg>'
     };
+    this.startReaders();
+  }
+
+  componentDidUpdate(previous: HostProps) {
+    if (previous.data?.cardNumber === this.props.data?.cardNumber) return;
+    // The outer shell survives card routes while its keyed chapters are replaced.
+    // Keep its scroll position, but discard the old card's pending navigation
+    // and reconnect observers to the new chapters. Prose updates keep their anchor.
+    this.stopReaders();
+    this.startReaders();
+  }
+
+  startReaders() {
     this._wired = new WeakSet();
     this.rootEl?.querySelector('[data-bar-tab="deck"]')?.setAttribute('data-current-hexagram', '');
     let tries = 0;
@@ -124,8 +138,14 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
   }
 
   componentWillUnmount() {
+    this.stopReaders();
+  }
+
+  stopReaders() {
     if (this._timer) clearTimeout(this._timer);
     if (this._anim) clearInterval(this._anim);
+    this._timer = null;
+    this._anim = null;
     this._readerCleanup.forEach((cleanup) => cleanup());
     this._readerCleanup = [];
   }
