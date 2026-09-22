@@ -13,6 +13,9 @@ public/learn/
 .wrangler
 test-results
 playwright-report
+# The mobile lane's JSON report (scripts/mobile-lane-summary.mjs reads it); CI
+# uploads it as an artifact, a local run just leaves it lying in the tree.
+mobile-results.json
 .worktrees/
 .superpowers/
 scripts/output
