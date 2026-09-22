@@ -70,7 +70,7 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 
 - [ ] The making strip on /make: two or three photos of layers being cut ("The making, in layers"); needs your studio photos _(band: you-required)_ _(effort: quick)_
 
-- [ ] RequestStewardship still uses bg-white inputs, slightly glaring on the new dark piece page; retoken to paper like the /make fields _(band: agent-runnable)_ _(effort: quick)_
+- [x] RequestStewardship still uses bg-white inputs, slightly glaring on the new dark piece page; retoken to paper like the /make fields — done: the textarea had already moved off literal `bg-white` to `bg-wood-50` in an earlier pass but still didn't match `/make`'s `bg-paper-50` field token (and reads near-black in Nightfall, since dark-mode `wood-50` is darker than `paper-50`); now `bg-paper-50` on `RequestStewardship.tsx`, matching the containing piece-page card exactly as `/make`'s fields match their note section.
 
 - [ ] Prove the oracle really works offline on your own phone _(band: you-required)_ _(effort: quick)_ → Plan: [offline-oracle-completion.md](todo/plans/offline-oracle-completion.md)
   The card words were proven offline; the artwork was only configured, never seen working, because the machine that built it could not reach the image host. Open the oracle on your phone, let a card load, wait ten seconds, switch to airplane mode, reload and open a card you never touched. Both words and picture should appear. Everything else in the offline plan is wasted effort until this passes.
