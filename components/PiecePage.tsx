@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { CARD_BY_NUMBER } from '../data/oracleData';
-import { img } from '../utils/cloudinary';
+import { img } from '../utils/media';
 import { ulCardNumber } from '../utils/universalLanguage';
 import { pieceCode } from '../utils/pieceCode';
 import { stewardOrdinalLabel } from '../utils/inscriptions';

@@ -44,8 +44,8 @@ test(`card ${CARD} serves a prerendered head and still hydrates`, async ({ page 
   expect(rawHtml).toContain(`<link rel="canonical" href="https://mandalacodes.com/universal-language/${CARD}" />`);
   expect(rawHtml).toContain(`<meta property="og:url" content="https://mandalacodes.com/universal-language/${CARD}" />`);
   const ogImageMatch = rawHtml.match(/<meta property="og:image" content="([^"]*)"/);
-  expect(ogImageMatch?.[1]).toContain('res.cloudinary.com');
-  expect(ogImageMatch?.[1]).toContain('w_300,h_300');
+  expect(ogImageMatch?.[1]).toContain('mandalacodes.com/media/image/');
+  expect(ogImageMatch?.[1]).toContain('w=400&h=400');
   const creativeWorkMatch = rawHtml.match(/\{"@context":"https:\/\/schema\.org","@type":"CreativeWork".*?\}(?=\s*<\/script>)/);
   expect(creativeWorkMatch, 'JSON-LD CreativeWork block').toBeTruthy();
   const creativeWork = JSON.parse(creativeWorkMatch![0]);

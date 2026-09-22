@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
+import { img } from '../utils/media';
 
 const DEFAULT_TITLE = 'Mandala Codes · Universal Language Oracle';
 const DEFAULT_DESCRIPTION =
   'A reading deck of 64 mandalas. Each card connects to a hexagram from the I Ching, a Gene Key, and a Human Design gate.';
-const DEFAULT_IMAGE =
-  'https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/48_ttflpq';
+const DEFAULT_IMAGE = `https://mandalacodes.com${img('48_ttflpq', { w: 1200, h: 630 })}`;
 
 interface MetaTagOptions {
   title?: string;

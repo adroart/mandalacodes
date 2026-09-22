@@ -30,7 +30,7 @@ export function primaryElement(prose){
 export function tintFor(card){ return ELEMENT_TINT[primaryElement(card.el)]; }
 
 export function imgUrl(publicId,size){
-  return 'https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_'+size+',h_'+size+',c_fill,g_center/'+publicId;
+  return '/media/image/'+publicId+'?w='+size+'&h='+size+'&gravity=center';
 }
 export function cardImg(card,size){
   return card.img ? imgUrl(card.img,size) : '';

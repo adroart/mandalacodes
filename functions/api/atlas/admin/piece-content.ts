@@ -11,8 +11,8 @@
  *
  * Body: { pieceId, story?, materials?, provenance?, images? }
  * `story`/`materials`/`provenance` are free text; an empty/whitespace-only
- * string clears that field. `images` is a list of Cloudinary public ids
- * (see utils/cloudinary.ts), capped at 12.
+ * string clears that field. `images` is a list of media object ids
+ * (see utils/media.ts), capped at 12.
  */
 
 import type { PagesContext } from '../_helpers';

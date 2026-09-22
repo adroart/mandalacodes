@@ -1,7 +1,7 @@
 import { Artwork } from '../types';
 import { CARD_BY_NUMBER } from '../data/oracleData';
 import { FULL_ARCHIVE } from '../data/mockData';
-import { img } from './cloudinary';
+import { img } from './media';
 
 /**
  * Parse the card number from a Universal Language coverImage public ID.
@@ -70,18 +70,18 @@ export function ulPieceForCard(number: number): Artwork | undefined {
   return UL_PIECE_BY_NUMBER.get(number);
 }
 
-/** Cloudinary public ID for a card's artwork, when one exists. */
+/** Media object ID for a card's artwork, when one exists. */
 export function ulCardPublicId(number: number): string | undefined {
   return UL_PIECE_BY_NUMBER.get(number)?.coverImage;
 }
 
-/** Universal Language card number → Cloudinary public ID. */
+/** Universal Language card number → media object ID. */
 const UL_IMAGE_BY_NUMBER = new Map<number, string>(
   Array.from(UL_PIECE_BY_NUMBER, ([num, a]) => [num, a.coverImage] as const)
 );
 
 /* These are the source plates where the white capture/background needs to be
- * made transparent. Cloudinary's background-removal delivery transform keeps
+ * made transparent. Cloudflare's foreground segmentation keeps
  * the complete square canvas; it does not trim or crop the artwork. Add future
  * plates here as they are identified. */
 const UL_CARDS_WITH_TRANSPARENT_BACKGROUND = new Set<number>([22]);
@@ -110,7 +110,7 @@ export function ulCardArtFloatsFree(number: number): boolean {
 }
 
 /**
- * Square Cloudinary URL for a Universal Language card's artwork.
+ * Square project-owned media URL for a Universal Language card's artwork.
  * Falls back to the oracle-card placeholder if the number is unknown.
  * Shared by the card page, the deck index, and the cast preview modal.
  */
@@ -129,7 +129,7 @@ export function ulCardImageUrl(number: number, size: number): string {
 }
 
 /**
- * The widths the reading asks Cloudinary for. Named here, once, because a
+ * The widths the reading asks the media route for. Named here, once, because a
  * width is part of the URL: the same artwork at 1080 and at 1100 are two
  * different addresses and so two different entries in the offline cache.
  * Warming one and rendering the other is why a reading opened with no signal

@@ -7,6 +7,7 @@ import { getSynthesis, type CardSynthesis } from '../data/synthesisData';
 import { getParsedCard, mapIching, type MdIchingLine } from '../data/cardMarkdown';
 import { HEXAGRAM_CHINESE } from '../data/hexagramChinese';
 import { ulCardImageUrl, ulCardPublicId } from '../utils/universalLanguage';
+import { img } from '../utils/media';
 import { useMetaTags } from '../hooks/useMetaTags';
 import { useDarkMode } from '../DarkModeContext';
 import { EBReadingHost, type EBData } from './oracle/eb/generated/EBReading.host';
@@ -98,7 +99,7 @@ const UniversalLanguageCard: React.FC = () => {
   useMetaTags({
     title: card ? `${card.card_name} · Code ${cardNum} · Universal Language Oracle` : undefined,
     description: card ? `${card.iching.hexagram_name} · ${card.gene_keys.shadow} / ${card.gene_keys.gift} / ${card.gene_keys.siddhi}. Universal Language Oracle by Adrian Rasmussen.` : undefined,
-    image: card ? `https://res.cloudinary.com/dobbosnda/image/upload/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/${ulCardPublicId(cardNum) ?? 'adrian-website/placeholders/oracle-card-3'}` : undefined,
+    image: card ? `https://mandalacodes.com${img(ulCardPublicId(cardNum) ?? 'adrian-website/placeholders/oracle-card-3', { w: 1200, h: 630 })}` : undefined,
   });
 
   if (!card) {

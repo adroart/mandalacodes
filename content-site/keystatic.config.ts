@@ -74,7 +74,7 @@ export default config({
         }),
 
         cover: fields.text({
-          label: 'Cover image (Cloudinary id)',
+          label: 'Cover image (media ID)',
           description: 'Public id of the cover artwork, e.g. "1_o8tafh". Falls back to a deck plate when blank.',
         }),
 

@@ -5,7 +5,7 @@ import { signOut } from '../../lib/account/authClient';
 import type { PieceRecord, CityCentroid, StewardRecord } from '../../types';
 import { ATLAS_PLACES, getCityById, isCountryPlace } from '../../data/cities';
 import { FULL_ARCHIVE } from '../../data/mockData';
-import { img } from '../../utils/cloudinary';
+import { img } from '../../utils/media';
 import { loadAtlasState, findPublicPiece } from '../../lib/atlas/state';
 import ConsentRings from './ConsentRings';
 import type { ConsentChoice } from './ConsentRings';

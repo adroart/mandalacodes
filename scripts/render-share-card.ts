@@ -25,7 +25,7 @@ import { findPublicPiece } from '../lib/atlas/state';
 import { CITIES_BY_ID, formatPlaceLabel } from '../data/cities';
 import { pieceCode } from '../utils/pieceCode';
 import { ulCardNumber } from '../utils/universalLanguage';
-import { img } from '../utils/cloudinary';
+import { img } from '../utils/media';
 import { buildShareCardElement, type ShareCardInput } from '../utils/atlas/shareCard';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');

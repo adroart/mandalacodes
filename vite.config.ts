@@ -150,7 +150,7 @@ const vitePWA = VitePWA({
       //
       // So this removes a rule that cost every visitor their artwork and
       // bought nobody an offline image. The browser's own cache still holds
-      // these immutable, far-future Cloudinary URLs on a repeat visit.
+      // these immutable, far-future media URLs on a repeat visit.
     ],
   },
 });

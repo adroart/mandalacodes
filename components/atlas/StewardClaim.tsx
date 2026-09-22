@@ -13,7 +13,7 @@ import { FULL_ARCHIVE } from '../../data/mockData';
 import { CITIES_BY_ID } from '../../data/cities';
 import { buildKinshipIndex } from '../../utils/kinship';
 import { ulCardNumber } from '../../utils/universalLanguage';
-import { img } from '../../utils/cloudinary';
+import { img } from '../../utils/media';
 import { pieceCode } from '../../utils/pieceCode';
 import { groupClaimCode, normalizeClaimCode } from '../../utils/claimCode';
 import ClaimCeremony from './ClaimCeremony';
