@@ -7,7 +7,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 02 · The ground in you takes in whatever is given and turns it into growth.  (Beyond the Shell)
 03 · The surge of something new finds its shape by trying.  (Messengers of the Infinite)
 04 · The wish to make sense of things asks and asks, until understanding comes up on its own.  (Veils of Knowledge)
-05 · Readiness keeps its hours in you until what you wait for calls.  (The Space Between Time)
+05 · The wait for something you know is coming has its own weight.  (The Space Between Time)
 06 · Friction comes with closeness and wears through the wall between two people.  (Harmonious Mirage)
 07 · Guidance gathers scattered people into one body, and it does its work by listening.  (Essential Nexus)
 08 · The freedom of being yourself, with nothing put on, finds the ones it belongs with.  (Odyssey of Freedom)
@@ -25,14 +25,14 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 20 · Calm decides in the moment, through the whole of you, and what comes out is clear.  (Emerging as the Code)
 21 · The will in you takes charge where others stall and carries the whole of what follows.  (Beyond Binary)
 22 · Warmth leaves whoever sits with you lighter than they came.  (Treasure of the Way)
-23 · Clarity in you cuts away everything but what matters, and the plain thing left goes the whole way in.  (Beneath the Surface)
+23 · A knowing arrives whole, before you have any words for it, and it picks out the one thing that matters.  (Beneath the Surface)
 24 · A pull takes you back to where a thing began so it can start again.  (Frequency Flutter)
 25 · Love goes from you to everything alike, with no plan in it.  (The Mysteries Play)
 26 · The drive to make things happen grows stronger in you the longer it is held in.  (Lighter Than a Feather)
 27 · A full heart goes out to whatever is too small to feed itself and fills as it gives.  (Inner Majesty)
 28 · The hunger for purpose asks of every day whether it mattered.  (Becoming the Mystery)
 29 · The whole yes goes all the way in before you can see where it leads.  (All In)
-30 · Desire heats a life from inside and burns on whatever it holds to.  (Sparking the Blaze)
+30 · Desire is in you from the start, the wanting that leans a person out toward the world.  (Sparking the Blaze)
 31 · Influence passes between people and turns them toward whoever says what they already felt.  (Theater of Truth)
 32 · The sense of what will last keeps a thing alive after the newness has worn off.  (Art of Living)
 33 · Hindsight draws you off alone until what happened makes sense, then sends you back to tell it.  (Echos of Time)
@@ -45,7 +45,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 40 · Resolve carries a life through and fills again only when you stop.  (Eternal Wellspring)
 41 · The hunger for a better life pictures more than is here and wants to feel it.  (Beginning and the End)
 42 · A pull in you carries each thing to its end so the next has room.  (Moving to Perfection)
-43 · Certainty arrives whole, from the one direction you were not facing, before you can say how.  (Cipher of Knowledge)
+43 · Sudden knowing arrives whole, before you have any way to say how it came.  (Cipher of Knowledge)
 44 · Recognition picks out who belongs near you in the first seconds, before a reason arrives.  (Sophia's Orchestra)
 45 · A pull gathers people around what there is, and you say out loud how it will be shared.  (Tribal Tapestry)
 46 · The luck is not a gift: it is what life does around a body that has stopped fighting it.  (Fountain of Light)
@@ -54,7 +54,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 49 · A heat builds in you under what no longer fits, until one day the whole thing turns.  (Union in the Ashes)
 50 · A sense knows what will feed the people near you, and what has gone off.  (Melt Into Perfection)
 51 · A charge sends you first, off the edge of what anyone has done.  (Unshakable Arrival)
-52 · A stillness settles in you at the end of a cycle and holds until the next one is ready.  (Timeless Blossom)
+52 · Everything that moves has to stop somewhere, and something in you knows where.  (Timeless Blossom)
 53 · The urge to start something new is a force of its own.  (Creation Oscillation)
 54 · The drive to rise above the place you were given built the cities, and it has not stopped.  (Everlasting Bounty)
 55 · A fullness swells in you at a life's height, so that what you make comes out of plenty.  (Untouched Perfection)
@@ -67,3 +67,20 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 62 · The wish to get the small thing right says the one word and stops.  (Voice of Nature)
 63 · Doubt goes back over a finished thing and catches the wrong note before anyone else.  (Adornments of Time)
 64 · Confusion comes before an idea and clears only in its own time.  (Communion)
+
+## The five whole entrances, pilot (2026-09-22)
+
+05 · The Space Between Time
+The wait for something you know is coming has its own weight. Nothing you do brings it any closer. So keep your hours and you will be rested when it arrives.
+
+23 · Beneath the Surface
+A knowing arrives whole, before you have any words for it, and it picks out the one thing that matters. Taking things away asks more of you than adding ever did. So say the one thing and people will hear it.
+
+30 · Sparking the Blaze
+Desire is in you from the start, the wanting that leans a person out toward the world. It takes any shape, a person or a place, and the reach under each one is the same. So feel it all the way through and it will show you what it was really after.
+
+43 · Cipher of Knowledge
+Sudden knowing arrives whole, before you have any way to say how it came. It comes as a flash, from the one direction you were not facing. So leave some quiet in the day and it will find you there.
+
+52 · Timeless Blossom
+Everything that moves has to stop somewhere, and something in you knows where. The outside holds still so that the inside can move. So stay where you are and the next move will be clear when it comes.
