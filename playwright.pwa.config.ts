@@ -5,6 +5,8 @@ export default defineConfig({
   testDir: './tests',
   testMatch: ['pwa-learn.spec.ts', 'offline-qr-reading.spec.ts'],
   reporter: 'list',
+  // CI runs this after mobile; preserve that lane's screenshots and traces.
+  outputDir: 'test-results/pwa',
   metadata: { pwa: true },
   use: { baseURL: 'http://127.0.0.1:2423' },
   projects: [
