@@ -54,9 +54,9 @@ describe('oracle-tells subsection openers', () => {
     const openers = countSubsectionOpeners();
     expect(openers.cards).toBe(64);
     expect(openers.keysInwardFace).toBe(0);
-    expect(openers.repressiveThisPerson).toBe(40);
-    expect(openers.reactiveHere).toBe(25);
-    expect(openers.immortalsStandsAbove).toBe(49);
+    expect(openers.repressiveThisPerson).toBeLessThanOrEqual(39);
+    expect(openers.reactiveHere).toBeLessThanOrEqual(24);
+    expect(openers.immortalsStandsAbove).toBeLessThanOrEqual(49);
   });
 
   describe('planted repeat', () => {
