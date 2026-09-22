@@ -25,7 +25,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 20 · Calm decides in the moment, through the whole of you, and what comes out is clear.  (Emerging as the Code)
 21 · The will in you takes charge where others stall and carries the whole of what follows.  (Beyond Binary)
 22 · Warmth leaves whoever sits with you lighter than they came.  (Treasure of the Way)
-23 · A knowing arrives whole, before you have any words for it, and it picks out the one thing that matters.  (Beneath the Surface)
+23 · A knowing arrives before the words do and picks out the one thing that matters.  (Beneath the Surface)
 24 · A pull takes you back to where a thing began so it can start again.  (Frequency Flutter)
 25 · Love goes from you to everything alike, with no plan in it.  (The Mysteries Play)
 26 · The drive to make things happen grows stronger in you the longer it is held in.  (Lighter Than a Feather)
@@ -45,7 +45,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 40 · Resolve carries a life through and fills again only when you stop.  (Eternal Wellspring)
 41 · The hunger for a better life pictures more than is here and wants to feel it.  (Beginning and the End)
 42 · A pull in you carries each thing to its end so the next has room.  (Moving to Perfection)
-43 · Sudden knowing arrives whole, before you have any way to say how it came.  (Cipher of Knowledge)
+43 · Sudden knowing arrives whole before you have any way to say how it came.  (Cipher of Knowledge)
 44 · Recognition picks out who belongs near you in the first seconds, before a reason arrives.  (Sophia's Orchestra)
 45 · A pull gathers people around what there is, and you say out loud how it will be shared.  (Tribal Tapestry)
 46 · The luck is not a gift: it is what life does around a body that has stopped fighting it.  (Fountain of Light)
@@ -74,13 +74,13 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 The wait for something you know is coming has its own weight. Nothing you do brings it any closer. So keep your hours and you will be rested when it arrives.
 
 23 · Beneath the Surface
-A knowing arrives whole, before you have any words for it, and it picks out the one thing that matters. Taking things away asks more of you than adding ever did. So say the one thing and people will hear it.
+A knowing arrives before the words do and picks out the one thing that matters. Taking things away asks more of you than adding ever did. So say the one thing and people will hear it.
 
 30 · Sparking the Blaze
-Desire is in you from the start, the wanting that leans a person out toward the world. It takes any shape, a person or a place, and the reach under each one is the same. So feel it all the way through and it will show you what it was really after.
+Desire is in you from the start, the wanting that leans a person out toward the world. It takes the shape of a person or a place, and the reach under each is the same. So feel it all the way through and it will show you what it was really after.
 
 43 · Cipher of Knowledge
-Sudden knowing arrives whole, before you have any way to say how it came. It comes as a flash, from the one direction you were not facing. So leave some quiet in the day and it will find you there.
+Sudden knowing arrives whole before you have any way to say how it came. It comes as a flash from the one direction you were not facing. So leave some quiet in the day and it will find you there.
 
 52 · Timeless Blossom
 Everything that moves has to stop somewhere, and something in you knows where. The outside holds still so that the inside can move. So stay where you are and the next move will be clear when it comes.
