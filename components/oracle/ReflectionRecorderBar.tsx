@@ -148,7 +148,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
   };
 
   return <>
-    {!journalOpen && <nav className="oracle-bottom-nav reflection-recorder-bar" aria-label="Private reflection recorder">
+    {!journalOpen && <nav className="oracle-bottom-nav reflection-recorder-bar" style={themeStyle} aria-label="Private reflection recorder">
       <div className="oracle-bottom-nav__inner reflection-recorder-bar__inner">
         <button className={`oracle-bottom-nav__slot reflection-recorder-bar__slot reflection-recorder-bar__control${!isRecording && state.status === 'paused' ? ' is-primary' : ''}`} type="button"
           disabled={state.status === 'committing' || state.status === 'requesting_permission' || isFinished}

@@ -57,6 +57,8 @@ export interface LedgerRow {
   /** Founding Lights ordinal, when the piece has been claimed. Tiebreaks the
    *  recency sort for rows placed on the same day. */
   claimOrdinal?: number;
+  /** Explicit catalogue availability proves an unclaimed piece is waiting for someone. */
+  availableForClaim?: boolean;
 }
 
 /* ─── Kinds ────────────────────────────────────────────────────────────────
@@ -93,7 +95,13 @@ export function ledgerKindLabel(kind: string): string {
    load-bearing across the wall, the ledger, the `ls` URL param and the unit
    suite; only the words a person sees changed. */
 
-export type LedgerStateFilter = 'all' | 'waiting-someone' | 'anchored' | 'waiting-dream';
+export type LedgerStateFilter =
+  | 'all'
+  | 'waiting-someone'
+  | 'anchored'
+  | 'held-private'
+  | 'location-unavailable'
+  | 'waiting-dream';
 
 /** Short labels for the control. The long reading ("created, waiting for
  *  someone") stays in the grammar and the section headings; a control needs a
@@ -104,7 +112,9 @@ export const LEDGER_STATE_OPTIONS: ReadonlyArray<{
 }> = [
   { value: 'all', label: 'any status' },
   { value: 'anchored', label: 'dreams anchored' },
+  { value: 'held-private', label: 'held; location private' },
   { value: 'waiting-someone', label: 'waiting for someone' },
+  { value: 'location-unavailable', label: 'public location unavailable' },
   { value: 'waiting-dream', label: 'waiting for a dream' },
 ];
 
@@ -114,8 +124,12 @@ export function ledgerStateLabel(state: Exclude<LedgerStateFilter, 'all'>): stri
   switch (state) {
     case 'anchored':
       return 'dreams anchored';
+    case 'held-private':
+      return 'held; location private';
     case 'waiting-someone':
       return 'created, waiting for someone';
+    case 'location-unavailable':
+      return 'public location unavailable';
     case 'waiting-dream':
       return 'waiting for a dream';
   }
@@ -124,15 +138,31 @@ export function ledgerStateLabel(state: Exclude<LedgerStateFilter, 'all'>): stri
 /** Section order when grouping by state: the living first. */
 export const LEDGER_STATE_ORDER = [
   'anchored',
+  'held-private',
   'waiting-someone',
+  'location-unavailable',
   'waiting-dream',
 ] as const satisfies ReadonlyArray<Exclude<LedgerStateFilter, 'all'>>;
 
-/** Which of the three states a row sits in: created-and-waiting (available or
- *  seeking), dreams-anchored (placed with a public dream), or waiting-for-a-
- *  dream (unawakened, or placed with no public dream). */
+function hasClaimedIdentity(row: LedgerRow): boolean {
+  return typeof row.claimOrdinal === 'number' &&
+    Number.isInteger(row.claimOrdinal) &&
+    row.claimOrdinal > 0;
+}
+
+/** A founding ordinal is the authoritative public evidence that a keeper
+ *  holds a piece. A withdrawn city must not turn that held row into one that
+ *  is waiting for someone. */
 export function ledgerStateOf(row: LedgerRow): Exclude<LedgerStateFilter, 'all'> {
-  if (row.norm === 'seeking') return 'waiting-someone';
+  if (hasClaimedIdentity(row)) {
+    if (!row.cityName) return 'held-private';
+    if (row.norm === 'placed' && !!row.dream && row.dream.trim().length > 0) {
+      return 'anchored';
+    }
+    return 'waiting-dream';
+  }
+  if (row.availableForClaim) return 'waiting-someone';
+  if (row.norm === 'seeking') return 'location-unavailable';
   if (row.norm === 'placed' && !!row.dream && row.dream.trim().length > 0) {
     return 'anchored';
   }
@@ -149,8 +179,18 @@ export function isLedgerState(v: string | null | undefined): v is LedgerStateFil
     v === 'all' ||
     v === 'waiting-someone' ||
     v === 'anchored' ||
+    v === 'held-private' ||
+    v === 'location-unavailable' ||
     v === 'waiting-dream'
   );
+}
+
+/** The place column must not call a held private location “not yet placed”. */
+export function ledgerPlaceLabel(row: LedgerRow): string {
+  if (row.cityName) return row.cityName;
+  if (hasClaimedIdentity(row)) return 'location private';
+  if (!row.availableForClaim) return 'public location unavailable';
+  return LEDGER_NO_PLACE_LABEL;
 }
 
 /* ─── Search ──────────────────────────────────────────────────────────────── */
@@ -378,6 +418,7 @@ export interface LedgerPieceLike {
   cardNumber?: number;
   placedAt?: string;
   claimOrdinal?: number;
+  availableForClaim?: boolean;
 }
 
 export function atlasPieceToRow(p: LedgerPieceLike): LedgerRow {
@@ -395,5 +436,6 @@ export function atlasPieceToRow(p: LedgerPieceLike): LedgerRow {
     cardNumber: p.cardNumber,
     placedAt: p.placedAt,
     claimOrdinal: p.claimOrdinal,
+    availableForClaim: p.availableForClaim,
   };
 }

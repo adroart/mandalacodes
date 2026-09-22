@@ -39,7 +39,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       </span>
     </header>
     <div data-reader="" style={{ flex: "1", minHeight: "0", position: "relative" } as unknown as React.CSSProperties}>
-      <div data-jumpbar="" style={{ position: "absolute", left: "0", right: "0", top: "0", height: "49px", zIndex: "5", display: "flex", alignItems: "stretch", justifyContent: "center", background: "#191510", overflow: "hidden", transition: "height .3s ease,background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
+      <div data-jumpbar="" role="navigation" aria-label="Reading by system" style={{ position: "absolute", left: "0", right: "0", top: "0", height: "49px", zIndex: "5", display: "flex", alignItems: "stretch", justifyContent: "center", background: "#191510", overflow: "hidden", transition: "height .3s ease,background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
         <div data-nostyle-scroll="" style={{ position: "relative", display: "flex", justifyContent: "center", overflowX: "auto" } as unknown as React.CSSProperties}>
           {(vals.nav ?? []).map((n: any, nIdx: number) => (
             <React.Fragment key={nIdx}>
@@ -50,7 +50,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           ))}
         </div>
       </div>
-      <span data-progressfill-h="" style={{ position: "absolute", left: "0", top: "0", height: "2px", width: "0", background: "linear-gradient(to right,rgba(198,166,103,.12),#debc7e)", zIndex: "6", transition: "width .12s linear,top .3s ease" } as unknown as React.CSSProperties}>
+      <span data-progressfill-h="" role="progressbar" aria-label="Reading progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0} style={{ position: "absolute", left: "0", top: "0", height: "2px", width: "0", background: "linear-gradient(to right,rgba(198,166,103,.12),#debc7e)", zIndex: "6", transition: "width .12s linear,top .3s ease" } as unknown as React.CSSProperties}>
       </span>
       <span data-comet="" style={{ position: "absolute", left: "0", top: "1px", width: "7px", height: "7px", transform: "translate(-50%,-50%) rotate(45deg)", borderRadius: "1px", background: "#f0d9a8", zIndex: "7", animation: "cometGlow 2.4s ease-in-out infinite", transition: "left .12s linear,top .3s ease" } as unknown as React.CSSProperties}>
       </span>
@@ -175,7 +175,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           </span>
         </span>
       </a>
-      <a href={vals.deckHref} className="dcw-cardreadingdesktop-h5" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
+      <a href={vals.deckHref} data-bar-deck="" data-current-hexagram="" className="dcw-cardreadingdesktop-h5" style={{ flex: "1", display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", borderRight: "1px solid rgba(168,135,77,.12)", transition: "background .3s ease,box-shadow .3s ease" } as unknown as React.CSSProperties}>
         <svg width="30" height="30" viewBox="0 0 40 40" fill="#a8874d">
           <g>
             <circle cx="10" cy="10" r="1.6">
@@ -214,7 +214,7 @@ export const CardReadingDesktopMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         </svg>
         <span>
           <span style={{ display: "block", fontFamily: "'Iowan Old Style Web',serif", fontSize: "15px", letterSpacing: ".08em", textTransform: "uppercase", color: "#ede4d4" } as unknown as React.CSSProperties}>
-          62 · All 64
+          {vals.cardNumber} · All 64
           </span>
           <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontStyle: "normal", letterSpacing: "0.01em", fontSize: "14px", color: "#80735f" } as unknown as React.CSSProperties}>
           Discover the codes

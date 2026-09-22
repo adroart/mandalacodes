@@ -255,6 +255,7 @@ export class CardReadingDesktopHost extends React.Component<HostProps> {
       // section, so it stays aligned to the labels AND spans top -> bottom.
       const den = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
       const frac = Math.max(0, Math.min(1, pos / den));
+      if (hfill) hfill.setAttribute('aria-valuenow', String(Math.round(frac * 100)));
       const barH = pos > 24 ? 38 : 49;
       if (jb) { jb.style.height = barH + 'px'; jb.style.background = pos > 24 ? '#15110c' : '#191510'; jb.style.boxShadow = pos > 24 ? '0 1px 0 rgba(168,135,77,.28)' : 'none'; }
       [aside, scroll, grain].forEach((el: any) => { if (el) el.style.top = barH + 'px'; });

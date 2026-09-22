@@ -43,9 +43,8 @@ const chart = storedProfile({
   core: { gate: 42, line: 6 },
 });
 
-/** The app forgets a local chart when nobody is signed in, so the chart test
- * signs a reader in the way tests/account-pieces.spec.ts does: intercept
- * Better Auth's get-session. */
+/** Exercise a guest chart claimed by a synthetic account whose remote profile
+ * is empty (204), using the same auth contract as account-pieces. */
 async function signIn(page: Page) {
   const now = new Date().toISOString();
   await page.route('**/api/auth/get-session', (route) => route.fulfill({
@@ -79,7 +78,7 @@ async function signIn(page: Page) {
 
 async function injectProfile(page: Page) {
   await signIn(page);
-  await page.route('**/api/profile/get', (route) => route.fulfill({ status: 404 }));
+  await page.route('**/api/profile/get', (route) => route.fulfill({ status: 204 }));
   await page.addInitScript(([key, value]) => {
     window.localStorage.setItem(key, value);
   }, [PROFILE_KEY, JSON.stringify(chart)] as const);

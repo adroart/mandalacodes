@@ -109,6 +109,7 @@ export function adaptCollectorFieldState(state: unknown): PublicAtlasState | nul
           : undefined;
       pieces.push({
         pieceId: light.artworkId,
+        ...(typeof identity.publicCode === 'string' && /^AR-[A-Z0-9-]+$/.test(identity.publicCode) ? { publicCode: identity.publicCode } : {}),
         ...(editionNumber !== undefined ? { editionNumber } : {}),
         ...(series ? { series } : {}),
         cityId: centroid ? centroid.id : null,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AccountLayout from './AccountLayout';
 import { useAccount } from '../../lib/account/useAccount';
@@ -16,30 +16,42 @@ interface HeldPiece {
 }
 
 const AccountPiecesInner: React.FC = () => {
-  const { fetchAuthed, isSignedIn } = useAccount();
+  const { fetchAuthed, isSignedIn, userId } = useAccount();
   const [pieces, setPieces] = useState<HeldPiece[] | null>(null);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
+  const loadedUser = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
+    if (loadedUser.current !== userId) {
+      loadedUser.current = userId;
+      setPieces(null);
+      setError(null);
+    }
+    if (!isSignedIn || !userId) return () => { active = false; };
     fetchAuthed('/api/account/pieces', { cache: 'no-store' })
       .then(async (res) => {
         if (!res.ok) throw new Error('failed');
         const data = await res.json();
-        if (active) setPieces(Array.isArray(data.pieces) ? data.pieces : []);
+        if (!Array.isArray(data.pieces)) throw new Error('invalid response');
+        if (active) {
+          setPieces(data.pieces);
+          setError(null);
+        }
       })
       .catch(() => {
-        if (active) setError(true);
+        if (active) setError('Your pieces could not be loaded right now.');
       });
     return () => {
       active = false;
     };
-  }, [fetchAuthed]);
+  }, [fetchAuthed, isSignedIn, retry, userId]);
 
-  if (error) {
+  if (error && pieces === null) {
     return (
       <p className="font-reading text-wood-700">
-        Your pieces could not be loaded right now. Try again in a moment.
+        {error} <button type="button" className="text-bronze-600 underline" onClick={() => setRetry((n) => n + 1)}>Try again</button>
       </p>
     );
   }
@@ -70,7 +82,9 @@ const AccountPiecesInner: React.FC = () => {
   }
 
   return (
-    <ul className="divide-y divide-wood-200/70 border-y border-wood-200/70">
+    <>
+      {error && <p className="font-reading text-wood-700 mb-4" role="alert">{error} <button type="button" className="text-bronze-600 underline" onClick={() => setRetry((n) => n + 1)}>Try again</button></p>}
+      <ul className="divide-y divide-wood-200/70 border-y border-wood-200/70">
       {pieces.map((piece) => (
         <li key={piece.id} className="py-8 first:pt-0 last:pb-0">
           <div className="flex flex-col sm:flex-row gap-6">
@@ -110,7 +124,8 @@ const AccountPiecesInner: React.FC = () => {
           </div>
         </li>
       ))}
-    </ul>
+      </ul>
+    </>
   );
 };
 

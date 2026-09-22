@@ -94,10 +94,7 @@ const OracleSystems: React.FC = () => {
             <p>
               The system reaches the West late. James Legge translates it in 1882. But the translation that opens the I Ching to the modern imagination is Richard Wilhelm's, completed in German in 1924 after twenty years in China studying with the scholar Lao Nai-hsuan. Cary F. Baynes carries it into English in 1950, with a foreword by Carl Jung that frames the book as a study of synchronicity. Almost every Western reader who has touched the I Ching since has touched it through their hands.
             </p>
-            <p className="text-wood-500 tracking-[0.015em] text-[15px]">
-              {/* DRAFT */}
-              [More on the structure: trigrams as elemental forces, hexagrams as their combinations, the role of the moving line, the practice of casting with yarrow stalks or coins. To be expanded.]
-            </p>
+
           </div>
 
           <div className="mt-10 pt-6 border-t border-wood-200">
@@ -135,10 +132,7 @@ const OracleSystems: React.FC = () => {
             <p>
               The sixty-four Gene Keys correspond directly to the sixty-four hexagrams of the I Ching and to the sixty-four codons of human DNA. This correspondence is not Rudd's invention. It is named in Martin Schönberger's 1973 work, in the writings of Terence McKenna, and most fully developed inside Human Design. Rudd's contribution is the Shadow-Gift-Siddhi spectrum, and the practice of holding all three frequencies as one continuous teaching.
             </p>
-            <p className="text-wood-500 tracking-[0.015em] text-[15px]">
-              {/* DRAFT */}
-              [More on the Golden Path, the Activation Sequence, the Venus Sequence, the Pearl Sequence, and the way Rudd intends the work to be lived rather than studied. To be expanded.]
-            </p>
+
           </div>
 
           <div className="mt-10 pt-6 border-t border-wood-200">
@@ -186,10 +180,7 @@ const OracleSystems: React.FC = () => {
             <p>
               Ra spent the rest of his life teaching the system, often in long, recorded lectures. He died in 2011. His teachings have since been carried forward by his students through the International Human Design School and the many independent teachers and analysts working today.
             </p>
-            <p className="text-wood-500 tracking-[0.015em] text-[15px]">
-              {/* DRAFT */}
-              [More on the four Types (Manifestor, Generator, Projector, Reflector), the nine centres, the meaning of definition versus openness, and how to read a chart. To be expanded.]
-            </p>
+
           </div>
 
           <div className="mt-10 pt-6 border-t border-wood-200">

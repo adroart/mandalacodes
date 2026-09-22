@@ -21,10 +21,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
    they are asked for so the tests can watch the order without a network. */
 const prose = vi.hoisted(() => ({ requested: [] as number[] }));
 vi.mock('../../data/synthesisData', () => ({
-  getSynthesis: async (n: number) => { prose.requested.push(n); return undefined; },
+  getSynthesis: async (n: number) => { prose.requested.push(n); return {}; },
 }));
 vi.mock('../../data/cardMarkdown', () => ({
-  getParsedCard: async () => undefined,
+  getParsedCard: async () => ({}),
 }));
 
 import { deckWarmOrder, warmOracleForOffline } from '../../lib/oracle/offlineWarm';
@@ -63,6 +63,7 @@ function browser(seed: Record<string, string> = {}): Harness {
   };
 
   vi.stubGlobal('window', {
+    addEventListener: () => {},
     setTimeout: (fn: () => void) => { queue.push(fn); return 0; },
     localStorage: {
       getItem: (key: string) => store.get(key) ?? null,
@@ -107,13 +108,15 @@ describe('warming the deck from a scanned card', () => {
     expect(h.requested[0]).toBe(1);
   });
 
-  it('warms the card on screen even once the whole deck has been stored', async () => {
+  it('does not trust a legacy persistent warm flag after reload', async () => {
     const h = browser({ [WARM_FLAG_KEY]: '1' });
 
     warmOracleForOffline({ startAt: 23 });
     await h.pumpUntil(() => h.requested.length >= 1);
 
-    expect(h.requested).toEqual([23]);
+    expect(h.requested[0]).toBe(23);
+    await h.pumpUntil(() => h.requested.length >= 2);
+    expect(h.requested.slice(0, 2)).toEqual([23, 24]);
   });
 
   it('covers all 64 cards exactly once whichever card it starts from', () => {

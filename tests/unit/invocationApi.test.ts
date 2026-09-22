@@ -29,7 +29,7 @@ describe('invocation API boundary', () => {
   });
 
   it('returns a direct draft and refreshes linked markdown from recorder transcripts', async () => {
-    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com' }, session: { id: 's' } });
+    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com', emailVerified: true }, session: { id: 's' } });
     const draft = { id: 'draft-1', hexagram_number: 22, session_id: 'session-1', title: 'Grace', updated_at: 'now' };
     const blocks = [{ id: 'segment:seg-1', kind: 'segment', segment_id: 'seg-1', markdown: 'Stale', sort_order: 0 }];
     const db = {
@@ -52,7 +52,7 @@ describe('invocation API boundary', () => {
   });
 
   it('publishes a full version response and batches blocks, transcripts, version, and live promotion', async () => {
-    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com' }, session: { id: 's' } });
+    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com', emailVerified: true }, session: { id: 's' } });
     const sqlSeen: string[] = []; const batches: unknown[][] = [];
     const db = {
       prepare: vi.fn((sql: string) => { sqlSeen.push(sql); return { bind: vi.fn(() => ({
@@ -75,7 +75,7 @@ describe('invocation API boundary', () => {
   });
 
   it('rejects a linked segment outside the owned session before writing R2', async () => {
-    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com' }, session: { id: 's' } });
+    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com', emailVerified: true }, session: { id: 's' } });
     const db = { prepare: vi.fn((sql: string) => ({ bind: vi.fn(() => ({ first: vi.fn().mockResolvedValue(sql.includes('oracle_reflection_segments') ? null : sql.includes('idempotency_key') ? null : {}) })) })) };
     const bucket = { put: vi.fn() };
     const draft = { id: 'draft-1', hexagramNumber: 22, sessionId: 'session-1', title: 'Grace', updatedAt: 'now', blocks: [{ id: 'segment:foreign', kind: 'segment', segmentId: 'foreign', markdown: 'No', sortOrder: 0 }] };
@@ -86,7 +86,7 @@ describe('invocation API boundary', () => {
   });
 
   it('returns version history as a direct array', async () => {
-    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com' }, session: { id: 's' } });
+    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com', emailVerified: true }, session: { id: 's' } });
     const row = { id: 'v1', hexagram_number: 22, version_number: 1, title: 'Grace', markdown_body: 'Body', artifact_key: 'private.md', author_user_id: 'admin-1', created_at: 'now' };
     const db = { prepare: vi.fn(() => ({ bind: vi.fn(() => ({ all: vi.fn().mockResolvedValue({ results: [row] }) })) })) };
     const { onRequestGet } = await import('../../functions/api/oracle/invocations/[number]/versions');
@@ -95,7 +95,7 @@ describe('invocation API boundary', () => {
   });
 
   it('returns rollback as a direct full version', async () => {
-    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com' }, session: { id: 's' } });
+    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com', emailVerified: true }, session: { id: 's' } });
     const source = { id: 'v1', hexagram_number: 22, draft_id: 'draft-1', version_number: 1, title: 'Grace', markdown_body: 'Body', artifact_key: 'old.md', author_user_id: 'admin-1', created_at: 'old' };
     const db = { prepare: vi.fn((sql: string) => ({ bind: vi.fn(() => ({ first: vi.fn().mockResolvedValue(sql.includes('COALESCE') ? { version: 2 } : source) })) })), batch: vi.fn().mockResolvedValue([]) };
     const bucket = { put: vi.fn().mockResolvedValue(undefined), delete: vi.fn().mockResolvedValue(undefined) };
@@ -105,7 +105,7 @@ describe('invocation API boundary', () => {
   });
 
   it('rejects publishing a draft not owned by the administrator before R2 writes', async () => {
-    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com' }, session: { id: 's' } });
+    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com', emailVerified: true }, session: { id: 's' } });
     const db = { prepare: vi.fn((sql: string) => ({ bind: vi.fn(() => ({ first: vi.fn().mockResolvedValue(sql.includes('oracle_invocation_drafts') ? null : sql.includes('idempotency_key') ? null : {}) })) })) };
     const bucket = { put: vi.fn() };
     const draft = { id: 'foreign-draft', hexagramNumber: 22, sessionId: 'session-1', title: 'Grace', updatedAt: 'now', blocks: [] };
@@ -123,7 +123,7 @@ describe('invocation API boundary', () => {
   });
 
   it('cleans up only the losing request artifact on a concurrent version collision', async () => {
-    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com' }, session: { id: 's' } });
+    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com', emailVerified: true }, session: { id: 's' } });
     const uuid = vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('loser-request-id' as `${string}-${string}-${string}-${string}-${string}`);
     const db = {
       prepare: vi.fn((sql: string) => ({ bind: vi.fn(() => ({ first: vi.fn().mockResolvedValue(sql.includes('COALESCE') ? { version: 3 } : sql.includes('idempotency_key') ? null : {}) })) })),

@@ -125,7 +125,7 @@ test.describe('/account/pieces', () => {
     await expect(worksLink).toBeVisible();
     await expect(worksLink).toHaveAttribute(
       'href',
-      'https://adrianrasmussen.com/creations/multidimensional-art/universal-language',
+      '/api/auth/handoff?next=%2Fcreations%2Fmultidimensional-art%2Funiversal-language',
     );
 
     await assertFourStandardChecks(page, consoleErrors);

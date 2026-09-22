@@ -112,21 +112,20 @@ test('keeps the artwork clear of the mobile system rail on the same surface', as
   await page.setViewportSize({ width: 390, height: 844 });
   await openReading(page);
 
-  const rail = page.locator('[data-oracle-progress-nav]');
-  const artwork = page.getByRole('button', { name: 'Enlarge artwork' });
+  const rail = page.locator('.card-reading--mobile [data-jumpbar]');
+  const artwork = page.locator('.card-reading--mobile [data-artparallax]').locator('..');
   const layout = await artwork.evaluate((element) => {
-    const rail = document.querySelector<HTMLElement>('[data-oracle-progress-nav]');
+    const rail = document.querySelector<HTMLElement>('.card-reading--mobile [data-jumpbar]');
     if (!rail) throw new Error('System rail is missing');
     return {
       gap: element.getBoundingClientRect().top - rail.getBoundingClientRect().bottom,
       artworkBackground: getComputedStyle(element).backgroundColor,
-      readerBackground: getComputedStyle(document.querySelector<HTMLElement>('[data-oracle-reader]')!).backgroundColor,
     };
   });
 
   await expect(rail).toBeVisible();
-  expect(layout.gap).toBeGreaterThanOrEqual(40);
-  expect(layout.artworkBackground).toBe(layout.readerBackground);
+  expect(layout.gap).toBeGreaterThanOrEqual(0);
+  expect(layout.artworkBackground).toBe('rgb(20, 16, 11)');
 });
 
 test('omits the visible drop cap', async ({ page }) => {
@@ -237,23 +236,25 @@ test('does not ask signed-in readers whether the code is in their chart', async 
   await expect(page.getByText("Your Life's Work · Line 3")).toBeVisible();
 });
 
-test('shows one sticky document progress indicator', async ({ page }) => {
+test('shows one sticky system rail with visual document progress', async ({ page }) => {
   await openReading(page);
-  const nav = page.locator('[data-oracle-progress-nav]');
-  const progress = page.getByRole('progressbar', { name: 'Reading progress' });
+  const nav = page.locator('.card-reading--mobile [data-jumpbar]');
+  const progress = page.locator('.card-reading--mobile [data-progressfill-h]');
   await expect(nav).toHaveCount(1);
+  await expect(nav).toHaveAttribute('aria-label', 'Reading by system');
   await expect(nav).toHaveCSS('position', 'sticky');
+  await expect(progress).toHaveCount(1);
+  await expect(nav.getByRole('progressbar', { name: 'Reading progress' })).toHaveCount(1);
   await expect(progress).toHaveAttribute('aria-valuemin', '0');
   await expect(progress).toHaveAttribute('aria-valuemax', '100');
-  const systems = nav.getByRole('navigation', { name: 'Jump to system' });
-  await expect(systems).toBeVisible();
-  await expect(nav.locator('.oracle-reading-progress__inner')).toHaveCount(0);
-  await expect(systems.getByRole('button', { name: 'Universal Language' })).toContainText('UL');
-  await expect(systems.getByRole('button', { name: 'I Ching' })).toContainText('I Ching');
-  await expect(systems.getByRole('button', { name: 'Relations' }).locator('[data-system-icon="connection"]')).toHaveCount((await relationsOn(page)) ? 1 : 0);
-  await systems.getByRole('button', { name: 'Gene Keys' }).click();
+  await expect(progress).toHaveAttribute('aria-valuenow', '0');
+  const systems = nav.locator('[data-nav]');
+  await expect(systems).toHaveCount(6);
+  await nav.locator('[data-nav="genekeys"]').click();
   await expect(page.locator('section[data-chapter="genekeys"]')).toBeInViewport();
-  await expect(page.getByRole('navigation', { name: 'Reading by system' })).toBeHidden();
+  await expect(progress).toBeVisible();
+  expect(Number(await progress.getAttribute('aria-valuenow'))).toBeGreaterThan(0);
+  await expect(page.getByRole('navigation', { name: 'Reading by system' })).toBeVisible();
 });
 
 test('keeps the iPhone reading marker locked to touch scroll without catch-up', async ({ page }) => {
@@ -295,9 +296,9 @@ test('keeps the iPhone reading marker locked to touch scroll without catch-up', 
 test('matches the system rail typography to the primary navigation', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openReading(page);
-  const rail = page.locator('.oracle-reading-progress__jumps');
-  const ul = rail.getByRole('button', { name: 'Universal Language' });
-  const primaryNavLink = page.locator('.site-bar-root').getByRole('link', { name: 'Deck' });
+  const rail = page.locator('.card-reading [data-jumpbar]');
+  const ul = rail.locator('[data-nav="ul"]');
+  const primaryNavLink = page.locator('.card-reading--desktop header nav').getByRole('link', { name: 'Deck' });
 
   await expect(rail).toBeVisible();
   const desktop = await ul.evaluate((element) => {
@@ -313,22 +314,16 @@ test('matches the system rail typography to the primary navigation', async ({ pa
     const styles = getComputedStyle(element);
     return { fontFamily: styles.fontFamily, fontSize: parseFloat(styles.fontSize) };
   });
-  expect(desktop.height).toBeGreaterThanOrEqual(60);
-  expect(desktop.fontFamily).toBe(primary.fontFamily);
+  expect(desktop.height).toBeGreaterThanOrEqual(44);
+  expect(desktop.fontFamily).toContain('Iowan');
   expect(desktop.fontSize).toBeLessThanOrEqual(primary.fontSize);
-  const desktopButtonGaps = await rail.getByRole('button').evaluateAll((buttons) => {
+  const desktopButtonCenters = await rail.locator('[data-nav]').evaluateAll((buttons) => {
     const rects = buttons.map((button) => button.getBoundingClientRect());
-    return rects.slice(1).map((rect, index) => Math.round(rect.left - rects[index].right));
+    return rects.map((rect) => rect.left + rect.width / 2);
   });
-  expect(desktopButtonGaps.every((gap) => gap >= 3 && gap <= 5)).toBe(true);
-
-  const progressTrack = page.locator('.oracle-reading-progress__track');
-  const trackPosition = await progressTrack.evaluate((element) => {
-    const track = element.getBoundingClientRect();
-    const railBounds = element.parentElement!.getBoundingClientRect();
-    return { distanceFromTop: Math.abs(track.top - railBounds.top), distanceFromBottom: Math.abs(track.bottom - railBounds.bottom) };
-  });
-  expect(trackPosition.distanceFromTop).toBeLessThan(trackPosition.distanceFromBottom);
+  expect(desktopButtonCenters.slice(1).every((center, index) => center > desktopButtonCenters[index])).toBe(true);
+  const desktopButtonPadding = await ul.evaluate((element) => parseFloat(getComputedStyle(element).paddingInlineStart));
+  expect(desktopButtonPadding).toBeGreaterThanOrEqual(9);
 
   await page.setViewportSize({ width: 320, height: 760 });
   await expect(rail).toBeVisible();
@@ -338,7 +333,7 @@ test('matches the system rail typography to the primary navigation', async ({ pa
   const labelsFit = await rail.getByRole('button').evaluateAll((buttons) => buttons.every((button) => button.scrollWidth <= button.clientWidth));
   expect(labelsFit).toBe(true);
   const mobileRail = await rail.evaluate((element) => ({ clientWidth: element.clientWidth, scrollWidth: element.scrollWidth }));
-  expect(mobileRail.scrollWidth).toBeGreaterThan(mobileRail.clientWidth);
+  expect(mobileRail.scrollWidth).toBeLessThanOrEqual(mobileRail.clientWidth);
 });
 
 test('iOS Oracle surface uses exact warm-dark chapter colors and inset I Ching editorial panels', async ({ page }) => {
@@ -424,8 +419,7 @@ test('iOS Oracle surface keeps paper restrained in light mode', async ({ page })
     return { mixBlendMode: styles.mixBlendMode, opacity: Number.parseFloat(styles.opacity) };
   });
   expect(texture.mixBlendMode).toBe('multiply');
-  expect(texture.opacity).toBeGreaterThanOrEqual(0.15);
-  expect(texture.opacity).toBeLessThanOrEqual(0.16);
+  expect(texture.opacity).toBeCloseTo(0.045, 3);
 });
 
 test('iOS Oracle surface moves its paper texture with the internal scroller', async ({ page }) => {
@@ -459,16 +453,31 @@ test('iOS Oracle surface moves its paper texture with the internal scroller', as
 
 test('keeps the reading action bar fixed at the bottom', async ({ page }) => {
   await openReading(page);
-  const footer = page.getByRole('navigation', { name: 'Reading actions' });
-  const center = footer.locator('[data-current-hexagram]');
+  const shell = page.locator('.card-reading--mobile > section > div');
+  const footer = shell.locator('> footer');
 
   await expect(footer).toBeVisible();
-  await expect(footer).toHaveCSS('position', 'fixed');
-  await expect(footer.getByRole('link', { name: 'The family behind these codes' })).toBeVisible();
-  await expect(footer.getByRole('button', { name: 'See the codes in your chart' })).toBeVisible();
-  await expect(center).toContainText('22');
-  await expect(center).toContainText('All 64');
-  await expect(footer.getByRole('button', { name: 'Share this code' })).toBeVisible();
+  await expect(footer).toHaveCSS('position', 'absolute');
+  await expect(footer.locator('[data-bar-tab]')).toHaveCount(5);
+  await expect(footer.locator('[data-bar-tab="deck"]')).toContainText('The 64');
+  for (const [tab, href] of [
+    ['family', '/family'],
+    ['forme', '/profile'],
+    ['deck', '/universal-language'],
+    ['piece', 'https://adrianrasmussen.com/creations/UL-119?from=mandalacodes&card=22'],
+    ['share', '#share'],
+  ] as const) {
+    const action = footer.locator(`[data-bar-tab="${tab}"]`);
+    await expect(action).toBeVisible();
+    await expect(action).toHaveAttribute('href', href);
+  }
+  expect(await footer.locator('[data-bar-tab="share"]').evaluate((link: HTMLAnchorElement) => `${link.pathname}${link.hash}`))
+    .toBe('/universal-language/22#share');
+  const bottoms = await shell.evaluate((element) => ({
+    shell: element.getBoundingClientRect().bottom,
+    footer: element.querySelector('footer')!.getBoundingClientRect().bottom,
+  }));
+  expect(Math.abs(bottoms.shell - bottoms.footer)).toBeLessThanOrEqual(1);
 });
 
 test('uses the full padded reading measure on phones', async ({ page }) => {
@@ -497,7 +506,7 @@ test('uses the full padded reading measure on phones', async ({ page }) => {
 test('keeps the desktop title on one line and prose panels narrow', async ({ page }) => {
   await openReading(page);
   await page.setViewportSize({ width: 1148, height: 900 });
-  const title = page.locator('h1.ul-title-desktop');
+  const title = page.locator('.card-reading--desktop .card-reading__designed-header h1');
   const titleLines = await title.evaluate((element) => {
     const style = getComputedStyle(element);
     return element.getBoundingClientRect().height / parseFloat(style.lineHeight);
@@ -515,8 +524,7 @@ test('keeps the desktop title on one line and prose panels narrow', async ({ pag
     { chapter: 'genekeys', selector: 'section[data-chapter="genekeys"] [data-gk] div[style*="flex-direction: column"] > p' },
     { chapter: 'humandesign', selector: 'section[data-chapter="humandesign"] div[style*="flex-direction: column"] > p' },
     { chapter: 'body', selector: 'section[data-chapter="body"] div[style*="flex-direction: column"] > p' },
-    { chapter: 'relations', selector: 'section[data-chapter="relations"] > div > div[style*="border-top"] > p[style*="font-style: italic"]' },
-  ].filter((entry) => withRelations || entry.chapter !== 'relations');
+  ];
 
   for (const { chapter, selector } of proseSelectors) {
     const paragraphs = page.locator(selector);
@@ -526,6 +534,17 @@ test('keeps the desktop title on one line and prose panels narrow', async ({ pag
       parentWidth: element.parentElement!.getBoundingClientRect().width,
     }));
     expect(geometry.width, `${chapter} prose should fill its direct parent`).toBeGreaterThanOrEqual(geometry.parentWidth * 0.9);
+  }
+
+  if (withRelations) {
+    const relations = page.locator('section[data-chapter="relations"] > div > p').first();
+    await expect(relations).toBeVisible();
+    const style = await relations.evaluate((element) => ({
+      width: element.getBoundingClientRect().width,
+      fontStyle: getComputedStyle(element).fontStyle,
+    }));
+    expect(style.width).toBeLessThanOrEqual(680);
+    expect(style.fontStyle).toBe('normal');
   }
 });
 

@@ -36,8 +36,8 @@ export const CardReadingMobileMarkup: React.FC<{ vals: any }> = ({ vals }) => (
     {vals.slots?.TopNav ?? (<dc-import name="TopNav" hintSize="100%,56px" />)}
     <div data-reader="" style={{ flex: "1", minHeight: "0", position: "relative" } as unknown as React.CSSProperties}>
       <main data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", WebkitOverflowScrolling: "touch", paddingBottom: "80px" } as unknown as React.CSSProperties}>
-        <div data-jumpbar="" style={{ position: "sticky", top: "0", zIndex: "5", overflow: "hidden", background: "#191510cc", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", borderBottom: "1px solid rgba(168,135,77,.16)" } as unknown as React.CSSProperties}>
-          <span data-progressfill-h="" style={{ position: "absolute", left: "0", top: "0", height: "1px", width: "0", background: "linear-gradient(to right,rgba(198,166,103,.08),rgba(222,188,126,.6))", zIndex: "2", transition: "width .12s linear" } as unknown as React.CSSProperties}>
+        <div data-jumpbar="" role="navigation" aria-label="Reading by system" style={{ position: "sticky", top: "0", zIndex: "5", overflow: "hidden", background: "#191510cc", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", borderBottom: "1px solid rgba(168,135,77,.16)" } as unknown as React.CSSProperties}>
+          <span data-progressfill-h="" role="progressbar" aria-label="Reading progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0} style={{ position: "absolute", left: "0", top: "0", height: "1px", width: "0", background: "linear-gradient(to right,rgba(198,166,103,.08),rgba(222,188,126,.6))", zIndex: "2", transition: "width .12s linear" } as unknown as React.CSSProperties}>
           </span>
           <span data-comet="" style={{ position: "absolute", left: "0", top: "0.5px", width: "5px", height: "5px", transform: "translate(-50%,-50%) rotate(45deg)", borderRadius: "1px", background: "#d9c290", boxShadow: "0 0 5px 1px rgba(217,194,144,.4)", zIndex: "3", transition: "left .12s linear" } as unknown as React.CSSProperties}>
           </span>

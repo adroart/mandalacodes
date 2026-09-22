@@ -12,10 +12,10 @@ import {
   ledgerKindLabel,
   ledgerStateLabel,
   ledgerStateOf,
+  ledgerPlaceLabel,
   matchesSearch,
   matchesState,
   isLedgerState,
-  LEDGER_NO_PLACE_LABEL,
   LEDGER_STATE_OPTIONS,
   type LedgerRow,
   type LedgerStateFilter,
@@ -121,7 +121,7 @@ const RegistryLine: React.FC<{
     );
   }
 
-  const place = row.cityName ?? LEDGER_NO_PLACE_LABEL;
+  const place = ledgerPlaceLabel(row);
   const stateLine = ledgerStateLabel(ledgerStateOf(row));
   const piecePath = `/piece/${row.pieceId}${
     typeof row.editionNumber === 'number' ? `/${row.editionNumber}` : ''

@@ -10,6 +10,7 @@ import {
   cleanLedgerTitle,
   groupLedgerRows,
   ledgerKindLabel,
+  ledgerPlaceLabel,
   ledgerStateLabel,
   ledgerStateOf,
   ledgerStatusLine,
@@ -55,11 +56,40 @@ describe('ledgerStatusLine — the ruled grammar', () => {
   });
 });
 
-describe('ledgerStateOf — the three states', () => {
-  it('seeking → created, waiting for someone', () => {
-    expect(ledgerStateOf(row({ norm: 'seeking' }))).toBe('waiting-someone');
+describe('ledgerStateOf — keeper identity and public location', () => {
+  it('describes public, private, explicitly unplaced and unknown locations separately', () => {
+    expect(ledgerPlaceLabel(row({ cityName: 'Lisbon', claimOrdinal: 1 }))).toBe('Lisbon');
+    expect(ledgerPlaceLabel(row({ cityName: undefined, claimOrdinal: 1 }))).toBe('location private');
+    expect(ledgerPlaceLabel(row({ cityName: undefined, availableForClaim: true }))).toBe(LEDGER_NO_PLACE_LABEL);
+    expect(ledgerPlaceLabel(row({ cityName: undefined }))).toBe('public location unavailable');
   });
-  it('placed with a dream → dreams anchored', () => {
+  it('keeps a held piece with a withdrawn location out of waiting-for-someone', () => {
+    const heldPrivate = row({
+      norm: 'seeking',
+      cityName: undefined,
+      cityLabel: undefined,
+      onGlobe: false,
+      claimOrdinal: 2,
+    });
+    expect(ledgerStateOf(heldPrivate)).toBe('held-private');
+    expect(ledgerStateLabel('held-private')).toBe('held; location private');
+  });
+  it('keeps a held piece with a public location in its ordinary claimed state', () => {
+    expect(ledgerStateOf(row({
+      norm: 'placed',
+      cityName: 'Lisbon',
+      claimOrdinal: 1,
+      dream: 'to begin again',
+    }))).toBe('anchored');
+  });
+  it('an explicitly available piece remains created, waiting for someone', () => {
+    expect(ledgerStateOf(row({ norm: 'seeking', availableForClaim: true }))).toBe('waiting-someone');
+  });
+  it('missing or invalid claim identity stays neutral without explicit availability', () => {
+    expect(ledgerStateOf(row({ norm: 'seeking', claimOrdinal: undefined }))).toBe('location-unavailable');
+    expect(ledgerStateOf(row({ norm: 'seeking', claimOrdinal: 0 }))).toBe('location-unavailable');
+  });
+  it('placed with a public dream → dreams anchored', () => {
     expect(ledgerStateOf(row({ norm: 'placed', dream: 'to begin again' }))).toBe(
       'anchored',
     );
@@ -213,7 +243,7 @@ describe('sortLedgerRows', () => {
 
 describe('groupLedgerRows', () => {
   const anchored = row({ key: 'anchored', norm: 'placed', dream: 'a dream', cityName: 'Lisbon' });
-  const seeking = row({ key: 'seeking', norm: 'seeking', cityName: undefined });
+  const seeking = row({ key: 'seeking', norm: 'seeking', cityName: undefined, availableForClaim: true });
   const quiet = row({ key: 'quiet', norm: 'placed', dream: undefined, cityName: 'Berlin' });
 
   it('one list keeps everything under a single section', () => {

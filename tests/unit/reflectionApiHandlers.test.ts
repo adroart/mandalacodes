@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const getSession = vi.fn();
 vi.mock('../../lib/account/auth.server.js', () => ({ createAuth: () => ({ api: { getSession } }) }));
 
-const adminSession = { user: { id: 'admin-1', email: 'a@example.com' }, session: { id: 's' } };
+const adminSession = { user: { id: 'admin-1', email: 'a@example.com', emailVerified: true }, session: { id: 's' } };
 
 type SegmentRow = Record<string, unknown> & {
   id: string;
@@ -93,7 +93,7 @@ describe('reflection API boundary', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('returns capability only for an allowlisted server session', async () => {
-    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com' }, session: { id: 's' } });
+    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com', emailVerified: true }, session: { id: 's' } });
     const { onRequestGet } = await import('../../functions/api/oracle/reflections/capability');
     const response = await onRequestGet({ request: new Request('https://example.test/api/oracle/reflections/capability'), env: { DB: {}, ADMIN_EMAILS: 'A@example.com' }, params: {}, waitUntil: vi.fn() } as never);
     expect(response.status).toBe(200);
@@ -101,7 +101,7 @@ describe('reflection API boundary', () => {
   });
 
   it('fails closed for missing allowlist and missing sessions', async () => {
-    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com' }, session: { id: 's' } });
+    getSession.mockResolvedValue({ user: { id: 'admin-1', email: 'a@example.com', emailVerified: true }, session: { id: 's' } });
     const { onRequestGet } = await import('../../functions/api/oracle/reflections/capability');
     expect((await onRequestGet({ request: new Request('https://example.test'), env: { DB: {} }, params: {}, waitUntil: vi.fn() } as never)).status).toBe(403);
     getSession.mockResolvedValue(null);

@@ -21,7 +21,7 @@ const KEY = 'ul.profile.v1';
 
 test('no birth moment: rail invites, no card glows', async ({ page }) => {
   await page.goto('/universal-language');
-  await expect(page.getByText('Your codes', { exact: false })).toBeVisible();
+  await expect(page.getByText('Enter your birth time', { exact: true })).toBeVisible();
   await expect(page.locator('[data-oe-yours="1"]')).toHaveCount(0);
 });
 
@@ -36,7 +36,7 @@ test('birth moment set: rail confirms, the profile cards glow', async ({ page })
   await page.goto('/universal-language');
 
   // Rail switched to confirmation.
-  await expect(page.getByText('Your codes are linked', { exact: false })).toBeVisible();
+  await expect(page.getByText('Your placement is illuminated', { exact: true })).toBeVisible();
 
   // The deck glows exactly the profile's distinct gates (I Ching view default).
   const glowing = page.locator('[data-oe="ichgrid"] [data-oe-yours="1"]');
@@ -46,13 +46,14 @@ test('birth moment set: rail confirms, the profile cards glow', async ({ page })
   await page.screenshot({ path: 'test-results/oracle-entry-codes-glow.png', fullPage: false });
 });
 
-test('linked "Your codes" tile routes to the Atlas', async ({ page }) => {
+test('linked profile invitation routes to the Hologenetic profile', async ({ page }) => {
   const profile = makeProfile();
   await page.addInitScript(([key, val]) => {
     window.localStorage.setItem(key as string, val as string);
   }, [KEY, JSON.stringify(profile)] as const);
 
   await page.goto('/universal-language');
-  await page.getByText('Your codes are linked', { exact: false }).click();
-  await expect(page).toHaveURL(/\/atlas$/);
+  await page.getByRole('link', { name: 'See your full Hologenetic profile →' }).click();
+  await expect(page).toHaveURL(/\/profile$/);
+  await expect(page.getByRole('button', { name: 'Share', exact: true })).toBeVisible();
 });

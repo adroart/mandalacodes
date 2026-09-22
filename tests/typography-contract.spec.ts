@@ -26,16 +26,32 @@ async function expectComputedFontRole(element: Locator, role: FontRole) {
   expect(normalizeFontFamily(actual)).toEqual(normalizeFontFamily(expected));
 }
 
+async function expectComputedFontRoleFace(element: Locator, role: FontRole) {
+  await expect(element).toBeVisible();
+  const { actual, expected } = await element.evaluate((node, customProperty) => {
+    const styles = getComputedStyle(node);
+    return { actual: styles.fontFamily, expected: styles.getPropertyValue(customProperty) };
+  }, role);
+  expect(normalizeFontFamily(actual)[0]).toBe(normalizeFontFamily(expected)[0]);
+}
+
 async function waitForFonts(page: Page) {
   await page.evaluate(() => document.fonts.ready);
 }
 
 async function visibleSharedNavigationLabel(page: Page, scope = '.site-bar-root') {
-  const visibleLabel = page.locator(`${scope} .font-label:visible`).first();
-  if (await visibleLabel.count()) return visibleLabel;
+  const navigation = page.locator(scope);
+  const menuButton = navigation.getByRole('button', { name: 'Open menu' });
+  if (await menuButton.isVisible()) {
+    await menuButton.click();
+    const mobileLabel = page.getByRole('navigation', { name: 'Mobile navigation' }).locator('.font-label').first();
+    await expect(mobileLabel).toBeVisible();
+    return mobileLabel;
+  }
 
-  await page.locator(scope).getByRole('button', { name: 'Open menu' }).click();
-  return page.getByRole('navigation', { name: 'Mobile navigation' }).locator('.font-label').first();
+  const inlineLabel = navigation.locator('.font-label').first();
+  await expect(inlineLabel).toBeVisible();
+  return inlineLabel;
 }
 
 test('the oracle reading resolves typography through the shared roles', async ({ page }) => {
@@ -46,12 +62,14 @@ test('the oracle reading resolves typography through the shared roles', async ({
   await waitForFonts(page);
 
   const visibleTitle = page
-    .locator('.eb-reading .ul-title-mobile:visible h1, .eb-reading .ul-title-desktop:visible')
+    .locator('.card-reading__designed-header h1:visible')
     .first();
   const prose = page.locator('.eb-reading section[data-chapter] p:has(.ul-dropcap)').first();
   const navigation = await visibleSharedNavigationLabel(page);
 
-  await expectComputedFontRole(visibleTitle, '--font-display');
+  // The imported current frame declares the shared display face with its own
+  // shorter fallback list; the contract is the selected shared face.
+  await expectComputedFontRoleFace(visibleTitle, '--font-display');
   await expectComputedFontRole(prose, '--font-reading');
   await expectComputedFontRole(navigation, '--font-ui');
 });

@@ -24,7 +24,6 @@ import {
   sigilNumberFor,
   type EnrichedPiece,
 } from '../lib/atlas/record';
-import { loadPublicCatalog } from '../lib/atlas/catalog';
 import type { PublicCatalogEntry } from '../utils/catalog';
 import KinshipLayer from './atlas/KinshipLayer';
 import { useIdleFade } from './atlas/useIdleFade';
@@ -448,20 +447,9 @@ const AtlasPage: React.FC = () => {
     };
   }, []);
 
-  /* The public catalog (mandalas, signature pieces, jewelry) for the ledger's
-     OTHER KINDS sections. Fetched once per session via the shared loader; any
-     failure resolves to an empty list, so the sections fall back to their
-     placeholder rows rather than a broken surface. */
-  const [catalog, setCatalog] = useState<PublicCatalogEntry[]>([]);
-  useEffect(() => {
-    let active = true;
-    loadPublicCatalog().then((entries) => {
-      if (active) setCatalog(entries);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
+  // The retired catalogue is not a public inventory source. Actual lights
+  // come from the canonical Atlas projection above.
+  const catalog: PublicCatalogEntry[] = [];
 
   const retryAtlasFetch = () => {
     if (retrying) return;
@@ -889,6 +877,14 @@ const AtlasPage: React.FC = () => {
     }
     return out;
   }, [globeNodes]);
+
+  // The birth-place origin is not a public artwork location. The desktop
+  // invitation belongs only when the current filters leave a piece marker
+  // that a visitor can actually open.
+  const hasVisiblePieceMarker = useMemo(
+    () => cityClusters.some((node) => node.status !== 'origin'),
+    [cityClusters],
+  );
 
   /* Which cluster each piece key belongs to (piece key → cluster id). A single
      piece maps to itself; a member of a multi-piece city maps to `city:<id>`. */
@@ -1662,7 +1658,7 @@ const AtlasPage: React.FC = () => {
                         {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
                         <span className="ml-2 normal-case tracking-[0.02em] text-[12px] text-wood-500">
                           of {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
-                          {!isPhone && ' · touch a light to read its dream'}
+                          {!isPhone && hasVisiblePieceMarker && ' · touch a light to read its dream'}
                         </span>
                       </>
                     )}

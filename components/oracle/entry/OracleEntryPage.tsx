@@ -7,7 +7,8 @@
         and "your codes" open the existing overlays; entering a reading routes to
         the full card page; opening a card is recorded in the journal.
    Everything visible is the generated design; this file is the wiring. */
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { useDialogFocus } from '../../../hooks/useDialogFocus';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../../DarkModeContext';
 import { ALL_CARDS, CARD_BY_NUMBER, type OracleCard } from '../../../data/oracleData';
@@ -69,13 +70,15 @@ function hexLines(u: string, l: string): boolean[] {
 }
 
 /* ── reused overlay shell ───────────────────────────────────────────────────── */
-const Overlay: React.FC<{ onClose: () => void; width: string; children: React.ReactNode }> = ({ onClose, width, children }) => (
-  <div onClick={onClose} className="fixed inset-0 z-[80] flex items-center justify-center p-6 overflow-auto bg-[rgba(30,26,22,0.55)] [backdrop-filter:blur(5px)]">
-    <div onClick={(e) => e.stopPropagation()} className="bg-paper-50 shadow-[0_24px_60px_rgba(30,26,22,0.4)] cursor-default" style={{ width }}>
+const Overlay: React.FC<{ onClose: () => void; width: string; children: React.ReactNode; label: string }> = ({ onClose, width, children, label }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  useDialogFocus(ref, true, onClose);
+  return <div onClick={onClose} className="fixed inset-0 z-[80] flex items-center justify-center p-6 overflow-auto bg-[rgba(30,26,22,0.55)] [backdrop-filter:blur(5px)]">
+    <div ref={ref} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={(e) => e.stopPropagation()} className="bg-paper-50 shadow-[0_24px_60px_rgba(30,26,22,0.4)] cursor-default" style={{ width }}>
       {children}
     </div>
-  </div>
-);
+  </div>;
+};
 
 const OracleEntryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -223,7 +226,7 @@ const OracleEntryPage: React.FC = () => {
 
       {/* Systems overlay (kept from the previous index — the rail links target it) */}
       {systemsOpen && (
-        <Overlay onClose={() => setSystemsOpen(false)} width="min(580px, 94vw)">
+        <Overlay label="Oracle systems" onClose={() => setSystemsOpen(false)} width="min(580px, 94vw)">
           <div className="px-8 pt-[30px] pb-[22px] border-b border-wood-200">
             <p className="m-0 mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">The Universal Language</p>
             <h2 className="m-0 font-display font-medium text-[34px] leading-[1.04] text-wood-900">Four systems, one frequency</h2>
@@ -255,7 +258,7 @@ const OracleEntryPage: React.FC = () => {
 
       {/* "Your codes" → link your birth moment (kept from the previous index) */}
       {gridOpen && (
-        <Overlay onClose={() => setGridOpen(false)} width="min(460px, 94vw)">
+        <Overlay label="Your codes" onClose={() => setGridOpen(false)} width="min(460px, 94vw)">
           <div className="px-8 pt-8 pb-7">
             <p className="m-0 mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">Sign in to yours</p>
             <h2 className="m-0 font-display font-medium text-[30px] leading-[1.05] text-wood-900">Link your birth moment</h2>

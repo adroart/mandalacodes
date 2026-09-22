@@ -100,6 +100,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       share:'<svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M10 30c0-9 6-13 15-13M18 10l8 7-8 7"/></svg>'
     };
     this._wired = new WeakSet();
+    this.rootEl?.querySelector('[data-bar-tab="deck"]')?.setAttribute('data-current-hexagram', '');
     let tries = 0;
     const tick = () => {
       let pending = false;
@@ -197,6 +198,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       if (artPar) artPar.style.transform = 'scale(1.12) translateY(' + (pos * 0.12) + 'px)';
       const den = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
       const frac = Math.max(0, Math.min(1, pos / den));
+      if (hfill) hfill.setAttribute('aria-valuenow', String(Math.round(frac * 100)));
 
       /* Progress marker: the bar and its diamond track scroll across the full
          width of the reader, empty at the top and complete at the bottom, rather

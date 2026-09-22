@@ -81,7 +81,7 @@ test('light mode reaches every remaining paper route family', async ({ page }) =
   const surfaces = [
     { route: '/gateway', selector: '#main-content > .route-fade-in > div', property: 'background-color', value: 'rgb(243, 239, 231)' },
     { route: '/family', selector: '.family-reveal', property: 'background-color', value: 'rgb(243, 239, 231)' },
-    { route: '/make', selector: '#main-content .bg-paper-100', property: 'background-color', value: 'rgb(234, 228, 215)' },
+    { route: '/make', selector: '#main-content section', property: 'background-color', value: 'rgb(243, 239, 231)' },
     { route: '/piece/UL-100', selector: '#main-content > .route-fade-in > .bg-paper-100', property: 'background-color', value: 'rgb(234, 228, 215)' },
     { route: '/admin/login', selector: '#main-content h1', property: 'color', value: 'rgb(39, 34, 25)' },
     { route: '/account', selector: '#main-content h1', property: 'color', value: 'rgb(39, 34, 25)' },
@@ -160,13 +160,14 @@ for (const theme of [
   });
 }
 
-test('Homecoming is a themed paper form rather than a permanently dark stage', async ({ page }) => {
+test('Homecoming no-input boundary remains on the themed paper surface', async ({ page }) => {
   await setTheme(page, false);
   await page.goto(`${BASE}/atlas/homecoming`);
 
-  const surface = page.locator('[data-homecoming-page]');
+  const surface = page.locator('#main-content section');
   await expect(surface).toHaveCSS('background-color', 'rgb(243, 239, 231)');
-  await expect(surface.getByRole('heading', { name: 'bring your piece home' })).toHaveCSS('color', 'rgb(122, 90, 34)');
+  await expect(surface.getByRole('heading', { name: 'Your physical piece' })).toHaveCSS('color', 'rgb(39, 34, 25)');
+  await expect(surface.getByText('Collector registration is not open here.', { exact: false })).toBeVisible();
 });
 
 for (const theme of [
