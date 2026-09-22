@@ -116,6 +116,12 @@ Joy grows by being shared. (58)
 
 Read the seven as one thing. The subject is always the energy, and the rest of the sentence is what it does. Never once the other way round.
 
+Said aloud (Adrian, 2026-09-22, on "Readiness keeps its hours in you"): "Why do you say readiness keeps its hours in you? That doesn't read in English." Say the subject and its verb aloud on their own, to a friend. Joy grows: yes. Desire burns: yes. Readiness keeps its hours: no. A pairing you would only write is a fault however good the rest of the sentence is. Then say the whole line. Every phrase in it must be one a person would say at a table.
+
+Say the card's own plain word (Adrian, same day): "Why don't you just say this is the end of the cycle? Why aren't you clear just in the beginning?" When the card already names the thing, use its word. Three rewrites of card 52 went round "the end of a cycle" (a piece of work, a push that has run its course, something you have been pushing at) before coming back to it. The card's word is not a first draft to improve on.
+
+Slop (Adrian, same day, on "Nothing much happens outside while the inside catches up"): "It's like you're not saying anything. This is slop." A line is slop when it would sit on any of the sixty-four without anyone noticing. The tells a script can catch are in `scripts/lint-slop.mjs`; the test that matters is to hand the line to someone holding the sixty-four keyword lists and ask which card it came from.
+
 Sentence two says how it behaves, one fact. The last sentence is the choice and what grows from it, said as what will happen: "So wait to be asked and your words will be received as support." Never "this energy" as a subject in the body of the entrance; the frame is given once, if at all, as "The energy of this code is".
 
 Where it comes from. Read the whole card first. The entrance is a summary of the totality: the I Ching, the Human Design drive, the Gene Keys arc and the body together, never one section. Card 58 is the joy of being alive AND the wish to make things better AND the growth by sharing; "the joy of being alive" alone was a quarter of it. Every fact in the entrance must be on the page; nothing invented.
