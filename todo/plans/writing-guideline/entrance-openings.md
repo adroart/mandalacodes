@@ -7,7 +7,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 02 · The ground in you takes in whatever is given and turns it into growth.  (Beyond the Shell)
 03 · The surge of something new finds its shape by trying.  (Messengers of the Infinite)
 04 · The wish to make sense of things asks and asks, until understanding comes up on its own.  (Veils of Knowledge)
-05 · The wait for something you know is coming has its own weight.  (The Space Between Time)
+05 · An answer already on its way has a weight you can feel before it comes.  (The Space Between Time)
 06 · Friction comes with closeness and wears through the wall between two people.  (Harmonious Mirage)
 07 · Guidance gathers scattered people into one body, and it does its work by listening.  (Essential Nexus)
 08 · The freedom of being yourself, with nothing put on, finds the ones it belongs with.  (Odyssey of Freedom)
@@ -25,14 +25,14 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 20 · Calm decides in the moment, through the whole of you, and what comes out is clear.  (Emerging as the Code)
 21 · The will in you takes charge where others stall and carries the whole of what follows.  (Beyond Binary)
 22 · Warmth leaves whoever sits with you lighter than they came.  (Treasure of the Way)
-23 · A knowing arrives in you before the words for it do.  (Beneath the Surface)
+23 · Clarity arrives before the words for it do.  (Beneath the Surface)
 24 · A pull takes you back to where a thing began so it can start again.  (Frequency Flutter)
 25 · Love goes from you to everything alike, with no plan in it.  (The Mysteries Play)
 26 · The drive to make things happen grows stronger in you the longer it is held in.  (Lighter Than a Feather)
 27 · A full heart goes out to whatever is too small to feed itself and fills as it gives.  (Inner Majesty)
 28 · The hunger for purpose asks of every day whether it mattered.  (Becoming the Mystery)
 29 · The whole yes goes all the way in before you can see where it leads.  (All In)
-30 · Desire is in you from the start, the wanting that leans a person out toward the world.  (Sparking the Blaze)
+30 · Desire was in you before you had anything to want.  (Sparking the Blaze)
 31 · Influence passes between people and turns them toward whoever says what they already felt.  (Theater of Truth)
 32 · The sense of what will last keeps a thing alive after the newness has worn off.  (Art of Living)
 33 · Hindsight draws you off alone until what happened makes sense, then sends you back to tell it.  (Echos of Time)
@@ -71,13 +71,13 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 ## The five whole entrances, pilot (2026-09-22)
 
 05 · The Space Between Time
-The wait for something you know is coming has its own weight. Nothing you do brings it any closer. So keep your hours and you will be rested when it arrives.
+An answer already on its way has a weight you can feel before it comes. Nothing you do brings it sooner. So keep your hours and you will be rested when it arrives.
 
 23 · Beneath the Surface
-A knowing arrives in you before the words for it do. It picks the one thing that matters out of everything else. So say that one thing and people will hear it.
+Clarity arrives before the words for it do. It picks the one thing that matters out of the tangle. So say that thing and people will hear it.
 
 30 · Sparking the Blaze
-Desire is in you from the start, the wanting that leans a person out toward the world. The reach under every shape it takes is the same. So feel it all the way through and it will show you what it was really after.
+Desire was in you before you had anything to want. The reach under every shape it takes is the same. So feel it all the way through and you will find what it was after.
 
 43 · Cipher of Knowledge
 Sudden knowing arrives whole before you have any way to say how it came. It comes as a flash from the one direction you were not facing. So leave some quiet in the day and it will find you there.
