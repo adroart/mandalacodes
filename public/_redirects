@@ -1,6 +1,8 @@
 # Mandala Codes — redirect rules
 # Processed top-to-bottom, first match wins.
 
+/media/* https://mandalacodes-media.lightcodes.workers.dev/media/:splat 302
+
 # Legacy /oracle/* paths (in case anyone copied a URL from the old domain
 # before adrianrasmussen.com's 301s were in place). The SPA also handles
 # these via <Navigate>, but a server-side 301 is preferred for crawlers.
