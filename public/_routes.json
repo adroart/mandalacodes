@@ -3,6 +3,7 @@
   "include": [
     "/api/*",
     "/qr/*",
+    "/media/*",
     "/universal-language/*",
     "/piece/*"
   ],
