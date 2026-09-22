@@ -12,11 +12,9 @@ export async function getPublishedArticles(): Promise<Article[]> {
 // Recreates the design's `renderVals()` logic so the Library landing and the
 // Reading Room share one source of truth for covers, tints, plates and meta.
 
-const CLOUD = 'https://res.cloudinary.com/dobbosnda/image/upload'
-
-/** Cloudinary cover URL at a given size (square by default). */
+/** Project-owned Cloudflare media URL at a given size (square by default). */
 export function cloud(id: string, w: number, h?: number): string {
-  return `${CLOUD}/f_auto,q_auto,w_${w},h_${h ?? w},c_fill,g_center/${id}`
+  return `/media/image/${id.split('/').map(encodeURIComponent).join('/')}?w=${w}&h=${h ?? w}&gravity=center`
 }
 
 /** Deck plates used as elegant fallbacks when an article has no cover set. */

@@ -37,7 +37,7 @@ import AtlasOverture from './atlas/AtlasOverture';
 import FeaturedDream, { type FeaturedDreamData } from './atlas/FeaturedDream';
 import SelectionInscription from './atlas/SelectionInscription';
 import { pieceCode } from '../utils/pieceCode';
-import { img } from '../utils/cloudinary';
+import { img } from '../utils/media';
 import { FULL_ARCHIVE } from '../data/mockData';
 import { CITIES_BY_ID } from '../data/cities';
 import { loadAtlasState } from '../lib/atlas/state';
@@ -1076,7 +1076,7 @@ const AtlasPage: React.FC = () => {
         ...row,
         kind,
         cardNumber,
-        // coverImage on record is a Cloudinary public id; the wall needs
+        // coverImage on record is a media object ID; the wall needs
         // delivery URLs (tile-sized, and larger for the opened record).
         coverImage: art?.coverImage ? img(art.coverImage, { w: 640 }) : undefined,
         coverImageLarge: art?.coverImage

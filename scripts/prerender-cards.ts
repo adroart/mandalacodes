@@ -11,7 +11,7 @@
  * differs — title, description, canonical, Open Graph / Twitter tags, and a
  * JSON-LD CreativeWork block. No headless browser involved.
  *
- * The per-card image reuses the exact Cloudinary crop
+ * The per-card image reuses the same square media crop
  * (functions/universal-language/[number].js's OG_CROP) that the edge
  * function has served as the card's share preview since it existed —
  * functions/universal-language/[number].js now serves these prerendered
@@ -33,9 +33,6 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://mandalacodes.com';
-const CLOUDINARY = 'https://res.cloudinary.com/dobbosnda/image/upload';
-// Must match OG_CROP in functions/universal-language/[number].js.
-const OG_CROP = 'f_auto,q_auto,w_300,h_300,c_fill,g_center';
 
 interface CorpusCard {
   number: number;
@@ -88,7 +85,7 @@ async function main() {
     const description = firstSentence(card.essence, card.keywords);
     const imageId = card.artworks[0]?.coverImage;
     if (!imageId) throw new Error(`[prerender] card ${number} has no artwork coverImage to build an og:image from`);
-    const image = `${CLOUDINARY}/${OG_CROP}/${imageId}`;
+    const image = `${SITE_URL}/media/image/${imageId.split('/').map(encodeURIComponent).join('/')}?w=400&h=400&gravity=center`;
 
     const titleEsc = escapeHtml(title);
     const descEsc = escapeHtml(description);

@@ -23,10 +23,10 @@ export const MATERIALS_MAX_LENGTH = 500;
 export const MAX_IMAGES = 12;
 export const IMAGE_ID_MAX_LENGTH = 200;
 
-// Cloudinary public IDs are folder-path-like: letters, digits, underscore,
+// Media object IDs are folder-path-like: letters, digits, underscore,
 // hyphen, dot, forward slash (e.g. "adrian-website/creations/mandala/seed-of-life").
 // No spaces or other punctuation — keeps them safe to drop straight into a
-// delivery URL (see utils/cloudinary.ts) without further escaping.
+// delivery URL (see utils/media.ts) without further escaping.
 const IMAGE_ID_PATTERN = /^[A-Za-z0-9_\-./]+$/;
 
 /** The raw admin-editor input shape (whitelisted fields only). */
@@ -76,7 +76,7 @@ function normalizeText(v: unknown): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
-/** True for a well-formed Cloudinary public id: non-empty, within length,
+/** True for a well-formed media object id: non-empty, within length,
  *  and drawn from the safe charset above. */
 export function isValidImageId(id: unknown): id is string {
   return (

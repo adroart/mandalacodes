@@ -3,7 +3,7 @@ import { useAccount } from '../lib/account/useAccount';
 import AdminLayout from './AdminLayout';
 import TypeaheadPicker from './shared/TypeaheadPicker';
 import { FULL_ARCHIVE } from '../data/mockData';
-import { img } from '../utils/cloudinary';
+import { img } from '../utils/media';
 import { atlasFailureMessage } from '../lib/atlas/boundary';
 import {
     isValidImageId,
@@ -158,7 +158,7 @@ const PiecePicker: React.FC<{
 };
 
 // ───────────────────────────────────────────────────────────────────────────
-// Image gallery editor — add/remove Cloudinary public ids with a preview.
+// Image gallery editor — add/remove media object IDs with a preview.
 // ───────────────────────────────────────────────────────────────────────────
 
 const ImagesEditor: React.FC<{
@@ -172,7 +172,7 @@ const ImagesEditor: React.FC<{
         const id = draft.trim();
         if (!id) return;
         if (!isValidImageId(id)) {
-            setError('That doesn\'t look like a Cloudinary public id (letters, digits, · _ - . / only).');
+            setError('That doesn\'t look like a media ID (letters, digits, · _ - . / only).');
             return;
         }
         if (images.includes(id)) {

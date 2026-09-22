@@ -20,7 +20,7 @@ function idle(fn: () => void): void {
  * fetch (vite.config.ts, oracle-app-chunks).
  *
  * The artwork is deliberately NOT part of this. The worker no longer caches
- * res.cloudinary.com at all (see the long note in vite.config.ts), so
+ * production media at all (see the long note in vite.config.ts), so
  * prefetching the 64 hero images stored nothing and cost every fresh browser
  * about 17 MB of Cloudinary bandwidth. Measured 2026-09-13: the Playwright
  * suite alone, opening card pages ~75 times a run across ~35 CI runs a day,

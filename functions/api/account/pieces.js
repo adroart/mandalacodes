@@ -20,7 +20,7 @@
  */
 
 import { FULL_ARCHIVE } from '../../../data/mockData';
-import { img } from '../../../utils/cloudinary';
+import { img } from '../../../utils/media';
 import { requireUser } from '../_lib/auth.js';
 
 /** True when a D1 error means the shared migrations haven't landed yet. */

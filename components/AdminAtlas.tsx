@@ -2367,7 +2367,7 @@ const CatalogForm: React.FC<{
                 </div>
 
                 <div>
-                    <label className={fieldLabel}>Cover photo (Cloudinary id)</label>
+                    <label className={fieldLabel}>Cover photo (media ID)</label>
                     <input
                         type="text"
                         value={form.coverImage}

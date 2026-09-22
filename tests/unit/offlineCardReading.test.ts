@@ -135,7 +135,7 @@ describe('warming the deck from a scanned card', () => {
 });
 
 describe('the warm pass never fetches artwork', () => {
-  /* The worker does not cache res.cloudinary.com (vite.config.ts), so an
+  /* The worker does not cache production media (vite.config.ts), so an
      artwork prefetch stores nothing and only spends bandwidth: 64 images,
      about 17 MB, for every fresh browser that opens a card or the deck. The
      Playwright suite alone burned 70 GB in one day that way (2026-09-12). */

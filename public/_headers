@@ -4,7 +4,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(self), geolocation=()
   X-XSS-Protection: 1; mode=block
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-pFw5drxcz5hxWmgQzDuS9n2lZe9BBq0DXazug4G6vJ4=' https://static.cloudflareinsights.com; script-src-elem 'self' 'sha256-pFw5drxcz5hxWmgQzDuS9n2lZe9BBq0DXazug4G6vJ4=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://res.cloudinary.com data: blob:; media-src 'self' https://res.cloudinary.com blob:; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://accounts.google.com
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-pFw5drxcz5hxWmgQzDuS9n2lZe9BBq0DXazug4G6vJ4=' https://static.cloudflareinsights.com; script-src-elem 'self' 'sha256-pFw5drxcz5hxWmgQzDuS9n2lZe9BBq0DXazug4G6vJ4=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://accounts.google.com
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
 # The service worker script and the document it bootstraps must never be
