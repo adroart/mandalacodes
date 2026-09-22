@@ -23,6 +23,19 @@ were written in one week, each restating the rule in its own words, and the
 paraphrases drifted. That is where "the wait", "a knowing" and "keeps its hours"
 came from.
 
+## No Fable review inside a card pass
+
+Adrian, 2026-09-22: "I don't want the other one to be doing the Fable review on
+it." A card pass is written by Opus and gated by the checks below. Fable writes
+the template and is read when the shape itself is in question, which is a
+different job from passing judgement on each card as it is written. A per-card
+review round costs a second full reading of the same six thousand words, which is
+the very double load this note exists to remove, and it puts a second opinion
+between the writer and Adrian, who is the one whose call it is.
+
+So: no Fable round per card, on either stream. The checks are the gate, and
+Adrian reads the card.
+
 ## What it runs on itself before it answers
 
 - `npm run lint:prose` and `npm run lint:tells` for the manuscript
