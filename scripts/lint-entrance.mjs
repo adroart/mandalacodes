@@ -3,9 +3,16 @@
  * Entrance lint. Runs every rule marked AUTO in oracle/ENTRANCE-CHECKLIST.md
  * against a card's entrance (the three or four sentences under the keynotes).
  *
- * The prose linter next to this one (scripts/lint-oracle-prose.ts) checks whole
- * manuscripts for italics, em dashes, editorial leaks and banned vocabulary. It
- * never looks at the entrance as a shape, which is what this adds.
+ * Two checkers already exist and this one does not repeat them. scripts/
+ * lint-oracle-prose.ts checks whole manuscripts for italics, em dashes,
+ * editorial leaks and banned vocabulary. todo/plans/writing-guideline/
+ * sentence-check.mjs, written in the card-writing session on 2026-09-18, checks
+ * any paragraph for sentences over 25 words, three or more commas, fragments,
+ * em dashes, italics, deck phrases and a content word used twice. Rules 10, 23,
+ * 41 and 42 of the checklist were dropped from here on 2026-09-22 because that
+ * script already runs them. What is left is the entrance as a shape: the energy
+ * as the subject, no action wearing a noun, no advice in the tail, the title
+ * kept out, the felt word, sentence count.
  *
  * Usage:
  *   node scripts/lint-entrance.mjs <file>     # one entrance per block, "NN · Title" then the prose
@@ -36,7 +43,6 @@ function checkEntrance(id, title, text) {
 
   const w1 = words(S[0] || '').length;
   if (w1 > 20) push(9, `sentence one is ${w1} words; twenty at most, and Adrian's card 38 is exactly twenty`);
-  S.forEach((s, i) => { const n = words(s).length; if (n > 25) push(10, `sentence ${i + 1} is ${n} words`); });
 
   const last = S[S.length - 1] || '';
   if (/^(so\s+)?(remember|try|make sure|be sure|allow|let yourself|embrace|practice|choose to)\b/i.test(last.trim())) push(18, 'last sentence reads as advice');
@@ -57,8 +63,6 @@ function checkEntrance(id, title, text) {
   S.forEach((s, i) => {
     const its = (s.toLowerCase().match(/\bit\b/g) || []).length;
     if (its > 2) push(39, `sentence ${i + 1} has ${its} uses of "it"`);
-    const commas = (s.match(/,/g) || []).length;
-    if (commas > 1) push(42, `sentence ${i + 1} has ${commas} commas`);
   });
 
   for (const v of VIRTUES) if (new RegExp(`\\b${v}\\b`).test(all)) push(12, `virtue word "${v}"`);
@@ -71,7 +75,6 @@ function checkEntrance(id, title, text) {
   const content = words(text).filter((w) => !STOP.has(w) && w.length > 2);
   const seen = new Map();
   for (const w of content) { const k = w.replace(/(ing|ed|es|s)$/, ''); seen.set(k, (seen.get(k) || 0) + 1); }
-  for (const [k, n] of seen) if (n > 1) warn(41, `"${k}" appears ${n} times; Adrian repeats wave on card 1 on purpose`);
 
   return { id, title, text, issues: out, sentences: S };
 }

@@ -179,6 +179,7 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 
 ## Oracle deck content (Universal Language)
 
+- [ ] Put the card checks behind one command so a writer runs one thing, not four: the prose linter, the tells check, the sentence check and the two entrance checks _(band: agent-runnable)_ _(effort: quick)_
 - [ ] Write sentences two and three of the entrance for all 64 cards, now that the opening sentence is settled _(band: agent-runnable)_ _(effort: deep)_ → Plan: [entrance openings](todo/plans/writing-guideline/entrance-openings.md)
 - [ ] Put the 64 settled opening sentences into the cards themselves, one line per card, nothing else touched _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] Show the entrance on the card page under a Message at a glance header: today the page shows the reading's first paragraph instead and nothing reads the entrance line _(band: agent-runnable)_ _(effort: moderate)_

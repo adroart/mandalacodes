@@ -24,7 +24,7 @@ listed all the same, so the reader has one place to look instead of four paragra
 7. AUTO. Sentence two says how it behaves, one fact, not a second definition.
 8. EYE. The last sentence is the choice and what grows from it, said as what will happen. Card 38 ends "staying till it matures" and is Adrian's, so no script decides this.
 9. AUTO. Sentence one is twenty words at most. Card 38 is exactly twenty.
-10. AUTO. No sentence in the entrance runs past 25 words.
+10. AUTO, by sentence-check.mjs. No sentence in the entrance runs past 25 words.
 
 ## What the subject may be
 
@@ -43,7 +43,7 @@ listed all the same, so the reader has one place to look instead of four paragra
 20. AUTO. "some people".
 21. EYE. Any claim about the reader's situation or character.
 22. EYE. A scene.
-23. AUTO. The em dash character.
+23. AUTO, by sentence-check.mjs and the prose linter. The em dash character.
 24. AUTO, once only. Cards 1 and 38 use "This energy" as the second sentence's subject and are Adrian's, so one use passes and two fail.
 
 ## The words
@@ -64,8 +64,8 @@ listed all the same, so the reader has one place to look instead of four paragra
 38. EYE. Name the thing that changes, so the reader does not read it as themselves.
 39. AUTO. At most two uses of "it" in a sentence, and EYE that neither could point two ways. Adrian's own card 58 carries two that point one way.
 40. AUTO. "this", never "the", to point back.
-41. EYE, with a script warning. No content word twice, unless the repeat is the point: card 1 repeats wave, card 38 repeats stay.
-42. AUTO. Commas only where English demands them: at most one per sentence, and none that a reader would not pause on.
+41. AUTO, advisory, by sentence-check.mjs. No content word twice, unless the repeat is the point: card 1 repeats wave, card 38 repeats stay.
+42. AUTO, by sentence-check.mjs, which flags three or more. Commas only where English demands them.
 43. AUTO. A feeling is "of", felt from inside, never "at".
 44. EYE. Cut every word whose removal keeps the meaning.
 
