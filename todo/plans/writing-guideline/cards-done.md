@@ -22,7 +22,7 @@ Order is card number. Cards 1 and 2 were read section by section by Adrian; 3, 1
 - 14 Ancestors Bloom: written whole under the locked brief (migration session). https://mandalacodes.com/universal-language/14
 - 15 Ordinary Valiance: written whole under the locked brief (autonomous batch, 2026-09-16). https://mandalacodes.com/universal-language/15
 - 16 Grand Rising: written whole under the locked brief (autonomous batch, 2026-09-16). https://mandalacodes.com/universal-language/16
-- 17 Peral of Christos: written whole under the locked brief (autonomous batch, 2026-09-16). https://mandalacodes.com/universal-language/17
+- 17 Pearl of Christos: written whole under the locked brief (autonomous batch, 2026-09-16). https://mandalacodes.com/universal-language/17
 - 18 Liberation of the Greater: written whole under the locked brief (autonomous batch, 2026-09-16). https://mandalacodes.com/universal-language/18
 - 19 Solection: written whole under the locked brief (autonomous batch, 2026-09-16). https://mandalacodes.com/universal-language/19
 - 20 Emerging as the Code: written whole under the locked brief (autonomous batch, 2026-09-16). https://mandalacodes.com/universal-language/20

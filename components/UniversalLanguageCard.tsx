@@ -135,13 +135,12 @@ const UniversalLanguageCard: React.FC = () => {
     moving: [1, 2, 3, 4, 5, 6].map(n => {
       const md = ichingLines.find(l => l.line === n);
       const text = (md?.reading ?? '').trim();
-      const becomes = md?.becomes?.hexagram
-        ? `Hexagram ${md.becomes.hexagram}${md.becomes.name ? ` · ${md.becomes.name}` : ''}`
-        : '';
       return {
         n,
         image: md?.image ?? '',
-        becomes,
+        // Only the complete cast has a destination; suppress the template
+        // slot for the hypothetical result of changing this line alone.
+        becomes: '',
         text: text || 'This line’s reading is being written.',
       };
     }),

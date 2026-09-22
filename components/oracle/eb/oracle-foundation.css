@@ -2,20 +2,20 @@
 html.oracle-card-page, html.oracle-card-page body { overflow-x: clip; }
 .eb-reading, .eb-entrance,
 .eb-reading[data-palette="daybook"], .eb-entrance[data-palette="daybook"] {
-  --l-bg:#f3efe7; --l-1:#272219; --l-2:#6b6253; --l-3:#a39a89;
-  --l-rule:rgba(39,34,25,.14); --l-soft:#eae4d7;
-  --d-bg:#e6ddc9; --d-1:#2a2419; --d-2:#6f6552; --d-3:#9c917a;
-  --d-rule:rgba(39,34,25,.13); --d-soft:#ddd3bd;
-  --accent:#a37b38; --accent-d:#956e2a;
+  --l-bg:#f3efe7; --l-1:#272219; --l-2:#5f5647; --l-3:#655b4b;
+  --l-rule:rgba(39,34,25,.14); --l-soft:#f0ece6;
+  --d-bg:#efebe4; --d-1:#2a2419; --d-2:#5f5647; --d-3:#655b4b;
+  --d-rule:rgba(39,34,25,.13); --d-soft:#eeebe5;
+  --accent:#72541f; --accent-d:#72541f;
   --oracle-section-main:#f3efe7;
-  --oracle-section-iching:#e6ddc9;
-  --oracle-section-genekeys:#eae4d7;
-  --oracle-section-humandesign:#ddd3bd;
-  --oracle-section-body:#e0d8c6;
-  --oracle-section-relations:#ddd3bd;
-  --oracle-inset-start:#eee7da;
-  --oracle-inset-end:#e2d6c0;
-  --oracle-footer:#e0d8c6;
+  --oracle-section-iching:#efebe4;
+  --oracle-section-genekeys:#f0ece6;
+  --oracle-section-humandesign:#eeebe5;
+  --oracle-section-body:#f0ece5;
+  --oracle-section-relations:#eeebe5;
+  --oracle-inset-start:#f3efe9;
+  --oracle-inset-end:#eeebe5;
+  --oracle-footer:#f0ece5;
 }
 .eb-reading[data-palette="nightfall"], .eb-entrance[data-palette="nightfall"] {
   --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#80735f;
@@ -102,7 +102,7 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
 .eb-reading section[data-chapter="body"] div[style*="flex-direction: column"] > p,
 .eb-reading section[data-chapter="relations"] div[style*="flex-direction: column"] > p {
   font-family:var(--font-reading) !important; font-size:clamp(16px,1.5vw,18px) !important;
-  line-height:1.8 !important; text-align:left !important; text-wrap:pretty;
+  line-height:1.8 !important; text-align:justify !important; text-align-last:start; text-wrap:wrap;
   width:100%; max-width:none; margin-inline:auto;
   word-break:normal; overflow-wrap:normal; hyphens:none;
 }
@@ -192,4 +192,22 @@ html.oracle-entrance-active [data-oracle-grain="reading"] { z-index:1001; }
   .eb-reading .ul-hero-section > .ul-title-mobile,
   .eb-reading .ul-hero-grid > figure,
   .eb-reading .ul-hero-grid > div > * { animation:none !important; transition:none !important; }
+}
+
+/* Full justification for reading prose, including moving-line readings and
+   expanded explanations. Keep the final line naturally aligned to the start. */
+.eb-reading p[style*="var(--font-reading)"],
+.eb-reading [data-reading-prose] p {
+  text-align:justify;
+  text-align-last:start;
+  text-wrap:wrap;
+}
+
+/* Keep the Daybook paper fine enough that it does not muddy small labels. */
+html:not(.dark) [data-oracle-grain="reading"] { opacity:.045; }
+/* The artwork/index stage is deliberately dark in either theme. Its accents
+   need the stage palette rather than inheriting Daybook's dark gold ink. */
+.eb-reading[data-palette="daybook"] [role="dialog"][aria-label="The sixty-four codes"] {
+  --accent:#c6a667;
+  --accent-d:#debc7e;
 }

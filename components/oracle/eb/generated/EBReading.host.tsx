@@ -780,7 +780,8 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     let movingSub;
     if (cast && movingNums.length) {
       movingSub = countWord + (many ? ' lines landed in motion. ' : ' line landed in motion. ') +
-        'Each carries its own reading. Turned over, ' +
+        'Each carries its own reading. ' +
+        (many ? 'With all moving lines turned over together, ' : 'With the moving line turned over, ') +
         (primaryHex ? primaryHex.name : 'this card') + ' becomes ' +
         (relatingHex ? relatingHex.name : 'the next card') + '.';
     } else {
@@ -809,9 +810,6 @@ export class EBReadingHost extends React.Component<HostProps, any> {
       castPresentLabel: primaryHex ? ('Hexagram ' + primaryHex.num + ' · ' + primaryHex.name) : '',
       castMoving: !!relatingHex,
       castStill: !!(cast && !relatingHex),
-      // With several lines moving, each line's own `becomes` is NOT the
-      // destination above — it is where that line would lead alone. Label it so.
-      castMultiMoving: movingNums.length > 1,
       openRelating: () => { if (centerHex) this.props.onOpenCode(centerHex.num); },
       entranceActive: this.entranceActive(),
       dismissEntrance: this.dismissEntrance,
