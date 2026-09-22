@@ -1,35 +1,47 @@
 # Development status — everything not fully fleshed out
 
-> **RE-MEASURED 2026-09-02. Read this box before trusting anything below it.**
+> **RE-MEASURED 2026-09-22. Read this box before trusting anything below it.**
 >
-> This document was compiled 2026-07-10 and has drifted, consistently in your
-> favour: more is built than it credits. An eight lane audit on 2026-09-01
-> checked it against the code.
+> This document was compiled 2026-07-10 and undercounted from the start; a
+> 2026-09-02 pass caught the worst of the drift in a note (kept below, now
+> folded into the sections themselves) but never rewrote the body it was
+> warning about. This pass re-checked every claim that note made, against the
+> code as it stands today, and corrected the actual sections instead of
+> stacking another box on top:
 >
-> **Section 0 names the wrong cause.** It says a keepsake-book ops gate of
-> database tables and secrets is holding finished features hostage. The secrets
-> are provisioned on the production project. The actual reason no collector can
-> claim anything is that the journey is live on NEITHER site: this repo retired
-> its collector write path deliberately on 2026-08-09 when the record moved,
-> and the replacement on adrianrasmussen.com is fully built and switched off at
-> `launchFlags.ts` `livingLegacy: false`. That flag is the gate.
+> - **Section 0's ops-gate framing was superseded, not merely stale.** The
+>   journey it describes (database tables + secrets) belongs to before
+>   2026-08-09; the current, more complete blocker is that this repo retired
+>   its own collector write path that day when the ownership record moved, and
+>   the replacement on adrianrasmussen.com stays switched off at `launchFlags.ts`
+>   `livingLegacy: false` (checked directly in that repo, still `false` today).
+>   Rewritten below to say that plainly instead of the pre-move story.
+> - **All six "quick wins" in section 1, not five, are verified shipped**,
+>   re-checked directly against the current files (not against the 2026-09-02
+>   note's word): the save-to-collection button, both energy panels, the
+>   kinship thread count, the gateway birth-chart link, the founding-light
+>   explainer, and the trigram line-order comment (the old file the item named,
+>   `data/trigrams.ts`, is gone; its replacement, `scripts/trigram-lines.ts`,
+>   already carries a correct comment). Marked inline below, not deleted, so
+>   the paper trail stays.
+> - **Three "Medium features" in section 1 are also verified shipped**, found
+>   while re-checking the surrounding claims: the "my collected cards on the
+>   map" join (#7), the flat all-64-codes index with tap-to-open honest states
+>   (#10, now `components/atlas/CodesIndex.tsx` inside the ledger), and the
+>   admin outreach-status control (#15, `components/AdminAtlas.tsx` +
+>   `POST /api/atlas/stewards/outreach`). None of these were named in the
+>   2026-09-02 note; this pass found them independently.
+> - **`AdminPieces.tsx` still doesn't exist** — confirmed again.
+> - Everything else in section 1 (kind ring click, shared city picker, and the
+>   rest) was spot-checked where feasible and left as-is: still genuinely open,
+>   no evidence of a build.
 >
-> **Five of the six "quick wins" in section 1 had already shipped** by the time
-> anyone read them. The Today and Year energy panels are live in the profile,
-> the gateway has its birth-chart link, the kinship thread count is surfaced,
-> "founding light" is explained, and the trigram comment is corrected. Item 1,
-> the save-to-collection button, shipped on 2026-09-01 and Collections now
-> works end to end.
+> This document does not re-verify Part II (the wiring & flow map) or the
+> writing-backlog counts in section 2 — those were out of scope for this pass;
+> treat them as of their original compile date until someone re-measures them.
 >
-> One file this document points at, `AdminPieces.tsx`, no longer exists.
->
-> Fixed on 2026-09-01 and not described anywhere below: the globe was showing
-> five fabricated pieces with an invented dream, every card's image described
-> itself as card 1, the reading claimed "one of one", a scanned plaque went
-> blank offline, and every collector screen ended in a retry loop that could
-> not succeed.
->
-> The current map is [plans/launch-readiness.md](plans/launch-readiness.md).
+> The current map is [plans/launch-readiness.md](plans/launch-readiness.md),
+> also re-measured today; see its own note.
 > Spot-check any line here against the code before acting on it.
 
 
@@ -45,75 +57,94 @@ what's done, what remains, rough effort, and who has to do it:_
 
 The single biggest fact: **most of the machine is built and merged.** The two large buckets of
 remaining work are (1) a handful of unfinished features, most of them small, and (2) a very large
-pile of writing that is Adrian's voice by design. One operations gate is quietly holding several
-finished features dormant.
+pile of writing that is Adrian's voice by design. The collector journey itself stays dark until a
+flag on the other repo flips (section 0) — that is not this repo's code to fix.
 
 ---
 
-## 0. The one thing holding finished features hostage (ops)
+## 0. The one thing holding the collector journey dark (ops + a flag on the other repo)
 
-The keepsake-book system — inscriptions, the signed export, and the sale hand-off from the art
-site — is **fully built and deployed but returns a graceful error on the live site** because the
-database tables it needs were never created, and its secrets were never set. Nothing is broken;
-these features just stay asleep until the go-live checklist runs. Full command list:
-`todo/handoff/GO-LIVE-RUNBOOK.md`; ledger: `todo/handoff/MORNING-AFTER.md` (only step a, the merge,
-is done).
+This section used to describe a pre-2026-08-09 world: a keepsake-book system waiting on database
+tables and secrets. That gate is superseded, not just stale — on 2026-08-09 Adrian ratified that
+**the ownership record moved to the Adrian Rasmussen site**, and this repo deliberately retired its
+own collector write path when it did (see `TODO.md`'s "Go-live ops — ON HOLD" section, top of file).
+The ceremony layer built here (rings, the dream, letters from the piece, the globe) rehomes onto the
+art site, not onto this repo's original schema.
+
+The actual, current blocker: the replacement is **fully built on adrianrasmussen.com** and switched
+off there at `launchFlags.ts` → `livingLegacy: false` (checked directly in that repo 2026-09-22,
+still `false`). Flipping that flag, and the go-live steps in `todo/handoff/GO-LIVE-RUNBOOK.md`, are
+the actual remaining path — not a table or secret in this repo. Do not run any of it without Adrian;
+`TODO.md` marks the whole section on hold.
 
 | Step | Consequence until done | Owner |
 |---|---|---|
-| Create the two new database tables (inscriptions + sale events) from the art-site repo | Writing an inscription, exporting the book, and receiving a sale all error out live | ops |
-| Set the sale-webhook secret + the claim-bridge secret on both site projects | The sale hand-off and self-serve claim stay closed | ops |
-| Build the sale-notification sender on the art site (adrianrasmussen.com) | A sale there never tells this site to open a claim | Adrian (other repo) |
-| Turn on the public mirror (tamper-evidence copy of the ledger) | No external proof-of-record | ops |
-| Baseline backup, then claim light #1 (the ignition), then begin collector outreach | The map stays dark; the launch story can't start | Adrian |
+| Flip `livingLegacy: false` → `true` on adrianrasmussen.com, once its own runbook gates pass | The collector journey stays live on neither site | Adrian (other repo) |
+| Run the go-live steps in `todo/handoff/GO-LIVE-RUNBOOK.md` (webhook secrets, GitHub mirror, baseline backup) | The sale hand-off, self-serve claim, and public mirror stay closed | ops |
+| Claim light #1 (the ignition), then begin collector outreach | The map stays dark; the launch story can't start | Adrian |
 
 ---
 
 ## 1. Agent-doable feature work (no writing required)
 
 ### Quick wins — small, self-contained, low risk
-1. **"Save this card" button is built but never placed on the card page.** The whole save-to-collection
-   system works and has its own page; the button component just isn't dropped next to Acquire/Share on
-   the card. → `components/account/SaveToCollectionButton.tsx` (unused), `components/UniversalLanguageCard.tsx`. _Quick · agent._
-2. **Today/Year energy panels are built but not shown anywhere.** Two working panels were ported from the
-   art site and never mounted on any page. → `components/oracle/{TodayEnergyPanel,YearEnergyPanel}.tsx`. _Quick · agent._
-3. **Kinship "threads" silently hide some arcs.** The globe caps how many connection threads it draws and
-   only logs it to the console; add a "showing X of Y" line to the filters row. → `components/AtlasPage.tsx:469`. _Quick · agent._
-4. **No path from the entry gateway to the birth-chart flow.** The gateway has three links, none into the
-   profile; a QR visitor can't find the chart. Add a fourth quiet link. → `components/OracleGateway.tsx:210`. _Quick · agent._
-5. **"Founding light" is shown but never defined** for a first-time visitor (the other atlas terms —
-   threads, Seeking ground — are already explained). Add one sentence where it appears. → `components/atlas/PieceSidePanel.tsx:143`. _Quick · agent._
-6. **A wrong code-comment about hexagram line order** (says top-to-bottom, stores bottom-to-top) invites
-   a future bug. → `data/trigrams.ts:4`. _Quick · agent._
+1. ~~**"Save this card" button is built but never placed on the card page.**~~ **SHIPPED, verified
+   2026-09-22.** `UniversalLanguageCard.tsx` renders `<SaveToCollectionButton item={cardCollectionItem(...)}
+   label="Save this code" />` inline in the chart row. → `components/account/SaveToCollectionButton.tsx`,
+   `components/UniversalLanguageCard.tsx`.
+2. ~~**Today/Year energy panels are built but not shown anywhere.**~~ **SHIPPED, verified 2026-09-22.**
+   Both mount in `OracleProfile.tsx` (`<TodayEnergyPanel />`, `<YearEnergyPanel />`). →
+   `components/oracle/{TodayEnergyPanel,YearEnergyPanel}.tsx`, `components/OracleProfile.tsx`.
+3. ~~**Kinship "threads" silently hide some arcs.**~~ **SHIPPED, verified 2026-09-22.** Both
+   `AtlasFilters` variants render `"{shown} threads"` or `"showing X of Y threads"` when the two counts
+   differ. → `components/atlas/AtlasFilters.tsx`.
+4. ~~**No path from the entry gateway to the birth-chart flow.**~~ **SHIPPED, verified 2026-09-22.**
+   `OracleGateway.tsx` links "Your Birth Chart" to `/profile`. → `components/OracleGateway.tsx:211`.
+5. ~~**"Founding light" is shown but never defined**~~ **SHIPPED, verified 2026-09-22.**
+   `PieceSidePanel.tsx` reads "A founding light marks the order in which a piece was claimed by its
+   keeper." right under the ordinal. → `components/atlas/PieceSidePanel.tsx:153`.
+6. ~~**A wrong code-comment about hexagram line order**~~ **SHIPPED, verified 2026-09-22 — and the file
+   itself moved.** `data/trigrams.ts` no longer exists; the trigram-line data now lives in
+   `scripts/trigram-lines.ts`, whose comments already state the convention correctly ("Lines are read
+   bottom-up per I Ching convention", with the render-order comment separately and correctly marked
+   "top-to-bottom" for its own SVG-drawing purpose). No contradiction remains.
 
 ### Medium features
-7. **"My collected cards on the map" view doesn't exist.** Collections list generically with no join to
-   which of your saved cards are actually placed on the globe. → `components/account/CollectionsManager.tsx`. _Moderate · agent._
+7. ~~**"My collected cards on the map" view doesn't exist.**~~ **SHIPPED, verified 2026-09-22.**
+   `CollectionsManager.tsx` loads atlas state, resolves each saved card's placement via
+   `findPlacementForCard`, and links straight to `/atlas?piece=...` when it's placed. →
+   `components/account/CollectionsManager.tsx`.
 8. **The globe stacks every piece on the exact city point** — 20 pieces in one town pile into one
    unreadable dot. The plan wants one marker per city, sized and numbered by count, with a city-list
-   panel. Nothing built. → `components/AtlasPage.tsx` (globeNodes memo, line 316), `piece-page-buildout.md`. _Deep · agent, Adrian UX sign-off._
+   panel. Nothing built. → `components/AtlasPage.tsx` (globeNodes memo, line 316), `piece-page-buildout.md`. _Deep · agent, Adrian UX sign-off._ _(Not re-verified this pass; carried over.)_
 9. **The hexagram ring on the globe is decorative, not tappable.** "The Field" lens 1 wants every glyph
-   clickable to open that code's pieces; the ring renders as atmosphere with no click handling. → `components/atlas/three/HexagramRing.tsx`. _Moderate · agent._
-10. **No flat "all 64 codes" index on the atlas, and no "tap a code → its pieces with honest states"
-    view** (e.g. "Earth's Breath · 1 of 3 · Bali, kept · Berlin, seeking"). Part of the same lens-1 gap. _Moderate · agent._
+   clickable to open that code's pieces; re-verified 2026-09-22 — `HexagramRingProps` still only takes
+   `placedByCard`, no click/select prop anywhere in the file. Still open. →
+   `components/atlas/three/HexagramRing.tsx`. _Moderate · agent._
+10. ~~**No flat "all 64 codes" index on the atlas...**~~ **SHIPPED, verified 2026-09-22.**
+    `components/atlas/CodesIndex.tsx` is exactly this: every code 1–64 with an honest one-line tally
+    ("2 kept · 1 seeking" / "not yet embodied"), click-to-open per-code piece list, shareable via
+    `?code=N`. Rendered inside `TheLedger.tsx`, reachable at `/atlas?view=ledger`.
 11. **The yearly "shall I keep carrying these words?" ask is missing.** "The Field" lens 2 (the dream map)
     is otherwise shipped — sharing, the tending queue, rehoming letters all work — but the once-a-year
     reconfirmation loop for shared words was never built. → new letter type + a "years since shared" check
-    mirroring the existing anniversary logic. → `utils/letters.ts`, `functions/api/atlas/steward/letters.ts`. _Quick–moderate · agent._
+    mirroring the existing anniversary logic. → `utils/letters.ts`, `functions/api/atlas/steward/letters.ts`. _Quick–moderate · agent._ _(Not re-verified this pass; carried over.)_
 12. **The guided founding-story tour ("the procession") doesn't exist.** Meant to be the low-key
     engagement engine that narrates the founding lights in order; grep finds nothing. The ignition opening
-    and claim-replay animations exist but are not this. → design-first. _Moderate–deep · agent, brainstorm with Adrian first._
+    and claim-replay animations exist but are not this. → design-first. _Moderate–deep · agent, brainstorm with Adrian first._ _(Not re-verified this pass; carried over.)_
 13. **Two duplicated data definitions invite drift:** the 11-position sphere sequence is hardcoded in two
     places, and the profile-key list in two more. Extract one shared source (note: one consumer is a plain-JS
-    site function that can't import the typed libs, so it needs a shared plain constants file). → `data/profilePositions.ts`, `lib/oracle/recommendation.ts`, `functions/api/profile/put.js`. _Moderate · agent._
-14. **The city picker is copy-pasted three times** (admin map, steward edit, piece editor). Extract one
-    shared component. → `components/AdminAtlas.tsx:104`, `components/StewardEdit.tsx:481`, `components/AdminPieceContent.tsx:61`. _Moderate · agent, needs light/dark visual QA._
-15. **Admin can see a steward's outreach status but can't change it** — it's read-only, only the claim flow
-    flips it. Needs a small edit control + endpoint, and first a decision on what manual states mean. →
-    `components/AdminAtlas.tsx:1233`. _Moderate · Adrian policy call, then agent._
+    site function that can't import the typed libs, so it needs a shared plain constants file). → `data/profilePositions.ts`, `lib/oracle/recommendation.ts`, `functions/api/profile/put.js`. _Moderate · agent._ _(Not re-verified this pass; carried over.)_
+14. **The city picker is copy-pasted three times** (admin map, steward edit, piece editor). Re-checked
+    2026-09-22: no shared `CityPicker`-style component found under `components/`; still duplicated. →
+    `components/AdminAtlas.tsx:104`, `components/StewardEdit.tsx:481`, `components/AdminPieceContent.tsx:61`. _Moderate · agent, needs light/dark visual QA._
+15. ~~**Admin can see a steward's outreach status but can't change it**~~ **SHIPPED, verified
+    2026-09-22.** `AdminAtlas.tsx` renders an editable `outreachStatus` `<select>` (excluding the
+    machine-owned `claimed` state) that posts to `POST /api/atlas/stewards/outreach`. →
+    `components/AdminAtlas.tsx:1789` (handler), `:1904` (select).
 16. **Two hexagram drawers still bypass the shared glyph module** (the gateway's orbital one and the
     coin-cast animated one), risking visual drift. Full unification is deep and needs a visual-parity
-    sign-off; the comment fix in #6 is the cheap half. → `components/oracle/HexagramGlyph.tsx:8`. _Deep · agent + Adrian sign-off._
+    sign-off; item 6's comment fix already landed as part of the file's move. → `components/oracle/HexagramGlyph.tsx:8`. _Deep · agent + Adrian sign-off._ _(Not re-verified this pass; carried over.)_
 
 ---
 
@@ -128,7 +159,7 @@ Counts verified against the actual content files, not the stale TODO.
 | **Gene Keys sections → final** | 2 / 64 | Rest are agent-written scaffold awaiting Adrian's pass. |
 | **Human Design sections → final** | 3 / 64 | Same. |
 | **Relations sections → final** | 2 / 64 | Same; the panel is now wired live (TODO's "not wired" is stale). |
-| **Live changing-line texts** | 0 / 384 | All placeholders in `data/ichingLines.ts`. Scaffold prose for all 384 exists in the section files and could be migrated in as drafts by an agent. |
+| **Live changing-line texts** | 384 / 384 | **Corrected 2026-09-22 (verified while fixing the `/cast-content` TODO item): this row was wrong.** `data/ichingLines.ts` no longer exists. All 384 lines (six per hexagram) are already written as real prose in each card's own `### Moving lines` subsection under `oracle/cards/<NN>.md`, read live by `lib/oracle/card-markdown.ts`'s `parseMovingLines`. No blank line or TODO marker remains in any of the 64 files. |
 | **Per-artwork readings** | 1 / 64 | UL-122 is the reference; an agent can scaffold the rest, Adrian authors the final prose. |
 | **Piece stories** (story / materials / photos per piece) | unknowable from repo | Lives in the live database via the piece-content editor, not in files. The editor is built; the 64 stories are Adrian's to write. |
 
@@ -178,9 +209,14 @@ the `/about`, `/artists`, `/symbolism` routes the plans assume **do not exist ye
 - The **Relations panel is already wired live** — TODO item calling it "not wired" is stale.
 - The **Light Codes route is not reserved** — no such route exists in the app.
 - **There is no `AdminPieces.tsx` importing a retired login library** — the file doesn't exist; the admin
-  screens that do exist use the current login library. That TODO item is void.
+  screens that do exist use the current login library. That TODO item is void. _(Re-confirmed 2026-09-22.)_
 - **Sign-up UI is done** (built into the sign-in panel), not pending.
 - Editorial content is at **`/learn`**, not the `/articles` path the SEO plans reference.
+- **Found 2026-09-22, not in `TODO.md`'s own backlog item for it:** the admin outreach-status control
+  (`TODO.md`'s "Interconnection" section, "Admin outreach-status control") is already built —
+  `AdminAtlas.tsx` has an editable select posting to `POST /api/atlas/stewards/outreach`. That TODO
+  item was not part of this task's assigned scope to close, so it is left open; flagging here so
+  whoever owns it next doesn't re-build it.
 
 ---
 
@@ -300,9 +336,10 @@ their card link; the save button renders nowhere; the daily card is a date hash,
 The findings above are ranked by leverage, not sequenced. These are the real ordering constraints —
 what must precede what, and what is independent:
 
-- **The silent sale hand-off (Part II·A1) can be built any time, but only *works live* after the ops
-  gate (§0): the two tables, both secrets, and the art-site sender.** So the code fix and the ops
-  steps are a single launch unit — neither delivers value alone. Plan them together.
+- **The silent sale hand-off (Part II·A1) can be built any time, but only *works live* after the
+  gate in §0** — rewritten 2026-09-22: that gate is now the `livingLegacy` flag on the other repo and
+  its own go-live steps, not the tables/secrets pair this line originally meant. So the code fix and
+  the other repo's launch unit are still linked — neither delivers value alone. Plan them together.
 - **The non-registered dead-end (A2) and the non-3D globe fallback (A3) are fully independent** — pure
   front-end, no ops, no content, no decisions. They can ship immediately and in parallel.
 - **The card→piece/globe links and the cheap connectors (C1–C3, C6, C7) are independent of everything
@@ -331,7 +368,8 @@ and dependencies. The order below is a starting hypothesis to react to, not the 
    hand-off is silent (Part II·A1), non-registered buyers dead-end (A2), and the whole thing depends on
    the ops gate (§0). Until these three are fixed, a real buyer literally cannot arrive. This is the
    highest-stakes cluster on the board.
-2. **Unblock the dormant features** (§0) — one ops sitting wakes the built keepsake-book / sale system.
+2. **Unblock the collector journey** (§0) — this is now Adrian's `livingLegacy` flag on the other repo
+   plus that repo's own go-live steps, not an ops sitting in this one.
 3. **Sweep the wiring quick wins** (Part I quick wins + Part II·C1–3): turn on the article→card link,
    mount the save button, link the card to its piece and the globe, add the six small connectors. All
    pure wiring over data that already exists — one agent batch.

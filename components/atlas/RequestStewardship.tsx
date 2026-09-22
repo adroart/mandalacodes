@@ -148,7 +148,7 @@ const RequestStewardship: React.FC<{
               maxLength={500}
               rows={3}
               placeholder="Bought at the Vienna auction, lot 12…"
-              className="w-full border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 resize-y"
+              className="w-full border border-wood-300 bg-paper-50 px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 resize-y"
             />
             {error && (
               <p className="font-reading font-medium text-sm text-stone-600">{error}</p>

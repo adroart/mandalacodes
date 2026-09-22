@@ -114,4 +114,22 @@ test('title, filters and side panel chrome all render around the constellation',
   await expect(
     page.getByText('Tap a point on the globe to see where that piece has come to rest.'),
   ).toBeVisible();
+
+  // The filters sidebar is a fixed 360px column at the desktop (lg) breakpoint
+  // while the Series+Status row only stacks vertically below `sm`, so on a
+  // wide desktop viewport the "All / Placed / Seeking ground" segmented
+  // buttons used to overflow the 360px column's right edge. `html, body`
+  // carry `overflow-x: clip` (src/index.css) so that spillage never grows
+  // `scrollWidth` for the page-wide overflow check above — it just silently
+  // clips the last button(s) out of view. Assert the group's own bounding
+  // box, not scrollWidth, stays inside the viewport.
+  const statusGroup = page.getByRole('group', { name: 'Status filter' });
+  await expect(statusGroup).toBeVisible();
+  const box = await statusGroup.boundingBox();
+  expect(box).not.toBeNull();
+  const viewport = page.viewportSize();
+  if (box && viewport) {
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
+  }
+  await expect(page.getByRole('button', { name: 'Seeking ground' })).toBeVisible();
 });
