@@ -98,7 +98,9 @@ jobs:
   # that commit. That is a real, pre-existing product/test mismatch (not
   # something this job introduces or should paper over) — see this branch's
   # PR description for the full list. Left enabled deliberately so CI reflects
-  # the true state rather than hiding it; a 20-minute budget covers it.
+  # the true state rather than hiding it. Re-measured 2026-09-22 on main
+  # (b9da484): 41 failed, 80 passed, 10 skipped of 131, in 11.6 minutes. A CI
+  # runner is slower: the same suite took 18m22s on run 35190547827.
   test-mobile:
     runs-on: ubuntu-latest
     needs: gate
@@ -106,8 +108,25 @@ jobs:
     # Reports without blocking until the 35 pre-existing failures listed in
     # TODO.md ("Found in the 2026-09-08 mobile suite audit") are resolved, so
     # main's status stays a true signal from the checks that can pass.
+    #
+    # The price of that, and it was being paid silently: this keeps the RUN's
+    # conclusion at success even while this job's own conclusion is failure,
+    # so the run badge — the thing anyone actually looks at — says nothing
+    # about the lane. Main carried a red lane under a green run from
+    # 2026-09-15 to 2026-09-17 (runs 35174697859, 35190547827: job failure,
+    # run success) and no surface said so. The "Mobile Chrome lane" block the
+    # report step writes to the run summary is now that surface, on every
+    # path, and it is where this lane's result is read. Not the run badge.
     continue-on-error: true
-    timeout-minutes: 20
+    # 24, not 20, purely so the reporting steps below can still run after a
+    # long suite. This is NOT the suite being given longer to pass: the suite's
+    # own budget is --global-timeout below, and at 18 minutes it is TIGHTER than
+    # the ~19m14s a 20-minute cap left it after setup. What it buys is that an
+    # overrun ends inside Playwright, which writes its report, instead of the
+    # runner killing the job at the cap — which is what happened on run
+    # 35070372247 (20m15s), and a killed job skips every later step, so that
+    # run produced no counts, no artifact and no record of what failed.
+    timeout-minutes: 24
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -116,12 +135,29 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:mobile
+      # --global-timeout 18m: Playwright stops itself and still reports.
+      # --reporter=list,json: the list output stays readable in the log, and
+      # the JSON is what the summary counts. The later --reporter wins over
+      # the one inside the npm script.
+      - run: npm run test:mobile -- --reporter=list,json --global-timeout=1080000
         env:
           CI: true
+          PLAYWRIGHT_JSON_OUTPUT_NAME: mobile-results.json
+      # always(): a red suite, a suite cut short by its own budget, and a
+      # green one all get counted. This is the only place the lane's result is
+      # stated, so it must not be conditional on which way the lane went.
+      - if: always()
+        run: node scripts/mobile-lane-summary.mjs mobile-results.json
+      # Was if: failure(), which never matched the two paths that most needed
+      # the evidence: a job killed at the cap (cancelled, not failed) and a run
+      # superseded by concurrency. Runs 35070372247, 35072415647 and
+      # 35105950236 all lost their report that way.
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
           name: playwright-mobile-report
-          path: test-results/
+          path: |
+            mobile-results.json
+            test-results/
           retention-days: 7
+          if-no-files-found: ignore
