@@ -77,7 +77,7 @@ An answer already on its way has a weight you can feel before it comes. Nothing 
 Clarity arrives before the words for it do. It picks the one thing that matters out of the tangle. So say that thing and people will hear it.
 
 30 · Sparking the Blaze
-Desire was in you before you had anything to want. The reach under every shape it takes is the same. So feel it all the way through and you will find what it was after.
+Desire was in you before you had anything to want. The reach under every shape it takes is the same. So stay with it to the end and you will find what it was after.
 
 43 · Cipher of Knowledge
 Sudden knowing arrives whole before you have any way to say how it came. It comes as a flash from the one direction you were not facing. So leave some quiet in the day and it will find you there.
