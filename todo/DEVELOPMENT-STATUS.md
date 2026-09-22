@@ -159,7 +159,7 @@ Counts verified against the actual content files, not the stale TODO.
 | **Gene Keys sections → final** | 2 / 64 | Rest are agent-written scaffold awaiting Adrian's pass. |
 | **Human Design sections → final** | 3 / 64 | Same. |
 | **Relations sections → final** | 2 / 64 | Same; the panel is now wired live (TODO's "not wired" is stale). |
-| **Live changing-line texts** | 384 / 384 | **Corrected 2026-09-22 (verified while fixing the `/cast-content` TODO item): this row was wrong.** `data/ichingLines.ts` no longer exists. All 384 lines (six per hexagram) are already written as real prose in each card's own `### Moving lines` subsection under `oracle/cards/<NN>.md`, read live by `lib/oracle/card-markdown.ts`'s `parseMovingLines`. No blank line or TODO marker remains in any of the 64 files. |
+| **Live changing-line texts** | 384 scaffold / 0 final | All 64 cards carry six written moving-line entries under ICHING (384 total on main, verified 2026-09-22). `data/ichingLines.ts` is retired; `lib/oracle/card-markdown.ts` reads `### Moving lines` live. Adrian's voice pass via `/cast-content` remains; do not treat the lines as missing placeholders. |
 | **Per-artwork readings** | 1 / 64 | UL-122 is the reference; an agent can scaffold the rest, Adrian authors the final prose. |
 | **Piece stories** (story / materials / photos per piece) | unknowable from repo | Lives in the live database via the piece-content editor, not in files. The editor is built; the 64 stories are Adrian's to write. |
 
