@@ -179,6 +179,10 @@ Getting the mobile Playwright suite an actual `webServer` (see `todo/archive.md`
 
 ## Oracle deck content (Universal Language)
 
+- [ ] Write sentences two and three of the entrance for all 64 cards, now that the opening sentence is settled _(band: agent-runnable)_ _(effort: deep)_ → Plan: [entrance openings](todo/plans/writing-guideline/entrance-openings.md)
+- [ ] Put the 64 settled opening sentences into the cards themselves, one line per card, nothing else touched _(band: agent-runnable)_ _(effort: moderate)_
+- [ ] Show the entrance on the card page under a Message at a glance header: today the page shows the reading's first paragraph instead and nothing reads the entrance line _(band: agent-runnable)_ _(effort: moderate)_
+- [ ] Say once, in the deck's own introduction, what the paintings are: the painting is a window to the energy, it does nothing, you look _(band: you-required)_ _(effort: quick)_
 - [ ] Build the printed workbook for Adrian's hand pass over the 64: the render script (one card per spread, every sentence numbered, facing rewrite page per lens, the seven checks and the sitting ritual in the front matter, the Phase 1 suspect marks and formula slots in the margin), then eight booklets of eight to the printer _(band: agent-runnable)_ _(effort: deep)_ → Plan: [personal-pass.md](todo/plans/personal-pass.md), Phase 2 section 1
 - [ ] Do the hand pass: read, mark, rewrite the 64 by hand in the printed workbook, without AI, one card a sitting, in the booklet order the plan sets _(band: you-required)_ _(effort: deep)_ → Plan: [personal-pass.md](todo/plans/personal-pass.md), Phase 2 sections 2, 3 and 5
 - [ ] Build the typist loop that carries the handwriting back into the cards: the photo intake folder in the vault, the one-page transcript brief, the no-model apply script that patches by sentence number, and the approved-lines file with its unit test _(band: agent-runnable)_ _(effort: deep)_ → Plan: [personal-pass.md](todo/plans/personal-pass.md), Phase 2 section 4
