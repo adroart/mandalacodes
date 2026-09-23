@@ -44,9 +44,14 @@ freshly-entered birth chart with the radio off.
 
 ## Deliberately excluded
 
-`/api/*` and `/qr/*` are denylisted from the navigation fallback
-(`workbox.navigateFallbackDenylist`) — those are Cloudflare Functions
-(auth/sync endpoints, and the printed-plaque QR redirects), not pages, and
+Page navigations are network-first (the `oracle-pages` rule in
+`workbox.runtimeCaching`): online, every page load gets the deployed HTML, so
+the first load after a deploy is the new build. Only when the network fails,
+or gives no answer within 3 seconds, does the precached `index.html` stand in.
+There is deliberately no `navigateFallback`: it answered every navigation from
+the precache, online or not, which made the first load after each deploy show
+the previous build. `/api/*`, `/qr/*`, `/learn/*` and `/design/*` are left out
+of that rule entirely — Functions and independently built static apps that
 must never be answered by the cached app shell. Everything else — Atlas,
 admin, account, piece pages, the LED product — has no special handling: it
 simply isn't fetched (and so never cached) unless a visitor actually opens
@@ -67,7 +72,9 @@ already offers.
 ## Updates
 
 `registerType: 'autoUpdate'` — a new deploy's service worker takes over
-silently on next load, no "update available" toast. The one safety net:
+silently (`skipWaiting` + `clientsClaim`), no "update available" toast, and
+because pages are network-first the very first load after a deploy already
+renders the new build (`tests/pwa-navigation.spec.ts` guards this). The one safety net:
 `components/ChunkErrorBoundary.tsx` reloads the tab once (session-guarded)
 if a lazy route import fails while online, which is what happens when a tab
 has been open since before a deploy purged the old chunk hashes.

@@ -100,11 +100,18 @@ const vitePWA = VitePWA({
       'site.webmanifest',
       'data/cities-index.json',
     ],
-    navigateFallback: '/index.html',
-    // Learn and the LED designer are independently built static applications.
-    // Their document navigations must reach their own HTML, even in an
-    // already controlled Oracle tab (including bare paths and query strings).
-    navigateFallbackDenylist: [/^\/api(?:\/|$)/, /^\/qr(?:\/|$)/, /^\/learn(?:\/|$)/, /^\/design(?:\/|$)/],
+    /* No precache answer for navigations. With navigateFallback set, every
+       document request was served the precached index.html, online or not, so
+       the first load after a deploy showed the previous build and only the
+       second load showed the new one (measured 2026-09-23 on a branch preview:
+       old card text with a controlling worker, new text after one reload).
+       Pages now go to the network first; see the 'navigate' rule below. null,
+       not undefined: vite-plugin-pwa fills in 'index.html' when it is absent. */
+    navigateFallback: null,
+    // The precache route runs before runtimeCaching and, by default, answers
+    // a request for '/' with the precached index.html. null keeps the home
+    // page on the same network-first rule as every other page.
+    directoryIndex: null,
     cleanupOutdatedCaches: true,
     /* Without these two the worker installs and then SITS in "waiting" until
        every tab of the site is closed, because the only skipWaiting workbox
@@ -121,6 +128,38 @@ const vitePWA = VitePWA({
     skipWaiting: true,
     clientsClaim: true,
     runtimeCaching: [
+      {
+        // Document navigations: the network answers whenever it can, so the
+        // first load after a deploy is the new build. Offline, or after 3
+        // seconds with no answer, the precached app shell stands in, which is
+        // what every navigation got before. No page is stored here on purpose:
+        // a stored page from an older build would point at chunk hashes the
+        // precache has already cleaned out, so offline the current shell is
+        // the only document that is sure to boot.
+        //
+        // Learn and the LED designer are independently built static
+        // applications, and /api and /qr are Functions. Their navigations are
+        // left to the browser, so they reach their own HTML even in an
+        // already controlled Oracle tab (including bare paths and query
+        // strings). The patterns live inside the matcher because workbox
+        // copies this function into sw.js as source text, without its scope.
+        urlPattern: ({ request, url, sameOrigin }) =>
+          sameOrigin &&
+          request.mode === 'navigate' &&
+          ![/^\/api(?:\/|$)/, /^\/qr(?:\/|$)/, /^\/learn(?:\/|$)/, /^\/design(?:\/|$)/].some((re) => re.test(url.pathname)),
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'oracle-pages',
+          networkTimeoutSeconds: 3,
+          plugins: [
+            {
+              cacheWillUpdate: async () => null,
+              cachedResponseWillBeUsed: async ({ cachedResponse }) =>
+                cachedResponse || (await caches.match('/index.html', { ignoreSearch: true })),
+            },
+          ],
+        },
+      },
       {
         // Every other same-origin JS/CSS chunk (the 64 card readings, the
         // deck index, Atlas, admin, …) — cached the first time a visit
