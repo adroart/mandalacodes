@@ -35,7 +35,7 @@ Three states, and a card is only 100% when all three hold.
 
 **0 finished. 1 written, waiting on Adrian. 8 part way. 55 not started.**
 
-One writer per card, sections first and the entrance last: see [dispatching a card writer](ENTRANCE-DISPATCH.md).
+One writer per card, sections first and the entrance last: see [dispatching a card writer](CARD-PASS.md).
 
 ## Finished (0)
 

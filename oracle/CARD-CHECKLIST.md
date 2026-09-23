@@ -1,4 +1,7 @@
-# The entrance: every rule, in one list
+# The card's checks: the entrance's rules, numbered
+
+Part of the one card template, not a separate stream: the shape is taught in
+[`WRITERS-BRIEF.md`](WRITERS-BRIEF.md) and a pass is run per [`CARD-PASS.md`](CARD-PASS.md).
 
 **The control comes first.** Six entrances are Adrian's own or approved by him (1, 38, 46, 48, 53, 58). Any rule that fails one of those is not a rule, it is my misreading, and it gets corrected here before it is used on anything else. Four of the first draft's rules failed his lines and were demoted on 2026-09-22.
 
