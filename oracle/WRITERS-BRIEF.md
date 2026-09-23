@@ -14,14 +14,15 @@ its sections, the card carries its settled entrance, and every section's status 
 so no writer and no script sets it. Until he says yes a card sits under "written,
 waiting on you", which is the queue for his reading, not a card to rewrite.
 
-**The framework comes first, and neither it nor the checking after is optional**
-(Adrian, 2026-09-23, after card 63 named its energy by its shadow with every script
-green). Before a word of prose, fill parts 1 to 3 of [`WORKSHEET.md`](WORKSHEET.md)
-from the sources: the energy whole across all three heights, the true things, the
-allotment. After writing, fill part 4 (every reader check quoted, and a cold
-reader), then pass `npm run card:gate -- NN`. The shadow is one height of the
-energy and never its name: not in the entrance, not in CODE's first sentence, and
-at most twice in CODE. [`CARD-PASS.md`](CARD-PASS.md) has the steps.
+**How this brief is used: the six steps in [`CARD-PASS.md`](CARD-PASS.md)** (locked by
+Adrian, 2026-09-23). This brief is not a test run after writing. It is how the
+sources are assimilated: "The templates are not just a pass or fail, but they need
+to be used in the creation of the assimilation of all the information." Place the
+card among its neighbours in the 64 entrance openings first. Then give every
+section its own facet, read through that section's question below, and write
+each section through its shape. The shadow is one height of the energy and never
+its name: not in the entrance, not in CODE's first sentence, and at most twice in
+CODE.
 
 You are writing one card of sixty-four: one energy, spoken in six voices. It will be read by someone who has never heard of the I Ching, the Gene Keys or Human Design, in any country, on a phone, at a moment in their life when they went looking for something true. The card is literature. Not a chat, not a reference, not a lesson. A page of plain English that a person who loves English enjoys reading, made of chosen words, each sentence one whole thought, every sentence carrying something real about a life that the reader could not have said for themselves. Adrian: "Simple can be one of the most poetic if you pick your words correctly." "Powerful is the way that it speaks to someone and speaks to their heart and really connects with something that is true, rather than trying to be big and powerful."
 

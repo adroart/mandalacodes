@@ -1,0 +1,22 @@
+# The card method is locked: see the top of oracle/CARD-PASS.md.
+name: method-lock
+
+on:
+  pull_request:
+    paths:
+      - 'oracle/CARD-PASS.md'
+      - 'oracle/WRITERS-BRIEF.md'
+      - 'oracle/WORKSHEET.md'
+      - 'oracle/CARD-CHECKLIST.md'
+      - 'scripts/card-gate.mjs'
+      - 'scripts/method-lock.mjs'
+
+jobs:
+  method-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+      - run: node scripts/method-lock.mjs origin/${{ github.base_ref }}
