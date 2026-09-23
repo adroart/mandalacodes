@@ -152,8 +152,12 @@ can say", which cards 17, 23, 43 and 57 already use.
 Then regenerate `data/oracle-corpus.json` and `data/oracle-search-index.json`
 (`node --import tsx scripts/build-oracle-corpus.ts`, then
 `scripts/build-search-index.ts`) and run `npm run progress`, all in the same
-commit as the card. Leave every `status:` as `scaffold`. `final` is Adrian's
-word alone.
+commit as the card. Then run `npm run test:unit` before pushing: it checks
+that every card still parses (card 63 once went out with its entrance written
+over the Human Design centre, which only the unit test caught). Change the
+entrance only inside the `meta:` block; a card has two lines that start
+`centre:`. Leave every `status:` as `scaffold`. `final` is Adrian's word
+alone.
 
 ## Copy this to dispatch a card
 
