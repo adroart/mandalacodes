@@ -46,7 +46,12 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
     const previous = previousRecorderStatus.current;
     previousRecorderStatus.current = recorder.state.status;
     if (previous !== 'idle' && recorder.state.status === 'idle') {
-      window.requestAnimationFrame(() => centerButtonRef.current?.focus());
+      window.requestAnimationFrame(() => {
+        const visibleDeck = document.querySelector<HTMLElement>(
+          '.card-reading [data-bar-tab="deck"], .card-reading [data-bar-deck]',
+        );
+        (visibleDeck ?? centerButtonRef.current)?.focus();
+      });
     }
   }, [recorder.state.status]);
 
@@ -77,8 +82,108 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
   }, [recorder]);
   useEffect(() => cancelHold, [cancelHold]);
 
+  // The current reading frame owns the visible deck control; this legacy bar
+  // remains mounted (hidden) as the single recorder/share state owner. Bind
+  // the admin gesture to the controls people can actually reach.
+  useEffect(() => {
+    if (!recorder.capabilityReady || !recorder.isAdmin || recorder.state.status !== 'idle') return;
+    const controls = Array.from(document.querySelectorAll<HTMLElement>(
+      '.card-reading [data-bar-tab="deck"], .card-reading [data-bar-deck]',
+    ));
+    const cleanups = controls.map((control) => {
+      let timer: number | null = null;
+      let suppressClick = false;
+      let heldPointerId: number | null = null;
+      const start = () => {
+        timer = null;
+        suppressClick = true;
+        control.classList.remove('is-holding');
+        void recorder.startRecording();
+      };
+      const pointerDown = (event: PointerEvent) => {
+        if (event.button !== 0) return;
+        suppressClick = false;
+        heldPointerId = event.pointerId;
+        try { control.setPointerCapture(event.pointerId); } catch { /* Older WebKit may not capture synthetic pointers. */ }
+        control.classList.add('is-holding');
+        timer = window.setTimeout(start, 650);
+      };
+      const endHold = () => {
+        if (timer !== null) window.clearTimeout(timer);
+        timer = null;
+        control.classList.remove('is-holding');
+        if (heldPointerId !== null && control.hasPointerCapture?.(heldPointerId)) {
+          try { control.releasePointerCapture(heldPointerId); } catch { /* Capture may already have ended. */ }
+        }
+        heldPointerId = null;
+      };
+      const click = (event: MouseEvent) => {
+        if (!suppressClick) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        suppressClick = false;
+      };
+      const keyDown = (event: KeyboardEvent) => {
+        if (event.key !== ' ') return;
+        event.preventDefault();
+        if (event.repeat) return;
+        void recorder.startRecording();
+      };
+      const contextMenu = (event: Event) => event.preventDefault();
+      const hint = document.createElement('span');
+      hint.className = 'oracle-admin-record-hint';
+      hint.textContent = 'Hold to record';
+      hint.setAttribute('aria-hidden', 'true');
+      control.appendChild(hint);
+      control.dataset.adminRecorder = 'available';
+      control.setAttribute('aria-keyshortcuts', 'Space');
+      control.setAttribute('aria-label', 'The 64. Tap or press Enter to open the deck. Hold or press Space to record a private reflection');
+      control.addEventListener('pointerdown', pointerDown);
+      control.addEventListener('pointerup', endHold);
+      control.addEventListener('pointercancel', endHold);
+      control.addEventListener('click', click, true);
+      control.addEventListener('keydown', keyDown);
+      control.addEventListener('contextmenu', contextMenu);
+      return () => {
+        endHold();
+        hint.remove();
+        delete control.dataset.adminRecorder;
+        control.removeAttribute('aria-keyshortcuts');
+        control.removeAttribute('aria-label');
+        control.removeEventListener('pointerdown', pointerDown);
+        control.removeEventListener('pointerup', endHold);
+        control.removeEventListener('pointercancel', endHold);
+        control.removeEventListener('click', click, true);
+        control.removeEventListener('keydown', keyDown);
+        control.removeEventListener('contextmenu', contextMenu);
+      };
+    });
+    return () => cleanups.forEach((cleanup) => cleanup());
+  }, [recorder.capabilityReady, recorder.isAdmin, recorder.state.status, recorder.startRecording]);
+
+  const reflectionActive = recorder.state.status !== 'idle';
+  useEffect(() => {
+    const frame = document.querySelector<HTMLElement>('.card-reading');
+    if (!frame || !reflectionActive) return;
+    frame.dataset.reflectionActive = 'true';
+    return () => { delete frame.dataset.reflectionActive; };
+  }, [reflectionActive]);
+
+  const safariHandoff = showSafariHandoff ? (
+    <a
+      className="oracle-safari-handoff"
+      href={`/universal-language/${current.number}`}
+      target="_blank"
+      rel="external noopener noreferrer"
+      aria-label="Open this reading in Safari"
+    >
+      <span>Open in Safari</span>
+      <small>Full browser</small>
+    </a>
+  ) : null;
+
   if (recorder.state.status !== 'idle') {
-    return <ReflectionRecorderBar hexagramNumber={current.number} recorder={recorder} onInvocationPublished={onInvocationPublished} />;
+    return <><ReflectionRecorderBar hexagramNumber={current.number} recorder={recorder} onInvocationPublished={onInvocationPublished} />{safariHandoff}</>;
   }
 
   // "For Me": if a chart already exists, open it; otherwise invite the birthday
@@ -89,19 +194,7 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
   };
 
   return (
-    <nav className="eb-reading oracle-bottom-nav" data-palette={palette} aria-label="Reading actions">
-      {showSafariHandoff && (
-        <a
-          className="oracle-bottom-nav__safari-handoff"
-          href={`/universal-language/${current.number}`}
-          target="_blank"
-          rel="external noopener noreferrer"
-          aria-label="Open this reading in Safari"
-        >
-          <span>Open in Safari</span>
-          <small>Full browser</small>
-        </a>
-      )}
+    <><nav className="eb-reading oracle-bottom-nav" data-palette={palette} aria-label="Reading actions">
       <div className="oracle-bottom-nav__inner">
         <Link className="oracle-bottom-nav__slot" to="/family" aria-label="The family behind these codes">
           <span className="oracle-bottom-nav__label">Family</span>
@@ -115,7 +208,7 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
           ref={centerButtonRef}
           type="button"
           className={`oracle-bottom-nav__slot oracle-bottom-nav__current${holding ? ' is-holding' : ''}`}
-          data-current-hexagram
+          data-recorder-owner
           data-admin-recorder={recorder.isAdmin ? 'available' : undefined}
           aria-label="All 64 codes"
           onPointerDown={beginHold}
@@ -162,7 +255,7 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
           onSave={() => setBirthOpen(false)}
         />
       )}
-    </nav>
+    </nav>{safariHandoff}</>
   );
 };
 

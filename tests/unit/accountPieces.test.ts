@@ -203,4 +203,36 @@ describe('GET /api/account/pieces', () => {
     const data = await response.json();
     expect(data.pieces).toEqual([]);
   });
+
+  it('reports unavailable when the shared database binding is absent', async () => {
+    signedInAs('user-A');
+    const response = await onRequestGet({ request: request(), env: {} } as any);
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({ ok: false, error: 'pieces_unavailable' });
+  });
+
+  it('reports unavailable instead of an empty list when keeper schema is absent', async () => {
+    signedInAs('user-A');
+    const emptyDatabase = new DatabaseSync(':memory:');
+    try {
+      const response = await onRequestGet({ request: request(), env: { DB: d1(emptyDatabase) } } as any);
+      expect(response.status).toBe(503);
+      await expect(response.json()).resolves.toEqual({ ok: false, error: 'pieces_unavailable' });
+    } finally {
+      emptyDatabase.close();
+    }
+  });
+
+  it('reports unavailable when keeper intentions schema is absent even with no pieces', async () => {
+    signedInAs('user-A');
+    const partialDatabase = new DatabaseSync(':memory:');
+    partialDatabase.exec(SCHEMA.replace(/CREATE TABLE keeper_intentions[\s\S]*?\n\);/, ''));
+    try {
+      const response = await onRequestGet({ request: request(), env: { DB: d1(partialDatabase) } } as any);
+      expect(response.status).toBe(503);
+      await expect(response.json()).resolves.toEqual({ ok: false, error: 'pieces_unavailable' });
+    } finally {
+      partialDatabase.close();
+    }
+  });
 });

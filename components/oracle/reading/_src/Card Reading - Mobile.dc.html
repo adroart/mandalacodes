@@ -52,8 +52,8 @@ a{color:#c6a667;text-decoration:none;}a:hover{color:#debc7e;}
       <main data-scroll="" style="position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:80px;">
 
         <!-- sticky pill jump bar (top) -->
-        <div data-jumpbar="" style="position:sticky;top:0;z-index:5;overflow:hidden;background:#191510cc;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(168,135,77,.16);">
-          <span data-progressfill-h="" style="position:absolute;left:0;top:0;height:1px;width:0;background:linear-gradient(to right,rgba(198,166,103,.08),rgba(222,188,126,.6));z-index:2;transition:width .12s linear;"></span>
+        <div data-jumpbar="" role="navigation" aria-label="Reading by system" style="position:sticky;top:0;z-index:5;overflow:hidden;background:#191510cc;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(168,135,77,.16);">
+          <span data-progressfill-h="" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="position:absolute;left:0;top:0;height:1px;width:0;background:linear-gradient(to right,rgba(198,166,103,.08),rgba(222,188,126,.6));z-index:2;transition:width .12s linear;"></span>
           <span data-comet="" style="position:absolute;left:0;top:0.5px;width:5px;height:5px;transform:translate(-50%,-50%) rotate(45deg);border-radius:1px;background:#d9c290;box-shadow:0 0 5px 1px rgba(217,194,144,.4);z-index:3;transition:left .12s linear;"></span>
           <div data-pills="" style="display:flex;padding:12px 12px;">
             <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6"><button type="button" data-nav="{{ n.id }}" style="flex:1 1 0;min-width:0;background:none;border:0;cursor:pointer;padding:6px 2px;font-family:'Iowan Old Style Web',serif;font-size:9px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:#80735f;white-space:nowrap;text-align:center;transition:color .3s ease,transform .35s cubic-bezier(.4,0,.2,1);transform-origin:center;">{{ n.tab }}</button></sc-for>
@@ -185,6 +185,7 @@ class Component extends DCLogic {
       if (artPar) artPar.style.transform = 'scale(1.12) translateY(' + (pos * 0.12) + 'px)';
       const den = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
       const frac = Math.max(0, Math.min(1, pos / den));
+      if (hfill) hfill.setAttribute('aria-valuenow', String(Math.round(frac * 100)));
       // comet rides the fixed-width sub-bar; clamp so it never leaves the frame
       const barW = pills ? pills.clientWidth : 0;
       const x = Math.max(4, Math.min(frac * barW, barW - 4));

@@ -25,6 +25,7 @@ export interface CardReadingMobileTabItem {
 }
 
 export interface CardReadingMobileData {
+  cardNumber?: string;
   nav?: CardReadingMobileNavItem[];
   tabs?: CardReadingMobileTabItem[];
 }
@@ -99,7 +100,21 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       piece:'<svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="8" y="9" width="24" height="22"/><path d="M8 9l12 11 12-11"/></svg>',
       share:'<svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M10 30c0-9 6-13 15-13M18 10l8 7-8 7"/></svg>'
     };
+    this.startReaders();
+  }
+
+  componentDidUpdate(previous: HostProps) {
+    if (previous.data?.cardNumber === this.props.data?.cardNumber) return;
+    // The outer shell survives card routes while its keyed chapters are replaced.
+    // Keep its scroll position, but discard the old card's pending navigation
+    // and reconnect observers to the new chapters. Prose updates keep their anchor.
+    this.stopReaders();
+    this.startReaders();
+  }
+
+  startReaders() {
     this._wired = new WeakSet();
+    this.rootEl?.querySelector('[data-bar-tab="deck"]')?.setAttribute('data-current-hexagram', '');
     let tries = 0;
     const tick = () => {
       let pending = false;
@@ -123,8 +138,14 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
   }
 
   componentWillUnmount() {
+    this.stopReaders();
+  }
+
+  stopReaders() {
     if (this._timer) clearTimeout(this._timer);
     if (this._anim) clearInterval(this._anim);
+    this._timer = null;
+    this._anim = null;
     this._readerCleanup.forEach((cleanup) => cleanup());
     this._readerCleanup = [];
   }
@@ -197,6 +218,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       if (artPar) artPar.style.transform = 'scale(1.12) translateY(' + (pos * 0.12) + 'px)';
       const den = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
       const frac = Math.max(0, Math.min(1, pos / den));
+      if (hfill) hfill.setAttribute('aria-valuenow', String(Math.round(frac * 100)));
 
       /* Progress marker: the bar and its diamond track scroll across the full
          width of the reader, empty at the top and complete at the bottom, rather
@@ -211,6 +233,27 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       if (idx !== lastActive) { lastActive = idx; setActive(idx); }
     };
 
+    // Keep an explicit tab choice anchored while its manuscript/font layout
+    // arrives. A wheel, touch, scrollbar or scroll key returns control to the reader.
+    let selectedSection: string | null = null;
+    const selectedTop = () => {
+      const target = selectedSection ? secFor(selectedSection) : null;
+      if (!target) return scroll.scrollTop;
+      const jumpH = jb ? jb.getBoundingClientRect().height : 0;
+      const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - jumpH - 8;
+      return Math.max(0, Math.min(top, scroll.scrollHeight - scroll.clientHeight));
+    };
+    const releaseSelection = () => {
+      selectedSection = null;
+      if (this._anim) { clearInterval(this._anim); this._anim = null; }
+    };
+    const onScrollKey = (event: KeyboardEvent) => {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) releaseSelection();
+    };
+    scroll.addEventListener('wheel', releaseSelection, { passive: true });
+    scroll.addEventListener('pointerdown', releaseSelection, { passive: true });
+    reader.addEventListener('keydown', onScrollKey);
+
     let scrollFrame: number | null = null;
     const onScroll = () => {
       if (scrollFrame !== null) return;
@@ -221,6 +264,7 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
     };
     const relayout = () => {
       layout();
+      if (selectedSection && !this._anim) scroll.scrollTop = selectedTop();
       onScroll();
     };
 
@@ -242,16 +286,16 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
       });
     }
 
-    const smoothTo = (to: number) => {
+    const smoothTo = (section: string) => {
+      selectedSection = section;
       const start = scroll.scrollTop;
-      const dist = to - start;
       const dur = 500;
       const t0 = Date.now();
       const ease = (p: number) => 1 - Math.pow(1 - p, 3);
       if (this._anim) clearInterval(this._anim);
       this._anim = setInterval(() => {
         const p = Math.min(1, (Date.now() - t0) / dur);
-        scroll.scrollTop = start + dist * ease(p);
+        scroll.scrollTop = start + (selectedTop() - start) * ease(p);
         onScroll();
         if (p >= 1) { clearInterval(this._anim as any); this._anim = null; }
       }, 16);
@@ -259,16 +303,16 @@ export class CardReadingMobileHost extends React.Component<HostProps> {
     const onReaderClick = (e: any) => {
       const btn = e.target.closest && e.target.closest('[data-nav]');
       if (!btn || !reader.contains(btn)) return;
-      const target = secFor(btn.getAttribute('data-nav'));
-      if (!target) return;
-      const jumpH = jb ? jb.getBoundingClientRect().height : 0;
-      const top = target.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop - jumpH - 8;
-      const max = scroll.scrollHeight - scroll.clientHeight;
-      smoothTo(Math.max(0, Math.min(top, max)));
+      const section = btn.getAttribute('data-nav');
+      if (!section || !secFor(section)) return;
+      smoothTo(section);
     };
     reader.addEventListener('click', onReaderClick);
     this._readerCleanup.push(() => {
       scroll.removeEventListener('scroll', onScroll);
+      scroll.removeEventListener('wheel', releaseSelection);
+      scroll.removeEventListener('pointerdown', releaseSelection);
+      reader.removeEventListener('keydown', onScrollKey);
       reader.removeEventListener('click', onReaderClick);
       if (scrollFrame !== null) cancelAnimationFrame(scrollFrame);
       settleTimers.forEach((timer) => clearTimeout(timer));

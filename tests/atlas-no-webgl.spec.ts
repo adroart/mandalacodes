@@ -48,6 +48,24 @@ const mockAtlasState = {
   },
 };
 
+function locationWithdrawalState(withdrawLocations: boolean) {
+  return {
+    ok: true,
+    state: {
+      generatedAt: '2026-09-22T00:00:00.000Z',
+      schemaVersion: 2,
+      cities: withdrawLocations ? [] : [
+        { id: 'lisbon-pt', city: 'Lisbon', country: 'Portugal', countryCode: 'PT', lat: 38.7223, lng: -9.1393 },
+        { id: 'denpasar-id', city: 'Denpasar', country: 'Indonesia', countryCode: 'ID', lat: -8.65, lng: 115.2167 },
+      ],
+      pieces: [
+        { pieceId: 'UL-122', editionNumber: 1, series: 'Universal Language', cityId: withdrawLocations ? null : 'lisbon-pt', status: withdrawLocations ? 'seeking' : 'placed', pieceType: 'mandala', claimOrdinal: 1, kind: 'sixty-four' },
+        { pieceId: 'UL-162', editionNumber: 1, series: 'Universal Language', cityId: withdrawLocations ? null : 'denpasar-id', status: withdrawLocations ? 'seeking' : 'placed', pieceType: 'mandala', claimOrdinal: 2, kind: 'sixty-four' },
+      ],
+    },
+  };
+}
+
 async function openAtlasWithoutWebGL(page: import('@playwright/test').Page) {
   await page.route('**/api/atlas', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockAtlasState) }),
@@ -132,4 +150,23 @@ test('title, filters and side panel chrome all render around the constellation',
     expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
   }
   await expect(page.getByRole('button', { name: 'Seeking ground' })).toBeVisible();
+});
+
+test('withdrawing public locations removes the fallback globe markers', async ({ page }) => {
+  let locationsWithdrawn = false;
+  await page.route('**/api/atlas', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify(locationWithdrawalState(locationsWithdrawn)),
+  }));
+  await page.goto(`${BASE}/atlas`, { waitUntil: 'networkidle' });
+
+  const globe = page.locator('svg[aria-label*="constellation"]');
+  await expect(globe.locator('circle')).toHaveCount(3);
+
+  locationsWithdrawn = true;
+  await page.reload({ waitUntil: 'networkidle' });
+
+  // The boundary circle remains; both actual public-location markers are gone.
+  await expect(globe.locator('circle')).toHaveCount(1);
 });

@@ -20,7 +20,6 @@ import { pieceCode } from '../../utils/pieceCode';
 import type { PublicCatalogEntry } from '../../utils/catalog';
 import type { PublicAtlasState } from '../../types';
 import { loadAtlasState } from './state';
-import { loadPublicCatalog } from './catalog';
 import {
   atlasPieceToRow,
   cleanLedgerTitle,
@@ -241,6 +240,7 @@ export function buildKindSections(
         !!stated && (stated.status === 'placed' || stated.status === 'unawakened'),
       placedAt: stated?.placedAt,
       claimOrdinal: stated?.claimOrdinal,
+      availableForClaim: !stated && e.status === 'available',
       sigil: sigilFor(e.id, {
         series: e.series,
         category: e.kind === 'jewelry' ? 'Jewelry' : undefined,
@@ -288,14 +288,14 @@ export function useAtlasRecord(): AtlasRecord {
 
   useEffect(() => {
     let active = true;
-    Promise.all([loadAtlasState(), loadPublicCatalog()])
-      .then(([data, catalog]) => {
+    loadAtlasState()
+      .then((data) => {
         if (!active) return;
         const enriched = enrichPieces(data);
         setRecord({
           status: 'ready',
           codeEntries: buildCodeEntries(enriched),
-          kindSections: buildKindSections(enriched, catalog),
+          kindSections: buildKindSections(enriched, []),
           generatedAt: data.generatedAt,
         });
       })

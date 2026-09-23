@@ -43,6 +43,10 @@ async function assertNeverBlankOrCrashed(page: Page) {
 }
 
 test.describe('offline reading, arriving straight on a card (QR path)', () => {
+  test.beforeEach(async ({ context }) => {
+    await context.route('**/api/**', route => route.fulfill({ status: 200, contentType: 'application/json', body: 'null' }));
+    await context.route(/^https:\/\//, route => route.abort());
+  });
   test('card 34 either renders from cache or shows the calm offline sentence, never blank', async ({ page, context }) => {
     await openCard(page, '/universal-language/33');
     await waitForServiceWorker(page);

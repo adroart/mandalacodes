@@ -1,7 +1,9 @@
 import { getSynthesis } from '../../data/synthesisData';
 import { getParsedCard } from '../../data/cardMarkdown';
 
-const WARM_FLAG_KEY = 'mc-oracle-warmed-v1';
+// Per-document completion: hashed prose is cheap to revisit through the worker,
+// and a new deployment or evicted cache must never trust an old storage flag.
+const passes = new WeakMap<Window, { complete: Set<number>; running: boolean }>();
 
 export const DECK_SIZE = 64;
 
@@ -29,11 +31,12 @@ function idle(fn: () => void): void {
  * worker has to cache it first; only then does a prefetch have somewhere to
  * put what it fetches.
  */
-export async function warmCard(number: number): Promise<void> {
-  await Promise.allSettled([
+export async function warmCard(number: number): Promise<boolean> {
+  const results = await Promise.allSettled([
     getSynthesis(number),
     getParsedCard(number),
   ]);
+  return results.every(result => result.status === 'fulfilled' && result.value != null);
 }
 
 /**
@@ -61,7 +64,7 @@ export interface WarmOptions {
 /**
  * Quietly makes the full 64-card deck's text available offline: fetches
  * every card's prose chunks, one card at a time, on the browser's idle
- * schedule, once per device. This is what turns "the cards you've already
+ * schedule, once per document. Completed chunks come from the worker cache. This is what turns "the cards you've already
  * opened work offline" (the service worker's runtime cache does that for
  * free) into "the whole deck works offline", the actual ask, since a
  * reading can land on any of the 64.
@@ -82,23 +85,28 @@ export function warmOracleForOffline(options: WarmOptions = {}): void {
   const { startAt } = options;
   const hasStart = Number.isInteger(startAt) && (startAt as number) >= 1 && (startAt as number) <= DECK_SIZE;
 
-  if (window.localStorage.getItem(WARM_FLAG_KEY)) {
-    /* The deck is already stored. Re-warming the card on screen is close to
-       free (it answers from the cache) and covers the one case the flag lies
-       about: a card whose prose was rewritten since the pass ran. */
-    if (hasStart) idle(() => { void warmCard(startAt as number); });
-    return;
+  let pass = passes.get(window);
+  if (!pass) {
+    pass = { complete: new Set(), running: false };
+    passes.set(window, pass);
+    // One recovery trigger, no timer loop and no media warming.
+    window.addEventListener('online', () => warmOracleForOffline(options));
   }
-
-  const order = deckWarmOrder(hasStart ? startAt : undefined);
+  if (pass.running) return;
+  const order = deckWarmOrder(hasStart ? startAt : undefined)
+    .filter(number => !pass.complete.has(number));
+  if (!order.length) return;
+  pass.running = true;
   let i = 0;
   const step = () => {
-    if (i >= order.length) {
-      window.localStorage.setItem(WARM_FLAG_KEY, '1');
+    if (i >= order.length || !navigator.onLine) {
+      pass.running = false;
       return;
     }
     const current = order[i++];
-    warmCard(current).finally(() => idle(step));
+    warmCard(current).then(success => {
+      if (success) pass.complete.add(current);
+    }).finally(() => idle(step));
   };
   idle(step);
 }

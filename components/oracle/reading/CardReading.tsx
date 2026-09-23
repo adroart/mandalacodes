@@ -127,6 +127,7 @@ export const CardReading: React.FC<CardReadingProps> = ({
   /* One bag, two shapes. Each host falls back to its design file's own defaults
      for anything not supplied, so an unconfigured render matches the source. */
   const mobileData: CardReadingMobileData = {
+    cardNumber,
     nav: lenses?.map((l) => ({ id: l.id, tab: l.tabShort ?? l.tab })),
     tabs,
   };

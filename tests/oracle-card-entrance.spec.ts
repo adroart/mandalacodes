@@ -174,7 +174,8 @@ test('an iPhone QR arrival offers a one-tap Safari handoff without replacing the
   await expect(handoff).toBeVisible();
   await expect(handoff).toHaveAttribute('href', CARD);
   await expect(handoff).toHaveAttribute('target', '_blank');
-  await expect(page.getByRole('navigation', { name: 'Reading actions' })).toBeVisible();
+  await expect(page.locator('.card-reading--mobile > section > div > footer')).toBeVisible();
+  expect(await handoff.evaluate((element) => element.closest('.oracle-bottom-nav'))).toBeNull();
 });
 
 test('a normal iPhone card link does not show the QR Safari handoff', async ({ page }) => {
@@ -190,6 +191,12 @@ test('a normal iPhone card link does not show the QR Safari handoff', async ({ p
 });
 
 test('opening from the deck plays once and browser Back returns quietly', async ({ page }) => {
+  // Destination is a local route fixture; this journey never visits production.
+  const artworkUrl = 'https://adrianrasmussen.com/creations/UL-119?from=mandalacodes&card=22';
+  await page.route(artworkUrl, route => route.fulfill({
+    status: 200, contentType: 'text/html',
+    body: '<!doctype html><title>Artwork design</title><h1>Treasure of the Way, artwork design</h1>',
+  }));
   await page.goto('/universal-language');
   const card = page.locator('[data-oe-num="22"]');
   await card.getByRole('button', { name: /Card 22:/ }).click();
@@ -197,8 +204,9 @@ test('opening from the deck plays once and browser Back returns quietly', async 
   await expect(entrance(page)).toBeVisible();
 
   await entrance(page).click();
-  await page.getByRole('link', { name: 'The physical piece for this code' }).click();
-  await expect(page).toHaveURL(/\/piece\/UL-119$/);
+  await page.locator('[data-bar-tab="piece"]').click();
+  await expect(page).toHaveURL(artworkUrl);
+  await expect(page.getByRole('heading', { name: 'Treasure of the Way, artwork design' })).toBeVisible();
   await page.goBack();
 
   await expect(page).toHaveURL(new RegExp(`${CARD}$`));

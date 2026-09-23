@@ -3,7 +3,7 @@
  *
  * Validates the self-owned Better Auth session cookie:
  *   requireUser  — any signed-in user
- *   requireAdmin — signed-in AND email is on the ADMIN_EMAILS allowlist
+ *   requireAdmin — signed-in, verified, AND email is on the ADMIN_EMAILS allowlist
  *
  * Return contract: AuthContext | Response.
  */
@@ -71,7 +71,7 @@ export async function requireUser(
 }
 
 /**
- * Require a signed-in user whose email is on the ADMIN_EMAILS allowlist.
+ * Require a signed-in user with a verified email on the ADMIN_EMAILS allowlist.
  * Comma-separated, case-insensitive. Empty/missing = no one is admin (fail closed).
  */
 export async function requireAdmin(
@@ -90,7 +90,7 @@ export async function requireAdmin(
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
   const email = (auth.email || '').toLowerCase();
-  if (!email || !allowlist.includes(email)) {
+  if (!auth.emailVerified || !email || !allowlist.includes(email)) {
     return new Response(JSON.stringify({ ok: false, error: 'forbidden' }), {
       status: 403,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },

@@ -13,6 +13,7 @@ import { CARD_BY_NUMBER } from '../../../data/oracleData';
 import { getSynthesis, type CardSynthesis } from '../../../data/synthesisData';
 import { ulCardArtFloatsFree, ulCardHeroImageUrl, ulPieceForCard } from '../../../utils/universalLanguage';
 import CardReading, { type CardReadingLens } from './CardReading';
+import { artDesignHref } from '../../../lib/atlas/artSite';
 import Navigation from '../../Navigation';
 import { isChunkLoadError } from '../../ChunkErrorBoundary';
 import { warmOracleForOffline } from '../../../lib/oracle/offlineWarm';
@@ -115,7 +116,7 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
 
   const keywords = syn?.keywords ?? [];
   const piece = ulPieceForCard(card.number);
-  const pieceHref = piece ? `/piece/${piece.id}` : '/universal-language';
+  const pieceHref = piece ? artDesignHref(piece.id, card.number) : '/universal-language';
 
   /* The design's left-hand meta block, from the card's own fields. */
   const meta = [

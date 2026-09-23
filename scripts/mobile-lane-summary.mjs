@@ -1,31 +1,25 @@
 /**
  * State the mobile Playwright lane's real result on the run summary page.
  *
- * The lane is deliberately non-blocking (`continue-on-error` on the
- * `test-mobile` job in .github/workflows/test.yml), because most of what it
- * catches is a product decision nobody has made yet — TODO.md's "Found in the
- * 2026-09-08 mobile suite audit" section. The cost of that choice is that the
- * WORKFLOW RUN reports success while the lane is red, so the run's own
- * conclusion cannot be read as the lane's result. Runs 35174697859 and
- * 35190547827 both carry a failed `test-mobile` inside a successful run, and no
- * surface said so.
+ * The lane is blocking: a red or incomplete mobile suite makes the
+ * `test-mobile` job fail. The ordinary list reporter is readable while the
+ * suite runs; this script adds durable counts to the run summary so a reviewer
+ * can see what failed or was never reached without reconstructing it from the
+ * complete log.
  *
  * This is that surface. It runs on every path, including the one where the
  * suite stopped at its own --global-timeout with most of its tests unreached,
- * and it exits non-zero whenever the lane did not fully pass — which keeps the
- * JOB's own conclusion honestly red underneath the green run.
+ * and it exits non-zero whenever the lane did not fully pass, preserving the
+ * blocking result even when Playwright stopped at its own time budget.
  *
- * It is a report, not a gate. It does not compare against a recorded baseline:
- * a count measured on one machine is not the count another machine gets (the
- * failures here are mostly 30-second timeouts, so a slower runner produces
- * more of them), and a gate that fires on that difference would turn every
- * merge red for a reason nobody could act on.
+ * It reports the gate's result. It does not compare against a recorded baseline:
+ * a count measured on one machine is not the count another machine gets
+ * (timing failures can multiply on a slower runner), and a gate that fires on
+ * that difference would turn a merge red for a reason nobody could act on.
  */
 import { appendFileSync, existsSync, readFileSync } from 'node:fs'
 
 const jsonPath = process.argv[2]
-const TODO_ANCHOR = 'TODO.md § "Found in the 2026-09-08 mobile suite audit"'
-
 function out(markdown) {
   const summary = process.env.GITHUB_STEP_SUMMARY
   if (summary) appendFileSync(summary, `${markdown}\n`)
@@ -110,7 +104,7 @@ if (cutShort) {
 }
 
 if (red === 0 && !cutShort) {
-  out('Nothing red. If this holds, the lane is ready to stop being non-blocking — see `todo/plans/ci-mobile-lane-red.md`.')
+  out('Nothing red. The blocking mobile lane passed.')
   console.log('::notice title=Mobile Chrome lane is green::no failures')
   process.exit(0)
 }
@@ -133,10 +127,10 @@ for (const [file, entry] of [...byFile].sort((a, b) => {
 }
 out('')
 out(
-  `This lane does not block a merge, and the run above says success for that reason. Most of these are one undecided product question, not ${red} separate bugs: see ${TODO_ANCHOR}.`,
+  `This blocking CI job failed. Resolve the ${red} red result${red === 1 ? '' : 's'} above, or establish that a reported failure is an invalid test contract, before publishing.`,
 )
 
 console.log(
-  `::warning title=Mobile Chrome lane is red::${red} of the ${ran} tests that ran are red (${counts.failed} failed, ${counts.timedOut} timed out). The run says success because this lane is non-blocking; see the run summary.`,
+  `::warning title=Mobile Chrome lane is red::${red} of the ${ran} tests that ran are red (${counts.failed} failed, ${counts.timedOut} timed out). This blocking job fails; see the run summary.`,
 )
 process.exit(1)

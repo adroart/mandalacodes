@@ -61,8 +61,8 @@ export function ulMetaTitle(art: Artwork): string {
 const UL_PIECE_BY_NUMBER = new Map<number, Artwork>(
   FULL_ARCHIVE
     .filter(a => a.series === 'Universal Language')
-    .map(a => [ulCardNumber(a.coverImage), a] as const)
-    .filter((pair): pair is readonly [number, Artwork] => pair[0] != null)
+    .map(a => [a.cardNumber, a] as const)
+    .filter((pair): pair is readonly [number, Artwork] => Number.isInteger(pair[0]) && pair[0]! >= 1 && pair[0]! <= 64)
 );
 
 /** The physical Universal Language piece for a card number, when one exists. */

@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { artDesignHref } from '../../lib/atlas/artSite';
 import type { Artwork } from '../../data/mockData';
 import { ulCardArtFloatsFree } from '../../utils/universalLanguage';
 
@@ -15,22 +17,19 @@ export const BuySheet: React.FC<{
 }> = ({ open, onClose, piece, imageUrl, imageAlt, cardName, cardNumber }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
 
+  useDialogFocus(dialogRef, open, onClose);
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', onKey);
-    setTimeout(() => dialogRef.current?.focus(), 50);
     return () => {
       document.body.style.overflow = prevOverflow;
-      window.removeEventListener('keydown', onKey);
     };
   }, [open, onClose]);
 
   if (!open) return null;
 
-  const pieceHref = piece ? `${ART_SITE}/creations/${piece.id}` : null;
+  const pieceHref = piece ? artDesignHref(piece.id, cardNumber) : null;
   const inquireHref = `${ART_SITE}/inquire`;
 
   return (

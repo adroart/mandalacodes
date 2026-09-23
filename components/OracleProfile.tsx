@@ -17,7 +17,7 @@ import { useMetaTags } from '../hooks/useMetaTags';
  * silently when accounts are configured AND the user is signed in.
  */
 const OracleProfile: React.FC = () => {
-  const { profile } = useProfile();
+  const { profile, syncError, retrySync } = useProfile();
   const [editing, setEditing] = useState(false);
   const [shareState, setShareState] = useState<'idle' | 'copied'>('idle');
 
@@ -140,6 +140,19 @@ const OracleProfile: React.FC = () => {
           </a>
         </p>
       </header>
+
+      {syncError && (
+        <div role="alert" style={{ fontFamily: 'var(--font-ui)', fontSize: 12, color: 'var(--color-danger-text)', marginBottom: 24 }}>
+          {syncError}
+          <button
+              type="button"
+              onClick={retrySync}
+              style={{ marginLeft: 12, color: 'inherit', textDecoration: 'underline', background: 'none', border: 0, cursor: 'pointer' }}
+            >
+              Try sync again
+          </button>
+        </div>
+      )}
 
       {showForm ? (
         <ProfileForm

@@ -29,14 +29,18 @@ async function loadCitiesIndex(): Promise<CitiesIndex> {
   if (_index) return _index;
   if (!_indexLoad) {
     _indexLoad = fetch('/data/cities-index.json')
-      .then((r) => (r.ok ? r.json() : []))
+      .then((r) => {
+        if (!r.ok) throw new Error('City search is unavailable. Check your connection and try again.');
+        return r.json();
+      })
       .then((data: CitiesIndex) => {
+        if (!Array.isArray(data)) throw new Error('City search is unavailable. Try again.');
         _index = data;
         return data;
       })
       .catch(() => {
-        _index = [];
-        return [];
+        _indexLoad = null;
+        throw new Error('City search is unavailable. Check your connection and try again.');
       });
   }
   return _indexLoad;

@@ -227,6 +227,55 @@ html.dark .card-reading {
   display: none !important;
 }
 
+/* The reflection recorder replaces the visible frame footer when active. */
+.oracle-bottom-nav.reflection-recorder-bar {
+  display: block !important;
+}
+
+.card-reading[data-reflection-active="true"] > section > div > footer {
+  visibility: hidden;
+}
+
+.card-reading [data-admin-recorder="available"] {
+  position: relative;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.card-reading [data-admin-recorder="available"]::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent);
+  content: "";
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.oracle-admin-record-hint {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 3px 7px;
+  background: var(--l-bg, #151411);
+  color: var(--l-1, #ede4d4);
+  font: 12px/1.3 var(--font-ui);
+  letter-spacing: 0;
+  text-transform: none;
+  pointer-events: none;
+}
+
+.card-reading [data-admin-recorder="available"].is-holding::after {
+  transform: scaleX(1);
+  transition: transform 650ms linear;
+}
+
 /* It also expects to be the page. Inside the shell it is a block in the
    shell's own scroll container, so it gives up full-viewport sizing. */
 .card-reading .eb-reading:not(.oracle-bottom-nav) {

@@ -21,6 +21,18 @@ afterEach(() => {
 });
 
 describe('Mandala Codes public Atlas read', () => {
+  it.each(['invalid', '0', '9007199254740992'])('does not borrow another edition metadata for %s', async (edition) => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    const shell = '<title>Mandala Codes</title>';
+    const response = await onRequestPieceGet({
+      request: new Request(`https://mandalacodes.com/piece/UL-122/${edition}`),
+      params: { path: ['UL-122', edition] },
+      env: { ASSETS: { fetch: async () => new Response(shell) } },
+    } as never);
+    expect(await response.text()).toBe(shell);
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it('reads the canonical public state from Adrian-Website instead of legacy R2', async () => {
     const canonical = { ok: true, state: { pieces: [{ pieceId: 'UL-64' }] } };
     const fetch = vi.fn(async () => Response.json(canonical));
