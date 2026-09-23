@@ -170,7 +170,7 @@ Re-measured on main (b9da484) 2026-09-22: **41 of 131**, which is the same suite
 
 ## Oracle deck content (Universal Language)
 
-- [ ] Card 3 carries two different opening lines, one on main and one on the closed card-writing branch, both written before the current rule; its pass settles which survives and Adrian chooses _(band: you-required)_ _(effort: quick)_
+- [ ] Pick card 3's opening line: two versions exist, both recorded as your choice on the same day; card 3's pass shows you both _(band: you-required)_ _(effort: quick)_ → Both lines and the evidence: [card 3's essence](todo/plans/writing-guideline/card-03-essence.md)
 - [ ] Put the card checks behind one command so a writer runs one thing, not four: the prose linter, the tells check, the sentence check and the two entrance checks _(band: agent-runnable)_ _(effort: quick)_
 - [ ] Write the remaining cards, one writer per card, sections and entrance in one pass; pick up wherever the tick list stands _(band: agent-runnable)_ _(effort: deep)_ → Where it stands: [what is written](oracle/CARD-PROGRESS.md) · How to run one: [dispatching a card writer](oracle/CARD-PASS.md)
 - [ ] Put the 64 settled opening sentences into the cards themselves, one line per card, nothing else touched _(band: agent-runnable)_ _(effort: moderate)_
