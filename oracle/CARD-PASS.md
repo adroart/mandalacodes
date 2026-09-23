@@ -64,6 +64,23 @@ settled line. Four of those drafts (30, 35, 63, 64) name the shadow.
 **2. Write the card** from the worksheet: ICHING, KEYS, DESIGN, BODY, RELATIONS,
 then CODE, then the keynotes, then the entrance last.
 
+The template is how the sources are assimilated, not a test run afterwards.
+Adrian, 2026-09-23: "The templates are not just a pass or fail, but they need to
+be used in the creation of the assimilation of all the information." So each
+section is built by putting that section's sources through that section's shape
+in [`WRITERS-BRIEF.md`](WRITERS-BRIEF.md): the Combination through its seven
+moves, the Gene Keys through three heights with one picture across them, the
+Body through the join its three threads agree on, Relations through where the
+energy goes next. Each section answers only its own question, so no two sections
+say the same thing.
+
+Before the first word, read the card's energy against all 64 lines in
+`todo/plans/writing-guideline/entrance-openings.md`. That file is the map of how
+the 64 differ. Name what this energy does that no other line does, and write the
+whole card from that difference. Card 64's first full pass skipped this, took
+the shape "arrives before you can say" that cards 17, 23, 43 and 57 already own,
+and every section repeated it.
+
 **3. The checks after.** Fill part 4 of the worksheet:
 - **every reader check** from the checklist, answered with the sentence it applies to quoted. A bare "yes" fails.
 - **a cold reader:** a fresh agent with no sources, given only the keywords, the entrance and CODE. It restates every sentence in its own words. Its output is pasted into the worksheet.
