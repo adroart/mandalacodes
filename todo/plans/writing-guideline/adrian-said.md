@@ -673,3 +673,13 @@ On the essence for card 3, shown the pilot's and the writer's side by side: use 
 
 [2026-09-16]
 (After reading card 1's Relations on the preview.) It holds, open the PR
+
+## 2026-09-23, card 63 and the framework
+
+(Reading card 63 on the live page, written by Opus with every script green.) "You did not hold together everything that I said. First off, the entry is negative. It's not readable. Did you run it through the checks and balances? You're talking so much about doubt. This is more than about doubt. That's the shadow. The template is not holding through here. Find out why and then figure out how to fix it."
+
+"I went through a ton of time building these templates and these scripts, and you did not do this. We need to figure out how you hold these when you're doing this yourself."
+
+"This has to be written into the process because there's gonna be 64 of these cards total. The frameworking that everything has to be ran through is not optional. And then the checking after is also not optional but first off the frameworking."
+
+Recorded as oracle/WORKSHEET.md (the framework, filled before writing) and scripts/card-gate.mjs (npm run card:gate -- NN), which a card must pass before it is committed.

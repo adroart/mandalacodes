@@ -51,11 +51,17 @@ for (const f of readdirSync(CARDS).filter((x) => /^\d\d\.md$/.test(x)).sort()) {
   const block = (raw.match(/^status:\n((?:\s{2}\w+:\s*\S+\n)+)/m) || [, ''])[1];
   const marks = block.trim().split('\n').map((l) => l.split(':')[1].trim()).filter(Boolean);
   const yours = marks.length > 0 && marks.every((m) => m === 'final');
-  rows.push({ id, title, gating, entranceDone, hasEntrance: Boolean(want), yours });
+  // The gate (scripts/card-gate.mjs) is the framework and the checks after. A card
+  // whose sentences pass but whose gate does not is part way, not written.
+  let gate = false;
+  if (gating === 0) {
+    try { execFileSync('node', ['scripts/card-gate.mjs', id], { stdio: 'ignore' }); gate = true; } catch { gate = false; }
+  }
+  rows.push({ id, title, gating, gate, entranceDone, hasEntrance: Boolean(want), yours });
 }
 
 const tick = (b) => (b ? 'x' : ' ');
-const ready = (r) => r.gating === 0 && r.entranceDone;
+const ready = (r) => r.gating === 0 && r.gate;
 const finished = rows.filter((r) => ready(r) && r.yours);
 const done = rows.filter((r) => ready(r) && !r.yours);
 const started = rows.filter((r) => !ready(r) && (r.gating === 0 || r.entranceDone));
@@ -73,7 +79,10 @@ lines.push('Three states, and a card is only 100% when all three hold.');
 lines.push('');
 lines.push('1. **Sections written**: the sentence check finds nothing to gate, which a card only');
 lines.push('   reaches by going through the pass.');
-lines.push('2. **Entrance in**: the card carries its settled opening sentence, the one agreed with Adrian.');
+lines.push('2. **Through the gate**: `npm run card:gate -- NN` passes. That means the worksheet was filled');
+lines.push('   BEFORE writing (the energy whole, the true things, the allotment), the entrance and CODE');
+lines.push('   do not name the energy by its shadow, and every reader check and the cold reader are done.');
+lines.push('   See [the worksheet](WORKSHEET.md). A sentence on file is a draft until it passes this.');
 lines.push('3. **Adrian\'s yes**: every section\'s status says `final`. That is his editorial decision');
 lines.push('   and never an automated score, so no script sets it and no writer may set it.');
 lines.push('');
@@ -88,7 +97,8 @@ const block = (name, list, note) => {
   for (const r of list) {
     const bits = [];
     bits.push(`sections ${r.gating === 0 ? 'done' : `${r.gating} to fix`}`);
-    bits.push(`entrance ${r.entranceDone ? 'in' : r.hasEntrance ? 'settled, not in the card' : 'not settled'}`);
+    bits.push(`entrance ${r.entranceDone ? 'in' : r.hasEntrance ? 'drafted, not in the card' : 'not drafted'}`);
+    if (r.gating === 0) bits.push(r.gate ? 'through the gate' : 'gate not passed');
     if (ready(r)) bits.push(r.yours ? 'yours' : 'waiting on you');
     lines.push(`- [${tick(ready(r) && r.yours)}] **${r.id} ${r.title}** · ${bits.join(' · ')}`);
   }
