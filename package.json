@@ -30,7 +30,10 @@
     "backup:atlas": "tsx scripts/backup-atlas.ts",
     "postbuild": "node scripts/build-csp-headers.mjs",
     "lint:tells": "node scripts/oracle-tells.mjs",
-    "workbook": "tsx scripts/oracle-workbook.ts"
+    "lint:entrance": "node scripts/lint-entrance.mjs",
+    "lint:slop": "node scripts/lint-slop.mjs",
+    "workbook": "tsx scripts/oracle-workbook.ts",
+    "progress": "node scripts/card-progress.mjs"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",

@@ -170,6 +170,12 @@ Re-measured on main (b9da484) 2026-09-22: **41 of 131**, which is the same suite
 
 ## Oracle deck content (Universal Language)
 
+- [ ] Put the card checks behind one command so a writer runs one thing, not four: the prose linter, the tells check, the sentence check and the two entrance checks _(band: agent-runnable)_ _(effort: quick)_
+- [ ] Write the remaining cards, one writer per card, sections and entrance in one pass; pick up wherever the tick list stands _(band: agent-runnable)_ _(effort: deep)_ → Where it stands: [what is written](oracle/CARD-PROGRESS.md) · How to run one: [dispatching a card writer](oracle/ENTRANCE-DISPATCH.md)
+- [ ] Put the 64 settled opening sentences into the cards themselves, one line per card, nothing else touched _(band: agent-runnable)_ _(effort: moderate)_
+- [ ] Show the entrance on the card page under a Message at a glance header: today the page shows the reading's first paragraph instead and nothing reads the entrance line _(band: agent-runnable)_ _(effort: moderate)_
+- [ ] Say once, in the deck's own introduction, what the paintings are: the painting is a window to the energy, it does nothing, you look _(band: you-required)_ _(effort: quick)_
+- [ ] Build the printed workbook for Adrian's hand pass over the 64: the render script (one card per spread, every sentence numbered, facing rewrite page per lens, the seven checks and the sitting ritual in the front matter, the Phase 1 suspect marks and formula slots in the margin), then eight booklets of eight to the printer _(band: agent-runnable)_ _(effort: deep)_ → Plan: [personal-pass.md](todo/plans/personal-pass.md), Phase 2 section 1
 - [ ] Do the hand pass: read, mark, rewrite the 64 by hand in the printed workbook, without AI, one card a sitting, in the booklet order the plan sets _(band: you-required)_ _(effort: deep)_ → Plan: [personal-pass.md](todo/plans/personal-pass.md), Phase 2 sections 2, 3 and 5
 - [ ] Build the typist loop that carries the handwriting back into the cards: the photo intake folder in the vault, the one-page transcript brief, the no-model apply script that patches by sentence number, and the approved-lines file with its unit test _(band: agent-runnable)_ _(effort: deep)_ → Plan: [personal-pass.md](todo/plans/personal-pass.md), Phase 2 section 4
 - [ ] Card 39 carries a Root-centre paragraph copied word for word from card 38; the two DESIGN sections read as one page. Found by the Phase 1 reading pass; fix in the hand pass or before the workbook prints _(band: you-required)_ _(effort: quick)_
