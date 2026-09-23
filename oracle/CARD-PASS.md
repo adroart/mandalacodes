@@ -79,6 +79,11 @@ before something is finished", taken from the fox nearly across, and Adrian
 asked why imagination would live at the end and not the beginning. In the
 card's full meaning before completion is the open state, the most awake one,
 and completion is what closes.
+Say the moment in the card's own words, never as a stock frame: "This is the"
+already opens the reading on seven cards, and the brief fails any paragraph
+opener used on more than three. Card 64 opens "Before completion is where you
+are most awake"; card 63 opens "After something is finished, the questions
+begin."
 
 **2. Give each section its own facet before writing.** Read each section's
 sources through that section's question in the brief:
