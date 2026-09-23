@@ -132,6 +132,18 @@ const vitePWA = VitePWA({
         options: {
           cacheName: 'oracle-app-chunks',
           expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 180 },
+          // A chunk URL the edge is not serving (mid-deploy) used to come
+          // back as the SPA's index.html with a 200, and CacheFirst kept that
+          // HTML for 180 days, so the card never loaded again on that device.
+          // Only store a real script or stylesheet.
+          plugins: [
+            {
+              cacheWillUpdate: async ({ response }) => {
+                const type = response.headers.get('content-type') || '';
+                return response.status === 200 && /javascript|css/i.test(type) ? response : null;
+              },
+            },
+          ],
         },
       },
       // The artwork is deliberately NOT cached by the worker.
