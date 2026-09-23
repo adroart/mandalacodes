@@ -52,7 +52,9 @@ test('withdrawing public locations keeps claimed lights but removes their map in
     await expect(publicPulse).toBeVisible();
     await expect(page.getByText('of 2 pieces', { exact: false })).toBeVisible();
     await expect(page.getByText('touch a light to read its dream', { exact: false })).toBeVisible();
-    await publicPulse.screenshot({ path: testInfo.outputPath('before-withdrawal-pulse.png') });
+    // Capture the complete asserted state. A locator screenshot additionally
+    // scrolls and waits for element stability; CI spent 8s in that capture path.
+    await page.screenshot({ path: testInfo.outputPath('before-withdrawal-pulse.png'), fullPage: true });
   });
 
   await test.step('reload the atlas after locations are withdrawn', async () => {
@@ -70,6 +72,6 @@ test('withdrawing public locations keeps claimed lights but removes their map in
     await expect(page.getByText('touch a light to read its dream', { exact: false })).toHaveCount(0);
     await expect(page.getByText('Lisbon', { exact: false })).toHaveCount(0);
     await expect(page.getByText('Denpasar', { exact: false })).toHaveCount(0);
-    await withdrawnPulse.screenshot({ path: testInfo.outputPath('after-withdrawal-pulse.png') });
+    await page.screenshot({ path: testInfo.outputPath('after-withdrawal-pulse.png'), fullPage: true });
   });
 });
