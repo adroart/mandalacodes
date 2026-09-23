@@ -65,7 +65,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 60 · A limit, this far and no further, gives a piece of work its shape.  (Woven Light)
 61 · A sureness without proof moves people more than any argument could.  (Celestial Remembrance)
 62 · The wish to get the small thing right says the one word and stops.  (Voice of Nature)
-63 · Doubt goes back over a finished thing and catches the wrong note before anyone else.  (Adornments of Time)
+63 · Curiosity keeps asking how a thing works, long after it is finished.  (Adornments of Time)
 64 · Confusion comes before an idea and clears only in its own time.  (Communion)
 
 ## The five whole entrances, pilot (2026-09-22)
