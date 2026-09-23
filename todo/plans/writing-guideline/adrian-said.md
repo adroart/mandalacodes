@@ -709,3 +709,7 @@ Why it happened: the frame writers were told to read the Gene Keys chapter and s
 "The templates are not just a pass or fail, but they need to be used in the creation of the assimilation of all the information."
 
 Why card 64 failed: its writer used the brief only as a gate after writing, and treated the entrance openings as one draft line to replace rather than as the map of how the 64 differ. The card took the shape "arrives before you can say" that 17, 23, 43 and 57 already own, and every section repeated it. Recorded in oracle/CARD-PASS.md step 2.
+
+(Shown the Opus 5.5 diagnosis and its six-step framework.) "Yes, should we do it in a new work tree? And can you write the instructions really clearly that will not be destroyed, overwritten, or sidestepped, that will be held to create the most beautiful results."
+
+Recorded as oracle/CARD-PASS.md (six steps, locked), oracle/WORKSHEET.md (the short sheet), scripts/card-gate.mjs (enforces the steps) and scripts/method-lock.mjs with .github/workflows/method-lock.yml (CI turns red when the method changes without his words here).
