@@ -70,20 +70,21 @@ energy comes second, as what lives in it. Adrian, 2026-09-23, on card 64: "Why
 don't you start by saying this is the moment just before something is
 finished." Its reading had opened on the Gene Keys gift, so it read as
 imagination in general, not as this card.
-Read the moment from the card's name at its full meaning, never from one
-section's picture or your own paraphrase: open the Gene Keys chapter's own use
-of the name and the highest height, and let them outrank the I Ching's scene.
-Then test it: say "[the energy] lives here" after the moment. If a listener
-would ask why, the moment is wrong. Card 64 first opened on "the moment just
-before something is finished", taken from the fox nearly across, and Adrian
-asked why imagination would live at the end and not the beginning. In the
-card's full meaning before completion is the open state, the most awake one,
-and completion is what closes.
+Read the moment from what the sources say the name means, never from one
+section's picture, your own paraphrase, or anyone's personal reading of the
+name: the Gene Keys chapter's own use of the name and what the I Ching texts
+say it means. Then test it: say "[the energy] lives here" after the moment.
+If a listener would ask why, the moment is wrong. Card 64 first opened on "the
+moment just before something is finished", taken from the fox nearly across,
+and Adrian asked why imagination would live at the end and not the beginning.
+In the sources before completion is a time of change, one order ended and the
+next not yet formed (Legge, Huang; the chapter: "the transformational state").
+Adrian, the same day, when his own reading of the name had been written in:
+"Stick with the information. I will put my own take on it later."
 Say the moment in the card's own words, never as a stock frame: "This is the"
 already opens the reading on seven cards, and the brief fails any paragraph
-opener used on more than three. Card 64 opens "Before completion is where you
-are most awake"; card 63 opens "After something is finished, the questions
-begin."
+opener used on more than three. Card 64 opens "Before completion is a time of
+change"; card 63 opens "After something is finished, the questions begin."
 
 **2. Give each section its own facet before writing.** Read each section's
 sources through that section's question in the brief:
