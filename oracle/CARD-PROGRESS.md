@@ -33,7 +33,7 @@ Three states, and a card is only 100% when all three hold.
 3. **Adrian's yes**: every section's status says `final`. That is his editorial decision
    and never an automated score, so no script sets it and no writer may set it.
 
-**0 finished. 1 written, waiting on Adrian. 8 part way. 55 not started.**
+**0 finished. 2 written, waiting on Adrian. 8 part way. 54 not started.**
 
 One writer per card, sections first and the entrance last: see [dispatching a card writer](CARD-PASS.md).
 
@@ -42,10 +42,11 @@ One writer per card, sections first and the entrance last: see [dispatching a ca
 Written, and you have said yes. Nothing left on these.
 
 
-## Written, waiting on you (1)
+## Written, waiting on you (2)
 
 Read it on the page. If it holds, its status goes to final and it moves up.
 
+- [ ] **63 Adornments of Time** · sections done · entrance in · waiting on you
 - [ ] **64 Communion** · sections done · entrance in · waiting on you
 
 ## Part way (8)
@@ -61,7 +62,7 @@ One half is done. The line after each says which.
 - [ ] **08 Odyssey of Freedom** · sections done · entrance settled, not in the card
 - [ ] **27 Inner Majesty** · sections done · entrance settled, not in the card
 
-## Not started (55)
+## Not started (54)
 
 Each takes one writer, one pass, about ten minutes of machine time.
 
@@ -119,5 +120,4 @@ Each takes one writer, one pass, about ten minutes of machine time.
 - [ ] **60 Woven Light** · sections 53 to fix · entrance settled, not in the card
 - [ ] **61 Celestial Remembrance** · sections 64 to fix · entrance settled, not in the card
 - [ ] **62 Voice of Nature** · sections 58 to fix · entrance settled, not in the card
-- [ ] **63 Adornments of Time** · sections 58 to fix · entrance settled, not in the card
 
