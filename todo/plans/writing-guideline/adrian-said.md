@@ -673,3 +673,29 @@ On the essence for card 3, shown the pilot's and the writer's side by side: use 
 
 [2026-09-16]
 (After reading card 1's Relations on the preview.) It holds, open the PR
+
+## 2026-09-23, card 63 and the framework
+
+(Reading card 63 on the live page, written by Opus with every script green.) "You did not hold together everything that I said. First off, the entry is negative. It's not readable. Did you run it through the checks and balances? You're talking so much about doubt. This is more than about doubt. That's the shadow. The template is not holding through here. Find out why and then figure out how to fix it."
+
+"I went through a ton of time building these templates and these scripts, and you did not do this. We need to figure out how you hold these when you're doing this yourself."
+
+"This has to be written into the process because there's gonna be 64 of these cards total. The frameworking that everything has to be ran through is not optional. And then the checking after is also not optional but first off the frameworking."
+
+Recorded as oracle/WORKSHEET.md (the framework, filled before writing) and scripts/card-gate.mjs (npm run card:gate -- NN), which a card must pass before it is committed.
+
+## 2026-09-23, the sixty-four frames (Pass / Fail on the first ten)
+
+Card 1: "Commas are in the wrong place. First sentence is good. Then the second is too long with miscomma."
+Card 2: "I don't know what feeling held as one part of a single whole means."
+Card 6: "It feels like you put three sentences in two. And what is after the comma is not great."
+Card 9: "Three sentences in two."
+Passed as written: 3, 4, 5, 7, 8, 10.
+
+(Asked whether to fix these now or after the cards are written.) Fix now. Turned into rules for every frame and every card: one idea per sentence; never hang a second idea off a comma; at most one comma in a sentence; every phrase says something a reader can picture.
+
+Also: "Always the template rate of fifty-nine fail immediately for the sentence check length." The frame instructions had allowed 35 words against the deck's 25; any limit given to a writer is copied from the rule file, never typed from memory.
+
+(Reading the rewritten frames, 2026-09-23.) "Beauty shines through your ordinary days. It's kind of strange. I notice you're just using gene keys to create this instead of the totality of the card. So it's becoming formulaic. And too heavily based on gene keys rather than the concept of it. How about you start with the full page writings rather than this? ... I notice you pull one word out of the three in each."
+
+Why it happened: the frame writers were told to read the Gene Keys chapter and skim Human Design, and never saw the I Ching, the body or the card whole; each one took a word from the shadow/gift/siddhi line. It also inverted the brief's own order, which writes the entrance LAST as a summary of the totality. The frames page (claude.ai/artifact/6R4XMzYyVS6gMMn3UnWNJF) is parked. Next: work out how to write one full card, in its own thread, then the entrance from that.

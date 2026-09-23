@@ -34,7 +34,8 @@
     "lint:entrance": "node scripts/lint-entrance.mjs",
     "lint:slop": "node scripts/lint-slop.mjs",
     "workbook": "tsx scripts/oracle-workbook.ts",
-    "progress": "node scripts/card-progress.mjs"
+    "progress": "node scripts/card-progress.mjs",
+    "card:gate": "node scripts/card-gate.mjs"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",
