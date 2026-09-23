@@ -1,1 +1,3 @@
 @AGENTS.md
+
+@./THINKING.md
