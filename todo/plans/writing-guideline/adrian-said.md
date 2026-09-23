@@ -660,6 +660,9 @@ The writing of number two seems very similar. Both the reading and the I Ching f
 Okay. This is great. It feels complete. Avoid being formulaic. In the Gene Keys, where it says "at its lowest", "at its best", "at its height", I do not want that a part of the template.
 
 
+[2026-09-16]
+On the essence for card 3, shown the pilot's and the writer's side by side: use the new one.
+
 ## 2026-09-16, the entrance
 
 "You made the entrance sentence the same as the reading. I believe you did this on many of them. So I need you to write a sentence. Basically gives a taste of the card, but not reusing anything in two sentences more or less. It's minimal because this is the introductory. It's not trying to explain the totality of it. It's trying to give people a taste of what the card is about. So you can really understand the totality of the card in one Summary. The writing needs to be different from everything, but based from the original card. Why did the template do it incorrectly and just copy rather than create."

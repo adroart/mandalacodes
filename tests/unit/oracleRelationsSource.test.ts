@@ -88,7 +88,11 @@ describe('Markdown-native Oracle Relations', () => {
     const serialized = JSON.stringify(relations);
 
     expect(relations.tarot).toMatchObject({ card: 'I · The Magician' });
-    expect(relations.tarot?.teaching).toContain('the maker with one hand raised');
+    // The Tarot teaching is the line above the bullets, so it names how many Arcana
+    // reach the card and by which route. The bullet prose moved out of this field when
+    // the deck went to intro-plus-bullets; card 64 was the last card still in the old shape.
+    expect(relations.tarot?.teaching).toContain("Four of the tarot's major cards");
+    expect(relations.tarot?.teaching).toContain('through the ring and the two trigrams');
     expect(relations.immortals).toMatchObject({
       upper: { trigram: 'Fire', name: 'Lu Dong Bin' },
       lower: { trigram: 'Water', name: 'Li Tie Guai' },
@@ -96,7 +100,7 @@ describe('Markdown-native Oracle Relations', () => {
     });
     // Mid-paragraph on purpose: names the immortal's own attribute rather than the
     // teaching's opening line, which editorial passes rewrite.
-    expect(relations.immortals?.teaching).toContain('keeps his medicine in a gourd');
+    expect(relations.immortals?.teaching).toContain('his medicine in a gourd');
     expect(relations.sky).toMatchObject({ value: 'Mercury' });
     expect(relations.sky?.teaching).toContain('quick messenger');
     expect(relations.hebrew_letter).toMatchObject({ letter: 'Beth' });
