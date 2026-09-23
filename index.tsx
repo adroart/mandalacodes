@@ -11,6 +11,9 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './src/index.css';
 import App from './App';
+import { installChunkRecovery } from './src/lib/chunkRecovery';
+
+installChunkRecovery();
 
 const statusEl = document.getElementById('loader-status');
 if (statusEl) statusEl.innerText = "Loading Modules...";
