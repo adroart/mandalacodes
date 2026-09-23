@@ -61,7 +61,11 @@ test('the resulting hexagram opens its reading directly', async ({ page }) => {
   if (await entrance.isVisible()) await entrance.click();
 
   await page.getByRole('button', { name: 'Cast the coins', exact: true }).first().click();
-  await page.getByRole('button', { name: /Moving toward Hexagram 47.*Read where it stands/i }).click();
+  await expect(page.getByText(/With all moving lines turned over together/)).toBeVisible();
+  await expect(page.getByText(/Turned over, it leads to/)).toHaveCount(0);
+  await expect(page.getByText('The lines in motion', { exact: true })).toBeVisible();
+  await page.screenshot({ path: `test-results/cast-combined-${test.info().project.name}.png` });
+  await page.getByRole('button', { name: /Turning into.*Hexagram 47.*Open that card/i }).click();
 
   await expect(page).toHaveURL(/\/universal-language\/47$/);
   await expect(page.getByRole('dialog', { name: 'The 64 Codes' })).toHaveCount(0);

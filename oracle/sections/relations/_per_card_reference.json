@@ -1031,7 +1031,7 @@
   },
   "17": {
     "number": 17,
-    "card_name": "Peral of Christos",
+    "card_name": "Pearl of Christos",
     "trigrams": {
       "upper": "Lake",
       "upper_symbol": "☱",
@@ -1108,18 +1108,18 @@
     },
     "pair": {
       "number": 17,
-      "card_name": "Peral of Christos",
+      "card_name": "Pearl of Christos",
       "hexagram_name": "Following (Sui)"
     },
     "inverse": {
       "number": 17,
-      "card_name": "Peral of Christos",
+      "card_name": "Pearl of Christos",
       "hexagram_name": "Following (Sui)",
       "is_self_inverse": false
     },
     "programming_partner": {
       "number": 17,
-      "card_name": "Peral of Christos"
+      "card_name": "Pearl of Christos"
     },
     "codon_ring": {
       "name": "Ring of Matter",
