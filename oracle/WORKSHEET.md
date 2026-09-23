@@ -53,5 +53,6 @@ Under each, the true things it carries, each ending in its source file.
 - Returned:
 - Card it named:
 - Repeats it found:
+- What it says the card is about, and why the energy belongs to the card's name:
 - Verdict (pass only when it names this card and finds no repeats inside CODE):
 ```

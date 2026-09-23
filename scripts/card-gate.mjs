@@ -125,6 +125,8 @@ if (!existsSync(sheetPath)) {
   const returned = line(p4, 'Returned');
   const named = line(p4, 'Card it named');
   const verdict = line(p4, 'Verdict');
+  const about = line(p4, 'What it says the card is about');
+  check('step 6: the reader said what the card is about and why the energy belongs to its name', about.length > 60, about ? `only ${about.length} chars` : 'missing');
   check('step 6: the fresh reader named this card', new RegExp(`\\b0*${+id}\\b`).test(named) || (title && named.toLowerCase().includes(title.toLowerCase())), named ? `it named "${named}"` : 'missing');
   check('step 6: the fresh reader passed', /^pass\b/i.test(verdict) && returned.length > 200, verdict ? `verdict "${verdict}", returned ${returned.length} chars` : 'no verdict');
 }

@@ -70,6 +70,15 @@ energy comes second, as what lives in it. Adrian, 2026-09-23, on card 64: "Why
 don't you start by saying this is the moment just before something is
 finished." Its reading had opened on the Gene Keys gift, so it read as
 imagination in general, not as this card.
+Read the moment from the card's name at its full meaning, never from one
+section's picture or your own paraphrase: open the Gene Keys chapter's own use
+of the name and the highest height, and let them outrank the I Ching's scene.
+Then test it: say "[the energy] lives here" after the moment. If a listener
+would ask why, the moment is wrong. Card 64 first opened on "the moment just
+before something is finished", taken from the fox nearly across, and Adrian
+asked why imagination would live at the end and not the beginning. In the
+card's full meaning before completion is the open state, the most awake one,
+and completion is what closes.
 
 **2. Give each section its own facet before writing.** Read each section's
 sources through that section's question in the brief:
@@ -126,6 +135,14 @@ can say", which cards 17, 23, 43 and 57 already use.
   not count (Adrian, 2026-09-23: twelve of twelve strict readers on card 64
   each found exactly one pair, the last with two different restatements). It
   passes only when it names this card and finds no repeats inside CODE.
+- In the same run, ask the reader two more things: what the card is about, in
+  one sentence, and why the energy belongs to the card's name (give it the
+  name). Paste both answers. They must match the step 1 sentence and the
+  card's moment. If the reader cannot say why the energy belongs to the name,
+  CODE's opening has not said it, and the card goes back. This is the check
+  the card as a whole never had: on card 64 every sentence passed while
+  Adrian could not tell what the reading was about or why imagination lived
+  in its moment.
 
 Then regenerate `data/oracle-corpus.json` and `data/oracle-search-index.json`
 (`node --import tsx scripts/build-oracle-corpus.ts`, then
