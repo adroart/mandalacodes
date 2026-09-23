@@ -64,6 +64,12 @@ one sentence that says what only this card is, and check it: it must be
 false for every one of those neighbours. Name the energy in a word a person
 says they feel. Never use the shadow word. The card's own line in the openings
 file is a draft to test like any other, and four of them name the shadow.
+Then name the card's moment: the situation in a life this card is, in the
+hexagram's own plain words. CODE's first sentence says that moment, and the
+energy comes second, as what lives in it. Adrian, 2026-09-23, on card 64: "Why
+don't you start by saying this is the moment just before something is
+finished." Its reading had opened on the Gene Keys gift, so it read as
+imagination in general, not as this card.
 
 **2. Give each section its own facet before writing.** Read each section's
 sources through that section's question in the brief:
@@ -88,8 +94,13 @@ assimilating. It cannot be done at the end.
 
 **4. Read the card sideways.** Put the six facet lines side by side, then the
 first and last sentence of every section. Wherever two say the same thing,
-rewrite the weaker one from its own facet. Write in the sheet what you found
-and what you changed. "Nothing" is an answer only when it is true.
+rewrite the weaker one from its own facet. Then look for the opposite fault:
+two sections that say contrary things about the same thing. Settle it into one
+line every section agrees with. On card 64, CODE said imagination shows you the
+whole thing while DESIGN said the pictures do not make sense, and Adrian could
+not tell which was meant; the line became "the picture is clear, the how is
+not". Write in the sheet what you found and what you changed. "Nothing" is an
+answer only when it is true.
 
 **5. Write the reading's CODE, the keynotes and the entrance last**, from the
 six facets together, with the brief's entrance section and `CARD-CHECKLIST.md`
@@ -103,10 +114,18 @@ can say", which cards 17, 23, 43 and 57 already use.
   energy by its shadow.
 - Send one fresh reader (Sonnet), with no sources, the keywords, the entrance,
   the CODE section and the neighbours' opening lines, each sentence numbered.
-  It must restate every sentence in its own words, say which of the listed
-  cards the text belongs to, and name any two sections or sentences that say
-  the same thing. Paste its answer into the sheet. It passes only when it
-  names this card and finds no repeats.
+  List this card among them with the step 1 sentence as its line, never its
+  line from the openings file. It must restate every sentence in its own
+  words, say which of the listed cards the text belongs to, and name any two
+  CODE sentences that say the same thing. It does not count CODE against the
+  entrance: the entrance summarises the card, so they share its core by
+  design, and on card 64 every such fix cut the reading until Adrian read it as
+  too short ("it's not really relating it to the card"). Paste its answer into
+  the sheet. A pair counts only when the reader's own two restatements say
+  the same thing; where they differ, quote both in the sheet and the pair does
+  not count (Adrian, 2026-09-23: twelve of twelve strict readers on card 64
+  each found exactly one pair, the last with two different restatements). It
+  passes only when it names this card and finds no repeats inside CODE.
 
 Then regenerate `data/oracle-corpus.json` and `data/oracle-search-index.json`
 (`node --import tsx scripts/build-oracle-corpus.ts`, then

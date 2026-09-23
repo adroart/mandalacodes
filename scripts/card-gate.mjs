@@ -101,6 +101,7 @@ if (!existsSync(sheetPath)) {
   check('step 1: what only this card is', only.length > 30, 'missing');
   const word = line(p1, 'The energy word');
   check('step 1: the energy word is not the shadow', word && !shadowIn(word.split(/[,.(]/)[0]).length, word ? `"${word}" is the shadow` : 'missing');
+  check("step 1: the card's moment is named", line(p1, "The card's moment").length > 20, "missing: the situation in a life, in the hexagram's plain words, which CODE opens on");
 
   const p2 = part(2);
   const secs = ['CODE', 'ICHING', 'KEYS', 'DESIGN', 'BODY', 'RELATIONS'];
@@ -118,14 +119,14 @@ if (!existsSync(sheetPath)) {
   check('step 2: the obvious thing has one home', line(p2, 'The one section').length > 3, 'missing');
 
   const p3 = part(3);
-  check('step 4: the sideways read', line(p3, 'Repeats found').length > 20 && line(p3, 'The entrance beside').length > 20, 'unfilled');
+  check('step 4: the sideways read', line(p3, 'Repeats found').length > 20 && line(p3, 'Contradictions found').length > 20 && line(p3, 'The entrance beside').length > 20, 'unfilled (repeats, contradictions and the entrance beside the neighbours)');
 
   const p4 = part(4);
   const returned = line(p4, 'Returned');
   const named = line(p4, 'Card it named');
   const verdict = line(p4, 'Verdict');
   check('step 6: the fresh reader named this card', new RegExp(`\\b0*${+id}\\b`).test(named) || (title && named.toLowerCase().includes(title.toLowerCase())), named ? `it named "${named}"` : 'missing');
-  check('step 6: the fresh reader passed', /\bpass/i.test(verdict) && returned.length > 200, verdict ? `verdict "${verdict}", returned ${returned.length} chars` : 'no verdict');
+  check('step 6: the fresh reader passed', /^pass\b/i.test(verdict) && returned.length > 200, verdict ? `verdict "${verdict}", returned ${returned.length} chars` : 'no verdict');
 }
 
 for (const p of passes) console.log(`  pass  ${p}`);

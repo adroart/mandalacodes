@@ -713,3 +713,19 @@ Why card 64 failed: its writer used the brief only as a gate after writing, and 
 (Shown the Opus 5.5 diagnosis and its six-step framework.) "Yes, should we do it in a new work tree? And can you write the instructions really clearly that will not be destroyed, overwritten, or sidestepped, that will be held to create the most beautiful results."
 
 Recorded as oracle/CARD-PASS.md (six steps, locked), oracle/WORKSHEET.md (the short sheet), scripts/card-gate.mjs (enforces the steps) and scripts/method-lock.mjs with .github/workflows/method-lock.yml (CI turns red when the method changes without his words here).
+
+## 2026-09-23, card 64 rebuilt under the six steps
+
+(Reading the rebuilt card 64's CODE on the preview.) "It seems a little short, the first readings, and it's hard for me to really know what it's about when I read the reading. It's talking about imagination, but it's not really relating it to the card."
+
+Why it happened: step 6's fresh reader is asked to name any sentence that repeats another, and the entrance is a summary of the card, so every sentence in CODE that tied imagination to this card (the unfinished middle of a change, the plan found in the building) was paired with an entrance line. Each pairing was fixed by cutting CODE, and seven runs took it from twelve sentences to six. The reading was restored to three paragraphs; whether the fresh reader should count CODE against the entrance at all is waiting on Adrian.
+
+(Asked how imagination relates to this code, then:) "Why don't you start by saying this is the moment just before something is finished." The reading now opens on his sentence as he said it. It is the rule "say the card's own plain word" again: the reading named the energy's gift before it named the card's moment, so imagination read as generic.
+
+"Also, you're saying the pictures don't make sense. But before completion when the pictures make sense I'm unsure how you're trying to depict it." The card had said the pictures "do not make sense yet" (DESIGN) and "make no sense to the mind and perfect sense at once" (Siddhi) while the reading said imagination shows the whole thing. Settled as one line across the card: the picture is clear, the how is not. DESIGN now says you see them long before you can explain them; the Siddhi line is cut; the reading says the picture comes clear but without a plan.
+
+(Asked whether the fresh reader should stop counting CODE against the entrance.) "Yes, but my question is how to strengthen the template so I don't have to give you this feedback. What don't you have in there that is requiring this feedback."
+
+Recorded in oracle/CARD-PASS.md, oracle/WORKSHEET.md, oracle/WRITERS-BRIEF.md and scripts/card-gate.mjs: step 1 names the card's moment and CODE opens on it; step 4 looks for contradictions as well as repeats; step 6 lists the card by its step 1 sentence and counts repeats inside CODE only; the gate requires the two new sheet lines and reads the verdict from its first word, since "Run 7 passed" inside a not-yet verdict had let it through.
+
+(Asked whether a fresh reader's pair should count only when its own two restatements say the same thing.) "yes, commit and push it". Recorded in oracle/CARD-PASS.md step 6.
