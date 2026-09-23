@@ -29,14 +29,13 @@ Three states, and a card is only 100% when all three hold.
 
 1. **Sections written**: the sentence check finds nothing to gate, which a card only
    reaches by going through the pass.
-2. **Through the gate**: `npm run card:gate -- NN` passes. That means the worksheet was filled
-   BEFORE writing (the energy whole, the true things, the allotment), the entrance and CODE
-   do not name the energy by its shadow, and every reader check and the cold reader are done.
-   See [the worksheet](WORKSHEET.md). A sentence on file is a draft until it passes this.
+2. **Through the gate**: `npm run card:gate -- NN` passes. That means the six steps in
+   [the card pass](CARD-PASS.md) were followed: the card placed among its neighbours, six different
+   facets, the sideways read, and a fresh reader who named this card and found no repeats.
 3. **Adrian's yes**: every section's status says `final`. That is his editorial decision
    and never an automated score, so no script sets it and no writer may set it.
 
-**0 finished. 1 written, waiting on Adrian. 9 part way. 54 not started.**
+**0 finished. 0 written, waiting on Adrian. 10 part way. 54 not started.**
 
 One writer per card, sections first and the entrance last: see [dispatching a card writer](CARD-PASS.md).
 
@@ -45,13 +44,12 @@ One writer per card, sections first and the entrance last: see [dispatching a ca
 Written, and you have said yes. Nothing left on these.
 
 
-## Written, waiting on you (1)
+## Written, waiting on you (0)
 
 Read it on the page. If it holds, its status goes to final and it moves up.
 
-- [ ] **63 Adornments of Time** · sections done · entrance in · through the gate · waiting on you
 
-## Part way (9)
+## Part way (10)
 
 One half is done. The line after each says which.
 
@@ -63,7 +61,8 @@ One half is done. The line after each says which.
 - [ ] **07 Essential Nexus** · sections done · entrance drafted, not in the card · gate not passed
 - [ ] **08 Odyssey of Freedom** · sections done · entrance drafted, not in the card · gate not passed
 - [ ] **27 Inner Majesty** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **64 Communion** · sections done · entrance in · gate not passed
+- [ ] **63 Adornments of Time** · sections done · entrance in · gate not passed
+- [ ] **64 Communion** · sections done · entrance drafted, not in the card · gate not passed
 
 ## Not started (54)
 

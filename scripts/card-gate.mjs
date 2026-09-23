@@ -9,16 +9,20 @@
  * words includes doubt, confusion and fear, and nothing required the reader
  * checks to be done at all. This gate closes those three gaps:
  *
- *   1. FRAMEWORK  oracle/worksheets/NN.md exists (template: oracle/WORKSHEET.md)
- *                 and parts 1 to 3 are filled: the energy whole, thirty or more
- *                 true things with their sources, and the allotment.
+ *   1. SHEET      oracle/worksheets/NN.md exists (template: oracle/WORKSHEET.md),
+ *                 per the six steps of oracle/CARD-PASS.md: the card placed among
+ *                 five to eight neighbours from the entrance openings, what only
+ *                 this card is, six facets that differ from each other with the
+ *                 true things filed under them, the sideways read, and a fresh
+ *                 reader who named this card and found no repeats.
  *   2. SHADOW     the entrance's first sentence, CODE's first sentence and the
  *                 keynotes do not name the energy by its shadow or either of its
- *                 natures, and CODE says the shadow word at most twice. The
- *                 shadow is one height of the energy, never the energy.
- *   3. CHECKS     the four existing checks (sentences, prose openers, entrance
- *                 shape, slop) pass, and part 4 of the worksheet answers every
- *                 reader check with a quoted sentence, plus a cold reader's pass.
+ *                 natures, and CODE says the shadow word at most twice.
+ *   3. CHECKS     the sentence script, prose openers, entrance shape and slop.
+ *
+ * Rewritten 2026-09-23 with the method (Adrian: "The templates are not just a
+ * pass or fail, but they need to be used in the creation of the assimilation of
+ * all the information"). Locked with it: see the top of oracle/CARD-PASS.md.
  *
  * Usage: npm run card:gate -- 63        Exit 1 on any failure.
  */
@@ -80,39 +84,48 @@ const lp = run(['--import', 'tsx', 'scripts/lint-oracle-prose.ts']);
 const mine = lp.out.split('\n').filter((l) => l.includes(`${id}.md`));
 check('prose linter', !mine.length, mine.slice(0, 3).join(' / '));
 
-// ---- 1 + 3b. the worksheet -------------------------------------------------
+// ---- 1. the sheet --------------------------------------------------------
 if (!existsSync(sheetPath)) {
-  fails.push(`worksheet: ${sheetPath} is missing. Copy the block in oracle/WORKSHEET.md and fill parts 1 to 3 BEFORE writing.`);
+  fails.push(`sheet: ${sheetPath} is missing. Copy the block in oracle/WORKSHEET.md and follow oracle/CARD-PASS.md step 1 before writing.`);
 } else {
   const ws = readFileSync(sheetPath, 'utf8');
   const part = (n) => (ws.match(new RegExp(`^## ${n}\\.[^\\n]*\\n([\\s\\S]*?)(?=^## \\d\\.|$(?![\\s\\S]))`, 'm')) || [, ''])[1];
-  const bullets = (t) => t.split('\n').filter((l) => /^- /.test(l));
+  const line = (t, label) => ((t.match(new RegExp(`^- ${label}[^:]*:[ \\t]*(.*)$`, 'm')) || [, ''])[1] || '').trim();
+  const words = (t) => new Set(t.toLowerCase().match(/[a-z']{4,}/g) || []);
+  const overlap = (x, y) => { const A = words(x), B = words(y); const n = [...A].filter((w) => B.has(w)).length; return n / Math.max(1, Math.min(A.size, B.size)); };
 
   const p1 = part(1);
-  const e1 = bullets(p1).filter((l) => /:\s*$/.test(l));
-  check('framework: the energy whole', bullets(p1).length >= 7 && !e1.length, e1.length ? `unfilled: ${e1.join(' | ')}` : 'part 1 missing');
-  const energyLine = (p1.match(/^- The word a person[^:]*:\s*(.+)$/m) || [, ''])[1];
-  check('framework: the entrance word is not the shadow', energyLine && !shadowIn(energyLine.split(/[,.(]/)[0]).length,
-    `"${energyLine}" is the shadow`);
+  const neighbours = (line(p1, 'Neighbours').match(/\b\d{1,2}\b/g) || []).filter((n) => +n >= 1 && +n <= 64 && +n !== +id);
+  check('step 1: placed among five to eight neighbours', neighbours.length >= 5 && neighbours.length <= 8, `${neighbours.length} neighbour numbers found`);
+  const only = line(p1, 'What only this card is');
+  check('step 1: what only this card is', only.length > 30, 'missing');
+  const word = line(p1, 'The energy word');
+  check('step 1: the energy word is not the shadow', word && !shadowIn(word.split(/[,.(]/)[0]).length, word ? `"${word}" is the shadow` : 'missing');
 
-  const truths = bullets(part(2)).filter((l) => /\S{3,}.*\S+\.(md|json)\b/.test(l));
-  check('framework: thirty true things with sources', truths.length >= 30, `${truths.length} lines carry a source file`);
+  const p2 = part(2);
+  const secs = ['CODE', 'ICHING', 'KEYS', 'DESIGN', 'BODY', 'RELATIONS'];
+  const facet = Object.fromEntries(secs.map((k) => [k, line(p2, k)]));
+  const empty = secs.filter((k) => facet[k].length < 20);
+  check('step 2: six facets', !empty.length, `unfilled: ${empty.join(', ')}`);
+  const same = [];
+  for (let i = 0; i < secs.length; i++) for (let j = i + 1; j < secs.length; j++)
+    if (facet[secs[i]] && facet[secs[j]] && overlap(facet[secs[i]], facet[secs[j]]) >= 0.5) same.push(`${secs[i]}~${secs[j]}`);
+  const echo = secs.filter((k) => facet[k] && only && overlap(facet[k], only) >= 0.6);
+  check('step 2: the six facets differ', !empty.length && !same.length && !echo.length,
+    [same.length && `too alike: ${same.join(', ')}`, echo.length && `restates what only this card is: ${echo.join(', ')}`].filter(Boolean).join('; '));
+  const truths = p2.split('\n').filter((l) => /^\s+- \S.*\S+\.(md|json)\b/.test(l));
+  check('step 2: true things filed under facets', truths.length >= 20, `${truths.length} sourced lines under the facets`);
+  check('step 2: the obvious thing has one home', line(p2, 'The one section').length > 3, 'missing');
 
   const p3 = part(3);
-  const e3 = bullets(p3).filter((l) => /:\s*$/.test(l));
-  check('framework: the allotment', bullets(p3).length >= 7 && !e3.length, e3.length ? `unfilled: ${e3.join(' | ')}` : 'part 3 missing');
+  check('step 4: the sideways read', line(p3, 'Repeats found').length > 20 && line(p3, 'The entrance beside').length > 20, 'unfilled');
 
   const p4 = part(4);
-  const reader = (p4.split(/^### Cold reader/m)[0] || '');
-  const rb = bullets(reader);
-  const weak = rb.filter((l) => { const a = l.replace(/^- [^:]*:\s*/, ''); return a.length < 20 || !/["“”]/.test(a); });
-  check('checks: every reader check answered with a quoted sentence', rb.length >= 26 && !weak.length,
-    `${weak.length} of ${rb.length} unanswered or unquoted: ${weak.slice(0, 3).map((l) => l.split(':')[0]).join(' | ')}`);
-  const cold = (p4.split(/^### Cold reader/m)[1] || '');
-  const verdict = (cold.match(/^- Verdict[^:]*:\s*(.+)$/m) || [, ''])[1];
-  const returned = (cold.match(/^- Returned:\s*([\s\S]+?)^- Could not/m) || [, ''])[1];
-  check('checks: the cold reader passed', /\bpass/i.test(verdict) && returned.trim().length > 200,
-    verdict ? `verdict "${verdict}", returned ${returned.trim().length} chars` : 'no cold reader verdict');
+  const returned = line(p4, 'Returned');
+  const named = line(p4, 'Card it named');
+  const verdict = line(p4, 'Verdict');
+  check('step 6: the fresh reader named this card', new RegExp(`\\b0*${+id}\\b`).test(named) || (title && named.toLowerCase().includes(title.toLowerCase())), named ? `it named "${named}"` : 'missing');
+  check('step 6: the fresh reader passed', /\bpass/i.test(verdict) && returned.length > 200, verdict ? `verdict "${verdict}", returned ${returned.length} chars` : 'no verdict');
 }
 
 for (const p of passes) console.log(`  pass  ${p}`);

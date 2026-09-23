@@ -699,3 +699,17 @@ Also: "Always the template rate of fifty-nine fail immediately for the sentence 
 (Reading the rewritten frames, 2026-09-23.) "Beauty shines through your ordinary days. It's kind of strange. I notice you're just using gene keys to create this instead of the totality of the card. So it's becoming formulaic. And too heavily based on gene keys rather than the concept of it. How about you start with the full page writings rather than this? ... I notice you pull one word out of the three in each."
 
 Why it happened: the frame writers were told to read the Gene Keys chapter and skim Human Design, and never saw the I Ching, the body or the card whole; each one took a word from the shadow/gift/siddhi line. It also inverted the brief's own order, which writes the entrance LAST as a summary of the totality. The frames page (claude.ai/artifact/6R4XMzYyVS6gMMn3UnWNJF) is parked. Next: work out how to write one full card, in its own thread, then the entrance from that.
+
+## 2026-09-23, card 64 written whole, and what the templates are for
+
+(Reading card 64 on the preview.) "When I read sixty-four it seems like they're all saying the exact same thing."
+
+(On the card template and the entrance openings.) "Those guides I wrote specifically to finally tune in to something that worked and I liked. Those guides are not optional. They are fundamental to writing things correctly. I'm open to streamlining the guides but not at the cost of not getting the right result."
+
+"The templates are not just a pass or fail, but they need to be used in the creation of the assimilation of all the information."
+
+Why card 64 failed: its writer used the brief only as a gate after writing, and treated the entrance openings as one draft line to replace rather than as the map of how the 64 differ. The card took the shape "arrives before you can say" that 17, 23, 43 and 57 already own, and every section repeated it. Recorded in oracle/CARD-PASS.md step 2.
+
+(Shown the Opus 5.5 diagnosis and its six-step framework.) "Yes, should we do it in a new work tree? And can you write the instructions really clearly that will not be destroyed, overwritten, or sidestepped, that will be held to create the most beautiful results."
+
+Recorded as oracle/CARD-PASS.md (six steps, locked), oracle/WORKSHEET.md (the short sheet), scripts/card-gate.mjs (enforces the steps) and scripts/method-lock.mjs with .github/workflows/method-lock.yml (CI turns red when the method changes without his words here).
