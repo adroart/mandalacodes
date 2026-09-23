@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Entrance lint. Runs every rule marked AUTO in oracle/ENTRANCE-CHECKLIST.md
+ * Entrance lint. Runs every rule marked AUTO in oracle/CARD-CHECKLIST.md
  * against a card's entrance (the three or four sentences under the keynotes).
  *
  * Two checkers already exist and this one does not repeat them. scripts/

@@ -79,7 +79,7 @@ lines.push('   and never an automated score, so no script sets it and no writer 
 lines.push('');
 lines.push(`**${finished.length} finished. ${done.length} written, waiting on Adrian. ${started.length} part way. ${todo.length} not started.**`);
 lines.push('');
-lines.push('One writer per card, sections first and the entrance last: see [dispatching a card writer](ENTRANCE-DISPATCH.md).');
+lines.push('One writer per card, sections first and the entrance last: see [dispatching a card writer](CARD-PASS.md).');
 lines.push('');
 const block = (name, list, note) => {
   lines.push(`## ${name} (${list.length})`);
