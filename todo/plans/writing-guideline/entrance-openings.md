@@ -34,7 +34,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 29 · The whole yes goes all the way in before you can see where it leads.  (All In)
 30 · Desire was in you before you had anything to want.  (Sparking the Blaze)
 31 · Influence passes between people and turns them toward whoever says what they already felt.  (Theater of Truth)
-32 · The sense of what will last keeps a thing alive after the newness has worn off.  (Art of Living)
+32 · A feeling for what will last tells you which plans and friendships have a future.  (Art of Living)
 33 · Hindsight draws you off alone until what happened makes sense, then sends you back to tell it.  (Echos of Time)
 34 · Strength lies quiet in you until something real calls for it, then pours the whole of itself in.  (Sublime Power)
 35 · The hunger for life looks past whatever you hold and meets an ordinary morning as new.  (Navigational Star)
