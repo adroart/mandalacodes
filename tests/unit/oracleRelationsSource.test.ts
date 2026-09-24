@@ -53,17 +53,17 @@ describe('Markdown-native Oracle Relations', () => {
     expect(relations.codon_ring.siblings).toEqual([20, 23, 24, 27, 42]);
   });
 
-  it('maps Card 28 combined self-inverse and UL-reference headings by structure', async () => {
+  it('maps Card 28 pair and self-inverse headings by structure', async () => {
     const relations = await loadRelations(28);
 
     expect(relations.pair.number).toBe(27);
-    expect(relations.pair.card_name).toBe('The Nourishing');
-    expect(relations.pair.teaching).toContain('open jaws that take in and feed');
+    expect(relations.pair.card_name).toBe('Inner Majesty');
+    expect(relations.pair.teaching).toContain('the care that feeds whatever cannot yet feed itself');
     expect(relations.inverse).toMatchObject({
       number: 28,
       is_self_inverse: true,
     });
-    expect(relations.inverse.teaching).toContain('one of only eight codes');
+    expect(relations.inverse.teaching).toContain('it comes back the same');
   });
 
   it('keeps Card 29 Markdown frontmatter authoritative over legacy pair data', async () => {
