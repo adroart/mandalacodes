@@ -18,7 +18,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 13 · The quiet in you is where strangers set down what they have told no one.  (Universal Crest)
 14 · An appetite for the work you love makes more than you need, and the rest feeds other people.  (Ancestors Bloom)
 15 · The magnetism in you grows as you slow down, until people come toward you without knowing why.  (Ordinary Valiance)
-16 · Enthusiasm gets a thing out of your head and into the world before you feel ready.  (Grand Rising)
+16 · Enthusiasm gets you started on what you love before you feel ready.  (Grand Rising)
 17 · A sense of where something is heading comes to you long before it gets there.  (Pearl of Christos)
 18 · An instinct for what has gone wrong sees the flaw first, and your hands go to mend it.  (Liberation of the Greater)
 19 · The pull to go where the warmth is missing rises in you before a word is said.  (Solection)
