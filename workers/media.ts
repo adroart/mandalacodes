@@ -69,26 +69,56 @@ async function handle(request: Request, env: Env, ctx: ExecutionContext): Promis
   const cached = await cache.match(cacheKey);
   if (cached) return request.method === 'HEAD' ? new Response(null, cached) : cached;
 
+  // The edge cache is per data center, so a cold region re-resizes every image
+  // it is asked for. Resizing a page of artwork at once runs this Worker past its
+  // resource limits (Cloudflare error 1102). Each resized variant is therefore
+  // stored in R2 the first time it is made, and served from there ever after.
+  const variantKey = needsTransform ? variantObjectKey(key, cacheUrl) : null;
+  if (variantKey) {
+    const stored = await env.MEDIA_BUCKET.get(variantKey);
+    if (stored) return finish(request, ctx, cache, cacheKey, objectResponse(stored));
+  }
+
   const object = await env.MEDIA_BUCKET.get(key);
   if (!object) return new Response('Not found', { status: 404 });
 
-  let response: Response;
-  if (!needsTransform) {
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set('etag', object.httpEtag);
-    response = new Response(object.body, { headers });
-  } else {
-    const transformed = await env.IMAGES.input(object.body)
-      .transform({ width, height, fit, gravity, segment: segment ? 'foreground' : undefined })
-      .output({ format, quality });
-    response = transformed.response();
-  }
+  if (!needsTransform) return finish(request, ctx, cache, cacheKey, objectResponse(object));
 
+  const transformed = await env.IMAGES.input(object.body)
+    .transform({ width, height, fit, gravity, segment: segment ? 'foreground' : undefined })
+    .output({ format, quality });
+  const response = transformed.response();
+  if (!response.ok) return new Response('Image unavailable', { status: 503, headers: { 'Cache-Control': 'no-store' } });
+
+  const bytes = await response.arrayBuffer();
+  const contentType = response.headers.get('Content-Type') ?? format ?? 'application/octet-stream';
+  if (variantKey) {
+    ctx.waitUntil(env.MEDIA_BUCKET.put(variantKey, bytes, { httpMetadata: { contentType } }).then(() => undefined));
+  }
+  return finish(request, ctx, cache, cacheKey, new Response(bytes, { headers: { 'Content-Type': contentType } }));
+}
+
+/** R2 key for one resized variant, derived from the same normalised parameters as the edge cache key. */
+export function variantObjectKey(key: string, cacheUrl: URL): string {
+  const params = [...cacheUrl.searchParams.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, value]) => `${name}=${value.replace('/', '_')}`)
+    .join(',');
+  return `_variants/${key}/${params}`;
+}
+
+function objectResponse(object: R2ObjectBody): Response {
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set('etag', object.httpEtag);
+  return new Response(object.body, { headers });
+}
+
+function finish(request: Request, ctx: ExecutionContext, cache: Cache, cacheKey: Request, response: Response): Response {
   const headers = new Headers(response.headers);
   headers.set('Cache-Control', 'public, max-age=31536000, immutable');
   const cacheable = new Response(response.body, { status: response.status, headers });
-  if (request.method === 'GET') ctx.waitUntil(cache.put(cacheKey, cacheable.clone()));
+  if (request.method === 'GET' && cacheable.ok) ctx.waitUntil(cache.put(cacheKey, cacheable.clone()));
   return request.method === 'HEAD' ? new Response(null, cacheable) : cacheable;
 }
 
