@@ -35,7 +35,7 @@ Three states, and a card is only 100% when all three hold.
 3. **Adrian's yes**: every section's status says `final`. That is his editorial decision
    and never an automated score, so no script sets it and no writer may set it.
 
-**3 finished. 0 written, waiting on Adrian. 7 part way. 54 not started.**
+**3 finished. 1 written, waiting on Adrian. 7 part way. 53 not started.**
 
 One writer per card, sections first and the entrance last: see [dispatching a card writer](CARD-PASS.md).
 
@@ -47,10 +47,11 @@ Written, and you have said yes. Nothing left on these.
 - [x] **63 Adornments of Time** · sections done · entrance in · through the gate · yours
 - [x] **64 Communion** · sections done · entrance in · through the gate · yours
 
-## Written, waiting on you (0)
+## Written, waiting on you (1)
 
 Read it on the page. If it holds, its status goes to final and it moves up.
 
+- [ ] **25 The Mysteries Play** · sections done · entrance in · through the gate · waiting on you
 
 ## Part way (7)
 
@@ -64,7 +65,7 @@ One half is done. The line after each says which.
 - [ ] **08 Odyssey of Freedom** · sections done · entrance drafted, not in the card · gate not passed
 - [ ] **27 Inner Majesty** · sections done · entrance drafted, not in the card · gate not passed
 
-## Not started (54)
+## Not started (53)
 
 Each takes one writer, one pass, about ten minutes of machine time.
 
@@ -85,7 +86,6 @@ Each takes one writer, one pass, about ten minutes of machine time.
 - [ ] **22 Treasure of the Way** · sections 58 to fix · entrance drafted, not in the card
 - [ ] **23 Beneath the Surface** · sections 44 to fix · entrance drafted, not in the card
 - [ ] **24 Frequency Flutter** · sections 59 to fix · entrance drafted, not in the card
-- [ ] **25 The Mysteries Play** · sections 56 to fix · entrance drafted, not in the card
 - [ ] **26 Lighter Than a Feather** · sections 58 to fix · entrance drafted, not in the card
 - [ ] **28 Becoming the Mystery** · sections 57 to fix · entrance drafted, not in the card
 - [ ] **29 All In** · sections 63 to fix · entrance drafted, not in the card
