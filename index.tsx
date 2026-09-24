@@ -12,8 +12,10 @@ import { BrowserRouter } from 'react-router-dom';
 import './src/index.css';
 import App from './App';
 import { installChunkRecovery } from './src/lib/chunkRecovery';
+import { installMediaRetry } from './src/lib/mediaRetry';
 
 installChunkRecovery();
+installMediaRetry();
 
 const statusEl = document.getElementById('loader-status');
 if (statusEl) statusEl.innerText = "Loading Modules...";
