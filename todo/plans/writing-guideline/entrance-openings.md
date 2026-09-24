@@ -64,6 +64,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 34 · Strength lies quiet in you until something real calls for it, then pours the whole of itself in.  (Sublime Power)
 34 · Strength moves through your whole body when something real calls for it.  (Sublime Power)
 35 · The hunger for life looks past whatever you hold and meets an ordinary morning as new.  (Navigational Star)
+35 · Adventure finds new ground in the places you know best.  (Navigational Star)
 36 · A drop in the stomach opens the heart in you, which goes on feeling past where the mind stops.  (Crystal Creation)
 37 · Warmth gathers a few people around one table and keeps them there.  (Journey Home)
 38 · Everything that lasts was held by someone who chose to stay and show up for what is important to them.  (Inner Light Symphony)
