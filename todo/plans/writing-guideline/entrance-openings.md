@@ -25,7 +25,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 20 · Calm decides in the moment, through the whole of you, and what comes out is clear.  (Emerging as the Code)
 21 · The will in you takes charge where others stall and carries the whole of what follows.  (Beyond Binary)
 22 · Warmth leaves whoever sits with you lighter than they came.  (Treasure of the Way)
-23 · Clarity arrives before the words for it do.  (Beneath the Surface)
+23 · Clarity cuts through everything you have added and finds the one thing that matters.  (Beneath the Surface)
 24 · A pull takes you back to where a thing began so it can start again.  (Frequency Flutter)
 25 · Love goes from you to everything alike, with no plan in it.  (The Mysteries Play)
 26 · The drive to make things happen grows stronger in you the longer it is held in.  (Lighter Than a Feather)
