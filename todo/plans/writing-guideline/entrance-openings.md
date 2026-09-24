@@ -45,6 +45,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 23 · Clarity arrives before the words for it do.  (Beneath the Surface)
 23 · Clarity cuts through everything you have added and finds the one thing that matters.  (Beneath the Surface)
 24 · A pull takes you back to where a thing began so it can start again.  (Frequency Flutter)
+24 · A fresh idea comes to you in the quiet after you have gone over something many times.  (Frequency Flutter)
 25 · Love goes from you to everything alike, with no plan in it.  (The Mysteries Play)
 26 · The drive to make things happen grows stronger in you the longer it is held in.  (Lighter Than a Feather)
 27 · The urge to look after others feeds you as well.  (Inner Majesty)
