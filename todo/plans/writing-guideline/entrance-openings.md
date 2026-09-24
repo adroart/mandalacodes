@@ -28,7 +28,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 23 · Clarity arrives before the words for it do.  (Beneath the Surface)
 24 · A pull takes you back to where a thing began so it can start again.  (Frequency Flutter)
 25 · Love goes from you to everything alike, with no plan in it.  (The Mysteries Play)
-26 · The drive to make things happen grows stronger in you the longer it is held in.  (Lighter Than a Feather)
+26 · The drive to achieve grows stronger in you the longer you hold it back.  (Lighter Than a Feather)
 27 · A full heart goes out to whatever is too small to feed itself and fills as it gives.  (Inner Majesty)
 28 · The hunger for purpose asks of every day whether it mattered.  (Becoming the Mystery)
 29 · The whole yes goes all the way in before you can see where it leads.  (All In)
