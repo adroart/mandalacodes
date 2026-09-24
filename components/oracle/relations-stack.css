@@ -74,7 +74,8 @@
 }
 .ul-rs-open__chart.is-lit { color: var(--accent); }
 .ul-rs-open__para {
-  font-family: var(--font-reading); font-size: clamp(17px, 2.3vw, 19px); line-height: 1.62; letter-spacing: 0.015em;
+  font-family: var(--font-reading); font-size: clamp(16px, 1.5vw, 18px); line-height: 1.8;
+  text-align: justify; text-align-last: start;
   color: var(--l-2); margin: 0 0 6px;
 }
 
