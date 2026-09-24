@@ -757,3 +757,9 @@ The opening had been built from Adrian's own reading of the name, given in conve
 2026-09-24: "Let's check off sixty-four and sixty-three and then go into all the part way ones." Cards 63 and 64 set to final on every section.
 
 2026-09-24, on card 2: "2 good". Card 2 set to final on every section.
+
+## 2026-09-24, card 9's reading opened on the hexagram's name
+
+"Why did you put small taming as the entrance into number nine? That's specific to I Ching and it's not relatable at all. How did this happen?"
+
+Fixed: CODE now opens "There are times when only small things can be done, and they add up." A hexagram's name opens the reading only when it is everyday English a person would use.
