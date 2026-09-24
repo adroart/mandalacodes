@@ -104,7 +104,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 57 · A hunch knows the way before you can say why.  (Flight of the Tao)
 57 · A hunch turns you toward one road and away from another.  (Flight of the Tao)
 58 · Joy grows by being shared.  (Rhythm of Life)
-59 · The longing to be known gets through whatever two people keep between them.  (Mystics Treasures)
+59 · The longing to be close to someone asks you to let them see all of you.  (Mystics Treasures)
 60 · A limit, this far and no further, gives a piece of work its shape.  (Woven Light)
 61 · A sureness without proof moves people more than any argument could.  (Celestial Remembrance)
 62 · The wish to get the small thing right says the one word and stops.  (Voice of Nature)
