@@ -5,7 +5,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 
 01 · Creation itself moves through you, the power that makes something from nothing.  (Earth's Breath)
 02 · Trust lets you take in whatever life brings and carry it until it grows.  (Beyond the Shell)
-03 · A beginning is real long before it is settled.  (Messengers of the Infinite)
+03 · Playfulness finds the shape of something new by trying one way after another.  (Messengers of the Infinite)
 04 · A wish to understand wakes in you whenever something new does not make sense yet.  (Veils of Knowledge)
 05 · Trust holds you steady until what you need arrives.  (The Space Between Time)
 06 · Friction starts when someone comes close to you.  (Harmonious Mirage)

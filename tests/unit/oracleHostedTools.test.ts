@@ -66,7 +66,7 @@ describe('hosted and local Oracle MCP parity', () => {
       shared,
     );
     expect(localGetLineResult(local, 1)).toEqual(shared);
-    expect(line.image).toContain('marker that will not be moved');
+    expect(line.image).toContain('a stone standing in the road');
     expect(line.becomes).toEqual({ hexagram: 8, name: 'Holding Together' });
   });
 

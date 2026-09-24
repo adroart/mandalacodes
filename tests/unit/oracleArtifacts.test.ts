@@ -46,15 +46,15 @@ describe('generated Oracle artifacts', () => {
     expect(card?.keywords).toContain('New Beginnings');
     // Deliberately mid-paragraph prose fixtures, one per lens, each unique to its
     // own field in oracle/cards/03.md. Opening sentences get rewritten; these do not.
-    expect(card?.glance.reading).toContain('fullness and not knowing in one breath');
-    expect(card?.iching.reading).toContain('twist them into one cord you can hold');
-    expect(card?.gene_keys.gift).toContain('the failing is how the shape is found');
-    expect(card?.human_design.gate).toContain('finds the form it can live in');
+    expect(card?.glance.reading).toContain('to see what it wants to become');
+    expect(card?.iching.reading).toContain('one strand at a time');
+    expect(card?.gene_keys.gift).toContain('only a change you have judged');
+    expect(card?.human_design.gate).toContain('toward a form it can live in');
     expect(card?.body.physiology).toContain('the scar that closed it');
 
     expect(searchDoc?.keywords).toContain('New Beginnings');
-    expect(searchDoc?.fields.glance).toContain('fullness and not knowing in one breath');
-    expect(searchDoc?.fields.iching).toContain('twist them into one cord you can hold');
+    expect(searchDoc?.fields.glance).toContain('to see what it wants to become');
+    expect(searchDoc?.fields.iching).toContain('one strand at a time');
   });
 
   it('retains rich Markdown Relations and the Markdown-authoritative Card 29 pair', async () => {
@@ -68,7 +68,7 @@ describe('generated Oracle artifacts', () => {
       siblings: [20, 23, 24, 27, 42],
     });
     // Mid-paragraph on purpose: the Tarot teaching's opening line is editorial.
-    expect(card3?.relations.tarot?.teaching).toContain('Five faces gather here, one from the family and four from the weather');
+    expect(card3?.relations.tarot?.teaching).toContain('come to this card through its family and its two trigrams');
     expect(card3?.relations.sky).toMatchObject({ value: 'Scorpio' });
     expect(card3?.relations.immortals?.teaching).toContain('Li Tie Guai');
     expect(card3?.relations.hebrew_letter).toMatchObject({ letter: 'Nun' });
