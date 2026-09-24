@@ -35,7 +35,7 @@ Three states, and a card is only 100% when all three hold.
 3. **Adrian's yes**: every section's status says `final`. That is his editorial decision
    and never an automated score, so no script sets it and no writer may set it.
 
-**2 finished. 0 written, waiting on Adrian. 8 part way. 54 not started.**
+**2 finished. 1 written, waiting on Adrian. 7 part way. 54 not started.**
 
 One writer per card, sections first and the entrance last: see [dispatching a card writer](CARD-PASS.md).
 
@@ -46,12 +46,13 @@ Written, and you have said yes. Nothing left on these.
 - [x] **63 Adornments of Time** · sections done · entrance in · through the gate · yours
 - [x] **64 Communion** · sections done · entrance in · through the gate · yours
 
-## Written, waiting on you (0)
+## Written, waiting on you (1)
 
 Read it on the page. If it holds, its status goes to final and it moves up.
 
+- [ ] **06 Harmonious Mirage** · sections done · entrance in · through the gate · waiting on you
 
-## Part way (8)
+## Part way (7)
 
 One half is done. The line after each says which.
 
@@ -59,7 +60,6 @@ One half is done. The line after each says which.
 - [ ] **02 Beyond the Shell** · sections done · entrance drafted, not in the card · gate not passed
 - [ ] **04 Veils of Knowledge** · sections done · entrance drafted, not in the card · gate not passed
 - [ ] **05 The Space Between Time** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **06 Harmonious Mirage** · sections done · entrance drafted, not in the card · gate not passed
 - [ ] **07 Essential Nexus** · sections done · entrance drafted, not in the card · gate not passed
 - [ ] **08 Odyssey of Freedom** · sections done · entrance drafted, not in the card · gate not passed
 - [ ] **27 Inner Majesty** · sections done · entrance drafted, not in the card · gate not passed
