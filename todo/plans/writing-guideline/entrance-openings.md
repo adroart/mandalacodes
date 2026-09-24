@@ -57,7 +57,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 52 · Stillness comes at the end of a cycle and holds until the next one is ready.  (Timeless Blossom)
 53 · The urge to start something new is a force of its own.  (Creation Oscillation)
 54 · The drive to rise above the place you were given built the cities, and it has not stopped.  (Everlasting Bounty)
-55 · A fullness swells in you at a life's height, so that what you make comes out of plenty.  (Untouched Perfection)
+55 · Freedom fills you from the inside, whatever the day brings.  (Untouched Perfection)
 56 · A taste for life takes the world in and hands it back as a story.  (Infinite Journey)
 57 · A hunch knows the way before you can say why.  (Flight of the Tao)
 58 · Joy grows by being shared.  (Rhythm of Life)
