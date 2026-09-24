@@ -75,6 +75,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 39 · Pressure builds in you and has to go somewhere, so it presses on whatever has gone still.  (Nobel Spark)
 40 · The will to see a thing through comes back each time you rest.  (Eternal Wellspring)
 41 · The hunger for a better life pictures more than is here and wants to feel it.  (Beginning and the End)
+41 · A longing for more shows you a better life than the one you have.  (Beginning and the End)
 42 · A pull in you carries each thing to its end so the next has room.  (Moving to Perfection)
 43 · Sudden knowing arrives whole before you have any way to say how it came.  (Cipher of Knowledge)
 44 · Recognition picks out who belongs near you in the first seconds, before a reason arrives.  (Sophia's Orchestra)
