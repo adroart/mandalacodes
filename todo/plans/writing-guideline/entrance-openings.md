@@ -89,6 +89,8 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 48 · The answer comes when you are asked for more than you have.  (Doorways of the Unknown)
 49 · The urge for change rises when the way you live no longer fits you.  (Union in the Ashes)
 50 · A sense knows what will feed the people near you, and what has gone off.  (Melt Into Perfection)
+49 · A heat builds in you under what no longer fits, until one day the whole thing turns.  (Union in the Ashes)
+50 · A feel for balance tells you what the people near you need, and what has gone off.  (Melt Into Perfection)
 51 · A charge sends you first, off the edge of what anyone has done.  (Unshakable Arrival)
 52 · Stillness comes at the end of a cycle and holds until the next one is ready.  (Timeless Blossom)
 53 · The urge to start something new is a force of its own.  (Creation Oscillation)
