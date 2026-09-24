@@ -35,41 +35,41 @@ Three states, and a card is only 100% when all three hold.
 3. **Adrian's yes**: every section's status says `final`. That is his editorial decision
    and never an automated score, so no script sets it and no writer may set it.
 
-**3 finished. 0 written, waiting on Adrian. 7 part way. 54 not started.**
+**0 finished. 1 written, waiting on Adrian. 5 part way. 58 not started.**
 
 One writer per card, sections first and the entrance last: see [dispatching a card writer](CARD-PASS.md).
 
-## Finished (3)
+## Finished (0)
 
 Written, and you have said yes. Nothing left on these.
 
-- [x] **02 Beyond the Shell** · sections done · entrance in · through the gate · yours
-- [x] **63 Adornments of Time** · sections done · entrance in · through the gate · yours
-- [x] **64 Communion** · sections done · entrance in · through the gate · yours
 
-## Written, waiting on you (0)
+## Written, waiting on you (1)
 
 Read it on the page. If it holds, its status goes to final and it moves up.
 
+- [ ] **56 Infinite Journey** · sections done · entrance in · through the gate · waiting on you
 
-## Part way (7)
+## Part way (5)
 
 One half is done. The line after each says which.
 
 - [ ] **01 Earth's Breath** · sections 40 to fix · entrance in
+- [ ] **02 Beyond the Shell** · sections 1 to fix · entrance in
 - [ ] **04 Veils of Knowledge** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **05 The Space Between Time** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **06 Harmonious Mirage** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **07 Essential Nexus** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **08 Odyssey of Freedom** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **27 Inner Majesty** · sections done · entrance drafted, not in the card · gate not passed
+- [ ] **63 Adornments of Time** · sections 1 to fix · entrance in
+- [ ] **64 Communion** · sections 1 to fix · entrance in
 
-## Not started (54)
+## Not started (58)
 
 Each takes one writer, one pass, about ten minutes of machine time.
 
 - [ ] **03 Messengers of the Infinite** · sections 38 to fix · entrance drafted, not in the card
-- [ ] **09 Ease in This** · sections 57 to fix · entrance drafted, not in the card
+- [ ] **05 The Space Between Time** · sections 1 to fix · entrance drafted, not in the card
+- [ ] **06 Harmonious Mirage** · sections 1 to fix · entrance drafted, not in the card
+- [ ] **07 Essential Nexus** · sections 1 to fix · entrance drafted, not in the card
+- [ ] **08 Odyssey of Freedom** · sections 1 to fix · entrance drafted, not in the card
+- [ ] **09 Ease in This** · sections 56 to fix · entrance drafted, not in the card
 - [ ] **10 Internal Treasure** · sections 41 to fix · entrance drafted, not in the card
 - [ ] **11 Sol Star** · sections 46 to fix · entrance drafted, not in the card
 - [ ] **12 Petals of Freedom** · sections 45 to fix · entrance drafted, not in the card
@@ -77,32 +77,33 @@ Each takes one writer, one pass, about ten minutes of machine time.
 - [ ] **14 Ancestors Bloom** · sections 58 to fix · entrance drafted, not in the card
 - [ ] **15 Ordinary Valiance** · sections 58 to fix · entrance drafted, not in the card
 - [ ] **16 Grand Rising** · sections 55 to fix · entrance drafted, not in the card
-- [ ] **17 Pearl of Christos** · sections 53 to fix · entrance drafted, not in the card
+- [ ] **17 Pearl of Christos** · sections 54 to fix · entrance drafted, not in the card
 - [ ] **18 Liberation of the Greater** · sections 58 to fix · entrance drafted, not in the card
 - [ ] **19 Solection** · sections 61 to fix · entrance drafted, not in the card
 - [ ] **20 Emerging as the Code** · sections 54 to fix · entrance drafted, not in the card
 - [ ] **21 Beyond Binary** · sections 47 to fix · entrance drafted, not in the card
-- [ ] **22 Treasure of the Way** · sections 58 to fix · entrance drafted, not in the card
+- [ ] **22 Treasure of the Way** · sections 57 to fix · entrance drafted, not in the card
 - [ ] **23 Beneath the Surface** · sections 44 to fix · entrance drafted, not in the card
 - [ ] **24 Frequency Flutter** · sections 59 to fix · entrance drafted, not in the card
 - [ ] **25 The Mysteries Play** · sections 56 to fix · entrance drafted, not in the card
 - [ ] **26 Lighter Than a Feather** · sections 58 to fix · entrance drafted, not in the card
-- [ ] **28 Becoming the Mystery** · sections 57 to fix · entrance drafted, not in the card
-- [ ] **29 All In** · sections 63 to fix · entrance drafted, not in the card
+- [ ] **27 Inner Majesty** · sections 1 to fix · entrance drafted, not in the card
+- [ ] **28 Becoming the Mystery** · sections 56 to fix · entrance drafted, not in the card
+- [ ] **29 All In** · sections 64 to fix · entrance drafted, not in the card
 - [ ] **30 Sparking the Blaze** · sections 54 to fix · entrance drafted, not in the card
-- [ ] **31 Theater of Truth** · sections 59 to fix · entrance drafted, not in the card
+- [ ] **31 Theater of Truth** · sections 58 to fix · entrance drafted, not in the card
 - [ ] **32 Art of Living** · sections 54 to fix · entrance drafted, not in the card
 - [ ] **33 Echos of Time** · sections 64 to fix · entrance drafted, not in the card
 - [ ] **34 Sublime Power** · sections 52 to fix · entrance drafted, not in the card
 - [ ] **35 Navigational Star** · sections 55 to fix · entrance drafted, not in the card
 - [ ] **36 Crystal Creation** · sections 60 to fix · entrance drafted, not in the card
-- [ ] **37 Journey Home** · sections 47 to fix · entrance drafted, not in the card
+- [ ] **37 Journey Home** · sections 46 to fix · entrance drafted, not in the card
 - [ ] **38 Inner Light Symphony** · sections 54 to fix · entrance drafted, not in the card
 - [ ] **39 Nobel Spark** · sections 67 to fix · entrance drafted, not in the card
 - [ ] **40 Eternal Wellspring** · sections 58 to fix · entrance drafted, not in the card
 - [ ] **41 Beginning and the End** · sections 51 to fix · entrance drafted, not in the card
 - [ ] **42 Moving to Perfection** · sections 65 to fix · entrance drafted, not in the card
-- [ ] **43 Cipher of Knowledge** · sections 55 to fix · entrance drafted, not in the card
+- [ ] **43 Cipher of Knowledge** · sections 56 to fix · entrance drafted, not in the card
 - [ ] **44 Sophia's Orchestra** · sections 64 to fix · entrance drafted, not in the card
 - [ ] **45 Tribal Tapestry** · sections 51 to fix · entrance drafted, not in the card
 - [ ] **46 Fountain of Light** · sections 48 to fix · entrance drafted, not in the card
@@ -115,9 +116,8 @@ Each takes one writer, one pass, about ten minutes of machine time.
 - [ ] **53 Creation Oscillation** · sections 52 to fix · entrance drafted, not in the card
 - [ ] **54 Everlasting Bounty** · sections 55 to fix · entrance drafted, not in the card
 - [ ] **55 Untouched Perfection** · sections 50 to fix · entrance drafted, not in the card
-- [ ] **56 Infinite Journey** · sections 59 to fix · entrance drafted, not in the card
 - [ ] **57 Flight of the Tao** · sections 64 to fix · entrance drafted, not in the card
-- [ ] **58 Rhythm of Life** · sections 68 to fix · entrance drafted, not in the card
+- [ ] **58 Rhythm of Life** · sections 67 to fix · entrance drafted, not in the card
 - [ ] **59 Mystics Treasures** · sections 58 to fix · entrance drafted, not in the card
 - [ ] **60 Woven Light** · sections 53 to fix · entrance drafted, not in the card
 - [ ] **61 Celestial Remembrance** · sections 64 to fix · entrance drafted, not in the card
