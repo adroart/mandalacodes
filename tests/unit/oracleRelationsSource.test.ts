@@ -133,7 +133,7 @@ describe('Markdown-native Oracle Relations', () => {
     expect(relations.inverse).toEqual({
       number: 61,
       is_self_inverse: true,
-      teaching: 'Turn these lines end for end and the shape does not move. This code is one of only eight that meets its own reflection, and the meaning is precise. A heart at the centre has no other side; what is true here is true read from any angle.',
+      teaching: 'Turn this energy end for end and it comes back the same. What is true at your centre looks the same from every side, so there is no hidden face behind it. What it lacks sits beside it, in its partner, never underneath.',
     });
   });
 });
