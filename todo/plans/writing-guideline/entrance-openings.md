@@ -13,7 +13,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 08 · The freedom of being yourself, with nothing put on, finds the ones it belongs with.  (Odyssey of Freedom)
 09 · A strength walks in you as a run of small steps, one plain step after another.  (Ease in This)
 10 · The ease of being at home in your own skin lightens every step you take.  (Internal Treasure)
-11 · A dream of how things could be gets you out of bed and arranges every choice around it.  (Sol Star)
+11 · A dream of how things could be pulls your whole life toward it.  (Sol Star)
 12 · A sense tells real from fake by what your heart does before you have a word for either.  (Petals of Freedom)
 13 · The quiet in you is where strangers set down what they have told no one.  (Universal Crest)
 14 · An appetite for the work you love makes more than you need, and the rest feeds other people.  (Ancestors Bloom)
