@@ -596,8 +596,8 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             ))}
           </div>
           <details className="ul-faces" style={{ marginTop: "22px" }}>
-            <summary className="ul-faces-strip" style={{ cursor: "pointer", listStyle: "none", display: "grid", gridTemplateColumns: "repeat(2,1fr)", border: "1px solid color-mix(in oklab,var(--accent) 22%,transparent)" }}>
-              <span style={{ padding: "16px 12px", textAlign: "center", borderRight: "1px solid var(--l-rule)", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+            <summary className="ul-faces-strip" style={{ cursor: "pointer", listStyle: "none", display: "grid", gridTemplateColumns: "1fr", border: "1px solid color-mix(in oklab,var(--accent) 22%,transparent)" }}>
+              <span style={{ padding: "16px 12px", textAlign: "center", borderBottom: "1px solid var(--l-rule)", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
                 <span style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)" }}>
                 Repressive
                 </span>
@@ -613,7 +613,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 {vals.gkReactiveFace}
                 </span>
               </span>
-              <span style={{ gridColumn: "1 / -1", borderTop: "1px solid var(--l-rule)", padding: "11px 12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", textAlign: "center", fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--accent-d)" }}>
+              <span style={{ borderTop: "1px solid var(--l-rule)", padding: "11px 12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", textAlign: "center", fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--accent-d)" }}>
                 <span className="ul-faces-open">
                 Read the two faces of this shadow
                 </span>
@@ -625,12 +625,12 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 </svg>
               </span>
             </summary>
-            <div className="ul-natures" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "18px", paddingTop: "22px" }}>
+            <div className="ul-natures" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "22px", paddingTop: "22px" }}>
               <div>
                 <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 7px" }}>
                 {vals.gkRepressiveName}
                 </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
                   {(vals.gkRepressiveParas ?? []).map((para, paraIdx) => (
                     <React.Fragment key={paraIdx}>
                       <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.74", color: "var(--l-2)", margin: "0" }}>
@@ -644,7 +644,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 <p style={{ fontFamily: 'var(--font-ui)', fontSize: "12px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 7px" }}>
                 {vals.gkReactiveName}
                 </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
                   {(vals.gkReactiveParas ?? []).map((para, paraIdx) => (
                     <React.Fragment key={paraIdx}>
                       <p style={{ fontFamily: 'var(--font-reading)', fontSize: "15px", lineHeight: "1.74", color: "var(--l-2)", margin: "0" }}>
@@ -942,13 +942,15 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
           <p style={{ fontFamily: 'var(--font-reading)', fontSize: "clamp(23px,3.4vw,28px)", lineHeight: "1.12", color: "var(--l-1)", margin: "0 0 14px" }}>
           {vals.kinName}
           </p>
-          {(vals.kinBodyParas ?? []).map((para, paraIdx) => (
-            <React.Fragment key={paraIdx}>
-              <p style={{ fontFamily: 'var(--font-reading)', fontStyle: "normal", fontSize: "clamp(18px,2.4vw,21px)", lineHeight: "1.62", letterSpacing: "0.015em", color: "var(--l-2)", margin: "0 0 14px" }}>
-              {para}
-              </p>
-            </React.Fragment>
-          ))}
+          <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            {(vals.kinBodyParas ?? []).map((para, paraIdx) => (
+              <React.Fragment key={paraIdx}>
+                <p style={{ fontFamily: 'var(--font-reading)', color: "var(--l-2)", margin: "0" }}>
+                {para}
+                </p>
+              </React.Fragment>
+            ))}
+          </div>
         </div>
           </>
         )}
