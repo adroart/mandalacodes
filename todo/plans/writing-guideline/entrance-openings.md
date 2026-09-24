@@ -13,6 +13,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 06 · Friction comes with closeness and wears through the wall between two people.  (Harmonious Mirage)
 06 · Friction starts when someone comes close to you.  (Harmonious Mirage)
 07 · Guidance gathers scattered people into one body, and it does its work by listening.  (Essential Nexus)
+07 · Guidance turns scattered people into a group that moves as one.  (Essential Nexus)
 08 · The freedom of being yourself, with nothing put on, finds the ones it belongs with.  (Odyssey of Freedom)
 09 · Determination grows out of small steps taken toward something you want.  (Ease in This)
 10 · The ease of being at home in your own skin lightens every step you take.  (Internal Treasure)
