@@ -21,7 +21,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 16 · Enthusiasm gets a thing out of your head and into the world before you feel ready.  (Grand Rising)
 17 · A sense of where something is heading comes to you long before it gets there.  (Pearl of Christos)
 18 · An instinct for what has gone wrong sees the flaw first, and your hands go to mend it.  (Liberation of the Greater)
-19 · The pull to go where the warmth is missing rises in you before a word is said.  (Solection)
+19 · Sensitivity feels what a person is missing before a word is said.  (Solection)
 20 · Calm decides in the moment, through the whole of you, and what comes out is clear.  (Emerging as the Code)
 21 · The will in you takes charge where others stall and carries the whole of what follows.  (Beyond Binary)
 22 · Warmth leaves whoever sits with you lighter than they came.  (Treasure of the Way)
