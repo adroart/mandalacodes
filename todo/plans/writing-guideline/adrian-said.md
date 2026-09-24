@@ -755,3 +755,5 @@ The opening had been built from Adrian's own reading of the name, given in conve
 2026-09-24, on cards 63 and 64: "the upper and lower trigram are written in a way that's actually not saying anything. Everything needs to be understandable." Both cards' trigram paragraphs rewritten to the brief's trigram moves (the force in you, why it sits there as a life fact, the image doing work in an ordinary thing, what it does alone), from the hexagram sources' trigram lines, since the trigram reference files in the vault are empty.
 
 2026-09-24: "Let's check off sixty-four and sixty-three and then go into all the part way ones." Cards 63 and 64 set to final on every section.
+
+2026-09-24, on card 2: "2 good". Card 2 set to final on every section.
