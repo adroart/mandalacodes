@@ -4,7 +4,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 ## Message at a glance
 
 01 · Creation itself moves through you, the power that makes something from nothing.  (Earth's Breath)
-02 · The ground in you takes in whatever is given and turns it into growth.  (Beyond the Shell)
+02 · Trust lets you take in whatever life brings and carry it until it grows.  (Beyond the Shell)
 03 · The surge of something new finds its shape by trying.  (Messengers of the Infinite)
 04 · The wish to make sense of things asks and asks, until understanding comes up on its own.  (Veils of Knowledge)
 05 · An answer already on its way has a weight you can feel before it comes.  (The Space Between Time)
