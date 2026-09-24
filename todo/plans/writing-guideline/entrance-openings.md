@@ -45,7 +45,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 40 · Resolve carries a life through and fills again only when you stop.  (Eternal Wellspring)
 41 · The hunger for a better life pictures more than is here and wants to feel it.  (Beginning and the End)
 42 · A pull in you carries each thing to its end so the next has room.  (Moving to Perfection)
-43 · Sudden knowing arrives whole before you have any way to say how it came.  (Cipher of Knowledge)
+43 · Insight breaks through all at once, after a long stretch when nothing seemed to change.  (Cipher of Knowledge)
 44 · Recognition picks out who belongs near you in the first seconds, before a reason arrives.  (Sophia's Orchestra)
 45 · A pull gathers people around what there is, and you say out loud how it will be shared.  (Tribal Tapestry)
 46 · The luck is not a gift: it is what life does around a body that has stopped fighting it.  (Fountain of Light)
