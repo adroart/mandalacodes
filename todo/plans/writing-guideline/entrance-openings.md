@@ -59,7 +59,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 54 · The drive to rise above the place you were given built the cities, and it has not stopped.  (Everlasting Bounty)
 55 · A fullness swells in you at a life's height, so that what you make comes out of plenty.  (Untouched Perfection)
 56 · A taste for life takes the world in and hands it back as a story.  (Infinite Journey)
-57 · A hunch knows the way before you can say why.  (Flight of the Tao)
+57 · A hunch turns you toward one road and away from another.  (Flight of the Tao)
 58 · Joy grows by being shared.  (Rhythm of Life)
 59 · The longing to be known gets through whatever two people keep between them.  (Mystics Treasures)
 60 · A limit, this far and no further, gives a piece of work its shape.  (Woven Light)
