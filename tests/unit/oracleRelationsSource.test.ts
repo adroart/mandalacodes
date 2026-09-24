@@ -70,9 +70,9 @@ describe('Markdown-native Oracle Relations', () => {
     const relations = await loadRelations(29);
 
     expect(relations.pair.number).toBe(29);
-    expect(relations.pair.card_name).toBe('The Abysmal Water');
+    expect(relations.pair.card_name).toBe('All In');
     expect(relations.pair.hexagram_name).toBeUndefined();
-    expect(relations.pair.teaching).toContain('Water over water reads the same from either end');
+    expect(relations.pair.teaching).toContain('one of the eight that come back the same when turned over');
     expect(relations.inverse).toMatchObject({
       number: 29,
       is_self_inverse: true,
