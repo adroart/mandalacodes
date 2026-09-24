@@ -34,3 +34,11 @@ already an energy a person says they feel.
 Nothing else from that branch was worth keeping. Its other changes were the generated
 corpus and search index, and a note saying the branch stood down to an autorun that has
 since been superseded by the one-writer-per-card pass in `oracle/CARD-PASS.md`.
+
+## Settled, 2026-09-24
+
+Adrian chose neither. Shown A and B side by side, he said: "Can you rewrite it using the
+same that you did all the other ones like? Cause I don't think this would really pass. The
+beginning is real long before it is settled." Both lines are released, the entrance is
+written fresh under the current rule, and the whole card is rebuilt under the six steps in
+`oracle/CARD-PASS.md` on the branch `claude/card-03-model`.

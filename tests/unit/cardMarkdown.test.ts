@@ -39,11 +39,11 @@ describe('Oracle card Markdown parser', () => {
     // field of oracle/cards/03.md, so a mis-mapped section still fails this test.
     const code = mapCode(card);
     expect(code?.keywords).toContain('New Beginnings');
-    expect(code?.reading).toContain('fullness and not knowing in one breath');
+    expect(code?.reading).toContain('to see what it wants to become');
 
     const iching = mapIching(card);
     expect(iching?.hexagram_name).toBe('Difficulty at the Beginning');
-    expect(iching?.reading).toContain('twist them into one cord you can hold');
+    expect(iching?.reading).toContain('one strand at a time');
     expect(iching?.lines).toHaveLength(6);
     expect(iching?.lines[0]?.becomes).toEqual({
       hexagram: 8,
@@ -52,11 +52,11 @@ describe('Oracle card Markdown parser', () => {
 
     const keys = mapKeys(card);
     expect(keys?.shadow_name).toBe('Chaos');
-    expect(keys?.gift).toContain('the failing is how the shape is found');
+    expect(keys?.gift).toContain('only a change you have judged');
 
     const design = mapDesign(card);
     expect(design?.gate_number).toBe(3);
-    expect(design?.gate).toContain('finds the form it can live in');
+    expect(design?.gate).toContain('toward a form it can live in');
 
     const body = mapBody(card);
     expect(body?.meta).toEqual({

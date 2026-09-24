@@ -757,3 +757,5 @@ The opening had been built from Adrian's own reading of the name, given in conve
 2026-09-24: "Let's check off sixty-four and sixty-three and then go into all the part way ones." Cards 63 and 64 set to final on every section.
 
 2026-09-24, on card 2: "2 good". Card 2 set to final on every section.
+
+2026-09-24, on card 3, shown both old entrances (A: "A beginning is real long before it is settled..." and B: "A beginning is alive in you long before it has a shape..."): "Can you rewrite it using the same that you did all the other ones like? Cause I don't think this would really pass. The beginning is real long before it is settled." Both old entrances are released. Card 3's entrance is written fresh and every section is rebuilt under the six steps, like the others, with every status back to scaffold.
