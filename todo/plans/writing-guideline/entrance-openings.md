@@ -29,7 +29,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 24 · A pull takes you back to where a thing began so it can start again.  (Frequency Flutter)
 25 · Love goes from you to everything alike, with no plan in it.  (The Mysteries Play)
 26 · The drive to make things happen grows stronger in you the longer it is held in.  (Lighter Than a Feather)
-27 · A full heart goes out to whatever is too small to feed itself and fills as it gives.  (Inner Majesty)
+27 · The urge to look after others feeds you as well.  (Inner Majesty)
 28 · The hunger for purpose asks of every day whether it mattered.  (Becoming the Mystery)
 29 · The whole yes goes all the way in before you can see where it leads.  (All In)
 30 · Desire was in you before you had anything to want.  (Sparking the Blaze)
