@@ -83,6 +83,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 44 · Recognition picks out who belongs near you in the first seconds, before a reason arrives.  (Sophia's Orchestra)
 44 · The instinct for people tells you within seconds whether someone belongs near you.  (Sophia's Orchestra)
 45 · A pull gathers people around what there is, and you say out loud how it will be shared.  (Tribal Tapestry)
+45 · Goodwill helps a crowd share what it has so that everyone is fed.  (Tribal Tapestry)
 46 · The luck is not a gift: it is what life does around a body that has stopped fighting it.  (Fountain of Light)
 47 · A pressure in you holds one fear in view until it changes state, then the next one surfaces.  (Garden of Alchemy)
 48 · The answer comes when you are asked for more than you have.  (Doorways of the Unknown)
