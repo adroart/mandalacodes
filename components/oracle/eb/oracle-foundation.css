@@ -106,11 +106,6 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
   width:100%; max-width:none; margin-inline:auto;
   word-break:normal; overflow-wrap:normal; hyphens:none;
 }
-/* I Ching reading text: unlike the other chapters, the last line also stretches
-   edge to edge rather than sitting flush left. */
-.eb-reading section[data-chapter="iching"] div[style*="flex-direction: column"] > p {
-  text-align-last:justify !important;
-}
 .eb-reading section[data-chapter] :is(p,span,button,summary)[style*="text-transform: uppercase"] { font-family:var(--font-ui) !important; }
 .eb-reading section[data-chapter] :is(h1,h2,h3), .eb-reading .ul-title-mobile, .eb-reading .ul-title-desktop { font-family:var(--font-display) !important; }
 .eb-reading section[data-chapter] :is(button,details,[data-gk]) { border-radius:4px; }
