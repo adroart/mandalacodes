@@ -755,3 +755,10 @@ The opening had been built from Adrian's own reading of the name, given in conve
 2026-09-24, on cards 63 and 64: "the upper and lower trigram are written in a way that's actually not saying anything. Everything needs to be understandable." Both cards' trigram paragraphs rewritten to the brief's trigram moves (the force in you, why it sits there as a life fact, the image doing work in an ordinary thing, what it does alone), from the hexagram sources' trigram lines, since the trigram reference files in the vault are empty.
 
 2026-09-24: "Let's check off sixty-four and sixty-three and then go into all the part way ones." Cards 63 and 64 set to final on every section.
+
+## 2026-09-24, the I Ching feeds a card but never frames it
+
+
+2026-09-24, on card 9's reading opening "Small taming is a time when": "Why did you put small taming as the entrance into number nine? That's specific to ei ching and it's not relatable at all. How did this happen?" Then: "The entrance of this is not Ai Ching. The Ai Ching specifically is in the Aiching system. It can contribute to it, but it's not the name of the card. The name of the card is what I call the universal language. The title of the artwork. This is my system." Then: "Sometimes an artwork title. Bully fits and could be explainable and times it's a little bit harder. But But regardless, that is the title. I don't want you to try to write the whole thing based on the hard pieces title. Otherwise we're gonna get some weird results. If you can work it in cool, if not don't worry about it." And on running the fix: "I don't want to run all of them. Because if they're off we have to keep on running all of them. This is not a time saving, token saving thing. We just run one. If it's good we run it on the rest." CARD-PASS step 1 amended to match.
+
+Applied to card 27: its reading had opened "Nourishment is the time to look at what feeds you", the hexagram's name used as the frame. It now opens on a situation from all the sources.
