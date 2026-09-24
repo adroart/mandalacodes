@@ -87,7 +87,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 46 · The luck is not a gift: it is what life does around a body that has stopped fighting it.  (Fountain of Light)
 47 · Hope grows in you on the days life hems you in.  (Garden of Alchemy)
 48 · The answer comes when you are asked for more than you have.  (Doorways of the Unknown)
-49 · A heat builds in you under what no longer fits, until one day the whole thing turns.  (Union in the Ashes)
+49 · The urge for change rises when the way you live no longer fits you.  (Union in the Ashes)
 50 · A sense knows what will feed the people near you, and what has gone off.  (Melt Into Perfection)
 51 · A charge sends you first, off the edge of what anyone has done.  (Unshakable Arrival)
 52 · Stillness comes at the end of a cycle and holds until the next one is ready.  (Timeless Blossom)
