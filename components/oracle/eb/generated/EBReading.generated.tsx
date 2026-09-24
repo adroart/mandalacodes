@@ -596,8 +596,8 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             ))}
           </div>
           <details className="ul-faces" style={{ marginTop: "22px" }}>
-            <summary className="ul-faces-strip" style={{ cursor: "pointer", listStyle: "none", display: "grid", gridTemplateColumns: "1fr", border: "1px solid color-mix(in oklab,var(--accent) 22%,transparent)" }}>
-              <span style={{ padding: "16px 12px", textAlign: "center", borderBottom: "1px solid var(--l-rule)", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+            <summary className="ul-faces-strip" style={{ cursor: "pointer", listStyle: "none", display: "grid", gridTemplateColumns: "repeat(2,1fr)", border: "1px solid color-mix(in oklab,var(--accent) 22%,transparent)" }}>
+              <span style={{ padding: "16px 12px", textAlign: "center", borderRight: "1px solid var(--l-rule)", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
                 <span style={{ fontFamily: 'var(--font-ui)', fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--l-3)" }}>
                 Repressive
                 </span>
@@ -613,7 +613,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
                 {vals.gkReactiveFace}
                 </span>
               </span>
-              <span style={{ borderTop: "1px solid var(--l-rule)", padding: "11px 12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", textAlign: "center", fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--accent-d)" }}>
+              <span style={{ gridColumn: "1 / -1", borderTop: "1px solid var(--l-rule)", padding: "11px 12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", textAlign: "center", fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--accent-d)" }}>
                 <span className="ul-faces-open">
                 Read the two faces of this shadow
                 </span>
