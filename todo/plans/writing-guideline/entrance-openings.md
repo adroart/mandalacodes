@@ -43,6 +43,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 22 · Warmth leaves whoever sits with you lighter than they came.  (Treasure of the Way)
 22 · Every feeling that rises in you is yours to feel all the way through.  (Treasure of the Way)
 23 · Clarity arrives before the words for it do.  (Beneath the Surface)
+23 · Clarity cuts through everything you have added and finds the one thing that matters.  (Beneath the Surface)
 24 · A pull takes you back to where a thing began so it can start again.  (Frequency Flutter)
 25 · Love goes from you to everything alike, with no plan in it.  (The Mysteries Play)
 26 · The drive to make things happen grows stronger in you the longer it is held in.  (Lighter Than a Feather)
