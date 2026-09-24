@@ -11,7 +11,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 06 · Friction comes with closeness and wears through the wall between two people.  (Harmonious Mirage)
 07 · Guidance gathers scattered people into one body, and it does its work by listening.  (Essential Nexus)
 08 · The freedom of being yourself, with nothing put on, finds the ones it belongs with.  (Odyssey of Freedom)
-09 · A strength walks in you as a run of small steps, one plain step after another.  (Ease in This)
+09 · Determination grows out of small steps taken toward something you want.  (Ease in This)
 10 · The ease of being at home in your own skin lightens every step you take.  (Internal Treasure)
 11 · A dream of how things could be gets you out of bed and arranges every choice around it.  (Sol Star)
 12 · A sense tells real from fake by what your heart does before you have a word for either.  (Petals of Freedom)
