@@ -21,6 +21,8 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 10 · The ease of being at home in your own skin lightens every step you take.  (Internal Treasure)
 11 · A dream of how things could be pulls your whole life toward it.  (Sol Star)
 12 · A sense tells real from fake by what your heart does before you have a word for either.  (Petals of Freedom)
+11 · A dream of how things could be gets you out of bed and arranges every choice around it.  (Sol Star)
+12 · Your heart can tell the real from the fake.  (Petals of Freedom)
 13 · The quiet in you is where strangers set down what they have told no one.  (Universal Crest)
 14 · An appetite for the work you love makes more than you need, and the rest feeds other people.  (Ancestors Bloom)
 15 · The magnetism in you grows as you slow down, until people come toward you without knowing why.  (Ordinary Valiance)
