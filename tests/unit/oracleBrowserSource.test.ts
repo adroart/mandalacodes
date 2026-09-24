@@ -145,10 +145,10 @@ describe('browser Oracle Markdown source contract', () => {
       keywords: expect.arrayContaining(['New Beginnings']),
       // Deliberately mid-paragraph prose fixtures (see cardMarkdown.test.ts), so a
       // rewrite of opening sentences does not break the browser synthesis contract.
-      essence: expect.stringContaining('fullness and not knowing in one breath'),
+      essence: expect.stringContaining('to see what it wants to become'),
       synthesis: {
-        gene_keys: { gift: expect.stringContaining('the failing is how the shape is found') },
-        human_design: { gate: expect.stringContaining('finds the form it can live in') },
+        gene_keys: { gift: expect.stringContaining('only a change you have judged') },
+        human_design: { gate: expect.stringContaining('toward a form it can live in') },
         body: { physiology: expect.stringContaining('the scar that closed it') },
       },
     });
