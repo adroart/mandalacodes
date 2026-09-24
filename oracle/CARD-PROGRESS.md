@@ -35,91 +35,91 @@ Three states, and a card is only 100% when all three hold.
 3. **Adrian's yes**: every section's status says `final`. That is his editorial decision
    and never an automated score, so no script sets it and no writer may set it.
 
-**3 finished. 0 written, waiting on Adrian. 7 part way. 54 not started.**
+**0 finished. 63 written, waiting on Adrian. 1 part way. 0 not started.**
 
 One writer per card, sections first and the entrance last: see [dispatching a card writer](CARD-PASS.md).
 
-## Finished (3)
+## Finished (0)
 
 Written, and you have said yes. Nothing left on these.
 
-- [x] **02 Beyond the Shell** · sections done · entrance in · through the gate · yours
-- [x] **63 Adornments of Time** · sections done · entrance in · through the gate · yours
-- [x] **64 Communion** · sections done · entrance in · through the gate · yours
 
-## Written, waiting on you (0)
+## Written, waiting on you (63)
 
 Read it on the page. If it holds, its status goes to final and it moves up.
 
+- [ ] **01 Earth's Breath** · sections done · entrance in · through the gate · waiting on you
+- [ ] **02 Beyond the Shell** · sections done · entrance in · through the gate · waiting on you
+- [ ] **04 Veils of Knowledge** · sections done · entrance in · through the gate · waiting on you
+- [ ] **05 The Space Between Time** · sections done · entrance in · through the gate · waiting on you
+- [ ] **06 Harmonious Mirage** · sections done · entrance in · through the gate · waiting on you
+- [ ] **07 Essential Nexus** · sections done · entrance in · through the gate · waiting on you
+- [ ] **08 Odyssey of Freedom** · sections done · entrance in · through the gate · waiting on you
+- [ ] **09 Ease in This** · sections done · entrance in · through the gate · waiting on you
+- [ ] **10 Internal Treasure** · sections done · entrance in · through the gate · waiting on you
+- [ ] **11 Sol Star** · sections done · entrance in · through the gate · waiting on you
+- [ ] **12 Petals of Freedom** · sections done · entrance in · through the gate · waiting on you
+- [ ] **13 Universal Crest** · sections done · entrance in · through the gate · waiting on you
+- [ ] **14 Ancestors Bloom** · sections done · entrance in · through the gate · waiting on you
+- [ ] **15 Ordinary Valiance** · sections done · entrance in · through the gate · waiting on you
+- [ ] **16 Grand Rising** · sections done · entrance in · through the gate · waiting on you
+- [ ] **17 Pearl of Christos** · sections done · entrance in · through the gate · waiting on you
+- [ ] **18 Liberation of the Greater** · sections done · entrance in · through the gate · waiting on you
+- [ ] **19 Solection** · sections done · entrance in · through the gate · waiting on you
+- [ ] **20 Emerging as the Code** · sections done · entrance in · through the gate · waiting on you
+- [ ] **21 Beyond Binary** · sections done · entrance in · through the gate · waiting on you
+- [ ] **22 Treasure of the Way** · sections done · entrance in · through the gate · waiting on you
+- [ ] **23 Beneath the Surface** · sections done · entrance in · through the gate · waiting on you
+- [ ] **24 Frequency Flutter** · sections done · entrance in · through the gate · waiting on you
+- [ ] **25 The Mysteries Play** · sections done · entrance in · through the gate · waiting on you
+- [ ] **26 Lighter Than a Feather** · sections done · entrance in · through the gate · waiting on you
+- [ ] **27 Inner Majesty** · sections done · entrance in · through the gate · waiting on you
+- [ ] **28 Becoming the Mystery** · sections done · entrance in · through the gate · waiting on you
+- [ ] **29 All In** · sections done · entrance in · through the gate · waiting on you
+- [ ] **30 Sparking the Blaze** · sections done · entrance in · through the gate · waiting on you
+- [ ] **31 Theater of Truth** · sections done · entrance in · through the gate · waiting on you
+- [ ] **32 Art of Living** · sections done · entrance in · through the gate · waiting on you
+- [ ] **33 Echos of Time** · sections done · entrance in · through the gate · waiting on you
+- [ ] **34 Sublime Power** · sections done · entrance in · through the gate · waiting on you
+- [ ] **35 Navigational Star** · sections done · entrance in · through the gate · waiting on you
+- [ ] **36 Crystal Creation** · sections done · entrance in · through the gate · waiting on you
+- [ ] **37 Journey Home** · sections done · entrance in · through the gate · waiting on you
+- [ ] **38 Inner Light Symphony** · sections done · entrance in · through the gate · waiting on you
+- [ ] **39 Nobel Spark** · sections done · entrance in · through the gate · waiting on you
+- [ ] **40 Eternal Wellspring** · sections done · entrance in · through the gate · waiting on you
+- [ ] **41 Beginning and the End** · sections done · entrance in · through the gate · waiting on you
+- [ ] **42 Moving to Perfection** · sections done · entrance in · through the gate · waiting on you
+- [ ] **43 Cipher of Knowledge** · sections done · entrance in · through the gate · waiting on you
+- [ ] **44 Sophia's Orchestra** · sections done · entrance in · through the gate · waiting on you
+- [ ] **45 Tribal Tapestry** · sections done · entrance in · through the gate · waiting on you
+- [ ] **46 Fountain of Light** · sections done · entrance in · through the gate · waiting on you
+- [ ] **47 Garden of Alchemy** · sections done · entrance in · through the gate · waiting on you
+- [ ] **48 Doorways of the Unknown** · sections done · entrance in · through the gate · waiting on you
+- [ ] **49 Union in the Ashes** · sections done · entrance in · through the gate · waiting on you
+- [ ] **50 Melt Into Perfection** · sections done · entrance in · through the gate · waiting on you
+- [ ] **51 Unshakable Arrival** · sections done · entrance in · through the gate · waiting on you
+- [ ] **52 Timeless Blossom** · sections done · entrance in · through the gate · waiting on you
+- [ ] **53 Creation Oscillation** · sections done · entrance in · through the gate · waiting on you
+- [ ] **54 Everlasting Bounty** · sections done · entrance in · through the gate · waiting on you
+- [ ] **55 Untouched Perfection** · sections done · entrance in · through the gate · waiting on you
+- [ ] **56 Infinite Journey** · sections done · entrance in · through the gate · waiting on you
+- [ ] **57 Flight of the Tao** · sections done · entrance in · through the gate · waiting on you
+- [ ] **58 Rhythm of Life** · sections done · entrance in · through the gate · waiting on you
+- [ ] **59 Mystics Treasures** · sections done · entrance in · through the gate · waiting on you
+- [ ] **60 Woven Light** · sections done · entrance in · through the gate · waiting on you
+- [ ] **61 Celestial Remembrance** · sections done · entrance in · through the gate · waiting on you
+- [ ] **62 Voice of Nature** · sections done · entrance in · through the gate · waiting on you
+- [ ] **63 Adornments of Time** · sections done · entrance in · through the gate · waiting on you
+- [ ] **64 Communion** · sections done · entrance in · through the gate · waiting on you
 
-## Part way (7)
+## Part way (1)
 
 One half is done. The line after each says which.
 
-- [ ] **01 Earth's Breath** · sections 40 to fix · entrance in
-- [ ] **04 Veils of Knowledge** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **05 The Space Between Time** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **06 Harmonious Mirage** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **07 Essential Nexus** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **08 Odyssey of Freedom** · sections done · entrance drafted, not in the card · gate not passed
-- [ ] **27 Inner Majesty** · sections done · entrance drafted, not in the card · gate not passed
+- [ ] **03 Messengers of the Infinite** · sections 38 to fix · entrance in
 
-## Not started (54)
+## Not started (0)
 
 Each takes one writer, one pass, about ten minutes of machine time.
 
-- [ ] **03 Messengers of the Infinite** · sections 38 to fix · entrance drafted, not in the card
-- [ ] **09 Ease in This** · sections 57 to fix · entrance drafted, not in the card
-- [ ] **10 Internal Treasure** · sections 41 to fix · entrance drafted, not in the card
-- [ ] **11 Sol Star** · sections 46 to fix · entrance drafted, not in the card
-- [ ] **12 Petals of Freedom** · sections 45 to fix · entrance drafted, not in the card
-- [ ] **13 Universal Crest** · sections 57 to fix · entrance drafted, not in the card
-- [ ] **14 Ancestors Bloom** · sections 58 to fix · entrance drafted, not in the card
-- [ ] **15 Ordinary Valiance** · sections 58 to fix · entrance drafted, not in the card
-- [ ] **16 Grand Rising** · sections 55 to fix · entrance drafted, not in the card
-- [ ] **17 Pearl of Christos** · sections 53 to fix · entrance drafted, not in the card
-- [ ] **18 Liberation of the Greater** · sections 58 to fix · entrance drafted, not in the card
-- [ ] **19 Solection** · sections 61 to fix · entrance drafted, not in the card
-- [ ] **20 Emerging as the Code** · sections 54 to fix · entrance drafted, not in the card
-- [ ] **21 Beyond Binary** · sections 47 to fix · entrance drafted, not in the card
-- [ ] **22 Treasure of the Way** · sections 58 to fix · entrance drafted, not in the card
-- [ ] **23 Beneath the Surface** · sections 44 to fix · entrance drafted, not in the card
-- [ ] **24 Frequency Flutter** · sections 59 to fix · entrance drafted, not in the card
-- [ ] **25 The Mysteries Play** · sections 56 to fix · entrance drafted, not in the card
-- [ ] **26 Lighter Than a Feather** · sections 58 to fix · entrance drafted, not in the card
-- [ ] **28 Becoming the Mystery** · sections 57 to fix · entrance drafted, not in the card
-- [ ] **29 All In** · sections 63 to fix · entrance drafted, not in the card
-- [ ] **30 Sparking the Blaze** · sections 54 to fix · entrance drafted, not in the card
-- [ ] **31 Theater of Truth** · sections 59 to fix · entrance drafted, not in the card
-- [ ] **32 Art of Living** · sections 54 to fix · entrance drafted, not in the card
-- [ ] **33 Echos of Time** · sections 64 to fix · entrance drafted, not in the card
-- [ ] **34 Sublime Power** · sections 52 to fix · entrance drafted, not in the card
-- [ ] **35 Navigational Star** · sections 55 to fix · entrance drafted, not in the card
-- [ ] **36 Crystal Creation** · sections 60 to fix · entrance drafted, not in the card
-- [ ] **37 Journey Home** · sections 47 to fix · entrance drafted, not in the card
-- [ ] **38 Inner Light Symphony** · sections 54 to fix · entrance drafted, not in the card
-- [ ] **39 Nobel Spark** · sections 67 to fix · entrance drafted, not in the card
-- [ ] **40 Eternal Wellspring** · sections 58 to fix · entrance drafted, not in the card
-- [ ] **41 Beginning and the End** · sections 51 to fix · entrance drafted, not in the card
-- [ ] **42 Moving to Perfection** · sections 65 to fix · entrance drafted, not in the card
-- [ ] **43 Cipher of Knowledge** · sections 55 to fix · entrance drafted, not in the card
-- [ ] **44 Sophia's Orchestra** · sections 64 to fix · entrance drafted, not in the card
-- [ ] **45 Tribal Tapestry** · sections 51 to fix · entrance drafted, not in the card
-- [ ] **46 Fountain of Light** · sections 48 to fix · entrance drafted, not in the card
-- [ ] **47 Garden of Alchemy** · sections 69 to fix · entrance drafted, not in the card
-- [ ] **48 Doorways of the Unknown** · sections 56 to fix · entrance drafted, not in the card
-- [ ] **49 Union in the Ashes** · sections 51 to fix · entrance drafted, not in the card
-- [ ] **50 Melt Into Perfection** · sections 52 to fix · entrance drafted, not in the card
-- [ ] **51 Unshakable Arrival** · sections 61 to fix · entrance drafted, not in the card
-- [ ] **52 Timeless Blossom** · sections 45 to fix · entrance drafted, not in the card
-- [ ] **53 Creation Oscillation** · sections 52 to fix · entrance drafted, not in the card
-- [ ] **54 Everlasting Bounty** · sections 55 to fix · entrance drafted, not in the card
-- [ ] **55 Untouched Perfection** · sections 50 to fix · entrance drafted, not in the card
-- [ ] **56 Infinite Journey** · sections 59 to fix · entrance drafted, not in the card
-- [ ] **57 Flight of the Tao** · sections 64 to fix · entrance drafted, not in the card
-- [ ] **58 Rhythm of Life** · sections 68 to fix · entrance drafted, not in the card
-- [ ] **59 Mystics Treasures** · sections 58 to fix · entrance drafted, not in the card
-- [ ] **60 Woven Light** · sections 53 to fix · entrance drafted, not in the card
-- [ ] **61 Celestial Remembrance** · sections 64 to fix · entrance drafted, not in the card
-- [ ] **62 Voice of Nature** · sections 58 to fix · entrance drafted, not in the card
 

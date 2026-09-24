@@ -53,26 +53,26 @@ describe('Markdown-native Oracle Relations', () => {
     expect(relations.codon_ring.siblings).toEqual([20, 23, 24, 27, 42]);
   });
 
-  it('maps Card 28 combined self-inverse and UL-reference headings by structure', async () => {
+  it('maps Card 28 pair and self-inverse headings by structure', async () => {
     const relations = await loadRelations(28);
 
     expect(relations.pair.number).toBe(27);
-    expect(relations.pair.card_name).toBe('The Nourishing');
-    expect(relations.pair.teaching).toContain('open jaws that take in and feed');
+    expect(relations.pair.card_name).toBe('Inner Majesty');
+    expect(relations.pair.teaching).toContain('the care that feeds whatever cannot yet feed itself');
     expect(relations.inverse).toMatchObject({
       number: 28,
       is_self_inverse: true,
     });
-    expect(relations.inverse.teaching).toContain('one of only eight codes');
+    expect(relations.inverse.teaching).toContain('it comes back the same');
   });
 
   it('keeps Card 29 Markdown frontmatter authoritative over legacy pair data', async () => {
     const relations = await loadRelations(29);
 
     expect(relations.pair.number).toBe(29);
-    expect(relations.pair.card_name).toBe('The Abysmal Water');
+    expect(relations.pair.card_name).toBe('All In');
     expect(relations.pair.hexagram_name).toBeUndefined();
-    expect(relations.pair.teaching).toContain('Water over water reads the same from either end');
+    expect(relations.pair.teaching).toContain('one of the eight that come back the same when turned over');
     expect(relations.inverse).toMatchObject({
       number: 29,
       is_self_inverse: true,
@@ -133,7 +133,7 @@ describe('Markdown-native Oracle Relations', () => {
     expect(relations.inverse).toEqual({
       number: 61,
       is_self_inverse: true,
-      teaching: 'Turn these lines end for end and the shape does not move. This code is one of only eight that meets its own reflection, and the meaning is precise. A heart at the centre has no other side; what is true here is true read from any angle.',
+      teaching: 'Turn this energy end for end and it comes back the same. What is true at your centre looks the same from every side, so there is no hidden face behind it. What it lacks sits beside it, in its partner, never underneath.',
     });
   });
 });

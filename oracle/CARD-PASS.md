@@ -64,8 +64,9 @@ one sentence that says what only this card is, and check it: it must be
 false for every one of those neighbours. Name the energy in a word a person
 says they feel. Never use the shadow word. The card's own line in the openings
 file is a draft to test like any other, and four of them name the shadow.
-Then name the card's moment: the situation in a life this card is, in the
-hexagram's own plain words. CODE's first sentence says that moment, and the
+Then name the card's moment: the situation in a life this card is, in
+everyday words a person would use about their own day. CODE's first sentence
+says that moment, and the
 energy comes second, as what lives in it. Adrian, 2026-09-23, on card 64: "Why
 don't you start by saying this is the moment just before something is
 finished." Its reading had opened on the Gene Keys gift, so it read as
@@ -85,6 +86,18 @@ Say the moment in the card's own words, never as a stock frame: "This is the"
 already opens the reading on seven cards, and the brief fails any paragraph
 opener used on more than three. Card 64 opens "Before completion is a time of
 change"; card 63 opens "After something is finished, the questions begin."
+The card's name is Adrian's artwork title, never the hexagram's name. Adrian,
+2026-09-24, on card 9 opening "Small taming is a time when": "That's specific
+to I Ching and it's not relatable at all", and "The name of the card is what I
+call the universal language. The title of the artwork. This is my system." The
+I Ching is one system that feeds the moment, like every other section's
+sources; it is never the frame, and no hexagram name or I Ching-only word
+stands in the reading. Work the title in only where it fits: "I don't want you
+to try to write the whole thing based on the ... title. Otherwise we're gonna
+get some weird results. If you can work it in cool, if not don't worry about
+it." A change to how cards are written runs on one card first, and the rest
+follow only after Adrian has read that one (the same day: "We just run one.
+If it's good we run it on the rest").
 
 **2. Give each section its own facet before writing.** Read each section's
 sources through that section's question in the brief:
