@@ -7,7 +7,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 02 · The ground in you takes in whatever is given and turns it into growth.  (Beyond the Shell)
 03 · The surge of something new finds its shape by trying.  (Messengers of the Infinite)
 04 · The wish to make sense of things asks and asks, until understanding comes up on its own.  (Veils of Knowledge)
-05 · An answer already on its way has a weight you can feel before it comes.  (The Space Between Time)
+05 · Trust holds you steady until what you need arrives.  (The Space Between Time)
 06 · Friction comes with closeness and wears through the wall between two people.  (Harmonious Mirage)
 07 · Guidance gathers scattered people into one body, and it does its work by listening.  (Essential Nexus)
 08 · The freedom of being yourself, with nothing put on, finds the ones it belongs with.  (Odyssey of Freedom)
