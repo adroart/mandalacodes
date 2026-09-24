@@ -35,21 +35,21 @@ Three states, and a card is only 100% when all three hold.
 3. **Adrian's yes**: every section's status says `final`. That is his editorial decision
    and never an automated score, so no script sets it and no writer may set it.
 
-**0 finished. 2 written, waiting on Adrian. 8 part way. 54 not started.**
+**2 finished. 0 written, waiting on Adrian. 8 part way. 54 not started.**
 
 One writer per card, sections first and the entrance last: see [dispatching a card writer](CARD-PASS.md).
 
-## Finished (0)
+## Finished (2)
 
 Written, and you have said yes. Nothing left on these.
 
+- [x] **63 Adornments of Time** · sections done · entrance in · through the gate · yours
+- [x] **64 Communion** · sections done · entrance in · through the gate · yours
 
-## Written, waiting on you (2)
+## Written, waiting on you (0)
 
 Read it on the page. If it holds, its status goes to final and it moves up.
 
-- [ ] **63 Adornments of Time** · sections done · entrance in · through the gate · waiting on you
-- [ ] **64 Communion** · sections done · entrance drafted, not in the card · through the gate · waiting on you
 
 ## Part way (8)
 
