@@ -39,7 +39,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 34 · Strength lies quiet in you until something real calls for it, then pours the whole of itself in.  (Sublime Power)
 35 · The hunger for life looks past whatever you hold and meets an ordinary morning as new.  (Navigational Star)
 36 · A drop in the stomach opens the heart in you, which goes on feeling past where the mind stops.  (Crystal Creation)
-37 · Warmth gathers a few people around one table and keeps them there.  (Journey Home)
+37 · Affection draws the people who are yours to one table and keeps a place for each of them.  (Journey Home)
 38 · Everything that lasts was held by someone who chose to stay and show up for what is important to them.  (Inner Light Symphony)
 39 · Pressure builds in you and has to go somewhere, so it presses on whatever has gone still.  (Nobel Spark)
 40 · Resolve carries a life through and fills again only when you stop.  (Eternal Wellspring)
