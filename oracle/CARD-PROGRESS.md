@@ -35,7 +35,7 @@ Three states, and a card is only 100% when all three hold.
 3. **Adrian's yes**: every section's status says `final`. That is his editorial decision
    and never an automated score, so no script sets it and no writer may set it.
 
-**0 finished. 63 written, waiting on Adrian. 1 part way. 0 not started.**
+**0 finished. 64 written, waiting on Adrian. 0 part way. 0 not started.**
 
 One writer per card, sections first and the entrance last: see [dispatching a card writer](CARD-PASS.md).
 
@@ -44,12 +44,13 @@ One writer per card, sections first and the entrance last: see [dispatching a ca
 Written, and you have said yes. Nothing left on these.
 
 
-## Written, waiting on you (63)
+## Written, waiting on you (64)
 
 Read it on the page. If it holds, its status goes to final and it moves up.
 
 - [ ] **01 Earth's Breath** · sections done · entrance in · through the gate · waiting on you
 - [ ] **02 Beyond the Shell** · sections done · entrance in · through the gate · waiting on you
+- [ ] **03 Messengers of the Infinite** · sections done · entrance in · through the gate · waiting on you
 - [ ] **04 Veils of Knowledge** · sections done · entrance in · through the gate · waiting on you
 - [ ] **05 The Space Between Time** · sections done · entrance in · through the gate · waiting on you
 - [ ] **06 Harmonious Mirage** · sections done · entrance in · through the gate · waiting on you
@@ -112,11 +113,10 @@ Read it on the page. If it holds, its status goes to final and it moves up.
 - [ ] **63 Adornments of Time** · sections done · entrance in · through the gate · waiting on you
 - [ ] **64 Communion** · sections done · entrance in · through the gate · waiting on you
 
-## Part way (1)
+## Part way (0)
 
 One half is done. The line after each says which.
 
-- [ ] **03 Messengers of the Infinite** · sections 38 to fix · entrance in
 
 ## Not started (0)
 
