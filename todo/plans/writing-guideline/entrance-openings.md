@@ -85,7 +85,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 45 · A pull gathers people around what there is, and you say out loud how it will be shared.  (Tribal Tapestry)
 45 · Goodwill helps a crowd share what it has so that everyone is fed.  (Tribal Tapestry)
 46 · The luck is not a gift: it is what life does around a body that has stopped fighting it.  (Fountain of Light)
-47 · A pressure in you holds one fear in view until it changes state, then the next one surfaces.  (Garden of Alchemy)
+47 · Hope grows in you on the days life hems you in.  (Garden of Alchemy)
 48 · The answer comes when you are asked for more than you have.  (Doorways of the Unknown)
 49 · A heat builds in you under what no longer fits, until one day the whole thing turns.  (Union in the Ashes)
 50 · A sense knows what will feed the people near you, and what has gone off.  (Melt Into Perfection)
