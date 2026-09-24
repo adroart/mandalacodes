@@ -26,12 +26,76 @@ test('the coins are the primary fast cast control', async ({ page }) => {
   const castControls = page.getByRole('button', { name: 'Cast the coins', exact: true });
   await expect(castControls).toHaveCount(2);
 
-  const startedAt = Date.now();
+  await castControls.evaluateAll((castButtons) => {
+    const timing = {
+      startedAt: null as number | null,
+      disabledAt: null as number | null,
+      resultAt: null as number | null,
+    };
+    const browserWindow = window as typeof window & { __coinCastTiming?: typeof timing };
+    browserWindow.__coinCastTiming = timing;
+
+    const isVisible = (element: HTMLElement) => {
+      if (typeof element.checkVisibility === 'function') {
+        return element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+      }
+      for (let current: HTMLElement | null = element; current; current = current.parentElement) {
+        const style = getComputedStyle(current);
+        if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) return false;
+      }
+      return element.getClientRects().length > 0;
+    };
+    const readState = () => {
+      if (timing.startedAt === null || timing.resultAt !== null) return;
+      const currentControls = [...document.querySelectorAll<HTMLButtonElement>('button')]
+        .filter((button) => (
+          button.getAttribute('aria-label') === 'Cast the coins'
+          || button.textContent?.trim() === 'Cast the coins'
+        ));
+      if (currentControls.length === 2 && currentControls.every((button) => button.disabled)) {
+        timing.disabledAt ??= performance.now();
+      }
+      const result = [...document.querySelectorAll<HTMLElement>('[data-chapter="iching"] div, [data-chapter="iching"] span')]
+        .find((element) => element.textContent?.trim() === 'Hexagram 22 · Grace' && isVisible(element));
+      if (result && timing.disabledAt !== null) {
+        timing.resultAt = performance.now();
+        return;
+      }
+      requestAnimationFrame(readState);
+    };
+
+    for (const castButton of castButtons) {
+      castButton.addEventListener('click', () => {
+        if (timing.startedAt !== null) return;
+        timing.startedAt = performance.now();
+        requestAnimationFrame(readState);
+      }, { capture: true, once: true });
+    }
+  });
+
   await castControls.first().click();
   await expect(castControls.first()).toBeDisabled();
   await expect(castControls.last()).toBeDisabled();
   await expect(page.getByText('Hexagram 22 · Grace', { exact: true })).toBeVisible();
-  expect(Date.now() - startedAt).toBeLessThan(650);
+  await page.waitForFunction(() => (
+    typeof (window as typeof window & { __coinCastTiming?: { resultAt: number | null } })
+      .__coinCastTiming?.resultAt === 'number'
+  ));
+  const castDuration = await page.evaluate(() => {
+    const timing = (window as typeof window & {
+      __coinCastTiming?: {
+        startedAt: number | null;
+        disabledAt: number | null;
+        resultAt: number | null;
+      };
+    }).__coinCastTiming;
+    if (!timing || timing.startedAt === null || timing.disabledAt === null || timing.resultAt === null) {
+      throw new Error('Coin cast timing marks were not recorded');
+    }
+    return timing.resultAt - timing.startedAt;
+  });
+  console.log(`Coin cast interaction to visible result: ${castDuration.toFixed(1)}ms`);
+  expect(castDuration).toBeLessThan(650);
 });
 
 test('the coin control casts from the keyboard without motion', async ({ page }) => {
