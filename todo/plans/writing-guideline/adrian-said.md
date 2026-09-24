@@ -760,3 +760,9 @@ The opening had been built from Adrian's own reading of the name, given in conve
 
 
 2026-09-24, on card 9's reading opening "Small taming is a time when": "Why did you put small taming as the entrance into number nine? That's specific to ei ching and it's not relatable at all. How did this happen?" Then: "The entrance of this is not Ai Ching. The Ai Ching specifically is in the Aiching system. It can contribute to it, but it's not the name of the card. The name of the card is what I call the universal language. The title of the artwork. This is my system." Then: "Sometimes an artwork title. Bully fits and could be explainable and times it's a little bit harder. But But regardless, that is the title. I don't want you to try to write the whole thing based on the hard pieces title. Otherwise we're gonna get some weird results. If you can work it in cool, if not don't worry about it." And on running the fix: "I don't want to run all of them. Because if they're off we have to keep on running all of them. This is not a time saving, token saving thing. We just run one. If it's good we run it on the rest." CARD-PASS step 1 amended to match.
+
+## 2026-09-24, the reading written fresh from the sources
+
+(Reading card 06's reading, and the three-part readings across the deck.) "The three part reading seems like it's focused on the challenges and the conflicts more than the gifts and how to step into this and embodiment." "I'm not just talking about the opening, I'm talking about the totality of the three paragraphs." "If you are rewriting it, don't just try to rework the words that are already in the three paragraphs. What about the source files to keep the context good and sharp."
+
+(Having read card 06's reading written fresh from the source files.) "run it on the rest"
