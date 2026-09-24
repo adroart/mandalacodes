@@ -66,7 +66,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 61 · A sureness without proof moves people more than any argument could.  (Celestial Remembrance)
 62 · The wish to get the small thing right says the one word and stops.  (Voice of Nature)
 63 · Curiosity keeps asking how a thing works, long after it is finished.  (Adornments of Time)
-64 · Confusion comes before an idea and clears only in its own time.  (Communion)
+64 · Imagination takes whatever a change has scattered and sees the shape of something new in it.  (Communion)
 
 ## The five whole entrances, pilot (2026-09-22)
 

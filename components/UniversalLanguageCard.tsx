@@ -183,8 +183,10 @@ const UniversalLanguageCard: React.FC = () => {
         ulReading: ulP,
         invocation: '',
         ichingCombinationHex: synthesis?.synthesis.iching.trigram_combination ?? card.iching.essence,
-        ichingCombinationUpper: card.iching.upper_trigram.nature,
-        ichingCombinationLower: card.iching.lower_trigram.nature,
+        // The card's written trigram paragraphs; the old keyword list only
+        // stands in while the card text has not loaded.
+        ichingCombinationUpper: synthesis?.synthesis.iching.upper_nature || card.iching.upper_trigram.nature,
+        ichingCombinationLower: synthesis?.synthesis.iching.lower_nature || card.iching.lower_trigram.nature,
         ichingReading: (synthesis?.synthesis.iching.reading ?? '').split('\n\n').map(s => s.trim()).filter(Boolean),
         ichingJudgement: (synthesis?.synthesis.iching.judgement_lines ?? []).join('\n'),
         ichingImage: (synthesis?.synthesis.iching.image_lines ?? []).join('\n'),

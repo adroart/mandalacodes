@@ -38,6 +38,10 @@ export interface SynthesisReference {
 
 export interface SynthesisIching {
   trigram_combination: string;
+  /** The card's own Upper trigram paragraph, from the ICHING section. */
+  upper_nature: string;
+  /** The card's own Lower trigram paragraph, from the ICHING section. */
+  lower_nature: string;
   reading: string;
   judgement_lines: string[];
   image_lines: string[];
@@ -242,6 +246,8 @@ function buildSynthesis(parsed: ParsedCard, cardNumber: number, context: string)
     synthesis: {
       iching: {
         trigram_combination: iching.combination,
+        upper_nature: iching.upper_nature,
+        lower_nature: iching.lower_nature,
         reading: iching.reading,
         judgement_lines: iching.judgement_lines,
         image_lines: iching.image_lines,

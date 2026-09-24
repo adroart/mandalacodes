@@ -64,6 +64,27 @@ one sentence that says what only this card is, and check it: it must be
 false for every one of those neighbours. Name the energy in a word a person
 says they feel. Never use the shadow word. The card's own line in the openings
 file is a draft to test like any other, and four of them name the shadow.
+Then name the card's moment: the situation in a life this card is, in the
+hexagram's own plain words. CODE's first sentence says that moment, and the
+energy comes second, as what lives in it. Adrian, 2026-09-23, on card 64: "Why
+don't you start by saying this is the moment just before something is
+finished." Its reading had opened on the Gene Keys gift, so it read as
+imagination in general, not as this card.
+Read the moment from what the sources say the name means, never from one
+section's picture, your own paraphrase, or anyone's personal reading of the
+name: the Gene Keys chapter's own use of the name and what the I Ching texts
+say it means. Then test it: say "[the energy] lives here" after the moment.
+If a listener would ask why, the moment is wrong. Card 64 first opened on "the
+moment just before something is finished", taken from the fox nearly across,
+and Adrian asked why imagination would live at the end and not the beginning.
+In the sources before completion is a time of change, one order ended and the
+next not yet formed (Legge, Huang; the chapter: "the transformational state").
+Adrian, the same day, when his own reading of the name had been written in:
+"Stick with the information. I will put my own take on it later."
+Say the moment in the card's own words, never as a stock frame: "This is the"
+already opens the reading on seven cards, and the brief fails any paragraph
+opener used on more than three. Card 64 opens "Before completion is a time of
+change"; card 63 opens "After something is finished, the questions begin."
 
 **2. Give each section its own facet before writing.** Read each section's
 sources through that section's question in the brief:
@@ -88,8 +109,13 @@ assimilating. It cannot be done at the end.
 
 **4. Read the card sideways.** Put the six facet lines side by side, then the
 first and last sentence of every section. Wherever two say the same thing,
-rewrite the weaker one from its own facet. Write in the sheet what you found
-and what you changed. "Nothing" is an answer only when it is true.
+rewrite the weaker one from its own facet. Then look for the opposite fault:
+two sections that say contrary things about the same thing. Settle it into one
+line every section agrees with. On card 64, CODE said imagination shows you the
+whole thing while DESIGN said the pictures do not make sense, and Adrian could
+not tell which was meant; the line became "the picture is clear, the how is
+not". Write in the sheet what you found and what you changed. "Nothing" is an
+answer only when it is true.
 
 **5. Write the reading's CODE, the keynotes and the entrance last**, from the
 six facets together, with the brief's entrance section and `CARD-CHECKLIST.md`
@@ -103,16 +129,36 @@ can say", which cards 17, 23, 43 and 57 already use.
   energy by its shadow.
 - Send one fresh reader (Sonnet), with no sources, the keywords, the entrance,
   the CODE section and the neighbours' opening lines, each sentence numbered.
-  It must restate every sentence in its own words, say which of the listed
-  cards the text belongs to, and name any two sections or sentences that say
-  the same thing. Paste its answer into the sheet. It passes only when it
-  names this card and finds no repeats.
+  List this card among them with the step 1 sentence as its line, never its
+  line from the openings file. It must restate every sentence in its own
+  words, say which of the listed cards the text belongs to, and name any two
+  CODE sentences that say the same thing. It does not count CODE against the
+  entrance: the entrance summarises the card, so they share its core by
+  design, and on card 64 every such fix cut the reading until Adrian read it as
+  too short ("it's not really relating it to the card"). Paste its answer into
+  the sheet. A pair counts only when the reader's own two restatements say
+  the same thing; where they differ, quote both in the sheet and the pair does
+  not count (Adrian, 2026-09-23: twelve of twelve strict readers on card 64
+  each found exactly one pair, the last with two different restatements). It
+  passes only when it names this card and finds no repeats inside CODE.
+- In the same run, ask the reader two more things: what the card is about, in
+  one sentence, and why the energy belongs to the card's name (give it the
+  name). Paste both answers. They must match the step 1 sentence and the
+  card's moment. If the reader cannot say why the energy belongs to the name,
+  CODE's opening has not said it, and the card goes back. This is the check
+  the card as a whole never had: on card 64 every sentence passed while
+  Adrian could not tell what the reading was about or why imagination lived
+  in its moment.
 
 Then regenerate `data/oracle-corpus.json` and `data/oracle-search-index.json`
 (`node --import tsx scripts/build-oracle-corpus.ts`, then
 `scripts/build-search-index.ts`) and run `npm run progress`, all in the same
-commit as the card. Leave every `status:` as `scaffold`. `final` is Adrian's
-word alone.
+commit as the card. Then run `npm run test:unit` before pushing: it checks
+that every card still parses (card 63 once went out with its entrance written
+over the Human Design centre, which only the unit test caught). Change the
+entrance only inside the `meta:` block; a card has two lines that start
+`centre:`. Leave every `status:` as `scaffold`. `final` is Adrian's word
+alone.
 
 ## Copy this to dispatch a card
 
