@@ -33,6 +33,7 @@ Rule (oracle/WRITERS-BRIEF.md, "The entrance", sentence one, 2026-09-19): the en
 16 · Enthusiasm gets a thing out of your head and into the world before you feel ready.  (Grand Rising)
 17 · The sense of where something is heading is a force of its own.  (Pearl of Christos)
 18 · An instinct for what has gone wrong sees the flaw first, and your hands go to mend it.  (Liberation of the Greater)
+18 · An instinct for what has gone wrong spots the flaw first.  (Liberation of the Greater)
 19 · The pull to go where the warmth is missing rises in you before a word is said.  (Solection)
 20 · Calm decides in the moment, through the whole of you, and what comes out is clear.  (Emerging as the Code)
 21 · The will in you takes charge where others stall and carries the whole of what follows.  (Beyond Binary)
