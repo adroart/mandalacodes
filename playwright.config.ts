@@ -24,7 +24,7 @@ export default defineConfig({
   // runner crashes the whole suite.
   // Production service-worker cases run in playwright.pwa.config.ts. Running
   // them here would wait forever for a worker that Vite dev never installs.
-  testIgnore: ['**/unit/**', '**/offline-qr-reading.spec.ts', '**/pwa-learn.spec.ts'],
+  testIgnore: ['**/unit/**', '**/offline-qr-reading.spec.ts', '**/pwa-learn.spec.ts', '**/pwa-navigation.spec.ts'],
   fullyParallel: false,
   retries: 0,
   reporter: 'list',
