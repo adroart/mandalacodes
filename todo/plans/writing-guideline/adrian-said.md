@@ -798,3 +798,5 @@ Run on one card first, card 6, written new from the source files without opening
 2026-09-26, on whether an opening phrase (keynote) may appear on two cards: "allow the phrase on two cards". Recorded in WRITERS-BRIEF, The keynotes. At the time 8 phrases were on two cards and one, "Knowing When to Stop", on three (27, 40, 56).
 
 2026-09-26, "change 56": card 56 keynote "Knowing When to Stop" (then on 27, 40 and 56) became "Letting It Settle", from its own reading ("In that gap, what you gathered settles and becomes yours").
+
+2026-09-26, on the printed book: "How do I make each page three with the lines reaching to the end of the section. Right now there's a lot of white space on the last one and not as much room on the first and second." The pen box is now sized per card (the tallest that keeps the card on its pages) and the last page is ruled from the end of the text.
