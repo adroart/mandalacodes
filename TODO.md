@@ -165,13 +165,10 @@ Historical baseline on b9da484, before these repairs: 41 failed, 80 passed and 1
 
 ## Oracle deck content (Universal Language)
 
-- [ ] Carry the rewrite through the other 56 cards, six at a time, each card written and checked by its own writer under the writers' brief _(band: agent-runnable)_ _(effort: deep)_ → Rule: [the writers' brief](oracle/WRITERS-BRIEF.md)
-- [ ] Write the seven opening phrases for the 56 cards not yet rewritten, to the rule Adrian set on 2026-09-22: three words as the target, each understandable on its own, at least four of the seven positive _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] Correct the hidden notes sheet on every rewritten card: it still describes paragraphs the rewrite removed, so the record misleads the next writer _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] Find why pushes to a pull request branch stopped starting a test run on 2026-09-22 while another branch's runs went through, since the last four card commits merged with no run of their own _(band: agent-runnable)_ _(effort: quick)_
 - [ ] Pick card 3's opening line: two versions exist, both recorded as your choice on the same day; card 3's pass shows you both _(band: you-required)_ _(effort: quick)_ → Both lines and the evidence: [card 3's essence](todo/plans/writing-guideline/card-03-essence.md)
 - [ ] Put the card checks behind one command so a writer runs one thing, not four: the prose linter, the tells check, the sentence check and the two entrance checks _(band: agent-runnable)_ _(effort: quick)_
-- [ ] Write the remaining cards, one writer per card, sections and entrance in one pass; pick up wherever the tick list stands _(band: agent-runnable)_ _(effort: deep)_ → Where it stands: [what is written](oracle/CARD-PROGRESS.md) · How to run one: [dispatching a card writer](oracle/CARD-PASS.md)
 - [ ] Put the 64 settled opening sentences into the cards themselves, one line per card, nothing else touched _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] Show the entrance on the card page under a Message at a glance header: today the page shows the reading's first paragraph instead and nothing reads the entrance line _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] Say once, in the deck's own introduction, what the paintings are: the painting is a window to the energy, it does nothing, you look _(band: you-required)_ _(effort: quick)_
