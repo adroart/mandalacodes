@@ -35,7 +35,6 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] Publish the locally verified 22 September reliability repairs after coordinator export clearance and verify deployed behavior → [execution checklist](todo/plans/audit-2026-09-22.md). Existing collector/offline/editorial plans retain their scope; no launch flags are enabled.
 - [ ] Check the Deadman and Maciocia point and page references in the 32 organ entries (body/organs in the vault) once the two PDFs are on this Mac; the Neijing and Nanjing chapter citations were checked 2026-09-16, those two books were not, because no copy could be found on disk or in the vault _(band: agent-runnable)_ _(effort: moderate)_
 - [x] Restore worker typechecking separately from the browser TypeScript project; current main and the audited repairs now share this boundary.
-- [ ] Publish the repaired browser CI job and verify its GitHub run/required-check configuration; locally 135 mobile checks and 3 production-worker checks pass, and browser failures now fail the workflow _(band: agent-runnable)_ _(effort: deep)_ → Plan: [ci-mobile-lane-red.md](todo/plans/ci-mobile-lane-red.md)
 
 ### Found in the 2026-09-08 audit and build day
 - [x] Card 57 Gene Keys nature headings verified on main (Hesitant / Impetuous in `oracle/cards/57.md`; empty-name bug closed 2026-09-22) _(band: agent-runnable)_ _(effort: quick)_
