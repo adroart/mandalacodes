@@ -45,8 +45,8 @@ describe('Oracle manuscript compiler — legacy bundle', () => {
     });
     expect(JSON.stringify(result.card)).not.toMatch(/sourcing_log|fact_check|"status"/i);
     expect(result.editorial.statuses).toEqual({
-      code: 'scaffold', iching: 'scaffold', keys: 'scaffold',
-      design: 'scaffold', body: 'scaffold', relations: 'scaffold',
+      code: 'final', iching: 'final', keys: 'final',
+      design: 'final', body: 'final', relations: 'final',
     });
   });
 
