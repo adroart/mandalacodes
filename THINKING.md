@@ -199,3 +199,56 @@ let a keynote phrase onto a third card, and do not change a `final` card's words
 Adrian's say.
 
 ---
+
+## 2026-09-26 — The home page is an invocation, and the grid stays the grid
+
+**Topic:** A design critique of the whole site set three priorities: readable text on the
+card page, consistency across pages, and a home page whose three actions (birth time, today
+and this year, Draw a card) competed at one weight. The first two shipped as mechanical
+passes. The home page took three rounds, and the corrections in them say what the page is.
+
+**Convergent answer:** The home page is an invocation with intention. Its three verses are
+the heart of the project, the first thing a stranger meets, and the reason the rest exists;
+restraint is applied around them, never to them. The hexagram grid is the deck's face: the
+64 symbols read at any size and together look ancient and connected, which the artwork
+cannot do small. What shipped (option B): the verses and the three ways in share one column,
+the deck fills the field beside it eight across, today and this year are tiles you can open
+and are lit where they sit in the deck, and birth time is a button of its own. The deeper
+point: "clean it up" means clearing the clutter around the heart, not distilling the page
+to one click.
+
+**Rejected paths, with reasons:**
+- **Artwork thumbnails on the deck grid.** "Art small doesn't look good and you can't see
+  anything. I Ching symbols read perfectly that small and then it looks like something
+  ancient and connected."
+- **Reducing the page to one action** (the first round: grid-first, threshold-then-grid,
+  today's card leading). It cut the invocation to satisfy a hierarchy rule. "You distilled
+  things down in a way where people don't understand the heart of this project."
+- **The verses below the grid or in a footer.** The heart is not a closing line.
+- **Six across in the deck.** Rows must end even: four on a phone, eight on desktop.
+- **Today, this year and birth time as quiet text lines.** "They don't really feel like
+  something I wanna click." Every way in must look like one.
+- **Regenerating the page from its design source.** The source has drifted 224 lines from
+  the live file; the layout lives in the page's own stylesheet instead.
+
+**The honest tensions left unresolved:**
+- Option C's pause, a line inviting the visitor to hold a question before drawing, was
+  proposed and not answered. The words would have to be Adrian's.
+- The column is not pinned while the deck scrolls; at desktop sizes both are about one
+  screen tall, so it was left unpinned. On taller decks or shorter screens that may matter.
+- Deck rows are taller than in the approved mock because each tile flips to show its art.
+- The sign-in button stays lowercase ("this is a gallery"), and the phone's Relations tab
+  keeps its symbol; both were left as recorded choices, not revisited.
+
+**Concrete next moves, in order:**
+1. ~~Card page text held to 12px and readable contrast~~
+2. ~~One menu label, one title pattern, no bar icons, no italics on Learn~~
+3. ~~The invocation column beside the sixty-four~~
+4. Decide whether the hold-a-question pause belongs on the page, in Adrian's words
+5. Reconcile the home page's design source with the live file before any re-import
+
+**What this entry exists to prevent:** Future Claude reading this file: do not put artwork
+on the deck grid, do not move or shrink the verses to simplify the page, and do not re-run
+the design converter on the home page. Name what a stranger should feel first, then tidy.
+
+---
