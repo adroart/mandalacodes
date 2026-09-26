@@ -796,3 +796,5 @@ Run on one card first, card 6, written new from the source files without opening
 2026-09-26, asked "Why do I need hidden notes underneath the card?", shown that the scene, mechanism and side-by-side notes go stale with every rewrite and repeat the worksheet while the entrance and sources are needed: "yes do it". Those three notes removed from all 64 cards; entrance, sources, lore and fact check kept.
 
 2026-09-26, on whether an opening phrase (keynote) may appear on two cards: "allow the phrase on two cards". Recorded in WRITERS-BRIEF, The keynotes. At the time 8 phrases were on two cards and one, "Knowing When to Stop", on three (27, 40, 56).
+
+2026-09-26, "change 56": card 56 keynote "Knowing When to Stop" (then on 27, 40 and 56) became "Letting It Settle", from its own reading ("In that gap, what you gathered settles and becomes yours").
