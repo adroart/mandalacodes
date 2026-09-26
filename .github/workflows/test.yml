@@ -10,11 +10,12 @@ on:
       - '*.md'
       - 'docs/**'
       - 'todo/**'
+  # Pull requests always start this workflow, even prose-only ones: main
+  # requires gate, test and test-mobile to report before a merge, and a
+  # workflow that never starts never reports, so the PR would wait forever.
+  # The gate below skips the two suites for prose-only PRs instead, and GitHub
+  # counts a skipped required job as passed.
   pull_request:
-    paths-ignore:
-      - '*.md'
-      - 'docs/**'
-      - 'todo/**'
 
 concurrency:
   group: test-${{ github.event.pull_request.number || github.ref }}
@@ -35,6 +36,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      pull-requests: read
     outputs:
       run: ${{ steps.decide.outputs.run }}
     steps:
@@ -47,6 +49,15 @@ jobs:
         run: |
           set -euo pipefail
           run=true; why="not a push to main"
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            why="pull request"
+            # The same prose-only rule push uses (root *.md, docs/, todo/),
+            # applied to the PR's files. A lookup failure runs everything.
+            files="$(gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename' 2>&1)" || files=""
+            if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE '^([^/]+\.md|docs/.*|todo/.*)$'; then
+              run=false; why="prose-only pull request"
+            fi
+          fi
           if [ "${{ github.event_name }}" = push ]; then
             why="direct push"
             if [ "$(git rev-list --parents -n1 HEAD | wc -w)" -ge 3 ]; then
