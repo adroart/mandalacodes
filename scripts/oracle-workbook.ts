@@ -250,6 +250,27 @@ async function renderCardPdf(page: Page, html: string, startsOnLeft: boolean): P
   return { pdf: await render(band, rlo), band };
 }
 
+const COVER_CSS = `@page { size: A4; margin: 0; }
+.cover { height: 297mm; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.cover h1 { font-size: 30pt; font-weight: normal; font-variant-caps: small-caps; letter-spacing: 0.12em; line-height: 1.2; margin: 0; }
+.cover .sub { font-size: 11pt; letter-spacing: 0.08em; color: #444; margin-top: 8mm; }
+.cover .by { font-size: 10pt; letter-spacing: 0.06em; color: #444; position: absolute; bottom: 30mm; left: 0; right: 0; }
+.back .site { font-size: 9pt; letter-spacing: 0.06em; color: #666; position: absolute; bottom: 30mm; left: 0; right: 0; text-align: center; }`;
+
+/** The cover: the book's name, one line under it, and the author at the foot. */
+function coverPage(): string {
+  return document('<div class="cover"><h1>Universal Language</h1><div class="sub">The sixty-four</div><div class="by">Adrian Rasmussen</div></div>', COVER_CSS);
+}
+
+/** The back page: only where the deck lives. */
+function backPage(): string {
+  return document('<div class="cover back"><div class="site">mandalacodes.com</div></div>', COVER_CSS);
+}
+
+function blankPage(): string {
+  return document('<div class="cover"></div>', COVER_CSS);
+}
+
 /** A page of nothing but rules, for the back of a card that ends on a right-hand page. */
 function ruledPage(): string {
   return document(`<div class="ruled-page">${'<div></div>'.repeat(30)}</div>`, RULED_PAGE_CSS);
@@ -273,6 +294,11 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
     pageIndex += indices.length + (RIGHT_HAND_STARTS ? indices.length % 2 : 0);
   }
   const ruled = await renderPdf(page, ruledPage());
+  // The whole book gets a cover and a back page (Adrian, 2026-09-26), each with a blank
+  // inside so card 1 still starts on a right-hand page. No pen box, no page number.
+  const covers = booklet === 0
+    ? { front: await renderPdf(page, coverPage()), back: await renderPdf(page, backPage()), blank: await renderPdf(page, blankPage()) }
+    : null;
 
   await page.close();
 
@@ -327,6 +353,17 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
     const name = `${f.card.name} - ${f.card.n}`;
     p.drawText(name, { x: w - outer - font.widthOfTextAtSize(name, size), y, size, font, color: grey });
   });
+
+  if (covers) {
+    const [front] = await out.copyPages(covers.front, [0]);
+    const [insideFront] = await out.copyPages(covers.blank, [0]);
+    const [insideBack] = await out.copyPages(covers.blank, [0]);
+    const [back] = await out.copyPages(covers.back, [0]);
+    out.insertPage(0, front);
+    out.insertPage(1, insideFront);
+    out.addPage(insideBack);
+    out.addPage(back);
+  }
 
   const file = path.join(OUT, booklet === 0 ? 'universal-language-workbook.pdf' : `booklet-${tag}.pdf`);
   fs.writeFileSync(file, await out.save());
