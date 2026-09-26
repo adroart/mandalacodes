@@ -164,12 +164,16 @@ function renderCard(n: number): { html: string; name: string } {
 // margin and every ruled line is a multiple of it, so the two columns'
 // lines meet across the page and across the sheet.
 const U = 11.5; // pt
-// The bottom quarter of every page is a ruled box for the pen (Adrian, 2026-09-17).
-const PEN_BAND = 66; // mm
+// The bottom of every page is a ruled box for the pen (Adrian, 2026-09-17). Its height is set
+// per card: the tallest box that still keeps the card on the pages it needs, so the writing is
+// spread evenly and every page has room for the pen, not only the last (Adrian, 2026-09-26:
+// "there's a lot of white space on the last one and not as much room on the first and second").
+const PEN_BAND = 66; // mm, the smallest box; a card's box grows from here
+const PEN_BAND_MAX = 200; // mm
 const KW_BOX = true; // the keywords on a light grey panel (Adrian, 2026-09-17); false puts them behind a rule
 let BODY_FONT = '"Iowan Old Style", Charter, Georgia, serif';
-const CSS = () => `
-@page { size: A4; margin: 15mm 12mm ${PEN_BAND + 12}mm 18mm; }
+const CSS = (band = PEN_BAND) => `
+@page { size: A4; margin: 15mm 12mm ${band + 12}mm 18mm; }
 @page :left { margin-left: 12mm; margin-right: 18mm; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -201,8 +205,8 @@ p.line { margin-top: ${U}pt; text-indent: 0; break-after: avoid; }
 `;
 const RULED_PAGE_CSS = `@page { margin-left: 12mm; margin-right: 18mm; }`; // a ruled page is always a left-hand page
 
-function document(body: string, extraCss = ''): string {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Universal Language workbook</title><style>${CSS()}${extraCss}</style></head><body>${body}</body></html>`;
+function document(body: string, extraCss = '', band = PEN_BAND): string {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Universal Language workbook</title><style>${CSS(band)}${extraCss}</style></head><body>${body}</body></html>`;
 }
 
 async function renderPdf(page: Page, html: string): Promise<PDFDocument> {
@@ -219,16 +223,31 @@ const RIGHT_HAND_STARTS = false;
 const mmToPt = (mm: number) => (mm * 72) / 25.4;
 
 /**
- * Render one card, then rule whatever is left of its last page: the most
- * rules that fit without the render growing by a page.
+ * Render one card with the tallest pen box that keeps it on the pages it
+ * needs at the smallest box, then rule whatever is left of its last page:
+ * the most rules that fit without the render growing by a page.
  */
-async function renderCardPdf(page: Page, html: string, startsOnLeft: boolean): Promise<PDFDocument> {
+async function renderCardPdf(page: Page, html: string, startsOnLeft: boolean): Promise<{ pdf: PDFDocument; band: number }> {
   // Chromium mirrors margins by page position, so a card that will sit on a
   // left-hand page renders behind a throwaway first page, dropped below.
   const lead = startsOnLeft ? '<div style="break-after: page"></div>' : '';
-  const withRules = (k: number) => document(lead + html.replace('</section>', `<div class="rules">${'<div></div>'.repeat(k)}</div></section>`));
-  void MAX_RULES;
-  return renderPdf(page, withRules(0));
+  const render = (band: number, k: number) =>
+    renderPdf(page, document(lead + html.replace('</section>', `<div class="rules">${'<div></div>'.repeat(k)}</div></section>`), '', band));
+  const target = (await render(PEN_BAND, 0)).getPageCount();
+  // The tallest box, to the millimetre, that keeps the page count.
+  let lo = PEN_BAND, hi = PEN_BAND_MAX;
+  while (hi - lo > 1) {
+    const mid = Math.floor((lo + hi) / 2);
+    if ((await render(mid, 0)).getPageCount() <= target) lo = mid; else hi = mid;
+  }
+  const band = lo;
+  // Then the most rules that still fit on the last page.
+  let rlo = 0, rhi = MAX_RULES;
+  while (rhi - rlo > 0) {
+    const mid = Math.ceil((rlo + rhi) / 2);
+    if ((await render(band, mid)).getPageCount() <= target) rlo = mid; else rhi = mid - 1;
+  }
+  return { pdf: await render(band, rlo), band };
 }
 
 /** A page of nothing but rules, for the back of a card that ends on a right-hand page. */
@@ -244,13 +263,13 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
 
   const page = await browser.newPage();
   // Each card is rendered knowing which side of the sheet it starts on.
-  const cardPdfs: { pdf: PDFDocument; indices: number[] }[] = [];
+  const cardPdfs: { pdf: PDFDocument; indices: number[]; band: number }[] = [];
   let pageIndex = 0;
   for (const r of rendered) {
     const startsOnLeft = pageIndex % 2 === 1;
-    const pdf = await renderCardPdf(page, r.html, startsOnLeft);
+    const { pdf, band } = await renderCardPdf(page, r.html, startsOnLeft);
     const indices = pdf.getPageIndices().slice(startsOnLeft ? 1 : 0);
-    cardPdfs.push({ pdf, indices });
+    cardPdfs.push({ pdf, indices, band });
     pageIndex += indices.length + (RIGHT_HAND_STARTS ? indices.length % 2 : 0);
   }
   const ruled = await renderPdf(page, ruledPage());
@@ -258,7 +277,7 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
   await page.close();
 
   const out = await PDFDocument.create();
-  const foot: { card?: { n: number; name: string }; first?: boolean }[] = [];
+  const foot: { card?: { n: number; name: string }; first?: boolean; band?: number }[] = [];
   const addRuled = async () => {
     const [rp] = await out.copyPages(ruled, [0]);
     out.addPage(rp);
@@ -269,7 +288,7 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
     const pages = await out.copyPages(cardPdfs[i].pdf, cardPdfs[i].indices);
     pages.forEach((pg, j) => {
       out.addPage(pg);
-      foot.push({ card: { n: rendered[i].n, name: rendered[i].name }, first: j === 0 });
+      foot.push({ card: { n: rendered[i].n, name: rendered[i].name }, first: j === 0, band: cardPdfs[i].band });
     });
     if (RIGHT_HAND_STARTS && pages.length % 2 === 1) {
       await addRuled();
@@ -295,7 +314,7 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
     const left = recto ? inner : outer;
     const boxW = w - inner - outer;
     const boxY = mmToPt(12);
-    const boxH = mmToPt(PEN_BAND - 4);
+    const boxH = mmToPt((foot[i]?.band ?? PEN_BAND) - 4);
     for (let ry = boxY + mmToPt(8); ry < boxY + boxH - mmToPt(2); ry += mmToPt(8)) {
       p.drawLine({ start: { x: left, y: ry }, end: { x: left + boxW, y: ry }, thickness: 0.3, color: rgb(0.82, 0.82, 0.82) });
     }
