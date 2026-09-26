@@ -93,3 +93,58 @@ translator as an authority. All five were tried here and rejected with reasons. 
 writers' brief before writing a word of card prose.
 
 ---
+
+## 2026-09-24 — The deck written end to end, and what the reading is for
+
+**Topic:** Move 5 of the 2026-09-22 entry, carried out. Cards 63 and 64 were rebuilt by hand
+under the six-step pass; the method was then run on all 64 by one headless writer per card,
+seven at a time, and every card went live on 2026-09-24 with status still `scaffold`. On the
+way Adrian corrected four things that change how any card is written.
+
+**Convergent answer:**
+- **The card's name is Adrian's artwork title, never the hexagram's.** The I Ching feeds a
+  card like the Gene Keys, Human Design and the body; it never frames it. Adrian: "The name of
+  the card is what I call the universal language. The title of the artwork. This is my
+  system." The title goes in only where it fits.
+- **The reading is the gift lived, not the problem.** Order: the gift alive in you; the hard
+  stretch, briefly; how to step into the gift, ending on it. Written fresh from the source
+  files, never by reworking earlier wording. Card 6 is the model.
+- **Every sentence on the card is read cold**, not only the reading
+  (`scripts/cold-read.mjs`). The mechanical sentence check cannot see a paragraph that says
+  nothing; the cold read caught card 1's dragon-and-character Combination at once.
+- **A change to how cards are written runs on one card first.** "We just run one. If it's good
+  we run it on the rest."
+
+**Rejected paths, with reasons:**
+- **Opening on the hexagram's name** ("Small taming is a time when"). "Specific to I Ching and
+  it's not relatable at all." CARD-PASS had said "in the hexagram's own plain words", which
+  worked by accident on 63 and 64, whose names are everyday English.
+- **Readings led by a lack or conflict** ("already on guard", "has not arrived yet"): six of
+  eight openings did it once the rule said "a situation from your day". It breaks the first
+  directive, embodied.
+- **Fixing a reading by reworking its sentences.** "Don't just try to rework the words that
+  are already in the three paragraphs. What about the source files."
+- **Running a change on every card at once.** "If they're off we have to keep on running all
+  of them."
+- **Writing the whole card from a hard artwork title.** "Otherwise we're gonna get some weird
+  results."
+
+**The honest tensions left unresolved:**
+- All 64 are live and none carries Adrian's `final`; he chose to read them on the live site.
+- The cold read over-flags a little and a second run flags different lines; it is a guide
+  the writer triages, not a verdict.
+- The tools that wrote the deck lived in a temp folder and were lost once; they are now in
+  `scripts/cold-read.mjs`, `scripts/card-queue.mjs` and
+  `todo/plans/writing-guideline/card-writer-brief.md`.
+
+**Concrete next moves, in order** (moves 1 to 5 of the 2026-09-22 entry are done):
+1. Adrian reads the live cards and marks the ones that hold `final`
+2. Decide whether an opening phrase may appear on two cards
+3. Check each card's hidden notes sheet against its page
+4. Re-render the printed book and read it as a book, not as cards
+
+**What this entry exists to prevent:** do not open a reading on a hexagram name, do not lead
+a reading with a lack, do not rewrite a reading from its own old sentences, and do not run a
+writing change on all 64 before Adrian has read one.
+
+---
