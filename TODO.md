@@ -32,7 +32,6 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
 
 ## Soon
-- [ ] Bring the home page's Claude Design source back in line with the live page, so a re-import stops being a way to undo it (they were 224 lines apart on 2026-09-26) _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] Publish the locally verified 22 September reliability repairs after coordinator export clearance and verify deployed behavior → [execution checklist](todo/plans/audit-2026-09-22.md). Existing collector/offline/editorial plans retain their scope; no launch flags are enabled.
 - [ ] Check the Deadman and Maciocia point and page references in the 32 organ entries (body/organs in the vault) once the two PDFs are on this Mac; the Neijing and Nanjing chapter citations were checked 2026-09-16, those two books were not, because no copy could be found on disk or in the vault _(band: agent-runnable)_ _(effort: moderate)_
 - [x] Restore worker typechecking separately from the browser TypeScript project; current main and the audited repairs now share this boundary.

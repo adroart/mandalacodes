@@ -1,15 +1,16 @@
 {
   "placeholders": [
-    "c.aria",
+    "a.aria",
+    "c.ariaArt",
+    "c.ariaTile",
     "c.art",
-    "c.lines",
+    "c.cardNum",
     "c.name",
-    "f.aria",
-    "f.lines",
-    "heroLines",
-    "query",
-    "readingArtBig",
-    "readingName",
+    "c.yoursAttr",
+    "e.aria",
+    "invite.aria",
+    "invite.doneAttr",
+    "invite.expandedAttr",
     "t.cx",
     "t.cy",
     "t.op",
@@ -19,37 +20,37 @@
     "theme"
   ],
   "handlers": [
+    "a.onClick",
     "c.onBack",
     "c.onRead",
     "c.onTile",
-    "closeReading",
     "drawRandom",
-    "e.onClick",
-    "enterReading",
-    "f.onClick",
-    "onQuery",
-    "openGrid",
-    "openSystems",
-    "stop",
-    "t.onClick",
-    "toggleTheme"
+    "e.onOpen",
+    "invite.onClick",
+    "openSystems"
   ],
   "refs": [],
   "loops": [
-    "elChips as e",
-    "feats as f",
+    "actions as a",
+    "energy as e",
     "gridCards as c",
-    "ringTicks as t",
-    "tabs as t"
+    "ringTicks as t"
   ],
   "conditionals": [
-    "c.closed",
+    "c.codeLabel",
     "c.flipped",
+    "invite.done",
+    "invite.expanded",
+    "inviteBuiltIn",
+    "inviteSlot",
     "isA",
     "isArtwork",
     "isB",
     "isC",
-    "isIChing",
-    "reading"
-  ]
+    "isIChing"
+  ],
+  "componentSlots": [
+    "Hexagram"
+  ],
+  "imageSlots": []
 }

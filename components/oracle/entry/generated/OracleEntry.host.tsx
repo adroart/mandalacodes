@@ -189,7 +189,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     // expands an inline dropdown (the app's birth-date/time/place form, passed in
     // as props.inviteForm). Once saved (hasCodes) it collapses to a quiet
     // confirmation that points to the Hologenetic profile.
-    const invite = this.props.hasCodes
+    const inviteBase = this.props.hasCodes
       ? {
           done: true,
           expanded: false,
@@ -208,6 +208,16 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
           aria: 'Enter your birth time to see which cards are most relevant to you',
           onClick: () => this.setState((s: any) => ({ inviteExpanded: !s.inviteExpanded })),
         };
+    // The design file's {{ }} placeholders take plain paths, never expressions,
+    // so every state-dependent attribute is resolved here and named in the file.
+    const invite = {
+      ...inviteBase,
+      wrapBg: inviteBase.done ? 'var(--glow,rgba(196,170,124,.16))' : 'var(--bg2,#fff)',
+      wrapBorder: inviteBase.done ? '1px solid var(--accent,#8a744e)' : '1px solid var(--line2,#d2c7b4)',
+      overflow: inviteBase.expanded ? 'visible' : 'hidden',
+      expandedAttr: inviteBase.expanded ? 'true' : 'false',
+      doneAttr: inviteBase.done ? '1' : undefined,
+    };
 
     // tabs
     const tabDefs = [
@@ -259,6 +269,9 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
         art: m ? m.cardImg(c, 320) : '',
         grad: 'linear-gradient(150deg,' + tint[0] + ',' + tint[1] + ')',
         yours,
+        // Resolved here for the same reason as the invitation: the deck's CSS
+        // keys on data-oe-yours="1", and the file cannot write a ternary.
+        yoursAttr: yours ? '1' : undefined,
         codeLabel,
         flipped,
         closed: !flipped,
@@ -267,6 +280,8 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
         upperTrigram: c.un || '',
         lowerTrigram: c.ln || '',
         aria: 'Card ' + c.n + ': ' + c.name,
+        ariaTile: 'Card ' + c.n + ': ' + c.name + (yours ? '. Your ' + codeLabel : ''),
+        ariaArt: 'Card ' + c.n + ': ' + c.name + (yours ? '. One of your codes.' : ''),
         onTile: flipped ? () => this.openReading(c) : () => this.flip(c.n),
         onBack: () => this.flipBack(c.n),
         onRead: () => this.openReading(c),
@@ -292,6 +307,8 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
       // keep-this), render it INSTEAD of the built-in invite. Keeps all the
       // account/sign-in logic in the page where the hooks live.
       inviteSlot: this.props.inviteSlot ?? null,
+      // The built-in invitation renders only when no slot is supplied.
+      inviteBuiltIn: !this.props.inviteSlot,
       // Right-hand door tiles, stacked. "Learn" opens the Systems overlay
       // (what the 64 are, the four systems they speak). "Your codes" switches
       // on whether a birth moment has been entered.
