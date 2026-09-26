@@ -10,7 +10,11 @@ describe('GitHub Actions test workflow policy', () => {
 
     const docsOnly = ['*.md', 'docs/**', 'todo/**'];
     expect(workflow.on.push).toEqual({ branches: ['main'], 'paths-ignore': docsOnly });
-    expect(workflow.on.pull_request).toEqual({ 'paths-ignore': docsOnly });
+    // Pull requests always start the workflow: main requires gate, test and
+    // test-mobile, and a workflow that never starts never reports, so a
+    // prose-only PR would wait forever. The gate skips the suites instead.
+    expect(workflow.on.pull_request ?? {}).not.toHaveProperty('paths-ignore');
+    expect(workflow.on.pull_request ?? {}).not.toHaveProperty('paths');
     expect(workflow.concurrency).toEqual({
       group: 'test-${{ github.event.pull_request.number || github.ref }}',
       'cancel-in-progress': true,
@@ -31,6 +35,11 @@ describe('GitHub Actions test workflow policy', () => {
     const gateRun = workflow.jobs.gate.steps.map((s: { run?: string }) => s.run ?? '').join('\n');
     expect(gateRun).toContain("git rev-parse 'HEAD^{tree}'");
     expect(gateRun).toContain('gh run list --workflow=');
+    // Prose-only pull requests skip both suites through the same gate, by the
+    // same prose rule pushes use, so the required checks still report.
+    expect(gateRun).toContain('pulls/${{ github.event.pull_request.number }}/files');
+    expect(gateRun).toContain("^([^/]+\\.md|docs/.*|todo/.*)$");
+    expect(workflow.jobs.gate.permissions['pull-requests']).toBe('read');
     for (const name of Object.keys(workflow.jobs).filter((n) => n !== 'gate')) {
       expect(workflow.jobs[name].needs, name).toBe('gate');
       expect(workflow.jobs[name].if, name).toContain("needs.gate.outputs.run == 'true'");
