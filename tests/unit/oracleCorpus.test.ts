@@ -124,8 +124,8 @@ describe('Markdown-only Oracle corpus', () => {
     const file = join(cardsDir, '23.md');
     const raw = await readFile(file, 'utf8');
     await writeFile(file, raw.replace(
-      '  relations: scaffold\n',
-      '  relations: scaffold\n  editorial_note: scaffold\n',
+      '  relations: final\n',
+      '  relations: final\n  editorial_note: scaffold\n',
     ), 'utf8');
 
     await expect(loadCorpusFromDirectory(cardsDir, new Map())).rejects.toThrow(
@@ -137,7 +137,7 @@ describe('Markdown-only Oracle corpus', () => {
     const cardsDir = await copiedCards();
     const file = join(cardsDir, '24.md');
     const raw = await readFile(file, 'utf8');
-    await writeFile(file, raw.replace('  relations: scaffold\n', ''), 'utf8');
+    await writeFile(file, raw.replace('  relations: final\n', ''), 'utf8');
 
     await expect(loadCorpusFromDirectory(cardsDir, new Map())).rejects.toThrow(
       /24\.md.*status\.relations.*missing/i,
@@ -148,7 +148,7 @@ describe('Markdown-only Oracle corpus', () => {
     const cardsDir = await copiedCards();
     const file = join(cardsDir, '25.md');
     const raw = await readFile(file, 'utf8');
-    await writeFile(file, raw.replace('  relations: scaffold\n', '  relations: done\n'), 'utf8');
+    await writeFile(file, raw.replace('  relations: final\n', '  relations: done\n'), 'utf8');
 
     await expect(loadCorpusFromDirectory(cardsDir, new Map())).rejects.toThrow(
       /25\.md.*status\.relations.*done.*scaffold.*in-progress.*final/i,

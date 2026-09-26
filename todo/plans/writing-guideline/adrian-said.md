@@ -790,3 +790,5 @@ Run on one card first, card 6, written new from the source files without opening
 2026-09-24, on card 3, shown both old entrances (A: "A beginning is real long before it is settled..." and B: "A beginning is alive in you long before it has a shape..."): "Can you rewrite it using the same that you did all the other ones like? Cause I don't think this would really pass. The beginning is real long before it is settled." Both old entrances are released. Card 3's entrance is written fresh and every section is rebuilt under the six steps, like the others, with every status back to scaffold.
 
 2026-09-26: shown the plan to put the 2026-09-24 decisions into the method (the reading order into WRITERS-BRIEF, the whole-card cold read into CARD-PASS step 6, the writing tools into the repo, a THINKING entry), Adrian said "o" (go).
+
+2026-09-26, after the printed book of all 64 was built: "mark them all final". Every section of every card set to final.
