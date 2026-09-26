@@ -381,7 +381,7 @@ const chartRowStyles = `
      surfaces' paper ones, so they are traded here for the reading's, chooser
      included, since this one sits on the reading. */
   .ul-chart-row .stc__btn {
-    font-size: 10px;
+    font-size: 12px;
     padding: 6px 12px;
     /* --l-3 is the palette's faintest step. On Day Book it lands at 1.9 to 1
        against the reader's own paper, which is unreadable at this size, so the

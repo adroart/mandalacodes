@@ -161,7 +161,7 @@ const stcStyles = `
         .stc { position: relative; display: inline-block; }
         .stc__btn {
           font-family: var(--font-ui);
-          font-size: 10px;
+          font-size: 12px;
           letter-spacing: 0.22em;
           text-transform: uppercase;
           color: var(--color-bronze-600);
@@ -225,7 +225,7 @@ const stcStyles = `
         }
         .stc__create-btn {
           font-family: var(--font-ui);
-          font-size: 10px;
+          font-size: 12px;
           letter-spacing: 0.18em;
           text-transform: uppercase;
           color: var(--color-paper-50);
@@ -275,7 +275,7 @@ const stcStyles = `
         .stc--panel .stc__btn-sub {
           display: block;
           font-family: var(--font-ui);
-          font-size: 10px;
+          font-size: 12px;
           letter-spacing: 0.2em;
           text-transform: uppercase;
           color: var(--l-3);

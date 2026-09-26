@@ -178,11 +178,11 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
       pieceHref={pieceHref}
       familyHref="/family"
       tabs={[
-        { id: 'family', label: 'Family', color: '#80735f', href: '/family' },
-        { id: 'forme', label: 'For Me', color: '#80735f', href: '/profile' },
+        { id: 'family', label: 'Family', color: '#8d7f69', href: '/family' },
+        { id: 'forme', label: 'For Me', color: '#8d7f69', href: '/profile' },
         { id: 'deck', label: 'The 64', color: '#c6a667', href: '/universal-language' },
-        { id: 'piece', label: 'Piece', color: '#80735f', href: pieceHref },
-        { id: 'share', label: 'Share', color: '#80735f', href: '#share' },
+        { id: 'piece', label: 'Piece', color: '#8d7f69', href: pieceHref },
+        { id: 'share', label: 'Share', color: '#8d7f69', href: '#share' },
       ]}
       reading={reading}
       artwork={artwork}
