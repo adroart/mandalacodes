@@ -167,7 +167,6 @@ Historical baseline on b9da484, before these repairs: 41 failed, 80 passed and 1
 
 - [ ] Carry the rewrite through the other 56 cards, six at a time, each card written and checked by its own writer under the writers' brief _(band: agent-runnable)_ _(effort: deep)_ → Rule: [the writers' brief](oracle/WRITERS-BRIEF.md)
 - [ ] Write the seven opening phrases for the 56 cards not yet rewritten, to the rule Adrian set on 2026-09-22: three words as the target, each understandable on its own, at least four of the seven positive _(band: agent-runnable)_ _(effort: moderate)_
-- [ ] Decide whether an opening phrase may appear on two cards: three of card 27's seven already appear on cards 35, 40, 44 and 56, and if the answer is no, the later card gives way _(band: you-required)_ _(effort: quick)_
 - [ ] Correct the hidden notes sheet on every rewritten card: it still describes paragraphs the rewrite removed, so the record misleads the next writer _(band: agent-runnable)_ _(effort: moderate)_
 - [ ] Find why pushes to a pull request branch stopped starting a test run on 2026-09-22 while another branch's runs went through, since the last four card commits merged with no run of their own _(band: agent-runnable)_ _(effort: quick)_
 - [ ] Pick card 3's opening line: two versions exist, both recorded as your choice on the same day; card 3's pass shows you both _(band: you-required)_ _(effort: quick)_ → Both lines and the evidence: [card 3's essence](todo/plans/writing-guideline/card-03-essence.md)

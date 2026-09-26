@@ -149,6 +149,8 @@ Each phrase is instantly understandable standing on its own, with nothing to wor
 
 At least four of the seven are the energy embodied and positive, the thing lived well. The rest may name a challenge inside the energy, said plainly, never as a fragment or a warning. The seven together show the different characteristics inside one energy.
 
+A phrase may appear on two cards. Adrian, 2026-09-26: "allow the phrase on two cards." Not on three: a phrase already on two cards is taken, and a third card finds its own words.
+
 ## The order and the sheet
 
 Write ICHING, KEYS, DESIGN, BODY, RELATIONS, then CODE from every source, then the keynotes, then the entrance last of all. The keynotes, five to seven on the `_Keywords:_` line, each name a state of a life that a stranger could say yes to with nothing else on the page.
