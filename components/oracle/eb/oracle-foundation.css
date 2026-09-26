@@ -18,9 +18,9 @@ html.oracle-card-page, html.oracle-card-page body { overflow-x: clip; }
   --oracle-footer:#f0ece5;
 }
 .eb-reading[data-palette="nightfall"], .eb-entrance[data-palette="nightfall"] {
-  --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#80735f;
+  --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#8d7f69;
   --l-rule:rgba(168,135,77,.18); --l-soft:#1b160f;
-  --d-bg:#100d09; --d-1:#f3ead9; --d-2:#cdc0a8; --d-3:#80735f;
+  --d-bg:#100d09; --d-1:#f3ead9; --d-2:#cdc0a8; --d-3:#8d7f69;
   --d-rule:rgba(168,135,77,.2); --d-soft:#17120c;
   --accent:#a8874d; --accent-d:#c6a667;
   --oracle-section-main:#14100b;
@@ -176,7 +176,7 @@ html.oracle-entrance-active [data-oracle-grain="reading"] { z-index:1001; }
   .eb-reading .ul-gk-spectrum-nav { margin-inline: -8px; }
   .eb-reading .ul-gk-spectrum-nav > button { padding-inline: 4px !important; }
   .eb-reading .ul-gk-spectrum-nav > button > p:first-child {
-    font-size: 8px !important;
+    font-size: 12px !important;
     letter-spacing: 0.14em !important;
   }
   .eb-reading .ul-gk-spectrum-nav > button > p:last-child {

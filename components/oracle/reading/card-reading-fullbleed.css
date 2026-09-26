@@ -26,7 +26,7 @@
 }
 
 html.dark .card-reading {
-  --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#80735f;
+  --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#8d7f69;
   --l-rule:rgba(168,135,77,.18); --l-soft:#191510;
   --accent:#a8874d; --accent-d:#c6a667;
 }
@@ -804,4 +804,26 @@ html:not(.dark) .card-reading [data-nav][aria-current="true"] {
 html:not(.dark) .card-reading :is(a,button):focus-visible {
   outline:2px solid var(--accent);
   outline-offset:3px;
+}
+
+/* Legibility floor for the card page (2026-09-26).
+   The generated reading panels carry their sizes and colours as inline
+   styles from the Claude Design sources, so a re-import would undo any edit
+   made there. The floor lives here instead, where it survives re-imports.
+   Measured on the live card before this: 69 inline labels at 9 to 11px, and
+   the quiet ink (#80735f) at 3.9 to 4.2:1 on the dark panels. Text is held at
+   12px or larger; the quiet ink follows the theme's --l-3, which passes
+   4.5:1 in both palettes. The six-tab row on phones keeps its own tuned size:
+   its fit is calculated for 11px, and at 12px it would scroll. */
+.card-reading :is(
+  [style*="font-size: 8px"], [style*="font-size: 8.5px"],
+  [style*="font-size: 9px"], [style*="font-size: 9.5px"],
+  [style*="font-size: 10px"], [style*="font-size: 10.5px"],
+  [style*="font-size: 11px"], [style*="font-size: 11.5px"]
+):not([data-nav]) {
+  font-size: 12px !important;
+}
+
+.card-reading [style*="color: rgb(128, 115, 95)"] {
+  color: var(--l-3) !important;
 }
