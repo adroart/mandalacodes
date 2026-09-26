@@ -97,7 +97,7 @@ const UniversalLanguageCard: React.FC = () => {
     return () => controller.abort();
   }, [cardNum]);
   useMetaTags({
-    title: card ? `${card.card_name} · Code ${cardNum} · Universal Language Oracle` : undefined,
+    title: card ? `${card.card_name} · Code ${cardNum} · Universal Language` : undefined,
     description: card ? `${card.iching.hexagram_name} · ${card.gene_keys.shadow} / ${card.gene_keys.gift} / ${card.gene_keys.siddhi}. Universal Language Oracle by Adrian Rasmussen.` : undefined,
     image: card ? `https://mandalacodes.com${img(ulCardPublicId(cardNum) ?? 'adrian-website/placeholders/oracle-card-3', { w: 1200, h: 630 })}` : undefined,
   });
