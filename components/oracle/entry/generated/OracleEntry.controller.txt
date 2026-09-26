@@ -93,6 +93,7 @@ class Component extends DCLogic {
         lines: lines(c),
         art: m ? m.cardImg(c, 320) : '',
         grad: 'linear-gradient(150deg,' + tint[0] + ',' + tint[1] + ')',
+        yours: false,
         flipped, closed: !flipped,
         flipTransform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         cardNum: String(c.n),
@@ -106,9 +107,8 @@ class Component extends DCLogic {
     });
 
     const filtering = q || this.state.elFilter !== 'All';
-    const instruction = filtering
-      ? (filtered.length + ' of 64 shown')
-      : (this.state.view === 'iching' ? 'Sixty-four hexagrams · tap one to reveal it' : 'Sixty-four paintings · tap one to enter');
+    // Idle instruction line removed by request; only the filter-count feedback remains.
+    const instruction = filtering ? (filtered.length + ' of 64 shown') : '';
 
     // reading vm
     let reading = null;
@@ -124,6 +124,8 @@ class Component extends DCLogic {
       theme,
       isA: inv === 'illuminated', isB: inv === 'altar', isC: inv === 'constellation',
       heroLines, ringTicks, heroDots, navLinks, feats, tabs, elChips, gridCards,
+      systemsTile: { eyebrow: 'The sixty-four', body: 'What the cards are, and the four systems they speak' },
+      codesTile: { done: false, eyebrow: 'Your codes', body: 'Add your birth moment and your cards light up in every reading' },
       isIChing: this.state.view === 'iching', isArtwork: this.state.view === 'artwork',
       query: this.state.query, instruction,
       drawHint: filtering ? (filtered.length + ' of 64 shown') : 'or choose one below',

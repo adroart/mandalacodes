@@ -126,14 +126,19 @@
         <!-- The invitation: centered birth-time button, expands an inline dropdown
              (the app's date/time/place form) in React; collapses to a confirmation
              once a birth moment is saved. Top of the rail, the first thing to do. -->
-        <sc-if test="{{ invite }}">
-        <div data-oe="invitewrap" style="position:relative;display:flex;flex-direction:column;border:1px solid var(--line2,#d2c7b4);border-radius:12px;overflow:hidden;background:var(--bg2,#fff)">
-          <button type="button" data-oe="invite" onClick="{{ invite.onClick }}" aria-label="{{ invite.aria }}" data-oe-invite-done="{{ invite.done }}" style="display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;width:100%;cursor:pointer;padding:14px 16px;background:transparent;border:none">
+        <!-- The page can supply a rich rail-top in the slot (switcher, welcome,
+             keep-this); otherwise the built-in invitation renders. -->
+        <sc-if value="{{ inviteSlot }}">{{ inviteSlot }}</sc-if>
+        <sc-if value="{{ inviteBuiltIn }}">
+        <div data-oe="invitewrap" style="position:relative;display:flex;flex-direction:column;gap:0;background:{{ invite.wrapBg }};border:{{ invite.wrapBorder }};border-radius:12px;overflow:{{ invite.overflow }}">
+          <button type="button" data-oe="invite" onClick="{{ invite.onClick }}" aria-label="{{ invite.aria }}" aria-expanded="{{ invite.expandedAttr }}" data-oe-invite-done="{{ invite.doneAttr }}" style="display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;width:100%;cursor:pointer;padding:14px 16px;background:transparent;border:none;transition:background .25s ease">
             <span style="display:flex;flex-direction:column;gap:4px;min-width:0;align-items:center">
               <span style="font-family: var(--font-display);font-size:18px;font-weight:500;line-height:1.1;color:var(--ink,#262321)">{{ invite.title }}</span>
               <span style="font-family: var(--font-reading);font-size:12px;line-height:1.45;color:var(--ink3,#8a7a5e)">{{ invite.sub }}</span>
             </span>
+            <sc-if value="{{ invite.done }}"><span aria-hidden="true" style="flex-shrink:0;font-family: var(--font-ui);font-size:16px;color:var(--accent,#8a744e)">✓</span></sc-if>
           </button>
+          <sc-if value="{{ invite.expanded }}"><div data-oe="invitedrop" style="padding:4px 16px 18px;border-top:1px solid var(--line2,#d2c7b4)">{{ invite.form }}</div></sc-if>
         </div>
         </sc-if>
         <!-- The energy band: today + this year, full rail width -->
@@ -168,9 +173,9 @@
       <sc-if value="{{ isIChing }}" hint-placeholder-val="{{ true }}">
       <div data-oe="ichgrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(22px,2.4vw,30px) clamp(8px,1.4vw,14px);padding:32px 0 8px">
         <sc-for list="{{ gridCards }}" as="c" hint-placeholder-count="24">
-          <div data-oe-yours="{{ c.yours }}" data-oe-num="{{ c.cardNum }}" style="position:relative;display:flex;flex-direction:column">
-            <button type="button" onClick="{{ c.onTile }}" aria-label="{{ c.aria }}" style="all:unset;cursor:pointer;display:block;perspective:760px">
-              <sc-if test="{{ c.codeLabel }}">
+          <div data-oe-yours="{{ c.yoursAttr }}" data-oe-num="{{ c.cardNum }}" style="position:relative;display:flex;flex-direction:column">
+            <button type="button" onClick="{{ c.onTile }}" aria-label="{{ c.ariaTile }}" style="all:unset;cursor:pointer;display:block;perspective:760px">
+              <sc-if value="{{ c.codeLabel }}">
               <span data-oe="codelabel" style="position:absolute;left:-6px;right:-6px;bottom:calc(79% + 5px);text-align:center;font-family: var(--font-ui);font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--codeLabel,#c9a45f);line-height:1.15;pointer-events:none">{{ c.codeLabel }}</span>
               </sc-if>
               <span style="position:relative;display:block;width:100%;aspect-ratio:1/1;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.85,.3,1),filter .3s ease;transform:{{ c.flipTransform }}">
@@ -203,7 +208,7 @@
       <sc-if value="{{ isArtwork }}" hint-placeholder-val="{{ true }}">
       <div data-oe="artgrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:18px 0 8px">
         <sc-for list="{{ gridCards }}" as="c" hint-placeholder-count="24">
-          <button type="button" onClick="{{ c.onRead }}" aria-label="{{ c.aria }}" data-oe-yours="{{ c.yours }}" style="all:unset;cursor:pointer;position:relative;display:block;width:100%;aspect-ratio:1/1;overflow:hidden">
+          <button type="button" onClick="{{ c.onRead }}" aria-label="{{ c.ariaArt }}" data-oe-yours="{{ c.yoursAttr }}" style="all:unset;cursor:pointer;position:relative;display:block;width:100%;aspect-ratio:1/1;overflow:hidden">
             <span style="position:absolute;inset:0;background:{{ c.grad }}"></span>
             <img src="{{ c.art }}" alt="{{ c.name }}" loading="lazy" decoding="async" crossorigin="anonymous" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.08) brightness(1.03);transition:transform .5s ease"></img>
             <span style="position:absolute;left:0;right:0;bottom:0;top:50%;background:linear-gradient(transparent,rgba(20,16,12,.78));opacity:0;transition:opacity .3s ease" class="oe-art-scrim"></span>
