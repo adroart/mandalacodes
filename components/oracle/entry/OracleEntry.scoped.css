@@ -187,3 +187,93 @@
     transform: none !important;
   }
 }
+
+/* ── The invocation column (2026-09-26, option B) ────────────────────────────
+   Adrian: the home page is an invocation with intention; the verses are its
+   heart. The verses and the three ways in (Draw a card, today and this year,
+   birth time) share one column; the sixty-four fill the field beside it.
+   Done here rather than in the generated markup, which a re-import rewrites:
+   the root becomes a two-column grid, the inner wrapper steps aside with
+   display:contents, and the rail and the deck take their own columns. */
+
+/* The rail, in its new order: the act first, then the day, then the invitation. */
+.oe-root [data-oe="railrow"]{ gap:12px !important }
+.oe-root [data-oe="actionrow"]{ order:1 }
+.oe-root [data-oe="energyband"]{ order:2 }
+.oe-root [data-oe="railinvite"]{ order:3 }
+
+.oe-root [data-oe="actionrow"] > button{
+  flex:1 1 auto; font-size:13px !important; letter-spacing:.2em !important;
+  padding:16px 28px !important; border-radius:3px !important;
+}
+
+/* Today and this year: tiles you can open. Stacked, each with its hexagram,
+   name and an arrow, raised a shade from the column. */
+.oe-root [data-oe="energyband"]{ flex-direction:column; gap:10px !important }
+.oe-root [data-oe="energyband"] > button{
+  flex:0 0 auto !important; gap:16px !important; padding:13px 18px !important;
+  border-radius:3px !important; border-color:var(--line2,#d2c7b4) !important;
+}
+.oe-root [data-oe="energyband"] > button::after{
+  content:'→'; margin-left:auto; color:var(--accent,#8a744e); font-size:16px;
+}
+.oe-root [data-oe="energyband"] > button > span:first-child{ width:30px !important; height:34px !important }
+.oe-root [data-oe="energyband"] span[style*="8.5px"]{ font-size:12px !important }
+.oe-root [data-oe="energyband"] span[style*="15px"]{ font-size:19px !important; line-height:1.15 !important }
+
+/* Birth time: an outlined button with its line beneath. */
+.oe-root [data-oe="birthbtn"]{
+  display:block; width:100%; padding:15px 16px; cursor:pointer;
+  background:transparent; border:1px solid var(--accent,#8a744e); border-radius:3px;
+  font-family:var(--font-ui); font-size:13px; font-weight:700; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--accent,#8a744e);
+  transition:background .25s ease;
+}
+.oe-root [data-oe="birthbtn"]:hover{ background:var(--glow,rgba(196,170,124,.16)) }
+.oe-root [data-oe="birthsub"]{
+  margin:10px 0 0; text-align:center; font-family:var(--font-reading);
+  font-size:13px; line-height:1.5; color:var(--ink3,#8a7a5e);
+}
+
+/* Two columns once there is room for the column and eight across. */
+@media (min-width:1100px){
+  .oe-root > [data-theme]{
+    display:grid; grid-template-columns:minmax(400px,470px) minmax(0,1fr);
+    grid-template-rows:auto 1fr auto;
+  }
+  .oe-root > [data-theme] > header{
+    grid-column:1; grid-row:1; background:var(--bg2,#1d1813) !important;
+    padding:clamp(48px,6vh,72px) 48px 30px !important;
+  }
+  .oe-root > [data-theme] > header > div{ text-align:left !important; margin:0 !important; max-width:none !important }
+  .oe-root > [data-theme] > header > div > div{ margin:0 !important; max-width:none !important; gap:16px !important }
+  .oe-root > [data-theme] > header h1{ font-size:48px !important }
+  .oe-root > [data-theme] > header h1 + p{ margin-bottom:30px !important }
+  .oe-root > [data-theme] > header > div > div > p{ font-size:20px !important }
+  .oe-root > [data-theme] > div:has(> [data-oe="rail"]){ display:contents !important }
+  .oe-root [data-oe="rail"]{
+    grid-column:1; grid-row:2; align-self:stretch;
+    background:var(--bg2,#1d1813); padding:0 48px 56px;
+  }
+  .oe-root [data-oe="railrow"]{ max-width:none !important; margin:0 !important }
+  .oe-root > [data-theme] > div > main{
+    grid-column:2; grid-row:1 / span 2; padding:40px 48px 0;
+    border-left:1px solid var(--line,#e3ddd1);
+  }
+  .oe-root > [data-theme] > div > main > p{ margin-inline:auto !important; text-align:center }
+  .oe-root > [data-theme] > footer{ grid-column:1 / -1; grid-row:3; margin-top:0 !important }
+  .oe-root [data-oe="ichgrid"]{ padding-top:8px !important }
+}
+
+/* Today and this year, lit in the deck (rules written by OracleEntryPage). */
+.oe-root [data-theme="dark"]{ --dayInk:#e2c07f; --yearInk:#c2a26a }
+.oe-root [data-theme="light"]{ --dayInk:#8a5f1c; --yearInk:#7a5a22 }
+.oe-root [data-oe="birthsub"]{ text-wrap:balance }
+
+/* The deck at the width of its field: glyphs sized to read as one ancient
+   set, not as tiles. */
+@media (min-width:1100px){
+  .oe-root [data-oe="ichgrid"]{ row-gap:10px !important }
+  .oe-root [data-oe="ichgrid"] button > span > span:first-child > span:first-child{ width:40% !important }
+  .oe-root [data-oe="cardnum"]{ font-size:14px !important }
+}
