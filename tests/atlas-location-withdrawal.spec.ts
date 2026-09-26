@@ -3,6 +3,13 @@ import { test, expect } from './fixtures';
 // Preserve action/teardown evidence if this complete withdrawal flow times out.
 test.use({ trace: 'retain-on-failure' });
 
+// The flow is two full atlas loads, ten assertions and two full-page captures
+// of a live WebGL globe. Measured from the CI trace of a red run (2026-09-26):
+// every assertion passed, each took about a second on the runner, and each
+// capture about five, so the flow ends near 30s and the default budget cut
+// off the last capture in 2 of 6 runs. The budget fits the work, with margin.
+test.setTimeout(60_000);
+
 const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:2222';
 
 async function releaseOverture(page: import('@playwright/test').Page) {
