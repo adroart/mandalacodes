@@ -40,7 +40,7 @@ test(`card ${CARD} serves a prerendered head and still hydrates`, async ({ page 
   // as it always has). The raw response is what a crawler that doesn't run
   // JS actually sees, which is the whole point of this page existing.
   const rawHtml = (await resp?.body())?.toString('utf8') ?? '';
-  expect(rawHtml).toContain(`<title>${CARD_NAME} · Code ${CARD} · Universal Language Oracle</title>`);
+  expect(rawHtml).toContain(`<title>${CARD_NAME} · Code ${CARD} · Universal Language · Mandala Codes</title>`);
   expect(rawHtml).toContain(`<link rel="canonical" href="https://mandalacodes.com/universal-language/${CARD}" />`);
   expect(rawHtml).toContain(`<meta property="og:url" content="https://mandalacodes.com/universal-language/${CARD}" />`);
   const ogImageMatch = rawHtml.match(/<meta property="og:image" content="([^"]*)"/);
@@ -49,7 +49,7 @@ test(`card ${CARD} serves a prerendered head and still hydrates`, async ({ page 
   const creativeWorkMatch = rawHtml.match(/\{"@context":"https:\/\/schema\.org","@type":"CreativeWork".*?\}(?=\s*<\/script>)/);
   expect(creativeWorkMatch, 'JSON-LD CreativeWork block').toBeTruthy();
   const creativeWork = JSON.parse(creativeWorkMatch![0]);
-  expect(creativeWork.name).toBe(`${CARD_NAME} · Code ${CARD} · Universal Language Oracle`);
+  expect(creativeWork.name).toBe(`${CARD_NAME} · Code ${CARD} · Universal Language · Mandala Codes`);
   expect(creativeWork.url).toBe(`https://mandalacodes.com/universal-language/${CARD}`);
 
   // Now prove the SPA still hydrates on top of that head — the card reading

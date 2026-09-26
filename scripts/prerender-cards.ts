@@ -81,7 +81,7 @@ async function main() {
   for (const card of cards) {
     const number = card.number;
     const canonical = `${SITE_URL}/universal-language/${number}`;
-    const title = `${card.card_name} · Code ${number} · Universal Language Oracle`;
+    const title = `${card.card_name} · Code ${number} · Universal Language · Mandala Codes`;
     const description = firstSentence(card.essence, card.keywords);
     const imageId = card.artworks[0]?.coverImage;
     if (!imageId) throw new Error(`[prerender] card ${number} has no artwork coverImage to build an og:image from`);

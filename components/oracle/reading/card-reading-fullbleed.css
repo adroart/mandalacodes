@@ -827,3 +827,13 @@ html:not(.dark) .card-reading :is(a,button):focus-visible {
 .card-reading [style*="color: rgb(128, 115, 95)"] {
   color: var(--l-3) !important;
 }
+
+/* No icons in the card's bottom bar (2026-09-26). The site carries text
+   labels only; the bar's pictograms came in with the Claude Design sources
+   (inline SVG on desktop, injected into [data-tabicon] on phones), so they
+   are withdrawn here rather than in the generated files, which a re-import
+   would restore. The labels already name every destination. */
+.card-reading footer > a > svg,
+.card-reading [data-tabicon] {
+  display: none !important;
+}

@@ -38,7 +38,7 @@ interface NavItem {
 // the person's space with their chart, pieces, and collections). Account sits
 // inline with the other codes rather than as a separate corner control, and
 // only renders when accounts are available.
-const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: NavItem[] = [
   { path: '/universal-language', label: 'Deck' },
   { path: '/the-systems', label: 'The Systems' },
   { path: '/learn', label: 'Learn', external: true },

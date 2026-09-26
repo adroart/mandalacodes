@@ -56,7 +56,11 @@ html {
 body { margin: 0; min-height: 100vh; }
 
 ::selection { background: #c4aa7c44; }
-a { color: var(--acc); }
+/* Library links are bronze. The site bar is the app's own component, whose
+   colours are layered Tailwind utilities; an unlayered `a` rule outranks every
+   layered one, so it turned the bar's menu bronze on /learn only. :where()
+   keeps this rule's specificity at a bare `a`. */
+a:where(:not(.mc-site-bar a)) { color: var(--acc); }
 
 /* a single signature easing curve, used everywhere */
 :root { --ease: cubic-bezier(0.16, 1, 0.3, 1); }
@@ -160,7 +164,7 @@ a, button, [role='button'], .lp-row, .lp-rel-card { -webkit-tap-highlight-color:
 .lp-cta .arrow { font-size: 14px; }
 .lp-hero-meta { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #b3a88f; }
 .lp-hero-corner { position: absolute; top: 46px; right: 64px; z-index: 3; text-align: right; }
-.lp-hero-corner .latest { font-family: var(--font-display); font-style: italic; font-size: 22px; color: #d2ad74; }
+.lp-hero-corner .latest { font-family: var(--font-display); font-size: 22px; color: #d2ad74; }
 .lp-hero-corner .plate { font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #b3a88f; margin-top: 2px; }
 
 /* ── Library ────────────────────────────────────────────────────────────── */
@@ -196,7 +200,7 @@ a, button, [role='button'], .lp-row, .lp-rel-card { -webkit-tap-highlight-color:
 .lp-row:hover .lp-row-title { color: var(--acc); }
 .lp-row-dek { font-family: var(--font-reading); font-size: 14.5px; line-height: 1.55; color: var(--body); margin: 8px 0 0; max-width: 560px; }
 .lp-row-read-m { display: none; font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); margin: 13px 0 0; }
-.lp-row-no { text-align: right; font-family: var(--font-display); font-style: italic; }
+.lp-row-no { text-align: right; font-family: var(--font-display); }
 .lp-row-no .num { font-size: 30px; opacity: 0.6; }
 .lp-row-no .read { font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-top: 7px; font-style: normal; }
 
@@ -248,7 +252,7 @@ a, button, [role='button'], .lp-row, .lp-rel-card { -webkit-tap-highlight-color:
 .lp-read-orn { color: var(--acc); font-size: 16px; letter-spacing: 0.5em; margin-bottom: 18px; }
 .lp-read-field { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--acc); font-weight: 600; }
 .lp-read-title { font-family: var(--font-display); font-weight: 500; font-size: clamp(28px, 6.2cqi, 58px); line-height: 1.04; letter-spacing: -0.015em; margin: 18px 0 0; color: var(--ink); }
-.lp-read-dek { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(18px, 2.5cqi, 25px); line-height: 1.42; color: var(--body); margin: 24px auto 0; max-width: 620px; font-feature-settings: 'swsh' 1, 'dlig' 1, 'liga' 1; }
+.lp-read-dek { font-family: var(--font-display); font-weight: 500; font-size: clamp(18px, 2.5cqi, 25px); line-height: 1.42; color: var(--body); margin: 24px auto 0; max-width: 620px; font-feature-settings: 'swsh' 1, 'dlig' 1, 'liga' 1; }
 .lp-byline { display: flex; flex-direction: column; align-items: center; gap: 14px; margin: 40px 0 8px; }
 .lp-byline .medallion { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--acc); display: flex; align-items: center; justify-content: center; font-family: var(--font-brand); font-size: 14px; color: var(--acc); }
 .lp-byline .meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center; font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); }
@@ -292,7 +296,7 @@ a, button, [role='button'], .lp-row, .lp-rel-card { -webkit-tap-highlight-color:
 
 /* blockquote -> oversized pull quote */
 .lp-read-body blockquote {
-  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-family: var(--font-display); font-weight: 500;
   font-size: 33px; line-height: 1.3; color: var(--ink); margin: 52px auto;
   max-width: 600px; text-align: center; border: none; padding: 0;
   font-feature-settings: 'swsh' 1, 'dlig' 1, 'liga' 1;

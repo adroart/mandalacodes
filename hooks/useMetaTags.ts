@@ -28,7 +28,7 @@ function setMeta(property: string, content: string) {
  */
 export function useMetaTags({ title, description, image }: MetaTagOptions) {
   useEffect(() => {
-    const pageTitle = title ? `${title} | Adrian Rasmussen` : DEFAULT_TITLE;
+    const pageTitle = title ? `${title} · Mandala Codes` : DEFAULT_TITLE;
     const pageDesc = description || DEFAULT_DESCRIPTION;
     const pageImage = image || DEFAULT_IMAGE;
 

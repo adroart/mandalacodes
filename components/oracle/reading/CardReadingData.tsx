@@ -15,6 +15,7 @@ import { ulCardArtFloatsFree, ulCardHeroImageUrl, ulPieceForCard } from '../../.
 import CardReading, { type CardReadingLens } from './CardReading';
 import { artDesignHref } from '../../../lib/atlas/artSite';
 import Navigation from '../../Navigation';
+import { NAV_ITEMS } from '../../NavigationCore';
 import { isChunkLoadError } from '../../ChunkErrorBoundary';
 import { warmOracleForOffline } from '../../../lib/oracle/offlineWarm';
 import { hexagramLineBooleans } from '../HexagramGlyph';
@@ -166,6 +167,14 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
       variant={variant}
       lenses={lenses}
       meta={meta}
+      /* The desktop header is the design file's own, and its defaults drifted
+         from the site menu ("Systems" against "The Systems"). It reads the
+         site's list so the two cannot disagree again. */
+      headerLabels={NAV_ITEMS.filter((item) => !item.signedInOnly).map((item) => ({
+        label: item.label,
+        href: item.path,
+        active: item.path === '/universal-language',
+      }))}
       cardKicker={`No. ${card.number} · Universal Language`}
       cardName={card.card_name}
       hexLines={hexagramLineBooleans(card.iching.upper_trigram.symbol, card.iching.lower_trigram.symbol).map((solid) => ({ solid, broken: !solid }))}
