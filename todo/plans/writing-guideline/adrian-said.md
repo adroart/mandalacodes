@@ -792,3 +792,5 @@ Run on one card first, card 6, written new from the source files without opening
 2026-09-26: shown the plan to put the 2026-09-24 decisions into the method (the reading order into WRITERS-BRIEF, the whole-card cold read into CARD-PASS step 6, the writing tools into the repo, a THINKING entry), Adrian said "o" (go).
 
 2026-09-26, after the printed book of all 64 was built: "mark them all final". Every section of every card set to final.
+
+2026-09-26, asked "Why do I need hidden notes underneath the card?", shown that the scene, mechanism and side-by-side notes go stale with every rewrite and repeat the worksheet while the entrance and sources are needed: "yes do it". Those three notes removed from all 64 cards; entrance, sources, lore and fact check kept.
