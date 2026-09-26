@@ -257,14 +257,57 @@ const COVER_CSS = `@page { size: A4; margin: 0; }
 .cover .by { font-size: 10pt; letter-spacing: 0.06em; color: #444; position: absolute; bottom: 30mm; left: 0; right: 0; }
 .back .site { font-size: 9pt; letter-spacing: 0.06em; color: #666; position: absolute; bottom: 30mm; left: 0; right: 0; text-align: center; }`;
 
+/** The words on the text covers, from oracle/book/cover.json so Adrian can change them. */
+function coverText(): { title: string; subtitle: string; author: string; back: string } {
+  const f = path.join(ROOT, 'oracle', 'book', 'cover.json');
+  const d = { title: 'Universal Language', subtitle: 'The sixty-four', author: 'Adrian Rasmussen', back: 'mandalacodes.com' };
+  return fs.existsSync(f) ? { ...d, ...JSON.parse(fs.readFileSync(f, 'utf8')) } : d;
+}
+
 /** The cover: the book's name, one line under it, and the author at the foot. */
 function coverPage(): string {
-  return document('<div class="cover"><h1>Universal Language</h1><div class="sub">The sixty-four</div><div class="by">Adrian Rasmussen</div></div>', COVER_CSS);
+  const t = coverText();
+  return document(`<div class="cover"><h1>${esc(t.title)}</h1>${t.subtitle ? `<div class="sub">${esc(t.subtitle)}</div>` : ''}<div class="by">${esc(t.author)}</div></div>`, COVER_CSS);
 }
 
 /** The back page: only where the deck lives. */
 function backPage(): string {
-  return document('<div class="cover back"><div class="site">mandalacodes.com</div></div>', COVER_CSS);
+  return document(`<div class="cover back"><div class="site">${esc(coverText().back)}</div></div>`, COVER_CSS);
+}
+
+/** One page for the printer: what the files are and how to print them. */
+function printerNotes(interior: number): string {
+  const t = coverText();
+  const css = `@page { size: A4; margin: 22mm 22mm; }
+body { font-size: 10pt; line-height: 15pt; }
+h1 { font-size: 16pt; font-weight: normal; margin: 0 0 4mm; }
+h2 { font-size: 10.5pt; font-weight: bold; margin: 6mm 0 1.5mm; }
+p, li { text-indent: 0; text-align: left; hyphens: none; word-spacing: normal; }
+ul { margin: 0; padding-left: 5mm; }`;
+  return document(`<h1>${esc(t.title)}: printing instructions</h1>
+<p>A book of ${interior} inside pages with a separate front and back cover. Everything is A4 portrait, black ink only, fonts embedded, and nothing runs to the edge of the page, so no bleed or crop marks are needed.</p>
+<h2>The files</h2>
+<ul>
+<li><b>1-inside-pages.pdf</b>: the ${interior} inside pages (${interior / 2} sheets).</li>
+<li><b>2-front-cover.pdf</b> and <b>3-back-cover.pdf</b>: one page each. The inside of both covers is blank.</li>
+<li><b>4-complete-book-for-proofing.pdf</b>: the whole book in order (cover, blank, inside pages, blank, back) for checking only. Print from files 1 to 3.</li>
+</ul>
+<h2>The inside pages</h2>
+<ul>
+<li>Print double-sided, flip on the long edge, at actual size (100%, no "fit to page").</li>
+<li>Page 1 is a right-hand page. Page ${interior} is a left-hand page.</li>
+<li>Margins are mirrored for binding: 18 mm on the bound side, 12 mm on the outer side.</li>
+<li>The writing lines are fine light grey (0.3 pt). Please send one printed proof sheet first to check they show.</li>
+</ul>
+<h2>The cover</h2>
+<ul>
+<li>Print the front and back covers on heavier card, one side only.</li>
+<li>If your binding needs a single wrap-around cover with a spine, the spine width depends on the paper: please set it from these two panels and tell us the width.</li>
+</ul>
+<h2>Binding</h2>
+<ul>
+<li>The 18 mm bound margin suits wire, spiral or ring binding. For a glued (perfect) binding at ${interior / 2} sheets, please confirm the margin is enough before printing.</li>
+</ul>`, css);
 }
 
 function blankPage(): string {
@@ -296,8 +339,23 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
   const ruled = await renderPdf(page, ruledPage());
   // The whole book gets a cover and a back page (Adrian, 2026-09-26), each with a blank
   // inside so card 1 still starts on a right-hand page. No pen box, no page number.
+  // Adrian's own designs win: drop front.pdf and/or back.pdf (one A4 page each) into
+  // oracle/book/ and they replace the text covers. The text covers read from
+  // oracle/book/cover.json.
+  const coverFile = (name: string) => {
+    const f = path.join(ROOT, 'oracle', 'book', name);
+    return fs.existsSync(f) ? PDFDocument.load(fs.readFileSync(f)) : null;
+  };
+  const ownFront = await coverFile('front.pdf');
+  const ownBack = await coverFile('back.pdf');
   const covers = booklet === 0
-    ? { front: await renderPdf(page, coverPage()), back: await renderPdf(page, backPage()), blank: await renderPdf(page, blankPage()) }
+    ? {
+      front: ownFront ?? await renderPdf(page, coverPage()),
+      back: ownBack ?? await renderPdf(page, backPage()),
+      blank: await renderPdf(page, blankPage()),
+      custom: Boolean(ownFront || ownBack),
+      notes: await renderPdf(page, printerNotes(cardPdfs.reduce((s, c) => s + c.indices.length, 0))),
+    }
     : null;
 
   await page.close();
@@ -355,6 +413,16 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
   });
 
   if (covers) {
+    // The print pack: what a printer asks for. The inside and the cover as separate files,
+    // a complete file for proofing, and one page of instructions.
+    const pack = path.join(OUT, 'print');
+    fs.rmSync(pack, { recursive: true, force: true });
+    fs.mkdirSync(pack, { recursive: true });
+    const interiorPages = out.getPageCount();
+    fs.writeFileSync(path.join(pack, '1-inside-pages.pdf'), await out.save());
+    const single = async (src: PDFDocument) => { const d = await PDFDocument.create(); const [p] = await d.copyPages(src, [0]); d.addPage(p); return d.save(); };
+    fs.writeFileSync(path.join(pack, '2-front-cover.pdf'), await single(covers.front));
+    fs.writeFileSync(path.join(pack, '3-back-cover.pdf'), await single(covers.back));
     const [front] = await out.copyPages(covers.front, [0]);
     const [insideFront] = await out.copyPages(covers.blank, [0]);
     const [insideBack] = await out.copyPages(covers.blank, [0]);
@@ -363,6 +431,9 @@ async function buildBooklet(browser: Browser, booklet: number, cards: number[], 
     out.insertPage(1, insideFront);
     out.addPage(insideBack);
     out.addPage(back);
+    fs.writeFileSync(path.join(pack, '4-complete-book-for-proofing.pdf'), await out.save());
+    fs.writeFileSync(path.join(pack, '0-PRINTER-INSTRUCTIONS.pdf'), await covers.notes.save());
+    console.log(`[workbook] print pack → ${path.relative(ROOT, pack)}/ (inside ${interiorPages} pages, front and back cover${covers.custom ? ', your own cover files' : ''}, instructions)`);
   }
 
   const file = path.join(OUT, booklet === 0 ? 'universal-language-workbook.pdf' : `booklet-${tag}.pdf`);
