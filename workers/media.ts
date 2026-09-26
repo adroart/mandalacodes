@@ -79,6 +79,15 @@ async function handle(request: Request, env: Env, ctx: ExecutionContext): Promis
     if (stored) return finish(request, ctx, cache, cacheKey, objectResponse(stored));
   }
 
+  // Resizing through the IMAGES binding bills the work to this Worker's CPU,
+  // and the Free plan allows 10 ms per request: a new variant measured 60-200 ms
+  // (2026-09-22..25) and was killed. Cloudflare's own resizer, reached with
+  // fetch + cf.image, runs outside that budget. The binding stays as the fallback.
+  if (needsTransform) {
+    const offloaded = await resizeOutsideWorker(url.pathname, request, { width, height, fit, gravity, quality, format, segment });
+    if (offloaded) return finish(request, ctx, cache, cacheKey, offloaded);
+  }
+
   const object = await env.MEDIA_BUCKET.get(key);
   if (!object) return new Response('Not found', { status: 404 });
 
@@ -96,6 +105,48 @@ async function handle(request: Request, env: Env, ctx: ExecutionContext): Promis
     ctx.waitUntil(env.MEDIA_BUCKET.put(variantKey, bytes, { httpMetadata: { contentType } }).then(() => undefined));
   }
   return finish(request, ctx, cache, cacheKey, new Response(bytes, { headers: { 'Content-Type': contentType } }));
+}
+
+/** This Worker's workers.dev address. A path with no query takes the raw R2 branch, so it is the resizer's source. */
+const RAW_MEDIA_ORIGIN = 'https://mandalacodes-media.lightcodes.workers.dev';
+
+interface ResizeOptions {
+  width?: number;
+  height?: number;
+  fit: 'contain' | 'scale-down' | 'cover';
+  gravity: 'face' | 'center' | 'auto';
+  quality: number;
+  format: ImageOutputOptions['format'];
+  segment: boolean;
+}
+
+/**
+ * Resize with Cloudflare's resizer instead of this Worker. Returns null when the
+ * resizer did not do the work (the zone has it off, or it errored), so the caller
+ * falls back to the binding; the cf-resized header is the proof it ran.
+ */
+export async function resizeOutsideWorker(pathname: string, request: Request, opts: ResizeOptions): Promise<Response | null> {
+  const image: Record<string, unknown> = {
+    width: opts.width,
+    height: opts.height,
+    fit: opts.fit,
+    gravity: opts.gravity,
+    quality: opts.quality,
+    format: opts.format?.slice('image/'.length),
+  };
+  if (opts.segment) image.segment = 'foreground';
+  try {
+    const response = await fetch(new URL(pathname, RAW_MEDIA_ORIGIN), {
+      headers: { Accept: request.headers.get('Accept') ?? 'image/jpeg' },
+      cf: { image } as RequestInitCfProperties,
+    });
+    const resized = response.headers.get('cf-resized') ?? '';
+    if (response.ok && resized && !resized.includes('err=')) return response;
+    await response.body?.cancel();
+  } catch {
+    // Network trouble reaching the resizer: the binding still works.
+  }
+  return null;
 }
 
 /** R2 key for one resized variant, derived from the same normalised parameters as the edge cache key. */

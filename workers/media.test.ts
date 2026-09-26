@@ -58,8 +58,13 @@ function fakeCtx() {
 }
 
 const cachePut = vi.fn(async () => undefined);
+// Cloudflare's resizer, reached by fetch + cf.image. By default it declines
+// (no cf-resized header), as it does on a zone with transformations off.
+const resizer = vi.fn(async (_url: URL, _init?: RequestInit) => new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'image/png' } }));
 beforeEach(() => {
   cachePut.mockClear();
+  resizer.mockClear();
+  (globalThis as unknown as { fetch: unknown }).fetch = resizer;
   // A cold data center: the edge cache never has anything.
   (globalThis as unknown as { caches: unknown }).caches = { default: { match: async () => undefined, put: cachePut } };
 });
@@ -113,5 +118,40 @@ describe('variant storage keys', () => {
     const b = new URL(`${ORIGIN}/x?fit=cover&w=400&format=image/webp`);
     expect(variantObjectKey('image/1', a)).toBe(variantObjectKey('image/1', b));
     expect(variantObjectKey('image/1', a).split('/').pop()).toContain('format=image_webp');
+  });
+});
+
+describe('resizing runs outside the Worker when Cloudflare\'s resizer takes it', () => {
+  const resized = () => new Response(new Uint8Array([7, 7]), { headers: { 'Content-Type': 'image/webp', 'cf-resized': 'internal=ok/h' } });
+
+  it('serves the resizer\'s output and never touches the binding', async () => {
+    const { env, transforms } = fakeEnv();
+    resizer.mockImplementationOnce(async () => resized());
+    const { ctx, settle } = fakeCtx();
+    const res = await worker.fetch(request('w=400&h=400&format=webp&segment=foreground'), env as never, ctx as never);
+    await settle();
+    expect(res.status).toBe(200);
+    expect(new Uint8Array(await res.arrayBuffer())).toEqual(new Uint8Array([7, 7]));
+    expect(transforms.count).toBe(0);
+    const [url, init] = resizer.mock.calls[0];
+    expect(String(url)).toBe('https://mandalacodes-media.lightcodes.workers.dev/media/image/2_kvndyq');
+    expect((init as { cf: { image: Record<string, unknown> } }).cf.image).toMatchObject({ width: 400, height: 400, format: 'webp', segment: 'foreground' });
+    expect(cachePut).toHaveBeenCalledOnce();
+  });
+
+  it('falls back to the binding when the resizer reports an error', async () => {
+    const { env, transforms } = fakeEnv();
+    resizer.mockImplementationOnce(async () => new Response('nope', { status: 404, headers: { 'cf-resized': 'err=9404' } }));
+    const { ctx } = fakeCtx();
+    const res = await worker.fetch(request('w=400&h=400&format=webp'), env as never, ctx as never);
+    expect(res.status).toBe(200);
+    expect(transforms.count).toBe(1);
+  });
+
+  it('does not call the resizer for an original', async () => {
+    const { env } = fakeEnv();
+    const { ctx } = fakeCtx();
+    await worker.fetch(new Request(`${ORIGIN}/media/image/2_kvndyq`), env as never, ctx as never);
+    expect(resizer).not.toHaveBeenCalled();
   });
 });
