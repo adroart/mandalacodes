@@ -95,7 +95,7 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
   // Rung 4: signed in — welcome, profile link, then the one account line below.
   if (hasCodes && isSignedIn) {
     return (
-      <div style={litCardStyle}>
+      <div data-oe="railinvite" style={litCardStyle}>
         <p style={leadStyle}>Welcome back{name ? `, ${name}` : ''}</p>
         <Link to="/profile" style={BRIGHT_CTA}>
           Your profile, pieces &amp; grid →
@@ -110,7 +110,7 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
   if (hasCodes) {
     return (
       <>
-        <div style={litCardStyle}>
+        <div data-oe="railinvite" style={litCardStyle}>
           <p style={leadStyle}>Your placement is illuminated</p>
           <Link to="/profile" style={BRIGHT_CTA}>
             See your full Hologenetic profile →
@@ -132,30 +132,14 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
   // the second screen offers to keep it (the Welcome sign-in).
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setFormOpen(true)}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '4px',
-          width: '100%',
-          padding: '14px 16px',
-          background: 'var(--bg2,#fff)',
-          border: '1px solid var(--line2,#d2c7b4)',
-          borderRadius: '12px',
-          cursor: 'pointer',
-          textAlign: 'center',
-        }}
-      >
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 500, lineHeight: 1.1, color: 'var(--ink,#262321)' }}>
+      {/* An outlined button of its own, so it reads as something to press;
+          the line beneath says what it gives. */}
+      <div data-oe="railinvite">
+        <button type="button" data-oe="birthbtn" onClick={() => setFormOpen(true)}>
           Enter your birth time
-        </span>
-        <span style={{ fontFamily: 'var(--font-reading)', fontSize: '12px', lineHeight: 1.45, color: 'var(--ink3,#8a7a5e)' }}>
-          See which cards are most relevant to you, lit throughout the oracle.
-        </span>
-      </button>
+        </button>
+        <p data-oe="birthsub">See which cards are most relevant to you, lit throughout the oracle.</p>
+      </div>
 
       {formOpen && (
         <BirthTimeModal

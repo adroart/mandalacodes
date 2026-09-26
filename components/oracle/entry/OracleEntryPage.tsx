@@ -190,8 +190,26 @@ const OracleEntryPage: React.FC = () => {
     warmOracleForOffline();
   }, []);
 
+  /* Today and this year are lit where they sit in the deck, with their word
+     beneath, so the day's energy is found in the field itself. The numbers
+     change daily, so the rules are written here; the two inks (--dayInk,
+     --yearInk) are theme tokens in OracleEntry.scoped.css. */
+  const dayCss = useMemo(() => {
+    const today = todaysEnergy().gate;
+    const year = yearsEnergy().gate;
+    const rules = (n: number, ink: string, label: string, glow: boolean) => {
+      const cell = `.oe-root [data-oe="ichgrid"] [data-oe-num="${n}"]`;
+      return `${cell}{--ink3:var(${ink})}
+${cell} [data-oe="cardnum"]{color:var(${ink}) !important}
+${glow ? `${cell} dc-import{filter:drop-shadow(0 0 10px color-mix(in oklab,var(${ink}) 45%,transparent))}` : ''}
+${cell}::after{content:'${label}';position:absolute;left:-24px;right:-24px;bottom:6px;text-align:center;pointer-events:none;white-space:nowrap;font-family:var(--font-ui);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(${ink})}`;
+    };
+    return rules(today, '--dayInk', 'Today', true) + (year === today ? '' : `\n${rules(year, '--yearInk', 'This year', false)}`);
+  }, []);
+
   return (
     <div className="oe-root pt-[var(--nav-height)]">
+      <style>{dayCss}</style>
       <OracleEntryHost
         adapter={adapter}
         theme={isDarkMode ? 'dark' : 'light'}
