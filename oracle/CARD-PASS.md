@@ -162,6 +162,18 @@ can say", which cards 17, 23, 43 and 57 already use.
   the card as a whole never had: on card 64 every sentence passed while
   Adrian could not tell what the reading was about or why imagination lived
   in its moment.
+- Then read the whole card cold, every sentence of every section:
+  `node scripts/cold-read.mjs oracle/cards/NN.md`. A reader who knows no system
+  reports each sentence it cannot say back as something about a person's life.
+  It over-flags a little, so the writer sorts real from false, fixes every
+  real one, runs it once more and stops. The brief always required this ("the
+  cold reader is the other half and nothing ships without both"); until
+  2026-09-24 only CODE was read, and Adrian found card 1's Combination telling
+  a dragon story and describing an old written character: "This doesn't make
+  a lot of sense."
+- A change to how cards are written runs on one card first, and the rest wait
+  for Adrian's read of it (2026-09-24: "We just run one. If it's good we run
+  it on the rest").
 
 Then regenerate `data/oracle-corpus.json` and `data/oracle-search-index.json`
 (`node --import tsx scripts/build-oracle-corpus.ts`, then
