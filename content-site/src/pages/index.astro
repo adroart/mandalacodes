@@ -5,16 +5,15 @@ import { getPublishedArticles, toView } from '../lib/articles'
 
 const articles = await getPublishedArticles()
 const views = articles.map((a, i) => toView(a, i))
-const base = import.meta.env.BASE_URL.replace(/\/$/, '')
-const featured = views[0]
-const description = 'Articles on mandala art, the stories behind its creation, and the geometry, history, and traditions that shape it.'
+const base = import.meta.env.BASE_URL
 
 const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: 'Learn · Mandala Codes',
-    description,
+    description:
+      'Essays and reference articles on mandalas, the I Ching, Gene Keys, and Human Design.',
     url: new URL(`${base}/`, Astro.site).href,
     isPartOf: { '@type': 'WebSite', name: 'Mandala Codes', url: 'https://mandalacodes.com' },
   },
@@ -23,10 +22,8 @@ const jsonLd = [
 
 <Base
   title="Learn · Mandala Codes"
-  description={description}
+  description="Essays and reference articles on mandalas, the I Ching, Gene Keys, and Human Design, the living library behind the Universal Language oracle."
   jsonLd={jsonLd}
-  ogImage={featured?.heroWide}
-  ogImageAlt={featured?.coverAlt}
 >
   <Library views={views} active="All" />
 </Base>

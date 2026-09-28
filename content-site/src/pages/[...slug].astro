@@ -1,146 +1,160 @@
 ---
-import { getCollection, render } from 'astro:content'
+import { render } from 'astro:content'
 import Base from '../layouts/Base.astro'
-import { cloud, fieldSlug, getPublishedArticles, getRelatedArticles, toView, type Article } from '../lib/articles'
-import { articleMetadata } from '../lib/metadata'
-import { FULL_ARCHIVE } from '../../../data/mockData'
-import '../styles/article-reader.css'
+import { getPublishedArticles, toView, type Article } from '../lib/articles'
 
 export async function getStaticPaths() {
-  const articles = import.meta.env.DEV ? await getCollection('articles') : await getPublishedArticles()
-  return articles.map((article, index) => ({ params: { slug: article.id }, props: { article, index } }))
+  const articles = await getPublishedArticles()
+  return articles.map((article, i) => ({
+    params: { slug: article.id },
+    props: { article, index: i },
+  }))
 }
 
-interface Props { article: Article; index: number }
+interface Props {
+  article: Article
+  index: number
+}
+
 const { article, index } = Astro.props
-const { Content, headings } = await render(article)
-const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+const { Content } = await render(article)
+const base = import.meta.env.BASE_URL
+
+// Full decorated set so we can build "Continue in the Library" + this view.
 const all = await getPublishedArticles()
-const view = toView(article, index)
-const related = getRelatedArticles(article, all, 3).map(a => toView(a, all.findIndex(entry => entry.id === a.id)))
-const sections = headings.filter(heading => heading.depth === 2)
-const category = fieldSlug(view.field)
-const categoryUrl = category ? `${base}/category/${category}/` : `${base}/`
-const dateFormat = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })
-const jsonLd = articleMetadata(article, view.heroWide)
-const connectedMandala = article.data.relatedCard ? FULL_ARCHIVE.find(piece => piece.cardNumber === article.data.relatedCard) : undefined
-const shareUrl = new URL(`${base}/${article.id}/`, Astro.site).href
+const views = all.map((a, i) => toView(a, i))
+const view = views[index]
+const related = views.filter(v => v.id !== view.id).slice(0, 3)
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.data.title,
+    description: article.data.description,
+    datePublished: article.data.pubDate.toISOString(),
+    ...(article.data.updatedDate && { dateModified: article.data.updatedDate.toISOString() }),
+    keywords: article.data.tags.join(', '),
+    mainEntityOfPage: canonical,
+    image: view.heroWide,
+    author: { '@type': 'Person', name: 'Adrian Rasmussen', url: 'https://adrianrasmussen.com' },
+    publisher: { '@type': 'Organization', name: 'Mandala Codes', url: 'https://mandalacodes.com' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Learn', item: new URL(`${base}/`, Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: article.data.title, item: canonical },
+    ],
+  },
+]
 ---
 
-<Base title={`${article.data.title} · Mandala Codes`} description={article.data.description} jsonLd={jsonLd} ogType="article" ogImage={view.heroWide} ogImageAlt={view.coverAlt} noindex={article.data.draft || view.status === 'research-note'} accent={view.tint}>
-  <article class="article-reader" data-reader>
-    <div class="article-progress" data-reading-progress role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span></span></div>
-    <nav class="article-breadcrumb" aria-label="Breadcrumb">
-      <a href={`${base}/`}>← The Library</a>
-      <span aria-hidden="true">/</span>
-      <a href={categoryUrl}>{view.field}</a>
-    </nav>
-
-    <div class="article-opener">
-    <header class="article-masthead">
-      <p class="article-kicker">{view.field}</p>
-      <h1>{article.data.title}</h1>
-      <p class="article-description">{article.data.description}</p>
-      <div class="article-meta">
-        {view.author && (view.authorUrl ? <a href={view.authorUrl} rel="author">{view.author}</a> : <span>{view.author}</span>)}
-        <time datetime={article.data.pubDate.toISOString()}>{dateFormat.format(article.data.pubDate)}</time>
-        <span>{view.read} read</span>
-        {article.data.updatedDate && <span>Updated <time datetime={article.data.updatedDate.toISOString()}>{dateFormat.format(article.data.updatedDate)}</time></span>}
-      </div>
-      <div class="article-actions">
-        <a class="article-start" href="#article-text">Read the article <span aria-hidden="true">↓</span></a>
-        <button class="article-copy-link" type="button" data-copy-link data-share-url={shareUrl} hidden>Copy link <span aria-hidden="true">↗</span></button>
-      </div>
-      <span class="article-share-feedback" data-share-feedback role="status" aria-live="polite"></span>
-      <div class="article-share-fallback" data-share-fallback hidden>
-        <label for="article-share-url">Copy this article link</label>
-        <input id="article-share-url" type="url" value={shareUrl} readonly />
-      </div>
-      {article.data.draft && <aside class="article-status" aria-label="Draft preview"><strong>Draft preview.</strong> This article is visible only in the local writing preview and is excluded from publication.</aside>}
-    </header>
-
-    <figure class="article-cover">
-      <a class="article-cover-mat" href={view.heroWide} data-artwork-open aria-label="View artwork at full size">
-        <img src={view.heroWide} alt={view.coverAlt} width={article.data.coverImage ? undefined : 1200} height={article.data.coverImage ? undefined : 1200} fetchpriority="high" decoding="async" />
-        <span class="article-artwork-hint">View artwork <span aria-hidden="true">⤢</span></span>
-      </a>
-      {(view.coverCaption || view.coverCredit) && (
-        <figcaption>
-          {view.coverCaption && <span>{view.coverCaption}</span>}
-          {view.coverCredit && <span class="article-credit">{view.coverCredit}</span>}
-        </figcaption>
-      )}
-    </figure>
-    </div>
-
-    <dialog class="article-artwork-dialog" data-artwork-dialog aria-labelledby="artwork-dialog-title">
-      <div class="article-artwork-toolbar">
-        <h2 id="artwork-dialog-title">Artwork</h2>
-        <button type="button" data-artwork-close autofocus>Close <span aria-hidden="true">×</span></button>
-      </div>
-      <img src={view.heroWide} alt={view.coverAlt} loading="lazy" decoding="async" />
-      {(view.coverCaption || view.coverCredit) && <p class="article-artwork-caption">{view.coverCaption}{view.coverCredit && <span>{view.coverCredit}</span>}</p>}
-    </dialog>
-
-    <div class:list={['article-reading-layout', { 'has-contents': sections.length >= 3 }]}>
-      {sections.length >= 3 && (
-        <aside class="article-contents" data-reader-contents>
-          <details open>
-            <summary>In this article</summary>
-            <nav aria-label="Article sections">
-              <ol>{sections.map(section => <li><a data-section-link href={`#${section.slug}`}>{section.text}</a></li>)}</ol>
-            </nav>
-          </details>
-        </aside>
-      )}
-      <div class="article-copy">
-        <div class="lp-read-body" id="article-text" tabindex="-1" data-reading-body><Content /></div>
-        {article.data.sources.length > 0 && (
-          <section class="article-sources" aria-labelledby="article-sources-title">
-            <h2 id="article-sources-title">Sources & further reading</h2>
-            <ol>{article.data.sources.map(source => <li>{source.url ? <a href={source.url}>{source.title}</a> : source.title}</li>)}</ol>
-          </section>
-        )}
-        <footer class="article-ending">
-          <a href={`${base}/`}>← Back to the Library</a>
-        </footer>
+<Base
+  title={`${article.data.title} · Mandala Codes`}
+  description={article.data.description}
+  jsonLd={jsonLd}
+  ogType="article"
+  accent={view.tint}
+>
+  <article class="lp-read-section" data-r="readSection">
+    {/* reading-progress ring (scroll-driven where supported) */}
+    <div class="lp-progress-wrap" data-r="progressWrap">
+      <div class="lp-progress" data-r="progress">
+        <svg width="54" height="54" viewBox="0 0 54 54">
+          <circle cx="27" cy="27" r="20" fill="none" stroke-width="2" style="stroke: var(--rule)"></circle>
+          <circle
+            data-r="progressArc"
+            cx="27" cy="27" r="20" fill="none" stroke-width="2" stroke-linecap="round"
+            stroke-dasharray="126" stroke-dashoffset="126" transform="rotate(-90 27 27)"
+            style="stroke: var(--field-accent, var(--acc-decoration))"
+          ></circle>
+          <circle cx="27" cy="27" r="2.4" style="fill: var(--field-accent, var(--acc-decoration))"></circle>
+        </svg>
       </div>
     </div>
 
-    {connectedMandala && (
-      <section class="article-connection" aria-labelledby="connected-mandala-title">
-        <a class="article-connection-art" href={`/universal-language/${connectedMandala.cardNumber}`} aria-label={`Explore ${connectedMandala.title} in the deck`}>
-          <img src={cloud(connectedMandala.coverImage, 460)} alt={connectedMandala.title} width="460" height="460" loading="lazy" decoding="async" />
-        </a>
-        <div>
-          <p class="article-kicker">Connected mandala · {connectedMandala.cardNumber}</p>
-          <h2 id="connected-mandala-title">{connectedMandala.title}</h2>
-          <p class="article-connection-series">{connectedMandala.series}</p>
-          <a class="article-connection-link" href={`/universal-language/${connectedMandala.cardNumber}`}>Explore in the deck <span aria-hidden="true">→</span></a>
+    <div class="lp-read-topbar">
+      <a class="back" href={`${base}/`}>← The Library</a>
+      <span class="mark">MANDALA CODES</span>
+      <span>{view.field}</span>
+    </div>
+
+    <div class="lp-read-pad">
+      <header class="lp-read-masthead" data-reveal>
+        <div class="lp-read-orn">◦ ◦ ◦</div>
+        <div class="lp-read-field">{view.field}</div>
+        <h1 class="lp-read-title">{article.data.title}</h1>
+        <p class="lp-read-dek">{article.data.description}</p>
+      </header>
+
+      <div class="lp-byline" data-reveal>
+        <div class="medallion">AR</div>
+        <div class="meta">
+          <span class="name">Adrian Rasmussen</span><span>·</span><span>{view.date}</span>
+          {article.data.updatedDate && (<><span>·</span><span>updated</span></>)}
+          <span>·</span><span>{view.read} read</span>
         </div>
-        <a class="article-connection-browse" href="/universal-language">Browse all 64 mandalas <span aria-hidden="true">↗</span></a>
-      </section>
-    )}
+      </div>
 
+      <figure class="lp-figure" data-reveal>
+        <div class="frame">
+          <img src={view.heroWide} alt="" />
+          <div class="inner"></div>
+        </div>
+        <figcaption class="lp-figcaption">
+          <span class="acc">Plate {view.plate}</span> &nbsp;·&nbsp; {view.culture} &nbsp;·&nbsp; Universal Language
+        </figcaption>
+      </figure>
+
+      <div class="lp-read-body" data-reveal>
+        <Content />
+        <div class="lp-hexagram" aria-hidden="true">
+          <div class="full"></div>
+          <div class="broken"><span></span><span></span></div>
+          <div class="full"></div>
+          <div class="full"></div>
+          <div class="broken"><span></span><span></span></div>
+          <div class="full"></div>
+        </div>
+      </div>
+    </div>
+
+    {/* ===== Continue in the Library ===== */}
     {related.length > 0 && (
-      <section class="article-related" aria-labelledby="article-related-title">
-        <div class="article-related-heading"><h2 id="article-related-title">Continue reading</h2><a href={categoryUrl}>More in {view.field} <span aria-hidden="true">→</span></a></div>
-        <div class="article-related-grid">
-          {related.map(item => (
-            <a class="article-related-item" href={`${base}/${item.id}/`}>
-              <img src={item.cover} alt="" loading="lazy" decoding="async" width="460" height="460" />
-              <div>
-                <p class="article-kicker">{item.field}</p>
-                <h3>{item.title}</h3>
-                <span class="article-related-meta">{item.read} read</span>
-              </div>
+      <section class="lp-related-section" data-reveal>
+        <div class="lp-related-head">
+          <span class="line"></span>
+          <span class="label">Continue in the Library</span>
+          <span class="line"></span>
+        </div>
+        <div class="lp-related" data-r="related">
+          {related.map(r => (
+            <a class="lp-rel-card" href={`${base}/${r.id}/`}>
+              <div class="frame"><img class="lp-rel-img" src={r.cover} alt="" /></div>
+              <div class="lp-rel-field" style={`color:${r.tint}`}>{r.field}</div>
+              <h3 class="lp-rel-title">{r.title}</h3>
+              <div class="lp-rel-read">{r.read} read</div>
             </a>
           ))}
         </div>
       </section>
     )}
+
+    {article.data.relatedCard && (
+      <div class="lp-read-pad" style="padding-top:0; padding-bottom:56px; text-align:center;">
+        <a
+          class="lp-cta"
+          data-magnetic
+          style="color: var(--acc); border-color: var(--mat);"
+          href={`/universal-language/${article.data.relatedCard}`}
+        >
+          Explore Card {article.data.relatedCard} in the deck <span class="arrow">→</span>
+        </a>
+      </div>
+    )}
   </article>
-  <script>
-    import '../lib/reader-interactions'
-  </script>
 </Base>

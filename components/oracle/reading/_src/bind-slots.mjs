@@ -84,8 +84,6 @@ const BINDINGS = [
       // Header title block, above the meta list.
       ['No. 62 · Universal Language', '{{ cardKicker }}'],
       ['Voice of Nature', '{{ cardName }}'],
-      // The deck link identifies the card currently being read.
-      ['62 · All 64', '{{ cardNumber }} · All 64'],
     ],
   },
   {
