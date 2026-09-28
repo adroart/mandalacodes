@@ -6,16 +6,60 @@ description: >-
   around 155 characters and make it read like a sentence.
 pubDate: 2026-06-15
 # updatedDate: 2026-07-01   # uncomment when you revise a published piece
+# author:                 # confirmed writer; leave absent until known
+# authorUrl:              # complete http:// or https:// URL, optional
+editorialStatus: article  # article or research-note; use draft to hide either
+field: Creation Stories
 tags:
-  - foundations
+  - creation
+# cover:                  # optional existing media ID
+# coverImage:             # path from a real editor upload; takes priority over cover
+# coverAlt:               # describe what is visible
+# coverCaption:           # identify the actual artwork or process shown
+# coverCredit:            # confirmed creator/photographer and required licence credit
+# sources:
+#   - title:              # author, title, publication, date, relevant page numbers
+#     url:                # complete http:// or https:// URL; optional for print sources
 # relatedCard: 1            # 1–64, optional. Links the article to a deck card.
 draft: true
 ---
 
-This first paragraph is the opening. Write it the way the published articles
-open: a plain, concrete statement that earns attention without overselling.
-The body is Markdoc (a superset of Markdown), so everything below works the
-same as in any `.md` file.
+Replace these instructions with your article. Start with the particular work,
+experience, or question the reader is here to explore. Use only confirmed
+details and your own account; do not invent a title, date, attribution, or
+creative history to fill a gap. The body uses Markdoc, with familiar Markdown
+formatting.
+
+## A structure for a creation story
+
+Introduce the actual work and its confirmed title, medium, dimensions, and
+date where relevant. Describe the starting point, then walk through the
+materials, sketches, decisions, and revisions that shaped the piece. Use
+process photographs and details to show what changed. Reflect on what you
+discovered and what remains unresolved.
+
+These are prompts rather than required sections. Change the field if the
+article is about research or a tradition instead. There is no minimum word
+count. Develop the subject as fully as the piece needs.
+
+## Artwork, details, and sources
+
+Upload the actual cover artwork in the sidebar. Add alternative text,
+a caption identifying what is shown, and confirmed credits. For process
+photographs, use the body's image control. Put each image in its own paragraph
+and fill in Caption and credit to display a caption below it.
+
+The text-editor syntax is shown below; replace every placeholder with the
+details and path of a real image before using it:
+
+```markdown
+![Description of what is visible](/learn/images/articles/your-article/detail.jpg "Confirmed caption and credit")
+```
+
+Use the Sources and further reading fields for references. Include the author,
+title, publication, date, and relevant page numbers; a URL is optional for print
+sources. Link evidence near historical or factual claims in the body, and
+distinguish those claims from your own interpretation.
 
 ## Use H2 for the main sections
 
@@ -58,17 +102,19 @@ ends by inviting the reader to draw a card.
   --------
   1. Copy this file:  cp _TEMPLATE.mdoc your-slug.mdoc
   2. Edit the frontmatter and body (or use the visual editor, see below).
-  3. Set `draft: false` when ready to publish.
-  4. Commit and push to main; Cloudflare Pages rebuilds /learn.
+  3. Preview; check images, links, factual claims, and confirmed attribution.
+  4. Update the publish date and set `draft: false` when ready to publish.
+  5. Commit the article and uploaded images; push to main to rebuild /learn.
 
   VISUAL EDITOR
   -------------
   From the repo root:  npm run write
-  Then open http://localhost:4321/learn/keystatic, a full editing UI that
+  Then open http://127.0.0.1:4322/keystatic, a full editing UI that
   writes these same .mdoc files. Files are the source of truth; Keystatic is
   just a UI over them.
 
-  Files starting with `_` (like this one) are ignored as drafts because
-  `draft: true` keeps them out of the build, RSS, sitemap, and llms.txt.
+  `draft: true`, not the filename, keeps this template out of the published
+  site, RSS, sitemap, and llms.txt. New editor entries also start as drafts.
+  A research-note editorial status labels a piece but does not hide it.
   Leave this template here as a reference; it will never publish while draft.
 -->

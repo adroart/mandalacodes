@@ -2,6 +2,7 @@
 import '../styles/global.css'
 import '../styles/site-bar.css'
 import NavigationStatic from '../../../components/NavigationStatic'
+import { absoluteUrl, serializeJsonLd } from '../lib/metadata'
 
 interface Props {
   title: string
@@ -9,16 +10,18 @@ interface Props {
   /** Extra JSON-LD blocks to inject (Article, BreadcrumbList, …) */
   jsonLd?: Record<string, unknown>[]
   ogType?: string
+  ogImage?: string
+  ogImageAlt?: string
+  noindex?: boolean
   /** Field name to tint this page's accent (per-essay tint on article pages). */
   accent?: string
 }
 
-const { title, description, jsonLd = [], ogType = 'website', accent } = Astro.props
+const { title, description, jsonLd = [], ogType = 'website', ogImage: image, ogImageAlt, noindex = false, accent } = Astro.props
 
 const canonical = new URL(Astro.url.pathname, Astro.site)
-const ogImage =
-  'https://mandalacodes.com/media/image/48_ttflpq?w=1200&h=630'
-const base = import.meta.env.BASE_URL
+const ogImage = absoluteUrl(image || '/media/image/48_ttflpq?w=1200&h=630')
+const base = import.meta.env.BASE_URL.replace(/\/$/, '')
 ---
 
 <!doctype html>
@@ -36,6 +39,7 @@ const base = import.meta.env.BASE_URL
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link
@@ -58,13 +62,15 @@ const base = import.meta.env.BASE_URL
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
+    {ogImageAlt && <meta property="og:image:alt" content={ogImageAlt} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    {ogImageAlt && <meta name="twitter:image:alt" content={ogImageAlt} />}
 
     {jsonLd.map(block => (
-      <script type="application/ld+json" set:html={JSON.stringify(block)} />
+      <script type="application/ld+json" set:html={serializeJsonLd(block)} />
     ))}
 
     {/* Speculative prerender, mirror of the app's rule: hovering any bar link
@@ -127,6 +133,7 @@ const base = import.meta.env.BASE_URL
     </script>
   </head>
   <body>
+    <a class="lp-skip-link" href="#main-content">Skip to content</a>
     {/* THE site bar — the app's own component, hydrated here. Markup, styling
         and behavior live in components/NavigationCore.tsx; this island is the
         only header either surface has, so the two can never drift. The
@@ -138,7 +145,7 @@ const base = import.meta.env.BASE_URL
     <div class="lp-page" data-r="page" data-motion="on" style={accent ? `--field-accent: ${accent}` : undefined}>
       <div class="lp-grain" data-r="grain"></div>
 
-      <slot />
+      <main id="main-content" tabindex="-1"><slot /></main>
 
       <footer class="lp-site-footer">
         Part of the <a href="/universal-language">Universal Language</a> ·
@@ -168,7 +175,7 @@ const base = import.meta.env.BASE_URL
         }
 
         // Magnetic CTAs: lean slightly toward the cursor (fine pointers only).
-        if (window.matchMedia('(pointer: fine)').matches) {
+        if (!reduce && window.matchMedia('(pointer: fine)').matches) {
           document.querySelectorAll('[data-magnetic]').forEach(function (el) {
             var s = 0.3
             el.addEventListener('mousemove', function (ev) {
@@ -186,3 +193,8 @@ const base = import.meta.env.BASE_URL
     </script>
   </body>
 </html>
+
+<style>
+  .lp-skip-link { position: fixed; top: 12px; left: 12px; z-index: 10000; padding: 12px 18px; background: #f3efe7; color: #211c16; border: 2px solid currentColor; border-radius: 4px; transform: translateY(-200%); }
+  .lp-skip-link:focus { transform: translateY(0); }
+</style>

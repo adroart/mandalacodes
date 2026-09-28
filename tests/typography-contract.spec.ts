@@ -77,11 +77,11 @@ test('the oracle reading resolves typography through the shared roles', async ({
 test('the learn article resolves typography through the same shared roles', async ({ page }) => {
   await page.goto('/learn/what-is-a-mandala/');
 
-  const article = page.locator('.lp-read-section');
+  const article = page.locator('.article-reader');
   await expect(article).toBeVisible();
   await waitForFonts(page);
 
-  const title = article.locator('.lp-read-title');
+  const title = article.locator('.article-masthead h1');
   const prose = article.locator('.lp-read-body p').first();
   const navigation = await visibleSharedNavigationLabel(page, '.mc-site-bar .site-bar-root');
 
