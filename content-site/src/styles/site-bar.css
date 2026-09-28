@@ -9,10 +9,6 @@
  * Tailwind's global preflight reset is NOT imported, so the library's own
  * lp-* reading styles stay byte-for-byte untouched.
  * ─────────────────────────────────────────────────────────────────────────── */
-/* Layer order is set by first mention. Without this line `base` (declared
-   below, after the utilities import) came last and outranked the bar's own
-   colour utilities, so every menu link inherited the library's body ink. */
-@layer theme, base, utilities;
 @import 'tailwindcss/theme.css' layer(theme) source(none);
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 @import '../../../src/theme.css';
@@ -48,4 +44,12 @@
 }
 .lp-page {
   padding-top: var(--nav-height);
+}
+
+/* The shared nav measures available space after hydration. Keep its desktop
+   links from overlapping the wordmark during the initial narrow-screen paint. */
+@media (max-width: 1100px) {
+  .mc-site-bar astro-island[ssr] .site-bar-root [aria-hidden='false'] {
+    visibility: hidden;
+  }
 }
