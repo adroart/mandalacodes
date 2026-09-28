@@ -10,7 +10,7 @@ test('controlled Oracle navigation preserves the Astro Learn library and article
   await page.reload();
   await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
   await page.goto('/learn');
-  await expect(page.locator('h1')).toContainText(/Learn|Library|mandala/i);
+  await expect(page.locator('h1')).toContainText(/Learn|mandala/i);
   await expect(page.locator('[data-site-shell]')).toHaveCount(0);
   expect(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
   const article = await page.locator('a[href^="/learn/"]').evaluateAll(links => links

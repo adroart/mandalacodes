@@ -17,26 +17,17 @@ interface Props {
 }
 
 const { fieldValue, label } = Astro.props
+const base = import.meta.env.BASE_URL
+
 const articles = await getPublishedArticles()
 const views = articles.map((a, i) => toView(a, i))
-const categoryViews = views.filter(view => view.field === fieldValue)
-const featured = categoryViews.find(view => view.status === 'article')
-const noindex = !featured
-const descriptions: Record<string, string> = {
-  'Creation Stories': 'The making of mandala art: materials, creative decisions, and the stories behind individual works.',
-  Foundations: 'Explore the meaning of mandalas, their forms, and ways of understanding them.',
-  Traditions: 'Explore mandalas within the cultural and contemplative traditions that give them meaning.',
-  'Symbolism & Geometry': 'Explore the geometry, patterns, and symbolism found in mandala art.',
-  History: 'Explore the history of mandala art and related circular forms across cultures.',
-}
-const description = descriptions[fieldValue] || `Articles on mandalas in the field of ${label}.`
 
 const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: `${label} · Learn · Mandala Codes`,
-    description,
+    description: `Articles on mandalas in the field of ${label}.`,
     url: new URL(Astro.url.pathname, Astro.site).href,
     isPartOf: { '@type': 'WebSite', name: 'Mandala Codes', url: 'https://mandalacodes.com' },
   },
@@ -45,11 +36,8 @@ const jsonLd = [
 
 <Base
   title={`${label} · Learn · Mandala Codes`}
-  description={description}
+  description={`Articles on mandalas in the field of ${label}, part of the Mandala Codes Learn library.`}
   jsonLd={jsonLd}
-  ogImage={featured?.heroWide}
-  ogImageAlt={featured?.coverAlt}
-  noindex={noindex}
 >
   <Library views={views} active={fieldValue} />
 </Base>

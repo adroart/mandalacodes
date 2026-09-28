@@ -1,15 +1,15 @@
 import rss from '@astrojs/rss'
 import type { APIContext } from 'astro'
-import { getIndexableArticles } from '../lib/articles'
+import { getPublishedArticles } from '../lib/articles'
 
 export async function GET(context: APIContext) {
-  const articles = await getIndexableArticles()
-  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+  const articles = await getPublishedArticles()
+  const base = import.meta.env.BASE_URL
 
   return rss({
     title: 'Mandala Codes · Learn',
     description:
-      'Articles on mandala art, its creation, geometry, history, and traditions.',
+      'Essays and reference articles on mandalas, the I Ching, Gene Keys, and Human Design.',
     site: context.site!,
     items: articles.map(article => ({
       title: article.data.title,

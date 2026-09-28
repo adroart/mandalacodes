@@ -24,7 +24,6 @@ const FALLBACK_COVERS = [
 ]
 
 export const FIELDS = [
-  'Creation Stories',
   'Foundations',
   'Traditions',
   'Symbolism & Geometry',
@@ -34,7 +33,6 @@ export const FIELDS = [
 /** Tab definitions: short label, the field value it filters to, and the URL slug. */
 export const TABS: { label: string; value: string; slug: string }[] = [
   { label: 'All', value: 'All', slug: '' },
-  { label: 'Creation stories', value: 'Creation Stories', slug: 'creation-stories' },
   { label: 'Foundations', value: 'Foundations', slug: 'foundations' },
   { label: 'Traditions', value: 'Traditions', slug: 'traditions' },
   { label: 'Geometry', value: 'Symbolism & Geometry', slug: 'geometry' },
@@ -87,7 +85,6 @@ export interface ArticleView {
   description: string
   field: string
   culture: string
-  tags: string[]
   cover: string // square cover for rows/medallions/related
   coverWide: string // landscape cover for spotlight/figure
   heroWide: string // large landscape for hero
@@ -98,32 +95,25 @@ export interface ArticleView {
   plate: string
   tint: string
   spotlight: boolean
-  status: 'article' | 'research-note'
-  coverAlt: string
-  coverCaption: string
-  coverCredit: string
-  author?: string
-  authorUrl?: string
 }
 
-const DATE_LONG = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })
+const DATE_LONG = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 
 /** Decorate a raw article entry into the view-model the design templates expect. */
 export function toView(article: Article, index: number): ArticleView {
   const d = article.data
   const field = d.field || 'Foundations'
-  const coverId = d.cover || FALLBACK_COVERS[Array.from(article.id).reduce((sum, char) => sum + char.charCodeAt(0), 0) % FALLBACK_COVERS.length]
-  const read = estimateRead(article.body ?? '')
+  const coverId = d.cover || FALLBACK_COVERS[index % FALLBACK_COVERS.length]
+  const read = d.readTime || estimateRead(article.body ?? '')
   return {
     id: article.id,
     title: d.title,
     description: d.description,
     field,
     culture: d.culture || 'Universal',
-    tags: d.tags,
-    cover: d.coverImage || cloud(coverId, 460),
-    coverWide: d.coverImage || cloud(coverId, 900),
-    heroWide: d.coverImage || cloud(coverId, 1200),
+    cover: cloud(coverId, 460),
+    coverWide: cloud(coverId, 900, 680),
+    heroWide: cloud(coverId, 1700, 1050),
     read,
     date: DATE_LONG.format(d.pubDate),
     dateShort: DATE_LONG.format(d.pubDate),
@@ -131,27 +121,5 @@ export function toView(article: Article, index: number): ArticleView {
     plate: String(coverId.split('_')[0]).padStart(2, '0'),
     tint: fieldTint(field),
     spotlight: d.spotlight,
-    status: d.editorialStatus || 'article',
-    coverAlt: d.coverAlt || 'Mandala artwork accompanying this article',
-    coverCaption: d.coverCaption || 'Accompanying artwork',
-    coverCredit: d.coverCredit || '',
-    author: d.author || undefined,
-    authorUrl: d.authorUrl || undefined,
   }
-}
-
-/** Public research notes keep their URLs, but are not promoted for indexing. */
-export async function getIndexableArticles(): Promise<Article[]> {
-  return (await getPublishedArticles()).filter(article => article.data.editorialStatus !== 'research-note')
-}
-
-/** Shared subject, artwork and tags are stronger signals than recency alone. */
-export function getRelatedArticles(article: Article, articles: Article[], limit = 3): Article[] {
-  const score = (candidate: Article) =>
-    (candidate.data.field === article.data.field ? 3 : 0) +
-    (article.data.relatedCard && candidate.data.relatedCard === article.data.relatedCard ? 5 : 0) +
-    candidate.data.tags.filter(tag => article.data.tags.includes(tag)).length * 2
-  return articles.filter(candidate => candidate.id !== article.id && candidate.data.editorialStatus !== 'research-note')
-    .sort((a, b) => score(b) - score(a) || b.data.pubDate.valueOf() - a.data.pubDate.valueOf() || a.id.localeCompare(b.id))
-    .slice(0, limit)
 }
