@@ -1,4 +1,6 @@
 import { defineConfig } from 'astro/config'
+import { readFileSync, existsSync, realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import react from '@astrojs/react'
 import markdoc from '@astrojs/markdoc'
 import sitemap from '@astrojs/sitemap'
@@ -7,7 +9,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 // Keystatic's admin UI needs server routes, which only exist in `astro dev`.
 // Production builds stay fully static (no adapter needed), so the editor is
-// available at localhost:4321/learn/keystatic but never shipped to Cloudflare.
+// available through `npm run write` at 127.0.0.1:4322/keystatic, never shipped
+// to Cloudflare. The writer overrides base to `/` for Keystatic's root routes.
 const isDev = process.argv.includes('dev')
 
 export default defineConfig({
@@ -19,7 +22,33 @@ export default defineConfig({
     // via NavigationStatic), rendered here so the two surfaces can never drift.
     // Tailwind compiles its classes from the shared theme contract — see
     // src/styles/site-bar.css.
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), {
+      name: 'writing-preview-shared-assets',
+      configureServer(server) {
+        server.middlewares.use((request, response, next) => {
+          const pathname = (request.url || '').split('?')[0]
+          // The writer is a separate server; share only these public assets.
+          if (!/^\/fonts\/[a-zA-Z0-9_.-]+\.woff2?$/.test(pathname) && pathname !== '/favicon.svg') return next()
+          const asset = fileURLToPath(new URL(`../public${pathname}`, import.meta.url))
+          if (!existsSync(asset)) return next()
+          response.setHeader('Content-Type', pathname.endsWith('.svg') ? 'image/svg+xml' : pathname.endsWith('.woff2') ? 'font/woff2' : 'font/woff')
+          response.end(readFileSync(asset))
+        })
+      },
+    }, {
+      name: 'writer-upload-preview',
+      configureServer(server) {
+        if (server.config.base !== '/') return
+        // Upload paths retain the published prefix; map only this directory
+        // to the writer's public files without changing saved article URLs.
+        server.middlewares.use((request, _response, next) => {
+          if (request.url?.startsWith('/learn/images/articles/')) {
+            request.url = request.url.slice('/learn'.length)
+          }
+          next()
+        })
+      },
+    }],
     // ONE React rule. The bar's source lives in the ROOT repo, whose own
     // node_modules carries react 18; this package renders with react 19. Any
     // react resolution that leaks to the root copy (or gets bundled as a second
@@ -41,6 +70,9 @@ export default defineConfig({
     //     page. Deduping lucide-react pins both passes to this one copy.
     resolve: { dedupe: ['react', 'react-dom', 'lucide-react'] },
     ssr: { external: ['react', 'react-dom'], noExternal: ['lucide-react'] },
-    server: { fs: { allow: ['..'] } },
+    server: {
+      fs: { allow: ['..', realpathSync(fileURLToPath(new URL('./node_modules', import.meta.url)))] },
+      proxy: { '/media/': { target: 'https://mandalacodes.com', changeOrigin: true } },
+    },
   },
 })

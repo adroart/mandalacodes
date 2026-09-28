@@ -16,6 +16,7 @@ import BuySheet from './oracle/BuySheet';
 import OracleShareSheet from './oracle/OracleShareSheet';
 import YourPositionCallout from './oracle/YourPositionCallout';
 import RelationsStack from './oracle/RelationsStack';
+import RelatedArticles from './oracle/RelatedArticles';
 import { LAUNCH_FLAGS } from '../launchFlags';
 import ChannelStatusLine from './oracle/ChannelStatusLine';
 import SaveToCollectionButton from './account/SaveToCollectionButton';
@@ -305,6 +306,7 @@ const UniversalLanguageCard: React.FC = () => {
         ) : undefined}
         hdChannelSlot={<ChannelStatusLine gate={card.human_design.gate} />}
       />
+      <RelatedArticles cardNum={card.number} palette={palette} />
       </>
       } />
       <BuySheet

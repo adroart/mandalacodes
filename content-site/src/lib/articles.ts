@@ -25,6 +25,7 @@ const FALLBACK_COVERS = [
 
 export const FIELDS = [
   'Foundations',
+  'Creation Stories',
   'Traditions',
   'Symbolism & Geometry',
   'History',
@@ -34,6 +35,7 @@ export const FIELDS = [
 export const TABS: { label: string; value: string; slug: string }[] = [
   { label: 'All', value: 'All', slug: '' },
   { label: 'Foundations', value: 'Foundations', slug: 'foundations' },
+  { label: 'Creation Stories', value: 'Creation Stories', slug: 'creation-stories' },
   { label: 'Traditions', value: 'Traditions', slug: 'traditions' },
   { label: 'Geometry', value: 'Symbolism & Geometry', slug: 'geometry' },
   { label: 'History', value: 'History', slug: 'history' },
@@ -44,6 +46,7 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'
 // Quiet per-field hue, blended ~22% toward the base accent so it stays bronze-family.
 const HUE: Record<string, string> = {
   Foundations: '#caa14a',
+  'Creation Stories': '#ba8b52',
   Traditions: '#c2742f',
   'Symbolism & Geometry': '#5f9a86',
   History: '#b85c3c',
@@ -85,6 +88,12 @@ export interface ArticleView {
   description: string
   field: string
   culture: string
+  tags: string[]
+  coverAlt: string
+  coverCaption: string
+  coverCredit: string
+  author?: string
+  authorUrl?: string
   cover: string // square cover for rows/medallions/related
   coverWide: string // landscape cover for spotlight/figure
   heroWide: string // large landscape for hero
@@ -97,23 +106,29 @@ export interface ArticleView {
   spotlight: boolean
 }
 
-const DATE_LONG = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+const DATE_LONG = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })
 
 /** Decorate a raw article entry into the view-model the design templates expect. */
 export function toView(article: Article, index: number): ArticleView {
   const d = article.data
   const field = d.field || 'Foundations'
   const coverId = d.cover || FALLBACK_COVERS[index % FALLBACK_COVERS.length]
-  const read = d.readTime || estimateRead(article.body ?? '')
+  const read = estimateRead(article.body ?? '')
   return {
     id: article.id,
     title: d.title,
     description: d.description,
     field,
     culture: d.culture || 'Universal',
-    cover: cloud(coverId, 460),
-    coverWide: cloud(coverId, 900, 680),
-    heroWide: cloud(coverId, 1700, 1050),
+    tags: d.tags,
+    coverAlt: d.coverAlt || '',
+    coverCaption: d.coverCaption || '',
+    coverCredit: d.coverCredit || '',
+    author: d.author?.trim() || undefined,
+    authorUrl: d.authorUrl || undefined,
+    cover: d.coverImage || cloud(coverId, 460),
+    coverWide: d.coverImage || cloud(coverId, 900, 680),
+    heroWide: d.coverImage || cloud(coverId, 1700, 1050),
     read,
     date: DATE_LONG.format(d.pubDate),
     dateShort: DATE_LONG.format(d.pubDate),

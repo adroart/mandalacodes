@@ -8,6 +8,8 @@ const articles = defineCollection({
     description: z.string(),
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
+    author: z.string().optional(),
+    authorUrl: z.string().url().regex(/^https?:\/\//i).or(z.literal('')).optional(),
     tags: z.array(z.string()).default([]),
     relatedCard: z.number().int().min(1).max(64).optional(),
     draft: z.boolean().default(false),
@@ -19,6 +21,10 @@ const articles = defineCollection({
     culture: z.string().optional(),
     /** Media object ID of the cover artwork, e.g. "1_o8tafh". Falls back to a deck plate when omitted. */
     cover: z.string().optional(),
+    coverImage: z.string().optional(),
+    coverAlt: z.string().optional(),
+    coverCaption: z.string().optional(),
+    coverCredit: z.string().optional(),
     /** Estimated reading time, e.g. "9 min". Computed from body length when omitted. */
     readTime: z.string().optional(),
     /** Lift this article into the Library spotlight band. At most one should be true. */
