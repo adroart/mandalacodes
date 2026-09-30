@@ -171,7 +171,8 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
 
   const safariHandoff = showSafariHandoff ? (
     <a
-      className="oracle-safari-handoff"
+      className="eb-reading oracle-safari-handoff"
+      data-palette={palette}
       href={`/universal-language/${current.number}`}
       target="_blank"
       rel="external noopener noreferrer"
