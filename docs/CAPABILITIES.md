@@ -2,9 +2,9 @@
 
 > **GENERATED — do not edit by hand.** Rerun
 > `npx tsx scripts/gen-capabilities-portable.ts`. It reads the code, so it cannot drift.
-> Generated 2026-09-08T11:02:33.245Z.
+> Generated 2026-09-30T11:55:59.375Z.
 
-**At a glance:** 24 commands.
+**At a glance:** 32 commands.
 
 ## Commands (how to use it)
 
@@ -13,6 +13,7 @@
 | `npm run dev` | `vite --port 2222` |
 | `npm run dev:full` | `npm run build && wrangler pages dev dist --port 2222 --ip 127.0.0.1` |
 | `npm run build:search-index` | `tsx scripts/build-search-index.ts` |
+| `npm run refill:extracts` | `node scripts/refill-vault-extracts.mjs` |
 | `npm run build:oracle-corpus` | `tsx scripts/build-oracle-corpus.ts` |
 | `npm run build:content` | `npm --prefix content-site install --no-audit --no-fund && npm --prefix content-site run build && rm -rf public/learn && cp -R content-site/dist public/learn` |
 | `npm run lint:prose` | `tsx scripts/lint-oracle-prose.ts` |
@@ -22,18 +23,25 @@
 | `npm run build` | `vite build && tsx scripts/prerender-cards.ts` |
 | `npm run build:designer` | `cd ../led/lightweaver && npx vite build --base=/design/ && rm -rf ../../mandalacodes/public/design && mkdir -p ../../mandalacodes/public/design && cp -R dist/. ../../mandalacodes/public/design/ && rm -f ../../mandalacodes/public/design/_headers ../../mandalacodes/public/design/_redirects` |
 | `npm run build:all` | `npm run build:designer && npm run build` |
-| `npm run typecheck` | `tsc --noEmit` |
+| `npm run typecheck` | `tsc --noEmit && tsc --noEmit -p workers/tsconfig.json` |
 | `npm run preview` | `vite preview` |
 | `npm run generate:qr` | `tsx scripts/generate-ul-qr.ts` |
 | `npm run verify:profile` | `tsx scripts/verify-profile-math.ts` |
 | `npm run generate:land-dots` | `tsx scripts/generate-land-dots.ts` |
 | `npm run test` | `npx playwright test` |
 | `npm run test:mobile` | `npx playwright test --project='Mobile Chrome' --reporter=list` |
+| `npm run test:pwa` | `playwright test --config=playwright.pwa.config.ts` |
 | `npm run test:live-oracle` | `LIVE_ORACLE_BASE_URL=https://mandalacodes.com playwright test tests/live-oracle-cards.spec.ts` |
 | `npm run test:unit` | `vitest run` |
 | `npm run check:migrate-oracle-card` | `tsx scripts/migrate-oracle-card.ts --check` |
 | `npm run backup:atlas` | `tsx scripts/backup-atlas.ts` |
 | `npm run postbuild` | `node scripts/build-csp-headers.mjs` |
+| `npm run lint:tells` | `node scripts/oracle-tells.mjs` |
+| `npm run lint:entrance` | `node scripts/lint-entrance.mjs` |
+| `npm run lint:slop` | `node scripts/lint-slop.mjs` |
+| `npm run workbook` | `tsx scripts/oracle-workbook.ts` |
+| `npm run progress` | `node scripts/card-progress.mjs` |
+| `npm run card:gate` | `node scripts/card-gate.mjs` |
 
 ---
 
