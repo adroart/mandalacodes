@@ -142,8 +142,8 @@ export function castForHexagram(primaryNumber: number): CastResult {
 }
 
 /**
- * A free six-coin cast with no fixed primary hexagram. Reserved for the
- * future "draw a reading" surface; not used by the card-page panel.
+ * A free six-line cast with no fixed primary hexagram, used by the deck
+ * chooser. Each line is one toss of three coins.
  */
 export function castFree(): CastResult {
   const lines: CastLine[] = [];

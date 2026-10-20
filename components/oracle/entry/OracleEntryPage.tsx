@@ -29,6 +29,7 @@ import { LAUNCH_FLAGS } from '../../../launchFlags';
 import { todaysEnergy, yearsEnergy } from '../../../lib/astrology/today';
 import { OracleEntryHost, type EntryCard, type EntryAdapter } from './generated/OracleEntry.host';
 import OracleRailTop from './OracleRailTop';
+import OracleDrawDialog from './OracleDrawDialog';
 import { warmOracleForOffline } from '../../../lib/oracle/offlineWarm';
 import './OracleEntry.scoped.css';
 
@@ -86,6 +87,8 @@ const OracleEntryPage: React.FC = () => {
   const { record: recordJournal } = useJournal();
   const { profile } = useProfile();
   const account = useAccount();
+  const [drawOpen, setDrawOpen] = useState(false);
+  const closeDraw = useCallback(() => setDrawOpen(false), []);
   const [systemsOpen, setSystemsOpen] = useState(false);
   const [gridOpen, setGridOpen] = useState(false);
 
@@ -218,6 +221,7 @@ ${cell}::after{content:'${label}';position:absolute;left:-24px;right:-24px;botto
         hasCodes={hasCodes}
         onEnterReading={onEnterReading}
         onCardOpened={onCardOpened}
+        onDrawCard={() => setDrawOpen(true)}
         onOpenSystems={() => setSystemsOpen(true)}
         onOpenGrid={() => {
           // Always open the sign-in / birth-moment overlay: this is where you
@@ -241,6 +245,11 @@ ${cell}::after{content:'${label}';position:absolute;left:-24px;right:-24px;botto
           />
         }
       />
+
+      {drawOpen && <OracleDrawDialog theme={isDarkMode ? 'dark' : 'light'} onClose={closeDraw} onOpen={(number, cast) => {
+        onCardOpened(number);
+        navigate(`/universal-language/${number}`, { state: { entrance: true, oracleCast: cast } });
+      }} />}
 
       {/* Systems overlay (kept from the previous index — the rail links target it) */}
       {systemsOpen && (

@@ -269,7 +269,7 @@ export const OracleEntryMarkup: React.FC<{ vals: any }> = ({ vals }) => (
       The Systems &amp; Connections →
       </button>
       <button type="button" onClick={vals.drawRandom} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: "var(--font-ui)", fontSize: "11px", fontWeight: "700", letterSpacing: ".18em", textTransform: "uppercase", color: "var(--accent,#8a744e)" } as unknown as React.CSSProperties}>
-      Draw at Random →
+      Draw a card →
       </button>
     </div>
   </footer>
