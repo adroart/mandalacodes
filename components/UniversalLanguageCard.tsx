@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import type { CastResult } from '../utils/ichingCasting';
 import { CARD_BY_NUMBER } from '../data/oracleData';
 import { HexagramSVG, hexagramLineBooleans } from './oracle/HexagramGlyph';
 import { astrologyGlyph, hebrewLetterGlyph, tarotNumeral } from '../utils/relationsDiagram';
@@ -291,6 +292,7 @@ const UniversalLanguageCard: React.FC = () => {
         accent="bronze"
         reduceMotion={prefersReducedMotion()}
         showEntrance={showEntrance}
+        initialCast={(location.state?.oracleCast as CastResult | undefined)?.primaryNumber === card.number ? location.state.oracleCast : undefined}
         onAcquire={() => setBuyOpen(true)}
         onShare={() => setShareOpen(true)}
         onOpenCode={(code) => navigate(`/universal-language/${code}`)}

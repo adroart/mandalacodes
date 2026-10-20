@@ -70,6 +70,7 @@ interface HostProps {
   hasCodes?: boolean;
   /** Route a selected card to the full reading page. */
   onEnterReading?: (n: number) => void;
+  onDrawCard?: () => void;
   onOpenSystems?: () => void; // app Systems overlay / page
   onOpenGrid?: () => void; // app "your codes" grid / sign-in
   /** Open the visitor's Hologenetic profile (shown once a birth moment is saved). */
@@ -182,7 +183,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     const fillBorder = '1px solid var(--accent,#8a744e)';
     const fillFg = 'var(--onAccent,#f7f5f1)';
     const actions = [
-      { key: 'draw', label: 'Draw a card', emphasis: true, bg: fillBg, border: fillBorder, fg: fillFg, aria: 'Draw a random card', onClick: () => { const c = all[Math.floor(Math.random() * all.length)]; if (c) this.openReading(c); } },
+      { key: 'draw', label: 'Draw a card', emphasis: true, bg: fillBg, border: fillBorder, fg: fillFg, aria: 'Draw a card', onClick: () => this.props.onDrawCard?.() },
     ];
 
     // The invitation. Until a birth moment is saved it's a centered button that
@@ -339,10 +340,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
       themeLabel: theme === 'dark' ? 'Light' : 'Dark',
       onQuery: (e: any) => this.setState({ query: e.target.value }),
       toggleTheme: () => this.setState({ themeOverride: this.theme === 'dark' ? 'light' : 'dark' }),
-      drawRandom: () => {
-        const c = all[Math.floor(Math.random() * all.length)];
-        if (c) this.openReading(c);
-      },
+      drawRandom: () => this.props.onDrawCard?.(),
       // App bridges (the design's no-ops are replaced with real app actions):
       openSystems: () => this.props.onOpenSystems?.(),
       openGrid: () => this.props.onOpenGrid?.(),

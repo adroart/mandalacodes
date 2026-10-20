@@ -7,6 +7,7 @@
    Relations panel mounts `relationsSlot` (a React component with its own
    state) when one is passed, else the template’s orbit (KIN / RELDATA / relSel). */
 import React from 'react';
+import type { CastResult } from '../../../../utils/ichingCasting';
 import { createRoot, type Root } from 'react-dom/client';
 import { themeCanvasFont } from '../../../../shared/themeFonts';
 import { OracleEntrancePortal } from '../OracleEntrancePortal';
@@ -42,6 +43,7 @@ interface HostProps {
   accent?: string;
   reduceMotion?: boolean;
   showEntrance?: boolean;
+  initialCast?: CastResult;
   onAcquire?: () => void;     // bridge to the app BuySheet (the previous Acquire panel)
   onShare?: () => void;       // bridge to the app share sheet (the previous Share panel)
   onOpenCode: (code: number) => void; // route from a cast directly to its resulting code
@@ -84,7 +86,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
     entranceDismissed: false,
     choreography: ((this.props.showEntrance ?? true) ? 'entrance' : 'reading') as ChoreographyPhase,
     active: 'ul',
-    cast: null as any,
+    cast: this.props.initialCast ? { lines: this.props.initialCast.lines } : null as any,
     casting: false,
     lightbox: false,
     share: false,
