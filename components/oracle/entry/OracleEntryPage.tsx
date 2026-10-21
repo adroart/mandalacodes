@@ -70,6 +70,26 @@ function hexLines(u: string, l: string): boolean[] {
   return [...U, ...L];
 }
 
+/* The back of a flipped tile, while its art downloads, shows the same hexagram
+   as the front with the colours swapped: the front's line colour becomes the
+   ground and the page colour becomes the lines. Each card's hexagram is a mask
+   drawn with the front glyph's own geometry (dc-hexagram-element.ts), so the
+   two faces are the same sign. The colours and the fade live in
+   OracleEntry.scoped.css. */
+const HEX_BACK_CSS = ALL_CARDS.map((card) => {
+  const LH = 9.6, GAP = 6.2, y0 = (100 - (6 * LH + 5 * GAP)) / 2;
+  const rects = hexLines(card.iching.upper_trigram.symbol, card.iching.lower_trigram.symbol)
+    .map((solid, i) => {
+      const y = y0 + i * (LH + GAP);
+      return solid
+        ? `<rect x="8" y="${y}" width="84" height="${LH}" rx="0.6"/>`
+        : `<rect x="8" y="${y}" width="34" height="${LH}" rx="0.6"/><rect x="58" y="${y}" width="34" height="${LH}" rx="0.6"/>`;
+    })
+    .join('');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">${rects}</svg>`;
+  return `.oe-root [data-oe="ichgrid"] [data-oe-num="${card.number}"]{--oe-hex:url("data:image/svg+xml,${encodeURIComponent(svg)}")}`;
+}).join('\n');
+
 /* ── reused overlay shell ───────────────────────────────────────────────────── */
 const Overlay: React.FC<{ onClose: () => void; width: string; children: React.ReactNode; label: string }> = ({ onClose, width, children, label }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -214,7 +234,8 @@ const OracleEntryPage: React.FC = () => {
   /* Today and this year are lit where they sit in the deck, with their word
      beneath, so the day's energy is found in the field itself. The numbers
      change daily, so the rules are written here; the two inks (--dayInk,
-     --yearInk) are theme tokens in OracleEntry.scoped.css. */
+     --yearInk) are theme tokens in OracleEntry.scoped.css. A flipped card puts
+     Back and Read in that same spot, so the word fades out while they show. */
   const dayCss = useMemo(() => {
     const today = todaysEnergy().gate;
     const year = yearsEnergy().gate;
@@ -223,13 +244,15 @@ const OracleEntryPage: React.FC = () => {
       return `${cell}{--ink3:var(${ink})}
 ${cell} [data-oe="cardnum"]{color:var(${ink}) !important}
 ${glow ? `${cell} dc-import{filter:drop-shadow(0 0 10px color-mix(in oklab,var(${ink}) 45%,transparent))}` : ''}
-${cell}::after{content:'${label}';position:absolute;left:-24px;right:-24px;bottom:6px;text-align:center;pointer-events:none;white-space:nowrap;font-family:var(--font-ui);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(${ink})}`;
+${cell}::after{content:'${label}';position:absolute;left:-24px;right:-24px;bottom:6px;text-align:center;pointer-events:none;white-space:nowrap;font-family:var(--font-ui);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(${ink});transition:opacity .3s ease}
+${cell}:has(> span button)::after{opacity:0}`;
     };
     return rules(today, '--dayInk', 'Today', true) + (year === today ? '' : `\n${rules(year, '--yearInk', 'This year', false)}`);
   }, []);
 
   return (
     <div ref={rootRef} className="oe-root pt-[var(--nav-height)]">
+      <style>{HEX_BACK_CSS}</style>
       <style>{dayCss}</style>
       <OracleEntryHost
         adapter={adapter}
