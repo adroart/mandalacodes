@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { img } from '../../utils/media';
 import { MEDIA_SIZE_PAIRS, MEDIA_WIDTHS } from '../../utils/mediaSizes';
-import { ulCardImageUrl } from '../../utils/universalLanguage';
+import { ulCardHeroSrcset, ulCardImageUrl } from '../../utils/universalLanguage';
 
 function size(url: string) {
   const params = new URL(url, 'https://mandalacodes.com').searchParams;
@@ -27,5 +27,18 @@ describe('every image request lands on a size the media worker serves', () => {
       const square = size(img('x', { w: n, h: n }));
       expect(MEDIA_SIZE_PAIRS.has(`${square.w}x${square.h}`)).toBe(true);
     }
+  });
+});
+
+describe('the card reading artwork is offered at every size it can show at', () => {
+  it('lists served squares up to the hero plate, so a laptop never fetches 1100 for a 545 px slot', () => {
+    const widths = ulCardHeroSrcset(22).split(', ').map((candidate) => {
+      const [url, descriptor] = candidate.split(' ');
+      const { w, h } = size(url);
+      expect(w).toBe(h);
+      expect(`${w}w`).toBe(descriptor);
+      return Number(w);
+    });
+    expect(widths).toEqual([400, 640, 800, 1100]);
   });
 });

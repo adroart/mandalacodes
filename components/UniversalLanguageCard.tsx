@@ -162,7 +162,11 @@ const UniversalLanguageCard: React.FC = () => {
         // c_fill/g_center from UL_IMAGE_BY_NUMBER via ulCardImageUrl), so the
         // artwork on the reading is identical to the card on the index, not the
         // physical piece cover (which was a different image).
-        heroImage: ulCardImageUrl(card.number, 1100),
+        // Never shown: this page renders inside the reading shell, which hides
+        // the generated hero (card-reading-fullbleed.css) and shows its own
+        // artwork, sized to the screen. A hidden image still downloads, so this
+        // one asked for the full 1100 plate on every card for nobody.
+        heroImage: 'data:,',
         lightboxImage: ulCardImageUrl(card.number, 1600),
         buyImage: ulCardImageUrl(card.number, 700),
         // hero uses the HEXAGRAM SYMBOL glyph (䷀ U+4DC0+n-1), like the file,
