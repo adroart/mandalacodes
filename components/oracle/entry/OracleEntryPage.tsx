@@ -187,6 +187,24 @@ const OracleEntryPage: React.FC = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [systemsOpen, gridOpen]);
 
+  /* A flipped tile's art fades in only once it has fully arrived (the waiting
+     lines and the fade live in OracleEntry.scoped.css). Image load events do
+     not bubble, so one listener on the root catches them on the way down. The
+     unflipped placeholder ('data:,') is never marked. */
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const onLoad = (event: Event) => {
+      const el = event.target;
+      if (el instanceof HTMLImageElement && el.closest('[data-oe-num]') && !el.src.startsWith('data:')) {
+        el.setAttribute('data-oe-loaded', '');
+      }
+    };
+    root.addEventListener('load', onLoad, true);
+    return () => root.removeEventListener('load', onLoad, true);
+  }, []);
+
   // Opening the deck is a strong signal the visitor is here for a reading;
   // quietly make the whole deck available offline from this point on.
   useEffect(() => {
@@ -211,7 +229,7 @@ ${cell}::after{content:'${label}';position:absolute;left:-24px;right:-24px;botto
   }, []);
 
   return (
-    <div className="oe-root pt-[var(--nav-height)]">
+    <div ref={rootRef} className="oe-root pt-[var(--nav-height)]">
       <style>{dayCss}</style>
       <OracleEntryHost
         adapter={adapter}
