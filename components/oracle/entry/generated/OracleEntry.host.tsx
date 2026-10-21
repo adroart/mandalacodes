@@ -93,6 +93,12 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
     query: '',
     elFilter: 'All',
     flipped: {} as Record<number, boolean>,
+    // Cards whose art has been asked for once. A tile's art sits on its back
+    // face, under the hexagram, so the browser's own lazy loading fetches it
+    // anyway: the deck pulled 37 plates, 1.8 MB, to show none. The art now
+    // loads on the first flip and stays, so flipping back and forth never
+    // refetches.
+    artShown: {} as Record<number, boolean>,
     themeOverride: null as string | null,
     invOverride: null as string | null,
     inviteExpanded: false,
@@ -254,6 +260,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
 
     const yourCodes = this.props.yourCodes;
     const codeLabels = this.props.codeLabels;
+    const artwork = this.state.view === 'artwork';
     const gridCards = filtered.map((c) => {
       const tint = m ? m.tintFor(c) : ['#9d7c48', '#65502f'];
       const flipped = !!this.state.flipped[c.n];
@@ -267,7 +274,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
         hx: c.hx,
         num2: String(c.n).padStart(2, '0'),
         lines: lines(c),
-        art: m ? m.cardImg(c, 320) : '',
+        art: m && (artwork || this.state.artShown[c.n]) ? m.cardImg(c, 320) : 'data:,',
         grad: 'linear-gradient(150deg,' + tint[0] + ',' + tint[1] + ')',
         yours,
         // Resolved here for the same reason as the invitation: the deck's CSS
@@ -348,7 +355,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
   }
 
   flip(n: number) {
-    this.setState((s: any) => ({ flipped: { ...s.flipped, [n]: true } }));
+    this.setState((s: any) => ({ flipped: { ...s.flipped, [n]: true }, artShown: { ...s.artShown, [n]: true } }));
   }
   flipBack(n: number) {
     this.setState((s: any) => {
