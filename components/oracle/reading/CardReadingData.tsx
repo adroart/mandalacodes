@@ -21,6 +21,9 @@ import { warmOracleForOffline } from '../../../lib/oracle/offlineWarm';
 import { hexagramLineBooleans } from '../HexagramGlyph';
 import CardReadingBodyHost, { type CardReadingBodyData } from './generated/CardReadingBody.host';
 
+/* The hexagram's geometry, from the deck glyph (dc-hexagram-element.ts). */
+const HEX_LH = 9.6, HEX_GAP = 6.2, HEX_Y0 = (100 - (6 * HEX_LH + 5 * HEX_GAP)) / 2;
+
 /* Prose in these files is paragraph-separated by blank lines. */
 const paras = (s?: string): string[] =>
   (s ?? '').split('\n\n').map((p) => p.trim()).filter(Boolean);
@@ -85,6 +88,10 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
   const card = CARD_BY_NUMBER.get(cardNumber);
   const [syn, setSyn] = useState<CardSynthesis | undefined>();
   const [loadFailure, setLoadFailure] = useState<unknown>(null);
+  /* Which card's plate has landed, so moving to another card starts it waiting again. */
+  const [artInFor, setArtInFor] = useState<number | null>(null);
+  const artIn = artInFor === cardNumber;
+  const setArtIn = () => setArtInFor(cardNumber);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,16 +159,35 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
 
   /* Full width of its column at the artwork's own square proportion: never
      cropped (the pattern IS the piece) and never letterboxed inside a taller
-     box. The slot's fixed height is released in card-reading-fullbleed.css. */
+     box. The slot's fixed height is released in card-reading-fullbleed.css.
+
+     Until the plate arrives, the slot holds the card's own hexagram with the
+     page's colours swapped, breathing (the same in-between the deck shows on a
+     flipped tile). The art is never held back: it draws over the hexagram the
+     moment it lands, and the hexagram clears once it has. */
   const artwork = (
-    <img
-      src={ulCardHeroImageUrl(card.number)}
-      srcSet={ulCardHeroSrcset(card.number)}
-      sizes={UL_CARD_HERO_SIZES}
-      alt={`${card.card_name} · Code ${card.number}`}
-      style={{ width: '100%', height: 'auto', display: 'block' }}
-      crossOrigin="anonymous"
-    />
+    <div className="card-art-wait" data-art-in={artIn ? '' : undefined}>
+      {!artIn && (
+        <svg className="card-art-wait__hex" viewBox="0 0 100 100" aria-hidden="true">
+          {hexagramLineBooleans(card.iching.upper_trigram.symbol, card.iching.lower_trigram.symbol).map((solid, i) => {
+            const y = HEX_Y0 + i * (HEX_LH + HEX_GAP);
+            return solid
+              ? <rect key={i} x="8" y={y} width="84" height={HEX_LH} rx="0.6" />
+              : <React.Fragment key={i}><rect x="8" y={y} width="34" height={HEX_LH} rx="0.6" /><rect x="58" y={y} width="34" height={HEX_LH} rx="0.6" /></React.Fragment>;
+          })}
+        </svg>
+      )}
+      <img
+        ref={(el) => { if (el?.complete && el.naturalWidth > 0 && !artIn) setArtIn(); }}
+        src={ulCardHeroImageUrl(card.number)}
+        srcSet={ulCardHeroSrcset(card.number)}
+        sizes={UL_CARD_HERO_SIZES}
+        alt={`${card.card_name} · Code ${card.number}`}
+        onLoad={() => setArtIn()}
+        style={{ width: '100%', height: 'auto', display: 'block' }}
+        crossOrigin="anonymous"
+      />
+    </div>
   );
 
   return (

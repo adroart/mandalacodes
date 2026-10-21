@@ -20,7 +20,7 @@ describe('Universal Language image treatment', () => {
     const url = ulCardImageUrl(22, 640);
 
     expect(url).toContain('/media/image/22_lldo5g?');
-    expect(url).not.toContain('format=');
+    expect(url).toContain('format=webp');
     expect(url).not.toContain('segment=foreground');
   });
 
@@ -28,7 +28,7 @@ describe('Universal Language image treatment', () => {
     const url = ulCardImageUrl(21, 640);
 
     expect(url).toContain('/media/image/21_');
-    expect(url).not.toContain('format=');
+    expect(url).toContain('format=webp');
     expect(url).not.toContain('segment=foreground');
   });
 });
