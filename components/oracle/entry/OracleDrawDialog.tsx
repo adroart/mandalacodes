@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ALL_CARDS, CARD_BY_NUMBER, type OracleCard } from '../../../data/oracleData';
 import { useDialogFocus } from '../../../hooks/useDialogFocus';
 import { castFree, type CastResult, type CoinValue } from '../../../utils/ichingCasting';
@@ -98,7 +99,9 @@ export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
     : mode === 'coins' && cast && card ? `Currently at Hexagram ${card.number}, ${card.card_name}.${changed ? ` Moving to Hexagram ${changed.number}, ${changed.card_name}.` : ' Begin with this card as it stands.'}`
     : mode === 'trigrams' && lower ? `Lower trigram: ${lower.name}. ${upper ? `Upper trigram: ${upper.name}. Your hexagram is ready.` : 'Choose the upper trigram.'}` : '';
 
-  return <div className="oracle-draw-backdrop" onClick={onClose}>
+  // Rendered on the body, outside the page: the page fades in on every visit, and a dialog
+  // inside it would fade too, letting the site menu show through. The wrapper keeps the theme tokens.
+  return createPortal(<div className="oe-root"><div className="oracle-draw-backdrop" onClick={onClose}>
     <div ref={panel} className="oracle-draw" data-theme={theme} data-method={mode} role="dialog" aria-modal="true" aria-labelledby="oracle-draw-title" tabIndex={-1} onClick={event => event.stopPropagation()}>
       <header className="oracle-draw-header">
         <h2 id="oracle-draw-title" className="oracle-draw-sr">Draw a card</h2>
@@ -123,7 +126,7 @@ export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
         {mode === 'trigrams' && <TrigramRing lower={lower} upper={upper} step={step} picks={picks} card={card || null} onPick={pick} onEdit={setStep} onOpen={onOpen} />}
       </div>
     </div>
-  </div>;
+  </div></div>, document.body);
 }
 
 /* The cast plays on its own clock so it can pause, skip, and be cleared on close. */

@@ -103,13 +103,13 @@ test('the 40 to 54 cast fits as a connected pair on a phone', async ({ page }) =
 
 test('casting keeps focus in the result and leaves the page behind inert', async ({ page }) => {
   const dialog = page.getByRole('dialog', { name: 'Draw a card' });
-  await expect(page.locator('.oe-root > [data-theme]')).toHaveAttribute('inert', '');
+  await expect(page.locator('#root')).toHaveAttribute('inert', '');
   await dialog.getByRole('button', { name: 'Throw the coins', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(dialog.getByRole('region', { name: 'Your hexagram' })).toBeFocused();
   await expect(dialog.getByRole('button', { name: /^Open card \d+$/ }).first()).toBeInViewport();
   await page.keyboard.press('Escape');
-  await expect(page.locator('.oe-root > [data-theme]')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#root')).not.toHaveAttribute('inert', '');
   await expect(page.getByRole('button', { name: 'Draw a card', exact: true }).first()).toBeFocused();
 });
 
@@ -218,4 +218,20 @@ test('dialog keeps the same size across both methods and the cast result', async
   await dialog.getByRole('tab', { name: 'Cast coins' }).click();
   expect(await dialog.boundingBox()).toEqual(original);
   await page.screenshot({ path: `test-results/oracle-draw-steady-${test.info().project.name}.png` });
+});
+
+test('the dialog never fades with the page behind it, so the site menu cannot show through', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/universal-language');
+  // Stretch the page's 0.3s fade-in so the click below reliably lands during it, as a quick tap does.
+  await page.addStyleTag({ content: '.route-fade-in { animation-duration: 60s !important; }' });
+  await page.getByRole('button', { name: 'Draw a card', exact: true }).first().click();
+  // The page fades in for 0.3s. If the dialog lives inside that fading page it fades with it,
+  // and the site menu behind shows through its top bar. Every ancestor must be fully opaque.
+  const opacity = await page.evaluate(() => {
+    let value = 1;
+    for (let el: Element | null = document.querySelector('.oracle-draw'); el; el = el.parentElement) value *= Number(getComputedStyle(el).opacity);
+    return value;
+  });
+  expect(opacity).toBe(1);
 });
