@@ -128,10 +128,11 @@ export function ulCardImageUrl(number: number, size: number): string {
     h: size,
     crop: 'fill',
     gravity: 'center',
-    // No fixed format: the media worker reads the browser's Accept header and
-    // sends AVIF where it is understood, WebP otherwise. AVIF measured 23 to 28
-    // percent lighter than WebP at every size the site asks for (2026-10-21).
-    format: backgroundRemoval ? 'png' : 'auto',
+    // WebP, not AVIF. AVIF came out 23 to 28 percent lighter, but the media
+    // worker makes each size the first time it is asked for, and AVIF took 1.4
+    // to 6 seconds to make against WebP's 0.6 to 0.9 (measured 2026-10-21 on
+    // the 1100 card plate). On a quiet site most views are first views.
+    format: backgroundRemoval ? 'png' : 'webp',
     backgroundRemoval,
   });
 }
