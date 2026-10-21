@@ -24,9 +24,9 @@ test('the deck downloads no card art until a card is flipped', async ({ page }) 
 
 /* The art starts downloading only on the flip, so for a moment the back of the
    tile has nothing to show. It used to sit empty and then the art popped in,
-   which read as a fault. It now holds six breathing lines until the art has
-   fully arrived, then fades the art in over them. */
-test('a flipped tile waits on breathing lines, then fades its art in', async ({ page }, testInfo) => {
+   which read as a fault. It now holds the card's own hexagram, colours swapped,
+   breathing, until the art arrives and draws over it. */
+test('a flipped tile waits on its own hexagram, colours swapped, then shows its art the moment it arrives', async ({ page }, testInfo) => {
   const plate = readFileSync(new URL('../public/android-chrome-512x512.png', import.meta.url));
   let release!: () => void;
   const arrived = new Promise<void>((resolve) => { release = resolve; });
@@ -38,19 +38,40 @@ test('a flipped tile waits on breathing lines, then fades its art in', async ({ 
   await page.goto('/universal-language');
   const tile = page.getByRole('button', { name: /^Card 22: Treasure of the Way/ });
   await tile.scrollIntoViewIfNeeded();
+  await tile.screenshot({ path: testInfo.outputPath('0-front.png') });
   await tile.click();
   const art = tile.locator('img');
   const lines = () => art.evaluate((img) => getComputedStyle(img.parentElement!, '::before').animationName);
 
   await page.waitForTimeout(900);
   expect(await lines()).toBe('oe-art-wait');
-  expect(await art.evaluate((img) => getComputedStyle(img).opacity)).toBe('0');
+  // The art itself is never held invisible: if anything stalls, it still shows.
+  expect(await art.evaluate((img) => getComputedStyle(img).opacity)).toBe('1');
   await tile.screenshot({ path: testInfo.outputPath('1-waiting.png') });
 
   release();
   await expect(art).toHaveAttribute('data-oe-loaded', '');
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(200);
   await tile.screenshot({ path: testInfo.outputPath('2-fading.png') });
   await expect.poll(() => art.evaluate((img) => getComputedStyle(img).opacity)).toBe('1');
   await tile.screenshot({ path: testInfo.outputPath('3-shown.png') });
+});
+
+/* Today and this year carry their word under the card, in the same spot a
+   flipped card shows Back and Read; the two used to print over each other. */
+test("a flipped card's Back and Read never sit on its Today label", async ({ page }) => {
+  await page.goto('/universal-language');
+  await expect(page.locator('[data-oe="ichgrid"] [data-oe-num]').first()).toBeVisible();
+  const today = await page.locator('[data-oe="ichgrid"] [data-oe-num]').evaluateAll((cells) =>
+    cells.find((c) => getComputedStyle(c, '::after').content.includes('Today'))?.getAttribute('data-oe-num'));
+  expect(today).toBeTruthy();
+  const card = page.locator(`[data-oe="ichgrid"] [data-oe-num="${today}"]`);
+  const label = () => card.evaluate((c) => getComputedStyle(c, '::after').opacity);
+
+  expect(await label()).toBe('1');
+  await card.locator('> button').click();
+  await expect(card.getByRole('button', { name: 'Back' })).toBeVisible();
+  await expect.poll(label).toBe('0');
+  await card.getByRole('button', { name: 'Back' }).click();
+  await expect.poll(label).toBe('1');
 });
