@@ -11,7 +11,7 @@
 import React, { useEffect, useState } from 'react';
 import { CARD_BY_NUMBER } from '../../../data/oracleData';
 import { getSynthesis, type CardSynthesis } from '../../../data/synthesisData';
-import { ulCardArtFloatsFree, ulCardHeroImageUrl, ulPieceForCard } from '../../../utils/universalLanguage';
+import { UL_CARD_HERO_SIZES, ulCardArtFloatsFree, ulCardHeroImageUrl, ulCardHeroSrcset, ulPieceForCard } from '../../../utils/universalLanguage';
 import CardReading, { type CardReadingLens } from './CardReading';
 import { artDesignHref } from '../../../lib/atlas/artSite';
 import Navigation from '../../Navigation';
@@ -156,6 +156,8 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
   const artwork = (
     <img
       src={ulCardHeroImageUrl(card.number)}
+      srcSet={ulCardHeroSrcset(card.number)}
+      sizes={UL_CARD_HERO_SIZES}
       alt={`${card.card_name} · Code ${card.number}`}
       style={{ width: '100%', height: 'auto', display: 'block' }}
       crossOrigin="anonymous"

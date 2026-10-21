@@ -156,3 +156,18 @@ export const UL_CARD_ART_WIDTH = {
 export function ulCardHeroImageUrl(number: number): string {
   return ulCardImageUrl(number, UL_CARD_ART_WIDTH.hero);
 }
+
+/**
+ * The reading's artwork at every served square up to the hero size, so the
+ * browser fetches the one that fits the screen. Measured 2026-10-21: the plate
+ * shows at about 37 to 39 percent of the window above 820 px wide, and the full
+ * width less a 30 px gutter below it. A one-dpr laptop at 1440 shows it 545 px
+ * wide and was handed the 1100 plate, four times the pixels it could use.
+ */
+export const UL_CARD_HERO_SIZES = '(min-width: 820px) 39vw, 100vw';
+
+export function ulCardHeroSrcset(number: number): string {
+  return [400, 640, 800, UL_CARD_ART_WIDTH.hero]
+    .map((w) => `${ulCardImageUrl(number, w)} ${w}w`)
+    .join(', ');
+}
