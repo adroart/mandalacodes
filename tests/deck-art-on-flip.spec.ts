@@ -51,7 +51,7 @@ test('a flipped tile waits on its own hexagram, colours swapped, then fades its 
 
   release();
   await expect(art).toHaveAttribute('data-oe-loaded', '');
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(200);
   await tile.screenshot({ path: testInfo.outputPath('2-fading.png') });
   await expect.poll(() => art.evaluate((img) => getComputedStyle(img).opacity)).toBe('1');
   await tile.screenshot({ path: testInfo.outputPath('3-shown.png') });
