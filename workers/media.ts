@@ -1,15 +1,12 @@
+import { MEDIA_SIZE_PAIRS, MEDIA_WIDTHS } from '../utils/mediaSizes';
+
 interface Env {
   MEDIA_BUCKET: R2Bucket;
   IMAGES: ImagesBinding;
 }
 
-const SIZES = [80, 150, 160, 200, 240, 280, 360, 400, 560, 600, 640, 675, 700, 720, 800, 900, 1100, 1200, 1280, 1400, 1600, 1800];
-const SIZE_PAIRS = new Set([
-  '80x80', '150x150', '160x160', '200x200', '240x240', '280x280',
-  '360x360', '400x400', '560x560', '600x600', '640x640', '700x700',
-  '720x720', '800x800', '900x900', '1100x1100', '1200x1200', '1600x1600',
-  '1200x400', '1200x630', '1200x675', '1200x800', '1600x1200', '800x900', '900x1100',
-]);
+const SIZES = MEDIA_WIDTHS;
+const SIZE_PAIRS = MEDIA_SIZE_PAIRS;
 
 function dimension(value: string | null): number | undefined {
   if (!value) return undefined;

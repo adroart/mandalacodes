@@ -1,3 +1,5 @@
+import { MEDIA_SIZE_PAIRS, MEDIA_WIDTHS } from './mediaSizes';
+
 const MEDIA_BASE = '/media/image';
 
 export interface ImgOptions {
@@ -10,11 +12,24 @@ export interface ImgOptions {
   backgroundRemoval?: boolean;
 }
 
+/**
+ * The smallest size the worker serves that is at least `w`, so a request never
+ * falls off the worker's list and comes back full size. A square request rounds
+ * to a square the worker also serves.
+ */
+export function servedWidth(w: number, square = false): number {
+  const served = MEDIA_WIDTHS.filter((s) => !square || MEDIA_SIZE_PAIRS.has(`${s}x${s}`));
+  return served.find((s) => s >= w) ?? served[served.length - 1];
+}
+
 export function img(publicId: string, opts: ImgOptions = {}): string {
   const path = publicId.split('/').map(encodeURIComponent).join('/');
   const params = new URLSearchParams();
-  if (opts.w) params.set('w', String(opts.w));
-  if (opts.h) params.set('h', String(opts.h));
+  const square = Boolean(opts.w && opts.h === opts.w);
+  const w = opts.w ? servedWidth(opts.w, square) : undefined;
+  const h = square ? w : opts.h;
+  if (w) params.set('w', String(w));
+  if (h) params.set('h', String(h));
   if (opts.crop) params.set('crop', opts.crop);
   if (opts.quality !== undefined) params.set('q', String(opts.quality));
   if (opts.gravity) params.set('gravity', opts.gravity);
