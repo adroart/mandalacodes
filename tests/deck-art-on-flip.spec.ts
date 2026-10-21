@@ -25,9 +25,8 @@ test('the deck downloads no card art until a card is flipped', async ({ page }) 
 /* The art starts downloading only on the flip, so for a moment the back of the
    tile has nothing to show. It used to sit empty and then the art popped in,
    which read as a fault. It now holds the card's own hexagram, colours swapped,
-   breathing, until the art has
-   fully arrived, then fades the art in over them. */
-test('a flipped tile waits on its own hexagram, colours swapped, then fades its art in', async ({ page }, testInfo) => {
+   breathing, until the art arrives and draws over it. */
+test('a flipped tile waits on its own hexagram, colours swapped, then shows its art the moment it arrives', async ({ page }, testInfo) => {
   const plate = readFileSync(new URL('../public/android-chrome-512x512.png', import.meta.url));
   let release!: () => void;
   const arrived = new Promise<void>((resolve) => { release = resolve; });
@@ -46,7 +45,8 @@ test('a flipped tile waits on its own hexagram, colours swapped, then fades its 
 
   await page.waitForTimeout(900);
   expect(await lines()).toBe('oe-art-wait');
-  expect(await art.evaluate((img) => getComputedStyle(img).opacity)).toBe('0');
+  // The art itself is never held invisible: if anything stalls, it still shows.
+  expect(await art.evaluate((img) => getComputedStyle(img).opacity)).toBe('1');
   await tile.screenshot({ path: testInfo.outputPath('1-waiting.png') });
 
   release();

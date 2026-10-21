@@ -282,8 +282,10 @@
    downloading then. Until it lands, the back shows the card's own hexagram with
    the front's colours swapped (light lines on dark become dark lines on light;
    each card's sign is set as --oe-hex by OracleEntryPage), breathing gently.
-   The art fades in over it once fully arrived (marked data-oe-loaded). Without
-   this the back showed empty, then the art popped in, and read as a fault. */
+   The art draws straight over it the moment it arrives. Nothing gates the art
+   itself: an earlier version held it invisible until a fade ran, and when the
+   fade stalled the art never showed. Without the hexagram the back showed
+   empty, then the art popped in, and read as a fault. */
 @keyframes oe-art-wait{0%,100%{opacity:.6}50%{opacity:1}}
 .oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img){ background:var(--ink3,#8a7a5e) }
 .oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img)::before{
@@ -293,16 +295,14 @@
   mask:var(--oe-hex) center / contain no-repeat;
   animation:oe-art-wait 1.8s ease-in-out infinite;
 }
-.oe-root [data-oe="ichgrid"] [data-oe-num] > button img{ opacity:0; transition:opacity .5s ease }
-.oe-root [data-oe="ichgrid"] [data-oe-num] > button img[data-oe-loaded]{ opacity:1 }
 /* Eight plates have see-through corners, so the swapped ground clears once
-   the art is fully in, rather than showing at the corners. */
-.oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img[data-oe-loaded]){ background:transparent; transition:background .3s ease .5s }
-.oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img[data-oe-loaded])::before{ animation:none; opacity:0; transition:opacity .3s ease .5s }
+   the art is fully in, rather than showing at the corners. Marked by
+   OracleEntryPage; if the mark never comes, only those corners are affected. */
+.oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img[data-oe-loaded]){ background:transparent; }
+.oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img[data-oe-loaded])::before{ animation:none; opacity:0; }
 @media (min-width:1100px){
   .oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img)::before{ inset:30% }
 }
 @media (prefers-reduced-motion: reduce){
   .oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img)::before{ animation:none }
-  .oe-root [data-oe="ichgrid"] [data-oe-num] > button img{ transition:none }
 }
