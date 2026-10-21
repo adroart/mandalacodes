@@ -83,8 +83,13 @@ const UL_IMAGE_BY_NUMBER = new Map<number, string>(
 /* These are the source plates where the white capture/background needs to be
  * made transparent. Cloudflare's foreground segmentation keeps
  * the complete square canvas; it does not trim or crop the artwork. Add future
- * plates here as they are identified. */
-const UL_CARDS_WITH_TRANSPARENT_BACKGROUND = new Set<number>([22]);
+ * plates here as they are identified.
+ *
+ * Only for a plate on a white ground. On a dark ground the segmentation cannot
+ * tell the dark wood from the background and cuts holes in the artwork: card
+ * 22 sat here until its plate was recaptured on dark, and the live card showed
+ * a hole at the bottom and ragged edges. Look at the plate before adding it. */
+const UL_CARDS_WITH_TRANSPARENT_BACKGROUND = new Set<number>([]);
 
 /* The plates that arrive with genuinely transparent corners, so the mandala
  * reads as a shape floating on whatever is behind it rather than as a picture
