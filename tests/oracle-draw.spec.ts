@@ -9,9 +9,9 @@ test.beforeEach(async ({ page }) => {
 test('selects the lower trigram first, previews the card, and opens it', async ({ page }) => {
   const dialog = page.getByRole('dialog', { name: 'Draw a card' });
   await dialog.getByRole('tab', { name: 'Choose trigrams' }).click();
-  await expect(dialog.getByRole('heading', { name: 'Choose the lower trigram' })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Choose the bottom half' })).toBeVisible();
   await dialog.getByRole('button', { name: 'Fire', exact: true }).click();
-  await expect(dialog.getByRole('heading', { name: 'Choose the upper trigram' })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Now choose the top half' })).toBeVisible();
   await dialog.getByRole('button', { name: 'Water', exact: true }).click();
   await expect(dialog.getByText('Hexagram 63', { exact: true })).toBeVisible();
   const bounds = await dialog.boundingBox();
@@ -36,7 +36,7 @@ test('allows editing either trigram and restores focus on close', async ({ page 
   await dialog.getByRole('button', { name: 'Heaven', exact: true }).click();
   await dialog.getByRole('button', { name: 'Heaven', exact: true }).click();
   await expect(dialog.getByText('Hexagram 1', { exact: true })).toBeVisible();
-  await dialog.getByRole('button', { name: /1.*Lower.*Heaven/ }).click();
+  await dialog.getByRole('button', { name: /1.*Bottom half.*Heaven/ }).click();
   await dialog.getByRole('button', { name: 'Earth', exact: true }).click();
   await expect(dialog.getByText('Hexagram 12', { exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
@@ -50,12 +50,12 @@ for (const moving of [false, true]) {
     const dialog = page.getByRole('dialog', { name: 'Draw a card' });
     await expect(dialog.getByRole('tab').first()).toHaveText('Cast coins');
     await expect(dialog.getByRole('tab', { name: 'Cast coins' })).toHaveAttribute('aria-selected', 'true');
-    await dialog.getByRole('button', { name: 'Cast the coins', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Throw the coins', exact: true }).click();
     await expect(dialog.getByText(`Hexagram ${moving ? 2 : 1}`, { exact: true })).toBeVisible();
     await expect(dialog.getByText('Currently at', { exact: true })).toBeVisible();
     await expect(dialog.getByText('Moving to', { exact: true })).toHaveCount(moving ? 1 : 0);
     await expect(dialog.getByText(/Changing lines:/)).toHaveCount(0);
-    await expect(dialog.getByRole('button', { name: 'Cast the coins', exact: true })).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: 'Throw the coins', exact: true })).toHaveCount(0);
     await expect(dialog.getByRole('button', { name: 'Cast again', exact: true })).toHaveCount(0);
     await expect(dialog.getByRole('button', { name: /^Open card \d+$/ }).first()).toBeInViewport();
     await page.screenshot({ path: `test-results/oracle-draw-${moving ? 'moving' : 'stable'}-${test.info().project.name}.png` });
@@ -65,7 +65,7 @@ for (const moving of [false, true]) {
       const entrance = page.getByRole('dialog', { name: 'Card entrance. Tap to begin.' });
       await expect(entrance).toBeVisible();
       await entrance.click();
-      await expect(page.getByRole('button', { name: 'Cast the coins', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Throw the coins', exact: true })).toHaveCount(0);
       await expect(page.getByText('Your throw', { exact: true })).toBeVisible();
       if (moving) await expect(page.getByText('The lines in motion', { exact: true })).toBeVisible();
     }
@@ -75,9 +75,10 @@ for (const moving of [false, true]) {
 test('coins animate once and are replaced by the result', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   const dialog = page.getByRole('dialog', { name: 'Draw a card' });
-  const coins = dialog.getByRole('button', { name: 'Cast the coins', exact: true });
+  const coins = dialog.getByRole('button', { name: 'Throw the coins', exact: true });
   await coins.click();
-  await expect(coins).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Skip to card', exact: true }).click();
   await expect(dialog.getByRole('button', { name: /^Open card \d+$/ }).first()).toBeVisible();
   await expect(coins).toHaveCount(0);
   await dialog.getByRole('tab', { name: 'Choose trigrams' }).click();
@@ -92,7 +93,7 @@ test('the 40 to 54 cast fits as a connected pair on a phone', async ({ page }) =
     Math.random = () => tosses[index++ % tosses.length];
   });
   const dialog = page.getByRole('dialog', { name: 'Draw a card' });
-  await dialog.getByRole('button', { name: 'Cast the coins', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Throw the coins', exact: true }).click();
   await expect(dialog.getByRole('figure', { name: 'Your throw' })).toContainText('Hexagram 40');
   await expect(dialog.getByRole('figure', { name: 'Changes to' })).toContainText('Hexagram 54');
   await expect(dialog.getByRole('figure', { name: 'Your throw' })).toContainText('Thunder over Water');
@@ -103,7 +104,7 @@ test('the 40 to 54 cast fits as a connected pair on a phone', async ({ page }) =
 test('casting keeps focus in the result and leaves the page behind inert', async ({ page }) => {
   const dialog = page.getByRole('dialog', { name: 'Draw a card' });
   await expect(page.locator('.oe-root > [data-theme]')).toHaveAttribute('inert', '');
-  await dialog.getByRole('button', { name: 'Cast the coins', exact: true }).focus();
+  await dialog.getByRole('button', { name: 'Throw the coins', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(dialog.getByRole('region', { name: 'Your hexagram' })).toBeFocused();
   await expect(dialog.getByRole('button', { name: /^Open card \d+$/ }).first()).toBeInViewport();
@@ -116,11 +117,12 @@ test('the cast plays once with explicit Open buttons and no replay', async ({ pa
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.evaluate(() => { Math.random = () => 0; });
   const dialog = page.getByRole('dialog', { name: 'Draw a card' });
-  await dialog.getByRole('button', { name: 'Cast the coins', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Throw the coins', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Skip to card', exact: true }).click();
   await expect(dialog.getByRole('button', { name: 'Open card 2', exact: true })).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Open card 1', exact: true })).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Replay change', exact: true })).toHaveCount(0);
-  await expect(dialog.getByRole('button', { name: 'Cast the coins', exact: true })).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: 'Throw the coins', exact: true })).toHaveCount(0);
   await dialog.locator('.oracle-draw-pair').evaluate(element => Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished)));
   await page.screenshot({ path: `test-results/oracle-draw-buttons-${test.info().project.name}.png` });
 });
@@ -150,7 +152,7 @@ test('trigram selection keeps its frame and joins both halves with uniform spaci
   expect(middle).toEqual(before);
   expect(glyphAfter).toEqual(glyphBefore);
   const tabs = await dialog.getByRole('tablist').boundingBox();
-  const lowerStep = await dialog.getByRole('button', { name: /1.*Lower.*Fire/ }).boundingBox();
+  const lowerStep = await dialog.getByRole('button', { name: /1.*Bottom half.*Fire/ }).boundingBox();
   expect(lowerStep!.y).toBeGreaterThanOrEqual(tabs!.y + tabs!.height);
   const rows = await dialog.locator('.oracle-draw-selection > svg > g').evaluateAll(groups => groups.map(group => (group as SVGGraphicsElement).getBBox().y));
   expect(rows).toEqual([0, 14, 28, 42, 56, 70]);
@@ -189,7 +191,7 @@ test('each displayed hexagram opens its own card from one header', async ({ page
   const dialog = page.getByRole('dialog', { name: 'Draw a card' });
   await expect(dialog.locator('header')).toHaveCount(1);
   await expect(dialog.locator('header').getByRole('tablist')).toBeVisible();
-  await dialog.getByRole('button', { name: 'Cast the coins', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Throw the coins', exact: true }).click();
   await expect(dialog.getByRole('figure', { name: 'Your throw' }).getByRole('button', { name: 'Open card 2', exact: true })).toBeInViewport();
   await expect(dialog.locator('.oracle-draw-footer')).toHaveCount(0);
   await page.screenshot({ path: `test-results/oracle-draw-direct-open-${test.info().project.name}.png` });
@@ -208,7 +210,7 @@ test('dialog keeps the same size across both methods and the cast result', async
   expect(await dialog.boundingBox()).toEqual(original);
   await dialog.getByRole('tab', { name: 'Cast coins' }).click();
   expect(await dialog.boundingBox()).toEqual(original);
-  await dialog.getByRole('button', { name: 'Cast the coins', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Throw the coins', exact: true }).click();
   await expect(dialog.getByRole('figure', { name: 'Your throw' })).toBeVisible();
   expect(await dialog.boundingBox()).toEqual(original);
   await dialog.getByRole('tab', { name: 'Choose trigrams' }).click();

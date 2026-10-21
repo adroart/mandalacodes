@@ -10,7 +10,7 @@ test('every lower and upper trigram pair resolves to its canonical hexagram', as
   await dialog.getByRole('tab', { name: 'Choose trigrams' }).click();
   const plain = (name: string) => name.replace(/\s*\(.*\)\s*$/, '').trim();
   for (const card of ALL_CARDS) {
-    await dialog.getByRole('button', { name: /1.*Lower/ }).click();
+    await dialog.getByRole('button', { name: /1.*Bottom half/ }).click();
     await dialog.getByRole('button', { name: plain(card.iching.lower_trigram.name), exact: true }).click();
     await dialog.getByRole('button', { name: plain(card.iching.upper_trigram.name), exact: true }).click();
     await expect(dialog.getByText(`Hexagram ${card.number}`, { exact: true })).toBeVisible();
