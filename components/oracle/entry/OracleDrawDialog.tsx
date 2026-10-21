@@ -197,10 +197,11 @@ function CoinStage({ play, onThrow, onSkip }: { play: Player; onThrow: () => voi
         const read = !!line && (index < t - 1 || (index === t - 1 && phase >= 3));
         const lineFaces = faces[index] ?? [];
         return <div key={index} className={`oracle-draw-build-row ${index === target ? 'is-target' : ''}`}>
-          <span className="oracle-draw-build-number">{index + 1}</span>
-          <span className={`oracle-draw-bar ${placed ? 'is-placed' : ''} ${placed && line!.moving ? 'is-moving' : ''} ${placed && !line!.yang ? 'is-yin' : ''}`} aria-hidden="true"><span /><span /></span>
-          <span className={`oracle-draw-build-note ${reached ? 'is-in' : ''}`}>
+          <span className={`oracle-draw-build-coins ${reached ? 'is-in' : ''}`} aria-label={`Line ${index + 1}`}>
             {reached && lineFaces.map((face, k) => <span key={k} className={face === 3 ? 'is-heads' : ''} />)}
+          </span>
+          <span className={`oracle-draw-bar ${placed ? 'is-placed' : ''} ${placed && line!.moving ? 'is-moving' : ''} ${placed && !line!.yang ? 'is-yin' : ''}`} aria-hidden="true"><span /><span /></span>
+          <span className="oracle-draw-build-total">
             {read && <strong className={line!.moving ? 'is-moving' : ''}>{line!.value}</strong>}
           </span>
         </div>;
