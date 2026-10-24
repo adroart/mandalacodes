@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { POSITIONS_BY_KEY, SEQUENCE_LABEL } from '../../data/profilePositions';
-import { PLACEMENT_DESCRIPTIONS } from '../../data/placementDescriptions';
+import { PLACEMENT_DESCRIPTIONS, placementSentence } from '../../data/placementDescriptions';
+import { PLACEMENT_THEMES } from '../../data/placementThemes';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
 import type { ProfileKey } from '../../lib/astrology/types';
 import SignInModal from '../account/SignInModal';
@@ -22,10 +23,12 @@ interface Props {
 }
 
 /**
- * The short, phone-sized "what this placement means in your chart" popup.
- * One block per matched position: the position name + line, two or three
- * sentences from data/placementDescriptions.ts, the card's Gene Keys triad,
- * and a single link out to the full chart. Sized to read in a few seconds.
+ * The "what this placement means in your chart" popup. One block per matched
+ * position: the position name + line, what the position is, how the visitor's
+ * line moves through it, the card's theme set into the position, and three
+ * questions (all from data/placementDescriptions.ts and
+ * data/placementThemes.ts), then the card's Gene Keys triad and a single link
+ * out to the full chart.
  *
  * When the chart is local-only (`canSave`), a quiet "Save your chart" offer
  * sits at the foot, opening the Welcome sign-in. The save pitch lands here,
@@ -86,7 +89,31 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, canSave = false, on
                   {card.card_name} · Code {gate}
                 </div>
               )}
-              <p className="ypp__body">{desc.body}</p>
+              {desc.body.split('\n\n').map((para, j) => (
+                <p key={j} className="ypp__body">{para}</p>
+              ))}
+              {desc.lines[line - 1] && (
+                <div className="ypp__section">
+                  <div className="ypp__label">Your line {line}</div>
+                  <p className="ypp__note">{desc.lines[line - 1]}</p>
+                </div>
+              )}
+              {card && PLACEMENT_THEMES[gate] && (
+                <div className="ypp__section">
+                  <div className="ypp__label">This card here</div>
+                  <p className="ypp__note ypp__note--card">
+                    {placementSentence(key, card.card_name, PLACEMENT_THEMES[gate])}
+                  </p>
+                </div>
+              )}
+              <div className="ypp__section">
+                <div className="ypp__label">To sit with</div>
+                <ul className="ypp__qs">
+                  {desc.questions.map((q) => (
+                    <li key={q}>{q}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           );
         })}
@@ -202,8 +229,38 @@ const YourPositionPopup: React.FC<Props> = ({ gate, matches, canSave = false, on
           font-size: 17px;
           line-height: 1.5;
           color: var(--l-2, #C9BDA9);
+          margin: 0 0 10px;
+        }
+        .ypp__section {
+          margin-top: 16px;
+        }
+        .ypp__label {
+          font-family: var(--font-brand);
+          font-size: 10px;
+          letter-spacing: 0.24em;
+          text-transform: uppercase;
+          color: var(--color-bronze-600, #C99A5B);
+          margin-bottom: 6px;
+        }
+        .ypp__note {
+          font-family: var(--font-reading);
+          font-size: 16px;
+          line-height: 1.5;
+          color: var(--l-2, #C9BDA9);
           margin: 0;
         }
+        .ypp__note--card {
+          color: var(--l-1, #ECE4D5);
+        }
+        .ypp__qs {
+          margin: 0;
+          padding-left: 18px;
+          font-family: var(--font-reading);
+          font-size: 16px;
+          line-height: 1.5;
+          color: var(--l-2, #C9BDA9);
+        }
+        .ypp__qs li + li { margin-top: 4px; }
         .ypp__triad {
           display: flex;
           gap: 6px;
