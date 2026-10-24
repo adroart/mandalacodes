@@ -207,22 +207,30 @@ const OracleEntryPage: React.FC = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [systemsOpen, gridOpen]);
 
-  /* A flipped tile's art fades in only once it has fully arrived (the waiting
-     lines and the fade live in OracleEntry.scoped.css). Image load events do
-     not bubble, so one listener on the root catches them on the way down. The
-     unflipped placeholder ('data:,') is never marked. */
+  /* A flipped tile's art is marked once it has fully arrived, so the waiting
+     hexagram behind it can stop (the lines live in OracleEntry.scoped.css).
+     Image events do not bubble, so one listener on the root catches them on
+     the way down. The unflipped placeholder (a data: image) is never marked.
+     A plate that fails to load is marked too, and hidden, so the tile keeps
+     breathing on its hexagram instead of showing a broken image. */
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const onLoad = (event: Event) => {
+    const mark = (attribute: string) => (event: Event) => {
       const el = event.target;
       if (el instanceof HTMLImageElement && el.closest('[data-oe-num]') && !el.src.startsWith('data:')) {
-        el.setAttribute('data-oe-loaded', '');
+        el.setAttribute(attribute, '');
       }
     };
+    const onLoad = mark('data-oe-loaded');
+    const onError = mark('data-oe-failed');
     root.addEventListener('load', onLoad, true);
-    return () => root.removeEventListener('load', onLoad, true);
+    root.addEventListener('error', onError, true);
+    return () => {
+      root.removeEventListener('load', onLoad, true);
+      root.removeEventListener('error', onError, true);
+    };
   }, []);
 
   // Opening the deck is a strong signal the visitor is here for a reading;
