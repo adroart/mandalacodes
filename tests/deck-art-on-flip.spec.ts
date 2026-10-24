@@ -75,3 +75,21 @@ test("a flipped card's Back and Read never sit on its Today label", async ({ pag
   await card.getByRole('button', { name: 'Back' }).click();
   await expect.poll(label).toBe('1');
 });
+
+/* An unflipped tile's art slot held 'data:,', which is no image at all. iOS
+   Safari draws that as a broken image, a blue question mark, and kept drawing
+   it over the waiting hexagram until the real art arrived. The slot now holds
+   a real transparent image, and a plate that fails is hidden, never broken. */
+test('a tile waiting on its art never holds a broken image', async ({ page }) => {
+  await page.route(/\/media\/image\/22_/, (route) => route.fulfill({ status: 404, body: '' }));
+  await page.goto('/universal-language');
+  const tile = page.getByRole('button', { name: /^Card 22: Treasure of the Way/ });
+  const art = tile.locator('img');
+  await expect(art).toHaveCount(1);
+  expect(await art.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+
+  await tile.click();
+  await expect(art).toHaveAttribute('data-oe-failed', '');
+  expect(await art.evaluate((img) => getComputedStyle(img).visibility)).toBe('hidden');
+  expect(await art.evaluate((img) => getComputedStyle(img.parentElement!, '::before').animationName)).toBe('oe-art-wait');
+});

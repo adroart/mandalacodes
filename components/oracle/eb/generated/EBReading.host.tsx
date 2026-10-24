@@ -80,7 +80,7 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   revealTargets = new WeakSet<HTMLElement>();
   glyphTargets = new WeakSet<HTMLElement>();
   rootAriaHidden: string | null = null;
-  rootWasInert = false;
+  ownsRootLayer = false;
 
   state = {
     entranceDismissed: false,
@@ -187,9 +187,6 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   }
 
   componentDidMount() {
-    const appRoot = document.getElementById('root');
-    this.rootAriaHidden = appRoot?.getAttribute('aria-hidden') ?? null;
-    this.rootWasInert = !!appRoot?.hasAttribute('inert');
     this.syncEntranceLayer();
     this.setBodyLock(this.isLocked());
     this.updateNav(this.state.active);
@@ -300,26 +297,39 @@ export class EBReadingHost extends React.Component<HostProps, any> {
   }
 
   entranceActive() { return (this.props.showEntrance ?? true) && !this.state.entranceDismissed; }
+  /* The entrance makes the app behind it inert, and on dismissal clears only
+     what it set. It used to remember whether the app was inert when the card
+     mounted and put that back, but a card opened from the draw mounts while
+     the draw dialog still holds the app inert (its cleanup runs a beat later),
+     so tap to begin re-applied the dialog's inert and the card page could not
+     be tapped or scrolled. */
   syncEntranceLayer = () => {
     const active = this.entranceActive();
     document.documentElement.classList.toggle('oracle-entrance-active', active);
     const appRoot = document.getElementById('root');
     if (!appRoot) return;
     if (active) {
+      if (!this.ownsRootLayer) {
+        this.rootAriaHidden = appRoot.getAttribute('aria-hidden');
+        this.ownsRootLayer = true;
+      }
       appRoot.setAttribute('inert', '');
       appRoot.setAttribute('aria-hidden', 'true');
       return;
     }
-    if (this.rootWasInert) appRoot.setAttribute('inert', ''); else appRoot.removeAttribute('inert');
-    if (this.rootAriaHidden === null) appRoot.removeAttribute('aria-hidden'); else appRoot.setAttribute('aria-hidden', this.rootAriaHidden);
+    this.releaseRootLayer(appRoot);
   };
   restoreEntranceLayer = () => {
     document.documentElement.classList.remove('oracle-entrance-active');
     const appRoot = document.getElementById('root');
-    if (!appRoot) return;
-    if (this.rootWasInert) appRoot.setAttribute('inert', ''); else appRoot.removeAttribute('inert');
-    if (this.rootAriaHidden === null) appRoot.removeAttribute('aria-hidden'); else appRoot.setAttribute('aria-hidden', this.rootAriaHidden);
+    if (appRoot) this.releaseRootLayer(appRoot);
   };
+  releaseRootLayer(appRoot: HTMLElement) {
+    if (!this.ownsRootLayer) return;
+    this.ownsRootLayer = false;
+    appRoot.removeAttribute('inert');
+    if (this.rootAriaHidden === null) appRoot.removeAttribute('aria-hidden'); else appRoot.setAttribute('aria-hidden', this.rootAriaHidden);
+  }
   isLocked() { return this.state.choreography !== 'reading' || this.state.lightbox || this.state.share || this.state.buy || !!this.state.overlay || this.state.index; }
   setBodyLock(on: boolean) { try { document.body.style.overflow = on ? 'hidden' : ''; } catch (e) {} }
 

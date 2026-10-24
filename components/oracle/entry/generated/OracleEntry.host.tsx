@@ -27,6 +27,12 @@ import { ensureDcHexagramElement } from './dc-hexagram-element';
    `lines` assignment flows through the live accessor and each glyph is its own. */
 ensureDcHexagramElement();
 
+/* A tile that has not been flipped holds a real, fully transparent image. It
+   used to hold 'data:,', which is no image at all: iOS Safari draws that as a
+   broken image, a blue question mark, and keeps drawing it over the waiting
+   hexagram until the card's art has finished downloading. */
+const NO_ART = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
 /* The lightweight card shape the design's renderVals expects. The adapter maps
    each real OracleCard into one of these so the verbatim logic is untouched. */
 export interface EntryCard {
@@ -274,7 +280,7 @@ export class OracleEntryHost extends React.Component<HostProps, any> {
         hx: c.hx,
         num2: String(c.n).padStart(2, '0'),
         lines: lines(c),
-        art: m && (artwork || this.state.artShown[c.n]) ? m.cardImg(c, 320) : 'data:,',
+        art: m && (artwork || this.state.artShown[c.n]) ? m.cardImg(c, 320) : NO_ART,
         grad: 'linear-gradient(150deg,' + tint[0] + ',' + tint[1] + ')',
         yours,
         // Resolved here for the same reason as the invitation: the deck's CSS

@@ -286,7 +286,7 @@
    itself: an earlier version held it invisible until a fade ran, and when the
    fade stalled the art never showed. Without the hexagram the back showed
    empty, then the art popped in, and read as a fault. */
-@keyframes oe-art-wait{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes oe-art-wait{0%,100%{opacity:.4}50%{opacity:1}}
 .oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img){ background:var(--ink3,#8a7a5e) }
 .oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img)::before{
   content:''; position:absolute; inset:26%;
@@ -300,6 +300,8 @@
    OracleEntryPage; if the mark never comes, only those corners are affected. */
 .oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img[data-oe-loaded]){ background:transparent; }
 .oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img[data-oe-loaded])::before{ animation:none; opacity:0; }
+/* A plate that failed to load is hidden rather than drawn as a broken image. */
+.oe-root [data-oe="ichgrid"] [data-oe-num] > button img[data-oe-failed]:not([data-oe-loaded]){ visibility:hidden }
 @media (min-width:1100px){
   .oe-root [data-oe="ichgrid"] [data-oe-num] > button span:has(> img)::before{ inset:30% }
 }
