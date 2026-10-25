@@ -211,3 +211,10 @@ html:not(.dark) [data-oracle-grain="reading"] { opacity:.045; }
   --accent:#c6a667;
   --accent-d:#debc7e;
 }
+
+/* The Shadow / Gift / Siddhi tiles name the spectrum; they are labels, not prose,
+   so the reading-prose justification above must not pull them to the left. */
+.eb-reading .ul-gk-spectrum-nav > button > p {
+  text-align:center !important;
+  text-align-last:center !important;
+}
