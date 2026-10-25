@@ -102,7 +102,7 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
 .eb-reading section[data-chapter="body"] div[style*="flex-direction: column"] > p,
 .eb-reading section[data-chapter="relations"] div[style*="flex-direction: column"] > p {
   font-family:var(--font-reading) !important; font-size:clamp(16px,1.5vw,18px) !important;
-  line-height:1.8 !important; text-align:justify !important; text-align-last:start; text-wrap:wrap;
+  line-height:1.8 !important; text-align:left !important; text-align-last:start; text-wrap:wrap;
   width:100%; max-width:none; margin-inline:auto;
   word-break:normal; overflow-wrap:normal; hyphens:none;
 }
@@ -194,11 +194,11 @@ html.oracle-entrance-active [data-oracle-grain="reading"] { z-index:1001; }
   .eb-reading .ul-hero-grid > div > * { animation:none !important; transition:none !important; }
 }
 
-/* Full justification for reading prose, including moving-line readings and
-   expanded explanations. Keep the final line naturally aligned to the start. */
+/* Reading prose sits left-aligned with a ragged right edge, including moving-line readings and
+   expanded explanations. No justification: it spreads words apart on narrow screens. */
 .eb-reading p[style*="var(--font-reading)"],
 .eb-reading [data-reading-prose] p {
-  text-align:justify;
+  text-align:left;
   text-align-last:start;
   text-wrap:wrap;
 }
