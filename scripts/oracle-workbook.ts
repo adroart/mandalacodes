@@ -179,7 +179,7 @@ const CSS = (band = PEN_BAND) => `
 html, body { margin: 0; padding: 0; }
 body { font-family: ${BODY_FONT}; font-size: 8.5pt; line-height: ${U}pt; color: #111; font-variant-numeric: oldstyle-nums; font-kerning: normal; }
 .card { column-count: 2; column-gap: 8mm; column-fill: auto; }
-p { margin: 0; text-indent: 4mm; text-align: justify; hyphens: auto; hyphenate-limit-chars: 6 3 3; word-spacing: -0.04em; orphans: 2; widows: 2; }
+p { margin: 0; text-indent: 4mm; text-align: left; hyphens: manual; orphans: 2; widows: 2; }
 p.quote { text-indent: 0; }
 p.quote + p.quote { margin-top: ${U / 2}pt; }
 .lead { font-variant-caps: small-caps; letter-spacing: 0.04em; }
