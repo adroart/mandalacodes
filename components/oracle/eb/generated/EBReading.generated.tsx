@@ -225,6 +225,9 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <span data-glyph="1" style={{ fontFamily: 'var(--font-cjk)', fontSize: "clamp(60px,9vw,80px)", lineHeight: "1", color: "var(--accent-d)" }}>
             {vals.ichingGlyph}
             </span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: "clamp(28px,6vw,36px)", lineHeight: "1.15", color: "var(--d-1)", letterSpacing: "0.01em" }}>
+            {vals.ichingHexName}
+            </span>
             <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px" }}>
             I Ching · about
             </span>
@@ -264,7 +267,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               ))}
             </span>
             <span style={{ flex: "1", minWidth: "0" }}>
-              <span style={{ display: "block", fontFamily: 'var(--font-display)', fontSize: "19px", color: "var(--d-1)", lineHeight: "1.2" }}>
+              <span style={{ display: "block", fontFamily: 'var(--font-display)', fontSize: "22px", color: "var(--d-1)", lineHeight: "1.2" }}>
               {vals.ichingHexName}
               </span>
               <span style={{ display: "block", fontFamily: 'var(--font-display)', fontSize: "14px", color: "var(--d-3)" }}>
