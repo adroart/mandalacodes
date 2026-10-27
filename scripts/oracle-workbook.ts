@@ -134,6 +134,7 @@ function renderCard(n: number): { html: string; name: string } {
     const sec = card.sections[lens.key];
     if (!sec) continue;
     html += `<h2>${lens.title}</h2>`;
+    if (lens.key === 'ICHING' && fm.hexagram_name) html += `<p class="hexname">${esc(String(fm.hexagram_name))}</p>`;
     // The parser hands the intro as paragraphs: in CODE the reading itself,
     // in KEYS the heights line (grey, the way the site shows it).
     for (const l of sec.intro) {
@@ -179,7 +180,7 @@ const CSS = (band = PEN_BAND) => `
 html, body { margin: 0; padding: 0; }
 body { font-family: ${BODY_FONT}; font-size: 8.5pt; line-height: ${U}pt; color: #111; font-variant-numeric: oldstyle-nums; font-kerning: normal; }
 .card { column-count: 2; column-gap: 8mm; column-fill: auto; }
-p { margin: 0; text-indent: 4mm; text-align: justify; hyphens: auto; hyphenate-limit-chars: 6 3 3; word-spacing: -0.04em; orphans: 2; widows: 2; }
+p { margin: 0; text-indent: 4mm; text-align: left; hyphens: manual; orphans: 2; widows: 2; }
 p.quote { text-indent: 0; }
 p.quote + p.quote { margin-top: ${U / 2}pt; }
 .lead { font-variant-caps: small-caps; letter-spacing: 0.04em; }
@@ -197,6 +198,8 @@ ${KW_BOX ? '.head .kw-cell { border-left: none; background: #efefef; padding: 2.
 .head .kw-cell { flex: 0 0 58mm; font-variant-caps: small-caps; letter-spacing: 0.01em; font-size: 8.5pt; line-height: ${U}pt; color: #444; ${KW_BOX ? '' : 'border-left: 0.4pt solid #999; padding-left: 4mm; margin-top: 2pt;'} }
 .head h1 { font-size: 20pt; font-weight: bold; line-height: ${U * 2.5}pt; margin: 0; font-variant-numeric: lining-nums; }
 .head .sentence { font-size: 10pt; line-height: ${U * 1.25}pt; text-indent: 0; }
+.hexname { font-size: 17pt; line-height: ${U * 2}pt; text-indent: 0; margin: 0 0 ${U / 2}pt; break-after: avoid; }
+.hexname + p { text-indent: 0; }
 h2 { font-size: 13pt; font-weight: normal; font-variant-caps: small-caps; letter-spacing: 0.06em; line-height: ${U * 1.5}pt; padding-bottom: 0; border-bottom: 0.4pt solid #999; margin: ${U * 2}pt 0 ${U * 0.75}pt; break-after: avoid; }
 h3 { font-size: 8.5pt; line-height: ${U}pt; font-weight: normal; font-variant-caps: small-caps; letter-spacing: 0.08em; margin: ${U}pt 0 0; break-after: avoid; }
 p.line { margin-top: ${U}pt; text-indent: 0; break-after: avoid; }

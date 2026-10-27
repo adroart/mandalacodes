@@ -18,7 +18,7 @@ test('uses the Teajia reading type roles and measure', async ({ page }) => {
   await openReading(page);
   const reading = page.locator('[data-reading-prose] p').first();
   await expect(reading).toBeVisible();
-  await expect(reading).toHaveCSS('text-align', 'justify');
+  await expect(reading).toHaveCSS('text-align', 'left');
   await expect(reading).toHaveCSS('text-align-last', 'start');
   await reading.scrollIntoViewIfNeeded();
   await page.screenshot({ path: `test-results/justified-reading-${test.info().project.name}.png` });

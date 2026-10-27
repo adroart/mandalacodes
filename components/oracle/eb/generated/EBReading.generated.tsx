@@ -225,6 +225,9 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
             <span data-glyph="1" style={{ fontFamily: 'var(--font-cjk)', fontSize: "clamp(60px,9vw,80px)", lineHeight: "1", color: "var(--accent-d)" }}>
             {vals.ichingGlyph}
             </span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: "clamp(28px,6vw,36px)", lineHeight: "1.15", color: "var(--d-1)", letterSpacing: "0.01em" }}>
+            {vals.ichingHexName}
+            </span>
             <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent-d)", borderBottom: "1px solid var(--d-rule)", paddingBottom: "6px" }}>
             I Ching · about
             </span>
@@ -264,7 +267,7 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
               ))}
             </span>
             <span style={{ flex: "1", minWidth: "0" }}>
-              <span style={{ display: "block", fontFamily: 'var(--font-display)', fontSize: "19px", color: "var(--d-1)", lineHeight: "1.2" }}>
+              <span style={{ display: "block", fontFamily: 'var(--font-display)', fontSize: "22px", color: "var(--d-1)", lineHeight: "1.2" }}>
               {vals.ichingHexName}
               </span>
               <span style={{ display: "block", fontFamily: 'var(--font-display)', fontSize: "14px", color: "var(--d-3)" }}>
@@ -524,12 +527,13 @@ export const EBReadingMarkup: React.FC<{ vals: any }> = ({ vals }) => (
         <header style={{ textAlign: "center", marginBottom: "clamp(36px,5vw,52px)" }}>
           <button onClick={vals.openOverlayGK} aria-label="About the Gene Keys" style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: "16px", color: "inherit" }}>
             <svg data-glyph="1" width="64" height="64" viewBox="0 0 100 100" fill="var(--accent)" aria-hidden="true">
-              <circle cx="50" cy="14" r="4.4" />
-              <path d="M 47.8 19 L 52.2 19 L 51.5 84 Q 50 87.5 48.5 84 Z" />
-              <ellipse cx="25" cy="28" rx="23" ry="4.2" transform="rotate(-4 25 28)" />
-              <ellipse cx="75" cy="28" rx="23" ry="4.2" transform="rotate(4 75 28)" />
-              <ellipse cx="28" cy="41" rx="20" ry="3.8" transform="rotate(7 28 41)" />
-              <ellipse cx="72" cy="41" rx="20" ry="3.8" transform="rotate(-7 72 41)" />
+              <circle cx="50" cy="12.5" r="4.2" />
+              <ellipse cx="50" cy="23" rx="3.4" ry="6.2" />
+              <path d="M 48.4 29 C 48.6 45, 48.9 70, 49.2 88 Q 50 92, 50.8 88 C 51.1 70, 51.4 45, 51.6 29 Z" />
+              <path d="M 52.5 20.5 C 64 13, 84 10.5, 96 14 C 97.5 16.5, 94 19.5, 86 21 C 74 23, 61 23.5, 52.5 23.5 Z" />
+              <path d="M 47.5 20.5 C 36 13, 16 10.5, 4 14 C 2.5 16.5, 6 19.5, 14 21 C 26 23, 39 23.5, 47.5 23.5 Z" />
+              <path d="M 52.5 26 C 63 25, 82 26, 93 30.5 C 95 33, 92 36, 84 36 C 72 36, 60 31.5, 52.5 28.5 Z" />
+              <path d="M 47.5 26 C 37 25, 18 26, 7 30.5 C 5 33, 8 36, 16 36 C 28 36, 40 31.5, 47.5 28.5 Z" />
             </svg>
             <span style={{ fontFamily: 'var(--font-ui)', fontSize: "11px", letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--accent)", borderBottom: "1px solid var(--l-rule)", paddingBottom: "6px" }}>
             Gene Keys · about
