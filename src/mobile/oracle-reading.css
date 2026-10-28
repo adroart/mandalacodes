@@ -64,8 +64,6 @@
 .oracle-app-shell[data-app-page="reading"] .eb-reading section[data-chapter] div[style*="flex-direction: column"] > p {
   font-size: 17px !important;
   line-height: 1.65 !important;
-  text-align: start !important;
-  text-align-last: auto;
 }
 /* Paragraphs remain immediately readable after a tab jump or a fast swipe. */
 .oracle-app-shell[data-app-page="reading"] .eb-reading [data-oracle-reveal] {

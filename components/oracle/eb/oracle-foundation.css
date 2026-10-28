@@ -108,7 +108,7 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
 .eb-reading section[data-chapter="body"] div[style*="flex-direction: column"] > p,
 .eb-reading section[data-chapter="relations"] div[style*="flex-direction: column"] > p {
   font-family:var(--font-reading) !important; font-size:clamp(16px,1.5vw,18px) !important;
-  line-height:1.8 !important; text-align:justify !important; text-align-last:start; text-wrap:wrap;
+  line-height:1.8 !important; text-align:start !important; text-align-last:auto !important; text-wrap:wrap !important;
   width:100%; max-width:none; margin-inline:auto;
   word-break:normal; overflow-wrap:normal; hyphens:none;
 }
@@ -200,13 +200,14 @@ html.oracle-entrance-active [data-oracle-grain="reading"] { z-index:1001; }
   .eb-reading .ul-hero-grid > div > * { animation:none !important; transition:none !important; }
 }
 
-/* Full justification for reading prose, including moving-line readings and
-   expanded explanations. Keep the final line naturally aligned to the start. */
+/* Reading prose uses a flush left edge and ordinary word spacing throughout,
+   including moving lines and expanded explanations. Override imported pretty
+   wrapping so a word is not moved early just to balance the final line. */
 .eb-reading p[style*="var(--font-reading)"],
 .eb-reading [data-reading-prose] p {
-  text-align:justify;
-  text-align-last:start;
-  text-wrap:wrap;
+  text-align:start !important;
+  text-align-last:auto !important;
+  text-wrap:wrap !important;
 }
 
 /* Keep the Daybook paper fine enough that it does not muddy small labels. */
