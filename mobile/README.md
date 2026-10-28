@@ -47,4 +47,4 @@ Only disabled cookie/HTTP probes bypass the prompt. Ordinary prompts, cookie
 operations, enabled plugin probes, and native sharing keep their standard behavior.
 `npm --prefix mobile test` checks those boundaries against the injected script.
 
-The native build resolves `OracleDrawDialog` to `src/mobile/OracleDrawDialog.tsx` and its companion stylesheet. The website keeps its separate dialog, so website redesigns cannot change the installed app's casting flow.
+The native app and website share `components/oracle/entry/OracleDrawDialog.tsx` and its stylesheet. The app adds its optional question and saved-reading flow around the shared coin casting and trigram chooser.
