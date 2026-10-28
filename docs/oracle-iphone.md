@@ -39,8 +39,16 @@ personal development-signed app, not an App Store or TestFlight release. Its
 provisioning profile governs when rebuilding/reinstalling is required. Build and
 installation receipts live in `mobile/build/` and are not committed.
 
-Verification on 28 October 2026: all three focused mobile WebKit tests passed,
-as did the repository TypeScript check and 27 relevant profile/reflection/API
-unit checks. Native simulator/device compilation and signature verification also
-passed. Installation and visual launch proof are recorded separately in the
-native build status; a successful compile alone is not an installed-app claim.
+Phone layout update, build 3 (28 October 2026): the native-only styles compact the
+Oracle entry, enlarge and reflow Birthday fields/chart/readings, keep six reader
+lens tabs touch-sized, and constrain sheets to the safe viewport. Explore's
+section links remain available while scrolling. Native graph framing and touch
+areas change presentation only; canonical node positions and calculations remain
+unchanged. The phone uses the existing warm paper, wood, and bronze appearance.
+
+Verification covers seven focused WebKit flows, including 375×667, 430×932 and
+932×430 layouts, all six reading tabs, birth-modal dismissal, sharing, and local
+profile persistence. Native compilation/signature checks and exact bundled-file
+verification are recorded with each build in `mobile/build/`. Simulator screenshots
+are separate from physical-phone verification; installation alone is not a claim
+of physical gesture or keyboard testing.

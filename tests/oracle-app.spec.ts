@@ -91,3 +91,49 @@ test('trigram choices form a circle and preserve lower/upper selection on the ph
   await dialog.getByRole('button', { name: 'Open card 29', exact: true }).click();
   await expect(page).toHaveURL(/\/universal-language\/29$/);
 });
+
+for (const size of [{width:375,height:667},{width:430,height:932},{width:932,height:430}]) {
+  test(`phone layouts stay usable at ${size.width}x${size.height}`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const fits = async () => expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.goto('/');
+    const draw = page.getByRole('button', {name:'Draw a card',exact:true}).first();
+    await expect(draw).toBeVisible();
+    await fits();
+    await page.screenshot({path:`mobile/build/layout-deck-${size.width}.png`});
+    await page.getByRole('button',{name:'Enter your birth time',exact:true}).click();
+    await expect(page.getByRole('button',{name:'Close birth time',exact:true})).toBeInViewport({ratio:1});
+    await page.getByRole('button',{name:'Close birth time',exact:true}).click();
+    if (size.width === 430) await page.getByRole('button',{name:'Use light appearance',exact:true}).click();
+    await page.getByRole('link',{name:'Explore',exact:true}).click();
+    const systems = page.getByRole('navigation',{name:'Explore systems'});
+    await expect(systems).toBeVisible();
+    for(const link of await systems.getByRole('link').all()) {
+      const box = await link.boundingBox();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+    }
+    await page.screenshot({path:`mobile/build/layout-explore-${size.width}.png`});
+    await systems.getByRole('link',{name:'Human Design',exact:true}).click();
+    await expect(page.getByRole('heading',{name:'A map of energy'})).toBeInViewport();
+    await fits();
+    await page.goto('/universal-language/1');
+    const tabs = page.locator('[data-nav]');
+    await expect(tabs).toHaveCount(6);
+    for(const tab of await tabs.all()) {
+      // WebKit rounds fractional edges; tolerate less than one percent.
+      await expect(tab).toBeInViewport({ratio:0.99});
+      const box=await tab.boundingBox();
+      expect(box!.width).toBeGreaterThanOrEqual(44);
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+      await tab.click();
+      await fits();
+    }
+    await page.locator('[data-nav="iching"]').click();
+    await page.screenshot({path:`mobile/build/layout-reading-${size.width}.png`});
+    await page.locator('[data-bar-tab=share], [data-bar-share]').filter({visible:true}).first().click();
+    await expect(page.getByRole('button',{name:'Share reading',exact:true})).toBeInViewport();
+    await expect(page.getByRole('button',{name:'Close',exact:true})).toBeInViewport();
+    await page.getByRole('button',{name:'Close',exact:true}).click();
+  });
+}

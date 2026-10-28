@@ -243,7 +243,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             onPointerCancel={onPointerUp}
           >
           <div className="pg__pan" style={{ transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})` }}>
-          <svg viewBox={`-70 8 860 660`} className="pg__svg" preserveAspectRatio="xMidYMid meet">
+          <svg viewBox={import.meta.env.VITE_ORACLE_APP === 'true' ? '40 20 640 630' : '-70 8 860 660'} className="pg__svg" preserveAspectRatio="xMidYMid meet">
             <defs>
               {SEQ_ORDER.map((seq) => (
                 <radialGradient key={seq} id={`orb-${seq}`} cx="38%" cy="32%" r="75%">
@@ -328,6 +328,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                     onClick={guard(() => open(meta.key))}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(meta.key); } }}
                   >
+                    {import.meta.env.VITE_ORACLE_APP === 'true' && <circle r={44} fill="transparent" className="pg__hit" />}
                     <circle r={R + 4} className="pg__ring" />
                     <circle r={R} fill={orbFill} className="pg__circle" />
                     <text className="pg__gate" y={5}>{gl.gate}.{gl.line}</text>

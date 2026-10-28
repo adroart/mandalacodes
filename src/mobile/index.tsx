@@ -6,6 +6,8 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import '../index.css';
 import './oracle-app.css';
+import './oracle-profile.css';
+import './oracle-reading.css';
 import OracleApp from './OracleApp';
 import { installNativeSharing } from './sharing';
 installNativeSharing();

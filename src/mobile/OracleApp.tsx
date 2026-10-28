@@ -18,7 +18,8 @@ function OracleRoutes() {
   const { pathname } = useLocation();
   const reading = /^\/universal-language\/\d+$/.test(pathname);
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
-  return <div data-site-shell className="oracle-app-shell min-h-screen bg-paper-50 text-wood-900">
+  const page = reading ? 'reading' : pathname.startsWith('/profile/shared/') ? 'shared-profile' : pathname === '/profile' ? 'profile' : pathname === '/the-systems' ? 'systems' : 'deck';
+  return <div data-site-shell data-app-page={page} className="oracle-app-shell min-h-screen bg-paper-50 text-wood-900">
     {!reading && <OracleNavigation />}
     <main id="main-content"><ChunkErrorBoundary><Suspense fallback={<div className="oracle-app-loading">Opening Oracle…</div>}><Routes>
       <Route path="/" element={<Navigate to="/universal-language" replace />} />

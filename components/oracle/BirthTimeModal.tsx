@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 import type { ProfileInputs } from '../../lib/profile/storage';
 import ProfileForm from './ProfileForm';
 
@@ -66,7 +67,7 @@ const BirthTimeModal: React.FC<{
   }, [onClose]);
 
   const ring = (
-    <div style={{
+    <div className="oracle-birth-ring" style={{
       width: 54, height: 54, margin: '0 auto 16px', borderRadius: '50%',
       border: `1.5px solid ${C.bronze}`, display: 'flex', alignItems: 'center',
       justifyContent: 'center', background: C.glow,
@@ -75,7 +76,7 @@ const BirthTimeModal: React.FC<{
     </div>
   );
   const brand = (
-    <p style={{
+    <p className="oracle-birth-brand" style={{
       fontFamily: 'var(--font-ui)', fontSize: 10, fontWeight: 700,
       letterSpacing: '0.24em', textTransform: 'uppercase', color: C.bronze, margin: '0 0 10px',
     }}>
@@ -101,6 +102,7 @@ const BirthTimeModal: React.FC<{
 
   return createPortal(
     <div
+      className="oracle-birth-backdrop"
       style={{
         position: 'fixed', inset: 0, zIndex: 100, display: 'flex',
         alignItems: 'center', justifyContent: 'center', padding: 24,
@@ -109,6 +111,7 @@ const BirthTimeModal: React.FC<{
       onClick={onClose}
     >
       <div
+        className="oracle-birth-panel"
         style={{
           width: '100%', maxWidth: 380, maxHeight: '88vh', overflowY: 'auto',
           background: C.surface, borderRadius: 20,
@@ -117,6 +120,7 @@ const BirthTimeModal: React.FC<{
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        {import.meta.env.VITE_ORACLE_APP === 'true' && <button type="button" className="oracle-birth-close" aria-label="Close birth time" onClick={onClose}><X size={20} aria-hidden="true" /></button>}
         {step === 'form' && (
           <>
             {ring}

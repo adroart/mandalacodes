@@ -1,0 +1,188 @@
+/* Native Birthday surfaces: keep the chart central and its reading close. */
+.oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) #main-content > main {
+  padding-inline: 20px;
+  padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+}
+.oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) #main-content > main > header {
+  margin-bottom: 22px;
+}
+.oracle-app-shell[data-app-page="profile"] #main-content > main > header > div:first-child {
+  align-items: center !important;
+  gap: 4px 12px !important;
+}
+.oracle-app-shell[data-app-page="profile"] #main-content > main > header > div:first-child > div {
+  gap: 4px !important;
+  margin-left: auto;
+}
+.oracle-app-shell[data-app-page="profile"] #main-content > main > header button {
+  min-width: 48px;
+  min-height: 44px;
+  padding: 8px !important;
+  font-size: 12px !important;
+  letter-spacing: .08em !important;
+}
+.oracle-app-shell[data-app-page="profile"] [data-profile-introduction] {
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+}
+.oracle-app-shell[data-app-page="profile"] [data-profile-introduction] a {
+  white-space: normal !important;
+  display: block;
+  padding-top: 4px;
+  text-wrap: balance;
+}
+.oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) #main-content > main > footer {
+  margin-top: 32px !important;
+  padding-top: 18px !important;
+  font-size: 13px !important;
+  letter-spacing: 0 !important;
+}
+
+/* The two short birth fields share a row; their guidance stays full width. */
+.oracle-app-shell[data-app-page="profile"] .profile-form,
+body.oracle-native .oracle-birth-panel .profile-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px 12px;
+  max-width: none;
+}
+.oracle-app-shell[data-app-page="profile"] .profile-form__field:nth-child(-n+2),
+body.oracle-native .oracle-birth-panel .profile-form__field:nth-child(-n+2) { display: contents; }
+.oracle-app-shell[data-app-page="profile"] .profile-form__field:nth-child(1) .profile-form__label,
+body.oracle-native .oracle-birth-panel .profile-form__field:nth-child(1) .profile-form__label { grid-area: 1 / 1; }
+.oracle-app-shell[data-app-page="profile"] .profile-form__field:nth-child(2) .profile-form__label,
+body.oracle-native .oracle-birth-panel .profile-form__field:nth-child(2) .profile-form__label { grid-area: 1 / 2; }
+.oracle-app-shell[data-app-page="profile"] .profile-form__field:nth-child(1) .profile-form__input,
+body.oracle-native .oracle-birth-panel .profile-form__field:nth-child(1) .profile-form__input { grid-area: 2 / 1; }
+.oracle-app-shell[data-app-page="profile"] .profile-form__field:nth-child(2) .profile-form__input,
+body.oracle-native .oracle-birth-panel .profile-form__field:nth-child(2) .profile-form__input { grid-area: 2 / 2; }
+.oracle-app-shell[data-app-page="profile"] .profile-form__field:nth-child(2) .profile-form__help,
+body.oracle-native .oracle-birth-panel .profile-form__field:nth-child(2) .profile-form__help { grid-column: 1 / -1; }
+.oracle-app-shell[data-app-page="profile"] .profile-form__field:nth-child(3),
+body.oracle-native .oracle-birth-panel .profile-form__field:nth-child(3) { grid-column: 1 / -1; margin-top: 10px; }
+.oracle-app-shell[data-app-page="profile"] .profile-form__input,
+body.oracle-native .oracle-birth-panel .profile-form__input {
+  min-width: 0;
+  width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+  padding: 10px;
+  border-radius: 6px;
+}
+.oracle-app-shell[data-app-page="profile"] .profile-form__label,
+body.oracle-native .oracle-birth-panel .profile-form__label {
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+.oracle-app-shell[data-app-page="profile"] .profile-form__help,
+body.oracle-native .oracle-birth-panel .profile-form__help {
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.oracle-app-shell[data-app-page="profile"] .profile-form__submit,
+body.oracle-native .oracle-birth-panel .profile-form__submit {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  letter-spacing: .08em;
+}
+.oracle-app-shell[data-app-page="profile"] .profile-form__error,
+body.oracle-native .oracle-birth-panel .profile-form__error { grid-column: 1 / -1; font-size: 14px; }
+.oracle-app-shell[data-app-page="profile"] .profile-form__suggestions,
+body.oracle-native .oracle-birth-panel .profile-form__suggestions { max-height: min(35dvh, 280px); }
+.oracle-app-shell[data-app-page="profile"] .profile-form__suggestion-tz,
+body.oracle-native .oracle-birth-panel .profile-form__suggestion-tz { font-size: 12px; letter-spacing: 0; }
+
+/* The path rail duplicates the same eleven positions in the complete list.
+   On the phone the chart and its selected reading take priority. */
+@media (max-width: 879px) {
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__rail--path { display: none; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__work { gap: 12px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__zoom {
+    position: relative;
+    top: auto;
+    right: auto;
+    display: flex;
+    width: max-content;
+    margin: 0 0 8px auto;
+    gap: 0;
+    padding: 0;
+    border-radius: 6px;
+    backdrop-filter: none;
+    background: var(--color-paper-50);
+  }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__name { font-size: 22px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__gate { font-size: 18px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__zoom-btn { min-width: 44px; height: 44px; padding: 0 8px; font-size: 13px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__filter { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; padding-bottom: 12px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__filter-btn { letter-spacing: .02em; padding: 6px 3px; border-radius: 6px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__detail { padding-top: 12px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__detail-role { margin-top: 8px; font-size: 16px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__detail-open { font-size: 12px; letter-spacing: .06em; margin-top: 4px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__list-view { margin-top: 22px; padding-top: 22px; gap: 26px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__band-label { font-size: 12px; letter-spacing: .12em; margin-bottom: 6px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__list { gap: 0; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__row {
+    grid-template-columns: 10px minmax(0, 1fr);
+    gap: 10px;
+    padding: 14px 0;
+    border: 0;
+    border-bottom: 1px solid var(--color-wood-200);
+    border-radius: 0;
+  }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__row-dot { width: 8px; height: 8px; margin-top: 8px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__row-name { font-size: 22px; line-height: 1.2; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__row-gate { font-size: 13px; letter-spacing: .04em; flex-shrink: 0; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__row-art { font-size: 14px; letter-spacing: 0; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__row-triad { gap: 4px 10px; margin-top: 6px; font-size: 13px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__row-role { margin-top: 6px; font-size: 16px; line-height: 1.4; letter-spacing: 0; }
+  .oracle-app-shell[data-app-page="profile"] .yc { margin-top: 28px; }
+  .oracle-app-shell[data-app-page="profile"] .yc__eyebrow { font-size: 12px; letter-spacing: .12em; margin-bottom: 8px; }
+  .oracle-app-shell[data-app-page="profile"] .yc__row { padding: 12px 0; border: 0; border-block: 1px solid var(--color-wood-200); border-radius: 0; }
+  .oracle-app-shell[data-app-page="profile"] .yc__gate { min-height: 44px; font-size: 14px; letter-spacing: 0; }
+  .oracle-app-shell[data-app-page="profile"] section[aria-label="The sky right now"] { margin-top: 28px !important; }
+  .oracle-app-shell[data-app-page="profile"] section[aria-label="The sky right now"] > p { font-size: 12px !important; letter-spacing: .12em !important; margin-bottom: 10px !important; }
+  .oracle-app-shell[data-app-page="profile"] section[aria-label="The sky right now"] > div { gap: 10px !important; }
+  .oracle-app-shell[data-app-page="profile"] .ul-energy-panel { width: 100%; max-width: none; padding: 12px; gap: 12px; }
+  .oracle-app-shell[data-app-page="profile"] .ul-energy-panel__thumb { width: 60px; height: 60px; }
+  .oracle-app-shell[data-app-page="profile"] .ul-energy-panel__title { font-size: 18px; }
+  .oracle-app-shell[data-app-page="profile"] .ul-energy-panel__meta { font-size: 12px; letter-spacing: 0; }
+}
+
+/* Birth entry from a reading or the deck uses the same comfortable fields. */
+body.oracle-native .oracle-birth-backdrop {
+  z-index: 2200 !important;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
+  backdrop-filter: none !important;
+}
+body.oracle-native .oracle-birth-panel {
+  position: relative;
+  max-width: 430px !important;
+  max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px) !important;
+  padding: 24px 20px 20px !important;
+  border-radius: 14px !important;
+  text-align: left !important;
+  overscroll-behavior: contain;
+}
+body.oracle-native .oracle-birth-ring,
+body.oracle-native .oracle-birth-brand { display: none; }
+body.oracle-native .oracle-birth-panel > h2 { padding-right: 36px; line-height: 1.15 !important; }
+body.oracle-native .oracle-birth-panel > p { font-size: 16px !important; line-height: 1.45 !important; }
+body.oracle-native .oracle-birth-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--color-wood-700);
+}
