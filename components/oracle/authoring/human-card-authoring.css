@@ -1,0 +1,18 @@
+.human-authoring-bar {display:grid;grid-template-columns:minmax(0,1fr) minmax(105px,.7fr) auto;gap:8px;align-items:end;padding:10px 0;border-block:1px solid var(--color-wood-200);}
+.human-authoring-bar label {font-size:13px;display:flex;flex-direction:column;gap:4px;min-width:0;}
+.human-authoring-bar select {width:100%;min-width:0;}
+.human-save-state {font-size:13px;color:var(--color-wood-600);padding:10px 0;}
+.human-origin {display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;flex-wrap:wrap;margin:8px 0;}
+.human-origin strong {font-weight:500;border-bottom:1px solid var(--color-bronze-600);}
+.human-origin span {color:var(--color-wood-600);}
+.human-working-writing textarea {min-height:260px;}
+.human-card-authoring details p {font-size:14px;}
+.human-checks {border-top:1px solid var(--color-wood-200);margin-top:14px;padding-top:12px;}
+.human-checks h2 {font-size:20px;font-weight:500;margin:0 0 8px;}
+.human-checks article {padding-bottom:14px;margin-bottom:12px;border-bottom:1px solid var(--color-wood-200);}
+.human-checks .ov-row {flex-wrap:wrap;justify-content:flex-start;}
+.human-more>button {margin:8px 6px 8px 0;}
+@media(max-width:400px){.human-authoring-bar {grid-template-columns:minmax(0,1fr) minmax(95px,.8fr) auto;gap:5px;}.human-authoring-bar button {padding-inline:10px;}.human-authoring-bar select {padding-inline:5px;font-size:15px;}}
+.human-destinations {display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;font-size:13px;}
+.human-destinations button {font-size:13px;padding:6px 9px;}
+.human-destinations [aria-pressed=true] {border-color:var(--color-bronze-600);}

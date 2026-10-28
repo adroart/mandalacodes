@@ -3,7 +3,46 @@
 Current local implementation, 2026-10-28. No canonical manuscript edits, existing
 Apple Notes changes, publication or editing-audio deletion are performed here.
 
-## In the app
+## Human words are authoritative
+
+The default in-card editor is now **Your words**. It writes no AI prose. The first
+safe spoken passage replaces that lens's published scaffold in a private working
+card; later distinct speech adds literally. Exact repeats are accounted for without
+repeating text. Correcting a previously incorporated transcript updates its original
+untouched contribution; human edits are protected. Ambiguous revisions present an
+explicit add/replace choice. Confidence warnings, unresolved destinations, known
+mishearing patterns and likely transcription artifacts pause the affected section.
+Confirmed words are checked against the exact corrected transcript before applying.
+
+Working drafts are keyed by card and lens, independently of recording sessions.
+They autosave with version checks/history, display in the actual reader immediately,
+and survive close/reopen. Published prose is available through a reversible view
+switch. No canonical manuscript is changed by this private working-card save.
+Speech and direct typing both retain their literal phrasing. Pure routing prefixes
+are omitted from displayed prose while raw speech stays saved.
+
+**100% human words** describes displayed section provenance, not transcription
+accuracy or editorial completeness. A card is wholly human only after all six
+lenses contain exclusively human words. AI can transcribe; it does not paraphrase
+this flow. Provider probabilities and routing/revision heuristics are not a
+calibrated 90–95% accuracy claim.
+
+Processing is an independent resumable activity. You can close the sheet, keep
+reading or record again while transcription runs. Only uncertain passages require
+review; safe sections apply live. Pending activity survives app restart and reuses
+retained transcripts and existing backend job identities, avoiding duplicate audio
+uploads or prose. Failure retains original audio. Working-card versions and audio
+remain private to this device; no cross-device draft sync is implied.
+
+The separate detailed review workflow remains available with `?authoring=review`
+for legacy draft review. Its AI-writing service is not used by the default editor.
+
+The private phone transport is implemented and the Mac HTTPS endpoint has been
+verified. See [private bridge setup](../../tools/oracle-private-bridge.md). The phone
+needs current Tailscale sign-in, the new app build and explicit address/key pairing;
+physical-phone end-to-end use is not yet verified for this new flow.
+
+## Detailed review workflow (legacy)
 
 Every card reader has a visible microphone **Record** action. It opens a focused
 sheet over that card, without changing the reader URL, scroll position or content.

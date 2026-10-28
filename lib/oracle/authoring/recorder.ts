@@ -138,9 +138,9 @@ export async function recoverCapture(store: AuthoringStore, saved: SavedSession,
   const session = { ...saved.session, captures: saved.session.captures.map(c => c.id === captureId ? { ...c, durationMs, status: chunks.length ? 'interrupted' as const : 'empty' as const } : c), markers: saved.session.markers.filter(m => m.captureId !== captureId || m.atMs <= durationMs) };
   return { session, version: await store.save(session, saved.version) };
 }
-export async function importAudio(store: AuthoringStore, saved: SavedSession, file: Blob, durationMs: number, sectionId: string | null): Promise<SavedSession> {
+export async function importAudio(store: AuthoringStore, saved: SavedSession, file: Blob, durationMs: number, sectionId: string | null, visibleCardNumber = saved.session.source.cardNumber): Promise<SavedSession> {
   if (!file.type.startsWith('audio/') || file.size <= 0 || file.size > 10 * 1024 * 1024 || !Number.isFinite(durationMs) || durationMs <= 0 || durationMs > 20 * 60 * 1000) throw new Error('Choose an audio file up to 10 MiB and 20 minutes, with its duration.');
-  const capture: Capture = { id: crypto.randomUUID(), recordedAt: new Date().toISOString(), durationMs, mimeType: file.type, status: 'ready', origin: 'import' };
+  const capture: Capture = { id: crypto.randomUUID(), recordedAt: new Date().toISOString(), durationMs, mimeType: file.type, status: 'ready', origin: 'import', visibleCardNumber };
   const session = { ...saved.session, captures: [...saved.session.captures, capture], markers: [...saved.session.markers, { captureId: capture.id, atMs: 0, sectionId }] };
   // Import metadata and audio atomically. Retain the same session identity and concurrency guard.
   return store.addImportedAudio(session, saved.version, capture.id, file, durationMs);

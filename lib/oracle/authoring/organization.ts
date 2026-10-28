@@ -21,6 +21,12 @@ function routingOnly(text:string) {
  for(const [regex] of lensCues) rest=rest.replace(regex,'');
  return !rest.replace(/\b(?:now|then|this|is|the|next|moving|on|to|let|lets|s|for|about|section)\b/gi,'').replace(/[^a-z]/gi,'').length;
 }
+/** Remove only leading routing-only sentences; original speech is retained separately. */
+export function spokenProse(text:string):string {
+ const parts=text.match(/[^.!?\n]+[.!?]?|\n+/g)??[text];
+ while(parts.length&&(!parts[0].trim()||routingOnly(parts[0])))parts.shift();
+ return parts.join('').trim();
+}
 /** Explicit local keyword hints only. No AI inference or invented word-level times. */
 export function suggestPassages(text:string, cardNumber:number, sectionId:string, unresolved=false):PassageSuggestion[] {
  const parts = text.match(/[^.!?\n]+[.!?]?|\n+/g)?.filter(p=>p.trim()) ?? [text];

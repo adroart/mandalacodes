@@ -29,6 +29,9 @@ import PublicInvocation from './oracle/invocation/PublicInvocation';
 import { loadLiveInvocation } from '../lib/oracle/invocationApi';
 import type { LiveInvocation } from '../lib/oracle/invocationTypes';
 import { consumeCardEntranceRequest, requestsCardEntrance } from '../lib/oracle/cardEntrance';
+import WorkingCardReading from './oracle/authoring/WorkingCardReading';
+
+const ReadingWorkingLayer = import.meta.env.VITE_ORACLE_APP === 'true' ? WorkingCardReading : ({ children }: { cardNumber: number; children: React.ReactNode }) => <>{children}</>;
 
 /* Earth's Breath card reading. The visible component is GENERATED from the
    imported design file (components/oracle/eb/generated/*) by the dc-import
@@ -289,6 +292,7 @@ const UniversalLanguageCard: React.FC = () => {
         />
         <style>{chartRowStyles}</style>
       </div>
+      <ReadingWorkingLayer key={card.number} cardNumber={card.number}>
       <EBReadingHost
         key={card.number}
         data={data}
@@ -311,6 +315,7 @@ const UniversalLanguageCard: React.FC = () => {
         ) : undefined}
         hdChannelSlot={<ChannelStatusLine gate={card.human_design.gate} />}
       />
+      </ReadingWorkingLayer>
       </>
       } />
       <BuySheet
