@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { readFileSync } from 'node:fs';
 test.beforeEach(async ({ context }) => {
   // Bundled assets are served locally for this browser test. No public network

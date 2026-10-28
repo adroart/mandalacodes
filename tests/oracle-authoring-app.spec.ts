@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 test('voice drafting opens from a card and resumes inside the bundled app', async ({ page }, testInfo) => {
   await page.route(/^https:\/\//, route => route.abort());
   await page.goto('/universal-language/23');
