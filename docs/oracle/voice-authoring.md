@@ -1,189 +1,231 @@
 # Oracle voice authoring
 
-Local implementation, 2026-10-28. No manuscript edits, commits, deployment,
-Apple Notes changes, or source-audio deletions are performed by this module.
+Current local implementation, 2026-10-28. No canonical manuscript edits, existing
+Apple Notes changes, publication or editing-audio deletion are performed here.
 
-## App integration
+## In the app
 
-The bundled Oracle app now exposes a microphone action labelled “Rewrite this card
-by voice” in each card's reading toolbar. It passes the visible reader lens into
-`/authoring/:number?section=…`. The page opens or resumes the latest draft for that
-card automatically. The reading journal provides “Voice drafts”, and the optional Home page provides “Your voice drafts”; the authoring Sessions
-control lists existing drafts. Close returns to the card reader.
+Every card reader has a visible microphone **Record** action. It opens a focused
+sheet over that card, without changing the reader URL, scroll position or content.
+The sheet restores focus to Record when closed. Text, controls and editors use the
+Oracle's serif family. Card context remains visible behind the sheet.
 
-`src/mobile/authoring/OracleAuthoringPage.tsx` loads the same bundled manuscript
-bytes and identifies them by SHA-256. Offline approval is an editorial approval of
-that app-bundled revision, not proof that a remote canonical file has not changed.
-A future canonical write still needs authoritative server-side source checks.
-Transcription and AI services remain disconnected in this native integration.
+Record, speak across as many cards or sections as needed, then Finish. Received
+recording chunks save to IndexedDB. Automatic transcription preserves the original
+words; the organizer proposes passages and destinations. The Transcript view shows
+editable words, Code and Section menus, move-up/down controls and Split at cursor.
+Edits save automatically. Writing is also directly editable, grouped by card and
+section. Changing words, destinations or order retains existing writing and marks affected
+comparisons stale. Opening Writing prepares only missing sections, preserving human
+edits. Each passage destination is confirmed explicitly before approval.
 
-The iOS app declares its microphone usage description. Review exports use a
-main-frame, bundled-origin-only native handler and the system share sheet. Export
-files are temporary copies; their cleanup never removes editing audio. The
-existing account transport is unchanged. Microphone permission and share-sheet
-presentation still need real-device verification; the simulator build compiles.
+Keywords are local routing hints, not AI understanding. Explicit card/code/gate/
+hexagram numbers, including spoken forms such as “twenty-three”, suggest card
+changes. I Ching, Gene Keys, Human Design and related section terms suggest lens
+changes. “A chain” is flagged as a possible I Ching recognition error. References
+such as “relates to hexagram 2” retain their current destination. “Which hexagram?”
+without a destination stays unresolved. Every suggestion can be changed manually.
 
-Integration tests run with `playwright.oracle-authoring-app.config.ts` against the
-actual bundled app in iPhone WebKit and desktop Chromium, covering entry from a
-card, auto-resume without duplicate sessions, return to reading, and home access.
+A recording can feed several card drafts without copying or discarding its audio.
+The full original transcript is retained as reference; organized passages point to
+it. Splitting keeps original words and source lineage, including when corrected
+words have changed. Passage order is explicit and survives transfer. Recording-
+level transcripts retain recording-level replay labels; no exact word timestamps
+are manufactured when the provider did not return them.
 
-## Delivered journey
+Approval is one explicit action covering the displayed writing, destinations and
+order. It checks every involved source snapshot and writes an immutable editorial
+receipt. It does not apply changes to the canonical manuscripts. Undiscussed
+sections remain untouched. Published listening audio is a separate asset.
 
-The isolated `OracleAuthoring` component takes a versioned canonical manuscript
-and an authenticated host service boundary. It offers microphone capture or audio
-import, local saved sessions, original transcript entry, independent corrections,
-manual timed excerpts, section assignment, full-section comparison, feedback,
-explicit approval, and Markdown/editorial export. A JSON review file carries audio,
-source, transcript, proposals and approval receipts to a computer. It is private
-material; the file is not encrypted and should be transferred privately.
+More options contains the detailed editor/import, portable export and saved drafts.
+Native exports use the system share sheet. The toolbar Record action is unboxed, and native select controls/options explicitly match the current light/dark colour scheme so menus remain readable. Review files contain private audio and
+text, are not encrypted, and should be transferred privately. Browser storage may
+be evicted; keep a copy before changing devices.
 
-Each session is for one card, with multiple recordings and sections. The six lens
-boundaries use exact character offsets into `oracle/cards/NN.md`. The entire original
-Markdown, including metadata, is preserved with its revision and SHA-256. Only a
-section with a proposal is replaced. Empty replacements are rejected. The caller
-must validate the full candidate with the existing canonical parser/corpus checks
-before any future application; structural headings inside a lens are part of its
-proposed replacement and must survive editorial review.
+## Integration boundaries
 
-Microphone recording saves each delivered MediaRecorder timeslice in a separate
-IndexedDB chunk. Session metadata is saved before capture starts. Switching the
-selected section, or changing `visibleSectionId` from the reader, adds a timestamped
-section hint. These are evidence of what was visible, not proof of spoken intent.
-Received chunks survive reload. Recovery retains only timestamps covered by saved
-audio, and marks the result interrupted. An attempt with no delivered audio is retained
-as an empty record, so recovery does not block later recordings. A browser crash may lose the last
-undelivered slice; partial media containers may not decode on every phone. Keep the
-recording screen open. Recording is capped at 20 minutes and 10 MiB; imports require
-user-supplied duration and an audio MIME type. Import time is recorded for imported
-files, not an inferred original recording date.
+- `src/mobile/OracleNavigation.tsx`: visible Record action and reader context.
+- `src/mobile/authoring/OracleAuthoringSheet.tsx`: accessible modal, focus and scroll.
+- `src/mobile/authoring/OracleAuthoringPage.tsx`: bundled manuscript loading, services
+  and standalone `/authoring/:number` compatibility route.
+- `components/oracle/authoring/OracleVoiceFlow.tsx`: editable transcript and writing.
+- `components/oracle/authoring/EditableText.tsx`: debounced/blur/unmount saves.
+- `lib/oracle/authoring/organization.ts`: keyword suggestions, splitting and lineage.
+- `lib/oracle/authoring/{types,workflow,storage,transfer}.ts`: durable review model.
+- `components/oracle/authoring/OracleAuthoring.tsx`: optional detailed editor.
 
-Raw transcript excerpts, their source/time range, provider and receipt time cannot
-be overwritten through the store. Corrections and manual assignments are separate.
-A hint or unresolved assignment blocks approval unless explicitly kept as reference
-only. For a full recording spanning sections, preserve it as reference and add timed
-excerpts for the specific sections. Reference-only material cannot support a
-proposal. This supports manual transition correction now without claiming automatic
-speech understanding. Each cited excerpt has a replay action on the speech and
-comparison screens. Timing is explicitly labelled recording/manual/provider.
+The session retains `source` as its primary snapshot for compatibility and adds
+`relatedSources` for other cards. Transcript/proposal `cardNumber` defaults to the
+primary card. `order` and `parentId` identify organization and original speech.
+A proposal key is card plus section, preventing identical lens names from colliding.
+Related sources append without modifying earlier snapshots; raw speech and parent
+relationships are immutable through the store. Corrections, routing and order are
+editable. `sessionSources`, `transcriptCard` and `proposalCard` normalize legacy and
+multi-card sessions. All source snapshots are required for `approveReview` and
+`approvedManuscripts`; a stale secondary source blocks the entire approval. A
+single-source export cannot bypass a multi-card source check.
 
-Proposals name transcript evidence and their manual or AI origin. Feedback records
-changes, uncertain words, omissions, contradictions and unsupported additions.
-Empty concern fields mean no concern was recorded, not an automatic claim that an
-AI checked them. The reviewer explicitly confirms the comparison and feedback.
-Approval re-fetches the current canonical source, checks both revision and bytes,
-and binds the entire review to a digest. Corrections, evidence/assignment changes,
-prose changes or feedback changes require fresh approval. Approved export checks the
-current source again. No code path writes the canonical manuscript.
+Each source has exact character ranges into canonical `oracle/cards/NN.md`, a
+revision and SHA-256. App snapshots identify bundled bytes as `app-manuscript:HASH`.
+Offline editorial approval is approval of that version, not proof that a remote
+manuscript is unchanged. A future write must recheck authoritative current sources
+and validate complete candidates before applying anything.
 
-The approval and its Markdown receipt are saved in one IndexedDB transaction.
-Receipts are append-only through the store and remain intact after later editing.
-Portable imports verify review and audio hashes, create a new session identity,
-retain historical receipts as reference, and clear actionable approvals. Hashes
-check integrity, not identity or trust. Browser approval is an editorial record,
-not an authorization token a server should trust.
+Receipts include every original card source, raw/corrected words, audio references,
+passage order, destinations, parent relationships, proposed writing, feedback and
+explicit approvals. Approval and its receipt commit atomically. Subsequent edits do
+not overwrite an earlier receipt. Portable imports verify source/review/audio hashes,
+retain historical receipts, create a new local session identity and require fresh
+approval. Hashes verify integrity, not identity or trusted server authorization.
 
-## Integration contract
+## AR Create services
 
-Import from `components/oracle/authoring/index.ts`:
+The app's Mac preview now uses `/api/oracle/authoring/ar-create`, a narrowly scoped
+same-origin loopback bridge mounted by `vite.oracle.config.ts` for both development
+and preview. It does not use a separate Groq provider or new API-key setup.
 
-```tsx
-import { OracleAuthoring, manuscriptSource, reflectionTranscription }
-  from './components/oracle/authoring';
+`tools/oracle-ar-create-bridge.mjs` connects to the existing AR Create service at
+127.0.0.1:8841. It imports the captured audio through AR's supported intake, links
+only the exact imported source to its recording job, starts transcription and
+resumes that job's status. Upstream writes carry `X-AR-Actor: import:oracle` and
+`X-AR-Client: http`, as required by the installed app. Public capability and the
+installed contract are verified without reading private AR configuration or files.
 
-const source = await manuscriptSource(cardNumber, immutableRevision, rawMarkdown);
+Capture/audio-hash mappings are persisted outside Git. Retries cannot silently
+upload different bytes or duplicate a confirmed import; uncertain import responses
+stop for recovery. Pending jobs are polled by the app without another audio upload.
+The bridge returns AR's real segment/word timestamps, confidence values, speaker
+labels, warnings and its transcript-review link. Those provider records remain
+immutable while corrected words and organization are editable. Provider duration
+can extend a browser recording clock slightly; the saved capture reflects that
+returned range rather than dropping aligned speech.
 
-<OracleAuthoring
-  source={source}
-  visibleSectionId={visibleLensId}
-  services={{
-    loadSource: async number => {
-      const latest = await authenticatedCanonicalLoader(number);
-      return manuscriptSource(number, latest.revision, latest.markdown);
-    },
-    // Optional, only when the host's private reflection API is actually available:
-    transcribe: reflectionTranscription,
-    // Optional authenticated AI adapter; absent by default:
-    // propose: proposeWithConfiguredProvider,
-  }}
-/>
-```
+`tools/oracle-ar-create-writing.mjs` imports AR Create's maintained
+`artifact-execution.mjs` helper from the sibling trusted checkout and uses its
+bounded, output-only Codex account runner. It does not target whichever AR project
+or manuscript happens to be open. No provider key is introduced. Writing requests
+and validated results are fingerprinted outside Git; repeated pending/completed
+requests reuse their receipt. Feedback, evidence, structural subheadings and the
+source hash are checked before a proposal is returned. Account login, configuration,
+hooks and permission controls remain in effect. No manuscript application is exposed.
 
-`loadSource` must fetch authoritative, current Markdown and revision. Never return
-the session snapshot as a convenience fallback. The local preview dynamically loads
-card 1 again. The host controls access, account boundaries, and whether authoring
-should be mounted. App routes and native capture/export setup are now integrated as described above; account code is unchanged.
-The host should remount the component when changing accounts or cards; local
-storage currently belongs to this browser profile, not a signed-in account.
+Actual local verification used clearly synthetic spoken audio, imported through the
+installed AR service: Whisper returned three segments and twenty aligned words.
+The existing AR Codex runner also returned a validated synthetic writing proposal.
+These are genuine local execution checks, not recognition-accuracy claims or proof
+of arbitrary recordings. The first attempted import encountered the installed
+write-attribution requirement and its conservative failed receipt was retained;
+the successful proof used a fresh synthetic capture after the contract was fixed.
+No existing recording, manuscript or active AR project was modified.
 
-`AuthoringServices.propose(session)` returns `Proposal[]`. Each section proposal
-must identify the provider/model, exact transcript evidence IDs and all five
-feedback strings. It may suggest only sections actually discussed in its assigned
-evidence. It must preserve the Oracle writing rules in `oracle/GUIDELINE.md`,
-identify uncertainty rather than invent intent, and make omissions/contradictions
-and unsupported additions explicit. Responses are validated, saved as proposals,
-and never approved automatically. Stale responses are rejected if review context
-changed. No local keyword matching is presented as AI. Provider/model configuration,
-authentication and a real AI test are still required. Automated spoken section
-transition detection is not implemented; a future timestamped transcription
-adapter can return section-labelled excerpts, which still enter as unconfirmed
-hints. Never invent word-level times from the current recording-level transcript.
+The bridge binds only the local Oracle preview; no new public listener, tunnel or
+installed AR runtime change was made. Physical iPhone access to this Mac's AR
+service still requires a private connection. The phone retains recordings and
+reports that limitation explicitly; it never treats its own localhost as the Mac
+or silently sends audio to a different provider. Browser checks with provider
+fixtures remain separate from the real synthetic service checks above.
 
-## Existing service reuse and honest blockers
+Canonical application, durable server receipts and approved source-audio cleanup
+remain unavailable. A future authenticated write needs an atomic source comparison,
+canonical validation, immutable server receipt, resulting revision/hash and verified
+read-back. Only after that proof may an explicit cleanup action target reviewed
+editing sources. It must never remove unreviewed recordings or listening assets.
 
-The opt-in `reflectionTranscription` adapter reuses the existing private reflection
-capability check, idempotent session creation/audio upload and transcription retry.
-Portable reviews retain the original private upload session ID for safe retries
-on another device under the same account. It does not change the existing transcript via PATCH, publish invocations, or touch
-published listening audio. Existing backend transcription is Groq Whisper with
-Cloudflare AI fallback. Existing endpoints require admin authentication, DB,
-ORACLE_PRIVATE, and a transcription provider binding/key. The current client rejects
-that capability in the native Oracle build. Its response supplies whole-recording
-text, without segment or word timestamps. If markers cross sections, its assignment
-is unresolved. Provider failures preserve local audio for retry. Uploads currently
-also appear in the existing private reflection journal; a separate editing namespace
-needs backend coordination before broad rollout.
-
-No live provider credentials or authenticated phone session was exercised in this
-chat. Neither transcription nor AI rewriting is claimed production-ready. The local
-preview deliberately has neither service connected and supports manual transcript
-review. Published assets and login/account surfaces remain unchanged. Account sync is not implemented: portable export/import is the bounded
-computer-review path. Browser storage can be evicted; the UI consistently asks for
-export backup. No OS background microphone guarantee or native bridge is claimed.
-
-Canonical application, verified durable server receipts, and source deletion remain
-deliberately unavailable. To implement them later, the host needs authenticated
-reviewer authorization, an authoritative source compare-and-swap in the actual write
-transaction, canonical validation, an immutable server receipt containing approved
-bytes and resulting revision/hash, read-back verification, and durable receipt
-confirmation. Only then may a separate explicit deletion action target the listed
-editing source asset IDs. It must never target unreviewed audio or opted-in listening
-assets. No generic deletion hook is exported prematurely.
-
-## Preview and verification
-
-With the ordinary Vite development server, visit
-`/components/oracle/authoring/preview.html`. This is a local development harness. The app uses `/authoring/:number` instead. `source` is real card-1 Markdown; all edits stay in
-separate authoring storage and exported files.
-
-Focused checks:
+## Verification
 
 ```sh
 npx vitest run tests/unit/oracle-authoring
+node --test tests/node/oracle-ar-create*.test.mjs
 npx tsc --noEmit
-PLAYWRIGHT_BASE_URL=http://127.0.0.1:4239 npx playwright test tests/oracle-authoring.spec.ts --project='Desktop Chrome' --project='Mobile Chrome' --workers=1
+npx vite build --config vite.oracle.config.ts
+npx playwright test --config playwright.oracle-authoring-app.config.ts
+npm --prefix mobile run build:simulator
 ```
 
-Tests cover exact boundaries across all 64 manuscripts, CRLF/metadata preservation,
-source staleness, approval invalidation, manual assignment/evidence requirements,
-raw transcript protection, received-chunk recovery, optimistic multi-tab concurrency,
-atomic approved receipts/imports, audio hashes, and fresh approval after transfer.
-Browser checks cover audio import/playback, corrections, comparison, approval,
-export/import and fake-microphone capture with section markers. Synthetic speech
-and silence fixtures exercise behavior only; they are not manuscript edits or
-real-provider transcription tests.
+Focused tests cover all 64 manuscript boundaries, metadata/CRLF preservation,
+source staleness across cards, approval invalidation, raw-parent lineage, splitting,
+spoken-keyword hints, ordering/routing, identical lens names across cards, atomic
+receipts, concurrent tabs, transfer hashes and provider failure boundaries. Browser
+checks cover the visible Record button, card-context popup, serif typography, focus
+return, multi-card editing/reassignment/reordering, editable writing, approval and
+one retained audio source. Fake-microphone processing cases use Chromium; WebKit
+covers card integration and modal behavior. No publication or installation on the
+physical phone is implied by local tests or the simulator build.
 
-Latest integration verification: 16 focused unit tests, iPhone WebKit and desktop
-Chromium integration tests, TypeScript, the app bundle build, native bridge tests,
-and the iOS simulator build pass. The broader app suite passes 14/15; its remaining
-failure is the deck-grid artwork visibility assertion at tests/oracle-app.spec.ts:261.
-No production release or phone installation was performed here.
+## Reconciliation improvements, 2026-10-28
+
+1. Individual changes can use the suggestion, keep current text, or wait for review.
+2. Partial acceptance composes the exact final section without losing unchanged text.
+3. Added and removed words have distinct visual marks; long changes expand on demand.
+4. Current text, spoken evidence and the editable result stay within the card sheet.
+5. Raw and corrected speech can be compared alongside their recording playback.
+6. Editorial uncertainties, omissions, contradictions and unsupported additions require explicit checks.
+7. Changed speech, routing or order marks the affected comparison stale, preserving its writing.
+8. A fresh comparison uses the latest assigned passages and resets earlier decisions.
+9. Direct writing edits retain up to twenty previous versions for undo.
+10. Needs-review filters and section progress expose unfinished reconciliation.
+11. Missing sections are prepared without overwriting existing human edits.
+12. Confirm-destination actions replace automatic confirmation at approval time.
+13. Repeated passages and low-confidence provider words get visible attention hints.
+14. Passage coverage shows whether words are linked to writing; orphaned drafts can move to Earlier writing while keeping the current section.
+15. Pending saves, failed edits and unresolved decisions block completion or approval; local retries retain the unsaved text.
+
+These are local editorial decisions. They do not apply a manuscript, publish a
+card, or establish a phone-to-Mac connection. Old approvals remain receipts of
+their original exact versions. Reconciliation metadata travels in portable copies.
+
+## Second editor pass, 2026-10-28
+
+The next fifteen improvements stay in the existing card sheet:
+
+1. Search corrected words, original transcription and passage notes together.
+2. Filter passages by code, section or attention needed, with explicit reset and empty state.
+3. Preview exact repeated-word corrections across only the filtered passages, then apply explicitly.
+4. Set passages aside and restore them without exposing protected original-parent transcripts.
+5. Undo the last transcript correction, with a bounded twenty-version history per passage.
+6. Keep private editorial notes attached to passages, excluded from generated writing.
+7. Name drafts and see those names in the saved-draft list.
+8. Restore Earlier writing against current evidence; preserve the displaced draft and require reconciliation again.
+9. Export proposed writing as a plain-text draft without audio or editorial notes.
+10. Replay recording audio at 0.75, 1, 1.25 or 1.5 times speed.
+11. Jump to the next unfinished change, including deferred choices, with keyboard focus.
+12. Undo the last reconciliation decision while the panel remains open, without bypassing stale evidence.
+13. Read the composed writing in a clean view separate from the editing field.
+14. Copy composed writing, with a selected text fallback when clipboard access fails.
+15. Expand a concise summary of decisions and words added or removed.
+
+Notes, names, correction history and set-aside state survive local saves and portable
+review transfer. Their optional structure is validated before storage/import. Search,
+filters, playback speed and the current decision-undo stack are transient controls.
+Automatic writing still receives only corrected, assigned active passages, not notes.
+
+## Recording to reconciliation, 2026-10-28
+
+This pass removes steps inside the card rather than adding another workspace:
+
+1. Pause and resume the same recording without counting the pause in its audio timestamps.
+2. See a live input meter when Web Audio is available.
+3. See mute/disconnect warnings and actionable microphone permission errors.
+4. Change Reading during recording to save a timed section marker. A marker applies at the next aligned transcript segment; no artificial split or word timing is invented.
+5. Add audio directly in the sheet, with detected duration and a manual-duration fallback.
+6. Find saved recordings, replay their audio and see their transcription state together.
+7. Transcribe a specific pending recording without rerunning completed recordings.
+8. Finish transcription and organization before starting writing, so writing failures never hide the editable transcript.
+9. Retry writing separately and keep each completed card's proposal when another card fails.
+10. See the actual saved, transcribed, organized and reconciliation stages without invented percentages.
+11. Review one card section at a time, with direct selection and next-section navigation.
+12. Review one change at a time; a successfully saved decision advances to the next unfinished change.
+13. Confirm the visible suggested destination route together, leaving unassigned words unresolved.
+14. Follow an actionable next step for pending audio, destinations, writing, reconciliation or final approval.
+15. Replay a low-confidence provider word from its actual timestamp beside the passage.
+
+The sheet also ignores Escape during recording/processing/saving, keeps the shared
+player near the editor, stops playback before recording, and leaves the full-list
+review modes available. Final approval always remains explicit.
+
+Audio chunks now persist as identical ArrayBuffer bytes because WebKit can reject
+Blob/File storage. Existing Blob chunks remain readable, mixed old/new chunks play
+and transfer together, and no database-version migration or audio deletion is used.
+The public recording/storage interfaces continue to return audio Blobs. Source/audio
+hashes and the atomic session/chunk transactions remain in place.

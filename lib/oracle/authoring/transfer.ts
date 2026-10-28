@@ -1,5 +1,6 @@
+import { validatePassageToolsState } from './passageTools';
 import type { AuthoringSession, StoredAudioChunk } from './types';
-import { sourceSnapshot, sha256, proposeSection, addTranscript } from './workflow';
+import { sourceSnapshot, sha256, proposeSection, addTranscript, sessionSources, validateTranscriptParent } from './workflow';
 import { AuthoringStore, type SavedSession } from './storage';
 const LIMIT = 80 * 1024 * 1024;
 async function audioHash(blob: Blob) {
@@ -30,17 +31,23 @@ export async function importBundle(store: AuthoringStore, text: string): Promise
   const session = bundle.session as AuthoringSession;
   if (session.schema !== 1 || !Array.isArray(session.captures) || !Array.isArray(session.transcript) || !Array.isArray(session.markers) || !Array.isArray(session.proposals) || !Array.isArray(session.approvals)) throw new Error('Invalid review structure');
   if (await sha256(JSON.stringify(session)) !== bundle.reviewHash) throw new Error('Review hash mismatch');
-  const snapshot = await sourceSnapshot(session.source.cardNumber, session.source.revision, session.source.markdown, session.source.sections);
-  if (snapshot.hash !== session.source.hash) throw new Error('Source hash mismatch');
+  if (session.relatedSources !== undefined && !Array.isArray(session.relatedSources)) throw new Error('Invalid related source snapshots');
+  for (const source of sessionSources(session)) {
+    const snapshot = await sourceSnapshot(source.cardNumber, source.revision, source.markdown, source.sections);
+    if (snapshot.hash !== source.hash) throw new Error('Source hash mismatch');
+  }
   if (session.captures.length > 100 || new Set(session.captures.map(c => c.id)).size !== session.captures.length || new Set(session.transcript.map(t => t.id)).size !== session.transcript.length) throw new Error('Invalid or duplicate sources');
   for (const c of session.captures) {
     if (!c.id || !c.mimeType?.startsWith('audio/') || !Number.isFinite(c.durationMs) || (c.status === 'empty' ? c.durationMs !== 0 : c.durationMs <= 0) || c.durationMs > 20 * 60 * 1000 || !['ready', 'interrupted', 'empty'].includes(c.status)) throw new Error('Invalid recording');
   }
   for (const t of session.transcript) {
-    addTranscript(session, t.captureId, [{ startMs: t.startMs, endMs: t.endMs, text: t.raw, sectionId: t.sectionId, timing: t.timing }], t.provider);
+    addTranscript(session, t.captureId, [{ startMs: t.startMs, endMs: t.endMs, text: t.raw, sectionId: t.sectionId, timing: t.timing, cardNumber: t.cardNumber, parentId: t.parentId, order: t.order, words: t.words, speaker: t.speaker }], t.provider);
+    validateTranscriptParent(session, t);
     if (typeof t.corrected !== 'string' || !['hint', 'manual', 'unresolved'].includes(t.assignment) || !['recording', 'manual', 'provider'].includes(t.timing)) throw new Error('Invalid transcript');
   }
+  validatePassageToolsState(session);
   session.proposals.forEach(p => proposeSection(session, p));
+  if (session.earlierProposals !== undefined && (!Array.isArray(session.earlierProposals) || session.earlierProposals.some(p => !p || typeof p.text !== 'string' || typeof p.sectionId !== 'string'))) throw new Error('Invalid earlier writing archive');
   for (const m of session.markers) {
     const c = session.captures.find(c => c.id === m.captureId);
     if (!c || !Number.isFinite(m.atMs) || m.atMs < 0 || m.atMs > c.durationMs || (m.sectionId !== null && !session.source.sections.some(s => s.id === m.sectionId))) throw new Error('Invalid section marker');

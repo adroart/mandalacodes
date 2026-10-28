@@ -2,9 +2,9 @@
 
 > **GENERATED — do not edit by hand.** Rerun
 > `npx tsx scripts/gen-capabilities-portable.ts`. It reads the code, so it cannot drift.
-> Generated 2026-10-20T05:41:24.190Z.
+> Generated 2026-10-28T12:08:31.296Z.
 
-**At a glance:** 32 commands.
+**At a glance:** 34 commands.
 
 ## Commands (how to use it)
 
@@ -42,6 +42,8 @@
 | `npm run workbook` | `tsx scripts/oracle-workbook.ts` |
 | `npm run progress` | `node scripts/card-progress.mjs` |
 | `npm run card:gate` | `node scripts/card-gate.mjs` |
+| `npm run build:oracle` | `tsx scripts/build-oracle-app.ts` |
+| `npm run test:oracle-app` | `playwright test --config playwright.oracle-app.config.ts` |
 
 ---
 
