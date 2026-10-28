@@ -51,3 +51,5 @@
 .working-card-reading__evidence { margin-top:18px; font:14px/1.5 var(--font-ui); }
 .working-card-reading__evidence summary { cursor:pointer; padding-block:12px; }
 .working-card-reading__evidence button { min-height:44px; padding:8px 0; border:0; background:transparent; color:inherit; font:inherit; text-decoration:underline; }
+
+.working-card-reading__words > p { margin:0; font:inherit; line-height:inherit; }

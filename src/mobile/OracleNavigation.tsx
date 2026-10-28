@@ -18,9 +18,12 @@ export default function OracleNavigation(_props: unknown) {
   const needsVoiceCheck=voiceJobs.filter(job=>job.state==='attention'||job.state==='failed').length;
   const [shareOpen, setShareOpen] = useState(false);
   const [recordSection, setRecordSection] = useState<string | null>(null);
+  const [recordingCard,setRecordingCard]=useState<number|null>(null);
+  const [startImmediately,setStartImmediately]=useState(false);
   const [passageAnchors,setPassageAnchors]=useState<PassageAnchor[]>([]);
-  const closeRecording=useCallback(()=>{setRecordSection(null);setPassageAnchors([]);},[]);
-  useEffect(()=>{const open=(e:Event)=>{const anchors=(e as CustomEvent<PassageAnchor[]>).detail;if(!anchors?.length)return;setPassageAnchors(anchors);setRecordSection(anchors[0].sectionId);};window.addEventListener('oracle:re-record',open);return()=>window.removeEventListener('oracle:re-record',open);},[]);
+  const closeRecording=useCallback(()=>{setRecordSection(null);setRecordingCard(null);setPassageAnchors([]);setStartImmediately(false);},[]);
+  useEffect(()=>{const open=(e:Event)=>{const anchors=(e as CustomEvent<PassageAnchor[]>).detail;if(!anchors?.length)return;setRecordingCard(anchors[0].cardNumber);setPassageAnchors(anchors);setRecordSection(anchors[0].sectionId);};window.addEventListener('oracle:re-record',open);return()=>window.removeEventListener('oracle:re-record',open);},[]);
+  useEffect(()=>{const open=(e:Event)=>{const detail=(e as CustomEvent<{sectionId?:string;anchors?:PassageAnchor[]}>).detail;setRecordingCard(detail?.anchors?.[0]?.cardNumber??null);setPassageAnchors([]);setStartImmediately(true);setRecordSection(detail?.sectionId??currentReaderSection());};window.addEventListener('oracle:open-recording',open);return()=>window.removeEventListener('oracle:open-recording',open);},[]);
   const card = /^\/universal-language\/\d+$/.test(pathname) ? CARD_BY_NUMBER.get(Number(pathname.split('/').pop())) : undefined;
   return <>
     <header className="oracle-app-nav">
@@ -29,13 +32,13 @@ export default function OracleNavigation(_props: unknown) {
         {!card && <Link to="/search" aria-label="Search codes"><Search size={20} aria-hidden="true" /></Link>}
         {!card && <Link to="/journal" aria-label="Reading journal"><BookOpen size={20} aria-hidden="true" /></Link>}
         {!card && <Link to="/account" aria-label="Account and backup"><UserRound size={21} aria-hidden="true" /></Link>}
-        {card && <button className="oracle-record-trigger" aria-label="Record a voice rewrite" onClick={event => { event.currentTarget.focus(); setPassageAnchors([]); setRecordSection(currentReaderSection()); }}><Mic size={17} aria-hidden="true" /><span>{needsVoiceCheck?'Check':'Record'}</span></button>}{card&&needsVoiceCheck>0&&<span className="sr-only" role="status">{needsVoiceCheck} recording{needsVoiceCheck===1?' needs':'s need'} your check.</span>}
+        {card && <button className="oracle-record-trigger" aria-label="Record a voice rewrite" onClick={event => { event.currentTarget.focus(); setRecordingCard(null);setPassageAnchors([]); setStartImmediately(false); setRecordSection(currentReaderSection()); }}><Mic size={17} aria-hidden="true" /><span>{needsVoiceCheck?'Check':'Record'}</span></button>}{card&&needsVoiceCheck>0&&<span className="sr-only" role="status">{needsVoiceCheck} recording{needsVoiceCheck===1?' needs':'s need'} your check.</span>}
         {card && <ReaderPreferences cardNumber={card.number} />}
         {card && <button aria-label="Share this code" onClick={() => setShareOpen(true)}><Share2 size={21} aria-hidden="true" /></button>}
         <button onClick={toggleDarkMode} aria-label={isDarkMode ? 'Use light appearance' : 'Use dark appearance'}>{isDarkMode ? <Sun size={21} aria-hidden="true" /> : <Moon size={21} aria-hidden="true" />}</button>
       </div>
     </header>
-    {card && recordSection && <OracleAuthoringSheet cardNumber={card.number} sectionId={recordSection} anchors={passageAnchors} onClose={closeRecording} />}
+    {card && recordSection && <OracleAuthoringSheet cardNumber={recordingCard??card.number} sectionId={recordSection} anchors={passageAnchors} startImmediately={startImmediately} onClose={closeRecording} />}
     {card && <OracleShareSheet key={card.number} open={shareOpen} onClose={() => setShareOpen(false)} cardNumber={card.number} cardName={card.card_name} />}
   </>;
 }

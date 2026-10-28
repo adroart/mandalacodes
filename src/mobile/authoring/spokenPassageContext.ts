@@ -8,6 +8,7 @@ export interface SpokenPassageDecision {
   targets: PassageAnchor[];
   candidates: PassageAnchor[];
   message?: string;
+  needsReview?: string;
 }
 
 /** A reference is context, never permission to replace a whole reading. */
@@ -15,6 +16,7 @@ export function decideSpokenPassage(text: string, anchors: PassageAnchor[], focu
   const intent = interpretPassageSpeech(text);
   const contextual = intent.kind !== 'explain' || Boolean(intent.reference.trim()) || /\b(?:where you (?:said|wrote)|you (?:said|wrote)|(?:that|this|these|both|last|above|previous) (?:sentence|paragraph|passage)|both of these)\b/i.test(text);
   const base = { contextual, kind: intent.kind, words: intent.words, targets: [] as PassageAnchor[], candidates: [] as PassageAnchor[] };
+  if(intent.needsReview)return {...base,contextual:true,message:intent.needsReview,needsReview:intent.needsReview,candidates:focused};
   if (!contextual) {
     if(focused.length===1)return {...base,contextual:true,kind:'append',targets:focused,candidates:focused};
     if(focused.length>1)return {...base,contextual:true,kind:'append',candidates:focused,message:'Which selected passage should receive these words?'};

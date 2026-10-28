@@ -3,11 +3,13 @@ import { AuthoringStore } from '../../../lib/oracle/authoring/storage';
 import { addTranscript, correctTranscript, sessionSources, transcriptCard } from '../../../lib/oracle/authoring/workflow';
 import { organizeCapture, spokenProse } from '../../../lib/oracle/authoring/organization';
 import { WorkingCardStore, reconcileHumanPassages, type HumanIssue, type HumanMode } from '../../../lib/oracle/authoring/humanDrafts';
+import {interpretPassageSpeech} from '../../../lib/oracle/authoring/passageContext';
+import {findBookPassages} from './bookPassages';
 import {splitSpokenThoughts} from '../../../lib/oracle/authoring/passageContext';
 import { passagesFromText, type PassageAnchor } from '../../../lib/oracle/authoring/passageContext';
 import { decideSpokenPassage, passageSpeechNeedsCheck } from './spokenPassageContext';
 import { applyPassageReplacement, applyPassageAddition, savePassageConnection, plainSection } from './passageActions';
-export interface HumanJob {id:string;sessionId:string;captureId:string;state:'queued'|'transcribing'|'organizing'|'applying'|'ready'|'attention'|'failed';message:string;issues:HumanIssue[];organized?:boolean;reviewed?:Record<string,string>;mode?:HumanMode;resolveIds?:string[];destinations?:{cardNumber:number;sectionId:string}[];anchors?:PassageAnchor[];passageMatches?:PassageAnchor[];selectedPassageIds?:string[];appliedPassageIds?:string[];updatedAt:string}
+export interface HumanJob {id:string;continuationId?:string;sessionId:string;captureId:string;state:'queued'|'transcribing'|'organizing'|'applying'|'ready'|'attention'|'failed';message:string;issues:HumanIssue[];organized?:boolean;reviewed?:Record<string,string>;mode?:HumanMode;resolveIds?:string[];destinations?:{cardNumber:number;sectionId:string}[];anchors?:PassageAnchor[];passageMatches?:PassageAnchor[];selectedPassageIds?:string[];appliedPassageIds?:string[];updatedAt:string}
 const KEY='oracle.human.jobs.v1',listeners=new Set<()=>void>(),running=new Set<string>();let tail=Promise.resolve();
 const store=new AuthoringStore(),cards=new WorkingCardStore();
 export function humanJobs():HumanJob[]{try{const value=JSON.parse(localStorage.getItem(KEY)??'[]');return Array.isArray(value)?value.filter(j=>j&&typeof j.id==='string'&&typeof j.sessionId==='string'&&typeof j.captureId==='string'):[];}catch{return[];}}
@@ -15,9 +17,9 @@ export function subscribeHumanJobs(listener:()=>void){listeners.add(listener);re
 function put(job:HumanJob){const list=humanJobs().filter(j=>j.id!==job.id);localStorage.setItem(KEY,JSON.stringify([...list,{...job,updatedAt:new Date().toISOString()}]));listeners.forEach(fn=>fn());}
 async function updateSession(id:string,change:(s:AuthoringSession)=>AuthoringSession|Promise<AuthoringSession>){for(let attempt=0;attempt<4;attempt++){const saved=await store.load(id);if(!saved)throw new Error('The recording session could not be found.');const next=await change(saved.session);try{await store.save(next,saved.version);return next;}catch(e){if(attempt===3||!/another tab/i.test(String(e)))throw e;}}throw new Error('The recording changed while saving. Try again.');}
 export async function editJobPassage(sessionId:string,id:string,text:string,cardNumber?:number,sectionId?:string,loadSource?:AuthoringServices['loadSource']){return updateSession(sessionId,async s=>{let next=s;if(cardNumber&&!sessionSources(s).some(src=>src.cardNumber===cardNumber)){if(!loadSource)throw new Error('Choose a recorded card destination.');next={...s,relatedSources:[...(s.relatedSources??[]),await loadSource(cardNumber)]};}return correctTranscript(next,id,{corrected:text,...(cardNumber?{cardNumber}:{}),...(sectionId!==undefined?{sectionId:sectionId||null}: {})});});}
-export function queueHumanCapture(sessionId:string,captureId:string,services:AuthoringServices,options:{mode?:HumanMode;reviewed?:Record<string,string>;resolveIds?:string[];anchors?:PassageAnchor[];selectedPassageIds?:string[]}={}){
+export function queueHumanCapture(sessionId:string,captureId:string,services:AuthoringServices,options:{continuationId?:string;mode?:HumanMode;reviewed?:Record<string,string>;resolveIds?:string[];anchors?:PassageAnchor[];selectedPassageIds?:string[]}={}){
  const id=`${sessionId}/${captureId}`;if(running.has(id))return;
- const previous=humanJobs().find(j=>j.id===id);const job:HumanJob={id,sessionId,captureId,state:'queued',message:'Recording saved. Processing your words…',issues:[],organized:previous?.organized,reviewed:options.reviewed??previous?.reviewed,mode:options.mode??'auto',resolveIds:options.resolveIds,anchors:options.anchors??previous?.anchors,selectedPassageIds:options.selectedPassageIds??previous?.selectedPassageIds,appliedPassageIds:previous?.appliedPassageIds,updatedAt:new Date().toISOString()};
+ const previous=humanJobs().find(j=>j.id===id);const job:HumanJob={id,continuationId:options.continuationId??previous?.continuationId,sessionId,captureId,state:'queued',message:'Recording saved. Processing your words…',issues:[],organized:previous?.organized,reviewed:options.reviewed??previous?.reviewed,mode:options.mode??'auto',resolveIds:options.resolveIds,anchors:options.anchors??previous?.anchors,selectedPassageIds:options.selectedPassageIds??previous?.selectedPassageIds,appliedPassageIds:previous?.appliedPassageIds,updatedAt:new Date().toISOString()};
  put(job);running.add(id);tail=tail.catch(()=>undefined).then(async()=>{try{
   let saved=await store.load(sessionId);if(!saved)throw new Error('The recording session is unavailable.');const capture=saved.session.captures.find(c=>c.id===captureId);if(!capture||capture.status==='recording'||capture.status==='empty')throw new Error('Finish a recording with received audio before processing.');
   if(!saved.session.transcript.some(t=>t.captureId===captureId)){
@@ -37,16 +39,21 @@ export function queueHumanCapture(sessionId:string,captureId:string,services:Aut
    candidates.push(...passagesFromText(source.cardNumber,section.id,working?.text??plainSection(source,section.id),working?.revision,source.hash));
   }
   let focus=job.anchors??[];
+  if(job.continuationId){const earlier=humanJobs().filter(j=>j.id!==job.id&&j.continuationId===job.continuationId&&j.state==='ready').sort((a,b)=>a.updatedAt.localeCompare(b.updatedAt)).at(-1);if(earlier?.anchors){for(let index=0;index<focus.length;index++){const old=focus[index],rebased=earlier.anchors.find(a=>a.cardNumber===old.cardNumber&&a.sectionId===old.sectionId&&a.text.includes(old.text));if(rebased&&(await cards.get(old.cardNumber,old.sectionId))?.revision===rebased.revision)focus[index]=rebased;}}job.anchors=focus;}
+
+  focus=focus.filter((a,index)=>!focus.some((b,other)=>other!==index&&a.cardNumber===b.cardNumber&&a.sectionId===b.sectionId&&a.revision===b.revision&&b.start<=a.start&&b.end>=a.end&&(b.end-b.start>a.end-a.start||other<index)));
   let all=[...focus,...candidates.filter(a=>!focus.some(f=>f.id===a.id))];
   const contextualIds=new Set<string>();
   for(const transcript of passages){
    if(job.appliedPassageIds?.includes(transcript.id)){contextualIds.add(transcript.id);continue;}
    const targetFocus=/\b(?:connect|these two|both of these|together)\b/i.test(transcript.corrected)?focus:focus.filter(a=>a.cardNumber===transcriptCard(s,transcript)&&a.sectionId===transcript.sectionId);
-   const decision=decideSpokenPassage(transcript.corrected,all,targetFocus,job.selectedPassageIds);
+   let decision=decideSpokenPassage(transcript.corrected,all,targetFocus,job.selectedPassageIds);
+   if(decision.contextual&&!decision.targets.length&&!decision.needsReview){const reference=interpretPassageSpeech(transcript.corrected).reference;if(reference.trim().split(/\s+/).length>=3){const found=await findBookPassages(reference,s.source.cardNumber,services.loadSource);all=[...all,...found.map(hit=>hit.anchor).filter(a=>!all.some(b=>b.id===a.id))];job.anchors=[...(job.anchors??[]),...found.map(hit=>hit.anchor).filter(a=>!job.anchors?.some(b=>b.id===a.id))];decision=decideSpokenPassage(transcript.corrected,all,targetFocus,job.selectedPassageIds);}}
    if(!decision.contextual)continue;
    contextualIds.add(transcript.id);
    job.passageMatches=decision.candidates;
    const issue=(message:string)=>issues.push({code:'revision',message,transcriptIds:[transcript.id]});
+   if(decision.needsReview){issue(decision.needsReview);continue;}
    if(!decision.targets.length){issue(decision.message??'Choose the passage these words refer to.');continue;}
    const reviewed=job.reviewed?.[transcript.id]===transcript.corrected;
    if(passageSpeechNeedsCheck(transcript.corrected,reviewed,(transcript.words??[]).flatMap(w=>w.probability===undefined?[]:[w.probability]))){issues.push({code:'uncertain',message:'Check the uncertain words before changing this passage.',transcriptIds:[transcript.id]});continue;}
@@ -104,4 +111,4 @@ export function queueHumanCapture(sessionId:string,captureId:string,services:Aut
   put({...job,state:issues.length?'attention':'ready',message:issues.length?(destinations.length?'A few words need your check. Other safe sections are saved.':'Check these words before they reach the card.'):'Your words are saved in the cards.',issues,destinations});
  }catch(e){put({...job,state:'failed',message:e instanceof Error?e.message:'Processing stopped. Your recording is still saved.',issues:[]});}finally{running.delete(id);}});
 }
-export function resumeHumanJobs(services:AuthoringServices){for(const job of humanJobs().filter(j=>['queued','transcribing','organizing','applying'].includes(j.state)))queueHumanCapture(job.sessionId,job.captureId,services,{mode:job.mode,reviewed:job.reviewed,resolveIds:job.resolveIds,anchors:job.anchors,selectedPassageIds:job.selectedPassageIds});}
+export function resumeHumanJobs(services:AuthoringServices){for(const job of humanJobs().filter(j=>['queued','transcribing','organizing','applying'].includes(j.state)))queueHumanCapture(job.sessionId,job.captureId,services,{continuationId:job.continuationId,mode:job.mode,reviewed:job.reviewed,resolveIds:job.resolveIds,anchors:job.anchors,selectedPassageIds:job.selectedPassageIds});}

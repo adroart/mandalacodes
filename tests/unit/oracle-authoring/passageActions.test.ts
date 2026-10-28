@@ -21,6 +21,9 @@ describe('passage application boundaries',()=>{
  it('adds after a passage without changing its words or duplicating the recording',async()=>{
  const s=source(52),a=anchors(s)[0];await applyPassageAddition(a,'An added human thought.',services(s),{sessionId:'session',captureId:'audio',transcriptId:'addition'});const saved=(await new WorkingCardStore().get(52,'CODE'))!;expect(saved.text).toBe('First published paragraph.\n\nAn added human thought.\n\nSecond published paragraph.\n\nThird published paragraph.');
  });
+ it('keeps successive additions to the same reference in spoken order',async()=>{
+ const s=source(55),a=anchors(s)[0];await applyPassageAddition(a,'My first thought.',services(s));const store=new WorkingCardStore(),saved=(await store.get(55,'CODE'))!;await applyPassageAddition({...a,revision:saved.revision,sectionText:saved.text},'My second thought.',services(s));const next=(await store.get(55,'CODE'))!;expect(next.text.indexOf('My first thought.')).toBeLessThan(next.text.indexOf('My second thought.'));expect(next.text).toContain('First published paragraph.\n\nMy first thought.\n\nMy second thought.');
+ });
  it('does not replace disjoint paragraphs or duplicate prose for connections',async()=>{
  const s=source(53),aa=anchors(s);await expect(applyPassageReplacement([aa[0],aa[2]],'Combined.',services(s))).rejects.toThrow(/adjacent/);savePassageConnection([aa[0],aa[2]],'The same concept.');savePassageConnection([aa[0],aa[2]],'The same concept.');expect(passageConnections()).toHaveLength(1);expect(await new WorkingCardStore().get(53,'CODE')).toBeUndefined();
  });

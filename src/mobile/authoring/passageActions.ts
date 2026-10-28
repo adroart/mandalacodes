@@ -3,7 +3,7 @@ import type {AuthoringServices,SourceSnapshot} from '../../../lib/oracle/authori
 import {replaceAnchoredText,type PassageAnchor} from '../../../lib/oracle/authoring/passageContext';
 const store=new WorkingCardStore(),CONTEXT='oracle.reader.anchors.v1',UNDO='oracle.passage.undo.v1',LINKS='oracle.passage.connections.v1';
 export interface PassageEvidence{sessionId:string;captureId:string;transcriptId:string}
-export function plainSection(source:SourceSnapshot,sectionId:string){const s=source.sections.find(s=>s.id===sectionId);if(!s)throw new Error('Choose a reading section.');return source.markdown.slice(s.start,s.end).replace(/^#{1,6}\s+.*\r?\n?/gm,'').replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'$1').replace(/^\s*>\s?/gm,'').trim();}
+export function plainSection(source:SourceSnapshot,sectionId:string){const s=source.sections.find(s=>s.id===sectionId);if(!s)throw new Error('Choose a reading section.');return source.markdown.slice(s.start,s.end).replace(/^_Keywords:_.*\r?\n?/gm,'').replace(/^#{1,6}\s+.*\r?\n?/gm,'').replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'$1').replace(/^\s*>\s?/gm,'').trim();}
 export function readReaderAnchors():PassageAnchor[]{try{return JSON.parse(localStorage.getItem(CONTEXT)??'[]');}catch{return[];}}
 export function writeReaderAnchors(anchors:PassageAnchor[]){localStorage.setItem(CONTEXT,JSON.stringify(anchors));window.dispatchEvent(new CustomEvent('oracle:reader-context',{detail:anchors}));}
 function baseline(source:SourceSnapshot,sectionId:string,text:string):WorkingSection{return {key:`${source.cardNumber}/${sectionId}`,cardNumber:source.cardNumber,sectionId,text,revision:0,sourceHash:source.hash,source,savedAt:'',blocks:[{id:'published',text,origin:'ai',evidence:[]}],humanWords:0,totalWords:wordCount(text)};}
@@ -22,9 +22,11 @@ async function apply(anchors:PassageAnchor[],words:string,services:AuthoringServ
  const before=existing??baseline(source,first.sectionId,plainSection(source,first.sectionId));
  const combined={...first,end:last.end,text:first.sectionText.slice(first.start,last.end)};
  const proposed=replaceAnchoredText(before.text,combined,words);
- const start=addition?combined.end:combined.start,end=combined.end,insert=addition?`\n\n${words}`:words;
+ let start=addition?combined.end:combined.start,end=combined.end;const insert=addition?`\n\n${words}`:words;
+ if(addition){let position=0;for(const block of exactBlocks(before)){const from=position;position+=block.text.length;if(block.attachedTo===combined.text&&from>=start&&!before.text.slice(start,from).trim())start=end=position;}}
+
  if(!addition&&proposed===before.text)return;
- const blocks=exactBlocks(before),nextBlocks=[...sliceBlocks(blocks,0,start),{id:crypto.randomUUID(),text:insert,sourceText:insert,...(!addition?{replacedText:combined.text}:{}),origin:'human' as const,evidence:evidence?[{...evidence,signature:words}]:[]},...sliceBlocks(blocks,end,before.text.length)];
+ const blocks=exactBlocks(before),nextBlocks=[...sliceBlocks(blocks,0,start),{id:crypto.randomUUID(),text:insert,sourceText:insert,...(!addition?{replacedText:combined.text}:{attachedTo:combined.text}),origin:'human' as const,evidence:evidence?[{...evidence,signature:words}]:[]},...sliceBlocks(blocks,end,before.text.length)];
  const next={...before,text:nextBlocks.map(b=>b.text).join(''),blocks:nextBlocks,humanWords:nextBlocks.reduce((n,b)=>n+(b.origin==='human'?wordCount(b.text):0),0),totalWords:wordCount(nextBlocks.map(b=>b.text).join(''))};
  const saved=await store.save(next,existing?.revision??0);
  localStorage.setItem(UNDO,JSON.stringify({before,afterRevision:saved.revision}));window.dispatchEvent(new Event('oracle:passage-applied'));

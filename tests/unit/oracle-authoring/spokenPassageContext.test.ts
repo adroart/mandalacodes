@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, vi, describe, expect, it } from 'vitest';
-import { passagesFromText } from '../../../lib/oracle/authoring/passageContext';
+import { passagesFromText,type PassageAnchor } from '../../../lib/oracle/authoring/passageContext';
 import { decideSpokenPassage, passageSpeechNeedsCheck } from '../../../src/mobile/authoring/spokenPassageContext';
 
 const anchors = passagesFromText(2, 'CODE', 'A quiet field receives the whole movement. The roots hold firm.\n\nThe open hand makes room for the unexpected.\n\nA quiet field receives the whole movement.');
@@ -107,5 +107,13 @@ describe('passage-aware capture jobs',()=>{
   queueHumanCapture(session.id,'clip',services,{anchors:[anchor]});
   await vi.waitFor(()=>expect(humanJobs()[0].state).toBe('ready'));
   expect((await cards.get(2,'CODE'))!.text).toBe('The quiet field receives.\n\nMy first human thought.\n\nMy second human thought.\n\nThe roots hold firm.');
+ });
+});
+
+describe('compound instruction review',()=>{
+ it('holds unsupported compound edits even if a focused target is known',()=>{
+  const anchor:PassageAnchor={id:'focus',cardNumber:2,sectionId:'CODE',text:'The opening. The rest.',sectionText:'The opening. The rest.',start:0,end:22};
+  const decision=decideSpokenPassage('Keep the opening of the first. Replace the explanation with this: My own words.',[anchor],[anchor]);
+  expect(decision.needsReview).toBeTruthy();expect(decision.targets).toEqual([]);
  });
 });

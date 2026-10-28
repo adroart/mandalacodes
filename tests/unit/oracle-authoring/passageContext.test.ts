@@ -40,8 +40,34 @@ describe('conservative spoken instructions', () => {
     expect(interpretPassageSpeech('where you said the quiet field, replace it with My exact words.')).toEqual({ kind: 'replace', reference: 'the quiet field', words: 'My exact words.' });
     expect(interpretPassageSpeech('that last sentence')).toEqual({ kind: 'explain', reference: 'that last sentence', words: '' });
   });
-  it('does not discard corrections or invent meaning for unsupported editing instructions', () => {
-    for (const text of ['Actually, let me say that differently.', 'Keep the opening and change the rest.', 'Add this before the paragraph: My words.', 'The word replace is part of this sentence.']) expect(interpretPassageSpeech(text)).toEqual({ kind: 'explain', reference: '', words: text });
+  it('holds unsupported instructions without leaking them into manuscript words', () => {
+    for (const text of ['Actually, let me say that differently.', 'Keep the opening and change the rest.', 'Add this before the paragraph: My words.']) {
+      const intent = interpretPassageSpeech(text);
+      expect(intent.needsReview).toBeTruthy();
+      expect(intent.words).not.toContain('Keep the opening');
+      expect(intent.words).not.toContain('Add this before');
+    }
+    for (const text of ['The word replace is part of this sentence.', 'Actually trust is how a field receives.', 'I actually prefer this wording.', 'Keep the quiet strength alive.', 'Correction is the beginning of a fresh understanding.']) expect(interpretPassageSpeech(text)).toEqual({ kind: 'explain', reference: '', words: text });
+  });
+  it('extracts a quoted explanation without copying its direction into the writing', () => {
+    expect(interpretPassageSpeech('Where you said “the quiet field”, what I mean is A living space that receives.')).toEqual({kind:'explain',reference:'the quiet field',words:'A living space that receives.'});
+    expect(interpretPassageSpeech('where you said the quiet field, what I mean is A living space.')).toEqual({kind:'explain',reference:'the quiet field',words:'A living space.'});
+    expect(interpretPassageSpeech('You wrote "the quiet field"; here is what I mean: This is my own exact voice.')).toEqual({kind:'explain',reference:'the quiet field',words:'This is my own exact voice.'});
+  });
+  it('executes only a fully specified keep-opening compound, and holds an ambiguous opening', () => {
+    const clear=interpretPassageSpeech('Keep the opening sentence of the first passage. Replace the rest with this: This is my new explanation.');
+    expect(clear).toEqual({kind:'replace',reference:'the text after the opening sentence of the first selected passage',words:'This is my new explanation.'});
+    const unclear=interpretPassageSpeech('Keep the opening of the first. Replace the explanation with this: My replacement.');
+    expect(unclear.words).toBe('My replacement.');expect(unclear.needsReview).toMatch(/opening/);
+  });
+  it('retains self-correction prose for review without writing its scratch command', () => {
+    const correction=interpretPassageSpeech('The field is fixed. Scratch that. The field changes with each visitor.');
+    expect(correction.words).toBe('The field changes with each visitor.');expect(correction.needsReview).toMatch(/earlier spoken/);
+    const instead=interpretPassageSpeech('No, instead: Here are my exact replacement words.');
+    expect(instead.words).toBe('Here are my exact replacement words.');expect(instead.needsReview).toBeTruthy();
+    const embedded=interpretPassageSpeech('Replace this paragraph with this: My first words. Delete that sentence.');
+    expect(embedded.needsReview).toMatch(/still contains/);
+    expect(interpretPassageSpeech('Correction: These are my revised spoken words.').needsReview).toMatch(/earlier spoken/);
   });
 });
 
@@ -70,6 +96,17 @@ describe('passage suggestions', () => {
     const last = matchPassages('that last sentence', local, [local[1].id])[0].anchor;
     expect(last.text).toBe('The final sentence.');
     expect(replaceAnchoredText(text, last, 'My new sentence.')).toBe(text.replace('The final sentence.', 'My new sentence.'));
+    const first = matchPassages('the opening sentence', local, [local[1].id])[0].anchor;
+    expect(first.text).toBe('The current opening.');
+    const remainder=matchPassages('the text after the opening sentence of the first selected passage',local,[local[1].id])[0].anchor;
+    expect(remainder.text).toBe('The final sentence.');
+    expect(replaceAnchoredText(text,remainder,'A fully human explanation.')).toBe('The first paragraph.\n\nThe current opening. A fully human explanation.\n\nThe next paragraph.');
+    expect(matchPassages('sentence above',local,[local[1].id])[0].anchor.text).toBe('The first paragraph.');
+    expect(matchPassages('sentence below',local,[local[1].id])[0].anchor.text).toBe('The next paragraph.');
+    expect(interpretPassageSpeech('the opening sentence')).toEqual({kind:'explain',reference:'the opening sentence',words:''});
+    expect(interpretPassageSpeech('sentence above')).toEqual({kind:'explain',reference:'sentence above',words:''});
+    const ordered=passagesFromText(2,'CODE','First. Remainder one.\n\nSecond. Remainder two.');
+    expect(matchPassages('the text after the opening sentence of the first selected passage',ordered,[ordered[1].id,ordered[0].id])[0].anchor.text).toBe('Remainder two.');
     expect(matchPassages('paragraph above', local)).toEqual([]);
     expect(matchPassages('that last sentence', local)).toEqual([]);
   });

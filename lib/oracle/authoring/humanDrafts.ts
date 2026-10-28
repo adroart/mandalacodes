@@ -7,6 +7,8 @@ export interface HumanBlock {
   sourceText?: string;
   /** Exact displaced passage for in-place provenance review. */
   replacedText?: string;
+  /** The exact reference passage receiving successive spoken additions. */
+  attachedTo?: string;
 }
 export interface WorkingSection {
   key: string; cardNumber: number; sectionId: string; text: string; revision: number;

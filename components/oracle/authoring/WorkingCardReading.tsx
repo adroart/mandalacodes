@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { WorkingCardStore, sectionHumanPercent, type WorkingSection } from '../../../lib/oracle/authoring/humanDrafts';
 import './WorkingCardReading.css';
 import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
+import {passagesFromText} from '../../../lib/oracle/authoring/passageContext';
 import PassageReadingControls from './PassageReadingControls';
 
 const LENSES = [
@@ -83,8 +84,14 @@ function WorkingLens({ section, target, label }: { section: WorkingSection; targ
     </div>
     {!published && <>
       <h2>{label}</h2>
-      <div className="working-card-reading__words">{section.blocks.map((block,index)=><React.Fragment key={block.id}>{index>0&&section.text===section.blocks.map(b=>b.text).join('\n\n')?'\n\n':''}<span data-human-origin={block.origin==='human'?true:undefined} title={block.origin==='human'?'Your words':undefined}>{block.text}</span></React.Fragment>)}</div>
+      <div className="working-card-reading__words">{renderWorkingParagraphs(section)}</div>
       <details className="working-card-reading__evidence"><summary>Passage history & recordings</summary>{section.blocks.filter(b=>b.origin==='human').map(block=><div key={block.id}><p>Your words · {block.text.slice(0,140)}</p>{block.replacedText&&<details><summary>Original passage</summary><p>{block.replacedText}</p></details>}{block.evidence[0]&&<button onClick={()=>void listen(block.evidence[0].sessionId,block.evidence[0].captureId)}>Listen to original recording</button>}</div>)}{audio&&<audio src={audio} controls aria-label="Passage recording"/>}{error&&<p role="alert">{error}</p>}</details>
     </>}
   </div>;
+}
+
+function renderWorkingParagraphs(section:WorkingSection){
+ let cursor=0;const human:{start:number;end:number}[]=[];for(const block of section.blocks){const at=section.text.indexOf(block.text,cursor);if(at<0)continue;if(block.origin==='human')human.push({start:at,end:at+block.text.length});cursor=at+block.text.length;}
+ const paragraphs=passagesFromText(section.cardNumber,section.sectionId,section.text,section.revision,section.sourceHash);
+ return paragraphs.map((paragraph,index)=>{const boundaries=[...new Set([paragraph.start,paragraph.end,...human.flatMap(r=>[Math.max(paragraph.start,r.start),Math.min(paragraph.end,r.end)]).filter(n=>n>paragraph.start&&n<paragraph.end)])].sort((a,b)=>a-b);return <React.Fragment key={paragraph.id}>{section.text.slice(index?paragraphs[index-1].end:0,paragraph.start)}<p>{boundaries.slice(0,-1).map((from,i)=>{const to=boundaries[i+1],isHuman=human.some(r=>r.start<=from&&r.end>=to);return <span key={from} data-human-origin={isHuman?true:undefined} title={isHuman?'Your words':undefined}>{section.text.slice(from,to)}</span>;})}</p></React.Fragment>;});
 }

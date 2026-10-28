@@ -11,7 +11,7 @@ interface Props {
   anchors: PassageAnchor[];
   source: SourceSnapshot;
   services: AuthoringServices;
-  onApplied: () => void;
+  onApplied: (anchor:PassageAnchor) => void;
   onClose: () => void;
 }
 const elapsedLabel = (ms: number) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
@@ -130,7 +130,7 @@ export default function PassageRecorder({ anchors, source, services, onApplied, 
         }
       }
       await applyPassageReplacement([target], text, services, evidence);
-      onApplied(); onClose();
+      onApplied(target); onClose();
     } catch (e) { report(e); } finally { if (mounted.current) setBusy(false); }
   };
   if (!target) return <section className="passage-recorder"><p>Select a passage in the card first.</p><button onClick={onClose}>Back to card</button></section>;

@@ -289,9 +289,8 @@ belongs to a thought. Spoken card/section destinations retain priority.
 
 Targeted edits preserve other text and its attribution. Human contributions show
 an unobtrusive underline, with displaced text and retained audio under passage
-history. Undo checks that no later edit would be lost. Printed-book references can
-match passages in the recording's known card sources; there is no semantic search
-across the entire 64-card corpus, calibrated matching accuracy, live word-following
-teleprompter, or streaming transcription while the microphone is still recording.
-Processing applies complete returned transcript passages. Compound instructions
-outside the bounded parser still require human interpretation.
+history. Undo checks that no later edit would be lost. Printed-book references and **Find in book** search the exact manuscripts and current private words across all 64 cards. Matching is lexical, with ambiguity retained and no calibrated accuracy claim. A persistent **Record / Re-record passage / Find in book / Connections** toolbar links the workflows; paragraphs can also be picked by tapping or keyboard without browser text selection.
+
+The visible Record action starts ordinary recording directly. Independently saved thoughts can transcribe and apply while the next thought records. After twelve seconds, automatic handoffs wait for a quiet break when input metering is supported; **Apply this thought** explicitly sends one at any time. Without metering the take stays intact until that action or Finish. Brief microphone reopening gaps may occur at boundaries. This is progressive thought transcription, not continuous word-level streaming or a speech-following teleprompter. Consecutive additions retain their order; background saves preserve recording and transcript work. Re-recording remains one deliberate take and waits for review.
+
+The bounded parser handles quoted explanations, exact sentence references, and explicitly keeping an opening sentence while replacing the rest. Ambiguous self-corrections, incomplete compound directions and embedded second instructions stay for correction before applying. No command text is silently pasted into a manuscript.
