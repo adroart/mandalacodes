@@ -97,9 +97,6 @@
   min-height: 72px;
   padding-block: 12px !important;
 }
-.oracle-app-shell[data-app-page="reading"] .eb-reading .ul-gk-spectrum-nav p {
-  text-align: center !important;
-}
 .oracle-app-shell[data-app-page="reading"] .eb-reading [role="dialog"][aria-label="About this system"] {
   padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)) !important;
 }

@@ -84,6 +84,12 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
   min-width: 0;
   padding-inline: clamp(5px, 1.5vw, 12px) !important;
 }
+/* These are navigation labels, not justified reading prose. Reset the final
+   line too: a one-line name otherwise inherits the prose's start alignment. */
+.eb-reading .ul-gk-spectrum-nav > button > p {
+  text-align: center !important;
+  text-align-last: center !important;
+}
 .eb-reading .ul-gk-spectrum-nav > button > p:last-child {
   font-size: clamp(17px, 4.2vw, 21px) !important;
   line-height: 1.05 !important;
