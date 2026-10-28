@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LAUNCH_FLAGS } from '../launchFlags';
 import { Link } from 'react-router-dom';
 import { useProfile } from '../lib/profile/context';
 import ProfileForm from './oracle/ProfileForm';
@@ -24,7 +25,7 @@ const OracleProfile: React.FC = () => {
   const shareProfile = async () => {
     if (!profile) return;
     const token = encodeSharedProfile(profile.computed, profile.inputs.place.label);
-    const url = `${window.location.origin}/profile/shared/${token}`;
+    const url = `${import.meta.env.VITE_ORACLE_APP === 'true' ? 'https://mandalacodes.com' : window.location.origin}/profile/shared/${token}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: 'My Hologenetic Profile', url });
@@ -204,8 +205,7 @@ const OracleProfile: React.FC = () => {
           Richard Rudd. Artwork and interpretation by Adrian Rasmussen.
         </p>
         <p style={{ marginTop: 8 }}>
-          Your birth data is stored on this device only. When you sign in, it
-          syncs to your account so it follows you across browsers.
+          Your birth data is stored on this device only.{LAUNCH_FLAGS.accounts && ' When you sign in, it syncs to your account so it follows you across browsers.'}
         </p>
         <p style={{ marginTop: 8 }}>
           Place data from{' '}

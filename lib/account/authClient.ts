@@ -10,6 +10,9 @@ import { createAuthClient } from 'better-auth/react';
 import { emailOTPClient } from 'better-auth/client/plugins';
 
 export const authClient = createAuthClient({
+  // Shared UI imports this client even when native account actions are disabled.
+  // Better Auth requires an HTTP origin at construction, not capacitor://localhost.
+  baseURL: import.meta.env.VITE_ORACLE_APP === 'true' ? 'https://mandalacodes.com' : undefined,
   basePath: '/api/auth',
   plugins: [emailOTPClient()],
 });
