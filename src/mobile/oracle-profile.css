@@ -117,8 +117,6 @@ body.oracle-native .oracle-birth-panel .profile-form__suggestion-tz { font-size:
     backdrop-filter: none;
     background: var(--color-paper-50);
   }
-  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__name { font-size: 22px; }
-  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__gate { font-size: 18px; }
   .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__zoom-btn { min-width: 44px; height: 44px; padding: 0 8px; font-size: 13px; }
   .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__filter { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; padding-bottom: 12px; }
   .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__filter-btn { letter-spacing: .02em; padding: 6px 3px; border-radius: 6px; }
@@ -186,3 +184,15 @@ body.oracle-native .oracle-birth-close {
   background: transparent;
   color: var(--color-wood-700);
 }
+
+/* Let the enlarged chart use the phone width, aligned to the same center axis. */
+@media (max-width: 879px) {
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__canvas { margin-inline: -8px; width: calc(100% + 16px); }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__zoom { margin-right: 8px; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__viewport { border-radius: 0; }
+  .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__channel { stroke-width: 2; opacity: .8; }
+  .oracle-app-shell[data-app-page="profile"] #main-content > main > header > div:first-child { display:grid !important; grid-template-columns:minmax(0,1fr) auto; }
+  .oracle-app-shell[data-app-page="profile"] #main-content > main > header h1 { line-height:1.08; }
+}
+.oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__name { font-size: 26px; padding-inline: 0; }
+.oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__gate { font-size: 26px; letter-spacing: 0; font-variant-numeric: tabular-nums; fill: #faf7f0; }

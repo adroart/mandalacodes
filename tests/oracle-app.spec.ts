@@ -137,3 +137,45 @@ for (const size of [{width:375,height:667},{width:430,height:932},{width:932,hei
     await page.getByRole('button',{name:'Close',exact:true}).click();
   });
 }
+
+for (const width of [375, 430]) {
+  test(`Birthday chart stays legible and aligned at ${width}px`, async ({page}) => {
+    await page.setViewportSize({width,height:932});
+    await page.goto('/profile');
+    await page.locator('input[type="date"]').fill('1990-06-15');
+    await page.getByPlaceholder('HH:MM').fill('14:30');
+    await page.getByPlaceholder('Type a city, then pick from the list').fill('Jakarta');
+    await page.getByRole('option').first().click();
+    await page.getByRole('button',{name:'Build my profile',exact:true}).click();
+    await expect(page.locator('.pg__svg')).toBeVisible();
+    for (const theme of ['dark','light']) {
+      if(theme === 'light') await page.getByRole('button',{name:'Use light appearance',exact:true}).click();
+      const geometry=await page.locator('.pg__svg').evaluate(svg => {
+        const viewport=svg.getBoundingClientRect();
+        const box=(e:Element)=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};};
+        const labels=Array.from(svg.querySelectorAll('.pg__name')).map(box);
+        const circles=Array.from(svg.querySelectorAll('.pg__circle')).map(box);
+        const overlaps=(a:ReturnType<typeof box>,b:ReturnType<typeof box>)=>Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x)>1 && Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y)>1;
+        return {labels:labels.length,minimumCircle:Math.min(...circles.map(c=>c.w)),
+          labelClipping:labels.some(r=>r.x<viewport.x-1||r.x+r.w>viewport.right+1||r.y<viewport.y-1||r.y+r.h>viewport.bottom+1),
+          labelOverlap:labels.some((a,i)=>labels.some((b,j)=>j>i&&overlaps(a,b))),
+          circleOverlap:labels.some(a=>circles.some(b=>overlaps(a,b))),
+          gateSize:parseFloat(getComputedStyle(svg.querySelector('.pg__gate')!).fontSize)*(svg as SVGSVGElement).getScreenCTM()!.a};
+      });
+      expect(geometry.labels).toBe(11);
+      expect(geometry.minimumCircle).toBeGreaterThanOrEqual(44);
+      expect(geometry.gateSize).toBeGreaterThanOrEqual(16);
+      expect(geometry.labelClipping).toBe(false);
+      expect(geometry.labelOverlap).toBe(false);
+      expect(geometry.circleOverlap).toBe(false);
+      await page.locator('.pg__canvas').screenshot({path:`mobile/build/birthday-chart-${width}-${theme}.png`});
+    }
+    await page.getByRole('button',{name:'Zoom in',exact:true}).click();
+    await expect(page.getByRole('button',{name:'Reset zoom',exact:true})).toHaveText('130%');
+    await page.getByRole('button',{name:'Reset zoom',exact:true}).click();
+    await expect(page.getByRole('button',{name:'Reset zoom',exact:true})).toHaveText('100%');
+    await page.locator('.pg__orb').first().click();
+    await expect(page.locator('.pg__detail-name')).toHaveText("Life's Work");
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  });
+}
