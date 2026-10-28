@@ -90,3 +90,25 @@ it('starts Google through the installed Better Auth API and preserves its state 
  expect(target.searchParams.get('redirect_uri')).toBe(origin+'/api/auth/callback/google');
  expect(response.headers.getSetCookie().some(cookie=>cookie.includes('oauth_state'))).toBe(true);
 });
+
+it('exchanges a real library session into a native cookie and rejects replay',async()=>{
+ const {createAuth}=await import('../../lib/account/auth.server.js');
+ const env={BETTER_AUTH_URL:origin,BETTER_AUTH_SECRET:secret,GOOGLE_CLIENT_ID:'test-client',GOOGLE_CLIENT_SECRET:'test-secret'};
+ const auth=createAuth(env);
+ const handler=createNativeGoogleHandler(()=>auth);
+ const start=await handler({request:new Request(`${origin}/api/auth/native/start?state=${state}&challenge=${await hash(verifier)}`),env},'start');
+ const flowCookie=start.headers.getSetCookie().find(cookie=>cookie.startsWith('__Host-oracle_native_flow='))!.split(';')[0];
+ // A fresh test-only session substitutes for Google's callback, without a network request.
+ const signedIn=await auth.api.signUpEmail({body:{name:'Local test',email:`local-${Date.now()}@example.test`,password:'test-only-password'},returnHeaders:true});
+ const cookies=[flowCookie,...signedIn.headers.getSetCookie().map(cookie=>cookie.split(';')[0])].join('; ');
+ const complete=await handler({request:new Request(origin+'/api/auth/native/complete',{headers:{Cookie:cookies}}),env},'complete');
+ const code=new URL(complete.headers.get('Location')!).searchParams.get('code');
+ expect(code).toMatch(/^[A-Za-z0-9_-]{43}$/);
+ const request=()=>new Request(origin+'/api/auth/native/exchange',{method:'POST',headers:{Origin:'capacitor://localhost','Content-Type':'application/json'},body:JSON.stringify({code,state,verifier})});
+ const exchanged=await handler({request:request(),env},'exchange');
+ expect(exchanged.status).toBe(200);
+ const nativeCookies=exchanged.headers.getSetCookie().map(cookie=>cookie.split(';')[0]).join('; ');
+ const session=await auth.api.getSession({headers:new Headers({Cookie:nativeCookies})});
+ expect(session?.user.id).toBe(signedIn.response.user.id);
+ expect((await handler({request:request(),env},'exchange')).status).toBe(400);
+});
