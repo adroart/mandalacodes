@@ -1,0 +1,17 @@
+.ov-capture-shelf {min-width:0;}
+.ov-capture-list {padding-top:4px;}
+.ov-capture-item {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--color-wood-200,#d8dcd1);}
+.ov-capture-item>div:first-child {display:flex;flex-direction:column;gap:3px;min-width:0;}
+.ov-capture-item strong {font-size:15px;font-weight:600;}
+.ov-capture-item small,.ov-capture-state {font-size:12px;color:var(--color-wood-600,#736046);overflow-wrap:anywhere;}
+.ov-capture-actions {display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;}
+.ov-capture-actions button,.ov-import-preview button {font-size:13px;}
+.ov-audio-import>label,.ov-import-preview>label {display:flex;flex-direction:column;gap:5px;font-size:13px;}
+.oracle-voice-flow .ov-audio-import input[type=file] {font-size:13px;padding:7px;min-width:0;}
+.ov-audio-import input[type=file]::file-selector-button {font:inherit;color:inherit;border:1px solid var(--color-wood-200,#d8dcd1);border-radius:4px;background:transparent;margin-right:9px;padding:6px 8px;}
+.ov-import-preview {margin:10px 0 0;overflow-wrap:anywhere;font-size:14px;}
+.ov-import-preview strong {font-weight:500;}
+.ov-import-preview p {font-size:13px;margin:6px 0;}
+.ov-import-preview>label {max-width:220px;margin:8px 0;}
+.ov-capture-error {font-size:13px;border:1px solid #a67653;padding:9px 12px;border-radius:6px;}
+@media(max-width:480px) {.ov-capture-item {align-items:flex-start;flex-direction:column;gap:7px;}.ov-capture-actions {justify-content:flex-start;}}
