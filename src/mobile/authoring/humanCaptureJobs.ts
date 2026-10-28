@@ -3,7 +3,11 @@ import { AuthoringStore } from '../../../lib/oracle/authoring/storage';
 import { addTranscript, correctTranscript, sessionSources, transcriptCard } from '../../../lib/oracle/authoring/workflow';
 import { organizeCapture, spokenProse } from '../../../lib/oracle/authoring/organization';
 import { WorkingCardStore, reconcileHumanPassages, type HumanIssue, type HumanMode } from '../../../lib/oracle/authoring/humanDrafts';
-export interface HumanJob {id:string;sessionId:string;captureId:string;state:'queued'|'transcribing'|'organizing'|'applying'|'ready'|'attention'|'failed';message:string;issues:HumanIssue[];organized?:boolean;reviewed?:Record<string,string>;mode?:HumanMode;resolveIds?:string[];destinations?:{cardNumber:number;sectionId:string}[];updatedAt:string}
+import {splitSpokenThoughts} from '../../../lib/oracle/authoring/passageContext';
+import { passagesFromText, type PassageAnchor } from '../../../lib/oracle/authoring/passageContext';
+import { decideSpokenPassage, passageSpeechNeedsCheck } from './spokenPassageContext';
+import { applyPassageReplacement, applyPassageAddition, savePassageConnection, plainSection } from './passageActions';
+export interface HumanJob {id:string;sessionId:string;captureId:string;state:'queued'|'transcribing'|'organizing'|'applying'|'ready'|'attention'|'failed';message:string;issues:HumanIssue[];organized?:boolean;reviewed?:Record<string,string>;mode?:HumanMode;resolveIds?:string[];destinations?:{cardNumber:number;sectionId:string}[];anchors?:PassageAnchor[];passageMatches?:PassageAnchor[];selectedPassageIds?:string[];appliedPassageIds?:string[];updatedAt:string}
 const KEY='oracle.human.jobs.v1',listeners=new Set<()=>void>(),running=new Set<string>();let tail=Promise.resolve();
 const store=new AuthoringStore(),cards=new WorkingCardStore();
 export function humanJobs():HumanJob[]{try{const value=JSON.parse(localStorage.getItem(KEY)??'[]');return Array.isArray(value)?value.filter(j=>j&&typeof j.id==='string'&&typeof j.sessionId==='string'&&typeof j.captureId==='string'):[];}catch{return[];}}
@@ -11,9 +15,9 @@ export function subscribeHumanJobs(listener:()=>void){listeners.add(listener);re
 function put(job:HumanJob){const list=humanJobs().filter(j=>j.id!==job.id);localStorage.setItem(KEY,JSON.stringify([...list,{...job,updatedAt:new Date().toISOString()}]));listeners.forEach(fn=>fn());}
 async function updateSession(id:string,change:(s:AuthoringSession)=>AuthoringSession|Promise<AuthoringSession>){for(let attempt=0;attempt<4;attempt++){const saved=await store.load(id);if(!saved)throw new Error('The recording session could not be found.');const next=await change(saved.session);try{await store.save(next,saved.version);return next;}catch(e){if(attempt===3||!/another tab/i.test(String(e)))throw e;}}throw new Error('The recording changed while saving. Try again.');}
 export async function editJobPassage(sessionId:string,id:string,text:string,cardNumber?:number,sectionId?:string,loadSource?:AuthoringServices['loadSource']){return updateSession(sessionId,async s=>{let next=s;if(cardNumber&&!sessionSources(s).some(src=>src.cardNumber===cardNumber)){if(!loadSource)throw new Error('Choose a recorded card destination.');next={...s,relatedSources:[...(s.relatedSources??[]),await loadSource(cardNumber)]};}return correctTranscript(next,id,{corrected:text,...(cardNumber?{cardNumber}:{}),...(sectionId!==undefined?{sectionId:sectionId||null}: {})});});}
-export function queueHumanCapture(sessionId:string,captureId:string,services:AuthoringServices,options:{mode?:HumanMode;reviewed?:Record<string,string>;resolveIds?:string[]}={}){
+export function queueHumanCapture(sessionId:string,captureId:string,services:AuthoringServices,options:{mode?:HumanMode;reviewed?:Record<string,string>;resolveIds?:string[];anchors?:PassageAnchor[];selectedPassageIds?:string[]}={}){
  const id=`${sessionId}/${captureId}`;if(running.has(id))return;
- const previous=humanJobs().find(j=>j.id===id);const job:HumanJob={id,sessionId,captureId,state:'queued',message:'Recording saved. Processing your words…',issues:[],organized:previous?.organized,reviewed:options.reviewed??previous?.reviewed,mode:options.mode??'auto',resolveIds:options.resolveIds,updatedAt:new Date().toISOString()};
+ const previous=humanJobs().find(j=>j.id===id);const job:HumanJob={id,sessionId,captureId,state:'queued',message:'Recording saved. Processing your words…',issues:[],organized:previous?.organized,reviewed:options.reviewed??previous?.reviewed,mode:options.mode??'auto',resolveIds:options.resolveIds,anchors:options.anchors??previous?.anchors,selectedPassageIds:options.selectedPassageIds??previous?.selectedPassageIds,appliedPassageIds:previous?.appliedPassageIds,updatedAt:new Date().toISOString()};
  put(job);running.add(id);tail=tail.catch(()=>undefined).then(async()=>{try{
   let saved=await store.load(sessionId);if(!saved)throw new Error('The recording session is unavailable.');const capture=saved.session.captures.find(c=>c.id===captureId);if(!capture||capture.status==='recording'||capture.status==='empty')throw new Error('Finish a recording with received audio before processing.');
   if(!saved.session.transcript.some(t=>t.captureId===captureId)){
@@ -21,13 +25,72 @@ export function queueHumanCapture(sessionId:string,captureId:string,services:Aut
    const response=await services.transcribe(saved.session,capture,await store.audio(sessionId,captureId));
    await updateSession(sessionId,s=>{if(s.transcript.some(t=>t.captureId===captureId))return s;const adjusted={...s,captures:s.captures.map(c=>c.id===captureId?{...c,durationMs:Math.max(c.durationMs,response.durationMs??0),...(response.arCreate?{arCreate:response.arCreate}:{})}:c)};return addTranscript(adjusted,captureId,response.segments,response.provider);});
   }
-  if(!job.organized){put({...job,state:'organizing',message:'Placing your words in the cards.'});await updateSession(sessionId,s=>organizeCapture(s,captureId,services.loadSource));job.organized=true;}
+  if(!job.organized){put({...job,state:'organizing',message:'Placing your words in the cards.'});await updateSession(sessionId,async s=>{let next=await organizeCapture(s,captureId,services.loadSource);for(const t of next.transcript.filter(t=>t.captureId===captureId&&!t.referenceOnly)){const thoughts=splitSpokenThoughts(t.corrected);if(thoughts.length<2)continue;next={...next,transcript:next.transcript.map(item=>item.id===t.id?{...item,referenceOnly:true}:item)};for(const [index,text] of thoughts.entries())next=addTranscript(next,captureId,[{text,startMs:t.startMs,endMs:t.endMs,timing:'recording',sectionId:t.sectionId,cardNumber:t.cardNumber,parentId:t.parentId??t.id,order:(t.order??s.transcript.indexOf(t))+index/thoughts.length}],t.provider);}return next;});job.organized=true;}
   saved=await store.load(sessionId);const s=saved!.session;const passages=s.transcript.filter(t=>t.captureId===captureId&&!t.referenceOnly).sort((a,b)=>(a.order??s.transcript.indexOf(a))-(b.order??s.transcript.indexOf(b)));
   const issues:HumanIssue[]=[];const destinations:{cardNumber:number;sectionId:string}[]=[];const unresolved=passages.filter(t=>!t.sectionId);if(unresolved.length)issues.push({code:'assignment',message:'Which section do these words belong to?',transcriptIds:unresolved.map(t=>t.id)});
   put({...job,state:'applying',message:'Saving your words to the working cards.'});
-  const keys=[...new Set(passages.filter(t=>t.sectionId).map(t=>`${transcriptCard(s,t)}:${t.sectionId}`))];
+  // Build candidates from the exact working reading where one exists, otherwise
+  // the bundled source. Captured anchors remain immutable context for this audio.
+  const candidates:PassageAnchor[]=[];
+  for(const source of sessionSources(s))for(const section of source.sections){
+   const working=await cards.get(source.cardNumber,section.id);
+   candidates.push(...passagesFromText(source.cardNumber,section.id,working?.text??plainSection(source,section.id),working?.revision,source.hash));
+  }
+  let focus=job.anchors??[];
+  let all=[...focus,...candidates.filter(a=>!focus.some(f=>f.id===a.id))];
+  const contextualIds=new Set<string>();
+  for(const transcript of passages){
+   if(job.appliedPassageIds?.includes(transcript.id)){contextualIds.add(transcript.id);continue;}
+   const targetFocus=/\b(?:connect|these two|both of these|together)\b/i.test(transcript.corrected)?focus:focus.filter(a=>a.cardNumber===transcriptCard(s,transcript)&&a.sectionId===transcript.sectionId);
+   const decision=decideSpokenPassage(transcript.corrected,all,targetFocus,job.selectedPassageIds);
+   if(!decision.contextual)continue;
+   contextualIds.add(transcript.id);
+   job.passageMatches=decision.candidates;
+   const issue=(message:string)=>issues.push({code:'revision',message,transcriptIds:[transcript.id]});
+   if(!decision.targets.length){issue(decision.message??'Choose the passage these words refer to.');continue;}
+   const reviewed=job.reviewed?.[transcript.id]===transcript.corrected;
+   if(passageSpeechNeedsCheck(transcript.corrected,reviewed,(transcript.words??[]).flatMap(w=>w.probability===undefined?[]:[w.probability]))){issues.push({code:'uncertain',message:'Check the uncertain words before changing this passage.',transcriptIds:[transcript.id]});continue;}
+   if(decision.kind==='connect'){
+    if(decision.targets.length<2){issue('Select at least two passages to connect.');continue;}
+    await savePassageConnection(decision.targets,decision.words||transcript.corrected);
+   }else{
+    if(!decision.words.trim()){issue('The passage is connected. Speak or type the words you want to use.');continue;}
+    if(decision.targets.length!==1){issue('Choose one passage for these words, or use Re-record for a combined passage.');continue;}
+    const evidence={sessionId,captureId,transcriptId:transcript.id};
+    if(decision.kind==='replace'){
+     if(!reviewed){issue('Check your words, then replace only the linked passage.');continue;}
+     await applyPassageReplacement(decision.targets,decision.words,services,evidence);
+    }else if(decision.kind==='append'||decision.words.trim()!==transcript.corrected.trim()){
+     await applyPassageAddition(decision.targets[0],decision.words,services,evidence);
+    }else{issue('The passage is connected. Use Re-record to replace it, or begin with “Add this after that passage:” for an addition.');continue;}
+   }
+   if(decision.kind!=='connect'){
+    // Rebase only changes made by this job, so the next spoken thought follows
+    // the previous one rather than inserting in reverse order at an old offset.
+    const target=decision.targets[0],latest=await cards.get(target.cardNumber,target.sectionId);
+    if(latest){
+     const text=decision.kind==='replace'?decision.words:`${target.text}\n\n${decision.words}`;
+     const start=latest.text.indexOf(text);
+     if(start>=0&&latest.text.indexOf(text,start+1)<0){
+      const next={...target,id:`${target.cardNumber}/${target.sectionId}/${start}-${start+text.length}`,text,start,end:start+text.length,sectionText:latest.text,revision:latest.revision};
+      const affected=(a:PassageAnchor)=>a.cardNumber===target.cardNumber&&a.sectionId===target.sectionId;
+      focus=[...focus.filter(a=>!affected(a)),next];job.anchors=focus;
+      all=[...all.filter(a=>!affected(a)),...passagesFromText(target.cardNumber,target.sectionId,latest.text,latest.revision,latest.sourceHash)];
+      // The duplicate last entry is the full connected span, not a separate
+      // destination. Keep it only when a paragraph candidate does not cover it.
+      all=all.filter((a,index,list)=>list.findIndex(b=>b.id===a.id&&b.text===a.text)===index);
+      job.selectedPassageIds=undefined;
+     }
+    }
+   }
+   job.appliedPassageIds=[...(job.appliedPassageIds??[]),transcript.id];
+   for(const target of decision.targets)destinations.push({cardNumber:target.cardNumber,sectionId:target.sectionId});
+   put({...job,state:'applying',issues,destinations});
+  }
+  const ordinary=passages.filter(t=>!contextualIds.has(t.id));
+  const keys=[...new Set(ordinary.filter(t=>t.sectionId).map(t=>`${transcriptCard(s,t)}:${t.sectionId}`))];
   for(const key of keys){const [cardValue,sectionId]=key.split(':'),cardNumber=Number(cardValue);const source=sessionSources(s).find(src=>src.cardNumber===cardNumber)!;
-   const originals=passages.filter(t=>transcriptCard(s,t)===cardNumber&&t.sectionId===sectionId);const evidence=originals.map(t=>({...t,corrected:spokenProse(t.corrected)}));
+   const originals=ordinary.filter(t=>transcriptCard(s,t)===cardNumber&&t.sectionId===sectionId);const evidence=originals.map(t=>({...t,corrected:spokenProse(t.corrected)}));
    const reviewedIds=originals.filter(t=>job.reviewed?.[t.id]===t.corrected).map(t=>t.id);
    const doubtful=originals.filter(t=>/\ba chain\b/i.test(t.corrected)&&!reviewedIds.includes(t.id));if(doubtful.length){issues.push({code:'uncertain',message:'Was “a chain” meant to be I Ching? Check this destination.',transcriptIds:doubtful.map(t=>t.id)});continue;}
    if(evidence.every(t=>!t.corrected.trim())){issues.push({code:'uncertain',message:'This passage contains routing words but no card writing yet.',transcriptIds:originals.map(t=>t.id)});continue;}
@@ -41,4 +104,4 @@ export function queueHumanCapture(sessionId:string,captureId:string,services:Aut
   put({...job,state:issues.length?'attention':'ready',message:issues.length?(destinations.length?'A few words need your check. Other safe sections are saved.':'Check these words before they reach the card.'):'Your words are saved in the cards.',issues,destinations});
  }catch(e){put({...job,state:'failed',message:e instanceof Error?e.message:'Processing stopped. Your recording is still saved.',issues:[]});}finally{running.delete(id);}});
 }
-export function resumeHumanJobs(services:AuthoringServices){for(const job of humanJobs().filter(j=>['queued','transcribing','organizing','applying'].includes(j.state)))queueHumanCapture(job.sessionId,job.captureId,services,{mode:job.mode,reviewed:job.reviewed,resolveIds:job.resolveIds});}
+export function resumeHumanJobs(services:AuthoringServices){for(const job of humanJobs().filter(j=>['queued','transcribing','organizing','applying'].includes(j.state)))queueHumanCapture(job.sessionId,job.captureId,services,{mode:job.mode,reviewed:job.reviewed,resolveIds:job.resolveIds,anchors:job.anchors,selectedPassageIds:job.selectedPassageIds});}

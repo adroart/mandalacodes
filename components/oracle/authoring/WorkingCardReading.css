@@ -46,3 +46,8 @@
 /* Place the view switch before published content without touching its nodes. */
 .working-card-reading section[data-chapter]:has(> .working-card-reading__panel--published) { display: flex; flex-direction: column; }
 .working-card-reading__panel--published { order: -1; width: 100%; }
+
+.working-card-reading__words [data-human-origin] { text-decoration:underline; text-decoration-color:var(--color-bronze-600); text-decoration-thickness:1px; text-underline-offset:5px; }
+.working-card-reading__evidence { margin-top:18px; font:14px/1.5 var(--font-ui); }
+.working-card-reading__evidence summary { cursor:pointer; padding-block:12px; }
+.working-card-reading__evidence button { min-height:44px; padding:8px 0; border:0; background:transparent; color:inherit; font:inherit; text-decoration:underline; }

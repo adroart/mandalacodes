@@ -3,6 +3,7 @@ import { Sun, Moon, Share2, Grid3X3, Sparkles, CircleUserRound, Compass, UserRou
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../DarkModeContext';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
+import type {PassageAnchor} from '../../lib/oracle/authoring/passageContext';
 import { currentReaderSection } from './authoring/readerContext';
 import {humanJobs,subscribeHumanJobs} from './authoring/humanCaptureJobs';
 import OracleAuthoringSheet from './authoring/OracleAuthoringSheet';
@@ -17,7 +18,9 @@ export default function OracleNavigation(_props: unknown) {
   const needsVoiceCheck=voiceJobs.filter(job=>job.state==='attention'||job.state==='failed').length;
   const [shareOpen, setShareOpen] = useState(false);
   const [recordSection, setRecordSection] = useState<string | null>(null);
-  const closeRecording = useCallback(() => setRecordSection(null), []);
+  const [passageAnchors,setPassageAnchors]=useState<PassageAnchor[]>([]);
+  const closeRecording=useCallback(()=>{setRecordSection(null);setPassageAnchors([]);},[]);
+  useEffect(()=>{const open=(e:Event)=>{const anchors=(e as CustomEvent<PassageAnchor[]>).detail;if(!anchors?.length)return;setPassageAnchors(anchors);setRecordSection(anchors[0].sectionId);};window.addEventListener('oracle:re-record',open);return()=>window.removeEventListener('oracle:re-record',open);},[]);
   const card = /^\/universal-language\/\d+$/.test(pathname) ? CARD_BY_NUMBER.get(Number(pathname.split('/').pop())) : undefined;
   return <>
     <header className="oracle-app-nav">
@@ -26,13 +29,13 @@ export default function OracleNavigation(_props: unknown) {
         {!card && <Link to="/search" aria-label="Search codes"><Search size={20} aria-hidden="true" /></Link>}
         {!card && <Link to="/journal" aria-label="Reading journal"><BookOpen size={20} aria-hidden="true" /></Link>}
         {!card && <Link to="/account" aria-label="Account and backup"><UserRound size={21} aria-hidden="true" /></Link>}
-        {card && <button className="oracle-record-trigger" aria-label="Record a voice rewrite" onClick={event => { event.currentTarget.focus(); setRecordSection(currentReaderSection()); }}><Mic size={17} aria-hidden="true" /><span>{needsVoiceCheck?'Check':'Record'}</span></button>}{card&&needsVoiceCheck>0&&<span className="sr-only" role="status">{needsVoiceCheck} recording{needsVoiceCheck===1?' needs':'s need'} your check.</span>}
+        {card && <button className="oracle-record-trigger" aria-label="Record a voice rewrite" onClick={event => { event.currentTarget.focus(); setPassageAnchors([]); setRecordSection(currentReaderSection()); }}><Mic size={17} aria-hidden="true" /><span>{needsVoiceCheck?'Check':'Record'}</span></button>}{card&&needsVoiceCheck>0&&<span className="sr-only" role="status">{needsVoiceCheck} recording{needsVoiceCheck===1?' needs':'s need'} your check.</span>}
         {card && <ReaderPreferences cardNumber={card.number} />}
         {card && <button aria-label="Share this code" onClick={() => setShareOpen(true)}><Share2 size={21} aria-hidden="true" /></button>}
         <button onClick={toggleDarkMode} aria-label={isDarkMode ? 'Use light appearance' : 'Use dark appearance'}>{isDarkMode ? <Sun size={21} aria-hidden="true" /> : <Moon size={21} aria-hidden="true" />}</button>
       </div>
     </header>
-    {card && recordSection && <OracleAuthoringSheet cardNumber={card.number} sectionId={recordSection} onClose={closeRecording} />}
+    {card && recordSection && <OracleAuthoringSheet cardNumber={card.number} sectionId={recordSection} anchors={passageAnchors} onClose={closeRecording} />}
     {card && <OracleShareSheet key={card.number} open={shareOpen} onClose={() => setShareOpen(false)} cardNumber={card.number} cardName={card.card_name} />}
   </>;
 }

@@ -2,6 +2,8 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { WorkingCardStore, sectionHumanPercent, type WorkingSection } from '../../../lib/oracle/authoring/humanDrafts';
 import './WorkingCardReading.css';
+import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
+import PassageReadingControls from './PassageReadingControls';
 
 const LENSES = [
   { section: 'CODE', chapter: 'ul', label: 'Universal Language' },
@@ -51,6 +53,7 @@ export default function WorkingCardReading({ cardNumber, children }: { cardNumbe
   const sections = loaded.card === cardNumber ? loaded.sections : [];
   return <div ref={root} className="working-card-reading">
     {children}
+    <PassageReadingControls cardNumber={cardNumber} root={root}/>
     {LENSES.map(lens => {
       const section = sections.find(s => s.sectionId === lens.section && s.text.trim());
       const target = targets[lens.section];
@@ -65,6 +68,9 @@ export default function WorkingCardReading({ cardNumber, children }: { cardNumbe
 function WorkingLens({ section, target, label }: { section: WorkingSection; target: HTMLElement; label: string }) {
   const [published, setPublished] = useState(false);
   const percent = sectionHumanPercent(section);
+  const [audio,setAudio]=useState(''),[error,setError]=useState('');
+  useEffect(()=>()=>{if(audio)URL.revokeObjectURL(audio);},[audio]);
+  const listen=async(sessionId:string,captureId:string)=>{try{const blob=await new AuthoringStore().audio(sessionId,captureId);setAudio(URL.createObjectURL(blob));}catch{setError('The original recording is unavailable on this device.');}};
   useLayoutEffect(() => {
     if (!published) target.setAttribute('data-working-card-view', '');
     else target.removeAttribute('data-working-card-view');
@@ -77,7 +83,8 @@ function WorkingLens({ section, target, label }: { section: WorkingSection; targ
     </div>
     {!published && <>
       <h2>{label}</h2>
-      <div className="working-card-reading__words">{section.text}</div>
+      <div className="working-card-reading__words">{section.blocks.map((block,index)=><React.Fragment key={block.id}>{index>0&&section.text===section.blocks.map(b=>b.text).join('\n\n')?'\n\n':''}<span data-human-origin={block.origin==='human'?true:undefined} title={block.origin==='human'?'Your words':undefined}>{block.text}</span></React.Fragment>)}</div>
+      <details className="working-card-reading__evidence"><summary>Passage history & recordings</summary>{section.blocks.filter(b=>b.origin==='human').map(block=><div key={block.id}><p>Your words · {block.text.slice(0,140)}</p>{block.replacedText&&<details><summary>Original passage</summary><p>{block.replacedText}</p></details>}{block.evidence[0]&&<button onClick={()=>void listen(block.evidence[0].sessionId,block.evidence[0].captureId)}>Listen to original recording</button>}</div>)}{audio&&<audio src={audio} controls aria-label="Passage recording"/>}{error&&<p role="alert">{error}</p>}</details>
     </>}
   </div>;
 }

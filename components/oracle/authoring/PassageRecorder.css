@@ -1,0 +1,32 @@
+.passage-recorder {padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0;color:var(--color-wood-900);font-family:var(--font-reading);}
+.passage-recorder__header {display:flex;align-items:start;justify-content:space-between;gap:12px;}
+.passage-recorder h2 {margin:0;font:500 27px/1.15 var(--font-display);}
+.passage-recorder__header p {margin:5px 0 0;color:var(--color-wood-600);font-size:14px;}
+.passage-recorder button,.passage-recorder select {min-height:44px;padding:9px 13px;border:1px solid var(--color-wood-300);border-radius:8px;background:transparent;color:inherit;font:500 16px var(--font-ui);}
+.passage-recorder button {cursor:pointer;}
+.passage-recorder button:disabled {opacity:.45;cursor:default;}
+.passage-recorder button:focus-visible,.passage-recorder textarea:focus-visible,.passage-recorder select:focus-visible,.passage-recorder__prompt:focus-visible {outline:2px solid var(--color-bronze-600);outline-offset:3px;}
+.passage-recorder select {max-width:100%;width:100%;background:var(--color-paper-50);}
+.passage-recorder__target {display:flex;flex-direction:column;gap:6px;font-size:14px;}
+.passage-recorder__settings {display:flex;align-items:start;justify-content:space-between;gap:16px;font-size:13px;border-block:1px solid var(--color-wood-200);padding:10px 0;}
+.passage-recorder__settings label {display:flex;align-items:center;flex-wrap:wrap;gap:8px;}
+.passage-recorder__settings input {width:100px;accent-color:var(--color-bronze-600);}
+.passage-recorder__settings details {max-width:55%;}
+.passage-recorder__settings summary {cursor:pointer;min-height:24px;}
+.passage-recorder__settings details span {display:block;margin-top:5px;color:var(--color-wood-600);}
+.passage-recorder__prompt {text-align:left;word-spacing:normal;max-height:48dvh;min-height:170px;overflow:auto;overscroll-behavior:contain;padding:8px 8px 22px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;scrollbar-color:var(--color-wood-300) transparent;}
+.passage-recorder__note {font-size:14px;line-height:1.45;margin:0;color:var(--color-wood-600);}
+.passage-recorder__monitor {display:flex;flex-wrap:wrap;align-items:center;gap:14px;font-size:15px;font-variant-numeric:tabular-nums;}
+.passage-recorder__monitor meter {width:95px;height:12px;accent-color:var(--color-bronze-600);}
+.passage-recorder__actions {display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;padding-top:10px;border-top:1px solid var(--color-wood-200);}
+.passage-recorder button.passage-recorder__primary {background:var(--color-wood-900);color:var(--color-paper-50);border-color:var(--color-wood-900);}
+.passage-recorder__comparison {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:18px;}
+.passage-recorder__comparison h3,.passage-recorder__comparison label {display:block;font:500 16px var(--font-ui);margin:0 0 8px;}
+.passage-recorder__original {white-space:pre-wrap;font-size:18px;line-height:1.6;max-height:45dvh;overflow:auto;padding-right:6px;}
+.passage-recorder textarea {width:100%;min-height:230px;resize:vertical;border:1px solid var(--color-wood-300);border-radius:8px;padding:12px;background:var(--color-paper-50);color:inherit;font:20px/1.6 var(--font-reading);caret-color:var(--color-bronze-600);}
+.passage-recorder__error {margin:0;font-size:15px;line-height:1.5;color:var(--color-wood-900);padding:10px;border:1px solid var(--color-bronze-600);border-radius:8px;}
+.passage-recorder audio {display:block;width:100%;height:44px;}
+.passage-recorder__uncertain {font-size:14px;line-height:1.6;}
+.passage-recorder__uncertain mark {background:transparent;color:inherit;text-decoration:underline wavy var(--color-bronze-600);text-underline-offset:4px;}
+.passage-recorder ::selection {background:var(--color-bronze-600);color:var(--color-paper-50);}
+@media(max-width:600px) {.passage-recorder {gap:12px;}.passage-recorder h2 {font-size:24px;}.passage-recorder__comparison {grid-template-columns:minmax(0,1fr);gap:14px;}.passage-recorder__original {max-height:21dvh;font-size:17px;}.passage-recorder textarea {min-height:180px;}.passage-recorder__prompt {text-align:left;word-spacing:normal;max-height:43dvh;}.passage-recorder__settings input {width:82px;}}

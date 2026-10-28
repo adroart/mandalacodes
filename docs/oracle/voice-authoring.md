@@ -268,3 +268,30 @@ Blob/File storage. Existing Blob chunks remain readable, mixed old/new chunks pl
 and transfer together, and no database-version migration or audio deletion is used.
 The public recording/storage interfaces continue to return audio Blobs. Source/audio
 hashes and the atomic session/chunk transactions remain in place.
+
+## Passage-connected recording, 2026-10-28
+
+Select rendered prose to reveal **Re-record**. **Keep selected** retains references
+across readings; adjacent passages can be replaced together, while separated
+passages require choosing one replacement destination. The isolated teleprompter
+has adjustable type, manual scrolling and optional timed scrolling. Audio and raw
+transcripts are saved before review. **Use my words** replaces only the selected
+range after explicit review; later source/working edits invalidate a stale target.
+
+Ordinary recording opens a compact nonmodal panel beside the reader. Visible and
+selected passages are captured as context; clear additions go after the focused
+passage. Quoted/relative references use conservative lexical matching, with candidate
+choices for ambiguity. Explicit replacements require reviewed words. Connections
+are private metadata rather than duplicated prose. Distinct spoken transitions can
+create ordered thoughts without invented word timestamps. Changing context during
+recording retains several references; it does not guess which disjoint reference
+belongs to a thought. Spoken card/section destinations retain priority.
+
+Targeted edits preserve other text and its attribution. Human contributions show
+an unobtrusive underline, with displaced text and retained audio under passage
+history. Undo checks that no later edit would be lost. Printed-book references can
+match passages in the recording's known card sources; there is no semantic search
+across the entire 64-card corpus, calibrated matching accuracy, live word-following
+teleprompter, or streaming transcription while the microphone is still recording.
+Processing applies complete returned transcript passages. Compound instructions
+outside the bounded parser still require human interpretation.

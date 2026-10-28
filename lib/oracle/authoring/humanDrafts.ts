@@ -5,6 +5,8 @@ export interface HumanBlock {
   id: string; text: string; origin: 'human' | 'ai'; evidence: HumanEvidence[];
   /** Literal words at incorporation, used to protect subsequent manual edits. */
   sourceText?: string;
+  /** Exact displaced passage for in-place provenance review. */
+  replacedText?: string;
 }
 export interface WorkingSection {
   key: string; cardNumber: number; sectionId: string; text: string; revision: number;

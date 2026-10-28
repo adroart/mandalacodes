@@ -16,3 +16,9 @@
 .human-destinations {display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;font-size:13px;}
 .human-destinations button {font-size:13px;padding:6px 9px;}
 .human-destinations [aria-pressed=true] {border-color:var(--color-bronze-600);}
+
+.human-routing { flex:1; }
+.human-routing summary,.human-working-writing > summary { cursor:pointer; min-height:44px; display:flex; align-items:center; font:15px/1.4 var(--font-ui); }
+.human-routing[open] label { display:inline-flex; margin:8px 12px 8px 0; }
+.human-passage-matches { display:grid; gap:8px; }
+.human-passage-matches button { text-align:left; white-space:normal; }
