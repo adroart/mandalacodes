@@ -1,0 +1,21 @@
+import { test, expect } from '@playwright/test';
+test('voice drafting opens from a card and resumes inside the bundled app', async ({ page }, testInfo) => {
+  await page.route(/^https:\/\//, route => route.abort());
+  await page.goto('/universal-language/23');
+  await expect(page.locator('.card-reading')).toBeVisible();
+  await page.getByRole('button', { name: 'Rewrite this card by voice', exact: true }).click();
+  await expect(page).toHaveURL(/\/authoring\/23\?section=/);
+  await expect(page.getByRole('region', { name: 'Oracle voice authoring' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Record', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New card review', exact: true })).toHaveCount(0);
+  await expect(page.locator('.oa-header')).toContainText('Card 23');
+  await page.screenshot({ path: testInfo.outputPath('integrated-authoring.png'), fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page).toHaveURL(/\/universal-language\/23$/);
+  await page.getByRole('button', { name: 'Rewrite this card by voice', exact: true }).click();
+  await page.getByRole('button', { name: 'Sessions', exact: true }).click();
+  await expect(page.locator('.oa-session-list button')).toHaveCount(1);
+  await page.goto('/home');
+  await expect(page.getByRole('link', { name: 'Your voice drafts', exact: true })).toBeVisible();
+});

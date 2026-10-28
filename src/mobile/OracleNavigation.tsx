@@ -1,20 +1,25 @@
 import React, { useState } from 'react';
-import { Sun, Moon, Share2, Grid3X3, Sparkles, CircleUserRound, Compass, UserRound } from 'lucide-react';
+import { Sun, Moon, Share2, Grid3X3, Sparkles, CircleUserRound, Compass, UserRound, Search, BookOpen, Mic } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../DarkModeContext';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
+import { currentReaderSection } from './authoring/readerContext';
 import ReaderPreferences from './reading/ReaderPreferences';
 import OracleShareSheet from './OracleShareSheet';
 export default function OracleNavigation(_props: unknown) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [shareOpen, setShareOpen] = useState(false);
   const card = /^\/universal-language\/\d+$/.test(pathname) ? CARD_BY_NUMBER.get(Number(pathname.split('/').pop())) : undefined;
   return <>
     <header className="oracle-app-nav">
-      <Link to="/home" aria-label="Oracle home" className="oracle-app-brand">Oracle</Link>
+      <Link to="/universal-language" aria-label="Oracle home" className="oracle-app-brand">Oracle</Link>
       <div className="oracle-app-tools">
+        {!card && <Link to="/search" aria-label="Search codes"><Search size={20} aria-hidden="true" /></Link>}
+        {!card && <Link to="/journal" aria-label="Reading journal"><BookOpen size={20} aria-hidden="true" /></Link>}
         {!card && <Link to="/account" aria-label="Account and backup"><UserRound size={21} aria-hidden="true" /></Link>}
+        {card && <button aria-label="Rewrite this card by voice" onClick={() => navigate(`/authoring/${card.number}?section=${currentReaderSection()}`)}><Mic size={21} aria-hidden="true" /></button>}
         {card && <ReaderPreferences cardNumber={card.number} />}
         {card && <button aria-label="Share this code" onClick={() => setShareOpen(true)}><Share2 size={21} aria-hidden="true" /></button>}
         <button onClick={toggleDarkMode} aria-label={isDarkMode ? 'Use light appearance' : 'Use dark appearance'}>{isDarkMode ? <Sun size={21} aria-hidden="true" /> : <Moon size={21} aria-hidden="true" />}</button>

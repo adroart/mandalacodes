@@ -252,3 +252,29 @@ test('reading preferences, focus and position persist',async({page})=>{
   await expect(page.getByRole('button',{name:'21 point text'})).toHaveAttribute('aria-pressed','true');
   await expect(page.getByLabel('More space between lines')).toBeChecked();
 });
+
+test('opens with the original I Ching grid and keeps artwork hidden until selection',async({page})=>{
+  await page.goto('/');
+  await expect(page).toHaveURL(/\/universal-language$/);
+  await expect(page.locator('[data-oe="ichgrid"]')).toBeVisible();
+  await expect(page.locator('[data-oe="ichgrid"] [data-oe-num]')).toHaveCount(64);
+  await expect(page.locator('img[src*="oracle-art"]:visible')).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Artwork view'})).toHaveCount(0);
+  const firstCard = page.locator('[data-oe="ichgrid"] [data-oe-num="1"]');
+  await firstCard.locator('button').first().tap();
+  await expect(firstCard.locator('img')).toBeVisible();
+  await expect(page.locator('img[src*="oracle-art"]:visible')).toHaveCount(1);
+  await page.screenshot({path:'mobile/build/grid-one-revealed.png'});
+  await page.reload();
+  await expect(page.locator('[data-oe="ichgrid"] [data-oe-num]')).toHaveCount(64);
+  await expect(page.locator('img[src*="oracle-art"]:visible')).toHaveCount(0);
+  await page.screenshot({path:'mobile/build/grid-concealed.png'});
+  await page.getByRole('link',{name:'Search codes',exact:true}).click();
+  await expect(page.locator('.od-card')).toHaveCount(64);
+  await expect(page.locator('.od-index img')).toHaveCount(0);
+  await page.getByRole('searchbox',{name:'Search Oracle cards'}).fill('29');
+  await expect(page.locator('.od-card')).toHaveCount(1);
+  await page.getByRole('link',{name:'Hexagram 29',exact:true}).click();
+  await expect(page.locator('.card-reading')).toBeVisible();
+  await expect(page.locator('img[src="/oracle-art/29.webp"]').first()).toBeVisible();
+});

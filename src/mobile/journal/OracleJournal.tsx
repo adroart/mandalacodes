@@ -68,6 +68,7 @@ export default function OracleJournal() {
   return <div className="oracle-journal-page">
     {entry ? <ReadingDetail key={entry.id} entry={entry} /> : <>
       <header className="oracle-journal-title"><div><p className="oracle-journal-kicker">Your practice</p><h1>Reading journal</h1></div><BookOpen size={27} aria-hidden="true" /></header>
+      <Link className="oracle-journal-back" to="/authoring/1">Voice drafts</Link>
       <p className="oracle-journal-intro">Your questions, reflections, and what unfolds.</p>
       {selected && !error && <p role="status">This reading is no longer available here. Choose one below.</p>}
       {error && <div className="oracle-journal-error" role="alert"><p>{error}</p><button onClick={refresh}>Try again</button><button onClick={() => void copyExport('json')}>Copy existing backup</button></div>}

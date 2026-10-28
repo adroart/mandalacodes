@@ -1,0 +1,80 @@
+.oracle-authoring { --oa-bg: var(--l-bg, #f7f5ef); --oa-text: var(--l-1, #292d29); --oa-muted: var(--l-2, #646a61); --oa-rule: var(--l-rule, #d8dcd1); --oa-accent: #496447; box-sizing: border-box; color: var(--oa-text); background: var(--oa-bg); font: 15px/1.5 var(--font-ui, system-ui, sans-serif); padding: clamp(16px, 3vw, 32px); max-width: 1360px; margin: auto; }
+.oracle-authoring *, .oracle-authoring *::before, .oracle-authoring *::after { box-sizing: border-box; }
+.oracle-authoring h1 { margin: 0; font: 400 clamp(27px, 4vw, 40px)/1.15 var(--font-display, Georgia, serif); }
+.oracle-authoring h2 { font-size: 16px; margin: 0 0 12px; font-weight: 600; }
+.oracle-authoring p { margin: 8px 0 14px; }
+.oracle-authoring button, .oracle-authoring select, .oracle-authoring input, .oracle-authoring textarea { font: inherit; color: inherit; border: 1px solid var(--oa-rule); border-radius: 6px; background: transparent; min-height: 44px; max-width: 100%; }
+.oracle-authoring button { cursor: pointer; padding: 8px 14px; }
+.oracle-authoring button:disabled, .oracle-authoring fieldset:disabled { opacity: .6; cursor: default; }
+.oracle-authoring button[aria-pressed=true] { background: #dce5d6; color: #263c26; border-color: #95a58d; }
+.oracle-authoring .oa-primary { background: var(--oa-accent); color: #fff; border-color: var(--oa-accent); }
+.oracle-authoring :focus-visible { outline: 2px solid var(--oa-accent); outline-offset: 3px; }
+.oracle-authoring label { display: flex; flex-direction: column; gap: 5px; color: var(--oa-muted); font-size: 13px; }
+.oracle-authoring select, .oracle-authoring input { padding: 7px 10px; }
+.oracle-authoring textarea { padding: 10px; width: 100%; min-height: 100px; resize: vertical; font-size: 16px; }
+.oracle-authoring pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+.oracle-authoring .oa-prose { font-family: var(--font-display, Georgia, serif); font-size: 17px; line-height: 1.65; }
+.oa-header, .oa-row, .oa-toolbar, .oa-import, .oa-clip, .oa-player { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.oa-header { justify-content: space-between; align-items: flex-start; }
+.oa-header p, .oa-eyebrow { color: var(--oa-muted); font-size: 12px; }
+.oa-eyebrow { display: block; text-transform: uppercase; letter-spacing: .15em; margin-bottom: 8px; }
+.oa-status { font-size: 13px; color: var(--oa-muted); min-height: 24px; padding: 8px 0; }
+.oa-error { background: #f5e9de; color: #783a22; padding: 12px; margin-bottom: 12px; border-radius: 6px; overflow-wrap: anywhere; }
+.oa-toolbar { border-block: 1px solid var(--oa-rule); padding: 12px 0; }
+.oa-toolbar label { flex-direction: row; align-items: center; gap: 8px; }
+.oa-tabs { display: flex; gap: 6px; margin: 16px 0; }
+.oa-tabs button { flex: 1; }
+.oa-content { border: 0; min-width: 0; margin: 0; padding: 0; }
+.oa-hint { font-size: 13px; color: var(--oa-muted); max-width: 85ch; }
+.oa-upload { position: relative; justify-content: center; border: 1px solid var(--oa-rule); border-radius: 6px; min-height: 44px; padding: 8px 14px; cursor: pointer; width: fit-content; }
+.oa-upload input { opacity: 0; position: absolute; inset: 0; width: 100%; cursor: pointer; }
+.oa-upload:focus-within { outline: 2px solid var(--oa-accent); }
+.oa-import input[type=number], .oa-entry input { width: 125px; }
+.oa-start { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 20px; }
+.oa-session-list { flex-basis: 100%; display: grid; gap: 8px; margin-top: 20px; }
+.oa-session-list button { text-align: left; }
+.oa-clips { margin-block: 16px; }
+.oa-clip { border-bottom: 1px solid var(--oa-rule); padding-block: 10px; }
+.oa-clip span, .oa-row span, .oa-spoken span { font-size: 12px; color: var(--oa-muted); }
+.oa-player { padding: 12px 0; margin-top: 8px; }
+.oa-player audio { width: min(420px, 100%); height: 44px; }
+.oa-transcript { border: 1px solid var(--oa-rule); padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+.oa-transcript h2 { margin: 0; }
+.oracle-authoring details { margin-block: 12px; }
+.oracle-authoring summary { cursor: pointer; min-height: 30px; font-size: 13px; color: var(--oa-muted); }
+.oracle-authoring .oa-check { flex-direction: row; align-items: center; gap: 8px; margin: 12px 0; }
+.oa-check input { flex: 0 0 20px; width: 20px; min-height: 20px; height: 20px; }
+.oa-entry { border-top: 1px solid var(--oa-rule); padding-top: 16px; }
+.oa-entry > label { margin-block: 12px; }
+.oa-comparison { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.oa-comparison > article { max-height: 450px; overflow: auto; min-width: 0; border-top: 1px solid var(--oa-rule); padding-top: 14px; }
+.oa-comparison textarea { min-height: 270px; }
+.oa-proposed > button { margin-top: 12px; }
+.oa-columns-switch { display: none; }
+.oa-feedback { border-top: 1px solid var(--oa-rule); margin-top: 20px; padding-top: 16px; }
+.oa-feedback details textarea { min-height: 70px; }
+.oa-feedback details { display: block; }
+.oa-feedback details > label { margin-bottom: 12px; }
+.oa-approval { border: 1px solid #95a58d; padding: 16px; margin: 20px 0; border-radius: 8px; }
+.oa-approval ul { list-style: none; margin: 0 0 16px; padding: 0; }
+.oa-approval li { display: flex; align-items: center; gap: 12px; margin-block: 6px; }
+.oa-approval li span { font-size: 12px; }
+.oa-approval > label:not(.oa-check) { max-width: 260px; }
+.oa-source { border-top: 1px solid var(--oa-rule); padding-top: 12px; font-size: 12px; overflow-wrap: anywhere; }
+@media (max-width: 720px) {
+  .oa-toolbar { gap: 8px; }
+  .oa-toolbar button { padding-inline: 10px; font-size: 13px; }
+  .oa-toolbar label { flex: 1 1 100%; }
+  .oa-toolbar select { flex: 1; }
+  .oa-tabs { gap: 4px; }
+  .oa-tabs button { padding-inline: 6px; font-size: 12px; }
+  .oa-columns-switch { display: flex; gap: 6px; margin-bottom: 16px; }
+  .oa-columns-switch button { flex: 1; padding-inline: 6px; }
+  .oa-comparison { display: block; }
+  .oa-comparison article { display: none; }
+  .oa-comparison[data-column=current] .oa-current, .oa-comparison[data-column=spoken] .oa-spoken, .oa-comparison[data-column=proposed] .oa-proposed { display: block; }
+  .oa-comparison textarea { min-height: 200px; }
+  .oa-transcript { padding: 12px; }
+  .oa-player label { width: 100%; }
+  .oa-player select { width: 100%; }
+}

@@ -45,23 +45,19 @@
 .od-view-switch button[aria-pressed=true] { background:var(--color-paper-200); color:var(--color-wood-900); }
 .od-count { margin:14px 0; font:12px/1.4 var(--font-ui); color:var(--color-wood-600); }
 .od-card-grid { display:grid; gap:20px 14px; }
-.od-card-grid--artwork { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .od-card { min-width:0; }
-.od-card-image { background:#17130e; position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; }
-.od-card-image img { width:100%; height:100%; object-fit:contain; }
-.od-card-number { position:absolute; left:8px; bottom:8px; display:grid; place-items:center; min-width:28px; height:28px; padding-inline:5px; border-radius:50%; background:#17130ee8; color:#f3efe7; font:600 13px var(--font-ui); }
 .od-card-copy { padding-top:9px; }
 .od-card h2 { font:500 22px/1.08 var(--font-display); margin:0 0 5px; overflow-wrap:break-word; }
 .od-card-copy > p { font:13px/1.35 var(--font-reading); color:var(--color-wood-700); margin:0; }
 .od-personal-label { display:block; margin-top:6px; font:600 11px/1.4 var(--font-ui); color:var(--color-bronze-600); }
-.od-card[data-personal] .od-card-image { box-shadow:0 0 0 2px var(--color-bronze-600); }
-.od-card-grid--hexagrams { grid-template-columns:1fr; gap:0; }
-.od-card-grid--hexagrams .od-card { display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid var(--color-wood-200); min-height:86px; }
 .od-card-glyph { flex:0 0 44px; display:flex; align-items:center; flex-direction:column; gap:6px; color:var(--color-bronze-600); font:600 12px var(--font-ui); }
-.od-card-grid--hexagrams .od-card-copy { padding:0; }
 .od-empty { padding:30px 4px; text-align:center; }
 .od-empty h2 { font:500 28px var(--font-display); }
 .od-empty p { font:16px/1.5 var(--font-reading); color:var(--color-wood-700); }
 .od-empty button { min-height:44px; border:1px solid var(--color-wood-300); border-radius:6px; background:transparent; padding:10px 16px; }
-@media(min-width:600px) { .od-card-grid--artwork { grid-template-columns:repeat(3,minmax(0,1fr)); } .od-card-grid--hexagrams { grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 22px; } .od-today { grid-template-columns:190px 1fr; } .od-today-copy h2 { font-size:36px; } }
 @media(max-width:359px) { .od-page { padding-inline:16px; } .od-today-copy { padding:16px 12px; } .od-today-copy h2 { font-size:25px; } .od-card-grid { column-gap:12px; } }
+.od-card-grid--symbols { grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+.od-card-grid--symbols .od-card { display:flex; align-items:center; justify-content:center; min-height:84px; border:1px solid transparent; border-radius:8px; }
+.od-card-grid--symbols .od-card[data-personal] { border-color:var(--color-bronze-600); }
+.od-card-grid--symbols .od-card:focus-visible { outline:2px solid var(--color-bronze-600); outline-offset:2px; }
+@media(min-width:600px) { .od-card-grid--symbols { grid-template-columns:repeat(8,minmax(0,1fr)); } .od-today { grid-template-columns:190px 1fr; } .od-today-copy h2 { font-size:36px; } }

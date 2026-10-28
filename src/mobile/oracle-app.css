@@ -50,6 +50,12 @@ body { overscroll-behavior-y: none; }
 .oracle-app-shell[data-app-page=deck] .oe-root [data-oe=birthsub] { margin-top:7px; font-size:14px; line-height:1.4; }
 .oracle-app-shell[data-app-page=deck] .oe-root [data-oe=ichgrid] { padding-top:16px !important; row-gap:14px !important; animation:none !important; }
 .oracle-app-shell[data-app-page=deck] .oe-root [data-oe=cardnum] { font-size:15px; }
+/* Explicit faces avoid WebKit painting the hidden artwork through the 3D back. */
+.oracle-app-shell .oe-root [data-oe=ichgrid] [style*="preserve-3d"] { transform:none !important; }
+.oracle-app-shell .oe-root [data-oe=ichgrid] [style*="preserve-3d"] > span { transform:none !important; }
+.oracle-app-shell .oe-root [data-oe=ichgrid] [style*="preserve-3d"] > span:last-child { visibility:hidden; }
+.oracle-app-shell .oe-root [data-oe=ichgrid] [style*="preserve-3d"][style*="rotateY(180deg)"] > span:first-child { visibility:hidden; }
+.oracle-app-shell .oe-root [data-oe=ichgrid] [style*="preserve-3d"][style*="rotateY(180deg)"] > span:last-child { visibility:visible; }
 .oracle-app-shell[data-app-page=deck] .oe-root [data-oe=ichgrid] button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:8px; }
 .oracle-app-shell[data-app-page=deck] .oe-root [data-oe=ichgrid] [data-oe-num] > div { min-height:44px; }
 .oracle-app-shell[data-app-page=deck] .oe-root [data-oe=ichgrid] [data-oe-num] > div button { min-height:44px; min-width:44px; }
@@ -135,3 +141,6 @@ body { overscroll-behavior-y: none; }
 .oracle-card-reveal .oracle-reveal-read { background:var(--color-wood-900); color:var(--color-paper-50); border-radius:8px; }
 @keyframes oracle-reveal-image { from {opacity:0; transform:translateY(8px) scale(.97);} to {opacity:1;transform:none;} }
 @media(prefers-reduced-motion:reduce) { .oracle-card-reveal img {animation:none;} }
+
+.oracle-app-tools > a { min-width:44px; width:44px; padding:0; }
+.od-today-hexagram { background:var(--color-paper-100); color:var(--color-bronze-600); min-height:180px; }

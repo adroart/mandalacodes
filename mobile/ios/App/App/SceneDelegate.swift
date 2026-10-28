@@ -60,6 +60,7 @@ class OracleViewController: CAPBridgeViewController {
         }
         configuration.userContentController.addScriptMessageHandler(OracleReminderHandler(), contentWorld: .page, name: "oracleReminders")
         configuration.userContentController.add(OracleFeedbackHandler(), name: "oracleFeedback")
+        configuration.userContentController.add(OracleAuthoringExportHandler(controller: self), name: "oracleAuthoringExport")
         configuration.userContentController.addUserScript(WKUserScript(source: """
         (() => {
             const originalPrompt = window.prompt.bind(window);
@@ -93,4 +94,35 @@ private func oraclePath(_ url: URL) -> String? {
     if url.host == "home" { return "/home" }
     guard url.host == "card", let number = Int(url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))), (1...64).contains(number) else { return nil }
     return "/universal-language/\(number)"
+}
+
+/// Private review exports use an explicit system share sheet, never an automatic upload.
+private final class OracleAuthoringExportHandler: NSObject, WKScriptMessageHandler {
+    weak var controller: UIViewController?
+    init(controller: UIViewController) { self.controller = controller }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.frameInfo.isMainFrame,
+              message.frameInfo.request.url?.scheme == "capacitor",
+              message.frameInfo.request.url?.host == "localhost",
+              let body = message.body as? [String: Any],
+              let id = body["id"] as? String, UUID(uuidString: id) != nil,
+              let name = body["name"] as? String,
+              name.range(of: "^oracle-card-[0-9]+-(review\\.json|receipt\\.md|approved\\.md)$", options: .regularExpression) != nil,
+              let text = body["text"] as? String, text.utf8.count <= 80 * 1024 * 1024,
+              let controller = controller else { return }
+        func reply(_ ok: Bool) {
+            message.webView?.evaluateJavaScript("window.dispatchEvent(new CustomEvent('oracle-authoring-export-result',{detail:{id:'\(id)',ok:\(ok ? "true" : "false")}}));")
+        }
+        do {
+            let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            let file = folder.appendingPathComponent(name)
+            try text.write(to: file, atomically: true, encoding: .utf8)
+            let sheet = UIActivityViewController(activityItems: [file], applicationActivities: nil)
+            sheet.popoverPresentationController?.sourceView = controller.view
+            sheet.popoverPresentationController?.sourceRect = CGRect(x: controller.view.bounds.midX, y: controller.view.bounds.midY, width: 1, height: 1)
+            sheet.completionWithItemsHandler = { _, _, _, _ in try? FileManager.default.removeItem(at: folder) }
+            controller.present(sheet, animated: true) { reply(true) }
+        } catch { reply(false) }
+    }
 }
