@@ -4,7 +4,8 @@ import { DarkModeProvider } from '../../DarkModeContext';
 import { ProfileProvider } from '../../lib/profile/context';
 import { CollectionsProvider } from '../../lib/collections/context';
 import ChunkErrorBoundary from '../../components/ChunkErrorBoundary';
-import OracleNavigation from './OracleNavigation';
+import OracleNavigation, { OracleTabBar } from './OracleNavigation';
+const Draw = lazy(() => import('./OracleDrawPage'));
 const Deck = lazy(() => import('../../components/oracle/entry/OracleEntryPage'));
 const Reading = lazy(() => import('../../components/UniversalLanguageCard'));
 const Profile = lazy(() => import('../../components/OracleProfile'));
@@ -18,18 +19,20 @@ function OracleRoutes() {
   const { pathname } = useLocation();
   const reading = /^\/universal-language\/\d+$/.test(pathname);
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
-  const page = reading ? 'reading' : pathname.startsWith('/profile/shared/') ? 'shared-profile' : pathname === '/profile' ? 'profile' : pathname === '/the-systems' ? 'systems' : 'deck';
+  const page = pathname === '/draw' ? 'draw' : reading ? 'reading' : pathname.startsWith('/profile/shared/') ? 'shared-profile' : pathname === '/profile' ? 'profile' : pathname === '/the-systems' ? 'systems' : 'deck';
   return <div data-site-shell data-app-page={page} className="oracle-app-shell min-h-screen bg-paper-50 text-wood-900">
-    {!reading && <OracleNavigation />}
+    <OracleNavigation key={pathname} />
     <main id="main-content"><ChunkErrorBoundary><Suspense fallback={<div className="oracle-app-loading">Opening Oracle…</div>}><Routes>
       <Route path="/" element={<Navigate to="/universal-language" replace />} />
       <Route path="/universal-language" element={<Deck />} />
       <Route path="/universal-language/:number" element={<Reading />} />
+      <Route path="/draw" element={<Draw />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/profile/shared/:data" element={<SharedProfile />} />
       <Route path="/the-systems" element={<Systems />} />
       <Route path="*" element={<WebsiteDestination />} />
     </Routes></Suspense></ChunkErrorBoundary></main>
+    <OracleTabBar />
   </div>;
 }
 export default function OracleApp() {

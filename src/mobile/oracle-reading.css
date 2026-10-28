@@ -138,3 +138,10 @@
 .oracle-app-shell[data-app-page="reading"] .card-reading--desktop [data-scroll],
 .oracle-app-shell[data-app-page="reading"] .card-reading--desktop aside,
 .oracle-app-shell[data-app-page="reading"] .card-reading--desktop [data-grain] { top:49px !important; }
+
+/* The app bar replaces the reader's website destinations in both orientations. */
+.oracle-app-shell[data-app-page="reading"] .card-reading > section { min-height:calc(var(--app-vh,100dvh) - var(--app-bottom-height)); }
+.oracle-app-shell[data-app-page="reading"] .card-reading > section > div { height:calc(var(--app-vh,100dvh) - var(--app-bottom-height)) !important; }
+.oracle-app-shell[data-app-page="reading"] .card-reading > section > div > footer,
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop > section > div > header { display:none !important; }
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop > section > div { padding-top:var(--nav-height); }

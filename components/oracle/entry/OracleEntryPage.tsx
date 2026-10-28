@@ -221,7 +221,7 @@ ${cell}::after{content:'${label}';position:absolute;left:-24px;right:-24px;botto
         hasCodes={hasCodes}
         onEnterReading={onEnterReading}
         onCardOpened={onCardOpened}
-        onDrawCard={() => setDrawOpen(true)}
+        onDrawCard={() => import.meta.env.VITE_ORACLE_APP ? navigate('/draw', { state: { returnTo: '/universal-language' } }) : setDrawOpen(true)}
         onOpenSystems={() => setSystemsOpen(true)}
         onOpenGrid={() => {
           // Always open the sign-in / birth-moment overlay: this is where you

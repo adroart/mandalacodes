@@ -25,7 +25,7 @@ test('bundled deck, drawing, and reading work without external network', async (
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/oracle-app-reading.png' });
   await expect(page.getByText('Hold to record', { exact: true })).toHaveCount(0);
-  await page.locator('[data-bar-tab=share]').click();
+  await page.locator('.oracle-app-nav').getByRole('button', {name:'Share this code'}).click();
   await expect(page.getByRole('button', { name: 'Share reading', exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -131,7 +131,7 @@ for (const size of [{width:375,height:667},{width:430,height:932},{width:932,hei
     }
     await page.locator('[data-nav="iching"]').click();
     await page.screenshot({path:`mobile/build/layout-reading-${size.width}.png`});
-    await page.locator('[data-bar-tab=share], [data-bar-share]').filter({visible:true}).first().click();
+    await page.locator('.oracle-app-nav').getByRole('button', {name:'Share this code'}).click();
     await expect(page.getByRole('button',{name:'Share reading',exact:true})).toBeInViewport();
     await expect(page.getByRole('button',{name:'Close',exact:true})).toBeInViewport();
     await page.getByRole('button',{name:'Close',exact:true}).click();
@@ -177,5 +177,33 @@ for (const width of [375, 430]) {
     await page.locator('.pg__orb').first().click();
     await expect(page.locator('.pg__detail-name')).toHaveText("Life's Work");
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  });
+}
+
+for (const size of [{width:375,height:667},{width:430,height:932},{width:932,height:430}]) {
+  test(`bottom destinations and full-screen drawing at ${size.width}px`, async ({page}) => {
+    await page.setViewportSize(size);
+    for (const path of ['/universal-language', '/profile', '/the-systems', '/universal-language/29']) {
+      await page.goto(path);
+      const nav = page.getByRole('navigation', {name:'Oracle', exact:true});
+      await expect(nav).toBeInViewport({ratio:1});
+      for (const name of ['Index','Birthday','Explore']) await expect(nav.getByRole('link',{name,exact:true})).toBeInViewport({ratio:1});
+      await nav.getByRole('button',{name:'Draw a card'}).click();
+      const dialog = page.getByRole('dialog',{name:'Draw a card'});
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByRole('tab',{name:'Cast coins'})).toHaveCSS('opacity','1');
+      await expect(dialog.getByRole('tablist')).toHaveCSS('opacity','1');
+      const box = await dialog.boundingBox();
+      expect(box!.x).toBe(0); expect(box!.y).toBe(0);
+      expect(box!.width).toBe(size.width); expect(box!.height).toBe(size.height);
+      await dialog.getByRole('tab',{name:'Choose trigrams'}).click();
+      const circle = dialog.getByRole('group',{name:/trigram choices/});
+      const ring = await circle.boundingBox();
+      expect(Math.abs(ring!.width-ring!.height)).toBeLessThan(1);
+      await page.screenshot({path:`mobile/build/fullscreen-draw-${size.width}.png`});
+      await dialog.getByRole('button',{name:'Close draw'}).click();
+      await expect(page).toHaveURL(path);
+      await expect(nav).toBeInViewport({ratio:1});
+    }
   });
 }
