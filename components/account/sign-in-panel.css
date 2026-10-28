@@ -1,0 +1,9 @@
+/* The same form owns its layout on the website and inside the native account page. */
+.sign-in-panel, .sign-in-panel * { box-sizing:border-box; }
+.sign-in-panel { min-width:0; }
+.sign-in-panel button { min-height:44px; max-width:100%; white-space:normal; line-height:1.45; overflow-wrap:anywhere; }
+.sign-in-panel button:disabled { cursor:default; opacity:.55; }
+.sign-in-panel input { display:block; min-width:0; max-width:100%; min-height:44px; }
+.sign-in-panel .sip-h > *, .sign-in-panel .sip-h__fields > * { min-width:0; }
+.sign-in-panel [role="alert"] { overflow-wrap:anywhere; }
+.sign-in-panel input:focus-visible, .sign-in-panel button:focus-visible { outline:2px solid var(--color-bronze-600); outline-offset:3px; }

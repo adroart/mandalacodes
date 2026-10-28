@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
+import './sign-in-panel.css';
 import {
   sendSignInCode,
   verifySignInCode,
@@ -39,6 +40,24 @@ const C = {
 
 type Mode = 'login' | 'signup' | 'code-email' | 'code-verify';
 
+export interface SignInActions {
+  sendSignInCode(email: string): Promise<{ error?: unknown }>;
+  verifySignInCode(email: string, code: string): Promise<{ error?: unknown }>;
+  signInWithPassword(email: string, password: string): Promise<{ error?: unknown }>;
+  signUpWithPassword(email: string, password: string, name?: string): Promise<{ error?: unknown }>;
+  signInWithGoogle(callbackURL?: string): Promise<{ error?: unknown }>;
+}
+const websiteActions: SignInActions = { sendSignInCode, verifySignInCode, signInWithPassword, signUpWithPassword, signInWithGoogle };
+interface SignInPanelProps {
+  onSignedIn?: () => void;
+  bare?: boolean;
+  horizontal?: boolean;
+  authActions?: SignInActions;
+  /** Native browser authentication returns here; website OAuth navigates away. */
+  googleReturnsToApp?: boolean;
+}
+
+
 /**
  * @param bare  When true, drops the boxed card chrome (border, shadow, pinned
  *   surface) and the redundant "Mandala Codes / Sign in" header so the form
@@ -50,7 +69,8 @@ type Mode = 'login' | 'signup' | 'code-email' | 'code-verify';
  *   of one tall column. The short code modes stay vertical. Mobile collapses
  *   back to a column automatically.
  */
-const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizontal?: boolean }> = ({ onSignedIn, bare = false, horizontal = false }) => {
+const SignInPanel: React.FC<SignInPanelProps> = ({ onSignedIn, bare = false, horizontal = false, authActions = websiteActions, googleReturnsToApp = false }) => {
+  const fieldId = useId();
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -62,60 +82,61 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
   const done = () => { onSignedIn?.(); };
 
   const doGoogle = async () => {
+    if (busy) return;
     setBusy(true);
     setError(null);
+    let redirecting = false;
     try {
-      const { error } = await signInWithGoogle('/account');
-      if (error) {
-        // Better Auth's client resolves with { error } rather than throwing
-        // (e.g. PROVIDER_NOT_FOUND when Google isn't configured server-side).
-        // Without this check the button silently stayed disabled forever.
-        setBusy(false);
-        setError('Google sign-in is not available right now. Try another way below.');
-      }
-    } catch {
-      setBusy(false);
-      setError('Could not start Google sign-in. Try another way below.');
+      const result = await authActions.signInWithGoogle('/account');
+      if (result.error) throw result.error;
+      if (googleReturnsToApp) done();
+      else redirecting = true;
+    } catch (cause) {
+      setError(googleReturnsToApp && cause instanceof Error ? cause.message : 'Could not start Google sign-in. Try another way below.');
+    } finally {
+      if (!redirecting) setBusy(false);
     }
   };
 
   const doPassword = async () => {
-    if (!email.trim() || !password) return;
+    if (busy || !email.trim() || !password) return;
     setBusy(true);
     setError(null);
-    const { error } = mode === 'signup'
-      ? await signUpWithPassword(email.trim(), password, name.trim())
-      : await signInWithPassword(email.trim(), password);
-    setBusy(false);
-    if (error) {
-      setError(
-        mode === 'signup'
-          ? 'Could not create the account. The email may already be in use, or the password is too short (8+ characters).'
-          : 'Email or password did not match. Try again, or create an account.',
-      );
-      return;
-    }
-    done();
+    try {
+      const result = mode === 'signup'
+        ? await authActions.signUpWithPassword(email.trim(), password, name.trim())
+        : await authActions.signInWithPassword(email.trim(), password);
+      if (result.error) throw result.error;
+      done();
+    } catch {
+      setError(mode === 'signup'
+        ? 'Could not create the account. The email may already be in use, or the password is too short (8+ characters).'
+        : 'Could not sign in. Check your email and password, or try another way below.');
+    } finally { setBusy(false); }
   };
 
   const sendCode = async () => {
-    if (!email.trim()) return;
+    if (busy || !email.trim()) return;
     setBusy(true);
     setError(null);
-    const { error } = await sendSignInCode(email.trim());
-    setBusy(false);
-    if (error) { setError('Could not send the code. Check the email and try again.'); return; }
-    setMode('code-verify');
+    try {
+      const result = await authActions.sendSignInCode(email.trim());
+      if (result.error) throw result.error;
+      setMode('code-verify');
+    } catch { setError('Could not send the code. Check the email and try again.'); }
+    finally { setBusy(false); }
   };
 
   const verify = async () => {
-    if (!code.trim()) return;
+    if (busy || code.length !== 6) return;
     setBusy(true);
     setError(null);
-    const { error } = await verifySignInCode(email.trim(), code.trim());
-    setBusy(false);
-    if (error) { setError('That code did not match. Try again, or request a new one.'); return; }
-    done();
+    try {
+      const result = await authActions.verifySignInCode(email.trim(), code.trim());
+      if (result.error) throw result.error;
+      done();
+    } catch { setError('That code could not be verified. Try again, or request a new one.'); }
+    finally { setBusy(false); }
   };
 
   const labelCls = 'block mb-1.5';
@@ -165,7 +186,7 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
       };
 
   return (
-    <div style={wrapperStyle}>
+    <div className="sign-in-panel" style={wrapperStyle} aria-busy={busy}>
       {horizontal && (
         <style>{`
           .sip-h { display: grid; grid-template-columns: minmax(0,0.85fr) auto minmax(0,1.45fr); gap: 40px; align-items: center; }
@@ -206,7 +227,7 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
       )}
 
       {error && (
-        <div style={{
+        <div role="alert" style={{
           marginBottom: 16, padding: '8px 12px', border: '1px solid var(--color-danger-border)',
           background: 'var(--color-danger-surface)', color: 'var(--color-danger-text)', fontFamily: 'var(--font-ui)', fontSize: 13,
         }}>
@@ -225,10 +246,10 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
               <div style={{
                 display: 'flex', flexDirection: 'column', gap: 4,
               }}>
-                <button type="button" style={linkStyle} onClick={() => { setError(null); setMode(mode === 'signup' ? 'login' : 'signup'); }}>
+                <button type="button" disabled={busy} style={linkStyle} onClick={() => { setError(null); setMode(mode === 'signup' ? 'login' : 'signup'); }}>
                   {mode === 'signup' ? 'Have an account? Sign in' : 'Create an account'}
                 </button>
-                <button type="button" style={{ ...linkStyle, color: C.sub }} onClick={() => { setError(null); setMode('code-email'); }}>
+                <button type="button" disabled={busy} style={{ ...linkStyle, color: C.sub }} onClick={() => { setError(null); setMode('code-email'); }}>
                   Email me a code instead
                 </button>
                 <button type="button" style={{ ...linkStyle, color: C.sub, textTransform: 'lowercase', letterSpacing: '0.06em' }} onClick={doGoogle} disabled={busy}>
@@ -246,19 +267,19 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
             <div className="sip-h__right">
               {mode === 'signup' && (
                 <div>
-                  <label className={labelCls} style={labelStyle}>Name (optional)</label>
-                  <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder="Your name" />
+                  <label htmlFor={`${fieldId}-name`} className={labelCls} style={labelStyle}>Name (optional)</label>
+                  <input id={`${fieldId}-name`} autoComplete="name" disabled={busy} value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder="Your name" />
                 </div>
               )}
               <div className="sip-h__fields">
                 <div style={{ flex: 1 }}>
-                  <label className={labelCls} style={labelStyle}>Email</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} placeholder="you@example.com" />
+                  <label htmlFor={`${fieldId}-email`} className={labelCls} style={labelStyle}>Email</label>
+                  <input id={`${fieldId}-email`} autoComplete="email" autoCapitalize="none" disabled={busy} type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} placeholder="you@example.com" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label className={labelCls} style={labelStyle}>Password</label>
+                  <label htmlFor={`${fieldId}-password`} className={labelCls} style={labelStyle}>Password</label>
                   <input
-                    type="password"
+                    id={`${fieldId}-password`} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} disabled={busy} type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && doPassword()}
@@ -276,18 +297,18 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {mode === 'signup' && (
             <div>
-              <label className={labelCls} style={labelStyle}>Name (optional)</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder="Your name" />
+              <label htmlFor={`${fieldId}-name`} className={labelCls} style={labelStyle}>Name (optional)</label>
+              <input id={`${fieldId}-name`} autoComplete="name" disabled={busy} value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder="Your name" />
             </div>
           )}
           <div>
-            <label className={labelCls} style={labelStyle}>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} placeholder="you@example.com" />
+            <label htmlFor={`${fieldId}-email`} className={labelCls} style={labelStyle}>Email</label>
+            <input id={`${fieldId}-email`} autoComplete="email" autoCapitalize="none" disabled={busy} type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} placeholder="you@example.com" />
           </div>
           <div>
-            <label className={labelCls} style={labelStyle}>Password</label>
+            <label htmlFor={`${fieldId}-password`} className={labelCls} style={labelStyle}>Password</label>
             <input
-              type="password"
+              id={`${fieldId}-password`} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} disabled={busy} type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && doPassword()}
@@ -303,10 +324,10 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
             display: 'flex', flexDirection: 'column', gap: 2, marginTop: 8,
             paddingTop: 16, borderTop: `1px solid ${C.line}`,
           }}>
-            <button type="button" style={linkStyle} onClick={() => { setError(null); setMode(mode === 'signup' ? 'login' : 'signup'); }}>
+            <button type="button" disabled={busy} style={linkStyle} onClick={() => { setError(null); setMode(mode === 'signup' ? 'login' : 'signup'); }}>
               {mode === 'signup' ? 'Have an account? Sign in' : 'Create an account'}
             </button>
-            <button type="button" style={{ ...linkStyle, color: C.sub }} onClick={() => { setError(null); setMode('code-email'); }}>
+            <button type="button" disabled={busy} style={{ ...linkStyle, color: C.sub }} onClick={() => { setError(null); setMode('code-email'); }}>
               Email me a code instead
             </button>
             {/* Google: a quiet lowercase text option, subordinate to email. */}
@@ -321,13 +342,13 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
       {mode === 'code-email' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label className={labelCls} style={labelStyle}>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendCode()} style={inputStyle} placeholder="you@example.com" />
+            <label htmlFor={`${fieldId}-email`} className={labelCls} style={labelStyle}>Email</label>
+            <input id={`${fieldId}-email`} autoComplete="email" autoCapitalize="none" disabled={busy} type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendCode()} style={inputStyle} placeholder="you@example.com" />
           </div>
           <button type="button" onClick={sendCode} disabled={busy || !email.trim()} style={primaryStyle}>
             {busy ? 'Sending...' : 'Send code'}
           </button>
-          <button type="button" style={linkStyle} onClick={() => { setError(null); setMode('login'); }}>
+          <button type="button" disabled={busy} style={linkStyle} onClick={() => { setError(null); setMode('login'); }}>
             Back to sign in
           </button>
         </div>
@@ -336,9 +357,9 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
       {mode === 'code-verify' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label className={labelCls} style={labelStyle}>6-digit code</label>
+            <label htmlFor={`${fieldId}-code`} className={labelCls} style={labelStyle}>6-digit code</label>
             <input
-              type="text"
+              id={`${fieldId}-code`} autoComplete="one-time-code" disabled={busy} type="text"
               inputMode="numeric"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -350,7 +371,7 @@ const SignInPanel: React.FC<{ onSignedIn?: () => void; bare?: boolean; horizonta
           <button type="button" onClick={verify} disabled={busy || code.length < 6} style={primaryStyle}>
             {busy ? 'Verifying...' : 'Sign in'}
           </button>
-          <button type="button" style={linkStyle} onClick={() => { setError(null); setCode(''); setMode('code-email'); }}>
+          <button type="button" disabled={busy} style={linkStyle} onClick={() => { setError(null); setCode(''); setMode('code-email'); }}>
             Use a different email
           </button>
         </div>

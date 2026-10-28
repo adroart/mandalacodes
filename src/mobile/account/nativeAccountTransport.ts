@@ -3,7 +3,7 @@ import type { HttpOptions, HttpResponse } from '../../../mobile/node_modules/@ca
 
 export const ACCOUNT_ORIGIN = 'https://mandalacodes.com';
 export const NATIVE_ORIGIN = 'capacitor://localhost';
-const ACCOUNT_PATH = /^\/api\/(?:auth\/(?:get-session|email-otp\/send-verification-otp|sign-in\/email-otp|sign-out|sync-user)|profile\/(?:get|put|delete)|collections\/(?:list|create|update|delete|add-item|remove-item))$/;
+const ACCOUNT_PATH = /^\/api\/(?:auth\/(?:get-session|email-otp\/send-verification-otp|sign-in\/(?:email-otp|email)|sign-up\/email|native\/exchange|sign-out|sync-user)|profile\/(?:get|put|delete)|collections\/(?:list|create|update|delete|add-item|remove-item))$/;
 export type NativeHttp = (options: HttpOptions) => Promise<HttpResponse>;
 
 /** Only our account API can receive the native cookie jar. No arbitrary URL,
@@ -42,6 +42,6 @@ export async function accountResult(response: Response): Promise<any> {
   if (response.ok) return body;
   if (response.status === 403 && /ORIGIN/i.test(String(body?.code))) throw new Error('Phone sign-in is not enabled on the server yet. Your local chart is safe.');
   if (response.status === 429) throw new Error('Too many attempts. Please wait before requesting another code.');
-  if (response.status === 400 || response.status === 401) throw new Error('The email or code was not accepted. Check it and try again.');
+  if (response.status === 400 || response.status === 401 || response.status === 422) throw new Error('Sign-in was not accepted. Check your details and try again.');
   throw new Error('Account sync is unavailable right now. Your local chart is safe.');
 }
