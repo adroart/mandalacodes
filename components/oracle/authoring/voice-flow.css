@@ -1,7 +1,7 @@
-.oracle-voice-flow { max-width:900px; margin:auto; padding:16px; color:var(--color-wood-900,#292d29); font:17px/1.5 'Iowan Old Style',Palatino,Georgia,serif; }
+.oracle-voice-flow { max-width:900px; margin:auto; padding:16px; color:var(--color-wood-900,#292d29); font:17px/1.5 var(--font-reading); }
 .oracle-voice-flow * { box-sizing:border-box; }
 .ov-header,.ov-controls,.ov-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.ov-header h1 { margin:0; font:30px/1.15 var(--font-display,'Cormorant Garamond',serif); }
+.ov-header h1 { margin:0; font:30px/1.15 var(--font-display); }
 .ov-header p { margin:5px 0 0; font-size:13px; color:var(--color-wood-600,#736046); }
 .oracle-voice-flow button,.oracle-voice-flow select,.oracle-voice-flow textarea { font:inherit; color:inherit; min-height:44px; border:1px solid var(--color-wood-200,#d8dcd1); border-radius:6px; background:transparent; padding:8px 12px; max-width:100%; }
 .oracle-voice-flow button { cursor:pointer; }
@@ -14,7 +14,7 @@
 .ov-controls select { min-width:0; }
 .ov-controls > button { min-width:112px; }
 .ov-note,.ov-assignment,.ov-more p { font-size:13px; color:var(--color-wood-600,#736046); margin:8px 0; }
-.oracle-voice-flow pre { white-space:pre-wrap; overflow-wrap:anywhere; font:18px/1.6 'Iowan Old Style',Palatino,Georgia,serif; margin:12px 0; }
+.oracle-voice-flow pre { white-space:pre-wrap; overflow-wrap:anywhere; font:18px/1.6 var(--font-reading); margin:12px 0; }
 .oracle-voice-flow details { border-bottom:1px solid var(--color-wood-200,#d8dcd1); padding:10px 0; }
 .oracle-voice-flow summary { cursor:pointer; min-height:30px; font-size:14px; }
 .ov-view-tabs { display:flex; gap:8px; margin:12px 0; }
@@ -28,7 +28,7 @@
 .ov-destination label,.ov-text-editor label { display:flex; flex-direction:column; gap:4px; min-width:0; font-size:13px; }
 .ov-destination select { width:100%; padding-inline:7px; text-overflow:ellipsis; }
 .ov-text-editor { margin:12px 0 0; }
-.ov-text-editor textarea { width:100%; min-height:125px; resize:vertical; font:18px/1.55 'Iowan Old Style',Palatino,Georgia,serif; padding:12px; caret-color:var(--color-bronze-600,#8a744e); }
+.ov-text-editor textarea { width:100%; min-height:125px; resize:vertical; font:18px/1.55 var(--font-reading); padding:12px; caret-color:var(--color-bronze-600,#8a744e); }
 .ov-text-editor > button { margin-top:6px; font-size:13px; }
 .ov-writing h2 { margin:0 0 12px; font-size:19px; font-weight:500; }
 .ov-writing textarea { min-height:230px; }

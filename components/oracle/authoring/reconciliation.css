@@ -4,7 +4,7 @@
 .or-review-heading label { display:flex; align-items:center; gap:5px; font-size:13px; }
 .oracle-reconciliation input[type=checkbox] { accent-color:var(--color-bronze-600,#8a744e); width:18px; height:18px; flex-shrink:0; }
 .or-context { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; }
-.oracle-reconciliation h3 { font:600 15px/1.4 'Iowan Old Style',Palatino,Georgia,serif; margin:10px 0; }
+.oracle-reconciliation h3 { font:600 15px/1.4 var(--font-reading); margin:10px 0; }
 .or-context section,.or-evidence { min-width:0; }
 .or-context pre,.or-evidence p { font-size:16px; line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere; }
 .or-context pre { max-height:340px; overflow-y:auto; padding-right:5px; }
@@ -43,7 +43,7 @@
 .or-review-summary dl > div { display:flex; justify-content:space-between; gap:10px; border-bottom:1px solid var(--color-wood-200,#d8dcd1); padding-bottom:6px; }
 .or-review-summary dt { font-weight:normal; }
 .or-review-summary dd { margin:0; font-variant-numeric:tabular-nums; }
-.or-read-text { white-space:pre-wrap; overflow-wrap:anywhere; max-width:70ch; font:18px/1.7 'Iowan Old Style',Palatino,Georgia,serif; margin:12px auto 16px; }
+.or-read-text { white-space:pre-wrap; overflow-wrap:anywhere; max-width:70ch; font:18px/1.7 var(--font-reading); margin:12px auto 16px; }
 .or-copy-status { font-size:13px; }
 .or-copy-fallback { display:flex; flex-direction:column; gap:5px; font-size:13px; margin-top:10px; }
 .or-copy-fallback textarea { width:100%; min-height:160px; resize:vertical; }
