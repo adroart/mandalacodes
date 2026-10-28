@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Sun, Moon, Share2, Grid3X3, Sparkles, CircleUserRound, Compass } from 'lucide-react';
+import { Sun, Moon, Share2, Grid3X3, Sparkles, CircleUserRound, Compass, UserRound } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../DarkModeContext';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
+import ReaderPreferences from './reading/ReaderPreferences';
 import OracleShareSheet from './OracleShareSheet';
 export default function OracleNavigation(_props: unknown) {
   const { pathname } = useLocation();
@@ -11,8 +12,10 @@ export default function OracleNavigation(_props: unknown) {
   const card = /^\/universal-language\/\d+$/.test(pathname) ? CARD_BY_NUMBER.get(Number(pathname.split('/').pop())) : undefined;
   return <>
     <header className="oracle-app-nav">
-      <Link to="/universal-language" className="oracle-app-brand">Oracle</Link>
+      <Link to="/home" aria-label="Oracle home" className="oracle-app-brand">Oracle</Link>
       <div className="oracle-app-tools">
+        {!card && <Link to="/account" aria-label="Account and backup"><UserRound size={21} aria-hidden="true" /></Link>}
+        {card && <ReaderPreferences cardNumber={card.number} />}
         {card && <button aria-label="Share this code" onClick={() => setShareOpen(true)}><Share2 size={21} aria-hidden="true" /></button>}
         <button onClick={toggleDarkMode} aria-label={isDarkMode ? 'Use light appearance' : 'Use dark appearance'}>{isDarkMode ? <Sun size={21} aria-hidden="true" /> : <Moon size={21} aria-hidden="true" />}</button>
       </div>

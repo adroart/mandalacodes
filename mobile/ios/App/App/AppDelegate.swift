@@ -1,13 +1,14 @@
 import UIKit
 import Capacitor
+import UserNotifications
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        UNUserNotificationCenter.current().delegate = self
         return true
     }
 
@@ -41,4 +42,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         config.delegateClass = SceneDelegate.self
         return config
     }
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        DispatchQueue.main.async {
+            if response.notification.request.content.userInfo["oraclePath"] as? String == "/home" {
+                let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+                let controller = scenes.flatMap { $0.windows }.first(where: { $0.isKeyWindow })?.rootViewController as? OracleViewController
+                controller?.openOraclePath("/home")
+            }
+            completionHandler()
+        }
+    }
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
+    }
+
 }

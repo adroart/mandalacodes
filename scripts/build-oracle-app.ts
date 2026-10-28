@@ -4,6 +4,8 @@ import { mkdir, cp, readFile, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 const root = process.cwd();
+const widget = spawnSync(process.execPath, ['node_modules/tsx/dist/cli.mjs', 'scripts/build-oracle-widget.ts'], { stdio: 'inherit' });
+if (widget.status !== 0) process.exit(widget.status ?? 1);
 const staging = path.join(root, '.oracle-public');
 await mkdir(path.join(staging, 'oracle-art'), { recursive: true });
 for (const item of ['fonts', 'oracle', 'favicon.svg', 'data/cities-index.json']) {

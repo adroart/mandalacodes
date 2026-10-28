@@ -1,0 +1,1362 @@
+{
+  "version": 1,
+  "generatedAt": 1793178832.776,
+  "validFrom": 1792540800,
+  "validUntil": 1856304000,
+  "cards": [
+    {
+      "number": 1,
+      "name": "Earth's Breath",
+      "gift": "Freshness",
+      "lines": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 2,
+      "name": "Beyond the Shell",
+      "gift": "Orientation",
+      "lines": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 3,
+      "name": "Messengers of the Infinite",
+      "gift": "Innovation",
+      "lines": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 4,
+      "name": "Veils of Knowledge",
+      "gift": "Understanding",
+      "lines": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 5,
+      "name": "The Space Between Time",
+      "gift": "Patience",
+      "lines": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 6,
+      "name": "Harmonious Mirage",
+      "gift": "Diplomacy",
+      "lines": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 7,
+      "name": "Essential Nexus",
+      "gift": "Guidance",
+      "lines": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 8,
+      "name": "Odyssey of Freedom",
+      "gift": "Style",
+      "lines": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 9,
+      "name": "Ease in This",
+      "gift": "Determination",
+      "lines": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 10,
+      "name": "Internal Treasure",
+      "gift": "Naturalness",
+      "lines": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 11,
+      "name": "Sol Star",
+      "gift": "Idealism",
+      "lines": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 12,
+      "name": "Petals of Freedom",
+      "gift": "Discrimination",
+      "lines": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 13,
+      "name": "Universal Crest",
+      "gift": "Discernment",
+      "lines": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 14,
+      "name": "Ancestors Bloom",
+      "gift": "Competence",
+      "lines": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 15,
+      "name": "Ordinary Valiance",
+      "gift": "Magnetism",
+      "lines": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 16,
+      "name": "Grand Rising",
+      "gift": "Versatility",
+      "lines": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 17,
+      "name": "Pearl of Christos",
+      "gift": "Far-Sightedness",
+      "lines": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 18,
+      "name": "Liberation of the Greater",
+      "gift": "Integrity",
+      "lines": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 19,
+      "name": "Solection",
+      "gift": "Sensitivity",
+      "lines": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 20,
+      "name": "Emerging as the Code",
+      "gift": "Self-Assurance",
+      "lines": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 21,
+      "name": "Beyond Binary",
+      "gift": "Authority",
+      "lines": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 22,
+      "name": "Treasure of the Way",
+      "gift": "Graciousness",
+      "lines": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 23,
+      "name": "Beneath the Surface",
+      "gift": "Simplicity",
+      "lines": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 24,
+      "name": "Frequency Flutter",
+      "gift": "Invention",
+      "lines": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 25,
+      "name": "The Mysteries Play",
+      "gift": "Acceptance",
+      "lines": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 26,
+      "name": "Lighter Than a Feather",
+      "gift": "Artfulness",
+      "lines": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 27,
+      "name": "Inner Majesty",
+      "gift": "Altruism",
+      "lines": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 28,
+      "name": "Becoming the Mystery",
+      "gift": "Totality",
+      "lines": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 29,
+      "name": "All In",
+      "gift": "Commitment",
+      "lines": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 30,
+      "name": "Sparking the Blaze",
+      "gift": "Lightness",
+      "lines": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 31,
+      "name": "Theater of Truth",
+      "gift": "Leadership",
+      "lines": [
+        false,
+        true,
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 32,
+      "name": "Art of Living",
+      "gift": "Preservation",
+      "lines": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 33,
+      "name": "Echos of Time",
+      "gift": "Mindfulness",
+      "lines": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 34,
+      "name": "Sublime Power",
+      "gift": "Strength",
+      "lines": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 35,
+      "name": "Navigational Star",
+      "gift": "Adventure",
+      "lines": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 36,
+      "name": "Crystal Creation",
+      "gift": "Humanity",
+      "lines": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 37,
+      "name": "Journey Home",
+      "gift": "Equality",
+      "lines": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 38,
+      "name": "Inner Light Symphony",
+      "gift": "Perseverance",
+      "lines": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 39,
+      "name": "Nobel Spark",
+      "gift": "Dynamism",
+      "lines": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 40,
+      "name": "Eternal Wellspring",
+      "gift": "Resolve",
+      "lines": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 41,
+      "name": "Beginning and the End",
+      "gift": "Anticipation",
+      "lines": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 42,
+      "name": "Moving to Perfection",
+      "gift": "Detachment",
+      "lines": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 43,
+      "name": "Cipher of Knowledge",
+      "gift": "Insight",
+      "lines": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 44,
+      "name": "Sophia's Orchestra",
+      "gift": "Teamwork",
+      "lines": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 45,
+      "name": "Tribal Tapestry",
+      "gift": "Synergy",
+      "lines": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 46,
+      "name": "Fountain of Light",
+      "gift": "Delight",
+      "lines": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 47,
+      "name": "Garden of Alchemy",
+      "gift": "Transmutation",
+      "lines": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 48,
+      "name": "Doorways of the Unknown",
+      "gift": "Resourcefulness",
+      "lines": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 49,
+      "name": "Union in the Ashes",
+      "gift": "Revolution",
+      "lines": [
+        false,
+        true,
+        true,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 50,
+      "name": "Melt Into Perfection",
+      "gift": "Equilibrium",
+      "lines": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 51,
+      "name": "Unshakable Arrival",
+      "gift": "Initiative",
+      "lines": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 52,
+      "name": "Timeless Blossom",
+      "gift": "Restraint",
+      "lines": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 53,
+      "name": "Creation Oscillation",
+      "gift": "Expansion",
+      "lines": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 54,
+      "name": "Everlasting Bounty",
+      "gift": "Aspiration",
+      "lines": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 55,
+      "name": "Untouched Perfection",
+      "gift": "Freedom",
+      "lines": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 56,
+      "name": "Infinite Journey",
+      "gift": "Enrichment",
+      "lines": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 57,
+      "name": "Flight of the Tao",
+      "gift": "Intuition",
+      "lines": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 58,
+      "name": "Rhythm of Life",
+      "gift": "Vitality",
+      "lines": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 59,
+      "name": "Mystics Treasures",
+      "gift": "Intimacy",
+      "lines": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "number": 60,
+      "name": "Woven Light",
+      "gift": "Realism",
+      "lines": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 61,
+      "name": "Celestial Remembrance",
+      "gift": "Inspiration",
+      "lines": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "number": 62,
+      "name": "Voice of Nature",
+      "gift": "Precision",
+      "lines": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "number": 63,
+      "name": "Adornments of Time",
+      "gift": "Inquiry",
+      "lines": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "number": 64,
+      "name": "Communion",
+      "gift": "Imagination",
+      "lines": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "at": 1792540800,
+      "gate": 50
+    },
+    {
+      "at": 1792921861.955,
+      "gate": 28
+    },
+    {
+      "at": 1793408949.579,
+      "gate": 44
+    },
+    {
+      "at": 1793894428.455,
+      "gate": 1
+    },
+    {
+      "at": 1794378395.507,
+      "gate": 43
+    },
+    {
+      "at": 1794861133.012,
+      "gate": 14
+    },
+    {
+      "at": 1795342903.508,
+      "gate": 34
+    },
+    {
+      "at": 1795823667.822,
+      "gate": 9
+    },
+    {
+      "at": 1796303365.355,
+      "gate": 5
+    },
+    {
+      "at": 1796782060.182,
+      "gate": 26
+    },
+    {
+      "at": 1797260048.774,
+      "gate": 11
+    },
+    {
+      "at": 1797737676.225,
+      "gate": 10
+    },
+    {
+      "at": 1798215017.89,
+      "gate": 58
+    },
+    {
+      "at": 1798692053.788,
+      "gate": 38
+    },
+    {
+      "at": 1799168791.562,
+      "gate": 54
+    },
+    {
+      "at": 1799645485.388,
+      "gate": 61
+    },
+    {
+      "at": 1800122514.091,
+      "gate": 60
+    },
+    {
+      "at": 1800600044.425,
+      "gate": 41
+    },
+    {
+      "at": 1801078093.589,
+      "gate": 19
+    },
+    {
+      "at": 1801556599.101,
+      "gate": 13
+    },
+    {
+      "at": 1802035726.822,
+      "gate": 49
+    },
+    {
+      "at": 1802515829.297,
+      "gate": 30
+    },
+    {
+      "at": 1802997125.57,
+      "gate": 55
+    },
+    {
+      "at": 1803479660.498,
+      "gate": 37
+    },
+    {
+      "at": 1803963294.892,
+      "gate": 63
+    },
+    {
+      "at": 1804448081.395,
+      "gate": 22
+    },
+    {
+      "at": 1804934290.377,
+      "gate": 36
+    },
+    {
+      "at": 1805422149.155,
+      "gate": 25
+    },
+    {
+      "at": 1805911706.412,
+      "gate": 17
+    },
+    {
+      "at": 1806402741.106,
+      "gate": 21
+    },
+    {
+      "at": 1806895188.775,
+      "gate": 51
+    },
+    {
+      "at": 1807389199.796,
+      "gate": 42
+    },
+    {
+      "at": 1807884979.467,
+      "gate": 3
+    },
+    {
+      "at": 1808382543.83,
+      "gate": 27
+    },
+    {
+      "at": 1808881591.727,
+      "gate": 24
+    },
+    {
+      "at": 1809381950.127,
+      "gate": 2
+    },
+    {
+      "at": 1809883642.4,
+      "gate": 23
+    },
+    {
+      "at": 1810386846.083,
+      "gate": 8
+    },
+    {
+      "at": 1810891508.327,
+      "gate": 20
+    },
+    {
+      "at": 1811397271.704,
+      "gate": 16
+    },
+    {
+      "at": 1811903864.451,
+      "gate": 35
+    },
+    {
+      "at": 1812411220.933,
+      "gate": 45
+    },
+    {
+      "at": 1812919496.318,
+      "gate": 12
+    },
+    {
+      "at": 1813428562.294,
+      "gate": 15
+    },
+    {
+      "at": 1813938048.759,
+      "gate": 52
+    },
+    {
+      "at": 1814447601.308,
+      "gate": 39
+    },
+    {
+      "at": 1814957141.782,
+      "gate": 53
+    },
+    {
+      "at": 1815466800.132,
+      "gate": 62
+    },
+    {
+      "at": 1815976423.651,
+      "gate": 56
+    },
+    {
+      "at": 1816485662.529,
+      "gate": 31
+    },
+    {
+      "at": 1816994128.037,
+      "gate": 33
+    },
+    {
+      "at": 1817501792.669,
+      "gate": 7
+    },
+    {
+      "at": 1818008767.449,
+      "gate": 4
+    },
+    {
+      "at": 1818514957.602,
+      "gate": 29
+    },
+    {
+      "at": 1819020048.652,
+      "gate": 59
+    },
+    {
+      "at": 1819523691.06,
+      "gate": 40
+    },
+    {
+      "at": 1820025916.735,
+      "gate": 64
+    },
+    {
+      "at": 1820526854.632,
+      "gate": 47
+    },
+    {
+      "at": 1821026522.552,
+      "gate": 6
+    },
+    {
+      "at": 1821524665.181,
+      "gate": 46
+    },
+    {
+      "at": 1822021019.908,
+      "gate": 18
+    },
+    {
+      "at": 1822515653.546,
+      "gate": 48
+    },
+    {
+      "at": 1823008750.552,
+      "gate": 57
+    },
+    {
+      "at": 1823500454.841,
+      "gate": 32
+    },
+    {
+      "at": 1823990604.385,
+      "gate": 50
+    },
+    {
+      "at": 1824479026.544,
+      "gate": 28
+    },
+    {
+      "at": 1824965794.853,
+      "gate": 44
+    },
+    {
+      "at": 1825451150.401,
+      "gate": 1
+    },
+    {
+      "at": 1825935353.171,
+      "gate": 43
+    },
+    {
+      "at": 1826418357.79,
+      "gate": 14
+    },
+    {
+      "at": 1826900065.233,
+      "gate": 34
+    },
+    {
+      "at": 1827380529.238,
+      "gate": 9
+    },
+    {
+      "at": 1827860011.404,
+      "gate": 5
+    },
+    {
+      "at": 1828338859.845,
+      "gate": 26
+    },
+    {
+      "at": 1828817148.348,
+      "gate": 11
+    },
+    {
+      "at": 1829294839.13,
+      "gate": 10
+    },
+    {
+      "at": 1829771944.019,
+      "gate": 58
+    },
+    {
+      "at": 1830248692.468,
+      "gate": 38
+    },
+    {
+      "at": 1830725473.966,
+      "gate": 54
+    },
+    {
+      "at": 1831202462.309,
+      "gate": 61
+    },
+    {
+      "at": 1831679675.445,
+      "gate": 60
+    },
+    {
+      "at": 1832157070.626,
+      "gate": 41
+    },
+    {
+      "at": 1832634797.933,
+      "gate": 19
+    },
+    {
+      "at": 1833113229.451,
+      "gate": 13
+    },
+    {
+      "at": 1833592600.128,
+      "gate": 49
+    },
+    {
+      "at": 1834072975.052,
+      "gate": 30
+    },
+    {
+      "at": 1834554251.075,
+      "gate": 55
+    },
+    {
+      "at": 1835036470.685,
+      "gate": 37
+    },
+    {
+      "at": 1835519931.735,
+      "gate": 63
+    },
+    {
+      "at": 1836004881.257,
+      "gate": 22
+    },
+    {
+      "at": 1836491410.787,
+      "gate": 36
+    },
+    {
+      "at": 1836979349.31,
+      "gate": 25
+    },
+    {
+      "at": 1837468625.084,
+      "gate": 17
+    },
+    {
+      "at": 1837959419.418,
+      "gate": 21
+    },
+    {
+      "at": 1838451951.123,
+      "gate": 51
+    },
+    {
+      "at": 1838946305.114,
+      "gate": 42
+    },
+    {
+      "at": 1839442232.95,
+      "gate": 3
+    },
+    {
+      "at": 1839939558.443,
+      "gate": 27
+    },
+    {
+      "at": 1840438326.438,
+      "gate": 24
+    },
+    {
+      "at": 1840938714.984,
+      "gate": 2
+    },
+    {
+      "at": 1841440763.303,
+      "gate": 23
+    },
+    {
+      "at": 1841944150.345,
+      "gate": 8
+    },
+    {
+      "at": 1842448610.858,
+      "gate": 20
+    },
+    {
+      "at": 1842954066.933,
+      "gate": 16
+    },
+    {
+      "at": 1843460670.829,
+      "gate": 35
+    },
+    {
+      "at": 1843968386.931,
+      "gate": 45
+    },
+    {
+      "at": 1844476857.992,
+      "gate": 12
+    },
+    {
+      "at": 1844985741.054,
+      "gate": 15
+    },
+    {
+      "at": 1845494895.689,
+      "gate": 52
+    },
+    {
+      "at": 1846004463.268,
+      "gate": 39
+    },
+    {
+      "at": 1846514347.141,
+      "gate": 53
+    },
+    {
+      "at": 1847024204.982,
+      "gate": 62
+    },
+    {
+      "at": 1847533637.935,
+      "gate": 56
+    },
+    {
+      "at": 1848042527.273,
+      "gate": 31
+    },
+    {
+      "at": 1848551003.206,
+      "gate": 33
+    },
+    {
+      "at": 1849058978.264,
+      "gate": 7
+    },
+    {
+      "at": 1849566155.296,
+      "gate": 4
+    },
+    {
+      "at": 1850072135.312,
+      "gate": 29
+    },
+    {
+      "at": 1850576868.803,
+      "gate": 59
+    },
+    {
+      "at": 1851080485.883,
+      "gate": 40
+    },
+    {
+      "at": 1851582986.483,
+      "gate": 64
+    },
+    {
+      "at": 1852084133.994,
+      "gate": 47
+    },
+    {
+      "at": 1852583594.087,
+      "gate": 6
+    },
+    {
+      "at": 1853081377.596,
+      "gate": 46
+    },
+    {
+      "at": 1853577644.339,
+      "gate": 18
+    },
+    {
+      "at": 1854072518.474,
+      "gate": 48
+    },
+    {
+      "at": 1854565848.045,
+      "gate": 57
+    },
+    {
+      "at": 1855057393.857,
+      "gate": 32
+    },
+    {
+      "at": 1855547195.062,
+      "gate": 50
+    },
+    {
+      "at": 1856035455.291,
+      "gate": 28
+    }
+  ]
+}

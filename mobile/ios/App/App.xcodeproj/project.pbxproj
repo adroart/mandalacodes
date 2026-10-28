@@ -16,6 +16,10 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
+		4197BD45A4FA4C9B8C0C4A65 /* OracleWidget.appex in Copy Files */ = {isa = PBXBuildFile; fileRef = D31E86D497FE4DEBBFB7FD07 /* OracleWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		71E3293F6AD14D5FAF69B829 /* OracleWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB89FEB170E34FE580AD3574 /* OracleWidget.swift */; };
+		0817ACC7156E43B49C53B875 /* oracle-widget.json in Resources */ = {isa = PBXBuildFile; fileRef = E73A3F7F83BC47659FBAE0B9 /* oracle-widget.json */; };
+		6D34F6D29968459F9836AD5F /* OracleReminderHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1F12441F5234518B4C627EC /* OracleReminderHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +34,10 @@
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		D31E86D497FE4DEBBFB7FD07 /* OracleWidget.appex */ = {isa = PBXFileReference; name = "OracleWidget.appex"; path = "OracleWidget.appex"; sourceTree = BUILT_PRODUCTS_DIR; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; };
+		EB89FEB170E34FE580AD3574 /* OracleWidget.swift */ = {isa = PBXFileReference; name = "OracleWidget.swift"; path = "OracleWidget.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
+		E73A3F7F83BC47659FBAE0B9 /* oracle-widget.json */ = {isa = PBXFileReference; name = "oracle-widget.json"; path = "oracle-widget.json"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		C1F12441F5234518B4C627EC /* OracleReminderHandler.swift */ = {isa = PBXFileReference; name = "OracleReminderHandler.swift"; path = "OracleReminderHandler.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -38,6 +46,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		94A5DBB638504D7CB94D93C1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -50,6 +65,7 @@
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
+				CA7B6003ABF04588A97A47A5 /* OracleWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -57,6 +73,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				D31E86D497FE4DEBBFB7FD07 /* OracleWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -73,8 +90,19 @@
 				504EC3131FED79650016851F /* Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
+				C1F12441F5234518B4C627EC /* OracleReminderHandler.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		CA7B6003ABF04588A97A47A5 /* OracleWidget */ = {
+			isa = PBXGroup;
+			children = (
+				EB89FEB170E34FE580AD3574 /* OracleWidget.swift */,
+				E73A3F7F83BC47659FBAE0B9 /* oracle-widget.json */,
+			);
+			name = OracleWidget;
+			path = OracleWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -87,10 +115,12 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				C336F2726E3044F5A55851A9 /* Copy Files */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				76C6D925577746EFB85B3E5A /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -100,18 +130,39 @@
 			productReference = 504EC3041FED79650016851F /* App.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B3B07837C87D45618CD5A695 /* "OracleWidget" */ = {
+			isa = PBXNativeTarget;
+			name = "OracleWidget";
+			productName = "OracleWidget";
+			productReference = D31E86D497FE4DEBBFB7FD07;
+			productType = "com.apple.product-type.app-extension";
+			buildConfigurationList = C7CC8395D15E45879D648736;
+			buildPhases = (
+				DD4C77B09EE7456293C08508 /* Sources */,
+				94A5DBB638504D7CB94D93C1 /* Frameworks */,
+				5F2769A9AA894A5C98D2D336 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		504EC2FC1FED79650016851F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 0920;
+				LastSwiftUpdateCheck = 920;
+				LastUpgradeCheck = 920;
 				TargetAttributes = {
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 1100;
+						ProvisioningStyle = Automatic;
+					};
+					B3B07837C87D45618CD5A695 = {
+						CreatedOnToolsVersion = 27.1;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -133,6 +184,7 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				B3B07837C87D45618CD5A695 /* "OracleWidget" */,
 			);
 		};
 /* End PBXProject section */
@@ -151,6 +203,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5F2769A9AA894A5C98D2D336 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0817ACC7156E43B49C53B875 /* oracle-widget.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -160,6 +220,15 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
+				6D34F6D29968459F9836AD5F /* OracleReminderHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD4C77B09EE7456293C08508 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				71E3293F6AD14D5FAF69B829 /* OracleWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -301,7 +370,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = X2RS69BS48;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -324,7 +393,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = X2RS69BS48;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -339,6 +408,52 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
+		};
+		C18C9D1CCEEC42BC875E7A24 /* Debug */ = {
+			name = Debug;
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = OracleWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_NAME = "OracleWidget";
+				SKIP_INSTALL = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.adrian.oracle.widget";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = X2RS69BS48;
+				CURRENT_PROJECT_VERSION = 6;
+				MARKETING_VERSION = 1.0;
+				SWIFT_VERSION = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+		};
+		B2EDDB5BA46841388EE1E653 /* Release */ = {
+			name = Release;
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = OracleWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_NAME = "OracleWidget";
+				SKIP_INSTALL = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.adrian.oracle.widget";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = X2RS69BS48;
+				CURRENT_PROJECT_VERSION = 6;
+				MARKETING_VERSION = 1.0;
+				SWIFT_VERSION = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
 		};
 /* End XCBuildConfiguration section */
 
@@ -361,6 +476,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		C7CC8395D15E45879D648736 /* Build configuration list for PBXNativeTarget "OracleWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C18C9D1CCEEC42BC875E7A24 /* Debug */,
+				B2EDDB5BA46841388EE1E653 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -377,6 +501,38 @@
 			productName = "CapApp-SPM";
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C336F2726E3044F5A55851A9 /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4197BD45A4FA4C9B8C0C4A65 /* OracleWidget.appex in Copy Files */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Copy Files";
+			dstPath = "";
+			dstSubfolderSpec = 13;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXContainerItemProxy section */
+		BE2E69FCEC6B4D43974220FA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B3B07837C87D45618CD5A695;
+			remoteInfo = "OracleWidget";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		76C6D925577746EFB85B3E5A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B3B07837C87D45618CD5A695 /* "OracleWidget" */;
+			targetProxy = BE2E69FCEC6B4D43974220FA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 	};
 	rootObject = 504EC2FC1FED79650016851F /* Project object */;
 }

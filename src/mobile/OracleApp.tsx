@@ -4,9 +4,14 @@ import { DarkModeProvider } from '../../DarkModeContext';
 import { ProfileProvider } from '../../lib/profile/context';
 import { CollectionsProvider } from '../../lib/collections/context';
 import ChunkErrorBoundary from '../../components/ChunkErrorBoundary';
+import { NativeAccountProvider } from './account/NativeAccountProvider';
 import OracleNavigation, { OracleTabBar } from './OracleNavigation';
+import { useReadingPosition } from './reading/ReaderPreferences';
 const Draw = lazy(() => import('./OracleDrawPage'));
-const Deck = lazy(() => import('../../components/oracle/entry/OracleEntryPage'));
+const Deck = lazy(() => import('./discovery/OracleIndex'));
+const Account = lazy(() => import('./account/OracleAccount'));
+const Journal = lazy(() => import('./journal/OracleJournal'));
+const Home = lazy(() => import('./discovery/OracleHome'));
 const Reading = lazy(() => import('../../components/UniversalLanguageCard'));
 const Profile = lazy(() => import('../../components/OracleProfile'));
 const SharedProfile = lazy(() => import('../../components/SharedProfile'));
@@ -17,13 +22,17 @@ function WebsiteDestination() {
 }
 function OracleRoutes() {
   const { pathname } = useLocation();
+  useReadingPosition(pathname);
   const reading = /^\/universal-language\/\d+$/.test(pathname);
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   const page = pathname === '/draw' ? 'draw' : reading ? 'reading' : pathname.startsWith('/profile/shared/') ? 'shared-profile' : pathname === '/profile' ? 'profile' : pathname === '/the-systems' ? 'systems' : 'deck';
   return <div data-site-shell data-app-page={page} className="oracle-app-shell min-h-screen bg-paper-50 text-wood-900">
     <OracleNavigation key={pathname} />
     <main id="main-content"><ChunkErrorBoundary><Suspense fallback={<div className="oracle-app-loading">Opening Oracle…</div>}><Routes>
-      <Route path="/" element={<Navigate to="/universal-language" replace />} />
+      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="/account" element={<Account />} />
+      <Route path="/journal" element={<Journal />} />
+      <Route path="/home" element={<Home />} />
       <Route path="/universal-language" element={<Deck />} />
       <Route path="/universal-language/:number" element={<Reading />} />
       <Route path="/draw" element={<Draw />} />
@@ -36,5 +45,5 @@ function OracleRoutes() {
   </div>;
 }
 export default function OracleApp() {
-  return <DarkModeProvider><ProfileProvider><CollectionsProvider><OracleRoutes /></CollectionsProvider></ProfileProvider></DarkModeProvider>;
+  return <DarkModeProvider><NativeAccountProvider enabled={import.meta.env.VITE_ORACLE_NATIVE_ACCOUNTS === 'true'}><ProfileProvider><CollectionsProvider><OracleRoutes /></CollectionsProvider></ProfileProvider></NativeAccountProvider></DarkModeProvider>;
 }

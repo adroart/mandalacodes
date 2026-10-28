@@ -20,9 +20,11 @@ interface Props {
   theme: 'light' | 'dark';
   onClose: () => void;
   onOpen: (number: number, cast?: CastResult) => void;
+  introduction?: React.ReactNode;
+  onInteraction?: () => void;
 }
 
-export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
+export default function OracleDrawDialog({ theme, onClose, onOpen, introduction, onInteraction }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const opener = useRef(typeof document !== 'undefined' && document.activeElement instanceof HTMLElement ? document.activeElement : null);
   const [mode, setMode] = useState<'trigrams' | 'coins'>('coins');
@@ -37,6 +39,7 @@ export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
   const throwCoins = () => {
     if (castStarted.current) return;
     castStarted.current = true;
+    onInteraction?.();
     const result = castFree();
     const finish = () => { setCast(result); setCasting(false); };
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) finish();
@@ -73,9 +76,10 @@ export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
   const changed = mode === 'coins' && cast?.changedNumber ? CARD_BY_NUMBER.get(cast.changedNumber) : null;
   const selected = step === 'lower' ? lower : upper;
   const pick = useCallback((trigram: Trigram) => {
+    onInteraction?.();
     if (step === 'lower') { setLower(trigram); setStep('upper'); }
     else setUpper(trigram);
-  }, [step]);
+  }, [step, onInteraction]);
 
 
   return <div className="oracle-draw-backdrop" onClick={onClose}>
@@ -94,6 +98,7 @@ export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
       </div>
         <button className="oracle-draw-close" type="button" aria-label="Close draw a card" onClick={onClose}><X size={20} /></button>
       </header>
+      {!cast && introduction}
       <p className="oracle-draw-sr" role="status" aria-live="polite" aria-atomic="true">{casting ? 'Casting the coins.' : mode === 'coins' && cast && card ? `Currently at Hexagram ${card.number}, ${card.card_name}.${changed ? ` Moving to Hexagram ${changed.number}, ${changed.card_name}.` : ' Begin with this card as it stands.'}` : lower ? `Lower trigram: ${lower.name}. ${upper ? `Upper trigram: ${upper.name}. Your hexagram is ready.` : 'Choose the upper trigram.'}` : ''}</p>
       <div id="draw-method" role="tabpanel" aria-labelledby={`draw-tab-${mode}`} className={`oracle-draw-body ${mode === 'coins' ? 'oracle-draw-coin-mode' : ''}`}>
         {(mode === 'trigrams' || !cast) && <section className="oracle-draw-controls">

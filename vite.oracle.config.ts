@@ -6,6 +6,12 @@ const local = (file: string) => path.resolve(__dirname, file);
 export default defineConfig({
   plugins: [react(), {
     name: 'oracle-native-entry',
+    configureServer(server) {
+      server.middlewares.use((request, _response, next) => {
+        if (request.headers.accept?.includes('text/html') && !request.url?.startsWith('/@')) request.url = '/oracle-app.html';
+        next();
+      });
+    },
     closeBundle() {
       const file = local('dist-oracle/oracle-app.html');
       if (fs.existsSync(file)) fs.renameSync(file, local('dist-oracle/index.html'));

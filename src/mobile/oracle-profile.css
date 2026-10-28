@@ -196,3 +196,10 @@ body.oracle-native .oracle-birth-close {
 }
 .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__name { font-size: 26px; padding-inline: 0; }
 .oracle-app-shell:is([data-app-page="profile"], [data-app-page="shared-profile"]) .pg__gate { font-size: 26px; letter-spacing: 0; font-variant-numeric: tabular-nums; fill: #faf7f0; }
+
+/* Selection stays readable beside the phone's chart without hunting below it. */
+.oracle-app-shell .pg__detail.is-open { position:fixed; z-index:75; bottom:var(--app-bottom-height); left:0; right:0; max-height:42dvh; overflow:auto; padding:18px max(20px,env(safe-area-inset-right)) 18px max(20px,env(safe-area-inset-left)); background:var(--color-paper-50); border-top:1px solid var(--color-wood-300); box-shadow:0 -8px 30px #0002; }
+.oracle-app-shell .pg__detail-close { float:right; min-height:44px; padding:0 10px; background:transparent; border:0; color:var(--color-wood-700); font:14px var(--font-ui); }
+.oracle-app-shell .pg__connections > span { display:block; font:12px var(--font-ui); color:var(--color-wood-600); margin-top:12px; }
+.oracle-app-shell .pg__connections > div { display:flex; flex-wrap:wrap; gap:4px 12px; }
+.oracle-app-shell .pg__connections button { min-height:44px; padding:0; background:transparent; border:0; color:var(--color-bronze-600); font:15px var(--font-ui); text-decoration:underline; text-underline-offset:4px; }

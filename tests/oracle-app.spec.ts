@@ -16,7 +16,9 @@ test('bundled deck, drawing, and reading work without external network', async (
   await page.getByRole('dialog').getByRole('button', { name: 'Cast the coins', exact: true }).click();
   await expect(page.getByRole('button', { name: /^Open card \d+$/ }).first()).toBeVisible();
   await page.getByRole('button', { name: /^Open card \d+$/ }).first().click();
+  await page.getByRole('button', {name:'Read this card →'}).click();
   await expect(page).toHaveURL(/\/universal-language\/\d+$/);
+  await expect(page.locator('.card-reading')).toBeVisible();
   await page.screenshot({ path: 'test-results/oracle-app-draw.png' });
   await page.goto('/universal-language/1');
   await expect(page.locator('img[src="/oracle-art/1.webp"]').first()).toBeVisible();
@@ -89,6 +91,7 @@ test('trigram choices form a circle and preserve lower/upper selection on the ph
   await expect(dialog.getByRole('button', { name: 'Open card 29', exact: true })).toBeInViewport({ ratio: 1 });
   await page.screenshot({ path: 'test-results/oracle-app-trigram-circle.png' });
   await dialog.getByRole('button', { name: 'Open card 29', exact: true }).click();
+  await page.getByRole('button', {name:'Read this card →'}).click();
   await expect(page).toHaveURL(/\/universal-language\/29$/);
 });
 
@@ -102,9 +105,8 @@ for (const size of [{width:375,height:667},{width:430,height:932},{width:932,hei
     await expect(draw).toBeVisible();
     await fits();
     await page.screenshot({path:`mobile/build/layout-deck-${size.width}.png`});
-    await page.getByRole('button',{name:'Enter your birth time',exact:true}).click();
-    await expect(page.getByRole('button',{name:'Close birth time',exact:true})).toBeInViewport({ratio:1});
-    await page.getByRole('button',{name:'Close birth time',exact:true}).click();
+    await page.goto('/profile');
+    await expect(page.getByRole('button',{name:'Build my profile',exact:true})).toBeVisible();
     if (size.width === 430) await page.getByRole('button',{name:'Use light appearance',exact:true}).click();
     await page.getByRole('link',{name:'Explore',exact:true}).click();
     const systems = page.getByRole('navigation',{name:'Explore systems'});
@@ -176,6 +178,9 @@ for (const width of [375, 430]) {
     await expect(page.getByRole('button',{name:'Reset zoom',exact:true})).toHaveText('100%');
     await page.locator('.pg__orb').first().click();
     await expect(page.locator('.pg__detail-name')).toHaveText("Life's Work");
+    await expect(page.getByRole('button',{name:'Close position details'})).toBeInViewport();
+    await expect(page.locator('.pg__connections button').first()).toBeInViewport();
+    await page.screenshot({path:`mobile/build/selected-position-${width}.png`});
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   });
 }
@@ -207,3 +212,43 @@ for (const size of [{width:375,height:667},{width:430,height:932},{width:932,hei
     }
   });
 }
+
+test('question, artwork reveal, reflection and follow-up survive reopening',async({page})=>{
+  await page.goto('/home');
+  await page.getByRole('navigation',{name:'Oracle',exact:true}).getByRole('button',{name:'Draw a card'}).click();
+  await page.getByText('Bring a question (optional)',{exact:true}).click();
+  await page.getByLabel('Your question',{exact:true}).fill('What deserves my attention today?');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.getByRole('button',{name:'Cast the coins',exact:true}).click();
+  await page.getByRole('button',{name:/^Open card \d+$/}).first().click();
+  await expect(page.getByRole('dialog',{name:'Your drawn card'})).toBeVisible();
+  await expect(page.getByText('What deserves my attention today?',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Write a reflection'}).click();
+  await expect(page).toHaveURL(/\/journal\?entry=/);
+  await expect(page.getByText('What deserves my attention today?',{exact:true})).toBeVisible();
+  await page.getByLabel('Your reflection',{exact:true}).fill('I want to make space for patient work.');
+  await page.getByLabel('Add a follow-up',{exact:true}).fill('I returned after a quiet walk.');
+  await page.getByRole('button',{name:'Add follow-up',exact:true}).click();
+  await page.reload();
+  await expect(page.getByLabel('Your reflection',{exact:true})).toHaveValue('I want to make space for patient work.');
+  await expect(page.getByText('I returned after a quiet walk.',{exact:true})).toBeVisible();
+});
+test('reading preferences, focus and position persist',async({page})=>{
+  await page.goto('/universal-language/29');
+  await page.getByRole('button',{name:'Reading preferences'}).click();
+  const dialog=page.getByRole('dialog',{name:'Reading preferences'});
+  await dialog.getByRole('button',{name:'21 point text'}).click();
+  await dialog.getByLabel('More space between lines').check();
+  await dialog.getByRole('button',{name:'Focus on this reading'}).click();
+  await expect(page.getByRole('navigation',{name:'Oracle',exact:true})).not.toBeVisible();
+  await page.getByRole('button',{name:'Exit focus'}).click();
+  await expect(page.getByRole('navigation',{name:'Oracle',exact:true})).toBeVisible();
+  const scroller=page.locator('.card-reading [data-scroll]');
+  await scroller.evaluate(e=>{e.scrollTop=900;});
+  await expect.poll(()=>page.evaluate(()=>Number(localStorage.getItem('oracle.reader.position.v1:29')))).toBeGreaterThan(850);
+  await page.reload();
+  await expect.poll(()=>scroller.evaluate(e=>e.scrollTop)).toBeGreaterThan(850);
+  await page.getByRole('button',{name:'Reading preferences'}).click();
+  await expect(page.getByRole('button',{name:'21 point text'})).toHaveAttribute('aria-pressed','true');
+  await expect(page.getByLabel('More space between lines')).toBeChecked();
+});
