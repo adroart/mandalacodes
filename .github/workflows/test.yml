@@ -117,7 +117,7 @@ jobs:
       - run: npm ci
       # Vite discovers the separate native HTML entry during dependency scans.
       - run: npm ci --prefix mobile
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: npm run build
       # --global-timeout 18m: Playwright stops itself and still reports.
       # --reporter=list,json: the list output stays readable in the log, and
@@ -127,6 +127,12 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_JSON_OUTPUT_NAME: mobile-results.json
+      # Native account regressions use local fonts and mocked auth/reminder bridges.
+      # No full native artwork build or production media downloads are needed.
+      - run: mkdir -p .oracle-public && cp -R public/fonts .oracle-public/
+      - run: npm run test:oracle-account
+        env:
+          CI: true
       # always(): a red suite, a suite cut short by its own budget, and a
       # green one all get counted. This is the only place the lane's result is
       # stated, so it must not be conditional on which way the lane went.
