@@ -80,3 +80,43 @@ for (const width of [320, 375, 430, 1024]) {
     await page.screenshot({path:testInfo.outputPath('account.png'),fullPage:true,scale:'css'});
   });
 }
+
+// Exercise the iPhone-only reminder UI without requesting notification permission.
+// Replace only the native bridge module served by the local test server.
+for (const width of [320, 375, 430]) {
+  for (const reminderState of ['off', 'on', 'denied']) {
+    test(`native reminder controls stay separate at ${width}px when ${reminderState}`,async({page},testInfo)=>{
+      await page.route('**/src/mobile/reminders/reminderBridge.ts',route=>route.fulfill({contentType:'application/javascript',body:`
+        let state={authorization:${JSON.stringify(reminderState==='denied'?'denied':'authorized')},scheduled:${reminderState==='on'},enabled:${reminderState==='on'},hour:9,minute:0};
+        window.reminderCalls=[];
+        export function createReminderBridge(){return {available:true,
+          status:async()=>({...state}),
+          enable:async(hour,minute)=>{window.reminderCalls.push({action:'enable',hour,minute});state={...state,scheduled:true,enabled:true,hour,minute};return {...state};},
+          disable:async()=>{window.reminderCalls.push({action:'disable'});state={...state,scheduled:false,enabled:false};return {...state};},
+          openSettings:async()=>{window.reminderCalls.push({action:'settings'});}
+        };}` }));
+      await page.setViewportSize({width,height:844});
+      await page.goto('/account');
+      const section=page.locator('.oracle-reminder-settings');
+      await expect(section.getByLabel('Local time')).toBeVisible();
+      await section.scrollIntoViewIfNeeded();
+      await assertClearControls(page);
+      const time=section.getByLabel('Local time');
+      // Actual iOS time-field painting also requires physical-device verification.
+      await section.screenshot({path:testInfo.outputPath('reminders.png'),scale:'css'});
+      expect(await page.evaluate(()=>(window as any).reminderCalls)).toEqual([]);
+      if(reminderState==='denied') {
+        await section.getByRole('button',{name:'Open iPhone Settings',exact:true}).click();
+        expect(await page.evaluate(()=>(window as any).reminderCalls)).toEqual([{action:'settings'}]);
+      } else {
+        await time.fill('20:30');
+        await section.getByRole('button',{name:reminderState==='on'?'Save time':'Enable reminder',exact:true}).click();
+        await expect(section.getByRole('status')).toHaveText('Daily reminder saved.');
+        expect(await page.evaluate(()=>(window as any).reminderCalls)).toEqual([{action:'enable',hour:20,minute:30}]);
+        await assertClearControls(page);
+        await section.getByRole('button',{name:'Turn off',exact:true}).click();
+        await expect(section.getByRole('status')).toHaveText('Daily reminder turned off.');
+      }
+    });
+  }
+}
