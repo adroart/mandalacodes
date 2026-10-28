@@ -23,6 +23,10 @@ function WebsiteDestination() {
   return <section className="oracle-app-website"><h1>On Mandala Codes</h1><p>This part of Mandala Codes opens on the website.</p><a href={`https://mandalacodes.com${location.pathname}${location.search}`} target="_blank" rel="noopener noreferrer">Open website ↗</a><Link to="/universal-language">Return to Oracle</Link></section>;
 }
 function OracleRoutes() {
+  useEffect(()=>{
+    const resume=()=>{try{const jobs=JSON.parse(localStorage.getItem('oracle.human.jobs.v1')??'[]');if(Array.isArray(jobs)&&jobs.some(job=>['queued','transcribing','organizing','applying'].includes(job.state)))void import('./authoring/OracleAuthoringPage').then(module=>module.resumePendingHumanAuthoring()).catch(()=>undefined);}catch{/* Audio remains retained if activity metadata needs recovery. */}};
+    resume();const visible=()=>{if(!document.hidden)resume();};window.addEventListener('online',resume);document.addEventListener('visibilitychange',visible);return()=>{window.removeEventListener('online',resume);document.removeEventListener('visibilitychange',visible);};
+  },[]);
   const { pathname } = useLocation();
   useReadingPosition(pathname);
   const reading = /^\/universal-language\/\d+$/.test(pathname);

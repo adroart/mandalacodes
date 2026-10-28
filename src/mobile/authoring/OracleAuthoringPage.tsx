@@ -15,7 +15,9 @@ async function bundledSource(number: number) {
   const markdown = await loader();
   return manuscriptSource(number, `app-manuscript:${await sha256(markdown)}`, markdown);
 }
+import { resumeHumanJobs } from './humanCaptureJobs';
 const services = { loadSource: bundledSource, transcribe: automaticTranscription, propose: automaticProposals };
+export function resumePendingHumanAuthoring(){resumeHumanJobs(services);}
 export default function OracleAuthoringPage({ cardNumber, initialSection, onDismiss }: { cardNumber?: number; initialSection?: string; onDismiss?: () => void } = {}) {
   const { number: routeNumber } = useParams();
   const number = String(cardNumber ?? routeNumber ?? "");

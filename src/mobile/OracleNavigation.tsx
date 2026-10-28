@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Sun, Moon, Share2, Grid3X3, Sparkles, CircleUserRound, Compass, UserRound, Search, BookOpen, Mic } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../DarkModeContext';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
 import { currentReaderSection } from './authoring/readerContext';
+import {humanJobs,subscribeHumanJobs} from './authoring/humanCaptureJobs';
 import OracleAuthoringSheet from './authoring/OracleAuthoringSheet';
 import ReaderPreferences from './reading/ReaderPreferences';
 import OracleShareSheet from './OracleShareSheet';
@@ -11,6 +12,9 @@ export default function OracleNavigation(_props: unknown) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const [voiceJobs,setVoiceJobs]=useState(humanJobs);
+  useEffect(()=>subscribeHumanJobs(()=>setVoiceJobs(humanJobs())),[]);
+  const needsVoiceCheck=voiceJobs.filter(job=>job.state==='attention'||job.state==='failed').length;
   const [shareOpen, setShareOpen] = useState(false);
   const [recordSection, setRecordSection] = useState<string | null>(null);
   const closeRecording = useCallback(() => setRecordSection(null), []);
@@ -22,7 +26,7 @@ export default function OracleNavigation(_props: unknown) {
         {!card && <Link to="/search" aria-label="Search codes"><Search size={20} aria-hidden="true" /></Link>}
         {!card && <Link to="/journal" aria-label="Reading journal"><BookOpen size={20} aria-hidden="true" /></Link>}
         {!card && <Link to="/account" aria-label="Account and backup"><UserRound size={21} aria-hidden="true" /></Link>}
-        {card && <button className="oracle-record-trigger" aria-label="Record a voice rewrite" onClick={event => { event.currentTarget.focus(); setRecordSection(currentReaderSection()); }}><Mic size={17} aria-hidden="true" /><span>Record</span></button>}
+        {card && <button className="oracle-record-trigger" aria-label="Record a voice rewrite" onClick={event => { event.currentTarget.focus(); setRecordSection(currentReaderSection()); }}><Mic size={17} aria-hidden="true" /><span>{needsVoiceCheck?'Check':'Record'}</span></button>}{card&&needsVoiceCheck>0&&<span className="sr-only" role="status">{needsVoiceCheck} recording{needsVoiceCheck===1?' needs':'s need'} your check.</span>}
         {card && <ReaderPreferences cardNumber={card.number} />}
         {card && <button aria-label="Share this code" onClick={() => setShareOpen(true)}><Share2 size={21} aria-hidden="true" /></button>}
         <button onClick={toggleDarkMode} aria-label={isDarkMode ? 'Use light appearance' : 'Use dark appearance'}>{isDarkMode ? <Sun size={21} aria-hidden="true" /> : <Moon size={21} aria-hidden="true" />}</button>
