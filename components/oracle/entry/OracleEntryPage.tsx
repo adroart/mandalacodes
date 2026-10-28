@@ -94,7 +94,7 @@ const HEX_BACK_CSS = ALL_CARDS.map((card) => {
 const Overlay: React.FC<{ onClose: () => void; width: string; children: React.ReactNode; label: string }> = ({ onClose, width, children, label }) => {
   const ref = useRef<HTMLDivElement>(null);
   useDialogFocus(ref, true, onClose);
-  return <div onClick={onClose} className="fixed inset-0 z-[80] flex items-center justify-center p-6 overflow-auto bg-[rgba(30,26,22,0.55)] [backdrop-filter:blur(5px)]">
+  return <div onClick={onClose} className="oracle-entry-overlay fixed inset-0 z-[80] flex items-center justify-center p-6 overflow-auto bg-[rgba(30,26,22,0.55)] [backdrop-filter:blur(5px)]">
     <div ref={ref} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={(e) => e.stopPropagation()} className="bg-paper-50 shadow-[0_24px_60px_rgba(30,26,22,0.4)] cursor-default" style={{ width }}>
       {children}
     </div>
@@ -270,7 +270,7 @@ ${cell}:has(> span button)::after{opacity:0}`;
         hasCodes={hasCodes}
         onEnterReading={onEnterReading}
         onCardOpened={onCardOpened}
-        onDrawCard={() => setDrawOpen(true)}
+        onDrawCard={() => import.meta.env.VITE_ORACLE_APP ? navigate('/draw', { state: { returnTo: '/universal-language' } }) : setDrawOpen(true)}
         onOpenSystems={() => setSystemsOpen(true)}
         onOpenGrid={() => {
           // Always open the sign-in / birth-moment overlay: this is where you

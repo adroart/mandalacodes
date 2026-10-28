@@ -44,3 +44,7 @@ oracle/_packets/
 
 # printed workbook output (npm run workbook)
 workbook/
+
+# Bundled personal Oracle app
+dist-oracle/
+.oracle-public/

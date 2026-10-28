@@ -24,7 +24,8 @@ export default defineConfig({
   // runner crashes the whole suite.
   // Production service-worker cases run in playwright.pwa.config.ts. Running
   // them here would wait forever for a worker that Vite dev never installs.
-  testIgnore: ['**/unit/**', '**/offline-qr-reading.spec.ts', '**/pwa-learn.spec.ts', '**/pwa-navigation.spec.ts'],
+  // Bundled native app specs run with their dedicated Oracle configs.
+  testIgnore: ['**/unit/**', '**/oracle-app.spec.ts', '**/oracle-authoring-app.spec.ts', '**/offline-qr-reading.spec.ts', '**/pwa-learn.spec.ts', '**/pwa-navigation.spec.ts'],
   fullyParallel: false,
   retries: 0,
   reporter: 'list',

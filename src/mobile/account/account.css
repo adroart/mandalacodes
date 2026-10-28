@@ -1,0 +1,21 @@
+.oracle-account-page { max-width:640px; margin-inline:auto; padding:calc(var(--nav-height) + 24px) 22px 28px; color:var(--color-wood-900); }
+.oracle-account-page h1 { font:500 34px/1.1 var(--font-display); margin:4px 0 12px; }
+.oracle-account-page h2 { font:500 26px/1.2 var(--font-display); margin:0 0 12px; }
+.oracle-account-page p { font:16px/1.5 var(--font-ui); margin:8px 0 16px; overflow-wrap:anywhere; }
+.oracle-account-page .oracle-account-eyebrow { font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--color-bronze-600); margin:0; }
+.oracle-account-page section { border-top:1px solid var(--color-wood-200); padding-top:22px; margin-top:24px; }
+.oracle-account-page .oracle-account-detail { font-size:14px; color:var(--color-wood-600); }
+.oracle-account-page button,.oracle-account-page a { min-height:44px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-wood-900); font:500 15px var(--font-ui); text-decoration:none; }
+.oracle-account-page button { background:transparent; border:1px solid var(--color-wood-300); border-radius:8px; padding:10px 14px; cursor:pointer; }
+.oracle-account-page button:disabled { opacity:.5; cursor:default; }
+.oracle-account-page .oracle-account-primary { background:var(--color-wood-900); color:var(--color-paper-50); border-color:var(--color-wood-900); }
+.oracle-account-page .oracle-account-text { border:0; text-decoration:underline; padding-inline:0; }
+.oracle-account-page label { display:block; font:500 15px var(--font-ui); margin:12px 0 6px; }
+.oracle-account-page input:not([type=file]),.oracle-account-page textarea { box-sizing:border-box; width:100%; padding:12px; border:1px solid var(--color-wood-300); border-radius:8px; color:var(--color-wood-900); background:var(--color-paper-50); font:16px/1.4 var(--font-ui); }
+.oracle-account-page textarea { resize:vertical; }
+.oracle-account-page form>button { margin:12px 8px 0 0; }
+.oracle-account-actions { display:flex; gap:10px; flex-wrap:wrap; }
+.oracle-account-page .oracle-account-file { font-size:14px; }
+.oracle-account-file input { display:block; max-width:100%; padding-block:10px; }
+.oracle-account-preview { border-left:2px solid var(--color-bronze-600); padding-left:14px; margin-top:16px; }
+.oracle-account-preview button { margin-right:8px; }

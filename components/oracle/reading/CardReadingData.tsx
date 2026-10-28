@@ -224,7 +224,7 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
       reading={reading}
       artwork={artwork}
       artFloatsFree={ulCardArtFloatsFree(card.number)}
-      topNav={<Navigation />}
+      topNav={import.meta.env.VITE_ORACLE_APP ? <></> : <Navigation />}
     />
   );
 };

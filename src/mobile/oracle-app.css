@@ -1,0 +1,146 @@
+:root { --nav-height: calc(52px + env(safe-area-inset-top, 0px)); }
+body { overscroll-behavior-y: none; }
+.oracle-app-nav { position: fixed; z-index: 70; inset: 0 0 auto; height: var(--nav-height); padding: env(safe-area-inset-top, 0px) 14px 0; display: flex; align-items: center; justify-content: space-between; background: var(--color-paper-50); border-bottom: 1px solid var(--color-wood-200); }
+.oracle-app-nav nav { display: flex; align-items: center; gap: 6px; }
+.oracle-app-nav a, .oracle-app-nav button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; color: var(--color-wood-700); font: 600 13px var(--font-ui); text-decoration: none; border: 0; background: none; }
+.oracle-app-nav a[aria-current] { color: var(--color-bronze-600); box-shadow: inset 0 -2px var(--color-bronze-600); }
+.oracle-app-nav button { font-size: 23px; width: 44px; }
+.oracle-app-loading, .oracle-app-website { padding: calc(var(--nav-height) + 36px) 24px 40px; }
+.oracle-app-website a { display: block; padding: 14px 0; }
+.oracle-app-shell { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.oracle-app-shell main > main { padding-top: calc(var(--nav-height) + 24px); }
+.oracle-app-shell main > main > header { margin-bottom: 24px; }
+.oracle-app-shell main > main > header > div { flex-wrap: wrap; gap: 12px !important; }
+.oracle-app-shell main > main > header h1 { font-size: 28px !important; }
+
+/* Keep the phone's reading actions within the Oracle. */
+.oracle-app-shell [data-bar-tab="family"], .oracle-app-shell [data-bar-tab="piece"] { display: none !important; }
+.oracle-app-share-backdrop { position: fixed; inset: 0; z-index: 400; background: #0008; display: flex; align-items: flex-end; }
+.oracle-app-share { width: 100%; padding: 24px 24px calc(16px + env(safe-area-inset-bottom)); background: var(--color-paper-50); color: var(--color-wood-900); border-radius: 18px 18px 0 0; }
+.oracle-app-share h2 { font: 30px var(--font-display); margin: 0 0 8px; }
+.oracle-app-share button { display: block; width: 100%; min-height: 48px; margin-top: 8px; border: 1px solid var(--color-wood-300); background: transparent; color: inherit; font: 16px var(--font-ui); border-radius: 8px; }
+
+/* Phone chrome uses the available width without entering the camera or home areas. */
+.oracle-native { -webkit-text-size-adjust:100%; }
+.oracle-app-nav { padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right)); }
+.oracle-app-nav nav { flex:1; gap:2px; }
+.oracle-app-nav a { min-width:64px; font-size:15px; padding-inline:12px; }
+.oracle-app-nav button { flex-shrink:0; }
+.oracle-native :focus-visible { outline:2px solid var(--color-bronze-600); outline-offset:3px; }
+.oracle-native input, .oracle-native select, .oracle-native textarea { font-size:16px; caret-color:var(--color-bronze-600); }
+.oracle-native ::selection { background:var(--color-bronze-200); color:var(--color-wood-900); }
+.oracle-app-shell { padding-inline:env(safe-area-inset-left) env(safe-area-inset-right); }
+
+/* The invocation stays intact, with the draw and the deck closer at hand. */
+.oracle-app-shell[data-app-page=deck] .oe-root > [data-theme] > header { padding:24px 20px 12px !important; background:var(--bg) !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root > [data-theme] > header h1 { font-size:34px !important; line-height:1.1 !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root > [data-theme] > header h1 + p { font-size:11px !important; letter-spacing:.14em !important; margin-bottom:14px !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root > [data-theme] > header > div > div { gap:8px !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root > [data-theme] > header > div > div > p { font-size:16px !important; line-height:1.4 !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root > [data-theme] > header * { animation:none !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=railrow] { gap:10px !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=actionrow] > button { min-height:48px; padding:12px 20px !important; font-size:14px !important; letter-spacing:.12em !important; border-radius:8px !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=energyband] { flex-direction:row; gap:10px !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=energyband] > button { flex:1 1 0 !important; gap:10px !important; padding:12px 10px !important; border-radius:8px !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=energyband] > button::after { display:none; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=energyband] > button > span:first-child { width:24px !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=energyband] > button > span:last-child { min-width:0; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=energyband] span[style*="15px"] { white-space:normal !important; font-size:17px !important; line-height:1.15 !important; min-height:40px; display:flex; align-items:center; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=birthbtn] { min-height:48px; padding:12px; border-radius:8px; font-size:13px; letter-spacing:.1em; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=birthsub] { margin-top:7px; font-size:14px; line-height:1.4; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=ichgrid] { padding-top:16px !important; row-gap:14px !important; animation:none !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=cardnum] { font-size:15px; }
+/* Explicit faces avoid WebKit painting the hidden artwork through the 3D back. */
+.oracle-app-shell .oe-root [data-oe=ichgrid] [style*="preserve-3d"] { transform:none !important; }
+.oracle-app-shell .oe-root [data-oe=ichgrid] [style*="preserve-3d"] > span { transform:none !important; }
+.oracle-app-shell .oe-root [data-oe=ichgrid] [style*="preserve-3d"] > span:last-child { visibility:hidden; }
+.oracle-app-shell .oe-root [data-oe=ichgrid] [style*="preserve-3d"][style*="rotateY(180deg)"] > span:first-child { visibility:hidden; }
+.oracle-app-shell .oe-root [data-oe=ichgrid] [style*="preserve-3d"][style*="rotateY(180deg)"] > span:last-child { visibility:visible; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=ichgrid] button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:8px; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=ichgrid] [data-oe-num] > div { min-height:44px; }
+.oracle-app-shell[data-app-page=deck] .oe-root [data-oe=ichgrid] [data-oe-num] > div button { min-height:44px; min-width:44px; }
+.oracle-app-shell[data-app-page=deck] .oe-root > [data-theme] > footer { margin-top:28px !important; padding:20px 18px calc(24px + env(safe-area-inset-bottom)) !important; }
+.oracle-app-shell[data-app-page=deck] .oe-root > [data-theme] > footer button { min-height:44px; }
+
+/* Explore keeps its section links near the title and readable while scrolling. */
+.oracle-app-shell[data-app-page=systems] .oracle-systems > div { display:flex; flex-direction:column; padding:calc(var(--nav-height) + 24px) 20px 32px; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems > div > p:first-child { margin-bottom:10px; letter-spacing:.15em; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems h1 { order:1; font-size:34px; margin-bottom:14px; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems nav { order:2; position:sticky; top:var(--nav-height); z-index:5; display:grid; grid-template-columns:1fr 1fr 1.35fr; gap:4px; margin:0 -4px 20px; padding:4px 0; background:var(--color-paper-50); }
+.oracle-app-shell[data-app-page=systems] .oracle-systems nav a { display:flex; justify-content:center; align-items:center; min-height:44px; padding:4px; font-size:12px; letter-spacing:.04em; white-space:nowrap; color:var(--color-wood-800); }
+.oracle-app-shell[data-app-page=systems] .oracle-systems > div > p:not(:first-child) { order:3; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems > div > p:nth-of-type(2) { font-size:18px; line-height:1.5; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems > div > p:nth-of-type(3) { margin-top:18px; font-size:14px; line-height:1.5; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems section { order:4; padding-top:32px; scroll-margin-top:calc(var(--nav-height) + 76px); }
+.oracle-app-shell[data-app-page=systems] .oracle-systems section > p:first-child { margin-bottom:10px; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems section h2 { font-size:29px; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems section > div { margin-top:20px; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems .space-y-5 { font-size:17px; line-height:1.6; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems section:last-child { margin-top:32px; }
+.oracle-app-shell[data-app-page=systems] .oracle-systems section:last-child > a { display:flex; align-items:center; min-height:44px; margin-top:20px; letter-spacing:.12em; }
+
+/* Sheets stay dismissible on short screens and clear the home indicator. */
+.oracle-app-share-backdrop { padding-top:max(12px,env(safe-area-inset-top)); padding-inline:env(safe-area-inset-left) env(safe-area-inset-right); }
+.oracle-app-share { max-width:560px; max-height:100%; overflow-y:auto; margin-inline:auto; padding:20px 20px calc(16px + env(safe-area-inset-bottom)); }
+.oracle-app-share h2 { font-size:30px; line-height:1.1; text-wrap:balance; }
+.oracle-app-share p { font-size:16px; line-height:1.45; margin:10px 0 16px; }
+.oracle-app-share button:first-of-type { background:var(--color-wood-900); color:var(--color-paper-50); border-color:var(--color-wood-900); }
+.oracle-app-share p[role=status]:empty { margin:0; }
+.oracle-app-shell .oracle-entry-overlay { padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
+.oracle-app-shell .oracle-entry-overlay [role=dialog] { max-width:100%; max-height:calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y:auto; border-radius:12px; }
+.oracle-app-shell .oracle-entry-overlay [role=dialog] > div { padding:20px; }
+.oracle-app-shell .oracle-entry-overlay [role=dialog] h2 { font-size:30px; }
+.oracle-app-shell .oracle-entry-overlay [role=dialog] button, .oracle-app-shell .oracle-entry-overlay [role=dialog] a { min-height:44px; display:inline-flex; align-items:center; }
+.oracle-app-shell .oracle-entry-overlay [role=dialog] .text-sm { font-size:16px; }
+@media(max-width:359px) {
+  .oracle-app-nav a { padding-inline:8px; font-size:14px; }
+  .oracle-app-shell[data-app-page=deck] .oe-root [data-oe=energyband] > button { flex-direction:column; align-items:flex-start; gap:6px !important; }
+}
+@media(orientation:landscape) and (max-height:500px) {
+  .oracle-app-shell[data-app-page=deck] .oe-root > [data-theme] > header { padding-top:16px !important; }
+  .oracle-app-shell .oracle-draw-backdrop { padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
+  .oracle-app-shell .oracle-draw { max-height:calc(100dvh - 16px); height:calc(100dvh - 16px); }
+}
+.oracle-app-shell[data-app-page=systems] .oracle-systems .text-wood-500 { color:var(--color-wood-700); }
+
+/* One permanent destination bar across the native app. */
+:root { --app-bottom-height:calc(61px + env(safe-area-inset-bottom, 0px)); }
+.oracle-app-shell { padding-bottom:var(--app-bottom-height); }
+.oracle-app-tools { display:flex; align-items:center; }
+.oracle-app-nav .oracle-app-brand { font:500 26px var(--font-display); padding-inline:8px; }
+.oracle-app-tabs { position:fixed; z-index:70; inset:auto 0 0; height:var(--app-bottom-height); display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); padding:0 max(8px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px,env(safe-area-inset-left)); background:var(--color-paper-50); border-top:1px solid var(--color-wood-200); }
+.oracle-app-tabs a,.oracle-app-tabs button { display:flex; flex-direction:column; gap:4px; justify-content:center; align-items:center; min-height:60px; color:var(--color-wood-700); font:500 12px var(--font-ui); text-decoration:none; border:0; background:transparent; }
+.oracle-app-tabs [aria-current] { color:var(--color-bronze-600); box-shadow:inset 0 2px currentColor; }
+/* Drawing is a dedicated screen with the same paper, ink and safe areas. */
+.oracle-app-shell .oe-root .oracle-draw-backdrop { padding:0; }
+.oracle-app-shell .oe-root .oracle-draw { width:100%; height:100dvh; max-height:100dvh; border-radius:0; box-shadow:none; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.oracle-app-shell .oracle-draw-body { width:100%; max-width:760px; margin-inline:auto; }
+.oracle-app-shell .oracle-draw-header { min-height:56px; }
+.oracle-app-shell .oracle-draw-controls { overflow:visible; flex-shrink:0; }
+.oracle-app-shell .oracle-draw-trigrams { width:min(300px,100%); }
+.oracle-app-shell .oracle-draw-help { font-size:15px; }
+.oracle-app-shell .oracle-draw-tabs button { font-size:15px; }
+.oracle-app-shell .oracle-draw-coin-mode .oracle-draw-controls { padding-top:clamp(28px,8dvh,72px); }
+
+.oracle-app-shell .oe-root .oracle-draw-tabs, .oracle-app-shell .oe-root .oracle-draw-tabs button { animation:none !important; opacity:1; transform:none; }
+.oracle-draw-intention { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 12px; padding:6px 16px; border-bottom:1px solid var(--line); font:14px var(--font-ui); flex-shrink:0; }
+.oracle-draw-intention details { flex:1; min-width:170px; }
+.oracle-draw-intention summary { cursor:pointer; min-height:44px; display:flex; align-items:center; color:var(--ink2); }
+.oracle-draw-intention textarea { display:block; width:100%; padding:10px; border:1px solid var(--line2); border-radius:8px; background:var(--bg); color:var(--ink); margin-bottom:8px; resize:vertical; }
+.oracle-quick-draw { display:flex; align-items:center; gap:6px; min-height:44px; color:var(--ink2); font-size:12px; }
+.oracle-quick-draw input { width:18px; height:18px; accent-color:var(--accent); }
+.oracle-draw-error { position:fixed; bottom:max(12px,env(safe-area-inset-bottom)); left:12px; right:12px; z-index:2200; background:var(--color-paper-50); color:var(--color-wood-900); border:1px solid var(--color-bronze-600); border-radius:8px; padding:16px; }
+.oracle-card-reveal { position:fixed; inset:0; z-index:2100; background:var(--color-paper-50); color:var(--color-wood-900); display:flex; flex-direction:column; align-items:center; overflow:auto; padding:max(12px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left)); }
+.oracle-card-reveal header { display:flex; align-items:center; justify-content:space-between; width:100%; min-height:48px; font:14px var(--font-ui); }
+.oracle-card-reveal button { min-height:48px; border:0; background:transparent; color:inherit; padding:10px 16px; font:16px var(--font-ui); }
+.oracle-card-reveal img { width:min(100%,48dvh,480px); aspect-ratio:1; object-fit:contain; margin:16px auto; border-radius:10px; animation:oracle-reveal-image .65s ease-out both; }
+.oracle-card-reveal h1 { font:500 clamp(30px,8vw,44px)/1.1 var(--font-display); text-align:center; margin:4px 0 8px; }
+.oracle-card-reveal p { margin:6px auto 14px; max-width:38ch; text-align:center; font:18px/1.4 var(--font-reading); }
+.oracle-card-reveal .oracle-reveal-question { font-size:15px; color:var(--color-wood-600); }
+.oracle-card-reveal > div { display:flex; flex-direction:column; width:min(100%,400px); margin-top:auto; }
+.oracle-card-reveal .oracle-reveal-read { background:var(--color-wood-900); color:var(--color-paper-50); border-radius:8px; }
+@keyframes oracle-reveal-image { from {opacity:0; transform:translateY(8px) scale(.97);} to {opacity:1;transform:none;} }
+@media(prefers-reduced-motion:reduce) { .oracle-card-reveal img {animation:none;} }
+
+.oracle-app-tools > a { min-width:44px; width:44px; padding:0; }
+.od-today-hexagram { background:var(--color-paper-100); color:var(--color-bronze-600); min-height:180px; }

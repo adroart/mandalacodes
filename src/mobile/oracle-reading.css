@@ -1,0 +1,142 @@
+/* Native reader: legible teaching text and six reachable lens tabs on a phone.
+   The imported reader owns inline layout, so these overrides stay in the app. */
+.oracle-app-shell[data-app-page="reading"] .card-reading--mobile [data-jumpbar] {
+  height: 53px !important;
+}
+.oracle-app-shell[data-app-page="reading"] .card-reading--mobile [data-pills] {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  min-height: 52px !important;
+  padding: 0 4px !important;
+  gap: 0 !important;
+  overflow: visible;
+}
+.oracle-app-shell[data-app-page="reading"] .card-reading--mobile [data-nav] {
+  min-width: 44px !important;
+  min-height: 52px !important;
+  padding: 4px 2px !important;
+  font-size: 12px !important;
+  line-height: 1.15;
+  letter-spacing: .015em !important;
+  white-space: normal !important;
+  transform: none !important;
+}
+.oracle-app-shell[data-app-page="reading"] .card-reading--mobile [data-nav]:not([data-nav="relations"])::before {
+  display: none !important;
+}
+.oracle-app-shell[data-app-page="reading"] .card-reading--mobile [data-nav="relations"] {
+  font-size: 0 !important;
+}
+.oracle-app-shell[data-app-page="reading"] .card-reading--mobile [data-nav="relations"]::before {
+  width: 20px !important;
+  height: 20px !important;
+}
+.oracle-app-shell[data-app-page="reading"] .card-reading--mobile [data-nav][aria-current="true"] {
+  box-shadow: inset 0 -2px var(--accent-d);
+}
+.oracle-app-shell[data-app-page="reading"] .card-reading--mobile [data-scroll] > div:has(> div > [data-artparallax]) {
+  padding: 16px 20px 0 !important;
+}
+.oracle-app-shell[data-app-page="reading"] .card-reading--mobile [data-scroll] > div > div:has(> [data-artparallax]) {
+  width: min(100%, 38dvh, 360px) !important;
+  margin-inline: auto;
+  border-radius: 8px !important;
+}
+.oracle-app-shell[data-app-page="reading"] .card-reading__designed-header [data-sec="ul"] {
+  --read-pad: 20px;
+  --hero-size: clamp(30px, 8vw, 38px);
+  --kw-size: 19px;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading section[data-chapter] > div {
+  padding: 28px 22px 36px !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading section[data-chapter] > div > header {
+  margin-bottom: 24px !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading section[data-chapter] header button {
+  gap: 10px !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading section[data-chapter] header [data-glyph] {
+  font-size: 50px !important;
+  max-width: 52px;
+  max-height: 52px;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading section[data-chapter] div[style*="flex-direction: column"] > p {
+  font-size: 17px !important;
+  line-height: 1.65 !important;
+}
+/* Paragraphs remain immediately readable after a tab jump or a fast swipe. */
+.oracle-app-shell[data-app-page="reading"] .eb-reading [data-oracle-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading .ul-iching-rows [data-iv] {
+  padding: 14px 20px !important;
+  gap: 12px !important;
+  min-height: 56px;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading .ul-iching-rows [data-iv] > span:first-child {
+  width: 54px !important;
+  letter-spacing: .08em !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading .ul-iching-rows [data-iv] > span:last-child {
+  font-size: 11px !important;
+  letter-spacing: .06em !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading .ul-ji > div {
+  width: 100% !important;
+  padding: 20px !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading .ul-gk-spectrum-nav {
+  margin-bottom: 18px !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading .ul-gk-spectrum-nav button {
+  min-height: 72px;
+  padding-block: 12px !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading [role="dialog"][aria-label="About this system"] {
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)) !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading [role="dialog"][aria-label="About this system"] > div {
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 22px !important;
+  border-radius: 12px;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading [role="dialog"][aria-label="About this system"] > div > div > p {
+  font-size: 17px !important;
+  line-height: 1.6 !important;
+}
+.oracle-app-shell[data-app-page="reading"] .eb-reading [role="dialog"] button {
+  min-height: 44px;
+}
+.oracle-app-shell[data-app-page="reading"] .card-reading--mobile > section > div > footer [data-bar-tab] {
+  min-height: 54px;
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .oracle-app-shell[data-app-page="reading"] .card-reading--mobile [data-scroll] > div > div:has(> [data-artparallax]) {
+    width: min(42dvh, 240px) !important;
+  }
+}
+/* Keep the landscape action bar consistent with the phone's portrait reader. */
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop .dcw-cardreadingdesktop-h3,
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop .dcw-cardreadingdesktop-h6 { display:none !important; }
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop [data-nav] {
+  min-width:44px;
+  min-height:48px;
+  transform:none !important;
+}
+/* Landscape keeps a full-height touch rail even after scrolling a chapter. */
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop [data-jumpbar] { height:49px !important; }
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop [data-scroll],
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop aside,
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop [data-grain] { top:49px !important; }
+
+/* The app bar replaces the reader's website destinations in both orientations. */
+.oracle-app-shell[data-app-page="reading"] .card-reading > section { min-height:calc(var(--app-vh,100dvh) - var(--app-bottom-height)); }
+.oracle-app-shell[data-app-page="reading"] .card-reading > section > div { height:calc(var(--app-vh,100dvh) - var(--app-bottom-height)) !important; }
+.oracle-app-shell[data-app-page="reading"] .card-reading > section > div > footer,
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop > section > div > header { display:none !important; }
+.oracle-app-shell[data-app-page="reading"] .card-reading--desktop > section > div { padding-top:var(--nav-height); }

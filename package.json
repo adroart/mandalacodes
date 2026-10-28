@@ -35,7 +35,9 @@
     "lint:slop": "node scripts/lint-slop.mjs",
     "workbook": "tsx scripts/oracle-workbook.ts",
     "progress": "node scripts/card-progress.mjs",
-    "card:gate": "node scripts/card-gate.mjs"
+    "card:gate": "node scripts/card-gate.mjs",
+    "build:oracle": "tsx scripts/build-oracle-app.ts",
+    "test:oracle-app": "playwright test --config playwright.oracle-app.config.ts"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",

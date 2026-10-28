@@ -26,7 +26,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T;
 }
 
-export const getReflectionCapability = () => request<{ ok: true; admin: true }>('/api/oracle/reflections/capability');
+export const getReflectionCapability = () => import.meta.env.VITE_ORACLE_APP === 'true'
+  ? Promise.reject(new ReflectionApiError(403, 'Recording is available on the website.'))
+  : request<{ ok: true; admin: true }>('/api/oracle/reflections/capability');
 
 export async function createReflectionSession(id: string, hexagramNumber: number): Promise<ReflectionSession> {
   const body = await request<{ session: ReflectionSession }>('/api/oracle/reflections/sessions', {
