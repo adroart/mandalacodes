@@ -1,5 +1,5 @@
 .oe-root .oracle-draw-backdrop { position:fixed; inset:0; z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(21,17,14,.7); }
-.oracle-draw { display:flex; flex-direction:column; width:min(700px,100%); height:min(560px,calc(100dvh - 40px)); max-height:calc(100dvh - 40px); overflow:hidden; overscroll-behavior:contain; background:var(--bg2); color:var(--ink); border-radius:12px; box-shadow:0 24px 60px rgba(21,17,14,.35); font-family:var(--font-reading); }
+.oracle-draw { display:flex; flex-direction:column; width:min(700px,100%); height:min(620px,calc(100dvh - 40px)); max-height:calc(100dvh - 40px); overflow:hidden; overscroll-behavior:contain; background:var(--bg2); color:var(--ink); border-radius:12px; box-shadow:0 24px 60px rgba(21,17,14,.35); font-family:var(--font-reading); }
 .oracle-draw button { cursor:pointer; font-family:var(--font-ui); color:inherit; transition:background-color .15s,color .15s,border-color .15s; }
 .oracle-draw button:focus-visible,.oracle-draw-cast-result:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
 .oracle-draw-cast-result:focus { outline-offset:-5px; }
@@ -21,8 +21,10 @@
 .oracle-draw-steps button[aria-current=step] { border-bottom:2px solid var(--accent); }
 .oracle-draw-steps span { display:block; font-size:12px; color:var(--ink2); margin-bottom:4px; }
 .oracle-draw-steps strong { font-size:16px; font-weight:500; }
-.oracle-draw-trigrams { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
-.oracle-draw-trigrams button { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-width:0; min-height:82px; border:1px solid var(--line2); border-radius:5px; background:transparent; padding:10px 2px; font-size:13px; }
+.oracle-draw-trigrams { position:relative; width:min(280px,100%); aspect-ratio:1; flex-shrink:0; margin-inline:auto; }
+.oracle-draw-trigrams::before { content:""; position:absolute; inset:13%; border:1px solid var(--line2); border-radius:50%; pointer-events:none; }
+.oracle-draw-wheel-center { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; color:var(--ink2); font-size:13px; }
+.oracle-draw-trigrams button { position:absolute; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; width:64px; height:64px; min-height:44px; border:1px solid transparent; border-radius:50%; background:var(--bg2); padding:4px 0; font-size:12px; }
 .oracle-draw-trigrams button:hover { background:var(--surface); }
 .oracle-draw-trigrams button[aria-pressed=true] { background:var(--surface); border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
 .oracle-draw-selected { position:absolute; top:4px; right:4px; }
@@ -71,8 +73,8 @@
 @keyframes oracle-draw-before { from { opacity:1; transform:scaleY(1); } to { opacity:0; transform:scaleY(0); } }
 @keyframes oracle-draw-after { from { opacity:0; transform:scaleY(0); } to { opacity:1; transform:scaleY(1); } }
 @media(max-width:600px) {
-  .oe-root .oracle-draw-backdrop { padding:12px; }
-  .oracle-draw { height:min(520px,calc(100dvh - 24px)); max-height:calc(100dvh - 24px); }
+  .oe-root .oracle-draw-backdrop { padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom)); }
+  .oracle-draw { height:min(620px,calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom))); max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
   .oracle-draw-header { padding:6px 16px; gap:8px; }
   .oracle-draw-header h2 { font-size:29px; }
   .oracle-draw-tabs { padding:0; gap:20px; }
@@ -83,7 +85,6 @@
   .oracle-draw-help { font-size:13px; margin-bottom:12px; }
   .oracle-draw-steps { margin-bottom:12px; }
   .oracle-draw-steps button { min-height:44px; padding-bottom:6px; }
-  .oracle-draw-trigrams button { min-height:62px; gap:7px; font-size:12px; }
   .oracle-draw-preview { flex-shrink:0; flex-direction:row; gap:14px; padding:14px 16px; }
   .oracle-draw-figure { flex-shrink:0; gap:2px; margin:0; }
   .oracle-draw-result { min-width:0; text-align:left; }
@@ -112,7 +113,10 @@
 .oracle-draw-direction { grid-column:2; grid-row:3; align-self:center; justify-self:center; color:var(--accentDeep); }
 /* The selection always occupies one six-line frame, with the same geometry as a cast. */
 .oracle-draw[data-method=trigrams] .oracle-draw-body { flex:1; }
-.oracle-draw[data-method=trigrams] .oracle-draw-controls h3 { min-height:29px; }
+.oracle-draw[data-method=trigrams] .oracle-draw-controls { padding:16px; }
+.oracle-draw[data-method=trigrams] .oracle-draw-steps { margin-bottom:8px; }
+.oracle-draw[data-method=trigrams] .oracle-draw-controls h3 { min-height:29px; margin-bottom:4px; }
+.oracle-draw[data-method=trigrams] .oracle-draw-help { margin-bottom:8px; }
 .oracle-draw-selection { position:relative; display:block; width:88px; height:90px; margin:0 0 20px; color:var(--accentDeep); flex-shrink:0; }
 .oracle-draw-selection > svg { display:block; width:88px; height:90px; }
 .oracle-draw-selection .is-unfilled { opacity:.13; }
@@ -134,18 +138,17 @@
   .oracle-draw[data-method=trigrams] .oracle-draw-result { grid-template-rows:18px 62px 34px 46px; gap:5px; }
   .oracle-draw[data-method=trigrams] .oracle-draw-result h3 { font-size:22px; }
 }
-/* On phones the whole selection fits as one fixed composition. */
+/* Keep the wheel square; short screens scroll the body without shrinking targets. */
 @media(max-width:600px) {
-  .oracle-draw[data-method=trigrams] .oracle-draw-body { overflow:hidden; }
-  .oracle-draw[data-method=trigrams] .oracle-draw-controls { display:flex; flex-direction:column; flex:1 0 252px; min-height:252px; padding:10px 16px; overflow:visible; }
+  .oracle-draw[data-method=trigrams] .oracle-draw-body { overflow-y:auto; }
+  .oracle-draw[data-method=trigrams] .oracle-draw-controls { display:flex; flex-direction:column; flex:1 0 auto; min-height:0; padding:10px 16px; overflow:visible; }
   .oracle-draw[data-method=trigrams] .oracle-draw-steps { margin-bottom:6px; gap:10px; }
   .oracle-draw[data-method=trigrams] .oracle-draw-steps button { display:flex; align-items:center; justify-content:space-between; gap:5px; height:44px; min-height:44px; padding:0 0 4px; }
   .oracle-draw[data-method=trigrams] .oracle-draw-steps span { margin:0; font-size:11px; }
   .oracle-draw[data-method=trigrams] .oracle-draw-steps strong { font-size:14px; }
   .oracle-draw[data-method=trigrams] .oracle-draw-controls h3 { min-height:22px; font-size:19px; line-height:22px; margin:0 0 4px; }
   .oracle-draw[data-method=trigrams] .oracle-draw-help { font-size:12px; line-height:16px; margin:0 0 8px; }
-  .oracle-draw[data-method=trigrams] .oracle-draw-trigrams { grid-template-rows:60px 60px; flex-shrink:0; gap:8px; height:128px; min-height:128px; overflow:visible; padding:0; }
-  .oracle-draw[data-method=trigrams] .oracle-draw-trigrams button { height:60px; min-height:60px; padding:6px 2px; gap:5px; }
+  .oracle-draw[data-method=trigrams] .oracle-draw-trigrams { width:min(260px,100%); }
   .oracle-draw[data-method=trigrams] .oracle-draw-trigrams button > svg:not(.oracle-draw-selected) { width:34px; height:23px; }
   .oracle-draw[data-method=trigrams] .oracle-draw-preview { height:168px; padding:10px 16px; gap:12px; }
   .oracle-draw[data-method=trigrams] .oracle-draw-result { grid-template-rows:18px 44px 28px 44px; gap:4px; }

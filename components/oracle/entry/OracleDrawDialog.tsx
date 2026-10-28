@@ -105,7 +105,8 @@ export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
             <h3>{step === 'lower' ? 'Choose the lower trigram' : 'Choose the upper trigram'}</h3>
             <p className="oracle-draw-help">Pick the bottom three lines, then the top.</p>
             <div className="oracle-draw-trigrams" role="group" aria-label={`${step === 'lower' ? 'Lower' : 'Upper'} trigram choices`}>
-              {TRIGRAMS.map(trigram => <button key={trigram.symbol} type="button" aria-label={trigram.name} aria-pressed={selected?.symbol === trigram.symbol} onClick={() => pick(trigram)}>
+              <span className="oracle-draw-wheel-center" aria-hidden="true">{step === 'lower' ? 'Lower' : 'Upper'}</span>
+              {TRIGRAMS.map((trigram, index) => <button key={trigram.symbol} type="button" style={{ left: `${50 + 37 * Math.sin(index * Math.PI / 4)}%`, top: `${50 - 37 * Math.cos(index * Math.PI / 4)}%` }} aria-label={trigram.name} aria-pressed={selected?.symbol === trigram.symbol} onClick={() => pick(trigram)}>
                 <TrigramSVG symbol={trigram.symbol} width={38} height={25} />
                 <span>{trigram.name}</span>
                 {selected?.symbol === trigram.symbol && <Check className="oracle-draw-selected" size={12} aria-hidden="true" />}

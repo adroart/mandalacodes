@@ -53,3 +53,41 @@ test('all 64 artwork plates ship in the bundle', async ({ request }) => {
     expect((await response.body()).length).toBe(item.bytes);
   }
 });
+
+test('trigram choices form a circle and preserve lower/upper selection on the phone', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Draw a card', exact: true }).first().click();
+  const dialog = page.getByRole('dialog', { name: 'Draw a card' });
+  await dialog.getByRole('tab', { name: 'Choose trigrams' }).click();
+  const choices = dialog.getByRole('group', { name: /trigram choices/ });
+  const geometry = await choices.evaluate(element => {
+    const ring = element.getBoundingClientRect();
+    return {
+      width: ring.width, height: ring.height,
+      buttons: Array.from(element.querySelectorAll('button')).map(button => {
+        const box = button.getBoundingClientRect();
+        return { width: box.width, height: box.height,
+          radius: Math.hypot(box.x + box.width / 2 - ring.x - ring.width / 2, box.y + box.height / 2 - ring.y - ring.height / 2) };
+      }),
+    };
+  });
+  expect(Math.abs(geometry.width - geometry.height)).toBeLessThan(1);
+  expect(geometry.buttons).toHaveLength(8);
+  const radii = geometry.buttons.map(button => button.radius);
+  expect(Math.max(...radii) - Math.min(...radii)).toBeLessThan(1);
+  for (const button of geometry.buttons) {
+    expect(button.width).toBeGreaterThanOrEqual(44);
+    expect(button.height).toBeGreaterThanOrEqual(44);
+  }
+  await dialog.getByRole('button', { name: 'Fire', exact: true }).click();
+  await expect(choices).toHaveAttribute('aria-label', 'Upper trigram choices');
+  await dialog.getByRole('button', { name: 'Water', exact: true }).click();
+  await expect(dialog.getByText('Hexagram 63', { exact: true })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Edit lower trigram, Fire' }).click();
+  await dialog.getByRole('button', { name: 'Water', exact: true }).click();
+  await expect(dialog.getByText('Hexagram 29', { exact: true })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Open card 29', exact: true })).toBeInViewport({ ratio: 1 });
+  await page.screenshot({ path: 'test-results/oracle-app-trigram-circle.png' });
+  await dialog.getByRole('button', { name: 'Open card 29', exact: true }).click();
+  await expect(page).toHaveURL(/\/universal-language\/29$/);
+});
