@@ -78,7 +78,7 @@
 .ul-rs-open__chart.is-lit { color: var(--accent); }
 .ul-rs-open__para {
   font-family: var(--font-reading); font-size: clamp(16px, 1.5vw, 18px); line-height: 1.8;
-  text-align:left; text-align-last: start;
+  text-align:start; text-align-last:auto; text-wrap:wrap;
   color: var(--l-2); margin: 0 0 6px;
 }
 
