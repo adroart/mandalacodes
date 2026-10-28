@@ -8,8 +8,8 @@ There is no remote development-server URL.
 From the repository root:
 
 ```sh
-npm run build:oracle
 npm --prefix mobile ci
+VITE_ORACLE_NATIVE_ACCOUNTS=true npm run build:oracle
 npm --prefix mobile run sync
 npm --prefix mobile test
 npm --prefix mobile run build:simulator
@@ -48,3 +48,19 @@ operations, enabled plugin probes, and native sharing keep their standard behavi
 `npm --prefix mobile test` checks those boundaries against the injected script.
 
 The native build resolves `OracleDrawDialog` to `src/mobile/OracleDrawDialog.tsx` and its companion stylesheet. The website keeps its separate dialog, so website redesigns cannot change the installed app's casting flow.
+
+## Build 12 account verification
+
+Use the account-enabled build command above for production phone updates. Omitting
+`VITE_ORACLE_NATIVE_ACCOUNTS=true` deliberately disables phone login; build 12 was
+packaged with it enabled.
+
+Build 12 uses the shared sign-in form for Google, password, and email-code sign-in.
+The system authentication prompt identifies the app as Oracle. Reminder time
+controls keep their spacing at narrow phone widths.
+
+Run `npm run test:oracle-account` for the
+mocked account/reminder layout checks. They do not establish that a real Google
+account completed authentication. On the installed phone, verify Google sign-in,
+reopen the app to confirm the session remains, and sign out. No device rebuild
+or installation is needed merely to merge these already-installed source changes.
