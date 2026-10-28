@@ -1,0 +1,17 @@
+{
+  "appId": "com.adrian.oracle",
+  "appName": "Oracle",
+  "webDir": "../dist-oracle",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0c0b0a"
+  },
+  "plugins": {
+    "CapacitorCookies": {
+      "enabled": false
+    },
+    "CapacitorHttp": {
+      "enabled": false
+    }
+  }
+}

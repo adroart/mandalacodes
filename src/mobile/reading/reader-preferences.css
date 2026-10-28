@@ -1,0 +1,21 @@
+.oracle-app-tools > button { font-size:19px; }
+.oracle-reader-settings-backdrop { position:fixed; z-index:2100; inset:0; display:flex; align-items:flex-end; justify-content:center; background:#0008; padding:16px; }
+.oracle-reader-settings { color:var(--color-wood-900); background:var(--color-paper-50); border:1px solid var(--color-wood-200); border-radius:16px; padding:20px 20px max(20px,env(safe-area-inset-bottom)); width:100%; max-width:440px; max-height:calc(100dvh - 32px); overflow:auto; }
+.oracle-reader-settings header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.oracle-reader-settings h2 { margin:0; font:500 28px var(--font-display); }
+.oracle-reader-settings button { min-height:44px; min-width:44px; background:transparent; border:1px solid var(--color-wood-300); color:inherit; border-radius:8px; }
+.oracle-reader-settings header button { border:0; display:grid; place-items:center; }
+.oracle-reader-settings fieldset { border:0; padding:0; margin:20px 0; }
+.oracle-reader-settings legend { margin-bottom:10px; font:500 15px var(--font-ui); }
+.oracle-reader-sizes { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.oracle-reader-sizes button[aria-pressed=true] { background:var(--color-wood-900); color:var(--color-paper-50); }
+.oracle-reader-settings label { display:flex; gap:12px; min-height:44px; align-items:center; font:16px var(--font-ui); }
+.oracle-reader-settings input { width:20px; height:20px; accent-color:var(--color-bronze-600); }
+.oracle-reader-focus-action { display:flex; gap:10px; align-items:center; justify-content:center; width:100%; margin-top:16px; font:16px var(--font-ui); }
+.oracle-reader-settings p { margin:16px 0 0; font:14px/1.5 var(--font-ui); color:var(--color-wood-600); }
+.oracle-exit-focus { position:fixed; z-index:100; top:max(8px,env(safe-area-inset-top)); right:max(12px,env(safe-area-inset-right)); display:flex; align-items:center; gap:6px; width:auto !important; padding:0 12px !important; border:1px solid var(--color-wood-300) !important; border-radius:8px; background:var(--color-paper-50) !important; font:14px var(--font-ui) !important; }
+body.oracle-reading-focus .oracle-app-nav { background:transparent; border:0; pointer-events:none; }
+body.oracle-reading-focus .oracle-app-brand,body.oracle-reading-focus .oracle-app-tools > button:not(.oracle-exit-focus),body.oracle-reading-focus .oracle-app-tabs { display:none !important; }
+body.oracle-reading-focus .oracle-exit-focus { pointer-events:auto; }
+body.oracle-reading-focus .oracle-app-shell { --app-bottom-height:env(safe-area-inset-bottom,0px); }
+.oracle-app-shell[data-app-page=reading] .eb-reading section[data-chapter] div[style*="flex-direction: column"] > p { font-size:var(--oracle-reading-size,17px) !important; line-height:var(--oracle-reading-leading,1.65) !important; }

@@ -61,6 +61,7 @@ export async function rollbackInvocation(hexagramNumber: number, sessionId: stri
 }
 
 export async function loadLiveInvocation(hexagramNumber: number, options?: { fresh?: boolean; signal?: AbortSignal }): Promise<LiveInvocation | null> {
+  if (import.meta.env.VITE_ORACLE_APP === 'true') return null;
   const response = await fetch(`/api/oracle/invocations/${hexagramNumber}/live`, {
     cache: options?.fresh ? 'no-store' : 'default', signal: options?.signal,
   });

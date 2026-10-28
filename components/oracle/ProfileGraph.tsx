@@ -26,7 +26,8 @@ const SEQUENCE_COLOR: Record<ProfileSequence, { core: string; edge: string }> = 
 };
 
 const VIEW = 720;     // square viewBox base
-const R = 22;         // orb radius in viewBox units
+const NATIVE = import.meta.env.VITE_ORACLE_APP === 'true';
+const R = NATIVE ? 32 : 22;         // orb radius in viewBox units
 
 type Filter = ProfileSequence | 'all';
 
@@ -85,7 +86,6 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
 
   const onPointerDown = (e: React.PointerEvent) => {
     ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     didDrag.current = false;
     if (ptrs.current.size === 2) {
       const [a, b] = [...ptrs.current.values()];
@@ -119,10 +119,14 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
         return clampZoom({ s: ns, x: px - (px - z.x) * k, y: py - (py - z.y) * k });
       });
       didDrag.current = true;
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     } else if (ptrs.current.size === 1 && panStart.current) {
       const dx = e.clientX - panStart.current.x;
       const dy = e.clientY - panStart.current.y;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        didDrag.current = true;
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      }
       setZoom((z) => clampZoom({ s: z.s, x: panStart.current!.ox + dx, y: panStart.current!.oy + dy }));
     }
   };
@@ -143,7 +147,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelected(null); };
     const onDown = (e: MouseEvent) => {
       const t = e.target as HTMLElement;
-      if (!t.closest('.pg__orb') && !t.closest('.pg__card') && !t.closest('.pg__rail-row')) {
+      if (!t.closest('.pg__orb') && !t.closest('.pg__card') && !t.closest('.pg__rail-row') && !t.closest('.pg__detail')) {
         setSelected(null);
       }
     };
@@ -243,20 +247,20 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             onPointerCancel={onPointerUp}
           >
           <div className="pg__pan" style={{ transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})` }}>
-          <svg viewBox={`-70 8 860 660`} className="pg__svg" preserveAspectRatio="xMidYMid meet">
+          <svg viewBox={NATIVE ? '110 8 500 646' : '-70 8 860 660'} className="pg__svg" preserveAspectRatio="xMidYMid meet">
             <defs>
               {SEQ_ORDER.map((seq) => (
                 <radialGradient key={seq} id={`orb-${seq}`} cx="38%" cy="32%" r="75%">
-                  <stop offset="0%" stopColor={SEQUENCE_COLOR[seq].core} />
+                  <stop offset="0%" stopColor={SEQUENCE_COLOR[seq][NATIVE ? 'edge' : 'core']} />
                   <stop offset="100%" stopColor={SEQUENCE_COLOR[seq].edge} />
                 </radialGradient>
               ))}
               {([['activation','venus'],['activation','pearl'],['venus','pearl']] as const).map(([a,b]) => (
                 <linearGradient key={`${a}-${b}`} id={`split-${a}-${b}`} x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor={SEQUENCE_COLOR[a].core} />
+                  <stop offset="0%" stopColor={SEQUENCE_COLOR[a][NATIVE ? 'edge' : 'core']} />
                   <stop offset="50%" stopColor={SEQUENCE_COLOR[a].edge} />
                   <stop offset="50%" stopColor={SEQUENCE_COLOR[b].edge} />
-                  <stop offset="100%" stopColor={SEQUENCE_COLOR[b].core} />
+                  <stop offset="100%" stopColor={SEQUENCE_COLOR[b][NATIVE ? 'edge' : 'core']} />
                 </linearGradient>
               ))}
               {SEQ_ORDER.map((seq) => (
@@ -275,7 +279,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             <g>
               {PROFILE_CHANNELS.map((ch, i) => {
                 const pa = pos(ch.from), pb = pos(ch.to);
-                const lit = seqActive(ch.sequence);
+                const lit = NATIVE && selected ? ch.from === selected || ch.to === selected : seqActive(ch.sequence);
                 const dx = pb.x - pa.x, dy = pb.y - pa.y;
                 const len = Math.hypot(dx, dy) || 1;
                 const ux = dx / len, uy = dy / len;
@@ -300,15 +304,17 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
               const p = pos(meta.key);
               const isSel = selected === meta.key;
               const seqs = sequencesOf(meta.key);
-              const inSeq = activeSequence != null && seqs.includes(activeSequence);
+              const inSeq = NATIVE && selected ? meta.key === selected || PROFILE_CHANNELS.some(ch => (ch.from === selected && ch.to === meta.key) || (ch.to === selected && ch.from === meta.key)) : activeSequence != null && seqs.includes(activeSequence);
               const orbFill = seqs.length >= 2 ? `url(#split-${seqs[0]}-${seqs[1]})` : `url(#orb-${meta.sequence})`;
 
-              const W = 150, H = 30, pad = R + 16;
+              const W = 150, H = NATIVE ? 36 : 30, pad = R + (NATIVE ? 10 : 16);
+              const labelSide = NATIVE && (meta.key === 'radiance' || meta.key === 'evolution') ? 'bottom'
+                : NATIVE && (meta.key === 'iq' || meta.key === 'eq') ? 'top' : meta.labelSide;
               let lx = p.x - W / 2, ly = p.y - H / 2; let align = 'is-center';
-              if (meta.labelSide === 'left')   { lx = p.x - pad - W; align = 'is-right'; }
-              if (meta.labelSide === 'right')  { lx = p.x + pad;     align = 'is-left'; }
-              if (meta.labelSide === 'top')    { ly = p.y - pad - H; align = 'is-center'; }
-              if (meta.labelSide === 'bottom') { ly = p.y + pad;     align = 'is-center'; }
+              if (labelSide === 'left')   { lx = p.x - pad - W; align = 'is-right'; }
+              if (labelSide === 'right')  { lx = p.x + pad;     align = 'is-left'; }
+              if (labelSide === 'top')    { ly = p.y - pad - H; align = 'is-center'; }
+              if (labelSide === 'bottom') { ly = p.y + pad;     align = 'is-center'; }
 
               return (
                 <g key={meta.key} className={`pg__node${isSel ? ' is-sel' : ''}${inSeq ? ' in-seq' : ''}`}>
@@ -328,9 +334,10 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
                     onClick={guard(() => open(meta.key))}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(meta.key); } }}
                   >
+                    {import.meta.env.VITE_ORACLE_APP === 'true' && <circle r={44} fill="transparent" className="pg__hit" />}
                     <circle r={R + 4} className="pg__ring" />
                     <circle r={R} fill={orbFill} className="pg__circle" />
-                    <text className="pg__gate" y={5}>{gl.gate}.{gl.line}</text>
+                    <text className="pg__gate" y={NATIVE ? 8 : 5}>{gl.gate}.{gl.line}</text>
                   </g>
                 </g>
               );
@@ -355,7 +362,8 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
               </button>
             ))}
           </div>
-          <div className="pg__detail">
+          <div className={`pg__detail${NATIVE && selected ? ' is-open' : ''}`} role="region" aria-label="Selected Birthday position">
+            {NATIVE && selected && <button className="pg__detail-close" aria-label="Close position details" onClick={() => setSelected(null)}>Close ×</button>}
             <div className="pg__detail-seq">{SEQUENCE_LABEL[detailMeta.sequence]}</div>
             <div className="pg__detail-head">
               <h2 className="pg__detail-name">{detailMeta.label}</h2>
@@ -363,6 +371,7 @@ const ProfileGraph: React.FC<Props> = ({ profile }) => {
             </div>
             {detailCard && <div className="pg__detail-art">{detailCard.card_name}</div>}
             <p className="pg__detail-role">{detailMeta.role}</p>
+            {NATIVE && selected && <div className="pg__connections"><span>Connected with</span><div>{[...new Set(PROFILE_CHANNELS.flatMap(ch => ch.from === detailKey ? [ch.to] : ch.to === detailKey ? [ch.from] : []))].map(key => <button key={key} onClick={() => setSelected(key)}>{POSITIONS_BY_KEY[key].label}</button>)}</div></div>}
             <button className="pg__detail-open" onClick={() => goCard(detailKey)}>Open the card →</button>
           </div>
         </aside>
