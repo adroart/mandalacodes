@@ -3,7 +3,7 @@ test.use({ launchOptions: { args: ['--use-fake-ui-for-media-stream','--use-fake-
 test('visible Record opens an editor over the card, keeps its context, and matches serif type',async({page},info)=>{
  await page.goto('/universal-language/2?authoring=review');
  const trigger=page.getByRole('button',{name:'Record a voice rewrite',exact:true});await expect(trigger).toBeVisible();await expect(trigger).toHaveText('Record');
- expect(await trigger.evaluate(e=>getComputedStyle(e).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+ expect((await trigger.boundingBox())!.height).toBeGreaterThanOrEqual(44);
  await trigger.click();const dialog=page.getByRole('dialog',{name:'Record and edit Oracle cards'});await expect(dialog).toBeVisible();await expect(page).toHaveURL(/\/universal-language\/2\?authoring=review$/);
  await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeVisible();
  expect(await dialog.locator('.oracle-voice-flow').evaluate(e=>getComputedStyle(e).fontFamily)).toMatch(/Iowan|Palatino|Georgia/);
@@ -34,7 +34,7 @@ test('one recording is split, moved, edited and ordered across several cards wit
  await expect(dialog.getByRole('button',{name:'Approve 3 changes',exact:true})).toBeDisabled();
  for(const panel of await dialog.locator('.oracle-reconciliation').all()){if(await panel.getByRole('button',{name:'Review with latest words',exact:true}).count())await panel.getByRole('button',{name:'Review with latest words',exact:true}).click();for(const choice of await panel.getByRole('button',{name:'Use suggestion',exact:true}).all())await choice.click();}
  await page.screenshot({path:info.outputPath('reconciliation-decisions.png')});
- await dialog.getByRole('button',{name:/^Transcript/}).click();for(const confirm of await dialog.getByRole('button',{name:'Confirm destination',exact:true}).all())await confirm.click();
+ await dialog.getByRole('button',{name:/^Transcript/}).click();{const confirmations=dialog.getByRole('button',{name:'Confirm destination',exact:true});while(await confirmations.count()){const before=await confirmations.count();await confirmations.first().click();await expect(confirmations).toHaveCount(before-1);}}
  await dialog.getByRole('button',{name:/^Writing/}).click();
  await dialog.getByRole('button',{name:'Approve 3 changes',exact:true}).click();await expect(dialog.locator('.ov-status')).toContainText('Approved and saved');
  await dialog.getByText('More options',{exact:true}).click();const dl=page.waitForEvent('download');await dialog.getByRole('button',{name:'Keep a copy',exact:true}).click();const file=await dl;const bundle=JSON.parse(await(await import('node:fs/promises')).readFile((await file.path())!,'utf8'));

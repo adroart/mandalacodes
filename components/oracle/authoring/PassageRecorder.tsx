@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { AuthoringServices, SourceSnapshot } from '../../../lib/oracle/authoring/types';
+import {Mic,Square,Pause,Play,ChevronLeft,Check,SlidersHorizontal} from 'lucide-react';
+import {CARD_BY_NUMBER} from '../../../data/oracleData';
+import WordChanges from './WordChanges';
+import type { AuthoringServices, SourceSnapshot, AlignedWord } from '../../../lib/oracle/authoring/types';
 import type { PassageAnchor } from '../../../lib/oracle/authoring/passageContext';
 import { AuthoringStore, type SavedSession } from '../../../lib/oracle/authoring/storage';
 import { addTranscript, correctTranscript, createSession } from '../../../lib/oracle/authoring/workflow';
@@ -37,7 +40,8 @@ export default function PassageRecorder({ anchors, source, services, onApplied, 
   const [phase, setPhase] = useState<'prompt' | 'transcribing' | 'review'>('prompt');
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [text, setText] = useState(''), [audioUrl, setAudioUrl] = useState('');
-  const [captureId, setCaptureId] = useState(''), [uncertain, setUncertain] = useState<string[]>([]);
+  const [captureId, setCaptureId] = useState(''), [uncertain, setUncertain] = useState<AlignedWord[]>([]);
+  const [reviewView,setReviewView]=useState<'original'|'words'>('words');
   const [fontSize, setFontSize] = useState(28), [speed, setSpeed] = useState(0);
   const prompt = useRef<HTMLDivElement>(null), editor = useRef<HTMLTextAreaElement>(null);
   const player = useRef<HTMLAudioElement>(null), handle = useRef<ActiveCapture | null>(null), mounted = useRef(true);
@@ -87,7 +91,8 @@ export default function PassageRecorder({ anchors, source, services, onApplied, 
       accept(next);
       if (!mounted.current) return;
       setText(segments.map(t => t.corrected).join('\n\n'));
-      setUncertain(segments.flatMap(t => (t.words ?? []).filter(w => w.probability !== undefined && w.probability < .6).map(w => w.text)));
+      setUncertain(segments.flatMap(t => (t.words ?? []).filter(w => w.probability !== undefined && w.probability < .6)));
+      setReviewView('words');
       setPhase('review');
       if (!segments.some(t => t.corrected.trim())) setError('No words were returned. Listen to your recording, then retry or type your words below.');
     } catch (e) { report(e); } finally { if (mounted.current) setBusy(false); }
@@ -133,19 +138,40 @@ export default function PassageRecorder({ anchors, source, services, onApplied, 
       onApplied(target); onClose();
     } catch (e) { report(e); } finally { if (mounted.current) setBusy(false); }
   };
+  const finishRecording=()=>{if(!active||busy)return;setBusy(true);void active.stop().catch(e=>{report(e);setBusy(false);});};
+  const shortcut=(event:React.KeyboardEvent)=>{if(!(event.metaKey||event.ctrlKey)||event.key!=='Enter'||event.repeat)return;event.preventDefault();if(busy)return;if(active)finishRecording();else if(phase==='review')void apply();else if(phase==='prompt')void record();};
+  const checkWord=(word:AlignedWord)=>{setReviewView('words');const start=text.toLocaleLowerCase().indexOf(word.text.toLocaleLowerCase());requestAnimationFrame(()=>{editor.current?.focus();if(start>=0)editor.current?.setSelectionRange(start,start+word.text.length);});if(player.current){player.current.currentTime=Math.max(0,word.startMs/1000);void player.current.play().catch(report);}};
   if (!target) return <section className="passage-recorder"><p>Select a passage in the card first.</p><button onClick={onClose}>Back to card</button></section>;
-  return <section className="passage-recorder" aria-label="Re-record selected passage" data-authoring-protected={Boolean(active || busy)}>
-    <header className="passage-recorder__header"><div><h2>{phase === 'review' ? 'Check your words' : 'Re-record this passage'}</h2><p>Code {target.cardNumber} · {target.sectionId==='CODE'?'Universal Language':source.sections.find(s => s.id === target.sectionId)?.title ?? target.sectionId}</p></div><button type="button" onClick={onClose} disabled={!!active || busy}>Back</button></header>
-    {anchors.length > 1 && <label className="passage-recorder__target">Replace<select aria-label="Passage to replace" disabled={!!active || busy || !!captureId} value={targetId} onChange={e => setTargetId(e.target.value)}>{combined && <option value="combined">Combined selected passages</option>}{anchors.map((anchor, index) => <option value={anchor.id} key={anchor.id}>Passage {index + 1} · Code {anchor.cardNumber} · {anchor.text.slice(0, 65)}</option>)}</select></label>}
-    {phase === 'review' ? <div className="passage-recorder__comparison"><div><h3>Original passage</h3><div className="passage-recorder__original">{target.text}</div></div><div><label htmlFor="passage-reviewed-words">Your words</label><textarea ref={editor} id="passage-reviewed-words" aria-label="Your replacement words" value={text} disabled={busy} onChange={e => setText(e.target.value)} /><p className="passage-recorder__note">Check the transcription. Only this passage will change.</p>{uncertain.length > 0 && <p className="passage-recorder__uncertain">Listen once more around: {uncertain.map((word, index) => <React.Fragment key={index}>{index > 0 ? ', ' : ''}<mark>{word}</mark></React.Fragment>)}</p>}</div></div> : <>
-      <div className="passage-recorder__settings"><label>Text size<input type="range" aria-label="Teleprompter text size" min={20} max={42} step={2} value={fontSize} onChange={e => setFontSize(Number(e.target.value))} /></label><details><summary>Scrolling</summary><label>Scroll speed<input type="range" aria-label="Teleprompter scroll speed" min={0} max={40} step={2} value={speed} onChange={e => setSpeed(Number(e.target.value))} /></label><span>{speed ? `${speed} pixels per second while recording` : 'Manual · move the passage yourself'}</span></details></div>
-      <div ref={prompt} className="passage-recorder__prompt" tabIndex={0} aria-label="Selected passage teleprompter" style={{ fontSize }}>{target.text}</div>
-      <p className="passage-recorder__note">Use this as a reference. Say it your way; replacement waits for your check.</p>
-    </>}
-    {active && <div className="passage-recorder__monitor" role="status"><span>{monitor.paused ? 'Paused' : monitor.muted ? 'Microphone muted' : 'Recording'} · {elapsedLabel(monitor.elapsed)}</span>{monitor.level !== null && <meter min={0} max={1} value={monitor.level} aria-label="Microphone input level" />}</div>}
-    {phase === 'transcribing' && <p role="status">{busy ? 'Your recording is saved. Transcribing your words…' : 'Your recording is saved. Transcription needs another try.'}</p>}
-    {error && <p className="passage-recorder__error" role="alert">{error}</p>}
-    {audioUrl && <audio ref={player} src={audioUrl} controls aria-label="Your passage recording" />}
-    <footer className="passage-recorder__actions">{active ? <><button type="button" onClick={() => { if (active.state() === 'paused') active.resume(); else active.pause(); }}>{monitor.paused ? 'Resume' : 'Pause'}</button><button type="button" className="passage-recorder__primary" onClick={() => { setBusy(true); void active.stop().catch(e => { report(e); setBusy(false); }); }} disabled={busy}>Finish</button></> : phase === 'review' ? <><button type="button" onClick={() => { setPhase('prompt'); setError(''); }} disabled={busy}>Record again</button><button type="button" className="passage-recorder__primary" onClick={() => void apply()} disabled={busy || !text.trim()}>{busy ? 'Saving…' : 'Use my words'}</button></> : phase === 'transcribing' ? <><button type="button" className="passage-recorder__primary" onClick={() => { if (saved && captureId) void transcribe(saved, captureId); }} disabled={busy || !saved}>{busy ? 'Transcribing…' : 'Retry transcription'}</button>{!busy && <button type="button" onClick={() => { setPhase('prompt'); setError(''); }}>Record again</button>}</> : <button type="button" className="passage-recorder__primary" onClick={() => void record()} disabled={busy}>{busy ? 'Opening…' : 'Record'}</button>}</footer>
+  const card=CARD_BY_NUMBER.get(target.cardNumber),state=active?'recording':phase==='review'?'review':phase==='transcribing'?'processing':'ready';
+  const lens=target.sectionId==='CODE'?'Universal Language':source.sections.find(s=>s.id===target.sectionId)?.title??target.sectionId;
+  const heading=state==='recording'?'Say it your way':state==='review'?'Check your words':state==='processing'?'Your words are on their way':'Re-record this passage';
+  return <section className="passage-recorder" aria-label="Re-record selected passage" data-state={state} data-authoring-protected={Boolean(active || busy)} onKeyDown={shortcut}>
+    <header className="passage-recorder__header">
+      <div className="passage-recorder__identity"><img src={`/oracle-art/${target.cardNumber}.webp`} alt=""/><div><p>{card?.card_name??`Code ${target.cardNumber}`}</p><span>Code {target.cardNumber} · {lens}</span></div></div>
+      <button type="button" className="passage-recorder__back" onClick={onClose} disabled={!!active || busy}><ChevronLeft size={16} aria-hidden="true"/>Back</button>
+    </header>
+    <div className="passage-recorder__stage-heading"><h2>{heading}</h2><ol aria-label="Recording steps"><li aria-current={state==='ready'?'step':undefined}>Ready</li><li aria-current={state==='recording'||state==='processing'?'step':undefined}>{state==='processing'?'Processing':'Recording'}</li><li aria-current={state==='review'?'step':undefined}>Review</li></ol></div>
+    {anchors.length > 1 && <label className="passage-recorder__target">Passage to replace<select aria-label="Passage to replace" disabled={!!active || busy || !!captureId} value={targetId} onChange={e => setTargetId(e.target.value)}>{combined && <option value="combined">Combined selected passages</option>}{anchors.map((anchor, index) => <option value={anchor.id} key={anchor.id}>Passage {index + 1} · Code {anchor.cardNumber} · {anchor.text.slice(0, 65)}</option>)}</select></label>}
+    <div className="passage-recorder__body">
+      {phase === 'review' ? <>
+        <div className="passage-recorder__review-tabs" role="tablist" aria-label="Compare passage"><button type="button" role="tab" id="passage-original-tab" aria-controls="passage-original-pane" aria-selected={reviewView==='original'} tabIndex={reviewView==='original'?0:-1} onKeyDown={event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();setReviewView('words');document.getElementById('passage-words-tab')?.focus();}}} onClick={()=>setReviewView('original')}>Original</button><button type="button" role="tab" id="passage-words-tab" aria-controls="passage-words-pane" aria-selected={reviewView==='words'} tabIndex={reviewView==='words'?0:-1} onKeyDown={event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();setReviewView('original');document.getElementById('passage-original-tab')?.focus();}}} onClick={()=>setReviewView('words')}>Your version</button></div>
+        <div className="passage-recorder__comparison">
+          <section id="passage-original-pane" className="passage-recorder__pane" data-active={reviewView==='original'} role="tabpanel" aria-labelledby="passage-original-tab"><h3>Original passage</h3><div className="passage-recorder__original">{target.text}</div></section>
+          <section id="passage-words-pane" className="passage-recorder__pane" data-active={reviewView==='words'} role="tabpanel" aria-labelledby="passage-words-tab"><label htmlFor="passage-reviewed-words">Your version</label><textarea ref={editor} id="passage-reviewed-words" aria-label="Your replacement words" value={text} disabled={busy} onChange={e => setText(e.target.value)} /><p className="passage-recorder__note">Your wording stays exact. Only the selected passage will change.</p>{uncertain.filter(w=>text.toLocaleLowerCase().includes(w.text.toLocaleLowerCase())).length>0&&<div className="passage-recorder__uncertain"><span>Check these words</span>{uncertain.filter(w=>text.toLocaleLowerCase().includes(w.text.toLocaleLowerCase())).map((word,index)=><button key={`${word.startMs}-${index}`} type="button" onClick={()=>checkWord(word)} aria-label={`Replay uncertain word: ${word.text}`}><Play size={12} aria-hidden="true"/>{word.text}</button>)}</div>}</section>
+        </div>
+        <details className="passage-recorder__changes"><summary>See word changes</summary><WordChanges original={target.text} revised={text}/></details>
+      </> : <>
+        <section className="passage-recorder__passage-card"><div className="passage-recorder__prompt-label"><span>Selected passage</span><details className="passage-recorder__settings"><summary title="Text size and scroll speed"><SlidersHorizontal size={15} aria-hidden="true"/>Reading controls</summary><div><label>Text size<input type="range" aria-label="Teleprompter text size" min={20} max={42} step={2} value={fontSize} onChange={e => setFontSize(Number(e.target.value))} /></label><label>Scroll speed<input type="range" aria-label="Teleprompter scroll speed" min={0} max={40} step={2} value={speed} onChange={e => setSpeed(Number(e.target.value))} /></label><span>{speed ? `${speed} pixels per second while recording` : 'Manual scrolling'}</span></div></details></div>
+        <div ref={prompt} className="passage-recorder__prompt" tabIndex={0} aria-label="Selected passage teleprompter" style={{ fontSize }}>{target.text}</div></section>
+        <p className="passage-recorder__note">Read, rethink, or depart from these words. Replacement waits for your check.</p>
+      </>}
+      {phase === 'transcribing' && <p className="passage-recorder__processing" role="status">{busy ? 'Recording saved. Preparing your editable transcription…' : 'Recording saved. Try transcription again when connected.'}</p>}
+      {error && <p className="passage-recorder__error" role="alert">{error}</p>}
+      {audioUrl && <audio ref={player} src={audioUrl} controls aria-label="Your passage recording" />}
+    </div>
+    <footer className="passage-recorder__footer">
+      <div className="passage-recorder__monitor" role={active?'status':undefined}>{active?<><span className={`passage-recorder__record-light${monitor.paused?' is-paused':''}`} aria-hidden="true"/><span>{monitor.paused ? 'Paused' : monitor.muted ? 'Microphone muted' : 'Recording'}</span><time>{elapsedLabel(monitor.elapsed)}</time>{monitor.level!==null&&<meter min={0} max={1} value={monitor.level} aria-label="Microphone input level"/>}</>:<span className="passage-recorder__shortcut">⌘ / Ctrl + Enter · {phase==='review'?'Use my words':'Record / finish'}</span>}</div>
+      <div className="passage-recorder__actions">{active ? <><button type="button" onClick={() => { if (active.state() === 'paused') active.resume(); else active.pause(); }}>{monitor.paused?<Play size={16} aria-hidden="true"/>:<Pause size={16} aria-hidden="true"/>}{monitor.paused ? 'Resume' : 'Pause'}</button><button type="button" className="passage-recorder__primary" onClick={finishRecording} disabled={busy}><Square size={15} aria-hidden="true"/>{busy?'Finishing…':'Finish'}</button></> : phase === 'review' ? <><button type="button" onClick={() => { setPhase('prompt'); setError(''); }} disabled={busy}>Record again</button><button type="button" className="passage-recorder__primary" onClick={() => void apply()} disabled={busy || !text.trim()}><Check size={17} aria-hidden="true"/>{busy ? 'Saving…' : 'Use my words'}</button></> : phase === 'transcribing' ? <><button type="button" className="passage-recorder__primary" onClick={() => { if (saved && captureId) void transcribe(saved, captureId); }} disabled={busy || !saved}>{busy ? 'Transcribing…' : 'Retry transcription'}</button>{!busy && <button type="button" onClick={() => { setPhase('prompt'); setError(''); }}>Record again</button>}</> : <button type="button" className="passage-recorder__primary" onClick={() => void record()} disabled={busy}><Mic size={18} aria-hidden="true"/>{busy ? 'Opening…' : 'Record'}</button>}</div>
+    </footer>
   </section>;
 }

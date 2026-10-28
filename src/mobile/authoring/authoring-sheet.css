@@ -9,8 +9,19 @@
 .oracle-app-tools > button.oracle-record-trigger:hover { color:var(--color-bronze-600); }
 @media(max-width:600px) { .oracle-authoring-backdrop { padding:0; } .oracle-authoring-sheet { max-height:88dvh; width:100%; border-radius:12px 12px 0 0; padding-bottom:env(safe-area-inset-bottom); } }
 
-/* Ordinary recording stays beside the reading; selected re-recording isolates it. */
-.oracle-authoring-backdrop--inline { pointer-events:none; background:transparent; bottom:var(--app-bottom-height,61px); padding:8px 12px; }
-.oracle-authoring-backdrop--inline .oracle-authoring-sheet { pointer-events:auto; max-width:720px; max-height:46dvh; }
-.oracle-authoring-backdrop--inline .human-working-writing { margin-top:10px; }
-.oracle-authoring-backdrop--inline .human-working-writing textarea { min-height:80px; }
+
+/* One daily workspace on desktop and phone; reading stays behind its canvas. */
+.oracle-authoring-backdrop { align-items:center; padding:20px; background:#15110e; }
+.oracle-authoring-sheet { display:flex; flex-direction:column; width:min(1280px,100%); height:calc(100dvh - 40px); max-height:none; overflow:hidden; border-radius:10px; box-shadow:0 12px 40px #0003; }
+.oracle-authoring-sheet:focus { outline:none; }
+.oracle-authoring-sheet .oracle-authoring-page { height:100%; min-height:0; padding:0; overflow:hidden; flex:1; }
+.oracle-authoring-sheet .human-card-authoring { height:100%; min-height:0; max-width:none; margin:0; }
+.oracle-authoring-sheet .passage-recorder { height:100%; min-height:0; }
+.oracle-authoring-sheet .ov-header { position:static; }
+@media(max-width:700px) { .oracle-authoring-backdrop { padding:0; } .oracle-authoring-sheet { width:100%; height:100dvh; max-height:100dvh; border:0; border-radius:0; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); } }
+
+.oracle-authoring-sheet--legacy { overflow:auto; }
+.oracle-authoring-sheet--legacy .oracle-authoring-page { height:auto; overflow:visible; flex:none; }
+/* Deliberate container boundary; controls stay separate from reading typography. */
+.oracle-authoring-sheet { border-color:#4b443a; background:#15110e; box-shadow:0 14px 48px #0005; }
+.oracle-authoring-sheet input,.oracle-authoring-sheet select,.oracle-authoring-sheet summary { font-family:var(--font-controls); }

@@ -27,6 +27,7 @@ const CANONICAL_FONT_ROLES = [
   '--font-display',
   '--font-reading',
   '--font-ui',
+  '--font-controls',
   '--font-technical',
   '--font-cjk',
   '--font-calligraphic',
@@ -300,11 +301,12 @@ function isSemanticFontDeclaration({ property, value }: FontDeclaration): boolea
 }
 
 describe('centralized typography contract', () => {
-  it('self-hosts Iowan Old Style for every non-display text role', () => {
+  it('self-hosts Iowan reading text and keeps modern controls as a separate role', () => {
     const theme = maskComments(readFileSync(THEME_FILE, 'utf8'));
     const appEntry = readFileSync(APP_ENTRY_FILE, 'utf8');
 
     expect(theme).toMatch(/^\s*--font-reading:\s*"Iowan Old Style Web"/m);
+    expect(theme).toMatch(/^\s*--font-controls:\s*"Plus Jakarta Sans"/m);
     expect(theme).toMatch(/^\s*--font-ui:\s*"Iowan Old Style Web"/m);
     expect(theme).toMatch(/font-family:\s*"Iowan Old Style Web"/);
     expect(appEntry).not.toMatch(/@fontsource\/(?:lora|karla)/);

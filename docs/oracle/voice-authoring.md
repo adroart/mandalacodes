@@ -47,7 +47,7 @@ physical-phone end-to-end use is not yet verified for this new flow.
 Every card reader has a visible microphone **Record** action. It opens a focused
 sheet over that card, without changing the reader URL, scroll position or content.
 The sheet restores focus to Record when closed. Text, controls and editors use the
-Oracle's serif family. Card context remains visible behind the sheet.
+Oracle's serif family. Card identity and the connected passage remain visible within the workspace.
 
 Record, speak across as many cards or sections as needed, then Finish. Received
 recording chunks save to IndexedDB. Automatic transcription preserves the original
@@ -78,7 +78,7 @@ receipt. It does not apply changes to the canonical manuscripts. Undiscussed
 sections remain untouched. Published listening audio is a separate asset.
 
 More options contains the detailed editor/import, portable export and saved drafts.
-Native exports use the system share sheet. The toolbar Record action is unboxed, and native select controls/options explicitly match the current light/dark colour scheme so menus remain readable. Review files contain private audio and
+Native exports use the system share sheet. Record is the primary action, and native select controls/options explicitly match the current light/dark colour scheme so menus remain readable. Review files contain private audio and
 text, are not encrypted, and should be transferred privately. Browser storage may
 be evicted; keep a copy before changing devices.
 
@@ -278,7 +278,7 @@ has adjustable type, manual scrolling and optional timed scrolling. Audio and ra
 transcripts are saved before review. **Use my words** replaces only the selected
 range after explicit review; later source/working edits invalidate a stale target.
 
-Ordinary recording opens a compact nonmodal panel beside the reader. Visible and
+Ordinary recording opens the full Voice studio workspace with the connected passage. Visible and
 selected passages are captured as context; clear additions go after the focused
 passage. Quoted/relative references use conservative lexical matching, with candidate
 choices for ambiguity. Explicit replacements require reviewed words. Connections
@@ -294,3 +294,27 @@ history. Undo checks that no later edit would be lost. Printed-book references a
 The visible Record action starts ordinary recording directly. Independently saved thoughts can transcribe and apply while the next thought records. After twelve seconds, automatic handoffs wait for a quiet break when input metering is supported; **Apply this thought** explicitly sends one at any time. Without metering the take stays intact until that action or Finish. Brief microphone reopening gaps may occur at boundaries. This is progressive thought transcription, not continuous word-level streaming or a speech-following teleprompter. Consecutive additions retain their order; background saves preserve recording and transcript work. Re-recording remains one deliberate take and waits for review.
 
 The bounded parser handles quoted explanations, exact sentence references, and explicitly keeping an opening sentence while replacing the rest. Ambiguous self-corrections, incomplete compound directions and embedded second instructions stay for correction before applying. No command text is silently pasted into a manuscript.
+
+## Daily voice workspace and desktop layout
+
+The reading has one visible Record entrance and secondary Passage tools. Record
+opens the same Ready workspace in every path. The workspace uses a separate
+self-hosted Plus Jakarta Sans controls role while keeping the reading and edited
+prose in Iowan. Desktop shows passage and transcript/review in two scrollable panes;
+phone shows focused Passage, Your words and Check panels. Primary recording and
+review actions stay in the fixed footer. Record/Writing/Recordings/Setup destinations
+support arrow-key navigation; scoped Ctrl/Cmd+Enter controls recording without
+capturing ordinary typing shortcuts.
+
+Only one recording/passage check is shown at a time. Previous/Next and a timestamped
+selector navigate the queue. Replay, editing, destination and exact word changes
+have separate controls and clear boundaries. Only the loaded visible passage can
+be marked reviewed. Failed processing retains its audio, with a concise recovery
+message and technical details under disclosure. Re-record review has desktop
+comparison panes and mobile Original/Your version switches, plus timed uncertain-word
+replay. Applying a replacement returns focus to the changed passage with Undo.
+
+The AR Create adapter accepts legitimate point-timed provider words without
+fabricating positive intervals: their passage uses whole-recording replay while
+actual word offsets remain intact. Invalid, reversed, outside or mismatched-source
+alignment remains rejected.

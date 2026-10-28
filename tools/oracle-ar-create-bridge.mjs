@@ -29,19 +29,31 @@ function audioInput(body) {
 function extension(mime) { return ({'audio/mp4':'m4a','audio/wav':'wav','audio/mpeg':'mp3','audio/ogg':'ogg','audio/flac':'flac','audio/aac':'aac'})[mime.split(';')[0]] || 'webm'; }
 function normalizeResult(result,record) {
   if (!result || !Array.isArray(result.segments)) throw error('AR Create has not returned a usable transcript yet.',502);
-  const segments=[];
+  const sourceHash=result.metadata?.source_sha256;
+  if(sourceHash!==undefined&&sourceHash!==record.audioHash)throw error('AR Create returned a transcript for different audio. The saved recording is preserved.',502);
+  // AR's merge contract permits point-timed words (end == start), particularly
+  // when exclusive diarization separates the last word from its previous group.
+  // Such a group has no precise passage interval. Retain its real word offsets
+  // and label the passage for whole-recording replay rather than inventing a span.
+  const decodedMs=Number(result.metadata?.duration_seconds)*1000;
+  const recordingDurationMs=Number.isFinite(decodedMs)&&decodedMs>0&&decodedMs<=1200000&&Math.abs(decodedMs-record.durationMs)<=1500&&sourceHash===record.audioHash
+    ?Math.max(record.durationMs,Math.round(decodedMs)):record.durationMs;
+  const segments=[];let recordingLevelPassages=false;
   for(const segment of result.segments) {
     const startMs=Math.round(Number(segment.start)*1000),endMs=Math.round(Number(segment.end)*1000);
     if(typeof segment.text!=='string'||!segment.text.trim())continue;
-    if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||startMs<0||endMs<=startMs||endMs>record.durationMs+1500)throw error('AR Create returned transcript timing outside this recording.',502);
+    if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||startMs<0||endMs<startMs||endMs>record.durationMs+1500)throw error('AR Create returned transcript timing outside this recording.',502);
     // Preserve actual provider offsets. Browser recording clocks can differ slightly
     // from decoded duration; expose that duration rather than inventing sub-times.
     const words=(Array.isArray(segment.words)?segment.words:[]).map(word=>({startMs:Math.round(Number(word.start)*1000),endMs:Math.round(Number(word.end)*1000),text:String(word.word??word.text??''),...(Number.isFinite(word.probability)?{probability:word.probability}:{})}));
     if(words.some(w=>!Number.isFinite(w.startMs)||!Number.isFinite(w.endMs)||w.startMs<0||w.endMs<w.startMs||w.startMs<startMs-1000||w.endMs>endMs+1000))throw error('AR Create returned invalid word alignment.',502);
-    segments.push({text:segment.text,startMs,endMs,sectionId:record.sectionId,timing:'provider',...(typeof segment.speaker==='string'?{speaker:segment.speaker}:{}),...(words.length?{words}:{})});
+    const pointTimed=endMs===startMs;
+    if(pointTimed&&(endMs>recordingDurationMs||words.some(w=>w.startMs!==startMs||w.endMs!==endMs)))throw error('AR Create returned invalid point-word alignment for this recording.',502);
+    if(pointTimed)recordingLevelPassages=true;
+    segments.push({text:segment.text,startMs:pointTimed?0:startMs,endMs:pointTimed?recordingDurationMs:endMs,sectionId:record.sectionId,timing:pointTimed?'recording':'provider',...(typeof segment.speaker==='string'?{speaker:segment.speaker}:{}),...(words.length?{words}:{})});
   }
   if(!segments.length)throw error('AR Create found no speech in this recording. Your audio is retained.',422);
-  return {provider:'AR Create · local Whisper',segments,durationMs:Math.max(record.durationMs,...segments.flatMap(s=>[s.endMs,...(s.words??[]).map(w=>w.endMs)])),arCreate:{sourceId:record.sourceId,jobId:record.jobId,reviewUrl:`${AR_ORIGIN}/transcription/${record.jobId}/view`,wordTimestamps:result.metadata?.word_timestamps??null,qualityFlags:Array.isArray(result.metadata?.quality_flags)?result.metadata.quality_flags:[],warnings:Array.isArray(result.metadata?.warnings)?result.metadata.warnings.filter(w=>typeof w==='string'):[]}};
+  return {provider:'AR Create · local Whisper',segments,durationMs:Math.max(record.durationMs,...segments.flatMap(s=>[s.endMs,...(s.words??[]).map(w=>w.endMs)])),arCreate:{sourceId:record.sourceId,jobId:record.jobId,reviewUrl:`${AR_ORIGIN}/transcription/${record.jobId}/view`,wordTimestamps:result.metadata?.word_timestamps??null,qualityFlags:Array.isArray(result.metadata?.quality_flags)?result.metadata.quality_flags:[],warnings:[...(Array.isArray(result.metadata?.warnings)?result.metadata.warnings.filter(w=>typeof w==='string'):[]),...(recordingLevelPassages?['A point-timed passage uses whole-recording replay; original provider word offsets are retained.']:[])]}};
 }
 
 /** Fixed local AR Create owner. No arbitrary URL, cookies, private config or source files. */

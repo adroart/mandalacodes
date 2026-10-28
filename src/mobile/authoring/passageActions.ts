@@ -29,7 +29,7 @@ async function apply(anchors:PassageAnchor[],words:string,services:AuthoringServ
  const blocks=exactBlocks(before),nextBlocks=[...sliceBlocks(blocks,0,start),{id:crypto.randomUUID(),text:insert,sourceText:insert,...(!addition?{replacedText:combined.text}:{attachedTo:combined.text}),origin:'human' as const,evidence:evidence?[{...evidence,signature:words}]:[]},...sliceBlocks(blocks,end,before.text.length)];
  const next={...before,text:nextBlocks.map(b=>b.text).join(''),blocks:nextBlocks,humanWords:nextBlocks.reduce((n,b)=>n+(b.origin==='human'?wordCount(b.text):0),0),totalWords:wordCount(nextBlocks.map(b=>b.text).join(''))};
  const saved=await store.save(next,existing?.revision??0);
- localStorage.setItem(UNDO,JSON.stringify({before,afterRevision:saved.revision}));window.dispatchEvent(new Event('oracle:passage-applied'));
+ localStorage.setItem(UNDO,JSON.stringify({before,afterRevision:saved.revision}));window.dispatchEvent(new CustomEvent('oracle:passage-applied',{detail:{kind:addition?'addition':'replacement',anchor:combined,words}}));
 }
 export const applyPassageReplacement=(anchors:PassageAnchor[],words:string,services:AuthoringServices,evidence?:PassageEvidence)=>apply(anchors,words,services,evidence,false);
 export const applyPassageAddition=(anchor:PassageAnchor,words:string,services:AuthoringServices,evidence?:PassageEvidence)=>apply([anchor],words,services,evidence,true);

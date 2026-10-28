@@ -58,3 +58,36 @@ test('middleware enforces same-origin localhost and delegates bounded writing se
  response=await fetch(url,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',Cookie:'never-forward=this'},body:JSON.stringify(f.body)});assert.equal(response.status,200);
  response=await fetch(url,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({operation:'propose'})});assert.deepEqual(await response.json(),{proposals:[],receivedOperation:'propose'});
 });
+
+test('real AR point-word speaker group keeps its words without inventing a provider interval',async t=>{
+ const f=await fixture(t);f.body.durationMs=3695;
+ // Numeric shape observed in the affected short recording; fixture words are synthetic.
+ f.engine.result={segments:[
+  {start:.4228437662124634,end:2.5028437662124636,text:'Synthetic preceding words.',speaker:'SPEAKER_00',words:[{start:.4228437662124634,end:2.5028437662124636,word:'Synthetic preceding words.',probability:.97}]},
+  {start:2.5028437662124636,end:2.5028437662124636,text:'Synthetic.',speaker:null,words:[{start:2.5028437662124636,end:2.5028437662124636,word:'Synthetic.',probability:.91}]},
+ ],metadata:{duration_seconds:3.6693125,word_timestamps:'whisper-native'}};
+ const response=await f.bridge.handle(f.body);assert.equal(response.status,200);
+ assert.equal(response.body.segments[0].timing,'provider');assert.equal(response.body.segments[0].startMs,423);assert.equal(response.body.segments[0].endMs,2503);
+ assert.deepEqual(response.body.segments[1],{text:'Synthetic.',startMs:0,endMs:3695,sectionId:'CODE',timing:'recording',words:[{startMs:2503,endMs:2503,text:'Synthetic.',probability:.91}]});
+ assert.equal(response.body.durationMs,3695);assert.ok(response.body.arCreate.warnings.some(w=>w.includes('whole-recording replay')));
+ const resumed=createArCreateBridge({stateDir:f.stateDir,fetcher:f.fetcher,pendingBudgetMs:0});assert.deepEqual(await resumed.handle({operation:'transcription-status',sessionId:f.body.sessionId,captureId:f.body.captureId}),response);assert.equal(f.engine.imports,1);assert.equal(f.engine.starts,1);
+});
+test('a sub-millisecond provider interval is honestly recording-level after millisecond conversion',async t=>{
+ const f=await fixture(t);f.engine.result={segments:[{start:.1001,end:.1002,text:'Synthetic token.',words:[{start:.1001,end:.1002,word:'Synthetic token.'}]}]};const response=await f.bridge.handle(f.body);assert.equal(response.status,200);assert.equal(response.body.segments[0].timing,'recording');assert.equal(response.body.segments[0].words[0].startMs,100);assert.equal(response.body.segments[0].words[0].endMs,100);
+});
+test('point timing does not relax reversed, outside-recording or inconsistent word alignment',async t=>{
+ for(const segment of [
+  {start:1.1,end:1,text:'Synthetic reversed.'},
+  {start:10,end:10,text:'Synthetic outside.'},
+  {start:1,end:1,text:'Synthetic inconsistent.',words:[{start:1,end:1.1,word:'Synthetic inconsistent.'}]},
+ ]){
+  const f=await fixture(t);f.engine.result={segments:[segment]};assert.equal((await f.bridge.handle(f.body)).status,502);assert.equal(f.engine.imports,1);
+ }
+});
+test('decoded duration can inform recording-level replay only for the exact imported audio',async t=>{
+ const f=await fixture(t);const {createHash}=await import('node:crypto');const sourceHash=createHash('sha256').update(Buffer.from(f.body.audioBase64,'base64')).digest('hex');
+ f.engine.result={segments:[{start:2.04,end:2.04,text:'Synthetic end.',words:[{start:2.04,end:2.04,word:'Synthetic end.'}]}],metadata:{duration_seconds:2.05,source_sha256:sourceHash}};
+ const response=await f.bridge.handle(f.body);assert.equal(response.status,200);assert.equal(response.body.segments[0].endMs,2050);assert.equal(response.body.durationMs,2050);
+ const other=await fixture(t);other.engine.result={segments:[{start:0,end:1,text:'Synthetic other recording.'}],metadata:{source_sha256:'0'.repeat(64)}};assert.equal((await other.bridge.handle(other.body)).status,502);
+ const noProof=await fixture(t);noProof.engine.result={segments:[{start:2.04,end:2.04,text:'Synthetic end.'}],metadata:{duration_seconds:2.05}};assert.equal((await noProof.bridge.handle(noProof.body)).status,502);
+});

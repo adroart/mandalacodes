@@ -1,4 +1,4 @@
-.passage-tools {position:fixed;z-index:100;left:50%;transform:translateX(-50%);bottom:calc(var(--app-bottom-height,61px) + 8px);width:min(680px,calc(100vw - 20px));border:1px solid var(--color-wood-300);border-radius:8px;background:var(--color-paper-50);color:var(--color-wood-900);box-shadow:0 6px 20px #0003;font:14px/1.4 var(--font-ui);}
+.passage-tools {position:fixed;z-index:100;left:50%;transform:translateX(-50%);bottom:calc(var(--app-bottom-height,61px) + 8px);width:min(680px,calc(100vw - 20px));border:1px solid var(--color-wood-300);border-radius:8px;background:var(--color-paper-50);color:var(--color-wood-900);box-shadow:0 6px 20px #0003;font:14px/1.4 var(--font-controls);}
 .passage-tools button,.passage-tools input {font:inherit;color:inherit;}
 .passage-tools button {min-height:44px;padding:7px 10px;border:0;background:transparent;cursor:pointer;}
 .passage-tools button:hover,.passage-tools button[aria-pressed=true],.passage-tools button[aria-expanded=true] {background:color-mix(in srgb,var(--color-bronze-600) 12%,transparent);}
@@ -11,7 +11,7 @@
 .passage-tools__panel p {margin:6px 0 12px;}
 .passage-tools__results {display:grid;gap:7px;}
 .passage-tools__results button {padding:10px;text-align:left;border:1px solid var(--color-wood-200);border-radius:4px;white-space:normal;}
-.passage-tools__results small {display:block;margin-bottom:5px;color:var(--color-wood-600);font:12px var(--font-ui);}
+.passage-tools__results small {display:block;margin-bottom:5px;color:var(--color-wood-600);font:12px var(--font-controls);}
 .passage-tools__search {display:flex;align-items:stretch;gap:6px;margin:6px 0 12px;}
 .passage-tools input {min-width:0;flex:1;width:100%;min-height:44px;padding:8px;border:1px solid var(--color-wood-300);border-radius:4px;background:var(--color-paper-50);caret-color:var(--color-bronze-600);}
 .passage-tools__search button {flex-shrink:0;}
@@ -35,3 +35,9 @@
 .passage-tools { max-height:calc(100dvh - var(--app-bottom-height,61px) - 90px); overflow-y:auto; overscroll-behavior:contain; }
 /* The last passage remains readable above the permanent tool strip. */
 .working-card-reading [data-scroll] { padding-bottom:80px; scroll-padding-bottom:80px; }
+
+.passage-tools { width:min(440px,calc(100vw - 24px)); }
+.passage-tools__bar { display:flex; justify-content:space-between; align-items:stretch; gap:8px; padding:4px; }
+.passage-tools__bar .passage-tools__record { display:flex; align-items:center; justify-content:center; gap:8px; min-width:128px; border-radius:5px; background:var(--color-bronze-600); color:var(--color-paper-50); }
+.passage-tools__menu { display:flex; justify-content:space-around; border-top:1px solid var(--color-wood-200); }
+.passage-tools__menu[hidden] { display:none; }
