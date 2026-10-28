@@ -203,6 +203,9 @@
   .oracle-draw-preview .oracle-draw-primary { margin-top:8px; }
 }
 @media (max-height:620px) {
+  .oracle-draw-body { overflow-y:auto; }
+  .oracle-draw-ring-mode, .oracle-draw-coins-stage { flex:none; min-height:540px; }
+  .oracle-draw-ring-room { flex:none; height:280px; }
   .oracle-draw-rule { display:none; }
   .oracle-draw-intro { display:none; }
 }
