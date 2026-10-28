@@ -102,7 +102,7 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
 .eb-reading section[data-chapter="body"] div[style*="flex-direction: column"] > p,
 .eb-reading section[data-chapter="relations"] div[style*="flex-direction: column"] > p {
   font-family:var(--font-reading) !important; font-size:clamp(16px,1.5vw,18px) !important;
-  line-height:1.8 !important; text-align:left !important; text-align-last:start; text-wrap:wrap;
+  line-height:1.8 !important; text-align:start !important; text-align-last:auto !important; text-wrap:wrap !important;
   width:100%; max-width:none; margin-inline:auto;
   word-break:normal; overflow-wrap:normal; hyphens:none;
 }
@@ -198,9 +198,9 @@ html.oracle-entrance-active [data-oracle-grain="reading"] { z-index:1001; }
    expanded explanations. No justification: it spreads words apart on narrow screens. */
 .eb-reading p[style*="var(--font-reading)"],
 .eb-reading [data-reading-prose] p {
-  text-align:left;
-  text-align-last:start;
-  text-wrap:wrap;
+  text-align:start !important;
+  text-align-last:auto !important;
+  text-wrap:wrap !important;
 }
 
 /* Keep the Daybook paper fine enough that it does not muddy small labels. */
