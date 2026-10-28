@@ -105,7 +105,7 @@ export default function OracleDrawDialog({ theme, onClose, onOpen, introduction,
 
   // Rendered on the body, outside the page: the page fades in on every visit, and a dialog
   // inside it would fade too, letting the site menu show through. The wrapper keeps the theme tokens.
-  return createPortal(<div className="oe-root"><div className="oracle-draw-backdrop" onClick={onClose}>
+  return createPortal(<div className="oe-root"><div className="oracle-draw-backdrop" data-theme={theme} onClick={onClose}>
     <div ref={panel} className="oracle-draw" data-theme={theme} data-method={mode} role="dialog" aria-modal="true" aria-labelledby="oracle-draw-title" tabIndex={-1} onClick={event => event.stopPropagation()}>
       <header className="oracle-draw-header">
         <h2 id="oracle-draw-title" className="oracle-draw-sr">Draw a card</h2>

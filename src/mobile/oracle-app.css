@@ -116,7 +116,7 @@ body { overscroll-behavior-y: none; }
 .oracle-quick-draw { display:flex; align-items:center; gap:6px; min-height:44px; color:var(--ink2); font-size:12px; }
 .oracle-quick-draw input { width:18px; height:18px; accent-color:var(--accent); }
 .oracle-draw-error { position:fixed; bottom:max(12px,env(safe-area-inset-bottom)); left:12px; right:12px; z-index:2200; background:var(--color-paper-50); color:var(--color-wood-900); border:1px solid var(--color-bronze-600); border-radius:8px; padding:16px; }
-.oracle-card-reveal { position:fixed; inset:0; z-index:2100; background:#000; color:#f0ece4; display:flex; flex-direction:column; align-items:center; overflow:auto; padding:max(12px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left)); }
+.oracle-card-reveal { position:fixed; inset:0; z-index:2100; background:var(--color-paper-50); color:var(--color-wood-900); display:flex; flex-direction:column; align-items:center; overflow:auto; padding:max(12px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left)); }
 .oracle-card-reveal header { display:flex; align-items:center; justify-content:space-between; width:100%; min-height:48px; font:14px var(--font-ui); }
 .oracle-card-reveal button { min-height:48px; border:0; background:transparent; color:inherit; padding:10px 16px; font:16px var(--font-ui); }
 .oracle-card-reveal img { width:min(100%,48dvh,480px); aspect-ratio:1; object-fit:contain; margin:16px auto; border-radius:10px; animation:oracle-reveal-image .65s ease-out both; }
