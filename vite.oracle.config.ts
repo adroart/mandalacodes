@@ -2,9 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import fs from 'node:fs';
+import { createArCreateMiddleware } from './tools/oracle-ar-create-bridge.mjs';
+import { createArCreateWriting } from './tools/oracle-ar-create-writing.mjs';
+const arCreate = () => { const writing = createArCreateWriting(); return createArCreateMiddleware({ writingHandler: body => writing.handle(body), writingCapabilities: () => writing.capabilities() }); };
 const local = (file: string) => path.resolve(__dirname, file);
 export default defineConfig({
-  plugins: [react(), {
+  plugins: [react(), { name: 'oracle-ar-create', configureServer(server) { server.middlewares.use(arCreate()); }, configurePreviewServer(server) { server.middlewares.use(arCreate()); } }, {
     name: 'oracle-native-entry',
     configureServer(server) {
       server.middlewares.use((request, _response, next) => {

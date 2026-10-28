@@ -1,3 +1,4 @@
+export { default as OracleVoiceFlow } from './OracleVoiceFlow';
 export { default as OracleAuthoring } from './OracleAuthoring';
 export type { OracleAuthoringProps } from './OracleAuthoring';
 export { manuscriptSource } from '../../../lib/oracle/authoring/source';
