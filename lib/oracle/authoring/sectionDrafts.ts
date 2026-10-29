@@ -1,3 +1,4 @@
+import type {PassageComparison} from './passageComparison';
 import type {AuthoringServices,SourceSnapshot} from './types';
 import type {CardSection} from './cardSections';
 import {WorkingCardStore,type WorkingSection} from './humanDrafts';
@@ -6,6 +7,7 @@ import {AuthoringStore} from './storage';
 import {applyPassageReplacement,plainSection} from '../../../src/mobile/authoring/passageActions';
 
 export interface SectionDraftResult {
+ comparison?:PassageComparison;
  sectionId:string;text:string;evidenceQuotes:string[];changes:{before:string;after:string;reason:string}[];warnings:string[];checked:boolean;applied?:boolean;takeIds?:string[];
  /** Applied text remains a reference while a later revision is being reviewed. */
  appliedText?:string;beforeText?:string;appliedAt?:string;appliedRevision?:number;integrationId?:string;beforeWorking?:WorkingSection;
