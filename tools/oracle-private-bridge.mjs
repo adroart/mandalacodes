@@ -40,8 +40,8 @@ export function createPrivateBridge({token,endpoint,transcription=createArCreate
   try{
    let size=0;const chunks=[];for await(const chunk of req){size+=chunk.length;if(size>15*1024*1024)return send(413,{error:'The request exceeds 15 MiB.'},cors);chunks.push(chunk);}
    let body;try{body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{return send(400,{error:'Use valid JSON.'},cors);}
-   if(!['capabilities','transcribe','transcription-status','propose','writing-status'].includes(body?.operation))return send(400,{error:'Unsupported bridge operation.'},cors);
-   const result=['propose','writing-status'].includes(body.operation)?await writing.handle(body):await transcription.handle(body);
+   if(!['capabilities','transcribe','transcription-status','propose','compare-passage','writing-status'].includes(body?.operation))return send(400,{error:'Unsupported bridge operation.'},cors);
+   const result=['propose','compare-passage','writing-status'].includes(body.operation)?await writing.handle(body):await transcription.handle(body);
    if(body.operation==='capabilities'&&result.status===200){result.body={...result.body,writing:await writing.capabilities(),phone:{direct:true,transport:'private HTTPS',authentication:'pairing key'}};}
    send(result.status,result.body,cors);
   }catch{return send(500,{error:'The Mac bridge could not finish. Your recording is saved.'},cors);}

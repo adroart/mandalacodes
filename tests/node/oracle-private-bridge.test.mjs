@@ -7,13 +7,14 @@ import { createPrivateBridge,loadPairingKey,BRIDGE_PATH } from '../../tools/orac
 const token='a'.repeat(43),endpoint=`https://test.example.ts.net:8443${BRIDGE_PATH}`;
 test('private bridge authenticates before forwarding, forbids other origins and exposes read-only capabilities',async()=>{
  let calls=0;
- const server=createPrivateBridge({token,endpoint,transcription:{handle:async()=>{calls++;return{status:200,body:{service:'AR Create',ready:true}};}},writing:{capabilities:async()=>({available:true})}});
+ const server=createPrivateBridge({token,endpoint,transcription:{handle:async()=>{calls++;return{status:200,body:{service:'AR Create',ready:true}};}},writing:{handle:async body=>({status:200,body:{operation:body.operation}}),capabilities:async()=>({available:true})}});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}${BRIDGE_PATH}`;
  try{
   const headers={'Content-Type':'application/json',Origin:'capacitor://localhost'};
   assert.equal((await fetch(url,{method:'POST',headers,body:'{"operation":"capabilities"}'})).status,401);assert.equal(calls,0);
   assert.equal((await fetch(url,{method:'POST',headers:{...headers,Origin:'https://evil.example',Authorization:`Bearer ${token}`},body:'{}'})).status,403);assert.equal(calls,0);
   const response=await fetch(url,{method:'POST',headers:{...headers,Authorization:`Bearer ${token}`},body:'{"operation":"capabilities"}'});assert.equal(response.status,200);assert.equal((await response.json()).phone.direct,true);assert.equal(calls,1);
+  const comparison=await fetch(url,{method:'POST',headers:{...headers,Authorization:`Bearer ${token}`},body:'{"operation":"compare-passage"}'});assert.equal(comparison.status,200);assert.deepEqual(await comparison.json(),{operation:'compare-passage'});assert.equal(calls,1);
   assert.equal((await fetch(url.replace(BRIDGE_PATH,'/pairing'),{headers:{Origin:'https://evil.example'}})).status,403);
   assert.equal((await fetch(url.replace(BRIDGE_PATH,'/pairing'),{headers:{'x-forwarded-for':'100.1.1.1'}})).status,403);
  }finally{await new Promise(r=>server.close(r));}

@@ -57,6 +57,7 @@ test('middleware enforces same-origin localhost and delegates bounded writing se
  let response=await fetch(url,{method:'POST',headers:{Origin:'https://untrusted.example','Content-Type':'application/json'},body:JSON.stringify(f.body)});assert.equal(response.status,403);assert.equal(f.calls.length,0);
  response=await fetch(url,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',Cookie:'never-forward=this'},body:JSON.stringify(f.body)});assert.equal(response.status,200);
  response=await fetch(url,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({operation:'propose'})});assert.deepEqual(await response.json(),{proposals:[],receivedOperation:'propose'});
+ response=await fetch(url,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({operation:'compare-passage'})});assert.deepEqual(await response.json(),{proposals:[],receivedOperation:'compare-passage'});
 });
 
 test('real AR point-word speaker group keeps its words without inventing a provider interval',async t=>{

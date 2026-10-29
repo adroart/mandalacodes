@@ -158,7 +158,7 @@ export function createArCreateMiddleware({writingHandler,writingCapabilities,...
     try{
       let size=0;const chunks=[];for await(const chunk of req){size+=chunk.length;if(size>MAX_BODY)throw error('The recording request exceeds 15 MiB.',413);chunks.push(chunk);}
       let body;try{body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw error('Send a valid recording JSON request.');}
-      if(['propose','writing-status'].includes(body?.operation)){
+      if(['propose','compare-passage','writing-status'].includes(body?.operation)){
         const result=writingHandler?await writingHandler(body):{status:503,body:{error:'AR Create writing is not connected yet. The recording and words are retained.'}};
         return send(result.status,result.body);
       }
