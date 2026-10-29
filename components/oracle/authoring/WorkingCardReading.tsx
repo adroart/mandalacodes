@@ -6,7 +6,7 @@ import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
 import {passagesFromText} from '../../../lib/oracle/authoring/passageContext';
 import PassageReadingControls from './PassageReadingControls';
 import {cardSections,type CardSection} from '../../../lib/oracle/authoring/cardSections';
-import {SectionDraftStore,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
+import {SectionDraftStore,sectionTitleEdits,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
 import {bundledSource} from '../../../src/mobile/authoring/bundledSource';
 
 const LENSES = [
@@ -58,10 +58,12 @@ export default function WorkingCardReading({ cardNumber, children }: { cardNumbe
   const sections = loaded.card === cardNumber ? loaded.sections : [];
   useLayoutEffect(()=>{
     const element=root.current;if(!element||loaded.card!==cardNumber)return;
-    const tagged:HTMLElement[]=[];
+    const tagged:HTMLElement[]=[],retitled:{element:HTMLElement;html:string}[]=[];
+    const edits=sectionTitleEdits(loaded.drafts,loaded.named[0]?.sourceHash??'');
     // Add identities to existing published paragraphs without moving host-owned nodes.
     for(const lens of LENSES){const target=targets[lens.section];if(!target)continue;
       const nodes=loaded.named.filter(node=>node.lensId===lens.section);
+      for(const heading of target.querySelectorAll<HTMLElement>('h3,h4,h5,h6')){if(heading.closest('.working-card-reading__panel'))continue;const node=nodes.find(node=>normalizedReadingText(node.title)===normalizedReadingText(heading.textContent??''));if(node&&edits[node.id]){retitled.push({element:heading,html:heading.innerHTML});heading.textContent=edits[node.id];}}
       for(const paragraph of target.querySelectorAll<HTMLElement>('p')){
         if(paragraph.closest('.working-card-reading__panel'))continue;
         const text=normalizedReadingText(paragraph.textContent??'');if(text.length<15)continue;
@@ -69,7 +71,7 @@ export default function WorkingCardReading({ cardNumber, children }: { cardNumbe
         if(matches.length===1){paragraph.dataset.cardSectionId=matches[0].id;tagged.push(paragraph);}
       }
     }
-    return()=>{for(const node of tagged)delete node.dataset.cardSectionId;};
+    return()=>{for(const node of tagged)delete node.dataset.cardSectionId;for(const {element,html}of retitled)element.innerHTML=html;};
   },[loaded,targets,cardNumber]);
   return <div ref={root} className="working-card-reading">
     {children}
@@ -115,6 +117,7 @@ function namedReadingRanges(section:WorkingSection,drafts:SectionDraftSession[])
  let sections:CardSection[];try{sections=cardSections(section.source).filter(node=>node.lensId===section.sectionId);}catch{return [];}
  const results=new Map<string,{text:string;at:string}>();
  for(const draft of drafts){if(draft.sourceHash!==section.sourceHash)continue;for(const result of draft.results){if(!result.appliedText||!result.appliedAt)continue;const previous=results.get(result.sectionId);if(!previous||previous.at<result.appliedAt)results.set(result.sectionId,{text:result.appliedText,at:result.appliedAt});}}
+ const edits=sectionTitleEdits(drafts,section.sourceHash);sections=sections.map(node=>({...node,title:edits[node.id]??node.title}));
  const ranges:NamedReadingRange[]=[];
  for(const node of sections){const text=results.get(node.id)?.text??node.text;let start=-1;
   if(section.text===node.sectionText&&text===node.text)start=node.start;
@@ -127,6 +130,6 @@ function namedReadingRanges(section:WorkingSection,drafts:SectionDraftSession[])
 function renderWorkingParagraphs(section:WorkingSection,drafts:SectionDraftSession[]){
  let cursor=0;const human:{start:number;end:number}[]=[];for(const block of section.blocks){const at=section.text.indexOf(block.text,cursor);if(at<0)continue;if(block.origin==='human')human.push({start:at,end:at+block.text.length});cursor=at+block.text.length;}
  const paragraphs=passagesFromText(section.cardNumber,section.sectionId,section.text,section.revision,section.sourceHash);
- const named=namedReadingRanges(section,drafts),shown=new Set<string>();
- return paragraphs.map((paragraph,index)=>{const node=named.find(range=>range.start<=paragraph.start&&range.end>=paragraph.end);const heading=node&&!shown.has(node.section.id)&&section.sectionId!=='CODE';if(node)shown.add(node.section.id);const boundaries=[...new Set([paragraph.start,paragraph.end,...human.flatMap(r=>[Math.max(paragraph.start,r.start),Math.min(paragraph.end,r.end)]).filter(n=>n>paragraph.start&&n<paragraph.end)])].sort((a,b)=>a-b);return <React.Fragment key={paragraph.id}>{section.text.slice(index?paragraphs[index-1].end:0,paragraph.start)}{heading&&<h3 className="working-card-reading__section-heading" data-card-section-id={node!.section.id}>{node!.section.title}</h3>}<p data-card-section-id={node?.section.id}>{boundaries.slice(0,-1).map((from,i)=>{const to=boundaries[i+1],isHuman=human.some(r=>r.start<=from&&r.end>=to);return <span key={from} data-human-origin={isHuman?true:undefined} title={isHuman?'Your words':undefined}>{section.text.slice(from,to)}</span>;})}</p></React.Fragment>;});
+ const named=namedReadingRanges(section,drafts),shown=new Set<string>(),titles=sectionTitleEdits(drafts,section.sourceHash);
+ return paragraphs.map((paragraph,index)=>{const node=named.find(range=>range.start<=paragraph.start&&range.end>=paragraph.end);const heading=node&&!shown.has(node.section.id)&&(section.sectionId!=='CODE'||!!titles[node.section.id]);if(node)shown.add(node.section.id);const boundaries=[...new Set([paragraph.start,paragraph.end,...human.flatMap(r=>[Math.max(paragraph.start,r.start),Math.min(paragraph.end,r.end)]).filter(n=>n>paragraph.start&&n<paragraph.end)])].sort((a,b)=>a-b);return <React.Fragment key={paragraph.id}>{section.text.slice(index?paragraphs[index-1].end:0,paragraph.start)}{heading&&<h3 className="working-card-reading__section-heading" data-card-section-id={node!.section.id}>{node!.section.title}</h3>}<p data-card-section-id={node?.section.id}>{boundaries.slice(0,-1).map((from,i)=>{const to=boundaries[i+1],isHuman=human.some(r=>r.start<=from&&r.end>=to);return <span key={from} data-human-origin={isHuman?true:undefined} title={isHuman?'Your words':undefined}>{section.text.slice(from,to)}</span>;})}</p></React.Fragment>;});
 }

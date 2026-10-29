@@ -97,3 +97,28 @@
 .section-studio-manuscript button {background:transparent;}
 .section-studio-take {border-bottom:1px solid var(--sv-rule);padding:12px 0;}
 @media(max-width:760px){.section-studio-manuscript p {font-size:18px;}.section-studio-manuscript h3 {font-size:15px;}.section-studio-footer:has(button:nth-child(3))>span {display:none;}.section-studio-footer:has(button:nth-child(3))>div {width:100%;justify-content:flex-end;}}
+/* Titles are editable labels, separate from the passage and recording evidence. */
+.section-studio-passage-title {margin:0 0 12px;min-height:34px;flex-shrink:0;font:600 15px/1.45 var(--font-controls);display:flex;align-items:center;}
+.section-voice-studio .section-studio-title-input {display:block;width:100%;min-width:0;min-height:34px;margin:0;padding:4px 0;border:0;border-bottom:1px solid var(--sv-rule);border-radius:0;background:transparent;color:inherit;font:inherit;letter-spacing:inherit;}
+.section-voice-studio .section-studio-title-input:hover {border-bottom-color:var(--sv-rule);}
+.section-voice-studio .section-studio-title-input:focus {outline:0;border-bottom-color:var(--sv-accent);}
+.section-voice-studio .section-studio-title-error {font-size:11px;color:#f1c5a2;}
+.section-studio-content--review {display:flex;flex-direction:column;}
+.section-studio-content--review .section-studio-comparison {flex:1 0 320px;height:auto;min-height:320px;}
+.section-studio-original,.section-voice-studio .section-studio-comparison textarea,.section-voice-studio .word-replay {font:16px/1.65 var(--font-controls);}
+.section-studio-manuscript p {font:16px/1.7 var(--font-controls);}
+.section-studio-comparison header {height:44px;margin-bottom:8px;}
+.section-studio-comparison>section {min-height:0;overflow:hidden;}
+.section-studio-comparison .word-replay {flex:1;height:auto;}
+.section-voice-studio .section-studio-scroll-link {font-size:10px;min-height:32px;padding:5px 7px;color:var(--sv-muted);background:transparent;}
+.section-voice-studio .section-studio-scroll-link[aria-pressed=true] {border-color:var(--sv-accent);color:var(--sv-accent);}
+@media(max-width:760px){
+ .section-studio-content--review .section-studio-comparison {grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr);flex-basis:300px;min-height:300px;}
+ .section-studio-comparison>section {padding:0 12px 10px;}
+ .section-studio-comparison>section+section {border-left:0;border-top:1px solid var(--sv-rule);}
+ .section-studio-comparison header {height:38px;margin-bottom:4px;}
+ .section-studio-passage-title {margin-bottom:6px;min-height:32px;font-size:16px;}
+ .section-voice-studio .section-studio-title-input {font-size:16px;}
+ .section-studio-original,.section-voice-studio .section-studio-comparison textarea,.section-voice-studio .word-replay {font-size:16px;line-height:1.55;}
+ .section-studio-comparison header button {min-height:32px;padding:5px 8px;}
+}

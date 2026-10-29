@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import {beforeEach,expect,it,vi} from 'vitest';
-import {SectionDraftStore,createSectionDraftSession,integrateSectionDraft,getIntegratedIntro,undoIntegratedSection,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
+import {SectionDraftStore,sectionTitleEdits,createSectionDraftSession,integrateSectionDraft,getIntegratedIntro,undoIntegratedSection,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
 import type {CardSection} from '../../../lib/oracle/authoring/cardSections';
 import {WorkingCardStore,editWorkingText} from '../../../lib/oracle/authoring/humanDrafts';
 import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
@@ -40,4 +40,14 @@ it('rejects a discarded take before writing any working text',async()=>{
 });
 it('rejects a missing take rather than borrowing the newest recording',async()=>{
  const {session,sections,services}=await reviewTake('review','missing');await expect(integrateSectionDraft(session.id,sections[0].id,services)).rejects.toThrow('evidence');expect(await working.get(2,'DESIGN')).toBeUndefined();
+});
+
+it('saves manual titles separately from speech and chooses the latest title for the same source',async()=>{
+ const {session,sections}=await review();const updated=await drafts.save({...session,titleEdits:{[sections[0].id]:{text:'My direction',updatedAt:'2026-10-29T10:00:00Z'}}},session.version);
+ expect(updated.results).toEqual(session.results);expect(updated.rawTranscript).toBe(session.rawTranscript);expect(updated.sections[0].title).toBe(sections[0].title);
+ const later={...updated,titleEdits:{[sections[0].id]:{text:'A later title',updatedAt:'2026-10-29T11:00:00Z'}}};
+ expect(sectionTitleEdits([later,updated],session.sourceHash)).toEqual({[sections[0].id]:'A later title'});expect(sectionTitleEdits([later],'a different source')).toEqual({});
+});
+it('rejects blank or multiline titles and unknown title destinations',async()=>{
+ const {session,sections}=await review();for(const [id,text]of [[sections[0].id,'  '],[sections[0].id,'Two\nlines'],['unknown','A title']])await expect(drafts.save({...session,titleEdits:{[id]:{text,updatedAt:'2026-10-29T10:00:00Z'}}},session.version)).rejects.toThrow('Use a title');
 });

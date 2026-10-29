@@ -12,8 +12,15 @@ export interface SectionDraftResult {
 }
 export interface SectionDraftSession {
  id:string;cardNumber:number;sourceHash:string;createdAt:string;updatedAt:string;version:number;source:SourceSnapshot;sections:CardSection[];startSectionId:string;
+ titleEdits?:Record<string,{text:string;updatedAt:string}>;
  captureSessionId?:string;captureId?:string;markers:{atMs:number;sectionId:string}[];rawTranscript:string;results:SectionDraftResult[];unassigned:{text:string;reason:string}[];
  state:'ready'|'recording'|'transcribing'|'assimilating'|'review'|'complete';error?:string;
+}
+/** Titles are hand-edited metadata; they never enter the spoken passage or its evidence. */
+export function sectionTitleEdits(sessions:SectionDraftSession[],sourceHash:string):Record<string,string>{
+ const edits:Record<string,{text:string;updatedAt:string}>={};
+ for(const session of sessions)if(session.sourceHash===sourceHash)for(const [id,edit]of Object.entries(session.titleEdits??{}))if(!edits[id]||edits[id].updatedAt<edit.updatedAt)edits[id]=edit;
+ return Object.fromEntries(Object.entries(edits).map(([id,edit])=>[id,edit.text]));
 }
 export function createSectionDraftSession(source:SourceSnapshot,sections:CardSection[],startSectionId=sections[0]?.id):SectionDraftSession {
  if(!startSectionId||!sections.some(section=>section.id===startSectionId))throw new Error('Choose a named card section before recording.');
@@ -32,6 +39,7 @@ export class SectionDraftStore {
  async save(next:SectionDraftSession,expectedVersion:number):Promise<SectionDraftSession>{
   if(!next.id||!Number.isInteger(next.cardNumber)||next.cardNumber<1||next.cardNumber>64||next.source.cardNumber!==next.cardNumber||next.sourceHash!==next.source.hash||!next.sections.length||new Set(next.sections.map(s=>s.id)).size!==next.sections.length||!next.sections.some(s=>s.id===next.startSectionId))throw new Error('This section draft does not match its card.');
   if(!Number.isInteger(expectedVersion)||expectedVersion<0||typeof next.rawTranscript!=='string'||next.sections.some(section=>section.cardNumber!==next.cardNumber||section.sourceHash!==next.sourceHash||section.start<0||section.end<section.start||section.sectionText.slice(section.start,section.end)!==section.text)||next.markers.some(marker=>!Number.isFinite(marker.atMs)||marker.atMs<0||!next.sections.some(section=>section.id===marker.sectionId)))throw new Error('This draft contains invalid section boundaries or recording markers.');
+  if(Object.entries(next.titleEdits??{}).some(([id,edit])=>!next.sections.some(section=>section.id===id)||!edit.text.trim()||edit.text.length>240||/[\r\n]/.test(edit.text)||!Number.isFinite(Date.parse(edit.updatedAt))))throw new Error('Use a title between 1 and 240 characters on one line.');
   if(next.results.some(result=>!next.sections.some(section=>section.id===result.sectionId))||new Set(next.results.map(result=>result.sectionId)).size!==next.results.length)throw new Error('A draft result has an unknown or duplicate section.');
   const saved=await this.run<SectionDraftSession>(['sessions','history'],'readwrite',(tx,done,fail)=>{const store=tx.objectStore('sessions'),request=store.get(next.id);request.onsuccess=()=>{const previous=request.result as SectionDraftSession|undefined;if((previous?.version??0)!==expectedVersion)return fail(new Error('Another tab changed this section draft. Reopen it before editing.'));if(previous&&(previous.cardNumber!==next.cardNumber||previous.sourceHash!==next.sourceHash))return fail(new Error('A saved draft cannot change its source card.'));
    const results=next.results.map(result=>{const prior=previous?.results.find(r=>r.sectionId===result.sectionId);return prior?.appliedText&&prior.text!==result.text?{...result,applied:false,appliedText:prior.appliedText,beforeText:prior.beforeText,appliedAt:prior.appliedAt,appliedRevision:prior.appliedRevision,integrationId:prior.integrationId,beforeWorking:prior.beforeWorking}:result;});
