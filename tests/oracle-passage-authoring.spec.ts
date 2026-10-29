@@ -14,7 +14,7 @@ async function selectPassage(page:import('@playwright/test').Page){
 test('selected passage opens isolated editable teleprompter without losing reader context',async({page},info)=>{
  const selected=await selectPassage(page);await page.getByRole('button',{name:'Re-record',exact:true}).click();
  const dialog=page.getByRole('dialog');await expect(dialog.locator('.section-studio-manuscript p')).toHaveText(selected);
- await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeVisible();
+ await expect(dialog.getByRole('button',{name:'Start recording',exact:true})).toBeVisible();
  await expect(page).toHaveURL(/\/universal-language\/2$/);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:info.outputPath('isolated-passage.png')});
@@ -24,7 +24,7 @@ test('re-record waits for review, replaces one passage verbatim and undo restore
  test.skip(browserName!=='chromium','Uses Chromium fake microphone');await context.grantPermissions(['microphone'],{origin:baseURL!});
  await page.route('**/api/oracle/authoring/ar-create',route=>{const body=route.request().postDataJSON(),text='My spoken version is clear and entirely my own.';return body.operation==='transcribe'?route.fulfill({json:{provider:'fixture',segments:[{text,startMs:0,endMs:Math.min(1000,body.durationMs),timing:'provider',sectionId:'CODE'}]}}):route.fulfill({json:{assimilation:{sections:[{sectionId:body.assimilation.startSectionId,text,evidenceQuotes:[text],changes:[],warnings:[]}],unassigned:[]}}});});
  const selected=await selectPassage(page);await page.getByRole('button',{name:'Re-record',exact:true}).click();const dialog=page.getByRole('dialog');
- await dialog.getByRole('button',{name:'Record',exact:true}).click();await expect(dialog.getByRole('button',{name:'Pause',exact:true})).toBeVisible();
+ await dialog.getByRole('button',{name:'Start recording',exact:true}).click();await expect(dialog.getByRole('button',{name:'Pause',exact:true})).toBeVisible();
  await expect(dialog.locator('.section-studio-status')).toContainText('0:01');await dialog.getByRole('button',{name:'Finish & review',exact:true}).click();
  await expect(dialog.getByRole('textbox',{name:'Your section words',exact:true})).toHaveValue('My spoken version is clear and entirely my own.');
  await expect(page.locator('.working-card-reading__words')).toHaveCount(0);
@@ -56,6 +56,6 @@ test('passage selection leads to a durable connection without duplicating prose'
 
 test('reading stays clear until a recording or passage mode is explicitly activated',async({page},info)=>{
  await page.goto('/universal-language/2');const tools=page.getByRole('complementary',{name:'Reading and recording tools'}),dialog=page.getByRole('dialog');await expect(page.locator('.card-reading')).toBeVisible();await expect(tools).toHaveCount(0);await expect(dialog).toHaveCount(0);await expect(page.locator('[data-passage-tools-active]')).toHaveCount(0);await page.screenshot({path:info.outputPath('reading-without-recording-overlay.png')});
- await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();await expect(dialog).toBeVisible();await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeEnabled();await dialog.getByRole('button',{name:'Done',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(tools).toHaveCount(0);
+ await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();await expect(dialog).toBeVisible();await expect(dialog.getByRole('button',{name:'Start recording',exact:true})).toBeEnabled();await dialog.getByRole('button',{name:'Done',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(tools).toHaveCount(0);
  await page.getByRole('button',{name:'Open passage tools',exact:true}).click();await expect(tools).toBeVisible();await page.getByRole('button',{name:'Exit passage mode',exact:true}).click();await expect(tools).toHaveCount(0);await expect(page.locator('[data-passage-tools-active]')).toHaveCount(0);await page.reload();await expect(tools).toHaveCount(0);await expect(dialog).toHaveCount(0);
 });

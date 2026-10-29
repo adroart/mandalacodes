@@ -56,3 +56,17 @@
 .section-studio-phrase-prompt{margin:18px 0;padding:18px;border:1px solid var(--sv-accent);border-radius:7px;background:#202818}.section-studio-phrase-prompt p{font:18px/1.7 var(--font-controls);white-space:pre-wrap}.section-studio-phrase-prompt small,.section-studio-phrase-prompt span{font-size:11px;color:var(--sv-muted)}.section-studio-connected{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.section-studio-connected button{font-size:11px;min-height:34px}
 @media(max-width:760px){.section-studio-views{grid-template-columns:26px repeat(3,minmax(0,1fr)) 44px}.section-studio-views .section-studio-mobile-close{width:44px}}
 @media(max-width:760px){.section-studio-pair-columns>[data-review-pane="words"]{max-height:none}}
+
+/* Put the recording action beside its passage, with a clear persistent next step. */
+.section-studio-manuscript>section[aria-current=step] .section-studio-select{display:inline-flex;align-items:center;justify-content:center}
+.section-studio-footer>.section-studio-next-action{max-width:30ch;font-size:12px;line-height:1.4}
+.section-studio-current{grid-template-columns:minmax(0,1fr) 82px}
+.section-voice-studio .section-studio-choose{display:flex;gap:5px;justify-content:center;border:1px solid var(--sv-rule);border-radius:5px;min-height:36px;font-size:11px}
+.section-studio-current .section-studio-choose span{font:inherit;color:inherit}
+@media(max-width:760px){
+ .section-studio-current{grid-template-columns:minmax(0,1fr) 69px;gap:0 4px}
+ .section-voice-studio .section-studio-choose{font-size:10px;gap:3px}
+ .section-studio-footer>.section-studio-next-action{font-size:10px;max-width:15ch}
+ .section-studio-footer>div{flex-shrink:0}
+ .section-studio-manuscript header>button{min-height:40px;font-size:11px}
+}
