@@ -24,8 +24,9 @@ function WebsiteDestination() {
 }
 function OracleRoutes() {
   useEffect(()=>{
-    const resume=()=>{try{const jobs=JSON.parse(localStorage.getItem('oracle.human.jobs.v1')??'[]');if(Array.isArray(jobs)&&jobs.some(job=>['queued','transcribing','organizing','applying'].includes(job.state)))void import('./authoring/OracleAuthoringPage').then(module=>module.resumePendingHumanAuthoring()).catch(()=>undefined);}catch{/* Audio remains retained if activity metadata needs recovery. */}};
-    resume();const visible=()=>{if(!document.hidden)resume();};window.addEventListener('online',resume);document.addEventListener('visibilitychange',visible);return()=>{window.removeEventListener('online',resume);document.removeEventListener('visibilitychange',visible);};
+    let active=true,cleanup:(()=>void)|undefined;
+    const resume=()=>void import('./authoring/backgroundRecovery').then(module=>{if(!active)return;if(!cleanup)cleanup=module.startPendingHumanRecovery();module.resumePendingHumanAuthoring();}).catch(()=>undefined);
+    resume();const visible=()=>{if(!document.hidden)resume();};window.addEventListener('online',resume);document.addEventListener('visibilitychange',visible);return()=>{active=false;cleanup?.();window.removeEventListener('online',resume);document.removeEventListener('visibilitychange',visible);};
   },[]);
   const { pathname } = useLocation();
   useReadingPosition(pathname);

@@ -2,11 +2,13 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { WorkingCardStore, sectionHumanPercent, type WorkingSection } from '../../../lib/oracle/authoring/humanDrafts';
 import './WorkingCardReading.css';
+import {recordingAudioSession} from '../../../lib/oracle/authoring/audioEvidence';
 import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
 import {passagesFromText} from '../../../lib/oracle/authoring/passageContext';
 import PassageReadingControls from './PassageReadingControls';
 import {cardSections,type CardSection} from '../../../lib/oracle/authoring/cardSections';
 import {SectionDraftStore,sectionTitleEdits,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
+import {namedReadingRanges} from './namedReadingRanges';
 import {bundledSource} from '../../../src/mobile/authoring/bundledSource';
 
 const LENSES = [
@@ -92,7 +94,7 @@ function WorkingLens({ section, target, label,drafts }: { section: WorkingSectio
   const percent = sectionHumanPercent(section);
   const [audio,setAudio]=useState(''),[error,setError]=useState('');
   useEffect(()=>()=>{if(audio)URL.revokeObjectURL(audio);},[audio]);
-  const listen=async(sessionId:string,captureId:string)=>{try{const blob=await new AuthoringStore().audio(sessionId,captureId);setAudio(URL.createObjectURL(blob));}catch{setError('The original recording is unavailable on this device.');}};
+  const listen=async(sessionId:string,captureId:string)=>{try{const draft=await draftStore.get(sessionId);const audioId=recordingAudioSession(draft as (SectionDraftSession&{takes?:{captureId:string;captureSessionId?:string}[]})|undefined,sessionId,captureId);const blob=await new AuthoringStore().audio(audioId,captureId);setAudio(URL.createObjectURL(blob));}catch{setError('The original recording is unavailable on this device.');}};
   useLayoutEffect(() => {
     if (!published) target.setAttribute('data-working-card-view', '');
     else target.removeAttribute('data-working-card-view');
@@ -112,21 +114,6 @@ function WorkingLens({ section, target, label,drafts }: { section: WorkingSectio
 }
 
 const normalizedReadingText=(text:string)=>text.replace(/[_*]/g,'').replace(/\s+/g,' ').trim();
-interface NamedReadingRange{section:CardSection;start:number;end:number}
-function namedReadingRanges(section:WorkingSection,drafts:SectionDraftSession[]):NamedReadingRange[]{
- let sections:CardSection[];try{sections=cardSections(section.source).filter(node=>node.lensId===section.sectionId);}catch{return [];}
- const results=new Map<string,{text:string;at:string}>();
- for(const draft of drafts){if(draft.sourceHash!==section.sourceHash)continue;for(const result of draft.results){if(!result.appliedText||!result.appliedAt)continue;const previous=results.get(result.sectionId);if(!previous||previous.at<result.appliedAt)results.set(result.sectionId,{text:result.appliedText,at:result.appliedAt});}}
- const edits=sectionTitleEdits(drafts,section.sourceHash);sections=sections.map(node=>({...node,title:edits[node.id]??node.title}));
- const ranges:NamedReadingRange[]=[];
- for(const node of sections){const text=results.get(node.id)?.text??node.text;let start=-1;
-  if(section.text===node.sectionText&&text===node.text)start=node.start;
-  else{const at=section.text.indexOf(text);if(at>=0&&section.text.indexOf(text,at+1)<0)start=at;}
-  if(start>=0)ranges.push({section:node,start,end:start+text.length});
- }
- // A label is useful only if its entire current range is unambiguous.
- return ranges.filter((range,index)=>!ranges.some((other,j)=>index!==j&&range.start<other.end&&range.end>other.start));
-}
 function renderWorkingParagraphs(section:WorkingSection,drafts:SectionDraftSession[]){
  let cursor=0;const human:{start:number;end:number}[]=[];for(const block of section.blocks){const at=section.text.indexOf(block.text,cursor);if(at<0)continue;if(block.origin==='human')human.push({start:at,end:at+block.text.length});cursor=at+block.text.length;}
  const paragraphs=passagesFromText(section.cardNumber,section.sectionId,section.text,section.revision,section.sourceHash);

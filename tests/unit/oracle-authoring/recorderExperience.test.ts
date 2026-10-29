@@ -113,3 +113,62 @@ describe('in-card recording controls', () => {
     expect(store.save).not.toHaveBeenCalled();
   });
 });
+
+import {startVoiceCapturePass} from '../../../src/mobile/authoring/voiceCapturePass';
+async function settlePass(){for(let i=0;i<60;i++)await Promise.resolve();}
+describe('rolling voice passes',()=>{
+ it('Send finishes by default and releases the microphone after saving final audio',async()=>{
+  const {store,initial,chunks}=memoryStore(),onSegment=vi.fn();
+  const active=await startVoiceCapturePass(store,initial,'CODE',vi.fn(),2,{onSegment});
+  now=1000;await active.flush();await settlePass();
+  expect(active.state()).toBe('inactive');expect(getUserMedia).toHaveBeenCalledTimes(1);
+  expect(chunks).toHaveLength(1);expect(onSegment).toHaveBeenCalledTimes(1);expect(track.stop).toHaveBeenCalledTimes(1);
+ });
+ it('retains the microphone across Send next and does not wait for slow processing',async()=>{
+  const {store,initial}=memoryStore();let finishProcessing!:()=>void;
+  const onSegment=vi.fn(()=>new Promise<void>(resolve=>{finishProcessing=resolve;}));
+  const active=await startVoiceCapturePass(store,initial,'CODE',vi.fn(),2,{continuous:true,onSegment});
+  now=1000;await active.flush({nextSectionId:'ICHING'});
+  expect(active.state()).toBe('recording');expect(active.currentCaptureId()).not.toBe(active.captureId);
+  expect(getUserMedia).toHaveBeenCalledTimes(1);expect(track.stop).not.toHaveBeenCalled();
+  expect(active.pendingProcessing()).toBe(1);
+  const saved=await store.load('session');expect(saved!.session.markers.at(-1)?.sectionId).toBe('ICHING');
+  finishProcessing();active.setContinuous(false);now=1500;await active.flush();await active.completion;
+  expect(track.stop).toHaveBeenCalledTimes(1);
+ });
+ it('registers the durable job before exposing the next active take',async()=>{
+  const {store,initial}=memoryStore(),events:string[]=[];let register!:()=>void;
+  const active=await startVoiceCapturePass(store,initial,'CODE',vi.fn(),2,{continuous:true,onActive:()=>events.push('active'),onSegmentReady:()=>new Promise<void>(yes=>{register=()=>{events.push('registered');yes();};})});
+  now=1000;const flushing=active.flush();await settlePass();expect(events).toEqual(['active']);
+  register();await flushing;expect(events).toEqual(['active','registered','active']);
+  const stopping=active.stop();await settlePass();register();await stopping;
+ });
+ it('rolls before byte limits in the same section even with continuous Send next off',async()=>{
+  const {store,initial,chunks}=memoryStore(),onSegment=vi.fn();
+  const active=await startVoiceCapturePass(store,initial,'CODE',vi.fn(),2,{maxBytes:6,onSegment});
+  now=1000;Recorder.latest.emit('123456');await settlePass();
+  expect(active.state()).toBe('recording');expect(active.currentCaptureId()).not.toBe(active.captureId);
+  expect(getUserMedia).toHaveBeenCalledTimes(1);expect(await chunks[0].blob.text()).toBe('123456');
+  expect((await store.load('session'))!.session.markers.every(marker=>marker.sectionId==='CODE')).toBe(true);
+  now=1500;await active.stop();expect(onSegment).toHaveBeenCalledTimes(2);
+ });
+});
+
+it('distinguishes safety continuation, explicit Send, and Finish while retaining the same microphone',async()=>{
+ const {store,initial}=memoryStore(),onSegmentReady=vi.fn();
+ const active=await startVoiceCapturePass(store,initial,'CODE',vi.fn(),2,{maxBytes:6,onSegmentReady});
+ now=1000;Recorder.latest.emit('123456');await settlePass();
+ expect(onSegmentReady.mock.calls.map(call=>call[2].reason)).toEqual(['boundary']);
+ expect(getUserMedia).toHaveBeenCalledTimes(1);expect(track.stop).not.toHaveBeenCalled();
+ now=1500;await active.flush({continue:true});
+ expect(onSegmentReady.mock.calls.map(call=>call[2].reason)).toEqual(['boundary','send']);
+ expect(getUserMedia).toHaveBeenCalledTimes(1);expect(track.stop).not.toHaveBeenCalled();
+ now=2000;await active.stop();
+ expect(onSegmentReady.mock.calls.map(call=>call[2].reason)).toEqual(['boundary','send','stop']);
+ expect(getUserMedia).toHaveBeenCalledTimes(1);expect(track.stop).toHaveBeenCalledTimes(1);
+});
+
+it('keeps a bounded phrase capture single-take and stops paused safety rolls',async()=>{
+ const first=memoryStore();const scoped=await startVoiceCapturePass(first.store,first.initial,'CODE',vi.fn(),2,{maxBytes:6,rollOnBoundary:false});now=1000;Recorder.latest.emit('123456');await scoped.completion;expect(scoped.state()).toBe('inactive');expect(getUserMedia).toHaveBeenCalledTimes(1);
+ const second=memoryStore();const paused=await startVoiceCapturePass(second.store,second.initial,'CODE',vi.fn(),2,{maxBytes:6,continuous:true});paused.pause();now=2000;Recorder.latest.emit('123456');await paused.completion;expect(paused.state()).toBe('inactive');expect(getUserMedia).toHaveBeenCalledTimes(2);
+});

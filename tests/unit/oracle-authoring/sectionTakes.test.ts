@@ -1,7 +1,8 @@
 import 'fake-indexeddb/auto';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
-import {SectionDraftStore,createSectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
+import {SectionDraftStore,createSectionDraftSession,integrateSectionDraft} from '../../../lib/oracle/authoring/sectionDrafts';
+import {WorkingCardStore} from '../../../lib/oracle/authoring/humanDrafts';
 import {cardSections} from '../../../lib/oracle/authoring/cardSections';
 import {createSession,sourceSnapshot} from '../../../lib/oracle/authoring/workflow';
 import {assimilateSections} from '../../../src/mobile/authoring/sectionAssimilation';
@@ -67,4 +68,87 @@ it('safely discards one legacy test take but preserves ambiguous multi-take draf
  const {sections,session,draft}=await fixture();const edited=await drafts.save({...draft,rawTranscript:'Testing.',results:[{...result(sections[0].id,'Testing.').sections[0],checked:false}]},draft.version);
  const discarded=await discardSectionTake(edited.id,'clip-1');expect(discarded.results).toEqual([]);expect(discarded.rawTranscript).toBe('');expect(discarded.takes?.[0].state).toBe('discarded');expect(await(await audio.audio(session.id,'clip-1')).text()).toBe('Audio clip-1');
  const multiple=await fixture(2);await expect(discardSectionTake(multiple.draft.id,'clip-1')).rejects.toThrow('several recordings');
+});
+it('loads only explicit destination cards and saves their drafts under the correct source',async()=>{
+ const {source,sections,draft}=await fixture();
+ const markdown='### The drive — Gate 14\nFourteen original.';
+ const other=await sourceSnapshot(14,'original',markdown,[{id:'DESIGN',title:'Human Design',start:0,end:markdown.length}]),destination=cardSections(other)[0];
+ const words='My drive. Next card fourteen. My fourteen words.';
+ const loadSource=vi.fn(async(number:number)=>number===14?other:source);
+ assimilate.mockImplementation(async input=>{
+  expect(input.relatedSources?.[0].cardNumber).toBe(14);expect(input.relatedSources?.[0].sections[0].text).toBe('Fourteen original.');
+  return {sections:[...result(sections[0].id,'My drive.').sections,...result(destination.id,'My fourteen words.').sections],unassigned:[]};
+ });
+ await queueSectionTake(draft.id,'clip-1',sections[0].id,{loadSource,transcribe:async()=>response(words)});
+ const saved=await waitState(draft.id,'clip-1','review');expect(loadSource).toHaveBeenCalledWith(14);
+ expect(saved.results.map(r=>r.sectionId)).toEqual([sections[0].id]);expect(saved.linkedSessionIds).toHaveLength(1);
+ const linked=(await drafts.get(saved.linkedSessionIds![0]))!;expect((await audio.load(saved.captureSessionId!))!.session.relatedSources?.map(source=>source.cardNumber)).toEqual([14]);expect((linked as TakeSession).takes?.every(take=>take.state==='review')).toBe(true);expect(linked.cardNumber).toBe(14);expect(linked.sourceHash).toBe(other.hash);expect(linked.results[0].comparisonOriginal).toBe('Fourteen original.');expect(linked.captureSessionId).toBe(saved.captureSessionId);expect(linked.rawTranscript).toBe(words);
+ const resumedTranscribe=vi.fn(async()=>response(words));await resumeSectionTakes({loadSource,transcribe:resumedTranscribe});await new Promise(resolve=>setTimeout(resolve,30));expect(assimilate).toHaveBeenCalledTimes(1);expect(resumedTranscribe).not.toHaveBeenCalled();expect((await getTakeSession(linked.id))!.takes?.every(take=>take.state==='review')).toBe(true);
+ await expect(discardSectionTake(draft.id,'clip-1')).rejects.toThrow('another card');
+});
+it('does not load a card from an incidental gate reference and records the exact latest comparison baseline',async()=>{
+ const {source,sections,draft}=await fixture();
+ const integrated=await drafts.save({...draft,results:[{...result(sections[0].id,'My earlier human writing.').sections[0],checked:true,applied:true,appliedText:'My earlier human writing.',beforeText:sections[0].text,appliedAt:new Date().toISOString()}]},draft.version);
+ const loadSource=vi.fn(async()=>source);assimilate.mockImplementation(async input=>{expect(input.sections[0].text).toBe('My earlier human writing.');return result(sections[0].id,'A connection with gate fourteen.');});
+ await queueSectionTake(integrated.id,'clip-1',sections[0].id,{loadSource,transcribe:async()=>response('A connection with gate fourteen.')});
+ const saved=await waitState(draft.id,'clip-1','review');expect(loadSource).not.toHaveBeenCalled();expect(saved.results[0].comparisonOriginal).toBe('My earlier human writing.');expect(saved.results[0].beforeText).toBe(sections[0].text);
+});
+it('persists a bounded transient retry deadline and resumes from cached speech when online',async()=>{
+ const {source,sections,draft}=await fixture();const transcribe=vi.fn(async()=>response('My direction.'));assimilate.mockRejectedValueOnce(Error('Network temporarily unavailable')).mockResolvedValue(result(sections[0].id,'My direction.'));
+ const services={loadSource:async()=>source,transcribe};await queueSectionTake(draft.id,'clip-1',sections[0].id,services);
+ const failed=await waitState(draft.id,'clip-1','failed');expect(failed.takes?.[0].retryAttempts).toBe(1);expect(failed.takes?.[0].retryAt).toBeGreaterThan(Date.now());
+ await drafts.save({...failed,takes:failed.takes?.map(t=>({...t,retryAt:Date.now()-1}))} as TakeSession,failed.version);
+ const {startSectionTakeRecovery}=await import('../../../src/mobile/authoring/sectionTakes');const stop=startSectionTakeRecovery(services);
+ try{const reviewed=await waitState(draft.id,'clip-1','review');expect(reviewed.takes?.[0].retryAt).toBeUndefined();expect(transcribe).toHaveBeenCalledTimes(1);}finally{stop();}
+});
+it('infers only an opening spoken edit command and respects the explicit chosen intent',async()=>{
+ const {source,sections,draft}=await fixture(2);const services={loadSource:async()=>source,transcribe:async()=>response('Add this. My further words.')};
+ assimilate.mockImplementation(async input=>result(input.startSectionId,input.words));
+ await queueSectionTake(draft.id,'clip-1',sections[0].id,services);const auto=await waitState(draft.id,'clip-1','review');expect(auto.results[0].editIntent).toBe('add');expect(assimilate.mock.calls[0][0].intent).toBe('add');
+ await queueSectionTake(draft.id,'clip-2',sections[1].id,services,[],{intent:'replace'});const explicit=await waitState(draft.id,'clip-2','review');expect(explicit.results.find(result=>result.sectionId===sections[1].id)?.editIntent).toBe('replace');expect(assimilate.mock.calls[1][0].intent).toBe('replace');
+});
+it('accumulates same-section safety rolls when later transcription finishes before the earlier AI review',async()=>{
+ const {source,sections,draft}=await fixture(2),first=deferred<ReturnType<typeof result>>();
+ const transcribe=vi.fn(async(_session,capture)=>response(capture.id==='clip-1'?'First spoken sentence.':'Second spoken sentence.'));
+ assimilate.mockReturnValueOnce(first.promise).mockImplementation(async input=>result(input.startSectionId,input.words));const services={loadSource:async()=>source,transcribe};
+ await queueSectionTake(draft.id,'clip-1',sections[0].id,services);await waitState(draft.id,'clip-1','assimilating');
+ await queueSectionTake(draft.id,'clip-2',sections[0].id,services,[],{continuationOf:'clip-1'});
+ await vi.waitFor(()=>expect(transcribe).toHaveBeenCalledTimes(2));expect(assimilate).toHaveBeenCalledTimes(1);
+ first.resolve(result(sections[0].id,'First spoken sentence.'));
+ const completed=await waitState(draft.id,'clip-2','review');expect(completed.results[0].text).toBe('First spoken sentence.\nSecond spoken sentence.');expect(completed.results[0].takeIds).toEqual(['clip-1','clip-2']);expect(completed.results[0].comparisonOriginal).toBe(sections[0].text);expect(assimilate.mock.calls[1][0].sections[0].text).toBe(sections[0].text);expect(assimilate.mock.calls[1][0].segments).toEqual([{text:'First spoken sentence.',startMs:0,endMs:1000},{text:'Second spoken sentence.',startMs:1000,endMs:2000}]);
+ const checked=await drafts.save({...completed,results:completed.results.map(result=>({...result,checked:true}))},completed.version);await integrateSectionDraft(checked.id,sections[0].id,services);
+ const working=(await new WorkingCardStore().get(2,'DESIGN'))!;expect(working.text).toContain('First spoken sentence.\nSecond spoken sentence.');expect(working.blocks.filter(block=>block.origin==='human').flatMap(block=>block.evidence.map(item=>item.captureId))).toEqual(['clip-1','clip-2']);
+});
+it('holds an accumulated candidate if a person changes the auto-prepared earlier segment',async()=>{
+ const {source,sections,draft}=await fixture(2),later=deferred<ReturnType<typeof result>>();assimilate.mockResolvedValueOnce(result(sections[0].id,'First sentence.')).mockReturnValueOnce(later.promise);
+ const services={loadSource:async()=>source,transcribe:async(_session,capture)=>response(capture.id==='clip-1'?'First sentence.':'Second sentence.')};
+ await queueSectionTake(draft.id,'clip-1',sections[0].id,services);await waitState(draft.id,'clip-1','review');await queueSectionTake(draft.id,'clip-2',sections[0].id,services,[],{continuationOf:'clip-1'});await waitState(draft.id,'clip-2','assimilating');
+ const current=(await getTakeSession(draft.id))!;await drafts.save({...current,results:current.results.map(result=>({...result,text:'My newer manual sentence.'}))},current.version);
+ later.resolve(result(sections[0].id,'First sentence.\nSecond sentence.'));const failed=await waitState(draft.id,'clip-2','failed');expect(failed.results[0].text).toBe('My newer manual sentence.');expect(failed.takes?.find(take=>take.captureId==='clip-2')?.error).toContain('edited or integrated');
+});
+it('rejects a late earlier AI response when another window already saved the newer accumulated candidate',async()=>{
+ const {source,sections,draft}=await fixture(2),earlier=deferred<ReturnType<typeof result>>();assimilate.mockReturnValue(earlier.promise);
+ const services={loadSource:async()=>source,transcribe:async()=>response('First sentence.')};await queueSectionTake(draft.id,'clip-1',sections[0].id,services);await waitState(draft.id,'clip-1','assimilating');
+ const current=(await getTakeSession(draft.id))!,newer={...result(sections[0].id,'First sentence. Second sentence.').sections[0],checked:false,takeIds:['clip-1','clip-2']};
+ await drafts.save({...current,results:[newer],takes:[...(current.takes??[]),{id:'clip-2',captureId:'clip-2',continuationOf:'clip-1',startSectionId:sections[0].id,markers:[],state:'review',createdAt:current.createdAt,preparedFingerprints:{[sections[0].id]:JSON.stringify(newer)}}]} as TakeSession,current.version);
+ earlier.resolve(result(sections[0].id,'First sentence.'));const held=await waitState(draft.id,'clip-1','failed');expect(held.results[0].text).toBe('First sentence. Second sentence.');expect(held.results[0].takeIds).toEqual(['clip-1','clip-2']);
+});
+it('carries the initial focus and offsets every marker when a safety roll follows a spoken section change',async()=>{
+ const {source,sections,draft}=await fixture(2);assimilate.mockImplementation(async input=>result(sections[0].id,input.words));const services={loadSource:async()=>source,transcribe:async(_session,capture)=>response(capture.id==='clip-1'?'Opening words. Next section.':'Centre words.')};
+ await queueSectionTake(draft.id,'clip-1',sections[0].id,services,[{atMs:0,sectionId:sections[0].id},{atMs:500,sectionId:sections[1].id}]);await waitState(draft.id,'clip-1','review');
+ await queueSectionTake(draft.id,'clip-2',sections[1].id,services,[{atMs:0,sectionId:sections[1].id}],{continuationOf:'clip-1'});await waitState(draft.id,'clip-2','review');
+ expect(assimilate.mock.calls[1][0].startSectionId).toBe(sections[0].id);expect(assimilate.mock.calls[1][0].markers).toEqual([{atMs:0,sectionId:sections[0].id},{atMs:500,sectionId:sections[1].id},{atMs:1000,sectionId:sections[1].id}]);
+});
+it('keeps issue word times local to their capture while rolling AI segment times are cumulative',async()=>{
+ const {source,sections,draft}=await fixture(2);const services={loadSource:async()=>source,transcribe:async(_session,capture)=>({provider:'provider',segments:[{text:capture.id==='clip-1'?'First sentence.':'Second uncertain sentence.',startMs:0,endMs:1000,timing:'provider' as const,sectionId:'DESIGN',words:capture.id==='clip-1'?[]:[{text:'uncertain',startMs:100,endMs:300,probability:.2}]}]})};
+ assimilate.mockImplementation(async input=>result(input.startSectionId,input.words));
+ await queueSectionTake(draft.id,'clip-1',sections[0].id,services);await waitState(draft.id,'clip-1','review');await queueSectionTake(draft.id,'clip-2',sections[0].id,services,[],{continuationOf:'clip-1'});const reviewed=await waitState(draft.id,'clip-2','review');
+ expect(assimilate.mock.calls[1][0].segments?.[1].startMs).toBe(1000);expect(reviewed.results[0].reviewIssues?.[0]).toMatchObject({captureId:'clip-2',quote:'uncertain',startMs:100,endMs:300,probability:.2});
+});
+it('refuses changed duplicate related sources while preserving cached audio metadata and speech',async()=>{
+ const {source,sections,session,draft}=await fixture(),original='### Reading\nEarlier fourteen.',changed='### Reading\nChanged fourteen.';
+ const related=await sourceSnapshot(14,'original',original,[{id:'CODE',title:'Universal Language',start:0,end:original.length}]),updated=await sourceSnapshot(14,'new',changed,[{id:'CODE',title:'Universal Language',start:0,end:changed.length}]);
+ const saved=(await audio.load(session.id))!;await audio.save({...saved.session,relatedSources:[related]},saved.version);
+ await queueSectionTake(draft.id,'clip-1',sections[0].id,{loadSource:async number=>number===14?updated:source,transcribe:async()=>response('Next card fourteen. My words.')});const failed=await waitState(draft.id,'clip-1','failed');
+ expect(failed.takes?.[0].error).toContain('related card changed');expect(assimilate).not.toHaveBeenCalled();const preserved=(await audio.load(session.id))!.session;expect(preserved.relatedSources?.[0].hash).toBe(related.hash);expect(preserved.captures).toHaveLength(1);expect(preserved.transcript[0].raw).toBe('Next card fourteen. My words.');
 });

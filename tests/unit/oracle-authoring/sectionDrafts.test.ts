@@ -51,3 +51,37 @@ it('saves manual titles separately from speech and chooses the latest title for 
 it('rejects blank or multiline titles and unknown title destinations',async()=>{
  const {session,sections}=await review();for(const [id,text]of [[sections[0].id,'  '],[sections[0].id,'Two\nlines'],['unknown','A title']])await expect(drafts.save({...session,titleEdits:{[id]:{text,updatedAt:'2026-10-29T10:00:00Z'}}},session.version)).rejects.toThrow('Use a title');
 });
+it('appends only spoken new words while preserving original AI provenance and undo',async()=>{
+ const {session,sections,services}=await review();
+ const changed=await drafts.save({...session,results:session.results.map((result,index)=>index?result:{...result,editIntent:'add' as const,text:'My additional words.'})},session.version);
+ const integrated=await integrateSectionDraft(changed.id,sections[0].id,services);
+ const card=(await working.get(2,'DESIGN'))!;expect(card.text).toBe(sections[0].text+'\n\nMy additional words.\n\nThe centre stays here.\n\nThe channel stays here.');expect(card.humanWords).toBe(3);expect(card.blocks.filter(block=>block.origin==='ai').map(block=>block.text).join('')).toContain(sections[0].text);expect(integrated.results[0].appliedText).toBe(sections[0].text+'\n\nMy additional words.');
+ await integrateSectionDraft(changed.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.revision).toBe(1);
+ await undoIntegratedSection(changed.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.text).toBe(session.source.markdown);expect((await working.get(2,'DESIGN'))!.humanWords).toBe(0);
+});
+it('retains every contributing take in one human block and preserves idempotency and undo',async()=>{
+ const {session,sections,services}=await reviewTake();const audio=new AuthoringStore(),saved=(await audio.load(session.captureSessionId!))!;
+ await audio.save({...saved.session,captures:saved.session.captures.map(capture=>({...capture,status:'ready' as const,durationMs:1000}))},saved.version);
+ const combined=await drafts.save({...session,takes:[{id:'earlier',captureId:'earlier',state:'review'},{id:'latest',captureId:'latest',state:'review'}],results:session.results.map((result,index)=>index?result:{...result,takeIds:['earlier','latest']})} as SectionDraftSession,session.version);
+ const integrated=await integrateSectionDraft(combined.id,sections[0].id,services),card=(await working.get(2,'DESIGN'))!;
+ const human=card.blocks.filter(block=>block.origin==='human');expect(human).toHaveLength(1);expect(human[0].evidence.map(item=>item.captureId)).toEqual(['earlier','latest']);expect(card.text.match(/My complete new drive/g)).toHaveLength(1);
+ await integrateSectionDraft(combined.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.revision).toBe(card.revision);expect(integrated.results[0].beforeWorking?.humanWords).toBe(0);
+ await undoIntegratedSection(combined.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.text).toBe(combined.source.markdown);expect((await working.get(2,'DESIGN'))!.humanWords).toBe(0);
+});
+it('repairs recording provenance after an interrupted multi-take receipt without inserting the words again',async()=>{
+ const {session,sections,services}=await reviewTake();const audio=new AuthoringStore(),saved=(await audio.load(session.captureSessionId!))!;
+ await audio.save({...saved.session,captures:saved.session.captures.map(capture=>({...capture,status:'ready' as const,durationMs:1000}))},saved.version);
+ const combined=await drafts.save({...session,takes:[{id:'earlier',captureId:'earlier',state:'review'},{id:'latest',captureId:'latest',state:'review'}],results:session.results.map((result,index)=>index?result:{...result,takeIds:['earlier','latest']})} as SectionDraftSession,session.version);
+ await integrateSectionDraft(combined.id,sections[0].id,services);const card=(await working.get(2,'DESIGN'))!;
+ await working.save({...card,blocks:card.blocks.map(block=>({...block,evidence:block.evidence.filter(item=>item.captureId!=='latest')}))},card.revision);
+ const reviewed=(await drafts.get(combined.id))!;await drafts.save({...reviewed,results:reviewed.results.map(result=>({...result,applied:false}))},reviewed.version);
+ await integrateSectionDraft(combined.id,sections[0].id,services);const recovered=(await working.get(2,'DESIGN'))!;
+ expect(recovered.text).toBe(card.text);expect(recovered.blocks.filter(block=>block.origin==='human')).toHaveLength(1);expect(recovered.blocks.flatMap(block=>block.evidence.map(item=>item.captureId))).toEqual(['earlier','latest']);
+ await undoIntegratedSection(combined.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.text).toBe(combined.source.markdown);
+});
+it('resolves phrase evidence from each take’s own audio session',async()=>{
+ const {session,sections,services}=await reviewTake();const audio=new AuthoringStore(),original=(await audio.load(session.captureSessionId!))!,phrase=createSession(original.session.source);
+ phrase.captures=[{id:'phrase-capture',recordedAt:phrase.createdAt,mimeType:'audio/wav',durationMs:1000,status:'ready',origin:'microphone'}];await audio.save(phrase,0);
+ const combined=await drafts.save({...session,takes:[{id:'earlier',captureId:'earlier',state:'review'},{id:'phrase-capture',captureId:'phrase-capture',captureSessionId:phrase.id,state:'review'}],results:session.results.map((result,index)=>index?result:{...result,takeIds:['earlier','phrase-capture']})} as SectionDraftSession,session.version);
+ await integrateSectionDraft(combined.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.blocks.flatMap(block=>block.evidence.map(item=>item.captureId))).toEqual(['earlier','phrase-capture']);
+});

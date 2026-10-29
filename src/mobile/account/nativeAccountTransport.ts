@@ -3,7 +3,7 @@ import type { HttpOptions, HttpResponse } from '../../../mobile/node_modules/@ca
 
 export const ACCOUNT_ORIGIN = 'https://mandalacodes.com';
 export const NATIVE_ORIGIN = 'capacitor://localhost';
-const ACCOUNT_PATH = /^\/api\/(?:auth\/(?:get-session|email-otp\/send-verification-otp|sign-in\/(?:email-otp|email)|sign-up\/email|native\/exchange|sign-out|sync-user)|profile\/(?:get|put|delete)|collections\/(?:list|create|update|delete|add-item|remove-item))$/;
+const ACCOUNT_PATH = /^\/api\/(?:auth\/(?:get-session|email-otp\/send-verification-otp|sign-in\/(?:email-otp|email)|sign-up\/email|native\/exchange|sign-out|sync-user)|profile\/(?:get|put|delete)|collections\/(?:list|create|update|delete|add-item|remove-item)|oracle\/authoring\/(?:process|private))$/;
 export type NativeHttp = (options: HttpOptions) => Promise<HttpResponse>;
 
 /** Only our account API can receive the native cookie jar. No arbitrary URL,
@@ -25,7 +25,7 @@ export function createNativeAccountFetch(request: NativeHttp = CapacitorHttp.req
     const result = await request({
       url: ACCOUNT_ORIGIN + path, method, data,
       headers: { Accept: 'application/json', 'Content-Type': 'application/json', Origin: NATIVE_ORIGIN },
-      responseType: 'json', disableRedirects: true, connectTimeout: 15000, readTimeout: 15000,
+      responseType: 'json', disableRedirects: true, connectTimeout: 15000, readTimeout: path === '/api/oracle/authoring/process' ? 110000 : 60000,
     });
     if (init.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
     if (result.url && new URL(result.url).origin !== ACCOUNT_ORIGIN) throw new Error('Account service redirected unexpectedly.');

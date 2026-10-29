@@ -10,26 +10,40 @@ function microphoneError(error: unknown): Error {
   return error instanceof Error ? error : new Error('The microphone could not start. Check its connection and try Record again.');
 }
 
+export interface CaptureOptions {
+  /** A caller-owned stream enables rolling takes without repeated permissions. */
+  stream?: MediaStream;
+  retainStream?: boolean;
+  maxDurationMs?: number;
+  maxBytes?: number;
+  onBoundary?: (reason: 'duration' | 'bytes') => void;
+}
+
+export async function acquireCaptureMicrophone(): Promise<MediaStream> {
+  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') throw new Error('Microphone recording needs a supported browser and a secure connection. You can import audio instead.');
+  try { return await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch (error) { throw microphoneError(error); }
+}
+
 /** Saves delivered audio without rewriting or deleting it. Media time excludes pauses;
  * a browser/process crash may still lose the last undelivered timeslice. */
-export async function startCapture(store: AuthoringStore, saved: SavedSession, sectionId: string | null, onFailure: (error: Error) => void, visibleCardNumber = saved.session.source.cardNumber) {
-  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') throw new Error('Microphone recording needs a supported browser and a secure connection. You can import audio instead.');
-  let stream: MediaStream;
-  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
-  catch (error) { throw microphoneError(error); }
+export async function startCapture(store: AuthoringStore, saved: SavedSession, sectionId: string | null, onFailure: (error: Error) => void, visibleCardNumber = saved.session.source.cardNumber, options: CaptureOptions = {}) {
+  const stream = options.stream ?? await acquireCaptureMicrophone();
+  const releaseStream = () => { if (!options.retainStream) stream.getTracks().forEach(t => t.stop()); };
   let recorder: MediaRecorder;
   try {
     const mimeType = chooseRecorderMimeType(t => MediaRecorder.isTypeSupported(t));
     recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-  } catch (error) { stream.getTracks().forEach(t => t.stop()); throw microphoneError(error); }
+  } catch (error) { releaseStream(); throw microphoneError(error); }
   const capture: Capture = { id: crypto.randomUUID(), recordedAt: new Date().toISOString(), mimeType: recorder.mimeType || 'audio/webm', durationMs: 0, status: 'recording', origin: 'microphone', visibleCardNumber };
   let started = 0, index = 0, failed: Error | undefined, stopped = false, saveFailed = false;
   let pausedAt: number | null = null, pausedTotal = 0, finalElapsed: number | null = null;
   let queue = Promise.resolve();
+  let receivedBytes = 0, boundaryReached = false;
   const elapsed = () => finalElapsed ?? Math.max(0, Math.round((pausedAt ?? performance.now()) - started - pausedTotal));
   const markers: SectionMarker[] = [{ captureId: capture.id, atMs: 0, sectionId }];
   const session: AuthoringSession = { ...saved.session, captures: [...saved.session.captures, capture], markers: [...saved.session.markers, ...markers] };
-  try { await store.save(session, saved.version); } catch (error) { stream.getTracks().forEach(t => t.stop()); throw error; }
+  try { await store.save(session, saved.version); } catch (error) { releaseStream(); throw error; }
   let context: AudioContext | undefined, sourceNode: MediaStreamAudioSourceNode | undefined, analyser: AnalyserNode | undefined, samples: Float32Array<ArrayBuffer> | undefined;
   // Metering is optional. Recording must work when Web Audio is unavailable or suspended.
   try {
@@ -56,7 +70,7 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
   const cleanup = () => {
     window.clearTimeout(timeout);
     if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', flushOnHide);
-    stream.getTracks().forEach(t => { t.removeEventListener('ended', trackEnded); t.stop(); });
+    stream.getTracks().forEach(t => { t.removeEventListener('ended', trackEnded); if (!options.retainStream) t.stop(); });
     try { sourceNode?.disconnect(); analyser?.disconnect(); } catch { /* Already disconnected. */ }
     if (context && context.state !== 'closed') void context.close().catch(() => undefined);
     recorder.onpause = recorder.onresume = null;
@@ -65,13 +79,17 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
   recorder.onresume = () => { if (pausedAt !== null) { pausedTotal += performance.now() - pausedAt; pausedAt = null; } };
   recorder.ondataavailable = event => {
     if (!event.data.size || saveFailed) return;
+    receivedBytes += event.data.size;
     const chunkIndex = index++, endMs = Math.max(1, elapsed());
     queue = queue.then(() => { if (!saveFailed) return store.appendChunk(session.id, capture.id, chunkIndex, event.data, endMs); }).catch(error => {
       saveFailed = true; failed = error instanceof Error ? error : new Error('Audio save failed'); onFailure(failed); halt();
     });
+    if (!boundaryReached && receivedBytes >= Math.min(options.maxBytes ?? 9 * 1024 * 1024, 9 * 1024 * 1024)) {
+      boundaryReached = true; options.onBoundary?.('bytes'); halt();
+    }
   };
   // The wall-clock ceiling also limits a recording left paused in a background tab.
-  const timeout = window.setTimeout(halt, 20 * 60 * 1000);
+  const timeout = window.setTimeout(() => { if (!boundaryReached) { boundaryReached = true; options.onBoundary?.('duration'); } halt(); }, Math.max(1000, Math.min(options.maxDurationMs ?? 20 * 60 * 1000, 20 * 60 * 1000)));
   stream.getTracks().forEach(t => t.addEventListener('ended', trackEnded));
   if (typeof document !== 'undefined') document.addEventListener('visibilitychange', flushOnHide);
   recorder.onerror = () => interrupt(new Error('Recording was interrupted. Recover the audio chunks already saved on this device.'));
