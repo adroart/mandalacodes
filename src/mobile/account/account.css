@@ -1,21 +1,29 @@
-.oracle-account-page { max-width:640px; margin-inline:auto; padding:calc(var(--nav-height) + 24px) 22px 28px; color:var(--color-wood-900); }
-.oracle-account-page h1 { font:500 34px/1.1 var(--font-display); margin:4px 0 12px; }
-.oracle-account-page h2 { font:500 26px/1.2 var(--font-display); margin:0 0 12px; }
-.oracle-account-page p { font:16px/1.5 var(--font-ui); margin:8px 0 16px; overflow-wrap:anywhere; }
-.oracle-account-page .oracle-account-eyebrow { font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--color-bronze-600); margin:0; }
-.oracle-account-page section { border-top:1px solid var(--color-wood-200); padding-top:22px; margin-top:24px; }
-.oracle-account-page .oracle-account-detail { font-size:14px; color:var(--color-wood-600); }
-.oracle-account-page button,.oracle-account-page a { min-height:44px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-wood-900); font:500 15px var(--font-ui); text-decoration:none; }
-.oracle-account-page button { background:transparent; border:1px solid var(--color-wood-300); border-radius:8px; padding:10px 14px; cursor:pointer; }
-.oracle-account-page button:disabled { opacity:.5; cursor:default; }
-.oracle-account-page .oracle-account-primary { background:var(--color-wood-900); color:var(--color-paper-50); border-color:var(--color-wood-900); }
-.oracle-account-page .oracle-account-text { border:0; text-decoration:underline; padding-inline:0; }
-.oracle-account-page label { display:block; font:500 15px var(--font-ui); margin:12px 0 6px; }
-.oracle-account-page input:not([type=file]),.oracle-account-page textarea { box-sizing:border-box; width:100%; padding:12px; border:1px solid var(--color-wood-300); border-radius:8px; color:var(--color-wood-900); background:var(--color-paper-50); font:16px/1.4 var(--font-ui); }
-.oracle-account-page textarea { resize:vertical; }
-.oracle-account-page form>button { margin:12px 8px 0 0; }
-.oracle-account-actions { display:flex; gap:10px; flex-wrap:wrap; }
-.oracle-account-page .oracle-account-file { font-size:14px; }
+.oracle-account-page { box-sizing:border-box; max-width:1152px; margin-inline:auto; padding:calc(var(--nav-height) + 24px) 24px 28px; color:var(--color-wood-900); }
+.oracle-account-page > header { margin-bottom:32px; }
+.oracle-account-page > header h1 { font:500 36px/1.05 var(--font-display); margin:0; }
+.oracle-account-page > header .oracle-account-intro { font:20px/1.625 var(--font-reading); color:var(--color-wood-700); margin:16px 0 0; }
+.oracle-account-page .oracle-account-eyebrow { font:600 11px/1.5 var(--font-ui); text-transform:uppercase; letter-spacing:.32em; color:var(--color-bronze-600); margin:0 0 16px; }
+.oracle-account-signin { min-width:0; margin-bottom:32px; }
+.oracle-account-section { border-top:1px solid var(--color-wood-200); padding-top:22px; margin-top:24px; min-width:0; }
+.oracle-account-section h2 { font:500 26px/1.2 var(--font-display); margin:0 0 12px; }
+.oracle-account-section p { font:16px/1.5 var(--font-ui); margin:8px 0 16px; overflow-wrap:anywhere; }
+.oracle-account-section .oracle-account-detail { font-size:14px; color:var(--color-wood-600); }
+.oracle-account-section :is(button,a) { box-sizing:border-box; min-height:44px; max-width:100%; display:inline-flex; align-items:center; justify-content:center; color:var(--color-wood-900); font:500 15px/1.45 var(--font-ui); text-decoration:none; white-space:normal; overflow-wrap:anywhere; }
+.oracle-account-section button { background:transparent; border:1px solid var(--color-wood-300); border-radius:8px; padding:10px 14px; cursor:pointer; }
+.oracle-account-section button:disabled { opacity:.5; cursor:default; }
+.oracle-account-section .oracle-account-primary { background:var(--color-wood-900); color:var(--color-paper-50); border-color:var(--color-wood-900); }
+.oracle-account-section .oracle-account-text { display:flex; border:0; text-decoration:underline; padding-inline:0; margin-top:10px; }
+.oracle-account-section label { display:block; font:500 15px var(--font-ui); margin:12px 0 6px; }
+.oracle-account-section input:not([type=file]),.oracle-account-section textarea { box-sizing:border-box; width:100%; min-width:0; padding:12px; border:1px solid var(--color-wood-300); border-radius:8px; color:var(--color-wood-900); background:var(--color-paper-50); font:16px/1.4 var(--font-ui); }
+.oracle-account-section textarea { resize:vertical; }
+.oracle-account-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; }
+.oracle-account-actions > button { width:100%; }
+.oracle-account-section .oracle-account-file { font-size:14px; }
 .oracle-account-file input { display:block; max-width:100%; padding-block:10px; }
 .oracle-account-preview { border-left:2px solid var(--color-bronze-600); padding-left:14px; margin-top:16px; }
-.oracle-account-preview button { margin-right:8px; }
+/* Reminder time and actions share available width without inherited form rules. */
+.oracle-account-page .oracle-reminder-controls { align-items:flex-end; }
+.oracle-account-page .oracle-reminder-controls > label { flex:1 1 120px; min-width:0; }
+.oracle-account-page .oracle-reminder-controls input { box-sizing:border-box; width:100%; max-width:100%; }
+.oracle-account-page .oracle-reminder-controls > button { flex:1 1 auto; justify-content:center; max-width:100%; white-space:normal; line-height:1.45; }
+@media(min-width:761px) { .oracle-account-page > header h1 { font-size:48px; } .oracle-account-page > header .oracle-account-intro { font-size:24px; } }

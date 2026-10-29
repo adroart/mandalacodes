@@ -1,6 +1,7 @@
 import UIKit
 import Capacitor
 import WebKit
+import AuthenticationServices
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -60,6 +61,7 @@ class OracleViewController: CAPBridgeViewController {
         }
         configuration.userContentController.addScriptMessageHandler(OracleReminderHandler(), contentWorld: .page, name: "oracleReminders")
         configuration.userContentController.add(OracleFeedbackHandler(), name: "oracleFeedback")
+        configuration.userContentController.add(OracleGoogleAuthHandler(controller: self), name: "oracleGoogleAuth")
         configuration.userContentController.add(OracleAuthoringExportHandler(controller: self), name: "oracleAuthoringExport")
         configuration.userContentController.addUserScript(WKUserScript(source: """
         (() => {
@@ -124,5 +126,76 @@ private final class OracleAuthoringExportHandler: NSObject, WKScriptMessageHandl
             sheet.completionWithItemsHandler = { _, _, _, _ in try? FileManager.default.removeItem(at: folder) }
             controller.present(sheet, animated: true) { reply(true) }
         } catch { reply(false) }
+    }
+}
+
+/// Google's credentials stay in the system authentication browser. Only a
+/// proof-bound handoff code returns to the bundled Oracle main frame.
+private final class OracleGoogleAuthHandler: NSObject, WKScriptMessageHandler, ASWebAuthenticationPresentationContextProviding {
+    weak var controller: UIViewController?
+    private var session: ASWebAuthenticationSession?
+    private var activeID: String?
+    init(controller: UIViewController) { self.controller = controller }
+
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        controller?.view.window ?? ASPresentationAnchor()
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.frameInfo.isMainFrame,
+              message.frameInfo.request.url?.scheme == "capacitor",
+              message.frameInfo.request.url?.host == "localhost",
+              let body = message.body as? [String: Any],
+              let id = body["id"] as? String, UUID(uuidString: id) != nil else { return }
+        if body["action"] as? String == "cancel" {
+            if activeID == id { session?.cancel(); session = nil; activeID = nil }
+            return
+        }
+        guard body["action"] as? String == "start",
+              let state = body["state"] as? String,
+              let challenge = body["challenge"] as? String,
+              state.range(of: "^[A-Za-z0-9_-]{43}$", options: .regularExpression) != nil,
+              challenge.range(of: "^[A-Za-z0-9_-]{43}$", options: .regularExpression) != nil else { return }
+        let reply: (String?, String?) -> Void = { [weak webView = message.webView] code, error in
+            guard let webView = webView, webView.url?.scheme == "capacitor", webView.url?.host == "localhost" else { return }
+            var result: [String: String] = ["id": id, "state": state]
+            if let code = code { result["code"] = code }
+            if let error = error { result["error"] = error }
+            guard let data = try? JSONSerialization.data(withJSONObject: result), let json = String(data: data, encoding: .utf8) else { return }
+            webView.evaluateJavaScript("window.dispatchEvent(new CustomEvent('oracle-google-result',{detail:\(json)}));")
+        }
+        guard session == nil, controller?.view.window != nil else { reply(nil, "unavailable"); return }
+        var start = URLComponents(string: "https://mandalacodes.com/api/auth/native/start")!
+        start.queryItems = [URLQueryItem(name: "state", value: state), URLQueryItem(name: "challenge", value: challenge)]
+        guard let url = start.url else { reply(nil, "unavailable"); return }
+        let authentication = ASWebAuthenticationSession(url: url, callbackURLScheme: "oracle") { [weak self] callback, error in
+            DispatchQueue.main.async {
+                guard self?.activeID == id else { return }
+                self?.session = nil
+                self?.activeID = nil
+                if let error = error {
+                    let cancelled = (error as? ASWebAuthenticationSessionError)?.code == .canceledLogin
+                    reply(nil, cancelled ? "cancelled" : "failed")
+                    return
+                }
+                guard let callback = callback,
+                      let parts = URLComponents(url: callback, resolvingAgainstBaseURL: false),
+                      parts.scheme == "oracle", parts.host == "auth",
+                      parts.user == nil, parts.password == nil, parts.port == nil,
+                      parts.fragment == nil, parts.path.isEmpty || parts.path == "/" else { reply(nil, "invalid_callback"); return }
+                let items = parts.queryItems ?? []
+                guard items.count == 2, Set(items.map(\.name)).count == 2,
+                      items.first(where: { $0.name == "state" })?.value == state else { reply(nil, "invalid_callback"); return }
+                if items.contains(where: { $0.name == "error" }) { reply(nil, "failed"); return }
+                guard let code = items.first(where: { $0.name == "code" })?.value,
+                      code.range(of: "^[A-Za-z0-9_-]{32,128}$", options: .regularExpression) != nil else { reply(nil, "invalid_callback"); return }
+                reply(code, nil)
+            }
+        }
+        authentication.presentationContextProvider = self
+        authentication.prefersEphemeralWebBrowserSession = false
+        session = authentication
+        activeID = id
+        if !authentication.start() { session = nil; activeID = nil; reply(nil, "unavailable") }
     }
 }

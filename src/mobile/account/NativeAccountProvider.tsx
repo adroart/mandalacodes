@@ -2,17 +2,21 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { Capacitor } from '../../../mobile/node_modules/@capacitor/core';
 import { AccountContext, type AccountState } from '../../../lib/account/useAccount';
 import { accountResult, createNativeAccountFetch } from './nativeAccountTransport';
+import { startNativeGoogleSignIn } from './nativeGoogleSignIn';
 
 interface Session { user: { id: string; email: string } }
 interface Actions {
   enabled: boolean; busy: boolean; error: string | null;
   sendCode: (email: string) => Promise<void>;
   verifyCode: (email: string, code: string) => Promise<void>;
+  signInWithPassword: (email: string, password: string) => Promise<void>;
+  signUpWithPassword: (email: string, password: string, name?: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
 }
 const unavailable = async () => { throw new Error('Phone sign-in is not enabled yet.'); };
-const ActionsContext = createContext<Actions>({enabled:false, busy:false, error:null, sendCode:unavailable, verifyCode:unavailable, signOut:unavailable, refresh:unavailable});
+const ActionsContext = createContext<Actions>({enabled:false, busy:false, error:null, sendCode:unavailable, verifyCode:unavailable, signInWithPassword:unavailable, signUpWithPassword:unavailable, signInWithGoogle:unavailable, signOut:unavailable, refresh:unavailable});
 export const useNativeAccountActions = () => useContext(ActionsContext);
 const fetchNative = createNativeAccountFetch();
 
@@ -34,7 +38,7 @@ export function NativeAccountProvider({ children, enabled = false }: {children:R
       setError(message); throw cause;
     } finally { setBusy(false); setLoaded(true); }
   }, [active]);
-  const loadSession = useCallback(async () => {
+  const loadSession = useCallback(async (requireSession = false) => {
     const current = ++generation.current;
     const next = await accountResult(await fetchNative('/api/auth/get-session'));
     if (current !== generation.current) return;
@@ -42,7 +46,10 @@ export function NativeAccountProvider({ children, enabled = false }: {children:R
       // Finish identity registration before ProfileProvider starts uploading.
       await accountResult(await fetchNative('/api/auth/sync-user', {method:'POST'}));
       if (current === generation.current) setSession(next);
-    } else setSession(null);
+    } else {
+      setSession(null);
+      if (requireSession) throw new Error('Sign-in could not be confirmed. Please try again.');
+    }
   }, []);
   const refresh = useCallback(() => run(loadSession), [run, loadSession]);
   useEffect(() => {
@@ -55,7 +62,20 @@ export function NativeAccountProvider({ children, enabled = false }: {children:R
   }), [run]);
   const verifyCode = useCallback((email:string, code:string) => run(async () => {
     await accountResult(await fetchNative('/api/auth/sign-in/email-otp', {method:'POST', body:JSON.stringify({email:email.trim(),otp:code.trim()})}));
-    await loadSession();
+    await loadSession(true);
+  }), [run, loadSession]);
+  const signInWithPassword = useCallback((email:string, password:string) => run(async () => {
+    await accountResult(await fetchNative('/api/auth/sign-in/email', {method:'POST', body:JSON.stringify({email:email.trim(),password})}));
+    await loadSession(true);
+  }), [run, loadSession]);
+  const signUpWithPassword = useCallback((email:string, password:string, name = '') => run(async () => {
+    await accountResult(await fetchNative('/api/auth/sign-up/email', {method:'POST', body:JSON.stringify({email:email.trim(),password,name:name.trim()})}));
+    await loadSession(true);
+  }), [run, loadSession]);
+  const signInWithGoogle = useCallback(() => run(async () => {
+    const handoff = await startNativeGoogleSignIn();
+    await accountResult(await fetchNative('/api/auth/native/exchange', {method:'POST', body:JSON.stringify(handoff)}));
+    await loadSession(true);
   }), [run, loadSession]);
   const signOut = useCallback(() => run(async () => {
     ++generation.current;
@@ -67,6 +87,6 @@ export function NativeAccountProvider({ children, enabled = false }: {children:R
     setSession(null);
   }), [run]);
   const value = useMemo<AccountState>(() => ({available:active,isLoaded:loaded,isSignedIn:!!session,userId:session?.user.id ?? null,email:session?.user.email ?? null,fetchAuthed:fetchNative}), [active, loaded, session]);
-  const actions = useMemo(() => ({enabled:active,busy,error,sendCode,verifyCode,signOut,refresh}), [active,busy,error,sendCode,verifyCode,signOut,refresh]);
+  const actions = useMemo(() => ({enabled:active,busy,error,sendCode,verifyCode,signInWithPassword,signUpWithPassword,signInWithGoogle,signOut,refresh}), [active,busy,error,sendCode,verifyCode,signInWithPassword,signUpWithPassword,signInWithGoogle,signOut,refresh]);
   return <ActionsContext.Provider value={actions}><AccountContext.Provider value={value}>{children}</AccountContext.Provider></ActionsContext.Provider>;
 }
