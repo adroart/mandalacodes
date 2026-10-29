@@ -49,3 +49,9 @@ database_id = "d0e93f04-203c-4dbd-945a-e14a9a364dd5"
 # migration for it. Two repos migrating one database share a single journal keyed
 # by filename, so the first repo to use a name silently locks the other out of it,
 # with no error. Consolidated 2026-09-01; see docs/d1-migrations.md.
+
+# Shares the same account allowance with the art site and other projects.
+[[durable_objects.bindings]]
+name = "SHARED_ALLOWANCE"
+class_name = "AllowanceGovernor"
+script_name = "i64os-quota-guard"
