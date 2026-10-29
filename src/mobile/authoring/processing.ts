@@ -1,8 +1,10 @@
 import { Capacitor } from '../../../mobile/node_modules/@capacitor/core';
+import { requestMacBridge } from './bridgeConnection';
 import type { AuthoringServices } from '../../../lib/oracle/authoring/types';
 export class AuthoringServiceError extends Error { constructor(public readonly status:number,message:string){super(message);} }
 async function request(body:unknown):Promise<{status:number;value:any}>{
- if(Capacitor.isNativePlatform()||!['localhost','127.0.0.1','[::1]'].includes(location.hostname))throw new AuthoringServiceError(503,'AR Create runs on your Mac. Your recording is saved here; a private connection to that Mac is needed for phone processing.');
+ if(Capacitor.isNativePlatform()){try{return await requestMacBridge(body);}catch(error){throw new AuthoringServiceError(503,error instanceof Error?error.message:'Your Mac could not connect. Your recording is saved.');}}
+ if(!['localhost','127.0.0.1','[::1]'].includes(location.hostname))throw new AuthoringServiceError(503,'AR Create runs on your Mac. Your recording is saved here; a private connection to that Mac is needed for phone processing.');
  const response=await fetch('/api/oracle/authoring/ar-create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
  const value=await response.json().catch(()=>null);
  if(!response.ok)throw new AuthoringServiceError(response.status,typeof value?.error==='string'?value.error:'AR Create could not finish. Your recording and words are saved.');

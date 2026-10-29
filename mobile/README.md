@@ -47,7 +47,7 @@ Only disabled cookie/HTTP probes bypass the prompt. Ordinary prompts, cookie
 operations, enabled plugin probes, and native sharing keep their standard behavior.
 `npm --prefix mobile test` checks those boundaries against the injected script.
 
-The native build resolves `OracleDrawDialog` to `src/mobile/OracleDrawDialog.tsx` and its companion stylesheet. The website keeps its separate dialog, so website redesigns cannot change the installed app's casting flow.
+The native app and website share `components/oracle/entry/OracleDrawDialog.tsx` and its stylesheet. The app adds its optional question and saved-reading flow around the shared coin casting and trigram chooser.
 
 ## Build 12 account verification
 
@@ -64,3 +64,7 @@ mocked account/reminder layout checks. They do not establish that a real Google
 account completed authentication. On the installed phone, verify Google sign-in,
 reopen the app to confirm the session remains, and sign out. No device rebuild
 or installation is needed merely to merge these already-installed source changes.
+
+## Build 13 whole-card voice workflow
+
+Record opens the section-aware studio. Speak across complete named sections, use Next section without restarting the microphone, then Finish & review. AR Create prepares evidence-linked speech cleanup and section assignments. Review Current section beside Your words, check flagged speech, then integrate one section or all ready sections into private working cards. Original audio and transcripts remain saved; neighboring sections remain intact. Intro edits are separate from the main reading. AI processing on the phone uses the private paired Mac bridge.

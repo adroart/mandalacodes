@@ -29,6 +29,10 @@ import PublicInvocation from './oracle/invocation/PublicInvocation';
 import { loadLiveInvocation } from '../lib/oracle/invocationApi';
 import type { LiveInvocation } from '../lib/oracle/invocationTypes';
 import { consumeCardEntranceRequest, requestsCardEntrance } from '../lib/oracle/cardEntrance';
+import WorkingCardReading from './oracle/authoring/WorkingCardReading';
+import WorkingCardIntro from './oracle/authoring/WorkingCardIntro';
+
+const ReadingWorkingLayer = import.meta.env.VITE_ORACLE_APP === 'true' ? WorkingCardReading : ({ children }: { cardNumber: number; children: React.ReactNode }) => <>{children}</>;
 
 /* Earth's Breath card reading. The visible component is GENERATED from the
    imported design file (components/oracle/eb/generated/*) by the dc-import
@@ -280,7 +284,7 @@ const UniversalLanguageCard: React.FC = () => {
           the placement, a chart without it says nothing. */}
       <div className="eb-reading ul-chart-row" data-palette={palette}>
         {synthesis?.summary ? (
-          <p className="ul-essence">{synthesis.summary}</p>
+          import.meta.env.VITE_ORACLE_APP === 'true'?<WorkingCardIntro cardNumber={card.number} original={synthesis.summary}/>:<p className="ul-essence">{synthesis.summary}</p>
         ) : null}
         <YourPositionCallout gate={card.number} />
         <SaveToCollectionButton
@@ -289,6 +293,7 @@ const UniversalLanguageCard: React.FC = () => {
         />
         <style>{chartRowStyles}</style>
       </div>
+      <ReadingWorkingLayer key={card.number} cardNumber={card.number}>
       <EBReadingHost
         key={card.number}
         data={data}
@@ -311,6 +316,7 @@ const UniversalLanguageCard: React.FC = () => {
         ) : undefined}
         hdChannelSlot={<ChannelStatusLine gate={card.human_design.gate} />}
       />
+      </ReadingWorkingLayer>
       </>
       } />
       <BuySheet

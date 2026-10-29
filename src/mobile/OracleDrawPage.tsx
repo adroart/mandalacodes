@@ -6,7 +6,7 @@ import { useJournal } from '../../lib/oracle/journal';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
 import type { CastResult } from '../../utils/ichingCasting';
 import { recordReading } from './journal/store';
-import OracleDrawDialog from './OracleDrawDialog';
+import OracleDrawDialog from '../../components/oracle/entry/OracleDrawDialog';
 import '../../components/oracle/entry/OracleEntry.scoped.css';
 function touchFeedback() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;

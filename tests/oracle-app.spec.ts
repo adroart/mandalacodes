@@ -13,7 +13,7 @@ test('bundled deck, drawing, and reading work without external network', async (
   await page.getByRole('button', { name: /draw a card/i }).first().click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.getByRole('dialog').getByRole('button', { name: 'Cast the coins', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Throw the coins', exact: true }).click();
   await expect(page.getByRole('button', { name: /^Open card \d+$/ }).first()).toBeVisible();
   await page.getByRole('button', { name: /^Open card \d+$/ }).first().click();
   await page.getByRole('button', {name:'Read this card →'}).click();
@@ -186,8 +186,9 @@ for (const width of [375, 430]) {
 }
 
 for (const size of [{width:375,height:667},{width:430,height:932},{width:932,height:430}]) {
-  test(`bottom destinations and full-screen drawing at ${size.width}px`, async ({page}) => {
+  test(`bottom destinations and shared draw layout at ${size.width}px`, async ({page}) => {
     await page.setViewportSize(size);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     for (const path of ['/universal-language', '/profile', '/the-systems', '/universal-language/29']) {
       await page.goto(path);
       const nav = page.getByRole('navigation', {name:'Oracle', exact:true});
@@ -199,14 +200,15 @@ for (const size of [{width:375,height:667},{width:430,height:932},{width:932,hei
       await expect(dialog.getByRole('tab',{name:'Cast coins'})).toHaveCSS('opacity','1');
       await expect(dialog.getByRole('tablist')).toHaveCSS('opacity','1');
       const box = await dialog.boundingBox();
-      expect(box!.x).toBe(0); expect(box!.y).toBe(0);
-      expect(box!.width).toBe(size.width); expect(box!.height).toBe(size.height);
+      expect(box!.x).toBeGreaterThanOrEqual(0); expect(box!.y).toBeGreaterThanOrEqual(0);
+      expect(box!.width).toBeLessThanOrEqual(size.width); expect(box!.height).toBeLessThanOrEqual(size.height);
+      if (size.width <= 600) { expect(box!.width).toBe(size.width); expect(box!.height).toBe(size.height); }
       await dialog.getByRole('tab',{name:'Choose trigrams'}).click();
       const circle = dialog.getByRole('group',{name:/trigram choices/});
       const ring = await circle.boundingBox();
       expect(Math.abs(ring!.width-ring!.height)).toBeLessThan(1);
       await page.screenshot({path:`mobile/build/fullscreen-draw-${size.width}.png`});
-      await dialog.getByRole('button',{name:'Close draw'}).click();
+      await dialog.getByRole('button',{name:'Close draw a card'}).click();
       await expect(page).toHaveURL(path);
       await expect(nav).toBeInViewport({ratio:1});
     }
@@ -219,7 +221,7 @@ test('question, artwork reveal, reflection and follow-up survive reopening',asyn
   await page.getByText('Bring a question (optional)',{exact:true}).click();
   await page.getByLabel('Your question',{exact:true}).fill('What deserves my attention today?');
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.getByRole('button',{name:'Cast the coins',exact:true}).click();
+  await page.getByRole('button',{name:'Throw the coins',exact:true}).click();
   await page.getByRole('button',{name:/^Open card \d+$/}).first().click();
   await expect(page.getByRole('dialog',{name:'Your drawn card'})).toBeVisible();
   await expect(page.getByText('What deserves my attention today?',{exact:true})).toBeVisible();
@@ -277,4 +279,14 @@ test('opens with the original I Ching grid and keeps artwork hidden until select
   await page.getByRole('link',{name:'Hexagram 29',exact:true}).click();
   await expect(page.locator('.card-reading')).toBeVisible();
   await expect(page.locator('img[src="/oracle-art/29.webp"]').first()).toBeVisible();
+});
+
+test('draw uses the shared web coin sequence with pause and skip', async ({page}) => {
+  await page.goto('/draw');
+  await page.getByRole('button', {name:'Throw the coins',exact:true}).click();
+  await page.getByRole('button', {name:'Pause',exact:true}).click();
+  await expect(page.getByRole('button', {name:'Resume',exact:true})).toHaveAttribute('aria-pressed','true');
+  await page.getByRole('button', {name:'Resume',exact:true}).click();
+  await page.getByRole('button', {name:'Skip to card',exact:true}).click();
+  await expect(page.getByRole('button', {name:/^Open card \d+$/}).first()).toBeVisible();
 });

@@ -1,0 +1,62 @@
+.working-card-reading { display: contents; }
+/* The generated reading owns its published children throughout. Only the
+   private portal is visible in this mode; no generated nodes are moved. */
+.working-card-reading [data-working-card-view] > :not(.working-card-reading__panel) { display: none !important; }
+.working-card-reading__panel {
+  --working-ink: var(--l-1);
+  --working-muted: var(--l-3);
+  --working-rule: var(--l-rule);
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px clamp(18px, 5vw, 32px) 32px;
+  color: var(--working-ink);
+}
+[data-chapter="iching"] > .working-card-reading__panel,
+[data-chapter="humandesign"] > .working-card-reading__panel {
+  --working-ink: var(--d-1);
+  --working-muted: var(--d-3);
+  --working-rule: var(--d-rule);
+}
+.working-card-reading__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 28px;
+  font: 12px/1.5 var(--font-ui);
+  color: var(--working-muted);
+}
+.working-card-reading__toolbar button {
+  min-height: 44px;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid var(--working-rule);
+  background: none;
+  color: var(--working-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.working-card-reading__toolbar button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.working-card-reading__lens { margin: 0 0 8px; font: 11px/1.5 var(--font-ui); color: var(--working-muted); letter-spacing: .12em; text-transform: uppercase; }
+.working-card-reading__panel h2 { margin: 0 0 24px; font: 400 clamp(28px, 4vw, 38px)/1.15 var(--font-display); color: inherit; }
+.working-card-reading__words { white-space: pre-wrap; overflow-wrap: anywhere; font: clamp(19px, 2.2vw, 22px)/1.75 var(--font-reading); }
+.working-card-reading__panel--published { padding-top: 8px; padding-bottom: 16px; }
+.working-card-reading__panel--published .working-card-reading__toolbar { margin-bottom: 0; }
+/* Place the view switch before published content without touching its nodes. */
+.working-card-reading section[data-chapter]:has(> .working-card-reading__panel--published) { display: flex; flex-direction: column; }
+.working-card-reading__panel--published { order: -1; width: 100%; }
+
+.working-card-reading__words [data-human-origin] { text-decoration:underline; text-decoration-color:var(--color-bronze-600); text-decoration-thickness:1px; text-underline-offset:5px; }
+.working-card-reading__evidence { margin-top:18px; font:14px/1.5 var(--font-ui); }
+.working-card-reading__evidence summary { cursor:pointer; padding-block:12px; }
+.working-card-reading__evidence button { min-height:44px; padding:8px 0; border:0; background:transparent; color:inherit; font:inherit; text-decoration:underline; }
+
+.working-card-reading__words > p { margin:0; font:inherit; line-height:inherit; }
+
+.working-card-reading__section-heading {margin:28px 0 14px;font:500 17px/1.4 var(--font-controls);color:var(--working-ink);white-space:normal;}
+.working-card-reading__section-heading:first-child {margin-top:0;}
+.working-card-intro {min-width:0;}
+.working-card-intro__toolbar {display:flex;justify-content:center;align-items:center;gap:12px;margin-top:8px;color:var(--l-3);font:12px/1.5 var(--font-controls);}
+.working-card-intro__toolbar button {min-height:36px;padding:5px 8px;border:1px solid var(--l-rule);border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer;}
+.working-card-intro__toolbar button:focus-visible {outline:2px solid currentColor;outline-offset:3px;}

@@ -25,6 +25,8 @@ const PHASE_AT = [700, 1050, 1400, 1700];
 
 interface Props {
   theme: 'light' | 'dark';
+  introduction?: React.ReactNode;
+  onInteraction?: () => void;
   onClose: () => void;
   onOpen: (number: number, cast?: CastResult) => void;
 }
@@ -41,7 +43,7 @@ function facesFor(value: CoinValue): number[] {
 
 const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
+export default function OracleDrawDialog({ theme, onClose, onOpen, introduction, onInteraction }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const opener = useRef(typeof document !== 'undefined' && document.activeElement instanceof HTMLElement ? document.activeElement : null);
   const [mode, setMode] = useState<'trigrams' | 'coins'>('coins');
@@ -79,6 +81,7 @@ export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
 
   const throwCoins = () => {
     if (cast || play.busy) return;
+    onInteraction?.();
     const result = castFree();
     if (reducedMotion()) { setCast(result); return; }
     play.start(result, () => setCast(result));
@@ -90,10 +93,11 @@ export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
     : lower && upper && ALL_CARDS.find(card => card.iching.lower_trigram.symbol === lower.symbol && card.iching.upper_trigram.symbol === upper.symbol);
   const changed = mode === 'coins' && cast?.changedNumber ? CARD_BY_NUMBER.get(cast.changedNumber) : null;
   const pick = useCallback((trigram: Trigram) => {
+    onInteraction?.();
     setPicks(count => count + 1);
     if (step === 'lower') { setLower(trigram); setStep('upper'); }
     else setUpper(trigram);
-  }, [step]);
+  }, [step, onInteraction]);
 
   const status = play.busy ? play.status
     : mode === 'coins' && cast && card ? `Currently at Hexagram ${card.number}, ${card.card_name}.${changed ? ` Moving to Hexagram ${changed.number}, ${changed.card_name}.` : ' Begin with this card as it stands.'}`
@@ -101,7 +105,7 @@ export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
 
   // Rendered on the body, outside the page: the page fades in on every visit, and a dialog
   // inside it would fade too, letting the site menu show through. The wrapper keeps the theme tokens.
-  return createPortal(<div className="oe-root"><div className="oracle-draw-backdrop" onClick={onClose}>
+  return createPortal(<div className="oe-root"><div className="oracle-draw-backdrop" data-theme={theme} onClick={onClose}>
     <div ref={panel} className="oracle-draw" data-theme={theme} data-method={mode} role="dialog" aria-modal="true" aria-labelledby="oracle-draw-title" tabIndex={-1} onClick={event => event.stopPropagation()}>
       <header className="oracle-draw-header">
         <h2 id="oracle-draw-title" className="oracle-draw-sr">Draw a card</h2>
@@ -119,6 +123,7 @@ export default function OracleDrawDialog({ theme, onClose, onOpen }: Props) {
         </span>
         <button className="oracle-draw-close" type="button" aria-label="Close draw a card" onClick={onClose}><span aria-hidden="true" /><span aria-hidden="true" /></button>
       </header>
+      {introduction}
       <p className="oracle-draw-sr" role="status" aria-live="polite" aria-atomic="true">{status}</p>
       <div id="draw-method" role="tabpanel" aria-labelledby={`draw-tab-${mode}`} className="oracle-draw-body">
         {mode === 'coins' && !cast && <CoinStage play={play} onThrow={throwCoins} onSkip={skip} />}

@@ -1,0 +1,6 @@
+.word-changes { min-width:0; color:inherit; }
+.word-changes__legend { display:flex; flex-wrap:wrap; gap:8px 18px; margin:0 0 12px; color:var(--color-wood-600); font:13px/1.5 var(--font-controls); }
+.word-changes__text { max-width:70ch; white-space:pre-wrap; overflow-wrap:anywhere; font:inherit; line-height:1.7; }
+.word-changes del { text-decoration:line-through; text-decoration-thickness:1px; text-decoration-color:currentColor; background:transparent; }
+.word-changes ins { color:inherit; text-decoration:underline; text-decoration-color:var(--color-bronze-600); text-decoration-thickness:2px; text-underline-offset:4px; background:color-mix(in srgb,var(--color-bronze-600) 12%,transparent); }
+.word-changes__text del { color:var(--color-wood-600); }

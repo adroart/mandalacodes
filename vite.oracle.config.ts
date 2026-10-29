@@ -23,8 +23,6 @@ export default defineConfig({
   define: { 'import.meta.env.VITE_ORACLE_APP': JSON.stringify('true') },
   publicDir: local('.oracle-public'),
   resolve: { alias: [
-    // Keep native drawing independent of the website's newer dialog and styles.
-    { find: /^.*\/OracleDrawDialog$/, replacement: local('src/mobile/OracleDrawDialog.tsx') },
     { find: /^.*\/OracleShareSheet$/, replacement: local('src/mobile/OracleShareSheet.tsx') },
     { find: /^.*\/NavigationCore$/, replacement: local('src/mobile/OracleNavigation.tsx') },
     { find: /^.*\/launchFlags$/, replacement: local('src/mobile/flags.ts') },

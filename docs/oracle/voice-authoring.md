@@ -3,12 +3,51 @@
 Current local implementation, 2026-10-28. No canonical manuscript edits, existing
 Apple Notes changes, publication or editing-audio deletion are performed here.
 
-## In the app
+## Human words are authoritative
+
+The default in-card editor is now **Your words**. It writes no AI prose. The first
+safe spoken passage replaces that lens's published scaffold in a private working
+card; later distinct speech adds literally. Exact repeats are accounted for without
+repeating text. Correcting a previously incorporated transcript updates its original
+untouched contribution; human edits are protected. Ambiguous revisions present an
+explicit add/replace choice. Confidence warnings, unresolved destinations, known
+mishearing patterns and likely transcription artifacts pause the affected section.
+Confirmed words are checked against the exact corrected transcript before applying.
+
+Working drafts are keyed by card and lens, independently of recording sessions.
+They autosave with version checks/history, display in the actual reader immediately,
+and survive close/reopen. Published prose is available through a reversible view
+switch. No canonical manuscript is changed by this private working-card save.
+Speech and direct typing both retain their literal phrasing. Pure routing prefixes
+are omitted from displayed prose while raw speech stays saved.
+
+**100% human words** describes displayed section provenance, not transcription
+accuracy or editorial completeness. A card is wholly human only after all six
+lenses contain exclusively human words. AI can transcribe; it does not paraphrase
+this flow. Provider probabilities and routing/revision heuristics are not a
+calibrated 90–95% accuracy claim.
+
+Processing is an independent resumable activity. You can close the sheet, keep
+reading or record again while transcription runs. Only uncertain passages require
+review; safe sections apply live. Pending activity survives app restart and reuses
+retained transcripts and existing backend job identities, avoiding duplicate audio
+uploads or prose. Failure retains original audio. Working-card versions and audio
+remain private to this device; no cross-device draft sync is implied.
+
+The separate detailed review workflow remains available with `?authoring=review`
+for legacy draft review. Its AI-writing service is not used by the default editor.
+
+The private phone transport is implemented and the Mac HTTPS endpoint has been
+verified. See [private bridge setup](../../tools/oracle-private-bridge.md). The phone
+needs current Tailscale sign-in, the new app build and explicit address/key pairing;
+physical-phone end-to-end use is not yet verified for this new flow.
+
+## Detailed review workflow (legacy)
 
 Every card reader has a visible microphone **Record** action. It opens a focused
 sheet over that card, without changing the reader URL, scroll position or content.
 The sheet restores focus to Record when closed. Text, controls and editors use the
-Oracle's serif family. Card context remains visible behind the sheet.
+Oracle's serif family. Card identity and the connected passage remain visible within the workspace.
 
 Record, speak across as many cards or sections as needed, then Finish. Received
 recording chunks save to IndexedDB. Automatic transcription preserves the original
@@ -39,7 +78,7 @@ receipt. It does not apply changes to the canonical manuscripts. Undiscussed
 sections remain untouched. Published listening audio is a separate asset.
 
 More options contains the detailed editor/import, portable export and saved drafts.
-Native exports use the system share sheet. The toolbar Record action is unboxed, and native select controls/options explicitly match the current light/dark colour scheme so menus remain readable. Review files contain private audio and
+Native exports use the system share sheet. Record is the primary action, and native select controls/options explicitly match the current light/dark colour scheme so menus remain readable. Review files contain private audio and
 text, are not encrypted, and should be transferred privately. Browser storage may
 be evicted; keep a copy before changing devices.
 
@@ -229,3 +268,53 @@ Blob/File storage. Existing Blob chunks remain readable, mixed old/new chunks pl
 and transfer together, and no database-version migration or audio deletion is used.
 The public recording/storage interfaces continue to return audio Blobs. Source/audio
 hashes and the atomic session/chunk transactions remain in place.
+
+## Passage-connected recording, 2026-10-28
+
+Select rendered prose to reveal **Re-record**. **Keep selected** retains references
+across readings; adjacent passages can be replaced together, while separated
+passages require choosing one replacement destination. The isolated teleprompter
+has adjustable type, manual scrolling and optional timed scrolling. Audio and raw
+transcripts are saved before review. **Use my words** replaces only the selected
+range after explicit review; later source/working edits invalidate a stale target.
+
+Ordinary recording opens the full Voice studio workspace with the connected passage. Visible and
+selected passages are captured as context; clear additions go after the focused
+passage. Quoted/relative references use conservative lexical matching, with candidate
+choices for ambiguity. Explicit replacements require reviewed words. Connections
+are private metadata rather than duplicated prose. Distinct spoken transitions can
+create ordered thoughts without invented word timestamps. Changing context during
+recording retains several references; it does not guess which disjoint reference
+belongs to a thought. Spoken card/section destinations retain priority.
+
+Targeted edits preserve other text and its attribution. Human contributions show
+an unobtrusive underline, with displaced text and retained audio under passage
+history. Undo checks that no later edit would be lost. Printed-book references and **Find in book** search the exact manuscripts and current private words across all 64 cards. Matching is lexical, with ambiguity retained and no calibrated accuracy claim. A persistent **Record / Re-record passage / Find in book / Connections** toolbar links the workflows; paragraphs can also be picked by tapping or keyboard without browser text selection.
+
+The visible Record action starts ordinary recording directly. Independently saved thoughts can transcribe and apply while the next thought records. After twelve seconds, automatic handoffs wait for a quiet break when input metering is supported; **Apply this thought** explicitly sends one at any time. Without metering the take stays intact until that action or Finish. Brief microphone reopening gaps may occur at boundaries. This is progressive thought transcription, not continuous word-level streaming or a speech-following teleprompter. Consecutive additions retain their order; background saves preserve recording and transcript work. Re-recording remains one deliberate take and waits for review.
+
+The bounded parser handles quoted explanations, exact sentence references, and explicitly keeping an opening sentence while replacing the rest. Ambiguous self-corrections, incomplete compound directions and embedded second instructions stay for correction before applying. No command text is silently pasted into a manuscript.
+
+## Daily voice workspace and desktop layout
+
+The reading has one visible Record entrance and secondary Passage tools. Record
+opens the same Ready workspace in every path. The workspace uses a separate
+self-hosted Plus Jakarta Sans controls role while keeping the reading and edited
+prose in Iowan. Desktop shows passage and transcript/review in two scrollable panes;
+phone shows focused Passage, Your words and Check panels. Primary recording and
+review actions stay in the fixed footer. Record/Writing/Recordings/Setup destinations
+support arrow-key navigation; scoped Ctrl/Cmd+Enter controls recording without
+capturing ordinary typing shortcuts.
+
+Only one recording/passage check is shown at a time. Previous/Next and a timestamped
+selector navigate the queue. Replay, editing, destination and exact word changes
+have separate controls and clear boundaries. Only the loaded visible passage can
+be marked reviewed. Failed processing retains its audio, with a concise recovery
+message and technical details under disclosure. Re-record review has desktop
+comparison panes and mobile Original/Your version switches, plus timed uncertain-word
+replay. Applying a replacement returns focus to the changed passage with Undo.
+
+The AR Create adapter accepts legitimate point-timed provider words without
+fabricating positive intervals: their passage uses whole-recording replay while
+actual word offsets remain intact. Invalid, reversed, outside or mismatched-source
+alignment remains rejected.

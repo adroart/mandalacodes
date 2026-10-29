@@ -1,7 +1,7 @@
 /* Draw a card. One column, phone first: method tabs and close on top, then the
    coin cast (big hexagram building upward), the cast result, or the trigram ring.
-   Every colour is a theme token, so light and dark both hold. */
-.oe-root .oracle-draw-backdrop { position:fixed; inset:0; z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(21,17,14,.72); }
+   Drawing follows the shared Oracle palette in either appearance. */
+.oe-root .oracle-draw-backdrop { position:fixed; inset:0; z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px; background:var(--bg); }
 .oracle-draw { position:relative; display:flex; flex-direction:column; width:min(440px,100%); height:min(860px,calc(100dvh - 40px)); overflow:hidden; overscroll-behavior:contain; background:var(--bg); color:var(--ink); border:1px solid var(--line); border-radius:10px; box-shadow:0 24px 60px rgba(21,17,14,.35); font-family:var(--font-reading); }
 .oracle-draw button { font-family:var(--font-ui); color:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform 140ms ease,background-color 260ms ease,color 260ms ease,border-color 260ms ease; }
 .oracle-draw button:not(:disabled):active { transform:scale(.97); }
@@ -10,6 +10,9 @@
 .oracle-draw button:disabled { opacity:.38; cursor:default; }
 .oracle-draw h3 { margin:0; font-family:var(--font-display); font-weight:500; }
 .oracle-draw-sr { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+/* Carry the Oracle canvas colour through every drawing surface. */
+.oe-root .oracle-draw[data-theme] { --bg2:var(--bg); --surface:var(--bg); }
 
 /* Top bar: the two methods and a close button, the same height. */
 .oracle-draw-header { display:flex; align-items:center; gap:8px; padding:14px 16px 0; flex-shrink:0; }
@@ -203,6 +206,9 @@
   .oracle-draw-preview .oracle-draw-primary { margin-top:8px; }
 }
 @media (max-height:620px) {
+  .oracle-draw-body { overflow-y:auto; }
+  .oracle-draw-ring-mode, .oracle-draw-coins-stage { flex:none; min-height:540px; }
+  .oracle-draw-ring-room { flex:none; height:280px; }
   .oracle-draw-rule { display:none; }
   .oracle-draw-intro { display:none; }
 }
