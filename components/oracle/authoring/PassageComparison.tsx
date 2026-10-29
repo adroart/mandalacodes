@@ -36,11 +36,10 @@ export default function PassageComparison({job,transcript,cardNumber,services,ch
     <header><span>Original</span><span className="comparison-destination">Code {first?.cardNumber??transcript.cardNumber??cardNumber} · {titles[first?.sectionId??transcript.sectionId??'']??'Choose section'}</span></header>
     <div className="comparison-reading">{reading||'Loading reading…'}</div>
    </section>
-   <section className="comparison-human" aria-label="Your version"><header><span>Your words</span></header>{children}</section>
+   <section className="comparison-human" aria-label="Your version"><header><span>Your words</span><button className="comparison-replay" onClick={onReplay}>Replay</button></header>{children}</section>
   </div>
   <footer className="comparison-controls">
-   <button disabled={busy||applying||!candidates.length} onClick={()=>void compare()}>{busy?'Comparing…':'Compare with AI'}</button>
-   <button onClick={onReplay}>Replay</button>
+   <button className="comparison-ai" disabled={busy||applying||!candidates.length} onClick={()=>void compare()}>{busy?'Comparing…':'Compare with AI'}</button>
    <select aria-label="How to apply your words" value={operation} onChange={e=>setOperation(e.target.value as 'replace'|'append')}><option value="replace">Replace</option><option value="append">Add after</option></select>
    <button className="comparison-save" disabled={!canApply||busy||applying} onClick={()=>void apply()}>{applying?'Saving…':operation==='replace'?'Use my words here':'Add my words here'}</button>
    <details className="comparison-picker"><summary>Passage{explanation?' · matched':''}</summary><label>Original passage<select aria-label="Original passage to change" value={ids.length===1?ids[0]:''} onChange={e=>{epoch.current++;setBusy(false);setIds(e.target.value?[e.target.value]:[]);setExplanation('');setWarnings([]);}}><option value="">Choose a passage</option>{candidates.map(a=><option key={a.id} value={a.id}>{titles[a.sectionId]??a.sectionId} · {a.cardNumber} · {a.text.slice(0,100)}</option>)}</select></label>{explanation&&<p className="comparison-reason">{explanation}</p>}</details>
