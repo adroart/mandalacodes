@@ -3,6 +3,8 @@ import type { AuthoringSession, Capture } from '../../../lib/oracle/authoring/ty
 import './capture-shelf.css';
 interface Props {
   session: AuthoringSession;
+  expanded?: boolean;
+  onDiscard?:(captureId:string)=>Promise<void>;
   disabled: boolean;
   processingCapture?: string;
   onListen: (captureId: string) => void;
@@ -14,7 +16,7 @@ const date = (value: string) => {
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? 'Saved recording' : parsed.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 };
-export default function CaptureShelf({ session, disabled, processingCapture, onListen, onTranscribe, onImport }: Props) {
+export default function CaptureShelf({ session, disabled, processingCapture, onListen, onTranscribe, onImport, expanded=false,onDiscard }: Props) {
   const [file, setFile] = useState<File | null>(null), [seconds, setSeconds] = useState('');
   const [reading, setReading] = useState(false), [detected, setDetected] = useState(false);
   const [error, setError] = useState(''), [notice, setNotice] = useState(''), [action, setAction] = useState('');
@@ -63,15 +65,17 @@ export default function CaptureShelf({ session, disabled, processingCapture, onL
     catch (e) { setError(e instanceof Error ? e.message : 'Transcription could not finish. The recording is still saved.'); }
     finally { setAction(''); }
   };
-  return <section className="ov-capture-shelf" aria-label="Saved recordings and audio import">
-    {!!session.captures.length && <details><summary>Recordings · {session.captures.length}</summary><div className="ov-capture-list">{session.captures.map((capture, index) => {
+  const recordings=<div className="ov-capture-list">{session.captures.map((capture, index) => {
       const transcribed = session.transcript.some(t => t.captureId === capture.id), working = processingCapture === capture.id || action === capture.id;
       const status = working ? 'Transcribing…' : capture.status === 'empty' ? 'No audio received' : capture.status === 'recording' ? 'Recording in progress' : transcribed ? 'Transcript saved' : capture.status === 'interrupted' ? 'Interrupted · saved audio can be transcribed' : 'Ready to transcribe';
-      return <article key={capture.id} className="ov-capture-item" aria-label={`Recording ${index + 1}`}><div><strong>Recording {index + 1} · {clock(capture.durationMs)}</strong><small>{date(capture.recordedAt)} · {capture.origin === 'import' ? 'Added audio' : 'Microphone'}</small><span className="ov-capture-state" role={working ? 'status' : undefined}>{status}</span></div><div className="ov-capture-actions"><button disabled={disabled || capture.status === 'empty' || capture.status === 'recording'} onClick={() => onListen(capture.id)}>Replay recording</button>{!transcribed && ['ready', 'interrupted'].includes(capture.status) && <button disabled={locked || Boolean(processingCapture)} onClick={() => void transcribe(capture)}>Transcribe recording</button>}</div></article>;
-    })}</div></details>}
-    <details ref={importPanel} className="ov-audio-import"><summary>Add audio</summary><p className="ov-note">Use a recording already on this device, up to 10 MiB and 20 minutes.</p><label htmlFor={inputId}>Audio file<input id={inputId} aria-label="Add audio file" ref={chooser} type="file" accept="audio/*" disabled={locked || Boolean(processingCapture)} onChange={event => choose(event.target.files?.[0])} /></label>
+      return <article key={capture.id} className="ov-capture-item" aria-label={`Recording ${index + 1}`}><div><strong>Recording {index + 1} · {clock(capture.durationMs)}</strong><small>{date(capture.recordedAt)} · {capture.origin === 'import' ? 'Added audio' : 'Microphone'}</small><span className="ov-capture-state" role={working ? 'status' : undefined}>{status}</span></div><div className="ov-capture-actions"><button disabled={disabled || capture.status === 'empty' || capture.status === 'recording'} onClick={() => onListen(capture.id)}>Replay recording</button>{onDiscard&&<button disabled={disabled||capture.status==='recording'} aria-label={`Discard recording ${index+1}`} onClick={()=>void onDiscard(capture.id).catch(e=>setError(e instanceof Error?e.message:'This recording could not be discarded.'))}>Discard</button>}{!transcribed && ['ready', 'interrupted'].includes(capture.status) && <button disabled={locked || Boolean(processingCapture)} onClick={() => void transcribe(capture)}>Transcribe recording</button>}</div></article>;
+    })}</div>;
+  const importFields=<><p className="ov-note">Use a recording already on this device, up to 10 MiB and 20 minutes.</p><label htmlFor={inputId}>Audio file<input id={inputId} aria-label="Add audio file" ref={chooser} type="file" accept="audio/*" disabled={locked || Boolean(processingCapture)} onChange={event => choose(event.target.files?.[0])} /></label>
       {file && <div className="ov-import-preview"><strong>{file.name}</strong>{reading ? <p role="status">Reading audio length…</p> : detected ? <p>Duration · {clock(durationMs)}{durationMs > 1200000 && ' · over 20 minutes'}</p> : <label>Duration in seconds<input aria-label="Audio duration in seconds" type="number" min="0.001" max="1200" step="0.001" value={seconds} disabled={locked} onChange={event => setSeconds(event.target.value)} /></label>}<button disabled={locked || Boolean(processingCapture) || reading || !validDuration} onClick={() => void useAudio()}>{action === 'import' ? 'Saving audio…' : 'Use this audio'}</button></div>}
-    </details>
+</>;
+  return <section className="ov-capture-shelf" aria-label="Saved recordings and audio import">
+    {!!session.captures.length&&(expanded?<section><h3>Recordings · {session.captures.length}</h3>{recordings}</section>:<details><summary>Recordings · {session.captures.length}</summary>{recordings}</details>)}
+    {expanded?<section className="ov-audio-import"><h3>Add audio</h3>{importFields}</section>:<details ref={importPanel} className="ov-audio-import"><summary>Add audio</summary>{importFields}</details>}
     {error && <p className="ov-capture-error" role="alert">{error}</p>}{notice && <p className="ov-note" role="status">{notice}</p>}
   </section>;
 }

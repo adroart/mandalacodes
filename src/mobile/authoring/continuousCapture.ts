@@ -4,7 +4,7 @@ import type {AuthoringSession} from '../../../lib/oracle/authoring/types';
 
 /** Restrict recorder retries to its own capture and markers. Background transcript
  * jobs may save the same session; their words, receipts and sources always win. */
-function recordingStore(store:AuthoringStore,initial:SavedSession):AuthoringStore {
+export function recordingStore(store:AuthoringStore,initial:SavedSession):AuthoringStore {
  let ownCapture='';
  const initialIds=new Set(initial.session.captures.map(c=>c.id));
  const save=async(incoming:AuthoringSession,_expectedVersion:number):Promise<number>=>{

@@ -1,11 +1,13 @@
 import 'fake-indexeddb/auto';
 import {beforeEach,expect,it,vi} from 'vitest';
-import {SectionDraftStore,createSectionDraftSession,integrateSectionDraft,getIntegratedIntro,undoIntegratedSection,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
+import {SectionDraftStore,sectionTitleEdits,createSectionDraftSession,integrateSectionDraft,getIntegratedIntro,undoIntegratedSection,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
 import type {CardSection} from '../../../lib/oracle/authoring/cardSections';
 import {WorkingCardStore,editWorkingText} from '../../../lib/oracle/authoring/humanDrafts';
+import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
+import {createSession,sourceSnapshot} from '../../../lib/oracle/authoring/workflow';
 import type {SourceSnapshot} from '../../../lib/oracle/authoring/types';
 const drafts=new SectionDraftStore(),working=new WorkingCardStore();
-beforeEach(async()=>{const values=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>values.set(key,value),removeItem:(key:string)=>values.delete(key)});vi.stubGlobal('window',new EventTarget());for(const name of ['oracle-section-drafts-v1','oracle-working-cards-v1'])await new Promise<void>((resolve,reject)=>{const request=indexedDB.deleteDatabase(name);request.onsuccess=()=>resolve();request.onerror=()=>reject(request.error);});});
+beforeEach(async()=>{const values=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>values.set(key,value),removeItem:(key:string)=>values.delete(key)});vi.stubGlobal('window',new EventTarget());for(const name of ['oracle-section-drafts-v1','oracle-working-cards-v1','oracle-authoring-v1'])await new Promise<void>((resolve,reject)=>{const request=indexedDB.deleteDatabase(name);request.onsuccess=()=>resolve();request.onerror=()=>reject(request.error);});});
 function fixture(cardNumber=2){const markdown='First drive paragraph.\n\nSecond drive paragraph.\n\nThe centre stays here.\n\nThe channel stays here.';const source:SourceSnapshot={cardNumber,revision:'original',hash:`source-${cardNumber}`,markdown,sections:[{id:'DESIGN',title:'Human Design',start:0,end:markdown.length}]};const bodies=['First drive paragraph.\n\nSecond drive paragraph.','The centre stays here.','The channel stays here.'];const sections:CardSection[]=bodies.map((text,index)=>({id:`${cardNumber}/DESIGN/${index}`,cardNumber,lensId:'DESIGN',title:['Direction of the Self','Identity Center','Channel of the Beat'][index],path:['Human Design',['Drive','Centre','Channel'][index]],text,start:markdown.indexOf(text),end:markdown.indexOf(text)+text.length,sectionText:markdown,sourceHash:source.hash,kind:'manuscript'}));return {source,sections,services:{loadSource:async()=>source}};}
 async function review(){const f=fixture();let session=createSectionDraftSession(f.source,f.sections);session={...session,rawTranscript:'My drive. My centre.',state:'review',results:[{sectionId:f.sections[0].id,text:'My complete new drive, in my own words.',evidenceQuotes:['My drive.'],changes:[],warnings:[],checked:true},{sectionId:f.sections[1].id,text:'My centre receives direction.',evidenceQuotes:['My centre.'],changes:[],warnings:[],checked:false}]};return {...f,session:await drafts.save(session,0)};}
 it('persists versioned section sessions and rejects stale saves without losing the original transcript',async()=>{const {session}=await review();const current=await drafts.save({...session,rawTranscript:'A corrected transcript.'},session.version);expect(current.version).toBe(2);await expect(drafts.save({...session,error:'stale'},session.version)).rejects.toThrow('Another tab');expect((await drafts.get(session.id))?.rawTranscript).toBe('A corrected transcript.');expect((await drafts.versions(session.id)).map(v=>v.rawTranscript)).toEqual(['My drive. My centre.','A corrected transcript.']);expect((await drafts.list(2))[0].id).toBe(session.id);});
@@ -19,4 +21,67 @@ it('rejects unknown and duplicate section results',async()=>{const {session}=awa
 
 it('recovers a crash between working integration and draft receipt without applying twice',async()=>{
  const {session,sections,services}=await review();await integrateSectionDraft(session.id,sections[0].id,services);const current=(await drafts.get(session.id))!;await drafts.save({...current,results:current.results.map(r=>r.sectionId===sections[0].id?{...r,applied:false,appliedText:undefined,beforeText:undefined,appliedAt:undefined,appliedRevision:undefined,integrationId:undefined,beforeWorking:undefined}:r)},current.version);const recovered=await integrateSectionDraft(session.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.revision).toBe(1);expect(recovered.results[0].beforeWorking?.blocks[0].origin).toBe('ai');await undoIntegratedSection(session.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.humanWords).toBe(0);
+});
+
+async function reviewTake(state='review',takeId='earlier'){
+ const f=await review(),audio=createSession(await sourceSnapshot(2,'original',f.source.markdown,f.source.sections));
+ audio.captures=[{id:'earlier',recordedAt:audio.createdAt,mimeType:'audio/wav',durationMs:5000,status:'ready',origin:'microphone'},{id:'latest',recordedAt:audio.createdAt,mimeType:'audio/wav',durationMs:0,status:'recording',origin:'microphone'}];
+ await new AuthoringStore().save(audio,0);
+ const session=await drafts.save({...f.session,captureSessionId:audio.id,captureId:'latest',takes:[{id:'earlier',captureId:'earlier',state}],results:f.session.results.map((r,index)=>index? r:{...r,takeIds:[takeId]})} as SectionDraftSession,f.session.version);
+ return {...f,session};
+}
+it('attaches the reviewed take rather than the newer recording to human words',async()=>{
+ const {session,sections,services}=await reviewTake();await integrateSectionDraft(session.id,sections[0].id,services);
+ const result=(await working.get(2,'DESIGN'))!;expect(result.blocks.filter(b=>b.origin==='human').flatMap(b=>b.evidence).map(e=>e.captureId)).toEqual(['earlier']);
+ expect((await drafts.get(session.id))!.results[0].takeIds).toEqual(['earlier']);
+});
+it('rejects a discarded take before writing any working text',async()=>{
+ const {session,sections,services}=await reviewTake('discarded');await expect(integrateSectionDraft(session.id,sections[0].id,services)).rejects.toThrow('discarded');expect(await working.get(2,'DESIGN')).toBeUndefined();
+});
+it('rejects a missing take rather than borrowing the newest recording',async()=>{
+ const {session,sections,services}=await reviewTake('review','missing');await expect(integrateSectionDraft(session.id,sections[0].id,services)).rejects.toThrow('evidence');expect(await working.get(2,'DESIGN')).toBeUndefined();
+});
+
+it('saves manual titles separately from speech and chooses the latest title for the same source',async()=>{
+ const {session,sections}=await review();const updated=await drafts.save({...session,titleEdits:{[sections[0].id]:{text:'My direction',updatedAt:'2026-10-29T10:00:00Z'}}},session.version);
+ expect(updated.results).toEqual(session.results);expect(updated.rawTranscript).toBe(session.rawTranscript);expect(updated.sections[0].title).toBe(sections[0].title);
+ const later={...updated,titleEdits:{[sections[0].id]:{text:'A later title',updatedAt:'2026-10-29T11:00:00Z'}}};
+ expect(sectionTitleEdits([later,updated],session.sourceHash)).toEqual({[sections[0].id]:'A later title'});expect(sectionTitleEdits([later],'a different source')).toEqual({});
+});
+it('rejects blank or multiline titles and unknown title destinations',async()=>{
+ const {session,sections}=await review();for(const [id,text]of [[sections[0].id,'  '],[sections[0].id,'Two\nlines'],['unknown','A title']])await expect(drafts.save({...session,titleEdits:{[id]:{text,updatedAt:'2026-10-29T10:00:00Z'}}},session.version)).rejects.toThrow('Use a title');
+});
+it('appends only spoken new words while preserving original AI provenance and undo',async()=>{
+ const {session,sections,services}=await review();
+ const changed=await drafts.save({...session,results:session.results.map((result,index)=>index?result:{...result,editIntent:'add' as const,text:'My additional words.'})},session.version);
+ const integrated=await integrateSectionDraft(changed.id,sections[0].id,services);
+ const card=(await working.get(2,'DESIGN'))!;expect(card.text).toBe(sections[0].text+'\n\nMy additional words.\n\nThe centre stays here.\n\nThe channel stays here.');expect(card.humanWords).toBe(3);expect(card.blocks.filter(block=>block.origin==='ai').map(block=>block.text).join('')).toContain(sections[0].text);expect(integrated.results[0].appliedText).toBe(sections[0].text+'\n\nMy additional words.');
+ await integrateSectionDraft(changed.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.revision).toBe(1);
+ await undoIntegratedSection(changed.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.text).toBe(session.source.markdown);expect((await working.get(2,'DESIGN'))!.humanWords).toBe(0);
+});
+it('retains every contributing take in one human block and preserves idempotency and undo',async()=>{
+ const {session,sections,services}=await reviewTake();const audio=new AuthoringStore(),saved=(await audio.load(session.captureSessionId!))!;
+ await audio.save({...saved.session,captures:saved.session.captures.map(capture=>({...capture,status:'ready' as const,durationMs:1000}))},saved.version);
+ const combined=await drafts.save({...session,takes:[{id:'earlier',captureId:'earlier',state:'review'},{id:'latest',captureId:'latest',state:'review'}],results:session.results.map((result,index)=>index?result:{...result,takeIds:['earlier','latest']})} as SectionDraftSession,session.version);
+ const integrated=await integrateSectionDraft(combined.id,sections[0].id,services),card=(await working.get(2,'DESIGN'))!;
+ const human=card.blocks.filter(block=>block.origin==='human');expect(human).toHaveLength(1);expect(human[0].evidence.map(item=>item.captureId)).toEqual(['earlier','latest']);expect(card.text.match(/My complete new drive/g)).toHaveLength(1);
+ await integrateSectionDraft(combined.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.revision).toBe(card.revision);expect(integrated.results[0].beforeWorking?.humanWords).toBe(0);
+ await undoIntegratedSection(combined.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.text).toBe(combined.source.markdown);expect((await working.get(2,'DESIGN'))!.humanWords).toBe(0);
+});
+it('repairs recording provenance after an interrupted multi-take receipt without inserting the words again',async()=>{
+ const {session,sections,services}=await reviewTake();const audio=new AuthoringStore(),saved=(await audio.load(session.captureSessionId!))!;
+ await audio.save({...saved.session,captures:saved.session.captures.map(capture=>({...capture,status:'ready' as const,durationMs:1000}))},saved.version);
+ const combined=await drafts.save({...session,takes:[{id:'earlier',captureId:'earlier',state:'review'},{id:'latest',captureId:'latest',state:'review'}],results:session.results.map((result,index)=>index?result:{...result,takeIds:['earlier','latest']})} as SectionDraftSession,session.version);
+ await integrateSectionDraft(combined.id,sections[0].id,services);const card=(await working.get(2,'DESIGN'))!;
+ await working.save({...card,blocks:card.blocks.map(block=>({...block,evidence:block.evidence.filter(item=>item.captureId!=='latest')}))},card.revision);
+ const reviewed=(await drafts.get(combined.id))!;await drafts.save({...reviewed,results:reviewed.results.map(result=>({...result,applied:false}))},reviewed.version);
+ await integrateSectionDraft(combined.id,sections[0].id,services);const recovered=(await working.get(2,'DESIGN'))!;
+ expect(recovered.text).toBe(card.text);expect(recovered.blocks.filter(block=>block.origin==='human')).toHaveLength(1);expect(recovered.blocks.flatMap(block=>block.evidence.map(item=>item.captureId))).toEqual(['earlier','latest']);
+ await undoIntegratedSection(combined.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.text).toBe(combined.source.markdown);
+});
+it('resolves phrase evidence from each take’s own audio session',async()=>{
+ const {session,sections,services}=await reviewTake();const audio=new AuthoringStore(),original=(await audio.load(session.captureSessionId!))!,phrase=createSession(original.session.source);
+ phrase.captures=[{id:'phrase-capture',recordedAt:phrase.createdAt,mimeType:'audio/wav',durationMs:1000,status:'ready',origin:'microphone'}];await audio.save(phrase,0);
+ const combined=await drafts.save({...session,takes:[{id:'earlier',captureId:'earlier',state:'review'},{id:'phrase-capture',captureId:'phrase-capture',captureSessionId:phrase.id,state:'review'}],results:session.results.map((result,index)=>index?result:{...result,takeIds:['earlier','phrase-capture']})} as SectionDraftSession,session.version);
+ await integrateSectionDraft(combined.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.blocks.flatMap(block=>block.evidence.map(item=>item.captureId))).toEqual(['earlier','phrase-capture']);
 });

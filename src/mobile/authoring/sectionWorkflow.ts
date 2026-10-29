@@ -2,7 +2,7 @@ import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
 import {addTranscript} from '../../../lib/oracle/authoring/workflow';
 import {recoverCapture} from '../../../lib/oracle/authoring/recorder';
 import type {AuthoringServices} from '../../../lib/oracle/authoring/types';
-import {SectionDraftStore,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
+import {SectionDraftStore,type SectionDraftSession,transcriptionReviewIssues} from '../../../lib/oracle/authoring/sectionDrafts';
 import {assimilateSections} from './sectionAssimilation';
 const drafts=new SectionDraftStore(),audio=new AuthoringStore();
 const running=new Map<string,Promise<void>>();
@@ -37,7 +37,7 @@ export function processSectionSession(id:string,services:AuthoringServices):Prom
   const latest=await changeSectionSession(id,s=>({...s,state:'assimilating',rawTranscript:words,error:undefined}));
   const references=await currentSectionTexts(latest);
   const result=await assimilateSections({words,sections:latest.sections.map(({id,title,path,text})=>({id,title,path,text:references[id]??text})),startSectionId:latest.startSectionId,markers:latest.markers,segments:transcript.map(t=>({text:t.raw,startMs:(offsets.get(t.captureId)??0)+t.startMs,endMs:(offsets.get(t.captureId)??0)+t.endMs}))});
-  await changeSectionSession(id,s=>({...s,state:'review',results:result.sections.map(r=>{const uncertain=transcript.filter(t=>r.evidenceQuotes.some(q=>q.includes(t.raw)||t.raw.includes(q))).flatMap(t=>(t.words??[]).filter(w=>w.probability!==undefined&&w.probability<.6).map(w=>w.text));return {...r,checked:false,warnings:[...new Set([...r.warnings,...(uncertain.length?[`Check possible mishearings against your audio: ${[...new Set(uncertain)].join(', ')}`]:[])])]};}),unassigned:result.unassigned,error:undefined}));
+  await changeSectionSession(id,s=>({...s,state:'review',results:result.sections.map(r=>{const uncertain=transcript.filter(t=>r.evidenceQuotes.some(q=>q.includes(t.raw)||t.raw.includes(q))).flatMap(t=>(t.words??[]).filter(w=>w.probability!==undefined&&w.probability<.6).map(w=>w.text));return {...r,reviewTranscript:words,comparisonOriginal:references[r.sectionId]??latest.sections.find(section=>section.id===r.sectionId)?.text,reviewIssues:[...(r.reviewIssues??[]),...transcriptionReviewIssues(words,transcript,r.evidenceQuotes)],checked:false,warnings:[...new Set([...r.warnings,...(uncertain.length?[`Check possible mishearings against your audio: ${[...new Set(uncertain)].join(', ')}`]:[])])]};}),unassigned:result.unassigned,error:undefined}));
  }catch(error){await changeSectionSession(id,s=>({...s,state:s.results.length?'review':'ready',error:error instanceof Error?error.message:'Section processing stopped. Your audio is saved.'}));throw error;}})().finally(()=>running.delete(id));
  running.set(id,task);return task;
 }
@@ -46,4 +46,9 @@ export async function resumeSectionWorkflows(services:AuthoringServices){for(con
 /** Private replacements provide current comparison context without changing source anchors. */
 export async function currentSectionTexts(session:SectionDraftSession):Promise<Record<string,string>>{
  const values=(await drafts.list(session.cardNumber)).filter(s=>s.sourceHash===session.sourceHash).flatMap(s=>s.results.filter(r=>r.appliedText&&r.appliedAt).map(r=>({id:r.sectionId,text:r.appliedText!,at:r.appliedAt!}))).sort((a,b)=>a.at.localeCompare(b.at));return Object.fromEntries(values.map(v=>[v.id,v.text]));
+}
+
+/** Small domain glossary for hosts that accept transcription prompt metadata. It is context, never replacement speech. */
+export function sectionTranscriptionContext(session:SectionDraftSession):{cardNumber:number;sectionTitles:string[];glossary:string[]}{
+ return {cardNumber:session.cardNumber,sectionTitles:session.sections.map(s=>s.title),glossary:['I Ching','Gene Keys','Human Design','hexagram','trigram','codon ring','Shadow','Gift','Siddhi',...new Set(session.sections.flatMap(s=>s.path))]};
 }
