@@ -97,6 +97,7 @@ jobs:
       # until Phase 1 of todo/plans/personal-pass.md brings it to its clean line.
       - run: npm run lint:tells
       - run: npm run test:unit
+      - run: npm run test:allowance
 
   # The current-frame mobile checks use Vite dev. Offline QR and Learn routing
   # require the actual generated worker and run against production preview.
