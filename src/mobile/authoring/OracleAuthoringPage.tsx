@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import PassageRecorder from '../../../components/oracle/authoring/PassageRecorder';
 import type {PassageAnchor} from '../../../lib/oracle/authoring/passageContext';
 import SectionVoiceStudio from '../../../components/oracle/authoring/SectionVoiceStudio';
+import {resumeSectionTakes} from './sectionTakes';
 import {resumeSectionWorkflows} from './sectionWorkflow';
 import HumanCardAuthoring from '../../../components/oracle/authoring/HumanCardAuthoring';
 import OracleVoiceFlow from '../../../components/oracle/authoring/OracleVoiceFlow';
@@ -13,7 +14,7 @@ import { exportAuthoringFile } from './nativeExport';
 import './authoring-app.css';
 import { resumeHumanJobs } from './humanCaptureJobs';
 const services = { loadSource: bundledSource, transcribe: automaticTranscription, propose: automaticProposals };
-export function resumePendingHumanAuthoring(){resumeHumanJobs(services);void resumeSectionWorkflows(services);}
+export function resumePendingHumanAuthoring(){resumeHumanJobs(services);void resumeSectionWorkflows(services);void resumeSectionTakes(services);}
 export default function OracleAuthoringPage({ cardNumber, initialSection, onDismiss, anchors, startImmediately,namedSectionId }: { cardNumber?: number; initialSection?: string; onDismiss?: () => void; anchors?: PassageAnchor[]; startImmediately?:boolean;namedSectionId?:string } = {}) {
   const { number: routeNumber } = useParams();
   const number = String(cardNumber ?? routeNumber ?? "");

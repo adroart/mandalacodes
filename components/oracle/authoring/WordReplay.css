@@ -1,0 +1,8 @@
+.word-replay {height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;white-space:pre-wrap;overflow-wrap:break-word;font:20px/1.65 var(--font-reading);color:inherit;scrollbar-width:thin;scrollbar-color:var(--sv-rule,#51483e) transparent;}
+.word-replay button.word-replay__word,.section-voice-studio .word-replay button.word-replay__word {display:inline;min-height:0;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;line-height:inherit;letter-spacing:inherit;text-align:inherit;cursor:pointer;vertical-align:baseline;}
+.word-replay button.word-replay__word:hover {text-decoration:underline;text-decoration-color:var(--sv-accent,#dabd8b);text-underline-offset:4px;}
+.word-replay button.word-replay__word:focus-visible {outline:1px solid var(--sv-accent,#dabd8b);outline-offset:3px;}
+.word-replay mark {padding:0 1px;margin:0 -1px;border-radius:3px;background:var(--sv-accent,#dabd8b);color:var(--sv-bg,#15110e);font:inherit;}
+.word-replay ::selection {background:#65513a;color:#fff5e5;}
+
+@media(max-width:760px){.word-replay {font-size:16px;line-height:1.6;}}

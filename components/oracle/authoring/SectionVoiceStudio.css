@@ -85,3 +85,15 @@
  .section-studio-section-list small {font-size:10px;}.section-voice-studio .section-studio-section-list button {padding-inline:8px;font-size:12px;}
  .section-studio-comparison {height:clamp(210px,37dvh,380px);}
 }
+/* A continuous manuscript lets you read ahead without changing an active take. */
+.section-studio-content--speak {overflow:hidden;padding-bottom:0;}
+.section-studio-manuscript {position:relative;height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--sv-rule) transparent;}
+.section-studio-manuscript>section {padding:22px 4px 28px;border-top:1px solid var(--sv-rule);max-width:80ch;}
+.section-studio-manuscript header {display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.section-studio-manuscript small {color:var(--sv-muted);font:11px/1.5 var(--font-controls);}
+.section-studio-manuscript h3 {font:600 17px/1.4 var(--font-controls);margin:4px 0;}
+.section-studio-manuscript p {font:20px/1.65 var(--font-reading);white-space:pre-wrap;margin:16px 0 0;}
+.section-studio-manuscript>section[aria-current=step] h3 {color:var(--sv-accent);}
+.section-studio-manuscript button {background:transparent;}
+.section-studio-take {border-bottom:1px solid var(--sv-rule);padding:12px 0;}
+@media(max-width:760px){.section-studio-manuscript p {font-size:18px;}.section-studio-manuscript h3 {font-size:15px;}.section-studio-footer:has(button:nth-child(3))>span {display:none;}.section-studio-footer:has(button:nth-child(3))>div {width:100%;justify-content:flex-end;}}

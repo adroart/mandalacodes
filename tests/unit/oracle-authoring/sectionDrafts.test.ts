@@ -3,9 +3,11 @@ import {beforeEach,expect,it,vi} from 'vitest';
 import {SectionDraftStore,createSectionDraftSession,integrateSectionDraft,getIntegratedIntro,undoIntegratedSection,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
 import type {CardSection} from '../../../lib/oracle/authoring/cardSections';
 import {WorkingCardStore,editWorkingText} from '../../../lib/oracle/authoring/humanDrafts';
+import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
+import {createSession,sourceSnapshot} from '../../../lib/oracle/authoring/workflow';
 import type {SourceSnapshot} from '../../../lib/oracle/authoring/types';
 const drafts=new SectionDraftStore(),working=new WorkingCardStore();
-beforeEach(async()=>{const values=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>values.set(key,value),removeItem:(key:string)=>values.delete(key)});vi.stubGlobal('window',new EventTarget());for(const name of ['oracle-section-drafts-v1','oracle-working-cards-v1'])await new Promise<void>((resolve,reject)=>{const request=indexedDB.deleteDatabase(name);request.onsuccess=()=>resolve();request.onerror=()=>reject(request.error);});});
+beforeEach(async()=>{const values=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>values.set(key,value),removeItem:(key:string)=>values.delete(key)});vi.stubGlobal('window',new EventTarget());for(const name of ['oracle-section-drafts-v1','oracle-working-cards-v1','oracle-authoring-v1'])await new Promise<void>((resolve,reject)=>{const request=indexedDB.deleteDatabase(name);request.onsuccess=()=>resolve();request.onerror=()=>reject(request.error);});});
 function fixture(cardNumber=2){const markdown='First drive paragraph.\n\nSecond drive paragraph.\n\nThe centre stays here.\n\nThe channel stays here.';const source:SourceSnapshot={cardNumber,revision:'original',hash:`source-${cardNumber}`,markdown,sections:[{id:'DESIGN',title:'Human Design',start:0,end:markdown.length}]};const bodies=['First drive paragraph.\n\nSecond drive paragraph.','The centre stays here.','The channel stays here.'];const sections:CardSection[]=bodies.map((text,index)=>({id:`${cardNumber}/DESIGN/${index}`,cardNumber,lensId:'DESIGN',title:['Direction of the Self','Identity Center','Channel of the Beat'][index],path:['Human Design',['Drive','Centre','Channel'][index]],text,start:markdown.indexOf(text),end:markdown.indexOf(text)+text.length,sectionText:markdown,sourceHash:source.hash,kind:'manuscript'}));return {source,sections,services:{loadSource:async()=>source}};}
 async function review(){const f=fixture();let session=createSectionDraftSession(f.source,f.sections);session={...session,rawTranscript:'My drive. My centre.',state:'review',results:[{sectionId:f.sections[0].id,text:'My complete new drive, in my own words.',evidenceQuotes:['My drive.'],changes:[],warnings:[],checked:true},{sectionId:f.sections[1].id,text:'My centre receives direction.',evidenceQuotes:['My centre.'],changes:[],warnings:[],checked:false}]};return {...f,session:await drafts.save(session,0)};}
 it('persists versioned section sessions and rejects stale saves without losing the original transcript',async()=>{const {session}=await review();const current=await drafts.save({...session,rawTranscript:'A corrected transcript.'},session.version);expect(current.version).toBe(2);await expect(drafts.save({...session,error:'stale'},session.version)).rejects.toThrow('Another tab');expect((await drafts.get(session.id))?.rawTranscript).toBe('A corrected transcript.');expect((await drafts.versions(session.id)).map(v=>v.rawTranscript)).toEqual(['My drive. My centre.','A corrected transcript.']);expect((await drafts.list(2))[0].id).toBe(session.id);});
@@ -19,4 +21,23 @@ it('rejects unknown and duplicate section results',async()=>{const {session}=awa
 
 it('recovers a crash between working integration and draft receipt without applying twice',async()=>{
  const {session,sections,services}=await review();await integrateSectionDraft(session.id,sections[0].id,services);const current=(await drafts.get(session.id))!;await drafts.save({...current,results:current.results.map(r=>r.sectionId===sections[0].id?{...r,applied:false,appliedText:undefined,beforeText:undefined,appliedAt:undefined,appliedRevision:undefined,integrationId:undefined,beforeWorking:undefined}:r)},current.version);const recovered=await integrateSectionDraft(session.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.revision).toBe(1);expect(recovered.results[0].beforeWorking?.blocks[0].origin).toBe('ai');await undoIntegratedSection(session.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.humanWords).toBe(0);
+});
+
+async function reviewTake(state='review',takeId='earlier'){
+ const f=await review(),audio=createSession(await sourceSnapshot(2,'original',f.source.markdown,f.source.sections));
+ audio.captures=[{id:'earlier',recordedAt:audio.createdAt,mimeType:'audio/wav',durationMs:5000,status:'ready',origin:'microphone'},{id:'latest',recordedAt:audio.createdAt,mimeType:'audio/wav',durationMs:0,status:'recording',origin:'microphone'}];
+ await new AuthoringStore().save(audio,0);
+ const session=await drafts.save({...f.session,captureSessionId:audio.id,captureId:'latest',takes:[{id:'earlier',captureId:'earlier',state}],results:f.session.results.map((r,index)=>index? r:{...r,takeIds:[takeId]})} as SectionDraftSession,f.session.version);
+ return {...f,session};
+}
+it('attaches the reviewed take rather than the newer recording to human words',async()=>{
+ const {session,sections,services}=await reviewTake();await integrateSectionDraft(session.id,sections[0].id,services);
+ const result=(await working.get(2,'DESIGN'))!;expect(result.blocks.filter(b=>b.origin==='human').flatMap(b=>b.evidence).map(e=>e.captureId)).toEqual(['earlier']);
+ expect((await drafts.get(session.id))!.results[0].takeIds).toEqual(['earlier']);
+});
+it('rejects a discarded take before writing any working text',async()=>{
+ const {session,sections,services}=await reviewTake('discarded');await expect(integrateSectionDraft(session.id,sections[0].id,services)).rejects.toThrow('discarded');expect(await working.get(2,'DESIGN')).toBeUndefined();
+});
+it('rejects a missing take rather than borrowing the newest recording',async()=>{
+ const {session,sections,services}=await reviewTake('review','missing');await expect(integrateSectionDraft(session.id,sections[0].id,services)).rejects.toThrow('evidence');expect(await working.get(2,'DESIGN')).toBeUndefined();
 });
