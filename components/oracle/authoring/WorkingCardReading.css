@@ -53,3 +53,10 @@
 .working-card-reading__evidence button { min-height:44px; padding:8px 0; border:0; background:transparent; color:inherit; font:inherit; text-decoration:underline; }
 
 .working-card-reading__words > p { margin:0; font:inherit; line-height:inherit; }
+
+.working-card-reading__section-heading {margin:28px 0 14px;font:500 17px/1.4 var(--font-controls);color:var(--working-ink);white-space:normal;}
+.working-card-reading__section-heading:first-child {margin-top:0;}
+.working-card-intro {min-width:0;}
+.working-card-intro__toolbar {display:flex;justify-content:center;align-items:center;gap:12px;margin-top:8px;color:var(--l-3);font:12px/1.5 var(--font-controls);}
+.working-card-intro__toolbar button {min-height:36px;padding:5px 8px;border:1px solid var(--l-rule);border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer;}
+.working-card-intro__toolbar button:focus-visible {outline:2px solid currentColor;outline-offset:3px;}

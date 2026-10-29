@@ -15,6 +15,7 @@ test('private bridge authenticates before forwarding, forbids other origins and 
   assert.equal((await fetch(url,{method:'POST',headers:{...headers,Origin:'https://evil.example',Authorization:`Bearer ${token}`},body:'{}'})).status,403);assert.equal(calls,0);
   const response=await fetch(url,{method:'POST',headers:{...headers,Authorization:`Bearer ${token}`},body:'{"operation":"capabilities"}'});assert.equal(response.status,200);assert.equal((await response.json()).phone.direct,true);assert.equal(calls,1);
   const comparison=await fetch(url,{method:'POST',headers:{...headers,Authorization:`Bearer ${token}`},body:'{"operation":"compare-passage"}'});assert.equal(comparison.status,200);assert.deepEqual(await comparison.json(),{operation:'compare-passage'});assert.equal(calls,1);
+  const assimilation=await fetch(url,{method:'POST',headers:{...headers,Authorization:`Bearer ${token}`},body:'{"operation":"assimilate-sections"}'});assert.equal(assimilation.status,200);assert.deepEqual(await assimilation.json(),{operation:'assimilate-sections'});assert.equal(calls,1);
   assert.equal((await fetch(url.replace(BRIDGE_PATH,'/pairing'),{headers:{Origin:'https://evil.example'}})).status,403);
   assert.equal((await fetch(url.replace(BRIDGE_PATH,'/pairing'),{headers:{'x-forwarded-for':'100.1.1.1'}})).status,403);
  }finally{await new Promise(r=>server.close(r));}

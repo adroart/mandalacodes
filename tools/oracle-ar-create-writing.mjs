@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import {comparisonInstructions,safeComparison,validateComparison} from './oracle-passage-comparison.mjs';
+import {assimilationInstructions,safeAssimilation,validateAssimilation} from './oracle-section-assimilation.mjs';
 import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
@@ -39,12 +40,12 @@ export function createArCreateWriting({stateDir=defaultDir(),execute,runnerPath=
  const load=async()=>{if(execute)return {capabilities:()=>({available:true,model:'test runner'}),launch:(_id,p,done,fail)=>Promise.resolve().then(()=>execute(p)).then(done,fail)};if(!workspace){const module=await import(pathToFileURL(runnerPath).href);workspace=module.createWorkspaceExecution({boundedEditorial:true});}return workspace;};
  const persist=(file,value)=>{const tmp=`${file}.next`;fs.writeFileSync(tmp,JSON.stringify(value),{mode:0o600});fs.renameSync(tmp,file);};
  const read=id=>{if(typeof id!=='string'||!/^writing-[a-f0-9]{64}$/.test(id))return null;try{return JSON.parse(fs.readFileSync(path.join(stateDir,`${id}.json`),'utf8'));}catch{return null;}};
- const reply=record=>record.state==='complete'?{status:200,body:{...(record.comparison?{comparison:record.comparison}:{proposals:record.proposals}),arCreate:{runner:'bounded-editorial',requestId:record.id,model:record.model}}}:record.state==='running'?{status:202,body:{pending:true,kind:'writing',requestId:record.id,stage:'Preparing writing with AR Create…'}}:{status:503,body:{error:record.error||'AR Create writing was interrupted. Your words are saved; choose Try again.'}};
+ const reply=record=>record.state==='complete'?{status:200,body:{...(record.assimilation?{assimilation:record.assimilation}:record.comparison?{comparison:record.comparison}:{proposals:record.proposals}),arCreate:{runner:'bounded-editorial',requestId:record.id,model:record.model}}}:record.state==='running'?{status:202,body:{pending:true,kind:'writing',requestId:record.id,stage:'Preparing writing with AR Create…'}}:{status:503,body:{error:record.error||'AR Create writing was interrupted. Your words are saved; choose Try again.'}};
  async function handle(body){
   if(body.operation==='writing-status'){const record=read(body.requestId);if(!record)return{status:404,body:{error:'That writing request was not found.'}};if(record.state==='running'&&!active.has(record.id)&&!(record.pid!==process.pid&&alive(record.pid)))return{status:503,body:{error:'AR Create writing was interrupted. Your words are saved; choose Try again.'}};return reply(record);}
-  if(!['propose','compare-passage'].includes(body.operation))return null;
-  const comparing=body.operation==='compare-passage';
-  let session;try{session=comparing?safeComparison(body.comparison):safeSession(body.session);}catch(error){return{status:400,body:{error:error.message}};}
+  if(!['propose','compare-passage','assimilate-sections'].includes(body.operation))return null;
+  const comparing=body.operation==='compare-passage',assimilating=body.operation==='assimilate-sections';
+  let session;try{session=assimilating?safeAssimilation(body.assimilation):comparing?safeComparison(body.comparison):safeSession(body.session);}catch(error){return{status:400,body:{error:error.message}};}
   const id=`writing-${hash(JSON.stringify(session))}`,file=path.join(stateDir,`${id}.json`),previous=read(id);
   if(previous?.state==='complete'||active.has(id))return reply(previous);
   let execution;try{execution=await load();if(!execution.capabilities().available)throw Error();}catch{return{status:503,body:{error:'AR Create’s existing writing runner is unavailable. Open AR Create on this Mac and try again.'}};}
@@ -54,12 +55,12 @@ export function createArCreateWriting({stateDir=defaultDir(),execute,runnerPath=
   catch(error){if(error.code!=='EEXIST')throw error;let owner;try{owner=JSON.parse(fs.readFileSync(lock,'utf8'));}catch{return{status:409,body:{error:'The previous writing lock needs recovery. Your words are saved.'}};}if(alive(owner.pid))return reply(read(id)??{id,state:'running'});fs.unlinkSync(lock);fs.writeFileSync(lock,JSON.stringify({pid:process.pid}),{flag:'wx',mode:0o600});}
   const attempt=(previous?.attempt??0)+1,cwd=path.join(stateDir,id,`attempt-${attempt}`);fs.mkdirSync(cwd,{recursive:true,mode:0o700});
   const record={id,state:'running',pid:process.pid,attempt,createdAt:new Date().toISOString(),sourceHash:session.source?.hash};persist(file,record);
-  const payload=comparing?session:{cardNumber:session.source.cardNumber,revision:session.source.revision,sections:session.source.sections.map(s=>({id:s.id,markdown:session.source.markdown.slice(s.start,s.end)})),evidence:session.transcript};
-  const prompt=`${comparing?comparisonInstructions:instructions}\n\nQuoted source and evidence:\n${JSON.stringify(payload)}`;
-  const artifactName=comparing?'comparison.json':'proposals.json';
+  const payload=comparing||assimilating?session:{cardNumber:session.source.cardNumber,revision:session.source.revision,sections:session.source.sections.map(s=>({id:s.id,markdown:session.source.markdown.slice(s.start,s.end)})),evidence:session.transcript};
+  const prompt=`${assimilating?assimilationInstructions:comparing?comparisonInstructions:instructions}\n\nQuoted source and evidence:\n${JSON.stringify(payload)}`;
+  const artifactName=assimilating?'assimilation.json':comparing?'comparison.json':'proposals.json';
   const operation=Promise.resolve().then(()=>execution.launch(id,{cwd,prompt,names:[artifactName]},result=>{
-   try{const artifact=result.response?.artifacts?.[artifactName];if(typeof artifact!=='string')throw Error();const decoded=JSON.parse(artifact);const model=result.model??(result.requestedModel?`${result.requestedModel} (requested)`:'installed AR Create configuration');const output=comparing?{comparison:validateComparison(decoded,session)}:{proposals:validated(decoded.proposals,session,model)};persist(file,{...record,state:'complete',finishedAt:new Date().toISOString(),model,...output});}
-   catch{persist(file,{...record,state:'failed',error:comparing?'AR Create returned a comparison that could not be matched to this reading. Your words and card are unchanged; try again.':'AR Create returned writing that could not be safely matched to your words. Your draft is unchanged; try again.'});}
+   try{const artifact=result.response?.artifacts?.[artifactName];if(typeof artifact!=='string')throw Error();const decoded=JSON.parse(artifact);const model=result.model??(result.requestedModel?`${result.requestedModel} (requested)`:'installed AR Create configuration');const output=assimilating?{assimilation:validateAssimilation(decoded,session)}:comparing?{comparison:validateComparison(decoded,session)}:{proposals:validated(decoded.proposals,session,model)};persist(file,{...record,state:'complete',finishedAt:new Date().toISOString(),model,...output});}
+   catch{persist(file,{...record,state:'failed',error:assimilating?'AR Create returned section cleanup that could not be traced to your speech. Your original words are saved; try again.':comparing?'AR Create returned a comparison that could not be matched to this reading. Your words and card are unchanged; try again.':'AR Create returned writing that could not be safely matched to your words. Your draft is unchanged; try again.'});}
   },()=>persist(file,{...record,state:'failed',error:'AR Create could not finish the writing. Check its existing Codex sign-in or permission controls, then try again.'}))).catch(()=>persist(file,{...record,state:'failed',error:'AR Create writing could not start. Your words are saved.'})).finally(()=>{active.delete(id);try{fs.unlinkSync(lock);}catch{}});
   active.set(id,operation);return reply(record);
  }

@@ -30,6 +30,7 @@ import { loadLiveInvocation } from '../lib/oracle/invocationApi';
 import type { LiveInvocation } from '../lib/oracle/invocationTypes';
 import { consumeCardEntranceRequest, requestsCardEntrance } from '../lib/oracle/cardEntrance';
 import WorkingCardReading from './oracle/authoring/WorkingCardReading';
+import WorkingCardIntro from './oracle/authoring/WorkingCardIntro';
 
 const ReadingWorkingLayer = import.meta.env.VITE_ORACLE_APP === 'true' ? WorkingCardReading : ({ children }: { cardNumber: number; children: React.ReactNode }) => <>{children}</>;
 
@@ -283,7 +284,7 @@ const UniversalLanguageCard: React.FC = () => {
           the placement, a chart without it says nothing. */}
       <div className="eb-reading ul-chart-row" data-palette={palette}>
         {synthesis?.summary ? (
-          <p className="ul-essence">{synthesis.summary}</p>
+          import.meta.env.VITE_ORACLE_APP === 'true'?<WorkingCardIntro cardNumber={card.number} original={synthesis.summary}/>:<p className="ul-essence">{synthesis.summary}</p>
         ) : null}
         <YourPositionCallout gate={card.number} />
         <SaveToCollectionButton
