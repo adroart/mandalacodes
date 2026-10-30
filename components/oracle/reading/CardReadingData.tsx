@@ -11,7 +11,7 @@
 import React, { useEffect, useState } from 'react';
 import { CARD_BY_NUMBER } from '../../../data/oracleData';
 import { getSynthesis, type CardSynthesis } from '../../../data/synthesisData';
-import { ulCardArtFloatsFree, ulCardHeroImageUrl, ulPieceForCard } from '../../../utils/universalLanguage';
+import { ulCardArtFloatsFree, ulPieceForCard } from '../../../utils/universalLanguage';
 import CardReading, { type CardReadingLens } from './CardReading';
 import { artDesignHref } from '../../../lib/atlas/artSite';
 import Navigation from '../../Navigation';
@@ -19,6 +19,7 @@ import { NAV_ITEMS } from '../../NavigationCore';
 import { isChunkLoadError } from '../../ChunkErrorBoundary';
 import { warmOracleForOffline } from '../../../lib/oracle/offlineWarm';
 import { hexagramLineBooleans } from '../HexagramGlyph';
+import CardArtwork from './CardArtwork';
 import CardReadingBodyHost, { type CardReadingBodyData } from './generated/CardReadingBody.host';
 
 /* Prose in these files is paragraph-separated by blank lines. */
@@ -153,14 +154,7 @@ export const CardReadingData: React.FC<Props> = ({ cardNumber, variant, reading:
   /* Full width of its column at the artwork's own square proportion: never
      cropped (the pattern IS the piece) and never letterboxed inside a taller
      box. The slot's fixed height is released in card-reading-fullbleed.css. */
-  const artwork = (
-    <img
-      src={ulCardHeroImageUrl(card.number)}
-      alt={`${card.card_name} · Code ${card.number}`}
-      style={{ width: '100%', height: 'auto', display: 'block' }}
-      crossOrigin="anonymous"
-    />
-  );
+  const artwork = <CardArtwork cardNumber={card.number} />;
 
   return (
     <CardReading
