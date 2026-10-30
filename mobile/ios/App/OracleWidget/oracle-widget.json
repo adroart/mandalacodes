@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generatedAt": 1793203963.135,
-  "validFrom": 1792540800,
-  "validUntil": 1856304000,
+  "generatedAt": 1793334657.114,
+  "validFrom": 1792713600,
+  "validUntil": 1856476800,
   "cards": [
     {
       "number": 1,
@@ -839,7 +839,7 @@
   ],
   "transitions": [
     {
-      "at": 1792540800,
+      "at": 1792713600,
       "gate": 50
     },
     {
