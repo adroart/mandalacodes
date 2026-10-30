@@ -10,7 +10,7 @@ import {humanJobs,subscribeHumanJobs} from './authoring/humanCaptureJobs';
 import ReaderPreferences from './reading/ReaderPreferences';
 import OracleShareSheet from './OracleShareSheet';
 export default function OracleNavigation(_props: unknown) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [shareOpen, setShareOpen] = useState(false);
@@ -22,7 +22,9 @@ export default function OracleNavigation(_props: unknown) {
   const [recordingCard,setRecordingCard]=useState<number|null>(null);
   const [startImmediately,setStartImmediately]=useState(false);
   const [passageAnchors,setPassageAnchors]=useState<PassageAnchor[]>([]);
-  const closeRecording=useCallback(()=>{setRecordSection(null);setNamedSectionId(undefined);setRecordingCard(null);setPassageAnchors([]);setStartImmediately(false);},[]);
+  const closeRecording=useCallback(()=>{setRecordSection(null);setNamedSectionId(undefined);setRecordingCard(null);setPassageAnchors([]);setStartImmediately(false);if(new URLSearchParams(window.location.search).has('voiceSession'))navigate(window.location.pathname,{replace:true});},[navigate]);
+  // A linked card's review travels in the address, so it opens once the card has loaded rather than on a timer.
+  useEffect(()=>{if(/^\/universal-language\/\d+$/.test(pathname)&&new URLSearchParams(search).has('voiceSession')){setRecordingCard(null);setPassageAnchors([]);setNamedSectionId(undefined);setRecordSection('CODE');}},[pathname,search]);
   useEffect(()=>{const open=(e:Event)=>{const anchors=(e as CustomEvent<PassageAnchor[]>).detail;if(!anchors?.length)return;setRecordingCard(anchors[0].cardNumber);setPassageAnchors(anchors);setRecordSection(anchors[0].sectionId);};window.addEventListener('oracle:re-record',open);return()=>window.removeEventListener('oracle:re-record',open);},[]);
   useEffect(()=>{const open=(e:Event)=>{const detail=(e as CustomEvent<{sectionId?:string;anchors?:PassageAnchor[];cardNumber?:number}>).detail;setRecordingCard(detail?.cardNumber??detail?.anchors?.[0]?.cardNumber??null);setPassageAnchors(detail?.anchors??[]);setStartImmediately(false);setRecordSection(detail?.sectionId??currentReaderSection());};window.addEventListener('oracle:open-recording',open);return()=>window.removeEventListener('oracle:open-recording',open);},[]);
   const card = /^\/universal-language\/\d+$/.test(pathname) ? CARD_BY_NUMBER.get(Number(pathname.split('/').pop())) : undefined;

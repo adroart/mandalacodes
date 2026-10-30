@@ -25,3 +25,6 @@
 /* Deliberate container boundary; controls stay separate from reading typography. */
 .oracle-authoring-sheet { border-color:#4b443a; background:#15110e; box-shadow:0 14px 48px #0005; }
 .oracle-authoring-sheet input,.oracle-authoring-sheet select,.oracle-authoring-sheet summary { font-family:var(--font-controls); }
+/* The voice workspace is near-black, not brown, edge to edge. */
+.oracle-authoring-backdrop:has(.section-voice-studio) { background:#060607; }
+.oracle-authoring-sheet:has(.section-voice-studio) { background:#0c0c0d; border-color:#26262a; }

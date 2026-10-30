@@ -31,6 +31,24 @@ async function apply(anchors:PassageAnchor[],words:string,services:AuthoringServ
  const saved=await store.save(next,existing?.revision??0);
  localStorage.setItem(UNDO,JSON.stringify({before,afterRevision:saved.revision}));window.dispatchEvent(new CustomEvent('oracle:passage-applied',{detail:{kind:addition?'addition':'replacement',anchor:combined,words}}));
 }
+/** Several exact spans of one reading change in a single revision. Untouched text keeps its own
+ * provenance; each new span is a human block with its recording evidence; an empty edit removes its span. */
+export async function applyPassageEdits(reading:{cardNumber:number;sectionId:string;sectionText:string;revision:number;sourceHash?:string},edits:{start:number;end:number;words:string}[],services:AuthoringServices,evidence?:PassageEvidence){
+ const sorted=[...edits].sort((a,b)=>a.start-b.start);
+ if(!sorted.length)throw new Error('Nothing here changes. Choose a passage to replace first.');
+ if(sorted.some((e,i)=>e.start<0||e.end<e.start||e.end>reading.sectionText.length||(i>0&&e.start<sorted[i-1].end)))throw new Error('These passages overlap. Compare the section again.');
+ const source=await services.loadSource(reading.cardNumber),existing=await store.get(reading.cardNumber,reading.sectionId);
+ if(evidence&&existing?.blocks.some(b=>b.evidence.some(e=>e.sessionId===evidence.sessionId&&e.transcriptId===evidence.transcriptId)))return;
+ if(reading.sourceHash&&source.hash!==reading.sourceHash)throw new Error('The source reading changed. Compare the section again.');
+ const before=existing??baseline(source,reading.sectionId,plainSection(source,reading.sectionId));
+ if((existing?.revision??0)!==reading.revision||before.text!==reading.sectionText)throw new Error('New words arrived in this reading. Compare the section again before replacing it.');
+ const blocks=exactBlocks(before),nextBlocks:HumanBlock[]=[];let cursor=0;
+ for(const edit of sorted){nextBlocks.push(...sliceBlocks(blocks,cursor,edit.start));if(edit.words)nextBlocks.push({id:crypto.randomUUID(),text:edit.words,sourceText:edit.words,replacedText:before.text.slice(edit.start,edit.end),origin:'human',evidence:evidence?[{...evidence,signature:edit.words}]:[]});cursor=edit.end;}
+ nextBlocks.push(...sliceBlocks(blocks,cursor,before.text.length));
+ const text=nextBlocks.map(b=>b.text).join(''),next={...before,text,blocks:nextBlocks,humanWords:nextBlocks.reduce((n,b)=>n+(b.origin==='human'?wordCount(b.text):0),0),totalWords:wordCount(text)};
+ const saved=await store.save(next,existing?.revision??0);
+ localStorage.setItem(UNDO,JSON.stringify({before,afterRevision:saved.revision}));window.dispatchEvent(new CustomEvent('oracle:passage-applied',{detail:{kind:'edits'}}));
+}
 export const applyPassageReplacement=(anchors:PassageAnchor[],words:string,services:AuthoringServices,evidence?:PassageEvidence)=>apply(anchors,words,services,evidence,false);
 export const applyPassageAddition=(anchor:PassageAnchor,words:string,services:AuthoringServices,evidence?:PassageEvidence)=>apply([anchor],words,services,evidence,true);
 export function hasPassageUndo(){return !!localStorage.getItem(UNDO);}

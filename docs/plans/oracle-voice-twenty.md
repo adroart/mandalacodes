@@ -46,3 +46,24 @@ Local verification covers the interactive workspace and persistence/provider con
 The default comparison now contains the original, editable human wording, one replay action per pair, necessary transcription checks and one primary Use my words action. Repeated match explanations, destination bars, filter controls, bulk integration, cleanup and scroll settings moved out of the default comparison to Tools. Unmatched speech remains saved on a separate ordinary screen; an explicit named destination opens the flat section picker, then Review in [section] returns to comparison before any integration. No dropdown or automatic ambiguous attachment. Review retains the selected passage when returning from secondary tools.
 
 Verified desktop and iPhone WebKit screenshots, routing, word checks, playback, additions, phrase recording, canonical heading retention and integration. The 44-case section suite had four capability skips; after updating old UI-label expectations and fixing the return-navigation defect, all 40 runnable cases passed across the main run and focused repairs. TypeScript and production bundle pass. Local preview updated; no phone installation or production publication.
+
+## Workspace redesign, 2026-10-30
+
+The Speak / Review / Tools tabs are gone. Their split was the main source of confusion: the section you recorded and the words it produced lived on different tabs, each with its own navigation, and every option sat in one Tools panel.
+
+- **One manuscript to record over.** The whole card scrolls as plain text, each section with its own state (Recording, Processing, Ready to review, Check words, Your words, Your addition). Tapping a section heading makes it the destination; scrolling never moves it, and nothing can move it while the microphone is live.
+- **One dock that always names the destination.** Idle: Record into [section] · Review N · Record. Live: timer, level, Pause, Done, Next [following section]. Next sends the take and moves on without waiting for processing.
+- **Review is a focused screen per section.** Editable title above the passage, any uncertain words quoted in context with Hear it / It's right (an edit that removes the word settles it), then the original and the human words: side by side on desktop, original pinned above and scroll-linked on phones. One primary action names its consequence (Replace with my words, Add my words, or Check N words first). After applying, the same screen shows the words now in the reading with Undo, See in card and the next step.
+- **Everything else is a plain screen:** Recording settings (keep microphone on at Next, spoken section names, what to do when a section already has human words, apply all checked, private sync), Recordings and transcript, Sessions, Unplaced words, Speech cleanup, Sections. No accordions, dropdowns or checkboxes for approval.
+- **Authorship marks read the latest application across sessions**, so a section stays marked Your words after its session completes, and See what changed reopens the session that holds its undo. Undo still refuses to overwrite newer words in the same reading.
+- Linked-card review now travels in the address (?voiceSession=) instead of an event fired on a timer after navigation.
+
+Verification on this branch: 246 authoring unit tests; the ported section workflow suite (22 cases) and a new recording journey with screenshots (tests/oracle-voice-journey.spec.ts) on iPhone WebKit and desktop Chromium, using fixture speech processing. Not verified here: hosted processing, a signed phone build, or production.
+
+### Replacement, passage by passage (2026-10-30)
+
+Before this change Replace swapped the whole section for exactly what was said, so unspoken paragraphs disappeared. Now:
+
+- **Aim:** tap a section heading for the whole section, or one paragraph for only that paragraph. The dock reads "Record over · Reading · paragraph 2" (or "all 3 paragraphs"). The take stores the exact paragraph (`SectionTake.focus`); review gives every spoken word to it (`focusedComparison`) whatever the alignment says.
+- **Review:** a matched comparison is shown as passage rows marked Stays, Your words, New here or Removed, each with one action (Remove / Keep it, Keep original / Use my words, Leave out / Add it back). Unspoken passages stay by default. Choices live on the result (`rowChoices`). The button counts the change: "Replace 1 passage · remove 1".
+- **Apply:** `sectionReplacementPlan` turns rows into exact span edits and `applyPassageEdits` writes them in one revision: new spans are human blocks with evidence, kept spans keep their original provenance, undo restores the earlier reading. Unmatched recordings still replace the whole section, and the screen and button say how many paragraphs that is.
