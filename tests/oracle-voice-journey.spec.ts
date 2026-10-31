@@ -1,4 +1,4 @@
-import {test,expect,type Page} from './fixtures';
+import {test,expect,type Page,type Locator} from './fixtures';
 /**
  * The whole recording journey on a phone and a desktop, with screenshots of every step.
  * Speech processing is a fixture here: it proves the interface and the saved-work rules,
@@ -17,13 +17,15 @@ async function scriptedSpeech(page:Page,{unplaced=false}={}){
    const quote=words.includes(reading.said)?reading.said:words;return route.fulfill({json:{assimilation:{sections:[{sectionId:'2/CODE/reading',text:reading.said,evidenceQuotes:[quote],changes:[],warnings:[]}],unassigned:unplaced?[{text:'And this belongs with my notes about Gate 7.',reason:'It names another card without saying to move there.'}]:[]}}});}
   throw new Error(`Unexpected operation ${body.operation}`);});
 }
+async function expectProse(editor:Locator,value:string|RegExp){const actual=()=>editor.evaluate(el=>{if(el instanceof HTMLTextAreaElement)return el.value;const prose=el.cloneNode(true) as HTMLElement;prose.querySelectorAll('[data-check-controls]').forEach(node=>node.remove());return prose.textContent??'';});if(typeof value==='string')await expect.poll(actual).toBe(value);else await expect.poll(actual).toMatch(value);}
 async function openRecording(page:Page){await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeEnabled();return dialog;}
-const shot=(page:Page,name:string)=>page.screenshot({path:`test-results/voice-journey/${test.info().project.name.replace(/\W+/g,'-')}-${page.viewportSize()!.width}-${name}.png`});
+const shot=(page:Page,name:string)=>page.screenshot({path:test.info().outputPath(`${test.info().project.name.replace(/\W+/g,'-')}-${page.viewportSize()!.width}-${name}.png`)});
 
 for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:1440,height:900}]] as const){
  test.describe(label,()=>{
   test.use({viewport:size,...(label==='phone'?{isMobile:true,hasTouch:true,deviceScaleFactor:2}:{})});
   test('record two sections without waiting, check one word, use my words, undo, and see them in the card',async({page,context,browserName,baseURL})=>{
+   test.setTimeout(60_000); // Includes a six-second provider delay and twelve full-screen captures.
    test.skip(browserName!=='chromium','Uses the Chromium fake microphone');await context.grantPermissions(['microphone'],{origin:baseURL!});
    await scriptedSpeech(page);const dialog=await openRecording(page);
    const dock=dialog.locator('.vs-dock');
@@ -34,7 +36,7 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await dialog.getByRole('button',{name:'Record',exact:true}).click();
    await expect(dock).toContainText('0:01');await expect(dialog.locator('.vs-section[data-recording]')).toHaveAttribute('data-section-id','2/INTRO');
    await shot(page,'02-recording-intro');
-   await dialog.getByRole('button',{name:'Send and go to Reading',exact:true}).click();
+   await dialog.getByRole('button',{name:'Send this recording and go to Universal Language · Reading',exact:true}).click();
    await expect(dock).toContainText('Record over');await expect(dock.locator('strong')).toHaveText(/^Reading/);
    await expect(dialog.locator('.vs-section[data-section-id="2/INTRO"] .vs-chip')).toHaveText('Processing');await expect(dock).toContainText('1 processing');
    await dialog.getByRole('button',{name:'Record',exact:true}).click();
@@ -44,13 +46,13 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await expect(dialog.locator('.vs-section[data-recording]')).toHaveAttribute('data-section-id','2/CODE/reading');
    await dialog.locator('.vs-manuscript').evaluate(el=>el.scrollTo({top:0}));
    await shot(page,'03-recording-reading-while-intro-processes');
-   await dialog.getByRole('button',{name:'Done',exact:true}).click();
+   await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
    const words=dialog.getByRole('textbox',{name:'Your section words',exact:true});
-   await expect(words).toHaveValue(reading.said);
+   await expectProse(words,reading.said);
    await expect(dialog.getByRole('textbox',{name:'Section title',exact:true})).toHaveValue('Reading');
    await expect(dialog.getByRole('region',{name:'Original section',exact:true})).toContainText('Trust lets life reach you all the way');
-   const checks=dialog.getByRole('region',{name:'Words to check',exact:true});
-   await expect(checks.locator('q mark')).toHaveText('chess');await expect(checks.locator('q')).toContainText('middle of your chess');
+   const checks=dialog.locator('.vs-inline-word-check,.vs-word-check-note');
+   await expect(checks.locator('.vs-checked-word')).toHaveText('chess');await expectProse(words,reading.said);
    const apply=dialog.locator('.vs-dock [data-action=apply]');
    await expect(apply).toBeDisabled();await expect(apply).toHaveText('Check 1 word first');
    await shot(page,'04-review-one-word-to-check');
@@ -58,8 +60,8 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await expect(dialog.locator('.vs-dock--review .vs-progress')).toBeVisible();
    await shot(page,'05-hearing-the-word');
    await dialog.getByRole('button',{name:'Done',exact:true}).click();
-   await words.fill(reading.said.replace('chess','chest'));
-   await expect(apply).toBeEnabled();await expect(checks).toContainText('All checked: “chess”');await expect(apply).toHaveText(/^Replace all \d+ paragraphs$/);await expect(dialog.locator('.vs-compare-summary')).toContainText('Your words replace the whole section');
+   await words.fill(reading.said.replace('chess','chest'));await words.blur();
+   await expect(apply).toBeEnabled();await expectProse(words,reading.said.replace('chess','chest'));await expect(checks).toHaveCount(0);await expect(apply).toHaveText(/^Replace all \d+ paragraphs$/);await expect(dialog.locator('.vs-replacement-scope')).toHaveText(/^Replaces all \d+ paragraphs$/);
    await shot(page,'06-word-corrected');
    await apply.click();
    await expect(dialog.getByRole('region',{name:'Now in your reading',exact:true})).toContainText('middle of your chest');
@@ -70,7 +72,7 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await expect(dialog.getByRole('region',{name:'Now in your reading',exact:true})).toBeVisible();
    await dialog.getByRole('button',{name:'Next to review',exact:true}).click();
    await expect(dialog.getByRole('textbox',{name:'Section title',exact:true})).toHaveValue('Intro');
-   await expect(words).toHaveValue(intro.text);
+   await expectProse(words,intro.text);
    await expect(dialog.getByRole('button',{name:'1 stumble tidied',exact:true})).toBeVisible();
    await dialog.getByRole('button',{name:'Listen',exact:true}).click();
    await expect(dialog.locator('.word-replay mark')).toHaveCount(1);
@@ -99,7 +101,7 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();
    await expect(dialog.locator('.vs-dock strong')).toHaveText(/^Reading · all \d+ paragraphs$/);
    await dialog.getByRole('button',{name:'Record',exact:true}).click();await expect(dialog.locator('.vs-dock')).toContainText('0:01');
-   await dialog.getByRole('button',{name:'Send and go to Combination',exact:true}).click();
+   await dialog.getByRole('button',{name:'Send this recording and go to I Ching · Combination',exact:true}).click();
    await expect(dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-chip')).toHaveText('Check words');
    await expect(dialog.getByRole('button',{name:'1 passage not placed yet'})).toBeVisible();
    await shot(page,'20-unplaced-noted');
@@ -111,8 +113,8 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await shot(page,'22-choose-section');
    await dialog.getByRole('navigation',{name:'Choose a card section'}).locator('button[data-section-id="2/CODE/reading"]').click();
    await expect(dialog.getByRole('textbox',{name:'Section title',exact:true})).toHaveValue('Reading');
-   await expect(dialog.getByRole('textbox',{name:'Your section words',exact:true})).toHaveValue(/Gate 7\.$/);
-   await expect(dialog.getByRole('region',{name:'Words to check',exact:true})).toContainText('placed by hand');
+   await expectProse(dialog.getByRole('textbox',{name:'Your section words',exact:true}),/Gate 7\.$/);
+   await expect(dialog.locator('.vs-word-check-note')).toContainText('placed by hand');
   });
  });
 }

@@ -1,0 +1,39 @@
+/* Human-first comparison: one document scroll, no original pinned above speech. */
+.section-voice-studio .vs-compare.vs-compare--human-first{gap:0}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair,
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair+.vs-pair{gap:8px;padding:16px 0;border-top:1px solid var(--vs-rule)}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair:first-child{padding-top:0;border-top:0}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair-head{min-height:44px}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-row-action{min-height:44px;border-radius:6px}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair [data-review-pane=original]{position:static;margin:0;padding:0;border:0;background:none}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair [data-review-pane=original] .vs-original{max-height:none;overflow:visible;mask-image:none;-webkit-mask-image:none}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-original{font-size:15px;line-height:1.6;color:var(--vs-muted);white-space:pre-wrap}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair[data-kind=unspoken] .vs-original{font-size:var(--vs-text);color:var(--vs-ink-2)}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair[data-kind=unspoken][data-choice=mine] .vs-original{text-decoration:line-through;color:var(--vs-muted)}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair[data-kind=unspoken] .vs-pair-head b,
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair-head b[data-tone=mine]{color:var(--vs-ink-2)}
+.section-voice-studio .vs-compare.vs-compare--human-first [data-review-pane=words]{min-width:0}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair[data-choice=mine] [data-review-pane=words]{border-left:3px solid var(--vs-accent);padding-left:12px}
+.section-voice-studio .vs-compare.vs-compare--human-first h4{min-height:18px;font-size:13px;color:var(--vs-muted);margin:0 0 4px;flex-wrap:wrap}
+.section-voice-studio .vs-replacement-scope{margin-left:auto;font-size:12px;text-align:right}
+.section-voice-studio .vs-compare.vs-compare--human-first .ov-text-editor textarea{padding:0;border:0;background:transparent;min-height:0;color:var(--vs-ink);line-height:1.6;resize:none}
+.section-voice-studio .vs-cleanup-link{align-self:flex-start;margin-top:12px;min-height:44px}
+.section-voice-studio .vs-checked-prose{white-space:pre-wrap;font-size:var(--vs-text);line-height:1.6;color:var(--vs-ink);outline:none;min-height:54px;overflow-wrap:anywhere}
+.section-voice-studio .vs-checked-prose:focus-visible{outline:1px solid var(--vs-muted);outline-offset:4px}
+.section-voice-studio .vs-inline-word-check{display:inline;white-space:normal}
+.section-voice-studio .vs-checked-word{text-decoration:underline dotted var(--vs-check);text-decoration-thickness:2px;text-underline-offset:4px;color:var(--vs-check);white-space:pre-wrap}
+.section-voice-studio .vs-inline-word-check[data-done] .vs-checked-word{color:inherit;text-decoration-color:var(--vs-muted)}
+.section-voice-studio .vs-word-check-actions{display:inline-flex;flex-wrap:wrap;gap:0 8px;vertical-align:baseline;margin-left:8px;max-width:100%;white-space:normal}
+.section-voice-studio .vs-word-check-actions button{background:none;border:0;border-radius:4px;color:var(--vs-ink-2);font:600 13px/20px var(--font-controls);min-height:44px;padding:0 2px;text-decoration:none;white-space:normal}
+.section-voice-studio .vs-word-check-actions button:hover:enabled{text-decoration:underline;text-underline-offset:4px}
+.section-voice-studio .vs-word-check-actions button:disabled{opacity:.45}
+.section-voice-studio .vs-word-check-note{font-size:13px;color:var(--vs-ink-2);margin-top:8px;line-height:1.5}
+.section-voice-studio .vs-word-check-note .vs-word-check-actions{margin-left:0;display:flex}
+@media(min-width:900px){
+ .section-voice-studio .vs-compare.vs-compare--human-first .vs-pair{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:32px}
+ .section-voice-studio .vs-compare.vs-compare--human-first .vs-pair[data-choice=mine] [data-review-pane=words]{grid-column:1}
+ .section-voice-studio .vs-compare.vs-compare--human-first .vs-pair[data-choice=mine] [data-review-pane=original]{grid-column:2;grid-row:2}
+ .section-voice-studio .vs-compare.vs-compare--human-first[data-mode=whole] .vs-pair[data-choice=mine] [data-review-pane=original]{grid-row:1}
+ .section-voice-studio .vs-compare.vs-compare--human-first .vs-pair [data-review-pane=original] .vs-original{font-size:16px}
+ .section-voice-studio .vs-compare.vs-compare--human-first .vs-pair[data-kind=unspoken]{display:block;max-width:700px}
+}
