@@ -129,6 +129,36 @@ private final class OracleAuthoringExportHandler: NSObject, WKScriptMessageHandl
     }
 }
 
+private enum OracleGoogleReturnStage: String {
+    case presentationUnavailable = "presentation-unavailable"
+    case systemError = "system-error"
+    case callbackMissing = "callback-missing"
+    case callbackURLShape = "callback-url-shape"
+    case callbackQueryCount = "callback-query-count"
+    case callbackStateMismatch = "callback-state-mismatch"
+    case callbackServerError = "callback-server-error"
+    case callbackCodeInvalid = "callback-code-invalid"
+    case success
+}
+
+/// Overwrite one small cache record. No URL, credential, account or raw error text
+/// may enter this dictionary; it exists only to locate a failed native return.
+private func recordOracleGoogleDiagnostic(_ stage: OracleGoogleReturnStage, codePresent: Bool, systemError: NSError?) {
+    var diagnostic: [String: Any] = [
+        "stage": stage.rawValue,
+        "timestamp": ISO8601DateFormatter().string(from: Date()),
+        "codePresent": codePresent
+    ]
+    if let error = systemError,
+       [ASWebAuthenticationSessionErrorDomain, NSURLErrorDomain, NSCocoaErrorDomain].contains(error.domain) {
+        diagnostic["errorDomain"] = error.domain
+        diagnostic["errorCode"] = error.code
+    }
+    guard let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first,
+          let data = try? JSONSerialization.data(withJSONObject: diagnostic, options: [.sortedKeys]) else { return }
+    try? data.write(to: folder.appendingPathComponent("oracle-google-diagnostic.json"), options: .atomic)
+}
+
 /// Google's credentials stay in the system authentication browser. Only a
 /// proof-bound handoff code returns to the bundled Oracle main frame.
 private final class OracleGoogleAuthHandler: NSObject, WKScriptMessageHandler, ASWebAuthenticationPresentationContextProviding {
@@ -156,46 +186,50 @@ private final class OracleGoogleAuthHandler: NSObject, WKScriptMessageHandler, A
               let challenge = body["challenge"] as? String,
               state.range(of: "^[A-Za-z0-9_-]{43}$", options: .regularExpression) != nil,
               challenge.range(of: "^[A-Za-z0-9_-]{43}$", options: .regularExpression) != nil else { return }
-        let reply: (String?, String?) -> Void = { [weak webView = message.webView] code, error in
+        var callbackCodePresent = false
+        let reply: (String?, String?, OracleGoogleReturnStage, NSError?) -> Void = { [weak webView = message.webView] code, error, stage, systemError in
+            recordOracleGoogleDiagnostic(stage, codePresent: code != nil || callbackCodePresent, systemError: systemError)
             guard let webView = webView, webView.url?.scheme == "capacitor", webView.url?.host == "localhost" else { return }
-            var result: [String: String] = ["id": id, "state": state]
+            var result: [String: String] = ["id": id, "state": state, "stage": stage.rawValue]
             if let code = code { result["code"] = code }
             if let error = error { result["error"] = error }
             guard let data = try? JSONSerialization.data(withJSONObject: result), let json = String(data: data, encoding: .utf8) else { return }
             webView.evaluateJavaScript("window.dispatchEvent(new CustomEvent('oracle-google-result',{detail:\(json)}));")
         }
-        guard session == nil, controller?.view.window != nil else { reply(nil, "unavailable"); return }
+        guard session == nil, controller?.view.window != nil else { reply(nil, "unavailable", .presentationUnavailable, nil); return }
         var start = URLComponents(string: "https://mandalacodes.com/api/auth/native/start")!
         start.queryItems = [URLQueryItem(name: "state", value: state), URLQueryItem(name: "challenge", value: challenge)]
-        guard let url = start.url else { reply(nil, "unavailable"); return }
+        guard let url = start.url else { reply(nil, "unavailable", .presentationUnavailable, nil); return }
         let authentication = ASWebAuthenticationSession(url: url, callbackURLScheme: "oracle") { [weak self] callback, error in
             DispatchQueue.main.async {
                 guard self?.activeID == id else { return }
                 self?.session = nil
                 self?.activeID = nil
+                let parts = callback.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }
+                callbackCodePresent = parts?.queryItems?.contains(where: { $0.name == "code" }) ?? false
                 if let error = error {
                     let cancelled = (error as? ASWebAuthenticationSessionError)?.code == .canceledLogin
-                    reply(nil, cancelled ? "cancelled" : "failed")
+                    reply(nil, cancelled ? "cancelled" : "failed", .systemError, error as NSError)
                     return
                 }
-                guard let callback = callback,
-                      let parts = URLComponents(url: callback, resolvingAgainstBaseURL: false),
+                guard callback != nil else { reply(nil, "invalid_callback", .callbackMissing, nil); return }
+                guard let parts = parts,
                       parts.scheme == "oracle", parts.host == "auth",
                       parts.user == nil, parts.password == nil, parts.port == nil,
-                      parts.fragment == nil, parts.path.isEmpty || parts.path == "/" else { reply(nil, "invalid_callback"); return }
+                      parts.fragment == nil, parts.path.isEmpty || parts.path == "/" else { reply(nil, "invalid_callback", .callbackURLShape, nil); return }
                 let items = parts.queryItems ?? []
-                guard items.count == 2, Set(items.map(\.name)).count == 2,
-                      items.first(where: { $0.name == "state" })?.value == state else { reply(nil, "invalid_callback"); return }
-                if items.contains(where: { $0.name == "error" }) { reply(nil, "failed"); return }
+                guard items.count == 2, Set(items.map(\.name)).count == 2 else { reply(nil, "invalid_callback", .callbackQueryCount, nil); return }
+                guard items.first(where: { $0.name == "state" })?.value == state else { reply(nil, "invalid_callback", .callbackStateMismatch, nil); return }
+                if items.contains(where: { $0.name == "error" }) { reply(nil, "failed", .callbackServerError, nil); return }
                 guard let code = items.first(where: { $0.name == "code" })?.value,
-                      code.range(of: "^[A-Za-z0-9_-]{32,128}$", options: .regularExpression) != nil else { reply(nil, "invalid_callback"); return }
-                reply(code, nil)
+                      code.range(of: "^[A-Za-z0-9_-]{32,128}$", options: .regularExpression) != nil else { reply(nil, "invalid_callback", .callbackCodeInvalid, nil); return }
+                reply(code, nil, .success, nil)
             }
         }
         authentication.presentationContextProvider = self
         authentication.prefersEphemeralWebBrowserSession = false
         session = authentication
         activeID = id
-        if !authentication.start() { session = nil; activeID = nil; reply(nil, "unavailable") }
+        if !authentication.start() { session = nil; activeID = nil; reply(nil, "unavailable", .presentationUnavailable, nil) }
     }
 }

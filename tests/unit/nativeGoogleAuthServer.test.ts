@@ -115,3 +115,32 @@ it('exchanges a real library session into a native cookie and rejects replay',as
  expect(session?.user.id).toBe(signedIn.response.user.id);
  expect((await handler({request:request(),env},'exchange')).status).toBe(400);
 });
+
+it('completes a real Google callback for an already signed-in Google user with a fresh browser session',async()=>{
+ const {createAuth}=await import('../../lib/account/auth.server.js');
+ const env={BETTER_AUTH_URL:origin,BETTER_AUTH_SECRET:secret,GOOGLE_CLIENT_ID:'test-client',GOOGLE_CLIENT_SECRET:'test-secret'};
+ const auth=createAuth(env),handler=createNativeGoogleHandler(()=>auth),ctx=await auth.$context;
+ const email=`existing-google-${Date.now()}@example.test`;
+ const registered=await auth.api.signUpEmail({body:{name:'Local Google fixture',email,password:'test-only-password'},returnHeaders:true});
+ await ctx.internalAdapter.createAccount({userId:registered.response.user.id,providerId:'google',accountId:'local-google-fixture-user'});
+ // Only Google's external network response is replaced. Better Auth's OAuth
+ // state, callback, account lookup/linking, session cookies and OTT are real.
+ const google=ctx.socialProviders.find(provider=>provider.id==='google')!;
+ google.validateAuthorizationCode=async()=>({accessToken:'local-fixture-access-token',scopes:['openid','email','profile']});
+ google.getUserInfo=async()=>({user:{id:'local-google-fixture-user',name:'Local Google fixture',email,emailVerified:true},data:{}} as any);
+ const jar=new Map<string,string>();
+ const receive=(headers:Headers)=>{for(const value of headers.getSetCookie()){const pair=value.split(';')[0],at=pair.indexOf('=');if(/Max-Age=0(?:;|$)/i.test(value))jar.delete(pair.slice(0,at));else jar.set(pair.slice(0,at),pair.slice(at+1));}};
+ const cookie=()=>[...jar].map(([name,value])=>`${name}=${value}`).join('; ');
+ receive(registered.headers);
+ const before=await auth.api.getSession({headers:new Headers({Cookie:cookie()})});
+ const start=await handler({request:new Request(`${origin}/api/auth/native/start?state=${state}&challenge=${await hash(verifier)}`,{headers:{Cookie:cookie()}}),env},'start');receive(start.headers);
+ const oauthState=new URL(start.headers.get('Location')!).searchParams.get('state')!;
+ const callback=await auth.handler(new Request(`${origin}/api/auth/callback/google?code=local-fixture-code&state=${encodeURIComponent(oauthState)}`,{headers:{Cookie:cookie()}}));
+ expect(callback.status).toBe(302);expect(callback.headers.get('Location')).toBe(origin+'/api/auth/native/complete');receive(callback.headers);
+ const after=await auth.api.getSession({headers:new Headers({Cookie:cookie()})});
+ expect(after?.user.id).toBe(before?.user.id);expect(after?.session.id).not.toBe(before?.session.id);
+ const complete=await handler({request:new Request(origin+'/api/auth/native/complete',{headers:{Cookie:cookie()}}),env},'complete');
+ const code=new URL(complete.headers.get('Location')!).searchParams.get('code');expect(code).toMatch(/^[A-Za-z0-9_-]{43}$/);
+ const exchange=await handler({request:new Request(origin+'/api/auth/native/exchange',{method:'POST',headers:{Origin:'capacitor://localhost','Content-Type':'application/json'},body:JSON.stringify({code,state,verifier})}),env},'exchange');
+ expect(exchange.status).toBe(200);
+});
