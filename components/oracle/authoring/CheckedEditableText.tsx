@@ -33,7 +33,7 @@ export function WordCheckActions({check,disabled,onHearCheck,onConfirmCheck,onRe
 
 export function UnplacedWordCheck(props:{check:InlineWordCheck}&CheckActions){
  return <div className="vs-word-check-note" data-check-key={props.check.key}>
-  <span>{props.check.quote?`Check “${props.check.quote}” against your recording.`:props.check.message}</span>
+  <span>{props.check.quote?`“${props.check.quote}”`:props.check.message}</span>
   <WordCheckActions {...props}/>
  </div>;
 }
@@ -51,22 +51,13 @@ export default function CheckedEditableText({label,value,checks,disabled,caret,s
  useEffect(()=>()=>{clearTimeout(timer.current);if(dirty.current&&latest.current!==committed.current)void callback.current(latest.current).catch(()=>undefined);},[]);
  useEffect(()=>{if(caret===undefined||!root.current||!matchMedia('(pointer: fine)').matches)return;const el=root.current;el.focus({preventScroll:true});const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,{acceptNode:node=>(node.parentElement?.closest('[data-check-controls]')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT)});let remaining=caret,node:Node|null;while((node=walker.nextNode())){if(remaining<=(node.textContent?.length??0)){const range=document.createRange();range.setStart(node,remaining);range.collapse(true);const selection=window.getSelection();selection?.removeAllRanges();selection?.addRange(range);break;}remaining-=node.textContent?.length??0;}},[caret]);
  // React never reconciles the browser-owned editable children. Rebuild only after focus leaves;
- // while typing, update non-editable action labels without moving the caret or rewriting prose.
+ // while typing, update the mark without moving the caret or rewriting prose.
  useLayoutEffect(()=>{
   const el=root.current;if(!el)return;
-  const controls=(check:InlineWordCheck)=>{
-   const group=document.createElement('span');group.className='vs-word-check-actions';group.dataset.checkControls='true';group.contentEditable='false';
-   const button=(text:string,action:string)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.disabled=!!disabled;b.dataset.checkAction=action;b.dataset.checkKey=check.key;group.appendChild(b);};
-   if(check.done)button('Check again','reopen');
-   else {if(actions.onHearCheck)button(check.canHear?'Hear it':'Listen to recording','hear');button(check.quote?'It’s right':'I’ve checked this','confirm');}
-   return group;
-  };
   if(focused.current){
    for(const span of Array.from(el.querySelectorAll<HTMLElement>('.vs-inline-word-check'))){
-    const check=placed.find(item=>item.key===span.dataset.checkKey);if(!check)continue;
-    span.toggleAttribute('data-done',check.done);
-    const old=span.querySelector('[data-check-controls]'),next=controls(check);
-    if(old&&old.outerHTML!==next.outerHTML)old.replaceWith(next);
+    const check=placed.find(item=>item.key===span.dataset.checkKey);
+    if(check)span.toggleAttribute('data-done',check.done);
    }
    return;
   }
@@ -74,15 +65,14 @@ export default function CheckedEditableText({label,value,checks,disabled,caret,s
   for(const check of anchored){
    if(check.from>cursor)fragment.appendChild(document.createTextNode(display.slice(cursor,check.from)));
    const span=document.createElement('span');span.className='vs-inline-word-check';span.dataset.checkKey=check.key;if(check.done)span.dataset.done='true';
-   const word=document.createElement('span');word.className='vs-checked-word';word.textContent=display.slice(check.from,check.to);span.append(word,controls(check));fragment.appendChild(span);cursor=check.to;
+   const word=document.createElement('span');word.className='vs-checked-word';word.textContent=display.slice(check.from,check.to);span.appendChild(word);fragment.appendChild(span);cursor=check.to;
   }
   if(cursor<display.length)fragment.appendChild(document.createTextNode(display.slice(cursor)));
   el.replaceChildren(fragment);
  },[display,checks,disabled,actions.onHearCheck]);
- const checkClick=(event:React.MouseEvent<HTMLDivElement>)=>{const button=(event.target as HTMLElement).closest<HTMLButtonElement>('button[data-check-action]');if(!button||button.disabled)return;const key=button.dataset.checkKey!;if(button.dataset.checkAction==='hear')actions.onHearCheck?.(key);else if(button.dataset.checkAction==='reopen')actions.onReopenCheck?.(key);else actions.onConfirmCheck?.(key);};
  return <div className="vs-checked-editor">
-  <div ref={root} role="textbox" aria-label={label} aria-multiline="true" aria-disabled={disabled||undefined} tabIndex={disabled?-1:0} contentEditable={!disabled} suppressContentEditableWarning className="vs-checked-prose" onClick={checkClick} onFocus={()=>{focused.current=true;}} onInput={input} onSelect={select} onMouseUp={select} onKeyUp={select} onBlur={e=>{if(e.currentTarget.contains(e.relatedTarget as Node))return;focused.current=false;setDisplay(latest.current);void flush();}} onPaste={e=>{e.preventDefault();insert(e.clipboardData.getData('text/plain'));}} onCopy={e=>{const selection=window.getSelection();if(!selection?.rangeCount)return;e.preventDefault();e.clipboardData.setData('text/plain',checkedEditorText(selection.getRangeAt(0).cloneContents()));}}/>
-  {placed.filter(check=>check.from===undefined).map(check=><UnplacedWordCheck key={check.key} check={check} disabled={disabled} {...actions}/>)}
+  <div ref={root} role="textbox" aria-label={label} aria-multiline="true" aria-disabled={disabled||undefined} tabIndex={disabled?-1:0} contentEditable={!disabled} suppressContentEditableWarning className="vs-checked-prose" onFocus={()=>{focused.current=true;}} onInput={input} onSelect={select} onMouseUp={select} onKeyUp={select} onBlur={e=>{if(e.currentTarget.contains(e.relatedTarget as Node))return;focused.current=false;setDisplay(latest.current);void flush();}} onPaste={e=>{e.preventDefault();insert(e.clipboardData.getData('text/plain'));}} onCopy={e=>{const selection=window.getSelection();if(!selection?.rangeCount)return;e.preventDefault();e.clipboardData.setData('text/plain',checkedEditorText(selection.getRangeAt(0).cloneContents()));}}/>
+  {placed.map(check=><UnplacedWordCheck key={check.key} check={check} disabled={disabled} {...actions}/>)}
   {failed&&<button type="button" className="vs-link" onClick={()=>void flush()}>Retry saving these words</button>}
  </div>;
 }

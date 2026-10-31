@@ -4,6 +4,14 @@ Design handoff for Claude Code · 31 October 2026
 
 Reference implementation inspected: `2c1e35d0`. The current checkout is at `f2d7fc45` and does not contain the referenced studio files in its working tree. This document targets the supplied reference revision. It changes presentation and action wording within the five requested improvements, plus Settings spacing. It does not change application, matching, recording, retention, or undo rules.
 
+## Owner correction: easier passage editing
+
+31 October 2026: Adrian rejected the mixed-size passage treatment and buttons inserted mid-sentence. This correction supersedes the original sizing and inline-action instructions below.
+
+- Recorded words and comparison originals use the same passage size and line height: 17px/1.6 on phone, 18px/1.6 on desktop.
+- Keep the doubtful word marked in the prose, with its actions on a compact separate row below the editable passage. Buttons never interrupt a sentence or enlarge a line of prose.
+- Retain direct editing, selection, phrase re-recording, plain-text paste and saved-word recovery. Original passages remain read-only; Adrian confirmed this change concerns editing his recorded words.
+
 ## Design decision
 
 Review begins with the words Adrian will use. The previous wording follows immediately. Unchanged passages remain fully readable below. Word checks live at their actual occurrence. After applying, the next recording sits immediately below the confirmation. During recording, destination names get the full width and controls get a separate row. Card progress measures the current applied reading's authorship.
