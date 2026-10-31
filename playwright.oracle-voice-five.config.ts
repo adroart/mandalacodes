@@ -1,6 +1,6 @@
 import {defineConfig,devices} from '@playwright/test';
 export default defineConfig({
- testDir:'./tests',testMatch:['oracle-voice-five.spec.ts','oracle-checked-editor.spec.ts'],workers:1,retries:0,
+ testDir:'./tests',testMatch:['oracle-voice-five.spec.ts','oracle-voice-journey.spec.ts','oracle-checked-editor.spec.ts'],workers:1,retries:0,
  use:{baseURL:'http://127.0.0.1:4279',trace:'retain-on-failure'},
  projects:[
   {name:'Phone',use:{...devices['iPhone 13'],browserName:'chromium',viewport:{width:390,height:844}}},

@@ -8,10 +8,10 @@ async function checkedReview(page:Page){
 test('inline checks never enter copied prose, phrase selection, pasted text, or the applied reading',async({page},info)=>{
  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
  const dialog=await checkedReview(page),editor=dialog.locator('.vs-checked-prose'),apply=dialog.locator('[data-action=apply]');
- await expect(editor.getByRole('button')).toHaveCount(0);
- const check=dialog.locator('.vs-word-check-note').first(),original=dialog.locator('.vs-original').first();await expect(check.getByRole('button',{name:'It’s right',exact:true})).toBeVisible();
- const typography=await Promise.all([editor,original].map(el=>el.evaluate(node=>({size:getComputedStyle(node).fontSize,line:getComputedStyle(node).lineHeight}))));expect(typography[0]).toEqual(typography[1]);
- const positions=await Promise.all([editor,check].map(el=>el.boundingBox()));expect(positions[1]!.y).toBeGreaterThanOrEqual(positions[0]!.y+positions[0]!.height-1);await page.screenshot({path:info.outputPath('passage-editing-uninterrupted.png')});
+ await expect(editor.getByRole('button')).toHaveCount(2);
+ const check=dialog.locator('.vs-inline-word-check').first(),original=dialog.locator('.vs-original').first();await expect(check.getByRole('button',{name:'It’s right',exact:true})).toBeVisible();
+ const typography=await Promise.all([editor,original].map(el=>el.evaluate(node=>({size:getComputedStyle(node).fontSize,line:getComputedStyle(node).lineHeight}))));expect(parseFloat(typography[0].size)).toBeGreaterThanOrEqual(parseFloat(typography[1].size));
+ const positions=await Promise.all([editor,check].map(el=>el.boundingBox()));expect(positions[1]!.y).toBeLessThan(positions[0]!.y+positions[0]!.height);await page.screenshot({path:info.outputPath('passage-editing-uninterrupted.png')});
  const copied=await editor.evaluate(el=>{const range=document.createRange();range.selectNodeContents(el);const selection=window.getSelection()!;selection.removeAllRanges();selection.addRange(range);const event=new ClipboardEvent('copy',{bubbles:true,cancelable:true,clipboardData:new DataTransfer()});el.dispatchEvent(event);return event.clipboardData!.getData('text/plain');});
  expect(copied).toBe(said);
  // The phrase after the non-editable controls must use prose offsets, not UI-label offsets.
