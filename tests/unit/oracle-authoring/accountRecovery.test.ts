@@ -1,0 +1,33 @@
+import 'fake-indexeddb/auto';
+import {beforeEach,expect,it,vi} from 'vitest';
+import {SectionDraftStore,createSectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
+import {cardSections} from '../../../lib/oracle/authoring/cardSections';
+import {sourceSnapshot} from '../../../lib/oracle/authoring/workflow';
+import {queueSectionTake} from '../../../src/mobile/authoring/sectionTakes';
+import {processSectionSession} from '../../../src/mobile/authoring/sectionWorkflow';
+import {resumeSignInBlockedRecordings} from '../../../src/mobile/authoring/accountRecovery';
+vi.mock('../../../src/mobile/authoring/sectionTakes',()=>({queueSectionTake:vi.fn()}));
+vi.mock('../../../src/mobile/authoring/sectionWorkflow',()=>({processSectionSession:vi.fn(async()=>undefined)}));
+const store=new SectionDraftStore();
+const blocked='Sign in to process on this phone. Your recording is saved.';
+beforeEach(async()=>{vi.clearAllMocks();vi.stubGlobal('window',new EventTarget());await new Promise<void>((resolve,reject)=>{const request=indexedDB.deleteDatabase('oracle-section-drafts-v1');request.onsuccess=()=>resolve();request.onerror=()=>reject(request.error);});});
+it('resumes only sign-in-blocked saved takes and preserves their recorded destinations',async()=>{
+ const source=await sourceSnapshot(2,'original','Original.',[{id:'CODE',title:'Code',start:0,end:9}]);
+ const draft=createSectionDraftSession(source,cardSections(source)),section=draft.startSectionId;
+ const take=(id:string,state:string,error?:string)=>({id,captureId:id,startSectionId:section,markers:[{atMs:0,sectionId:section},{atMs:200,sectionId:section}],state,error,createdAt:draft.createdAt});
+ await store.save({...draft,captureSessionId:'saved-audio',takes:[take('blocked','failed',blocked),take('provider','failed','Hosted review could not finish.'),take('discarded','discarded',blocked),take('review','review'),take('working','transcribing')]} as any,0);
+ const services={loadSource:async()=>source};
+ await resumeSignInBlockedRecordings(services);
+ expect(queueSectionTake).toHaveBeenCalledExactlyOnceWith(draft.id,'blocked',section,services,take('blocked','failed',blocked).markers);
+ expect(processSectionSession).not.toHaveBeenCalled();
+});
+it('recovers older sign-in-blocked sessions without touching integrated work',async()=>{
+ const source=await sourceSnapshot(2,'original','Original.',[{id:'CODE',title:'Code',start:0,end:9}]);
+ const draft=createSectionDraftSession(source,cardSections(source));
+ await store.save({...draft,captureSessionId:'saved-audio',error:blocked},0);
+ const used=createSectionDraftSession(source,cardSections(source));
+ await store.save({...used,captureSessionId:'other-audio',error:blocked,results:[{sectionId:used.startSectionId,text:'My words.',applied:true}]} as any,0);
+ const services={loadSource:async()=>source};
+ await resumeSignInBlockedRecordings(services);
+ expect(processSectionSession).toHaveBeenCalledExactlyOnceWith(draft.id,services);
+});
