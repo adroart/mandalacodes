@@ -46,12 +46,12 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await expect(dialog.locator('.vs-section[data-recording]')).toHaveAttribute('data-section-id','2/CODE/reading');
    await dialog.locator('.vs-manuscript').evaluate(el=>el.scrollTo({top:0}));
    await shot(page,'03-recording-reading-while-intro-processes');
-   await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
+   await dialog.getByRole('button',{name:'Done',exact:true}).click();
    const words=dialog.getByRole('textbox',{name:'Your section words',exact:true});
    await expectProse(words,reading.said);
    await expect(dialog.getByRole('textbox',{name:'Section title',exact:true})).toHaveValue('Reading');
    await expect(dialog.getByRole('region',{name:'Original section',exact:true})).toContainText('Trust lets life reach you all the way');
-   const checks=dialog.locator('.vs-inline-word-check,.vs-word-check-note');
+   const checks=words.locator('.vs-inline-word-check');await expect(dialog.locator('.vs-checks')).toHaveCount(0);await expect(checks.getByRole('button',{name:'Hear it',exact:true})).toBeVisible();await expect(checks.getByRole('button',{name:'It’s right',exact:true})).toBeVisible();
    await expect(checks.locator('.vs-checked-word')).toHaveText('chess');await expectProse(words,reading.said);
    const apply=dialog.locator('.vs-dock [data-action=apply]');
    await expect(apply).toBeDisabled();await expect(apply).toHaveText('Check 1 word first');
@@ -65,7 +65,7 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await shot(page,'06-word-corrected');
    await apply.click();
    await expect(dialog.getByRole('region',{name:'Now in your reading',exact:true})).toContainText('middle of your chest');
-   await shot(page,'07-applied');
+   await expect(dialog.getByRole('region',{name:'Next section to record',exact:true}).locator('p')).not.toBeEmpty();await expect(dialog.getByRole('button',{name:'Record this section',exact:true})).toBeVisible();await shot(page,'07-applied');
    await dialog.getByRole('button',{name:'Undo',exact:true}).click();
    await expect(words).toBeVisible();await expect(dialog.locator('.vs-toast')).toContainText('Undone');
    await apply.click();
@@ -85,7 +85,7 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await dialog.getByRole('button',{name:'Back',exact:true}).click();
    await expect(dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-chip')).toHaveText('Your words');
    await expect(dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-text')).toContainText('middle of your chest');
-   await shot(page,'10-card-sections-show-your-words');
+   await expect(dialog.locator('.vs-card-progress')).toHaveText(/^2 of \d+ sections in your words$/);await expect(dialog.getByRole('progressbar',{name:'Sections entirely in your words',exact:true})).toHaveAttribute('aria-valuenow','2');await shot(page,'10-card-sections-show-your-words');
    await dialog.getByRole('button',{name:'Recording settings',exact:true}).click();
    await shot(page,'11-settings');
    await dialog.getByRole('button',{name:'Back',exact:true}).click();
