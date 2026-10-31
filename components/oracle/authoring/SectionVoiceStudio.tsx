@@ -24,6 +24,8 @@ import {phraseReplayBounds,loopVoicePhrase,type VoiceReplayBounds} from '../../.
 import VoiceSyncTools from './VoiceSyncTools';
 import {restoreDocumentedCleanup} from '../../../src/mobile/authoring/speechCleanupReview';
 import {enqueueVoicePhraseRevision} from '../../../src/mobile/authoring/voicePhraseRevision';
+import {WorkingCardStore} from '../../../lib/oracle/authoring/humanDrafts';
+import {cardSectionAuthorship,readingOriginSpans,namedSectionOriginSpans} from '../../../lib/oracle/authoring/sectionAuthorship';
 import './SectionVoiceStudio.css';
 interface Props{source:SourceSnapshot;services:AuthoringServices;sectionId:string;onClose:()=>void;onEarlier:()=>void;namedSectionId?:string;initialAnchors?:PassageAnchor[];onNavigateCard?:(card:number,sessionId?:string)=>void;initialSessionId?:string}
 type View='work'|'review'|'settings'|'audio'|'sessions'|'sections'|'cleanup'|'unplaced';
@@ -38,7 +40,9 @@ const quoted=(text:string,quote?:string)=>!quote||new RegExp(`(^|[^\\p{L}])${quo
 
 /** One manuscript to read and record over, one focused screen to compare, and plain screens for everything else. */
 export default function SectionVoiceStudio({source,services,sectionId,onClose,onEarlier,namedSectionId,initialAnchors,onNavigateCard,initialSessionId}:Props){
- const store=useMemo(()=>new SectionDraftStore(),[]),audio=useMemo(()=>new AuthoringStore(),[]);
+ const store=useMemo(()=>new SectionDraftStore(),[]),audio=useMemo(()=>new AuthoringStore(),[]),workingStore=useMemo(()=>new WorkingCardStore(),[]);
+ const [authorship,setAuthorship]=useState<ReturnType<typeof cardSectionAuthorship>>(),[authorshipFailed,setAuthorshipFailed]=useState(false);
+ const [appliedOrigins,setAppliedOrigins]=useState<Record<string,ReturnType<typeof readingOriginSpans>>>({});
  const [draft,setDraft]=useState<SectionDraftSession>(),[savedAudio,setSavedAudio]=useState<SavedSession>(),[focusId,setFocusId]=useState(''),[targetId,setTargetId]=useState(''),[error,setError]=useState(''),[opening,setOpening]=useState(false),[integrating,setIntegrating]=useState(false),[active,setActive]=useState<VoiceCapturePass|null>(null),[monitor,setMonitor]=useState({elapsed:0,paused:false,level:null as number|null}),[audioUrl,setAudioUrl]=useState(''),[history,setHistory]=useState<SectionDraftSession[]>([]);
  const [view,setView]=useState<View>('work');
  const seekAt=useRef(0),clipBounds=useRef<VoiceReplayBounds|null>(null),loopCleanup=useRef<(()=>void)|null>(null);
@@ -89,7 +93,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
  /** Only this paragraph can change; its neighbours stay whatever is said. */
  const aimParagraph=(id:string,paragraph:{start:number;end:number;text:string})=>{if(handle.current||opening)return;setTargetId(id);setFocusId(id);setParagraphAim({sectionId:id,...paragraph});setError('');};
  const reviewAt=(id:string)=>{explicitChoice.current=true;setFocusId(id);setPhrase(null);if(audioUrl)stopListening();setView('review');};
- const record=async(phraseTarget:typeof phrase=null,targetSection=targetId)=>{if(!current.current||opening||processing||stopping)return;setOpening(true);explicitChoice.current=false;setError('');setNotice('');setView('work');setReplay(null);player.current?.pause();setAudioUrl('');try{
+ const record=async(phraseTarget:typeof phrase=null,targetSection=targetId)=>{if(!current.current||opening||handle.current||stopping)return;setOpening(true);explicitChoice.current=false;setError('');setNotice('');setView('work');setReplay(null);player.current?.pause();setAudioUrl('');try{
   await flush();if(phraseTarget&&current.current?.results.find(r=>r.sectionId===phraseTarget.sectionId)?.text!==phraseTarget.baseText)throw Error('Those words changed. Select the phrase again.');if(intent==='revise'&&!phraseTarget&&!initialAnchors?.length)throw Error('Select the exact words to revise first.');let value=current.current!;phraseCapture.current=phraseTarget;
   let saved=value.captureSessionId?await audio.load(value.captureSessionId):null;
   if(!saved){const session=createSession(source);saved={session,version:await audio.save(session,0)};}
@@ -132,18 +136,30 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
  const titleFor=(node:CardSection)=>draft?.titleEdits?.[node.id]?.text??titles[node.id]??node.title;
  const saveTitle=(id:string,text:string)=>{failed.current=false;const task=pending.current.then(()=>patch(s=>({...s,titleEdits:{...s.titleEdits,[id]:{text:text.trim(),updatedAt:new Date().toISOString()}}}))).then(()=>undefined);pending.current=task.catch(e=>{failed.current=true;report(e);});return task;};
  useEffect(()=>{let alive=true;void store.list(source.cardNumber).then(values=>{if(alive)setTitles(sectionTitleEdits(values,source.hash));}).catch(report);return()=>{alive=false;};},[draft?.id,source.hash]);
- useEffect(()=>{let alive=true;void store.list(source.cardNumber).then(values=>{if(!alive)return;const latest:typeof authored={};values.filter(s=>s.sourceHash===source.hash).flatMap(s=>s.results.filter(r=>r.appliedAt).map(r=>({id:r.sectionId,at:r.appliedAt!,human:!!r.integrationId,add:r.editIntent==='add',sessionId:s.id}))).sort((a,b)=>a.at.localeCompare(b.at)).forEach(({id,at,...value})=>{latest[id]=value;});setAuthored(latest);}).catch(report);return()=>{alive=false;};},[draft?.id,draft?.version,source.hash]);
+ useEffect(()=>{
+  let alive=true,request=0;
+  const refresh=async()=>{const version=++request;try{
+   const [values,working,synthesis]=await Promise.all([store.list(source.cardNumber),workingStore.list(source.cardNumber),getSynthesis(source.cardNumber)]);
+   if(!alive||version!==request)return;
+   const latest:typeof authored={};values.filter(s=>s.sourceHash===source.hash).flatMap(s=>s.results.filter(r=>r.appliedAt).map(r=>({id:r.sectionId,at:r.appliedAt!,human:!!r.integrationId,add:r.editIntent==='add',sessionId:s.id}))).sort((a,b)=>a.at.localeCompare(b.at)).forEach(({id,at,...value})=>{latest[id]=value;});setAuthored(latest);
+   const all=cardSections(source,synthesis?.summary),coverage=cardSectionAuthorship(source,all,working,values),origins:typeof appliedOrigins={};
+   for(const node of all){const spans=namedSectionOriginSpans(source,node,working,values);if(spans)origins[node.id]=spans;}
+   setAppliedOrigins(origins);setAuthorship(coverage);setAuthorshipFailed(false);
+  }catch{if(alive&&version===request){setAuthorshipFailed(true);}}};
+  void refresh();const unsubscribe=workingStore.subscribe(()=>void refresh());
+  return()=>{alive=false;unsubscribe();};
+ },[draft?.id,draft?.version,source.hash]);
  useEffect(()=>{let alive=true;void Promise.all(((draft as TakeSession|undefined)?.linkedSessionIds??[]).map(id=>store.get(id))).then(values=>{if(alive){const latest=new Map<number,SectionDraftSession>();values.filter((v):v is SectionDraftSession=>!!v).sort((a,b)=>a.updatedAt.localeCompare(b.updatedAt)).forEach(value=>latest.set(value.cardNumber,value));setLinkedDrafts([...latest.values()]);}}).catch(report);return()=>{alive=false;};},[draft?.id,(draft as TakeSession|undefined)?.linkedSessionIds?.join('|')]);
  const readUpdated=()=>{const node=section,r=result;if(!node||!r?.appliedText)return;onClose();requestAnimationFrame(()=>window.dispatchEvent(new CustomEvent('oracle:focus-passage',{detail:{cardNumber:source.cardNumber,sectionId:node.lensId,text:r.appliedText.split(/\n\s*\n/)[0]}})));};
  useEffect(()=>{if(!draft||active||!focusId)return;const id=draft.id,timer=setTimeout(()=>void changeSectionSession(id,s=>({...s,resume:{sectionId:focusId,mode:view,positionMs:(player.current?.currentTime??0)*1000}})).then(value=>{if(current.current?.id===id)accept(value);}).catch(report),500);return()=>clearTimeout(timer);},[draft?.id,focusId,view,!!active]);
  useEffect(()=>{setResolved({});setCaret(undefined);},[draft?.id,focusId]);
 
  const chip=(node:CardSection):{label:string;tone:Tone}|null=>{
-  if(active&&recordingTarget.current===node.id)return {label:monitor.paused?'Paused':'Recording',tone:'rec'};
+  if(active&&recordingTarget.current===node.id)return {label:monitor.paused?'Paused':'Recording',tone:monitor.paused?'busy':'rec'};
   const r=results.find(x=>x.sectionId===node.id);
-  if(r?.applied)return {label:r.editIntent==='add'?'Your addition':'Your words',tone:'human'};
+  if(r?.applied)return {label:authorship?.sections[node.id]==='human'?'Your words':r.editIntent==='add'?'Your addition':'Partly your words',tone:'human'};
   if(r)return sectionReviewExceptions(r).needsReview&&!r.checked?{label:'Check words',tone:'check'}:{label:'Ready to review',tone:'ready'};
-  if(authored[node.id]?.human)return {label:authored[node.id].add?'Your addition':'Your words',tone:'human'};
+  if(authored[node.id]?.human)return {label:authorship?.sections[node.id]==='human'?'Your words':authored[node.id].add?'Your addition':'Partly your words',tone:'human'};
   if(takes.some(t=>t.startSectionId===node.id&&queued.includes(t)))return {label:'Processing',tone:'busy'};
   if(takes.some(t=>t.startSectionId===node.id&&t.state==='failed'))return {label:'Needs attention',tone:'alert'};
   return null;
@@ -153,7 +169,10 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
  const waiting=results.filter(r=>!r.applied).length+(draft?.unassigned.length??0);
  const checks=result&&!result.applied&&!result.checked&&sectionReviewExceptions(result).needsReview?issueKeys(result).map(item=>({...item,done:!!resolved[item.key]||!!item.quote&&!quoted(result.text,item.quote)})):[];
  const open=checks.filter(c=>!c.done).length;
- const spoken=result?.reviewTranscript??draft?.rawTranscript??'';
+ const generalCheck=checks.some(c=>!c.quote);
+ const progressText=authorshipFailed?'Authorship unavailable':!authorship?'Checking authorship…':authorship.total?`${authorship.human} of ${authorship.total} ${authorship.total===1?'section':'sections'} in your words`:'No recordable sections';
+ const pathFor=(node:CardSection)=>[...node.path.slice(0,-1),titleFor(node)].filter((part,i,all)=>i===0||part!==all[i-1]).join(' · ');
+ const scopeFor=(node:CardSection,focus?:{start:number;text:string})=>{const ps=readingParagraphs(references[node.id]??node.text);const i=focus?ps.findIndex(p=>p.start===focus.start&&p.text===focus.text):-1;return i>=0?`Paragraph ${i+1} of ${ps.length}`:ps.length>1?`All ${ps.length} paragraphs`:'Whole section';};
  const spanLabel=(node:CardSection,focus?:{start:number;text:string})=>{const paragraphs=readingParagraphs(references[node.id]??node.text);if(focus){const i=paragraphs.findIndex(p=>p.start===focus.start&&p.text===focus.text);return i>=0?` · paragraph ${i+1}`:'';}return paragraphs.length>1?` · all ${paragraphs.length} paragraphs`:'';};
  const nextAfter=(id?:string)=>nodes[nodes.findIndex(n=>n.id===id)+1];
  const nextReview=reviewList.find((n,index)=>index>position&&!results.find(r=>r.sectionId===n.id)?.applied)??reviewList.find(n=>!results.find(r=>r.sectionId===n.id)?.applied&&n.id!==section?.id);
@@ -165,23 +184,28 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
   return parts.length?{text:parts.join(' · ').replace(/^./,c=>c.toUpperCase()),empty:false}:{text:'Nothing to change',empty:true};})();
  const applySection=async()=>{if(!result||!section)return;if(checks.length&&!open)checkWords(section.id,true);await integrate();};
  const recordingNode=active?nodes.find(n=>n.id===recordingTarget.current)??target:target,upcoming=active&&!phraseCapture.current?nextAfter(recordingTarget.current):undefined;
+ const nextRecording=result?.applied&&!initialAnchors?.length?nextAfter(section?.id):undefined;
+ const appliedText=result?.appliedText??result?.text??'';
+ const originSpans=section?appliedOrigins[section.id]:undefined;
+ const displayOrigins=originSpans?.map(part=>part.text).join('')===appliedText?originSpans:[{text:appliedText,origin:section&&authorship?.sections[section.id]==='human'?'human':'unknown'}];
  const locked=!!active||opening||integrating;
- const back=(to:View)=><button className="vs-icon" aria-label="Back" onClick={()=>openView(to)}><ChevronLeft size={20}/></button>;
+ const back=(to:View)=><button className="vs-icon" aria-label="Back" onClick={()=>openView(to)}>Back</button>;
  const screenTitle:Record<View,string>={work:'',review:'',settings:'Recording settings',audio:'Recordings',sessions:'Sessions',sections:placing!==null?'Place these words':'Sections',cleanup:'Speech cleanup',unplaced:'Unplaced words'};
 
  const index=(onPick:(node:CardSection)=>void,mode:'rail'|'screen')=><nav className={mode==='rail'?'vs-rail':'vs-index'} aria-label={mode==='rail'?'Card sections':'Choose a card section'}>{nodes.map((node,i)=>{const state=chip(node);return <React.Fragment key={node.id}>{node.lensId!==nodes[i-1]?.lensId&&node.path.length>1&&<h3>{node.path[0]}</h3>}<button data-section-id={node.id} aria-current={(view==='review'?focusId:targetId)===node.id?'step':undefined} onClick={()=>onPick(node)}><span>{titleFor(node)}</span>{state&&<i data-tone={state.tone} aria-label={state.label}/>}</button></React.Fragment>;})}</nav>;
  const pickFromRail=(node:CardSection)=>{if(view==='review'&&results.some(r=>r.sectionId===node.id))void choose(node.id).catch(report);else{if(view!=='work')openView('work');aim(node.id,true);}};
 
- return <section className="section-voice-studio" aria-label="Voice recording" data-view={view} data-recording-section-id={active?recordingTarget.current:undefined} data-authoring-protected={!!active||opening||integrating||undefined} onKeyDown={e=>{if(view!=='review'||(e.target as HTMLElement).closest('textarea,input'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();step(e.key==='ArrowRight'?1:-1);}}}>
-  <header className="vs-bar">
-   {view==='work'?<button className="vs-icon" aria-label="Close recording" disabled={locked} onClick={()=>void close()}><X size={20}/></button>:view==='review'?back('work'):back(view==='audio'||view==='sessions'?'settings':view==='settings'?'work':view==='sections'?pickerReturn.current:view==='unplaced'&&!results.length?'work':'review')}
-   {view==='work'&&<div className="vs-bar-title"><strong>{CARD_BY_NUMBER.get(source.cardNumber)?.card_name??`Code ${source.cardNumber}`}</strong><small>Code {source.cardNumber} · Record over the reading</small></div>}
-   {view==='review'&&<button className="vs-bar-title vs-bar-title--button" aria-label="Choose a section to review" onClick={()=>{pickerReturn.current='review';setPlacing(null);openView('sections');}}><strong>Review</strong><small>{position>=0?`${position+1} of ${reviewList.length}`:queued.length?'Processing':'Nothing to review yet'}{open?` · ${plural(open,'word')} to check`:''}</small></button>}
+ return <section className="section-voice-studio" aria-label="Voice recording" data-view={view} data-recording-section-id={active?recordingTarget.current:undefined} data-authoring-protected={!!active||opening||integrating||undefined} onKeyDown={e=>{if(view!=='review'||(e.target as HTMLElement).closest('textarea,input,[contenteditable=true],button'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();step(e.key==='ArrowRight'?1:-1);}}}>
+  <header className="vs-bar" data-card-header={view==='work'||undefined}>
+   {view==='work'?<button className="vs-icon" aria-label="Close recording" disabled={locked} onClick={()=>void close()}><span>Close</span></button>:view==='review'?back('work'):back(view==='audio'||view==='sessions'?'settings':view==='settings'?'work':view==='sections'?pickerReturn.current:view==='unplaced'&&!results.length?'work':'review')}
+   {view==='work'&&<div className="vs-bar-title"><strong>Code {source.cardNumber} · {CARD_BY_NUMBER.get(source.cardNumber)?.card_name??'Oracle'}</strong></div>}
+   {view==='review'&&<button className="vs-bar-title vs-bar-title--button" aria-label="Choose a section to review" onClick={()=>{pickerReturn.current='review';setPlacing(null);openView('sections');}}><strong>{result?.applied?'Applied':'Review'}</strong><small>{position>=0?`${position+1} of ${reviewList.length}`:queued.length?'Processing':'Nothing to review yet'}</small></button>}
    {view!=='work'&&view!=='review'&&<div className="vs-bar-title"><strong>{screenTitle[view]}</strong></div>}
    <div className="vs-bar-end">
-    {view==='work'&&<><button className="vs-icon vs-only-narrow" aria-label="Sections" onClick={()=>{pickerReturn.current='work';setPlacing(null);openView('sections');}}><List size={20}/></button><button className="vs-icon" aria-label="Recording settings" disabled={!!active} onClick={()=>openView('settings')}><Settings2 size={20}/></button></>}
-    {view==='review'&&<><button className="vs-icon" aria-label="Previous section" disabled={position<=0||integrating} onClick={()=>step(-1)}><ChevronLeft size={20}/></button><button className="vs-icon" aria-label="Next section" disabled={position<0||position>=reviewList.length-1||integrating} onClick={()=>step(1)}><ChevronRight size={20}/></button></>}
+    {view==='work'&&<><button className="vs-icon vs-only-narrow" aria-label="Sections" onClick={()=>{pickerReturn.current='work';setPlacing(null);openView('sections');}}><span>Sections</span></button><button className="vs-icon" aria-label="Recording settings" disabled={!!active} onClick={()=>openView('settings')}><span>Settings</span></button></>}
+    {view==='review'&&<><button className="vs-icon" aria-label="Previous section" disabled={position<=0||integrating} onClick={()=>step(-1)}><span>Previous</span></button><button className="vs-icon" aria-label="Next section" disabled={position<0||position>=reviewList.length-1||integrating} onClick={()=>step(1)}><span>Next</span></button></>}
    </div>
+   {view==='work'&&<div className="vs-card-progress" aria-label="Card authorship"><span>{progressText}</span>{authorship&&!authorshipFailed&&authorship.total>0&&<div className="vs-authorship-track" role="progressbar" aria-label="Sections entirely in your words" aria-valuemin={0} aria-valuemax={authorship.total} aria-valuenow={authorship.human} aria-valuetext={progressText}><i style={{width:`${authorship.human/authorship.total*100}%`}}/></div>}</div>}
   </header>
   <div className="vs-main">
    {(view==='work'||view==='review')&&index(pickFromRail,'rail')}
@@ -189,7 +213,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
    {view==='work'&&(active&&phraseCapture.current?<section className="vs-prompt" aria-label="Selected phrase recording"><small>Say these words again</small><p>{phraseCapture.current.text}</p><span>Everything around them stays as it is.</span></section>:
     <div ref={manuscript} className="vs-stage vs-manuscript" aria-label="Card manuscript">
      {!!initialAnchors?.length&&<p className="vs-lead">Your selected {initialAnchors.length>1?'passages':'passage'}. Only these words are replaced.</p>}
-     {nodes.map((node,i)=>{const state=chip(node),aimed=(active?recordingTarget.current:targetId)===node.id;return <section key={node.id} className="vs-section" data-paragraph-aim={(active?!!captureFocus.current&&recordingTarget.current===node.id:paragraphAim?.sectionId===node.id)||undefined} data-section-id={node.id} aria-label={node.path.join(' · ')} aria-current={aimed?'step':undefined} data-recording={active&&recordingTarget.current===node.id||undefined}>
+     {nodes.map((node,i)=>{const state=chip(node),aimed=(active?recordingTarget.current:targetId)===node.id;return <section key={node.id} className="vs-section" data-paragraph-aim={(active?!!captureFocus.current&&recordingTarget.current===node.id:paragraphAim?.sectionId===node.id)||undefined} data-section-id={node.id} aria-label={node.path.join(' · ')} aria-current={aimed?'step':undefined} data-recording={active&&!monitor.paused&&recordingTarget.current===node.id||undefined}>
       {node.lensId!==nodes[i-1]?.lensId&&node.path.length>1&&<p className="vs-lens">{node.path[0]}</p>}
       <button className="vs-section-head" aria-pressed={aimed} aria-label={`${titleFor(node)}${aimed?', recording destination':', make this the recording destination'}`} disabled={!!active||opening} onClick={()=>aim(node.id)}>
        <span className="vs-aim" aria-hidden="true"><Mic size={14}/></span><span className="vs-section-title">{titleFor(node)}</span>{state&&<span className="vs-chip" data-tone={state.tone}>{state.label}</span>}
@@ -204,30 +228,25 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
     </div>)}
 
    {view==='review'&&<div className="vs-stage vs-review">
-    {!!draft?.unassigned.length&&<button className="vs-note" onClick={()=>openView('unplaced')}><span>{plural(draft.unassigned.length,'passage')} from your recording {draft.unassigned.length===1?'was':'were'} not placed.</span><strong>Place {draft.unassigned.length===1?'it':'them'}<ChevronRight size={15}/></strong></button>}
-    {!!linkedDrafts.length&&<nav aria-label="Connected card recordings">{linkedDrafts.map(value=><button key={value.id} className="vs-note" onClick={()=>{onClose();onNavigateCard?.(value.cardNumber,value.id);}}><span>You also spoke about Code {value.cardNumber}.</span><strong>Review {plural(value.results.length,'passage')}<ChevronRight size={15}/></strong></button>)}</nav>}
     {section&&result?<>
      <div className="vs-review-head" data-section-id={section.id}>
       <small>{section.path.slice(0,-1).join(' · ')||'Card'}{section.id.includes('/selection-')?' · selected passage':''}</small>
       <TitleField key={`${draft!.id}/${section.id}`} label="Section title" value={titleFor(section)} disabled={integrating} save={text=>saveTitle(section.id,text)}/>
      </div>
-     {result.applied?<section className="vs-applied" aria-label="Now in your reading">
-      <p className="vs-applied-state"><Check size={16}/>{result.editIntent==='add'?'Added to your reading. The original stays above it.':'Now in your reading, in your words.'}</p>
-      {result.editIntent==='add'&&result.beforeText&&<p className="vs-applied-kept">{result.beforeText}</p>}
-      <p className="vs-applied-text">{result.editIntent==='add'?result.text:result.appliedText??result.text}</p>
-     </section>:<>
-      {!!checks.length&&!open&&<section className="vs-checks-done" aria-label="Words to check"><Check size={15}/><span>All checked: {checks.map(c=>`“${c.quote??'note'}”`).join(', ')}</span><button className="vs-link vs-link--quiet" onClick={()=>setResolved({})}>Check again</button></section>}
-     {!!open&&<section className="vs-checks" aria-label="Words to check">
-       <p>Is this what you said? Fix it in your words below, or confirm it.</p>
-       {checks.map(item=><div className="vs-check" key={item.key} data-done={item.done||undefined}>
-        <q>{item.issue&&spoken.slice(item.issue.start,item.issue.end)===item.issue.quote?<Around text={spoken} start={item.issue.start} end={item.issue.end}/>:item.quote??item.message}</q>{item.quote&&(!item.issue||item.issue.kind==='ambiguity')&&<span>{item.message}</span>}
-        {item.issue?.captureId&&item.issue.startMs!==undefined&&<button className="vs-btn vs-btn--quiet" onClick={()=>hear(item.issue!)}><Volume2 size={15}/>Hear it</button>}
-        <button className="vs-btn vs-btn--quiet" aria-pressed={item.done} disabled={item.done&&!resolved[item.key]} onClick={()=>setResolved(r=>{const n={...r};if(n[item.key])delete n[item.key];else n[item.key]=true;return n;})}><Check size={15}/>{item.done?'Checked':'It’s right'}</button>
-       </div>)}
+     {result.applied?<section className="vs-applied" aria-label="Now in your reading" data-has-next={!!nextRecording||undefined}>
+      <p className="vs-applied-state"><Check size={16}/>{result.editIntent==='add'?'Your words were added to the reading.':authorship?.sections[section.id]==='human'?'Your words are in the reading.':'Your changes are in the reading.'}</p>
+      {nextRecording&&<section className="vs-next-recording" aria-label="Next section to record">
+       <small>Record next</small><h3>{pathFor(nextRecording)}</h3>
+       <p>{references[nextRecording.id]??nextRecording.text}</p>
+       <button className="vs-btn vs-btn--primary" disabled={opening||stopping} onClick={()=>{setParagraphAim(null);captureFocus.current=undefined;setTargetId(nextRecording.id);void record(null,nextRecording.id);}}>{opening?'Opening microphone…':'Record this section'}</button>
       </section>}
-      <SectionPassageReview original={sectionComparisonOriginal(result,references[section.id]??section.text)} text={result.text} comparison={result.comparison} choices={result.rowChoices} onChoose={(key,choice)=>choosePassage(section.id,key,choice)} intent={result.editIntent} sessionKey={`${draft!.id}/${section.id}`} disabled={integrating} replay={replay} activeWord={activeWord} caret={caret} cleanupCount={result.changes.length} onCleanup={()=>setView('cleanup')} replayDisabled={integrating||!!active} onSelection={(from,to,text,baseText)=>{if(to>from&&text.trim())setPhrase({sectionId:section.id,from,to,text,baseText});else setPhrase(null);}} onReplay={(from,to)=>void listen(from,to)} onSeek={word=>{if(word.captureId)void playCapture(word.captureId,word.startMs).catch(report);}} onEdit={(i,replacement)=>edit(section.id,sectionComparisonOriginal(result,references[section.id]??section.text),i,replacement)}/>
+      <div className="vs-just-applied"><h3>Just applied</h3>{displayOrigins.map((part,i)=><span key={i} className={part.origin==='human'?'vs-applied-text':'vs-applied-kept'}>{part.text}</span>)}</div>
+     </section>:<>
+      <SectionPassageReview checks={checks.map(c=>({key:c.key,quote:c.quote,message:c.message,done:c.done,canHear:!!c.issue?.captureId&&c.issue.startMs!==undefined}))} onHearCheck={key=>{const c=checks.find(c=>c.key===key);if(c?.issue?.captureId&&c.issue.startMs!==undefined)hear(c.issue);else void listen();}} onConfirmCheck={key=>setResolved(r=>({...r,[key]:true}))} onReopenCheck={key=>setResolved(r=>{const n={...r};delete n[key];return n;})} original={sectionComparisonOriginal(result,references[section.id]??section.text)} text={result.text} comparison={result.comparison} choices={result.rowChoices} onChoose={(key,choice)=>choosePassage(section.id,key,choice)} intent={result.editIntent} sessionKey={`${draft!.id}/${section.id}`} disabled={integrating} replay={replay} activeWord={activeWord} caret={caret} cleanupCount={result.changes.length} onCleanup={()=>setView('cleanup')} replayDisabled={integrating||!!active} onSelection={(from,to,text,baseText)=>{if(to>from&&text.trim())setPhrase({sectionId:section.id,from,to,text,baseText});else setPhrase(null);}} onReplay={(from,to)=>void listen(from,to)} onSeek={word=>{if(word.captureId)void playCapture(word.captureId,word.startMs).catch(report);}} onEdit={(i,replacement)=>edit(section.id,sectionComparisonOriginal(result,references[section.id]??section.text),i,replacement)}/>
      </>}
-    </>:<div className="vs-empty"><p>{queued.length||processing?`Your words are processing. ${plural(queued.length||1,'recording')} on the way. You can keep recording while you wait.`:'Nothing to review yet. Record a section, then come back here.'}</p><button className="vs-btn" onClick={()=>openView('work')}>Back to the card</button></div>}
+    </>:<div className="vs-empty"><p>{queued.length||processing?`Your recording is saved. Preparing your words…`:'Nothing to review yet. Record a section, then come back here.'}</p><button className="vs-btn" onClick={()=>openView('work')}>Back to the card</button></div>}
+    {!!draft?.unassigned.length&&<button className="vs-note" onClick={()=>openView('unplaced')}><span>{plural(draft.unassigned.length,'passage')} from your recording {draft.unassigned.length===1?'was':'were'} not placed.</span><strong>Place {draft.unassigned.length===1?'it':'them'}<ChevronRight size={15}/></strong></button>}
+    {!!linkedDrafts.length&&<nav aria-label="Connected card recordings">{linkedDrafts.map(value=><button key={value.id} className="vs-note" onClick={()=>{onClose();onNavigateCard?.(value.cardNumber,value.id);}}><span>You also spoke about Code {value.cardNumber}.</span><strong>Review {plural(value.results.length,'passage')}<ChevronRight size={15}/></strong></button>)}</nav>}
    </div>}
 
    {view==='sections'&&<div className="vs-stage vs-screen">{placing!==null&&draft?.unassigned[placing]&&<blockquote className="vs-quote">{draft.unassigned[placing].text}</blockquote>}{index(node=>{if(placing!==null)void place(placing,node.id);else if(pickerReturn.current==='review'&&results.some(r=>r.sectionId===node.id)){reviewAt(node.id);}else{setView('work');aim(node.id,true);}},'screen')}</div>}
@@ -246,7 +265,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
 
    <section className="vs-stage vs-screen" aria-label="Recording settings" hidden={view!=='settings'}>
     <h3>While recording</h3>
-    <label className="vs-switch"><span><strong>Keep the microphone on at Next</strong><small>Next sends the section and carries straight on into the following one.</small></span><input type="checkbox" role="switch" checked={continuous} onChange={e=>{setContinuous(e.target.checked);handle.current?.setContinuous(e.target.checked);localStorage.setItem('oracle.voice.continuous',String(e.target.checked));}}/></label>
+    <label className="vs-switch"><span><strong>Keep recording after Send &amp; next</strong><small>Sends this section and keeps the microphone on for the next one.</small></span><input type="checkbox" role="switch" checked={continuous} onChange={e=>{setContinuous(e.target.checked);handle.current?.setContinuous(e.target.checked);localStorage.setItem('oracle.voice.continuous',String(e.target.checked));}}/></label>
     <label className="vs-switch"><span><strong>Move when I say a section’s name</strong><small>{routingStatus==='unsupported'?'Not available on this device. The Next button always works.':'Uses your browser’s speech service where available. The Next button always works.'}</small></span><input type="checkbox" role="switch" checked={voiceCommands} disabled={!!active} onChange={e=>{setVoiceCommands(e.target.checked);localStorage.setItem('oracle.voice.commands',String(e.target.checked));}}/></label>
     <fieldset className="vs-choice"><legend><strong>When a section already has my words</strong></legend>{([['auto','Decide from what I say'],['replace','Replace them'],['add','Add after them']] as const).map(([value,label])=><label key={value}><input type="radio" name="vs-intent" value={value} checked={intent===value||intent==='revise'&&value==='auto'} disabled={!!active} onChange={()=>setIntent(value)}/>{label}</label>)}</fieldset>
     {readyClean.length>1&&<><h3>Review</h3><div className="vs-row"><div><p>{plural(readyClean.length,'section')} checked and ready</p><small>Each is saved to your reading with its recording, and each can be undone.</small></div><button className="vs-btn" disabled={integrating} onClick={()=>void integrate(true)}>Use all {readyClean.length}</button></div></>}
@@ -275,14 +294,18 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
 
   {view==='work'&&<footer className="vs-dock" data-recording={!!active||undefined}>
    {active?<>
-    <div className="vs-dock-target" aria-live="polite"><small><span className="vs-dot" data-paused={monitor.paused||undefined}/>{time(monitor.elapsed)}<span className="vs-level" aria-hidden="true" style={{'--level':monitor.paused?0:monitor.level??0} as React.CSSProperties}/></small><strong>{phraseCapture.current?'Selected words':titleFor(recordingNode)}{!phraseCapture.current&&<span className="vs-span">{spanLabel(recordingNode,captureFocus.current)}</span>}</strong></div>
-    <button className="vs-icon vs-icon--ring" aria-label={monitor.paused?'Resume':'Pause'} disabled={stopping} onClick={togglePause}>{monitor.paused?<Play size={18}/>:<Pause size={18}/>}</button>
-    <button className={`vs-btn${upcoming?'':' vs-btn--primary'}`} disabled={stopping} onClick={()=>stop('review')}>Done</button>
-    {upcoming&&<button className="vs-btn vs-btn--primary vs-next" disabled={stopping} aria-label={`Send and go to ${titleFor(upcoming)}`} onClick={()=>stop('next')}><span><small>{stopping?'Saving…':'Next'}</small>{titleFor(upcoming)}</span><ChevronRight size={18}/></button>}
-   </>:processing?<div className="vs-dock-target"><small>Processing</small><strong>Your saved words are being organised. You can close this.</strong></div>:<>
-    <div className="vs-dock-target"><small>Record over{queued.length?<em> · {queued.length} processing</em>:null}</small><strong>{target?titleFor(target):'Opening…'}<span className="vs-span">{target?spanLabel(target,paragraphAim?.sectionId===target.id?paragraphAim:undefined):''}</span></strong></div>
-    {waiting>0&&<button className="vs-btn" onClick={()=>{reviewArrival.current=true;explicitChoice.current=false;openView(results.some(r=>!r.applied)?'review':'unplaced');}}>Review <b>{waiting}</b></button>}
-    <button className="vs-record" disabled={opening||stopping||!target} onClick={()=>void record(null,target?.id)}><span className="vs-dot"/>{opening?'Opening…':'Record'}</button>
+    <div className="vs-recording-status"><span className="vs-dot" data-paused={monitor.paused||undefined}/><span>{stopping?'Saving recording…':monitor.paused?'Paused':'Recording'} · {time(monitor.elapsed)}</span><span className="vs-level" aria-hidden="true" style={{'--level':monitor.paused?0:monitor.level??0} as React.CSSProperties}/></div>
+    <div className="vs-dock-target" aria-live="polite"><strong>{pathFor(recordingNode)}</strong><span>{phraseCapture.current?'Selected words':scopeFor(recordingNode,captureFocus.current)}</span></div>
+    {upcoming&&<p className="vs-recording-next">{continuous?'Next, recording continues':'Next'} · {pathFor(upcoming)}</p>}
+    <div className="vs-recording-actions">
+     <button className="vs-btn" disabled={stopping} onClick={togglePause}>{monitor.paused?'Resume':'Pause'}</button>
+     <button className={`vs-btn${upcoming?'':' vs-btn--primary'}`} disabled={stopping} onClick={()=>stop('review')}>Stop &amp; review</button>
+     {upcoming&&<button className="vs-btn vs-btn--primary" disabled={stopping} aria-label={`Send this recording and ${continuous?'keep recording in':'go to'} ${pathFor(upcoming)}`} onClick={()=>stop('next')}>Send &amp; next</button>}
+    </div>
+   </>:<>
+    <div className="vs-dock-target"><small>Record over{queued.length?<span> · {queued.length} processing</span>:null}</small><strong>{target?titleFor(target):'Opening…'}<span className="vs-span">{target?spanLabel(target,paragraphAim?.sectionId===target.id?paragraphAim:undefined):''}</span></strong></div>
+    {waiting>0&&<button className="vs-btn" onClick={()=>{reviewArrival.current=true;explicitChoice.current=false;openView(results.some(r=>!r.applied)?'review':'unplaced');}}>Review {waiting}</button>}
+    <button className="vs-record" disabled={opening||stopping||!target} onClick={()=>void record(null,target?.id)}>{opening?'Opening microphone…':'Record'}</button>
    </>}
   </footer>}
 
@@ -295,11 +318,11 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
    </>:result.applied?<>
     <button className="vs-btn vs-btn--quiet" disabled={integrating} onClick={()=>void undoIntegratedSection(draft!.id,section.id,services).then(value=>{accept(value);setNotice('Undone. The earlier words are back in your reading.');}).catch(report)}><Undo2 size={16}/>Undo</button>
     <button className="vs-btn vs-btn--quiet" onClick={readUpdated}><BookOpen size={16}/>See in card</button>
-    {nextReview?<button className="vs-btn vs-btn--primary" onClick={()=>void choose(nextReview.id).catch(report)}>Next to review<ChevronRight size={18}/></button>:nextAfter(section.id)&&!initialAnchors?.length?<button className="vs-btn vs-btn--primary vs-next" aria-label={`Record ${titleFor(nextAfter(section.id)!)}`} onClick={()=>{setView('work');aim(nextAfter(section.id)!.id,true);}}><span><small>Record next</small>{titleFor(nextAfter(section.id)!)}</span><ChevronRight size={18}/></button>:<button className="vs-btn vs-btn--primary" onClick={()=>void close()}>Finish</button>}
+    {nextReview?<button className={`vs-btn${nextRecording?' vs-btn--quiet':' vs-btn--primary'}`} onClick={()=>void choose(nextReview.id).catch(report)}>Next to review</button>:!nextRecording?<button className="vs-btn vs-btn--primary" onClick={()=>void close()}>Finish</button>:queued.length?<span className="vs-processing-count">{queued.length} processing</span>:null}
    </>:<>
     <button className="vs-btn vs-btn--quiet" disabled={integrating||!!active||!draft?.captureSessionId} onClick={()=>void listen()}><Play size={16}/>Listen</button>
     <button className="vs-btn vs-btn--quiet" disabled={opening||integrating||stopping} onClick={()=>void record(phrase&&phrase.sectionId===section.id?phrase:null,section.id)}><Mic size={16}/>{phrase&&phrase.sectionId===section.id?'Re-record selection':'Re-record'}</button>
-    <button className="vs-btn vs-btn--primary" data-action="apply" disabled={!result.text.trim()||integrating||open>0||applyLabel.empty} onClick={()=>void applySection()}>{integrating?'Saving…':open?`Check ${plural(open,'word')} first`:applyLabel.text}</button>
+    <button className="vs-btn vs-btn--primary" data-action="apply" disabled={!result.text.trim()||integrating||open>0||applyLabel.empty} onClick={()=>void applySection()}>{integrating?'Saving words…':open?`Check ${plural(open,generalCheck?'item':'word')} first`:!result.text.trim()?'No words to use':applyLabel.text}</button>
    </>}
   </footer>}
 
@@ -307,13 +330,6 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
  </section>;
 
  async function place(i:number,sectionId:string){try{await patch(s=>{const u=s.unassigned[i];if(!u)return s;const existing=s.results.find(r=>r.sectionId===sectionId),takeId=(u as {takeId?:string}).takeId;return {...s,results:existing?s.results.map(r=>r.sectionId===sectionId?{...r,evidenceQuotes:[...r.evidenceQuotes,u.text],takeIds:[...new Set([...(r.takeIds??[]),...(takeId?[takeId]:[])])],text:`${r.text}\n\n${u.text}`,comparison:undefined,checked:false,applied:false,warnings:[...r.warnings,'Check these words you placed by hand.']}:r):[...s.results,{sectionId,takeIds:takeId?[takeId]:undefined,text:u.text,evidenceQuotes:[u.text],changes:[],warnings:['Check these words you placed by hand.'],checked:false}],unassigned:s.unassigned.filter((_,index)=>index!==i)};});setPlacing(null);reviewAt(sectionId);}catch(e){report(e);}}
-}
-
-/** The uncertain word inside a few of the words spoken around it, from the raw transcript. */
-function Around({text,start,end}:{text:string;start:number;end:number}){
- const letter=/[\p{L}\p{N}]/u;while(start<end&&!letter.test(text[start]))start++;while(end>start&&!letter.test(text[end-1]))end--;
- const from=start>28?text.indexOf(' ',start-28)+1:0,to=text.indexOf(' ',end+24);
- return <>{from>0&&'…'}{text.slice(from,start)}<mark>{text.slice(start,end)}</mark>{text.slice(end,to<0?text.length:to)}{to>=0&&'…'}</>;
 }
 
 function TitleField({value,label,disabled,save}:{value:string;label:string;disabled?:boolean;save:(text:string)=>Promise<void>}){
