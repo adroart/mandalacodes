@@ -246,6 +246,12 @@
 .vs-toast span{flex:1;min-width:0;padding:6px 0}
 .vs-toast[data-tone=alert]{border-color:rgba(239,85,72,.5);color:#ffc0b8}
 .vs-toast .vs-icon{width:36px;height:36px}
+.vs-processing-status{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;padding:10px 16px;border-bottom:1px solid var(--vs-rule-2);background:var(--vs-raised);font-size:14px;line-height:1.4}
+.vs-processing-status>div:first-child{min-width:0;flex:1}
+.vs-processing-status strong,.vs-processing-status span{display:block}
+.vs-processing-status span{color:var(--vs-ink-2);margin-top:3px;overflow-wrap:anywhere}
+.vs-processing-actions{display:flex;gap:6px;flex-shrink:0}
+@media(max-width:440px){.vs-processing-status{flex-wrap:wrap;gap:6px}.vs-processing-status>div:first-child{flex-basis:100%}.vs-processing-actions{margin-left:auto}}
 
 @keyframes vs-pulse{0%,100%{opacity:1}50%{opacity:.45}}
 @keyframes vs-blink{0%,100%{opacity:.25}50%{opacity:1}}

@@ -26,6 +26,9 @@ import {restoreDocumentedCleanup} from '../../../src/mobile/authoring/speechClea
 import {enqueueVoicePhraseRevision} from '../../../src/mobile/authoring/voicePhraseRevision';
 import {WorkingCardStore} from '../../../lib/oracle/authoring/humanDrafts';
 import {cardSectionAuthorship,readingOriginSpans,namedSectionOriginSpans} from '../../../lib/oracle/authoring/sectionAuthorship';
+import {useAccount} from '../../../lib/account/useAccount';
+import {useNativeAccountActions} from '../../../src/mobile/account/NativeAccountProvider';
+import {isSignInBlocked,resumeSignInBlockedRecordings} from '../../../src/mobile/authoring/accountRecovery';
 import './SectionVoiceStudio.css';
 interface Props{source:SourceSnapshot;services:AuthoringServices;sectionId:string;onClose:()=>void;onEarlier:()=>void;namedSectionId?:string;initialAnchors?:PassageAnchor[];onNavigateCard?:(card:number,sessionId?:string)=>void;initialSessionId?:string}
 type View='work'|'review'|'settings'|'audio'|'sessions'|'sections'|'cleanup'|'unplaced';
@@ -40,6 +43,8 @@ const quoted=(text:string,quote?:string)=>!quote||new RegExp(`(^|[^\\p{L}])${quo
 
 /** One manuscript to read and record over, one focused screen to compare, and plain screens for everything else. */
 export default function SectionVoiceStudio({source,services,sectionId,onClose,onEarlier,namedSectionId,initialAnchors,onNavigateCard,initialSessionId}:Props){
+ const account=useAccount(),accountActions=useNativeAccountActions();
+ const [retrying,setRetrying]=useState(false);
  const store=useMemo(()=>new SectionDraftStore(),[]),audio=useMemo(()=>new AuthoringStore(),[]),workingStore=useMemo(()=>new WorkingCardStore(),[]);
  const [authorship,setAuthorship]=useState<ReturnType<typeof cardSectionAuthorship>>(),[authorshipFailed,setAuthorshipFailed]=useState(false);
  const [appliedOrigins,setAppliedOrigins]=useState<Record<string,ReturnType<typeof readingOriginSpans>>>({});
@@ -130,6 +135,13 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
  const openView=(next:View)=>{player.current?.pause();setReplay(null);setAudioUrl('');setView(next);setError('');if(next==='review'&&!(explicitChoice.current&&results.some(r=>r.sectionId===focusId))){const first=results.find(r=>!r.applied&&sectionReviewExceptions(r).needsReview&&!r.checked)??results.find(r=>!r.applied)??results[0];if(first)setFocusId(first.sectionId);}if(next==='audio')void showAudio().catch(report);if(next==='sessions')void store.list(source.cardNumber).then(setHistory).catch(report);};
  useEffect(()=>{let alive=true;if(draft)void currentSectionTexts(draft).then(value=>{if(alive)setReferences(value);}).catch(report);return()=>{alive=false;};},[draft?.id,draft?.results.map(r=>r.appliedText).join('|')]);
  const takes=(draft as TakeSession|undefined)?.takes??[],queued=takes.filter(t=>['queued','transcribing','assimilating'].includes(t.state)),discarded=new Set(takes.filter(t=>t.state==='discarded').map(t=>t.captureId));
+ const failedTakes=takes.filter(take=>take.state==='failed');
+ const signInBlocked=failedTakes.some(take=>isSignInBlocked(take.error))||isSignInBlocked(draft?.error);
+ const processingMessage=(failedTakes[0]?.error??draft?.error??'').replace(/\s*Your (?:local )?(?:recording|words|recording and words) (?:is|are) saved\.?\s*$/i,'');
+ const savedCaptures=savedAudio?.session.captures.filter(capture=>!discarded.has(capture.id)&&['ready','interrupted'].includes(capture.status)&&capture.durationMs>0)??[];
+ const needsSignIn=accountActions.enabled&&account.isLoaded&&(!account.isSignedIn||signInBlocked);
+ const retrySaved=async()=>{if(!draft||retrying)return;setRetrying(true);setError('');try{await flush();for(const take of failedTakes)accept(await queueSectionTake(draft.id,take.captureId,take.startSectionId,services,take.markers));if(!takes.length)await prepare(draft.id);}catch(e){report(e);}finally{if(mounted.current)setRetrying(false);}};
+ const signInAndResume=async()=>{setError('');try{await flush();await accountActions.signInWithGoogle();await resumeSignInBlockedRecordings(services);}catch(e){report(e);}};
  useEffect(()=>{if(view==='review'&&results.length&&((!explicitChoice.current&&reviewArrival.current&&!queued.length)||!results.some(r=>r.sectionId===focusId))){const first=results.find(r=>!r.applied&&sectionReviewExceptions(r).needsReview&&!r.checked)??results.find(r=>!r.applied)??results[0];setFocusId(first.sectionId);reviewArrival.current=false;}},[view,draft?.version]);
  useEffect(()=>{if(view==='work'&&nodes.length)reveal(handle.current?recordingTarget.current:targetId);},[draft?.id,view]);
  useEffect(()=>{if(!playing)return;let frame=0;const tick=()=>{if(player.current){setPlayhead(player.current.currentTime*1000);if(replay)setActiveWord(activeReplayWord(replay.words,replay.captureId,player.current.currentTime*1000));}frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame);},[playing,replay]);
@@ -199,7 +211,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
   <header className="vs-bar" data-card-header={view==='work'||undefined}>
    {view==='work'?<button className="vs-icon" aria-label="Close recording" disabled={locked} onClick={()=>void close()}><span>Close</span></button>:view==='review'?back('work'):back(view==='audio'||view==='sessions'?'settings':view==='settings'?'work':view==='sections'?pickerReturn.current:view==='unplaced'&&!results.length?'work':'review')}
    {view==='work'&&<div className="vs-bar-title"><strong>Code {source.cardNumber} · {CARD_BY_NUMBER.get(source.cardNumber)?.card_name??'Oracle'}</strong></div>}
-   {view==='review'&&<button className="vs-bar-title vs-bar-title--button" aria-label="Choose a section to review" onClick={()=>{pickerReturn.current='review';setPlacing(null);openView('sections');}}><strong>{result?.applied?'Applied':'Review'}</strong><small>{position>=0?`${position+1} of ${reviewList.length}`:queued.length?'Processing':'Nothing to review yet'}</small></button>}
+   {view==='review'&&<button className="vs-bar-title vs-bar-title--button" aria-label="Choose a section to review" onClick={()=>{pickerReturn.current='review';setPlacing(null);openView('sections');}}><strong>{result?.applied?'Applied':'Review'}</strong><small>{position>=0?`${position+1} of ${reviewList.length}`:queued.length?'Processing':savedCaptures.length?'Transcript pending':'Nothing to review yet'}</small></button>}
    {view!=='work'&&view!=='review'&&<div className="vs-bar-title"><strong>{screenTitle[view]}</strong></div>}
    <div className="vs-bar-end">
     {view==='work'&&<><button className="vs-icon vs-only-narrow" aria-label="Sections" onClick={()=>{pickerReturn.current='work';setPlacing(null);openView('sections');}}><span>Sections</span></button><button className="vs-icon" aria-label="Recording settings" disabled={!!active} onClick={()=>openView('settings')}><span>Settings</span></button></>}
@@ -207,6 +219,10 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
    </div>
    {view==='work'&&<div className="vs-card-progress" aria-label="Card authorship"><span>{progressText}</span>{authorship&&!authorshipFailed&&authorship.total>0&&<div className="vs-authorship-track" role="progressbar" aria-label="Sections entirely in your words" aria-valuemin={0} aria-valuemax={authorship.total} aria-valuenow={authorship.human} aria-valuetext={progressText}><i style={{width:`${authorship.human/authorship.total*100}%`}}/></div>}</div>}
   </header>
+  {!active&&!opening&&(needsSignIn||savedCaptures.length>0&&(failedTakes.length>0||!!draft?.error))&&<section className="vs-processing-status" aria-label="Recording and transcription status">
+   <div><strong>{savedCaptures.length?`${plural(savedCaptures.length,'recording')} saved on this device`:'Sign in once for automatic transcription'}</strong><span>{needsSignIn?'Your sign-in will be remembered. Saved recordings will resume.':processingMessage}</span></div>
+   <div className="vs-processing-actions">{savedCaptures.length>0&&view!=='audio'&&<button className="vs-btn" onClick={()=>openView('audio')}>Listen</button>}{needsSignIn?<button className="vs-btn vs-btn--primary" disabled={accountActions.busy||retrying} onClick={()=>void signInAndResume()}>{accountActions.busy?'Signing in…':account.isSignedIn?'Reconnect':'Sign in'}</button>:<button className="vs-btn vs-btn--primary" disabled={retrying||processing||!!queued.length} onClick={()=>void retrySaved()}>{retrying?'Retrying…':'Retry'}</button>}</div>
+  </section>}
   <div className="vs-main">
    {(view==='work'||view==='review')&&index(pickFromRail,'rail')}
 
@@ -244,7 +260,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
      </section>:<>
       <SectionPassageReview checks={checks.map(c=>({key:c.key,quote:c.quote,message:c.message,done:c.done,canHear:!!c.issue?.captureId&&c.issue.startMs!==undefined}))} onHearCheck={key=>{const c=checks.find(c=>c.key===key);if(c?.issue?.captureId&&c.issue.startMs!==undefined)hear(c.issue);else void listen();}} onConfirmCheck={key=>setResolved(r=>({...r,[key]:true}))} onReopenCheck={key=>setResolved(r=>{const n={...r};delete n[key];return n;})} original={sectionComparisonOriginal(result,references[section.id]??section.text)} text={result.text} comparison={result.comparison} choices={result.rowChoices} onChoose={(key,choice)=>choosePassage(section.id,key,choice)} intent={result.editIntent} sessionKey={`${draft!.id}/${section.id}`} disabled={integrating} replay={replay} activeWord={activeWord} caret={caret} cleanupCount={result.changes.length} onCleanup={()=>setView('cleanup')} replayDisabled={integrating||!!active} onSelection={(from,to,text,baseText)=>{if(to>from&&text.trim())setPhrase({sectionId:section.id,from,to,text,baseText});else setPhrase(null);}} onReplay={(from,to)=>void listen(from,to)} onSeek={word=>{if(word.captureId)void playCapture(word.captureId,word.startMs).catch(report);}} onEdit={(i,replacement)=>edit(section.id,sectionComparisonOriginal(result,references[section.id]??section.text),i,replacement)}/>
      </>}
-    </>:<div className="vs-empty"><p>{queued.length||processing?`Your recording is saved. Preparing your words…`:'Nothing to review yet. Record a section, then come back here.'}</p><button className="vs-btn" onClick={()=>openView('work')}>Back to the card</button></div>}
+    </>:<div className="vs-empty"><p>{queued.length||processing?'Your recording is saved. Preparing your words…':savedCaptures.length?'Your audio is saved. The transcript is not ready yet.':'Nothing to review yet. Record a section, then come back here.'}</p><button className="vs-btn" onClick={()=>openView('work')}>Back to the card</button></div>}
     {!!draft?.unassigned.length&&<button className="vs-note" onClick={()=>openView('unplaced')}><span>{plural(draft.unassigned.length,'passage')} from your recording {draft.unassigned.length===1?'was':'were'} not placed.</span><strong>Place {draft.unassigned.length===1?'it':'them'}<ChevronRight size={15}/></strong></button>}
     {!!linkedDrafts.length&&<nav aria-label="Connected card recordings">{linkedDrafts.map(value=><button key={value.id} className="vs-note" onClick={()=>{onClose();onNavigateCard?.(value.cardNumber,value.id);}}><span>You also spoke about Code {value.cardNumber}.</span><strong>Review {plural(value.results.length,'passage')}<ChevronRight size={15}/></strong></button>)}</nav>}
    </div>}
@@ -277,7 +293,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
 
    {view==='audio'&&<section className="vs-stage vs-screen" aria-label="Audio and transcript">
     {savedAudio&&<CaptureShelf expanded session={{...savedAudio.session,captures:savedAudio.session.captures.filter(c=>!discarded.has(c.id))}} onDiscard={discard} disabled={!!active||processing||opening||integrating} onListen={id=>{clipBounds.current=null;setReplay(null);void playCapture(id).catch(report);}} onTranscribe={async(id)=>{if(draft)accept(await queueSectionTake(draft.id,id,takes.find(t=>t.captureId===id)?.startSectionId??targetId,services));}} onImport={addAudio}/>}
-    {takes.filter(t=>t.state==='failed'||t.state==='discarded').map(t=><section className="vs-row" key={t.id}><div><p>{nodes.find(n=>n.id===t.startSectionId)?.title}</p><small>{t.state==='discarded'?'Discarded recording':t.error}</small></div><button className="vs-btn" onClick={()=>void (t.state==='discarded'?restoreSectionTake(draft!.id,t.captureId,services):queueSectionTake(draft!.id,t.captureId,t.startSectionId,services)).then(accept).catch(report)}>{t.state==='discarded'?'Restore':'Try again'}</button></section>)}
+    {takes.filter(t=>t.state==='failed'||t.state==='discarded').map(t=><section className="vs-row" key={t.id}><div><p>{nodes.find(n=>n.id===t.startSectionId)?.title}</p><small>{t.state==='discarded'?'Discarded recording':t.error}</small></div><button className="vs-btn" onClick={()=>void (t.state==='discarded'?restoreSectionTake(draft!.id,t.captureId,services):queueSectionTake(draft!.id,t.captureId,t.startSectionId,services,t.markers)).then(accept).catch(report)}>{t.state==='discarded'?'Restore':'Try again'}</button></section>)}
     {draft?.rawTranscript&&<><h3>Original transcript</h3><pre className="vs-pre">{draft.rawTranscript}</pre></>}
     {!takes.length&&draft?.captureSessionId&&!active&&!!savedAudio?.session.captures.length&&<button className="vs-btn" disabled={processing||draft.results.some(r=>r.applied)} onClick={()=>void prepare(draft.id)}>Prepare sections again</button>}
    </section>}

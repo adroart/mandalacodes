@@ -29,17 +29,22 @@ export function NativeAccountProvider({ children, enabled = false }: {children:R
   const [loaded, setLoaded] = useState(!active);
   const [error, setError] = useState<string | null>(null);
   const generation = useRef(0);
+  const authPending = useRef(false);
+  const restoring = useRef<Promise<void> | null>(null);
   const run = useCallback(async (operation: () => Promise<void>) => {
     if (!active) throw new Error('Phone sign-in is not enabled yet.');
+    if (authPending.current) throw new Error('An account action is already in progress.');
+    authPending.current = true;
+    // A startup/resume response cannot undo a later sign-in or sign-out.
+    ++generation.current;
     setBusy(true); setError(null);
     try { await operation(); }
     catch (cause) {
       const message = cause instanceof Error ? cause.message : 'Account sync is unavailable right now.';
       setError(message); throw cause;
-    } finally { setBusy(false); setLoaded(true); }
+    } finally { authPending.current = false; setBusy(false); setLoaded(true); }
   }, [active]);
-  const loadSession = useCallback(async (requireSession = false) => {
-    const current = ++generation.current;
+  const loadSession = useCallback(async (requireSession = false, current = ++generation.current) => {
     const next = await accountResult(await fetchNative('/api/auth/get-session'));
     if (current !== generation.current) return;
     if (next?.user?.id && typeof next.user.email === 'string') {
@@ -51,11 +56,39 @@ export function NativeAccountProvider({ children, enabled = false }: {children:R
       if (requireSession) throw new Error('Sign-in could not be confirmed. Please try again.');
     }
   }, []);
-  const refresh = useCallback(() => run(loadSession), [run, loadSession]);
+  const refresh = useCallback(() => {
+    if (!active) return Promise.reject(new Error('Phone sign-in is not enabled yet.'));
+    // Foreground/online events often arrive together. Reuse the same validation
+    // and never compete with a credential exchange or a confirmed sign-out.
+    if (authPending.current) return Promise.resolve();
+    if (restoring.current) return restoring.current;
+    const current = ++generation.current;
+    setError(null);
+    let task: Promise<void>;
+    task = loadSession(false, current).catch(cause => {
+      if (current === generation.current) setError(cause instanceof Error ? cause.message : 'Account sync is unavailable right now.');
+      throw cause;
+    }).finally(() => {
+      if (restoring.current === task) restoring.current = null;
+      if (current === generation.current) setLoaded(true);
+    });
+    restoring.current = task;
+    return task;
+  }, [active, loadSession]);
   useEffect(() => {
     if (!active) { setLoaded(true); return; }
-    void refresh().catch(() => undefined);
-    return () => { generation.current++; };
+    const restore = () => { void refresh().catch(() => undefined); };
+    const visible = () => { if (!document.hidden) restore(); };
+    restore();
+    window.addEventListener('online', restore);
+    document.addEventListener('visibilitychange', visible);
+    return () => {
+      generation.current++;
+      // React StrictMode may restart this effect before the old request settles.
+      restoring.current = null;
+      window.removeEventListener('online', restore);
+      document.removeEventListener('visibilitychange', visible);
+    };
   }, [active, refresh]);
   const sendCode = useCallback((email: string) => run(async () => {
     await accountResult(await fetchNative('/api/auth/email-otp/send-verification-otp', {method:'POST', body:JSON.stringify({email:email.trim(),type:'sign-in'})}));
@@ -78,7 +111,6 @@ export function NativeAccountProvider({ children, enabled = false }: {children:R
     await loadSession(true);
   }), [run, loadSession]);
   const signOut = useCallback(() => run(async () => {
-    ++generation.current;
     await accountResult(await fetchNative('/api/auth/sign-out', {method:'POST',body:'{}'}));
     // Confirm the native cookie jar no longer grants a session before the UI
     // claims sign-out. If it fails, keep the old account visible and retryable.

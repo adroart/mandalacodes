@@ -87,6 +87,9 @@ it('starts Google through the installed Better Auth API and preserves its state 
  expect(response.status).toBe(302);
  const target=new URL(response.headers.get('Location')!);
  expect(target.origin).toBe('https://accounts.google.com');
+ expect(target.searchParams.get('include_granted_scopes')).toBe('false');
+ expect(target.searchParams.get('scope')?.split(' ').sort()).toEqual(['email','openid','profile']);
+ expect(target.searchParams.get('code_challenge_method')).toBe('S256');
  expect(target.searchParams.get('redirect_uri')).toBe(origin+'/api/auth/callback/google');
  expect(response.headers.getSetCookie().some(cookie=>cookie.includes('oauth_state'))).toBe(true);
 });
