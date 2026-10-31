@@ -3,6 +3,20 @@ export interface GoogleHandoff { code: string; verifier: string; state: string }
 
 const encode = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const opaque = /^[A-Za-z0-9_-]{32,128}$/;
+// Only fixed native stages affect UI text. Never reflect native error details.
+function nativeFailureMessage(stage: unknown): string {
+  switch (stage) {
+    case 'presentation-unavailable': return 'Google sign-in could not open on this iPhone. Please try again.';
+    case 'system-error': return 'The iPhone could not return from Google sign-in. Please try again.';
+    case 'callback-missing': return 'Google sign-in closed without returning to the app. Please try again.';
+    case 'callback-url-shape':
+    case 'callback-query-count': return 'Google sign-in returned an unexpected app link. Please try again.';
+    case 'callback-state-mismatch': return 'Google sign-in could not be verified. Please try again.';
+    case 'callback-server-error': return 'Google sign-in could not be confirmed by the server. Please try again.';
+    case 'callback-code-invalid': return 'Google sign-in returned an invalid response. Please try again.';
+    default: return 'Google sign-in did not finish. Please try again.';
+  }
+}
 
 /** The proof stays in memory for this attempt. The system browser returns only
  * a short-lived code; the account HTTP transport exchanges it for its cookie. */
@@ -24,7 +38,7 @@ export async function startNativeGoogleSignIn(
       cleanup();
       if (detail.state !== state) { reject(new Error('Google sign-in could not be verified. Please try again.')); return; }
       if (detail.error) {
-        reject(new Error(detail.error === 'cancelled' ? 'Google sign-in was cancelled.' : 'Google sign-in did not finish. Please try again.'));
+        reject(new Error(detail.error === 'cancelled' ? 'Google sign-in was cancelled.' : nativeFailureMessage(detail.stage)));
         return;
       }
       if (typeof detail.code !== 'string' || !opaque.test(detail.code)) { reject(new Error('Google sign-in returned an invalid response.')); return; }

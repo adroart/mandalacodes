@@ -62,5 +62,13 @@ owner.** Mocked browser tests and anonymous server probes do not establish that
 complete device flow. Email-code delivery and Birthday sync also require their
 own real-account verification; tests do not send emails automatically.
 
+Build 17's live website Google login, hosted transcription with word timing and
+24,000-token-budget hosted review were verified on 2026-10-31 using generated
+speech. The physical iPhone still rejected the native Google return before token
+exchange. Native return diagnostics overwrite `Library/Caches/oracle-google-diagnostic.json`
+with a fixed stage, timestamp, code-presence boolean and optional allowlisted OS
+error domain/code. No authorization values, account details or raw errors are
+recorded. Stage-specific messages preserve every existing callback validation.
+
 Sign in with Apple is not configured. This provider does not sync journals or
 audio; the Birthday endpoint is not a full-app backup.
