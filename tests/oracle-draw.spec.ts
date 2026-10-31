@@ -235,3 +235,20 @@ test('the dialog never fades with the page behind it, so the site menu cannot sh
   });
   expect(opacity).toBe(1);
 });
+
+// Both pages ask for viewport-fit=cover, so on an iPhone the full-screen dialog runs under
+// the status bar. Until 2026-10-31 nothing stepped it in: the method tabs and the close
+// button sat under the clock, half hidden and hard to tap. Chromium can emulate the insets.
+test('on a notched phone the tabs and close button clear the status bar', async ({ page, browserName }) => {
+  test.skip(page.viewportSize()!.width > 600 || browserName !== 'chromium', 'Phone safe area, emulated through Chromium');
+  const top = 47, bottom = 34;
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: { top, bottom, left: 0, right: 0 } });
+  const dialog = page.getByRole('dialog', { name: 'Draw a card' });
+  for (const control of [dialog.getByRole('tab', { name: 'Cast coins' }), dialog.getByRole('tab', { name: 'Choose trigrams' }), dialog.getByRole('button', { name: 'Close draw a card' })]) {
+    expect((await control.boundingBox())!.y).toBeGreaterThanOrEqual(top);
+  }
+  const body = await dialog.locator('.oracle-draw-body').boundingBox();
+  expect(body!.y + body!.height).toBeLessThanOrEqual(page.viewportSize()!.height - bottom + 1);
+  await page.screenshot({ path: `test-results/oracle-draw-safe-area-${test.info().project.name}.png` });
+});

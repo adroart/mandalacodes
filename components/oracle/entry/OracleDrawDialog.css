@@ -176,10 +176,12 @@
 .oracle-draw-preview h3.is-placeholder { color:var(--ink3); }
 .oracle-draw-preview .oracle-draw-primary { width:100%; height:50px; margin-top:12px; }
 
-/* Phones: the dialog becomes the whole screen. */
+/* Phones: the dialog becomes the whole screen. Both pages ask for viewport-fit=cover,
+   so the screen runs under the status bar and the home indicator; the insets keep the
+   method tabs and the close button out from under the clock. */
 @media (max-width:600px) {
   .oe-root .oracle-draw-backdrop { padding:0; }
-  .oracle-draw { width:100%; height:100dvh; border:0; border-radius:0; }
+  .oracle-draw { width:100%; height:100dvh; border:0; border-radius:0; padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px); }
 }
 /* Narrow phones: keep both method names inside their tabs. */
 @media (max-width:360px) {
