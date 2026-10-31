@@ -40,8 +40,8 @@ export function UnplacedWordCheck(props:{check:InlineWordCheck}&CheckActions){
 
 /** A prose editor whose check controls are excluded from saving, copying and phrase offsets. */
 export default function CheckedEditableText({label,value,checks,disabled,caret,save,onSelection,...actions}:Props){
- const root=useRef<HTMLDivElement>(null),latest=useRef(value),committed=useRef(value),dirty=useRef(false),focused=useRef(false),timer=useRef<ReturnType<typeof setTimeout>>(),callback=useRef(save);
- const [display,setDisplay]=useState(value),[failed,setFailed]=useState(false);callback.current=save;
+ const root=useRef<HTMLDivElement>(null),latest=useRef(value),committed=useRef(value),dirty=useRef(false),focused=useRef(false),timer=useRef<ReturnType<typeof setTimeout>>(),callback=useRef(save),actionsRef=useRef(actions),built=useRef('');
+ const [display,setDisplay]=useState(value),[failed,setFailed]=useState(false);callback.current=save;actionsRef.current=actions;
  const placed=placeReviewChecks(display,checks),anchored=placed.filter((check):check is PlacedWordCheck&{from:number;to:number}=>check.from!==undefined&&check.to!==undefined).sort((a,b)=>a.from-b.from);
  const flush=async()=>{clearTimeout(timer.current);const text=latest.current;if(!dirty.current||text===committed.current)return;try{await callback.current(text);committed.current=text;if(latest.current===text)dirty.current=false;setFailed(false);}catch{setFailed(true);}};
  const select=()=>{const el=root.current,selection=window.getSelection();if(!el||!selection?.rangeCount)return;const range=selection.getRangeAt(0);if(!el.contains(range.startContainer)||!el.contains(range.endContainer))return;const prefix=range.cloneRange();prefix.selectNodeContents(el);prefix.setEnd(range.startContainer,range.startOffset);const from=checkedEditorText(prefix.cloneContents()),selected=checkedEditorText(range.cloneContents());onSelection?.(from.length,from.length+selected.length,selected,checkedEditorText(el));};
@@ -54,14 +54,17 @@ export default function CheckedEditableText({label,value,checks,disabled,caret,s
  // while typing, update the mark without moving the caret or rewriting prose.
  useLayoutEffect(()=>{
   const el=root.current;if(!el)return;
+  // Rebuilding swaps the check buttons, so a press that spans a parent render would be lost.
+  const signature=JSON.stringify([display,!!disabled,!!actions.onHearCheck,placed.map(check=>[check.key,check.from,check.to,check.done])]);
+  if(signature===built.current&&el.childNodes.length)return;built.current=signature;
   const updateActions=(span:HTMLElement,check:PlacedWordCheck)=>{
    span.querySelector('[data-check-controls]')?.remove();
    const controls=document.createElement('span');controls.className='vs-word-check-actions';controls.dataset.checkControls='true';controls.contentEditable='false';
    const button=(label:string,action:()=>void)=>{const node=document.createElement('button');node.type='button';node.textContent=label;node.disabled=!!disabled;node.onclick=action;controls.appendChild(node);};
-   if(check.done)button('Check again',()=>actions.onReopenCheck?.(check.key));
+   if(check.done)button('Check again',()=>actionsRef.current.onReopenCheck?.(check.key));
    else {
-    if(actions.onHearCheck)button('Hear it',()=>actions.onHearCheck?.(check.key));
-    button('It’s right',()=>actions.onConfirmCheck?.(check.key));
+    if(actions.onHearCheck)button('Hear it',()=>actionsRef.current.onHearCheck?.(check.key));
+    button('It’s right',()=>actionsRef.current.onConfirmCheck?.(check.key));
    }
    span.appendChild(controls);
   };
