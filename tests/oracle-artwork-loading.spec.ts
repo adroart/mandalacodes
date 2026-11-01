@@ -40,3 +40,21 @@ test('failed artwork hides the broken image, stops motion, and can retry', async
   await art.getByRole('button', { name: 'Try again' }).click();
   await expect(art).toHaveAttribute('data-state', 'ready');
 });
+
+/* decode() is a courtesy, not a gate. On the live site it once never settled
+   for card 23, so a downloaded plate sat behind the loading screen for good;
+   some browsers also reject it for images that draw fine. A loaded plate is
+   shown either way. */
+for (const [label, decode] of [
+  ['never settles', 'new Promise(() => {})'],
+  ['rejects', 'Promise.reject(new DOMException("decode", "EncodingError"))'],
+] as const) {
+  test(`the artwork shows once loaded even when decode ${label}`, async ({ page }) => {
+    await page.addInitScript(`HTMLImageElement.prototype.decode = function () { return ${decode}; };`);
+    await page.route(/\/media\/image\//, route => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#8a744e"/></svg>' }));
+    await page.goto('/universal-language/23');
+    const art = page.locator('.card-artwork');
+    await expect(art).toHaveAttribute('data-state', 'ready');
+    await expect(art.locator('img')).toHaveCSS('visibility', 'visible');
+  });
+}

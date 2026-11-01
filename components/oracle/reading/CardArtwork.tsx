@@ -4,7 +4,7 @@ import { UL_CARD_HERO_SIZES, ulCardHeroImageUrl, ulCardHeroSrcset } from '../../
 import { hexagramLineBooleans } from '../HexagramGlyph';
 import './card-artwork.css';
 
-/** A source-keyed image boundary: the plate stays hidden until decode succeeds. */
+/** A source-keyed image boundary: the plate stays hidden until it has loaded. */
 export default function CardArtwork({ cardNumber }: { cardNumber: number }) {
   return <ArtworkRequest key={cardNumber} cardNumber={cardNumber} />;
 }
@@ -15,13 +15,17 @@ function ArtworkRequest({ cardNumber }: { cardNumber: number }) {
   const [attempt, setAttempt] = useState(0);
   const image = useRef<HTMLImageElement>(null);
   const lines = hexagramLineBooleans(card.iching.upper_trigram.symbol, card.iching.lower_trigram.symbol);
+  /* A loaded plate is shown. decode() only smooths the reveal, and gets a
+     moment to do it: on the live site it never settled for one card, which
+     left the art downloaded and the page stuck on its loading screen, and some
+     browsers reject it for images that draw fine. A real failure arrives
+     through onError. */
   const reveal = async (element: HTMLImageElement) => {
-    try {
-      await element.decode();
-      if (image.current === element) setState('ready');
-    } catch {
-      if (image.current === element) setState('error');
-    }
+    await Promise.race([
+      element.decode().catch(() => undefined),
+      new Promise((resolve) => setTimeout(resolve, 300)),
+    ]);
+    if (image.current === element) setState('ready');
   };
   return (
     <div className="card-artwork" data-state={state} aria-busy={state === 'loading'}>
