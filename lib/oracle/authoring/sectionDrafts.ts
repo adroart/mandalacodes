@@ -1,16 +1,18 @@
-import type {PassageComparison} from './passageComparison';
+import {applyComparisonEdits,buildPassageComparison,comparisonEdits,comparisonRows,type PassageChoice,type PassageComparison} from './passageComparison';
 import type {AuthoringServices,SourceSnapshot,Transcript} from './types';
 import type {CardSection} from './cardSections';
 import {WorkingCardStore,type WorkingSection} from './humanDrafts';
 import {sha256} from './workflow';
 import {AuthoringStore} from './storage';
-import {applyPassageAddition,applyPassageReplacement,plainSection} from '../../../src/mobile/authoring/passageActions';
+import {applyPassageAddition,applyPassageEdits,applyPassageReplacement,plainSection} from '../../../src/mobile/authoring/passageActions';
 
 export interface SectionDraftResult {
  comparison?:PassageComparison;
  /** Comparison baseline is independent of the earlier undo receipt. */
  editIntent?:'replace'|'add'|'revise';
  comparisonOriginal?:string;reviewTranscript?:string;reviewIssues?:SectionReviewIssue[];
+ /** Per compared passage, keyed by its original span: keep the written words or use the spoken ones. */
+ rowChoices?:Record<string,PassageChoice>;
  sectionId:string;text:string;evidenceQuotes:string[];changes:{before:string;after:string;reason:string}[];warnings:string[];checked:boolean;applied?:boolean;takeIds?:string[];
  /** Applied text remains a reference while a later revision is being reviewed. */
  appliedText?:string;beforeText?:string;appliedAt?:string;appliedRevision?:number;integrationId?:string;beforeWorking?:WorkingSection;
@@ -99,13 +101,21 @@ async function evidenceCaptures(session:SectionDraftSession,result:SectionDraftR
  return [...new Set(selected.map(take=>take!.captureId))];
 }
 /** Apply only the complete named section that was reviewed; all adjacent text survives. */
+/** Passage by passage when the comparison is matched against this exact baseline; otherwise undefined and the whole section is replaced. */
+export function sectionReplacementPlan(result:SectionDraftResult,beforeText:string):{edits:{start:number;end:number;words:string}[];text:string}|undefined{
+ if(result.editIntent==='add'||sectionComparisonOriginal(result,beforeText)!==beforeText)return;
+ const view=buildPassageComparison(beforeText,result.text,result.comparison);if(view.kind!=='matched')return;
+ const edits=comparisonEdits(beforeText,comparisonRows(view,result.rowChoices));
+ if(!edits.length)throw new Error('Every passage is set to keep its original words. Choose one to replace.');
+ return {edits,text:applyComparisonEdits(beforeText,edits)};
+}
 export async function integrateSectionDraft(sessionId:string,sectionId:string,services:AuthoringServices):Promise<SectionDraftSession>{
  const session=await drafts.get(sessionId),section=session?.sections.find(s=>s.id===sectionId),result=session?.results.find(r=>r.sectionId===sectionId);
  if(!session||!section||!result)throw new Error('Choose a saved named section to integrate.');if(!result.checked||!result.text.trim())throw new Error('Check your words before integrating this section.');if(result.applied&&(result.takeIds?.length??0)<=1&&(result.editIntent==='add'||result.appliedText===result.text))return session;
  const captureIds=await evidenceCaptures(session,result),captureId=captureIds[0];
  const source=await services.loadSource(session.cardNumber);if(source.hash!==session.sourceHash)throw new Error('The original card changed. Reopen the section and compare it again.');
- const integrationId=`${sectionId}/${await sha256((result.editIntent==='add'?'add/':'')+result.text)}`;let expectedWorkingText:string|undefined;let appliedText=result.text,beforeText=section.text,appliedRevision:number|undefined,beforeWorking:WorkingSection|undefined;
- if(section.kind==='intro'){const previous=await getIntegratedIntro(session.cardNumber);beforeText=previous??section.text;if(result.editIntent==='add')appliedText=prepareSectionEdit(beforeText,result.text,'add');}
+ const integrationId=`${sectionId}/${await sha256((result.editIntent==='add'?'add/':'')+result.text+(result.rowChoices?JSON.stringify(result.rowChoices):''))}`;let expectedWorkingText:string|undefined;let appliedText=result.text,beforeText=section.text,appliedRevision:number|undefined,beforeWorking:WorkingSection|undefined;
+ if(section.kind==='intro'){const previous=await getIntegratedIntro(session.cardNumber);beforeText=previous??section.text;if(result.editIntent==='add')appliedText=prepareSectionEdit(beforeText,result.text,'add');else appliedText=sectionReplacementPlan(result,beforeText)?.text??result.text;}
  else {
   const existing=await workingCards.get(session.cardNumber,section.lensId),currentText=existing?.text??plainSection(source,section.lensId);
   const evidenceDone=existing?.blocks.some(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId));
@@ -117,8 +127,8 @@ export async function integrateSectionDraft(sessionId:string,sectionId:string,se
    expectedWorkingText=currentText.slice(0,result.editIntent==='add'?start+beforeText.length:start)+(result.editIntent==='add'?'\n\n':'')+result.text+currentText.slice(start+beforeText.length);
    const anchor={id:section.id,cardNumber:session.cardNumber,sectionId:section.lensId,text:beforeText,sectionText:currentText,start,end:start+beforeText.length,sourceHash:session.sourceHash,revision:existing?.revision??0};
    if(result.editIntent==='add'){await applyPassageAddition(anchor,result.text,services,{sessionId:session.id,captureId,transcriptId:integrationId});appliedText=beforeText+'\n\n'+result.text;}
-   else await applyPassageReplacement([anchor],result.text,services,{sessionId:session.id,captureId,transcriptId:integrationId});
-  }else {beforeText=existing!.blocks.find(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId))?.replacedText??section.text;const history=await workingCards.versions(session.cardNumber,section.lensId),firstApplied=history.find(version=>version.blocks.some(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId)));expectedWorkingText=firstApplied?.text;beforeWorking=firstApplied?.revision===1?baseline(source,section.lensId,plainSection(source,section.lensId)):history.find(version=>version.revision===(firstApplied?.revision??0)-1);}
+   else {const plan=sectionReplacementPlan(result,beforeText);if(plan){appliedText=plan.text;expectedWorkingText=currentText.slice(0,start)+plan.text+currentText.slice(start+beforeText.length);await applyPassageEdits({cardNumber:session.cardNumber,sectionId:section.lensId,sectionText:currentText,revision:existing?.revision??0,sourceHash:session.sourceHash},plan.edits.map(edit=>({...edit,start:edit.start+start,end:edit.end+start})),services,{sessionId:session.id,captureId,transcriptId:integrationId});}else await applyPassageReplacement([anchor],result.text,services,{sessionId:session.id,captureId,transcriptId:integrationId});}
+  }else {const prior=await appliedReference(session.cardNumber,section.id,session.sourceHash),baselineText=prior?.result.appliedText??section.text,plan=result.editIntent==='add'?undefined:sectionReplacementPlan(result,baselineText);beforeText=plan?baselineText:existing!.blocks.find(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId))?.replacedText??section.text;if(plan)appliedText=plan.text;const history=await workingCards.versions(session.cardNumber,section.lensId),firstApplied=history.find(version=>version.blocks.some(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId)));expectedWorkingText=firstApplied?.text;beforeWorking=firstApplied?.revision===1?baseline(source,section.lensId,plainSection(source,section.lensId)):history.find(version=>version.revision===(firstApplied?.revision??0)-1);}
   if(result.editIntent==='add'&&evidenceDone){const block=existing!.blocks.find(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId));beforeText=block?.attachedTo??section.text;appliedText=beforeText+'\n\n'+result.text;}
   // The passage helper inserts one evidence record. Preserve every contributing take
   // on that same block without changing its words or promoting adjacent AI prose.

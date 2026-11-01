@@ -18,6 +18,11 @@ describe('native account transport boundary',()=>{
     await expect(createNativeAccountFetch(request,true)(path)).rejects.toThrow('Unsupported');
     expect(request).not.toHaveBeenCalled();
   });
+  it('uses the full processing timeout on iOS, whose bridge takes connectTimeout before readTimeout',async()=>{
+    const request=vi.fn<NativeHttp>(async()=>good);
+    await createNativeAccountFetch(request,true)('/api/oracle/authoring/process',{method:'POST',body:'{}'});
+    expect(request.mock.calls[0][0]).toMatchObject({connectTimeout:110000,readTimeout:110000});
+  });
   it('does not silently fall back to browser cookies',async()=>{
     const request=vi.fn<NativeHttp>(async()=>good);
     await expect(createNativeAccountFetch(request,false)('/api/profile/get')).rejects.toThrow('installed');

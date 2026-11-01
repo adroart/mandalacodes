@@ -7,6 +7,7 @@ import ChunkErrorBoundary from '../../components/ChunkErrorBoundary';
 import { NativeAccountProvider } from './account/NativeAccountProvider';
 import OracleNavigation, { OracleTabBar } from './OracleNavigation';
 import { useReadingPosition } from './reading/ReaderPreferences';
+import { useAccount } from '../../lib/account/useAccount';
 const Authoring = lazy(() => import('./authoring/OracleAuthoringPage'));
 const Draw = lazy(() => import('./OracleDrawPage'));
 const Deck = lazy(() => import('../../components/oracle/entry/OracleEntryPage'));
@@ -23,11 +24,16 @@ function WebsiteDestination() {
   return <section className="oracle-app-website"><h1>On Mandala Codes</h1><p>This part of Mandala Codes opens on the website.</p><a href={`https://mandalacodes.com${location.pathname}${location.search}`} target="_blank" rel="noopener noreferrer">Open website ↗</a><Link to="/universal-language">Return to Oracle</Link></section>;
 }
 function OracleRoutes() {
+  const account=useAccount();
   useEffect(()=>{
+    if(account.isLoaded&&account.isSignedIn)void import('./authoring/backgroundRecovery').then(module=>module.resumeSignedInAuthoring()).catch(()=>undefined);
+  },[account.isLoaded,account.isSignedIn,account.userId]);
+  useEffect(()=>{
+    if(account.available&&(!account.isLoaded||!account.isSignedIn))return;
     let active=true,cleanup:(()=>void)|undefined;
     const resume=()=>void import('./authoring/backgroundRecovery').then(module=>{if(!active)return;if(!cleanup)cleanup=module.startPendingHumanRecovery();module.resumePendingHumanAuthoring();}).catch(()=>undefined);
     resume();const visible=()=>{if(!document.hidden)resume();};window.addEventListener('online',resume);document.addEventListener('visibilitychange',visible);return()=>{active=false;cleanup?.();window.removeEventListener('online',resume);document.removeEventListener('visibilitychange',visible);};
-  },[]);
+  },[account.available,account.isLoaded,account.isSignedIn]);
   const { pathname } = useLocation();
   useReadingPosition(pathname);
   const reading = /^\/universal-language\/\d+$/.test(pathname);

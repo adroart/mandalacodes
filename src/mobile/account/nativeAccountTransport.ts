@@ -25,7 +25,9 @@ export function createNativeAccountFetch(request: NativeHttp = CapacitorHttp.req
     const result = await request({
       url: ACCOUNT_ORIGIN + path, method, data,
       headers: { Accept: 'application/json', 'Content-Type': 'application/json', Origin: NATIVE_ORIGIN },
-      responseType: 'json', disableRedirects: true, connectTimeout: 15000, readTimeout: path === '/api/oracle/authoring/process' ? 110000 : 60000,
+      // On iOS Capacitor uses connectTimeout as the entire URLRequest timeout,
+      // not only the TCP connection. A 15s value prematurely cancels speech jobs.
+      responseType: 'json', disableRedirects: true, connectTimeout: path === '/api/oracle/authoring/process' ? 110000 : 15000, readTimeout: path === '/api/oracle/authoring/process' ? 110000 : 60000,
     });
     if (init.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
     if (result.url && new URL(result.url).origin !== ACCOUNT_ORIGIN) throw new Error('Account service redirected unexpectedly.');

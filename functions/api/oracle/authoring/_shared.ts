@@ -1,6 +1,6 @@
 import type { R2Bucket } from '@cloudflare/workers-types';
 import { requireUser, type AuthEnv } from '../../_lib/auth';
-export interface AuthoringEnv extends AuthEnv { ORACLE_PRIVATE?: R2Bucket; GROQ_API_KEY?: string; OPENAI_API_KEY?: string; ORACLE_WRITING_MODEL?: string }
+export interface AuthoringEnv extends AuthEnv { ORACLE_PRIVATE?: R2Bucket; GROQ_API_KEY?: string; OPENAI_API_KEY?: string; ORACLE_WRITING_PROVIDER?: string; ORACLE_WRITING_MODEL?: string }
 export interface Context { request: Request; env: AuthoringEnv }
 export const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'private, no-store' } });
 export async function authorize(request: Request, env: AuthoringEnv) {

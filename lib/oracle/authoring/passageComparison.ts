@@ -47,3 +47,45 @@ export function replaceComparisonPassage(original:string,text:string,snapshot:Pa
  const comparison={originalText:original,spokenText:updated,pairs};
  return {text:updated,...(valid(original,updated,comparison)?{comparison}:{})};
 }
+/** What happens to one compared passage. 'mine' uses the spoken words (or removes an unspoken original); 'original' keeps the written words. */
+export type PassageChoice='mine'|'original';
+export interface ComparisonRow extends ComparedPassage {key:string;kind:'replaced'|'unspoken'|'new';choice:PassageChoice;changes:boolean}
+/** Unspoken original passages stay unless the speaker removes them; spoken words are used unless the original is kept. */
+export function comparisonRows(view:PassageComparisonView,choices:Record<string,PassageChoice>={}):ComparisonRow[]{
+ return view.pairs.map(pair=>{
+  const kind=!pair.original.trim()?'new':!pair.text.trim()?'unspoken':'replaced',key=`${pair.originalStart}-${pair.originalEnd}`;
+  const choice=choices[key]??(kind==='unspoken'?'original':'mine');
+  return {...pair,key,kind,choice,changes:choice==='mine'&&pair.text!==pair.original};
+ });
+}
+/** Exact spans of the original section that change. Kept passages and the space between them are never rewritten. */
+export function comparisonEdits(original:string,rows:ComparisonRow[]):{start:number;end:number;words:string}[]{
+ const edits:{start:number;end:number;words:string}[]=[];
+ for(let i=0;i<rows.length;){
+  if(!rows[i].changes){i++;continue;}
+  let j=i;while(j+1<rows.length&&rows[j+1].changes)j++;
+  const run=rows.slice(i,j+1),pieces:string[]=[];let previous:ComparisonRow|undefined;
+  for(const row of run){const words=row.choice==='mine'?row.text.trim():row.original;if(!words)continue;if(pieces.length){const gap=previous?original.slice(previous.originalEnd,row.originalStart):'';pieces.push(gap&&!gap.trim()?gap:'\n\n');}pieces.push(words);previous=row;}
+  let start=run[0].originalStart,end=run.at(-1)!.originalEnd,words=pieces.join('');
+  if(!words){if(j+1<rows.length)end=rows[j+1].originalStart;else if(i>0)start=rows[i-1].originalEnd;}
+  else if(start===end){if(start>0)words=`\n\n${words}`;else if(original.trim())words=`${words}\n\n`;}
+  if(words||end>start)edits.push({start,end,words});
+  i=j+1;
+ }
+ return edits;
+}
+export function applyComparisonEdits(original:string,edits:{start:number;end:number;words:string}[]){
+ let text=original;for(const edit of [...edits].sort((a,b)=>b.start-a.start))text=text.slice(0,edit.start)+edit.words+text.slice(edit.end);return text;
+}
+/** A recording aimed at one passage: everything spoken belongs to it and every other passage is unspoken. */
+export function focusedComparison(original:string,spoken:string,focus:{start:number;end:number;text:string}):PassageComparison|undefined{
+ if(focus.end<=focus.start||original.slice(focus.start,focus.end)!==focus.text||!spoken.trim())return;
+ const lead=original.slice(0,focus.start).trimEnd().length,tail=focus.end+(original.slice(focus.end).length-original.slice(focus.end).trimStart().length),textStart=spoken.length-spoken.trimStart().length,textEnd=spoken.trimEnd().length;
+ const pairs:PassageRange[]=[...(lead?[{originalStart:original.length-original.trimStart().length,originalEnd:lead,textStart,textEnd:textStart}]:[]),{originalStart:focus.start,originalEnd:focus.end,textStart,textEnd},...(original.slice(focus.end).trim()?[{originalStart:tail,originalEnd:original.trimEnd().length,textStart:textEnd,textEnd}]:[])];
+ const comparison={originalText:original,spokenText:spoken,pairs};
+ return valid(original,spoken,comparison)?comparison:undefined;
+}
+/** Paragraphs of a reading with their exact offsets, for aiming a recording at one of them. */
+export function readingParagraphs(text:string):{start:number;end:number;text:string}[]{
+ return [...text.matchAll(/\S(?:[\s\S]*?\S)?(?=\s*\n\s*\n|\s*$)/g)].map(match=>({start:match.index!,end:match.index!+match[0].length,text:match[0]}));
+}

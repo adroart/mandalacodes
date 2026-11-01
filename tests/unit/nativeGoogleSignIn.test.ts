@@ -39,3 +39,27 @@ describe('native Google proof and callback',()=>{
     expect(f.bridge.postMessage).toHaveBeenLastCalledWith({action:'cancel',id:f.bridge.postMessage.mock.calls[0][0] && (f.bridge.postMessage.mock.calls[0][0] as any).id});
   });
 });
+
+
+describe('native Google safe return diagnostics',()=>{
+ it.each([
+  ['presentation-unavailable','could not open'],
+  ['system-error','iPhone could not return'],
+  ['callback-missing','closed without returning'],
+  ['callback-url-shape','unexpected app link'],
+  ['callback-query-count','unexpected app link'],
+  ['callback-state-mismatch','could not be verified'],
+  ['callback-server-error','confirmed by the server'],
+  ['callback-code-invalid','invalid response'],
+ ])('explains the fixed stage %s without reflecting native error details',async(stage,message)=>{
+  const f=fixture();await f.started;const rejected=expect(f.result).rejects.toThrow(message);
+  response(f.events,{id:f.payload.id,state:f.payload.state,error:'failed',stage,errorDomain:'untrusted-secret-domain',errorMessage:'private-secret'});await rejected;
+ });
+ it('keeps cancellation and unknown old native failures compatible',async()=>{
+  const cancelled=fixture();await cancelled.started;const cancellation=expect(cancelled.result).rejects.toThrow('Google sign-in was cancelled.');response(cancelled.events,{id:cancelled.payload.id,state:cancelled.payload.state,error:'cancelled',stage:'system-error'});await cancellation;
+  const old=fixture();await old.started;const rejected=expect(old.result).rejects.toThrow('Google sign-in did not finish. Please try again.');response(old.events,{id:old.payload.id,state:old.payload.state,error:'failed',stage:'untrusted-secret-stage'});await rejected;
+ });
+ it('does not let a diagnostic stage override the existing proof checks',async()=>{
+  const f=fixture();await f.started;const rejected=expect(f.result).rejects.toThrow('could not be verified');response(f.events,{id:f.payload.id,state:'wrong',code,stage:'success'});await rejected;
+ });
+});

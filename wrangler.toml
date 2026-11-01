@@ -4,6 +4,12 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
+# Hosted voice review uses the existing server-only Groq credential. Provider and
+# model are release configuration; requests cannot choose a destination or model.
+[vars]
+ORACLE_WRITING_PROVIDER = "groq"
+ORACLE_WRITING_MODEL = "openai/gpt-oss-120b"
+
 [[r2_buckets]]
 binding = "MEDIA_BUCKET"
 bucket_name = "mandalacodes-media"
