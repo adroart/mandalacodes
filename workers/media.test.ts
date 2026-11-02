@@ -139,6 +139,21 @@ describe('resizing runs outside the Worker when Cloudflare\'s resizer takes it',
     expect(cachePut).toHaveBeenCalledOnce();
   });
 
+  it('keeps the resizer\'s output in R2, so the next cold request does not resize again', async () => {
+    const { env, store } = fakeEnv();
+    resizer.mockImplementationOnce(async () => resized());
+    const first = fakeCtx();
+    await worker.fetch(request('w=360&h=360&format=webp'), env as never, first.ctx as never);
+    await first.settle();
+    expect([...store.keys()].some((k) => k.startsWith('_variants/image/2_kvndyq/'))).toBe(true);
+
+    const second = fakeCtx();
+    const res = await worker.fetch(request('w=360&h=360&format=webp'), env as never, second.ctx as never);
+    expect(new Uint8Array(await res.arrayBuffer())).toEqual(new Uint8Array([7, 7]));
+    expect(res.headers.get('Content-Type')).toBe('image/webp');
+    expect(resizer).toHaveBeenCalledOnce();
+  });
+
   it('falls back to the binding when the resizer reports an error', async () => {
     const { env, transforms } = fakeEnv();
     resizer.mockImplementationOnce(async () => new Response('nope', { status: 404, headers: { 'cf-resized': 'err=9404' } }));
