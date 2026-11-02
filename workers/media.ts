@@ -82,7 +82,10 @@ async function handle(request: Request, env: Env, ctx: ExecutionContext): Promis
   // fetch + cf.image, runs outside that budget. The binding stays as the fallback.
   if (needsTransform) {
     const offloaded = await resizeOutsideWorker(url.pathname, request, { width, height, fit, gravity, quality, format, segment });
-    if (offloaded) return finish(request, ctx, cache, cacheKey, offloaded);
+    // Kept in R2 like the binding's output: the edge cache drops variants of a
+    // quiet site within hours, and every miss re-resizes the full artwork
+    // (0.5-2 s measured 2026-11-02, 60 of 64 deck tiles cold).
+    if (offloaded) return finish(request, ctx, cache, cacheKey, await storeVariant(env, ctx, variantKey, offloaded, format));
   }
 
   const object = await env.MEDIA_BUCKET.get(key);
@@ -96,12 +99,17 @@ async function handle(request: Request, env: Env, ctx: ExecutionContext): Promis
   const response = transformed.response();
   if (!response.ok) return new Response('Image unavailable', { status: 503, headers: { 'Cache-Control': 'no-store' } });
 
+  return finish(request, ctx, cache, cacheKey, await storeVariant(env, ctx, variantKey, response, format));
+}
+
+/** Saves a freshly resized variant to R2 so no data center has to make it again. */
+async function storeVariant(env: Env, ctx: ExecutionContext, variantKey: string | null, response: Response, format: ImageOutputOptions['format']): Promise<Response> {
   const bytes = await response.arrayBuffer();
   const contentType = response.headers.get('Content-Type') ?? format ?? 'application/octet-stream';
   if (variantKey) {
     ctx.waitUntil(env.MEDIA_BUCKET.put(variantKey, bytes, { httpMetadata: { contentType } }).then(() => undefined));
   }
-  return finish(request, ctx, cache, cacheKey, new Response(bytes, { headers: { 'Content-Type': contentType } }));
+  return new Response(bytes, { headers: { 'Content-Type': contentType } });
 }
 
 /** This Worker's workers.dev address. A path with no query takes the raw R2 branch, so it is the resizer's source. */
