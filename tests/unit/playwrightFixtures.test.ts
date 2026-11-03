@@ -18,9 +18,10 @@ describe('Playwright specs stay off production media', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('the fixture answers /media itself', () => {
-    const source = readFileSync(resolve(process.cwd(), 'tests/fixtures.ts'), 'utf8');
-    expect(source).toContain('\\/media\\/');
-    expect(source).toContain('route.fulfill');
+  it('the fixture hands /media to the shared stub, which answers it', () => {
+    const fixture = readFileSync(resolve(process.cwd(), 'tests/fixtures.ts'), 'utf8');
+    expect(fixture).toContain('stubMeteredMedia(context, /\\/media\\//)');
+    const stub = readFileSync(resolve(process.cwd(), 'tests/shared/media-stub.ts'), 'utf8');
+    expect(stub).toContain('route.fulfill');
   });
 });
