@@ -1,3 +1,4 @@
+import { metaAfterManualEdit, parseMeta } from '../../../../../utils/oracleBetterTranscript';
 import { admin, isAuthResponse, isResponse, json, requireBinding, segmentFromRow, type ReflectionContext } from '../_shared';
 export async function onRequestPatch({ request, env, params }: ReflectionContext) {
   const auth = await admin(request, env); if (isAuthResponse(auth)) return auth;
@@ -6,7 +7,10 @@ export async function onRequestPatch({ request, env, params }: ReflectionContext
   if (typeof body.transcript !== 'string' || new TextEncoder().encode(body.transcript).length > 100_000) return json({ ok: false, error: 'transcript must be at most 100000 UTF-8 bytes' }, 400);
   const transcript = body.transcript.trim();
   if (!transcript) return json({ ok: false, error: 'transcript must not be empty' }, 400);
-  const metadata = JSON.stringify({ provider: 'manual', wordCount: transcript.split(/\s+/).length });
+  // The phone's first draft, and any better transcript the Mac sent, stay on record beside Adrian's own words.
+  const before = await db.prepare('SELECT transcript,provider_metadata_json FROM oracle_reflection_segments WHERE id=?1 AND owner_user_id=?2').bind(params.id, auth.userId).first<Record<string, unknown>>();
+  if (!before) return json({ ok: false, error: 'segment not found' }, 404);
+  const metadata = JSON.stringify(metaAfterManualEdit(String(before.transcript ?? ''), parseMeta(before.provider_metadata_json), transcript));
   const now = new Date().toISOString(); const result = await db.prepare("UPDATE oracle_reflection_segments SET transcript=?3,transcription_status='transcribed',transcription_error=NULL,transcription_started_at=NULL,provider_metadata_json=?4,updated_at=?5 WHERE id=?1 AND owner_user_id=?2").bind(params.id, auth.userId, transcript, metadata, now).run();
   if (result.meta.changes !== 1) return json({ ok: false, error: 'segment not found' }, 404);
   const row = await db.prepare('SELECT * FROM oracle_reflection_segments WHERE id=?1 AND owner_user_id=?2').bind(params.id, auth.userId).first<Record<string, unknown>>();

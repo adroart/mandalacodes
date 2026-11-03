@@ -72,3 +72,10 @@ export const reorderReflectionSegments = async (sessionId: string, segmentIds: s
   });
   return body.segments;
 };
+
+export const decideBetterTranscript = async (id: string, decisions: Record<string, 'accept' | 'keep' | 'defer'>) => {
+  const body = await request<{ ok: true; done: boolean; segment: ReflectionSegment }>(`/api/oracle/reflections/segments/${encodeURIComponent(id)}/better`, {
+    method: 'POST', body: JSON.stringify({ decisions }),
+  });
+  return body;
+};
