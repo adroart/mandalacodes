@@ -46,7 +46,7 @@ export function addTranscript(session: AuthoringSession, captureId: string, inpu
     if (t.sectionId !== null && !source.sections.some(s => s.id === t.sectionId)) throw new Error('Unknown section');
     if (t.order !== undefined && (!Number.isInteger(t.order) || t.order < 0)) throw new Error('Excerpt order must be a nonnegative integer');
     validateTranscriptParent(session, { ...t, captureId });
-    return { id: crypto.randomUUID(), captureId, startMs: t.startMs, endMs: t.endMs, raw: t.text, corrected: t.text, sectionId: t.sectionId, assignment: t.sectionId ? 'hint' as const : 'unresolved' as const, timing: t.timing, provider, receivedAt: new Date().toISOString(), ...(t.cardNumber === undefined ? {} : { cardNumber: t.cardNumber }), ...(t.order === undefined ? {} : { order: t.order }), ...(t.parentId === undefined ? {} : { parentId: t.parentId }), ...(t.words === undefined ? {} : { words: structuredClone(t.words) }), ...(t.speaker === undefined ? {} : { speaker: t.speaker }) };
+    return { id: crypto.randomUUID(), captureId, startMs: t.startMs, endMs: t.endMs, raw: t.text, corrected: t.corrected ?? t.text, sectionId: t.sectionId, assignment: t.sectionId ? 'hint' as const : 'unresolved' as const, timing: t.timing, provider, receivedAt: new Date().toISOString(), ...(t.cardNumber === undefined ? {} : { cardNumber: t.cardNumber }), ...(t.order === undefined ? {} : { order: t.order }), ...(t.parentId === undefined ? {} : { parentId: t.parentId }), ...(t.words === undefined ? {} : { words: structuredClone(t.words) }), ...(t.speaker === undefined ? {} : { speaker: t.speaker }) };
   });
   return { ...session, transcript: [...session.transcript, ...added] };
 }

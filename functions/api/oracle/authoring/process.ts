@@ -2,7 +2,11 @@ import { authorize, boundedJson, decodeAudio, json, type AuthoringEnv, type Cont
 import { proposeSection } from '../../../../lib/oracle/authoring/workflow';
 import { safeAssimilation, validateAssimilation, assimilationInstructions } from '../../../../tools/oracle-section-assimilation.mjs';
 import type { AuthoringSession, Proposal } from '../../../../lib/oracle/authoring/types';
+import { applyKnownFixes, buildWordsPrompt } from '../../../../shared/words';
+import { ORACLE_WORDS_PROFILE } from '../../../../shared/oracleWords';
 interface WritingProvider {provider:'openai'|'groq';model:string;key:string;url:string}
+/** `text` stays what the speech model returned (the raw words); `corrected` is the same with the shared word library's known mishearings fixed. Only present when something changed. */
+function withKnownFixes(text:string):{corrected?:string}{const fixed=applyKnownFixes(text);return fixed.fixes.length?{corrected:fixed.text}:{};}
 /** Preserve existing OpenAI installations. Groq requires an explicit server choice. */
 function writingProvider(env:AuthoringEnv):WritingProvider|undefined {
  const provider=env.ORACLE_WRITING_PROVIDER??'openai',model=env.ORACLE_WRITING_MODEL?.trim();
@@ -37,13 +41,13 @@ export async function onRequestPost({request,env}:Context){
    if(!env.GROQ_API_KEY)return json({error:'Hosted transcription is not configured. Your recording is saved.'},503);
    if(typeof body.mimeType!=='string'||!body.mimeType.startsWith('audio/')||!Number.isFinite(body.durationMs)||body.durationMs<=0||body.durationMs>20*60*1000)return json({error:'Invalid recording.'},400);
    const bytes=decodeAudio(body.audioBase64);const form=new FormData();
-   form.set('file',new File([bytes],body.mimeType.includes('mp4')?'recording.m4a':'recording.webm',{type:body.mimeType}));form.set('prompt',['A private Oracle reflection. Preserve natural words and punctuation.',Number.isInteger(body.context?.cardNumber)?`Card ${body.context.cardNumber}.`:'',...[...(Array.isArray(body.context?.sectionTitles)?body.context.sectionTitles:[]),...(Array.isArray(body.context?.glossary)?body.context.glossary:[])].filter((s:unknown)=>typeof s==='string').slice(0,40)].join(' ').slice(0,1000));form.set('model','whisper-large-v3-turbo');form.set('response_format','verbose_json');form.append('timestamp_granularities[]','word');form.append('timestamp_granularities[]','segment');
+   form.set('file',new File([bytes],body.mimeType.includes('mp4')?'recording.m4a':'recording.webm',{type:body.mimeType}));form.set('prompt',['A private Oracle reflection. Preserve natural words and punctuation.',Number.isInteger(body.context?.cardNumber)?`Card ${body.context.cardNumber}.`:'',buildWordsPrompt(undefined,{...ORACLE_WORDS_PROFILE,intro:'',budget:90}).prompt,...[...(Array.isArray(body.context?.sectionTitles)?body.context.sectionTitles:[]),...(Array.isArray(body.context?.glossary)?body.context.glossary:[])].filter((s:unknown)=>typeof s==='string').slice(0,40)].filter(Boolean).join(' ').slice(0,1000));form.set('model','whisper-large-v3-turbo');form.set('response_format','verbose_json');form.append('timestamp_granularities[]','word');form.append('timestamp_granularities[]','segment');
    const response=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',{method:'POST',headers:{Authorization:`Bearer ${env.GROQ_API_KEY}`},body:form,signal:AbortSignal.timeout(90000)});
    if(!response.ok)return json({error:'Hosted transcription could not finish. Your recording is saved.'},502);
    const result=await response.json() as any;
    const words=Array.isArray(result.words)?result.words.filter((w:any)=>typeof w.word==='string'&&Number.isFinite(w.start)&&Number.isFinite(w.end)).map((w:any)=>({text:w.word,startMs:Math.max(0,Math.round(w.start*1000)),endMs:Math.min(body.durationMs,Math.round(w.end*1000))})):[];
-   const segments=Array.isArray(result.segments)?result.segments.filter((s:any)=>typeof s.text==='string'&&Number.isFinite(s.start)&&Number.isFinite(s.end)).map((s:any)=>{const startMs=Math.max(0,Math.round(s.start*1000)),endMs=Math.min(body.durationMs,Math.round(s.end*1000));return {startMs,endMs,text:s.text,sectionId:body.sectionId??null,timing:'provider',words:words.filter((w:any)=>w.startMs>=startMs&&w.startMs<endMs&&w.endMs>=w.startMs)};}).filter((s:any)=>s.endMs>s.startMs):[];
-   if(!segments.length&&typeof result.text==='string'&&result.text.trim())segments.push({startMs:0,endMs:body.durationMs,text:result.text,sectionId:body.sectionId??null,timing:'recording'});
+   const segments=Array.isArray(result.segments)?result.segments.filter((s:any)=>typeof s.text==='string'&&Number.isFinite(s.start)&&Number.isFinite(s.end)).map((s:any)=>{const startMs=Math.max(0,Math.round(s.start*1000)),endMs=Math.min(body.durationMs,Math.round(s.end*1000));return {startMs,endMs,text:s.text,...withKnownFixes(s.text),sectionId:body.sectionId??null,timing:'provider',words:words.filter((w:any)=>w.startMs>=startMs&&w.startMs<endMs&&w.endMs>=w.startMs)};}).filter((s:any)=>s.endMs>s.startMs):[];
+   if(!segments.length&&typeof result.text==='string'&&result.text.trim())segments.push({startMs:0,endMs:body.durationMs,text:result.text,...withKnownFixes(result.text),sectionId:body.sectionId??null,timing:'recording'});
    if(!segments.length)return json({error:'No speech was returned. Your recording is saved.'},422);
    return json({provider:'groq:whisper-large-v3-turbo',segments,durationMs:body.durationMs});
   }
