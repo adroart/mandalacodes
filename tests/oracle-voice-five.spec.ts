@@ -68,3 +68,9 @@ test('the applied preview starts recording its displayed section in one tap',asy
  await expect(d.getByRole('button',{name:'Done',exact:true})).toBeVisible();
  await d.getByRole('button',{name:'Pause',exact:true}).click();
 });
+
+test('voice drafts opened from the journal keep the Record bar on screen above the tabs',async({page})=>{
+ await page.goto('/authoring/1');const dock=page.locator('.section-voice-studio .vs-dock');await expect(dock.getByRole('button',{name:'Record',exact:true})).toBeVisible();
+ const viewport=page.viewportSize()!;const box=(await dock.boundingBox())!;const tabs=await page.locator('.oracle-app-tabs').boundingBox();
+ expect(box.y+box.height).toBeLessThanOrEqual((tabs?.y??viewport.height)+1);expect(box.y).toBeGreaterThan(0);
+});
