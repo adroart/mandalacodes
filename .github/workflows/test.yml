@@ -103,7 +103,9 @@ jobs:
   # require the actual generated worker and run against production preview.
   # Build once before either lane so their static Learn assets are identical.
   test-mobile:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04 on 2026-11-03 and Playwright 1.60 cannot install Chromium there
+    # ("does not support chromium on ubuntu26.04-x64"). Move back to ubuntu-latest once Playwright supports it.
+    runs-on: ubuntu-24.04
     needs: gate
     if: needs.gate.outputs.run == 'true'
     # Playwright owns the 18-minute mobile budget so it can still write JSON;

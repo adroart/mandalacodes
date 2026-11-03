@@ -30,7 +30,7 @@ export interface AuthoringSession {
   schema: 1; id: string; title?: string; transcriptHistory?: Record<string, string[]>; passageNotes?: Record<string, string>; parkedPassageIds?: string[]; reflectionSessionId?: string; createdAt: string; source: SourceSnapshot; relatedSources?: SourceSnapshot[];
   captures: Capture[]; markers: SectionMarker[]; transcript: Transcript[]; proposals: Proposal[]; earlierProposals?: Proposal[]; approvals: Approval[];
 }
-export interface TranscriptInput { startMs: number; endMs: number; text: string; sectionId: string | null; timing: Transcript['timing']; cardNumber?: number; order?: number; parentId?: string; words?: AlignedWord[]; speaker?: string }
+export interface TranscriptInput { startMs: number; endMs: number; text: string; /** The speech model's words with known mishearings fixed; `text` stays the raw words. */ corrected?: string; sectionId: string | null; timing: Transcript['timing']; cardNumber?: number; order?: number; parentId?: string; words?: AlignedWord[]; speaker?: string }
 export interface StoredAudioChunk { key: string; sessionId: string; captureId: string; index: number; blob: Blob; endMs: number }
 /** Host must fetch the CURRENT authoritative manuscript, not return the session snapshot. */
 export interface AuthoringServices {

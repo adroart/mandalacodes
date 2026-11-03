@@ -136,6 +136,14 @@ describe('reflection API boundary', () => {
     expect(result).toEqual({ text: 'Breath.', metadataJson: JSON.stringify({ provider: 'groq', wordCount: 1, duration: 1.2 }) });
   });
 
+  it('fixes known mishearings in the stored text and keeps what the speech model returned in the segment metadata', async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ text: ' I was reading jean keys. ', duration: 2 }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
+    const result = await transcribeCommittedAudio({ GROQ_API_KEY: 'groq-secret' }, new Uint8Array([1, 2]).buffer, 'audio/webm', fetcher);
+    expect(result.text).toBe('I was reading Gene Keys.');
+    expect(JSON.parse(result.metadataJson)).toMatchObject({ provider: 'groq', rawTranscript: 'I was reading jean keys.', wordFixes: [{ from: 'jean keys', to: 'Gene Keys', count: 1 }] });
+  });
+
   it('trims deployment whitespace from the Groq credential', async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ text: 'Breath.' }), {
       status: 200,
@@ -156,7 +164,7 @@ describe('reflection API boundary', () => {
     const run = vi.fn().mockResolvedValue({ text: '  Breath. ', duration: 1.2, private: 'omitted' });
     const { transcribeCommittedAudio } = await import('../../functions/api/oracle/reflections/_shared');
     const result = await transcribeCommittedAudio({ AI: { run } as never }, new Uint8Array([1, 2]).buffer, 'audio/webm');
-    expect(run).toHaveBeenCalledWith('@cf/openai/whisper-large-v3-turbo', { audio: 'AQI=' });
+    expect(run).toHaveBeenCalledWith('@cf/openai/whisper-large-v3-turbo', { audio: 'AQI=', initial_prompt: expect.stringContaining('Siddhi') });
     expect(result).toEqual({ text: 'Breath.', metadataJson: JSON.stringify({ provider: 'cloudflare', wordCount: 1, duration: 1.2 }) });
   });
 
@@ -209,7 +217,7 @@ describe('reflection API boundary', () => {
     );
 
     expect(fetcher).toHaveBeenCalledOnce();
-    expect(run).toHaveBeenNthCalledWith(1, '@cf/openai/whisper-large-v3-turbo', { audio: 'AQI=' });
+    expect(run).toHaveBeenNthCalledWith(1, '@cf/openai/whisper-large-v3-turbo', { audio: 'AQI=', initial_prompt: expect.stringContaining('Siddhi') });
     expect(run).toHaveBeenNthCalledWith(2, '@cf/openai/whisper', { audio: [1, 2] });
     expect(result).toEqual({ text: 'Returning breath.', metadataJson: JSON.stringify({ provider: 'cloudflare', wordCount: 2, duration: null }) });
   });

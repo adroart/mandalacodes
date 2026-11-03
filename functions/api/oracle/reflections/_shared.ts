@@ -1,6 +1,8 @@
 import type { Ai, D1Database, R2Bucket } from '@cloudflare/workers-types';
 import { isAuthResponse, requireAdmin, type AuthContext } from '../../_lib/auth.ts';
 import { normalizeTranscript } from '../../../../utils/oracleReflection';
+import { applyKnownFixes, buildWordsPrompt } from '../../../../shared/words';
+import { ORACLE_WORDS_PROFILE } from '../../../../shared/oracleWords';
 
 export interface ReflectionEnv { DB?: D1Database; ORACLE_PRIVATE?: R2Bucket; AI?: Ai; GROQ_API_KEY?: string; ADMIN_EMAILS?: string; BETTER_AUTH_SECRET?: string; BETTER_AUTH_URL?: string }
 export interface ReflectionContext { request: Request; env: ReflectionEnv; params: Record<string, string>; waitUntil(promise: Promise<unknown>): void }
@@ -20,6 +22,9 @@ export function canClaimTranscription(status: unknown, startedAt: unknown, nowMs
   const started = typeof startedAt === 'string' ? Date.parse(startedAt) : NaN;
   return !Number.isFinite(started) || started <= nowMs - TRANSCRIPTION_LEASE_MS;
 }
+
+/** The speech model's vocabulary prompt: the oracle's own sentence, then the shared library's words for this project. */
+export function oracleTranscriptionPrompt() { return buildWordsPrompt(undefined, ORACLE_WORDS_PROFILE).prompt; }
 
 function bytesToBase64(bytes: Uint8Array) {
   const chunkSize = 32 * 1024;
@@ -63,22 +68,26 @@ function logTranscriptionFailure(details: {
 function transcriptionResult(raw: unknown, provider: TranscriptionProvider) {
   const normalized = normalizeTranscript(raw);
   const row = raw && typeof raw === 'object' ? raw as Record<string, unknown> : {};
+  // Known mishearings from the shared word library are fixed in the text the person sees; what the speech model
+  // actually returned is kept beside it in the segment's provider metadata.
+  const fixed = applyKnownFixes(normalized.text);
   return {
-    text: normalized.text,
+    text: fixed.text,
     metadataJson: JSON.stringify({
       provider,
-      wordCount: normalized.text.split(/\s+/).filter(Boolean).length,
+      wordCount: fixed.text.split(/\s+/).filter(Boolean).length,
       duration: typeof row.duration === 'number' ? row.duration : null,
+      ...(fixed.fixes.length ? { rawTranscript: normalized.text, wordFixes: fixed.fixes } : {}),
     }),
   };
 }
 
 async function transcribeWithCloudflare(ai: Ai, bytes: ArrayBuffer) {
-  const run = ai.run.bind(ai) as unknown as (model: string, input: { audio: string | number[] }) => Promise<unknown>;
+  const run = ai.run.bind(ai) as unknown as (model: string, input: { audio: string | number[]; initial_prompt?: string }) => Promise<unknown>;
   const audio = new Uint8Array(bytes);
   let raw: unknown;
   try {
-    raw = await run('@cf/openai/whisper-large-v3-turbo', { audio: bytesToBase64(audio) });
+    raw = await run('@cf/openai/whisper-large-v3-turbo', { audio: bytesToBase64(audio), initial_prompt: oracleTranscriptionPrompt() });
   } catch (error) {
     logTranscriptionFailure({ provider: 'cloudflare', model: '@cf/openai/whisper-large-v3-turbo', errorName: error instanceof Error ? error.name : 'UnknownError', errorMessage: error instanceof Error ? error.message : undefined });
     if (audio.byteLength > LEGACY_CLOUDFLARE_FALLBACK_MAX_BYTES) throw error;
@@ -104,7 +113,7 @@ export async function transcribeCommittedAudio(
     const form = new FormData();
     form.set('model', 'whisper-large-v3-turbo');
     form.set('response_format', 'json');
-    form.set('prompt', 'A private reflection about the Mandala Codes, I Ching, hexagrams, Gene Keys, Shadow, Gift, Siddhi, Human Design, contemplation, and invocation. Preserve these spellings and natural punctuation.');
+    form.set('prompt', oracleTranscriptionPrompt());
     form.set('file', new File([bytes], mimeType.includes('mp4') ? 'reflection.m4a' : 'reflection.webm', { type: mimeType }));
     try {
       const response = await fetcher('https://api.groq.com/openai/v1/audio/transcriptions', {
