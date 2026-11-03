@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import BetterTranscriptNote from './BetterTranscriptNote';
 import type { ReflectionSegment, ReflectionSession } from '../../types/oracleReflection';
 import {
   listReflectionSegments,
@@ -328,6 +329,8 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
                         : 'Queued'
               }</span>
               {segment.transcriptionError && <p className="reflection-segment__transcription-error">{segment.transcriptionError}</p>}
+              <BetterTranscriptNote segment={segment} onMessage={setMessage}
+                onSegment={(saved) => setSegments((rows) => rows.map((row) => row.id === saved.id ? saved : row))} />
               {(segment.transcriptionStatus === 'transcription_pending' || segment.transcriptionStatus === 'failed') && <button type="button" onClick={() => void retry(segment.id)}>Retry</button>}
             </div>}
           </article>)}

@@ -1,6 +1,7 @@
 import type { Ai, D1Database, R2Bucket } from '@cloudflare/workers-types';
 import { isAuthResponse, requireAdmin, type AuthContext } from '../../_lib/auth.ts';
 import { normalizeTranscript } from '../../../../utils/oracleReflection';
+import { betterView, parseMeta } from '../../../../utils/oracleBetterTranscript';
 import { applyKnownFixes, buildWordsPrompt } from '../../../../shared/words';
 import { ORACLE_WORDS_PROFILE } from '../../../../shared/oracleWords';
 
@@ -13,7 +14,11 @@ export function requireBinding<T>(value: T | undefined, name: string): T | Respo
 export const isResponse = <T>(value: T | Response): value is Response => value instanceof Response;
 export const validUuid = (value: unknown): value is string => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 export const sessionFromRow = (row: Record<string, unknown>) => ({ id: row.id, hexagramNumber: row.hexagram_number, createdAt: row.created_at, updatedAt: row.updated_at, finishedAt: row.finished_at ?? null });
-export const segmentFromRow = (row: Record<string, unknown>) => ({ id: row.id, sessionId: row.session_id, sequence: row.sequence, recordedAt: row.recorded_at, durationMs: row.duration_ms, mimeType: row.mime_type, byteSize: row.byte_size, transcript: row.transcript ?? '', transcriptionStatus: row.transcription_status, transcriptionError: row.transcription_error ?? null, transcriptionStartedAt: row.transcription_started_at ?? null, updatedAt: row.updated_at });
+export const segmentFromRow = (row: Record<string, unknown>) => {
+  // A better transcript from the Mac, and the first draft it sits beside, appear only once the Mac has sent one.
+  const better = row.provider_metadata_json ? betterView(parseMeta(row.provider_metadata_json)) : null;
+  return { id: row.id, sessionId: row.session_id, sequence: row.sequence, recordedAt: row.recorded_at, durationMs: row.duration_ms, mimeType: row.mime_type, byteSize: row.byte_size, transcript: row.transcript ?? '', transcriptionStatus: row.transcription_status, transcriptionError: row.transcription_error ?? null, transcriptionStartedAt: row.transcription_started_at ?? null, updatedAt: row.updated_at, ...(better ? { betterTranscript: better } : {}) };
+};
 
 const TRANSCRIPTION_LEASE_MS = 5 * 60 * 1000;
 export function canClaimTranscription(status: unknown, startedAt: unknown, nowMs = Date.now()) {
