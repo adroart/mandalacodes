@@ -32,6 +32,8 @@ export interface QuickOptions {
   fileName?: string;
   /** Prefix for failure logs, so each caller's failures stay findable. */
   logTag?: string;
+  /** Another Groq Whisper model, for a second opinion (e.g. 'whisper-large-v3'); default whisper-large-v3-turbo. */
+  groqModel?: string;
   fetcher?: Fetcher;
 }
 
@@ -116,11 +118,12 @@ export async function quickTranscribe(env: QuickTranscriptionEnv, bytes: ArrayBu
   const timings = options.timings === true;
   const logTag = options.logTag ?? '[quick-transcription]';
   const fetcher: Fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init));
+  const groqModel = options.groqModel ?? GROQ_MODEL;
   let groqFailure: Error | null = null;
   const groqApiKey = env.GROQ_API_KEY?.trim();
   if (groqApiKey) {
     const form = new FormData();
-    form.set('model', GROQ_MODEL);
+    form.set('model', groqModel);
     form.set('response_format', timings ? 'verbose_json' : 'json');
     if (timings) { form.append('timestamp_granularities[]', 'segment'); form.append('timestamp_granularities[]', 'word'); }
     form.set('prompt', options.prompt);
@@ -128,13 +131,13 @@ export async function quickTranscribe(env: QuickTranscriptionEnv, bytes: ArrayBu
     try {
       const response = await fetcher('https://api.groq.com/openai/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: `Bearer ${groqApiKey}` }, body: form });
       if (!response.ok) {
-        logFailure(logTag, { provider: 'groq', model: GROQ_MODEL, status: response.status, requestId: response.headers.get('x-request-id') });
+        logFailure(logTag, { provider: 'groq', model: groqModel, status: response.status, requestId: response.headers.get('x-request-id') });
         throw new Error(`Groq HTTP ${response.status}`);
       }
-      return result(await response.json(), 'groq', GROQ_MODEL, timings);
+      return result(await response.json(), 'groq', groqModel, timings);
     } catch (error) {
       groqFailure = error instanceof Error ? error : new Error('Groq request failed');
-      if (!/^Groq HTTP \d+$/.test(groqFailure.message)) logFailure(logTag, { provider: 'groq', model: GROQ_MODEL, errorName: groqFailure.name, errorMessage: groqFailure.message });
+      if (!/^Groq HTTP \d+$/.test(groqFailure.message)) logFailure(logTag, { provider: 'groq', model: groqModel, errorName: groqFailure.name, errorMessage: groqFailure.message });
     }
   }
   if (env.AI) {
