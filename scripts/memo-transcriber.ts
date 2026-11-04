@@ -12,6 +12,7 @@
  */
 import { quickTranscribe, type QuickTranscriptionEnv } from '../functions/api/_lib/quickTranscription';
 import { memoTranscriptionPrompt } from '../functions/api/_lib/memoTranscript';
+import { transcriptDoubts, type TranscriptDoubt } from '../functions/api/_lib/transcriptDoubts';
 
 const site = (process.env.MEMO_SITE_URL || 'https://mandalacodes.com').replace(/\/$/, '');
 const key = process.env.AR_PICKUP_TOKEN?.trim();
@@ -56,10 +57,17 @@ async function main() {
       const audio = await call(`/api/oracle/pickup/memos/${memo.id}/files/audio`);
       if (audio.status !== 200) throw new Error(`audio HTTP ${audio.status}`);
       const started = Date.now();
-      const transcript = await quickTranscribe(env, await audio.response.arrayBuffer(), memo.audio.mimeType, { prompt: memoTranscriptionPrompt(), timings: true, logTag: '[memo-transcriber]' });
-      const sent = await send({ transcript });
+      const bytes = await audio.response.arrayBuffer();
+      const transcript = await quickTranscribe(env, bytes, memo.audio.mimeType, { prompt: memoTranscriptionPrompt(), timings: true, logTag: '[memo-transcriber]' });
+      // A second opinion from Groq's full model: where the two disagree are the words most likely misheard.
+      let doubts: TranscriptDoubt[] | null = null;
+      if (env.GROQ_API_KEY) {
+        try { doubts = transcriptDoubts(transcript.text, (await quickTranscribe({ GROQ_API_KEY: env.GROQ_API_KEY }, bytes, memo.audio.mimeType, { prompt: memoTranscriptionPrompt(), groqModel: 'whisper-large-v3', logTag: '[memo-transcriber second]' })).text); }
+        catch { doubts = null; }
+      }
+      const sent = await send({ transcript: { ...transcript, ...(doubts ? { doubts, secondOpinion: 'whisper-large-v3' } : {}) } });
       if (sent.status !== 200) throw new Error(`the site refused the transcript (HTTP ${sent.status})`);
-      console.log(`  ${label}: done by ${transcript.provider} in ${Math.round((Date.now() - started) / 1000)} s, ${transcript.text.split(/\s+/).length} words, ${transcript.segments?.length ?? 0} timed sentences.`);
+      console.log(`  ${label}: done by ${transcript.provider} in ${Math.round((Date.now() - started) / 1000)} s, ${transcript.text.split(/\s+/).length} words, ${transcript.segments?.length ?? 0} timed sentences, ${doubts ? doubts.length + ' words heard differently by the second model' : 'no second opinion'}.`);
     } catch (error) {
       failures += 1;
       const why = error instanceof Error ? error.message.replace(/Bearer\s+\S+/g, 'Bearer [redacted]').slice(0, 160) : 'unknown error';

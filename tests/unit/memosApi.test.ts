@@ -141,6 +141,45 @@ describe('memos from the phone', () => {
     expect((await waiting()).map((m: { handoff: { revision: number } }) => m.handoff.revision)).toEqual([8]);
   });
 
+  it('keeps the posting kit the VPS leaves, and gives the frames only to the signed-in admin', async () => {
+    await memoWithAudioAndPhoto();
+    const { onRequestPost: kit } = await import('../../functions/api/oracle/pickup/memos/[id]/kit');
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
+    const frame = (n: number) => kit(ctx(pickup(`/x?frame=${n}`, { method: 'POST', body: png, headers: { 'Content-Type': 'image/png', 'Content-Length': '4' } }), env, { id: MEMO }));
+    expect((await frame(1)).status).toBe(409);
+    const started = await kit(ctx(pickup('/x', { method: 'POST', body: JSON.stringify({ format: 'story', caption: 'A morning at the kiln.', frames: 2 }), headers: { 'Content-Type': 'application/json' } }), env, { id: MEMO }));
+    expect(started.status).toBe(200);
+    expect((await frame(3)).status).toBe(400);
+    await frame(1);
+    const done = await (await frame(2)).json();
+    expect(done.memo.kit).toMatchObject({ format: 'story', caption: 'A morning at the kiln.', frames: [{ name: 'story-1.png', byteSize: 4 }, { name: 'story-2.png', byteSize: 4 }] });
+    const { onRequestGet: get } = await import('../../functions/api/memos/[id]/kit/[frame]');
+    const res = await get(ctx(new Request('https://example.test/x'), env, { id: MEMO, frame: '2' }));
+    expect(res.status).toBe(200); expect(res.headers.get('Content-Type')).toBe('image/png');
+    getSession.mockResolvedValue(null);
+    expect((await get(ctx(new Request('https://example.test/x'), env, { id: MEMO, frame: '2' }))).status).toBe(401);
+  });
+
+  it('lets the phone Shortcut start a memo and send files with the upload key, but never read memos', async () => {
+    const UPLOAD = 'u'.repeat(48);
+    env.MEMO_UPLOAD_TOKEN = UPLOAD; getSession.mockResolvedValue(null);
+    const asShortcut = (path: string, init: RequestInit = {}) => new Request(`https://example.test${path}`, { ...init, headers: { Authorization: `Bearer ${UPLOAD}`, ...(init.headers ?? {}) } });
+    const { onRequestPost: create, onRequestGet: list } = await import('../../functions/api/memos');
+    const made = await (await create(ctx(asShortcut('/api/memos', { method: 'POST', body: JSON.stringify({ title: 'From the share sheet' }) }), env))).json();
+    expect(made.memo.title).toBe('From the share sheet');
+    const { onRequestPost: file } = await import('../../functions/api/memos/[id]/file');
+    const send = (name: string, bytes: number) => file(ctx(asShortcut(`/x?name=${name}`, { method: 'POST', body: new Uint8Array(bytes), headers: { 'Content-Length': String(bytes) } }), env, { id: made.memo.id }));
+    expect((await send('Kiln visit.m4a', 6)).status).toBe(200);
+    expect((await send('IMG_0001.HEIC', 3)).status).toBe(201);
+    expect((await send('notes.txt', 3)).status).toBe(415);
+    expect((await list(ctx(asShortcut('/api/memos'), env))).status).toBe(401);
+    expect((await create(ctx(new Request('https://example.test/api/memos', { method: 'POST', body: '{}', headers: { Authorization: 'Bearer wrong-key-wrong-key-wrong-key-wrong' } }), env))).status).toBe(401);
+    // The admin sees what the Shortcut sent, with its recording and photo.
+    getSession.mockResolvedValue(adminSession);
+    const mine = await (await list(ctx(new Request('https://example.test/api/memos'), env))).json();
+    expect(mine.memos[0]).toMatchObject({ title: 'From the share sheet', audio: { mimeType: 'audio/mp4', byteSize: 6 }, photos: [{ name: 'IMG_0001.HEIC', mimeType: 'image/heic' }] });
+  });
+
   it('refuses the pickup without the key', async () => {
     const { onRequestGet: list } = await import('../../functions/api/oracle/pickup/memos');
     expect((await list(ctx(new Request('https://example.test/api/oracle/pickup/memos'), env))).status).toBe(401);

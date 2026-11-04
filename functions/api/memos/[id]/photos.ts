@@ -5,7 +5,7 @@ const cleanName = (value: string | null) => (value ?? '').replace(/[\\/\u0000-\u
 
 /** One photo, sent as the raw request body and streamed into storage; ?name= carries the phone's file name. Kept as sent. */
 export async function onRequestPost(context: MemoContext) {
-  const own = await ownMemo(context); if (isResponse(own)) return own;
+  const own = await ownMemo(context, { upload: true }); if (isResponse(own)) return own;
   const type = (context.request.headers.get('Content-Type') ?? '').toLowerCase();
   if (!isPhotoType(type)) return json({ ok: false, error: 'a JPEG, PNG, HEIC or WebP photo is required' }, 415);
   if (own.manifest.photos.length >= MAX_PHOTOS) return json({ ok: false, error: `a memo holds at most ${MAX_PHOTOS} photos` }, 409);

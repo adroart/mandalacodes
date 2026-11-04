@@ -6,7 +6,7 @@ import { conflict, declaredLength, isAudioType, MAX_AUDIO_BYTES, memoPrefix, mem
  * function would spend the free plan's CPU allowance). Sending again replaces it and clears the old transcript.
  */
 export async function onRequestPost(context: MemoContext) {
-  const own = await ownMemo(context); if (isResponse(own)) return own;
+  const own = await ownMemo(context, { upload: true }); if (isResponse(own)) return own;
   const type = context.request.headers.get('Content-Type') ?? '';
   if (!isAudioType(type)) return json({ ok: false, error: 'an audio file is required' }, 415);
   const length = declaredLength(context.request, MAX_AUDIO_BYTES, 'the recording is over 25 MB; send it in parts'); if (isResponse(length)) return length;
