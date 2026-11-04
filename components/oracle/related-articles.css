@@ -23,18 +23,18 @@
   margin: 0;
   color: var(--l-2);
   font-family: var(--font-label);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: .13em;
   text-transform: uppercase;
 }
 
-.oracle-library__all {
+.oracle-library .oracle-library__all {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--accent);
+  color: var(--l-2);
   font-family: var(--font-label);
   font-size: 12px;
   text-decoration: none;
@@ -79,6 +79,8 @@
   line-height: 1.18;
   text-wrap: pretty;
 }
+
+.oracle-library .oracle-library__title { color: var(--l-1); }
 
 .oracle-library__description {
   display: -webkit-box;
