@@ -160,6 +160,26 @@ describe('memos from the phone', () => {
     expect((await get(ctx(new Request('https://example.test/x'), env, { id: MEMO, frame: '2' }))).status).toBe(401);
   });
 
+  it('lets the phone Shortcut start a memo and send files with the upload key, but never read memos', async () => {
+    const UPLOAD = 'u'.repeat(48);
+    env.MEMO_UPLOAD_TOKEN = UPLOAD; getSession.mockResolvedValue(null);
+    const asShortcut = (path: string, init: RequestInit = {}) => new Request(`https://example.test${path}`, { ...init, headers: { Authorization: `Bearer ${UPLOAD}`, ...(init.headers ?? {}) } });
+    const { onRequestPost: create, onRequestGet: list } = await import('../../functions/api/memos');
+    const made = await (await create(ctx(asShortcut('/api/memos', { method: 'POST', body: JSON.stringify({ title: 'From the share sheet' }) }), env))).json();
+    expect(made.memo.title).toBe('From the share sheet');
+    const { onRequestPost: file } = await import('../../functions/api/memos/[id]/file');
+    const send = (name: string, bytes: number) => file(ctx(asShortcut(`/x?name=${name}`, { method: 'POST', body: new Uint8Array(bytes), headers: { 'Content-Length': String(bytes) } }), env, { id: made.memo.id }));
+    expect((await send('Kiln visit.m4a', 6)).status).toBe(200);
+    expect((await send('IMG_0001.HEIC', 3)).status).toBe(201);
+    expect((await send('notes.txt', 3)).status).toBe(415);
+    expect((await list(ctx(asShortcut('/api/memos'), env))).status).toBe(401);
+    expect((await create(ctx(new Request('https://example.test/api/memos', { method: 'POST', body: '{}', headers: { Authorization: 'Bearer wrong-key-wrong-key-wrong-key-wrong' } }), env))).status).toBe(401);
+    // The admin sees what the Shortcut sent, with its recording and photo.
+    getSession.mockResolvedValue(adminSession);
+    const mine = await (await list(ctx(new Request('https://example.test/api/memos'), env))).json();
+    expect(mine.memos[0]).toMatchObject({ title: 'From the share sheet', audio: { mimeType: 'audio/mp4', byteSize: 6 }, photos: [{ name: 'IMG_0001.HEIC', mimeType: 'image/heic' }] });
+  });
+
   it('refuses the pickup without the key', async () => {
     const { onRequestGet: list } = await import('../../functions/api/oracle/pickup/memos');
     expect((await list(ctx(new Request('https://example.test/api/oracle/pickup/memos'), env))).status).toBe(401);

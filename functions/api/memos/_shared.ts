@@ -9,7 +9,30 @@ export { memoTranscriptionPrompt, timedTranscriptText };
  * manifest, one audio file, its photos and its first transcript. No database table; the manifest's etag guards
  * every change, so two tabs (or a retry) never overwrite each other.
  */
-export interface MemoEnv extends ReflectionEnv { AR_PICKUP_TOKEN?: string }
+export interface MemoEnv extends ReflectionEnv { AR_PICKUP_TOKEN?: string; MEMO_UPLOAD_TOKEN?: string }
+
+/** Memos sent by the phone's share-sheet Shortcut (upload key, no session) live under this owner. */
+export const SHORTCUT_OWNER = 'phone-shortcut';
+const digestBytes = async (value: string) => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)));
+async function sameSecret(given: string, expected: string) {
+  const [a, b] = await Promise.all([digestBytes(given), digestBytes(expected)]);
+  let difference = 0; for (let i = 0; i < a.length; i += 1) difference |= a[i] ^ b[i];
+  return difference === 0;
+}
+/**
+ * Who is sending: the signed-in admin (the page), or the phone Shortcut holding the upload key. The upload key may
+ * only start memos and add files to them; reading memos, transcripts and kits stays with the admin session.
+ */
+export async function uploader(request: Request, env: MemoEnv): Promise<{ userId: string; viaShortcut: boolean } | Response> {
+  const expected = env.MEMO_UPLOAD_TOKEN?.trim();
+  const match = /^Bearer\s+(\S+)$/i.exec(request.headers.get('Authorization') ?? '');
+  if (expected && expected.length >= 32 && match) {
+    if (await sameSecret(match[1], expected)) return { userId: SHORTCUT_OWNER, viaShortcut: true };
+    return json({ ok: false, error: 'unauthorized' }, 401);
+  }
+  const auth = await admin(request, env); if (isAuthResponse(auth)) return auth;
+  return { userId: auth.userId, viaShortcut: false };
+}
 export interface MemoContext { request: Request; env: MemoEnv; params: Record<string, string>; waitUntil(promise: Promise<unknown>): void }
 
 export interface MemoPhoto { id: string; name: string; mimeType: string; byteSize: number; key: string; addedAt: string }
@@ -124,12 +147,17 @@ export const needsTranscript = (manifest: MemoManifest, nowMs = Date.now()) => B
 export const PICKERS = new Set(['vps', 'mac']);
 
 /** The signed-in admin's own memo, read fresh. Returns a response to send back when it cannot be used. */
-export async function ownMemo({ request, env, params }: MemoContext) {
-  const auth = await admin(request, env); if (isAuthResponse(auth)) return auth;
+export async function ownMemo({ request, env, params }: MemoContext, { upload = false } = {}) {
+  const who = upload ? await uploader(request, env) : await admin(request, env);
+  if (who instanceof Response) return who;
   const bucket = requireBinding(env.ORACLE_PRIVATE, 'ORACLE_PRIVATE'); if (isResponse(bucket)) return bucket;
   if (!validUuid(params.id)) return json({ ok: false, error: 'invalid memo id' }, 400);
-  const key = manifestKey(auth.userId, params.id);
-  const read = await readManifest(bucket, key);
-  if (!read) return json({ ok: false, error: 'memo not found' }, 404);
-  return { auth, bucket, key, ...read };
+  // The admin also owns what the Shortcut sent; the Shortcut sees only its own memos.
+  const owners = 'viaShortcut' in who && who.viaShortcut ? [SHORTCUT_OWNER] : [who.userId, SHORTCUT_OWNER];
+  for (const owner of owners) {
+    const key = manifestKey(owner, params.id);
+    const read = await readManifest(bucket, key);
+    if (read) return { auth: { userId: owner }, bucket, key, ...read };
+  }
+  return json({ ok: false, error: 'memo not found' }, 404);
 }
