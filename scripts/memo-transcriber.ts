@@ -11,7 +11,7 @@
  * It never prints a key.
  */
 import { quickTranscribe, type QuickTranscriptionEnv } from '../functions/api/_lib/quickTranscription';
-import { memoTranscriptionPrompt } from '../functions/api/memos/_shared';
+import { memoTranscriptionPrompt } from '../functions/api/_lib/memoTranscript';
 
 const site = (process.env.MEMO_SITE_URL || 'https://mandalacodes.com').replace(/\/$/, '');
 const key = process.env.AR_PICKUP_TOKEN?.trim();
