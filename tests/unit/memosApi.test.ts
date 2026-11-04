@@ -141,6 +141,25 @@ describe('memos from the phone', () => {
     expect((await waiting()).map((m: { handoff: { revision: number } }) => m.handoff.revision)).toEqual([8]);
   });
 
+  it('keeps the posting kit the VPS leaves, and gives the frames only to the signed-in admin', async () => {
+    await memoWithAudioAndPhoto();
+    const { onRequestPost: kit } = await import('../../functions/api/oracle/pickup/memos/[id]/kit');
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
+    const frame = (n: number) => kit(ctx(pickup(`/x?frame=${n}`, { method: 'POST', body: png, headers: { 'Content-Type': 'image/png', 'Content-Length': '4' } }), env, { id: MEMO }));
+    expect((await frame(1)).status).toBe(409);
+    const started = await kit(ctx(pickup('/x', { method: 'POST', body: JSON.stringify({ format: 'story', caption: 'A morning at the kiln.', frames: 2 }), headers: { 'Content-Type': 'application/json' } }), env, { id: MEMO }));
+    expect(started.status).toBe(200);
+    expect((await frame(3)).status).toBe(400);
+    await frame(1);
+    const done = await (await frame(2)).json();
+    expect(done.memo.kit).toMatchObject({ format: 'story', caption: 'A morning at the kiln.', frames: [{ name: 'story-1.png', byteSize: 4 }, { name: 'story-2.png', byteSize: 4 }] });
+    const { onRequestGet: get } = await import('../../functions/api/memos/[id]/kit/[frame]');
+    const res = await get(ctx(new Request('https://example.test/x'), env, { id: MEMO, frame: '2' }));
+    expect(res.status).toBe(200); expect(res.headers.get('Content-Type')).toBe('image/png');
+    getSession.mockResolvedValue(null);
+    expect((await get(ctx(new Request('https://example.test/x'), env, { id: MEMO, frame: '2' }))).status).toBe(401);
+  });
+
   it('refuses the pickup without the key', async () => {
     const { onRequestGet: list } = await import('../../functions/api/oracle/pickup/memos');
     expect((await list(ctx(new Request('https://example.test/api/oracle/pickup/memos'), env))).status).toBe(401);

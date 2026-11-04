@@ -27,6 +27,8 @@ export interface MemoManifest {
   picked: Record<string, string>;
   /** The finished Instagram plan the VPS feeder left for the Mac to take in, one way. */
   handoff?: { key: string; planId: string; revision: number; at: string };
+  /** The posting kit: the finished frames and caption, for saving to the phone. Nothing is posted from here. */
+  kit?: { format: string; caption: string; frames: { key: string; name: string; byteSize: number }[]; at: string };
 }
 
 // Groq's upload limit; Workers AI takes the same file as base64.
@@ -84,7 +86,11 @@ export const memoView = (manifest: MemoManifest) => ({
   transcript: { status: manifest.transcript.status, provider: manifest.transcript.provider, error: manifest.transcript.error },
   picked: manifest.picked,
   handoff: manifest.handoff ? { planId: manifest.handoff.planId, revision: manifest.handoff.revision, at: manifest.handoff.at } : null,
+  kit: manifest.kit ? { format: manifest.kit.format, caption: manifest.kit.caption, frames: manifest.kit.frames.map((f) => ({ name: f.name, byteSize: f.byteSize })), at: manifest.kit.at } : null,
 });
+
+export const MAX_KIT_FRAMES = 20;
+export const MAX_FRAME_BYTES = 10 * 1024 * 1024;
 
 /** A plan left for the Mac that it has not taken in yet (or a newer one since it last did). */
 export const handoffWaiting = (manifest: MemoManifest, by: string) => Boolean(manifest.handoff) && (!manifest.picked[`${by}:handoff`] || manifest.picked[`${by}:handoff`] < manifest.handoff!.at);

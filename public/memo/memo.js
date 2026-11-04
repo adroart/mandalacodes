@@ -74,6 +74,8 @@
       if (memo.picked.vps) meta.append(' · with Claude');
       const title = document.createElement('div'); title.textContent = memo.title || 'Untitled memo';
       div.append(title, meta);
+      const kit = memo.kit && memo.kit.frames.length && memo.kit.frames.every((f) => f.byteSize > 0) ? memo.kit : null;
+      if (kit) { div.append(kitBlock(memo.id, kit)); return div; }
       if (memo.transcript.status === 'done') {
         const { transcript } = await api(`/api/memos/${memo.id}`).catch(() => ({}));
         if (transcript) { const pre = document.createElement('pre'); pre.textContent = transcript; div.append(pre); }
@@ -81,6 +83,32 @@
       return div;
     }));
     $('memos').replaceChildren(...rows);
+  }
+
+  // The posting kit: the frames he said yes to, saved to Photos in one tap (the share sheet's Save Images), and the
+  // caption copied in one tap. Nothing is posted from here; he posts it himself.
+  function kitBlock(memoId, kit) {
+    const box = document.createElement('div'); box.className = 'kit';
+    const head = document.createElement('div'); head.className = 'state'; head.textContent = `Ready to post · ${kit.frames.length} ${kit.format} frame${kit.frames.length === 1 ? '' : 's'}`;
+    const strip = document.createElement('div'); strip.className = 'strip';
+    const urls = kit.frames.map((_, i) => `/api/memos/${memoId}/kit/${i + 1}`);
+    for (const url of urls) { const img = new Image(); img.src = url; img.alt = 'Frame'; img.loading = 'lazy'; strip.append(img); }
+    const save = document.createElement('button'); save.type = 'button'; save.textContent = 'Save to Photos';
+    save.addEventListener('click', async () => {
+      save.disabled = true; save.textContent = 'Getting the frames…';
+      try {
+        const files = await Promise.all(urls.map(async (url, i) => new File([await (await fetch(url, { credentials: 'same-origin' })).blob()], kit.frames[i].name, { type: 'image/png' })));
+        if (navigator.canShare && navigator.canShare({ files })) await navigator.share({ files });
+        else for (const url of urls) window.open(url, '_blank');
+        save.textContent = 'Save to Photos';
+      } catch (error) { save.textContent = error.name === 'AbortError' ? 'Save to Photos' : 'Could not save; try again'; }
+      save.disabled = false;
+    });
+    const caption = document.createElement('pre'); caption.textContent = kit.caption || '(no caption)';
+    const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'quiet'; copy.textContent = 'Copy caption';
+    copy.addEventListener('click', async () => { try { await navigator.clipboard.writeText(kit.caption); copy.textContent = 'Copied'; setTimeout(() => { copy.textContent = 'Copy caption'; }, 2000); } catch { copy.textContent = 'Select the caption and copy'; } });
+    box.append(head, strip, save, caption, copy);
+    return box;
   }
 
   list();
