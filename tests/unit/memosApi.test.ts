@@ -119,7 +119,7 @@ describe('memos from the phone', () => {
     await memoWithAudioAndPhoto();
     const { onRequestPost: post } = await import('../../functions/api/oracle/pickup/memos/[id]/transcript');
     const { onRequestPost: handoff } = await import('../../functions/api/oracle/pickup/memos/[id]/handoff');
-    const plan = JSON.stringify({ schema: 'ar-create.instagram-plan.v1', id: '00000000-0000-4000-8000-0000000000bb', revision: 7, lines: [] });
+    const plan = JSON.stringify({ schema: 'ar-create.instagram-handoff.v1', plan: { schema: 'ar-create.instagram-plan.v1', id: '00000000-0000-4000-8000-0000000000bb', revision: 7, lines: [] }, sources: [] });
     const send = (body: string) => handoff(ctx(pickup('/x', { method: 'POST', body, headers: { 'Content-Length': String(body.length) } }), env, { id: MEMO }));
     expect((await send(plan)).status).toBe(409);
     const claim = await (await post(ctx(pickup('/x', { method: 'POST', body: JSON.stringify({ claim: true }) }), env, { id: MEMO }))).json();
