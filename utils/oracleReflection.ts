@@ -1,10 +1,7 @@
 import { REFLECTION_LIMITS } from '../types/oracleReflection';
 
-const MIME_CANDIDATES = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'] as const;
-
-export function chooseRecorderMimeType(isSupported: (type: string) => boolean): string | null {
-  return MIME_CANDIDATES.find(isSupported) ?? null;
-}
+/* Which format to record in is the shared microphone module. */
+export { chooseRecorderMimeType } from '../shared/voice/microphone';
 
 export function validateHexagramNumber(value: unknown): number {
   if (!Number.isInteger(value) || Number(value) < 1 || Number(value) > 64) throw new Error('hexagramNumber must be an integer from 1 to 64');
