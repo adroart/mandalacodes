@@ -49,7 +49,7 @@
         await api(`/api/memos/${memoId}/photos?name=${encodeURIComponent(photo.name)}`, { method: 'POST', headers: { 'Content-Type': photo.type || 'image/jpeg' }, body: photo });
         sentPhotos.add(mark);
       }
-      say(`Sent. The VPS transcribes it within a few minutes; tell Claude in chat it's there.`);
+      say(`Sent. Tell Claude in chat it's there; Claude transcribes it and starts the story.`);
       form.reset(); $('thumbs').replaceChildren(); $('audioName').textContent = 'Choose the voice memo'; $('photosName').textContent = 'Choose photos, up to 20';
       memoId = null; sentPhotos = new Set();
       await list();
@@ -59,7 +59,7 @@
     }
   });
 
-  const STATES = { none: 'waiting for the VPS', transcribing: 'transcribing', done: 'transcribed', failed: 'transcription failed; the VPS tries again' };
+  const STATES = { none: 'waiting for Claude', transcribing: 'transcribing', done: 'transcribed', failed: 'transcription failed; Claude tries again' };
   async function list() {
     let memos;
     try { ({ memos } = await api('/api/memos')); } catch { return; }
