@@ -115,6 +115,32 @@ describe('memos from the phone', () => {
     expect(await collect()).toBe(0);
   });
 
+  it('keeps the finished plan the VPS leaves for the Mac, and lists it until the Mac takes it in', async () => {
+    await memoWithAudioAndPhoto();
+    const { onRequestPost: post } = await import('../../functions/api/oracle/pickup/memos/[id]/transcript');
+    const { onRequestPost: handoff } = await import('../../functions/api/oracle/pickup/memos/[id]/handoff');
+    const plan = JSON.stringify({ schema: 'ar-create.instagram-plan.v1', id: '00000000-0000-4000-8000-0000000000bb', revision: 7, lines: [] });
+    const send = (body: string) => handoff(ctx(pickup('/x', { method: 'POST', body, headers: { 'Content-Length': String(body.length) } }), env, { id: MEMO }));
+    expect((await send(plan)).status).toBe(409);
+    const claim = await (await post(ctx(pickup('/x', { method: 'POST', body: JSON.stringify({ claim: true }) }), env, { id: MEMO }))).json();
+    await post(ctx(pickup('/x', { method: 'POST', body: JSON.stringify({ startedAt: claim.startedAt, transcript: { provider: 'groq', model: 'm', text: 'One.', rawText: 'One.', wordFixes: [], duration: 1 } }) }), env, { id: MEMO }));
+    expect((await send('{"schema":"something-else"}')).status).toBe(400);
+    expect((await send(plan)).status).toBe(200);
+
+    const { onRequestGet: list } = await import('../../functions/api/oracle/pickup/memos');
+    const waiting = async () => (await (await list(ctx(pickup('/api/oracle/pickup/memos?waiting=handoff&by=mac'), env))).json()).memos;
+    expect((await waiting()).map((m: { handoff: { revision: number } }) => m.handoff.revision)).toEqual([7]);
+    const { onRequestGet: file } = await import('../../functions/api/oracle/pickup/memos/[id]/files/[file]');
+    expect(await (await file(ctx(pickup('/x'), env, { id: MEMO, file: 'handoff' }))).text()).toBe(plan);
+
+    const { onRequestPost: picked } = await import('../../functions/api/oracle/pickup/memos/[id]/picked');
+    await picked(ctx(pickup('/x', { method: 'POST', body: JSON.stringify({ by: 'mac', what: 'handoff' }) }), env, { id: MEMO }));
+    expect(await waiting()).toHaveLength(0);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    expect((await send(plan.replace('"revision":7', '"revision":8'))).status).toBe(200);
+    expect((await waiting()).map((m: { handoff: { revision: number } }) => m.handoff.revision)).toEqual([8]);
+  });
+
   it('refuses the pickup without the key', async () => {
     const { onRequestGet: list } = await import('../../functions/api/oracle/pickup/memos');
     expect((await list(ctx(new Request('https://example.test/api/oracle/pickup/memos'), env))).status).toBe(401);

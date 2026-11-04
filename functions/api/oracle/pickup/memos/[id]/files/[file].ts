@@ -2,7 +2,7 @@ import { json, requireBinding, isResponse, validUuid } from '../../../../reflect
 import { requirePickup, type PickupContext } from '../../../_shared';
 import { findManifestKey, readManifest } from '../../../../../memos/_shared';
 
-/** A memo's recording ("audio"), full transcript ("transcript") or one photo (its id), streamed as stored. */
+/** A memo's recording ("audio"), full transcript ("transcript"), the plan left for the Mac ("handoff") or one photo (its id). */
 export async function onRequestGet({ request, env, params }: PickupContext) {
   const refused = await requirePickup(request, env); if (refused) return refused;
   const bucket = requireBinding(env.ORACLE_PRIVATE, 'ORACLE_PRIVATE'); if (isResponse(bucket)) return bucket;
@@ -13,6 +13,7 @@ export async function onRequestGet({ request, env, params }: PickupContext) {
   const { manifest } = read;
   const key = params.file === 'audio' ? manifest.audio?.key
     : params.file === 'transcript' ? manifest.transcript.key
+    : params.file === 'handoff' ? manifest.handoff?.key
     : manifest.photos.find((photo) => photo.id === params.file)?.key;
   const object = key ? await bucket.get(key) : null;
   if (!object) return json({ ok: false, error: 'file not found' }, 404);
