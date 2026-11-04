@@ -17,9 +17,11 @@ export async function onRequestPost({ request, env, params }: PickupContext) {
   const length = Number(request.headers.get('Content-Length'));
   if (!Number.isInteger(length) || length <= 0 || length > MAX_PLAN_BYTES) return json({ ok: false, error: 'send the plan as JSON, up to 2 MB' }, 413);
   const body = await request.text();
-  let plan: { id?: unknown; revision?: unknown; schema?: unknown };
-  try { plan = JSON.parse(body); } catch { return json({ ok: false, error: 'the plan is not JSON' }, 400); }
-  if (plan.schema !== 'ar-create.instagram-plan.v1' || typeof plan.id !== 'string' || !UUID.test(plan.id) || !Number.isSafeInteger(plan.revision)) return json({ ok: false, error: 'not an AR Create Instagram plan' }, 400);
+  // AR Create sends the plan with the hash of each Library file it names: {schema: handoff, plan, sources}.
+  let bundle: { schema?: unknown; plan?: { id?: unknown; revision?: unknown; schema?: unknown }; sources?: unknown };
+  try { bundle = JSON.parse(body); } catch { return json({ ok: false, error: 'the plan is not JSON' }, 400); }
+  const plan = bundle.plan ?? {};
+  if (bundle.schema !== 'ar-create.instagram-handoff.v1' || !Array.isArray(bundle.sources) || plan.schema !== 'ar-create.instagram-plan.v1' || typeof plan.id !== 'string' || !UUID.test(plan.id) || !Number.isSafeInteger(plan.revision)) return json({ ok: false, error: 'not an AR Create Instagram plan hand-off' }, 400);
   const key = await findManifestKey(bucket, params.id);
   const read = key ? await readManifest(bucket, key) : null;
   if (!key || !read) return json({ ok: false, error: 'memo not found' }, 404);
