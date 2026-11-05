@@ -42,11 +42,49 @@ async function assertNeverBlankOrCrashed(page: Page) {
   expect(bodyText.length).toBeGreaterThan(0);
 }
 
+async function waitForWarmedDeck(page: Page) {
+  // A successful navigation or a connection notice does not prove that the
+  // quiet warm pass stored the deck. Check the actual worker cache instead
+  // of sleeping for an assumed amount of idle time.
+  await expect.poll(async () => page.evaluate(async () => {
+    const cache = await caches.open('oracle-app-chunks');
+    const requests = await cache.keys();
+    return new Set(requests.flatMap(request => {
+      const match = new URL(request.url).pathname.match(/\/assets\/(0[1-9]|[1-5][0-9]|6[0-4])-[^/]+\.js$/);
+      return match ? [Number(match[1])] : [];
+    })).size;
+  }), { timeout: 45_000, intervals: [100, 250, 500] }).toBe(64);
+}
+
 test.describe('offline reading, arriving straight on a card (QR path)', () => {
   test.beforeEach(async ({ context }) => {
     await context.route('**/api/**', route => route.fulfill({ status: 200, contentType: 'application/json', body: 'null' }));
     await context.route(/^https:\/\//, route => route.abort());
   });
+
+  test('a QR arrival warms every card and an untouched card retains its prose offline', async ({ page, context }) => {
+    test.setTimeout(75_000);
+    await openCard(page, '/universal-language/33');
+    await waitForServiceWorker(page);
+    await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
+    // Start a new document under the active worker. The first visit can load
+    // its own prose before the worker claims the page; no persistent warm
+    // flag should prevent the controlled document from storing it again.
+    await openCard(page, '/universal-language/33');
+    await waitForWarmedDeck(page);
+
+    // setOffline alone can leave worker-owned network fetches available.
+    // Abort those too, so a missing cached chunk cannot pass by downloading.
+    await context.route('**/assets/**', route => route.abort());
+    await context.setOffline(true);
+    await openCard(page, '/universal-language/34');
+
+    await expect(page.getByRole('heading', { name: 'Sublime Power', level: 1 })).toBeVisible();
+    await expect(page.getByText('You can work hard all day with nothing in you pulling against the work.', { exact: false })).toBeVisible();
+    await expect(page.getByText('needs a connection', { exact: false })).toHaveCount(0);
+    await assertNeverBlankOrCrashed(page);
+  });
+
   test('card 34 either renders from cache or shows the calm offline sentence, never blank', async ({ page, context }) => {
     await openCard(page, '/universal-language/33');
     await waitForServiceWorker(page);
