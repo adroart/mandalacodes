@@ -15,9 +15,13 @@ export function onRequest({ params }) {
     return Response.redirect('https://mandalacodes.com/?ref=qr', 302);
   }
 
-  const n = parseInt(params.number, 10);
+  // Accept the complete digit-only plaque number, including legacy zero padding.
+  // parseInt would silently turn malformed values such as "1junk" into card 1.
+  const number = params.number;
+  const n = Number(number);
 
-  if (isNaN(n) || n < 1 || n > 64) {
+  if (typeof number !== 'string' || !number.length || /[^0-9]/.test(number)
+    || !Number.isInteger(n) || n < 1 || n > 64) {
     return new Response('Not found', { status: 404 });
   }
 
