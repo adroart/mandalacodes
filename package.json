@@ -21,6 +21,7 @@
     "preview": "vite preview",
     "generate:qr": "tsx scripts/generate-ul-qr.ts",
     "verify:profile": "tsx scripts/verify-profile-math.ts",
+    "verify:card-links": "tsx scripts/verify-card-links.ts",
     "generate:land-dots": "tsx scripts/generate-land-dots.ts",
     "test": "npx playwright test",
     "test:mobile": "npx playwright test --project='Mobile Chrome' --reporter=list",
