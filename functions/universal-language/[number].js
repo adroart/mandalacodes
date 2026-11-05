@@ -17,7 +17,11 @@
 
 export async function onRequest(context) {
   const { params, env, request } = context;
-  const num = parseInt(params.number, 10);
+  // A partial numeric prefix is not a card address. Keep digit-only legacy
+  // zero padding, but never serve card 1's metadata for a URL such as 1junk.
+  const number = params.number;
+  const num = typeof number === 'string' && number.length && !/[^0-9]/.test(number)
+    ? Number(number) : NaN;
 
   // Known card (1-64) — serve the file scripts/prerender-cards.ts wrote at
   // build time. It already carries the correct title, canonical, meta

@@ -55,7 +55,7 @@ const UniversalLanguageCard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDarkMode } = useDarkMode();
-  const cardNum = parseInt(number ?? '', 10);
+  const cardNum = number && !/[^0-9]/.test(number) ? Number(number) : NaN;
   const card = CARD_BY_NUMBER.get(cardNum);
   const [synthesis, setSynthesis] = useState<CardSynthesis | undefined>(undefined);
   const [liveInvocationState, setLiveInvocationState] = useState<{ cardNum: number; value: LiveInvocation | null }>({ cardNum, value: null });
