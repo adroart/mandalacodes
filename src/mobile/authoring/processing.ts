@@ -17,7 +17,11 @@ export async function requestAuthoringProcessing(body:unknown):Promise<{status:n
   throw new AuthoringServiceError(503,'Hosted processing is not available yet. Your local recording and words are saved.');
  }
  if(!local&&Capacitor.isNativePlatform()&&[404,405,503].includes(response.status)&&loadMacBridge())return requestMacBridge(body);
- if(!response.ok)throw new AuthoringServiceError(response.status,response.status===401?'Sign in to process on this phone. Your recording is saved.':typeof value?.error==='string'?value.error:'AR Create could not finish. Your recording and words are saved.');
+ if(!response.ok){
+  const html=typeof value==='string'&&/^\s*(?:<!doctype\s+html\b|<html\b)/i.test(value);
+  const fallback=`Hosted processing returned HTTP ${response.status}${html?' (HTML response)':''}. Your recording and words are saved.`;
+  throw new AuthoringServiceError(response.status,response.status===401?'Sign in to process on this phone. Your recording is saved.':typeof value?.error==='string'?value.error:fallback);
+ }
  return {status:response.status,value};
 }
 async function process(body:Record<string,unknown>):Promise<any>{
