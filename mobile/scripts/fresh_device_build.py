@@ -154,7 +154,7 @@ def verify_bundle(path, bundle, team, started, now, runner, private_dir, records
         raise SigningError('Actual signed entitlements differ from the development scope.')
     with tempfile.TemporaryDirectory(prefix='certificate-', dir=private_dir) as directory:
         prefix = str(Path(directory) / 'signer')
-        command(['codesign', '-d', '--extract-certificates', prefix, str(path)], runner)
+        command(['codesign', '-d', '--extract-certificates=' + prefix, str(path)], runner)
         try:
             certificate = Path(prefix + '0').read_bytes()
         except OSError:

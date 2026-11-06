@@ -92,7 +92,9 @@ class SigningTests(unittest.TestCase):
                 team = 'WRONG' if self.wrong_signer_team else TEAM
                 stderr = f'Identifier={bundle}\nTeamIdentifier={team}\n'.encode()
             elif '--extract-certificates' in args:
-                prefix = args[args.index('--extract-certificates') + 1]
+                raise subprocess.CalledProcessError(1, args)
+            elif any(arg.startswith('--extract-certificates=') for arg in args):
+                prefix = next(arg.split('=', 1)[1] for arg in args if arg.startswith('--extract-certificates='))
                 Path(prefix + '0').write_bytes(b'other' if self.bad_certificate else b'signer')
         return subprocess.CompletedProcess(args, 0, stdout, stderr)
 
