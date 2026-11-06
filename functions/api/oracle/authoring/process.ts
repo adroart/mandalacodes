@@ -57,9 +57,14 @@ export async function onRequestPost({request,env}:Context){
    const input=safeAssimilation(body.assimilation);
    const response=await requestWriting(provider,24000,[{role:'system',content:assimilationInstructions.replace('Return ONLY an artifact assimilation.json containing exactly','Return ONLY a JSON object containing exactly')+' Return the object itself, without an artifact envelope or Markdown fences.'},{role:'user',content:JSON.stringify(input)}]);
    if(!response.ok)return json({error:'Hosted review could not finish. Your words are saved.'},502);
-   const result=await response.json() as any;
+   const preserveWords=(stage:'provider_json'|'content_json'|'evidence')=>{
+    console.warn('oracle_authoring_review_failure',{operation:'assimilate-sections',provider:provider.provider,stage,reason:stage==='evidence'?'invalid_evidence':'invalid_json'});
+    return json({assimilation:validateAssimilation({sections:[],unassigned:[{text:input.words,reason:'AI review could not prepare these words reliably. Choose their section and review the exact saved transcript.'}]},input)});
+   };
+   let result:any;try{result=await response.json();}catch{return preserveWords('provider_json');}
    if(!finishedWriting(result))return json({error:'Hosted review could not finish. Your words are saved.'},502);
-   return json({assimilation:validateAssimilation(JSON.parse(result.choices?.[0]?.message?.content??'{}'),input)});
+   let candidate:any;try{candidate=JSON.parse(result.choices[0].message.content);}catch{return preserveWords('content_json');}
+   try{return json({assimilation:validateAssimilation(candidate,input)});}catch{return preserveWords('evidence');}
   }
   if(body.operation==='transcribe'){
    if(!env.GROQ_API_KEY)return json({error:'Hosted transcription is not configured. Your recording is saved.'},503);
