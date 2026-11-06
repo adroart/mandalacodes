@@ -22,6 +22,23 @@ function finishedWriting(value:any):boolean {
  const choice=value?.choices?.[0];
  return !!choice&&(!choice.finish_reason||choice.finish_reason==='stop')&&!choice.message?.refusal&&typeof choice.message?.content==='string'&&!!choice.message.content.trim();
 }
+type TranscriptionFailureReason='credentials'|'rate_limit'|'file_size'|'audio_format'|'model'|'timestamp_options'|'request_options'|'unclassified'|'non_json';
+/** Inspect provider detail in memory; only a closed category may reach diagnostics. */
+async function transcriptionFailureReason(response:Response):Promise<TranscriptionFailureReason>{
+ if(response.status===401)return 'credentials';
+ if(response.status===429)return 'rate_limit';
+ if(response.status===413)return 'file_size';
+ let error:any;try{error=(await response.json() as any)?.error;}catch{return 'non_json';}
+ const detail=[error?.code,error?.type,error?.message].filter((value):value is string=>typeof value==='string').map(value=>value.slice(0,4000)).join('\n');
+ if(/api[_ -]?key|authenticat|unauthoriz|invalid[_ -]?credential/i.test(detail))return 'credentials';
+ if(/rate[_ -]?limit|quota|too many requests/i.test(detail))return 'rate_limit';
+ if(/file.{0,24}(?:size|large)|(?:size|large).{0,24}file|payload.{0,20}(?:large|size)|too.{0,8}large/i.test(detail))return 'file_size';
+ if(/timestamp|granularit/i.test(detail))return 'timestamp_options';
+ if(/model/i.test(detail))return 'model';
+ if(/audio|codec|decod|corrupt|invalid_file|file.{0,20}format|format.{0,20}file/i.test(detail))return 'audio_format';
+ if(/parameter|argument|response[_ -]?format|invalid_request|request.{0,20}(?:option|body)/i.test(detail))return 'request_options';
+ return 'unclassified';
+}
 /** Credentials stay in Pages secrets. No anonymous proxy or caller-selected provider URL/model. */
 export async function onRequestPost({request,env}:Context){
  const auth=await authorize(request,env);if(auth instanceof Response)return auth;
@@ -43,7 +60,10 @@ export async function onRequestPost({request,env}:Context){
    const bytes=decodeAudio(body.audioBase64);const form=new FormData();
    form.set('file',new File([bytes],body.mimeType.includes('mp4')?'recording.m4a':'recording.webm',{type:body.mimeType}));form.set('prompt',['A private Oracle reflection. Preserve natural words and punctuation.',Number.isInteger(body.context?.cardNumber)?`Card ${body.context.cardNumber}.`:'',buildWordsPrompt(undefined,{...ORACLE_WORDS_PROFILE,intro:'',budget:90}).prompt,...[...(Array.isArray(body.context?.sectionTitles)?body.context.sectionTitles:[]),...(Array.isArray(body.context?.glossary)?body.context.glossary:[])].filter((s:unknown)=>typeof s==='string').slice(0,40)].filter(Boolean).join(' ').slice(0,1000));form.set('model','whisper-large-v3-turbo');form.set('response_format','verbose_json');form.append('timestamp_granularities[]','word');form.append('timestamp_granularities[]','segment');
    const response=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',{method:'POST',headers:{Authorization:`Bearer ${env.GROQ_API_KEY}`},body:form,signal:AbortSignal.timeout(90000)});
-   if(!response.ok)return json({error:'Hosted transcription could not finish. Your recording is saved.'},502);
+   if(!response.ok){
+    console.warn('oracle_authoring_provider_failure',{operation:'transcribe',provider:'groq',status:response.status,reason:await transcriptionFailureReason(response)});
+    return json({error:'Hosted transcription could not finish. Your recording is saved.'},502);
+   }
    const result=await response.json() as any;
    const words=Array.isArray(result.words)?result.words.filter((w:any)=>typeof w.word==='string'&&Number.isFinite(w.start)&&Number.isFinite(w.end)).map((w:any)=>({text:w.word,startMs:Math.max(0,Math.round(w.start*1000)),endMs:Math.min(body.durationMs,Math.round(w.end*1000))})):[];
    const segments=Array.isArray(result.segments)?result.segments.filter((s:any)=>typeof s.text==='string'&&Number.isFinite(s.start)&&Number.isFinite(s.end)).map((s:any)=>{const startMs=Math.max(0,Math.round(s.start*1000)),endMs=Math.min(body.durationMs,Math.round(s.end*1000));return {startMs,endMs,text:s.text,...withKnownFixes(s.text),sectionId:body.sectionId??null,timing:'provider',words:words.filter((w:any)=>w.startMs>=startMs&&w.startMs<endMs&&w.endMs>=w.startMs)};}).filter((s:any)=>s.endMs>s.startMs):[];

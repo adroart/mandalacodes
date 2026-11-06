@@ -27,6 +27,14 @@ Xcode 26 or newer is required; this project was prepared using Xcode 27.1.
 Device builds require the team's Apple account and signing credentials in Xcode.
 They do not install or launch the app.
 
+Free Personal Team installs use seven-day provisioning profiles. Xcode can reuse
+a still-valid profile, so a new build number or installation does not restart
+that clock. Before installing, record the actual profile expiration for the app
+and every extension, reject expired profiles, and report the remaining validity.
+Renew the existing bundle and signing identity without uninstalling the app;
+uninstalling can remove saved recordings. Development installs do not require
+App Store submission or paid enrollment. See [Apple's account limits](https://developer.apple.com/help/account/basics/about-your-developer-account/).
+
 To install through Xcode, open `mobile/ios/App/App.xcodeproj`, select the connected
 iPhone and the **App** scheme, then run. The home-screen name is **Oracle**.
 An unlocked, paired phone with Developer Mode enabled is required.
