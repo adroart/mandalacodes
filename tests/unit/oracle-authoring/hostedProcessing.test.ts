@@ -14,7 +14,7 @@ const complete=(output:unknown,finish_reason='stop')=>new Response(JSON.stringif
 function writingSession(){return {schema:1,id:'session',createdAt:'2026-10-31T12:00:00Z',source:{cardNumber:2,revision:'fixture',hash:'fixture-hash',markdown:original,sections:[{id:'DESIGN',title:'Human Design',start:0,end:original.length}]},captures:[],markers:[],transcript:[{id:'transcript',captureId:'capture',startMs:0,endMs:1000,raw:words,corrected:words,sectionId:'DESIGN',assignment:'manual',timing:'provider',provider:'fixture',receivedAt:'2026-10-31T12:00:00Z'}],proposals:[],approvals:[]};}
 describe('authenticated hosted authoring provider selection',()=>{
  beforeEach(()=>{vi.clearAllMocks();vi.mocked(requireUser).mockResolvedValue({userId:'owner'} as never);});
- afterEach(()=>vi.unstubAllGlobals());
+ afterEach(()=>{vi.unstubAllGlobals();vi.restoreAllMocks();});
  it('keeps authentication and origin checks ahead of all provider calls',async()=>{
   const upstream=vi.fn();vi.stubGlobal('fetch',upstream);vi.mocked(requireUser).mockResolvedValue(new Response('',{status:401}));
   expect((await call({operation:'assimilate-sections',assimilation},groq)).status).toBe(401);expect(upstream).not.toHaveBeenCalled();
@@ -54,11 +54,31 @@ describe('authenticated hosted authoring provider selection',()=>{
   ['invented wording',{...faithful,sections:[{...faithful.sections[0],text:words+' An invented sentence.'}]}],
   ['unsupported evidence',{...faithful,sections:[{...faithful.sections[0],evidenceQuotes:['Words never spoken.']}]}],
   ['unknown section',{...faithful,sections:[{...faithful.sections[0],sectionId:'2/BODY/unknown'}]}],
- ])('rejects %s instead of returning an applyable result',async(_label,output)=>{
-  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(complete(output)));const response=await call({operation:'assimilate-sections',assimilation},groq);expect(response.status).toBe(400);const result=await response.json() as any;expect(result.assimilation).toBeUndefined();expect(result.error).toContain('saved');
+  ['omitted speech',{...faithful,sections:[{...faithful.sections[0],text:'I trust',evidenceQuotes:['I trust']}]}],
+  ['empty review',{sections:[],unassigned:[]}],
+ ])('rejects %s and returns only the exact saved words for human placement',async(_label,output)=>{
+  const warn=vi.spyOn(console,'warn').mockImplementation(()=>undefined);
+  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(complete(output)));const response=await call({operation:'assimilate-sections',assimilation},groq);expect(response.status).toBe(200);const result=await response.json() as any;
+  expect(result.assimilation.sections).toEqual([]);expect(result.assimilation.unassigned).toEqual([{text:words,reason:expect.stringContaining('AI review could not prepare')}]);
+  expect(warn.mock.calls).toEqual([['oracle_authoring_review_failure',{operation:'assimilate-sections',provider:'groq',stage:'evidence',reason:'invalid_evidence'}]]);
+ });
+ it.each(['provider_json','content_json'] as const)('preserves every saved word when %s is malformed without logging provider content',async stage=>{
+  const warn=vi.spyOn(console,'warn').mockImplementation(()=>undefined),privateBody='private provider response with no valid JSON';
+  const response=stage==='provider_json'?new Response(privateBody,{headers:{'Content-Type':'application/json'}}):new Response(JSON.stringify({choices:[{finish_reason:'stop',message:{content:privateBody}}]}),{headers:{'Content-Type':'application/json'}});
+  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(response));const result=await call({operation:'assimilate-sections',assimilation},groq);expect(result.status).toBe(200);
+  const output=await result.json() as any;expect(output.assimilation.sections).toEqual([]);expect(output.assimilation.unassigned).toEqual([{text:words,reason:expect.stringContaining('AI review could not prepare')}]);
+  expect(JSON.stringify(output)).not.toContain(privateBody);expect(warn.mock.calls).toEqual([['oracle_authoring_review_failure',{operation:'assimilate-sections',provider:'groq',stage,reason:'invalid_json'}]]);
  });
  it('does not accept a token-limited partial completion even when its JSON parses',async()=>{
   vi.stubGlobal('fetch',vi.fn().mockResolvedValue(complete(faithful,'length')));const response=await call({operation:'assimilate-sections',assimilation},groq);expect(response.status).toBe(502);expect(await response.json()).toMatchObject({error:expect.stringContaining('saved')});
+ });
+ it('retains an honest error for a refused review instead of presenting a completed review',async()=>{
+  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify({choices:[{finish_reason:'stop',message:{content:JSON.stringify(faithful),refusal:'fixture refusal'}}]}),{headers:{'Content-Type':'application/json'}})));
+  const response=await call({operation:'assimilate-sections',assimilation},groq);expect(response.status).toBe(502);expect(await response.json()).not.toHaveProperty('assimilation');
+ });
+ it('does not turn a provider network failure into a completed review',async()=>{
+  const warn=vi.spyOn(console,'warn').mockImplementation(()=>undefined);vi.stubGlobal('fetch',vi.fn().mockRejectedValue(new TypeError('private provider network failure')));
+  const response=await call({operation:'assimilate-sections',assimilation},groq);expect(response.status).toBe(400);expect(await response.json()).not.toHaveProperty('assimilation');expect(warn).not.toHaveBeenCalled();
  });
  it('uses the selected provider for legacy proposals and attributes the author accurately',async()=>{
   const proposals=[{sectionId:'DESIGN',text:words,evidenceIds:['transcript'],feedback:{changes:'Preserved the spoken words.',uncertainWords:'',omissions:'',contradictions:'',unsupportedAdditions:''}}];
