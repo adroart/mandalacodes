@@ -1,6 +1,7 @@
 node_modules/
 build/
 scaffold/
+scripts/__pycache__/
 .DS_Store
 *.log
 ios/App/App/public/

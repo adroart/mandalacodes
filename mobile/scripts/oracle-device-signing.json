@@ -1,0 +1,12 @@
+{
+  "team": "X2RS69BS48",
+  "bundles": {
+    "": "com.adrian.oracle",
+    "PlugIns/OracleWidget.appex": "com.adrian.oracle.widget"
+  },
+  "project": "ios/App/App.xcodeproj",
+  "scheme": "App",
+  "configuration": "Debug",
+  "app_name": "App.app",
+  "derived_data_root": "build/device"
+}
