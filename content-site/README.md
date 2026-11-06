@@ -7,11 +7,11 @@ git, readable by humans and AI alike.
 ## Writing workflow
 
 ```bash
-npm run write        # from the repo root (or `npm run dev` in here)
+npm run write        # from the repo root (or this directory)
 ```
 
-Then open <http://localhost:4321/learn/keystatic> — a full editing UI with
-rich text, tags, dates, and a draft toggle. Every save writes a markdown file
+Then open <http://127.0.0.1:4322/keystatic> — a full editing UI with
+rich text, tags, dates, artwork uploads, author attribution, and a draft toggle. Every save writes a markdown file
 to `src/content/articles/`. Commit and push to `main` and Cloudflare Pages
 publishes it.
 
@@ -19,8 +19,11 @@ Prefer a text editor? Just create a `.mdoc` file by hand — Keystatic is a UI
 over the files, not a database. See `what-is-a-mandala.mdoc` for the
 frontmatter shape.
 
-Articles with `draft: true` are excluded from the site, RSS, sitemap, and
-llms.txt until you flip the flag.
+New articles start as drafts. The editor preview opens a private local page for
+drafts; only articles with `draft: false` appear in the published site, RSS,
+sitemap, and llms.txt. Uploaded artwork lives in
+`content-site/public/images/articles/` and is published under
+`/learn/images/articles/`. Save the image file with the article.
 
 ## How it ships
 
