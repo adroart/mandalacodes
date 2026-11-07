@@ -17,7 +17,6 @@ interface Props {
 }
 
 const { fieldValue, label } = Astro.props
-const base = import.meta.env.BASE_URL
 
 const articles = await getPublishedArticles()
 const views = articles.map((a, i) => toView(a, i))
@@ -28,7 +27,7 @@ const jsonLd = [
     '@type': 'CollectionPage',
     name: `${label} · Learn · Mandala Codes`,
     description: `Articles on mandalas in the field of ${label}.`,
-    url: new URL(Astro.url.pathname, Astro.site).href,
+    url: `https://mandalacodes.com/learn/category/${Astro.params.field}/`,
     isPartOf: { '@type': 'WebSite', name: 'Mandala Codes', url: 'https://mandalacodes.com' },
   },
 ]
