@@ -9,6 +9,16 @@ export interface RemoteCopy {revision:string|null;document:PrivateDocument|null}
 export class PrivateSyncConflict extends Error { constructor(){super('A newer copy exists on your account. Show the copies in your account and choose what to keep. Nothing on this phone has changed.');} }
 /** The server asked for audio this phone believed it already held. The save did not commit. */
 class MissingPrivateAudio extends Error {}
+/** The account cannot hold this session in one private copy (too many recordings or too large). Retrying cannot help until its content changes. */
+export type PrivateCopyLimit='too_many_recordings'|'document_too_large';
+export const PRIVATE_COPY_LIMIT_LINE:Record<PrivateCopyLimit,string>={
+ too_many_recordings:'This card has more recordings than one private copy can hold. Everything is still saved on this phone. Start a new session for this card to keep copying.',
+ document_too_large:'This card holds more than one private copy can keep. Everything is still saved on this phone. Start a new session for this card to keep copying.'};
+export class PrivateCopyStopped extends Error { constructor(readonly reason:PrivateCopyLimit){super(PRIVATE_COPY_LIMIT_LINE[reason]);} }
+/** Sessions the server refused for size, by account and remote id, with a fingerprint of the content refused. Lives as long as the page. */
+const stopped=new Map<string,{reason:PrivateCopyLimit;fingerprint:string}>();
+/** A finished capture's audio never changes, so its hash is kept per capture for the life of the page. */
+const hashes=new Map<string,string>();
 const MAX_AUDIO_BYTES=10*1024*1024;
 async function audioHash(blob:Blob){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');}
 function base64(bytes:Uint8Array){let result='';for(let i=0;i<bytes.length;i+=16384)result+=String.fromCharCode(...bytes.subarray(i,i+16384));return btoa(result);}
@@ -26,6 +36,7 @@ export class PrivateAuthoringSync {
  private async call(body:unknown){
   const response=await this.transport('/api/oracle/authoring/private',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(60000)});
   const result=await response.json().catch(()=>null);
+  if(response.status===413&&(result?.code==='too_many_recordings'||result?.code==='document_too_large'))throw new PrivateCopyStopped(result.code);
   if(response.status===409)throw new PrivateSyncConflict();
   if(response.status===400&&(result?.missingAudio===true||/Upload all private audio/.test(result?.error??'')))throw new MissingPrivateAudio();
   if(!response.ok)throw Error(response.status===401?'Sign in to keep a private copy. Everything is still on this phone.':result?.error??'Your account copy could not be reached. Everything is still on this phone.');
@@ -45,11 +56,13 @@ export class PrivateAuthoringSync {
  async save(store:AudioSource,sessionId:string,expectedRevision:string|null,resume:ResumePosition|null,workspace:Record<string,unknown>={},remoteId=sessionId,accountId?:string):Promise<string>{
   const saved=await store.load(sessionId);if(!saved)throw Error('Session not found');
   if(saved.session.captures.some(c=>c.status==='recording'))throw Error('Finish the current take before saving a copy.');
-  const audio:{captureId:string;mimeType:string;hash:string}[]=[],blobs=new Map<string,Blob>(),details=new Map<string,AudioDetails>();
-  for(const capture of saved.session.captures.filter(c=>c.status!=='empty')){const blob=await store.audio(sessionId,capture.id),hash=await audioHash(blob);audio.push({captureId:capture.id,mimeType:capture.mimeType,hash});blobs.set(hash,blob);if(!details.has(hash))details.set(hash,audioDetails(saved.session,capture));}
-  // A restored local copy has a fresh id. The remote document retains its stable id.
-  const session={...saved.session,id:remoteId};
+  // A session the server already refused for size stays stopped until its content changes: nothing is hashed or sent.
   const {sha256}=await import('../../../lib/oracle/authoring/workflow');
+  const session={...saved.session,id:remoteId},stopKey=`${accountId??''}/${remoteId}`,fingerprint=await sha256(JSON.stringify({session,workspace}));
+  const refused=stopped.get(stopKey);if(refused){if(refused.fingerprint===fingerprint)throw new PrivateCopyStopped(refused.reason);stopped.delete(stopKey);}
+  const audio:{captureId:string;mimeType:string;hash:string}[]=[],captureOf=new Map<string,string>(),details=new Map<string,AudioDetails>();
+  for(const capture of saved.session.captures.filter(c=>c.status!=='empty')){const cacheKey=`${sessionId}/${capture.id}`;let hash=hashes.get(cacheKey);if(!hash){hash=await audioHash(await store.audio(sessionId,capture.id));hashes.set(cacheKey,hash);}audio.push({captureId:capture.id,mimeType:capture.mimeType,hash});if(!captureOf.has(hash))captureOf.set(hash,capture.id);if(!details.has(hash))details.set(hash,audioDetails(saved.session,capture));}
+  // A restored local copy has a fresh id. The remote document retains its stable id.
   const document={format:'oracle-authoring-review',version:1,session,reviewHash:await sha256(JSON.stringify(session)),audio,receipts:await store.receipts(sessionId),resume,workspace};
   const upload=async(trustRecord:boolean)=>{
    const known=trustRecord&&accountId?knownPrivateAudio(accountId):new Set<string>(),sent=new Set<string>();
@@ -57,13 +70,14 @@ export class PrivateAuthoringSync {
    if(trustRecord&&accountId){const unknown=[...new Set(audio.map(item=>item.hash))].filter(hash=>!known.has(hash));if(unknown.length)for(const hash of await this.held(unknown)){known.add(hash);rememberPrivateAudio(accountId,[hash]);}}
    for(const item of audio){
     if(known.has(item.hash)||sent.has(item.hash))continue;
-    const blob=blobs.get(item.hash)!;if(blob.size>MAX_AUDIO_BYTES)throw Error('One recording is larger than 10 MB and cannot be copied. It is still on this phone.');
+    const blob=await store.audio(sessionId,captureOf.get(item.hash)!);if(blob.size>MAX_AUDIO_BYTES)throw Error('One recording is larger than 10 MB and cannot be copied. It is still on this phone.');
     // One capture per request; its bytes are encoded only for this request.
     const result=await this.call({operation:'audio-put',hash:item.hash,mimeType:item.mimeType,details:details.get(item.hash),audioBase64:base64(new Uint8Array(await blob.arrayBuffer()))});
     sent.add(item.hash);if(accountId&&result?.hash===item.hash)rememberPrivateAudio(accountId,[item.hash]);
    }
   };
   const commit=async()=>(await this.call({operation:'save',id:remoteId,expectedRevision,document})).revision as string;
+  try{
   await upload(true);
   try{return await commit();}
   catch(error){
@@ -73,6 +87,7 @@ export class PrivateAuthoringSync {
    try{return await commit();}
    catch(again){if(again instanceof MissingPrivateAudio)throw Error('Your account could not keep every recording. Everything is still on this phone.');throw again;}
   }
+  }catch(error){if(error instanceof PrivateCopyStopped)stopped.set(stopKey,{reason:error.reason,fingerprint});throw error;}
  }
  /** Restore as a new local copy through the existing validated importer. No local overwrite, even after conflict. */
  async restore(store:AuthoringStore,id:string,accountId?:string){

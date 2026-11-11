@@ -86,4 +86,17 @@ describe('private audio details, audio-has, better-get and missingAudio',()=>{
   vi.mocked(requireAdmin).mockResolvedValue(new Response('',{status:401}));
   expect((await sync({request:request({operation:'better-get',hashes:[mine]}),env:{ORACLE_PRIVATE:b as any}})).status).toBe(401);
  });
+ it('accepts 101 and 600 audio references, refuses 601 with 413 too_many_recordings, and keeps malformed documents at 400',async()=>{
+  const refs=(n:number)=>Array.from({length:n},(_,i)=>({captureId:'c'+i,hash:String(i%10).repeat(64)}));
+  const env=()=>({ORACLE_PRIVATE:{put:vi.fn().mockResolvedValue({etag:'e'}),head:vi.fn().mockResolvedValue({})} as any});
+  const save=(document:unknown)=>sync({request:request({operation:'save',id:'session',expectedRevision:null,document}),env:env()});
+  for(const n of [101,600])expect((await save({session:{schema:1,id:'session'},audio:refs(n)})).status).toBe(200);
+  const many=await save({session:{schema:1,id:'session'},audio:refs(601)});
+  expect(many.status).toBe(413);expect(await many.json()).toEqual({error:expect.stringMatching(/^[^.]+\. Your local work is safe\.$/),code:'too_many_recordings',retryable:false});
+  const bad=await save({session:{schema:1,id:'session'},audio:'nope'});expect(bad.status).toBe(400);expect(await bad.json()).toMatchObject({code:'invalid_request',error:'Invalid document.'});
+ });
+ it('refuses a document over 6 MiB with 413 document_too_large',async()=>{
+  const response=await sync({request:request({operation:'save',id:'session',expectedRevision:null,document:{session:{schema:1,id:'session',pad:'x'.repeat(6*1024*1024)},audio:[]}}),env:{ORACLE_PRIVATE:{put:vi.fn(),head:vi.fn()} as any}});
+  expect(response.status).toBe(413);expect(await response.json()).toMatchObject({code:'document_too_large',retryable:false});
+ });
 });

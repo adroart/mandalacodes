@@ -5,7 +5,7 @@ import {SectionDraftStore,type SectionDraftSession} from '../../../lib/oracle/au
 import {WorkingCardStore} from '../../../lib/oracle/authoring/humanDrafts';
 import {sourceSnapshot} from '../../../lib/oracle/authoring/workflow';
 import {currentSectionTexts} from '../../../src/mobile/authoring/sectionWorkflow';
-import {PrivateAuthoringSync,acknowledgePrivateSync,loadPrivateSyncLink,type ResumePosition} from '../../../src/mobile/authoring/privateSync';
+import {PrivateAuthoringSync,PrivateCopyStopped,PRIVATE_COPY_LIMIT_LINE,type PrivateCopyLimit,acknowledgePrivateSync,loadPrivateSyncLink,type ResumePosition} from '../../../src/mobile/authoring/privateSync';
 import {QuietContinuity,voiceWorkspace,readVoiceWorkspace,workingSyncChoices,remapLinkedVoiceReviews,remapWorkspaceEvidence,linkedVoiceIds,voicePeers,validateVoiceWorkspaceAudio,safeResume,privateCopyEnabled,PRIVATE_COPY_QUIET_MS,type WorkingSyncChoice,type VoiceWorkspace} from '../../../src/mobile/authoring/voiceWorkspaceSync';
 import {requestPersistence,storageUsage,storageLine} from '../../../src/mobile/authoring/storageHealth';
 import './VoiceSyncTools.css';
@@ -17,16 +17,16 @@ function savedAgo(at:number,now:number){const minutes=Math.floor((now-at)/60000)
 function readingName(rows:SectionDraftSession[],cardNumber:number,lensId:string){const section=rows.flatMap(row=>row.sections).find(s=>s.cardNumber===cardNumber&&s.lensId===lensId);return section?.path?.[0]??section?.title??'this reading';}
 export default function VoiceSyncTools({draft,savedAudio,resume,onRestored}:VoiceSyncToolsProps){
  const account=useAccount(),sync=useMemo(()=>new PrivateAuthoringSync(account.fetchAuthed),[account.fetchAuthed]);
- const [automatic,setAutomatic]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState(''),[tick,setTick]=useState(0);
+ const [automatic,setAutomatic]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState(''),[tick,setTick]=useState(0),[stopped,setStopped]=useState<PrivateCopyLimit|null>(null);
  const [remote,setRemote]=useState<{id:string;revision:string;updatedAt:string}[]>([]),[cursor,setCursor]=useState<string|null>(null),[listed,setListed]=useState(false),[candidate,setCandidate]=useState<Candidate|null>(null);
  const [space,setSpace]=useState(''),[savedAt,setSavedAt]=useState<number|null>(null),[now,setNow]=useState(()=>Date.now());
  const gate=useRef(new QuietContinuity()),lock=useRef(false),latest=useRef({draft,savedAudio,resume});latest.current={draft,savedAudio,resume};
  const optKey=`oracle.voice.continuity.v1/${account.userId??'guest'}`;
- useEffect(()=>{let stored:string|null=null;try{stored=localStorage.getItem(optKey);}catch{}setAutomatic(privateCopyEnabled(account.isSignedIn&&!!account.userId,stored));gate.current=new QuietContinuity();setCandidate(null);setRemote([]);setListed(false);setError('');setNotice('');setSavedAt(null);},[optKey,account.isSignedIn]);
+ useEffect(()=>{let stored:string|null=null;try{stored=localStorage.getItem(optKey);}catch{}setAutomatic(privateCopyEnabled(account.isSignedIn&&!!account.userId,stored));gate.current=new QuietContinuity();setCandidate(null);setRemote([]);setListed(false);setError('');setNotice('');setSavedAt(null);setStopped(null);},[optKey,account.isSignedIn]);
  useEffect(()=>{const stopWorking=working.subscribe(()=>setTick(n=>n+1)),stopDrafts=drafts.subscribe(()=>setTick(n=>n+1));return()=>{stopWorking();stopDrafts();};},[]);
  useEffect(()=>{let live=true;void requestPersistence().then(()=>storageUsage()).then(usage=>{if(live&&usage)setSpace(storageLine(usage));});return()=>{live=false;};},[savedAudio?.version]);
  useEffect(()=>{if(savedAt===null)return;const timer=setInterval(()=>setNow(Date.now()),60000);return()=>clearInterval(timer);},[savedAt]);
- async function perform(action:()=>Promise<void>){if(lock.current)return;lock.current=true;setBusy(true);setError('');try{await action();}catch(e){setError(e instanceof Error?e.message:'The copy could not be saved. Everything is still on this phone.');}finally{lock.current=false;setBusy(false);}}
+ async function perform(action:()=>Promise<void>){if(lock.current)return;lock.current=true;setBusy(true);setError('');try{await action();}catch(e){if(e instanceof PrivateCopyStopped){setStopped(e.reason);return;}setError(e instanceof Error?e.message:'The copy could not be saved. Everything is still on this phone.');}finally{lock.current=false;setBusy(false);}}
  async function save(){
   if(!account.userId)throw Error('Sign in to keep a private copy.');
   const current=latest.current,sessionId=current.draft.captureSessionId??current.savedAudio?.session.id;
@@ -41,7 +41,7 @@ export default function VoiceSyncTools({draft,savedAudio,resume,onRestored}:Voic
   const position:ResumePosition={...current.resume,cardNumber:current.draft.cardNumber,captureId:current.draft.captureId};
   const remoteId=link?.remoteId??saved.session.id;
   const revision=await sync.save(audio,saved.session.id,link?.revision??null,position,{voice:workspace},remoteId,account.userId);
-  acknowledgePrivateSync(account.userId,current.draft.id,{remoteId,revision});gate.current.acknowledge(JSON.stringify({draft:current.draft,savedVersion:current.savedAudio?.version,resume:current.resume,tick}));setNotice('');const at=Date.now();setSavedAt(at);setNow(at);
+  acknowledgePrivateSync(account.userId,current.draft.id,{remoteId,revision});gate.current.acknowledge(JSON.stringify({draft:current.draft,savedVersion:current.savedAudio?.version,resume:current.resume,tick}));setNotice('');setStopped(null);const at=Date.now();setSavedAt(at);setNow(at);
  }
  const recording=draft.state==='recording'||!!savedAudio?.session.captures.some(c=>c.status==='recording');
  useEffect(()=>{
@@ -87,9 +87,9 @@ export default function VoiceSyncTools({draft,savedAudio,resume,onRestored}:Voic
  if(!account.isSignedIn)return <section className="voice-sync-tools" aria-label="Private copy"><h2>Private copy</h2><p>Recordings are kept only on this phone. Sign in to keep a private copy in your account as well.</p><a href="/account">Sign in</a>{spaceLine}</section>;
  const rows=candidate?[candidate.draft,...candidate.linked]:[];
  return <section className="voice-sync-tools" aria-label="Private copy"><h2>Private copy</h2>
-  <p>{automatic?'Your recordings and writing are copied to your account as you work, so this phone is not the only copy.':'Recordings are kept only on this phone.'}</p>
+  {stopped?<p role="status">{PRIVATE_COPY_LIMIT_LINE[stopped]}</p>:<p>{automatic?'Your recordings and writing are copied to your account as you work, so this phone is not the only copy.':'Recordings are kept only on this phone.'}</p>}
   <label className="voice-sync-opt"><input type="checkbox" role="switch" checked={automatic} onChange={e=>{const enabled=e.target.checked;setAutomatic(enabled);try{localStorage.setItem(optKey,String(enabled));}catch{}}}/>Copy my recordings to my account</label>
-  {automatic&&<p className="voice-sync-note">Copies wait until you stop recording. If another device changed this card, both versions are kept for you to choose.</p>}
+  {automatic&&!stopped&&<p className="voice-sync-note">Copies wait until you stop recording. If another device changed this card, both versions are kept for you to choose.</p>}
   {savedAt!==null&&<p className="voice-sync-saved" role="status">Saved to your account {savedAgo(savedAt,now)}</p>}
   {spaceLine}
   <div className="voice-sync-actions"><button disabled={busy||recording||!draft.captureSessionId} onClick={()=>void perform(save)}>Save a copy now</button><button disabled={busy} onClick={()=>void perform(()=>list())}>Show copies in my account</button></div>

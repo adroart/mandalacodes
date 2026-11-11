@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import {beforeEach,describe,expect,it,vi} from 'vitest';
 import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
 import {createSession,sourceSnapshot} from '../../../lib/oracle/authoring/workflow';
-import {PrivateAuthoringSync,PrivateSyncConflict,knownPrivateAudio,forgetPrivateAudio,audioDetails} from '../../../src/mobile/authoring/privateSync';
+import {PrivateAuthoringSync,PrivateSyncConflict,PrivateCopyStopped,PRIVATE_COPY_LIMIT_LINE,knownPrivateAudio,forgetPrivateAudio,audioDetails} from '../../../src/mobile/authoring/privateSync';
 /** `current` answers audio-has and flags missing audio as the server now does; without it the server is the older one. */
 function server(current=false){
  const audio=new Set<string>(),calls:any[]=[];let conflict=false,revision=0;
@@ -94,5 +94,25 @@ describe('private copy audio by hash',()=>{
   const s=server(true),sync=new PrivateAuthoringSync(s.transport),local=store();
   const first=await sync.save(local,'session',null,null,{},'session','owner');s.audio.clear();
   expect(await sync.save(local,'session',first,null,{},'session','owner')).toBe('r2');expect(s.puts().length).toBe(4);
+ });
+ it('stops after a too_many_recordings answer: no retry, no audio again, until the content changes; hashes are not repeated',async()=>{
+  const s=server(true),inner=s.transport;let refuse=true;
+  const transport=vi.fn(async(path:string,init?:RequestInit)=>{const body=JSON.parse(String(init!.body));if(body.operation==='save'&&refuse){s.calls.push(body);return Response.json({error:'Too many.',code:'too_many_recordings',retryable:false},{status:413});}return inner(path,init);});
+  const sync=new PrivateAuthoringSync(transport),local=store([{id:'h1',status:'ready'},{id:'h2',status:'ready'}]);
+  await expect(sync.save(local,'hs',null,null,{},'hs','owner')).rejects.toBeInstanceOf(PrivateCopyStopped);
+  const audioReads=local.audio.mock.calls.length,calls=s.calls.length,puts=s.puts().length;
+  for(let n=0;n<3;n++)await expect(sync.save(local,'hs',null,{positionMs:n} as any,{},'hs','owner')).rejects.toMatchObject({reason:'too_many_recordings'});
+  expect(s.calls.length).toBe(calls);expect(s.puts().length).toBe(puts);expect(local.audio.mock.calls.length).toBe(audioReads);
+  refuse=false;const changed=await sync.save(local,'hs',null,null,{voice:'changed'},'hs','owner');expect(changed).toBe('r1');
+  expect(local.audio.mock.calls.filter(c=>c[0]==='hs').length).toBe(audioReads);// hashed once per capture; upload did not read anything new either
+ });
+ it('stops on document_too_large the same way',async()=>{
+  const s=server(true),sync=new PrivateAuthoringSync(async()=>Response.json({error:'Big.',code:'document_too_large',retryable:false},{status:413}));void s;
+  const local=store([{id:'d1',status:'ready'}]);
+  await expect(sync.save(local,'ds',null,null,{},'ds','owner')).rejects.toMatchObject({reason:'document_too_large'});
+ });
+ it('the stopped lines are plain: they name the way forward and never show a status, "document" or the raw server text',()=>{
+  expect(PRIVATE_COPY_LIMIT_LINE.too_many_recordings).toBe('This card has more recordings than one private copy can hold. Everything is still saved on this phone. Start a new session for this card to keep copying.');
+  for(const line of Object.values(PRIVATE_COPY_LIMIT_LINE)){expect(line).toMatch(/still saved on this phone\. Start a new session/);expect(line).not.toMatch(/document|Invalid|\b4\d\d\b/i);}
  });
 });

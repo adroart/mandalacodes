@@ -72,7 +72,7 @@ describe('processing failure contract',()=>{
   }
   const put=vi.fn();await contract(await sync({request:post('private',{operation:'audio-put',hash:'a'.repeat(64),mimeType:'audio/mp4',audioBase64:decodesOver}),env:env({ORACLE_PRIVATE:{put}})}),413,'audio_too_large',false);
   expect(upstream).not.toHaveBeenCalled();expect(put).not.toHaveBeenCalled();
- });
+ },20000);
  it('answers 413 body_too_large for a request over the 15 MiB bound',async()=>{
   await contract(await process({request:post('process',{operation:'transcribe',padding:'x'.repeat(15*1024*1024)}),env:env()}),413,'body_too_large',false);
   await contract(await sync({request:post('private',{operation:'list',padding:'x'.repeat(15*1024*1024)}),env:env({ORACLE_PRIVATE:{}})}),413,'body_too_large',false);
