@@ -6,7 +6,7 @@ export type StudioBarProps=Pick<VoiceStudio,
  'savedCaptures'|'results'|'active'|'integrating'|'step'|'progressText'|'authorship'|'authorshipFailed'|'screenTitle'
 >;
 
-/** The bar across the top of every screen: Close or Back, the screen's title, and its own buttons. */
+/** The bar across the top of every screen: Close or Back, the screen's title, and its own buttons. The title (`data-screen-title`) takes focus when the screen changes. */
 export default function StudioBar({view,locked,close,openView,pickerReturn,setPlacing,source,result,position,reviewList,queued,savedCaptures,results,active,integrating,step,progressText,authorship,authorshipFailed,screenTitle}:StudioBarProps){
  const back=(to:View)=><button className="vs-icon" aria-label="Back" onClick={()=>openView(to)}>Back</button>;
  return <header className="vs-bar" data-card-header={view==='work'||undefined}>
@@ -15,12 +15,12 @@ export default function StudioBar({view,locked,close,openView,pickerReturn,setPl
    :view==='review'
     ?back('work')
     :back(view==='audio'||view==='sessions'?'settings':view==='settings'?'work':view==='sections'?pickerReturn.current:view==='unplaced'&&!results.length?'work':'review')}
-  {view==='work'&&<div className="vs-bar-title"><strong>Code {source.cardNumber} · {CARD_BY_NUMBER.get(source.cardNumber)?.card_name??'Oracle'}</strong></div>}
-  {view==='review'&&<button className="vs-bar-title vs-bar-title--button" aria-label="Choose a section to review" onClick={()=>{pickerReturn.current='review';setPlacing(null);openView('sections');}}>
+  {view==='work'&&<div className="vs-bar-title" tabIndex={-1} data-screen-title><strong>Code {source.cardNumber} · {CARD_BY_NUMBER.get(source.cardNumber)?.card_name??'Oracle'}</strong></div>}
+  {view==='review'&&<button className="vs-bar-title vs-bar-title--button" data-screen-title aria-label="Choose a section to review" onClick={()=>{pickerReturn.current='review';setPlacing(null);openView('sections');}}>
    <strong>{result?.applied?'Applied':'Review'}</strong>
    <small>{position>=0?`${position+1} of ${reviewList.length}`:queued.length?'Processing':savedCaptures.length?'Transcript pending':'Nothing to review yet'}</small>
   </button>}
-  {view!=='work'&&view!=='review'&&<div className="vs-bar-title"><strong>{screenTitle[view]}</strong></div>}
+  {view!=='work'&&view!=='review'&&<div className="vs-bar-title" tabIndex={-1} data-screen-title><strong>{screenTitle[view]}</strong></div>}
   <div className="vs-bar-end">
    {view==='work'&&<>
     <button className="vs-icon vs-only-narrow" aria-label="Sections" onClick={()=>{pickerReturn.current='work';setPlacing(null);openView('sections');}}><span>Sections</span></button>
