@@ -16,6 +16,7 @@ import { startVoiceRouting, type VoiceRouteEvidence, type VoiceRoutingStatus } f
 import { phraseReplayBounds, type VoiceReplayBounds } from '../../../../src/mobile/authoring/voiceTargets';
 import { enqueueVoicePhraseRevision } from '../../../../src/mobile/authoring/voicePhraseRevision';
 import { WorkingCardStore } from '../../../../lib/oracle/authoring/humanDrafts';
+import { useSendToCard } from './useSendToCard';
 import { cardSectionAuthorship, readingOriginSpans, namedSectionOriginSpans } from '../../../../lib/oracle/authoring/sectionAuthorship';
 import { useAccount } from '../../../../lib/account/useAccount';
 import { useNativeAccountActions } from '../../../../src/mobile/account/NativeAccountProvider';
@@ -1051,6 +1052,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             report(e);
         }
     }
+    const sendToCard = useSendToCard({ source, services, visible: view === 'settings', recording: !!active, preparing: processing || queued.length > 0 });
     return {
         // Props the screens need.
         source, services, onClose, onEarlier, onNavigateCard, initialAnchors,
@@ -1077,6 +1079,8 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         record, stop, togglePause, edit, choosePassage, checkWords, integrate, playCapture, listen, hear, addAudio, discard,
         showAudio, close, openView, dismissToast, retrySaved, signInAndResume, titleFor, shownTitle, saveTitle, readUpdated,
         chip, step, pathFor, scopeFor, spanLabel, nextAfter, applySection, pickFromRail, place,
+        // Send finished sections to the card.
+        sendToCard,
     };
 }
 /** Everything the voice studio's screens can read from `useVoiceStudio`. */

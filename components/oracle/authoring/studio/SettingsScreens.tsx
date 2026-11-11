@@ -7,6 +7,7 @@ import {restoreDocumentedCleanup} from '../../../../src/mobile/authoring/speechC
 import CaptureShelf from '../CaptureShelf';
 import VoiceSyncTools from '../VoiceSyncTools';
 import SectionIndex,{type SectionIndexProps} from './SectionIndex';
+import SendToCard from './SendToCard';
 import {plural} from './format';
 import type {VoiceStudio} from './types';
 
@@ -59,15 +60,17 @@ export function CleanupScreen({result,section,shownTitle,integrating,patch,repor
 export type SettingsScreenProps=Pick<VoiceStudio,
  'view'|'continuous'|'setContinuous'|'handle'|'voiceCommands'|'setVoiceCommands'|'routingStatus'|'intent'|'setIntent'|
  'active'|'readyClean'|'integrating'|'integrate'|'openView'|'draft'|'savedAudio'|'focusId'|'player'|'source'|'onClose'|
- 'onNavigateCard'|'accept'|'setSavedAudio'|'setFocusId'|'resumePlayback'|'setView'
+ 'onNavigateCard'|'accept'|'setSavedAudio'|'setFocusId'|'resumePlayback'|'setView'|'sendToCard'
 >;
 
 /**
  * Recording settings. Unlike every other screen it stays mounted and is only hidden, so the sync
  * tools inside keep their state.
  */
-export function SettingsScreen({view,continuous,setContinuous,handle,voiceCommands,setVoiceCommands,routingStatus,intent,setIntent,active,readyClean,integrating,integrate,openView,draft,savedAudio,focusId,player,source,onClose,onNavigateCard,accept,setSavedAudio,setFocusId,resumePlayback,setView}:SettingsScreenProps){
- return <section className="vs-stage vs-screen" aria-label="Recording settings" hidden={view!=='settings'}>
+export function SettingsScreen({view,continuous,setContinuous,handle,voiceCommands,setVoiceCommands,routingStatus,intent,setIntent,active,readyClean,integrating,integrate,openView,draft,savedAudio,focusId,player,source,onClose,onNavigateCard,accept,setSavedAudio,setFocusId,resumePlayback,setView,sendToCard}:SettingsScreenProps){
+ return <>
+ {view==='settings'&&sendToCard.open&&<SendToCard state={sendToCard}/>}
+ <section className="vs-stage vs-screen" aria-label="Recording settings" hidden={view!=='settings'||sendToCard.open}>
   <h3>While recording</h3>
   <label className="vs-switch">
    <span><strong>Keep recording after Next</strong><small>Sends this section and keeps the microphone on for the next one.</small></span>
@@ -89,10 +92,12 @@ export function SettingsScreen({view,continuous,setContinuous,handle,voiceComman
    </div>
   </>}
   <h3>Files</h3>
+  <button className="vs-row vs-row--nav" onClick={()=>sendToCard.setOpen(true)}><div><p>Send finished sections to the card</p><small>{sendToCard.status}</small></div><ChevronRight size={18}/></button>
   <button className="vs-row vs-row--nav" onClick={()=>openView('audio')}><div><p>Recordings and transcript</p><small>Listen, add an audio file, discard or restore a take</small></div><ChevronRight size={18}/></button>
   <button className="vs-row vs-row--nav" onClick={()=>openView('sessions')}><div><p>Sessions</p><small>Earlier sessions for this card and the Mac connection</small></div><ChevronRight size={18}/></button>
   <div className="vs-sync">{draft&&<VoiceSyncTools draft={draft} savedAudio={savedAudio} resume={{sectionId:focusId,mode:view,positionMs:(player.current?.currentTime??0)*1000}} onRestored={(value,saved,resume)=>{if(value.cardNumber!==source.cardNumber){onClose();onNavigateCard?.(value.cardNumber,value.id);return;}accept(value);setSavedAudio(saved);setFocusId(resume?.sectionId??value.startSectionId);if(resume?.captureId)resumePlayback.current={captureId:resume.captureId,positionMs:resume.positionMs};setView(resume?.mode==='work'?'work':'review');}}/>}</div>
- </section>;
+ </section>
+ </>;
 }
 
 export type AudioScreenProps=Pick<VoiceStudio,
