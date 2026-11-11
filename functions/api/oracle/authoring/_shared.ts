@@ -1,6 +1,7 @@
-import type { R2Bucket } from '@cloudflare/workers-types';
+import type { Ai, R2Bucket } from '@cloudflare/workers-types';
 import { requireAdmin, type AuthEnv } from '../../_lib/auth.ts';
-export interface AuthoringEnv extends AuthEnv { ORACLE_PRIVATE?: R2Bucket; GROQ_API_KEY?: string; OPENAI_API_KEY?: string; ORACLE_WRITING_PROVIDER?: string; ORACLE_WRITING_MODEL?: string }
+/** AI is the Workers AI binding (wrangler.toml [ai]): the transcription fallback when Groq is busy or failing. Optional; without it a Groq failure is final, as before. */
+export interface AuthoringEnv extends AuthEnv { ORACLE_PRIVATE?: R2Bucket; AI?: Ai; GROQ_API_KEY?: string; OPENAI_API_KEY?: string; ORACLE_WRITING_PROVIDER?: string; ORACLE_WRITING_MODEL?: string }
 export interface Context { request: Request; env: AuthoringEnv }
 export const json = (body: unknown, status = 200, headers: Record<string,string> = {}) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'private, no-store', ...headers } });
 /** Failure codes a client may retry unchanged, later: the provider was busy, failed or slow, or the hourly limit was reached. Never the request itself. */

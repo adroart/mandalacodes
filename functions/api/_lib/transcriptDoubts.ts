@@ -26,7 +26,18 @@ function tokens(text: string) {
   return out;
 }
 
-export function transcriptDoubts(kept: string, second: string): TranscriptDoubt[] {
+export interface DoubtOptions {
+  /**
+   * Whether two differing runs mean the same once the caller's own corrections are applied (such as the shared word
+   * library's known fixes, which can span several words). Each side is an exact slice of its text, widened by
+   * `context` words on either side. Returning true drops the doubt.
+   */
+  same?: (kept: string, second: string) => boolean;
+  /** Neighbouring words given to `same` on each side (default 2). */
+  context?: number;
+}
+
+export function transcriptDoubts(kept: string, second: string, options: DoubtOptions = {}): TranscriptDoubt[] {
   const a = tokens(kept), b = tokens(second);
   if (!a.length || !b.length) return [];
   // Longest common subsequence over normalised words (two rows at a time would lose the path; a 3,000-word memo is
@@ -47,6 +58,11 @@ export function transcriptDoubts(kept: string, second: string): TranscriptDoubt[
     const ours = a.slice(fromI, i), theirs = b.slice(fromJ, j);
     // Only a run of the kept words can be shown and confirmed; a word the first missed altogether has nothing to point at.
     if (!ours.length || ours.length > MAX_RUN || theirs.length > MAX_RUN) continue;
+    if (options.same) {
+      const context = options.context ?? 2;
+      const around = (text: string, list: typeof a, from: number, to: number) => { const lo = Math.max(0, from - context), hi = Math.min(list.length, to + context); return lo < hi ? text.slice(list[lo].start, list[hi - 1].end) : ''; };
+      if (options.same(around(kept, a, fromI, i), around(second, b, fromJ, j))) continue;
+    }
     const start = ours[0].start, end = ours[ours.length - 1].end;
     doubts.push({ heard: kept.slice(start, end).replace(/[.,;:!?…"”’)\]]+$/u, ''), alt: theirs.map((t) => t.raw).join(' ').replace(/[.,;:!?…"”’)\]]+$/u, ''), at: start });
   }

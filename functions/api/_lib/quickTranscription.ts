@@ -97,21 +97,35 @@ function result(raw: unknown, provider: QuickProvider, model: string, timings: b
   };
 }
 
-async function viaCloudflare(ai: Ai, bytes: ArrayBuffer, options: Required<Pick<QuickOptions, 'prompt' | 'logTag'>> & { timings: boolean }) {
+/** Workers AI, then its legacy model for short clips. `read` turns a reply into the caller's shape; a reply it rejects counts as a failure. */
+async function runWorkersAi<T>(ai: Ai, bytes: ArrayBuffer | Uint8Array, options: { prompt: string; logTag: string }, read: (raw: unknown, model: string) => T): Promise<T> {
   const run = ai.run.bind(ai) as unknown as (model: string, input: { audio: string | number[]; initial_prompt?: string }) => Promise<unknown>;
   const audio = new Uint8Array(bytes);
   try {
-    return result(await run(CLOUDFLARE_MODEL, { audio: bytesToBase64(audio), initial_prompt: options.prompt }), 'cloudflare', CLOUDFLARE_MODEL, options.timings);
+    return read(await run(CLOUDFLARE_MODEL, { audio: bytesToBase64(audio), initial_prompt: options.prompt }), CLOUDFLARE_MODEL);
   } catch (error) {
     logFailure(options.logTag, { provider: 'cloudflare', model: CLOUDFLARE_MODEL, errorName: error instanceof Error ? error.name : 'UnknownError', errorMessage: error instanceof Error ? error.message : undefined });
     if (audio.byteLength > LEGACY_CLOUDFLARE_FALLBACK_MAX_BYTES) throw error;
   }
   try {
-    return result(await run(LEGACY_CLOUDFLARE_MODEL, { audio: Array.from(audio) }), 'cloudflare', LEGACY_CLOUDFLARE_MODEL, options.timings);
+    return read(await run(LEGACY_CLOUDFLARE_MODEL, { audio: Array.from(audio) }), LEGACY_CLOUDFLARE_MODEL);
   } catch (legacyError) {
     logFailure(options.logTag, { provider: 'cloudflare', model: LEGACY_CLOUDFLARE_MODEL, errorName: legacyError instanceof Error ? legacyError.name : 'UnknownError', errorMessage: legacyError instanceof Error ? legacyError.message : undefined });
     throw legacyError;
   }
+}
+
+function viaCloudflare(ai: Ai, bytes: ArrayBuffer, options: Required<Pick<QuickOptions, 'prompt' | 'logTag'>> & { timings: boolean }) {
+  return runWorkersAi(ai, bytes, options, (raw, model) => result(raw, 'cloudflare', model, options.timings));
+}
+
+/**
+ * The same Workers AI fallback for a caller that runs its own Groq request and reads the reply itself (hosted
+ * authoring keeps its own error contract and word timings). Returns the provider's reply untouched with the model
+ * that gave it; a reply without text is a failure, as it is for quickTranscribe.
+ */
+export function workersAiTranscription(ai: Ai, bytes: ArrayBuffer | Uint8Array, options: { prompt: string; logTag?: string }): Promise<{ model: string; raw: unknown }> {
+  return runWorkersAi(ai, bytes, { prompt: options.prompt, logTag: options.logTag ?? '[quick-transcription]' }, (raw, model) => { normalizeTranscript(raw); return { model, raw }; });
 }
 
 export async function quickTranscribe(env: QuickTranscriptionEnv, bytes: ArrayBuffer, mimeType: string, options: QuickOptions): Promise<QuickTranscript> {

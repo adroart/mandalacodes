@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { quickTranscribe } from '../../functions/api/_lib/quickTranscription';
+import { quickTranscribe, workersAiTranscription } from '../../functions/api/_lib/quickTranscription';
 
 const audio = new Uint8Array([1, 2]).buffer;
 const groqReply = (body: unknown) => vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } }));
@@ -42,5 +42,16 @@ describe('quick transcription', () => {
     expect(result.text).toBe('I was reading Gene Keys.');
     expect(result.rawText).toBe('I was reading jean keys.');
     expect(result.segments?.[0].text).toBe('I was reading Gene Keys.');
+  });
+
+  it('shares the Workers AI fallback with a caller that reads the reply itself, untouched, and falls to the legacy model', async () => {
+    const reply = { text: ' One. ', segments: [{ start: 0, end: 1, text: ' One.' }] };
+    const run = vi.fn().mockResolvedValue(reply);
+    expect(await workersAiTranscription({ run } as never, new Uint8Array([1, 2]), { prompt: 'p' })).toEqual({ model: '@cf/openai/whisper-large-v3-turbo', raw: reply });
+    expect(run.mock.calls[0][1]).toEqual({ audio: 'AQI=', initial_prompt: 'p' });
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const legacy = vi.fn().mockResolvedValueOnce({ text: ' ' }).mockResolvedValueOnce({ text: 'Two.' });
+    expect(await workersAiTranscription({ run: legacy } as never, audio, { prompt: 'p' })).toEqual({ model: '@cf/openai/whisper', raw: { text: 'Two.' } });
+    vi.restoreAllMocks();
   });
 });
