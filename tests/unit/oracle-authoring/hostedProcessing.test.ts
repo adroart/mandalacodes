@@ -1,6 +1,6 @@
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
-vi.mock('../../../functions/api/_lib/auth',()=>({requireUser:vi.fn(async()=>({userId:'owner'}))}));
-import {requireUser} from '../../../functions/api/_lib/auth';
+vi.mock('../../../functions/api/_lib/auth.ts',()=>({requireAdmin:vi.fn(async()=>({userId:'owner'}))}));
+import {requireAdmin} from '../../../functions/api/_lib/auth.ts';
 import {onRequestPost} from '../../../functions/api/oracle/authoring/process';
 import type {AuthoringEnv} from '../../../functions/api/oracle/authoring/_shared';
 const groq={GROQ_API_KEY:'fixture-groq-key',ORACLE_WRITING_PROVIDER:'groq',ORACLE_WRITING_MODEL:'openai/gpt-oss-120b'};
@@ -13,12 +13,12 @@ const call=(body:unknown,env:Record<string,string>={})=>onRequestPost({request:r
 const complete=(output:unknown,finish_reason='stop')=>new Response(JSON.stringify({choices:[{finish_reason,message:{content:JSON.stringify(output)}}]}),{headers:{'Content-Type':'application/json'}});
 function writingSession(){return {schema:1,id:'session',createdAt:'2026-10-31T12:00:00Z',source:{cardNumber:2,revision:'fixture',hash:'fixture-hash',markdown:original,sections:[{id:'DESIGN',title:'Human Design',start:0,end:original.length}]},captures:[],markers:[],transcript:[{id:'transcript',captureId:'capture',startMs:0,endMs:1000,raw:words,corrected:words,sectionId:'DESIGN',assignment:'manual',timing:'provider',provider:'fixture',receivedAt:'2026-10-31T12:00:00Z'}],proposals:[],approvals:[]};}
 describe('authenticated hosted authoring provider selection',()=>{
- beforeEach(()=>{vi.clearAllMocks();vi.mocked(requireUser).mockResolvedValue({userId:'owner'} as never);});
+ beforeEach(()=>{vi.clearAllMocks();vi.mocked(requireAdmin).mockResolvedValue({userId:'owner'} as never);});
  afterEach(()=>{vi.unstubAllGlobals();vi.restoreAllMocks();});
  it('keeps authentication and origin checks ahead of all provider calls',async()=>{
-  const upstream=vi.fn();vi.stubGlobal('fetch',upstream);vi.mocked(requireUser).mockResolvedValue(new Response('',{status:401}));
+  const upstream=vi.fn();vi.stubGlobal('fetch',upstream);vi.mocked(requireAdmin).mockResolvedValue(new Response('',{status:401}));
   expect((await call({operation:'assimilate-sections',assimilation},groq)).status).toBe(401);expect(upstream).not.toHaveBeenCalled();
-  vi.mocked(requireUser).mockClear();expect((await onRequestPost({request:request({operation:'capabilities'},'https://evil.example'),env:groq})).status).toBe(403);expect(requireUser).not.toHaveBeenCalled();
+  vi.mocked(requireAdmin).mockClear();expect((await onRequestPost({request:request({operation:'capabilities'},'https://evil.example'),env:groq})).status).toBe(403);expect(requireAdmin).not.toHaveBeenCalled();
  });
  it('reports readiness only for the explicitly selected configured provider',async()=>{
   const cases:[Record<string,string>,boolean][]=[
@@ -42,13 +42,15 @@ describe('authenticated hosted authoring provider selection',()=>{
   const upstream=vi.fn().mockResolvedValue(complete(faithful));vi.stubGlobal('fetch',upstream);expect((await call({operation:'assimilate-sections',assimilation},openai)).status).toBe(200);expect(upstream.mock.calls[0][0]).toBe('https://api.openai.com/v1/chat/completions');expect(JSON.parse(upstream.mock.calls[0][1].body).model).toBe(openai.ORACLE_WRITING_MODEL);
  });
  it('fails closed without a selected provider credential and never falls back or calls upstream',async()=>{
-  const upstream=vi.fn();vi.stubGlobal('fetch',upstream);const response=await call({operation:'assimilate-sections',assimilation},{...openai,ORACLE_WRITING_PROVIDER:'groq'});expect(response.status).toBe(503);expect(await response.json()).toEqual({error:'Hosted writing is not configured. Your words are saved.'});expect(upstream).not.toHaveBeenCalled();
+  const upstream=vi.fn();vi.stubGlobal('fetch',upstream);const response=await call({operation:'assimilate-sections',assimilation},{...openai,ORACLE_WRITING_PROVIDER:'groq'});expect(response.status).toBe(503);expect(await response.json()).toEqual({error:'Hosted writing is not configured. Your words are saved.',code:'not_configured',retryable:false});expect(upstream).not.toHaveBeenCalled();
  });
  it('rejects malformed source boundaries before sending any transcript',async()=>{
   const upstream=vi.fn();vi.stubGlobal('fetch',upstream);const response=await call({operation:'assimilate-sections',assimilation:{...assimilation,startSectionId:'missing'}},groq);expect(response.status).toBe(400);expect(upstream).not.toHaveBeenCalled();expect(await response.json()).toMatchObject({error:expect.stringContaining('saved')});
  });
- it('retains an honest failure response for unavailable providers without leaking their response',async()=>{
-  const upstream=vi.fn().mockResolvedValue(new Response('private provider diagnostic',{status:429}));vi.stubGlobal('fetch',upstream);const response=await call({operation:'assimilate-sections',assimilation},groq);expect(response.status).toBe(502);expect(await response.json()).toEqual({error:'Hosted review could not finish. Your words are saved.'});expect(upstream).toHaveBeenCalledTimes(1);
+ it('passes a busy provider through as a retryable 429 without leaking its response',async()=>{
+  const warn=vi.spyOn(console,'warn').mockImplementation(()=>undefined);
+  const upstream=vi.fn().mockResolvedValue(new Response('private provider diagnostic',{status:429}));vi.stubGlobal('fetch',upstream);const response=await call({operation:'assimilate-sections',assimilation},groq);expect(response.status).toBe(429);const result=await response.json();expect(result).toEqual({error:'Review is busy right now. Your words are saved, so try again in a minute.',code:'provider_busy',retryable:true});expect(JSON.stringify(result)).not.toContain('private');expect(upstream).toHaveBeenCalledTimes(1);
+  expect(warn.mock.calls).toEqual([['oracle_authoring_provider_failure',{operation:'assimilate-sections',provider:'groq',status:429,reason:'rate_limit'}]]);
  });
  it.each([
   ['invented wording',{...faithful,sections:[{...faithful.sections[0],text:words+' An invented sentence.'}]}],
@@ -78,7 +80,8 @@ describe('authenticated hosted authoring provider selection',()=>{
  });
  it('does not turn a provider network failure into a completed review',async()=>{
   const warn=vi.spyOn(console,'warn').mockImplementation(()=>undefined);vi.stubGlobal('fetch',vi.fn().mockRejectedValue(new TypeError('private provider network failure')));
-  const response=await call({operation:'assimilate-sections',assimilation},groq);expect(response.status).toBe(400);expect(await response.json()).not.toHaveProperty('assimilation');expect(warn).not.toHaveBeenCalled();
+  const response=await call({operation:'assimilate-sections',assimilation},groq);expect(response.status).toBe(502);const result=await response.json();expect(result).not.toHaveProperty('assimilation');expect(result).toMatchObject({code:'provider_failed',retryable:true});
+  expect(warn.mock.calls).toEqual([['oracle_authoring_provider_failure',{operation:'assimilate-sections',provider:'groq',reason:'network'}]]);
  });
  it('uses the selected provider for legacy proposals and attributes the author accurately',async()=>{
   const proposals=[{sectionId:'DESIGN',text:words,evidenceIds:['transcript'],feedback:{changes:'Preserved the spoken words.',uncertainWords:'',omissions:'',contradictions:'',unsupportedAdditions:''}}];
@@ -86,6 +89,8 @@ describe('authenticated hosted authoring provider selection',()=>{
  });
  it('keeps proposal evidence validation when switching providers',async()=>{
   const proposals=[{sectionId:'DESIGN',text:words,evidenceIds:['missing'],feedback:{changes:'Preserved the spoken words.',uncertainWords:'',omissions:'',contradictions:'',unsupportedAdditions:''}}];
-  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(complete({proposals})));const response=await call({operation:'propose',session:writingSession()},groq);expect(response.status).toBe(400);expect(await response.json()).not.toHaveProperty('proposals');
+  const warn=vi.spyOn(console,'warn').mockImplementation(()=>undefined);
+  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(complete({proposals})));const response=await call({operation:'propose',session:writingSession()},groq);expect(response.status).toBe(502);const result=await response.json();expect(result).not.toHaveProperty('proposals');expect(result).toMatchObject({code:'provider_failed',retryable:true});
+  expect(warn.mock.calls).toEqual([['oracle_authoring_provider_failure',{operation:'propose',provider:'groq',status:200,reason:'invalid_evidence'}]]);
  });
 });

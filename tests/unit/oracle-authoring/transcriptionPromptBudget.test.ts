@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-vi.mock('../../../functions/api/_lib/auth', () => ({ requireUser: vi.fn(async () => ({ userId: 'owner' })) }));
+vi.mock('../../../functions/api/_lib/auth.ts', () => ({ requireAdmin: vi.fn(async () => ({ userId: 'owner' })) }));
 import { onRequestPost } from '../../../functions/api/oracle/authoring/process';
 import { cardSections } from '../../../lib/oracle/authoring/cardSections';
 import { manuscriptSource } from '../../../lib/oracle/authoring/source';
