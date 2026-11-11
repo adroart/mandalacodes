@@ -7,6 +7,8 @@ export interface ArCreateReceipt { sourceId: string; jobId: string; reviewUrl: s
 export interface Capture {
   id: string; recordedAt: string; mimeType: string; durationMs: number;
   status: 'recording' | 'ready' | 'interrupted' | 'empty'; origin: 'microphone' | 'import'; visibleCardNumber?: number; arCreate?: ArCreateReceipt;
+  /** Running total of audio bytes saved for this capture; absent on captures saved before it was kept. */
+  audioBytes?: number;
 }
 export interface SectionMarker { captureId: string; atMs: number; sectionId: string | null }
 export interface Transcript {

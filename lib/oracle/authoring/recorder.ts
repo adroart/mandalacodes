@@ -10,6 +10,17 @@ function microphoneError(error: unknown): Error {
   return error instanceof Error ? error : new Error('The microphone could not start. Check its connection and try Record again.');
 }
 
+const TAKE_LIMIT_MS = 20 * 60 * 1000, TIMESLICE_MS = 1000;
+/** Speech bitrate: at 48 kbps a 19 minute take is about 7 megabytes, inside the 9 MiB byte ceiling. */
+export const SPEECH_BITS_PER_SECOND = 48_000;
+/**
+ * Time between chunk arrivals beyond this is treated as a suspended page, not recorded audio.
+ * Kept generous on purpose: a busy main thread can delay chunk delivery by a few seconds while
+ * audio is still being captured, and a duration that is too SHORT makes the server drop the
+ * words spoken after it. Too long is harmless below the take ceiling.
+ */
+export const ARRIVAL_GAP_MS = 10 * TIMESLICE_MS;
+
 export interface CaptureOptions {
   /** A caller-owned stream enables rolling takes without repeated permissions. */
   stream?: MediaStream;
@@ -33,14 +44,22 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
   let recorder: MediaRecorder;
   try {
     const mimeType = chooseRecorderMimeType(t => MediaRecorder.isTypeSupported(t));
-    recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    // Some browsers reject the bitrate option; record without it rather than not at all.
+    try { recorder = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), audioBitsPerSecond: SPEECH_BITS_PER_SECOND }); }
+    catch { recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined); }
   } catch (error) { releaseStream(); throw microphoneError(error); }
   const capture: Capture = { id: crypto.randomUUID(), recordedAt: new Date().toISOString(), mimeType: recorder.mimeType || 'audio/webm', durationMs: 0, status: 'recording', origin: 'microphone', visibleCardNumber };
   let started = 0, index = 0, failed: Error | undefined, stopped = false, saveFailed = false;
   let pausedAt: number | null = null, pausedTotal = 0, finalElapsed: number | null = null;
   let queue = Promise.resolve();
   let receivedBytes = 0, boundaryReached = false;
-  const elapsed = () => finalElapsed ?? Math.max(0, Math.round((pausedAt ?? performance.now()) - started - pausedTotal));
+  const ceilingMs = Math.max(1000, Math.min(options.maxDurationMs ?? TAKE_LIMIT_MS, TAKE_LIMIT_MS));
+  // Recorded time follows delivered audio: pauses and any stretch beyond ARRIVAL_GAP_MS without a chunk
+  // (a suspended page) do not count, and a take never reads longer than its ceiling.
+  let lastArrival = 0, lostTotal = 0;
+  const mediaClock = () => (pausedAt ?? performance.now()) - started - pausedTotal;
+  const counted = (clock: number) => clock - lostTotal - Math.max(0, clock - lastArrival - ARRIVAL_GAP_MS);
+  const elapsed = () => finalElapsed ?? Math.min(ceilingMs, Math.max(0, Math.round(counted(mediaClock()))));
   const markers: SectionMarker[] = [{ captureId: capture.id, atMs: 0, sectionId }];
   const session: AuthoringSession = { ...saved.session, captures: [...saved.session.captures, capture], markers: [...saved.session.markers, ...markers] };
   try { await store.save(session, saved.version); } catch (error) { releaseStream(); throw error; }
@@ -79,6 +98,7 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
   recorder.onresume = () => { if (pausedAt !== null) { pausedTotal += performance.now() - pausedAt; pausedAt = null; } };
   recorder.ondataavailable = event => {
     if (!event.data.size || saveFailed) return;
+    if (finalElapsed === null) { const clock = mediaClock(); lostTotal += Math.max(0, clock - lastArrival - ARRIVAL_GAP_MS); lastArrival = clock; }
     receivedBytes += event.data.size;
     const chunkIndex = index++, endMs = Math.max(1, elapsed());
     queue = queue.then(() => { if (!saveFailed) return store.appendChunk(session.id, capture.id, chunkIndex, event.data, endMs); }).catch(error => {
@@ -89,7 +109,7 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
     }
   };
   // The wall-clock ceiling also limits a recording left paused in a background tab.
-  const timeout = window.setTimeout(() => { if (!boundaryReached) { boundaryReached = true; options.onBoundary?.('duration'); } halt(); }, Math.max(1000, Math.min(options.maxDurationMs ?? 20 * 60 * 1000, 20 * 60 * 1000)));
+  const timeout = window.setTimeout(() => { if (!boundaryReached) { boundaryReached = true; options.onBoundary?.('duration'); } halt(); }, ceilingMs);
   stream.getTracks().forEach(t => t.addEventListener('ended', trackEnded));
   if (typeof document !== 'undefined') document.addEventListener('visibilitychange', flushOnHide);
   recorder.onerror = () => interrupt(new Error('Recording was interrupted. Recover the audio chunks already saved on this device.'));
@@ -151,13 +171,13 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
 export type ActiveCapture = Awaited<ReturnType<typeof startCapture>>;
 
 export async function recoverCapture(store: AuthoringStore, saved: SavedSession, captureId: string): Promise<SavedSession> {
-  const chunks = (await store.chunks(saved.session.id)).filter(c => c.captureId === captureId);
-  const durationMs = Math.max(0, ...chunks.map(c => c.endMs));
+  const chunks = await store.captureChunks(saved.session.id, captureId);
+  const durationMs = Math.min(TAKE_LIMIT_MS, Math.max(0, ...chunks.map(c => c.endMs)));
   const session = { ...saved.session, captures: saved.session.captures.map(c => c.id === captureId ? { ...c, durationMs, status: chunks.length ? 'interrupted' as const : 'empty' as const } : c), markers: saved.session.markers.filter(m => m.captureId !== captureId || m.atMs <= durationMs) };
   return { session, version: await store.save(session, saved.version) };
 }
 export async function importAudio(store: AuthoringStore, saved: SavedSession, file: Blob, durationMs: number, sectionId: string | null, visibleCardNumber = saved.session.source.cardNumber): Promise<SavedSession> {
-  if (!file.type.startsWith('audio/') || file.size <= 0 || file.size > 10 * 1024 * 1024 || !Number.isFinite(durationMs) || durationMs <= 0 || durationMs > 20 * 60 * 1000) throw new Error('Choose an audio file up to 10 MiB and 20 minutes, with its duration.');
+  if (!file.type.startsWith('audio/') || file.size <= 0 || file.size > 10 * 1024 * 1024 || !Number.isFinite(durationMs) || durationMs <= 0 || durationMs > TAKE_LIMIT_MS) throw new Error('Choose an audio file up to 10 megabytes and 20 minutes, with its duration.');
   const capture: Capture = { id: crypto.randomUUID(), recordedAt: new Date().toISOString(), durationMs, mimeType: file.type, status: 'ready', origin: 'import', visibleCardNumber };
   const session = { ...saved.session, captures: [...saved.session.captures, capture], markers: [...saved.session.markers, { captureId: capture.id, atMs: 0, sectionId }] };
   // Import metadata and audio atomically. Retain the same session identity and concurrency guard.
