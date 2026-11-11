@@ -1,10 +1,10 @@
 import React,{useMemo,useRef} from 'react';
 import {Pencil} from 'lucide-react';
 import {buildPassageComparison,comparisonRows,readingParagraphs,type PassageChoice,type PassageComparison,type ComparisonRow} from '../../../lib/oracle/authoring/passageComparison';
-import {initialReviewOrder,placeReviewChecks,type InlineWordCheck} from '../../../lib/oracle/authoring/reviewPresentation';
+import {initialReviewOrder,placeReviewChecks} from '../../../lib/oracle/authoring/reviewPresentation';
 import type {ReplayWord} from '../../../lib/oracle/authoring/wordReplay';
 import EditableText from './EditableText';
-import CheckedEditableText,{UnplacedWordCheck} from './CheckedEditableText';
+import CheckedEditableText,{UnplacedWordCheck,type ReviewWordCheck} from './CheckedEditableText';
 import WordReplay from './WordReplay';
 import './passage-review.css';
 interface Props {
@@ -12,7 +12,8 @@ interface Props {
  replay:{text:string;words:ReplayWord[];captureId:string}|null;activeWord:number;
  /** Character offset in text to return the cursor to after listening. */
  caret?:number;cleanupCount?:number;onCleanup?:()=>void;onChoose?:(key:string,choice:PassageChoice)=>void;
- checks?:InlineWordCheck[];onHearCheck?:(key:string)=>void;onConfirmCheck?:(key:string)=>void;onReopenCheck?:(key:string)=>void;
+ /** Word checks; `playing` and `audio` are optional playback facts for each check's row. */
+ checks?:ReviewWordCheck[];onHearCheck?:(key:string)=>void;onStopCheck?:(key:string)=>void;onConfirmCheck?:(key:string)=>void;onReopenCheck?:(key:string)=>void;
  onSelection?:(from:number,to:number,text:string,baseText:string)=>void;onReplay:(from?:number,to?:number)=>void;onSeek:(word:ReplayWord)=>void;onEdit:(index:number,replacement:string)=>Promise<void>;
 }
 const state=(row:ComparisonRow)=>row.kind==='unspoken'?(row.choice==='original'?['Stays','Remove']:['Removed','Keep it']):row.kind==='new'?(row.choice==='mine'?['Your words','Leave out']:['Left out','Add it back']):(row.choice==='mine'?['Your words','Keep original']:['Original kept','Use my words']);
@@ -30,7 +31,7 @@ export default function SectionPassageReview(props:Props){
  const editable=rows.filter(row=>row.kind!=='unspoken'&&row.choice==='mine').length,paragraphs=readingParagraphs(props.original).length;
  const checks=placeReviewChecks(props.text,props.checks??[]),firstEditable=ordered.find(({row})=>row.kind!=='unspoken'&&row.choice==='mine')?.index;
  const checkRow=(check:typeof checks[number])=>check.from!==undefined?rows.findIndex(row=>row.kind!=='unspoken'&&row.choice==='mine'&&check.from!>=row.textStart&&check.to!<=row.textEnd):-1;
- const actions={onHearCheck:props.onHearCheck,onConfirmCheck:props.onConfirmCheck,onReopenCheck:props.onReopenCheck};
+ const actions={onHearCheck:props.onHearCheck,onStopCheck:props.onStopCheck,onConfirmCheck:props.onConfirmCheck,onReopenCheck:props.onReopenCheck};
  return <section className="vs-compare vs-compare--human-first" aria-label="Compare with the original" data-mode={passages?'passages':'whole'}>
   {ordered.map(({row,index})=>{
    const tokens=props.replay?.words.flatMap((word,global)=>{const from=Math.max(row.textStart,word.from),to=Math.min(row.textEnd,word.to);return to>from?[{...word,text:word.text.slice(from-word.from,to-word.from),from:from-row.textStart,to:to-row.textStart,global}]:[]})??[];
