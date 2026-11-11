@@ -15,11 +15,23 @@ npm --prefix mobile test
 npm --prefix mobile run build:simulator
 ```
 
-For a signed device build:
+For a signed device build, use the same account-enabled web build first:
 
 ```sh
+VITE_ORACLE_NATIVE_ACCOUNTS=true npm run build:oracle
 npm --prefix mobile run build:device
 ```
+
+The web build writes `dist-oracle/oracle-build.json` (`accounts`, `commit`,
+`builtAt`). `build:device` first runs `mobile/scripts/check-oracle-build.mjs` and
+stops, before syncing or signing, when that file is missing, says `accounts` is
+false, or names a commit other than the current git HEAD. It prints one line such
+as `Error: The Oracle web bundle was built without phone sign-in. Run:
+VITE_ORACLE_NATIVE_ACCOUNTS=true npm run build:oracle`. Run that command, commit
+any changes first so the commit matches, and build again. `build:simulator` only
+warns. The account screen ends with a line such as `Oracle · build 19 · a1b2c3d ·
+11 Nov 2026` so a phone can be matched to its bundle. The signing checks below are
+unchanged.
 
 The commands select `/Applications/Xcode.app` for the current command because
 this Mac's global developer path currently points to Command Line Tools.
@@ -108,4 +120,4 @@ or installation is needed merely to merge these already-installed source changes
 
 ## Build 13 whole-card voice workflow
 
-Record opens the section-aware studio. Speak across complete named sections, use Next section without restarting the microphone, then Finish & review. AR Create prepares evidence-linked speech cleanup and section assignments. Review Current section beside Your words, check flagged speech, then integrate one section or all ready sections into private working cards. Original audio and transcripts remain saved; neighboring sections remain intact. Intro edits are separate from the main reading. AI processing on the phone uses the private paired Mac bridge.
+Record opens the section-aware studio. Speak across complete named sections, use Next section without restarting the microphone, then Finish & review. AR Create prepares evidence-linked speech cleanup and section assignments. Review Current section beside Your words, check flagged speech, then integrate one section or all ready sections into private working cards. Original audio and transcripts remain saved; neighboring sections remain intact. Intro edits are separate from the main reading. On the phone, recordings go to the site first (signed in, owner account only). The paired Mac bridge is only a fallback, used when the site answers 404, 405 or 503.

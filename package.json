@@ -40,6 +40,10 @@
     "build:oracle": "tsx scripts/build-oracle-app.ts",
     "test:oracle-app": "playwright test --config playwright.oracle-app.config.ts",
     "test:oracle-account": "playwright test --config playwright.oracle-account.config.ts",
+    "test:oracle-voice": "playwright test --config playwright.oracle-voice-five.config.ts",
+    "test:oracle-authoring-app": "playwright test --config playwright.oracle-authoring-app.config.ts",
+    "test:node": "node --import tsx --test tests/node/*.test.mjs",
+    "test:node:ci": "node --import tsx --test tests/node/oracle-ar-create-writing.test.mjs tests/node/oracle-passage-comparison.test.mjs tests/node/oracle-section-review.test.mjs",
     "test:allowance": "node --import tsx --test tests/shared-allowance.test.mjs",
     "build:allowance": "node scripts/build-pages-allowance.mjs --project mandalacodes --binding DB"
   },
