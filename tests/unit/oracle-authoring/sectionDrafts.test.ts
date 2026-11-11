@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import {beforeEach,expect,it,vi} from 'vitest';
-import {SectionDraftStore,sectionTitleEdits,createSectionDraftSession,integrateSectionDraft,getIntegratedIntro,undoIntegratedSection,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
+import {SectionDraftStore,sectionTitleEdits,createSectionDraftSession,integrateSectionDraft,getIntegratedIntro,undoIntegratedSection,DRAFT_HISTORY_KEEP,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
 import type {CardSection} from '../../../lib/oracle/authoring/cardSections';
 import {WorkingCardStore,editWorkingText} from '../../../lib/oracle/authoring/humanDrafts';
 import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
@@ -85,3 +85,17 @@ it('resolves phrase evidence from each take’s own audio session',async()=>{
  const combined=await drafts.save({...session,takes:[{id:'earlier',captureId:'earlier',state:'review'},{id:'phrase-capture',captureId:'phrase-capture',captureSessionId:phrase.id,state:'review'}],results:session.results.map((result,index)=>index?result:{...result,takeIds:['earlier','phrase-capture']})} as SectionDraftSession,session.version);
  await integrateSectionDraft(combined.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.blocks.flatMap(block=>block.evidence.map(item=>item.captureId))).toEqual(['earlier','phrase-capture']);
 });
+
+it('keeps recent draft history and the version each live receipt was applied in, and drops the rest',async()=>{
+ const {session,sections,services}=await review();
+ let current=session;for(let n=0;n<5;n++)current=await drafts.save({...current,rawTranscript:`Early ${n}.`},current.version);
+ const applied=await integrateSectionDraft(session.id,sections[0].id,services),appliedAt=applied.results[0].appliedAt;
+ current=applied;for(let n=0;n<DRAFT_HISTORY_KEEP+10;n++)current=await drafts.save({...current,rawTranscript:`Later ${n}.`},current.version);
+ const history=await drafts.versions(session.id),receiptOrigin=history.filter(v=>v.version<=current.version-DRAFT_HISTORY_KEEP);
+ expect(history.length).toBe(DRAFT_HISTORY_KEEP+1);
+ expect(history.slice(1).map(v=>v.version)).toEqual(Array.from({length:DRAFT_HISTORY_KEEP},(_,i)=>current.version-DRAFT_HISTORY_KEEP+1+i));
+ expect(receiptOrigin.map(v=>v.version)).toEqual([applied.version]);expect(receiptOrigin[0].results[0].appliedAt).toBe(appliedAt);
+ expect((await drafts.get(session.id))!.results[0].beforeWorking).toBeDefined();
+ await undoIntegratedSection(session.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.text).toBe(session.source.markdown);
+});
+it('does not prune a short history',async()=>{const {session}=await review();let current=session;for(let n=0;n<4;n++)current=await drafts.save({...current,rawTranscript:`Take ${n}.`},current.version);expect((await drafts.versions(session.id)).length).toBe(5);});

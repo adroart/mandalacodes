@@ -60,6 +60,18 @@ export function createSectionDraftSession(source:SourceSnapshot,sections:CardSec
  const now=new Date().toISOString();return {id:crypto.randomUUID(),cardNumber:source.cardNumber,sourceHash:source.hash,createdAt:now,updatedAt:now,version:0,source:structuredClone(source),sections:structuredClone(sections),startSectionId,markers:[],rawTranscript:'',results:[],unassigned:[],state:'ready'};
 }
 const listeners=new Map<string,Set<()=>void>>();
+/** Recent versions kept per draft. The live draft row always holds every applied receipt and its undo state. */
+export const DRAFT_HISTORY_KEEP=20;
+const receiptKeys=(session:SectionDraftSession)=>session.results.filter(result=>result.appliedText&&result.appliedAt).map(result=>`${result.sectionId}\n${result.appliedAt}`);
+/** Inside the save transaction: keep the newest versions and the first version of each receipt the draft still carries; drop other older clones. Audio lives elsewhere and is never touched. */
+function pruneDraftHistory(history:IDBObjectStore,current:SectionDraftSession){
+ const oldest=current.version-DRAFT_HISTORY_KEEP;if(oldest<1)return;
+ const live=new Set(receiptKeys(current)),seen=new Set<string>();
+ const request=history.openCursor(IDBKeyRange.bound([current.id,-Infinity],[current.id,oldest]));
+ request.onsuccess=()=>{const cursor=request.result;if(!cursor)return;
+  const origin=receiptKeys(cursor.value as SectionDraftSession).filter(key=>live.has(key)&&!seen.has(key));origin.forEach(key=>seen.add(key));
+  if(!origin.length)cursor.delete();cursor.continue();};
+}
 /** Private drafts and a durable version history, separate from saved audio and manuscripts. */
 export class SectionDraftStore {
  constructor(private readonly name='oracle-section-drafts-v1'){}
@@ -76,7 +88,7 @@ export class SectionDraftStore {
   if(next.results.some(result=>!next.sections.some(section=>section.id===result.sectionId))||new Set(next.results.map(result=>result.sectionId)).size!==next.results.length)throw new Error('A draft result has an unknown or duplicate section.');
   const saved=await this.run<SectionDraftSession>(['sessions','history'],'readwrite',(tx,done,fail)=>{const store=tx.objectStore('sessions'),request=store.get(next.id);request.onsuccess=()=>{const previous=request.result as SectionDraftSession|undefined;if((previous?.version??0)!==expectedVersion)return fail(new Error('Another tab changed this section draft. Reopen it before editing.'));if(previous&&(previous.cardNumber!==next.cardNumber||previous.sourceHash!==next.sourceHash))return fail(new Error('A saved draft cannot change its source card.'));
    const results=next.results.map(result=>{const prior=previous?.results.find(r=>r.sectionId===result.sectionId);return prior?.appliedText&&(prior.text!==result.text||prior.editIntent!==result.editIntent||JSON.stringify(prior.takeIds??[])!==JSON.stringify(result.takeIds??[]))?{...result,applied:false,appliedText:prior.appliedText,beforeText:prior.beforeText,appliedAt:prior.appliedAt,appliedRevision:prior.appliedRevision,integrationId:prior.integrationId,beforeWorking:prior.beforeWorking}:result;});
-   const value=structuredClone({...next,results,version:expectedVersion+1,updatedAt:new Date().toISOString()});store.put(value);tx.objectStore('history').add(value);done(value);};});
+   const value=structuredClone({...next,results,version:expectedVersion+1,updatedAt:new Date().toISOString()});store.put(value);const history=tx.objectStore('history');history.add(value);pruneDraftHistory(history,value);done(value);};});
   for(const listener of listeners.get(this.name)??[]){try{listener();}catch{/* Readers cannot invalidate committed drafts. */}}
   if(typeof window!=='undefined')window.dispatchEvent(new Event('oracle:section-draft-changed'));return saved;
  }

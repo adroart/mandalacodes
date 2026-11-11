@@ -1,0 +1,72 @@
+import 'fake-indexeddb/auto';
+import {beforeEach,describe,expect,it,vi} from 'vitest';
+import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
+import {createSession,sourceSnapshot} from '../../../lib/oracle/authoring/workflow';
+import {PrivateAuthoringSync,PrivateSyncConflict,knownPrivateAudio,forgetPrivateAudio} from '../../../src/mobile/authoring/privateSync';
+function server(){
+ const audio=new Set<string>(),calls:any[]=[];let conflict=false,revision=0;
+ const transport=vi.fn(async(_path:string,init?:RequestInit)=>{
+  const body=JSON.parse(String(init!.body));calls.push(body);
+  if(body.operation==='audio-put'){audio.add(body.hash);return Response.json({ok:true,hash:body.hash});}
+  if(body.operation==='save'){
+   if(body.document.audio.some((a:any)=>!audio.has(a.hash)))return Response.json({error:'Upload all private audio before saving.'},{status:400});
+   if(conflict)return Response.json({error:'changed',conflict:true},{status:409});
+   return Response.json({revision:`r${++revision}`});
+  }
+  return Response.json({error:'Unknown operation.'},{status:400});
+ });
+ return {audio,calls,transport,setConflict:(value:boolean)=>{conflict=value;},puts:()=>calls.filter(c=>c.operation==='audio-put'),saves:()=>calls.filter(c=>c.operation==='save')};
+}
+function store(captures:{id:string;status:string}[]=[{id:'a',status:'ready'},{id:'b',status:'interrupted'},{id:'c',status:'empty'}]){
+ return {load:vi.fn(async(id:string)=>({session:{id,schema:1,captures:captures.map(c=>({...c,mimeType:'audio/webm',durationMs:c.status==='empty'?0:1000}))},version:1})),audio:vi.fn(async(_id:string,captureId:string)=>new Blob([`bytes of ${captureId}`],{type:'audio/webm'})),receipts:vi.fn(async()=>[])} as any;
+}
+describe('private copy audio by hash',()=>{
+ beforeEach(()=>{const values=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>values.set(key,value),removeItem:(key:string)=>values.delete(key)});});
+ it('uploads each capture once across repeated saves, one capture per request, then the small document',async()=>{
+  const s=server(),sync=new PrivateAuthoringSync(s.transport),local=store();
+  const first=await sync.save(local,'session',null,null,{},'session','owner');
+  expect(s.puts().map(p=>p.hash).length).toBe(2);expect(s.puts().every(p=>typeof p.audioBase64==='string'&&!('audio' in p)&&atob(p.audioBase64).startsWith('bytes of '))).toBe(true);
+  expect(s.calls.at(-1).operation).toBe('save');expect(s.saves()[0].document.audio.map((a:any)=>a.captureId)).toEqual(['a','b']);expect(s.saves()[0].document.audio.every((a:any)=>!('base64' in a))).toBe(true);
+  expect(knownPrivateAudio('owner').size).toBe(2);
+  const second=await sync.save(local,'session',first,null,{},'session','owner');await sync.save(local,'session',second,null,{},'session','owner');
+  expect(s.puts().length).toBe(2);expect(s.saves().map(save=>save.expectedRevision)).toEqual([null,'r1','r2']);
+ });
+ it('keeps the record per account',async()=>{const s=server(),sync=new PrivateAuthoringSync(s.transport),local=store();await sync.save(local,'session',null,null,{},'session','owner');await sync.save(local,'session',null,null,{},'session','other');expect(s.puts().length).toBe(4);expect(knownPrivateAudio('other').size).toBe(2);});
+ it('a lost local record only causes a harmless re-upload',async()=>{
+  const s=server(),sync=new PrivateAuthoringSync(s.transport),local=store();
+  const first=await sync.save(local,'session',null,null,{},'session','owner');forgetPrivateAudio('owner');
+  await sync.save(local,'session',first,null,{},'session','owner');expect(s.puts().length).toBe(4);expect(s.saves().length).toBe(2);
+ });
+ it('a record the server contradicts is forgotten and the audio is sent again before the same save',async()=>{
+  const s=server(),sync=new PrivateAuthoringSync(s.transport),local=store();
+  const first=await sync.save(local,'session',null,null,{},'session','owner');s.audio.clear();
+  expect(await sync.save(local,'session',first,null,{},'session','owner')).toBe('r2');
+  expect(s.puts().length).toBe(4);expect(s.saves().map(save=>save.expectedRevision)).toEqual([null,'r1','r1']);
+ });
+ it('stops on a conflict, never retries or overwrites',async()=>{
+  const s=server(),sync=new PrivateAuthoringSync(s.transport),local=store();
+  const first=await sync.save(local,'session',null,null,{},'session','owner');s.setConflict(true);
+  await expect(sync.save(local,'session',first,null,{},'session','owner')).rejects.toBeInstanceOf(PrivateSyncConflict);
+  expect(s.saves().length).toBe(2);expect(s.saves()[1].expectedRevision).toBe('r1');expect(s.puts().length).toBe(2);
+ });
+ it('does nothing while a take is recording',async()=>{
+  const s=server(),sync=new PrivateAuthoringSync(s.transport),local=store([{id:'a',status:'ready'},{id:'b',status:'recording'}]);
+  await expect(sync.save(local,'session',null,null,{},'session','owner')).rejects.toThrow('Finish the current take');
+  expect(s.transport).not.toHaveBeenCalled();expect(local.audio).not.toHaveBeenCalled();
+ });
+ it('a saved copy restores through the existing importer with the same audio',async()=>{
+  const bytes=new Map<string,string>();let saved:any;
+  const transport=async(_path:string,init?:RequestInit)=>{const body=JSON.parse(String(init!.body));
+   if(body.operation==='audio-put'){bytes.set(body.hash,body.audioBase64);return Response.json({ok:true,hash:body.hash});}
+   if(body.operation==='audio-get')return Response.json({audioBase64:bytes.get(body.hash)});
+   if(body.operation==='save'){saved=body.document;return Response.json({revision:'r1'});}
+   return Response.json({revision:'r1',document:saved});};
+  const local=new AuthoringStore('private-sync-'+crypto.randomUUID()),session=createSession(await sourceSnapshot(2,'original','Original.',[{id:'CODE',title:'Code',start:0,end:9}]));
+  await local.save(session,0);session.captures.push({id:'clip',recordedAt:session.createdAt,mimeType:'audio/webm',durationMs:1000,status:'ready',origin:'microphone'} as any);
+  await local.addImportedAudio(session,1,'clip',new Blob(['spoken words'],{type:'audio/webm'}),1000);
+  const sync=new PrivateAuthoringSync(transport);await sync.save(local,session.id,null,null,{},session.id,'owner');
+  const restored=await sync.restore(local,session.id,'owner');expect(restored.saved.session.id).not.toBe(session.id);
+  expect(await (await local.audio(restored.saved.session.id,'clip')).text()).toBe('spoken words');
+ });
+ it('without an account uploads every capture, as before',async()=>{const s=server(),sync=new PrivateAuthoringSync(s.transport),local=store();await sync.save(local,'session',null,null,{},'session');await sync.save(local,'session','r1',null,{},'session');expect(s.puts().length).toBe(4);});
+});
