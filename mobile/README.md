@@ -23,9 +23,10 @@ npm --prefix mobile run build:device
 ```
 
 The web build writes `dist-oracle/oracle-build.json` (`accounts`, `commit`,
-`builtAt`). `build:device` first runs `mobile/scripts/check-oracle-build.mjs` and
+`dirty`, `builtAt`). `build:device` first runs `mobile/scripts/check-oracle-build.mjs` and
 stops, before syncing or signing, when that file is missing, says `accounts` is
-false, or names a commit other than the current git HEAD. It prints one line such
+false, names a commit other than the current git HEAD, or was built from
+uncommitted changes. It prints one line such
 as `Error: The Oracle web bundle was built without phone sign-in. Run:
 VITE_ORACLE_NATIVE_ACCOUNTS=true npm run build:oracle`. Run that command, commit
 any changes first so the commit matches, and build again. `build:simulator` only
