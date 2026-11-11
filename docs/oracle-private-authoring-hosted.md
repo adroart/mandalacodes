@@ -1,3 +1,6 @@
+> Kept for history and reasoning. `docs/oracle/VOICE-STATUS.md` describes the current state.
+> Stale here: it names `OPENAI_API_KEY` and an OpenAI model; `wrangler.toml` configures Groq with the model openai/gpt-oss-120b for section review, and Groq whisper-large-v3-turbo for transcription.
+
 # Private phone processing and continuity candidate
 
 This change is local code, not a deployment. Production and installed apps need a new release before the hosted routes exist.

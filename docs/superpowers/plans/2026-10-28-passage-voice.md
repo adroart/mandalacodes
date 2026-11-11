@@ -1,3 +1,6 @@
+> Kept for history and reasoning. `docs/oracle/VOICE-STATUS.md` describes the current state.
+> Stale here: it describes an isolated passage recorder and an older screen generation (the recorder file is now unused), and AI processing through AR Create on the Mac; today the phone uses the section workspace and sends to the site first.
+
 # Passage-connected voice
 
 Accepted design: the twenty passage-context improvements and printed-book / isolated re-record flow approved in conversation. Human speech remains literal. Explicit re-record replacements require editable transcript review; uncertain references never replace broad sections.
