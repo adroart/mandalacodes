@@ -169,7 +169,7 @@ describe('rolling voice passes',()=>{
   expect(active.state()).toBe('recording');expect(active.currentCaptureId()).not.toBe(active.captureId);
   expect(getUserMedia).toHaveBeenCalledTimes(1);expect(track.stop).not.toHaveBeenCalled();
   expect(active.pendingProcessing()).toBe(1);
-  const saved=await store.load('session');expect(saved!.session.markers.at(-1)?.sectionId).toBe('ICHING');
+  const saved=await store.load('session');expect(saved!.session.markers.find(marker=>marker.captureId===active.currentCaptureId())?.sectionId).toBe('ICHING');
   finishProcessing();active.setContinuous(false);now=1500;await active.flush();await active.completion;
   expect(track.stop).toHaveBeenCalledTimes(1);
  });
@@ -205,7 +205,9 @@ it('distinguishes safety continuation, explicit Send, and Finish while retaining
  expect(getUserMedia).toHaveBeenCalledTimes(1);expect(track.stop).toHaveBeenCalledTimes(1);
 });
 
-it('keeps a bounded phrase capture single-take and stops paused safety rolls',async()=>{
+it('keeps a bounded phrase capture single-take and rolls a paused safety boundary into a paused take',async()=>{
  const first=memoryStore();const scoped=await startVoiceCapturePass(first.store,first.initial,'CODE',vi.fn(),2,{maxBytes:6,rollOnBoundary:false});now=1000;Recorder.latest.emit('123456');await scoped.completion;expect(scoped.state()).toBe('inactive');expect(getUserMedia).toHaveBeenCalledTimes(1);
- const second=memoryStore();const paused=await startVoiceCapturePass(second.store,second.initial,'CODE',vi.fn(),2,{maxBytes:6,continuous:true});paused.pause();now=2000;Recorder.latest.emit('123456');await paused.completion;expect(paused.state()).toBe('inactive');expect(getUserMedia).toHaveBeenCalledTimes(2);
+ const second=memoryStore();const paused=await startVoiceCapturePass(second.store,second.initial,'CODE',vi.fn(),2,{maxBytes:6,continuous:true});paused.pause();now=2000;const old=Recorder.latest;old.emit('123456');await settlePass();
+ expect(paused.state()).toBe('paused');expect(Recorder.latest).not.toBe(old);expect(Recorder.latest.state).toBe('paused');expect(paused.currentCaptureId()).not.toBe(paused.captureId);expect(getUserMedia).toHaveBeenCalledTimes(2);expect(track.stop).toHaveBeenCalledTimes(1);
+ await paused.stop();expect(paused.state()).toBe('inactive');expect(track.stop).toHaveBeenCalledTimes(2);
 });

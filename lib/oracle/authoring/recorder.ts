@@ -1,6 +1,8 @@
 import { chooseRecorderMimeType } from '../../../utils/oracleReflection';
 import type { AuthoringSession, Capture, SectionMarker } from './types';
 import { AuthoringStore, type SavedSession } from './storage';
+import { resumeAudioWhenVisible } from '../../../shared/voice/microphone';
+import { onNativeRecordingEvent, setRecordingActive } from '../../../src/mobile/authoring/nativeRecordingGuard';
 
 function microphoneError(error: unknown): Error {
   const name = error && typeof error === 'object' && 'name' in error ? String(error.name) : '';
@@ -20,6 +22,12 @@ export const SPEECH_BITS_PER_SECOND = 48_000;
  * words spoken after it. Too long is harmless below the take ceiling.
  */
 export const ARRIVAL_GAP_MS = 10 * TIMESLICE_MS;
+/** A meter level at or above this is real input, not a muted or silent microphone. */
+export const REAL_INPUT_LEVEL = .025;
+
+/** Why the microphone may be delivering silence: the track was muted (a call, Siri, the app
+ * in the background), the phone took the audio session, or the input route changed. */
+export interface CaptureInterruption { kind: 'muted' | 'interrupted' | 'route-changed'; since: number }
 
 export interface CaptureOptions {
   /** A caller-owned stream enables rolling takes without repeated permissions. */
@@ -28,6 +36,50 @@ export interface CaptureOptions {
   maxDurationMs?: number;
   maxBytes?: number;
   onBoundary?: (reason: 'duration' | 'bytes') => void;
+  /** Each delivered chunk, with the take's total bytes so far. */
+  onChunk?: (bytes: number, totalBytes: number) => void;
+  onInterruption?: (state: CaptureInterruption | null) => void;
+}
+
+let awakeHolds = 0;
+/** Keeps the screen awake while anything records; overlapping takes share one hold.
+ * Returns the release, which is safe to call more than once. */
+export function holdRecordingActive(): () => void {
+  if (awakeHolds++ === 0) setRecordingActive(true);
+  let held = true;
+  return () => { if (!held) return; held = false; if (--awakeHolds === 0) setRecordingActive(false); };
+}
+
+/** Recording goes on through a mute or interruption so nothing is lost if the audio comes
+ * back, but the state is reported so nobody counts on it. Cleared on unmute, on the end of
+ * the interruption, or by clear() when real input arrives again. */
+export function watchInterruptions(stream: MediaStream, onChange?: (state: CaptureInterruption | null) => void) {
+  const tracks = stream.getAudioTracks();
+  let muted = tracks.some(t => t.muted), interrupted = false, routed = false, state: CaptureInterruption | null = null;
+  const update = () => {
+    const kind = muted ? 'muted' : interrupted ? 'interrupted' : routed ? 'route-changed' : null;
+    if ((state?.kind ?? null) === kind) return;
+    state = kind ? { kind, since: Date.now() } : null; onChange?.(state);
+  };
+  const onMute = () => { muted = true; update(); };
+  const onUnmute = () => { muted = tracks.some(t => t.muted); update(); };
+  tracks.forEach(t => { t.addEventListener('mute', onMute); t.addEventListener('unmute', onUnmute); });
+  let unsubscribe: () => void = () => undefined;
+  // Native events are optional: a browser without them keeps the track events.
+  try {
+    unsubscribe = onNativeRecordingEvent(event => {
+      if (event.kind === 'interruption-began' || event.kind === 'inactive') interrupted = true;
+      else if (event.kind === 'route-changed') routed = true;
+      else { interrupted = false; routed = false; }
+      update();
+    });
+  } catch { /* No window events here. */ }
+  update();
+  return {
+    current: () => state,
+    clear: () => { interrupted = false; routed = false; muted = tracks.some(t => t.muted); update(); },
+    stop: () => { tracks.forEach(t => { t.removeEventListener('mute', onMute); t.removeEventListener('unmute', onUnmute); }); unsubscribe(); },
+  };
 }
 
 export async function acquireCaptureMicrophone(): Promise<MediaStream> {
@@ -75,6 +127,7 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
       if (context.state === 'suspended') void context.resume().catch(() => undefined);
     }
   } catch { /* The microphone and durable recording remain usable without a meter. */ }
+  const stopResuming = resumeAudioWhenVisible(context), watch = watchInterruptions(stream, options.onInterruption), awake = holdRecordingActive();
   let resolveStopped: (saved: SavedSession) => void, rejectStopped: (error: Error) => void;
   const completion = new Promise<SavedSession>((resolve, reject) => { resolveStopped = resolve; rejectStopped = reject; });
   void completion.catch(() => undefined);
@@ -83,7 +136,7 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
     finalElapsed = elapsed();
     recorder.stop();
   };
-  const interrupt = (error: Error) => { if (stopped || failed) return; failed = error; onFailure(error); halt(); };
+  const interrupt = (error: Error) => { if (stopped || failed) return; failed = error; onFailure(error); halt(); awake(); };
   const trackEnded = () => interrupt(new Error('The microphone disconnected or stopped. Your received audio is saved; reconnect it and recover this recording before continuing.'));
   const flushOnHide = () => { if (document.visibilityState === 'hidden' && recorder.state === 'recording') { try { recorder.requestData(); } catch { /* A simultaneous stop already flushes its final chunk. */ } } };
   const cleanup = () => {
@@ -92,7 +145,20 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
     stream.getTracks().forEach(t => { t.removeEventListener('ended', trackEnded); if (!options.retainStream) t.stop(); });
     try { sourceNode?.disconnect(); analyser?.disconnect(); } catch { /* Already disconnected. */ }
     if (context && context.state !== 'closed') void context.close().catch(() => undefined);
+    stopResuming(); watch.stop(); awake();
     recorder.onpause = recorder.onresume = null;
+  };
+  const level = (): number | null => {
+    if (!analyser || !samples || context?.state !== 'running') return null;
+    if (recorder.state !== 'recording') return 0;
+    try { analyser.getFloatTimeDomainData(samples); return Math.min(1, Math.sqrt(samples.reduce((sum, sample) => sum + sample * sample, 0) / samples.length) * 4); }
+    catch { return null; }
+  };
+  // Optional so callers and fakes that predate them stay valid.
+  const signals: { meterAvailable?: () => boolean; interruption?: () => CaptureInterruption | null } = {
+    /** False when Web Audio is missing or suspended: show "meter unavailable", not silence. */
+    meterAvailable: () => !!analyser && context?.state === 'running',
+    interruption: watch.current,
   };
   recorder.onpause = () => { if (pausedAt === null && finalElapsed === null) pausedAt = performance.now(); };
   recorder.onresume = () => { if (pausedAt !== null) { pausedTotal += performance.now() - pausedAt; pausedAt = null; } };
@@ -100,6 +166,8 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
     if (!event.data.size || saveFailed) return;
     if (finalElapsed === null) { const clock = mediaClock(); lostTotal += Math.max(0, clock - lastArrival - ARRIVAL_GAP_MS); lastArrival = clock; }
     receivedBytes += event.data.size;
+    options.onChunk?.(event.data.size, receivedBytes);
+    if (watch.current() && (level() ?? 0) >= REAL_INPUT_LEVEL) watch.clear();
     const chunkIndex = index++, endMs = Math.max(1, elapsed());
     queue = queue.then(() => { if (!saveFailed) return store.appendChunk(session.id, capture.id, chunkIndex, event.data, endMs); }).catch(error => {
       saveFailed = true; failed = error instanceof Error ? error : new Error('Audio save failed'); onFailure(failed); halt();
@@ -146,12 +214,8 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
       try { recorder.resume(); }
       catch (error) { interrupt(microphoneError(error)); }
     },
-    level: (): number | null => {
-      if (!analyser || !samples || context?.state !== 'running') return null;
-      if (recorder.state !== 'recording') return 0;
-      try { analyser.getFloatTimeDomainData(samples); return Math.min(1, Math.sqrt(samples.reduce((sum, sample) => sum + sample * sample, 0) / samples.length) * 4); }
-      catch { return null; }
-    },
+    level,
+    ...signals,
     muted: () => stream.getAudioTracks().some(t => t.muted || !t.enabled || t.readyState === 'ended'),
     mark: (id: string | null) => {
       if (stopped || recorder.state === 'inactive') return;
