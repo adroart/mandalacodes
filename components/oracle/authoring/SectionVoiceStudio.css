@@ -251,6 +251,8 @@
 .vs-processing-status strong,.vs-processing-status span{display:block}
 .vs-processing-status span{color:var(--vs-ink-2);margin-top:3px;overflow-wrap:anywhere}
 .vs-processing-actions{display:flex;gap:6px;flex-shrink:0}
+/* The status code after a failure: quiet, for reporting what failed. */
+.vs-error-detail{display:block;margin-top:2px;font:400 12px/16px var(--font-controls);color:var(--vs-muted);font-variant-numeric:tabular-nums}
 @media(max-width:440px){.vs-processing-status{flex-wrap:wrap;gap:6px}.vs-processing-status>div:first-child{flex-basis:100%}.vs-processing-actions{margin-left:auto}}
 
 @keyframes vs-pulse{0%,100%{opacity:1}50%{opacity:.45}}
@@ -312,7 +314,8 @@
 .vs-chip[data-tone=ready]{background:var(--vs-raised);color:var(--vs-ink-2)}
 .vs-section-head .vs-chip{max-width:40%;white-space:normal}
 .vs-row-action{min-height:44px}
-.vs-dock{padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));gap:8px}
+/* The bottom safe area belongs to whatever meets the screen edge: the tab bar on the page, the dock in the sheet (authoring-sheet.css). */
+.vs-dock{padding:12px 20px;gap:8px}
 .vs-dock-target strong{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
 .vs-record{background:var(--vs-accent);color:var(--vs-accent-ink);border-radius:6px;white-space:normal;min-width:90px;padding:0 16px}
 @media(hover:hover){.vs-record:hover:enabled{background:#e6c47f}}

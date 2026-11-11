@@ -6,19 +6,25 @@ import {SectionDraftStore,type SectionDraftResult,type SectionDraftSession,creat
 import {assimilateSections} from './sectionAssimilation';
 import {cardSections} from '../../../lib/oracle/authoring/cardSections';
 import {currentSectionTexts} from './sectionWorkflow';
+import {recoverCapture} from '../../../lib/oracle/authoring/recorder';
 
 export interface SectionTake {
  id:string;captureId:string;startSectionId:string;markers:{atMs:number;sectionId:string}[];
  state:'queued'|'transcribing'|'assimilating'|'review'|'discarded'|'failed';
  error?:string;resultSectionIds?:string[];createdAt:string;
+ /** The status code (or offline/timeout) behind `error`, kept so the speaker can report what failed. */
+ errorDetail?:string;
  /** Review fingerprints at queue time prevent a late result overwriting newer work. */
  baseline?:Record<string,string>;continuationOf?:string;
  /** The exact passage of the start section this take was aimed at. Only that passage may change. */
  focus?:{start:number;end:number;text:string};preparedFingerprints?:Record<string,string>;comparisonOriginals?:Record<string,string>;intent?:'replace'|'add'|'revise';retryAttempts?:number;retryAt?:number;
 }
 export interface TakeResult extends SectionDraftResult {takeIds?:string[]}
+export interface RecordingDestination {captureId:string;sectionId:string;markers:{atMs:number;sectionId:string}[];intent?:'replace'|'add'|'revise';focus?:{start:number;end:number;text:string};continuationOf?:string}
 export interface TakeSession extends SectionDraftSession {
  takes?:SectionTake[];linkedSessionIds?:string[];
+ /** Where the live recording is going, saved as it starts, so a recording cut off by a reload or a killed app still reaches its section. */
+ recording?:RecordingDestination;
  results:TakeResult[];
  unassigned:{text:string;reason:string;takeId?:string}[];
 }
@@ -45,8 +51,22 @@ async function changeAudio(id:string,update:(value:AuthoringSession)=>AuthoringS
  throw Error('The recording changed while its transcript was being saved.');
 }
 function updateTake(session:TakeSession,captureId:string,values:Partial<SectionTake>):TakeSession{
- return {...session,takes:(session.takes??[]).map(take=>take.captureId===captureId?{...take,...values}:take)};
+ // Clearing the sentence clears its quiet detail too.
+ const update='error' in values&&values.error===undefined?{...values,errorDetail:undefined}:values;
+ return {...session,takes:(session.takes??[]).map(take=>take.captureId===captureId?{...take,...update}:take)};
 }
+const retryableStatuses=new Set([0,408,409,429,500,502,504]);
+/** Retry a passing failure (busy, provider failure, timeout, no connection), never one the speaker must act on
+ * (signed out, not allowed, too large, no speech, bad request, not set up). The server's own `retryable` wins;
+ * then the HTTP status; an older error with neither is judged by its message. */
+export function retryableTakeFailure(error:unknown):boolean{
+ const value=error&&typeof error==='object'?error as {retryable?:unknown;status?:unknown;name?:unknown}:{};
+ if(typeof value.retryable==='boolean')return value.retryable;
+ if(typeof value.status==='number'&&Number.isFinite(value.status)&&value.status!==202)return retryableStatuses.has(value.status);
+ if(value.name==='TimeoutError'||value.name==='AbortError')return true;
+ return /network|offline|failed to fetch|load failed|connection|temporar|timed? ?out|unavailable|\b50[234]\b/i.test(error instanceof Error?error.message:String(error??''));
+}
+const failureDetail=(error:unknown)=>{const detail=error&&typeof error==='object'&&'detail' in error?(error as {detail?:unknown}).detail:undefined;return typeof detail==='string'&&detail?detail:undefined;};
 function rawSpeech(session:AuthoringSession,discarded:Set<string>){
  const order=new Map(session.captures.map((capture,index)=>[capture.id,index]));
  return session.transcript.filter(t=>!t.referenceOnly&&!discarded.has(t.captureId)).sort((a,b)=>(order.get(a.captureId)??0)-(order.get(b.captureId)??0)||a.startMs-b.startMs).map(t=>t.raw).join('\n');
@@ -159,10 +179,10 @@ function launch(id:string,captureId:string,services:AuthoringServices){
  }catch(error){
   await change(id,session=>{
    const take=session.takes?.find(t=>t.captureId===captureId);if(!take||take.state==='discarded')return session;
-   const message=error instanceof Error?error.message:'This take could not finish. Its audio is saved.';
+   const message=error instanceof Error?error.message:'This recording could not be prepared. It is saved on this device.';
    const retryAttempts=(take.retryAttempts??0)+1;
-   const retryAt=retryAttempts<=4&&/network|offline|fetch|connection|temporar|timed? ?out|unavailable|\b50[234]\b/i.test(message)?Date.now()+Math.min(60000,2000*2**(retryAttempts-1)):undefined;
-   const next=updateTake(session,captureId,{state:'failed',error:message,retryAttempts,retryAt});
+   const retryAt=retryAttempts<=4&&retryableTakeFailure(error)?Date.now()+Math.min(60000,2000*2**(retryAttempts-1)):undefined;
+   const next=updateTake(session,captureId,{state:'failed',error:message,errorDetail:failureDetail(error),retryAttempts,retryAt});
    return {...next,state:stateAfter(next)};
   }).catch(()=>undefined);
  }})().finally(()=>running.delete(jobKey));
@@ -186,6 +206,43 @@ export async function queueSectionTake(sessionId:string,captureId:string,startSe
 }
 export async function resumeSectionTakes(services:AuthoringServices){
  for(const session of await drafts.list() as TakeSession[])for(const take of session.takes??[])if(['queued','transcribing','assimilating'].includes(take.state))launch(session.id,take.captureId,services);
+}
+export interface InterruptedRecovery {session?:TakeSession;queued:number;saved:number}
+/** A recording left mid-way by a reload or a killed app is closed with the audio it saved. When its section is known it
+ * is queued exactly like a finished recording; otherwise it stays saved with the other recordings. The take queue
+ * dedupes by capture, so the same audio is never prepared twice. `liveCaptureId` is never touched. */
+export async function recoverInterruptedRecordings(sessionId:string,services:AuthoringServices,liveCaptureId?:string):Promise<InterruptedRecovery>{
+ const draft=await getTakeSession(sessionId);if(!draft?.captureSessionId)return {session:draft,queued:0,saved:0};
+ const first=await audio.load(draft.captureSessionId);if(!first)return {session:draft,queued:0,saved:0};
+ const destination=draft.recording&&draft.recording.captureId!==liveCaptureId?draft.recording:undefined;
+ const queuedIds=new Set((draft.takes??[]).map(take=>take.captureId));
+ // Also catches a recording closed earlier whose queueing was itself cut off.
+ const stranded=first.session.captures.filter(c=>c.id!==liveCaptureId&&(c.status==='recording'||c.status==='interrupted'&&c.id===destination?.captureId&&!queuedIds.has(c.id)));
+ let queued=0,saved=0,session:TakeSession|undefined=draft;
+ for(const capture of stranded){
+  let closed=capture;
+  if(closed.status==='recording')for(let attempt=0;attempt<4;attempt++){
+   const latest=await audio.load(first.session.id);const own=latest?.session.captures.find(c=>c.id===capture.id);if(!latest||!own)break;
+   if(own.status!=='recording'){closed=own;break;}
+   try{closed=(await recoverCapture(audio,latest,capture.id)).session.captures.find(c=>c.id===capture.id)!;break;}
+   catch(error){if(attempt===3||!/another tab/i.test(String(error)))throw error;}
+  }
+  if(closed.status==='empty'||closed.status==='recording'||queuedIds.has(capture.id))continue;
+  const current=await getTakeSession(sessionId);
+  if(current&&destination?.captureId===capture.id&&current.sections.some(s=>s.id===destination.sectionId)){
+   const parent=destination.continuationOf&&current.takes?.some(t=>t.captureId===destination.continuationOf&&t.state!=='discarded')?destination.continuationOf:undefined;
+   const markers=destination.markers.filter(m=>m.atMs<=closed.durationMs&&current.sections.some(s=>s.id===m.sectionId));
+   session=await queueSectionTake(sessionId,capture.id,destination.sectionId,services,markers.length?markers:[{atMs:0,sectionId:destination.sectionId}],{intent:destination.intent,continuationOf:parent,focus:destination.focus});
+   queuedIds.add(capture.id);queued++;
+  }else saved++;
+ }
+ const latest=await getTakeSession(sessionId);
+ // Nothing records into this session from a window that was closed: it leaves the recording state it was cut off in.
+ // A recording started since this check began (a new capture id) is left alone.
+ const stale=(s:TakeSession)=>!liveCaptureId&&s.captureId===draft.captureId&&s.recording?.captureId===draft.recording?.captureId&&(s.state==='recording'||!!s.recording);
+ if(latest&&stale(latest))session=await change(sessionId,s=>stale(s)?{...s,recording:undefined,state:s.state==='recording'?(s.results.length?'review':'ready'):s.state}:s);
+ else session=latest??session;
+ return {session,queued,saved};
 }
 /** Discard is recoverable. Audio and source transcripts remain in their original store. */
 export async function discardSectionTake(sessionId:string,captureId:string):Promise<TakeSession>{

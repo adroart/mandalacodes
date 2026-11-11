@@ -28,3 +28,5 @@
 /* The voice workspace is near-black, not brown, edge to edge. */
 .oracle-authoring-backdrop:has(.section-voice-studio) { background:#060607; }
 .oracle-authoring-sheet:has(.section-voice-studio) { background:#0c0c0d; border-color:#26262a; }
+/* The bottom safe area is applied once: when the workspace's dock meets the bottom of the phone sheet, the dock pads itself for the home indicator and the sheet does not. */
+@media(max-width:700px) { .oracle-authoring-sheet:has(.section-voice-studio .vs-dock) { padding-bottom:0; } .oracle-authoring-sheet .section-voice-studio .vs-dock { padding-bottom:calc(12px + env(safe-area-inset-bottom,0px)); } }

@@ -69,6 +69,77 @@ test('the applied preview starts recording its displayed section in one tap',asy
  await d.getByRole('button',{name:'Pause',exact:true}).click();
 });
 
+test('the card voice sheet runs edge to edge on a phone, with no band above or below the workspace',async({page},info)=>{
+ test.skip(info.project.name!=='Phone','The sheet is full screen only on a phone.');
+ const d=await open(page);const viewport=page.viewportSize()!;expect(viewport).toEqual({width:390,height:844});
+ const studio=(await d.locator('.section-voice-studio').boundingBox())!,dock=(await d.locator('.section-voice-studio .vs-dock').boundingBox())!;
+ expect(Math.round(studio.y)).toBe(0);expect(Math.round(studio.y+studio.height)).toBe(viewport.height);expect(Math.round(dock.y+dock.height)).toBe(viewport.height);
+ // No inset is applied twice: on a screen without one the dock keeps its plain 12 px.
+ expect(await d.locator('.section-voice-studio .vs-dock').evaluate(el=>getComputedStyle(el).paddingBottom)).toBe('12px');
+ await page.screenshot({path:info.outputPath('sheet-edge-to-edge.png')});
+});
+
+test('a recording cut off by a reload is saved, sent on by itself, and Record works again',async({page,context,baseURL,browserName},info)=>{
+ test.skip(browserName!=='chromium','Uses the Chromium fake microphone.');
+ await context.grantPermissions(['microphone'],{origin:baseURL!});page.on('dialog',dialog=>void dialog.accept());
+ let transcribed=0;page.on('request',request=>{if(request.url().includes('/api/oracle/authoring/ar-create')&&request.postDataJSON()?.operation==='transcribe')transcribed++;});
+ await pipeline(page,false);
+ let d=await open(page);const reading=d.locator('.vs-section[data-section-id="2/CODE/reading"]');await reading.locator('.vs-section-head').click();
+ await d.getByRole('button',{name:'Record',exact:true}).click();await expect(d.locator('.vs-dock')).toContainText('0:02',{timeout:10000});
+ await page.reload();
+ d=await open(page);
+ await expect(d.locator('.vs-toast')).toContainText('A recording that was interrupted has been saved and is being prepared.');
+ await expect(d.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-chip')).toHaveText(/Processing|Ready to review|Check words/);
+ await expect.poll(()=>transcribed).toBe(1);
+ const stored=await page.evaluate(async()=>{const load=(path:string)=>import(path);const [{SectionDraftStore},{AuthoringStore}]=await Promise.all([load('/lib/oracle/authoring/sectionDrafts.ts'),load('/lib/oracle/authoring/storage.ts')]);const drafts=await new SectionDraftStore().list(2);const draft=drafts.find((s:any)=>s.takes?.length);const audio=draft?.captureSessionId?await new AuthoringStore().load(draft.captureSessionId):null;return {takes:draft?.takes?.map((t:any)=>({section:t.startSectionId,state:t.state})),captures:audio?.session.captures.map((c:any)=>c.status)};});
+ expect(stored.takes).toHaveLength(1);expect(stored.takes![0].section).toBe('2/CODE/reading');expect(['queued','transcribing','assimilating','review']).toContain(stored.takes![0].state);expect(stored.captures).toEqual(['interrupted']);
+ await page.screenshot({path:info.outputPath('interrupted-recovered.png')});
+ await d.getByRole('button',{name:'Record',exact:true}).click();
+ await expect(d.getByRole('button',{name:'Done',exact:true})).toBeVisible();await expect(d.locator('.vs-dock')).toContainText('Recording');await expect(d).not.toContainText('Recover your saved recording');
+ await d.getByRole('button',{name:'Done',exact:true}).click();await expect.poll(()=>transcribed).toBe(2);
+});
+
+/** Seeds one saved draft for card 2 the way the workspace stores it, before the workspace opens. */
+async function seed(page:Page,shape:{blocked?:boolean;error?:string}){
+ await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();
+ await page.evaluate(async({blocked,error})=>{
+  const load=(path:string)=>import(path);
+  const [{bundledSource},{cardSections},{createSession},{AuthoringStore},{SectionDraftStore,createSectionDraftSession}]=await Promise.all([load('/src/mobile/authoring/bundledSource.ts'),load('/lib/oracle/authoring/cardSections.ts'),load('/lib/oracle/authoring/workflow.ts'),load('/lib/oracle/authoring/storage.ts'),load('/lib/oracle/authoring/sectionDrafts.ts')]);
+  const source=await bundledSource(2),sections=cardSections(source),destination=sections.find((s:any)=>s.id==='2/CODE/reading'),session=createSession(source),captureId='saved-capture';
+  session.captures=blocked?[{id:captureId,recordedAt:session.createdAt,mimeType:'audio/wav',durationMs:1000,status:'ready',origin:'microphone',visibleCardNumber:2}]:[];
+  const audio=new AuthoringStore();await audio.save(session,0);if(blocked)await audio.appendChunk(session.id,captureId,0,new Blob([new Uint8Array(64)],{type:'audio/wav'}),1000);
+  const takes=blocked?[{id:'blocked-take',captureId,startSectionId:destination.id,markers:[],state:'failed',error:'Sign in to process on this phone. Your recording is saved.',errorDetail:'401',createdAt:session.createdAt}]:[];
+  await new SectionDraftStore().save({...createSectionDraftSession(source,sections,destination.id),captureSessionId:session.id,takes,...(error?{error}:{})},0);
+ },shape);
+ await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();return page.getByRole('dialog');
+}
+
+test('a build without sign-in says so plainly instead of offering a Retry that cannot work',async({page})=>{
+ const d=await seed(page,{blocked:true});const status=d.getByRole('region',{name:'Recording and transcription status',exact:true});
+ await expect(status).toContainText('1 recording saved on this device');
+ await expect(status).toContainText('This version of the app cannot sign in, so your recordings cannot be prepared yet. They stay saved on this device.');
+ await expect(status).toContainText('Details: 401');
+ await expect(status.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);await expect(status.getByRole('button',{name:'Listen',exact:true})).toBeVisible();
+});
+
+test('an error shows once and Dismiss clears it for good',async({page})=>{
+ const message='Your words could not be prepared this time. Your recording is saved and will be tried again shortly.';
+ let d=await seed(page,{error:message});const toast=d.locator('.vs-toast');
+ await expect(toast).toHaveCount(1);await expect(toast).toContainText(message);await expect(d.getByText(message,{exact:true})).toHaveCount(1);
+ await toast.getByRole('button',{name:'Dismiss',exact:true}).click();await expect(toast).toHaveCount(0);
+ await page.reload();await expect(page.locator('.card-reading')).toBeVisible();await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();d=page.getByRole('dialog');
+ await expect(d.getByRole('button',{name:'Record',exact:true})).toBeEnabled();await expect(d.locator('.vs-toast')).toHaveCount(0);
+});
+
+test('section names read without the manuscript dash while ids and matching keep it',async({page})=>{
+ const d=await open(page);const head=d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"] .vs-section-title');
+ const raw=await page.evaluate(async()=>{const load=(path:string)=>import(path);const [{bundledSource},{cardSections}]=await Promise.all([load('/src/mobile/authoring/bundledSource.ts'),load('/lib/oracle/authoring/cardSections.ts')]);return cardSections(await bundledSource(2)).find((s:any)=>s.id==='2/ICHING/upper-trigram').title;});
+ expect(raw).toContain('\u2014');
+ await expect(head).toHaveText(raw.replace(/\s+\u2014\s+/,' · '));
+ const shown=await d.locator('.vs-rail button,.vs-section-title,.vs-dock-target strong').allInnerTexts();expect(shown.join('\n')).not.toContain('\u2014');
+ await d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"] .vs-section-head').click();await expect(d.locator('.vs-dock-target strong')).toContainText(raw.replace(/\s+\u2014\s+/,' · ').split(' (')[0]);
+});
+
 test('voice drafts opened from the journal keep the Record bar on screen above the tabs',async({page})=>{
  await page.goto('/authoring/1');const dock=page.locator('.section-voice-studio .vs-dock');await expect(dock.getByRole('button',{name:'Record',exact:true})).toBeVisible();
  const viewport=page.viewportSize()!;const box=(await dock.boundingBox())!;const tabs=await page.locator('.oracle-app-tabs').boundingBox();

@@ -4,7 +4,7 @@ import type {AuthoringServices,SourceSnapshot} from '../../../lib/oracle/authori
 import {AuthoringStore,type SavedSession} from '../../../lib/oracle/authoring/storage';
 import {createSession} from '../../../lib/oracle/authoring/workflow';
 import {importAudio} from '../../../lib/oracle/authoring/recorder';
-import {cardSections,type CardSection} from '../../../lib/oracle/authoring/cardSections';
+import {cardSections,displaySectionTitle,type CardSection} from '../../../lib/oracle/authoring/cardSections';
 import {SectionDraftStore,sectionTitleEdits,createSectionDraftSession,integrateSectionDraft,undoIntegratedSection,sectionComparisonOriginal,sectionReviewExceptions,type SectionDraftSession,type SectionDraftResult} from '../../../lib/oracle/authoring/sectionDrafts';
 import {changeSectionSession,processSectionSession,currentSectionTexts} from '../../../src/mobile/authoring/sectionWorkflow';
 import {currentNamedReaderSection} from '../../../src/mobile/authoring/readerContext';
@@ -14,7 +14,7 @@ import CaptureShelf from './CaptureShelf';
 import SectionPassageReview from './SectionPassageReview';
 import {replaceComparisonPassage,buildPassageComparison,comparisonRows,readingParagraphs,type PassageChoice} from '../../../lib/oracle/authoring/passageComparison';
 import {BridgeConnection} from '../../../src/mobile/authoring/MacBridgeConnection';
-import {queueSectionTake,discardSectionTake,restoreSectionTake,type TakeSession} from '../../../src/mobile/authoring/sectionTakes';
+import {queueSectionTake,discardSectionTake,restoreSectionTake,recoverInterruptedRecordings,type TakeSession,type RecordingDestination} from '../../../src/mobile/authoring/sectionTakes';
 import {buildWordReplay,activeReplayWord,type ReplayWord} from '../../../lib/oracle/authoring/wordReplay';
 import type {PassageAnchor} from '../../../lib/oracle/authoring/passageContext';
 import {focusedVoiceSections} from '../../../src/mobile/authoring/focusSections';
@@ -71,8 +71,12 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
  const [authored,setAuthored]=useState<Record<string,{human:boolean;add:boolean;sessionId:string}>>({});
  const current=useRef(draft),handle=useRef<VoiceCapturePass|null>(null),mounted=useRef(true),pending=useRef(Promise.resolve()),failed=useRef(false);current.current=draft;
  const accept=(value:SectionDraftSession)=>{if(current.current?.id===value.id&&current.current.version>value.version)return;current.current=value;if(mounted.current)setDraft(value);};
- const report=(e:unknown)=>{if(mounted.current)setError(e instanceof Error?e.message:'Your recording is saved. Try again.');};
+ const errorDetail=useRef<{message:string;detail:string}|null>(null);
+ const report=(e:unknown)=>{if(!mounted.current)return;const message=e instanceof Error?e.message:'Your recording is saved. Try again.',detail=e&&typeof e==='object'&&'detail' in e?String((e as {detail?:unknown}).detail??''):'';errorDetail.current=detail?{message,detail}:null;setError(message);};
  const loadAudio=async(value:SectionDraftSession)=>{if(value.captureSessionId){const loaded=await audio.load(value.captureSessionId);if(mounted.current&&current.current?.id===value.id)setSavedAudio(loaded??undefined);}else if(mounted.current)setSavedAudio(undefined);};
+ const recovering=useRef<Promise<unknown>>(Promise.resolve()),liveCapture=useRef('');
+ /** Closes a recording cut off by a reload or a killed app and sends it on like a finished one. */
+ const recoverInterrupted=async(id:string)=>{const recovered=await recoverInterruptedRecordings(id,services);if(recovered.session)accept(recovered.session);if(recovered.queued||recovered.saved){if(recovered.session)await loadAudio(recovered.session);if(mounted.current)setNotice(recovered.queued?'A recording that was interrupted has been saved and is being prepared.':'A recording that was interrupted has been saved. You can listen to it in Recording settings, under Recordings and transcript.');}return recovered;};
  const reveal=(id:string,smooth=false)=>{const root=manuscript.current,element=root?.querySelector<HTMLElement>(`[data-section-id="${CSS.escape(id)}"]`);if(root&&element)root.scrollTo({top:Math.max(0,element.getBoundingClientRect().top-root.getBoundingClientRect().top+root.scrollTop-4),behavior:smooth&&!matchMedia('(prefers-reduced-motion: reduce)').matches?'smooth':'instant'});};
  const make=async()=>{await pending.current;if(failed.current)throw Error('Save your current words before starting another session.');const synthesis=await getSynthesis(source.cardNumber),allNodes=cardSections(source,synthesis?.summary),nodes=initialAnchors?.length?focusedVoiceSections(source,allNodes,initialAnchors):allNodes;const visible=namedSectionId??currentNamedReaderSection(nodes);const start=nodes.find(s=>s.id===visible)??(sectionId==='CODE'?nodes[0]:nodes.find(s=>s.lensId===sectionId))??nodes[0];const value=await store.save(createSectionDraftSession(source,nodes,start.id),0);accept(value);setFocusId(start.id);setTargetId(start.id);setSavedAudio(undefined);setView('work');return value;};
  useEffect(()=>{mounted.current=true;let alive=true;void(async()=>{const previous=initialSessionId?await store.get(initialSessionId):(await store.list(source.cardNumber)).find(s=>s.sourceHash===source.hash&&s.state!=='complete'&&(!initialAnchors?.length||s.sections.length===initialAnchors.filter(anchor=>anchor.cardNumber===source.cardNumber).length&&s.sections.every(node=>initialAnchors.some(anchor=>anchor.cardNumber===source.cardNumber&&anchor.text===node.text&&anchor.sectionText===node.sectionText&&anchor.start===node.start))));if(!alive)return;if(previous&&previous.sourceHash===source.hash){accept(previous);
@@ -81,7 +85,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
    setTargetId(reading??previous.resume?.sectionId??previous.startSectionId);
    setFocusId(initialSessionId?previous.results[0]?.sectionId??previous.startSectionId:reading??previous.resume?.sectionId??previous.results[0]?.sectionId??previous.startSectionId);
    if(initialSessionId)setView('review');
-   await loadAudio(previous);if(['transcribing','assimilating'].includes(previous.state))void processSectionSession(previous.id,services).catch(report);}else await make();})().catch(report);const unsubscribe=store.subscribe(()=>{const id=current.current?.id;if(id)void store.get(id).then(value=>{if(value&&current.current?.id===id&&value.version>=(current.current?.version??0)){accept(value);void loadAudio(value);}}).catch(report);});return()=>{alive=false;mounted.current=false;unsubscribe();routeHandle.current?.stop();loopCleanup.current?.();void handle.current?.stop();};},[source.cardNumber]);
+   await loadAudio(previous);recovering.current=recoverInterrupted(previous.id).catch(report);await recovering.current;if(['transcribing','assimilating'].includes(previous.state))void processSectionSession(previous.id,services).catch(report);}else await make();})().catch(report);const unsubscribe=store.subscribe(()=>{const id=current.current?.id;if(id)void store.get(id).then(value=>{if(value&&current.current?.id===id&&value.version>=(current.current?.version??0)){accept(value);void loadAudio(value);}}).catch(report);});return()=>{alive=false;mounted.current=false;unsubscribe();routeHandle.current?.stop();loopCleanup.current?.();void handle.current?.stop();};},[source.cardNumber]);
  useEffect(()=>{if(!active)return;const tick=()=>setMonitor({elapsed:active.elapsed(),paused:active.state()==='paused',level:active.level()});const timer=setInterval(tick,150);const before=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',before);return()=>{clearInterval(timer);window.removeEventListener('beforeunload',before);};},[active]);
  useEffect(()=>()=>{if(audioUrl)URL.revokeObjectURL(audioUrl);},[audioUrl]);
  const nodes=draft?.sections??[],review=view==='review',processing=draft?.state==='transcribing'||draft?.state==='assimilating';
@@ -99,21 +103,28 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
  const aimParagraph=(id:string,paragraph:{start:number;end:number;text:string})=>{if(handle.current||opening)return;setTargetId(id);setFocusId(id);setParagraphAim({sectionId:id,...paragraph});setError('');};
  const reviewAt=(id:string)=>{explicitChoice.current=true;setFocusId(id);setPhrase(null);if(audioUrl)stopListening();setView('review');};
  const record=async(phraseTarget:typeof phrase=null,targetSection=targetId)=>{if(!current.current||opening||handle.current||stopping)return;setOpening(true);explicitChoice.current=false;setError('');setNotice('');setView('work');setReplay(null);player.current?.pause();setAudioUrl('');try{
-  await flush();if(phraseTarget&&current.current?.results.find(r=>r.sectionId===phraseTarget.sectionId)?.text!==phraseTarget.baseText)throw Error('Those words changed. Select the phrase again.');if(intent==='revise'&&!phraseTarget&&!initialAnchors?.length)throw Error('Select the exact words to revise first.');let value=current.current!;phraseCapture.current=phraseTarget;
+  await flush();if(phraseTarget&&current.current?.results.find(r=>r.sectionId===phraseTarget.sectionId)?.text!==phraseTarget.baseText)throw Error('Those words changed. Select the phrase again.');if(intent==='revise'&&!phraseTarget&&!initialAnchors?.length)throw Error('Select the exact words to revise first.');
+  // Anything left mid-recording by a reload or a killed app is closed and sent on before the microphone opens.
+  await recovering.current;await recoverInterrupted(current.current!.id);
+  let value=current.current!;phraseCapture.current=phraseTarget;
   let saved=value.captureSessionId?await audio.load(value.captureSessionId):null;
   if(!saved){const session=createSession(source);saved={session,version:await audio.save(session,0)};}
-  if(saved.session.captures.some(c=>c.status==='recording'))throw Error('Recover your saved recording before starting another take.');
+  // Interrupted recordings were closed just above; this only guards a recording still running in another window.
+  if(saved.session.captures.some(c=>c.status==='recording'))throw Error('A recording is still being saved in another window. Close it there, then try again.');
   const target=value.sections.find(s=>s.id===targetSection)??value.sections.find(s=>s.id===value.startSectionId)!;
   captureFocus.current=!phraseTarget&&paragraphAim?.sectionId===target.id?{start:paragraphAim.start,end:paragraphAim.end,text:paragraphAim.text}:undefined;
   continuation.current=undefined;nextContinuation.current=undefined;recordingTarget.current=target.id;captureTarget.current=target.id;markers.current=[{atMs:0,sectionId:target.id}];pendingNext.current=null;stopMode.current='review';
   value=await changeSectionSession(value.id,s=>({...s,captureSessionId:saved!.session.id}));accept(value);const id=value.id;
   const recorder=await startVoiceCapturePass(audio,saved,target.lensId==='INTRO'?'CODE':target.lensId,report,source.cardNumber,{
    continuous:phraseTarget?false:continuous,rollOnBoundary:!phraseTarget,
-   onActive:captureId=>{focusByCapture.current.set(captureId,captureFocus.current);continuation.current=nextContinuation.current;nextContinuation.current=undefined;captureTarget.current=recordingTarget.current;segmentStart.current=handle.current?.elapsed()??0;markers.current=[{atMs:0,sectionId:captureTarget.current}];void changeSectionSession(id,s=>({...s,state:'recording',captureId,error:undefined})).then(accept).catch(report);},
+   onActive:captureId=>{focusByCapture.current.set(captureId,captureFocus.current);continuation.current=nextContinuation.current;nextContinuation.current=undefined;captureTarget.current=recordingTarget.current;segmentStart.current=handle.current?.elapsed()??0;markers.current=[{atMs:0,sectionId:captureTarget.current}];liveCapture.current=captureId;
+    // Saved as it starts, so a recording cut off by a reload or a killed app still reaches this section.
+    const destination:RecordingDestination|undefined=phraseCapture.current?undefined:{captureId,sectionId:captureTarget.current,markers:[...markers.current],intent:intent==='auto'?undefined:intent,focus:captureFocus.current,continuationOf:continuation.current};
+    void changeSectionSession(id,s=>({...s,state:'recording',captureId,error:undefined,recording:destination}) as TakeSession).then(accept).catch(report);},
    onSegmentReady:async(savedTake,captureId,metadata)=>{const finished=savedTake.session.captures.find(c=>c.id===captureId);if(!finished||finished.status==='empty'||finished.durationMs<=0)return;await changeSectionSession(id,s=>({...s,state:'ready'}));if(phraseCapture.current){const selected=phraseCapture.current;const queued=await enqueueVoicePhraseRevision({draftId:id,sectionId:selected.sectionId,from:selected.from,to:selected.to,baseText:selected.baseText,captureSessionId:savedTake.session.id,captureId},services);accept(queued);setPhrase(null);phraseCapture.current=null;return;}const queued=await queueSectionTake(id,captureId,captureTarget.current,services,markers.current,{intent:intent==='auto'?undefined:intent,continuationOf:continuation.current,focus:focusByCapture.current.get(captureId)});nextContinuation.current=metadata.reason==='boundary'?captureId:undefined;if(current.current?.id===id){accept(queued);await loadAudio(queued);}if(pendingNext.current){recordingTarget.current=pendingNext.current;setFocusId(pendingNext.current);setTargetId(pendingNext.current);reveal(pendingNext.current);pendingNext.current=null;}},
    onProcessingFailure:report,
   });handle.current=recorder;setActive(recorder);setMonitor({elapsed:0,paused:false,level:null});setFocusId(target.id);setTargetId(target.id);
-  routeConfig.current={sections:value.sections.map(node=>({id:node.id,title:node.title,aliases:[titleFor(node),node.title.split(/\s+[\u2014\u2013]\s+/)[0],...(node.id===value.sections[0].id?['intro']:[])]})),currentSectionId:()=>recordingTarget.current,elapsed:()=>Math.max(0,recorder.elapsed()-segmentStart.current),onStatus:setRoutingStatus,onRoute:(event:VoiceRouteEvidence)=>{const node=value.sections.find(n=>n.id===event.sectionId);if(!node)return;markers.current.push({atMs:event.atMs,sectionId:node.id});recordingTarget.current=node.id;captureFocus.current=undefined;setParagraphAim(null);recorder.mark(node.lensId==='INTRO'?'CODE':node.lensId);setFocusId(node.id);setTargetId(node.id);reveal(node.id,true);setNotice(`Heard “${titleFor(node)}”. Recording into it now.`);}};if(voiceCommands&&!phraseTarget)routeHandle.current=startVoiceRouting(routeConfig.current);
+  routeConfig.current={sections:value.sections.map(node=>({id:node.id,title:node.title,aliases:[titleFor(node),node.title.split(/\s+[\u2014\u2013]\s+/)[0],...(node.id===value.sections[0].id?['intro']:[])]})),currentSectionId:()=>recordingTarget.current,elapsed:()=>Math.max(0,recorder.elapsed()-segmentStart.current),onStatus:setRoutingStatus,onRoute:(event:VoiceRouteEvidence)=>{const node=value.sections.find(n=>n.id===event.sectionId);if(!node)return;markers.current.push({atMs:event.atMs,sectionId:node.id});const live=liveCapture.current,spoken=[...markers.current];void changeSectionSession(id,s=>{const r=(s as TakeSession).recording;return r?.captureId===live?{...s,recording:{...r,markers:spoken}} as TakeSession:s;}).catch(()=>undefined);recordingTarget.current=node.id;captureFocus.current=undefined;setParagraphAim(null);recorder.mark(node.lensId==='INTRO'?'CODE':node.lensId);setFocusId(node.id);setTargetId(node.id);reveal(node.id,true);setNotice(`Heard “${shownTitle(node)}”. Recording into it now.`);}};if(voiceCommands&&!phraseTarget)routeHandle.current=startVoiceRouting(routeConfig.current);
   void recorder.completion.then(async()=>{routeHandle.current?.stop();routeHandle.current=null;handle.current=null;const latest=await changeSectionSession(id,s=>({...s,state:s.results.length?'review':'ready'}));accept(latest);if(mounted.current){setActive(null);setStopping(false);if(stopMode.current==='next')setView('work');else{explicitChoice.current=true;setFocusId(recordingTarget.current);setView('review');}}}).catch(e=>{handle.current=null;routeHandle.current?.stop();if(mounted.current){setActive(null);setStopping(false);}report(e);});
  }catch(e){report(e);}finally{setOpening(false);}};
  const stop=(mode:'next'|'review')=>{const capture=handle.current;if(!capture||stopping)return;stopMode.current=mode;if(mode==='review')reviewArrival.current=true;setStopping(true);if(mode==='next'&&!phraseCapture.current){const index=nodes.findIndex(node=>node.id===recordingTarget.current),next=nodes[index+1];pendingNext.current=next?.id??null;captureFocus.current=undefined;setParagraphAim(null);if(next){setTargetId(next.id);reveal(next.id,true);}void capture.flush({continue:continuous&&!!next,nextSectionId:next?(next.lensId==='INTRO'?'CODE':next.lensId):undefined}).then(()=>{if(mounted.current)setStopping(false);}).catch(e=>{setStopping(false);report(e);});}else void capture.stop().catch(e=>{setStopping(false);report(e);});};
@@ -140,12 +151,24 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
  const processingMessage=(failedTakes[0]?.error??draft?.error??'').replace(/\s*Your (?:local )?(?:recording|words|recording and words) (?:is|are) saved\.?\s*$/i,'');
  const savedCaptures=savedAudio?.session.captures.filter(capture=>!discarded.has(capture.id)&&['ready','interrupted'].includes(capture.status)&&capture.durationMs>0)??[];
  const needsSignIn=accountActions.enabled&&account.isLoaded&&(!account.isSignedIn||signInBlocked);
+ /** Without the account screen in this build, asking to sign in would be a loop: say so plainly instead. */
+ const cannotSignIn=signInBlocked&&!accountActions.enabled;
+ const draftDetail=(draft as {errorDetail?:{message:string;detail:string}}|undefined)?.errorDetail;
+ const processingDetail=failedTakes[0]?.error?failedTakes[0].errorDetail:draft?.error&&draftDetail?.message===draft.error?draftDetail.detail:undefined;
+ /** A failure shows once: in the status band when it is about saved recordings, otherwise in the toast. */
+ const statusShown=!active&&!opening&&(needsSignIn||savedCaptures.length>0&&(failedTakes.length>0||!!draft?.error));
+ const statusErrors=statusShown?[failedTakes[0]?.error,draft?.error].filter(Boolean):[];
+ const toastError=error&&!statusErrors.includes(error)?error:!statusShown&&draft?.error?draft.error:'';
+ const toastDetail=toastError&&toastError===error&&errorDetail.current?.message===error?errorDetail.current.detail:toastError&&toastError===draft?.error&&draftDetail?.message===toastError?draftDetail.detail:'';
+ const dismissToast=()=>{const shown=toastError;setError('');setNotice('');errorDetail.current=null;if(shown&&shown===current.current?.error)void patch(s=>s.error===shown?{...s,error:undefined}:s).catch(report);};
  const retrySaved=async()=>{if(!draft||retrying)return;setRetrying(true);setError('');try{await flush();for(const take of failedTakes)accept(await queueSectionTake(draft.id,take.captureId,take.startSectionId,services,take.markers));if(!takes.length)await prepare(draft.id);}catch(e){report(e);}finally{if(mounted.current)setRetrying(false);}};
  const signInAndResume=async()=>{setError('');try{await flush();await accountActions.signInWithGoogle();await resumeSignInBlockedRecordings(services);}catch(e){report(e);}};
  useEffect(()=>{if(view==='review'&&results.length&&((!explicitChoice.current&&reviewArrival.current&&!queued.length)||!results.some(r=>r.sectionId===focusId))){const first=results.find(r=>!r.applied&&sectionReviewExceptions(r).needsReview&&!r.checked)??results.find(r=>!r.applied)??results[0];setFocusId(first.sectionId);reviewArrival.current=false;}},[view,draft?.version]);
  useEffect(()=>{if(view==='work'&&nodes.length)reveal(handle.current?recordingTarget.current:targetId);},[draft?.id,view]);
  useEffect(()=>{if(!playing)return;let frame=0;const tick=()=>{if(player.current){setPlayhead(player.current.currentTime*1000);if(replay)setActiveWord(activeReplayWord(replay.words,replay.captureId,player.current.currentTime*1000));}frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame);},[playing,replay]);
  const titleFor=(node:CardSection)=>draft?.titleEdits?.[node.id]?.text??titles[node.id]??node.title;
+ /** What the speaker reads. Matching and saved titles keep `titleFor`. */
+ const shownTitle=(node:CardSection)=>displaySectionTitle(titleFor(node));
  const saveTitle=(id:string,text:string)=>{failed.current=false;const task=pending.current.then(()=>patch(s=>({...s,titleEdits:{...s.titleEdits,[id]:{text:text.trim(),updatedAt:new Date().toISOString()}}}))).then(()=>undefined);pending.current=task.catch(e=>{failed.current=true;report(e);});return task;};
  useEffect(()=>{let alive=true;void store.list(source.cardNumber).then(values=>{if(alive)setTitles(sectionTitleEdits(values,source.hash));}).catch(report);return()=>{alive=false;};},[draft?.id,source.hash]);
  useEffect(()=>{
@@ -183,7 +206,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
  const open=checks.filter(c=>!c.done).length;
  const generalCheck=checks.some(c=>!c.quote);
  const progressText=authorshipFailed?'Authorship unavailable':!authorship?'Checking authorship…':authorship.total?`${authorship.human} of ${authorship.total} ${authorship.total===1?'section':'sections'} in your words`:'No recordable sections';
- const pathFor=(node:CardSection)=>[...node.path.slice(0,-1),titleFor(node)].filter((part,i,all)=>i===0||part!==all[i-1]).join(' · ');
+ const pathFor=(node:CardSection)=>displaySectionTitle([...node.path.slice(0,-1),titleFor(node)].filter((part,i,all)=>i===0||part!==all[i-1]).join(' · '));
  const scopeFor=(node:CardSection,focus?:{start:number;text:string})=>{const ps=readingParagraphs(references[node.id]??node.text);const i=focus?ps.findIndex(p=>p.start===focus.start&&p.text===focus.text):-1;return i>=0?`Paragraph ${i+1} of ${ps.length}`:ps.length>1?`All ${ps.length} paragraphs`:'Whole section';};
  const spanLabel=(node:CardSection,focus?:{start:number;text:string})=>{const paragraphs=readingParagraphs(references[node.id]??node.text);if(focus){const i=paragraphs.findIndex(p=>p.start===focus.start&&p.text===focus.text);return i>=0?` · paragraph ${i+1}`:'';}return paragraphs.length>1?` · all ${paragraphs.length} paragraphs`:'';};
  const nextAfter=(id?:string)=>nodes[nodes.findIndex(n=>n.id===id)+1];
@@ -204,7 +227,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
  const back=(to:View)=><button className="vs-icon" aria-label="Back" onClick={()=>openView(to)}>Back</button>;
  const screenTitle:Record<View,string>={work:'',review:'',settings:'Recording settings',audio:'Recordings',sessions:'Sessions',sections:placing!==null?'Place these words':'Sections',cleanup:'Speech cleanup',unplaced:'Unplaced words'};
 
- const index=(onPick:(node:CardSection)=>void,mode:'rail'|'screen')=><nav className={mode==='rail'?'vs-rail':'vs-index'} aria-label={mode==='rail'?'Card sections':'Choose a card section'}>{nodes.map((node,i)=>{const state=chip(node);return <React.Fragment key={node.id}>{node.lensId!==nodes[i-1]?.lensId&&node.path.length>1&&<h3>{node.path[0]}</h3>}<button data-section-id={node.id} aria-current={(view==='review'?focusId:targetId)===node.id?'step':undefined} onClick={()=>onPick(node)}><span>{titleFor(node)}</span>{state&&<i data-tone={state.tone} aria-label={state.label}/>}</button></React.Fragment>;})}</nav>;
+ const index=(onPick:(node:CardSection)=>void,mode:'rail'|'screen')=><nav className={mode==='rail'?'vs-rail':'vs-index'} aria-label={mode==='rail'?'Card sections':'Choose a card section'}>{nodes.map((node,i)=>{const state=chip(node);return <React.Fragment key={node.id}>{node.lensId!==nodes[i-1]?.lensId&&node.path.length>1&&<h3>{node.path[0]}</h3>}<button data-section-id={node.id} aria-current={(view==='review'?focusId:targetId)===node.id?'step':undefined} onClick={()=>onPick(node)}><span>{shownTitle(node)}</span>{state&&<i data-tone={state.tone} aria-label={state.label}/>}</button></React.Fragment>;})}</nav>;
  const pickFromRail=(node:CardSection)=>{if(view==='review'&&results.some(r=>r.sectionId===node.id))void choose(node.id).catch(report);else{if(view!=='work')openView('work');aim(node.id,true);}};
 
  return <section className="section-voice-studio" aria-label="Voice recording" data-view={view} data-recording-section-id={active?recordingTarget.current:undefined} data-authoring-protected={!!active||opening||integrating||undefined} onKeyDown={e=>{if(view!=='review'||(e.target as HTMLElement).closest('textarea,input,[contenteditable=true],button'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();step(e.key==='ArrowRight'?1:-1);}}}>
@@ -219,9 +242,9 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
    </div>
    {view==='work'&&<div className="vs-card-progress" aria-label="Card authorship"><span>{progressText}</span>{authorship&&!authorshipFailed&&authorship.total>0&&<div className="vs-authorship-track" role="progressbar" aria-label="Sections entirely in your words" aria-valuemin={0} aria-valuemax={authorship.total} aria-valuenow={authorship.human} aria-valuetext={progressText}><i style={{width:`${authorship.human/authorship.total*100}%`}}/></div>}</div>}
   </header>
-  {!active&&!opening&&(needsSignIn||savedCaptures.length>0&&(failedTakes.length>0||!!draft?.error))&&<section className="vs-processing-status" aria-label="Recording and transcription status">
-   <div><strong>{savedCaptures.length?`${plural(savedCaptures.length,'recording')} saved on this device`:'Sign in once for automatic transcription'}</strong><span>{needsSignIn?'Your sign-in will be remembered. Saved recordings will resume.':processingMessage}</span></div>
-   <div className="vs-processing-actions">{savedCaptures.length>0&&view!=='audio'&&<button className="vs-btn" onClick={()=>openView('audio')}>Listen</button>}{needsSignIn?<button className="vs-btn vs-btn--primary" disabled={accountActions.busy||retrying} onClick={()=>void signInAndResume()}>{accountActions.busy?'Signing in…':account.isSignedIn?'Reconnect':'Sign in'}</button>:<button className="vs-btn vs-btn--primary" disabled={retrying||processing||!!queued.length} onClick={()=>void retrySaved()}>{retrying?'Retrying…':'Retry'}</button>}</div>
+  {statusShown&&<section className="vs-processing-status" aria-label="Recording and transcription status">
+   <div><strong>{savedCaptures.length?`${plural(savedCaptures.length,'recording')} saved on this device`:'Sign in once for automatic transcription'}</strong><span>{needsSignIn?'Your sign-in will be remembered. Saved recordings will resume.':cannotSignIn?'This version of the app cannot sign in, so your recordings cannot be prepared yet. They stay saved on this device.':processingMessage}</span>{!needsSignIn&&processingDetail&&<small className="vs-error-detail">Details: {processingDetail}</small>}</div>
+   <div className="vs-processing-actions">{savedCaptures.length>0&&view!=='audio'&&<button className="vs-btn" onClick={()=>openView('audio')}>Listen</button>}{needsSignIn?<button className="vs-btn vs-btn--primary" disabled={accountActions.busy||retrying} onClick={()=>void signInAndResume()}>{accountActions.busy?'Signing in…':account.isSignedIn?'Reconnect':'Sign in'}</button>:cannotSignIn?null:<button className="vs-btn vs-btn--primary" disabled={retrying||processing||!!queued.length} onClick={()=>void retrySaved()}>{retrying?'Retrying…':'Retry'}</button>}</div>
   </section>}
   <div className="vs-main">
    {(view==='work'||view==='review')&&index(pickFromRail,'rail')}
@@ -231,8 +254,8 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
      {!!initialAnchors?.length&&<p className="vs-lead">Your selected {initialAnchors.length>1?'passages':'passage'}. Only these words are replaced.</p>}
      {nodes.map((node,i)=>{const state=chip(node),aimed=(active?recordingTarget.current:targetId)===node.id;return <section key={node.id} className="vs-section" data-paragraph-aim={(active?!!captureFocus.current&&recordingTarget.current===node.id:paragraphAim?.sectionId===node.id)||undefined} data-section-id={node.id} aria-label={node.path.join(' · ')} aria-current={aimed?'step':undefined} data-recording={active&&!monitor.paused&&recordingTarget.current===node.id||undefined}>
       {node.lensId!==nodes[i-1]?.lensId&&node.path.length>1&&<p className="vs-lens">{node.path[0]}</p>}
-      <button className="vs-section-head" aria-pressed={aimed} aria-label={`${titleFor(node)}${aimed?', recording destination':', make this the recording destination'}`} disabled={!!active||opening} onClick={()=>aim(node.id)}>
-       <span className="vs-aim" aria-hidden="true"><Mic size={14}/></span><span className="vs-section-title">{titleFor(node)}</span>{state&&<span className="vs-chip" data-tone={state.tone}>{state.label}</span>}
+      <button className="vs-section-head" aria-pressed={aimed} aria-label={`${shownTitle(node)}${aimed?', recording destination':', make this the recording destination'}`} disabled={!!active||opening} onClick={()=>aim(node.id)}>
+       <span className="vs-aim" aria-hidden="true"><Mic size={14}/></span><span className="vs-section-title">{shownTitle(node)}</span>{state&&<span className="vs-chip" data-tone={state.tone}>{state.label}</span>}
       </button>
       {(()=>{const text=references[node.id]??node.text,paragraphs=readingParagraphs(text),focus=(active?captureFocus.current&&recordingTarget.current===node.id?captureFocus.current:undefined:paragraphAim?.sectionId===node.id?paragraphAim:undefined);
        if(paragraphs.length<2)return <div className="vs-section-text">{text}</div>;
@@ -274,7 +297,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
    </section>}
 
    {view==='cleanup'&&result&&<section className="vs-stage vs-screen" aria-label="Speech cleanup review">
-    <p className="vs-lead">Stumbles and repeated starts were tidied in {titleFor(section!)}. Your recording and every original word are kept.</p>
+    <p className="vs-lead">Stumbles and repeated starts were tidied in {shownTitle(section!)}. Your recording and every original word are kept.</p>
     {result.changes.map((change,i)=><section className="vs-row" key={i}><div><p><del>{change.before}</del>{change.after&&<> → {change.after}</>}</p><small>{change.reason}</small></div><button className="vs-btn" disabled={integrating||!!result.applied} onClick={()=>void patch(s=>({...s,results:s.results.map(r=>r.sectionId===section?.id?restoreDocumentedCleanup(r,i):r)})).catch(report)}>Keep what I said</button></section>)}
     <h3>What you said</h3><pre className="vs-pre">{result.evidenceQuotes.join('\n\n')}</pre>
    </section>}
@@ -293,7 +316,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
 
    {view==='audio'&&<section className="vs-stage vs-screen" aria-label="Audio and transcript">
     {savedAudio&&<CaptureShelf expanded session={{...savedAudio.session,captures:savedAudio.session.captures.filter(c=>!discarded.has(c.id))}} onDiscard={discard} disabled={!!active||processing||opening||integrating} onListen={id=>{clipBounds.current=null;setReplay(null);void playCapture(id).catch(report);}} onTranscribe={async(id)=>{if(draft)accept(await queueSectionTake(draft.id,id,takes.find(t=>t.captureId===id)?.startSectionId??targetId,services));}} onImport={addAudio}/>}
-    {takes.filter(t=>t.state==='failed'||t.state==='discarded').map(t=><section className="vs-row" key={t.id}><div><p>{nodes.find(n=>n.id===t.startSectionId)?.title}</p><small>{t.state==='discarded'?'Discarded recording':t.error}</small></div><button className="vs-btn" onClick={()=>void (t.state==='discarded'?restoreSectionTake(draft!.id,t.captureId,services):queueSectionTake(draft!.id,t.captureId,t.startSectionId,services,t.markers)).then(accept).catch(report)}>{t.state==='discarded'?'Restore':'Try again'}</button></section>)}
+    {takes.filter(t=>t.state==='failed'||t.state==='discarded').map(t=><section className="vs-row" key={t.id}><div><p>{displaySectionTitle(nodes.find(n=>n.id===t.startSectionId)?.title??'')}</p><small>{t.state==='discarded'?'Discarded recording':t.error}</small></div><button className="vs-btn" onClick={()=>void (t.state==='discarded'?restoreSectionTake(draft!.id,t.captureId,services):queueSectionTake(draft!.id,t.captureId,t.startSectionId,services,t.markers)).then(accept).catch(report)}>{t.state==='discarded'?'Restore':'Try again'}</button></section>)}
     {draft?.rawTranscript&&<><h3>Original transcript</h3><pre className="vs-pre">{draft.rawTranscript}</pre></>}
     {!takes.length&&draft?.captureSessionId&&!active&&!!savedAudio?.session.captures.length&&<button className="vs-btn" disabled={processing||draft.results.some(r=>r.applied)} onClick={()=>void prepare(draft.id)}>Prepare sections again</button>}
    </section>}
@@ -306,7 +329,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
    </section>}
   </div>
 
-  {(notice||error||draft?.error)&&<div className="vs-toast" role={error||draft?.error?'alert':'status'} data-tone={error||draft?.error?'alert':undefined}><span>{error||draft?.error||notice}</span><button className="vs-icon" aria-label="Dismiss" onClick={()=>{setError('');setNotice('');}}><X size={16}/></button></div>}
+  {(notice||toastError)&&<div className="vs-toast" role={toastError?'alert':'status'} data-tone={toastError?'alert':undefined}><span>{toastError||notice}{toastDetail&&<small className="vs-error-detail">Details: {toastDetail}</small>}</span><button className="vs-icon" aria-label="Dismiss" onClick={dismissToast}><X size={16}/></button></div>}
 
   {view==='work'&&<footer className="vs-dock" data-recording={!!active||undefined}>
    {active?<>
@@ -319,7 +342,7 @@ export default function SectionVoiceStudio({source,services,sectionId,onClose,on
      {upcoming&&<button className="vs-btn vs-btn--primary" disabled={stopping} aria-label={`Send this recording and ${continuous?'keep recording in':'go to'} ${pathFor(upcoming)}`} onClick={()=>stop('next')}>Next</button>}
     </div>
    </>:<>
-    <div className="vs-dock-target"><small>Record over{queued.length?<span> · {queued.length} processing</span>:null}</small><strong>{target?titleFor(target):'Opening…'}<span className="vs-span">{target?spanLabel(target,paragraphAim?.sectionId===target.id?paragraphAim:undefined):''}</span></strong></div>
+    <div className="vs-dock-target"><small>Record over{queued.length?<span> · {queued.length} processing</span>:null}</small><strong>{target?shownTitle(target):'Opening…'}<span className="vs-span">{target?spanLabel(target,paragraphAim?.sectionId===target.id?paragraphAim:undefined):''}</span></strong></div>
     {waiting>0&&<button className="vs-btn" onClick={()=>{reviewArrival.current=true;explicitChoice.current=false;openView(results.some(r=>!r.applied)?'review':'unplaced');}}>Review {waiting}</button>}
     <button className="vs-record" disabled={opening||stopping||!target} onClick={()=>void record(null,target?.id)}>{opening?'Opening microphone…':'Record'}</button>
    </>}
