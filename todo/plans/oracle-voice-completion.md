@@ -139,6 +139,9 @@ leading straight to the next section, and the unplaced-words flow.
 
 ## 4. Decisions needed from Adrian before building
 
+**Decided 2026-11-11: Adrian accepted all five recommendations below** ("go with all your
+recommendations"). They are settled; do not re-ask. Wave 1 started the same day.
+
 1. **Word-check buttons and text sizes.** Your 31 October correction (buttons on a row
    below, one text size) or the later version now in the app (buttons inside the sentence,
    smaller originals)? Recommended: your correction.
