@@ -1,5 +1,5 @@
 import { validatePassageToolsState } from './passageTools';
-import type { AuthoringSession, StoredAudioChunk } from './types';
+import type { AuthoringSession, Capture, SectionMarker, StoredAudioChunk } from './types';
 import { editorialReceipt, reviewDigest, sessionSources, sourceSnapshot, transcriptCard, validateTranscriptParent } from './workflow';
 export interface SavedSession { session: AuthoringSession; version: number }
 export interface StoredReceipt { id: string; sessionId: string; markdown: string; digest: string }
@@ -115,6 +115,25 @@ export class AuthoringStore {
         // Captures saved before the running total: one keyed read of this capture only, then stored.
         const earlier = s.chunks.getAll(captureRange(sessionId, captureId));
         earlier.onsuccess = () => write((earlier.result as AudioRecord[]).reduce((total, c) => total + audioSize(c), 0));
+      };
+    });
+  }
+  /** Adds or changes one capture and replaces its markers inside one transaction on the latest saved session, the way
+   * appendChunk writes, so a chunk saved by another take cannot make it fail. `change` runs inside the transaction: keep
+   * it synchronous. Nothing else in the session is touched. */
+  putCapture(sessionId: string, captureId: string, change: (capture: Capture | undefined, markers: SectionMarker[]) => { capture: Capture; markers: SectionMarker[] }): Promise<SavedSession> {
+    return this.tx(['sessions'], 'readwrite', (s, done, fail) => {
+      const r = s.sessions.get(sessionId);
+      r.onsuccess = () => {
+        const saved = r.result as SavedSession | undefined;
+        if (!saved) return fail(new Error('Recording session not found'));
+        const own = saved.session.captures.find(c => c.id === captureId);
+        let next: { capture: Capture; markers: SectionMarker[] };
+        try { next = change(own, saved.session.markers.filter(m => m.captureId === captureId)); } catch (error) { return fail(error as Error); }
+        if (next.capture.id !== captureId || next.markers.some(m => m.captureId !== captureId)) return fail(new Error('A recording can only change its own capture and markers'));
+        const session = { ...saved.session, captures: own ? saved.session.captures.map(c => c.id === captureId ? next.capture : c) : [...saved.session.captures, next.capture], markers: [...saved.session.markers.filter(m => m.captureId !== captureId), ...next.markers] };
+        const value = { session, version: saved.version + 1 };
+        s.sessions.put(value); done(value);
       };
     });
   }

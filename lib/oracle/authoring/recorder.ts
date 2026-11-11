@@ -39,6 +39,43 @@ export interface CaptureOptions {
   /** Each delivered chunk, with the take's total bytes so far. */
   onChunk?: (bytes: number, totalBytes: number) => void;
   onInterruption?: (state: CaptureInterruption | null) => void;
+  /** Prepare everything (capture record, meter) without starting the recorder; the handle's `go()` starts it
+   * synchronously. A `go()` that throws leaves the take armed for one more try, then closes it. */
+  armed?: boolean;
+}
+
+const SAVE_ATTEMPTS = 5;
+/** Takes recording or still draining (final chunk, closing save) in this page. Recovery leaves these alone. */
+const liveCaptures = new Map<string, Promise<void>>();
+/** True while a take started in this page records or is still saving its last audio. */
+export function isCaptureLive(captureId: string): boolean { return liveCaptures.has(captureId); }
+/** Resolves once the take's closing save has settled, saved or failed; at once for a take not live here. */
+export function whenCaptureSettled(captureId: string): Promise<void> { return liveCaptures.get(captureId) ?? Promise.resolve(); }
+function registerLive(captureId: string): () => void {
+  let settle!: () => void;
+  liveCaptures.set(captureId, new Promise<void>(resolve => { settle = resolve; }));
+  return () => { liveCaptures.delete(captureId); settle(); };
+}
+
+type CaptureChange = (capture: Capture | undefined, markers: SectionMarker[]) => { capture: Capture; markers: SectionMarker[] };
+/** Changes one capture and its markers on the latest saved session, so another take's chunk writes cannot make it fail:
+ * in one transaction where the store offers it, otherwise by re-reading and re-applying a few times. */
+async function updateCapture(store: AuthoringStore, sessionId: string, captureId: string, change: CaptureChange): Promise<SavedSession> {
+  let lastError: unknown = new Error('The recording could not be saved. Received audio remains on this device.');
+  for (let attempt = 0; attempt < SAVE_ATTEMPTS; attempt++) {
+    try {
+      if (typeof store.putCapture === 'function') return await store.putCapture(sessionId, captureId, change);
+      const latest = await store.load(sessionId);
+      if (!latest) throw new Error('Recording session was not found');
+      const own = latest.session.captures.find(c => c.id === captureId), next = change(own, latest.session.markers.filter(m => m.captureId === captureId));
+      const session = { ...latest.session, captures: own ? latest.session.captures.map(c => c.id === captureId ? next.capture : c) : [...latest.session.captures, next.capture], markers: [...latest.session.markers.filter(m => m.captureId !== captureId), ...next.markers] };
+      return { session, version: await store.save(session, latest.version) };
+    } catch (error) {
+      lastError = error;
+      if (/not found/i.test(String(error))) break;
+    }
+  }
+  throw lastError;
 }
 
 let awakeHolds = 0;
@@ -114,7 +151,15 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
   const elapsed = () => finalElapsed ?? Math.min(ceilingMs, Math.max(0, Math.round(counted(mediaClock()))));
   const markers: SectionMarker[] = [{ captureId: capture.id, atMs: 0, sectionId }];
   const session: AuthoringSession = { ...saved.session, captures: [...saved.session.captures, capture], markers: [...saved.session.markers, ...markers] };
-  try { await store.save(session, saved.version); } catch (error) { releaseStream(); throw error; }
+  const settleLive = registerLive(capture.id);
+  try {
+    try { await store.save(session, saved.version); }
+    catch (error) {
+      // Another take's chunk moved the version on: add this capture to the latest session instead.
+      if (!/another tab|version/i.test(String(error))) throw error;
+      await updateCapture(store, session.id, capture.id, () => ({ capture, markers: [...markers] }));
+    }
+  } catch (error) { settleLive(); releaseStream(); throw error; }
   let context: AudioContext | undefined, sourceNode: MediaStreamAudioSourceNode | undefined, analyser: AnalyserNode | undefined, samples: Float32Array<ArrayBuffer> | undefined;
   // Metering is optional. Recording must work when Web Audio is unavailable or suspended.
   try {
@@ -139,6 +184,7 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
   const interrupt = (error: Error) => { if (stopped || failed) return; failed = error; onFailure(error); halt(); awake(); };
   const trackEnded = () => interrupt(new Error('The microphone disconnected or stopped. Your received audio is saved; reconnect it and recover this recording before continuing.'));
   const flushOnHide = () => { if (document.visibilityState === 'hidden' && recorder.state === 'recording') { try { recorder.requestData(); } catch { /* A simultaneous stop already flushes its final chunk. */ } } };
+  let timeout: number | undefined;
   const cleanup = () => {
     window.clearTimeout(timeout);
     if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', flushOnHide);
@@ -176,8 +222,6 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
       boundaryReached = true; options.onBoundary?.('bytes'); halt();
     }
   };
-  // The wall-clock ceiling also limits a recording left paused in a background tab.
-  const timeout = window.setTimeout(() => { if (!boundaryReached) { boundaryReached = true; options.onBoundary?.('duration'); } halt(); }, ceilingMs);
   stream.getTracks().forEach(t => t.addEventListener('ended', trackEnded));
   if (typeof document !== 'undefined') document.addEventListener('visibilitychange', flushOnHide);
   recorder.onerror = () => interrupt(new Error('Recording was interrupted. Recover the audio chunks already saved on this device.'));
@@ -186,21 +230,38 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
     finalElapsed ??= elapsed(); stopped = true; cleanup();
     try {
       await queue;
-      const latest = await store.load(session.id);
-      if (!latest) throw new Error('Recording session was not found');
-      const durationMs = latest.session.captures.find(c => c.id === capture.id)?.durationMs ?? 0;
-      const next = { ...latest.session, markers: [...latest.session.markers.filter(m => m.captureId !== capture.id), ...markers.filter(m => m.atMs <= durationMs)], captures: latest.session.captures.map(c => c.id === capture.id ? { ...c, status: c.durationMs === 0 ? 'empty' as const : failed ? 'interrupted' as const : 'ready' as const } : c) };
-      const version = await store.save(next, latest.version);
-      resolveStopped!({ session: next, version });
-    } catch (error) { rejectStopped!(error as Error); }
+      // Closed on the latest session in one step, so the other take's chunks cannot make it fail. If it still
+      // fails, the capture stays 'recording' and leaves the live list: recovery closes and queues it.
+      const next = await updateCapture(store, session.id, capture.id, c => {
+        if (!c) throw new Error('Recording session was not found');
+        return { capture: { ...c, status: c.durationMs === 0 ? 'empty' : failed ? 'interrupted' : 'ready' }, markers: markers.filter(m => m.atMs <= c.durationMs) };
+      });
+      settleLive(); resolveStopped!(next);
+    } catch (error) { settleLive(); rejectStopped!(error as Error); }
   };
-  try { started = performance.now(); recorder.start(1000); } catch (error) {
-    stopped = true; cleanup();
+  let live = false, attempts = 0;
+  const begin = () => {
+    started = performance.now(); recorder.start(1000); live = true;
+    // The wall-clock ceiling also limits a recording left paused in a background tab.
+    timeout = window.setTimeout(() => { if (!boundaryReached) { boundaryReached = true; options.onBoundary?.('duration'); } halt(); }, ceilingMs);
+  };
+  // A take that never started is closed with what it saved (nothing), so it is not left 'recording'.
+  const close = async () => {
+    stopped = true; cleanup(); settleLive();
     const current = await store.load(session.id);
     if (current) await recoverCapture(store, current, capture.id);
-    throw microphoneError(error);
+  };
+  const go = () => {
+    if (live) return;
+    if (stopped) throw new Error('This recording was closed before it started.');
+    try { begin(); }
+    catch (error) { if (++attempts >= 2) void close().catch(() => undefined); throw microphoneError(error); }
+  };
+  if (!options.armed) {
+    try { begin(); } catch (error) { await close(); throw microphoneError(error); }
   }
   return {
+    ...(options.armed ? { go } : {}),
     captureId: capture.id,
     elapsed,
     state: (): RecordingState => recorder.state,
@@ -223,9 +284,10 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
       markers.push(marker);
       queue = queue.then(async () => {
         if (saveFailed) return;
-        const current = await store.load(session.id);
-        if (!current) throw new Error('Recording session not found');
-        await store.save({ ...current.session, markers: [...current.session.markers, marker] }, current.version);
+        await updateCapture(store, session.id, capture.id, (c, own) => {
+          if (!c) throw new Error('Recording session not found');
+          return { capture: c, markers: [...own, marker] };
+        });
       }).catch(error => { saveFailed = true; failed = error as Error; onFailure(failed); halt(); });
     },
     stop: () => { halt(); return completion; },
@@ -234,7 +296,17 @@ export async function startCapture(store: AuthoringStore, saved: SavedSession, s
 }
 export type ActiveCapture = Awaited<ReturnType<typeof startCapture>>;
 
+/** Closes a capture left 'recording' with the audio it saved. A take still recording or draining in this page is not
+ * touched: it is waited for, and the latest saved session comes back with the take as it closed itself (normally
+ * 'ready' with all its audio). Only if that closing save failed is it recovered here. */
 export async function recoverCapture(store: AuthoringStore, saved: SavedSession, captureId: string): Promise<SavedSession> {
+  if (isCaptureLive(captureId)) {
+    await whenCaptureSettled(captureId);
+    const latest = await store.load(saved.session.id), own = latest?.session.captures.find(c => c.id === captureId);
+    if (!latest || !own) return saved;
+    if (own.status !== 'recording') return latest;
+    saved = latest;
+  }
   const chunks = await store.captureChunks(saved.session.id, captureId);
   const durationMs = Math.min(TAKE_LIMIT_MS, Math.max(0, ...chunks.map(c => c.endMs)));
   const session = { ...saved.session, captures: saved.session.captures.map(c => c.id === captureId ? { ...c, durationMs, status: chunks.length ? 'interrupted' as const : 'empty' as const } : c), markers: saved.session.markers.filter(m => m.captureId !== captureId || m.atMs <= durationMs) };

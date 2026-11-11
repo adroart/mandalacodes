@@ -6,7 +6,7 @@ vi.mock('../../../src/mobile/authoring/nativeRecordingGuard',()=>({
  setRecordingActive:(value:boolean)=>{native.active.push(value);},
  onNativeRecordingEvent:(listener:(event:{kind:string})=>void)=>{native.listeners.push(listener);return()=>{native.listeners=native.listeners.filter(item=>item!==listener);};},
 }));
-import {startCapture} from '../../../lib/oracle/authoring/recorder';
+import {isCaptureLive,startCapture} from '../../../lib/oracle/authoring/recorder';
 import {startVoiceCapturePass} from '../../../src/mobile/authoring/voiceCapturePass';
 
 class Track extends EventTarget {
@@ -17,18 +17,19 @@ class Track extends EventTarget {
 }
 const log:string[]=[];
 class Recorder {
- static all:Recorder[]=[];static isTypeSupported=()=>true;static exclusive=false;
+ static all:Recorder[]=[];static isTypeSupported=()=>true;static exclusive=false;static refuse=0;
+ static onStart:((recorder:Recorder)=>void)|undefined;static onStop:((recorder:Recorder)=>void)|undefined;
  static get latest(){return Recorder.all[Recorder.all.length-1];}
  readonly n=Recorder.all.length;
  state:RecordingState='inactive';mimeType='audio/webm';
  ondataavailable:((event:{data:Blob})=>void)|null=null;onstop:(()=>void)|null=null;onpause:(()=>void)|null=null;onresume:(()=>void)|null=null;onerror:(()=>void)|null=null;
  constructor(){Recorder.all.push(this);}
- start=vi.fn(()=>{if(Recorder.exclusive&&Recorder.all.some(r=>r!==this&&r.state!=='inactive'))throw Object.assign(new Error('busy'),{name:'NotReadableError'});log.push(`start ${this.n}`);this.state='recording';});
+ start=vi.fn(()=>{if(Recorder.refuse>0||Recorder.exclusive&&Recorder.all.some(r=>r!==this&&r.state!=='inactive')){Recorder.refuse=Math.max(0,Recorder.refuse-1);throw Object.assign(new Error('busy'),{name:'NotReadableError'});}log.push(`start ${this.n}`);Recorder.onStart?.(this);this.state='recording';});
  requestData=vi.fn(()=>this.emit('chunk'));
  emit(text:string){this.ondataavailable?.({data:new Blob([text],{type:this.mimeType})});}
  pause=vi.fn(()=>{this.state='paused';this.onpause?.();});
  resume=vi.fn(()=>{this.state='recording';this.onresume?.();});
- stop=vi.fn(()=>{log.push(`stop ${this.n}`);this.state='inactive';this.emit('final');this.onstop?.();});
+ stop=vi.fn(()=>{log.push(`stop ${this.n}`);Recorder.onStop?.(this);this.state='inactive';this.emit('final');this.onstop?.();});
 }
 class Page extends EventTarget {visibilityState:DocumentVisibilityState='visible';}
 function memoryStore(){
@@ -57,7 +58,7 @@ class Context {
 }
 async function settle(){for(let i=0;i<80;i++)await Promise.resolve();}
 beforeEach(()=>{
- now=0;track=new Track();page=new Page();meter=null;log.length=0;Recorder.all=[];Recorder.exclusive=false;native.active=[];native.listeners=[];
+ now=0;track=new Track();page=new Page();meter=null;log.length=0;Recorder.all=[];Recorder.exclusive=false;Recorder.refuse=0;Recorder.onStart=Recorder.onStop=undefined;native.active=[];native.listeners=[];
  vi.stubGlobal('navigator',{mediaDevices:{getUserMedia:vi.fn(async()=>({getTracks:()=>[track],getAudioTracks:()=>[track]}))}});
  vi.stubGlobal('MediaRecorder',Recorder);
  vi.stubGlobal('window',{setTimeout,clearTimeout});
@@ -107,8 +108,51 @@ describe('take boundaries without a gap',()=>{
   Recorder.exclusive=true;const {store,initial}=memoryStore(),failure=vi.fn();
   const active=await startVoiceCapturePass(store,initial,'CODE',failure,2,{continuous:true});
   now=1000;await active.flush();
+  // The refused start is retried on the same prepared take right after the old one stops.
+  expect(log).toEqual(['start 0','stop 0','start 1']);expect(active.state()).toBe('recording');expect(failure).not.toHaveBeenCalled();
+  now=1500;const saved=await active.stop();expect(saved.session.captures.map(c=>c.status)).toEqual(['ready','ready']);
+ });
+ it('opens a fresh take when the prepared one is refused twice',async()=>{
+  const {store,initial,current}=memoryStore(),failure=vi.fn();
+  const active=await startVoiceCapturePass(store,initial,'CODE',failure,2,{continuous:true});
+  Recorder.refuse=2;now=1000;await active.flush();await settle();
   expect(log).toEqual(['start 0','stop 0','start 2']);expect(active.state()).toBe('recording');expect(failure).not.toHaveBeenCalled();
-  now=1500;const saved=await active.stop();expect(saved.session.captures.map(c=>c.status)).toEqual(['ready','empty','ready']);
+  now=1500;await active.stop();await settle();expect(current().session.captures.map(c=>c.status)).toEqual(['ready','empty','ready']);
+ });
+ it('prepares the next take first, then starts it and stops the old one in the same tick',async()=>{
+  const {store,initial,current}=memoryStore();
+  const active=await startVoiceCapturePass(store,initial,'CODE',vi.fn(),2,{continuous:true});
+  let ticked=false,atStart:string[]=[],tickedAtStop:boolean|undefined;
+  Recorder.onStart=()=>{atStart=current().session.captures.map(c=>c.status);ticked=false;queueMicrotask(()=>{ticked=true;});};
+  Recorder.onStop=recorder=>{if(recorder.n===0)tickedAtStop=ticked;};
+  now=1000;await active.flush();
+  expect(log).toEqual(['start 0','start 1','stop 0']);
+  // The next capture was saved before its recorder started, and no awaited work ran between start and stop.
+  expect(atStart).toEqual(['recording','recording']);expect(tickedAtStop).toBe(false);
+  now=2000;await active.stop();
+ });
+ it('keeps the current take recording when the next take cannot be prepared',async()=>{
+  const {store,initial}=memoryStore(),failure=vi.fn();
+  const active=await startVoiceCapturePass(store,initial,'CODE',failure,2,{continuous:true});
+  vi.mocked(store.load).mockRejectedValueOnce(new Error('Storage unavailable'));
+  now=1000;await active.flush();await settle();
+  expect(failure.mock.calls.map(call=>call[0].message)).toEqual(['Storage unavailable']);
+  expect(log).toEqual(['start 0']);expect(Recorder.latest.state).toBe('recording');expect(active.state()).toBe('recording');expect(active.currentCaptureId()).toBe(active.captureId);
+  now=2000;const saved=await active.stop();expect(saved.session.captures.map(c=>c.status)).toEqual(['ready']);
+ });
+ it('closes and queues a take whose closing save keeps failing, and reports the failure',async()=>{
+  const {store,initial,current,chunks}=memoryStore(),failure=vi.fn(),onSegmentReady=vi.fn();
+  vi.mocked(store.captureChunks).mockImplementation(async(_session,id)=>chunks.filter(c=>c.captureId===id).map(c=>({key:`${id}/${c.index}`,sessionId:'session',captureId:id,index:c.index,endMs:c.endMs,blob:new Blob([])})));
+  const active=await startVoiceCapturePass(store,initial,'CODE',failure,2,{continuous:true,onSegmentReady});
+  const first=active.captureId,save=vi.mocked(store.save),real=save.getMockImplementation()!;
+  save.mockImplementation(async(session,version)=>{if(session.captures.find(c=>c.id===first)?.status==='ready')throw new Error('Disk full');return real(session,version);});
+  now=1000;Recorder.latest.emit('spoken');await active.flush();await settle();
+  expect(failure.mock.calls.map(call=>call[0].message)).toEqual(['Disk full']);
+  expect(isCaptureLive(first)).toBe(false);
+  expect(current().session.captures.find(c=>c.id===first)).toMatchObject({status:'interrupted',durationMs:1000});
+  expect(onSegmentReady).toHaveBeenCalledWith(expect.anything(),first,{reason:'send'});
+  expect(Recorder.latest.state).toBe('recording');
+  now=2000;await active.stop();
  });
 });
 
