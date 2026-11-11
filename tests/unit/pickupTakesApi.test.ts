@@ -160,12 +160,26 @@ describe('takes list', () => {
     expect((await list(bucket, `?cursor=${sneaky}`)).response.status).toBe(400);
   });
 
-  it('a large backlog of waiting recordings is all seen in one call when it fits the budget', async () => {
+  it('following the cursor visits every waiting take once when more wait than the limit, even on one listing page', async () => {
     const bucket = fakeR2(100);
     for (let n = 1; n <= 250; n += 1) bucket.seed(audioKey(hashOf(n)), 'x', { customMetadata: { v: '1', recordedAt: new Date(Date.UTC(2026, 0, 1) + (300 - n) * 60000).toISOString() } });
-    const { body } = await list(bucket, '?limit=3');
-    expect(body.takes.map((take: any) => take.audioHash)).toEqual([hashOf(250), hashOf(249), hashOf(248)]);
-    expect(body.cursor).toBeNull();
+    const first = await list(bucket, '?limit=3');
+    expect(first.body.takes.map((take: any) => take.audioHash)).toEqual([hashOf(3), hashOf(2), hashOf(1)]);
+    expect(first.body.more).toBe(true); expect(typeof first.body.cursor).toBe('string');
+    const seen: string[] = first.body.takes.map((take: any) => take.audioHash);
+    let cursor = first.body.cursor, rounds = 0;
+    while (cursor && rounds < 200) {
+      const next = await list(bucket, `?limit=3&cursor=${cursor}`);
+      seen.push(...next.body.takes.map((take: any) => take.audioHash)); cursor = next.body.cursor; rounds += 1;
+    }
+    expect(seen).toHaveLength(250);
+    expect(new Set(seen).size).toBe(250);
+    const small = fakeR2();
+    for (let n = 1; n <= 7; n += 1) small.seed(audioKey(hashOf(n)), 'x');
+    const all = await list(small, '?limit=7');
+    expect(all.body.takes).toHaveLength(7); expect(all.body).toMatchObject({ more: false, cursor: null });
+    const forged = btoa(JSON.stringify({ u: USER, k: 'authoring/other/audio/' + hashOf(1) })).replace(/=+$/, '');
+    expect((await list(small, `?cursor=${forged}`)).response.status).toBe(400);
   });
 
   it('ignores keys that are not audio hashes and users whose segment is not canonical', async () => {
@@ -201,6 +215,25 @@ describe('takes audio', () => {
 });
 
 describe('takes transcript', () => {
+  it('refuses a chunked body over the limit without reading it to the end, and still takes in-limit and bad bodies', async () => {
+    const bucket = fakeR2(); bucket.seed(audioKey(hashOf(1)), 'x');
+    const id = takeIdOf(USER, hashOf(1)), route = `/api/oracle/pickup/takes/${id}/transcript`;
+    const send = (stream: ReadableStream<Uint8Array>) => takeTranscript({
+      request: new Request(`https://example.test${route}`, { method: 'POST', headers: { Authorization: `Bearer ${KEY}` }, body: stream, duplex: 'half' } as never),
+      env: { ORACLE_PRIVATE: bucket, AR_PICKUP_TOKEN: KEY }, params: { id }, waitUntil: vi.fn(),
+    } as never);
+    let sent = 0;
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) { sent += 1; if (sent > 6) throw new Error('read past the limit'); controller.enqueue(new Uint8Array(1_000_000).fill(32)); },
+    });
+    const big = await send(endless);
+    expect(big.status).toBe(413); expect(sent).toBeLessThanOrEqual(4);
+    const bytes = new TextEncoder().encode(JSON.stringify(result(hashOf(1))));
+    const chunks = (data: Uint8Array) => new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(data.slice(0, 20)); controller.enqueue(data.slice(20)); controller.close(); } });
+    expect((await send(chunks(bytes))).status).toBe(201);
+    expect((await send(chunks(new TextEncoder().encode('{not json')))).status).toBe(400);
+  });
+
   it('keeps the result beside the audio, accepts the same result again, and the take leaves the list', async () => {
     const bucket = fakeR2(); bucket.seed(audioKey(hashOf(1)), 'x');
     const first = await post(bucket, hashOf(1), result(hashOf(1)));

@@ -1,6 +1,7 @@
 import type { R2Bucket } from '@cloudflare/workers-types';
 import { MAX_BETTER_TEXT_BYTES } from '../../../../../../utils/oracleBetterTranscript';
 import { isResponse, json, requireBinding } from '../../../reflections/_shared';
+import { boundedJson } from '../../../authoring/_shared';
 import { requirePickup, type PickupContext } from '../../_shared';
 import { parseStoredBetter, parseTakeId, takeIdOf, type StoredBetterTake } from '../_shared';
 
@@ -74,10 +75,10 @@ export async function onRequestPost({ request, env, params }: PickupContext) {
   const take = parseTakeId(params.id);
   if (!take) return reply(400, 'invalid take id');
   if (Number(request.headers.get('Content-Length')) > MAX_BODY_BYTES) return reply(413, 'result is too large');
-  const raw = await request.text();
-  if (new TextEncoder().encode(raw).length > MAX_BODY_BYTES) return reply(413, 'result is too large');
   let body: Record<string, unknown>;
-  try { body = JSON.parse(raw); } catch { return reply(400, 'invalid JSON'); }
+  try { body = await boundedJson(request, MAX_BODY_BYTES); } catch (error) {
+    return error instanceof Error && error.message === 'body_too_large' ? reply(413, 'result is too large') : reply(400, 'invalid JSON');
+  }
   if (!body || typeof body !== 'object' || Array.isArray(body)) return reply(400, 'invalid JSON');
   if (typeof body.audioHash !== 'string' || body.audioHash.toLowerCase() !== take.hash) return reply(400, 'audioHash does not match this take');
 

@@ -12,7 +12,7 @@ const MAX_RESULT_PAGES = 6;
 const MAX_USER_PAGES = 2;
 
 /** Where a scan stopped: the user segment and R2's cursor in that user's audio listing. Opaque to the Mac. */
-interface ScanCursor { u: string; c?: string }
+interface ScanCursor { u: string; c?: string; k?: string }
 const encodeCursor = (cursor: ScanCursor) => btoa(JSON.stringify(cursor)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 function decodeCursor(value: string): ScanCursor | null {
   if (!/^[A-Za-z0-9_-]{1,2048}$/.test(value)) return null;
@@ -20,7 +20,8 @@ function decodeCursor(value: string): ScanCursor | null {
     const parsed = JSON.parse(atob(value.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (value.length % 4)) % 4)));
     if (!parsed || typeof parsed.u !== 'string' || !validUserSegment(parsed.u)) return null;
     if (parsed.c !== undefined && (typeof parsed.c !== 'string' || parsed.c.length > 1024)) return null;
-    return { u: parsed.u, ...(parsed.c ? { c: parsed.c } : {}) };
+    if (parsed.k !== undefined && (typeof parsed.k !== 'string' || parsed.k.length > 1024 || !parsed.k.startsWith(`authoring/${parsed.u}/audio/`))) return null;
+    return { u: parsed.u, ...(parsed.c ? { c: parsed.c } : {}), ...(parsed.k ? { k: parsed.k } : {}) };
   } catch { return null; }
 }
 
@@ -30,7 +31,8 @@ const hashAfter = (key: string, prefix: string) => key.startsWith(prefix) ? key.
  * Card recordings from the app still waiting for a better transcript, oldest first. Read only.
  * Waiting: an audio object under authoring/<user>/audio/ with no result object under authoring/<user>/better/.
  * The scan pages through R2 under a fixed budget of list calls, so handled recordings cannot starve the rest:
- * when the budget runs out the reply carries `cursor`, and a call with that cursor carries on from there.
+ * when the budget runs out, or more are waiting than `limit`, the reply carries `cursor`, and a call with that cursor
+ * carries on from there: after the last take returned, in the order the audio is listed, so none is skipped.
  */
 export async function onRequestGet({ request, env }: PickupContext) {
   const refused = await requirePickup(request, env); if (refused) return refused;
@@ -63,9 +65,11 @@ export async function onRequestGet({ request, env }: PickupContext) {
     if (start && user < start.u) continue;
     const audioPrefix = `authoring/${user}/audio/`, betterPrefix = `authoring/${user}/better/`;
     let audioCursor = start && user === start.u ? start.c : undefined;
+    let startAfter = start && user === start.u ? start.k : undefined;
     do {
       if (calls >= MAX_LIST_CALLS) { next = { u: user, ...(audioCursor ? { c: audioCursor } : {}) }; break scan; }
-      const page = await bucket.list({ prefix: audioPrefix, cursor: audioCursor, include: ['httpMetadata', 'customMetadata'] } as never); calls += 1;
+      const page = await bucket.list({ prefix: audioPrefix, ...(audioCursor ? { cursor: audioCursor } : startAfter ? { startAfter } : {}), include: ['httpMetadata', 'customMetadata'] } as never); calls += 1;
+      startAfter = undefined;
       const audio = page.objects.map((object) => ({ object, user, hash: hashAfter(object.key, audioPrefix) })).filter((item) => AUDIO_HASH.test(item.hash));
       if (audio.length) {
         const hashes = audio.map((item) => item.hash).sort();
@@ -83,7 +87,16 @@ export async function onRequestGet({ request, env }: PickupContext) {
           if (!results.truncated) reachedEnd = true; else resultCursor = results.cursor;
         }
         if (!reachedEnd) incomplete = true;
-        else for (const item of audio) if (!handled.has(item.hash)) waiting.push(item);
+        else {
+          const fresh = audio.filter((item) => !handled.has(item.hash));
+          const room = limit - waiting.length;
+          waiting.push(...fresh.slice(0, room));
+          if (fresh.length > room || (waiting.length >= limit && (page.truncated || users.indexOf(user) < users.length - 1))) {
+            // Resume exactly after the last take returned, not after the pages looked through.
+            next = { u: user, k: waiting[waiting.length - 1].object.key };
+            break scan;
+          }
+        }
       }
       audioCursor = page.truncated ? page.cursor : undefined;
     } while (audioCursor);

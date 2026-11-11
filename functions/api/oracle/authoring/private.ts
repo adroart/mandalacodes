@@ -7,6 +7,8 @@ const hashList=(value:unknown,max:number):string[]|null=>Array.isArray(value)&&v
 /** Better transcripts handed back in one reply, at most this many bytes; the rest are named in `more` for another call. */
 /** One saved workspace document: at most this many audio references and bytes. */
 const MAX_REFERENCES=600,MAX_DOCUMENT_BYTES=6*1024*1024;
+/** A save lists the caller's audio at most this many times (1000 keys each); past that, at most MAX_AUDIO_HEADS heads. */
+const MAX_AUDIO_LIST_CALLS=10,MAX_AUDIO_HEADS=40;
 const BETTER_REPLY_BYTES=8*1024*1024;
 /** Owner-scoped R2 objects only. Conditional writes atomically reject stale devices. */
 export async function onRequestPost({request,env}:Context){
@@ -73,7 +75,22 @@ export async function onRequestPost({request,env}:Context){
   if(document.audio.length>MAX_REFERENCES)return failure(413,'too_many_recordings','This card has more recordings than one private copy can hold. Your local work is safe.',false);
   if(new TextEncoder().encode(JSON.stringify(document)).byteLength>MAX_DOCUMENT_BYTES)return failure(413,'document_too_large','This card is too large to keep in one private copy. Your local work is safe.',false);
   if(body.expectedRevision!==null&&(typeof body.expectedRevision!=='string'||!body.expectedRevision.length))return invalid('A previous revision is required.');
-  for(const audio of document.audio){if(!validId(audio.captureId)||!HASH.test(audio.hash)||!await bucket.head(prefix+'audio/'+audio.hash))return failure(400,'invalid_request','Upload all private audio before saving.',false,{missingAudio:true});}
+  const missingAudio=()=>failure(400,'invalid_request','Upload all private audio before saving.',false,{missingAudio:true});
+  for(const audio of document.audio)if(!validId(audio.captureId)||!HASH.test(audio.hash))return missingAudio();
+  // One bounded listing of the caller's own audio prefix instead of a head per reference (platform subrequest limits).
+  const unconfirmed=new Set<string>(document.audio.map((audio:{hash:string})=>audio.hash));
+  let listCursor:string|undefined,ended=false;
+  for(let calls=0;unconfirmed.size&&calls<MAX_AUDIO_LIST_CALLS;calls+=1){
+   const page=await bucket.list({prefix:prefix+'audio/',limit:1000,cursor:listCursor});
+   for(const object of page.objects)unconfirmed.delete(object.key.slice((prefix+'audio/').length));
+   if(!page.truncated){ended=true;break;}
+   listCursor=page.cursor;
+  }
+  if(unconfirmed.size){
+   // Listing ended with some missing, or the cap was reached: head only a few of the rest.
+   if(ended||unconfirmed.size>MAX_AUDIO_HEADS)return missingAudio();
+   for(const hash of unconfirmed)if(!await bucket.head(prefix+'audio/'+hash))return missingAudio();
+  }
   const result=await bucket.put(key,JSON.stringify(document),{onlyIf:body.expectedRevision===null?{etagDoesNotMatch:'*'}:{etagMatches:body.expectedRevision},httpMetadata:{contentType:'application/json'}});
   if(!result)return failure(409,'conflict','Another device changed this session. Load its copy before choosing which changes to keep.',false,{conflict:true});
   return json({revision:result.etag});

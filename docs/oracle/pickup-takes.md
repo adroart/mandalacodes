@@ -16,7 +16,7 @@ the same way it already does for website reflections (`/api/oracle/pickup/segmen
 401 with `WWW-Authenticate: Bearer` for a missing or wrong key. Errors are `{ ok: false, error }`.
 
 ## GET /api/oracle/pickup/takes?limit=N&cursor=C
-Read only. `limit` 1 to 50 (default 20). Oldest first, by the recording time the phone sent (else upload time).
+Read only. `limit` 1 to 50 (default 20). Oldest first within a reply, by the recording time the phone sent (else upload time). Takes are chosen in audio listing order, so across calls a cursor visits each waiting take once.
 ```
 { ok: true, more: boolean, cursor: string | null,
   takes: [{ id, audioHash, hexagramNumber, sectionId, captureId, recordedAt, uploadedAt, durationMs,
@@ -24,7 +24,7 @@ Read only. `limit` 1 to 50 (default 20). Oldest first, by the recording time the
 ```
 - Fields the phone did not send are `null`; audio uploaded before details were kept has `detailsKnown: false`.
 - Each call makes a bounded number of R2 list calls. When it stops early, `cursor` is set: call again with it
-  until `cursor` is null to see the rest. `more` is true while there are more waiting than returned.
+  until `cursor` is null to see the rest; it resumes right after the last take returned. `more` is true while there are more waiting than returned.
 - 400 `invalid cursor`.
 
 ## GET /api/oracle/pickup/takes/{id}/audio
