@@ -45,7 +45,8 @@
     "test:node": "node --import tsx --test tests/node/*.test.mjs",
     "test:node:ci": "node --import tsx --test tests/node/oracle-ar-create-writing.test.mjs tests/node/oracle-passage-comparison.test.mjs tests/node/oracle-section-review.test.mjs",
     "test:allowance": "node --import tsx --test tests/shared-allowance.test.mjs",
-    "build:allowance": "node scripts/build-pages-allowance.mjs --project mandalacodes --binding DB"
+    "build:allowance": "node scripts/build-pages-allowance.mjs --project mandalacodes --binding DB",
+    "voice:apply": "tsx scripts/voice-apply.ts"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",
