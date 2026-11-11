@@ -2,6 +2,7 @@ import React from 'react';
 import {ChevronRight,Pause,Play,Mic,Repeat} from 'lucide-react';
 import type {CardSection} from '../../../../lib/oracle/authoring/cardSections';
 import {sectionComparisonOriginal,type SectionDraftResult} from '../../../../lib/oracle/authoring/sectionDrafts';
+import type {TakeResult} from '../../../../src/mobile/authoring/sectionTakes';
 import {activeReplayWord} from '../../../../lib/oracle/authoring/wordReplay';
 import {loopVoicePhrase} from '../../../../src/mobile/authoring/voiceTargets';
 import SectionPassageReview from '../SectionPassageReview';
@@ -10,8 +11,11 @@ import {AppliedPanel,appliedActions,type AppliedPanelProps,type AppliedActionsPr
 import {plural,time} from './format';
 import type {VoiceStudio} from './types';
 
+/** The other wording as it would sit in his text: edge punctuation goes, as it does from the quoted word. */
+const spoken=(words:string)=>words.trim().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu,'');
+
 export type ReviewStageProps=Omit<AppliedPanelProps,'section'|'result'>&Pick<VoiceStudio,
- 'section'|'result'|'draft'|'titleFor'|'integrating'|'saveTitle'|'checks'|'hear'|'listen'|'setResolved'|'choosePassage'|
+ 'section'|'result'|'draft'|'titleFor'|'integrating'|'saveTitle'|'checks'|'checkAudio'|'listen'|'setResolved'|'choosePassage'|
  'replay'|'activeWord'|'caret'|'setView'|'active'|'setPhrase'|'playCapture'|'report'|'edit'|'queued'|'processing'|
  'savedCaptures'|'openView'|'linkedDrafts'|'onClose'|'onNavigateCard'
 >;
@@ -21,7 +25,7 @@ export type ReviewStageProps=Omit<AppliedPanelProps,'section'|'result'>&Pick<Voi
  * comparison host (`SectionPassageReview`), then the unplaced-words and connected-card notes.
  */
 export function ReviewStage(props:ReviewStageProps){
- const {section,result,draft,titleFor,integrating,saveTitle,checks,hear,listen,setResolved,choosePassage,references,replay,activeWord,caret,setView,active,setPhrase,playCapture,report,edit,queued,processing,savedCaptures,openView,linkedDrafts,onClose,onNavigateCard}=props;
+ const {section,result,draft,titleFor,integrating,saveTitle,checks,checkAudio,listen,setResolved,choosePassage,references,replay,activeWord,caret,setView,active,setPhrase,playCapture,report,edit,queued,processing,savedCaptures,openView,linkedDrafts,onClose,onNavigateCard}=props;
  return <div className="vs-stage vs-review">
   {section&&result?<>
    <div className="vs-review-head" data-section-id={section.id}>
@@ -29,9 +33,11 @@ export function ReviewStage(props:ReviewStageProps){
     <TitleField key={`${draft!.id}/${section.id}`} label="Section title" value={titleFor(section)} disabled={integrating} save={text=>saveTitle(section.id,text)}/>
    </div>
    {result.applied?<AppliedPanel {...props} section={section} result={result}/>:<>
+    {(result as TakeResult).doubtsAvailable===false&&<p className="vs-review-unchecked" role="note">This recording was not double-checked. Listen once before you use it.</p>}
     <SectionPassageReview
-     checks={checks.map(c=>({key:c.key,quote:c.quote,message:c.message,done:c.done,canHear:!!c.issue?.captureId&&c.issue.startMs!==undefined}))}
-     onHearCheck={key=>{const c=checks.find(c=>c.key===key);if(c?.issue?.captureId&&c.issue.startMs!==undefined)hear(c.issue);else void listen();}}
+     checks={checks.map(c=>({key:c.key,quote:c.quote,message:c.message,done:c.done,...checkAudio.stateFor(c),...(c.quote&&typeof c.issue?.heardAlso==='string'&&spoken(c.issue.heardAlso).toLowerCase()!==c.quote.toLowerCase()?{heardAlso:spoken(c.issue.heardAlso)}:{})}))}
+     onHearCheck={key=>{const c=checks.find(c=>c.key===key);if(c)void checkAudio.hearCheck(c);}}
+     onStopCheck={checkAudio.stopCheck}
      onConfirmCheck={key=>setResolved(r=>({...r,[key]:true}))}
      onReopenCheck={key=>setResolved(r=>{const n={...r};delete n[key];return n;})}
      original={sectionComparisonOriginal(result,references[section.id]??section.text)}
@@ -101,14 +107,17 @@ export function ReviewDock(props:ReviewDockProps){
 
 export type PlaybackAudioProps=Pick<VoiceStudio,
  'audioUrl'|'player'|'seekAt'|'setPlayhead'|'loopCleanup'|'clipBounds'|'loop'|'report'|'setPlaying'|'replay'|'setActiveWord'
->;
+>&Partial<Pick<VoiceStudio,'checkAudio'>>;
 
 /** The hidden audio element every Listen, Play and Hear goes through, on the review and recordings screens alike. */
-export function PlaybackAudio({audioUrl,player,seekAt,setPlayhead,loopCleanup,clipBounds,loop,report,setPlaying,replay,setActiveWord}:PlaybackAudioProps){
+export function PlaybackAudio({audioUrl,player,seekAt,setPlayhead,loopCleanup,clipBounds,loop,report,setPlaying,replay,setActiveWord,checkAudio}:PlaybackAudioProps){
+ // A word check's clip that cannot play says so on its own row; any other playback keeps the usual notice.
+ const failed=(e:unknown)=>{if(!(e instanceof Error&&e.name==='AbortError')&&checkAudio?.playbackFailed(audioUrl))return;report(e);};
  return <audio
   ref={player}
   hidden
-  onLoadedMetadata={()=>{if(player.current){player.current.currentTime=seekAt.current;setPlayhead(seekAt.current*1000);loopCleanup.current?.();if(clipBounds.current)loopCleanup.current=loopVoicePhrase(player.current,clipBounds.current,loop);void player.current.play().catch(report);}}}
+  onError={()=>{checkAudio?.playbackFailed(audioUrl);}}
+  onLoadedMetadata={()=>{if(player.current){player.current.currentTime=seekAt.current;setPlayhead(seekAt.current*1000);loopCleanup.current?.();if(clipBounds.current)loopCleanup.current=loopVoicePhrase(player.current,clipBounds.current,loop);void player.current.play().catch(failed);}}}
   onPlay={()=>setPlaying(true)}
   onPause={()=>setPlaying(false)}
   onTimeUpdate={()=>{if(!player.current)return;setPlayhead(player.current.currentTime*1000);if(replay)setActiveWord(activeReplayWord(replay.words,replay.captureId,player.current.currentTime*1000));}}

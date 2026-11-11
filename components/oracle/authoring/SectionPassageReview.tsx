@@ -12,7 +12,7 @@ interface Props {
  replay:{text:string;words:ReplayWord[];captureId:string}|null;activeWord:number;
  /** Character offset in text to return the cursor to after listening. */
  caret?:number;cleanupCount?:number;onCleanup?:()=>void;onChoose?:(key:string,choice:PassageChoice)=>void;
- /** Word checks; `playing` and `audio` are optional playback facts for each check's row. */
+ /** Word checks; `playing` and `audio` are each row's playback state, `heardAlso` what a second listening heard there. */
  checks?:ReviewWordCheck[];onHearCheck?:(key:string)=>void;onStopCheck?:(key:string)=>void;onConfirmCheck?:(key:string)=>void;onReopenCheck?:(key:string)=>void;
  onSelection?:(from:number,to:number,text:string,baseText:string)=>void;onReplay:(from?:number,to?:number)=>void;onSeek:(word:ReplayWord)=>void;onEdit:(index:number,replacement:string)=>Promise<void>;
 }

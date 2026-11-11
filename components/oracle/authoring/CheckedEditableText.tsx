@@ -2,10 +2,11 @@ import React,{useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {placeReviewChecks,type InlineWordCheck,type PlacedWordCheck} from '../../../lib/oracle/authoring/reviewPresentation';
 
 /**
- * Optional playback facts for one check. The studio does not report them yet; when it does,
- * the row shows `Stop clip`, `Audio unavailable` or `Audio could not play.` without further changes here.
+ * One check as the row shows it. `playing`: its clip is the one playing (`Stop clip`). `audio`: no recording can be
+ * played (`Audio unavailable`) or the last attempt failed (`Audio could not play.`). `heardAlso`: what a second
+ * listening heard there instead, '' when it heard nothing; absent when only one listening was made.
  */
-export interface ReviewWordCheck extends InlineWordCheck {playing?:boolean;audio?:'unavailable'|'failed'}
+export interface ReviewWordCheck extends InlineWordCheck {playing?:boolean;audio?:'unavailable'|'failed';heardAlso?:string}
 export interface CheckActions {disabled?:boolean;onHearCheck?:(key:string)=>void;onStopCheck?:(key:string)=>void;onConfirmCheck?:(key:string)=>void;onReopenCheck?:(key:string)=>void}
 interface Props extends CheckActions {label:string;value:string;checks:ReviewWordCheck[];caret?:number;save:(text:string)=>Promise<void>;onSelection?:(from:number,to:number,text:string,value:string)=>void}
 
@@ -28,7 +29,7 @@ export function checkedEditorText(root:Node):string {
 }
 
 /** The actions for one check, in the order the design gives them. Never rendered inside prose. */
-export function WordCheckActions({check,disabled,onHearCheck,onStopCheck,onConfirmCheck,onReopenCheck}:{check:ReviewWordCheck}&CheckActions){
+export function WordCheckActions({check,disabled,onHearCheck,onStopCheck,onConfirmCheck,onReopenCheck,onUse}:{check:ReviewWordCheck;onUse?:()=>void}&CheckActions){
  if(check.done)return <span className="vs-word-check-actions"><button type="button" disabled={disabled} onClick={()=>onReopenCheck?.(check.key)}>Check again</button></span>;
  const listen=check.canHear?'Hear it':'Listen to recording';
  return <span className="vs-word-check-actions">
@@ -37,16 +38,18 @@ export function WordCheckActions({check,disabled,onHearCheck,onStopCheck,onConfi
    :check.playing?<button type="button" disabled={disabled} onClick={()=>(onStopCheck??onHearCheck)?.(check.key)}>Stop clip</button>
    :onHearCheck&&<button type="button" disabled={disabled} onClick={()=>onHearCheck(check.key)}>{listen}</button>}
   <button type="button" disabled={disabled} onClick={()=>onConfirmCheck?.(check.key)}>{check.quote?'It’s right':'I’ve checked this'}</button>
+  {onUse&&check.heardAlso&&<button type="button" className="vs-word-check-use" disabled={disabled} onClick={onUse}>Use “{check.heardAlso}”</button>}
  </span>;
 }
 
-/** One compact row below the passage: the quoted word, then its actions. */
-export function WordCheckRow({check,onShow,...actions}:{check:PlacedWordCheck;onShow?:(key:string)=>void}&CheckActions){
+/** One compact row below the passage: the quoted word, what a second listening heard, then its actions. */
+export function WordCheckRow({check,onShow,onUse,...actions}:{check:PlacedWordCheck&ReviewWordCheck;onShow?:(key:string)=>void;onUse?:(key:string)=>void}&CheckActions){
  const placed=check.from!==undefined&&!!onShow;
  return <div className={placed?'vs-word-check-row':'vs-word-check-row vs-word-check-note'} data-check-key={check.key} data-done={check.done||undefined}>
   {placed?<button type="button" className="vs-word-check-quote" aria-label={`“${check.quote}”: show it in your words`} onClick={()=>onShow!(check.key)}>“{check.quote}”</button>
    :<span className="vs-word-check-quote">{check.quote?`“${check.quote}”`:check.message}</span>}
-  <WordCheckActions check={check} {...actions}/>
+  {!check.done&&check.quote&&check.heardAlso!==undefined&&<span className="vs-word-check-also">{check.heardAlso?`also heard “${check.heardAlso}”`:'not heard on the second listening'}</span>}
+  <WordCheckActions check={check} onUse={placed&&!check.done&&check.heardAlso&&onUse?()=>onUse(check.key):undefined} {...actions}/>
  </div>;
 }
 
@@ -54,19 +57,43 @@ export function UnplacedWordCheck(props:{check:ReviewWordCheck}&CheckActions){
  return <WordCheckRow {...props} check={{...props.check,from:undefined,to:undefined}}/>;
 }
 
+/** While typing, a marked word he has changed loses its doubt mark until the text is redrawn. */
+function markChanged(root:HTMLElement){
+ for(const word of Array.from(root.querySelectorAll<HTMLElement>('.vs-checked-word')))word.toggleAttribute('data-changed',word.textContent!==word.dataset.word);
+}
+
 /** A prose editor that only marks doubtful words; their actions live in rows below, outside the editable text. */
 export default function CheckedEditableText({label,value,checks,disabled,caret,save,onSelection,...actions}:Props){
+ const {onConfirmCheck}=actions;
  const root=useRef<HTMLDivElement>(null),latest=useRef(value),committed=useRef(value),dirty=useRef(false),focused=useRef(false),timer=useRef<ReturnType<typeof setTimeout>>(),callback=useRef(save),built=useRef('');
- const [display,setDisplay]=useState(value),[failed,setFailed]=useState(false);callback.current=save;
+ const [display,setDisplay]=useState(value),[failed,setFailed]=useState(false),[used,setUsed]=useState<ReadonlySet<string>>(new Set());callback.current=save;
  const placed=placeReviewChecks(display,checks) as (PlacedWordCheck&ReviewWordCheck)[],anchored=placed.filter((check):check is PlacedWordCheck&ReviewWordCheck&{from:number;to:number}=>check.from!==undefined&&check.to!==undefined).sort((a,b)=>a.from-b.from);
  // Reading order: marked words by position, then any check whose word could not be found.
- const rows=[...anchored,...placed.filter(check=>check.from===undefined)];
+ // A check whose other wording was just used leaves at once, without waiting for the saved text to settle it.
+ const rows=[...anchored,...placed.filter(check=>check.from===undefined&&!used.has(check.key))];
  const flush=async()=>{clearTimeout(timer.current);const text=latest.current;if(!dirty.current||text===committed.current)return;try{await callback.current(text);committed.current=text;if(latest.current===text)dirty.current=false;setFailed(false);}catch{setFailed(true);}};
  const select=()=>{const el=root.current,selection=window.getSelection();if(!el||!selection?.rangeCount)return;const range=selection.getRangeAt(0);if(!el.contains(range.startContainer)||!el.contains(range.endContainer))return;const prefix=range.cloneRange();prefix.selectNodeContents(el);prefix.setEnd(range.startContainer,range.startOffset);const from=checkedEditorText(prefix.cloneContents()),selected=checkedEditorText(range.cloneContents());onSelection?.(from.length,from.length+selected.length,selected,checkedEditorText(el));};
- const input=()=>{if(!root.current)return;latest.current=checkedEditorText(root.current);dirty.current=true;onSelection?.(0,0,'',latest.current);clearTimeout(timer.current);timer.current=setTimeout(()=>void flush(),600);};
+ const input=()=>{if(!root.current)return;latest.current=checkedEditorText(root.current);markChanged(root.current);dirty.current=true;onSelection?.(0,0,'',latest.current);clearTimeout(timer.current);timer.current=setTimeout(()=>void flush(),600);};
  const insert=(text:string)=>{const el=root.current,selection=window.getSelection();if(!el||!selection?.rangeCount)return;const range=selection.getRangeAt(0);if(!el.contains(range.commonAncestorContainer))return;range.deleteContents();const node=document.createTextNode(text);range.insertNode(node);range.setStart(node,text.length);range.collapse(true);selection.removeAllRanges();selection.addRange(range);input();};
+ /**
+  * Put the other wording in place of exactly the marked occurrence, through the browser's own editing so the normal
+  * undo brings the word back. Only the editable text changes; the saved transcript and audio are never touched.
+  */
+ const use=(key:string)=>{
+  const el=root.current,check=anchored.find(item=>item.key===key),word=el?.querySelector<HTMLElement>(`.vs-inline-word-check[data-check-key="${CSS.escape(key)}"] .vs-checked-word`);
+  if(disabled||!el||!check?.heardAlso||!word)return;
+  // Typing inside the mark since it was drawn means he already changed it: never overwrite that.
+  if((word.textContent??'').toLowerCase()!==display.slice(check.from,check.to).toLowerCase())return;
+  el.focus({preventScroll:true});
+  const range=document.createRange();range.selectNodeContents(word);const selection=window.getSelection();selection?.removeAllRanges();selection?.addRange(range);
+  if(!document.execCommand('insertText',false,check.heardAlso)){range.deleteContents();range.insertNode(document.createTextNode(check.heardAlso));input();}
+  setUsed(value=>new Set(value).add(key));setDisplay(latest.current);void flush();
+  // When the other wording still holds the quoted word, removing it cannot settle the check, so confirm it instead.
+  if(check.quote&&placeReviewChecks(check.heardAlso,[{key,quote:check.quote,message:check.message,done:false,canHear:false}])[0]?.from!==undefined)onConfirmCheck?.(key);
+ };
  /** Bring a marked word into view and select it, so he can listen, retype or re-record it. */
  const show=(key:string)=>{const el=root.current,word=el?.querySelector<HTMLElement>(`.vs-inline-word-check[data-check-key="${CSS.escape(key)}"] .vs-checked-word`);if(!el||!word)return;word.scrollIntoView({block:'center',behavior:'smooth'});if(disabled)return;el.focus({preventScroll:true});const range=document.createRange();range.selectNodeContents(word);const selection=window.getSelection();selection?.removeAllRanges();selection?.addRange(range);};
+ useEffect(()=>{setUsed(value=>value.size?new Set():value);},[checks.map(check=>check.key).join('|')]);
  useEffect(()=>{if(!dirty.current){latest.current=value;committed.current=value;if(!focused.current)setDisplay(value);}},[value]);
  useEffect(()=>()=>{clearTimeout(timer.current);if(dirty.current&&latest.current!==committed.current)void callback.current(latest.current).catch(()=>undefined);},[]);
  useEffect(()=>{if(caret===undefined||!root.current||!matchMedia('(pointer: fine)').matches)return;const el=root.current;el.focus({preventScroll:true});const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,{acceptNode:node=>(node.parentElement?.closest('[data-check-controls]')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT)});let remaining=caret,node:Node|null;while((node=walker.nextNode())){if(remaining<=(node.textContent?.length??0)){const range=document.createRange();range.setStart(node,remaining);range.collapse(true);const selection=window.getSelection();selection?.removeAllRanges();selection?.addRange(range);break;}remaining-=node.textContent?.length??0;}},[caret]);
@@ -88,7 +115,7 @@ export default function CheckedEditableText({label,value,checks,disabled,caret,s
   for(const check of anchored){
    if(check.from>cursor)fragment.appendChild(document.createTextNode(display.slice(cursor,check.from)));
    const span=document.createElement('span');span.className='vs-inline-word-check';span.dataset.checkKey=check.key;if(check.done)span.dataset.done='true';
-   const word=document.createElement('span');word.className='vs-checked-word';word.textContent=display.slice(check.from,check.to);span.appendChild(word);fragment.appendChild(span);cursor=check.to;
+   const word=document.createElement('span');word.className='vs-checked-word';word.textContent=display.slice(check.from,check.to);word.dataset.word=word.textContent;span.appendChild(word);fragment.appendChild(span);cursor=check.to;
   }
   if(cursor<display.length)fragment.appendChild(document.createTextNode(display.slice(cursor)));
   el.replaceChildren(fragment);
@@ -96,7 +123,7 @@ export default function CheckedEditableText({label,value,checks,disabled,caret,s
  return <div className="vs-checked-editor">
   <div ref={root} role="textbox" aria-label={label} aria-multiline="true" aria-disabled={disabled||undefined} tabIndex={disabled?-1:0} contentEditable={!disabled} suppressContentEditableWarning className="vs-checked-prose" onFocus={()=>{focused.current=true;}} onInput={input} onSelect={select} onMouseUp={select} onKeyUp={select} onBlur={e=>{if(e.currentTarget.contains(e.relatedTarget as Node))return;focused.current=false;setDisplay(latest.current);void flush();}} onPaste={e=>{e.preventDefault();insert(e.clipboardData.getData('text/plain'));}} onCopy={e=>{const selection=window.getSelection();if(!selection?.rangeCount)return;e.preventDefault();e.clipboardData.setData('text/plain',checkedEditorText(selection.getRangeAt(0).cloneContents()));}}/>
   {rows.length>0&&<div className="vs-word-check-rows" role="group" aria-label="Words to check">
-   {rows.map(check=><WordCheckRow key={check.key} check={check} onShow={show} disabled={disabled} {...actions}/>)}
+   {rows.map(check=><WordCheckRow key={check.key} check={check} onShow={show} onUse={use} disabled={disabled} {...actions}/>)}
   </div>}
   {failed&&<button type="button" className="vs-link" onClick={()=>void flush()}>Retry saving these words</button>}
  </div>;

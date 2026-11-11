@@ -22,6 +22,7 @@ import { useAccount } from '../../../../lib/account/useAccount';
 import { useNativeAccountActions } from '../../../../src/mobile/account/NativeAccountProvider';
 import { isSignInBlocked, resumeSignInBlockedRecordings } from '../../../../src/mobile/authoring/accountRecovery';
 import { plural } from './format';
+import { useCheckAudio } from './useCheckAudio';
 import type { StudioProps, Tone, View } from './types';
 /** The processing summary of timed mishearings is not repeated beside the timed words themselves.
  * An issue is settled once its exact quote is gone from the human words or the speaker confirms it. */
@@ -967,6 +968,8 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     const checks = result && !result.applied && !result.checked && sectionReviewExceptions(result).needsReview ? issueKeys(result).map(item => ({ ...item, done: !!resolved[item.key] || !!item.quote && !quoted(result.text, item.quote) })) : [];
     const open = checks.filter(c => !c.done).length;
     const generalCheck = checks.some(c => !c.quote);
+    /** Each word check's own clip: playing, stopped, unavailable or failed. See `useCheckAudio`. */
+    const checkAudio = useCheckAudio({ load: id => audio.load(id), captureSessionId: draft?.captureSessionId, version: draft?.version, discarded, fallbackCaptureIds: [...(result?.takeIds ?? []), draft?.captureId], playCapture, clipBounds, clearReplay: () => setReplay(null), audioUrl, playing, stopListening });
     const progressText = authorshipFailed ? 'Authorship unavailable' : !authorship ? 'Checking authorship…' : authorship.total ? `${authorship.human} of ${authorship.total} ${authorship.total === 1 ? 'section' : 'sections'} in your words` : 'No recordable sections';
     const pathFor = (node: CardSection) => displaySectionTitle([...node.path.slice(0, -1), titleFor(node)].filter((part, i, all) => i === 0 || part !== all[i - 1]).join(' · '));
     const scopeFor = (node: CardSection, focus?: {
@@ -1068,7 +1071,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         // Review and playback.
         resolved, setResolved, placing, setPlacing, caret, playhead, setPlayhead, playing, setPlaying,
         replay, setReplay, activeWord, setActiveWord, audioUrl, loop, setLoop,
-        seekAt, clipBounds, loopCleanup, player, resumePlayback, pickerReturn, explicitChoice, reviewArrival,
+        seekAt, clipBounds, loopCleanup, player, resumePlayback, pickerReturn, explicitChoice, reviewArrival, checkAudio,
         // Derived values.
         nodes, review, processing, section, result, results, target, takes, queued, discarded, savedCaptures,
         needsSignIn, cannotSignIn, processingMessage, processingDetail, statusShown, toastError, toastDetail,

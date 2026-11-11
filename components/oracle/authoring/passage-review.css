@@ -44,6 +44,15 @@
 .section-voice-studio .vs-word-check-actions button:disabled{opacity:.45;cursor:default}
 .section-voice-studio :is(.vs-word-check-actions button,button.vs-word-check-quote):focus-visible{outline:2px solid var(--vs-ink-2);outline-offset:2px}
 .section-voice-studio .vs-word-check-status{color:var(--vs-muted);font:400 14px/20px var(--font-controls)}
+/* What a second listening heard there: quiet secondary text between the word and its actions. Long wording wraps. */
+.section-voice-studio .vs-word-check-also{min-width:0;color:var(--vs-muted);font:400 14px/20px var(--font-controls);overflow-wrap:anywhere}
+.section-voice-studio .vs-word-check-actions button.vs-word-check-use{max-width:100%;text-align:left;overflow-wrap:anywhere;padding-block:12px;line-height:20px}
+.section-voice-studio .vs-word-check-row{max-width:100%;min-width:0}
+.section-voice-studio .vs-word-check-actions{max-width:100%;min-width:0}
+/* A marked word he has already changed while typing loses its mark until the text is redrawn. */
+.section-voice-studio .vs-checked-word[data-changed]{text-decoration:none}
+/* A recording that was not double-checked: one quiet line near his words, never a warning panel. */
+.section-voice-studio .vs-review-unchecked{margin:0 0 12px;max-width:700px;color:var(--vs-muted);font:400 14px/20px var(--font-controls)}
 /* A check whose word cannot be found keeps the same row shape, with its quote or message. */
 .section-voice-studio .vs-word-check-note .vs-word-check-quote{font-weight:400;color:var(--vs-ink-2)}
 
