@@ -1,9 +1,10 @@
 import {AuthoringStore,type SavedSession} from '../../../lib/oracle/authoring/storage';
 import {focusedComparison} from '../../../lib/oracle/authoring/passageComparison';
-import {addTranscript} from '../../../lib/oracle/authoring/workflow';
+import {addTranscript,uncertainWord} from '../../../lib/oracle/authoring/workflow';
 import type {AuthoringServices,AuthoringSession} from '../../../lib/oracle/authoring/types';
 import {SectionDraftStore,type SectionDraftResult,type SectionDraftSession,createSectionDraftSession,transcriptionReviewIssues} from '../../../lib/oracle/authoring/sectionDrafts';
 import {assimilateSections} from './sectionAssimilation';
+import {correctedSpeech,restoreSpokenWords} from './knownWordFixes';
 import {cardSections} from '../../../lib/oracle/authoring/cardSections';
 import {currentSectionTexts} from './sectionWorkflow';
 import {recoverCapture} from '../../../lib/oracle/authoring/recorder';
@@ -18,8 +19,14 @@ export interface SectionTake {
  baseline?:Record<string,string>;continuationOf?:string;
  /** The exact passage of the start section this take was aimed at. Only that passage may change. */
  focus?:{start:number;end:number;text:string};preparedFingerprints?:Record<string,string>;comparisonOriginals?:Record<string,string>;intent?:'replace'|'add'|'revise';retryAttempts?:number;retryAt?:number;
+ /** The server asked for a pause (Retry-After) when this failed: no other recording is retried before `retryAt` either. */
+ serverPause?:boolean;
 }
-export interface TakeResult extends SectionDraftResult {takeIds?:string[]}
+export interface TakeResult extends SectionDraftResult {takeIds?:string[];
+ /** true: a second listening checked every recording behind these words. false: at least one was not checked, so no doubt list means
+  * nothing. Absent: the words came by a path that never double-checks (the Mac uses its own confidence instead). */
+ doubtsAvailable?:boolean;
+}
 export interface RecordingDestination {captureId:string;sectionId:string;markers:{atMs:number;sectionId:string}[];intent?:'replace'|'add'|'revise';focus?:{start:number;end:number;text:string};continuationOf?:string}
 export interface TakeSession extends SectionDraftSession {
  takes?:SectionTake[];linkedSessionIds?:string[];
@@ -55,16 +62,25 @@ function updateTake(session:TakeSession,captureId:string,values:Partial<SectionT
  const update='error' in values&&values.error===undefined?{...values,errorDetail:undefined}:values;
  return {...session,takes:(session.takes??[]).map(take=>take.captureId===captureId?{...take,...update}:take)};
 }
-const retryableStatuses=new Set([0,408,409,429,500,502,504]);
+const retryableStatuses=new Set([0,408,429,500,502,504]);
 /** Retry a passing failure (busy, provider failure, timeout, no connection), never one the speaker must act on
- * (signed out, not allowed, too large, no speech, bad request, not set up). The server's own `retryable` wins;
- * then the HTTP status; an older error with neither is judged by its message. */
+ * (signed out, not allowed, too large, no speech, bad request, not set up). An explicit `retryable: false` always wins;
+ * a conflict (409) is never resolved by repeating the request; then the server's `retryable: true`; then the HTTP status;
+ * an older error with neither is judged by its message. */
 export function retryableTakeFailure(error:unknown):boolean{
  const value=error&&typeof error==='object'?error as {retryable?:unknown;status?:unknown;name?:unknown}:{};
- if(typeof value.retryable==='boolean')return value.retryable;
+ if(value.retryable===false||value.status===409)return false;
+ if(value.retryable===true)return true;
  if(typeof value.status==='number'&&Number.isFinite(value.status)&&value.status!==202)return retryableStatuses.has(value.status);
  if(value.name==='TimeoutError'||value.name==='AbortError')return true;
  return /network|offline|failed to fetch|load failed|connection|temporar|timed? ?out|unavailable|\b50[234]\b/i.test(error instanceof Error?error.message:String(error??''));
+}
+/** How long the server asked to be left alone (Retry-After), in milliseconds; 0 when it did not ask. */
+export function retryAfterMs(error:unknown):number{const value=error&&typeof error==='object'?(error as {retryAfterMs?:unknown}).retryAfterMs:undefined;return typeof value==='number'&&Number.isFinite(value)&&value>0?Math.min(value,24*60*60*1000):0;}
+/** The next attempt: doubling from 2 seconds to a minute, never sooner than the server asked. Undefined when it must not be retried. */
+export function takeRetryAt(error:unknown,retryAttempts:number,now=Date.now()):number|undefined{
+ if(retryAttempts>4||!retryableTakeFailure(error))return undefined;
+ return Math.max(now+Math.min(60000,2000*2**(retryAttempts-1)),now+retryAfterMs(error));
 }
 const failureDetail=(error:unknown)=>{const detail=error&&typeof error==='object'&&'detail' in error?(error as {detail?:unknown}).detail:undefined;return typeof detail==='string'&&detail?detail:undefined;};
 function rawSpeech(session:AuthoringSession,discarded:Set<string>){
@@ -103,7 +119,7 @@ function launch(id:string,captureId:string,services:AuthoringServices){
    saved=await changeAudio(saved.session.id,current=>{
     if(current.transcript.some(t=>t.captureId===captureId))return current;
     const adjusted={...current,captures:current.captures.map(c=>c.id===captureId?{...c,durationMs:Math.max(c.durationMs,response.durationMs??0),...(response.arCreate?{arCreate:response.arCreate}:{})}:c)};
-    return addTranscript(adjusted,captureId,response.segments,response.provider);
+    return addTranscript(adjusted,captureId,response.segments,response.provider,{doubts:response.doubts,doubtsAvailable:response.doubtsAvailable});
    });
   }
   session=await getTakeSession(id);take=session?.takes?.find(t=>t.captureId===captureId);
@@ -119,7 +135,10 @@ function launch(id:string,captureId:string,services:AuthoringServices){
   if(chain.some(t=>!saved!.session.transcript.some(transcript=>transcript.captureId===t.captureId&&!transcript.referenceOnly)))throw Error('An earlier part of this recording has not finished transcription. Retry after that saved part is ready.');
   let elapsed=0;const offsets=new Map<string,number>();for(const part of chain){offsets.set(part.captureId,elapsed);elapsed+=saved.session.captures.find(c=>c.id===part.captureId)?.durationMs??0;}
   const transcript=chain.flatMap(part=>saved!.session.transcript.filter(t=>t.captureId===part.captureId&&!t.referenceOnly).sort((a,b)=>a.startMs-b.startMs).map(t=>({...t,startMs:t.startMs+(offsets.get(part.captureId)??0),endMs:t.endMs+(offsets.get(part.captureId)??0),words:t.words})));
-  const words=transcript.map(t=>t.raw).join('\n');if(!words.trim())throw Error('No speech was found in this take. Your audio is saved.');
+  // Matching reads the words with known mishearings fixed; evidence and review stay on the raw words.
+  const speech=correctedSpeech(transcript),words=speech.raw,heard=speech.corrected;if(!words.trim())throw Error('No speech was found in this take. Your audio is saved.');
+  const checked=transcript.some(t=>t.doubtsAvailable===false)?false:transcript.length&&transcript.every(t=>t.doubtsAvailable===true)?true:undefined;
+  const listening=checked===undefined?{}:{doubtsAvailable:checked};
   await change(id,current=>{
    const own=current.takes?.find(t=>t.captureId===captureId);if(!own||own.state==='discarded')return current;
    const discarded=new Set((current.takes??[]).filter(t=>t.state==='discarded').map(t=>t.captureId));
@@ -128,7 +147,7 @@ function launch(id:string,captureId:string,services:AuthoringServices){
   const latestReferences=await currentSectionTexts(session);
   const references=rootTake.comparisonOriginals??Object.fromEntries(session.sections.map(section=>[section.id,latestReferences[section.id]??section.text]));
   if(!rootTake.comparisonOriginals)await change(id,current=>updateTake(current,rootTake.captureId,{comparisonOriginals:references}));
-  const relatedSources=await Promise.all(explicitDestinationCards(words,session.cardNumber).map(async cardNumber=>{const source=await services.loadSource(cardNumber);if(source.cardNumber!==cardNumber)throw Error('The related card source does not match its requested card.');const sections=cardSections(source);const references=await currentSectionTexts(createSectionDraftSession(source,sections));return {cardNumber,source,sections,references};}));
+  const relatedSources=await Promise.all(explicitDestinationCards(heard,session.cardNumber).map(async cardNumber=>{const source=await services.loadSource(cardNumber);if(source.cardNumber!==cardNumber)throw Error('The related card source does not match its requested card.');const sections=cardSections(source);const references=await currentSectionTexts(createSectionDraftSession(source,sections));return {cardNumber,source,sections,references};}));
   if(relatedSources.length)await changeAudio(saved.session.id,current=>{
    const sources=[current.source,...(current.relatedSources??[])],additions=relatedSources.map(item=>item.source).filter(source=>{
     const existing=sources.filter(candidate=>candidate.cardNumber===source.cardNumber);
@@ -137,8 +156,8 @@ function launch(id:string,captureId:string,services:AuthoringServices){
    });
    return additions.length?{...current,relatedSources:[...(current.relatedSources??[]),...additions]}:current;
   });
-  const intent=take.intent??inferSpokenEditIntent(words,!!references[take.startSectionId]);
-  const prepared=await assimilateSections({words,intent,relatedSources:relatedSources.map(({cardNumber,sections,references})=>({cardNumber,sections:sections.map(({id,title,path,text})=>({id,title,path,text:references[id]??text}))})),sections:session.sections.map(({id,title,path,text})=>({id,title,path,text:references[id]??text})),startSectionId:rootTake.startSectionId,markers:chain.flatMap(part=>part.markers.map(marker=>({...marker,atMs:marker.atMs+(offsets.get(part.captureId)??0)}))),segments:transcript.map(t=>({text:t.raw,startMs:t.startMs,endMs:t.endMs}))});
+  const intent=take.intent??inferSpokenEditIntent(heard,!!references[take.startSectionId]);
+  const prepared=restoreSpokenWords(await assimilateSections({words:heard,intent,relatedSources:relatedSources.map(({cardNumber,sections,references})=>({cardNumber,sections:sections.map(({id,title,path,text})=>({id,title,path,text:references[id]??text}))})),sections:session.sections.map(({id,title,path,text})=>({id,title,path,text:references[id]??text})),startSectionId:rootTake.startSectionId,markers:chain.flatMap(part=>part.markers.map(marker=>({...marker,atMs:marker.atMs+(offsets.get(part.captureId)??0)}))),segments:transcript.map(t=>({text:t.corrected||t.raw,startMs:t.startMs,endMs:t.endMs}))}),speech);
   const active=await getTakeSession(id);if(active?.takes?.find(t=>t.captureId===captureId)?.state==='discarded')return;
   const linkedSessionIds:string[]=[];
   for(const destination of relatedSources){
@@ -148,7 +167,7 @@ function launch(id:string,captureId:string,services:AuthoringServices){
    const existing=await drafts.get(linkedId);
    if(!existing){
     const linked=createSectionDraftSession(destination.source,destination.sections,foreign[0].sectionId);
-    await drafts.save({...linked,id:linkedId,captureSessionId:session.captureSessionId,captureId,takes:chain.map(part=>({...part,state:'review' as const,error:undefined,retryAt:undefined,retryAttempts:0,resultSectionIds:foreign.map(result=>result.sectionId)})),rawTranscript:words,state:'review',results:foreign.map(result=>({...result,takeIds:chainIds,editIntent:intent,comparisonOriginal:result.comparisonOriginal??destination.references[result.sectionId]??destination.sections.find(section=>section.id===result.sectionId)?.text,reviewTranscript:words,checked:false,reviewIssues:[...(result.reviewIssues??[]),...transcriptionReviewIssues(words,transcript,result.evidenceQuotes)]})),unassigned:[]} as TakeSession,0);
+    await drafts.save({...linked,id:linkedId,captureSessionId:session.captureSessionId,captureId,takes:chain.map(part=>({...part,state:'review' as const,error:undefined,retryAt:undefined,retryAttempts:0,resultSectionIds:foreign.map(result=>result.sectionId)})),rawTranscript:words,state:'review',results:foreign.map(result=>({...result,...listening,takeIds:chainIds,editIntent:intent,comparisonOriginal:result.comparisonOriginal??destination.references[result.sectionId]??destination.sections.find(section=>section.id===result.sectionId)?.text,reviewTranscript:words,checked:false,reviewIssues:[...(result.reviewIssues??[]),...transcriptionReviewIssues(words,transcript,result.evidenceQuotes)]})),unassigned:[]} as TakeSession,0);
    }
    linkedSessionIds.push(linkedId);
   }
@@ -166,11 +185,11 @@ function launch(id:string,captureId:string,services:AuthoringServices){
    const resultIds=new Set(localSections.map(result=>result.sectionId));
    const discarded=new Set((current.takes??[]).filter(t=>t.state==='discarded').map(t=>t.captureId));
    const results:TakeResult[]=[...current.results.filter(result=>!resultIds.has(result.sectionId)),...localSections.map(result=>{
-    const uncertain=transcript.filter(t=>result.evidenceQuotes.some(q=>q.includes(t.raw)||t.raw.includes(q))).flatMap(t=>(t.words??[]).filter(w=>w.probability!==undefined&&w.probability<.6).map(w=>w.text));
+    const uncertain=transcript.filter(t=>result.evidenceQuotes.some(q=>q.includes(t.raw)||t.raw.includes(q))).flatMap(t=>[...(t.words??[]).filter(uncertainWord).map(w=>w.text.trim()),...(t.doubts??[]).map(d=>d.text.trim())]);
     const comparisonOriginal=references[result.sectionId]??session!.sections.find(section=>section.id===result.sectionId)?.text;
     // An aimed take gives every spoken word to its passage; the AI alignment cannot move them elsewhere in the section.
     const aimed=rootTake.focus&&result.sectionId===rootTake.startSectionId&&intent!=='add'&&comparisonOriginal!==undefined?focusedComparison(comparisonOriginal,result.text,rootTake.focus):undefined;
-    return {...result,...(aimed?{comparison:aimed}:{}),editIntent:intent,reviewTranscript:words,comparisonOriginal,reviewIssues:[...(result.reviewIssues??[]),...transcriptionReviewIssues(words,transcript,result.evidenceQuotes)],takeIds:chainIds,checked:false,warnings:[...new Set([...result.warnings,...(uncertain.length?[`Check possible mishearings against your audio: ${[...new Set(uncertain)].join(', ')}`]:[])])]};
+    return {...result,...listening,...(aimed?{comparison:aimed}:{}),editIntent:intent,reviewTranscript:words,comparisonOriginal,reviewIssues:[...(result.reviewIssues??[]),...transcriptionReviewIssues(words,transcript,result.evidenceQuotes)],takeIds:chainIds,checked:false,warnings:[...new Set([...result.warnings,...(uncertain.length?[`Check possible mishearings against your audio: ${[...new Set(uncertain)].join(', ')}`]:[])])]};
    })].map(result=>preservesIntegration(current.results.find(prior=>prior.sectionId===result.sectionId),result));
    const order=new Map(current.sections.map((section,index)=>[section.id,index]));results.sort((a,b)=>(order.get(a.sectionId)??0)-(order.get(b.sectionId)??0));
    const next=updateTake({...current,linkedSessionIds:[...new Set([...(current.linkedSessionIds??[]),...linkedSessionIds])],results,unassigned:[...current.unassigned.filter(u=>!u.takeId||!chainIds.includes(u.takeId)),...prepared.unassigned.map(u=>({...u,takeId:captureId}))],rawTranscript:rawSpeech(latestAudio.session,discarded)},captureId,{state:'review',preparedFingerprints:Object.fromEntries(results.filter(result=>resultIds.has(result.sectionId)).map(result=>[result.sectionId,fingerprint(result)])),resultSectionIds:[...resultIds],error:undefined,retryAt:undefined,retryAttempts:0});
@@ -181,8 +200,8 @@ function launch(id:string,captureId:string,services:AuthoringServices){
    const take=session.takes?.find(t=>t.captureId===captureId);if(!take||take.state==='discarded')return session;
    const message=error instanceof Error?error.message:'This recording could not be prepared. It is saved on this device.';
    const retryAttempts=(take.retryAttempts??0)+1;
-   const retryAt=retryAttempts<=4&&retryableTakeFailure(error)?Date.now()+Math.min(60000,2000*2**(retryAttempts-1)):undefined;
-   const next=updateTake(session,captureId,{state:'failed',error:message,errorDetail:failureDetail(error),retryAttempts,retryAt});
+   const retryAt=takeRetryAt(error,retryAttempts);
+   const next=updateTake(session,captureId,{state:'failed',error:message,errorDetail:failureDetail(error),retryAttempts,retryAt,serverPause:retryAt!==undefined&&retryAfterMs(error)>0?true:undefined});
    return {...next,state:stateAfter(next)};
   }).catch(()=>undefined);
  }})().finally(()=>running.delete(jobKey));
@@ -286,25 +305,37 @@ export function explicitDestinationCards(words:string,currentCard:number):number
  return [...new Set([...words.matchAll(pattern)].map(match=>parse(match[1])).filter(number=>Number.isInteger(number)&&number>=1&&number<=64&&number!==currentCard))];
 }
 
-/** Event-driven recovery with persisted backoff. Timers do no work while offline. */
+/** Retries in flight, across every session: one at a time, so a provider that is failing is asked once, not by every waiting recording. */
+const retrying=new Set<string>();
+/** Event-driven recovery with persisted backoff. Timers do no work while offline. Failed recordings are retried one at a
+ * time, earliest due first, and none before a pause the server asked for (Retry-After) has passed. */
 export function startSectionTakeRecovery(services:AuthoringServices):()=>void {
- let disposed=false,timer:ReturnType<typeof setTimeout>|undefined,checking=false;
+ let disposed=false,timer:ReturnType<typeof setTimeout>|undefined,checking=false,again=false;
  const recover=async()=>{
-  if(disposed||checking)return;checking=true;clearTimeout(timer);
+  if(disposed)return;if(checking){again=true;return;}checking=true;clearTimeout(timer);
   try{
    if(typeof navigator!=='undefined'&&navigator.onLine===false)return;
-   let nextAt=Infinity;
-   for(const session of await drafts.list() as TakeSession[])for(const take of session.takes??[]){
+   let nextAt=Infinity;const due:{sessionId:string;take:SectionTake}[]=[];
+   const sessions=await drafts.list() as TakeSession[],now=Date.now();
+   const pausedUntil=Math.max(0,...sessions.flatMap(session=>(session.takes??[]).filter(t=>t.state==='failed'&&t.serverPause&&t.retryAt!==undefined).map(t=>t.retryAt!)));
+   for(const session of sessions)for(const take of session.takes??[]){
     if(['queued','transcribing','assimilating'].includes(take.state))launch(session.id,take.captureId,services);
     if(take.state==='failed'&&take.retryAt!==undefined){
-     if(take.retryAt<=Date.now()){
-      await change(session.id,current=>{const own=current.takes?.find(t=>t.captureId===take.captureId);return own?.state==='failed'&&own.retryAt===take.retryAt?updateTake(current,take.captureId,{state:'queued',retryAt:undefined}):current;});
-      launch(session.id,take.captureId,services);
-     }else nextAt=Math.min(nextAt,take.retryAt);
+     const at=Math.max(take.retryAt,pausedUntil);
+     if(at<=now)due.push({sessionId:session.id,take});else nextAt=Math.min(nextAt,at);
     }
    }
+   due.sort((a,b)=>a.take.retryAt!-b.take.retryAt!);
+   const next=retrying.size?undefined:due[0];
+   if(next){
+    const {sessionId,take}=next,jobKey=key(sessionId,take.captureId);
+    await change(sessionId,current=>{const own=current.takes?.find(t=>t.captureId===take.captureId);return own?.state==='failed'&&own.retryAt===take.retryAt?updateTake(current,take.captureId,{state:'queued',retryAt:undefined,serverPause:undefined}):current;});
+    launch(sessionId,take.captureId,services);
+    const job=running.get(jobKey);
+    if(job){retrying.add(jobKey);void job.finally(()=>{retrying.delete(jobKey);void recover();});}
+   }else if(due.length)nextAt=Math.min(nextAt,now+1000);
    if(Number.isFinite(nextAt)&&!disposed)timer=setTimeout(()=>void recover(),Math.max(1,nextAt-Date.now()));
-  }finally{checking=false;}
+  }finally{checking=false;if(again&&!disposed){again=false;void recover();}}
  };
  const onChange=()=>{void recover();};const unsubscribe=drafts.subscribe(onChange);
  if(typeof window!=='undefined'){window.addEventListener('online',onChange);window.addEventListener('focus',onChange);}

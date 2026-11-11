@@ -18,13 +18,16 @@ export const processingFailureMessages:Record<ProcessingFailure,string>={
  offline:'No connection right now. Your recording is saved and will be tried again when you are back online.',
  not_configured:'Preparing words is not set up yet. Your recording is saved on this device. Try again later.',
  local_not_running:'The speech service on this computer is not running. Your recording is saved. Start it, then choose Retry.',
- in_progress:'This recording is already being prepared. It is saved and will be tried again shortly.',
+ in_progress:'This recording is already being prepared. It is saved on this device. Choose Retry once that has finished.',
  still_working:'Your words are still being prepared. Your recording is saved and will be checked again shortly.',
 };
-const retryableFailures=new Set<ProcessingFailure>(['busy','failed','timeout','offline','in_progress','still_working']);
+// A conflict (in_progress, 409) is never resolved by sending the same request again.
+const retryableFailures=new Set<ProcessingFailure>(['busy','failed','timeout','offline','still_working']);
 export class AuthoringServiceError extends Error {
  readonly failure?:ProcessingFailure;readonly retryable?:boolean;
- constructor(public readonly status:number,message:string,options:{failure?:ProcessingFailure;retryable?:boolean}={}){super(message);this.name='AuthoringServiceError';this.failure=options.failure;this.retryable=options.retryable;}
+ /** How long the server asked to be left alone before the next attempt (its Retry-After), when it said. */
+ readonly retryAfterMs?:number;
+ constructor(public readonly status:number,message:string,options:{failure?:ProcessingFailure;retryable?:boolean;retryAfterMs?:number}={}){super(message);this.name='AuthoringServiceError';this.failure=options.failure;this.retryable=options.retryable;if(options.retryAfterMs!==undefined)this.retryAfterMs=options.retryAfterMs;}
  /** The quiet detail shown after the sentence: the HTTP status, or offline/timeout when no response came back. */
  get detail(){return this.status?String(this.status):this.failure==='timeout'?'timeout':this.failure==='offline'?'offline':'';}
 }
@@ -41,8 +44,18 @@ export function processingFailure(status:number,code:unknown,local=false):Proces
  if(status===503)return local?'local_not_running':'not_configured';if(status===404||status===405)return 'not_configured';
  return status>=500?'failed':'invalid_request';
 }
-export function processingError(status:number,failure:ProcessingFailure,retryable?:unknown){
- return new AuthoringServiceError(status,processingFailureMessages[failure],{failure,retryable:typeof retryable==='boolean'?retryable:retryableFailures.has(failure)});
+export function processingError(status:number,failure:ProcessingFailure,retryable?:unknown,retryAfterMs?:number){
+ return new AuthoringServiceError(status,processingFailureMessages[failure],{failure,retryable:typeof retryable==='boolean'?retryable:retryableFailures.has(failure),...(retryAfterMs?{retryAfterMs}:{})});
+}
+/** Retry-After as seconds or an HTTP date, else the body's `retryAfter` seconds; undefined when neither says. */
+export function retryAfterMs(header:string|null|undefined,body?:unknown,now=Date.now()):number|undefined{
+ const value=header?.trim();
+ if(value){
+  if(/^\d+(?:\.\d+)?$/.test(value))return Math.round(Number(value)*1000)||undefined;
+  const at=Date.parse(value);if(Number.isFinite(at))return Math.max(0,at-now)||undefined;
+ }
+ const seconds=body&&typeof body==='object'?(body as {retryAfter?:unknown}).retryAfter:undefined;
+ return typeof seconds==='number'&&Number.isFinite(seconds)&&seconds>0?Math.round(seconds*1000):undefined;
 }
 export async function requestAuthoringProcessing(body:unknown):Promise<{status:number;value:any}>{
  const operation=(body as {operation?:string})?.operation;
@@ -65,7 +78,7 @@ export async function requestAuthoringProcessing(body:unknown):Promise<{status:n
  if(!response.ok){
   // The response body is never shown: it can be an HTML page or a provider's private detail.
   const fields=value&&typeof value==='object'&&!Array.isArray(value)?value as {code?:unknown;retryable?:unknown}:{};
-  throw processingError(response.status,processingFailure(response.status,fields.code,local),fields.retryable);
+  throw processingError(response.status,processingFailure(response.status,fields.code,local),fields.retryable,retryAfterMs(response.headers?.get?.('Retry-After'),fields));
  }
  return {status:response.status,value};
 }
@@ -87,4 +100,47 @@ export const automaticTranscription:NonNullable<AuthoringServices['transcribe']>
  const result=await process({context,operation:'transcribe',sessionId:session.reflectionSessionId??session.id,captureId:capture.id,audioBase64:await base64(audio),mimeType:audio.type,durationMs:capture.durationMs,sectionId});
  return {...result,segments:result.segments.map(segment=>({...segment,cardNumber:capture.visibleCardNumber??session.source.cardNumber}))};
 };
+/**
+ * Whether recordings can be prepared right now, asked once when the workspace opens and kept for a few minutes.
+ * Never blocks recording: a recording is saved whatever this says. `ready` means words can be heard and matched to sections;
+ * `signed_out` (401), `not_allowed` (403, another account), `not_set_up` (503, 404, or a missing piece), `unreachable` (no answer in time).
+ */
+export type HostedReadinessState='ready'|'signed_out'|'not_allowed'|'not_set_up'|'unreachable';
+export interface HostedReadiness {
+ state:HostedReadinessState;
+ /** When the server answered: whether hearing words and matching them to sections are each set up. */
+ transcription?:boolean;writing?:boolean;
+ /** On the phone, recordings would still be tried on the paired Mac when the server is not set up. */
+ macFallback?:boolean;
+ checkedAt:number;
+}
+const READINESS_KEEP_MS=3*60*1000,READINESS_RETRY_MS=30*1000;
+let readiness:{value?:HostedReadiness;pending?:Promise<HostedReadiness>}={};
+/** Forget the kept answer, for example after signing in. */
+export function forgetHostedReadiness(){readiness={};}
+export function hostedReadiness(options:{force?:boolean;timeoutMs?:number}={}):Promise<HostedReadiness>{
+ const kept=readiness.value;
+ if(!options.force&&kept&&Date.now()-kept.checkedAt<(kept.state==='unreachable'?READINESS_RETRY_MS:READINESS_KEEP_MS))return Promise.resolve(kept);
+ if(!options.force&&readiness.pending)return readiness.pending;
+ const pending=askReadiness(options.timeoutMs??6000).then(value=>{if(readiness.pending===pending)readiness={value};return value;});
+ readiness={...readiness,pending};
+ return pending;
+}
+async function askReadiness(timeoutMs:number):Promise<HostedReadiness>{
+ const native=Capacitor.isNativePlatform(),local=!native&&['localhost','127.0.0.1','[::1]'].includes(location.hostname);
+ const answer=(state:HostedReadinessState,extra:Partial<HostedReadiness>={}):HostedReadiness=>({state,...extra,...(state==='not_set_up'&&native&&loadMacBridge()?{macFallback:true}:{}),checkedAt:Date.now()});
+ let response:Response;
+ try{
+  const transport=native?createNativeAccountFetch():fetch;
+  response=await transport(local?'/api/oracle/authoring/ar-create':'/api/oracle/authoring/process',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({operation:'capabilities'}),signal:AbortSignal.timeout(timeoutMs)});
+ }catch{return answer('unreachable');}
+ if(response.status===401)return answer('signed_out');
+ if(response.status===403)return answer('not_allowed');
+ if([404,405,503].includes(response.status))return answer('not_set_up');
+ if(!response.ok)return answer('unreachable');
+ const value=await response.json().catch(()=>null) as {transcription?:{available?:unknown;ready?:unknown};writing?:{available?:unknown}}|null;
+ if(!value||typeof value!=='object')return answer('not_set_up');
+ const transcription=value.transcription?.available===true||value.transcription?.ready===true,writing=value.writing?.available===true;
+ return answer(transcription&&writing?'ready':'not_set_up',{transcription,writing});
+}
 export const automaticProposals:NonNullable<AuthoringServices['propose']>=async session=>(await process({operation:'propose',session})).proposals;

@@ -1,8 +1,8 @@
 import {applyComparisonEdits,buildPassageComparison,comparisonEdits,comparisonRows,type PassageChoice,type PassageComparison} from './passageComparison';
-import type {AuthoringServices,SourceSnapshot,Transcript} from './types';
+import type {AuthoringServices,SourceSnapshot,Transcript,TranscriptDoubt} from './types';
 import type {CardSection} from './cardSections';
 import {WorkingCardStore,type WorkingSection} from './humanDrafts';
-import {sha256} from './workflow';
+import {sha256,uncertainWord} from './workflow';
 import {AuthoringStore} from './storage';
 import {applyPassageAddition,applyPassageEdits,applyPassageReplacement,plainSection} from '../../../src/mobile/authoring/passageActions';
 
@@ -21,23 +21,34 @@ export interface SectionReviewIssue {
  kind:'transcription'|'ambiguity';quote:string;start:number;end:number;message:string;
  /** Character offsets refer to rawTranscript, never inferred cleaned text. */
  scope:'rawTranscript';probability?:number;startMs?:number;endMs?:number;captureId?:string;
+ /** What a second listening heard here instead ('' when it heard nothing). Absent when only one listening was made. */
+ heardAlso?:string;
 }
 /** Surface only actionable exceptions; no audio confidence is inferred from an AI warning. */
 export function sectionReviewExceptions(result:SectionDraftResult){return {issues:result.reviewIssues??[],warnings:result.warnings,changes:result.changes,needsReview:!!(result.reviewIssues?.length||result.warnings.length)};}
 export function sectionComparisonOriginal(result:SectionDraftResult,fallback:string):string{return result.comparisonOriginal??result.comparison?.originalText??result.appliedText??fallback;}
-/** Locate provider words within their real transcript segment, including repeated words. */
-export function transcriptionReviewIssues(rawTranscript:string,transcripts:Pick<Transcript,'raw'|'words'|'captureId'>[],evidenceQuotes:string[]):SectionReviewIssue[]{
+/** Locate provider words within their real transcript segment, including repeated words. A word is flagged by `uncertainWord`;
+ * a passage without word timings is flagged by its own exact doubt runs. */
+export function transcriptionReviewIssues(rawTranscript:string,transcripts:(Pick<Transcript,'raw'|'words'|'captureId'>&{doubts?:TranscriptDoubt[]})[],evidenceQuotes:string[]):SectionReviewIssue[]{
  const issues:SectionReviewIssue[]=[];let segmentCursor=0;
+ // Exact evidence containment avoids assigning a warning to an unrelated section.
+ const belongs=(start:number,end:number)=>evidenceQuotes.some(quote=>{let at=rawTranscript.indexOf(quote);while(at>=0){if(start>=at&&end<=at+quote.length)return true;at=rawTranscript.indexOf(quote,at+1);}return false;});
+ const message=(quote:string)=>/\s/.test(quote.trim())?'Check these words against the saved audio.':'Check this word against the saved audio.';
  for(const transcript of transcripts){
   const segmentStart=rawTranscript.indexOf(transcript.raw,segmentCursor);if(segmentStart<0)continue;segmentCursor=segmentStart+transcript.raw.length;
   let wordCursor=0;
   for(const word of transcript.words??[]){
    const local=transcript.raw.indexOf(word.text,wordCursor);if(local<0)continue;wordCursor=local+word.text.length;
-   if(word.probability===undefined||!Number.isFinite(word.probability)||word.probability<0||word.probability>=.6)continue;
+   if(!uncertainWord(word))continue;
    const start=segmentStart+local,end=start+word.text.length;
-   // Exact evidence containment avoids assigning a warning to an unrelated section.
-   const belongs=evidenceQuotes.some(quote=>{let at=rawTranscript.indexOf(quote);while(at>=0){if(start>=at&&end<=at+quote.length)return true;at=rawTranscript.indexOf(quote,at+1);}return false;});
-   if(belongs)issues.push({kind:'transcription',quote:rawTranscript.slice(start,end),start,end,scope:'rawTranscript',message:'Check this word against the saved audio.',probability:word.probability,startMs:word.startMs,endMs:word.endMs,captureId:transcript.captureId});
+   if(belongs(start,end))issues.push({kind:'transcription',quote:rawTranscript.slice(start,end),start,end,scope:'rawTranscript',message:message(word.text),...(word.probability!==undefined?{probability:word.probability}:{}),startMs:word.startMs,endMs:word.endMs,captureId:transcript.captureId,...(typeof word.heardAlso==='string'?{heardAlso:word.heardAlso}:{})});
+  }
+  let doubtCursor=0;
+  for(const doubt of transcript.doubts??[]){
+   if(typeof doubt?.text!=='string'||!doubt.text.trim())continue;
+   const local=transcript.raw.indexOf(doubt.text,doubtCursor);if(local<0)continue;doubtCursor=local+doubt.text.length;
+   const start=segmentStart+local,end=start+doubt.text.length;
+   if(belongs(start,end))issues.push({kind:'transcription',quote:rawTranscript.slice(start,end),start,end,scope:'rawTranscript',message:message(doubt.text),startMs:doubt.startMs,endMs:doubt.endMs,captureId:transcript.captureId,heardAlso:doubt.heardAlso});
   }
  }
  return issues;
