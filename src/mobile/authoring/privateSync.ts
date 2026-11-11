@@ -2,6 +2,7 @@ import { Capacitor } from '../../../mobile/node_modules/@capacitor/core';
 import { createNativeAccountFetch } from '../account/nativeAccountTransport';
 import { importBundle } from '../../../lib/oracle/authoring/transfer';
 import type { AuthoringStore } from '../../../lib/oracle/authoring/storage';
+import type { AuthoringSession, Capture } from '../../../lib/oracle/authoring/types';
 export interface ResumePosition { captureId?:string; positionMs:number; cardNumber:number; sectionId?:string; mode?:string }
 export interface PrivateDocument { session: unknown; audio: {captureId:string;mimeType:string;hash:string}[]; format:string;version:number;reviewHash:string;receipts:unknown[]; resume:ResumePosition|null; workspace:Record<string,unknown> }
 export interface RemoteCopy {revision:string|null;document:PrivateDocument|null}
@@ -12,6 +13,14 @@ const MAX_AUDIO_BYTES=10*1024*1024;
 async function audioHash(blob:Blob){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');}
 function base64(bytes:Uint8Array){let result='';for(let i=0;i<bytes.length;i+=16384)result+=String.fromCharCode(...bytes.subarray(i,i+16384));return btoa(result);}
 type AudioSource=Pick<AuthoringStore,'load'|'audio'|'receipts'>;
+/** What the server keeps beside a capture's audio so the Mac can transcribe it well and the phone can match the result. */
+export interface AudioDetails {durationMs?:number;cardNumber?:number;sectionId?:string;captureId:string;recordedAt?:string}
+export function audioDetails(session:Partial<Pick<AuthoringSession,'source'|'markers'>>,capture:Pick<Capture,'id'|'durationMs'|'recordedAt'|'visibleCardNumber'>):AudioDetails{
+ const card=capture.visibleCardNumber??session.source?.cardNumber;
+ // A section only when every marker of this capture points at the same one.
+ const sections=[...new Set((session.markers??[]).filter(m=>m.captureId===capture.id).map(m=>m.sectionId))];
+ return {captureId:capture.id,...(Number.isSafeInteger(capture.durationMs)&&capture.durationMs>0?{durationMs:capture.durationMs}:{}),...(Number.isSafeInteger(card)?{cardNumber:card}:{}),...(sections.length===1&&sections[0]?{sectionId:sections[0]}:{}),...(capture.recordedAt?{recordedAt:capture.recordedAt}:{})};
+}
 export class PrivateAuthoringSync {
  constructor(private readonly transport:(path:string,init?:RequestInit)=>Promise<Response>=Capacitor.isNativePlatform()?createNativeAccountFetch():fetch){}
  private async call(body:unknown){
@@ -22,6 +31,12 @@ export class PrivateAuthoringSync {
   if(!response.ok)throw Error(response.status===401?'Sign in to keep a private copy. Everything is still on this phone.':result?.error??'Your account copy could not be reached. Everything is still on this phone.');
   return result;
  }
+ /** Which of these hashes the account already holds. An older server without `audio-has`, or any failure, answers none: the audio is then simply sent. */
+ private async held(hashes:string[]):Promise<string[]>{
+  const present:string[]=[];
+  try{for(let i=0;i<hashes.length;i+=100){const result=await this.call({operation:'audio-has',hashes:hashes.slice(i,i+100)});if(!Array.isArray(result?.present))return present;present.push(...result.present.filter((hash:unknown)=>typeof hash==='string'&&hashes.includes(hash)));}}catch{/* Unknown is treated as missing. */}
+  return present;
+ }
  list(cursor?:string):Promise<{documents:{id:string;revision:string;updatedAt:string}[];cursor:string|null}>{return this.call({operation:'list',cursor});}
  read(id:string):Promise<RemoteCopy>{return this.call({operation:'read',id});}
  /** Caller retains the acknowledged revision per account+remote id. Never guess it from a local save version.
@@ -30,19 +45,21 @@ export class PrivateAuthoringSync {
  async save(store:AudioSource,sessionId:string,expectedRevision:string|null,resume:ResumePosition|null,workspace:Record<string,unknown>={},remoteId=sessionId,accountId?:string):Promise<string>{
   const saved=await store.load(sessionId);if(!saved)throw Error('Session not found');
   if(saved.session.captures.some(c=>c.status==='recording'))throw Error('Finish the current take before saving a copy.');
-  const audio:{captureId:string;mimeType:string;hash:string}[]=[],blobs=new Map<string,Blob>();
-  for(const capture of saved.session.captures.filter(c=>c.status!=='empty')){const blob=await store.audio(sessionId,capture.id),hash=await audioHash(blob);audio.push({captureId:capture.id,mimeType:capture.mimeType,hash});blobs.set(hash,blob);}
+  const audio:{captureId:string;mimeType:string;hash:string}[]=[],blobs=new Map<string,Blob>(),details=new Map<string,AudioDetails>();
+  for(const capture of saved.session.captures.filter(c=>c.status!=='empty')){const blob=await store.audio(sessionId,capture.id),hash=await audioHash(blob);audio.push({captureId:capture.id,mimeType:capture.mimeType,hash});blobs.set(hash,blob);if(!details.has(hash))details.set(hash,audioDetails(saved.session,capture));}
   // A restored local copy has a fresh id. The remote document retains its stable id.
   const session={...saved.session,id:remoteId};
   const {sha256}=await import('../../../lib/oracle/authoring/workflow');
   const document={format:'oracle-authoring-review',version:1,session,reviewHash:await sha256(JSON.stringify(session)),audio,receipts:await store.receipts(sessionId),resume,workspace};
   const upload=async(trustRecord:boolean)=>{
    const known=trustRecord&&accountId?knownPrivateAudio(accountId):new Set<string>(),sent=new Set<string>();
+   // A record that is empty or misses some of these: ask the account which it already holds before sending any.
+   if(trustRecord&&accountId){const unknown=[...new Set(audio.map(item=>item.hash))].filter(hash=>!known.has(hash));if(unknown.length)for(const hash of await this.held(unknown)){known.add(hash);rememberPrivateAudio(accountId,[hash]);}}
    for(const item of audio){
     if(known.has(item.hash)||sent.has(item.hash))continue;
     const blob=blobs.get(item.hash)!;if(blob.size>MAX_AUDIO_BYTES)throw Error('One recording is larger than 10 MB and cannot be copied. It is still on this phone.');
     // One capture per request; its bytes are encoded only for this request.
-    const result=await this.call({operation:'audio-put',hash:item.hash,mimeType:item.mimeType,audioBase64:base64(new Uint8Array(await blob.arrayBuffer()))});
+    const result=await this.call({operation:'audio-put',hash:item.hash,mimeType:item.mimeType,details:details.get(item.hash),audioBase64:base64(new Uint8Array(await blob.arrayBuffer()))});
     sent.add(item.hash);if(accountId&&result?.hash===item.hash)rememberPrivateAudio(accountId,[item.hash]);
    }
   };

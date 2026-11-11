@@ -2,14 +2,16 @@ import 'fake-indexeddb/auto';
 import {beforeEach,describe,expect,it,vi} from 'vitest';
 import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
 import {createSession,sourceSnapshot} from '../../../lib/oracle/authoring/workflow';
-import {PrivateAuthoringSync,PrivateSyncConflict,knownPrivateAudio,forgetPrivateAudio} from '../../../src/mobile/authoring/privateSync';
-function server(){
+import {PrivateAuthoringSync,PrivateSyncConflict,knownPrivateAudio,forgetPrivateAudio,audioDetails} from '../../../src/mobile/authoring/privateSync';
+/** `current` answers audio-has and flags missing audio as the server now does; without it the server is the older one. */
+function server(current=false){
  const audio=new Set<string>(),calls:any[]=[];let conflict=false,revision=0;
  const transport=vi.fn(async(_path:string,init?:RequestInit)=>{
   const body=JSON.parse(String(init!.body));calls.push(body);
   if(body.operation==='audio-put'){audio.add(body.hash);return Response.json({ok:true,hash:body.hash});}
+  if(current&&body.operation==='audio-has')return Response.json({present:body.hashes.filter((hash:string)=>audio.has(hash))});
   if(body.operation==='save'){
-   if(body.document.audio.some((a:any)=>!audio.has(a.hash)))return Response.json({error:'Upload all private audio before saving.'},{status:400});
+   if(body.document.audio.some((a:any)=>!audio.has(a.hash)))return Response.json(current?{error:'Some recordings are not stored yet.',missingAudio:true}:{error:'Upload all private audio before saving.'},{status:400});
    if(conflict)return Response.json({error:'changed',conflict:true},{status:409});
    return Response.json({revision:`r${++revision}`});
   }
@@ -69,4 +71,28 @@ describe('private copy audio by hash',()=>{
   expect(await (await local.audio(restored.saved.session.id,'clip')).text()).toBe('spoken words');
  });
  it('without an account uploads every capture, as before',async()=>{const s=server(),sync=new PrivateAuthoringSync(s.transport),local=store();await sync.save(local,'session',null,null,{},'session');await sync.save(local,'session','r1',null,{},'session');expect(s.puts().length).toBe(4);});
+ it('sends what the Mac needs with each upload',async()=>{
+  const s=server(),sync=new PrivateAuthoringSync(s.transport),local=store();await sync.save(local,'session',null,null,{},'session','owner');
+  expect(s.puts()[0].details).toEqual({captureId:'a',durationMs:1000});
+  expect(audioDetails({source:{cardNumber:12} as any,markers:[{captureId:'a',atMs:0,sectionId:'12/CODE'},{captureId:'a',atMs:50,sectionId:'12/CODE'},{captureId:'b',atMs:0,sectionId:'12/OTHER'}]},{id:'a',durationMs:4200,recordedAt:'2026-11-01T08:00:00.000Z'}))
+   .toEqual({captureId:'a',durationMs:4200,cardNumber:12,sectionId:'12/CODE',recordedAt:'2026-11-01T08:00:00.000Z'});
+  expect(audioDetails({source:{cardNumber:12} as any,markers:[{captureId:'a',atMs:0,sectionId:'12/CODE'},{captureId:'a',atMs:50,sectionId:'12/OTHER'}]},{id:'a',durationMs:0,recordedAt:'',visibleCardNumber:7})).toEqual({captureId:'a',cardNumber:7});
+ });
+ it('asks the account which audio it holds when the local record is lost, and sends none again',async()=>{
+  const s=server(true),sync=new PrivateAuthoringSync(s.transport),local=store();
+  const first=await sync.save(local,'session',null,null,{},'session','owner');forgetPrivateAudio('owner');
+  await sync.save(local,'session',first,null,{},'session','owner');
+  expect(s.puts().length).toBe(2);expect(s.calls.filter(c=>c.operation==='audio-has').length).toBe(2);expect(knownPrivateAudio('owner').size).toBe(2);
+  await sync.save(local,'session','r2',null,{},'session','owner');expect(s.calls.filter(c=>c.operation==='audio-has').length).toBe(2);
+ });
+ it('a stale record sends only what the account does not hold',async()=>{
+  const s=server(true),sync=new PrivateAuthoringSync(s.transport),local=store();
+  const first=await sync.save(local,'session',null,null,{},'session','owner');s.audio.delete([...s.audio][0]);forgetPrivateAudio('owner');
+  expect(await sync.save(local,'session',first,null,{},'session','owner')).toBe('r2');expect(s.puts().length).toBe(3);
+ });
+ it('recognises missing audio by the flag, whatever the words',async()=>{
+  const s=server(true),sync=new PrivateAuthoringSync(s.transport),local=store();
+  const first=await sync.save(local,'session',null,null,{},'session','owner');s.audio.clear();
+  expect(await sync.save(local,'session',first,null,{},'session','owner')).toBe('r2');expect(s.puts().length).toBe(4);
+ });
 });
