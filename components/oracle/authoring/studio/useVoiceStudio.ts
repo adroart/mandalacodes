@@ -12,7 +12,8 @@ import { queueSectionTake, discardSectionTake, recoverInterruptedRecordings, typ
 import { buildWordReplay, activeReplayWord, type ReplayWord } from '../../../../lib/oracle/authoring/wordReplay';
 import { focusedVoiceSections } from '../../../../src/mobile/authoring/focusSections';
 import { startVoiceCapturePass, type VoiceCapturePass } from '../../../../src/mobile/authoring/voiceCapturePass';
-import { startVoiceRouting, type VoiceRouteEvidence, type VoiceRoutingStatus } from '../../../../src/mobile/authoring/voiceCaptureRouting';
+import { startVoiceRouting, voiceRoutingDefault, type VoiceRouteEvidence, type VoiceRoutingStatus } from '../../../../src/mobile/authoring/voiceCaptureRouting';
+import { useRecordingHealth } from './useRecordingHealth';
 import { phraseReplayBounds, type VoiceReplayBounds } from '../../../../src/mobile/authoring/voiceTargets';
 import { enqueueVoicePhraseRevision } from '../../../../src/mobile/authoring/voicePhraseRevision';
 import { WorkingCardStore } from '../../../../lib/oracle/authoring/humanDrafts';
@@ -59,7 +60,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     const clipBounds = useRef<VoiceReplayBounds | null>(null);
     const loopCleanup = useRef<(() => void) | null>(null);
     const [continuous, setContinuous] = useState(() => localStorage.getItem('oracle.voice.continuous') === 'true');
-    const [voiceCommands, setVoiceCommands] = useState(() => localStorage.getItem('oracle.voice.commands') !== 'false');
+    const [voiceCommands, setVoiceCommands] = useState(() => voiceRoutingDefault());
     const [routingStatus, setRoutingStatus] = useState<VoiceRoutingStatus>('stopped');
     const [intent, setIntent] = useState<'auto' | 'replace' | 'add' | 'revise'>('auto');
     const [loop, setLoop] = useState(false);
@@ -445,13 +446,14 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                     }
                 },
                 onProcessingFailure: report,
+                onInterruption: state => health.onInterruption(state),
             });
             handle.current = recorder;
             setActive(recorder);
             setMonitor({ elapsed: 0, paused: false, level: null });
             setFocusId(target.id);
             setTargetId(target.id);
-            routeConfig.current = { sections: value.sections.map(node => ({ id: node.id, title: node.title, aliases: [titleFor(node), node.title.split(/\s+[\u2014\u2013]\s+/)[0], ...(node.id === value.sections[0].id ? ['intro'] : [])] })), currentSectionId: () => recordingTarget.current, elapsed: () => Math.max(0, recorder.elapsed() - segmentStart.current), onStatus: setRoutingStatus, onRoute: (event: VoiceRouteEvidence) => {
+            routeConfig.current = { sections: value.sections.map(node => ({ id: node.id, title: node.title, aliases: [titleFor(node), node.title.split(/\s+[\u2014\u2013]\s+/)[0], ...(node.id === value.sections[0].id ? ['intro'] : [])] })), currentSectionId: () => recordingTarget.current, elapsed: () => recorder.takeElapsed(), onStatus: setRoutingStatus, onRoute: (event: VoiceRouteEvidence) => {
                     const node = value.sections.find(n => n.id === event.sectionId);
                     if (!node)
                         return;
@@ -762,9 +764,11 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     const signInBlocked = failedTakes.some(take => isSignInBlocked(take.error)) || isSignInBlocked(draft?.error);
     const processingMessage = (failedTakes[0]?.error ?? draft?.error ?? '').replace(/\s*Your (?:local )?(?:recording|words|recording and words) (?:is|are) saved\.?\s*$/i, '');
     const savedCaptures = savedAudio?.session.captures.filter(capture => !discarded.has(capture.id) && ['ready', 'interrupted'].includes(capture.status) && capture.durationMs > 0) ?? [];
-    const needsSignIn = accountActions.enabled && account.isLoaded && (!account.isSignedIn || signInBlocked);
+    const health = useRecordingHealth({ active, paused: monitor.paused, namesApply: !phraseCapture.current, routingStatus, signedIn: account.isSignedIn, preparedKey: draft?.id, prepared: draft?.results.length ?? 0 });
+    const readinessSignedOut = health.readiness === 'signed_out';
+    const needsSignIn = accountActions.enabled && account.isLoaded && (!account.isSignedIn || signInBlocked || readinessSignedOut);
     /** Without the account screen in this build, asking to sign in would be a loop: say so plainly instead. */
-    const cannotSignIn = signInBlocked && !accountActions.enabled;
+    const cannotSignIn = (signInBlocked || readinessSignedOut) && !accountActions.enabled;
     const draftDetail = (draft as {
         errorDetail?: {
             message: string;
@@ -773,7 +777,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     } | undefined)?.errorDetail;
     const processingDetail = failedTakes[0]?.error ? failedTakes[0].errorDetail : draft?.error && draftDetail?.message === draft.error ? draftDetail.detail : undefined;
     /** A failure shows once: in the status band when it is about saved recordings, otherwise in the toast. */
-    const statusShown = !active && !opening && (needsSignIn || savedCaptures.length > 0 && (failedTakes.length > 0 || !!draft?.error));
+    const statusShown = !active && !opening && (needsSignIn || readinessSignedOut || !!health.readinessLine || savedCaptures.length > 0 && (failedTakes.length > 0 || !!draft?.error));
     const statusErrors = statusShown ? [failedTakes[0]?.error, draft?.error].filter(Boolean) : [];
     const toastError = error && !statusErrors.includes(error) ? error : !statusShown && draft?.error ? draft.error : '';
     const toastDetail = toastError && toastError === error && errorDetail.current?.message === error ? errorDetail.current.detail : toastError && toastError === draft?.error && draftDetail?.message === toastError ? draftDetail.detail : '';
@@ -810,6 +814,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         try {
             await flush();
             await accountActions.signInWithGoogle();
+            health.signedIn();
             await resumeSignInBlockedRecordings(services);
         }
         catch (e) {
@@ -943,7 +948,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         tone: Tone;
     } | null => {
         if (active && recordingTarget.current === node.id)
-            return { label: monitor.paused ? 'Paused' : 'Recording', tone: monitor.paused ? 'busy' : 'rec' };
+            return health.microphone === 'interrupted' && !monitor.paused ? { label: 'Interrupted', tone: 'busy' } : { label: monitor.paused ? 'Paused' : 'Recording', tone: monitor.paused ? 'busy' : 'rec' };
         const r = results.find(x => x.sectionId === node.id);
         if (r?.applied)
             return { label: authorship?.sections[node.id] === 'human' ? 'Your words' : r.editIntent === 'add' ? 'Your addition' : 'Partly your words', tone: 'human' };
@@ -1074,7 +1079,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         seekAt, clipBounds, loopCleanup, player, resumePlayback, pickerReturn, explicitChoice, reviewArrival, checkAudio,
         // Derived values.
         nodes, review, processing, section, result, results, target, takes, queued, discarded, savedCaptures,
-        needsSignIn, cannotSignIn, processingMessage, processingDetail, statusShown, toastError, toastDetail,
+        needsSignIn, cannotSignIn, processingMessage, processingDetail, statusShown, toastError, toastDetail, health,
         reviewList, position, waiting, checks, open, generalCheck, progressText, nextReview, readyClean, applyLabel,
         recordingNode, upcoming, nextRecording, appliedText, displayOrigins, locked, screenTitle,
         // Actions.

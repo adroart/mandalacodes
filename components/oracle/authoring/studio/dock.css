@@ -1,0 +1,10 @@
+/* The recording dock's health words: plain and neutral, never red (red means the microphone is live). */
+.section-voice-studio .vs-recording-status>span:nth-child(2){min-width:0}
+.section-voice-studio .vs-recording-status[data-health=interrupted]>span:nth-child(2){flex:1;line-height:18px}
+.section-voice-studio .vs-dock-health-line{display:block}
+/* The scope keeps its separator: a long path wraps before "· all 3 paragraphs", not after the dot. */
+.section-voice-studio .vs-dock:not([data-recording]) .vs-span{white-space:nowrap}
+.section-voice-studio .vs-dock-health{color:var(--vs-ink-2)}
+.section-voice-studio .vs-level-note{margin-left:auto;font:500 12px/20px var(--font-controls);color:var(--vs-muted);white-space:nowrap}
+.section-voice-studio .vs-dock-listening{margin:4px 0 0;font:400 12px/18px var(--font-controls);color:var(--vs-muted)}
+.section-voice-studio .vs-dock-announce{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}

@@ -73,7 +73,7 @@ export function SettingsScreen({view,continuous,setContinuous,handle,voiceComman
  <section className="vs-stage vs-screen" aria-label="Recording settings" hidden={view!=='settings'||sendToCard.open}>
   <h3>While recording</h3>
   <label className="vs-switch">
-   <span><strong>Keep recording after Next</strong><small>Sends this section and keeps the microphone on for the next one.</small></span>
+   <span><strong>Keep recording after Send &amp; next</strong><small>Sends this section and keeps the microphone on for the next one.</small></span>
    <input type="checkbox" role="switch" checked={continuous} onChange={e=>{setContinuous(e.target.checked);handle.current?.setContinuous(e.target.checked);localStorage.setItem('oracle.voice.continuous',String(e.target.checked));}}/>
   </label>
   <label className="vs-switch">

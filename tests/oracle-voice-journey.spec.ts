@@ -37,7 +37,7 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await expect(dock).toContainText('0:01');await expect(dialog.locator('.vs-section[data-recording]')).toHaveAttribute('data-section-id','2/INTRO');
    await shot(page,'02-recording-intro');
    await dialog.getByRole('button',{name:'Send this recording and go to Universal Language · Reading',exact:true}).click();
-   await expect(dock).toContainText('Record over');await expect(dock.locator('strong')).toHaveText(/^Reading/);
+   await expect(dock).toContainText('Record over');await expect(dock.locator('strong')).toHaveText(/^Universal Language · Reading/);
    await expect(dialog.locator('.vs-section[data-section-id="2/INTRO"] .vs-chip')).toHaveText('Processing');await expect(dock).toContainText('1 processing');
    await dialog.getByRole('button',{name:'Record',exact:true}).click();
    await expect(dock).toContainText('0:01');
@@ -46,7 +46,7 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await expect(dialog.locator('.vs-section[data-recording]')).toHaveAttribute('data-section-id','2/CODE/reading');
    await dialog.locator('.vs-manuscript').evaluate(el=>el.scrollTo({top:0}));
    await shot(page,'03-recording-reading-while-intro-processes');
-   await dialog.getByRole('button',{name:'Done',exact:true}).click();
+   await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
    const words=dialog.getByRole('textbox',{name:'Your section words',exact:true});
    await expectProse(words,reading.said);
    await expect(dialog.getByRole('textbox',{name:'Section title',exact:true})).toHaveValue('Reading');
@@ -99,7 +99,7 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    test.skip(browserName!=='chromium','Uses the Chromium fake microphone');await context.grantPermissions(['microphone'],{origin:baseURL!});
    await scriptedSpeech(page,{unplaced:true});const dialog=await openRecording(page);
    await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();
-   await expect(dialog.locator('.vs-dock strong')).toHaveText(/^Reading · all \d+ paragraphs$/);
+   await expect(dialog.locator('.vs-dock strong')).toHaveText(/^Universal Language · Reading · all \d+ paragraphs$/);
    await dialog.getByRole('button',{name:'Record',exact:true}).click();await expect(dialog.locator('.vs-dock')).toContainText('0:01');
    await dialog.getByRole('button',{name:'Send this recording and go to I Ching · Combination',exact:true}).click();
    await expect(dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-chip')).toHaveText('Check words');
