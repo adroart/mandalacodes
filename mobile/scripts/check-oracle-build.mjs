@@ -1,4 +1,4 @@
-// Refuses a device build whose web bundle cannot sign in or is not the current commit.
+// Refuses a device build whose web bundle cannot sign in, is not the current commit, or was built from uncommitted changes.
 // Usage, from mobile/: node scripts/check-oracle-build.mjs [--warn] [--manifest <file>]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -13,6 +13,8 @@ export function checkManifest(manifest, head) {
   if (!manifest || manifest.accounts !== true) return `The Oracle web bundle was built without phone sign-in. Run: ${FIX}`;
   if (!head) return `Cannot read the current git commit, so the bundle cannot be checked. Run from a git checkout, then: ${FIX}`;
   if (manifest.commit !== head) return `The Oracle web bundle is from a different commit than HEAD. Run: ${FIX}`;
+  // A bundle from before the flag existed cannot say it was clean, so it is treated as built from changes.
+  if (manifest.dirty !== false) return `The Oracle web bundle was built from uncommitted changes. Commit or discard them, then run: ${FIX}`;
   return '';
 }
 

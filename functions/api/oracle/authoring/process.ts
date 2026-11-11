@@ -6,7 +6,7 @@ import type { AuthoringSession, Proposal } from '../../../../lib/oracle/authorin
 import { applyKnownFixes, buildWordsPrompt, estimateTokens } from '../../../../shared/words';
 import { ORACLE_WORDS_PROFILE } from '../../../../shared/oracleWords';
 import { workersAiTranscription } from '../../_lib/quickTranscription';
-import { transcriptDoubts } from '../../_lib/transcriptDoubts';
+import { compareTranscripts } from '../../_lib/transcriptDoubts';
 interface WritingProvider {provider:'openai'|'groq';model:string;key:string;url:string}
 /** `text` stays what the speech model returned (the raw words); `corrected` is the same with the shared word library's known mishearings fixed. Only present when something changed. */
 function withKnownFixes(text:string):{corrected?:string}{const fixed=applyKnownFixes(text);return fixed.fixes.length?{corrected:fixed.text}:{};}
@@ -81,33 +81,69 @@ function failureFor(operation:Operation,status:number):Response{
 const GROQ_TRANSCRIPTION='https://api.groq.com/openai/v1/audio/transcriptions',FIRST_MODEL='whisper-large-v3-turbo',SECOND_MODEL='whisper-large-v3';
 /** Both listening passes and any fallback share the one provider timeout the phone already waits within. */
 const LISTEN_BUDGET_MS=90000,MAX_AUDIO_MS=20*60*1000;
-/** Word alignment is a words-by-words table; past this the comparison is skipped rather than risk the request (20 minutes of speech is about 9M). */
-const MAX_DOUBT_CELLS=12_000_000;
-function groqTranscription(env:AuthoringEnv,bytes:Uint8Array<ArrayBuffer>,mimeType:string,prompt:string,model:string,timings:boolean,signal:AbortSignal){
- const form=new FormData();form.set('file',new File([bytes],mimeType.includes('mp4')?'recording.m4a':'recording.webm',{type:mimeType}));form.set('prompt',prompt);form.set('model',model);form.set('response_format',timings?'verbose_json':'json');
+/**
+ * Doubt finding compares kept words with second words in windows of bounded memory (transcriptDoubts WINDOW_CELLS);
+ * this caps the total work instead. Past it the comparison is skipped and doubts are unavailable: 20 minutes of speech
+ * is about 9M, so this is a last resort, not a limit a real take meets.
+ */
+const MAX_DOUBT_CELLS=16_000_000;
+/**
+ * Memory for a full-size take (10 MiB of audio, 13.3 MiB of base64), in the order the copies live:
+ * - reading the body: the text and the parsed value (about 27 MiB), the read buffer already gone (boundedJson);
+ * - decoding: the base64 string and the decoded bytes (about 23 MiB), then the base64 is dropped from the body;
+ * - sending: one File (10 MiB) shared by both Groq passes, the decoded bytes dropped once it exists; the runtime's
+ *   own upload buffers come on top of that and are not ours to shape;
+ * - only on fallback: the File's bytes read back and their base64 (about 23 MiB more while it is built, so about
+ *   33 MiB with the File; the bytes are dropped before the run unless the clip is small enough for the legacy model).
+ *   Without the runtime's Uint8Array.prototype.toBase64 the pieces and their join add about 13 MiB for a moment.
+ * So the peak is about 27 to 33 MiB, against roughly 75 to 85 MiB before (four body copies while reading, a list of
+ * every byte in the old decode, a File per pass beside the base64 and the bytes, and the fallback's copies on top).
+ */
+function audioFile(bytes:Uint8Array<ArrayBuffer>,mimeType:string):File{return new File([bytes],mimeType.includes('mp4')?'recording.m4a':'recording.webm',{type:mimeType});}
+/** Decodes the take and lets go of its base64 in the body, so neither outlives the step that needs it. */
+function takeAudio(body:any):Uint8Array<ArrayBuffer>{const bytes=decodeAudio(body.audioBase64);body.audioBase64=undefined;return bytes;}
+/** The same File object goes into every pass's form, set without a name so the form uses it as it is. */
+function groqTranscription(env:AuthoringEnv,file:File,prompt:string,model:string,timings:boolean,signal:AbortSignal){
+ const form=new FormData();form.set('file',file);form.set('prompt',prompt);form.set('model',model);form.set('response_format',timings?'verbose_json':'json');
  if(timings){form.append('timestamp_granularities[]','word');form.append('timestamp_granularities[]','segment');}
  return fetch(GROQ_TRANSCRIPTION,{method:'POST',headers:{Authorization:`Bearer ${env.GROQ_API_KEY}`},body:form,signal});
 }
+/**
+ * The request's one deadline. Every provider call takes `signal`: it aborts with a TimeoutError when the budget runs
+ * out, and `stop` aborts whatever is still running once the answer is decided (a second pass nobody will read, a
+ * fallback past its time), so nothing keeps working after the response.
+ */
+function listeningDeadline(ms:number){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(new DOMException('listening out of time','TimeoutError')),ms);
+ return {signal:controller.signal,stop:()=>{clearTimeout(timer);if(!controller.signal.aborted)controller.abort(new DOMException('listening no longer needed','AbortError'));}};
+}
+/** Rejects with the signal's reason once it aborts, for a call that might not watch its signal itself. */
+function whenAborted(signal:AbortSignal):{promise:Promise<never>;release:()=>void}{
+ let release=()=>{};
+ const promise=new Promise<never>((_,reject)=>{if(signal.aborted)return reject(signal.reason);const listen=()=>reject(signal.reason);signal.addEventListener('abort',listen,{once:true});release=()=>signal.removeEventListener('abort',listen);});
+ return {promise,release};
+}
 interface Heard {provider:string;raw:any}
 /** Workers AI when Groq is busy, failing or unreachable, within what is left of the budget. Undefined when absent or it fails too. */
-async function fallbackListening(env:AuthoringEnv,bytes:Uint8Array<ArrayBuffer>,prompt:string,started:number):Promise<Heard|undefined>{
- const remaining=started+LISTEN_BUDGET_MS-Date.now();if(!env.AI||remaining<5000)return;
- let timer:ReturnType<typeof setTimeout>|undefined;
+async function fallbackListening(env:AuthoringEnv,file:File,prompt:string,started:number,signal:AbortSignal):Promise<Heard|undefined>{
+ const remaining=started+LISTEN_BUDGET_MS-Date.now();if(!env.AI||remaining<5000||signal.aborted)return;
+ const stopped=whenAborted(signal);
  try{
-  const heard=await Promise.race([workersAiTranscription(env.AI,bytes,{prompt,logTag:'oracle_authoring_fallback_failure'}),new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(new DOMException('fallback out of time','TimeoutError')),remaining);})]);
+  // The File is read and encoded only now, inside the fallback; the Groq passes never paid for it.
+  const heard=await Promise.race([workersAiTranscription(env.AI,file,{prompt,logTag:'oracle_authoring_fallback_failure',signal}),stopped.promise]);
   return {provider:`cloudflare:${heard.model}`,raw:heard.raw};
  }catch(error){logProvider('transcribe','cloudflare',{reason:isTimeout(error)?'timeout':'unclassified'});return;}
- finally{clearTimeout(timer);}
+ finally{stopped.release();}
 }
 /** The transcript of record: Groq turbo with word timings, else the Workers AI fallback when Groq is busy (429), failing (5xx, 408) or unreachable. */
-async function firstListening(env:AuthoringEnv,bytes:Uint8Array<ArrayBuffer>,mimeType:string,prompt:string,started:number):Promise<Heard|Response>{
+async function firstListening(env:AuthoringEnv,file:File,prompt:string,started:number,signal:AbortSignal):Promise<Heard|Response>{
  let response:Response;
- try{response=await reach('transcribe','groq',()=>groqTranscription(env,bytes,mimeType,prompt,FIRST_MODEL,true,AbortSignal.timeout(LISTEN_BUDGET_MS)));}
- catch(error){if(error instanceof ProviderUnreachable&&!error.timeout){const heard=await fallbackListening(env,bytes,prompt,started);if(heard)return heard;}throw error;}
+ try{response=await reach('transcribe','groq',()=>groqTranscription(env,file,prompt,FIRST_MODEL,true,signal));}
+ catch(error){if(error instanceof ProviderUnreachable&&!error.timeout){const heard=await fallbackListening(env,file,prompt,started,signal);if(heard)return heard;}throw error;}
  if(!response.ok){
   if(!env.AI||!(response.status===429||response.status===408||response.status>=500))return upstreamFailure('transcribe','groq',response);
   logProvider('transcribe','groq',{status:response.status,reason:await providerFailureReason(response)});
-  return await fallbackListening(env,bytes,prompt,started)??failureFor('transcribe',response.status);
+  return await fallbackListening(env,file,prompt,started,signal)??failureFor('transcribe',response.status);
  }
  const result=await providerJson('transcribe','groq',response);
  if(result===NOT_JSON||!result||typeof result!=='object'){logProvider('transcribe','groq',{status:response.status,reason:'non_json'});return failure(502,'provider_failed',SAY.transcribe.failed);}
@@ -116,21 +152,17 @@ async function firstListening(env:AuthoringEnv,bytes:Uint8Array<ArrayBuffer>,mim
 type SecondHearing={ok:true;text:string}|{ok:false;status?:number;reason:string};
 /**
  * A second listening by a different model, text only, for the doubt finder. Best effort: it never fails the take,
- * stops at the shared budget, and reads no failure body (the closed category comes from the status alone).
+ * stops at the shared deadline (or when the request stops it), and reads no failure body (the closed category comes
+ * from the status alone). It never rejects.
  */
-function secondListening(env:AuthoringEnv,bytes:Uint8Array<ArrayBuffer>,mimeType:string,prompt:string){
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(new DOMException('second pass out of time','TimeoutError')),LISTEN_BUDGET_MS);
- const done=(async():Promise<SecondHearing>=>{
-  try{
-   const response=await groqTranscription(env,bytes,mimeType,prompt,SECOND_MODEL,false,controller.signal);
-   if(!response.ok)return {ok:false,status:response.status,reason:response.status===429?'rate_limit':response.status===401?'credentials':response.status===413?'file_size':'unclassified'};
-   // Read a copy, so a reply object this pass happens to share with the first is never consumed under it.
-   const value=await response.clone().json() as any,text=typeof value?.text==='string'?value.text:'';
-   return text.trim()?{ok:true,text}:{ok:false,reason:'no_speech'};
-  }catch(error){return {ok:false,reason:isTimeout(error)?'timeout':(error instanceof SyntaxError?'non_json':'network')};}
-  finally{clearTimeout(timer);}
- })();
- return {done,cancel:()=>controller.abort()};
+async function secondListening(env:AuthoringEnv,file:File,prompt:string,signal:AbortSignal):Promise<SecondHearing>{
+ try{
+  const response=await groqTranscription(env,file,prompt,SECOND_MODEL,false,signal);
+  if(!response.ok)return {ok:false,status:response.status,reason:response.status===429?'rate_limit':response.status===401?'credentials':response.status===413?'file_size':'unclassified'};
+  // Read a copy, so a reply object this pass happens to share with the first is never consumed under it.
+  const value=await response.clone().json() as any,text=typeof value?.text==='string'?value.text:'';
+  return text.trim()?{ok:true,text}:{ok:false,reason:'no_speech'};
+ }catch(error){return {ok:false,reason:isTimeout(error)?'timeout':(error instanceof SyntaxError?'non_json':'network')};}
 }
 const spokenKey=(text:string)=>(text.toLowerCase().match(/[\p{L}\p{N}]+/gu)??[]).join(' ');
 /** A difference the shared word library already corrects (or only of case and punctuation) is not a doubt. */
@@ -141,9 +173,9 @@ interface Doubt {text:string;startMs:number;endMs:number;heardAlso:string}
 function findDoubts(units:Unit[],second:string,markUnits:boolean):Doubt[]|undefined{
  const spokenUnits=units.filter(unit=>unit.text.trim());let kept='';const at:number[]=[];
  for(const unit of spokenUnits){if(kept)kept+=' ';at.push(kept.length);kept+=unit.text.trim();}
- const count=(text:string)=>text.split(/\s+/).filter(Boolean).length;if(count(kept)*count(second)>MAX_DOUBT_CELLS)return;
+ const found=compareTranscripts(kept,second,{same:sameOnceFixed,maxCells:MAX_DOUBT_CELLS});if(!found)return;
  const doubts:Doubt[]=[];
- for(const doubt of transcriptDoubts(kept,second,{same:sameOnceFixed})){
+ for(const doubt of found){
   const from=doubt.at,to=doubt.at+doubt.heard.length,hit=spokenUnits.filter((unit,k)=>at[k]<to&&at[k]+unit.text.trim().length>from);
   if(!hit.length)continue;
   if(markUnits)for(const unit of hit){unit.doubt=true;unit.heardAlso=doubt.alt;}
@@ -212,6 +244,25 @@ async function reviewSections(provider:WritingProvider,input:any):Promise<Respon
  for(const part of parts)if(!part.candidate)logReview(provider.provider,part.stage!);
  try{return json({assimilation:validateAssimilation(mergeAssimilationParts(input,parts,UNPREPARED),input)});}catch{return preserveWords('merge');}
 }
+/** Both passes over the one File under the request's deadline; the caller stops whatever is still running when this returns or throws. */
+async function transcribe(env:AuthoringEnv,body:any,file:File,prompt:string,started:number,signal:AbortSignal):Promise<Response>{
+ const first=firstListening(env,file,prompt,started,signal),second=secondListening(env,file,prompt,signal);
+ const heard=await first;if(heard instanceof Response)return heard;
+ const result=heard.raw,durationMs=Math.max(body.durationMs,providerDurationMs(result)??0);
+ const rawWords=Array.isArray(result.words)?result.words:Array.isArray(result.segments)?result.segments.flatMap((s:any)=>Array.isArray(s?.words)?s.words:[]):[];
+ const words:Unit[]=rawWords.filter((w:any)=>typeof w?.word==='string'&&finite(w.start)&&finite(w.end)).map((w:any)=>({text:w.word,startMs:Math.max(0,toMs(w.start)),endMs:Math.min(durationMs,toMs(w.end))}));
+ const segments:any[]=Array.isArray(result.segments)?result.segments.filter((s:any)=>typeof s?.text==='string'&&finite(s.start)&&finite(s.end)).map((s:any)=>{const startMs=Math.max(0,toMs(s.start)),endMs=Math.min(durationMs,toMs(s.end));return {startMs,endMs,text:s.text,...withKnownFixes(s.text),sectionId:body.sectionId??null,timing:'provider',...segmentQuality(s),words:words.filter(w=>w.startMs>=startMs&&w.startMs<endMs&&w.endMs>=w.startMs)};}).filter((s:any)=>s.endMs>s.startMs):[];
+ if(!segments.length&&typeof result.text==='string'&&result.text.trim())segments.push({startMs:0,endMs:durationMs,text:result.text,...withKnownFixes(result.text),sectionId:body.sectionId??null,timing:'recording'});
+ if(!segments.length)return failure(422,'no_speech','No speech was returned. Your recording is saved.');
+ const other=await second,timed=segments.flatMap((s:any)=>s.words??[]) as Unit[];
+ // The second listening can only take doubts away, never the take: a failure, the work cap or a comparison that
+ // throws (an allocation refused included) each leave the first pass standing with doubtsAvailable false.
+ let doubts:Doubt[]|undefined,reason='too_long';
+ if(other.ok)try{doubts=findDoubts(timed.length?timed:segments,other.text,timed.length>0);}catch{doubts=undefined;reason='comparison_failed';for(const unit of timed){delete unit.doubt;delete unit.heardAlso;}}
+ if(other.ok===false)logProvider('transcribe','groq',{pass:'second',...(other.status?{status:other.status}:{}),reason:other.reason});
+ else if(!doubts)logProvider('transcribe','groq',{pass:'second',reason});
+ return json({provider:heard.provider,segments,durationMs,doubts:doubts??[],doubtsAvailable:!!doubts});
+}
 /** Generous for one person recording section by section; it bounds a runaway loop, not normal work. */
 const HOURLY_LIMIT=300;
 /** Credentials stay in Pages secrets. No anonymous proxy or caller-selected provider URL/model. */
@@ -231,22 +282,11 @@ export async function onRequestPost({request,env}:Context){
   if(body.operation==='transcribe'){
    if(!env.GROQ_API_KEY)return failure(503,'not_configured','Hosted transcription is not configured. Your recording is saved.');
    if(typeof body.mimeType!=='string'||!body.mimeType.startsWith('audio/')||!Number.isFinite(body.durationMs)||body.durationMs<=0||body.durationMs>MAX_AUDIO_MS)return failure(400,'invalid_request','Invalid recording. Your recording is saved.');
-   const bytes=decodeAudio(body.audioBase64),prompt=transcriptionPrompt(body.context),started=Date.now();
-   // Both listenings start together; the second never delays or fails the first beyond the shared budget.
-   const first=firstListening(env,bytes,body.mimeType,prompt,started),second=secondListening(env,bytes,body.mimeType,prompt);
-   let heard:Heard|Response;try{heard=await first;}catch(error){second.cancel();throw error;}
-   if(heard instanceof Response){second.cancel();return heard;}
-   const result=heard.raw,durationMs=Math.max(body.durationMs,providerDurationMs(result)??0);
-   const rawWords=Array.isArray(result.words)?result.words:Array.isArray(result.segments)?result.segments.flatMap((s:any)=>Array.isArray(s?.words)?s.words:[]):[];
-   const words:Unit[]=rawWords.filter((w:any)=>typeof w?.word==='string'&&finite(w.start)&&finite(w.end)).map((w:any)=>({text:w.word,startMs:Math.max(0,toMs(w.start)),endMs:Math.min(durationMs,toMs(w.end))}));
-   const segments:any[]=Array.isArray(result.segments)?result.segments.filter((s:any)=>typeof s?.text==='string'&&finite(s.start)&&finite(s.end)).map((s:any)=>{const startMs=Math.max(0,toMs(s.start)),endMs=Math.min(durationMs,toMs(s.end));return {startMs,endMs,text:s.text,...withKnownFixes(s.text),sectionId:body.sectionId??null,timing:'provider',...segmentQuality(s),words:words.filter(w=>w.startMs>=startMs&&w.startMs<endMs&&w.endMs>=w.startMs)};}).filter((s:any)=>s.endMs>s.startMs):[];
-   if(!segments.length&&typeof result.text==='string'&&result.text.trim())segments.push({startMs:0,endMs:durationMs,text:result.text,...withKnownFixes(result.text),sectionId:body.sectionId??null,timing:'recording'});
-   if(!segments.length){second.cancel();return failure(422,'no_speech','No speech was returned. Your recording is saved.');}
-   const other=await second.done,timed=segments.flatMap((s:any)=>s.words??[]) as Unit[];
-   const doubts=other.ok?findDoubts(timed.length?timed:segments,other.text,timed.length>0):undefined;
-   if(other.ok===false)logProvider('transcribe','groq',{pass:'second',...(other.status?{status:other.status}:{}),reason:other.reason});
-   else if(!doubts)logProvider('transcribe','groq',{pass:'second',reason:'too_long'});
-   return json({provider:heard.provider,segments,durationMs,doubts:doubts??[],doubtsAvailable:!!doubts});
+   // The bytes live only as the argument that builds the one File both passes share.
+   const file=audioFile(takeAudio(body),body.mimeType),prompt=transcriptionPrompt(body.context),started=Date.now(),deadline=listeningDeadline(LISTEN_BUDGET_MS);
+   // Both listenings start together; the second never delays or fails the first beyond the shared budget, and is
+   // aborted by `stop` on every way out that does not need it.
+   try{return await transcribe(env,body,file,prompt,started,deadline.signal);}finally{deadline.stop();}
   }
   if(body.operation==='propose'){
    const provider=writingProvider(env);if(!provider)return failure(503,'not_configured','Hosted writing is not configured. Your words are saved.');

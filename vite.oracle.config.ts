@@ -10,7 +10,11 @@ const local = (file: string) => path.resolve(__dirname, file);
 const gitHead = () => { try { return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { return ''; } };
 // The native build number (CURRENT_PROJECT_VERSION) read from the Xcode project text; no Xcode needed.
 const nativeBuild = () => { try { return /CURRENT_PROJECT_VERSION = (\d+);/.exec(fs.readFileSync(local('mobile/ios/App/App.xcodeproj/project.pbxproj'), 'utf8'))?.[1] ?? ''; } catch { return ''; } };
+// Whether tracked files differ from HEAD, outside the build output: a bundle built from them is not the commit it names.
+// Unknown (no git) counts as dirty, so the device guard asks for a clean rebuild rather than trusting it.
+const gitDirty = () => { try { return execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'] }).toString().split('\n').filter(Boolean).map(line => line.slice(3).split(' -> ').pop()!.replace(/^"|"$/g, '')).some(file => !file.startsWith('dist-oracle/')); } catch { return true; } };
 const commit = gitHead();
+const dirty = gitDirty();
 const builtAt = new Date().toISOString();
 const accounts = loadEnv('production', __dirname, 'VITE_').VITE_ORACLE_NATIVE_ACCOUNTS === 'true';
 export default defineConfig({
@@ -30,7 +34,7 @@ export default defineConfig({
     // Read by mobile/scripts/check-oracle-build.mjs before any device build.
     name: 'oracle-build-manifest',
     closeBundle() {
-      if (fs.existsSync(local('dist-oracle'))) fs.writeFileSync(local('dist-oracle/oracle-build.json'), JSON.stringify({ accounts, commit, builtAt }, null, 2) + '\n');
+      if (fs.existsSync(local('dist-oracle'))) fs.writeFileSync(local('dist-oracle/oracle-build.json'), JSON.stringify({ accounts, commit, dirty, builtAt }, null, 2) + '\n');
     },
   }],
   define: {

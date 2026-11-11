@@ -42,16 +42,13 @@ const CLOUDFLARE_MODEL = '@cf/openai/whisper-large-v3-turbo';
 const LEGACY_CLOUDFLARE_MODEL = '@cf/openai/whisper';
 const LEGACY_CLOUDFLARE_FALLBACK_MAX_BYTES = 4 * 1024 * 1024;
 
-function bytesToBase64(bytes: Uint8Array) {
-  const chunkSize = 32 * 1024;
-  let binary = '';
-  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-    const end = Math.min(offset + chunkSize, bytes.length);
-    let chunk = '';
-    for (let index = offset; index < end; index += 1) chunk += String.fromCharCode(bytes[index]);
-    binary += chunk;
-  }
-  return btoa(binary);
+/** The runtime's own encoder where it has one; otherwise 3-byte-aligned pieces, so no full-size binary string is ever built. */
+export function bytesToBase64(bytes: Uint8Array, chunkBytes = 3 * 8192) {
+  const native = (bytes as Uint8Array & { toBase64?: () => string }).toBase64;
+  if (typeof native === 'function') return native.call(bytes);
+  const parts: string[] = [];
+  for (let offset = 0; offset < bytes.length; offset += chunkBytes) parts.push(btoa(String.fromCharCode.apply(null, bytes.subarray(offset, offset + chunkBytes) as unknown as number[])));
+  return parts.join('');
 }
 
 function logFailure(tag: string, details: { provider: QuickProvider; model: string; status?: number; requestId?: string | null; errorName?: string; errorMessage?: string }) {
@@ -97,18 +94,30 @@ function result(raw: unknown, provider: QuickProvider, model: string, timings: b
   };
 }
 
+type AudioSource = ArrayBuffer | Uint8Array | Blob;
+type Run = (model: string, input: { audio: string | number[]; initial_prompt?: string }, options?: { signal?: AbortSignal }) => Promise<unknown>;
+/** Base64 for the turbo model, built only now that a fallback is needed; the bytes are kept only when small enough for the legacy model. */
+async function encodeAudio(source: AudioSource) {
+  const bytes = source instanceof Uint8Array ? source : source instanceof ArrayBuffer ? new Uint8Array(source) : new Uint8Array(await source.arrayBuffer());
+  return { base64: bytesToBase64(bytes), small: bytes.byteLength > LEGACY_CLOUDFLARE_FALLBACK_MAX_BYTES ? undefined : bytes };
+}
+/** Its own frame, so the base64 copy is unreachable once the turbo model has answered or failed. */
+async function runTurbo(run: Run, base64: string, prompt: string, signal?: AbortSignal) {
+  return run(CLOUDFLARE_MODEL, { audio: base64, initial_prompt: prompt }, ...(signal ? [{ signal }] : []));
+}
 /** Workers AI, then its legacy model for short clips. `read` turns a reply into the caller's shape; a reply it rejects counts as a failure. */
-async function runWorkersAi<T>(ai: Ai, bytes: ArrayBuffer | Uint8Array, options: { prompt: string; logTag: string }, read: (raw: unknown, model: string) => T): Promise<T> {
-  const run = ai.run.bind(ai) as unknown as (model: string, input: { audio: string | number[]; initial_prompt?: string }) => Promise<unknown>;
-  const audio = new Uint8Array(bytes);
+async function runWorkersAi<T>(ai: Ai, source: AudioSource, options: { prompt: string; logTag: string; signal?: AbortSignal }, read: (raw: unknown, model: string) => T): Promise<T> {
+  const run = ai.run.bind(ai) as unknown as Run;
+  let small: Uint8Array | undefined;
   try {
-    return read(await run(CLOUDFLARE_MODEL, { audio: bytesToBase64(audio), initial_prompt: options.prompt }), CLOUDFLARE_MODEL);
+    const encoded = await encodeAudio(source);small = encoded.small;
+    return read(await runTurbo(run, encoded.base64, options.prompt, options.signal), CLOUDFLARE_MODEL);
   } catch (error) {
     logFailure(options.logTag, { provider: 'cloudflare', model: CLOUDFLARE_MODEL, errorName: error instanceof Error ? error.name : 'UnknownError', errorMessage: error instanceof Error ? error.message : undefined });
-    if (audio.byteLength > LEGACY_CLOUDFLARE_FALLBACK_MAX_BYTES) throw error;
+    if (!small || options.signal?.aborted) throw error;
   }
   try {
-    return read(await run(LEGACY_CLOUDFLARE_MODEL, { audio: Array.from(audio) }), LEGACY_CLOUDFLARE_MODEL);
+    return read(await run(LEGACY_CLOUDFLARE_MODEL, { audio: Array.from(small) }, ...(options.signal ? [{ signal: options.signal }] : [])), LEGACY_CLOUDFLARE_MODEL);
   } catch (legacyError) {
     logFailure(options.logTag, { provider: 'cloudflare', model: LEGACY_CLOUDFLARE_MODEL, errorName: legacyError instanceof Error ? legacyError.name : 'UnknownError', errorMessage: legacyError instanceof Error ? legacyError.message : undefined });
     throw legacyError;
@@ -122,10 +131,11 @@ function viaCloudflare(ai: Ai, bytes: ArrayBuffer, options: Required<Pick<QuickO
 /**
  * The same Workers AI fallback for a caller that runs its own Groq request and reads the reply itself (hosted
  * authoring keeps its own error contract and word timings). Returns the provider's reply untouched with the model
- * that gave it; a reply without text is a failure, as it is for quickTranscribe.
+ * that gave it; a reply without text is a failure, as it is for quickTranscribe. A Blob is read only here, when the
+ * fallback is actually needed; `signal` stops the run at the caller's deadline.
  */
-export function workersAiTranscription(ai: Ai, bytes: ArrayBuffer | Uint8Array, options: { prompt: string; logTag?: string }): Promise<{ model: string; raw: unknown }> {
-  return runWorkersAi(ai, bytes, { prompt: options.prompt, logTag: options.logTag ?? '[quick-transcription]' }, (raw, model) => { normalizeTranscript(raw); return { model, raw }; });
+export function workersAiTranscription(ai: Ai, audio: AudioSource, options: { prompt: string; logTag?: string; signal?: AbortSignal }): Promise<{ model: string; raw: unknown }> {
+  return runWorkersAi(ai, audio, { prompt: options.prompt, logTag: options.logTag ?? '[quick-transcription]', signal: options.signal }, (raw, model) => { normalizeTranscript(raw); return { model, raw }; });
 }
 
 export async function quickTranscribe(env: QuickTranscriptionEnv, bytes: ArrayBuffer, mimeType: string, options: QuickOptions): Promise<QuickTranscript> {
