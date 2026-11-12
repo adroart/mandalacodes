@@ -17,6 +17,18 @@ failure probes (no speech service, microphone denied). Every claim below is mark
 
 Nothing in this audit ran on a phone, against the live site, or against a real speech provider.
 
+## 0. Progress, 2026-11-12
+
+Waves 1 to 5 are built and pushed on `claude/relaxed-cannon-k3l0jh` (41 commits, not merged to main, not deployed, not installed). Two independent reviews ran between waves and their findings were fixed. The combined branch passes the type check, 1,652 unit tests and the voice lane (102 passed, 2 skipped) with scripted speech.
+
+What is left is no longer agent work:
+
+1. Adrian: merge, deploy, build and install, then run `docs/oracle/VOICE-PHONE-CHECK.md` on card 2.
+2. Fix whatever the phone shows (the Swift has never been compiled).
+3. The open items listed in `docs/oracle/VOICE-STATUS.md`: structured sections in the apply script, the build gate versus his spoken words, the AR Create side of the Mac pickup and a screen for its result, removing the older studios, a post-deploy check with a real recording.
+
+The current state, file by file, is in `docs/oracle/VOICE-STATUS.md`. The sections below are the audit as written on 2026-11-11 and the plan as it was; read them for the reasoning, not for the present state.
+
 ## 1. The short version
 
 The workspace is real and mostly coherent: one scrolling manuscript, a dock that names the

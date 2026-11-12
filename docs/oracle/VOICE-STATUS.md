@@ -1,54 +1,56 @@
 # Oracle card voice: status
 
-Written 2026-11-11 against the code at commit dee3e5b. Each statement below was checked against the files named beside it. Nothing here was run on a phone.
+Written 2026-11-12 against commit 7fcb9d0 on branch `claude/relaxed-cannon-k3l0jh` (not yet merged to main, not deployed, not installed). The combined branch passes the type check, 1,652 unit tests and the voice lane (102 passed, 2 desktop-only skips), all with scripted speech. Nothing here has run on a phone, on the deployed site or against a real speech provider, and none of the Swift has been compiled.
 
-The plan to finish the work is `todo/plans/oracle-voice-completion.md`. The owner's brief is `ORACLE-VOICE-HANDOFF.md`. Older voice documents are kept for history and each says so at its top.
+The plan and its progress are in `todo/plans/oracle-voice-completion.md`. The owner's brief is `ORACLE-VOICE-HANDOFF.md`. The phone checks are in `docs/oracle/VOICE-PHONE-CHECK.md`. Older voice documents are kept for history and each says so at its top.
 
 ## What it is for
 
-The owner speaks his own words over a card's sections, and those words replace prose that AI wrote. His words take precedence over any AI text. The Oracle app records, sends the audio for transcription, matches the speech to sections, and lets him compare and apply it on the device.
+The owner speaks his own words over a card's sections, and those words replace prose that AI wrote. His words take precedence over any AI text. The Oracle app records, sends the audio for transcription, matches the speech to sections, lets him compare and apply it on the device, and hands the finished sections over as a file that is written into the card on the Mac.
 
 ## The path a recording takes on the phone
 
-1. Record. `lib/oracle/authoring/recorder.ts` and `src/mobile/authoring/voiceCapturePass.ts`. Audio is saved in one-second chunks on the device.
-2. Queue. `src/mobile/authoring/sectionTakes.ts` holds each take until it is sent.
-3. Send. `src/mobile/authoring/processing.ts` posts to `POST /api/oracle/authoring/process`. Only on the native app, and only when the site answers 404, 405 or 503, it falls back to a paired Mac bridge if one is saved.
-4. Transcribe and match sections. `functions/api/oracle/authoring/process.ts`. Provider and models, from `wrangler.toml` and the code:
-   - Transcription: Groq, model `whisper-large-v3-turbo`, with word timestamps. It needs the `GROQ_API_KEY` Pages secret.
-   - Section matching: `ORACLE_WRITING_PROVIDER` is `groq` and `ORACLE_WRITING_MODEL` is `openai/gpt-oss-120b`. If the provider variable is unset the code defaults to OpenAI and then needs `OPENAI_API_KEY`, so the variable matters.
-   - The phone cannot choose a provider, a model or a URL.
-5. Review and apply on the device. `components/oracle/authoring/SectionVoiceStudio.tsx` and `lib/oracle/authoring/humanDrafts.ts`. Applied words are kept in the phone's browser storage (IndexedDB).
-6. Optional private copy. `functions/api/oracle/authoring/private.ts` stores the workspace and audio in the private R2 bucket (`ORACLE_PRIVATE`) with revision checks. It is opt-in.
+1. Record. `lib/oracle/authoring/recorder.ts` and `src/mobile/authoring/voiceCapturePass.ts`. Audio is saved in one-second chunks. One microphone stream is kept across sections; the next recording starts in the same tick the previous one stops. The screen is held awake while recording (`src/mobile/authoring/nativeRecordingGuard.ts`, native handler in `mobile/ios/App/App/SceneDelegate.swift`).
+2. Queue and retry. `src/mobile/authoring/sectionTakes.ts`. A recording cut off by a reload or a kill is closed and queued when the workspace opens. Failures retry by status, one at a time, and wait as long as the server asks.
+3. Send. `src/mobile/authoring/processing.ts` posts to `POST /api/oracle/authoring/process`. On the native app, and only when the site answers 404, 405 or 503, it falls back to a paired Mac if one is saved.
+4. Transcribe, check and match. `functions/api/oracle/authoring/process.ts`.
+   - Transcript of record: Groq `whisper-large-v3-turbo` with word timestamps (`GROQ_API_KEY`). If Groq fails, Workers AI (`AI` binding) is used.
+   - Second listening: Groq `whisper-large-v3`. Where the two disagree in substance, the word is returned as a doubt with what else was heard. If the second listening fails, the transcript still returns and says it was not double-checked.
+   - Section matching: `ORACLE_WRITING_PROVIDER` `groq`, `ORACLE_WRITING_MODEL` `openai/gpt-oss-120b`. Long recordings are reviewed in parts.
+   - Owner only: signed in, verified email, listed in `ADMIN_EMAILS`. 300 requests an hour.
+5. Review and apply on the device. `components/oracle/authoring/SectionVoiceStudio.tsx` with one file per screen in `components/oracle/authoring/studio/`. Applied words are kept in the phone's browser storage.
+6. Private copy. `functions/api/oracle/authoring/private.ts`. On by default when signed in; each recording uploads once; up to 600 recordings per session copy.
+7. Send finished sections to the card. Recording settings, `studio/useSendToCard.ts`. One file through the share sheet. On the Mac: `npm run voice:apply -- --file <file> --dry-run`, then without `--dry-run` (`docs/oracle/voice-apply.md`). The script writes only sections whose card text still matches what the app saw, and never commits.
 
 ## What must be true for the phone to work alone
 
-- The app bundle was built with `VITE_ORACLE_NATIVE_ACCOUNTS=true`. Without it the app has no sign-in (`src/mobile/OracleApp.tsx`) and every send fails as signed out. Whether a build fails when the flag is missing is Wave 1 work; do not assume it.
-- The owner is signed in on the phone.
-- The Pages project has the `GROQ_API_KEY` secret, the two variables above, the `ORACLE_PRIVATE` bucket and the account database.
-- Pages was deployed after any server change. The phone calls the deployed site, not the repository.
-- From Wave 1 onward (in progress on 2026-11-11) the process and private endpoints accept only the owner's admin account. Before that they accepted any signed-in account (`functions/api/oracle/authoring/_shared.ts` calls the general user check). Check the merged state before relying on either description.
+- The bundle was built with `VITE_ORACLE_NATIVE_ACCOUNTS=true` from a clean, committed tree. `npm --prefix mobile run build:device` now refuses otherwise.
+- The phone is signed in with the account listed in `ADMIN_EMAILS`, with a verified email. The native Google sign-in return was recorded as rejected on the phone at build 17 and nothing since has changed it; email-code sign-in is the fallback to try.
+- Pages has `GROQ_API_KEY`, `ADMIN_EMAILS`, the two writing variables, the `ORACLE_PRIVATE` bucket, the `AI` binding and the account database, and was deployed after this branch merged.
 
-## What is not built or not proven
+## Open items
 
-- No path carries applied words into `oracle/cards/NN.md` or the site. Nothing in the authoring code writes to the cards; it only reads them.
-- The Mac better-transcript pickup (`functions/api/oracle/pickup/`) lists website reflection segments and memos. It does not list card recordings made in the app.
-- Uncertain-word flags do not fire on the hosted path. The flag needs a word confidence below 0.6 (`src/mobile/authoring/sectionTakes.ts`), and the hosted transcription keeps only each word's text and timing (`functions/api/oracle/authoring/process.ts`). The tests show flags only because their scripted speech supplies a confidence.
-- There is no automated test against a real phone or a real speech provider. The seven Oracle app voice specs are not in the CI workflow (section 3.5 of the plan; not re-checked here).
-
-## Which screens are current
-
-- Current: the one-manuscript workspace in `components/oracle/authoring/SectionVoiceStudio.tsx`, with its review components `SectionPassageReview.tsx`, `CheckedEditableText.tsx` and `WordReplay.tsx`. The workspace uses the sans controls font (`SectionVoiceStudio.css`).
-- Older generations still in the tree: `HumanCardAuthoring` (reachable from Settings, Sessions); the `OracleVoiceFlow` and `OracleAuthoring` family (reachable only by adding `?authoring=review` to the address); `PassageRecorder.tsx`, which nothing imports.
+- **Not proven on a phone:** everything. See the phone check.
+- **Swift not compiled:** the recording handler and the share-sheet handler in `SceneDelegate.swift`.
+- **Two recorders on one microphone:** unknown whether Safari allows it. If it refuses, a boundary falls back to a short gap.
+- **Structured sections:** the apply script writes plain-prose sections only (23 of 33 on card 2). Moving lines, Judgement, Image, Tarot, Deeper correlation and two label lines are reported for a hand edit.
+- **Build gate versus his words:** `npm run build` runs the prose lint as a gate. An em dash or italics inside applied spoken words would stop a build. The apply script reports them; nothing exempts them yet.
+- **Mac better transcript for app recordings:** this repository's side is built (`docs/oracle/pickup-takes.md`). Nothing calls it until AR Create is updated, and the app has no screen for the result yet.
+- **Older studios:** `HumanCardAuthoring` (Settings, Sessions) and the `OracleVoiceFlow` family (`?authoring=review`) are still in the tree. Remove them after confirming the phone holds no unapplied drafts in them.
+- **One automated press is not settled:** pressing Hear it within a fraction of a second of stopping a clip, when that recording has been removed from the device, fails in automation and passes with a short pause (`tests/oracle-voice-checks.spec.ts`). Cause not found.
+- **Post-deploy check script** (real recording through the live service) is not written.
 
 ## Local checks
 
 ```sh
 npm ci
 npm --prefix mobile ci
-npx playwright test --config playwright.oracle-voice-five.config.ts tests/oracle-voice-journey.spec.ts --trace off
+npm run typecheck
+npm run test:unit
+npm run test:oracle-voice
 ```
 
-These use scripted speech, Chromium's fake microphone and a replaced speech service. They prove nothing about the phone, the deployed site or a real provider. The config starts the app on port 4279. Another builder is adding a named script for this lane; check `package.json`.
+The voice lane uses scripted speech, Chromium's fake microphone and a replaced speech service, on port 4279. It is in CI's mobile job. `tests/oracle-section-workflow.spec.ts` and `tests/oracle-passage-authoring.spec.ts` are not in that lane; run them through `npm run test:oracle-authoring-app` (needs a built app and WebKit).
 
 ## Device ledger
 
