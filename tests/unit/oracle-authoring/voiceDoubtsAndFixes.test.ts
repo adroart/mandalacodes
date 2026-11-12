@@ -124,13 +124,13 @@ describe('known-word fixes are used and can be undone',()=>{
 describe('retry advice',()=>{
  const failure=(status:number|undefined,extra:Record<string,unknown>={})=>Object.assign(Error('Plain words.'),status===undefined?{}:{status},extra);
  it('an explicit retryable false always wins over the status',()=>{for(const status of [429,500,502,504,0])expect(retryableTakeFailure(failure(status,{retryable:false}))).toBe(false);});
- it('never repeats a conflict, even when marked retryable',()=>{expect(retryableTakeFailure(failure(409))).toBe(false);expect(retryableTakeFailure(failure(409,{retryable:true}))).toBe(false);});
+ it('treats a 409 as still working unless it is marked not retryable',()=>{expect(retryableTakeFailure(failure(409))).toBe(true);expect(retryableTakeFailure(failure(409,{retryable:true}))).toBe(true);expect(retryableTakeFailure(failure(409,{retryable:false}))).toBe(false);});
  it('waits at least as long as Retry-After asks, beyond the usual backoff',()=>{
   const now=1_000_000;
   expect(takeRetryAt(failure(429,{retryable:true,retryAfterMs:120000}),1,now)).toBe(now+120000);
   expect(takeRetryAt(failure(429,{retryable:true}),1,now)).toBe(now+2000);
   expect(takeRetryAt(failure(429,{retryable:true,retryAfterMs:500}),3,now)).toBe(now+8000);
-  expect(takeRetryAt(failure(409),1,now)).toBeUndefined();expect(takeRetryAt(failure(502),5,now)).toBeUndefined();
+  expect(takeRetryAt(failure(409),1,now)).toBe(now+30000);expect(takeRetryAt(failure(409,{retryable:false}),1,now)).toBeUndefined();expect(takeRetryAt(failure(502),5,now)).toBeUndefined();
  });
  it('persists the Retry-After pause on a failed recording',async()=>{
   const {source,sections,draft}=await fixture();

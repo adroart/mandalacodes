@@ -56,9 +56,15 @@ describe('the server retry advice reaches the queue',()=>{
   respond({error:'x',code:'provider_failed',retryable:false},502);
   expect(retryableTakeFailure(await requestAuthoringProcessing({operation:'transcribe'}).catch(e=>e))).toBe(false);
  });
- it('a 409 is not retried',async()=>{
+ it('a 409 that says nothing more is still working: tried again tens of seconds later',async()=>{
   respond({error:'x'},409);
   const error=await requestAuthoringProcessing({operation:'transcribe'}).catch(e=>e);
-  expect(error.retryable).toBe(false);expect(retryableTakeFailure(error)).toBe(false);
+  expect(error).toMatchObject({status:409,failure:'still_working',retryable:true});expect(retryableTakeFailure(error)).toBe(true);
+  expect(takeRetryAt(error,1,0)).toBe(30000);expect(takeRetryAt(error,2,0)).toBe(60000);expect(takeRetryAt(error,5,0)).toBeUndefined();
+ });
+ it('a 409 the server marks not retryable waits for Retry',async()=>{
+  respond({error:'x',retryable:false},409);
+  const error=await requestAuthoringProcessing({operation:'transcribe'}).catch(e=>e);
+  expect(error).toMatchObject({status:409,failure:'in_progress',retryable:false});expect(retryableTakeFailure(error)).toBe(false);expect(takeRetryAt(error,1,0)).toBeUndefined();
  });
 });

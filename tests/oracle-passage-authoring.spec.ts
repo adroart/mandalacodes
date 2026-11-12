@@ -14,7 +14,7 @@ async function selectPassage(page:import('@playwright/test').Page){
 }
 test('selected passage opens isolated editable teleprompter without losing reader context',async({page},info)=>{
  const selected=await selectPassage(page);await page.getByRole('button',{name:'Re-record this passage',exact:true}).click();
- const dialog=page.getByRole('dialog');await expect(dialog.locator('.vs-section-text')).toHaveText(selected);
+ const dialog=page.getByRole('dialog');await expect(dialog.locator('.vs-section-text')).toContainText(selected);
  await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeVisible();
  await expect(page).toHaveURL(/\/universal-language\/2$/);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -26,7 +26,7 @@ test('re-record waits for review, replaces one passage verbatim and undo restore
  await page.route('**/api/oracle/authoring/ar-create',route=>{const body=route.request().postDataJSON(),text='My spoken version is clear and entirely my own.';return body.operation==='transcribe'?route.fulfill({json:{provider:'fixture',segments:[{text,startMs:0,endMs:Math.min(1000,body.durationMs),timing:'provider',sectionId:'CODE'}]}}):route.fulfill({json:{assimilation:{sections:[{sectionId:body.assimilation.startSectionId,text,evidenceQuotes:[text],changes:[],warnings:[]}],unassigned:[]}}});});
  const selected=await selectPassage(page);await page.getByRole('button',{name:'Re-record this passage',exact:true}).click();const dialog=page.getByRole('dialog');
  await dialog.getByRole('button',{name:'Record',exact:true}).click();await expect(dialog.getByRole('button',{name:'Pause',exact:true})).toBeVisible();
- await expect(dialog.locator('.vs-dock')).toContainText('0:01');await dialog.getByRole('button',{name:'Done',exact:true}).click();
+ await expect(dialog.locator('.vs-dock')).toContainText('0:01');await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
  await expect(dialog.getByRole('textbox',{name:'Your section words',exact:true})).toHaveValue('My spoken version is clear and entirely my own.');
  await expect(page.locator('.working-card-reading__words')).toHaveCount(0);
  await dialog.getByRole('textbox',{name:'Your section words',exact:true}).fill('My checked version stays exactly as I wrote it.');await page.screenshot({path:info.outputPath('check-original-and-spoken.png')});

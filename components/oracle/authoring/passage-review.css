@@ -49,6 +49,10 @@
 .section-voice-studio .vs-word-check-actions button.vs-word-check-use{max-width:100%;text-align:left;overflow-wrap:anywhere;padding-block:12px;line-height:20px}
 .section-voice-studio .vs-word-check-row{max-width:100%;min-width:0}
 .section-voice-studio .vs-word-check-actions{max-width:100%;min-width:0}
+/* Every row has the same two lines: the quote and what else was heard, then its actions, left aligned. */
+.section-voice-studio .vs-word-check-rows{gap:8px}
+.section-voice-studio .vs-word-check-row{row-gap:2px}
+.section-voice-studio .vs-word-check-row>.vs-word-check-actions{flex:1 0 100%;justify-content:flex-start}
 /* A marked word he has already changed while typing loses its mark until the text is redrawn. */
 .section-voice-studio .vs-checked-word[data-changed]{text-decoration:none}
 /* A recording that was not double-checked: one quiet line near his words, never a warning panel. */

@@ -24,7 +24,7 @@ test('apply one section, then send it to the card as one file the Mac accepts',a
  await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();
  await dialog.getByRole('button',{name:'Record',exact:true}).click();
  await expect(dialog.locator('.vs-dock')).toContainText('0:01');
- await dialog.getByRole('button',{name:'Done',exact:true}).click();
+ await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
  const apply=dialog.locator('.vs-dock [data-action=apply]');
  await expect(apply).toBeEnabled();await apply.click();
  await expect(dialog.getByRole('region',{name:'Now in your reading',exact:true})).toContainText('middle of your chest');

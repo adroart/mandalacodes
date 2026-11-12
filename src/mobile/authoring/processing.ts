@@ -21,7 +21,8 @@ export const processingFailureMessages:Record<ProcessingFailure,string>={
  in_progress:'This recording is already being prepared. It is saved on this device. Choose Retry once that has finished.',
  still_working:'Your words are still being prepared. Your recording is saved and will be checked again shortly.',
 };
-// A conflict (in_progress, 409) is never resolved by sending the same request again.
+// A 409 that says nothing more means the Mac or local speech service is still working on this recording: it is asked
+// again later (see `takeRetryAt`). One the server marks `retryable: false` waits for Retry.
 const retryableFailures=new Set<ProcessingFailure>(['busy','failed','timeout','offline','still_working']);
 export class AuthoringServiceError extends Error {
  readonly failure?:ProcessingFailure;readonly retryable?:boolean;
@@ -45,6 +46,7 @@ export function processingFailure(status:number,code:unknown,local=false):Proces
  return status>=500?'failed':'invalid_request';
 }
 export function processingError(status:number,failure:ProcessingFailure,retryable?:unknown,retryAfterMs?:number){
+ if(failure==='in_progress'&&typeof retryable!=='boolean')failure='still_working';
  return new AuthoringServiceError(status,processingFailureMessages[failure],{failure,retryable:typeof retryable==='boolean'?retryable:retryableFailures.has(failure),...(retryAfterMs?{retryAfterMs}:{})});
 }
 /** Retry-After as seconds or an HTTP date, else the body's `retryAfter` seconds; undefined when neither says. */

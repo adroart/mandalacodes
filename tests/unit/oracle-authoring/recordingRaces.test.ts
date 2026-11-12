@@ -132,15 +132,40 @@ describe('recovery never closes a take still live in this page', () => {
     expect(await (await store.audio(id, first.captureId)).text()).toBe('a1final');
     await second.stop();
   });
-  it('waits for a take still recording until it stops', async () => {
+  it('leaves a take still recording alone and returns at once, unchanged', async () => {
     const { store, id, first, second } = await setup();
-    let returned = false;
-    const recovering = recoverCapture(store, (await store.load(id))!, first.captureId).then(value => { returned = true; return value; });
-    await idle(20);
-    expect(returned).toBe(false);
+    const before = (await store.load(id))!;
+    const result = await recoverCapture(store, before, first.captureId);
+    expect(result).toBe(before);
+    expect(isCaptureLive(first.captureId)).toBe(true);
     expect((await store.load(id))!.session.captures.find(c => c.id === first.captureId)?.status).toBe('recording');
-    now = 2000; await first.stop();
-    expect((await recovering).session.captures.find(c => c.id === first.captureId)?.status).toBe('ready');
+    now = 2000;
+    expect((await first.stop()).session.captures.find(c => c.id === first.captureId)?.status).toBe('ready');
+    await second.stop();
+  });
+  it('waits only a few seconds for a take whose stop never arrives, then lets it go for a later recovery', async () => {
+    const { store, id, first, second, a } = await setup();
+    // WebKit after a phone call: the stop is asked for and its event never comes.
+    a.stop.mockImplementation(() => undefined);
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    vi.stubGlobal('window', { setTimeout, clearTimeout });
+    try {
+      now = 2000;
+      const stopping = first.stop().then(() => 'saved', () => 'let go');
+      const before = (await store.load(id))!;
+      let returned: SavedSession | undefined;
+      void recoverCapture(store, before, first.captureId).then(value => { returned = value; });
+      await vi.advanceTimersByTimeAsync(2900);
+      expect(returned).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(200);
+      expect(returned).toBe(before);
+      expect(isCaptureLive(first.captureId)).toBe(true);
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(await stopping).toBe('let go');
+      expect(isCaptureLive(first.captureId)).toBe(false);
+    } finally { vi.useRealTimers(); }
+    const recovered = await recoverCapture(store, (await store.load(id))!, first.captureId);
+    expect(recovered.session.captures.find(c => c.id === first.captureId)).toMatchObject({ status: 'interrupted', durationMs: 1000 });
     await second.stop();
   });
 });

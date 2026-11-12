@@ -77,7 +77,7 @@ export function SettingsScreen({view,continuous,setContinuous,handle,voiceComman
    <input type="checkbox" role="switch" checked={continuous} onChange={e=>{setContinuous(e.target.checked);handle.current?.setContinuous(e.target.checked);localStorage.setItem('oracle.voice.continuous',String(e.target.checked));}}/>
   </label>
   <label className="vs-switch">
-   <span><strong>Move when I say a section’s name</strong><small>{routingStatus==='unsupported'?'Not available on this device. The Next button always works.':'Uses your browser’s speech service where available. The Next button always works.'}</small></span>
+   <span><strong>Move when I say a section’s name</strong><small>{routingStatus==='unsupported'?'Not available on this device. Send & next always works.':'Uses the phone’s speech recognition where available. Send & next always works.'}</small></span>
    <input type="checkbox" role="switch" checked={voiceCommands} disabled={!!active} onChange={e=>{setVoiceCommands(e.target.checked);localStorage.setItem('oracle.voice.commands',String(e.target.checked));}}/>
   </label>
   <fieldset className="vs-choice">

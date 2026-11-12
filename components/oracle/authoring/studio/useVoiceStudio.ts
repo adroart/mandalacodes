@@ -8,7 +8,7 @@ import { changeSectionSession, processSectionSession, currentSectionTexts } from
 import { currentNamedReaderSection } from '../../../../src/mobile/authoring/readerContext';
 import { getSynthesis } from '../../../../data/synthesisData';
 import { replaceComparisonPassage, buildPassageComparison, comparisonRows, readingParagraphs, type PassageChoice } from '../../../../lib/oracle/authoring/passageComparison';
-import { queueSectionTake, discardSectionTake, recoverInterruptedRecordings, type TakeSession, type RecordingDestination } from '../../../../src/mobile/authoring/sectionTakes';
+import { queueSectionTake, discardSectionTake, recoverInterruptedRecordings, withRecordingDestination, type TakeSession, type RecordingDestination } from '../../../../src/mobile/authoring/sectionTakes';
 import { buildWordReplay, activeReplayWord, type ReplayWord } from '../../../../lib/oracle/authoring/wordReplay';
 import { focusedVoiceSections } from '../../../../src/mobile/authoring/focusSections';
 import { startVoiceCapturePass, type VoiceCapturePass } from '../../../../src/mobile/authoring/voiceCapturePass';
@@ -24,6 +24,7 @@ import { useNativeAccountActions } from '../../../../src/mobile/account/NativeAc
 import { isSignInBlocked, resumeSignInBlockedRecordings } from '../../../../src/mobile/authoring/accountRecovery';
 import { plural } from './format';
 import { useCheckAudio } from './useCheckAudio';
+import { correctedQuote } from '../../../../src/mobile/authoring/knownWordFixes';
 import type { StudioProps, Tone, View } from './types';
 /** The processing summary of timed mishearings is not repeated beside the timed words themselves.
  * An issue is settled once its exact quote is gone from the human words or the speaker confirms it. */
@@ -416,7 +417,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                     liveCapture.current = captureId;
                     // Saved as it starts, so a recording cut off by a reload or a killed app still reaches this section.
                     const destination: RecordingDestination | undefined = phraseCapture.current ? undefined : { captureId, sectionId: captureTarget.current, markers: [...markers.current], intent: intent === 'auto' ? undefined : intent, focus: captureFocus.current, continuationOf: continuation.current };
-                    void changeSectionSession(id, s => ({ ...s, state: 'recording', captureId, error: undefined, recording: destination }) as TakeSession).then(accept).catch(report);
+                    void changeSectionSession(id, s => withRecordingDestination({ ...s, state: 'recording', captureId, error: undefined } as TakeSession, destination)).then(accept).catch(report);
                 },
                 onSegmentReady: async (savedTake, captureId, metadata) => {
                     const finished = savedTake.session.captures.find(c => c.id === captureId);
@@ -448,6 +449,11 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                 onProcessingFailure: report,
                 onInterruption: state => health.onInterruption(state),
             });
+            // The workspace closed while the microphone was opening: nothing here could stop this pass later.
+            if (!mounted.current) {
+                void recorder.stop().catch(() => undefined);
+                return;
+            }
             handle.current = recorder;
             setActive(recorder);
             setMonitor({ elapsed: 0, paused: false, level: null });
@@ -939,8 +945,21 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         }).catch(report), 500);
         return () => clearTimeout(timer);
     }, [draft?.id, focusId, view, !!active]);
+    /** "It's right" is kept per section (keys start with the section id) for the life of the draft, so looking at another
+     * section and coming back keeps it. A section's confirmations go when a new recording replaces its words or it is applied. */
+    const resolvedStamps = useRef<Record<string, string>>({});
     useEffect(() => {
         setResolved({});
+        resolvedStamps.current = {};
+    }, [draft?.id]);
+    useEffect(() => {
+        const stamps = Object.fromEntries((draft?.results ?? []).map(r => [r.sectionId, JSON.stringify([!!r.applied, r.takeIds ?? [], r.reviewTranscript ?? ''])]));
+        const stale = Object.keys(resolvedStamps.current).filter(id => resolvedStamps.current[id] !== stamps[id]);
+        resolvedStamps.current = stamps;
+        if (stale.length)
+            setResolved(r => Object.fromEntries(Object.entries(r).filter(([key]) => !stale.some(id => key.startsWith(`${id}/`)))) as Record<string, true>);
+    }, [draft?.results]);
+    useEffect(() => {
         setCaret(undefined);
     }, [draft?.id, focusId]);
     const chip = (node: CardSection): {
@@ -970,25 +989,63 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             void choose(next.id).catch(report);
     };
     const waiting = results.filter(r => !r.applied).length + (draft?.unassigned.length ?? 0);
-    const checks = result && !result.applied && !result.checked && sectionReviewExceptions(result).needsReview ? issueKeys(result).map(item => ({ ...item, done: !!resolved[item.key] || !!item.quote && !quoted(result.text, item.quote) })) : [];
+    // A doubt on a word the shared word library fixed is placed on the fixed wording; `heard` keeps the raw words.
+    // Only an edit by the speaker settles a check by its words being gone.
+    const checks = result && !result.applied && !result.checked && sectionReviewExceptions(result).needsReview ? issueKeys(result).map(item => {
+        const key = `${result.sectionId}/${item.key}`;
+        const fixed = item.quote && !quoted(result.text, item.quote) ? correctedQuote(result.changes, item.quote) : undefined;
+        const quote = fixed && quoted(result.text, fixed) ? fixed : item.quote;
+        return { ...item, key, quote, heard: item.quote, done: !!resolved[key] || !!quote && !quoted(result.text, quote) };
+    }) : [];
     const open = checks.filter(c => !c.done).length;
     const generalCheck = checks.some(c => !c.quote);
     /** Each word check's own clip: playing, stopped, unavailable or failed. See `useCheckAudio`. */
     const checkAudio = useCheckAudio({ load: id => audio.load(id), captureSessionId: draft?.captureSessionId, version: draft?.version, discarded, fallbackCaptureIds: [...(result?.takeIds ?? []), draft?.captureId], playCapture, clipBounds, clearReplay: () => setReplay(null), audioUrl, playing, stopListening });
     const progressText = authorshipFailed ? 'Authorship unavailable' : !authorship ? 'Checking authorship…' : authorship.total ? `${authorship.human} of ${authorship.total} ${authorship.total === 1 ? 'section' : 'sections'} in your words` : 'No recordable sections';
     const pathFor = (node: CardSection) => displaySectionTitle([...node.path.slice(0, -1), titleFor(node)].filter((part, i, all) => i === 0 || part !== all[i - 1]).join(' · '));
+    /** The card's own sections, read only when the workspace opened on passages chosen in the reader. */
+    const readerUnits = useMemo(() => {
+        if (!initialAnchors?.length)
+            return [];
+        try {
+            return cardSections(source);
+        }
+        catch {
+            return [];
+        }
+    }, [source, initialAnchors]);
+    /**
+     * A passage chosen in the reader ("Re-record this passage") that is exactly one paragraph of its
+     * section: its number there and the section's paragraph count, so it reads as if aimed here.
+     */
+    const selectionParagraph = (node: CardSection) => {
+        if (!initialAnchors?.length)
+            return undefined;
+        const parent = readerUnits.find(unit => unit.lensId === node.lensId && unit.sectionText === node.sectionText && unit.start <= node.start && node.end <= unit.end);
+        if (!parent)
+            return undefined;
+        const ps = readingParagraphs(parent.text);
+        const index = ps.findIndex(p => parent.start + p.start === node.start && p.text === node.text);
+        return index >= 0 ? { index, count: ps.length } : undefined;
+    };
     const scopeFor = (node: CardSection, focus?: {
         start: number;
         text: string;
     }) => {
         const ps = readingParagraphs(references[node.id] ?? node.text);
         const i = focus ? ps.findIndex(p => p.start === focus.start && p.text === focus.text) : -1;
+        const chosen = !focus ? selectionParagraph(node) : undefined;
+        if (chosen)
+            return `Paragraph ${chosen.index + 1} of ${chosen.count}`;
         return i >= 0 ? `Paragraph ${i + 1} of ${ps.length}` : ps.length > 1 ? `All ${ps.length} paragraphs` : 'Whole section';
     };
     const spanLabel = (node: CardSection, focus?: {
         start: number;
         text: string;
     }) => {
+        const chosen = !focus ? selectionParagraph(node) : undefined;
+        if (chosen)
+            return ` · paragraph ${chosen.index + 1}`;
         const paragraphs = readingParagraphs(references[node.id] ?? node.text);
         if (focus) {
             const i = paragraphs.findIndex(p => p.start === focus.start && p.text === focus.text);
@@ -1051,7 +1108,21 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                 const takeId = (u as {
                     takeId?: string;
                 }).takeId;
-                return { ...s, results: existing ? s.results.map(r => r.sectionId === sectionId ? { ...r, evidenceQuotes: [...r.evidenceQuotes, u.text], takeIds: [...new Set([...(r.takeIds ?? []), ...(takeId ? [takeId] : [])])], text: `${r.text}\n\n${u.text}`, comparison: undefined, checked: false, applied: false, warnings: [...r.warnings, 'Check these words you placed by hand.'] } : r) : [...s.results, { sectionId, takeIds: takeId ? [takeId] : undefined, text: u.text, evidenceQuotes: [u.text], changes: [], warnings: ['Check these words you placed by hand.'], checked: false }], unassigned: s.unassigned.filter((_, index) => index !== i) };
+                const node = s.sections.find(n => n.id === sectionId);
+                // Words placed by hand are added after the section's reading unless the owner chose "Replace them" in Recording settings.
+                const adding = intent !== 'replace';
+                const placed = (r: SectionDraftResult): SectionDraftResult => {
+                    const text = `${r.text}\n\n${u.text}`;
+                    const base = { ...r, evidenceQuotes: [...r.evidenceQuotes, u.text], takeIds: [...new Set([...(r.takeIds ?? []), ...(takeId ? [takeId] : [])])], text, checked: false, applied: false, warnings: [...r.warnings, 'Check these words you placed by hand.'] };
+                    if (r.editIntent === 'add')
+                        return { ...base, comparison: undefined };
+                    // A passage-by-passage comparison keeps its rows; the placed words become one new passage at the end.
+                    const original = sectionComparisonOriginal(r, references[sectionId] ?? node?.text ?? '');
+                    if (r.comparison && buildPassageComparison(original, r.text, r.comparison).kind === 'matched')
+                        return { ...base, comparison: { originalText: original, spokenText: text, pairs: [...r.comparison.pairs, { originalStart: original.length, originalEnd: original.length, textStart: r.text.length + 2, textEnd: text.length }] } };
+                    return { ...base, comparison: undefined };
+                };
+                return { ...s, results: existing ? s.results.map(r => r.sectionId === sectionId ? placed(r) : r) : [...s.results, { sectionId, takeIds: takeId ? [takeId] : undefined, text: u.text, evidenceQuotes: [u.text], changes: [], warnings: ['Check these words you placed by hand.'], checked: false, ...(adding ? { editIntent: 'add' as const, comparisonOriginal: references[sectionId] ?? node?.text } : {}) }], unassigned: s.unassigned.filter((_, index) => index !== i) };
             });
             setPlacing(null);
             reviewAt(sectionId);
@@ -1086,7 +1157,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         accept, report, loadAudio, make, prepare, patch, flush, stopListening, choose, aim, openApplied, aimParagraph, reviewAt,
         record, stop, togglePause, edit, choosePassage, checkWords, integrate, playCapture, listen, hear, addAudio, discard,
         showAudio, close, openView, dismissToast, retrySaved, signInAndResume, titleFor, shownTitle, saveTitle, readUpdated,
-        chip, step, pathFor, scopeFor, spanLabel, nextAfter, applySection, pickFromRail, place,
+        chip, step, pathFor, scopeFor, spanLabel, selectionParagraph, nextAfter, applySection, pickFromRail, place,
         // Send finished sections to the card.
         sendToCard,
     };

@@ -100,3 +100,24 @@ export function restoreSpokenWords(result:SectionAssimilationResult,speech:Corre
   unassigned:result.unassigned.map(item=>({...item,text:rawText(speech,item.text)})),
  };
 }
+const holds=(text:string,quote:string)=>new RegExp(`(^|[^\\p{L}\\p{N}])${quote.trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}([^\\p{L}\\p{N}]|$)`,'iu').test(text);
+/**
+ * A word check quotes the raw words, but where the shared word library fixed them the proposed text holds the fixed
+ * wording instead. This is that wording for `quote` (the whole fix when the quote lies inside it, or the quote with the fix
+ * made when the fix lies inside the quote), so the check stays on the words the speaker sees. Undefined when no fix touched it.
+ */
+export function correctedQuote(changes:{before:string;after:string;reason:string}[],quote:string):string|undefined{
+ if(!quote.trim())return undefined;
+ for(const change of changes){
+  if(change.reason!==KNOWN_WORD_REASON)continue;
+  // A fix can be widened by unchanged words on either side; only the words it changed count.
+  const before=change.before.split(/(\s+)/),after=change.after.split(/(\s+)/);
+  let lead=0;while(lead<before.length&&lead<after.length&&before[lead]===after[lead])lead++;
+  let trail=0;while(trail<before.length-lead&&trail<after.length-lead&&before[before.length-1-trail]===after[after.length-1-trail])trail++;
+  const was=before.slice(lead,before.length-trail).join('').trim(),now=after.slice(lead,after.length-trail).join('').trim();
+  if(!was||!now)continue;
+  if(holds(was,quote))return now;
+  if(holds(quote,was)){const at=quote.toLowerCase().indexOf(was.toLowerCase());return quote.slice(0,at)+now+quote.slice(at+was.length);}
+ }
+ return undefined;
+}

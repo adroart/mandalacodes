@@ -29,6 +29,8 @@ export type VoiceCapturePass=ActiveCapture&{
 
 /** Before a ceiling, roll at the first quiet stretch of this length within the lead. */
 const QUIET_LEAD_MS=30_000,QUIET_MS=400,BYTE_MARGIN_MS=3000,CHECK_MS=100,BYTE_LIMIT=9*1024*1024,PREPARE_RETRY_MS=5000;
+/** onSegmentReady can lose a race with other writers of the same draft; it is tried again a few times, a little later each time. */
+const READY_ATTEMPTS=4,READY_RETRY_MS=150;
 interface Take {handle:ActiveCapture;section:string|null;bytes:number;retired:boolean;link?:Promise<void>}
 
 /** Every delivered chunk is saved before publication. At a boundary the next take is prepared
@@ -118,7 +120,7 @@ export async function startVoiceCapturePass(store:AuthoringStore,saved:SavedSess
    try{
     const result=await take.handle.completion;
     lastSaved=(await store.load(saved.session.id))??result;
-    await options.onSegmentReady?.(lastSaved,id,{reason});
+    await ready(lastSaved,id,reason);
     process(lastSaved,id);
    }catch(error){
     if(!successor)throw error;
@@ -140,8 +142,17 @@ export async function startVoiceCapturePass(store:AuthoringStore,saved:SavedSess
    try{lastSaved=await recoverCapture(store,latest,id);break;}
    catch(error){if(attempt>=3)throw error;}
   }
-  await options.onSegmentReady?.(lastSaved,id,{reason});
+  if(lastSaved.session.captures.find(c=>c.id===id)?.status==='recording')return;
+  await ready(lastSaved,id,reason);
   process(lastSaved,id);
+ };
+ const ready=async(result:SavedSession,id:string,reason:VoiceCaptureSegmentMetadata['reason'])=>{
+  for(let attempt=1;;attempt++){
+   try{await options.onSegmentReady?.(result,id,{reason});return;}
+   catch(error){if(attempt>=READY_ATTEMPTS)throw error;}
+   await new Promise(resolve=>setTimeout(resolve,READY_RETRY_MS*attempt));
+   result=(await store.load(saved.session.id))??result;
+  }
  };
  const timer=setInterval(()=>{
   const take=active;

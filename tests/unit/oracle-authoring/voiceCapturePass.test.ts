@@ -104,6 +104,26 @@ describe('take boundaries without a gap',()=>{
   failOn.text='';now=1500;Recorder.latest.emit('still here');now=2000;const saved=await active.stop();
   expect(saved.session.captures.at(-1)).toMatchObject({status:'ready',durationMs:1000});expect(current().session.captures[0]).toMatchObject({status:'interrupted',durationMs:1000});
  });
+ it('tries onSegmentReady again when another writer of the draft wins the race, so the finished take is still queued',async()=>{
+  const {store,initial}=memoryStore(),failure=vi.fn();let conflicts=2;
+  const onSegmentReady=vi.fn((_saved:SavedSession,_id:string)=>{if(conflicts-->0)throw new Error('Another tab changed this session.');});
+  const active=await startVoiceCapturePass(store,initial,'CODE',failure,2,{continuous:true,onSegmentReady});
+  const first=active.captureId;
+  now=1000;Recorder.latest.emit('spoken');await active.flush();await settle();
+  expect(onSegmentReady).toHaveBeenCalledTimes(3);expect(onSegmentReady.mock.calls.every(call=>call[1]===first)).toBe(true);
+  expect(failure).not.toHaveBeenCalled();expect(Recorder.latest.state).toBe('recording');
+  now=2000;await active.stop();
+ });
+ it('reports a take whose onSegmentReady keeps failing after a few tries, and keeps recording',async()=>{
+  const {store,initial}=memoryStore(),failure=vi.fn();
+  const onSegmentReady=vi.fn((_saved:SavedSession,_id:string,meta:{reason:string})=>{if(meta.reason==='send')throw new Error('Another tab changed this session.');});
+  const active=await startVoiceCapturePass(store,initial,'CODE',failure,2,{continuous:true,onSegmentReady});
+  now=1000;Recorder.latest.emit('spoken');await active.flush();await settle();
+  expect(onSegmentReady.mock.calls.filter(call=>call[2].reason==='send')).toHaveLength(4);
+  expect(failure.mock.calls.map(call=>call[0].message)).toEqual(['Another tab changed this session.']);
+  expect(Recorder.latest.state).toBe('recording');
+  now=2000;await active.stop();
+ });
  it('falls back to stop-then-start when a second recorder on one stream is refused',async()=>{
   Recorder.exclusive=true;const {store,initial}=memoryStore(),failure=vi.fn();
   const active=await startVoiceCapturePass(store,initial,'CODE',failure,2,{continuous:true});

@@ -138,6 +138,6 @@ test('recording state is announced once per change, never the clock',async({page
  if(info.project.name==='Phone')await page.screenshot({path:info.outputPath('recording.png')});
  await d.getByRole('button',{name:'Pause',exact:true}).click();await expect(live).toHaveText('Paused');
  await d.getByRole('button',{name:'Resume',exact:true}).click();await expect(live).toHaveText('Recording');
- await d.getByRole('button',{name:'Done',exact:true}).click();await expect(live).toHaveText('Saved');
+ await d.getByRole('button',{name:'Stop & review',exact:true}).click();await expect(live).toHaveText('Saved');
  expect(await page.evaluate(()=>(window as any).said)).toEqual(['Recording','Paused','Recording','Saved']);
 });

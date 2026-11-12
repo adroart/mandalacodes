@@ -67,19 +67,28 @@
 .vs-aim{display:grid;place-items:center;flex-shrink:0;width:30px;height:30px;border:1px solid var(--vs-rule-2);border-radius:50%;color:var(--vs-muted);transition:background .15s,border-color .15s,color .15s}
 @media(hover:hover){.vs-section-head:hover:enabled .vs-aim{color:var(--vs-ink);border-color:var(--vs-muted)}}
 .vs-section-head[aria-pressed=true] .vs-aim{background:var(--vs-accent);border-color:var(--vs-accent);color:var(--vs-accent-ink)}
-.vs-section[data-recording] .vs-aim{background:var(--vs-rec);border-color:var(--vs-rec);color:#fff;animation:vs-pulse 1.6s ease-in-out infinite}
+/* Red only while the microphone hears him; a paused, interrupted or muted capture stays neutral. */
+.vs-section[data-recording] .vs-aim{background:var(--vs-raised);border-color:var(--vs-rule-2);color:var(--vs-ink-2)}
+.vs-section[data-live] .vs-aim{background:var(--vs-rec);border-color:var(--vs-rec);color:#fff;animation:vs-pulse 1.6s ease-in-out infinite}
 .vs-section-title{flex:1;min-width:0;font:600 16px/1.35 var(--font-controls)}
 .vs-section-text{margin-top:10px;white-space:pre-line;font:400 var(--vs-text)/1.62 var(--font-controls);color:var(--vs-ink-2);overflow-wrap:break-word}
 .vs-section[aria-current=step] .vs-section-text{color:var(--vs-ink)}
 .vs-section-text--paragraphs{white-space:normal}
-.vs-para{position:relative;margin:0 calc(var(--vs-gutter) * -1);padding:4px var(--vs-gutter);white-space:pre-line;cursor:pointer;transition:background .12s}
+.vs-para{position:relative;margin:0 calc(var(--vs-gutter) * -1);padding:4px var(--vs-gutter);white-space:pre-line}
 .vs-para+.vs-para{margin-top:.75em}
-.vs-para[aria-disabled]{cursor:default}
-@media(hover:hover){.vs-para:not([aria-disabled]):hover{background:rgba(255,255,255,.035)}}
+/* Paragraphs are buttons only while the owner is choosing one in the aimed section. */
+.vs-para--choice{display:block;width:calc(100% + var(--vs-gutter) * 2);padding-block:10px;border:1px solid var(--vs-rule-2);border-radius:6px;background:none;color:var(--vs-ink);font:inherit;text-align:left;cursor:pointer;transition:background .12s,border-color .12s}
+@media(hover:hover){.vs-para--choice:hover{background:var(--vs-hover);border-color:var(--vs-muted)}}
+.vs-para--choice:active{background:var(--vs-accent-soft);border-color:var(--vs-accent)}
+.section-voice-studio .vs-para--choice:focus-visible{outline:2px solid var(--vs-accent);outline-offset:-2px}
+.vs-narrow{display:inline-flex;align-items:center;min-height:44px;margin:6px 0 0 40px;padding:0;border:0;background:none;color:var(--vs-ink-2);font:600 14px/1.3 var(--font-controls);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--vs-rule-2)}
+@media(hover:hover){.vs-narrow:hover{color:var(--vs-ink)}}
+.vs-picking{margin:4px 0 0 40px;font:500 14px/1.4 var(--font-controls);color:var(--vs-accent)}
 .vs-para[data-aimed]{padding-top:10px;padding-bottom:12px;background:rgba(255,255,255,.05);color:#fbfaf6}
 .vs-para[data-aimed]::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--vs-accent)}
 .vs-section[data-recording] .vs-para[data-aimed]{background:rgba(255,255,255,.05)}
-.vs-section[data-recording] .vs-para[data-aimed]::before{background:var(--vs-rec)}
+.vs-section[data-recording] .vs-para[data-aimed]::before{background:var(--vs-muted)}
+.vs-section[data-live] .vs-para[data-aimed]::before{background:var(--vs-rec)}
 .vs-para-tag{display:block;margin-bottom:4px;font:700 12px/1.3 var(--font-controls);letter-spacing:.02em;color:var(--vs-accent)}
 .vs-section[data-recording] .vs-para-tag{color:var(--vs-muted)}
 .vs-section[data-paragraph-aim]::before{display:none}
@@ -87,7 +96,8 @@
 .vs-section[data-paragraph-aim] .vs-section-head[aria-pressed=true] .vs-aim{background:none;border-color:var(--vs-accent);color:var(--vs-accent)}
 .vs-span{font-weight:500;color:var(--vs-ink-2)}
 .vs-section[aria-current=step]::before{content:'';position:absolute;left:calc(var(--vs-gutter) * -1);top:18px;bottom:22px;width:3px;border-radius:0 3px 3px 0;background:var(--vs-accent)}
-.vs-section[data-recording]::before{background:var(--vs-rec)}
+.vs-section[data-recording]::before{background:var(--vs-muted)}
+.vs-section[data-live]::before{background:var(--vs-rec)}
 
 
 /* State chips and dots share one vocabulary */
@@ -260,7 +270,7 @@
 @media(max-width:599px){
  .vs-compare[data-mode=passages] [data-kind=replaced] .vs-original{font-size:15px;line-height:1.55}
  .vs-dock--review{gap:2px;padding:8px 10px}
- .vs-dock--review .vs-btn--quiet{flex-direction:column;gap:3px;min-width:60px;min-height:52px;padding:0 6px;font-size:11px;font-weight:600}
+ .vs-dock--review .vs-btn--quiet{flex-direction:column;gap:3px;min-width:60px;min-height:52px;padding:0 6px;font-size:12px;font-weight:600}
  .vs-dock--review .vs-btn--primary{flex:1;min-width:0;min-height:48px;margin-left:6px;padding:0 12px}
  .vs-dock--review .vs-next{max-width:none}
 }

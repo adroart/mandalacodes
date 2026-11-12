@@ -5,7 +5,7 @@ import {SectionDraftStore,createSectionDraftSession} from '../../../lib/oracle/a
 import {cardSections} from '../../../lib/oracle/authoring/cardSections';
 import {createSession,sourceSnapshot} from '../../../lib/oracle/authoring/workflow';
 import {assimilateSections} from '../../../src/mobile/authoring/sectionAssimilation';
-import {getTakeSession,queueSectionTake,recoverInterruptedRecordings,retryableTakeFailure,type TakeSession} from '../../../src/mobile/authoring/sectionTakes';
+import {getTakeSession,queueSectionTake,recoverInterruptedRecordings,retryableTakeFailure,withRecordingDestination,type TakeSession} from '../../../src/mobile/authoring/sectionTakes';
 vi.mock('../../../src/mobile/authoring/sectionAssimilation',()=>({assimilateSections:vi.fn()}));
 const assimilate=vi.mocked(assimilateSections),audio=new AuthoringStore(),drafts=new SectionDraftStore();
 beforeEach(async()=>{vi.clearAllMocks();vi.stubGlobal('window',new EventTarget());const values=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>values.set(key,value),removeItem:(key:string)=>values.delete(key)});for(const name of ['oracle-section-drafts-v1','oracle-working-cards-v1','oracle-authoring-v1'])await new Promise<void>((resolve,reject)=>{const req=indexedDB.deleteDatabase(name);req.onsuccess=()=>resolve();req.onerror=()=>reject(req.error);});});
@@ -67,6 +67,26 @@ describe('a recording cut off by a reload',()=>{
   const recovered=await recoverInterruptedRecordings(draft.id,{loadSource:async()=>source,transcribe});
   expect(recovered).toMatchObject({queued:0,saved:1});expect(recovered.session?.takes??[]).toHaveLength(0);expect(recovered.session?.state).toBe('ready');
   expect((await audio.load(session.id))!.session.captures[0].status).toBe('interrupted');expect(transcribe).not.toHaveBeenCalled();
+ });
+ it('queues a finished recording whose queueing failed, from the destination kept when the next one started',async()=>{
+  const {source,sections,session,draft}=await interrupted({status:'interrupted'});
+  // The take finished ('ready') and the next take of the pass started before it could be queued.
+  const saved=(await audio.load(session.id))!;await audio.save({...saved.session,captures:saved.session.captures.map(c=>({...c,status:'ready' as const,durationMs:2000}))},saved.version);
+  const moved=withRecordingDestination((await getTakeSession(draft.id))!,{captureId:'next',sectionId:sections[0].id,markers:[{atMs:0,sectionId:sections[0].id}]});
+  expect(moved.recording?.captureId).toBe('next');expect(moved.earlierRecordings?.map(item=>item.captureId)).toEqual(['cut']);
+  await drafts.save(moved,(await getTakeSession(draft.id))!.version);
+  const transcribe=vi.fn(async()=>response('Words of the first take.'));assimilate.mockResolvedValue(result(sections[1].id,'Words of the first take.'));
+  const services={loadSource:async()=>source,transcribe};
+  expect(await recoverInterruptedRecordings(draft.id,services)).toMatchObject({queued:1,saved:0});
+  const reviewed=await waitState(draft.id,'cut','review');expect(reviewed.takes![0]).toMatchObject({startSectionId:sections[1].id,intent:'replace'});
+  expect(withRecordingDestination(reviewed,undefined).earlierRecordings).toBeUndefined();
+  expect(await recoverInterruptedRecordings(draft.id,services)).toMatchObject({queued:0,saved:0});expect(transcribe).toHaveBeenCalledTimes(1);
+ });
+ it('leaves a finished recording with no known section listed with the saved recordings',async()=>{
+  const {source,session,draft}=await interrupted({destination:false,status:'interrupted'});const transcribe=vi.fn();
+  const saved=(await audio.load(session.id))!;await audio.save({...saved.session,captures:saved.session.captures.map(c=>({...c,durationMs:2000}))},saved.version);
+  expect(await recoverInterruptedRecordings(draft.id,{loadSource:async()=>source,transcribe})).toMatchObject({queued:0,saved:0});
+  expect((await audio.load(session.id))!.session.captures[0]).toMatchObject({status:'interrupted'});expect(transcribe).not.toHaveBeenCalled();
  });
  it('drops a recording that saved no audio and never touches the live one',async()=>{
   const empty=await interrupted({chunks:0});const transcribe=vi.fn();
