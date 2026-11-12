@@ -27,9 +27,9 @@ test('a failed transcript visibly retains saved audio and can be retried without
 });
 test('changed words and their inline check lead review; kept AI receives no progress credit',async({page},info)=>{
  const said=await pipeline(page,true,true),d=await open(page);await expectProgress(d,0);await imported(d);
- const first=d.locator('.vs-pair').first();await expect(first.locator('.vs-pair-head')).toContainText('Passage 2');expect(await first.getByRole('textbox').evaluate(el=>{const copy=el.cloneNode(true) as HTMLElement;copy.querySelectorAll('[data-check-controls]').forEach(n=>n.remove());return copy.textContent;})).toBe(said);await expect(d.locator('.vs-checks')).toHaveCount(0);await expect(apply(d)).toBeDisabled();const check=first.getByRole('textbox').locator('.vs-inline-word-check');await expect(check.locator('.vs-checked-word')).toHaveText('chess');await expect(check.getByRole('button',{name:'Hear it',exact:true})).toBeVisible();await expect(check.getByRole('button',{name:'It’s right',exact:true})).toBeVisible();expect(await check.locator('.vs-checked-word').evaluate(el=>getComputedStyle(el).textDecorationLine)).toContain('underline');
+ const first=d.locator('.vs-pair').first();await expect(first.locator('.vs-pair-head')).toContainText('Passage 2');expect(await first.getByRole('textbox').evaluate(el=>{const copy=el.cloneNode(true) as HTMLElement;copy.querySelectorAll('[data-check-controls]').forEach(n=>n.remove());return copy.textContent;})).toBe(said);await expect(d.locator('.vs-checks')).toHaveCount(0);await expect(apply(d)).toBeDisabled();const check=first.getByRole('textbox').locator('.vs-inline-word-check');await expect(check.locator('.vs-checked-word')).toHaveText('chess');await expect(first.getByRole('textbox').getByRole('button')).toHaveCount(0);const checkRow=first.locator('[data-review-pane=words] .vs-word-check-row');await expect(checkRow.locator('.vs-word-check-quote')).toHaveText('“chess”');await expect(checkRow.getByRole('button',{name:/^(Hear it|Listen to recording)$/})).toBeVisible();await expect(checkRow.getByRole('button',{name:'It’s right',exact:true})).toBeVisible();expect(await check.locator('.vs-checked-word').evaluate(el=>getComputedStyle(el).textDecorationLine)).toContain('underline');
  const unchanged=d.locator('.vs-pair[data-kind=unspoken]');expect(await unchanged.count()).toBeGreaterThan(0);for(const row of await unchanged.all()){await expect(row.locator('.vs-original')).toBeVisible();await expect(row.locator('[data-review-pane=words]')).toHaveCount(0);}
- if(page.viewportSize()!.width<768){const humanSize=await first.getByRole('textbox').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));for(const text of [first.locator('.vs-original'),unchanged.first().locator('.vs-original')]){expect(await text.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeLessThan(humanSize);expect(await text.evaluate(el=>getComputedStyle(el).color)).not.toBe(await first.getByRole('textbox').evaluate(el=>getComputedStyle(el).color));}}
+ {const type=(el:Element)=>({size:getComputedStyle(el).fontSize,line:getComputedStyle(el).lineHeight}),human=await first.getByRole('textbox').evaluate(type);for(const text of [first.locator('.vs-original'),unchanged.first().locator('.vs-original')]){expect(await text.evaluate(type)).toEqual(human);expect(await text.evaluate(el=>getComputedStyle(el).color)).not.toBe(await first.getByRole('textbox').evaluate(el=>getComputedStyle(el).color));}}
  const positions=await first.evaluate(el=>({words:el.querySelector('[data-review-pane=words]')!.getBoundingClientRect().top,original:el.querySelector('[data-review-pane=original]')!.getBoundingClientRect().top}));if(page.viewportSize()!.width<768)expect(positions.words).toBeLessThan(positions.original);
  expect((await first.getByRole('textbox').boundingBox())!.y).toBeLessThan(250);await page.screenshot({path:info.outputPath('review-inline.png')});await first.getByRole('button',{name:'It’s right',exact:true}).click();await expect(apply(d)).toBeEnabled();await expect(first.getByRole('button',{name:'Check again',exact:true})).toBeVisible();
  await apply(d).click();await expect(d.locator('.vs-next-recording')).toBeVisible();await d.getByRole('button',{name:'Back',exact:true}).click();await expectProgress(d,0);await expect(d.locator('[data-section-id="2/CODE/reading"] .vs-chip').first()).toHaveText('Partly your words');
@@ -40,8 +40,8 @@ test('whole-section application offers the next recording above the applied text
 });
 test('live dock keeps complete current and next destinations and allows a new take while processing',async({page,context,baseURL,browserName},info)=>{
  test.skip(browserName!=='chromium','Uses the Chromium fake microphone.');
- await context.grantPermissions(['microphone'],{origin:baseURL!});let release:()=>void=()=>{};const gate=new Promise<void>(resolve=>{release=resolve;});await page.route('**/api/oracle/authoring/ar-create',async route=>{const body=route.request().postDataJSON();if(body.operation==='transcribe'){await gate;return route.fulfill({json:{provider:'fixture',segments:[{text:'My own words.',startMs:0,endMs:Math.min(body.durationMs,1000),timing:'provider',sectionId:'CODE'}]}});}return route.fulfill({json:{assimilation:{sections:[],unassigned:[{text:'My own words.',reason:'No exact destination in this fixture.'}]}}});});const d=await open(page);await d.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-para').nth(1).click();await d.getByRole('button',{name:'Record',exact:true}).click();const dock=d.locator('.vs-dock');await expect(dock.locator('.vs-dock-target strong')).toHaveText('Universal Language · Reading');await expect(dock).toContainText('Paragraph 2 of');await expect(dock.getByRole('button',{name:'Done',exact:true})).toBeVisible();await expect(dock.getByRole('button',{name:'Send this recording and go to I Ching · Combination',exact:true})).toHaveText('Next');await expect(dock.locator('.vs-recording-next')).toContainText('I Ching');await expect(d.getByRole('button',{name:'Pause',exact:true})).toBeVisible();await expect(dock).toContainText('0:01');
- const names=await dock.locator('.vs-dock-target strong,.vs-recording-next').evaluateAll(els=>els.map(el=>({width:el.clientWidth,scroll:el.scrollWidth,overflow:getComputedStyle(el).textOverflow})));for(const n of names){expect(n.scroll).toBeLessThanOrEqual(n.width+1);expect(n.overflow).not.toBe('ellipsis');}await page.screenshot({path:info.outputPath('live-dock.png')});await d.getByRole('button',{name:'Pause',exact:true}).click();await expect(dock).toContainText('Paused');await d.getByRole('button',{name:'Resume',exact:true}).click();await d.getByRole('button',{name:'Send this recording and go to I Ching · Combination',exact:true}).click();await expect(d.getByRole('button',{name:'Record',exact:true})).toBeEnabled();await expect(dock).toContainText('processing');await d.getByRole('button',{name:'Record',exact:true}).click();await expect(d).toContainText('Recording');release();await d.getByRole('button',{name:'Done',exact:true}).click();
+ await context.grantPermissions(['microphone'],{origin:baseURL!});let release:()=>void=()=>{};const gate=new Promise<void>(resolve=>{release=resolve;});await page.route('**/api/oracle/authoring/ar-create',async route=>{const body=route.request().postDataJSON();if(body.operation==='transcribe'){await gate;return route.fulfill({json:{provider:'fixture',segments:[{text:'My own words.',startMs:0,endMs:Math.min(body.durationMs,1000),timing:'provider',sectionId:'CODE'}]}});}return route.fulfill({json:{assimilation:{sections:[],unassigned:[{text:'My own words.',reason:'No exact destination in this fixture.'}]}}});});const d=await open(page);await d.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();await d.getByRole('button',{name:'Record one paragraph only',exact:true}).click();await d.locator('.vs-section[data-section-id="2/CODE/reading"]').getByRole('button',{name:/^Paragraph 2: /}).click();await d.getByRole('button',{name:'Record',exact:true}).click();const dock=d.locator('.vs-dock');await expect(dock.locator('.vs-dock-target strong')).toHaveText('Universal Language · Reading');await expect(dock).toContainText('Paragraph 2 of');await expect(dock.getByRole('button',{name:'Stop & review',exact:true})).toBeVisible();await expect(dock.getByRole('button',{name:'Send this recording and go to I Ching · Combination',exact:true})).toHaveText('Send & next');await expect(dock.locator('.vs-recording-next')).toContainText('I Ching');await expect(d.getByRole('button',{name:'Pause',exact:true})).toBeVisible();await expect(dock).toContainText('0:01');
+ const names=await dock.locator('.vs-dock-target strong,.vs-recording-next').evaluateAll(els=>els.map(el=>({width:el.clientWidth,scroll:el.scrollWidth,overflow:getComputedStyle(el).textOverflow})));for(const n of names){expect(n.scroll).toBeLessThanOrEqual(n.width+1);expect(n.overflow).not.toBe('ellipsis');}await page.screenshot({path:info.outputPath('live-dock.png')});await d.getByRole('button',{name:'Pause',exact:true}).click();await expect(dock).toContainText('Paused');await d.getByRole('button',{name:'Resume',exact:true}).click();await d.getByRole('button',{name:'Send this recording and go to I Ching · Combination',exact:true}).click();await expect(d.getByRole('button',{name:'Record',exact:true})).toBeEnabled();await expect(dock).toContainText('processing');await d.getByRole('button',{name:'Record',exact:true}).click();await expect(d).toContainText('Recording');release();await d.getByRole('button',{name:'Stop & review',exact:true}).click();
 });
 
 test('long destinations remain complete with enlarged phone type and Settings has breathing room',async({page,context,baseURL,browserName},info)=>{
@@ -51,7 +51,7 @@ test('long destinations remain complete with enlarged phone type and Settings ha
  await d.getByRole('button',{name:'Back',exact:true}).click();await d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"] .vs-section-head').click();await page.addStyleTag({content:'.section-voice-studio{--vs-text:22px}.section-voice-studio .vs-dock-target strong,.section-voice-studio .vs-recording-next{font-size:20px;line-height:1.5}'});await d.getByRole('button',{name:'Record',exact:true}).click();
  await expect(d.locator('.vs-dock-target strong')).toContainText('Upper trigram');await expect(d.locator('.vs-recording-next')).toContainText('Lower trigram');
  const sizes=await d.locator('.vs-dock-target strong,.vs-recording-next,.vs-recording-actions button').evaluateAll(els=>els.map(el=>({width:el.clientWidth,scroll:el.scrollWidth,height:el.getBoundingClientRect().height})));for(const item of sizes){expect(item.scroll).toBeLessThanOrEqual(item.width+1);}for(const item of sizes.slice(2))expect(item.height).toBeGreaterThanOrEqual(44);
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:info.outputPath('long-names-large-type.png')});await d.getByRole('button',{name:'Done',exact:true}).click();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:info.outputPath('long-names-large-type.png')});await d.getByRole('button',{name:'Stop & review',exact:true}).click();
 });
 
 
@@ -65,8 +65,79 @@ test('the applied preview starts recording its displayed section in one tap',asy
  await preview.getByRole('button',{name:'Record this section',exact:true}).click();
  await expect(d.locator('.vs-section[data-recording]')).toHaveAttribute('data-section-id',nextId);
  await expect(d.locator('.vs-dock-target strong')).toHaveText('I Ching · Combination');
- await expect(d.getByRole('button',{name:'Done',exact:true})).toBeVisible();
+ await expect(d.getByRole('button',{name:'Stop & review',exact:true})).toBeVisible();
  await d.getByRole('button',{name:'Pause',exact:true}).click();
+});
+
+test('the card voice sheet runs edge to edge on a phone, with no band above or below the workspace',async({page},info)=>{
+ test.skip(info.project.name!=='Phone','The sheet is full screen only on a phone.');
+ const d=await open(page);const viewport=page.viewportSize()!;expect(viewport).toEqual({width:390,height:844});
+ const studio=(await d.locator('.section-voice-studio').boundingBox())!,dock=(await d.locator('.section-voice-studio .vs-dock').boundingBox())!;
+ expect(Math.round(studio.y)).toBe(0);expect(Math.round(studio.y+studio.height)).toBe(viewport.height);expect(Math.round(dock.y+dock.height)).toBe(viewport.height);
+ // No inset is applied twice: on a screen without one the dock keeps its plain 12 px.
+ expect(await d.locator('.section-voice-studio .vs-dock').evaluate(el=>getComputedStyle(el).paddingBottom)).toBe('12px');
+ await page.screenshot({path:info.outputPath('sheet-edge-to-edge.png')});
+});
+
+test('a recording cut off by a reload is saved, sent on by itself, and Record works again',async({page,context,baseURL,browserName},info)=>{
+ test.skip(browserName!=='chromium','Uses the Chromium fake microphone.');
+ await context.grantPermissions(['microphone'],{origin:baseURL!});page.on('dialog',dialog=>void dialog.accept());
+ let transcribed=0;page.on('request',request=>{if(request.url().includes('/api/oracle/authoring/ar-create')&&request.postDataJSON()?.operation==='transcribe')transcribed++;});
+ await pipeline(page,false);
+ let d=await open(page);const reading=d.locator('.vs-section[data-section-id="2/CODE/reading"]');await reading.locator('.vs-section-head').click();
+ await d.getByRole('button',{name:'Record',exact:true}).click();await expect(d.locator('.vs-dock')).toContainText('0:02',{timeout:10000});
+ await page.reload();
+ d=await open(page);
+ await expect(d.locator('.vs-toast')).toContainText('A recording that was interrupted has been saved and is being prepared.');
+ await expect(d.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-chip')).toHaveText(/Processing|Ready to review|Check words/);
+ await expect.poll(()=>transcribed).toBe(1);
+ const stored=await page.evaluate(async()=>{const load=(path:string)=>import(path);const [{SectionDraftStore},{AuthoringStore}]=await Promise.all([load('/lib/oracle/authoring/sectionDrafts.ts'),load('/lib/oracle/authoring/storage.ts')]);const drafts=await new SectionDraftStore().list(2);const draft=drafts.find((s:any)=>s.takes?.length);const audio=draft?.captureSessionId?await new AuthoringStore().load(draft.captureSessionId):null;return {takes:draft?.takes?.map((t:any)=>({section:t.startSectionId,state:t.state})),captures:audio?.session.captures.map((c:any)=>c.status)};});
+ expect(stored.takes).toHaveLength(1);expect(stored.takes![0].section).toBe('2/CODE/reading');expect(['queued','transcribing','assimilating','review']).toContain(stored.takes![0].state);expect(stored.captures).toEqual(['interrupted']);
+ await page.screenshot({path:info.outputPath('interrupted-recovered.png')});
+ await d.getByRole('button',{name:'Record',exact:true}).click();
+ await expect(d.getByRole('button',{name:'Stop & review',exact:true})).toBeVisible();await expect(d.locator('.vs-dock')).toContainText('Recording');await expect(d).not.toContainText('Recover your saved recording');
+ await d.getByRole('button',{name:'Stop & review',exact:true}).click();await expect.poll(()=>transcribed).toBe(2);
+});
+
+/** Seeds one saved draft for card 2 the way the workspace stores it, before the workspace opens. */
+async function seed(page:Page,shape:{blocked?:boolean;error?:string}){
+ await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();
+ await page.evaluate(async({blocked,error})=>{
+  const load=(path:string)=>import(path);
+  const [{bundledSource},{cardSections},{createSession},{AuthoringStore},{SectionDraftStore,createSectionDraftSession}]=await Promise.all([load('/src/mobile/authoring/bundledSource.ts'),load('/lib/oracle/authoring/cardSections.ts'),load('/lib/oracle/authoring/workflow.ts'),load('/lib/oracle/authoring/storage.ts'),load('/lib/oracle/authoring/sectionDrafts.ts')]);
+  const source=await bundledSource(2),sections=cardSections(source),destination=sections.find((s:any)=>s.id==='2/CODE/reading'),session=createSession(source),captureId='saved-capture';
+  session.captures=blocked?[{id:captureId,recordedAt:session.createdAt,mimeType:'audio/wav',durationMs:1000,status:'ready',origin:'microphone',visibleCardNumber:2}]:[];
+  const audio=new AuthoringStore();await audio.save(session,0);if(blocked)await audio.appendChunk(session.id,captureId,0,new Blob([new Uint8Array(64)],{type:'audio/wav'}),1000);
+  const takes=blocked?[{id:'blocked-take',captureId,startSectionId:destination.id,markers:[],state:'failed',error:'Sign in to process on this phone. Your recording is saved.',errorDetail:'401',createdAt:session.createdAt}]:[];
+  await new SectionDraftStore().save({...createSectionDraftSession(source,sections,destination.id),captureSessionId:session.id,takes,...(error?{error}:{})},0);
+ },shape);
+ await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();return page.getByRole('dialog');
+}
+
+test('a build without sign-in says so plainly instead of offering a Retry that cannot work',async({page})=>{
+ const d=await seed(page,{blocked:true});const status=d.getByRole('region',{name:'Recording and transcription status',exact:true});
+ await expect(status).toContainText('1 recording saved on this device');
+ await expect(status).toContainText('This version of the app cannot sign in, so your recordings cannot be prepared yet. They stay saved on this device.');
+ await expect(status).toContainText('Details: 401');
+ await expect(status.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);await expect(status.getByRole('button',{name:'Listen',exact:true})).toBeVisible();
+});
+
+test('an error shows once and Dismiss clears it for good',async({page})=>{
+ const message='Your words could not be prepared this time. Your recording is saved and will be tried again shortly.';
+ let d=await seed(page,{error:message});const toast=d.locator('.vs-toast');
+ await expect(toast).toHaveCount(1);await expect(toast).toContainText(message);await expect(d.getByText(message,{exact:true})).toHaveCount(1);
+ await toast.getByRole('button',{name:'Dismiss',exact:true}).click();await expect(toast).toHaveCount(0);
+ await page.reload();await expect(page.locator('.card-reading')).toBeVisible();await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();d=page.getByRole('dialog');
+ await expect(d.getByRole('button',{name:'Record',exact:true})).toBeEnabled();await expect(d.locator('.vs-toast')).toHaveCount(0);
+});
+
+test('section names read without the manuscript dash while ids and matching keep it',async({page})=>{
+ const d=await open(page);const head=d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"] .vs-section-title');
+ const raw=await page.evaluate(async()=>{const load=(path:string)=>import(path);const [{bundledSource},{cardSections}]=await Promise.all([load('/src/mobile/authoring/bundledSource.ts'),load('/lib/oracle/authoring/cardSections.ts')]);return cardSections(await bundledSource(2)).find((s:any)=>s.id==='2/ICHING/upper-trigram').title;});
+ expect(raw).toContain('\u2014');
+ await expect(head).toHaveText(raw.replace(/\s+\u2014\s+/,' · '));
+ const shown=await d.locator('.vs-rail button,.vs-section-title,.vs-dock-target strong').allInnerTexts();expect(shown.join('\n')).not.toContain('\u2014');
+ await d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"] .vs-section-head').click();await expect(d.locator('.vs-dock-target strong')).toContainText(raw.replace(/\s+\u2014\s+/,' · ').split(' (')[0]);
 });
 
 test('voice drafts opened from the journal keep the Record bar on screen above the tabs',async({page})=>{

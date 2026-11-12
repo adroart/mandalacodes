@@ -136,6 +136,14 @@ jobs:
       - run: npm run test:oracle-account
         env:
           CI: true
+      # The phone voice studio specs start their own Vite server on port 4279.
+      # They import from mobile/node_modules, installed by the earlier mobile ci.
+      - run: npm run test:oracle-voice
+        env:
+          CI: true
+      - run: npm --prefix mobile test
+      # Node tests that need no local sockets (the two bridge tests bind loopback ports and stay manual).
+      - run: npm run test:node:ci
       # always(): a red suite, a suite cut short by its own budget, and a
       # green one all get counted. This is the only place the lane's result is
       # stated, so it must not be conditional on which way the lane went.

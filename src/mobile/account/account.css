@@ -27,3 +27,4 @@
 .oracle-account-page .oracle-reminder-controls input { box-sizing:border-box; width:100%; max-width:100%; }
 .oracle-account-page .oracle-reminder-controls > button { flex:1 1 auto; justify-content:center; max-width:100%; white-space:normal; line-height:1.45; }
 @media(min-width:761px) { .oracle-account-page > header h1 { font-size:48px; } .oracle-account-page > header .oracle-account-intro { font-size:24px; } }
+.oracle-account-build { margin:24px 0 8px; font-size:12px; font-style:normal; color:var(--color-wood-600); text-align:center; }

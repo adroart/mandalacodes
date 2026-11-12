@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { startCapture } from '../../../lib/oracle/authoring/recorder';
+import { ARRIVAL_GAP_MS, SPEECH_BITS_PER_SECOND, startCapture } from '../../../lib/oracle/authoring/recorder';
 import type { AuthoringStore, SavedSession } from '../../../lib/oracle/authoring/storage';
 import type { AuthoringSession } from '../../../lib/oracle/authoring/types';
 
@@ -11,13 +11,17 @@ class Track extends EventTarget {
 class Recorder {
   static latest: Recorder;
   static isTypeSupported = () => true;
+  static rejectBitrate = false;
   state: RecordingState = 'inactive'; mimeType = 'audio/webm';
   ondataavailable: ((event: { data: Blob }) => void) | null = null;
   onstop: (() => void) | null = null;
   onpause: (() => void) | null = null;
   onresume: (() => void) | null = null;
   onerror: (() => void) | null = null;
-  constructor() { Recorder.latest = this; }
+  constructor(_stream: unknown, readonly options?: MediaRecorderOptions) {
+    if (Recorder.rejectBitrate && options?.audioBitsPerSecond !== undefined) throw new TypeError('audioBitsPerSecond is not supported');
+    Recorder.latest = this;
+  }
   start = vi.fn(() => { this.state = 'recording'; });
   requestData = vi.fn(() => this.emit('chunk'));
   emit(text: string) { this.ondataavailable?.({ data: new Blob([text], { type: this.mimeType }) }); }
@@ -42,12 +46,13 @@ function memoryStore() {
       current.version++;
     }),
     chunks: vi.fn(async () => []),
+    captureChunks: vi.fn(async () => []),
   };
   return { initial: { session: initial, version: 1 }, store: store as unknown as AuthoringStore, chunks };
 }
 let now: number, track: Track, page: Page, getUserMedia: ReturnType<typeof vi.fn>;
 beforeEach(() => {
-  now = 0; track = new Track(); page = new Page();
+  now = 0; track = new Track(); page = new Page(); Recorder.rejectBitrate = false;
   getUserMedia = vi.fn(async () => ({ getTracks: () => [track], getAudioTracks: () => [track] }));
   vi.stubGlobal('navigator', { mediaDevices: { getUserMedia } });
   vi.stubGlobal('MediaRecorder', Recorder);
@@ -104,6 +109,38 @@ describe('in-card recording controls', () => {
     track.dispatchEvent(new Event('ended')); page.dispatchEvent(new Event('visibilitychange'));
     expect(failure).toHaveBeenCalledTimes(1); expect(Recorder.latest.requestData).toHaveBeenCalledTimes(1);
   });
+  it('asks for a speech bitrate and still records when the browser rejects the option', async () => {
+    const accepted = memoryStore(); const first = await startCapture(accepted.store, accepted.initial, 'CODE', vi.fn());
+    expect(Recorder.latest.options).toMatchObject({ mimeType: expect.stringMatching(/^audio\//), audioBitsPerSecond: SPEECH_BITS_PER_SECOND });
+    now = 1000; await first.stop();
+    Recorder.rejectBitrate = true; now = 0;
+    const { store, initial, chunks } = memoryStore(); const failure = vi.fn();
+    const active = await startCapture(store, initial, 'CODE', failure);
+    expect(Recorder.latest.options).toEqual({ mimeType: expect.stringMatching(/^audio\//) });
+    now = 1000; Recorder.latest.emit('spoken');
+    const saved = await active.stop();
+    expect(saved.session.captures[0]).toMatchObject({ status: 'ready', durationMs: 1000 });
+    expect(chunks).toHaveLength(2); expect(failure).not.toHaveBeenCalled();
+  });
+  it('does not count a long stretch with no audio arriving as recorded time', async () => {
+    const { store, initial, chunks } = memoryStore(); const active = await startCapture(store, initial, 'CODE', vi.fn());
+    now = 1000; Recorder.latest.emit('a');
+    now = 1000 + 30 * 60_000; expect(active.elapsed()).toBe(1000 + ARRIVAL_GAP_MS);
+    Recorder.latest.emit('b'); now += 1000; Recorder.latest.emit('c');
+    const saved = await active.stop();
+    expect(chunks.map(c => c.endMs)).toEqual([1000, 1000 + ARRIVAL_GAP_MS, 2000 + ARRIVAL_GAP_MS, 2000 + ARRIVAL_GAP_MS]);
+    expect(saved.session.captures[0].durationMs).toBe(2000 + ARRIVAL_GAP_MS);
+  });
+  it('never saves a take longer than its ceiling', async () => {
+    const bounded = memoryStore(); const short = await startCapture(bounded.store, bounded.initial, 'CODE', vi.fn(), 2, { maxDurationMs: 2000 });
+    for (let i = 1; i <= 5; i++) { now = i * 1000; Recorder.latest.emit(`${i}`); }
+    expect(short.elapsed()).toBe(2000); expect((await short.stop()).session.captures[0].durationMs).toBe(2000);
+    expect(bounded.chunks.every(c => c.endMs <= 2000)).toBe(true);
+    now = 0; const { store, initial, chunks } = memoryStore(); const active = await startCapture(store, initial, 'CODE', vi.fn());
+    for (let t = 2500; t <= 21 * 60_000; t += 2500) { now = t; Recorder.latest.emit('x'); }
+    const saved = await active.stop();
+    expect(saved.session.captures[0].durationMs).toBe(20 * 60_000); expect(Math.max(...chunks.map(c => c.endMs))).toBe(20 * 60_000);
+  });
   it.each([
     ['NotAllowedError', 'Allow the microphone'], ['NotFoundError', 'No microphone'], ['NotReadableError', 'another app'],
   ])('explains %s without creating a recording', async (name, words) => {
@@ -132,7 +169,7 @@ describe('rolling voice passes',()=>{
   expect(active.state()).toBe('recording');expect(active.currentCaptureId()).not.toBe(active.captureId);
   expect(getUserMedia).toHaveBeenCalledTimes(1);expect(track.stop).not.toHaveBeenCalled();
   expect(active.pendingProcessing()).toBe(1);
-  const saved=await store.load('session');expect(saved!.session.markers.at(-1)?.sectionId).toBe('ICHING');
+  const saved=await store.load('session');expect(saved!.session.markers.find(marker=>marker.captureId===active.currentCaptureId())?.sectionId).toBe('ICHING');
   finishProcessing();active.setContinuous(false);now=1500;await active.flush();await active.completion;
   expect(track.stop).toHaveBeenCalledTimes(1);
  });
@@ -168,7 +205,9 @@ it('distinguishes safety continuation, explicit Send, and Finish while retaining
  expect(getUserMedia).toHaveBeenCalledTimes(1);expect(track.stop).toHaveBeenCalledTimes(1);
 });
 
-it('keeps a bounded phrase capture single-take and stops paused safety rolls',async()=>{
+it('keeps a bounded phrase capture single-take and rolls a paused safety boundary into a paused take',async()=>{
  const first=memoryStore();const scoped=await startVoiceCapturePass(first.store,first.initial,'CODE',vi.fn(),2,{maxBytes:6,rollOnBoundary:false});now=1000;Recorder.latest.emit('123456');await scoped.completion;expect(scoped.state()).toBe('inactive');expect(getUserMedia).toHaveBeenCalledTimes(1);
- const second=memoryStore();const paused=await startVoiceCapturePass(second.store,second.initial,'CODE',vi.fn(),2,{maxBytes:6,continuous:true});paused.pause();now=2000;Recorder.latest.emit('123456');await paused.completion;expect(paused.state()).toBe('inactive');expect(getUserMedia).toHaveBeenCalledTimes(2);
+ const second=memoryStore();const paused=await startVoiceCapturePass(second.store,second.initial,'CODE',vi.fn(),2,{maxBytes:6,continuous:true});paused.pause();now=2000;const old=Recorder.latest;old.emit('123456');await settlePass();
+ expect(paused.state()).toBe('paused');expect(Recorder.latest).not.toBe(old);expect(Recorder.latest.state).toBe('paused');expect(paused.currentCaptureId()).not.toBe(paused.captureId);expect(getUserMedia).toHaveBeenCalledTimes(2);expect(track.stop).toHaveBeenCalledTimes(1);
+ await paused.stop();expect(paused.state()).toBe('inactive');expect(track.stop).toHaveBeenCalledTimes(2);
 });

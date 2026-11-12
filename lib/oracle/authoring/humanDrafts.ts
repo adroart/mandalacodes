@@ -1,4 +1,5 @@
 import type { SourceSnapshot, Transcript } from './types';
+import { uncertainWord } from './workflow';
 
 export interface HumanEvidence { sessionId: string; transcriptId: string; captureId: string; signature: string }
 export interface HumanBlock {
@@ -54,8 +55,9 @@ export function reconcileHumanPassages(existing: WorkingSection | undefined, sou
     const text = t.corrected.trim();
     if (!text) continue;
     if (!reviewedIds.includes(t.id)) {
-      const probabilities = (t.words ?? []).flatMap(w => w.probability === undefined ? [] : [w.probability]);
-      if (probabilities.some(p => p < .45) || probabilities.filter(p => p < .6).length >= 2) issue('confidence', 'Check the uncertain words against the recording.', t);
+      // A word a second listening heard differently always counts; a merely unsure word counts when very unsure or not alone.
+      const unsure = (t.words ?? []).filter(uncertainWord);
+      if (unsure.some(w => w.doubt === true || (w.probability !== undefined && w.probability < .45)) || unsure.length >= 2 || !!t.doubts?.length) issue('confidence', 'Check the uncertain words against the recording.', t);
       if (/\[inaudible\]|\[unclear\]|\[unknown\]|\?{2,}|\ba chain\b|\bthanks? (?:you )?for watching\b|\bsubtitles by\b|^\s*(?:\[music\]|\(music\)|music|[♪♫]+)[.!\s]*$/i.test(text)) issue('uncertain', 'Check a possible mishearing in these words.', t);
     }
     const evidence: HumanEvidence = { sessionId, transcriptId: t.id, captureId: t.captureId, signature: signature(text) };

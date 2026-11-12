@@ -1,8 +1,8 @@
 import {applyComparisonEdits,buildPassageComparison,comparisonEdits,comparisonRows,type PassageChoice,type PassageComparison} from './passageComparison';
-import type {AuthoringServices,SourceSnapshot,Transcript} from './types';
+import type {AuthoringServices,SourceSnapshot,Transcript,TranscriptDoubt} from './types';
 import type {CardSection} from './cardSections';
 import {WorkingCardStore,type WorkingSection} from './humanDrafts';
-import {sha256} from './workflow';
+import {sha256,uncertainWord} from './workflow';
 import {AuthoringStore} from './storage';
 import {applyPassageAddition,applyPassageEdits,applyPassageReplacement,plainSection} from '../../../src/mobile/authoring/passageActions';
 
@@ -21,23 +21,34 @@ export interface SectionReviewIssue {
  kind:'transcription'|'ambiguity';quote:string;start:number;end:number;message:string;
  /** Character offsets refer to rawTranscript, never inferred cleaned text. */
  scope:'rawTranscript';probability?:number;startMs?:number;endMs?:number;captureId?:string;
+ /** What a second listening heard here instead ('' when it heard nothing). Absent when only one listening was made. */
+ heardAlso?:string;
 }
 /** Surface only actionable exceptions; no audio confidence is inferred from an AI warning. */
 export function sectionReviewExceptions(result:SectionDraftResult){return {issues:result.reviewIssues??[],warnings:result.warnings,changes:result.changes,needsReview:!!(result.reviewIssues?.length||result.warnings.length)};}
 export function sectionComparisonOriginal(result:SectionDraftResult,fallback:string):string{return result.comparisonOriginal??result.comparison?.originalText??result.appliedText??fallback;}
-/** Locate provider words within their real transcript segment, including repeated words. */
-export function transcriptionReviewIssues(rawTranscript:string,transcripts:Pick<Transcript,'raw'|'words'|'captureId'>[],evidenceQuotes:string[]):SectionReviewIssue[]{
+/** Locate provider words within their real transcript segment, including repeated words. A word is flagged by `uncertainWord`;
+ * a passage without word timings is flagged by its own exact doubt runs. */
+export function transcriptionReviewIssues(rawTranscript:string,transcripts:(Pick<Transcript,'raw'|'words'|'captureId'>&{doubts?:TranscriptDoubt[]})[],evidenceQuotes:string[]):SectionReviewIssue[]{
  const issues:SectionReviewIssue[]=[];let segmentCursor=0;
+ // Exact evidence containment avoids assigning a warning to an unrelated section.
+ const belongs=(start:number,end:number)=>evidenceQuotes.some(quote=>{let at=rawTranscript.indexOf(quote);while(at>=0){if(start>=at&&end<=at+quote.length)return true;at=rawTranscript.indexOf(quote,at+1);}return false;});
+ const message=(quote:string)=>/\s/.test(quote.trim())?'Check these words against the saved audio.':'Check this word against the saved audio.';
  for(const transcript of transcripts){
   const segmentStart=rawTranscript.indexOf(transcript.raw,segmentCursor);if(segmentStart<0)continue;segmentCursor=segmentStart+transcript.raw.length;
   let wordCursor=0;
   for(const word of transcript.words??[]){
    const local=transcript.raw.indexOf(word.text,wordCursor);if(local<0)continue;wordCursor=local+word.text.length;
-   if(word.probability===undefined||!Number.isFinite(word.probability)||word.probability<0||word.probability>=.6)continue;
+   if(!uncertainWord(word))continue;
    const start=segmentStart+local,end=start+word.text.length;
-   // Exact evidence containment avoids assigning a warning to an unrelated section.
-   const belongs=evidenceQuotes.some(quote=>{let at=rawTranscript.indexOf(quote);while(at>=0){if(start>=at&&end<=at+quote.length)return true;at=rawTranscript.indexOf(quote,at+1);}return false;});
-   if(belongs)issues.push({kind:'transcription',quote:rawTranscript.slice(start,end),start,end,scope:'rawTranscript',message:'Check this word against the saved audio.',probability:word.probability,startMs:word.startMs,endMs:word.endMs,captureId:transcript.captureId});
+   if(belongs(start,end))issues.push({kind:'transcription',quote:rawTranscript.slice(start,end),start,end,scope:'rawTranscript',message:message(word.text),...(word.probability!==undefined?{probability:word.probability}:{}),startMs:word.startMs,endMs:word.endMs,captureId:transcript.captureId,...(typeof word.heardAlso==='string'?{heardAlso:word.heardAlso}:{})});
+  }
+  let doubtCursor=0;
+  for(const doubt of transcript.doubts??[]){
+   if(typeof doubt?.text!=='string'||!doubt.text.trim())continue;
+   const local=transcript.raw.indexOf(doubt.text,doubtCursor);if(local<0)continue;doubtCursor=local+doubt.text.length;
+   const start=segmentStart+local,end=start+doubt.text.length;
+   if(belongs(start,end))issues.push({kind:'transcription',quote:rawTranscript.slice(start,end),start,end,scope:'rawTranscript',message:message(doubt.text),startMs:doubt.startMs,endMs:doubt.endMs,captureId:transcript.captureId,heardAlso:doubt.heardAlso});
   }
  }
  return issues;
@@ -60,6 +71,18 @@ export function createSectionDraftSession(source:SourceSnapshot,sections:CardSec
  const now=new Date().toISOString();return {id:crypto.randomUUID(),cardNumber:source.cardNumber,sourceHash:source.hash,createdAt:now,updatedAt:now,version:0,source:structuredClone(source),sections:structuredClone(sections),startSectionId,markers:[],rawTranscript:'',results:[],unassigned:[],state:'ready'};
 }
 const listeners=new Map<string,Set<()=>void>>();
+/** Recent versions kept per draft. The live draft row always holds every applied receipt and its undo state. */
+export const DRAFT_HISTORY_KEEP=20;
+const receiptKeys=(session:SectionDraftSession)=>session.results.filter(result=>result.appliedText&&result.appliedAt).map(result=>`${result.sectionId}\n${result.appliedAt}`);
+/** Inside the save transaction: keep the newest versions and the first version of each receipt the draft still carries; drop other older clones. Audio lives elsewhere and is never touched. */
+function pruneDraftHistory(history:IDBObjectStore,current:SectionDraftSession){
+ const oldest=current.version-DRAFT_HISTORY_KEEP;if(oldest<1)return;
+ const live=new Set(receiptKeys(current)),seen=new Set<string>();
+ const request=history.openCursor(IDBKeyRange.bound([current.id,-Infinity],[current.id,oldest]));
+ request.onsuccess=()=>{const cursor=request.result;if(!cursor)return;
+  const origin=receiptKeys(cursor.value as SectionDraftSession).filter(key=>live.has(key)&&!seen.has(key));origin.forEach(key=>seen.add(key));
+  if(!origin.length)cursor.delete();cursor.continue();};
+}
 /** Private drafts and a durable version history, separate from saved audio and manuscripts. */
 export class SectionDraftStore {
  constructor(private readonly name='oracle-section-drafts-v1'){}
@@ -76,7 +99,7 @@ export class SectionDraftStore {
   if(next.results.some(result=>!next.sections.some(section=>section.id===result.sectionId))||new Set(next.results.map(result=>result.sectionId)).size!==next.results.length)throw new Error('A draft result has an unknown or duplicate section.');
   const saved=await this.run<SectionDraftSession>(['sessions','history'],'readwrite',(tx,done,fail)=>{const store=tx.objectStore('sessions'),request=store.get(next.id);request.onsuccess=()=>{const previous=request.result as SectionDraftSession|undefined;if((previous?.version??0)!==expectedVersion)return fail(new Error('Another tab changed this section draft. Reopen it before editing.'));if(previous&&(previous.cardNumber!==next.cardNumber||previous.sourceHash!==next.sourceHash))return fail(new Error('A saved draft cannot change its source card.'));
    const results=next.results.map(result=>{const prior=previous?.results.find(r=>r.sectionId===result.sectionId);return prior?.appliedText&&(prior.text!==result.text||prior.editIntent!==result.editIntent||JSON.stringify(prior.takeIds??[])!==JSON.stringify(result.takeIds??[]))?{...result,applied:false,appliedText:prior.appliedText,beforeText:prior.beforeText,appliedAt:prior.appliedAt,appliedRevision:prior.appliedRevision,integrationId:prior.integrationId,beforeWorking:prior.beforeWorking}:result;});
-   const value=structuredClone({...next,results,version:expectedVersion+1,updatedAt:new Date().toISOString()});store.put(value);tx.objectStore('history').add(value);done(value);};});
+   const value=structuredClone({...next,results,version:expectedVersion+1,updatedAt:new Date().toISOString()});store.put(value);const history=tx.objectStore('history');history.add(value);pruneDraftHistory(history,value);done(value);};});
   for(const listener of listeners.get(this.name)??[]){try{listener();}catch{/* Readers cannot invalidate committed drafts. */}}
   if(typeof window!=='undefined')window.dispatchEvent(new Event('oracle:section-draft-changed'));return saved;
  }

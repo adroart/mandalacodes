@@ -1,3 +1,6 @@
+> Kept for history and reasoning. `docs/oracle/VOICE-STATUS.md` describes the current state.
+> Stale here: it names `OPENAI_API_KEY` and an OpenAI model; `wrangler.toml` configures Groq with the model openai/gpt-oss-120b for section review, and Groq whisper-large-v3-turbo for transcription.
+
 # Private phone processing and continuity candidate
 
 This change is local code, not a deployment. Production and installed apps need a new release before the hosted routes exist.
@@ -14,7 +17,7 @@ Deploy Pages Functions plus the app together using the repository release proced
 
 `POST /api/oracle/authoring/process`: account session required, production/native origin allowlist; operations capabilities, transcribe, propose, assimilate-sections. Hosted assimilation reuses the same evidence and cleanup validation as local AR Create. Transcription uploads are limited to 10 MiB and 20 minutes; bounded streaming body parsing rejects chunked oversized requests. A configured Mac bridge remains a compatibility fallback only for hosted 404/405/503 responses, never authentication rejection or provider failure. Localhost continues using local AR Create.
 
-`POST /api/oracle/authoring/private`: account session required; operations list, read, save, audio-put, audio-get. Keys include the authenticated account id; no caller-controlled owner or public object URL. Audio is owner-scoped SHA-256 content-addressed and immutable, at most 10 MiB per capture. Documents are at most 2 MiB, with at most 100 audio references; list pages are bounded to 100 objects. Audio uploads precede the document commit. A failed document commit can leave private unreferenced audio but never a falsely acknowledged saved revision.
+`POST /api/oracle/authoring/private`: account session required; operations list, read, save, audio-put, audio-get. Keys include the authenticated account id; no caller-controlled owner or public object URL. Audio is owner-scoped SHA-256 content-addressed and immutable, at most 10 MiB per capture. Documents are at most 6 MiB, with at most 600 audio references (413 `too_many_recordings` or `document_too_large` beyond that; the app stops copying that session and says so); list pages are bounded to 100 objects. Audio uploads precede the document commit. A failed document commit can leave private unreferenced audio but never a falsely acknowledged saved revision.
 
 `save` always requires expectedRevision, null for a new remote document. R2 conditional puts reject stale revisions with 409. No last-write-wins retry or automatic conflict overwrite. Local IndexedDB remains the offline source. Account-scoped links record acknowledged remote ids and revisions only after successful save/restore. Restore validates source/audio hashes through the existing importer and creates a new local copy. Workspace drafts and resume position travel with the document; the UI decides when to restore them and must not silently overwrite current local drafts.
 

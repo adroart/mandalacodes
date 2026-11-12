@@ -32,6 +32,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
 
 ## Soon
+- [ ] Oracle app card voice: built on `claude/relaxed-cannon-k3l0jh`, never run on a phone. Merge, deploy, build, install, then run the phone check on card 2 and write the ledger row _(band: you-required)_ _(effort: moderate)_ → Check: [VOICE-PHONE-CHECK.md](docs/oracle/VOICE-PHONE-CHECK.md) · State: [VOICE-STATUS.md](docs/oracle/VOICE-STATUS.md) · Plan: [oracle-voice-completion.md](todo/plans/oracle-voice-completion.md)
 - [ ] Publish the locally verified 22 September reliability repairs after coordinator export clearance and verify deployed behavior → [execution checklist](todo/plans/audit-2026-09-22.md). Existing collector/offline/editorial plans retain their scope; no launch flags are enabled.
 - [ ] Check the Deadman and Maciocia point and page references in the 32 organ entries (body/organs in the vault) once the two PDFs are on this Mac; the Neijing and Nanjing chapter citations were checked 2026-09-16, those two books were not, because no copy could be found on disk or in the vault _(band: agent-runnable)_ _(effort: moderate)_
 - [x] Restore worker typechecking separately from the browser TypeScript project; current main and the audited repairs now share this boundary.

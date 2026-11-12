@@ -1,3 +1,6 @@
+> Kept for history and reasoning. `docs/oracle/VOICE-STATUS.md` describes the current state.
+> Stale here: its earlier sections describe Speak, Review and Tools tabs, which its own 2026-10-30 section removed.
+
 # Oracle voice workflow: twenty approved improvements
 
 Approved 2026-10-29. Start with 1–8; retain the complete scope. Product goal: human speech replaces AI-authored prose with clear, evidence-linked review and minimal mobile controls. No accordions. Recording stays opt-in. Publishing is separate from this implementation.

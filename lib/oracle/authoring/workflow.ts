@@ -1,5 +1,29 @@
 import { reviewProblems, composeReconciliation, validateReconciliation } from './reconciliation';
-import type { AuthoringSession, SourceSection, SourceSnapshot, TranscriptInput, Proposal, Transcript } from './types';
+import type { AlignedWord, AuthoringSession, SourceSection, SourceSnapshot, TranscriptDoubt, TranscriptInput, Proposal, Transcript } from './types';
+
+/** One rule for a word that needs checking against the audio: a second listening heard it differently, or the speech model was unsure of it (the Mac path). */
+export function uncertainWord(word: Pick<AlignedWord, 'probability' | 'doubt'> | undefined): boolean {
+  if (!word) return false;
+  return word.doubt === true || (typeof word.probability === 'number' && Number.isFinite(word.probability) && word.probability >= 0 && word.probability < .6);
+}
+const validDoubt = (d: TranscriptDoubt | undefined): d is TranscriptDoubt => !!d && typeof d.text === 'string' && !!d.text.trim() && d.text.length <= 4000 && Number.isFinite(d.startMs) && Number.isFinite(d.endMs) && d.endMs >= d.startMs && typeof d.heardAlso === 'string' && d.heardAlso.length <= 4000;
+/**
+ * Give each passage the second listening's verdict. A passage with word timings already carries its doubts on its words;
+ * one without (a recording-length passage) keeps the doubts whose exact words it contains and whose time it overlaps.
+ */
+export function transcriptDoubts(input: TranscriptInput[], doubts: TranscriptDoubt[] | undefined, doubtsAvailable: boolean | undefined): TranscriptInput[] {
+  const listed = (Array.isArray(doubts) ? doubts : []).filter(validDoubt);
+  if (typeof doubtsAvailable !== 'boolean' && !listed.length) return input;
+  const used = new Set<TranscriptDoubt>();
+  return input.map(t => {
+    const own = (Array.isArray(t.doubts) ? t.doubts : []).filter(validDoubt);
+    const timed = !!t.words?.length;
+    const found = timed ? [] : listed.filter(d => !used.has(d) && d.startMs < t.endMs && d.endMs > t.startMs && t.text.includes(d.text));
+    found.forEach(d => used.add(d));
+    const all = [...own, ...found];
+    return { ...t, ...(all.length ? { doubts: all } : {}), ...(typeof (t.doubtsAvailable ?? doubtsAvailable) === 'boolean' ? { doubtsAvailable: t.doubtsAvailable ?? doubtsAvailable } : {}) };
+  });
+}
 
 export async function sha256(text: string): Promise<string> {
   return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))), b => b.toString(16).padStart(2, '0')).join('');
@@ -34,19 +58,21 @@ export function validateTranscriptParent(session: AuthoringSession, t: Pick<Tran
   const parent = session.transcript.find(p => p.id === t.parentId);
   if (!parent || !parent.referenceOnly || parent.captureId !== t.captureId || parent.startMs > t.startMs || parent.endMs < t.endMs || parent.parentId !== undefined) throw new Error('A derived excerpt requires its retained original parent and matching audio time range');
 }
-export function addTranscript(session: AuthoringSession, captureId: string, input: TranscriptInput[], provider: string): AuthoringSession {
+/** `listening` carries the response's top-level doubts and whether they were checked; see `transcriptDoubts`. */
+export function addTranscript(session: AuthoringSession, captureId: string, input: TranscriptInput[], provider: string, listening?: { doubts?: TranscriptDoubt[]; doubtsAvailable?: boolean }): AuthoringSession {
+  if (listening) input = transcriptDoubts(input, listening.doubts, listening.doubtsAvailable);
   const capture = session.captures.find(c => c.id === captureId);
   if (!capture || capture.status === 'recording') throw new Error('Finish or recover the recording first');
   const added = input.map(t => {
     if (!Number.isFinite(t.startMs) || !Number.isFinite(t.endMs) || t.startMs < 0 || t.endMs <= t.startMs || t.endMs > capture.durationMs) throw new Error('Transcript time range is outside the audio');
     if (!t.text.trim()) throw new Error('Transcript is empty');
     if (t.speaker !== undefined && (typeof t.speaker !== 'string' || t.speaker.length > 256)) throw new Error('Invalid speaker identity');
-    if (t.words !== undefined && (!Array.isArray(t.words) || t.words.length > 50000 || t.words.some(word => !Number.isFinite(word.startMs) || !Number.isFinite(word.endMs) || word.startMs < 0 || word.endMs < word.startMs || word.endMs > capture.durationMs || typeof word.text !== 'string' || word.text.length > 1000 || (word.probability !== undefined && (!Number.isFinite(word.probability) || word.probability < 0 || word.probability > 1))))) throw new Error('Invalid provider word alignment');
+    if (t.words !== undefined && (!Array.isArray(t.words) || t.words.length > 50000 || t.words.some(word => !Number.isFinite(word.startMs) || !Number.isFinite(word.endMs) || word.startMs < 0 || word.endMs < word.startMs || word.endMs > capture.durationMs || typeof word.text !== 'string' || word.text.length > 1000 || (word.probability !== undefined && (!Number.isFinite(word.probability) || word.probability < 0 || word.probability > 1)) || (word.doubt !== undefined && word.doubt !== true) || (word.heardAlso !== undefined && (typeof word.heardAlso !== 'string' || word.heardAlso.length > 1000))))) throw new Error('Invalid provider word alignment');
     const source = sourceFor(session, t.cardNumber ?? session.source.cardNumber);
     if (t.sectionId !== null && !source.sections.some(s => s.id === t.sectionId)) throw new Error('Unknown section');
     if (t.order !== undefined && (!Number.isInteger(t.order) || t.order < 0)) throw new Error('Excerpt order must be a nonnegative integer');
     validateTranscriptParent(session, { ...t, captureId });
-    return { id: crypto.randomUUID(), captureId, startMs: t.startMs, endMs: t.endMs, raw: t.text, corrected: t.corrected ?? t.text, sectionId: t.sectionId, assignment: t.sectionId ? 'hint' as const : 'unresolved' as const, timing: t.timing, provider, receivedAt: new Date().toISOString(), ...(t.cardNumber === undefined ? {} : { cardNumber: t.cardNumber }), ...(t.order === undefined ? {} : { order: t.order }), ...(t.parentId === undefined ? {} : { parentId: t.parentId }), ...(t.words === undefined ? {} : { words: structuredClone(t.words) }), ...(t.speaker === undefined ? {} : { speaker: t.speaker }) };
+    return { id: crypto.randomUUID(), captureId, startMs: t.startMs, endMs: t.endMs, raw: t.text, corrected: t.corrected ?? t.text, sectionId: t.sectionId, assignment: t.sectionId ? 'hint' as const : 'unresolved' as const, timing: t.timing, provider, receivedAt: new Date().toISOString(), ...(t.cardNumber === undefined ? {} : { cardNumber: t.cardNumber }), ...(t.order === undefined ? {} : { order: t.order }), ...(t.parentId === undefined ? {} : { parentId: t.parentId }), ...(t.words === undefined ? {} : { words: structuredClone(t.words) }), ...(t.speaker === undefined ? {} : { speaker: t.speaker }), ...(t.doubts?.length ? { doubts: structuredClone(t.doubts.filter(validDoubt)) } : {}), ...(typeof t.doubtsAvailable === 'boolean' ? { doubtsAvailable: t.doubtsAvailable } : {}) };
   });
   return { ...session, transcript: [...session.transcript, ...added] };
 }

@@ -40,6 +40,18 @@ export function triggerRecorderHaptic(
   try { vibration(pattern); } catch { /* Haptics never gate recorder behavior. */ }
 }
 
+/* A phone suspends Web Audio while the app is in the background and does not
+   always resume it on return, which leaves a meter reading silence. Resume it
+   whenever the page becomes visible again. Returns the unsubscribe function. */
+export function resumeAudioWhenVisible(context: { state: string; resume(): Promise<void> } | undefined): () => void {
+  if (!context || typeof document === 'undefined' || typeof document.addEventListener !== 'function') return () => undefined;
+  const onVisibility = () => {
+    if (document.visibilityState === 'visible' && context.state !== 'running' && context.state !== 'closed') void context.resume().catch(() => undefined);
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+  return () => document.removeEventListener('visibilitychange', onVisibility);
+}
+
 export function startMicrophoneMeter(stream: MediaStream, onLevel: (level: number) => void): () => void {
   if (typeof window === 'undefined') return () => undefined;
   const AudioContextConstructor = window.AudioContext
@@ -56,6 +68,7 @@ export function startMicrophoneMeter(stream: MediaStream, onLevel: (level: numbe
     analyser.fftSize = 64;
     analyser.smoothingTimeConstant = .72;
     source.connect(analyser);
+    const stopResuming = resumeAudioWhenVisible(context);
     const samples = new Uint8Array(analyser.fftSize);
     const sample = (timestamp: number) => {
       if (stopped) return;
@@ -71,6 +84,7 @@ export function startMicrophoneMeter(stream: MediaStream, onLevel: (level: numbe
       if (stopped) return;
       stopped = true;
       window.cancelAnimationFrame(frame);
+      stopResuming();
       source.disconnect();
       analyser.disconnect();
       onLevel(0);
