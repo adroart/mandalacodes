@@ -19,7 +19,7 @@ Nothing in this audit ran on a phone, against the live site, or against a real s
 
 ## 0. Progress, 2026-11-12
 
-Waves 1 to 5 are built and pushed on `claude/relaxed-cannon-k3l0jh` (41 commits, not merged to main, not deployed, not installed). Two independent reviews ran between waves and their findings were fixed. The combined branch passes the type check, 1,652 unit tests and the voice lane (102 passed, 2 skipped) with scripted speech.
+Waves 1 to 5 are built and pushed on `claude/relaxed-cannon-k3l0jh` (30 commits, not merged to main, not deployed, not installed). Two independent reviews ran between waves and their findings were fixed. The combined branch passes the type check, 1,652 unit tests and the voice lane (102 passed, 2 skipped) with scripted speech.
 
 What is left is no longer agent work:
 
