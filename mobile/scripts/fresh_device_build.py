@@ -197,14 +197,14 @@ def run_build(config, cache_dirs, work_dir, audit_root, runner=subprocess.run,
                     if source.suffix not in ('.mobileprovision', '.provisionprofile') or source.is_symlink() or not source.is_file():
                         continue
                     try:
-                        before = source.stat(follow_symlinks=False)
+                        before = source.lstat()
                         value = decode(source, runner)
                     except SigningError:
                         # Unknown profiles are never eligible for cache mutation.
                         continue
                     if not any(profile_scope(value, bundle, config['team']) for bundle in config['bundles'].values()):
                         continue
-                    after = source.stat(follow_symlinks=False)
+                    after = source.lstat()
                     identity = ('st_dev', 'st_ino', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
                     if any(getattr(before, key) != getattr(after, key) for key in identity):
                         raise SigningError('Provisioning cache changed during inspection; retry safely.')

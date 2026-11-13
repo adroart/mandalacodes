@@ -49,6 +49,15 @@ export function writeWidgetTimeline(now = new Date()) {
   const document = buildWidgetTimeline(start,end,now);
   const output = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../mobile/ios/App/OracleWidget/oracle-widget.json');
   fs.mkdirSync(path.dirname(output),{recursive:true});
+  // Leave the file alone when only generatedAt would change, so a rebuild on the same day keeps the tree
+  // clean and the device build's uncommitted-changes guard can pass.
+  const withoutStamp = (value: WidgetTimeline) => JSON.stringify({...value, generatedAt:0});
+  let previous: WidgetTimeline | undefined;
+  try { previous = JSON.parse(fs.readFileSync(output,'utf8')); } catch { previous = undefined; }
+  if (previous && withoutStamp(previous) === withoutStamp(document)) {
+    console.log(`Oracle widget: unchanged, ${document.transitions.length} solar transitions through ${end.toISOString().slice(0,10)}.`);
+    return previous;
+  }
   fs.writeFileSync(output,JSON.stringify(document,null,2)+'\n');
   console.log(`Oracle widget: ${document.transitions.length} solar transitions through ${end.toISOString().slice(0,10)}.`);
   return document;
