@@ -1,10 +1,10 @@
 # Oracle card voice: the phone check
 
-For Adrian, with the Mac and the phone. Nothing in the voice work has run on a phone yet. Do this once after the branch is merged and Pages has deployed, on one card (card 2), and write the result as a row in the device ledger in `docs/oracle/VOICE-STATUS.md` the same day.
+For Adrian, with the Mac and the phone. Nothing in the voice work has run on a phone yet. The work is merged and deployed (2026-11-12). Do this once, on one card (card 2), and write the result as a row in the device ledger in `docs/oracle/VOICE-STATUS.md` the same day.
 
 ## Before you start
 
-1. Merge the branch and let Pages deploy.
+1. On the Mac, `git checkout main && git pull`.
 2. In the Cloudflare Pages settings, confirm `ADMIN_EMAILS` holds the email you sign in with on the phone, and that `GROQ_API_KEY` is set.
 3. On the Mac, from a clean committed tree:
 
