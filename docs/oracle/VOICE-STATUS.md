@@ -1,6 +1,6 @@
 # Oracle card voice: status
 
-Written 2026-11-12 against commit 7fcb9d0 on branch `claude/relaxed-cannon-k3l0jh` (not yet merged to main, not deployed, not installed). The combined branch passes the type check, 1,652 unit tests and the voice lane (102 passed, 2 desktop-only skips), all with scripted speech. Nothing here has run on a phone, on the deployed site or against a real speech provider, and none of the Swift has been compiled.
+Written 2026-11-12, updated 2026-11-13. The work was merged to main as 4cb740f (pull request 401) on 2026-11-12 and Cloudflare deployed it. Checked against the live site on 2026-11-13: the new pickup route for app recordings answers 401 without a key, and the process endpoint answers a signed-out request with the new `code` and `retryable` fields. CI passed on the merged commit, including the voice lane's first run on the CI runner (scripted speech). Nothing has run on a phone or against a real speech provider with a real recording, and none of the Swift has been compiled.
 
 The plan and its progress are in `todo/plans/oracle-voice-completion.md`. The owner's brief is `ORACLE-VOICE-HANDOFF.md`. The phone checks are in `docs/oracle/VOICE-PHONE-CHECK.md`. Older voice documents are kept for history and each says so at its top.
 
@@ -62,4 +62,5 @@ Every phone install gets a row, written the same day. Rows below are only what t
 | 2026-10-29 | 13 | f28e42c (integration commit; the installed commit is not stated) | Not recorded | Installation verified, and called the last verified install. Nothing else recorded. Source: `ORACLE-VOICE-HANDOFF.md` (date from the commit) | Handoff text, author not named |
 | 2026-10-31 | 17 | Not recorded | Native Google sign-in return on the iPhone. The website Google login, hosted transcription with word timing and hosted review were checked with generated speech; the record does not say they ran on the phone | The phone rejected the native Google return before token exchange. No later commit touches it. Source: `src/mobile/account/README.md` | Repository text, author not named |
 | 2026-11-03 | 19 | 767ba60 | Not recorded | Commit says it is installed on the iPhone: the five voice screen changes, the artwork loader and the shared word list. Nothing about what worked. Source: `git show -s 767ba60` | Commit message, Claude Opus 5.5 co-author |
+| 2026-11-12 | none (site only) | 4cb740f | Nothing on the phone. Site deploy checked from outside: new pickup route 401 without a key, process endpoint returns the new signed-out answer, card 2 loads | Deployed. No phone install of this work yet | Claude session, 2026-11-13 |
 | Next entry | | | | | |

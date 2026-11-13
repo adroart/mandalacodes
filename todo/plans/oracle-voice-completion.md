@@ -19,11 +19,11 @@ Nothing in this audit ran on a phone, against the live site, or against a real s
 
 ## 0. Progress, 2026-11-12
 
-Waves 1 to 5 are built and pushed on `claude/relaxed-cannon-k3l0jh` (30 commits, not merged to main, not deployed, not installed). Two independent reviews ran between waves and their findings were fixed. The combined branch passes the type check, 1,652 unit tests and the voice lane (102 passed, 2 skipped) with scripted speech.
+Waves 1 to 5 are built, merged to main as 4cb740f (pull request 401) and deployed on 2026-11-12. Two independent reviews ran between waves and their findings were fixed. CI passed on the merged commit: type check, unit tests, the website lane and the voice lane, all with scripted speech. The deploy was checked against the live site on 2026-11-13.
 
 What is left is no longer agent work:
 
-1. Adrian: merge, deploy, build and install, then run `docs/oracle/VOICE-PHONE-CHECK.md` on card 2.
+1. Adrian: build and install from the Mac, then run `docs/oracle/VOICE-PHONE-CHECK.md` on card 2.
 2. Fix whatever the phone shows (the Swift has never been compiled).
 3. The open items listed in `docs/oracle/VOICE-STATUS.md`: structured sections in the apply script, the build gate versus his spoken words, the AR Create side of the Mac pickup and a screen for its result, removing the older studios, a post-deploy check with a real recording.
 
