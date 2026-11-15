@@ -43,20 +43,30 @@ export function buildWidgetTimeline(start: Date, end: Date, generated = new Date
     transitions,
   };
 }
+const REFRESH_WHEN_LEFT = 365*DAY;
+/** True when the bundled file can stay as it is: same cards and gate changes, it already covers today, and more than a
+ * year of coverage is left. The window start moves every day, so comparing whole files would rewrite it
+ * on every build and trip the device build's uncommitted-changes guard. */
+export function widgetStillCurrent(previous: WidgetTimeline | undefined, next: WidgetTimeline, now: Date): boolean {
+  if (!previous || previous.version !== next.version) return false;
+  if (JSON.stringify(previous.cards) !== JSON.stringify(next.cards)) return false;
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  if (previous.validFrom*1000 > today || previous.validUntil*1000 - today <= REFRESH_WHEN_LEFT) return false;
+  // Every gate change the new build finds inside the old coverage must already be in the old file.
+  const known = new Set(previous.transitions.map(change => `${change.at}:${change.gate}`));
+  return next.transitions.slice(1).filter(change => change.at < previous.validUntil).every(change => known.has(`${change.at}:${change.gate}`));
+}
 export function writeWidgetTimeline(now = new Date()) {
   const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - 7*DAY);
   const end = new Date(start.getTime() + 738*DAY);
   const document = buildWidgetTimeline(start,end,now);
   const output = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../mobile/ios/App/OracleWidget/oracle-widget.json');
   fs.mkdirSync(path.dirname(output),{recursive:true});
-  // Leave the file alone when only generatedAt would change, so a rebuild on the same day keeps the tree
-  // clean and the device build's uncommitted-changes guard can pass.
-  const withoutStamp = (value: WidgetTimeline) => JSON.stringify({...value, generatedAt:0});
   let previous: WidgetTimeline | undefined;
   try { previous = JSON.parse(fs.readFileSync(output,'utf8')); } catch { previous = undefined; }
-  if (previous && withoutStamp(previous) === withoutStamp(document)) {
-    console.log(`Oracle widget: unchanged, ${document.transitions.length} solar transitions through ${end.toISOString().slice(0,10)}.`);
-    return previous;
+  if (widgetStillCurrent(previous, document, now)) {
+    console.log(`Oracle widget: unchanged, covers through ${new Date(previous!.validUntil*1000).toISOString().slice(0,10)}.`);
+    return previous!;
   }
   fs.writeFileSync(output,JSON.stringify(document,null,2)+'\n');
   console.log(`Oracle widget: ${document.transitions.length} solar transitions through ${end.toISOString().slice(0,10)}.`);

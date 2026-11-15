@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildWidgetTimeline } from '../../scripts/build-oracle-widget';
+import { buildWidgetTimeline, widgetStillCurrent } from '../../scripts/build-oracle-widget';
 import { todaysEnergy } from '../../lib/astrology/today';
 import { bitsForCard } from '../../utils/ichingCasting';
 import { ALL_CARDS } from '../../data/oracleData';
@@ -37,5 +37,34 @@ describe('bundled Oracle widget solar timeline', () => {
   it('rejects a missing or reversed validity interval', () => {
     expect(()=>buildWidgetTimeline(end,start)).toThrow();
     expect(()=>buildWidgetTimeline(new Date(NaN),end)).toThrow();
+  });
+});
+
+describe('keeping the bundled widget file between builds', () => {
+  const day = 86400000;
+  const fileFrom = new Date('2026-11-01T00:00:00Z');
+  const old = buildWidgetTimeline(fileFrom, new Date(fileFrom.getTime() + 738*day), fileFrom);
+  const rebuildOn = (now: Date) => {
+    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - 7*day);
+    return buildWidgetTimeline(start, new Date(start.getTime() + 738*day), now);
+  };
+  it('keeps the file on a later day while more than a year is left', () => {
+    const now = new Date('2026-11-20T12:00:00Z');
+    expect(widgetStillCurrent(old, rebuildOn(now), now)).toBe(true);
+  });
+  it('rewrites once a year or less of coverage is left', () => {
+    const now = new Date(fileFrom.getTime() + 380*day);
+    expect(widgetStillCurrent(old, rebuildOn(now), now)).toBe(false);
+  });
+  it('rewrites when the cards or a gate change differ', () => {
+    const now = new Date('2026-11-20T12:00:00Z');
+    const renamed = {...old, cards: old.cards.map((card, i) => i === 0 ? {...card, name: 'Other'} : card)};
+    expect(widgetStillCurrent(renamed, rebuildOn(now), now)).toBe(false);
+    const shifted = {...old, transitions: old.transitions.map((change, i) => i === 5 ? {...change, at: change.at + 60} : change)};
+    expect(widgetStillCurrent(shifted, rebuildOn(now), now)).toBe(false);
+  });
+  it('rewrites when there is no file or it starts after today', () => {
+    expect(widgetStillCurrent(undefined, old, fileFrom)).toBe(false);
+    expect(widgetStillCurrent(old, old, new Date(fileFrom.getTime() - day))).toBe(false);
   });
 });
