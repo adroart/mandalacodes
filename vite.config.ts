@@ -228,6 +228,7 @@ export default defineConfig({
   server: {
     port: 2222,
     strictPort: true,
+    proxy: { '/media/': { target: 'https://mandalacodes.com', changeOrigin: true } },
   },
   build: {
     target: 'es2022',

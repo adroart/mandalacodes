@@ -49,3 +49,11 @@
 .lp-page {
   padding-top: var(--nav-height);
 }
+
+/* The server-rendered desktop links briefly overlap the mobile controls until
+   the shared navigation hydrates. Hide only that transient link row. */
+@media (max-width: 1100px) {
+  .mc-site-bar astro-island[ssr] .site-bar-root [aria-hidden='false'] {
+    visibility: hidden;
+  }
+}

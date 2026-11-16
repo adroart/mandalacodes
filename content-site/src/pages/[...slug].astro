@@ -1,10 +1,11 @@
 ---
-import { render } from 'astro:content'
+import { getCollection, render } from 'astro:content'
 import Base from '../layouts/Base.astro'
 import { getPublishedArticles, toView, type Article } from '../lib/articles'
+import { articleMetadata } from '../lib/metadata'
 
 export async function getStaticPaths() {
-  const articles = await getPublishedArticles()
+  const articles = import.meta.env.DEV ? await getCollection('articles') : await getPublishedArticles()
   return articles.map((article, i) => ({
     params: { slug: article.id },
     props: { article, index: i },
@@ -18,39 +19,15 @@ interface Props {
 
 const { article, index } = Astro.props
 const { Content } = await render(article)
-const base = import.meta.env.BASE_URL
+const base = import.meta.env.BASE_URL.replace(/\/$/, '')
 
 // Full decorated set so we can build "Continue in the Library" + this view.
 const all = await getPublishedArticles()
 const views = all.map((a, i) => toView(a, i))
-const view = views[index]
+const view = toView(article, index)
 const related = views.filter(v => v.id !== view.id).slice(0, 3)
 
-const canonical = new URL(Astro.url.pathname, Astro.site).href
-
-const jsonLd = [
-  {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: article.data.title,
-    description: article.data.description,
-    datePublished: article.data.pubDate.toISOString(),
-    ...(article.data.updatedDate && { dateModified: article.data.updatedDate.toISOString() }),
-    keywords: article.data.tags.join(', '),
-    mainEntityOfPage: canonical,
-    image: view.heroWide,
-    author: { '@type': 'Person', name: 'Adrian Rasmussen', url: 'https://adrianrasmussen.com' },
-    publisher: { '@type': 'Organization', name: 'Mandala Codes', url: 'https://mandalacodes.com' },
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Learn', item: new URL(`${base}/`, Astro.site).href },
-      { '@type': 'ListItem', position: 2, name: article.data.title, item: canonical },
-    ],
-  },
-]
+const jsonLd = articleMetadata(article, view.heroWide)
 ---
 
 <Base
@@ -58,6 +35,10 @@ const jsonLd = [
   description={article.data.description}
   jsonLd={jsonLd}
   ogType="article"
+  ogImage={view.heroWide}
+  ogImageAlt={view.coverAlt}
+  canonicalPath={`/learn/${article.id}/`}
+  noindex={article.data.draft}
   accent={view.tint}
 >
   <article class="lp-read-section" data-r="readSection">
@@ -92,9 +73,9 @@ const jsonLd = [
       </header>
 
       <div class="lp-byline" data-reveal>
-        <div class="medallion">AR</div>
+        <div class="medallion" aria-hidden="true">{view.author ? view.author.trim().split(/\s+/).map(part => part[0]).slice(0, 2).join('').toUpperCase() : '◦'}</div>
         <div class="meta">
-          <span class="name">Adrian Rasmussen</span><span>·</span><span>{view.date}</span>
+          {view.author && <><span class="name">{view.authorUrl ? <a href={view.authorUrl} rel="author">{view.author}</a> : view.author}</span><span>·</span></>}<span>{view.date}</span>
           {article.data.updatedDate && (<><span>·</span><span>updated</span></>)}
           <span>·</span><span>{view.read} read</span>
         </div>
@@ -102,13 +83,15 @@ const jsonLd = [
 
       <figure class="lp-figure" data-reveal>
         <div class="frame">
-          <img src={view.heroWide} alt="" />
+          <img src={view.heroWide} alt={view.coverAlt} />
           <div class="inner"></div>
         </div>
-        <figcaption class="lp-figcaption">
-          <span class="acc">Plate {view.plate}</span> &nbsp;·&nbsp; {view.culture} &nbsp;·&nbsp; Universal Language
-        </figcaption>
+        {(!article.data.coverImage || view.coverCaption || view.coverCredit) && <figcaption class="lp-figcaption">
+          {view.coverCaption || view.coverCredit ? <>{view.coverCaption && <span>{view.coverCaption}</span>}{view.coverCaption && view.coverCredit && <> &nbsp;·&nbsp; </>}{view.coverCredit}</> : <><span class="acc">Plate {view.plate}</span> &nbsp;·&nbsp; {view.culture} &nbsp;·&nbsp; Universal Language</>}
+        </figcaption>}
       </figure>
+
+      {article.data.draft && <aside aria-label="Draft preview"><strong>Draft preview</strong> · This article is unpublished.</aside>}
 
       <div class="lp-read-body" data-reveal>
         <Content />
