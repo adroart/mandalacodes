@@ -53,14 +53,15 @@ test.describe('choosing what a recording replaces',()=>{
   for(const name of ['Add after','Replace'])expect((await d.getByRole('button',{name,exact:true}).boundingBox())!.height).toBeGreaterThanOrEqual(44);
   await shot(page,'focused-choice');
   await d.getByRole('button',{name:'Back',exact:true}).click();await expect(section(d,READING)).toBeVisible();
-  await expect(d.getByRole('button',{name:'Record',exact:true})).toBeDisabled();
+  await expect(d.getByRole('button',{name:'Edit passage',exact:true})).toBeVisible();
+  await expect(d.getByRole('button',{name:'Record',exact:true})).toHaveCount(0);
  });
 
  test('Add after and Replace each name the chosen paragraph; whole-section mode is separate',async({page})=>{
   const d=await openRecording(page);await section(d,READING).getByRole('button',{name:/^Edit paragraph 2:/}).click();
   await d.getByRole('button',{name:'Add after',exact:true}).click();
   await expect(d.getByRole('button',{name:'Record addition',exact:true})).toBeEnabled();
-  await expect(destination(d)).toContainText('paragraph 2');
+  await expect(d.locator('.vs-passage-path')).toContainText('Paragraph 2 of 3');
   await d.getByRole('button',{name:'Replace',exact:true}).click();
   await expect(d.getByRole('button',{name:'Record replacement',exact:true})).toBeEnabled();
   await d.getByRole('button',{name:'Back',exact:true}).click();await chooseWhole(d);
@@ -130,7 +131,19 @@ test('words placed by hand are added to the section, and the applied reading kee
  const paragraphs=section(d,READING).locator('.vs-para');await expect(paragraphs).toHaveCount(3);
  const original=(await paragraphs.allInnerTexts()).map(t=>t.trim());expect(original.length).toBeGreaterThan(1);
  await chooseWhole(d);await importAudio(d);
- await d.getByRole('button',{name:/was not placed/}).click();
+ await d.getByRole('button',{name:'Back',exact:true}).click();
+ if(!(await d.locator('[data-view=work]').isVisible()))await d.getByRole('button',{name:'Back',exact:true}).click();
+ await expect(d.locator('[data-view=work]')).toBeVisible();
+ await section(d,'2/INTRO').getByRole('button',{name:/^Edit paragraph 1:/}).click();
+ await d.getByRole('button',{name:'Back',exact:true}).click();
+ const dock=d.locator('.vs-dock--idle');
+ await expect(dock.getByRole('button',{name:'Place 1: 1 unplaced'})).toHaveText('Place 1');
+ await expect(dock.getByRole('button',{name:'Edit passage',exact:true})).toBeVisible();
+ if(test.info().project.name==='Phone'){
+  expect(await dock.locator(':scope > *').evaluateAll(children=>new Set(children.map(child=>Math.round(child.getBoundingClientRect().top))).size)).toBeLessThanOrEqual(2);
+  await shot(page,'saved-words-compact-dock');
+ }
+ await dock.getByRole('button',{name:'Place 1: 1 unplaced'}).click();
  await expect(d.getByRole('region',{name:'Unplaced words',exact:true})).toContainText(addition);
  await d.getByRole('button',{name:'Choose a section',exact:true}).click();
  await d.getByRole('navigation',{name:'Choose a card section'}).locator(`button[data-section-id="${READING}"]`).click();

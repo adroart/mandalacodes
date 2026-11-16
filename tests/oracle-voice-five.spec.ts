@@ -23,7 +23,7 @@ test('a failed transcript visibly retains saved audio and can be retried without
  await page.screenshot({path:info.outputPath('saved-audio-recovery.png')});
  await status.getByRole('button',{name:'Listen',exact:true}).click();await expect(d.getByRole('region',{name:'Audio and transcript'})).toBeVisible();
  await status.getByRole('button',{name:'Retry',exact:true}).click();await expect(status).toHaveCount(0);await expect.poll(()=>calls).toBe(2);
- await d.getByRole('button',{name:'Back',exact:true}).click();await d.getByRole('button',{name:'Back',exact:true}).click();await d.getByRole('button',{name:'Review 1',exact:true}).click();await expect(d.locator('.vs-compare')).toContainText('My saved words.');
+ await d.getByRole('button',{name:'Back',exact:true}).click();await d.getByRole('button',{name:'Back',exact:true}).click();await d.getByRole('button',{name:'Review saved words',exact:true}).click();await expect(d.locator('.vs-compare')).toContainText('My saved words.');
 });
 test('changed words and their inline check lead review; kept AI receives no progress credit',async({page},info)=>{
  const said=await pipeline(page,true,true),d=await open(page);await expectProgress(d,0);await imported(d);

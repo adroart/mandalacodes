@@ -16,6 +16,8 @@ test('a phone passage edit keeps its destination and operation visible through r
  await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();
  await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();
  const dialog=page.getByRole('dialog'),passage=dialog.locator('.vs-para--choice').first();
+ await expect(dialog.locator('.vs-dock-target strong')).toHaveText('Tap a passage to edit');
+ await expect(dialog.locator('.vs-dock-target small')).toHaveCount(0);
  await passage.click();await expect(dialog.locator('[data-view=passage]')).toBeVisible();
  await expect(dialog.locator('.vs-passage-path')).toContainText('Card 2 · Intro · Paragraph 1 of 1');
  await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeDisabled();
@@ -68,6 +70,24 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(reading).toHaveCount(3);
  await reading.nth(1).click();
  await expect(dialog.locator('.vs-passage-path')).toContainText('Card 2 · Universal Language · Reading · Paragraph 2 of 3');
+ await dialog.getByRole('button',{name:'Back',exact:true}).click();
+ const workDock=dialog.locator('.vs-dock--idle');
+ await expect(workDock).toContainText('Reading · paragraph 2');
+ await expect(workDock.getByRole('button',{name:'Edit passage',exact:true})).toBeVisible();
+ await expect(workDock.getByRole('button',{name:/Review 1: 1 edit/})).toBeVisible();
+ await expect(workDock.locator('.vs-dock-review')).toHaveText('Review 1');
+ await expect(workDock.getByRole('button',{name:'Record',exact:true})).toHaveCount(0);
+ for(const width of [430,320]){
+  await page.setViewportSize({width,height:812});
+  expect(await workDock.locator(':scope > *').evaluateAll(children=>new Set(children.map(child=>Math.round(child.getBoundingClientRect().top))).size)).toBeLessThanOrEqual(2);
+  expect((await workDock.locator('.vs-dock-target strong').boundingBox())!.height).toBeLessThanOrEqual(21);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  for(const button of await workDock.getByRole('button').all())expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await page.screenshot({path:info.outputPath(`selected-passage-compact-dock-${width}.png`)});
+ }
+ await page.setViewportSize({width:375,height:812});
+ await workDock.getByRole('button',{name:'Edit passage',exact:true}).click();
+ await expect(dialog.getByRole('button',{name:'Add after',exact:true})).toBeVisible();
  await dialog.getByRole('button',{name:'Replace',exact:true}).click();
  await expect(dialog.getByRole('button',{name:'Record replacement',exact:true})).toBeEnabled();
  await page.screenshot({path:info.outputPath('reading-paragraph-replace-phone.png')});
@@ -79,7 +99,21 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(dialog.locator('.vs-review-plan')).toContainText('Replace this passage',{timeout:15000});
  await dialog.getByRole('button',{name:'Back',exact:true}).click();
  await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-para--choice').first().click();
- await expect(dialog.getByRole('button',{name:'Finish review first',exact:true})).toBeDisabled();
- await expect(dialog.getByRole('button',{name:'Review saved words',exact:true})).toBeVisible();
+ const blockedDock=dialog.locator('.vs-dock--blocked');
+ await expect(dialog.locator('.vs-passage-pending')).toContainText('re-record that edit');
+ await expect(dialog.locator('.vs-passage-actions')).toHaveCount(0);
+ await expect(dialog.locator('.vs-passage-instruction')).toHaveCount(0);
+ await expect(blockedDock.getByRole('button',{name:'Review saved words',exact:true})).toBeVisible();
+ await expect(blockedDock.getByRole('button',{name:/Record/})).toHaveCount(0);
+ expect(await blockedDock.locator(':scope > *').count()).toBe(1);
+ expect((await blockedDock.getByRole('button',{name:'Review saved words'}).boundingBox())!.height).toBeGreaterThanOrEqual(44);
+ for(const width of [430,320]){
+  await page.setViewportSize({width,height:812});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:info.outputPath(`pending-review-compact-dock-${width}.png`)});
+ }
+ await blockedDock.getByRole('button',{name:'Review saved words',exact:true}).click();
+ await expect(dialog.locator('.vs-review-plan')).toContainText('Replace this passage');
+ await expect(dialog.getByRole('button',{name:'Re-record',exact:true})).toBeVisible();
  expect(assimilations).toBe(0);
 });
