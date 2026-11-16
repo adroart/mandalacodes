@@ -16,7 +16,12 @@ VITE_ORACLE_NATIVE_ACCOUNTS=true npm run build:oracle
 npm --prefix mobile run build:device
 ```
 
-If the Swift does not compile, stop and send the error. Two handlers in `SceneDelegate.swift` were written without Xcode.
+Stop if the build fails. The project todo records a successful device build on
+2026-11-16, but that does not establish that today's artifact is safe to install.
+Follow [the fresh-signing flow](../../mobile/README.md): the current audit must
+verify newly issued profiles for the app and every extension, each with at least
+6 days, 23 hours remaining. Record their actual expiration dates before installation.
+Never install an older output after a failed build.
 
 4. Install, open the app, sign in. The account screen's last line shows the build and commit. If Google sign-in is refused on the phone, use the email code.
 

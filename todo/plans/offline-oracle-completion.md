@@ -11,76 +11,49 @@
 
 ---
 
-## What is actually true today
+## Current contract and evidence
 
-Audited 2026-08-21 by reading the code, not by trusting the notes.
+The current offline contract is **card prose and core reading/profile
+functionality**, not artwork. Artwork is intentionally network-only to avoid
+large downloads and storage costs. Do not treat a missing picture as a bug or
+restore image prefetch without a separate product decision.
 
-**Works with no connection, once the device has visited once:**
+Automated production-worker coverage verifies a direct card arrival warms all
+64 prose chunks into the actual service-worker cache, then opens an untouched
+card with network fetches blocked and requires its real text. Separate cases
+cover the calm missing-chunk notice and retry recovery. See
+`tests/offline-qr-reading.spec.ts` and
+[docs/offline-oracle.md](../../docs/offline-oracle.md). This is local automated
+evidence, not proof from Adrian’s phone or production.
 
-- The site itself loads — shell, fonts, styles.
-- All 64 card readings: their words and their artwork. A background pass pulls
-  the whole deck quietly after the first visit, so a reading can land on any
-  card, not only ones already opened.
-- Casting coins, and the Today and Year energy panels. All computed locally.
-- A personal profile from a birth moment — the astrology runs on the device, and
-  the birth-place search reads a city list that ships with the site rather than
-  calling out.
+The application code computes coin casts, uses a bundled city lookup, and
+computes profile data locally. Those behaviors are not asserted by
+`tests/offline-qr-reading.spec.ts`. Remote account data, Atlas surfaces, live
+invocation publishing, and reflection delivery still need connectivity. Reflection recording has an offline queue; its user-facing behavior and
+drain/recovery expectations remain product and acceptance questions, not a
+general-purpose guarantee.
 
-That last point matters more than it looks: **a complete personal reading is
-possible with no connection at all.** That was not a stated goal; it fell out of
-how the oracle was already built.
+## Owner-required phone acceptance
 
-**Needs a connection:**
-
-- The live invocation composer.
-- Sending a recorded reflection. Recordings are held on the device in a queue
-  and are not lost, but nothing has been tested about what happens when that
-  queue tries to drain on a bad connection.
-- Atlas, the account pages, admin, and individual piece pages. None are cached
-  on purpose. Opening one offline shows a quiet line saying that part needs a
-  connection, rather than crashing.
-
-**Never verified anywhere:** all of it, on a real device.
-
----
-
-## The one thing that must happen first — yours
-
-Nobody has confirmed the artwork actually caches. The machine that built this
-could not reach the image host, so that path was configured and reasoned about
-but never seen working. Everything else here is wasted effort if it is wrong.
-
-On your phone: open the oracle, let a card load, wait ten seconds without
-navigating away, then turn on airplane mode, reload, and open a card you never
-touched. **Both the words and the picture should be there.**
-
-If the words appear and the picture does not, stop and say so — the cause is
-almost certainly a card-art image tag missing its cross-origin attribute, and it
-is a small fix, but nothing below is worth doing until it is made.
-
----
+On the phone, open the oracle from a current production build, allow the prose
+warm pass to finish, switch to airplane mode, reload, and open a different
+card. Confirm its actual reading text renders without the connection notice.
+Also interrupt warming and verify recovery after connectivity returns. Record
+the device/browser and outcome. Artwork is outside this check by design.
 
 ## The open questions — these are yours, and they are why this is not just a build
 
-**1. What is the promise?** Right now the site says nothing about working
-offline. A reader in a place with no signal has no reason to try. The first pass
-deliberately left the sentence out on the grounds that the feature should be
-felt rather than announced. That was a real argument, not an oversight — but it
-means the feature only ever helps someone who happens to try. Decide whether the
-oracle says it, and if so, where and in what voice.
+**1. What is the promise?** Decide whether the interface should state that
+card text can be available offline, and if so, where and in what voice.
 
-**2. What should a reader see when they reach for something that needs a
-connection?** Today they get one quiet sentence. That is honest and unobtrusive,
-and it is also the same response whether they tapped Atlas out of curiosity or
-tried to send a reflection they had just spoken. Those probably deserve
-different answers.
+**2. What should a reader see when an action needs a connection?** Decide
+whether Atlas and queued reflection actions need different guidance.
 
-**3. Is the gallery iPad real?** iPhones and iPads clear cached sites after
-about a week unused, unless the site has been added to the home screen. So for a
-tablet that sits between shows, offline will have quietly expired by the time it
-matters. There is no install prompt, on purpose. If a gallery device is a real
-plan, the answer is adding it to the home screen once on that device — not
-adding a prompt every visitor sees.
+**3. Is the gallery iPad real?** A gallery device needs its own acceptance
+check after inactivity and storage pressure. Adding the site to the home screen
+does not establish that every cached chunk will remain available indefinitely.
+There is no install prompt, on purpose; decide the gallery use case before
+changing the general visitor experience.
 
 **4. Should a reflection recorded offline be a first-class thing?** The recorder
 already holds recordings on the device rather than dropping them. Nobody has
@@ -89,39 +62,25 @@ just quietly send later. This is the piece with the most room in it.
 
 ---
 
-## The build work, once the above is settled
+## Remaining product decisions and build work
 
-**Notice a new release on a tab left open.** A device that never closes the tab
-keeps serving the version it cached. Check for a new release when the tab comes
-back into focus. There is already a recovery path if something breaks; this is
-the missing half that checks before it breaks.
+The remaining reader-facing decisions are still Adrian’s: whether to state the
+offline promise in the interface, what different offline guidance Atlas versus
+reflection actions should show, whether a gallery iPad is an actual use case,
+and whether queued reflections should be visible as a first-class saved item.
+Do not implement these choices by guessing.
 
-**Ask the browser to keep the cache.** One call once the 64-card pass finishes,
-asking the browser to treat this cache as worth keeping rather than clearing it
-under pressure. It is the only lever the web offers, and it does not solve the
-iPhone limit above.
-
-**Write one test that fails loudly.** Nothing anywhere tests the offline path, so
-it can break silently on any deploy. The right shape drives a real browser,
-takes it offline, and checks a card renders with its picture. Note before
-starting: the phone test suite is currently red in bulk on main (separate to-do
-item), so this needs its own honest baseline rather than being dropped into a
-suite nobody trusts.
-
-**Decide about the reflection queue.** Whatever question 4 settles, the draining
-behaviour on a poor connection has never been exercised.
-
----
+The proposals for a focus-time update check and a persistent-storage request
+remain possible enhancements; audit the current implementation and device
+behavior before deciding whether they are needed. A first offline browser test
+is no longer missing: the focused production-worker coverage above exists. The
+current contract is documented in `docs/offline-oracle.md`.
 
 ## Things that will silently break this
 
 - The three files that bootstrap the offline layer must keep their no-cache
   headers, or the network edge can serve a stale copy after a deploy and no
   amount of correctness on the device will help.
-- Any new card-art image needs its cross-origin attribute. Without it the
-  browser makes a request the offline layer cannot safely store, and the browser
-  charges several megabytes of quota for each one. The attribute is now recorded
-  in the design source too, so re-generating the entry page should keep it.
 - The live endpoints and the printed-plaque redirects are deliberately excluded
   from the offline fallback. They must never be answered from cache.
 - The city list is regenerated by a script. If that script's output order ever

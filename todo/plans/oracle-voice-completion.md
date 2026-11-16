@@ -21,10 +21,10 @@ Nothing in this audit ran on a phone, against the live site, or against a real s
 
 Waves 1 to 5 are built, merged to main as 4cb740f (pull request 401) and deployed on 2026-11-12. Two independent reviews ran between waves and their findings were fixed. CI passed on the merged commit: type check, unit tests, the website lane and the voice lane, all with scripted speech. The deploy was checked against the live site on 2026-11-13.
 
-What is left is no longer agent work:
+Current follow-up (2026-11-16):
 
-1. Adrian: build and install from the Mac, then run `docs/oracle/VOICE-PHONE-CHECK.md` on card 2.
-2. Fix whatever the phone shows (the Swift has never been compiled).
+1. Adrian: install only after the current fresh-signing audit passes, then run `docs/oracle/VOICE-PHONE-CHECK.md` on card 2.
+2. Fix whatever the phone shows. `TODO.md` now records a successful device build from main on 2026-11-16; the earlier uncompiled-Swift blocker is superseded. Phone behavior still needs acceptance.
 3. The open items listed in `docs/oracle/VOICE-STATUS.md`: structured sections in the apply script, the build gate versus his spoken words, the AR Create side of the Mac pickup and a screen for its result, removing the older studios, a post-deploy check with a real recording.
 
 The current state, file by file, is in `docs/oracle/VOICE-STATUS.md`. The sections below are the audit as written on 2026-11-11 and the plan as it was; read them for the reasoning, not for the present state.

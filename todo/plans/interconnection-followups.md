@@ -25,10 +25,13 @@ Two commits:
    reciprocal link from `/profile`; the multi-piece steward picker on
    `/atlas/edit`.
 
-## Verify on the next preview deploy *(you-required, quick)*
+## Historical preview checklist — revalidate routes before use
 
-The remote environment has no browser, so these shipped on build + node-level
-checks only. Click through once:
+This June 2026 checklist is historical. Recheck that each route and feature
+remains active before using it; `/atlas/edit` and any retired-boundary behavior
+may have changed. Source inspection confirms local implementations for several
+paths, but not current preview, production, or live-ledger behavior. Owner
+click-through and ledger identity checks remain outstanding where applicable:
 
 - A card page (`/universal-language/1`): Relations panel seats (pair teaching,
   inverse, Immortal, Hebrew letter), the "On the Atlas" seat, and the profile
@@ -47,40 +50,51 @@ checks only. Click through once:
 
 ## Content (Adrian's voice, not delegable)
 
-- The 384 changing-line texts (`data/ichingLines.ts` is all placeholders;
-  CoinCast already renders them when present) — via `/cast-content`.
-- The 63 RELATIONS scaffolds (`oracle/sections/relations/`, only UL 1 is
-  `final`) are now LIVE on cards. Readable prose, but the Phase 2 personal
-  pass now has a visible surface.
-- The per-becoming reading in CoinCast (`components/oracle/CoinCast.tsx`,
-  "the present begins to give way…") is one generic sentence for all 64
-  becomings; synthesis content could make it per-hexagram.
+- The 384 changing-line texts are already authored in each card manuscript;
+  the remaining work is Adrian’s voice pass via `/cast-content` (see the main
+  TODO). Do not use the deleted `data/ichingLines.ts` as an authority.
+- RELATIONS prose is authored in the canonical `oracle/cards/NN.md`
+  manuscripts; the old `oracle/sections/relations/` JSON is historical and is
+  not the runtime authority. Check current editorial status in the card
+  frontmatter or generated `oracle/CARD-PROGRESS.md` before describing how many
+  still need Adrian’s personal pass.
+- Consider a per-hexagram transition reading only after locating the current
+  cast surface and deciding the content shape; the former CoinCast reference is
+  absent from this checkout.
 
-## Remaining interconnection development *(agent-runnable)*
+## Interconnection follow-ups
 
-- **Collections ↔ card pages.** `CollectionsProvider` is mounted app-wide but
-  no card-page UI saves a card to a collection. Add a save affordance near
-  Acquire/Share (signed-in only), and a "which of my collected cards are
-  placed on the atlas" view in `/account/collections`.
-- **Sphere metadata dedup.** `data/profilePositions.ts` (11 positions, UI
-  fields) and `lib/oracle/recommendation.ts` `SPHERES` (same 11, simpler)
-  define the same sequence twice; extract one shared base. Same for the
-  11-key `ProfileKey` list repeated in `lib/astrology/profile.ts` and
-  `functions/api/profile/put.js`'s validator.
-- **City picker dedup.** `AdminAtlas.tsx`'s `CityAutocomplete` and
-  `StewardEdit.tsx`'s combobox duplicate query/filter/render logic — extract
-  a shared component.
-- **Kinship arc cap.** When pairs exceed `MAX_KINSHIP_ARCS` (200) only a
-  console.info fires; surface "showing X of Y kinship arcs" in the filters
-  row.
-- **Gateway → profile.** The QR-arrival screen never mentions the profile;
-  a fourth quiet link ("Map your birth chart") would close that loop for
-  plaque scanners.
-- **Remaining renderer unification (needs visual QA).** OracleGateway's
-  orbital hexagrams and CoinCast's animated `Hexagram` still own their
-  geometry; `data/trigrams.ts` stores lines bottom-to-top while its comment
-  claims top-to-bottom — fix the comment or migrate callers to the shared
-  glyph module.
+The following June-review items are already present in this checkout; they are
+not remaining build work:
+
+- **Card collections and Atlas placement:** `components/UniversalLanguageCard.tsx`
+  uses `SaveToCollectionButton`; `components/account/CollectionsManager.tsx`
+  joins saved cards to placements via `loadAtlasState` / `findPlacementForCard`,
+  shows city/status, and links to the selected Atlas piece. The Atlas join is
+  locally implemented; live behavior is not proven by source inspection.
+- **Profile key/sphere ordering:** `data/profileKeys.js` is the shared source
+  imported by `data/profilePositions.ts`,
+  `lib/oracle/recommendation.ts`, and
+  `functions/api/profile/put.js`. Surface-specific labels and descriptions
+  intentionally remain local; do not consolidate them without a product
+  decision.
+- **City picker:** `components/shared/TypeaheadPicker.tsx` is used by the
+  `CityAutocomplete` wrapper in `components/AdminAtlas.tsx` and directly by
+  `components/atlas/StewardEdit.tsx`.
+- **Kinship arc cap:** `components/atlas/AtlasFilters.tsx` displays the
+  visible/total thread count when the limit applies.
+- **Gateway → profile:** `components/OracleGateway.tsx` already links to
+  `/profile` as “Your Birth Chart.”
+
+The remaining renderer follow-up needs a fresh, bounded audit before work is
+assigned. Several major surfaces already use
+`components/oracle/HexagramGlyph.tsx`, including the card and atlas code index;
+the Gateway retains its orbital custom drawing. Do not describe CoinCast as a
+current component without locating it in this checkout. Preserve distinct
+animated or ornamental design where shared geometry would change the
+experience, and visually review any proposed consolidation on the real
+surfaces. Check the old `data/trigrams.ts` comment discrepancy against current
+code before reopening it.
 
 ## Bigger pieces already tracked elsewhere
 

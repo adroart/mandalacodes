@@ -1,6 +1,6 @@
 # Oracle card voice: status
 
-Written 2026-11-12, updated 2026-11-13. The work was merged to main as 4cb740f (pull request 401) on 2026-11-12 and Cloudflare deployed it. Checked against the live site on 2026-11-13: the new pickup route for app recordings answers 401 without a key, and the process endpoint answers a signed-out request with the new `code` and `retryable` fields. CI passed on the merged commit, including the voice lane's first run on the CI runner (scripted speech). Nothing has run on a phone or against a real speech provider with a real recording, and none of the Swift has been compiled.
+Written 2026-11-12, updated 2026-11-16. The work was merged to main as 4cb740f (pull request 401) on 2026-11-12 and Cloudflare deployed it. Checked against the live site on 2026-11-13: the new pickup route for app recordings answers 401 without a key, and the process endpoint answers a signed-out request with the new `code` and `retryable` fields. CI passed on the merged commit, including the voice lane's first run on the CI runner (scripted speech). The project todo records a successful device build from main on 2026-11-16; this supersedes the earlier uncompiled-Swift status, not the missing phone acceptance. The current voice workflow still needs a real recording on the phone against the speech provider.
 
 The plan and its progress are in `todo/plans/oracle-voice-completion.md`. The owner's brief is `ORACLE-VOICE-HANDOFF.md`. The phone checks are in `docs/oracle/VOICE-PHONE-CHECK.md`. Older voice documents are kept for history and each says so at its top.
 
@@ -31,13 +31,13 @@ The owner speaks his own words over a card's sections, and those words replace p
 ## Open items
 
 - **Not proven on a phone:** everything. See the phone check.
-- **Swift not compiled:** the recording handler and the share-sheet handler in `SceneDelegate.swift`.
+- **Device acceptance:** a successful device build is recorded in `TODO.md` on 2026-11-16. Recording interruption, sharing and actual phone behavior remain unverified. Re-audit fresh signing before any installation; see `mobile/README.md`.
 - **Two recorders on one microphone:** unknown whether Safari allows it. If it refuses, a boundary falls back to a short gap.
 - **Structured sections:** the apply script writes plain-prose sections only (23 of 33 on card 2). Moving lines, Judgement, Image, Tarot, Deeper correlation and two label lines are reported for a hand edit.
 - **Build gate versus his words:** `npm run build` runs the prose lint as a gate. An em dash or italics inside applied spoken words would stop a build. The apply script reports them; nothing exempts them yet.
 - **Mac better transcript for app recordings:** this repository's side is built (`docs/oracle/pickup-takes.md`). Nothing calls it until AR Create is updated, and the app has no screen for the result yet.
 - **Older studios:** `HumanCardAuthoring` (Settings, Sessions) and the `OracleVoiceFlow` family (`?authoring=review`) are still in the tree. Remove them after confirming the phone holds no unapplied drafts in them.
-- **One automated press is not settled:** pressing Hear it within a fraction of a second of stopping a clip, when that recording has been removed from the device, fails in automation and passes with a short pause (`tests/oracle-voice-checks.spec.ts`). Cause not found.
+- **Rapid audio retry regression:** on 2026-11-16, the stop/delete/Hear-it scenario in `tests/oracle-voice-checks.spec.ts` passed five repetitions each in Desktop and Phone Chromium projects after removing the 800 ms workaround. The historical failure did not reproduce; its cause is not established. Keep the no-delay test in CI. This is browser fixture evidence, not iPhone acceptance.
 - **Post-deploy check script** (real recording through the live service) is not written.
 
 ## Local checks
@@ -51,6 +51,11 @@ npm run test:oracle-voice
 ```
 
 The voice lane uses scripted speech, Chromium's fake microphone and a replaced speech service, on port 4279. It is in CI's mobile job. `tests/oracle-section-workflow.spec.ts` and `tests/oracle-passage-authoring.spec.ts` are not in that lane; run them through `npm run test:oracle-authoring-app` (needs a built app and WebKit).
+
+2026-11-16 local verification: typecheck passed; all 168 unit files / 1,656 tests
+passed. Focused playback repetition passed as recorded above. A separate combined
+browser run failed during Record-dialog setup before reaching playback; the
+desktop rerun passed. The full browser suite was not rerun in this audit.
 
 ## Device ledger
 
