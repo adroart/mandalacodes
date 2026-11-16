@@ -4,6 +4,7 @@ import StudioBar from './studio/StudioBar';
 import {ProcessingStatus,Toast} from './studio/StatusBand';
 import SectionIndex from './studio/SectionIndex';
 import Manuscript from './studio/Manuscript';
+import PassageEditor from './studio/PassageEditor';
 import Dock from './studio/Dock';
 import {ReviewStage,ReviewDock,PlaybackAudio} from './studio/ReviewScreen';
 import {SectionsPicker,UnplacedScreen,CleanupScreen,SettingsScreen,AudioScreen,SessionsScreen} from './studio/SettingsScreens';
@@ -18,7 +19,7 @@ import './SectionVoiceStudio.css';
  */
 export default function SectionVoiceStudio(props:StudioProps){
  const studio=useVoiceStudio(props);
- const {view,active,recordingTarget,opening,integrating,step,statusShown,notice,toastError,section,result,draft,audioUrl,pickFromRail,manuscript,monitor,targetId}=studio;
+ const {view,active,recordingTarget,opening,integrating,step,statusShown,notice,toastError,section,result,draft,audioUrl,pickFromRail,manuscript,monitor,targetId,pendingPassage}=studio;
  const root=useRef<HTMLElement>(null);
  useVisualViewport(root);
  useScreenFocus(root,view==='review'&&result?.applied?'applied':view);
@@ -31,6 +32,8 @@ export default function SectionVoiceStudio(props:StudioProps){
    {(view==='work'||view==='review')&&<SectionIndex {...studio} onPick={pickFromRail} mode="rail"/>}
 
    {view==='work'&&<Manuscript {...studio}/>}
+
+   {view==='passage'&&<PassageEditor {...studio}/>}
 
    {view==='review'&&<ReviewStage {...studio}/>}
 
@@ -49,9 +52,9 @@ export default function SectionVoiceStudio(props:StudioProps){
 
   {(notice||toastError)&&<Toast {...studio}/>}
 
-  {view==='work'&&<Dock {...studio}/>}
+  {(view==='work'||view==='passage')&&<Dock {...studio}/>}
 
-  {view==='review'&&section&&result&&<ReviewDock {...studio} section={section} result={result}/>}
+  {view==='review'&&!pendingPassage&&section&&result&&<ReviewDock {...studio} section={section} result={result}/>}
 
   {audioUrl&&<PlaybackAudio {...studio}/>}
   <p className="vs-visually-hidden" role="status" aria-live="polite" data-recording-announcement>{announcement}</p>

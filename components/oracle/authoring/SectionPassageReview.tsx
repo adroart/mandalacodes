@@ -8,7 +8,7 @@ import CheckedEditableText,{UnplacedWordCheck,type ReviewWordCheck} from './Chec
 import WordReplay from './WordReplay';
 import './passage-review.css';
 interface Props {
- original:string;text:string;intent?:'replace'|'add'|'revise';comparison?:PassageComparison;choices?:Record<string,PassageChoice>;disabled:boolean;replayDisabled:boolean;sessionKey:string;
+ original:string;text:string;intent?:'replace'|'add'|'revise';explicitPassage?:'add'|'replace';comparison?:PassageComparison;choices?:Record<string,PassageChoice>;disabled:boolean;replayDisabled:boolean;sessionKey:string;
  replay:{text:string;words:ReplayWord[];captureId:string}|null;activeWord:number;
  /** Character offset in text to return the cursor to after listening. */
  caret?:number;cleanupCount?:number;onCleanup?:()=>void;onChoose?:(key:string,choice:PassageChoice)=>void;
@@ -40,17 +40,17 @@ export default function SectionPassageReview(props:Props){
    const [label,action]=state(row),label2=editable===1?'Your section words':`Your words for passage ${index+1}`;
    const rowChecks=checks.filter(check=>checkRow(check)===index||(checkRow(check)<0&&index===firstEditable));
    if(rowChecks.length)checkedRows.current.keys.add(row.key);
-   const original=<section key="original" data-review-pane="original" aria-label={!passages?'Original section':`Original passage ${index+1}`}>
-    {row.kind!=='unspoken'&&<h4>{add?'Already in the reading':'Original'}</h4>}
+   const original=<section key="original" data-review-pane="original" aria-label={props.explicitPassage?'Selected passage':!passages?'Original section':`Original passage ${index+1}`}>
+    {row.kind!=='unspoken'&&<h4>{props.explicitPassage==='add'?'Selected passage · stays':add?'Already in the reading':'Original passage'}</h4>}
     <div className="vs-original">{row.original}</div>
    </section>;
    const human=row.kind!=='unspoken'?<section key="words" data-review-pane="words" aria-label={!passages?'Your section words':`Your words for passage ${index+1}`}>
-    {(!passages||row.choice!=='mine')&&<h4>{row.choice!=='mine'?'Not being used':add?'Your addition':'Your words'}{row.choice==='mine'&&<Pencil size={12} aria-hidden="true"/>}{!passages&&!add&&<span className="vs-replacement-scope">{paragraphs>1?`Replaces all ${paragraphs} paragraphs`:'Replaces this paragraph'}</span>}</h4>}
+    {(!passages||row.choice!=='mine')&&<h4>{row.choice!=='mine'?'Not being used':props.explicitPassage==='add'?'Your addition':add?'Your addition':'Your words'}{row.choice==='mine'&&<Pencil size={12} aria-hidden="true"/>}{!passages&&!add&&<span className="vs-replacement-scope">{props.explicitPassage==='replace'?'Replaces selected passage':paragraphs>1?`Replaces all ${paragraphs} paragraphs`:'Replaces this paragraph'}</span>}</h4>}
     {row.choice!=='mine'?<p className="vs-unused">{row.text}</p>:props.replay?<WordReplay text={row.text} words={tokens} activeIndex={active} onSeek={props.onSeek}/>:checkedRows.current.keys.has(row.key)?<CheckedEditableText key={props.sessionKey+'/'+index} label={label2} value={row.text} checks={rowChecks.map(check=>({...check,unanchored:checkRow(check)<0}))} disabled={props.disabled} caret={caret} save={replacement=>props.onEdit(index,replacement)} onSelection={(from,to,text,value)=>props.onSelection?.(row.textStart+from,row.textStart+to,text,props.text.slice(0,row.textStart)+value+props.text.slice(row.textEnd))} {...actions}/>:<EditableText autoSize="content" hideLabel caret={caret} onSelection={(from,to,text,value)=>props.onSelection?.(row.textStart+from,row.textStart+to,text,props.text.slice(0,row.textStart)+value+props.text.slice(row.textEnd))} key={props.sessionKey+'/'+index} label={label2} value={row.text} disabled={props.disabled} save={replacement=>props.onEdit(index,replacement)}/>}
    </section>:null;
    return <div className="vs-pair" role="group" key={`${props.sessionKey}/${row.key}`} data-passage-index={index} data-kind={passages?row.kind:'whole'} data-choice={row.choice} aria-label={passages?`${row.kind==='new'?'New passage':`Passage ${index+1}`}: ${label}`:undefined}>
     {passages&&<header className="vs-pair-head"><span>{row.kind==='new'?'New passage':`Passage ${index+1}`}<b data-tone={row.choice==='mine'&&row.kind!=='unspoken'?'mine':row.kind==='unspoken'&&row.choice==='mine'?'removed':'kept'}>{label}</b></span>{props.onChoose&&<button type="button" className="vs-row-action" disabled={props.disabled} onClick={()=>props.onChoose!(row.key,row.choice==='mine'?'original':'mine')}>{action}</button>}</header>}
-    {row.choice==='mine'?[human,...(row.original.trim()?[original]:[])]:[...(row.original.trim()?[original]:[]),human]}
+    {props.explicitPassage?[...(row.original.trim()?[original]:[]),human]:row.choice==='mine'?[human,...(row.original.trim()?[original]:[])]:[...(row.original.trim()?[original]:[]),human]}
    </div>;
   })}
   {firstEditable===undefined&&checks.map(check=><UnplacedWordCheck key={check.key} check={check} disabled={props.disabled} {...actions}/>)}

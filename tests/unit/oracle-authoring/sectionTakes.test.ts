@@ -32,6 +32,27 @@ it('returns a durable queued take immediately and preserves another active recor
  expect(transcribe).toHaveBeenCalledTimes(1);expect(transcribe.mock.calls[0][1].id).toBe('clip-1');expect(completed.state).toBe('recording');expect(completed.results[0].takeIds).toEqual(['clip-1']);
  expect((await audio.load(session.id))!.session.captures[1].status).toBe('recording');expect(await(await audio.audio(session.id,'clip-2')).text()).toBe('Audio clip-2');
 });
+it('prepares a chosen passage from the transcript without routing or rewriting it',async()=>{
+ const {source,sections,session,draft}=await fixture();const chosen=sections[0],focus={start:0,end:chosen.text.length,text:chosen.text};
+ const passageEdit={operation:'add' as const,focus,sectionText:chosen.text};
+ await queueSectionTake(draft.id,'clip-1',chosen.id,{loadSource:async()=>source,transcribe:async()=>response('Add this after the passage.')},[],{intent:'add',focus,passageEdit});
+ const ready=await waitState(draft.id,'clip-1','review');
+ expect(assimilate).not.toHaveBeenCalled();expect(ready.results).toHaveLength(1);
+ expect(ready.results[0]).toMatchObject({sectionId:chosen.id,text:'Add this after the passage.',editIntent:'add',passageEdit,reviewTranscript:'Add this after the passage.',checked:false});
+ expect(ready.unassigned).toEqual([]);expect((await audio.load(session.id))?.session.transcript[0].raw).toBe('Add this after the passage.');
+ expect(await(await audio.audio(session.id,'clip-1')).text()).toBe('Audio clip-1');
+});
+it('keeps a pending same-section passage review when another take is queued',async()=>{
+ const {source,sections,session,draft}=await fixture(2),chosen=sections[0],focus={start:0,end:chosen.text.length,text:chosen.text},passageEdit={operation:'replace' as const,focus,sectionText:chosen.text};
+ const waiting=deferred<ReturnType<typeof response>>();
+ const services={loadSource:async()=>source,transcribe:async()=>waiting.promise};
+ await queueSectionTake(draft.id,'clip-1',chosen.id,services,[],{passageEdit});await waitState(draft.id,'clip-1','transcribing');
+ await expect(queueSectionTake(draft.id,'clip-2',chosen.id,services,[],{passageEdit})).rejects.toThrow('waiting for review or preparation');
+ waiting.resolve(response('First preserved proposal.'));const ready=await waitState(draft.id,'clip-1','review');
+ await expect(queueSectionTake(draft.id,'clip-2',chosen.id,services,[],{passageEdit})).rejects.toThrow('waiting for review or preparation');
+ expect(ready.results[0].text).toBe('First preserved proposal.');expect(ready.takes?.map(t=>t.captureId)).toEqual(['clip-1']);
+ expect(await(await audio.audio(session.id,'clip-2')).text()).toBe('Audio clip-2');
+});
 it('merges parallel takes into separate named sections and aggregates original speech chronologically',async()=>{
  const {source,sections,draft}=await fixture(2);const transcribe=vi.fn(async(_session,capture)=>response(capture.id==='clip-1'?'My drive.':'My centre.'));
  assimilate.mockImplementation(async input=>result(input.startSectionId,input.words));const services={loadSource:async()=>source,transcribe};

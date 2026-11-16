@@ -77,9 +77,25 @@
 .vs-para{position:relative;margin:0 calc(var(--vs-gutter) * -1);padding:4px var(--vs-gutter);white-space:pre-line}
 .vs-para+.vs-para{margin-top:.75em}
 /* Paragraphs are buttons only while the owner is choosing one in the aimed section. */
-.vs-para--choice{display:block;width:calc(100% + var(--vs-gutter) * 2);padding-block:10px;border:1px solid var(--vs-rule-2);border-radius:6px;background:none;color:var(--vs-ink);font:inherit;text-align:left;cursor:pointer;transition:background .12s,border-color .12s}
+.vs-para--choice{display:block;width:calc(100% + var(--vs-gutter) * 2);min-height:44px;padding-block:10px;border:1px solid transparent;border-radius:6px;background:none;color:var(--vs-ink);font:inherit;text-align:left;cursor:pointer;transition:background .12s,border-color .12s}
 @media(hover:hover){.vs-para--choice:hover{background:var(--vs-hover);border-color:var(--vs-muted)}}
 .vs-para--choice:active{background:var(--vs-accent-soft);border-color:var(--vs-accent)}
+.vs-para--choice[data-aimed]{border-color:var(--vs-rule-2)}
+.vs-passage-actions{display:flex;gap:8px;margin:12px 0 4px}
+.vs-passage-actions .vs-btn{flex:1;min-width:0}
+.vs-passage-actions .vs-btn[aria-pressed=true]{border-color:var(--vs-accent);background:var(--vs-accent-soft);color:var(--vs-accent)}
+.vs-passage-editor{padding:18px var(--vs-gutter) 28px;max-width:760px;margin-inline:auto;width:100%}
+.vs-passage-path{display:block;color:var(--vs-muted);font:600 13px/1.4 var(--font-controls);overflow-wrap:anywhere}
+.vs-passage-selected{margin:12px 0 0;padding:12px 14px;border-left:3px solid var(--vs-accent);background:var(--vs-raised);font:400 var(--vs-text)/1.55 var(--font-controls);white-space:pre-line;overflow-wrap:anywhere}
+.vs-passage-instruction{margin:16px 0 0;color:var(--vs-ink-2);font-size:14px}
+.vs-passage-effect{margin:10px 0 0;color:var(--vs-ink-2);font-size:14px;line-height:1.45}
+.vs-passage-stale{margin:12px 0;color:var(--vs-rec);font-size:14px}
+.vs-passage-pending{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin:14px 0 0;color:var(--vs-ink-2);font-size:14px;line-height:1.45}
+.vs-review-plan{display:flex;flex-direction:column;gap:3px;margin:0 0 14px;padding:10px 12px;border:1px solid var(--vs-rule-2);border-radius:8px;color:var(--vs-ink-2);font-size:13px;line-height:1.4}
+.vs-review-plan strong{color:var(--vs-ink);font-size:14px}
+.vs-review-waiting{padding-top:24px}
+.vs-review-waiting strong{font-size:18px}
+.vs-review-waiting p{margin:8px 0 0;color:var(--vs-ink-2);font-size:14px;line-height:1.45}
 .section-voice-studio .vs-para--choice:focus-visible{outline:2px solid var(--vs-accent);outline-offset:-2px}
 .vs-narrow{display:inline-flex;align-items:center;min-height:44px;margin:6px 0 0 40px;padding:0;border:0;background:none;color:var(--vs-ink-2);font:600 14px/1.3 var(--font-controls);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--vs-rule-2)}
 @media(hover:hover){.vs-narrow:hover{color:var(--vs-ink)}}

@@ -18,7 +18,7 @@ export interface SectionTake {
  /** Review fingerprints at queue time prevent a late result overwriting newer work. */
  baseline?:Record<string,string>;continuationOf?:string;
  /** The exact passage of the start section this take was aimed at. Only that passage may change. */
- focus?:{start:number;end:number;text:string};preparedFingerprints?:Record<string,string>;comparisonOriginals?:Record<string,string>;intent?:'replace'|'add'|'revise';retryAttempts?:number;retryAt?:number;
+ focus?:{start:number;end:number;text:string};passageEdit?:NonNullable<SectionDraftResult['passageEdit']>;preparedFingerprints?:Record<string,string>;comparisonOriginals?:Record<string,string>;intent?:'replace'|'add'|'revise';retryAttempts?:number;retryAt?:number;
  /** The server asked for a pause (Retry-After) when this failed: no other recording is retried before `retryAt` either. */
  serverPause?:boolean;
 }
@@ -27,7 +27,7 @@ export interface TakeResult extends SectionDraftResult {takeIds?:string[];
   * nothing. Absent: the words came by a path that never double-checks (the Mac uses its own confidence instead). */
  doubtsAvailable?:boolean;
 }
-export interface RecordingDestination {captureId:string;sectionId:string;markers:{atMs:number;sectionId:string}[];intent?:'replace'|'add'|'revise';focus?:{start:number;end:number;text:string};continuationOf?:string}
+export interface RecordingDestination {captureId:string;sectionId:string;markers:{atMs:number;sectionId:string}[];intent?:'replace'|'add'|'revise';focus?:{start:number;end:number;text:string};passageEdit?:NonNullable<SectionDraftResult['passageEdit']>;continuationOf?:string}
 export interface TakeSession extends SectionDraftSession {
  takes?:SectionTake[];linkedSessionIds?:string[];
  /** Where the live recording is going, saved as it starts, so a recording cut off by a reload or a killed app still reaches its section. */
@@ -152,7 +152,7 @@ function launch(id:string,captureId:string,services:AuthoringServices){
   const latestReferences=await currentSectionTexts(session);
   const references=rootTake.comparisonOriginals??Object.fromEntries(session.sections.map(section=>[section.id,latestReferences[section.id]??section.text]));
   if(!rootTake.comparisonOriginals)await change(id,current=>updateTake(current,rootTake.captureId,{comparisonOriginals:references}));
-  const relatedSources=await Promise.all(explicitDestinationCards(heard,session.cardNumber).map(async cardNumber=>{const source=await services.loadSource(cardNumber);if(source.cardNumber!==cardNumber)throw Error('The related card source does not match its requested card.');const sections=cardSections(source);const references=await currentSectionTexts(createSectionDraftSession(source,sections));return {cardNumber,source,sections,references};}));
+  const relatedSources=rootTake.passageEdit?[]:await Promise.all(explicitDestinationCards(heard,session.cardNumber).map(async cardNumber=>{const source=await services.loadSource(cardNumber);if(source.cardNumber!==cardNumber)throw Error('The related card source does not match its requested card.');const sections=cardSections(source);const references=await currentSectionTexts(createSectionDraftSession(source,sections));return {cardNumber,source,sections,references};}));
   if(relatedSources.length)await changeAudio(saved.session.id,current=>{
    const sources=[current.source,...(current.relatedSources??[])],additions=relatedSources.map(item=>item.source).filter(source=>{
     const existing=sources.filter(candidate=>candidate.cardNumber===source.cardNumber);
@@ -161,8 +161,12 @@ function launch(id:string,captureId:string,services:AuthoringServices){
    });
    return additions.length?{...current,relatedSources:[...(current.relatedSources??[]),...additions]}:current;
   });
-  const intent=take.intent??inferSpokenEditIntent(heard,!!references[take.startSectionId]);
-  const prepared=restoreSpokenWords(await assimilateSections({words:heard,intent,relatedSources:relatedSources.map(({cardNumber,sections,references})=>({cardNumber,sections:sections.map(({id,title,path,text})=>({id,title,path,text:references[id]??text}))})),sections:session.sections.map(({id,title,path,text})=>({id,title,path,text:references[id]??text})),startSectionId:rootTake.startSectionId,markers:chain.flatMap(part=>part.markers.map(marker=>({...marker,atMs:marker.atMs+(offsets.get(part.captureId)??0)}))),segments:transcript.map(t=>({text:t.corrected||t.raw,startMs:t.startMs,endMs:t.endMs}))}),speech);
+  const intent=rootTake.passageEdit?.operation??take.intent??inferSpokenEditIntent(heard,!!references[take.startSectionId]);
+  // A chosen passage has one destination and one operation. Its transcript is the editable proposal;
+  // no model may route, rewrite, or reclassify it as a different section.
+  const prepared=rootTake.passageEdit
+   ?restoreSpokenWords({sections:[{sectionId:rootTake.startSectionId,text:heard,evidenceQuotes:[heard],changes:[],warnings:[]}],unassigned:[]},speech)
+   :restoreSpokenWords(await assimilateSections({words:heard,intent,relatedSources:relatedSources.map(({cardNumber,sections,references})=>({cardNumber,sections:sections.map(({id,title,path,text})=>({id,title,path,text:references[id]??text}))})),sections:session.sections.map(({id,title,path,text})=>({id,title,path,text:references[id]??text})),startSectionId:rootTake.startSectionId,markers:chain.flatMap(part=>part.markers.map(marker=>({...marker,atMs:marker.atMs+(offsets.get(part.captureId)??0)}))),segments:transcript.map(t=>({text:t.corrected||t.raw,startMs:t.startMs,endMs:t.endMs}))}),speech);
   const active=await getTakeSession(id);if(active?.takes?.find(t=>t.captureId===captureId)?.state==='discarded')return;
   const linkedSessionIds:string[]=[];
   for(const destination of relatedSources){
@@ -192,10 +196,10 @@ function launch(id:string,captureId:string,services:AuthoringServices){
    const results:TakeResult[]=[...current.results.filter(result=>!resultIds.has(result.sectionId)),...localSections.map(result=>{
     // Only doubtful words inside this section's own evidence, the same ones its word checks are made from.
     const heardIssues=transcriptionReviewIssues(words,transcript,result.evidenceQuotes),uncertain=heardIssues.map(issue=>issue.quote.trim());
-    const comparisonOriginal=references[result.sectionId]??session!.sections.find(section=>section.id===result.sectionId)?.text;
+    const comparisonOriginal=rootTake.passageEdit?.sectionText??references[result.sectionId]??session!.sections.find(section=>section.id===result.sectionId)?.text;
     // An aimed take gives every spoken word to its passage; the AI alignment cannot move them elsewhere in the section.
     const aimed=rootTake.focus&&result.sectionId===rootTake.startSectionId&&intent!=='add'&&comparisonOriginal!==undefined?focusedComparison(comparisonOriginal,result.text,rootTake.focus):undefined;
-    return {...result,...listening,...(aimed?{comparison:aimed}:{}),editIntent:intent,reviewTranscript:words,comparisonOriginal,reviewIssues:[...(result.reviewIssues??[]),...heardIssues],takeIds:chainIds,checked:false,warnings:[...new Set([...result.warnings,...(uncertain.length?[`Check possible mishearings against your audio: ${[...new Set(uncertain)].join(', ')}`]:[])])]};
+    return {...result,...listening,...(aimed?{comparison:aimed}:{}),...(rootTake.passageEdit?{passageEdit:rootTake.passageEdit}:{}),editIntent:intent,reviewTranscript:words,comparisonOriginal,reviewIssues:[...(result.reviewIssues??[]),...heardIssues],takeIds:chainIds,checked:false,warnings:[...new Set([...result.warnings,...(uncertain.length?[`Check possible mishearings against your audio: ${[...new Set(uncertain)].join(', ')}`]:[])])]};
    })].map(result=>preservesIntegration(current.results.find(prior=>prior.sectionId===result.sectionId),result));
    const order=new Map(current.sections.map((section,index)=>[section.id,index]));results.sort((a,b)=>(order.get(a.sectionId)??0)-(order.get(b.sectionId)??0));
    const next=updateTake({...current,linkedSessionIds:[...new Set([...(current.linkedSessionIds??[]),...linkedSessionIds])],results,unassigned:[...current.unassigned.filter(u=>!u.takeId||!chainIds.includes(u.takeId)),...prepared.unassigned.map(u=>({...u,takeId:captureId}))],rawTranscript:rawSpeech(latestAudio.session,discarded)},captureId,{state:'review',preparedFingerprints:Object.fromEntries(results.filter(result=>resultIds.has(result.sectionId)).map(result=>[result.sectionId,fingerprint(result)])),resultSectionIds:[...resultIds],error:undefined,retryAt:undefined,retryAttempts:0});
@@ -214,16 +218,18 @@ function launch(id:string,captureId:string,services:AuthoringServices){
  running.set(jobKey,task);
 }
 /** Persist the job before returning; transcription and AI continue independently. */
-export async function queueSectionTake(sessionId:string,captureId:string,startSectionId:string,services:AuthoringServices,markers:{atMs:number;sectionId:string}[]=[],options:{intent?:'replace'|'add'|'revise';continuationOf?:string;focus?:{start:number;end:number;text:string}}={}):Promise<TakeSession>{
+export async function queueSectionTake(sessionId:string,captureId:string,startSectionId:string,services:AuthoringServices,markers:{atMs:number;sectionId:string}[]=[],options:{intent?:'replace'|'add'|'revise';continuationOf?:string;focus?:{start:number;end:number;text:string};passageEdit?:NonNullable<SectionDraftResult['passageEdit']>}={}):Promise<TakeSession>{
  const registered=await change(sessionId,session=>{
   if(!session.sections.some(section=>section.id===startSectionId)||markers.some(m=>!Number.isFinite(m.atMs)||m.atMs<0||!session.sections.some(s=>s.id===m.sectionId)))throw Error('Choose an existing section before sending this take.');
   const existing=session.takes?.find(t=>t.captureId===captureId);
   if(existing&&['queued','transcribing','assimilating','review','discarded'].includes(existing.state))return session;
+  if(options.passageEdit&&(session.results.some(result=>result.sectionId===startSectionId&&!result.applied)||(session.takes??[]).some(take=>take.captureId!==captureId&&take.startSectionId===startSectionId&&['queued','transcribing','assimilating'].includes(take.state))))
+   throw Error('This section already has words waiting for review or preparation. Finish them before making another recording here. Your saved audio remains available.');
   const parentId=options.continuationOf??existing?.continuationOf,parent=parentId?session.takes?.find(t=>t.captureId===parentId):undefined;
   if(parentId&&(!parent||parentId===captureId||parent.state==='discarded'))throw Error('Continue only a saved recording for this same section.');
   if(parentId&&continuationChain(session,parentId).some(part=>part.captureId===captureId))throw Error('A recording cannot continue itself.');
   const baseline=Object.fromEntries(session.results.map(result=>[result.sectionId,fingerprint(result)]));
-  const take:SectionTake={id:captureId,captureId,startSectionId,markers:markers.length?structuredClone(markers):[{atMs:0,sectionId:startSectionId}],state:'queued',continuationOf:parentId,intent:options.intent??existing?.intent??parent?.intent,focus:options.focus??existing?.focus??parent?.focus,retryAttempts:existing?.retryAttempts??0,createdAt:existing?.createdAt??new Date().toISOString(),baseline};
+  const take:SectionTake={id:captureId,captureId,startSectionId,markers:markers.length?structuredClone(markers):[{atMs:0,sectionId:startSectionId}],state:'queued',continuationOf:parentId,intent:options.intent??existing?.intent??parent?.intent,focus:options.focus??existing?.focus??parent?.focus,passageEdit:options.passageEdit??existing?.passageEdit??parent?.passageEdit,retryAttempts:existing?.retryAttempts??0,createdAt:existing?.createdAt??new Date().toISOString(),baseline};
   return {...session,takes:[...(session.takes??[]).filter(t=>t.captureId!==captureId),take]};
  });
  const take=registered.takes?.find(t=>t.captureId===captureId);if(take&&['queued','transcribing','assimilating'].includes(take.state))launch(sessionId,captureId,services);
@@ -265,7 +271,7 @@ export async function recoverInterruptedRecordings(sessionId:string,services:Aut
   if(current&&destination&&current.sections.some(s=>s.id===destination.sectionId)){
    const parent=destination.continuationOf&&current.takes?.some(t=>t.captureId===destination.continuationOf&&t.state!=='discarded')?destination.continuationOf:undefined;
    const markers=destination.markers.filter(m=>m.atMs<=closed.durationMs&&current.sections.some(s=>s.id===m.sectionId));
-   session=await queueSectionTake(sessionId,capture.id,destination.sectionId,services,markers.length?markers:[{atMs:0,sectionId:destination.sectionId}],{intent:destination.intent,continuationOf:parent,focus:destination.focus});
+   session=await queueSectionTake(sessionId,capture.id,destination.sectionId,services,markers.length?markers:[{atMs:0,sectionId:destination.sectionId}],{intent:destination.intent,continuationOf:parent,focus:destination.focus,passageEdit:destination.passageEdit});
    queuedIds.add(capture.id);queued++;
   }else saved++;
  }
