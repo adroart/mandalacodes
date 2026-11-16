@@ -7,19 +7,21 @@ const optionalWebUrl = {
   },
 }
 
-// Local mode: run `npm run write` in content-site/, open
-// http://127.0.0.1:4322/keystatic and every save writes a .mdoc file to
-// src/content/articles/ — commit and push to publish.
-//
-// To edit from the browser in production later, switch to GitHub mode:
-//   storage: { kind: 'github', repo: { owner: 'adroart', name: 'mandalacodes' } }
-// and change each collection path to 'content-site/src/content/articles/*'
-// (GitHub mode resolves paths from the repo root, local mode from this folder).
-// That also requires creating the Keystatic GitHub App — see
-// https://keystatic.com/docs/github-mode
+// Local saves write to this package. Cloud saves use the same schema and paths,
+// scoped to content-site/ in the GitHub repository by storage.pathPrefix.
+// This config runs in both the Node API and the browser. These identifiers
+// are public configuration, so Astro must include them in the client bundle.
+const isWriter = import.meta.env.PUBLIC_MANDALA_WRITER_BUILD === '1'
+const cloudProject = import.meta.env.PUBLIC_KEYSTATIC_CLOUD_PROJECT
+if (isWriter && !cloudProject) {
+  throw new Error('PUBLIC_KEYSTATIC_CLOUD_PROJECT must be set for the hosted writer build')
+}
 
 export default config({
-  storage: { kind: 'local' },
+  storage: isWriter
+    ? { kind: 'cloud', pathPrefix: 'content-site' }
+    : { kind: 'local' },
+  ...(isWriter ? { cloud: { project: cloudProject! } } : {}),
 
   ui: {
     brand: { name: 'Mandala Codes · Learn' },
@@ -31,7 +33,9 @@ export default config({
       slugField: 'title',
       path: 'src/content/articles/*',
       entryLayout: 'content',
-      previewUrl: '/{slug}',
+      // The hosted server renders its build snapshot, not the selected Cloud
+      // branch. Local dev remains the only private draft preview for this pilot.
+      ...(!isWriter ? { previewUrl: '/{slug}' } : {}),
       format: { contentField: 'body' },
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),

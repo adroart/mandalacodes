@@ -5,18 +5,19 @@ import react from '@astrojs/react'
 import markdoc from '@astrojs/markdoc'
 import sitemap from '@astrojs/sitemap'
 import keystatic from '@keystatic/astro'
+import node from '@astrojs/node'
 import tailwindcss from '@tailwindcss/vite'
 
-// Keystatic's admin UI needs server routes, which only exist in `astro dev`.
-// Production builds stay fully static (no adapter needed), so the editor is
-// available through `npm run write` at 127.0.0.1:4322/keystatic, never shipped
-// to Cloudflare. The writer overrides base to `/` for Keystatic's root routes.
+// The public /learn build remains static. The separate writer build adds only
+// Keystatic's on-demand admin/API routes to a Node server at the root path.
 const isDev = process.argv.includes('dev')
+const isWriter = process.env.MANDALA_WRITER_BUILD === '1'
 
 export default defineConfig({
   site: 'https://mandalacodes.com',
-  base: '/learn',
-  integrations: [react(), markdoc(), sitemap(), ...(isDev ? [keystatic()] : [])],
+  base: isWriter ? '/' : '/learn',
+  adapter: isWriter ? node({ mode: 'standalone' }) : undefined,
+  integrations: [react(), markdoc(), sitemap(), ...(isDev || isWriter ? [keystatic()] : [])],
   vite: {
     // The site bar is the app's own component (../components/NavigationCore.tsx
     // via NavigationStatic), rendered here so the two surfaces can never drift.

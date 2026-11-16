@@ -12,8 +12,8 @@ npm run write        # from the repo root (or this directory)
 
 Then open <http://127.0.0.1:4322/keystatic> — a full editing UI with
 rich text, tags, dates, artwork uploads, author attribution, and a draft toggle. Every save writes a markdown file
-to `src/content/articles/`. Commit and push to `main` and Cloudflare Pages
-publishes it.
+to `src/content/articles/`. Commit on a working branch and merge its reviewed
+PR to publish through Cloudflare Pages.
 
 Prefer a text editor? Just create a `.mdoc` file by hand — Keystatic is a UI
 over the files, not a database. See `what-is-a-mandala.mdoc` for the
@@ -42,12 +42,35 @@ content with zero JavaScript.
 - Per-article: canonical URL, Open Graph/Twitter meta, `Article` +
   `BreadcrumbList` JSON-LD
 
-## Editing from the browser in production (later, optional)
+## Hosted browser writer pilot
 
-Keystatic currently runs in **local mode** (dev server only — nothing admin
-ships to production). To write from any browser at a hosted URL, switch
-`keystatic.config.ts` to GitHub mode and create the Keystatic GitHub App:
-<https://keystatic.com/docs/github-mode>. GitHub mode resolves paths from the
-repo root, so the collection path becomes `content-site/src/content/articles/*`.
-The admin would then need a host with server routes (e.g. a small separate
-Pages/Workers project) — the published articles stay fully static either way.
+The optional writer build serves `/keystatic` and `/api/keystatic` from a
+separate Astro Node service. It uses Keystatic Cloud authentication and GitHub
+storage, while the normal `npm run build` remains the static Pages build.
+Configure a **free Render web service** against a reviewed pilot branch:
+
+| Render setting | Value |
+| --- | --- |
+| Root directory | `content-site` |
+| Runtime / plan | Node / Free |
+| Build command | `npm ci && npm run build:writer` |
+| Start command | `node dist/server/entry.mjs` |
+| Environment | `HOST=0.0.0.0`, `NODE_VERSION=22.22.3`, `PUBLIC_KEYSTATIC_CLOUD_PROJECT=<team>/<project>` |
+
+The project identifier is public. Create it in a dedicated Keystatic Cloud
+team, connect only `adroart/mandalacodes`, and grant the intended editor account.
+Test on Render's `onrender.com` URL before adding a domain. The build was
+tested with Node 22.22.3. Do not turn on a paid plan for this pilot.
+
+Cloud mode scopes the article and image paths to `content-site/` in GitHub.
+Use a fresh working branch from protected `main`, save the article and artwork,
+then open and review a GitHub PR. The editor does not create that PR.
+`branchPrefix` remains unset pending a real branch selection test. Published
+article URLs and image paths stay under `/learn/` after merge and Pages rebuild.
+The hosted editor has no branch-aware draft preview; use local `npm run write`
+for private draft preview. Production article routes still exclude drafts.
+
+Before calling the pilot operational, sign in through the hosted URL, save and
+reopen a draft on a disposable branch, upload a cover and body image, inspect
+the resulting `.mdoc` and image paths in GitHub, and verify an unauthenticated
+visitor cannot read or mutate the API. Keep test content off `main`.
