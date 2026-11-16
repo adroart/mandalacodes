@@ -32,6 +32,12 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 - [ ] **Write the 64 piece stories** — the piece-content editor gives you a no-code surface for story/materials/photos per piece; the words are yours _(you · deep)_
 
 ## Soon
+
+### Current triage — 2026-11-16
+
+- [x] **Reconcile existing branches (2026-11-16):** completed against the pinned audit inventory; article-library PR #396 is merged and live at `/learn/`. See [branch integration and release record](todo/plans/unmerged-work-2026-11-16.md). Historical inventory: 57 refs / 34 tips; current disposition of the reviewed 11: 8 incorporated (including #396), 2 superseded, 1 owner-held. No selected missing candidate remains from that review.
+
+- [x] **Article library and local writer, PR #396:** live at [mandalacodes.com/learn](https://mandalacodes.com/learn/). Merged `9de8389e` and deployed build `07c30b99`. Required CI, build/typecheck, unit/article checks, visual review, local draft flow and live-byte proof passed; full evidence and remaining limits are in the [release record](todo/plans/unmerged-work-2026-11-16.md). Hosted Keystatic GitHub mode, physical-phone acceptance, owner-held phrase list and collector hold remain outstanding.
 - [ ] Oracle app card voice: put it on your phone and run the card 2 check. A device build from main passed on 2026-11-16 with fresh signing (the widget fix is in [#404](https://github.com/adroart/mandalacodes/pull/404)); nothing is installed yet _(band: you-required)_ _(effort: moderate)_ → Check: [VOICE-PHONE-CHECK.md](docs/oracle/VOICE-PHONE-CHECK.md) · State: [VOICE-STATUS.md](docs/oracle/VOICE-STATUS.md) · Plan: [oracle-voice-completion.md](todo/plans/oracle-voice-completion.md)
   1. Install on the phone, only from a build whose signing has at least 6 days 23 hours left; rebuild with `npm --prefix mobile run build:device` if older.
   2. Make sure the email you sign in with on the phone is in `ADMIN_EMAILS` in Cloudflare Pages. Sign in (email code if Google is refused) and check the account screen's last line shows the new build and commit.
