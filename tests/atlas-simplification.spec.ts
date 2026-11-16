@@ -59,7 +59,7 @@ test('globe keeps only Series and status, and has no dream hopping or timed hint
   await expect(page.getByRole('button', { name: 'dreams', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'open the book' }).click();
   await expect(page.getByText(DREAM, { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'return', exact: true }).first().click();
+  await page.keyboard.press('Escape');
   await expect(page.getByText(DREAM, { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'filter', exact: true }).click();
   const panel = page.getByText('Refine the map').locator('..').locator('..');
