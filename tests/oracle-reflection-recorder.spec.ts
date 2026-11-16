@@ -174,6 +174,77 @@ test('saved feedback, Resume emphasis, and Journal count come from local persist
   await expectRecorderStateFits(page, /^Recording$/);
 });
 
+test('failed upload remains playable on device and leaves Journal only after server acknowledgement', async ({ page }) => {
+  await mockAdminRecorder(page);
+  let deliver = false;
+  await page.route((url) => url.pathname === '/api/oracle/reflections/segments', route => {
+    if (route.request().method() === 'POST') {
+      if (!deliver) return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Connection unavailable' }) });
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ segment: { id: 'sent-segment' } }) });
+    }
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ segments: deliver ? [{ id: 'sent-segment', sessionId: 'session-22', sequence: 0, recordedAt: new Date().toISOString(), durationMs: 1000, mimeType: 'audio/mp4', byteSize: 5, transcript: '', transcriptionStatus: 'transcription_pending', transcriptionError: null, transcriptionStartedAt: null, updatedAt: new Date().toISOString() }] : [] }) });
+  });
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+  const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
+  await recorder.getByRole('button', { name: 'Pause and save this segment' }).click();
+  await expect(recorder.locator('.reflection-recorder-bar__state')).toContainText('Saved on device');
+  await recorder.getByRole('button', { name: /Journal/ }).click();
+  const journal = page.getByRole('dialog', { name: 'Journal · 22' });
+  await expect(journal.getByLabel('Recordings waiting to send')).toContainText('Saved on this device · waiting to send');
+  await expect(journal.getByLabel('Recordings waiting to send').getByRole('button', { name: 'Play recording for segment 1' })).toBeVisible();
+  await expect(journal.getByRole('button', { name: 'Shift to invocation' })).toBeDisabled();
+  await page.screenshot({ path: test.info().outputPath('journal-pending-on-device.png') });
+  await journal.getByRole('button', { name: 'Try sending' }).click();
+  await expect(journal.getByLabel('Recordings waiting to send')).toBeVisible();
+  await expect(journal.getByText('Still saved on this device. Connect and try sending again.')).toBeVisible();
+  deliver = true;
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  await expect(journal.getByLabel('Recordings waiting to send')).toHaveCount(0);
+  await expect(journal.getByRole('button', { name: 'Shift to invocation' })).toBeEnabled();
+  await page.screenshot({ path: test.info().outputPath('journal-after-send.png') });
+});
+
+test('expired admin session closes pending audio in Journal', async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', error => pageErrors.push(error.message));
+  await mockAdminRecorder(page);
+  let attempts = 0;
+  await page.route((url) => url.pathname === '/api/oracle/reflections/segments', route => {
+    if (route.request().method() === 'POST') {
+      attempts += 1;
+      return route.fulfill({ status: attempts === 1 ? 503 : 401, contentType: 'application/json', body: JSON.stringify({ error: 'Session expired' }) });
+    }
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ segments: [] }) });
+  });
+  await page.goto(`${BASE}${CARD}`);
+  await dismissEntrance(page);
+  const center = page.locator('[data-current-hexagram]');
+  await center.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true });
+  await page.waitForTimeout(700);
+  const recorder = page.getByRole('navigation', { name: 'Private reflection recorder' });
+  await recorder.getByRole('button', { name: 'Pause and save this segment' }).click();
+  await recorder.getByRole('button', { name: /Journal/ }).click();
+  const journal = page.getByRole('dialog', { name: 'Journal · 22' });
+  await expect(journal.getByLabel('Recordings waiting to send')).toBeVisible();
+  await journal.getByRole('button', { name: 'Try sending' }).click();
+  await expect(journal).toHaveCount(0);
+  expect(pageErrors).toEqual([]);
+  await expect(recorder).toContainText('Your administrator session ended. Sign in and try again.');
+  await expect(recorder.getByRole('button', { name: 'Dismiss recording error' })).toBeVisible();
+  await expect(recorder.getByRole('button', { name: /Journal/ })).toBeDisabled();
+  await recorder.getByRole('button', { name: 'Dismiss recording error' }).click();
+  await expect(recorder).toHaveCount(0);
+  await expect(center).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Treasure of the Way' })).toBeVisible();
+  expect(pageErrors).toEqual([]);
+  await center.click();
+  await expect(page).toHaveURL(/\/universal-language$/);
+});
+
 test('saved recorder surfaces a non-final transcription response without losing the audio', async ({ page }) => {
   await mockAdminRecorder(page);
   await page.route('**/api/oracle/reflections/segments/**/transcribe', route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Groq rate limit reached; retry later' }) }));

@@ -98,7 +98,8 @@ Historical baseline on b9da484, before these repairs: 41 failed, 80 passed and 1
 
 - [ ] Offline phone acceptance _(you-required)_ → Plan: [offline-oracle-completion.md](todo/plans/offline-oracle-completion.md). The production-worker browser check now verifies all 64 prose chunks are cached and untouched-card text renders with network blocked. Phone confirmation of the text-only promise and interrupted-warm recovery remains outstanding; artwork is excluded by design.
 
-- [ ] Decide whether to state the offline promise in the interface, differentiate offline guidance for Atlas vs queued reflections, support a gallery iPad use case, and expose queued reflections as a first-class saved item. Product choices remain owner-required; old proposed update-check, persistent-storage and baseline-test tasks need fresh evidence before reopening. → Plan: [offline-oracle-completion.md](todo/plans/offline-oracle-completion.md)
+- [x] **Offline guidance decisions (2026-11-16):** Adrian approved a brief downloaded-text/artwork note in existing reader guidance, connection-specific Atlas and reflection messages, and visible pending recordings in the existing Journal. Local implementation and verification are recorded in [offline-oracle-completion.md](todo/plans/offline-oracle-completion.md).
+- [ ] Decide whether a dedicated gallery iPad is a real use case before adding its acceptance flow. Physical-phone offline acceptance remains above; proposed update-check and persistent-storage enhancements need fresh evidence before reopening. → [Offline plan](todo/plans/offline-oracle-completion.md) _(band: you-required)_
 
 - [ ] Rewrite the 64 opening readings so each speaks the whole code (all traditions as lenses on one energy) and ends lifting, not heavy _(band: you-required)_ _(effort: deep)_ → Plan: [reading-rewrite.md](todo/plans/reading-rewrite.md)
 

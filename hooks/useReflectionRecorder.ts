@@ -443,6 +443,11 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
       dispatch({ type: 'finished' });
       return;
     }
+    if (startingStatus === 'error' && authorizationRevokedRef.current) {
+      stopTracks();
+      dispatch({ type: 'finished' });
+      return;
+    }
     const saved = await finishAfterLocalPersistence(
       () => commitCurrentSegment(),
       () => persistencePromiseRef.current,
@@ -489,9 +494,9 @@ export function useReflectionRecorder(hexagramNumber: number): UseReflectionReco
       window.removeEventListener('online', online);
       window.removeEventListener('pagehide', hide);
       document.removeEventListener('visibilitychange', visibility);
-      void exit();
     };
   }, [exit, hexagramNumber, retryPending]);
+  useEffect(() => () => { void exit(); }, [exit, hexagramNumber]);
 
   return { isAdmin, capabilityReady, state, micLevel, startRecording, pause, resume, finish, exit, cancel, retryPending };
 }

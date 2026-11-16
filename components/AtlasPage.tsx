@@ -1593,7 +1593,7 @@ const AtlasPage: React.FC = () => {
       <div className="px-6 pb-32 max-w-7xl mx-auto pt-16">
         {state.kind === 'loading' && (
           <p
-            className="font-display text-lg text-wood-700 py-24 text-center"
+            className="font-display text-lg text-wood-900 py-24 text-center"
             aria-live="polite"
           >
             loading the atlas
@@ -1602,10 +1602,10 @@ const AtlasPage: React.FC = () => {
 
         {state.kind === 'error' && (
           <div
-            className="font-display text-lg text-wood-700 py-24 text-center"
+            className="font-display text-lg text-wood-900 py-24 text-center"
             aria-live="polite"
           >
-            <p>the atlas is briefly out of reach.</p>
+            <p>{typeof navigator !== 'undefined' && !navigator.onLine ? 'The Atlas needs an internet connection.' : 'the atlas is briefly out of reach.'}</p>
             <button
               type="button"
               onClick={retryAtlasFetch}

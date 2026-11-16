@@ -41,7 +41,24 @@ card. Confirm its actual reading text renders without the connection notice.
 Also interrupt warming and verify recovery after connectivity returns. Record
 the device/browser and outcome. Artwork is outside this check by design.
 
-## The open questions — these are yours, and they are why this is not just a build
+## Owner decisions — 2026-11-16
+
+Adrian approved these choices:
+
+- **“Add the brief help text (Recommended)”**: place “Downloaded card text can be read offline. Artwork needs an internet connection” in existing reader help.
+- **“Use action-specific guidance (Recommended)”**: Atlas needs a connection; a queued reflection is saved on this device and waiting to send.
+- **“Show pending recordings (Recommended)”**: expose queued reflections with their pending status in the existing recordings view.
+
+Implemented locally and reviewed on desktop and 320 px mobile. The existing Systems overlay carries the brief note; Atlas explains the connection requirement when its request fails offline. The existing private reflection Journal shows this card’s finished device recordings, audio controls, pending state and Try sending action. Failed delivery preserves the row; manual or automatic server acknowledgement refreshes the Journal. Pending recordings do not enter invocation composition before upload.
+
+An expired administrator session closes private playback and exposes the existing session-ended message and Dismiss action without a React hook-order crash. Dismiss restores usable reading navigation. This required keeping the recorder’s hook order stable and separating unmount cleanup from retry-handler changes.
+
+Verification: 13 focused queue/Journal unit tests, eight desktop/320 px browser cases covering guidance, delivery failure, retry, automatic acknowledgement and expired access. The affected delivery/401 cases passed again after review repairs. TypeScript and diff checks pass. Screens are retained in `/Users/adrianrasmussen/.codex/visualizations/2026/11/16/01a1e212-dadb-7803-a55d-c5f13a9968f9/offline-oracle/`.
+
+These choices do not change artwork caching, promise permanent browser storage, or authorize a gallery iPad feature. A new reflection still needs a server session before capture; retries occur on administrator startup, connectivity return or user action, with no guaranteed background delivery. Existing queue data has no added account schema. Physical-phone acceptance and publication of this local change remain outstanding.
+
+## Earlier product questions
+
 
 **1. What is the promise?** Decide whether the interface should state that
 card text can be available offline, and if so, where and in what voice.
@@ -64,11 +81,7 @@ just quietly send later. This is the piece with the most room in it.
 
 ## Remaining product decisions and build work
 
-The remaining reader-facing decisions are still Adrian’s: whether to state the
-offline promise in the interface, what different offline guidance Atlas versus
-reflection actions should show, whether a gallery iPad is an actual use case,
-and whether queued reflections should be visible as a first-class saved item.
-Do not implement these choices by guessing.
+The reader help, action-specific connectivity guidance and pending-recording visibility were approved above. Implement them within the current reader and reflection UI. Whether a gallery iPad is an actual use case remains Adrian’s decision; do not add that feature by guessing.
 
 The proposals for a focus-time update check and a persistent-storage request
 remain possible enhancements; audit the current implementation and device
