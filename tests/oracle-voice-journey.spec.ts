@@ -18,7 +18,7 @@ async function scriptedSpeech(page:Page,{unplaced=false}={}){
   throw new Error(`Unexpected operation ${body.operation}`);});
 }
 async function expectProse(editor:Locator,value:string|RegExp){const actual=()=>editor.evaluate(el=>{if(el instanceof HTMLTextAreaElement)return el.value;const prose=el.cloneNode(true) as HTMLElement;prose.querySelectorAll('[data-check-controls]').forEach(node=>node.remove());return prose.textContent??'';});if(typeof value==='string')await expect.poll(actual).toBe(value);else await expect.poll(actual).toMatch(value);}
-async function openRecording(page:Page){await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeEnabled();return dialog;}
+async function openRecording(page:Page){await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeDisabled();return dialog;}
 const shot=(page:Page,name:string)=>page.screenshot({path:test.info().outputPath(`${test.info().project.name.replace(/\W+/g,'-')}-${page.viewportSize()!.width}-${name}.png`)});
 
 for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:1440,height:900}]] as const){
@@ -29,15 +29,16 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    test.skip(browserName!=='chromium','Uses the Chromium fake microphone');await context.grantPermissions(['microphone'],{origin:baseURL!});
    await scriptedSpeech(page);const dialog=await openRecording(page);
    const dock=dialog.locator('.vs-dock');
-   await expect(dock).toContainText('Record over');
-   await dialog.locator('.vs-section[data-section-id="2/INTRO"] .vs-section-head').click();await expect(dock.locator('strong')).toHaveText('Intro');
+   await dialog.locator('.vs-section[data-section-id="2/INTRO"] .vs-section-head').click();
+   await dialog.locator('.vs-section[data-section-id="2/INTRO"]').getByRole('button',{name:'Record whole section',exact:true}).click();
+   await expect(dock).toContainText('Whole section recording');await expect(dock.locator('strong')).toHaveText('Intro');
    await expect(dialog.locator('.vs-section[aria-current=step]')).toHaveAttribute('data-section-id','2/INTRO');
    await shot(page,'01-open');
    await dialog.getByRole('button',{name:'Record',exact:true}).click();
    await expect(dock).toContainText('0:01');await expect(dialog.locator('.vs-section[data-recording]')).toHaveAttribute('data-section-id','2/INTRO');
    await shot(page,'02-recording-intro');
    await dialog.getByRole('button',{name:'Send this recording and go to Universal Language · Reading',exact:true}).click();
-   await expect(dock).toContainText('Record over');await expect(dock.locator('strong')).toHaveText(/^Universal Language · Reading/);
+   await expect(dock).toContainText('Whole section recording');await expect(dock.locator('strong')).toHaveText(/^Universal Language · Reading/);
    await expect(dialog.locator('.vs-section[data-section-id="2/INTRO"] .vs-chip')).toHaveText('Processing');await expect(dock).toContainText('1 processing');
    await dialog.getByRole('button',{name:'Record',exact:true}).click();
    await expect(dock).toContainText('0:01');
@@ -99,13 +100,14 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    test.skip(browserName!=='chromium','Uses the Chromium fake microphone');await context.grantPermissions(['microphone'],{origin:baseURL!});
    await scriptedSpeech(page,{unplaced:true});const dialog=await openRecording(page);
    await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();
+   await dialog.locator('.vs-section[data-section-id="2/CODE/reading"]').getByRole('button',{name:'Record whole section',exact:true}).click();
    await expect(dialog.locator('.vs-dock strong')).toHaveText(/^Universal Language · Reading · all \d+ paragraphs$/);
    await dialog.getByRole('button',{name:'Record',exact:true}).click();await expect(dialog.locator('.vs-dock')).toContainText('0:01');
    await dialog.getByRole('button',{name:'Send this recording and go to I Ching · Combination',exact:true}).click();
    await expect(dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-chip')).toHaveText('Check words');
    await expect(dialog.getByRole('button',{name:'1 passage not placed yet'})).toBeVisible();
    await shot(page,'20-unplaced-noted');
-   await dialog.getByRole('button',{name:/^Review \d+$/}).click();
+   await dialog.getByRole('button',{name:/^Review \d+ · \d+ unplaced$/}).click();
    await dialog.getByRole('button',{name:/was not placed/}).click();
    await expect(dialog.getByRole('region',{name:'Unplaced words',exact:true})).toContainText('Gate 7');
    await shot(page,'21-unplaced-screen');

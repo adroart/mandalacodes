@@ -15,13 +15,14 @@ async function scriptedSpeech(page:Page){
   if(body.operation==='assimilate-sections')return route.fulfill({json:{assimilation:{sections:[{sectionId:'2/CODE/reading',text:reading,evidenceQuotes:[reading],changes:[],warnings:[]}],unassigned:[]}}});
   throw new Error(`Unexpected operation ${body.operation}`);});
 }
-async function openRecording(page:Page){await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeEnabled();return dialog;}
+async function openRecording(page:Page){await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeDisabled();return dialog;}
 
 test('apply one section, then send it to the card as one file the Mac accepts',async({page,context,browserName,baseURL})=>{
  test.setTimeout(60_000);
  test.skip(browserName!=='chromium','Uses the Chromium fake microphone');await context.grantPermissions(['microphone'],{origin:baseURL!});
  await scriptedSpeech(page);const dialog=await openRecording(page);
  await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();
+ await dialog.locator('.vs-section[data-section-id="2/CODE/reading"]').getByRole('button',{name:'Record whole section',exact:true}).click();
  await dialog.getByRole('button',{name:'Record',exact:true}).click();
  await expect(dialog.locator('.vs-dock')).toContainText('0:01');
  await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();

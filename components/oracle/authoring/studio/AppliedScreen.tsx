@@ -12,12 +12,12 @@ export type AppliedPanelProps=Pick<VoiceStudio,
 /** The review screen once a section is applied: what is now in the reading, and the next section to record. */
 export function AppliedPanel({section,result,authorship,nextRecording,pathFor,references,opening,stopping,setParagraphAim,captureFocus,setTargetId,record,displayOrigins}:AppliedPanelProps){
  return <section className="vs-applied" aria-label="Now in your reading" data-has-next={!!nextRecording||undefined}>
-  <p className="vs-applied-state"><Check size={16}/>{result.editIntent==='add'?'Your words were added to the reading.':authorship?.sections[section.id]==='human'?'Your words are in the reading.':'Your changes are in the reading.'}</p>
+  <p className="vs-applied-state"><Check size={16}/>{result.passageEdit?`Applied to your private reading: ${result.passageEdit.operation==='add'?'addition':'replacement'}.`:result.editIntent==='add'?'Your words were added to the reading.':authorship?.sections[section.id]==='human'?'Your words are in the reading.':'Your changes are in the reading.'}</p>
   {nextRecording&&<section className="vs-next-recording" aria-label="Next section to record">
    <small>Record next</small>
    <h3>{pathFor(nextRecording)}</h3>
    <p>{references[nextRecording.id]??nextRecording.text}</p>
-   <button className="vs-btn vs-btn--primary" disabled={opening||stopping} onClick={()=>{setParagraphAim(null);captureFocus.current=undefined;setTargetId(nextRecording.id);void record(null,nextRecording.id);}}>{opening?'Opening microphone…':'Record this section'}</button>
+   <button className="vs-btn vs-btn--primary" disabled={opening||stopping} onClick={()=>{setParagraphAim(null);captureFocus.current=undefined;setTargetId(nextRecording.id);void record(null,nextRecording.id,undefined,true);}}>{opening?'Opening microphone…':'Record this section'}</button>
   </section>}
   <div className="vs-just-applied">
    <h3>Just applied</h3>

@@ -57,6 +57,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     const [audioUrl, setAudioUrl] = useState('');
     const [history, setHistory] = useState<SectionDraftSession[]>([]);
     const [view, setView] = useState<View>('work');
+    const [pendingPassage, setPendingPassage] = useState<{sectionId:string;captureId:string;operation:'add'|'replace';focus:{start:number;end:number;text:string}}|null>(null);
     const seekAt = useRef(0);
     const clipBounds = useRef<VoiceReplayBounds | null>(null);
     const loopCleanup = useRef<(() => void) | null>(null);
@@ -80,6 +81,9 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         end: number;
         text: string;
     } | null>(null);
+    const [passageOperation, setPassageOperation] = useState<'add' | 'replace' | null>(null);
+    const [wholeSection, setWholeSection] = useState(false);
+    const passageCapture = useRef<NonNullable<SectionDraftResult['passageEdit']> | null>(null);
     const focusByCapture = useRef(new Map<string, {
         start: number;
         end: number;
@@ -203,8 +207,10 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         accept(value);
         setFocusId(start.id);
         setTargetId(start.id);
+        if (initialAnchors?.length && readingParagraphs(start.text).length === 1)
+            setParagraphAim({sectionId:start.id,start:0,end:start.text.length,text:start.text});
         setSavedAudio(undefined);
-        setView('work');
+        setView(initialAnchors?.length&&readingParagraphs(start.text).length===1?'passage':'work');
         return value;
     };
     useEffect(() => {
@@ -220,6 +226,10 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                 const reading = namedSectionId && previous.sections.some(n => n.id === namedSectionId) ? namedSectionId : undefined;
                 setTargetId(reading ?? previous.resume?.sectionId ?? previous.startSectionId);
                 setFocusId(initialSessionId ? previous.results[0]?.sectionId ?? previous.startSectionId : reading ?? previous.resume?.sectionId ?? previous.results[0]?.sectionId ?? previous.startSectionId);
+                if (initialAnchors?.length) {
+                    const selected=previous.sections.find(n=>n.id===(reading ?? previous.resume?.sectionId ?? previous.startSectionId));
+                    if(selected&&readingParagraphs(selected.text).length===1){setParagraphAim({sectionId:selected.id,start:0,end:selected.text.length,text:selected.text});if(!initialSessionId)setView('passage');}
+                }
                 if (initialSessionId)
                     setView('review');
                 await loadAudio(previous);
@@ -312,6 +322,8 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     };
     const choose = async (id: string) => {
         explicitChoice.current = true;
+        reviewArrival.current = false;
+        setPendingPassage(null);
         await flush();
         setFocusId(id);
         setPhrase(null);
@@ -325,6 +337,8 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         setTargetId(id);
         setFocusId(id);
         setParagraphAim(null);
+        setPassageOperation(null);
+        setWholeSection(false);
         setError('');
         if (scroll)
             requestAnimationFrame(() => reveal(id, true));
@@ -353,24 +367,33 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         setTargetId(id);
         setFocusId(id);
         setParagraphAim({ sectionId: id, ...paragraph });
+        setPassageOperation(null);
+        setWholeSection(false);
         setError('');
+        setView('passage');
+    };
+    const aimWholeSection = (id: string) => {
+        aim(id);
+        setWholeSection(true);
     };
     const reviewAt = (id: string) => {
         explicitChoice.current = true;
+        reviewArrival.current = false;
+        setPendingPassage(null);
         setFocusId(id);
         setPhrase(null);
         if (audioUrl)
             stopListening();
         setView('review');
     };
-    const record = async (phraseTarget: typeof phrase = null, targetSection = targetId) => {
+    const record = async (phraseTarget: typeof phrase = null, targetSection = targetId, passageTarget?:NonNullable<SectionDraftResult['passageEdit']>, recordWhole=false) => {
         if (!current.current || opening || handle.current || stopping)
             return;
         setOpening(true);
         explicitChoice.current = false;
         setError('');
         setNotice('');
-        setView('work');
+        setView(passageTarget||passageOperation?'passage':'work');
         setReplay(null);
         player.current?.pause();
         setAudioUrl('');
@@ -384,6 +407,11 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             await recovering.current;
             await recoverInterrupted(current.current!.id);
             let value = current.current!;
+            const target = value.sections.find(s => s.id === targetSection) ?? value.sections.find(s => s.id === value.startSectionId)!;
+            const priorPassage=value.results.find(r=>r.sectionId===target.id&&!r.applied);
+            const sameReview=!!passageTarget&&!!priorPassage?.passageEdit&&JSON.stringify(priorPassage.passageEdit)===JSON.stringify(passageTarget);
+            if(!phraseTarget&&((!sameReview&&!!priorPassage)||(value as TakeSession).takes?.some(t=>t.startSectionId===target.id&&['queued','transcribing','assimilating'].includes(t.state))))
+                throw Error('This section already has words waiting for review or preparation. Finish them before making another recording here.');
             phraseCapture.current = phraseTarget;
             let saved = value.captureSessionId ? await audio.load(value.captureSessionId) : null;
             if (!saved) {
@@ -393,8 +421,15 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             // Interrupted recordings were closed just above; this only guards a recording still running in another window.
             if (saved.session.captures.some(c => c.status === 'recording'))
                 throw Error('A recording is still being saved in another window. Close it there, then try again.');
-            const target = value.sections.find(s => s.id === targetSection) ?? value.sections.find(s => s.id === value.startSectionId)!;
-            captureFocus.current = !phraseTarget && paragraphAim?.sectionId === target.id ? { start: paragraphAim.start, end: paragraphAim.end, text: paragraphAim.text } : undefined;
+            captureFocus.current = !phraseTarget && passageTarget?passageTarget.focus:!phraseTarget && paragraphAim?.sectionId === target.id ? { start: paragraphAim.start, end: paragraphAim.end, text: paragraphAim.text } : undefined;
+            const sectionText = (await currentSectionTexts(value))[target.id] ?? target.text;
+            passageCapture.current = phraseTarget ? null : passageTarget??(captureFocus.current && passageOperation
+                ? {operation:passageOperation,focus:captureFocus.current,sectionText} : null);
+            if(passageTarget&&sectionText!==passageTarget.sectionText)throw Error('This passage changed. Select it again before recording.');
+            if (passageCapture.current && sectionText.slice(passageCapture.current.focus.start, passageCapture.current.focus.end) !== passageCapture.current.focus.text)
+                throw Error('This passage changed. Select it again before recording.');
+            if (!phraseTarget && !passageCapture.current && !wholeSection && !recordWhole)
+                throw Error('Choose a passage and Add after or Replace before recording.');
             continuation.current = undefined;
             nextContinuation.current = undefined;
             recordingTarget.current = target.id;
@@ -406,7 +441,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             accept(value);
             const id = value.id;
             const recorder = await startVoiceCapturePass(audio, saved, target.lensId === 'INTRO' ? 'CODE' : target.lensId, report, source.cardNumber, {
-                continuous: phraseTarget ? false : continuous, rollOnBoundary: !phraseTarget,
+                continuous: phraseTarget || passageCapture.current ? false : continuous, rollOnBoundary: !phraseTarget && !passageCapture.current,
                 onActive: captureId => {
                     focusByCapture.current.set(captureId, captureFocus.current);
                     continuation.current = nextContinuation.current;
@@ -416,7 +451,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                     markers.current = [{ atMs: 0, sectionId: captureTarget.current }];
                     liveCapture.current = captureId;
                     // Saved as it starts, so a recording cut off by a reload or a killed app still reaches this section.
-                    const destination: RecordingDestination | undefined = phraseCapture.current ? undefined : { captureId, sectionId: captureTarget.current, markers: [...markers.current], intent: intent === 'auto' ? undefined : intent, focus: captureFocus.current, continuationOf: continuation.current };
+                    const destination: RecordingDestination | undefined = phraseCapture.current ? undefined : { captureId, sectionId: captureTarget.current, markers: [...markers.current], intent: passageCapture.current?.operation ?? (intent === 'auto' ? undefined : intent), focus: captureFocus.current, passageEdit: passageCapture.current ?? undefined, continuationOf: continuation.current };
                     void changeSectionSession(id, s => withRecordingDestination({ ...s, state: 'recording', captureId, error: undefined } as TakeSession, destination)).then(accept).catch(report);
                 },
                 onSegmentReady: async (savedTake, captureId, metadata) => {
@@ -432,7 +467,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                         phraseCapture.current = null;
                         return;
                     }
-                    const queued = await queueSectionTake(id, captureId, captureTarget.current, services, markers.current, { intent: intent === 'auto' ? undefined : intent, continuationOf: continuation.current, focus: focusByCapture.current.get(captureId) });
+                    const queued = await queueSectionTake(id, captureId, captureTarget.current, services, markers.current, { intent: passageCapture.current?.operation ?? (intent === 'auto' ? undefined : intent), continuationOf: continuation.current, focus: focusByCapture.current.get(captureId), passageEdit: passageCapture.current ?? undefined, reRecordPassage:!!passageTarget });
                     nextContinuation.current = metadata.reason === 'boundary' ? captureId : undefined;
                     if (current.current?.id === id) {
                         accept(queued);
@@ -479,7 +514,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                     reveal(node.id, true);
                     setNotice(`Heard “${shownTitle(node)}”. Recording into it now.`);
                 } };
-            if (voiceCommands && !phraseTarget)
+            if (voiceCommands && !phraseTarget && !passageCapture.current)
                 routeHandle.current = startVoiceRouting(routeConfig.current);
             void recorder.completion.then(async () => {
                 routeHandle.current?.stop();
@@ -520,10 +555,12 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         if (!capture || stopping)
             return;
         stopMode.current = mode;
-        if (mode === 'review')
+        if (mode === 'review') {
             reviewArrival.current = true;
+            if(passageCapture.current)setPendingPassage({sectionId:recordingTarget.current,captureId:liveCapture.current,operation:passageCapture.current.operation,focus:passageCapture.current.focus});
+        }
         setStopping(true);
-        if (mode === 'next' && !phraseCapture.current) {
+        if (mode === 'next' && !phraseCapture.current && !passageCapture.current) {
             const index = nodes.findIndex(node => node.id === recordingTarget.current);
             const next = nodes[index + 1];
             pendingNext.current = next?.id ?? null;
@@ -610,7 +647,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         try {
             await flush();
             let value = (await store.get(draft.id))!;
-            const targets = all ? value.results.filter(r => !r.applied && (!sectionReviewExceptions(r).needsReview || r.checked)) : value.results.filter(r => r.sectionId === section.id && !r.applied);
+            const targets = all ? value.results.filter(r => !r.applied && !r.passageEdit && (!sectionReviewExceptions(r).needsReview || r.checked)) : value.results.filter(r => r.sectionId === section.id && !r.applied);
             if (!targets.length)
                 throw Error('Choose a section with words to integrate.');
             for (const target of targets) {
@@ -619,7 +656,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                 await changeSectionSession(value.id, s => ({ ...s, results: s.results.map(r => r.sectionId === target.sectionId ? { ...r, checked: true } : r) }));
                 value = await integrateSectionDraft(value.id, target.sectionId, services);
                 accept(value);
-                if (initialAnchors?.length && value.results.every(r => r.applied)) {
+                if (initialAnchors?.length && !target.passageEdit && value.results.every(r => r.applied)) {
                     onClose();
                     const node = value.sections.find(n => n.id === target.sectionId);
                     requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('oracle:focus-passage', { detail: { cardNumber: value.cardNumber, sectionId: node?.lensId, text: target.text.split(/\n\s*\n/)[0] } })));
@@ -741,6 +778,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         setReplay(null);
         setAudioUrl('');
         setView(next);
+        if(next!=='review')setPendingPassage(null);
         setError('');
         if (next === 'review' && !(explicitChoice.current && results.some(r => r.sectionId === focusId))) {
             const first = results.find(r => !r.applied && sectionReviewExceptions(r).needsReview && !r.checked) ?? results.find(r => !r.applied) ?? results[0];
@@ -765,6 +803,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     }, [draft?.id, draft?.results.map(r => r.appliedText).join('|')]);
     const takes = (draft as TakeSession | undefined)?.takes ?? [];
     const queued = takes.filter(t => ['queued', 'transcribing', 'assimilating'].includes(t.state));
+    const processingStage = queued.some(t=>t.state==='transcribing')?'Transcribing saved audio…':queued.some(t=>t.state==='assimilating')?'Preparing review…':queued.length?'Sending saved audio…':'';
     const discarded = new Set(takes.filter(t => t.state === 'discarded').map(t => t.captureId));
     const failedTakes = takes.filter(take => take.state === 'failed');
     const signInBlocked = failedTakes.some(take => isSignInBlocked(take.error)) || isSignInBlocked(draft?.error);
@@ -828,12 +867,18 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         }
     };
     useEffect(() => {
+        if(view==='review'&&pendingPassage&&results.some(r=>r.sectionId===pendingPassage.sectionId&&r.takeIds?.includes(pendingPassage.captureId)&&!!r.passageEdit&&!r.applied)){
+            setFocusId(pendingPassage.sectionId);
+            setPendingPassage(null);
+            reviewArrival.current=false;
+            return;
+        }
         if (view === 'review' && results.length && ((!explicitChoice.current && reviewArrival.current && !queued.length) || !results.some(r => r.sectionId === focusId))) {
             const first = results.find(r => !r.applied && sectionReviewExceptions(r).needsReview && !r.checked) ?? results.find(r => !r.applied) ?? results[0];
             setFocusId(first.sectionId);
             reviewArrival.current = false;
         }
-    }, [view, draft?.version]);
+    }, [view, draft?.version, pendingPassage]);
     useEffect(() => {
         if (view === 'work' && nodes.length)
             reveal(handle.current ? recordingTarget.current : targetId);
@@ -1055,10 +1100,11 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     };
     const nextAfter = (id?: string) => nodes[nodes.findIndex(n => n.id === id) + 1];
     const nextReview = reviewList.find((n, index) => index > position && !results.find(r => r.sectionId === n.id)?.applied) ?? reviewList.find(n => !results.find(r => r.sectionId === n.id)?.applied && n.id !== section?.id);
-    const readyClean = results.filter(r => !r.applied && (!sectionReviewExceptions(r).needsReview || r.checked));
+    const readyClean = results.filter(r => !r.applied && !r.passageEdit && (!sectionReviewExceptions(r).needsReview || r.checked));
     const applyLabel = (() => {
         if (!result || !section)
             return { text: '', empty: false };
+        if(result.passageEdit)return {text:result.passageEdit.operation==='add'?'Apply addition':'Apply replacement',empty:false};
         if (result.editIntent === 'add')
             return { text: 'Add my words', empty: false };
         const base = sectionComparisonOriginal(result, references[section.id] ?? section.text);
@@ -1082,13 +1128,13 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         await integrate();
     };
     const recordingNode = active ? nodes.find(n => n.id === recordingTarget.current) ?? target : target;
-    const upcoming = active && !phraseCapture.current ? nextAfter(recordingTarget.current) : undefined;
-    const nextRecording = result?.applied && !initialAnchors?.length ? nextAfter(section?.id) : undefined;
+    const upcoming = active && !phraseCapture.current && !passageCapture.current ? nextAfter(recordingTarget.current) : undefined;
+    const nextRecording = result?.applied && !result.passageEdit && !initialAnchors?.length ? nextAfter(section?.id) : undefined;
     const appliedText = result?.appliedText ?? result?.text ?? '';
     const originSpans = section ? appliedOrigins[section.id] : undefined;
     const displayOrigins = originSpans?.map(part => part.text).join('') === appliedText ? originSpans : [{ text: appliedText, origin: section && authorship?.sections[section.id] === 'human' ? 'human' : 'unknown' }];
     const locked = !!active || opening || integrating;
-    const screenTitle: Record<View, string> = { work: '', review: '', settings: 'Recording settings', audio: 'Recordings', sessions: 'Sessions', sections: placing !== null ? 'Place these words' : 'Sections', cleanup: 'Speech cleanup', unplaced: 'Unplaced words' };
+    const screenTitle: Record<View, string> = { work: '', passage: 'Edit passage', review: '', settings: 'Recording settings', audio: 'Recordings', sessions: 'Sessions', sections: placing !== null ? 'Place these words' : 'Sections', cleanup: 'Speech cleanup', unplaced: 'Unplaced words' };
     const pickFromRail = (node: CardSection) => {
         if (view === 'review' && results.some(r => r.sectionId === node.id))
             void choose(node.id).catch(report);
@@ -1138,18 +1184,18 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         // Account and stores.
         account, accountActions, retrying, store, audio,
         // Session and screen state.
-        draft, savedAudio, setSavedAudio, history, view, setView, focusId, setFocusId, targetId, setTargetId,
+        draft, savedAudio, setSavedAudio, history, view, setView, focusId, setFocusId, targetId, setTargetId, pendingPassage,
         error, notice, setNotice, opening, integrating, stopping,
         authorship, authorshipFailed, references, linkedDrafts,
         // Recording.
         active, monitor, continuous, setContinuous, voiceCommands, setVoiceCommands, routingStatus, intent, setIntent,
-        phrase, setPhrase, paragraphAim, setParagraphAim, captureFocus, phraseCapture, recordingTarget, handle, manuscript,
+        phrase, setPhrase, paragraphAim, setParagraphAim, passageOperation, setPassageOperation, wholeSection, aimWholeSection, passageCapture, captureFocus, phraseCapture, recordingTarget, handle, manuscript,
         // Review and playback.
         resolved, setResolved, placing, setPlacing, caret, playhead, setPlayhead, playing, setPlaying,
         replay, setReplay, activeWord, setActiveWord, audioUrl, loop, setLoop,
         seekAt, clipBounds, loopCleanup, player, resumePlayback, pickerReturn, explicitChoice, reviewArrival, checkAudio,
         // Derived values.
-        nodes, review, processing, section, result, results, target, takes, queued, discarded, savedCaptures,
+        nodes, review, processing, processingStage, section, result, results, target, takes, queued, discarded, savedCaptures,
         needsSignIn, cannotSignIn, processingMessage, processingDetail, statusShown, toastError, toastDetail, health,
         reviewList, position, waiting, checks, open, generalCheck, progressText, nextReview, readyClean, applyLabel,
         recordingNode, upcoming, nextRecording, appliedText, displayOrigins, locked, screenTitle,

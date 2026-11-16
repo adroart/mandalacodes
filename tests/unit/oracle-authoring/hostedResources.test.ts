@@ -93,15 +93,49 @@ describe('one deadline that really stops every provider call',()=>{
   const response=await pending;expect(response.status).toBe(504);expect(await response.json()).toMatchObject({code:'provider_timeout',retryable:true});
   for(const signal of signals){expect(signal.aborted).toBe(true);expect((signal.reason as DOMException).name).toBe('TimeoutError');}
  });
- it('keeps the first pass when the second is still listening at the deadline, saying doubts are unavailable',async()=>{
+ it('keeps the first pass after a short grace and aborts the late second, saying doubts are unavailable',async()=>{
   const warn=vi.spyOn(console,'warn').mockImplementation(()=>undefined);
   const upstream=vi.fn(async(_url:string,init:RequestInit)=>isSecond(init)?hang(init):reply(timed('I trust my direction today.')));vi.stubGlobal('fetch',upstream);
   const pending=call();await turns();
-  await vi.advanceTimersByTimeAsync(90_000);
+  await vi.advanceTimersByTimeAsync(1499);expect(upstream.mock.calls.find(([,init])=>isSecond(init))![1].signal!.aborted).toBe(false);
+  await vi.advanceTimersByTimeAsync(1);
   const response=await pending;expect(response.status).toBe(200);
   expect(await response.json()).toMatchObject({doubts:[],doubtsAvailable:false,segments:[{text:'I trust my direction today.'}]});
-  expect(warn.mock.calls).toEqual([['oracle_authoring_provider_failure',{operation:'transcribe',provider:'groq',pass:'second',reason:'timeout'}]]);
+  expect(warn).not.toHaveBeenCalled();
   expect(upstream.mock.calls.find(([,init])=>isSecond(init))![1].signal!.aborted).toBe(true);
+  expect((upstream.mock.calls.find(([,init])=>isSecond(init))![1].signal!.reason as DOMException).name).toBe('AbortError');
+ });
+ it('keeps verified doubts when the second pass arrives inside the grace',async()=>{
+  vi.spyOn(console,'info').mockImplementation(()=>undefined);
+  vi.stubGlobal('fetch',vi.fn(async(_url:string,init:RequestInit)=>{
+   if(!isSecond(init))return reply(timed('I trust my direction today.'));
+   await new Promise(resolve=>setTimeout(resolve,800));return reply({text:'I trust my election today.'});
+  }));
+  const pending=call();await turns();await vi.advanceTimersByTimeAsync(800);
+  const response=await pending;expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({doubtsAvailable:true,doubts:[{text:'direction',heardAlso:'election'}]});
+ });
+ it('does not replace a failed first pass with an untimed second pass',async()=>{
+  vi.spyOn(console,'warn').mockImplementation(()=>undefined);
+  const timing=vi.spyOn(console,'info').mockImplementation(()=>undefined);
+  vi.stubGlobal('fetch',vi.fn(async(_url:string,init:RequestInit)=>isSecond(init)?reply({text:'Words from second.'}):reply({error:{message:'failed'}},503)));
+  const response=await call();expect(response.status).toBe(502);expect(await response.json()).toMatchObject({code:'provider_failed'});
+  expect(timing.mock.calls.map(([,detail])=>({stage:(detail as {stage:string}).stage,status:(detail as {status?:number}).status}))).toEqual([
+   {stage:'first_listening',status:undefined},{stage:'response',status:502},
+  ]);
+ });
+ it('keeps the first failure when both listenings fail',async()=>{
+  vi.spyOn(console,'warn').mockImplementation(()=>undefined);
+  vi.stubGlobal('fetch',vi.fn(async(_url:string,init:RequestInit)=>isSecond(init)?reply({error:{message:'failed'}},503):reply({error:{message:'busy'}},429)));
+  const response=await call();expect(response.status).toBe(429);expect(await response.json()).toMatchObject({code:'provider_busy'});
+ });
+ it('records a no-speech response without waiting for verification',async()=>{
+  const timing=vi.spyOn(console,'info').mockImplementation(()=>undefined);
+  vi.stubGlobal('fetch',vi.fn(async(_url:string,init:RequestInit)=>isSecond(init)?reply({text:'second pass'}):reply({text:'',segments:[]})));
+  const response=await call();expect(response.status).toBe(422);
+  expect(timing.mock.calls.map(([,detail])=>({stage:(detail as {stage:string}).stage,status:(detail as {status?:number}).status}))).toEqual([
+   {stage:'first_listening',status:undefined},{stage:'response',status:422},
+  ]);
  });
  it('stops the second pass as soon as the first has failed for good, without waiting for the deadline',async()=>{
   vi.spyOn(console,'warn').mockImplementation(()=>undefined);
@@ -120,6 +154,27 @@ describe('one deadline that really stops every provider call',()=>{
   const response=await pending;expect(response.status).toBe(429);expect(signal.aborted).toBe(true);
   expect(run).toHaveBeenCalledTimes(1);
   expect(warn.mock.calls.at(-1)).toEqual(['oracle_authoring_provider_failure',{operation:'transcribe',provider:'cloudflare',reason:'timeout'}]);
+ });
+});
+
+describe('visible transcript latency with controlled providers',()=>{
+ it('returns the kept words shortly after first listening when verification is slow',async()=>{
+  vi.useFakeTimers({toFake:['setTimeout','clearTimeout','Date']});
+  vi.spyOn(console,'warn').mockImplementation(()=>undefined);
+  const timing=vi.spyOn(console,'info').mockImplementation(()=>undefined);
+  vi.stubGlobal('fetch',vi.fn(async(_url:string,init:RequestInit)=>{
+   await new Promise(resolve=>setTimeout(resolve,isSecond(init)?3200:100));
+   return isSecond(init)?reply({text:'I trust my direction today.'}):reply(timed('I trust my direction today.'));
+  }));
+  let settled=false;const pending=call().then(response=>{settled=true;return response;});
+  await turns();await vi.advanceTimersByTimeAsync(100);expect(settled).toBe(false);
+  await vi.advanceTimersByTimeAsync(1499);expect(settled).toBe(false);
+  await vi.advanceTimersByTimeAsync(1);const response=await pending;
+  expect(response.status).toBe(200);expect(await response.json()).toMatchObject({segments:[{text:'I trust my direction today.'}]});
+  expect(timing.mock.calls.map(([,detail])=>({stage:(detail as {stage:string}).stage,elapsedMs:(detail as {elapsedMs:number}).elapsedMs}))).toEqual([
+   {stage:'first_listening',elapsedMs:100},{stage:'second_window',elapsedMs:1600},{stage:'response',elapsedMs:1600},
+  ]);
+  expect(JSON.stringify(timing.mock.calls)).not.toMatch(/direction|fixture-key|AQID/);
  });
 });
 

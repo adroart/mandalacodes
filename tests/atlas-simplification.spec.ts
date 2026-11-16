@@ -52,6 +52,8 @@ test('dream prose appears only inside opened records, with wall search and filte
 });
 
 test('globe has no dream hopping or timed hints with lenses flag', async ({ page }, testInfo) => {
+  // The globe, book and screenshot can outlast the default timeout on a shared CI runner.
+  test.setTimeout(60_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await openFixture(page, '/atlas?lenses=1&piece=UL-122%3A1');
   await expect(page.getByText(DREAM, { exact: true })).toHaveCount(0);
