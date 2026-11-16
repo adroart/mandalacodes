@@ -351,7 +351,7 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
           }`}
         >
           {desktopItems.map((item, i) => {
-            const linkClass = `group relative text-[13px] uppercase tracking-[0.18em] font-label py-3 px-3.5 2xl:px-5 transition-all duration-300 font-semibold ${
+            const linkClass = `group relative text-[13px] uppercase tracking-[0.18em] font-label py-3 px-3.5 2xl:px-5 transition-colors duration-300 font-semibold ${
               isNavActive(item.path) ? 'text-wood-900' : 'text-wood-700 hover:text-bronze-600'
             }`;
             const underline = (

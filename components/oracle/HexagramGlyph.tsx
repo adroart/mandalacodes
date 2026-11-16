@@ -6,13 +6,12 @@ import { CARD_BY_NUMBER } from '../../data/oracleData';
  * ProfileGraph, YourPositionCallout, and the today/year energy panels —
  * no markup duplication, single visual language.
  *
- * Deliberately NOT migrated: OracleGateway (compressed orbital glyphs with
- * historical line ordering) and CoinCast's Hexagram (moving-line flip
- * animation). Both are specialized renderers with their own geometry.
+ * OracleGateway uses the shared line data with its own compressed orbital
+ * geometry. CoinCast's Hexagram keeps its moving-line flip animation.
  */
 
 // lines = [top, middle, bottom], true = yang (solid), false = yin (broken)
-const TRIGRAM_LINES: Record<string, readonly [boolean, boolean, boolean]> = {
+export const TRIGRAM_LINES: Record<string, readonly [boolean, boolean, boolean]> = {
   '☰': [true,  true,  true ],  // Qian / Heaven
   '☱': [false, true,  true ],  // Dui  / Lake
   '☲': [true,  false, true ],  // Li   / Fire

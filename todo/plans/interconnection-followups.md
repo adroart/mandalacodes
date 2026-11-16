@@ -86,15 +86,14 @@ not remaining build work:
 - **Gateway → profile:** `components/OracleGateway.tsx` already links to
   `/profile` as “Your Birth Chart.”
 
-The remaining renderer follow-up needs a fresh, bounded audit before work is
-assigned. Several major surfaces already use
-`components/oracle/HexagramGlyph.tsx`, including the card and atlas code index;
-the Gateway retains its orbital custom drawing. Do not describe CoinCast as a
-current component without locating it in this checkout. Preserve distinct
-animated or ornamental design where shared geometry would change the
-experience, and visually review any proposed consolidation on the real
-surfaces. Check the old `data/trigrams.ts` comment discrepancy against current
-code before reopening it.
+The bounded Gateway follow-up is implemented locally on 2026-11-16:
+`components/OracleGateway.tsx` now shares the trigram line data from
+`components/oracle/HexagramGlyph.tsx`. Its orbital dimensions, animation,
+navigation and historical unknown-symbol fallback are preserved. The browser
+regression checks all 64 rendered patterns; desktop/mobile before-and-after
+screens were reviewed. There is no need to replace its custom geometry to
+share that data. The old CoinCast and `data/trigrams.ts` references remain
+historical, not instructions to rebuild absent components.
 
 ## Bigger pieces already tracked elsewhere
 
