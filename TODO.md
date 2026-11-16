@@ -35,7 +35,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 ### Current triage — 2026-11-16
 
-- [ ] **Desktop channel-scroll test geometry:** the existing `channel-status.spec.ts` signed-out test stops before its modal at a chapter offset assertion (34.48 px versus less than 2 px). Mobile passes; a separate direct chart-sign-in check passes on both desktop and mobile. Investigate the positioning helper before treating this as a product defect. _(band: agent-runnable)_ _(effort: quick)_
+- [x] **Desktop channel-scroll test geometry (2026-11-16, local):** the helper applied the mobile rail-height-plus-8 offset to desktop, whose rail is outside the scroller and whose existing host targets a 12 px chapter inset. The helper now checks each layout’s actual contract with the same strict 2 px tolerance. All 12 focused desktop/mobile channel tests pass; no product scroll code changed.
 
 - [x] **Mobile recorder hint (local):** “Hold to record” stays inside the deck footer button, leaving scrolling actions clear. The regression fails against the old CSS and passes at 320 px and 393 px; recorder activation and the 44 px hit target remain verified.
 
