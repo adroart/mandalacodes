@@ -1,7 +1,8 @@
 import { expect, test } from './fixtures';
 
-test('admin record hint stays inside the mobile reading footer', async ({ page }, testInfo) => {
+for (const dark of [true, false]) test(`admin record hint stays inside the mobile reading footer (${dark ? 'dark' : 'light'})`, async ({ page }, testInfo) => {
   test.skip(!['Mobile 320', 'Mobile Chrome'].includes(testInfo.project.name), 'Mobile reading frame only');
+  await page.addInitScript((isDark) => localStorage.setItem('dark-mode', String(isDark)), dark);
   await page.route('**/api/oracle/reflections/capability', (route) => route.fulfill({
     json: { ok: true, admin: true },
   }));
@@ -17,7 +18,7 @@ test('admin record hint stays inside the mobile reading footer', async ({ page }
   const save = page.getByRole('button', { name: 'Save this code' });
   await expect(save).toBeVisible();
   await save.scrollIntoViewIfNeeded();
-  await page.screenshot({ path: testInfo.outputPath('admin-record-hint-near-save.png') });
+  await page.screenshot({ path: testInfo.outputPath(`admin-record-hint-near-save-${dark ? 'dark' : 'light'}.png`) });
 
   const hintBox = await hint.boundingBox();
   const footerBox = await footer.boundingBox();
@@ -25,6 +26,7 @@ test('admin record hint stays inside the mobile reading footer', async ({ page }
   expect(footerBox).not.toBeNull();
   expect(hintBox!.y).toBeGreaterThanOrEqual(footerBox!.y);
   expect(hintBox!.y + hintBox!.height).toBeLessThanOrEqual(footerBox!.y + footerBox!.height);
+  expect(await hint.evaluate((element) => parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(12);
   const saveBox = await save.boundingBox();
   expect(saveBox!.y + saveBox!.height).toBeLessThanOrEqual(footerBox!.y);
   const deckBox = await deck.boundingBox();
