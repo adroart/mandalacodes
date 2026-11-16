@@ -12,6 +12,10 @@ export interface SectionDraftResult {
  editIntent?:'replace'|'add'|'revise';
  /** Present only for the new explicit, single-passage recorder. Older reviews keep their saved meaning. */
  passageEdit?:{operation:'add'|'replace';focus:{start:number;end:number;text:string};sectionText:string};
+ /** The complete candidate remains available after a selected range is prepared. */
+ rangeSelection?:{candidateText:string;original:{start:number;end:number;text:string};candidate:{start:number;end:number;text:string};unplacedKey:string};
+ /** Restored history uses an exact minimal edit so unchanged provenance survives Apply. */
+ historyRestore?:{baselineText:string};
  comparisonOriginal?:string;reviewTranscript?:string;reviewIssues?:SectionReviewIssue[];
  /** Per compared passage, keyed by its original span: keep the written words or use the spoken ones. */
  rowChoices?:Record<string,PassageChoice>;
@@ -59,8 +63,9 @@ export interface SectionDraftSession {
  id:string;cardNumber:number;sourceHash:string;createdAt:string;updatedAt:string;version:number;source:SourceSnapshot;sections:CardSection[];startSectionId:string;
  titleEdits?:Record<string,{text:string;updatedAt:string}>;
  resume?:{sectionId:string;mode:string;positionMs:number};
- captureSessionId?:string;captureId?:string;markers:{atMs:number;sectionId:string}[];rawTranscript:string;results:SectionDraftResult[];unassigned:{text:string;reason:string}[];
+ captureSessionId?:string;captureId?:string;markers:{atMs:number;sectionId:string}[];rawTranscript:string;results:SectionDraftResult[];unassigned:{text:string;reason:string;rangeSelectionKey?:string}[];
  state:'ready'|'recording'|'transcribing'|'assimilating'|'review'|'complete';error?:string;
+ historyOrigin?:{kind:'draft'|'working';sessionId:string;version:number;workingRevision?:number};
 }
 /** Change only the pending proposal's effect; its speech and exact destination remain intact. */
 export function switchPendingPassageOperation(session:SectionDraftSession,sectionId:string,operation:'add'|'replace',currentSectionText:string):SectionDraftSession {
@@ -74,6 +79,36 @@ export function switchPendingPassageOperation(session:SectionDraftSession,sectio
  const {comparison: _comparison,rowChoices: _rowChoices,...rest}=result;
  const changed:SectionDraftResult={...rest,passageEdit:{...passage,operation},editIntent:operation,checked:false,applied:false};
  return {...session,results:session.results.map(item=>item.sectionId===sectionId?changed:item)};
+}
+export interface ExactTextRange {start:number;end:number;text:string}
+export interface SelectedRangeReplacement {
+ original:ExactTextRange;candidate:ExactTextRange;
+ /** Full baselines prevent a repeated phrase from silently binding to a changed draft. */
+ expectedOriginalText:string;expectedCandidateText:string;expectedDraftVersion:number;
+}
+function exactRange(baseline:string,range:ExactTextRange):boolean{
+ const splitSurrogate=(at:number)=>at>0&&at<baseline.length&&/^[\uDC00-\uDFFF]$/.test(baseline[at])&&/^[\uD800-\uDBFF]$/.test(baseline[at-1]);
+ return Number.isInteger(range.start)&&Number.isInteger(range.end)&&range.start>=0&&range.end>range.start&&range.end<=baseline.length&&!splitSurrogate(range.start)&&!splitSurrogate(range.end)&&baseline.slice(range.start,range.end)===range.text&&!!range.text.trim();
+}
+/** Prepare a proposal only. The full recording and unselected candidate words remain available. */
+export function prepareSelectedRangeReplacement(session:SectionDraftSession,sectionId:string,selection:SelectedRangeReplacement,currentSectionText:string):SectionDraftSession{
+ const result=session.results.find(item=>item.sectionId===sectionId),section=session.sections.find(item=>item.id===sectionId);
+ if(!result||!section||result.applied)throw new Error('Choose a pending section review before selecting words.');
+ const activity=session as SectionDraftSession&{recording?:{sectionId:string};takes?:{startSectionId:string;state:string}[]};
+ if(activity.state==='recording'||activity.state==='transcribing'||activity.state==='assimilating'||activity.takes?.some(take=>take.startSectionId===sectionId&&['queued','transcribing','assimilating'].includes(take.state)))throw new Error('Wait for this passage recording to finish before selecting words.');
+ if(session.version!==selection.expectedDraftVersion||session.sourceHash!==session.source.hash||section.sourceHash!==session.sourceHash||currentSectionText!==selection.expectedOriginalText||!exactRange(selection.expectedOriginalText,selection.original)||!exactRange(selection.expectedCandidateText,selection.candidate))throw new Error('The selected words changed. Select both ranges again.');
+ const prior=result.rangeSelection;
+ if(prior){
+  if(prior.candidateText!==selection.expectedCandidateText||result.text!==prior.candidate.text)throw new Error('The recorded words changed. Select the candidate range again.');
+  if(JSON.stringify(prior.original)===JSON.stringify(selection.original)&&JSON.stringify(prior.candidate)===JSON.stringify(selection.candidate))return session;
+ }else if(result.text!==selection.expectedCandidateText)throw new Error('The recorded words changed. Select the candidate range again.');
+ const base=result.passageEdit?.sectionText??sectionComparisonOriginal(result,section.text);
+ if(base!==selection.expectedOriginalText)throw new Error('The original reading changed. Select its words again.');
+ const key=`${session.id}/${sectionId}/range`;
+ const unused=[selection.expectedCandidateText.slice(0,selection.candidate.start),selection.expectedCandidateText.slice(selection.candidate.end)].filter(part=>part.trim());
+ const {comparison:_comparison,rowChoices:_rowChoices,reviewIssues:_reviewIssues,changes:_changes,warnings:_warnings,historyRestore:_historyRestore,...rest}=result;
+ const changed:SectionDraftResult={...rest,text:selection.candidate.text,editIntent:'replace',passageEdit:{operation:'replace',focus:selection.original,sectionText:selection.expectedOriginalText},comparisonOriginal:selection.original.text,changes:[],warnings:[],checked:false,applied:false,rangeSelection:{candidateText:selection.expectedCandidateText,original:selection.original,candidate:selection.candidate,unplacedKey:key}};
+ return {...session,results:session.results.map(item=>item.sectionId===sectionId?changed:item),unassigned:[...session.unassigned.filter(item=>item.rangeSelectionKey!==key),...unused.map(text=>({text,reason:'Unused words from the full saved recording. Place these if needed.',rangeSelectionKey:key}))]};
 }
 /** Titles are hand-edited metadata; they never enter the spoken passage or its evidence. */
 export function sectionTitleEdits(sessions:SectionDraftSession[],sourceHash:string):Record<string,string>{
@@ -123,6 +158,75 @@ const drafts=new SectionDraftStore(),workingCards=new WorkingCardStore(),audioSt
 function baseline(source:SourceSnapshot,lensId:string,text:string):WorkingSection{return {key:`${source.cardNumber}/${lensId}`,cardNumber:source.cardNumber,sectionId:lensId,text,revision:0,sourceHash:source.hash,source,savedAt:'',blocks:[{id:'published',text,origin:'ai',evidence:[]}],humanWords:0,totalWords:(text.match(/\S+/g)??[]).length};}
 function uniquePosition(text:string,needle:string){const at=text.indexOf(needle);return at>=0&&text.indexOf(needle,at+1)<0?at:-1;}
 async function appliedReference(cardNumber:number,sectionId:string,sourceHash:string){const sessions=await drafts.list(cardNumber);return sessions.filter(s=>s.sourceHash===sourceHash).flatMap(session=>session.results.filter(result=>result.sectionId===sectionId&&result.appliedText&&result.appliedAt).map(result=>({session,result}))).sort((a,b)=>b.result.appliedAt!.localeCompare(a.result.appliedAt!))[0];}
+export interface SectionHistoryEntry {
+ id:string;kind:'draft'|'working';cardNumber:number;sectionId:string;sourceHash:string;createdAt:string;
+ stateLabel:string;contextLabel:string;scopeLabel:string;preview:string;text:string;
+ sessionId?:string;version?:number;workingRevision?:number;restoreDisabledReason?:string;
+}
+/** The list describes only local retained snapshots. A working revision without an exact named-section receipt is viewable but cannot be safely restored here. */
+export async function listSectionHistory(cardNumber:number,sectionId:string,sourceHash:string):Promise<SectionHistoryEntry[]>{
+ const live=(await drafts.list(cardNumber)).filter(session=>session.sourceHash===sourceHash&&session.sections.some(section=>section.id===sectionId));
+ const versions=(await Promise.all(live.map(async session=>({session,versions:await drafts.versions(session.id)})))).flatMap(({session,versions})=>versions.map(version=>({session,version})));
+ const entries:SectionHistoryEntry[]=[],seen=new Set<string>();
+ for(const {session,version} of versions){const result=version.results.find(item=>item.sectionId===sectionId);if(!result)continue;
+  const key=`${session.id}/${result.text}/${result.editIntent??'replace'}/${JSON.stringify(result.passageEdit??null)}/${JSON.stringify(result.comparison??null)}/${JSON.stringify(result.rowChoices??null)}/${!!result.applied}/${JSON.stringify(result.takeIds??[])}`;
+  if(seen.has(key))continue;seen.add(key);
+  let proposal=result.text,restoreDisabledReason:string|undefined;
+  if(result.passageEdit)proposal=result.passageEdit.sectionText.slice(0,result.passageEdit.focus.start)+(result.passageEdit.operation==='add'?result.passageEdit.focus.text+'\n\n'+result.text:result.text)+result.passageEdit.sectionText.slice(result.passageEdit.focus.end);
+  else if(result.editIntent==='add')proposal=(result.beforeText??result.comparisonOriginal??version.sections.find(section=>section.id===sectionId)?.text??'').trimEnd()+'\n\n'+result.text.trim();
+  else if(result.comparison||result.rowChoices){
+   const original=sectionComparisonOriginal(result,version.sections.find(section=>section.id===sectionId)?.text??'');
+   try{const plan=sectionReplacementPlan(result,original);if(plan)proposal=plan.text;else restoreDisabledReason='The saved passage choices no longer match their original reading.';}
+   catch{restoreDisabledReason='The saved passage choices do not produce a restorable change.';}
+  }
+  entries.push({id:`draft/${session.id}/${version.version}/${sectionId}`,kind:'draft',cardNumber,sectionId,sourceHash,createdAt:version.updatedAt,stateLabel:result.applied?'Applied proposal':result.checked?'Checked proposal':'Draft proposal',contextLabel:`Saved draft · version ${version.version}`,scopeLabel:'Named passage',preview:proposal.slice(0,240),text:proposal,sessionId:session.id,version:version.version,...(restoreDisabledReason?{restoreDisabledReason}:{})});
+ }
+ const section=live.flatMap(session=>session.sections).find(item=>item.id===sectionId);
+ if(section?.kind==='manuscript'){
+  const workingVersions=await workingCards.versions(cardNumber,section.lensId);
+  for(const working of workingVersions.filter(item=>item.sourceHash===sourceHash)){
+   const exact=versions.find(({session,version})=>version.results.some(result=>result.sectionId===sectionId&&result.applied&&result.appliedRevision===working.revision&&!!result.appliedText&&!!result.integrationId&&uniquePosition(working.text,result.appliedText)>=0&&working.blocks.some(block=>block.evidence.some(evidence=>evidence.sessionId===session.id&&evidence.transcriptId===result.integrationId))));
+   const receipt=exact?.version.results.find(result=>result.sectionId===sectionId&&result.appliedRevision===working.revision);
+   const restorable=!!receipt&&!!exact;
+   const reason=restorable?undefined:'This full-lens reading revision has no exact restorable named-passage proposal.';
+   entries.push({id:`working/${cardNumber}/${section.lensId}/${working.revision}/${sectionId}`,kind:'working',cardNumber,sectionId,sourceHash,createdAt:working.savedAt,stateLabel:'Private reading version',contextLabel:`Reading revision ${working.revision}`,scopeLabel:restorable?'Named passage':'Full lens',preview:(restorable?receipt!.appliedText!:working.text).slice(0,240),text:restorable?receipt!.appliedText!:working.text,sessionId:restorable?exact!.session.id:undefined,version:restorable?exact!.version.version:undefined,workingRevision:working.revision,...(reason?{restoreDisabledReason:reason}:{})});
+  }
+ }
+ return entries.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||b.id.localeCompare(a.id));
+}
+/** Copy a retained proposal into a new pending draft. The old session and private reading are never written. */
+export async function restoreSectionHistoryAsDraft(entry:SectionHistoryEntry,current:SectionDraftSession,services:AuthoringServices):Promise<{session:SectionDraftSession;sectionId:string}>{
+ if(entry.restoreDisabledReason)throw new Error(entry.restoreDisabledReason);
+ const active=current as SectionDraftSession&{recording?:unknown;takes?:{state:string}[]};
+ if(['recording','transcribing','assimilating'].includes(current.state)||active.recording||active.takes?.some(take=>['queued','transcribing','assimilating'].includes(take.state)))throw new Error('Wait for the current recording to finish before restoring history.');
+ const savedCurrent=await drafts.get(current.id);
+ if(!savedCurrent||savedCurrent.version!==current.version||entry.cardNumber!==current.cardNumber||entry.sourceHash!==current.sourceHash||!current.sections.some(section=>section.id===entry.sectionId))throw new Error('The current draft or history destination changed. Reopen it before restoring.');
+ const source=await services.loadSource(current.cardNumber);
+ if(source.hash!==current.sourceHash)throw new Error('The original card changed. Reopen its history before restoring.');
+ const found=(await listSectionHistory(entry.cardNumber,entry.sectionId,entry.sourceHash)).find(item=>item.id===entry.id);
+ if(!found||found.restoreDisabledReason||found.kind!==entry.kind||found.sessionId!==entry.sessionId||found.version!==entry.version||found.workingRevision!==entry.workingRevision)throw new Error('That retained history version is unavailable or changed. Reopen history.');
+ const origin=found.sessionId&&found.version!==undefined?(await drafts.versions(found.sessionId)).find(item=>item.version===found.version):undefined;
+ const historical=origin?.results.find(result=>result.sectionId===entry.sectionId),target=current.sections.find(section=>section.id===entry.sectionId)!;
+ if(!origin||!historical||origin.sourceHash!==source.hash||!origin.sections.some(section=>section.id===target.id&&section.lensId===target.lensId&&section.kind===target.kind))throw new Error('The older section mapping is no longer compatible.');
+ let baselineText=target.text;
+ if(target.kind==='intro')baselineText=await getIntegratedIntro(current.cardNumber)??target.text;
+ else{
+  const working=await workingCards.get(current.cardNumber,target.lensId),currentReading=working?.text??plainSection(source,target.lensId),prior=await appliedReference(current.cardNumber,target.id,current.sourceHash);
+  const candidate=prior?.result.appliedText??target.text;
+  if(uniquePosition(currentReading,candidate)<0)throw new Error('The current named passage changed or is ambiguous. Compare it again before restoring.');
+  baselineText=candidate;
+ }
+ const next=createSectionDraftSession(source,current.sections,entry.sectionId);
+ const {applied:_applied,appliedText:_appliedText,beforeText:_beforeText,appliedAt:_appliedAt,appliedRevision:_appliedRevision,integrationId:_integrationId,beforeWorking:_beforeWorking,...copy}=historical;
+ // A historical selected span may no longer match today's section. Restore its
+ // complete named-passage proposal against today's exact named-passage baseline.
+ const result:SectionDraftResult={...structuredClone(copy),text:found.text,editIntent:'replace',passageEdit:undefined,rangeSelection:undefined,historyRestore:{baselineText},comparisonOriginal:baselineText,comparison:undefined,rowChoices:undefined,reviewIssues:undefined,changes:[],warnings:[],checked:false,applied:false};
+ const historicalActivity=origin as SectionDraftSession&{takes?:{id:string;state:string}[]};
+ const referencedTakes=(historicalActivity.takes??[]).filter(take=>result.takeIds?.includes(take.id));
+ if(result.takeIds?.some(id=>!referencedTakes.some(take=>take.id===id&&take.state==='review')))throw new Error('The historical recording is unfinished or unavailable.');
+ const proposal={...next,state:'review' as const,results:[result],rawTranscript:origin.rawTranscript,unassigned:structuredClone(origin.unassigned),captureSessionId:origin.captureSessionId,captureId:origin.captureId??origin.id,markers:structuredClone(origin.markers),...(referencedTakes.length?{takes:structuredClone(referencedTakes)}:{}),historyOrigin:{kind:found.kind,sessionId:origin.id,version:origin.version,...(found.workingRevision!==undefined?{workingRevision:found.workingRevision}:{})}};
+ return {session:await drafts.save(proposal,0),sectionId:entry.sectionId};
+}
 async function patchResult(id:string,sectionId:string,change:(result:SectionDraftResult,session:SectionDraftSession)=>SectionDraftResult):Promise<SectionDraftSession>{for(let attempt=0;attempt<4;attempt++){const current=await drafts.get(id);if(!current)throw new Error('This saved section draft could not be found.');const next={...current,results:current.results.map(result=>result.sectionId===sectionId?change(result,current):result)};next.state=next.results.length>0&&next.results.every(result=>result.applied)&&!next.unassigned.length?'complete':'review';try{return await drafts.save(next,current.version);}catch(error){if(attempt===3||!/Another tab/.test(String(error)))throw error;}}throw new Error('Your draft changed while saving. Try again.');}
 interface TakeEvidence {id:string;captureId:string;captureSessionId?:string;state:string}
 /** Take evidence belongs to the reviewed words, never the session's newest microphone. */
@@ -141,6 +245,16 @@ async function evidenceCaptures(session:SectionDraftSession,result:SectionDraftR
 /** Apply only the complete named section that was reviewed; all adjacent text survives. */
 /** Passage by passage when the comparison is matched against this exact baseline; otherwise undefined and the whole section is replaced. */
 export function sectionReplacementPlan(result:SectionDraftResult,beforeText:string):{edits:{start:number;end:number;words:string}[];text:string}|undefined{
+ if(result.historyRestore){
+  if(result.historyRestore.baselineText!==beforeText)throw new Error('The current named passage changed. Reopen history before applying.');
+  if(result.text===beforeText)throw new Error('These historical words are already in the reading.');
+  const before=[...beforeText],after=[...result.text];let start=0,tail=0,startUnits=0,tailUnits=0;
+  while(start<before.length&&start<after.length&&before[start]===after[start]){startUnits+=before[start].length;start++;}
+  while(tail<before.length-start&&tail<after.length-start&&before[before.length-1-tail]===after[after.length-1-tail]){tailUnits+=before[before.length-1-tail].length;tail++;}
+  const end=beforeText.length-tailUnits,words=result.text.slice(startUnits,result.text.length-tailUnits);
+  if(!words)throw new Error('This history proposal only removes words. Its recording evidence cannot be attached safely yet.');
+  return {edits:[{start:startUnits,end,words}],text:result.text};
+ }
  if(result.editIntent==='add'||sectionComparisonOriginal(result,beforeText)!==beforeText)return;
  const view=buildPassageComparison(beforeText,result.text,result.comparison);if(view.kind!=='matched')return;
  const edits=comparisonEdits(beforeText,comparisonRows(view,result.rowChoices));

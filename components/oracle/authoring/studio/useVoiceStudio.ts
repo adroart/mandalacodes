@@ -3,7 +3,7 @@ import { AuthoringStore, type SavedSession } from '../../../../lib/oracle/author
 import { createSession } from '../../../../lib/oracle/authoring/workflow';
 import { importAudio } from '../../../../lib/oracle/authoring/recorder';
 import { cardSections, displaySectionTitle, type CardSection } from '../../../../lib/oracle/authoring/cardSections';
-import { SectionDraftStore, sectionTitleEdits, createSectionDraftSession, integrateSectionDraft, sectionComparisonOriginal, sectionReviewExceptions, switchPendingPassageOperation, type SectionDraftSession, type SectionDraftResult } from '../../../../lib/oracle/authoring/sectionDrafts';
+import { SectionDraftStore, sectionTitleEdits, createSectionDraftSession, integrateSectionDraft, sectionComparisonOriginal, sectionReviewExceptions, switchPendingPassageOperation, listSectionHistory, restoreSectionHistoryAsDraft, prepareSelectedRangeReplacement, type SectionHistoryEntry, type SectionDraftSession, type SectionDraftResult } from '../../../../lib/oracle/authoring/sectionDrafts';
 import { changeSectionSession, processSectionSession, currentSectionTexts } from '../../../../src/mobile/authoring/sectionWorkflow';
 import { currentNamedReaderSection } from '../../../../src/mobile/authoring/readerContext';
 import { getSynthesis } from '../../../../data/synthesisData';
@@ -56,6 +56,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     const [monitor, setMonitor] = useState({ elapsed: 0, paused: false, level: null as number | null });
     const [audioUrl, setAudioUrl] = useState('');
     const [history, setHistory] = useState<SectionDraftSession[]>([]);
+    const [sectionHistory, setSectionHistory] = useState<SectionHistoryEntry[]>([]);
     const [view, setView] = useState<View>('work');
     const [pendingPassage, setPendingPassage] = useState<{sectionId:string;captureId:string;operation:'add'|'replace';focus:{start:number;end:number;text:string}}|null>(null);
     const seekAt = useRef(0);
@@ -789,6 +790,57 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             void showAudio().catch(report);
         if (next === 'sessions')
             void store.list(source.cardNumber).then(setHistory).catch(report);
+        if (next === 'history' && section)
+            void listSectionHistory(source.cardNumber, section.id, source.hash).then(setSectionHistory).catch(report);
+    };
+    const restoreHistory = async (entry: SectionHistoryEntry) => {
+        if (!current.current || active || processing || queued.length || integrating || entry.restoreDisabledReason)
+            return;
+        setIntegrating(true);
+        setError('');
+        try {
+            await flush();
+            const saved = await store.get(current.current.id);
+            if (!saved)
+                throw Error('Your current draft could not be loaded. Reopen History.');
+            const restored = await restoreSectionHistoryAsDraft(entry, saved, services);
+            accept(restored.session);
+            setFocusId(restored.sectionId);
+            setTargetId(restored.sectionId);
+            await loadAudio(restored.session);
+            setNotice('Restored as a separate draft. Review before applying.');
+            setView('review');
+        } catch (e) { report(e); }
+        finally { setIntegrating(false); }
+    };
+    const prepareRange = async (original: {start:number;end:number;text:string}, candidate: {start:number;end:number;text:string}, selected: {original:string;words:string;version:number}) => {
+        if (!section || !result || result.applied || active || integrating || processing || queued.some(take => take.startSectionId === section.id))
+            return;
+        const id = section.id;
+        setIntegrating(true);
+        setError('');
+        try {
+            await flush();
+            const saved = current.current && await store.get(current.current.id);
+            if (!saved || saved.id !== draft?.id)
+                throw Error('This draft changed. Select both ranges again.');
+            const latestSource = await services.loadSource(saved.cardNumber);
+            if (latestSource.hash !== saved.sourceHash)
+                throw Error('The original card changed. Reopen the section and compare it again.');
+            const currentText = (await currentSectionTexts(saved))[id] ?? saved.sections.find(node => node.id === id)?.text;
+            if (currentText === undefined)
+                throw Error('This selected passage is no longer available. Select it again.');
+            const value = await changeSectionSession(saved.id, session => prepareSelectedRangeReplacement(session, id, {
+                original, candidate, expectedOriginalText: selected.original, expectedCandidateText: selected.words,
+                expectedDraftVersion: selected.version,
+            }, currentText));
+            accept(value);
+            setFocusId(id);
+            setView('review');
+            setNotice('Selected replacement ready to review. Your reading has not changed.');
+            await loadAudio(value);
+        } catch (e) { report(e); }
+        finally { setIntegrating(false); }
     };
     useEffect(() => {
         let alive = true;
@@ -981,7 +1033,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('oracle:focus-passage', { detail: { cardNumber: source.cardNumber, sectionId: node.lensId, text: r.appliedText.split(/\n\s*\n/)[0] } })));
     };
     useEffect(() => {
-        if (!draft || active || !focusId)
+        if (!draft || active || !focusId || view === 'range' || view === 'history')
             return;
         const id = draft.id;
         const timer = setTimeout(() => void changeSectionSession(id, s => ({ ...s, resume: { sectionId: focusId, mode: view, positionMs: (player.current?.currentTime ?? 0) * 1000 } })).then(value => {
@@ -1101,6 +1153,15 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     const nextAfter = (id?: string) => nodes[nodes.findIndex(n => n.id === id) + 1];
     const nextReview = reviewList.find((n, index) => index > position && !results.find(r => r.sectionId === n.id)?.applied) ?? reviewList.find(n => !results.find(r => r.sectionId === n.id)?.applied && n.id !== section?.id);
     const readyClean = results.filter(r => !r.applied && !r.passageEdit && (!sectionReviewExceptions(r).needsReview || r.checked));
+    const historyApplyReason = (() => {
+        if (!result?.historyRestore || result.applied) return '';
+        const before = [...result.historyRestore.baselineText], after = [...result.text];
+        if (result.text === result.historyRestore.baselineText) return 'These historical words are already in your reading.';
+        let start = 0, tail = 0;
+        while (start < before.length && start < after.length && before[start] === after[start]) start++;
+        while (tail < before.length - start && tail < after.length - start && before[before.length - 1 - tail] === after[after.length - 1 - tail]) tail++;
+        return start + tail === after.length ? 'Restoring a version that only removes words is not supported yet. This draft is saved.' : '';
+    })();
     const applyLabel = (() => {
         if (!result || !section)
             return { text: '', empty: false };
@@ -1134,7 +1195,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     const originSpans = section ? appliedOrigins[section.id] : undefined;
     const displayOrigins = originSpans?.map(part => part.text).join('') === appliedText ? originSpans : [{ text: appliedText, origin: section && authorship?.sections[section.id] === 'human' ? 'human' : 'unknown' }];
     const locked = !!active || opening || integrating;
-    const screenTitle: Record<View, string> = { work: '', passage: 'Edit passage', review: '', settings: 'Recording settings', audio: 'Recordings', sessions: 'Sessions', sections: placing !== null ? 'Place these words' : 'Sections', cleanup: 'Speech cleanup', unplaced: 'Unplaced words' };
+    const screenTitle: Record<View, string> = { work: '', passage: 'Edit passage', review: '', history: 'History', range: 'Select replacement', settings: 'Recording settings', audio: 'Recordings', sessions: 'Sessions', sections: placing !== null ? 'Place these words' : 'Sections', cleanup: 'Speech cleanup', unplaced: 'Unplaced words' };
     const pickFromRail = (node: CardSection) => {
         if (view === 'review' && results.some(r => r.sectionId === node.id))
             void choose(node.id).catch(report);
@@ -1207,7 +1268,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         // Account and stores.
         account, accountActions, retrying, store, audio,
         // Session and screen state.
-        draft, savedAudio, setSavedAudio, history, view, setView, focusId, setFocusId, targetId, setTargetId, pendingPassage,
+        draft, savedAudio, setSavedAudio, history, sectionHistory, view, setView, focusId, setFocusId, targetId, setTargetId, pendingPassage,
         error, notice, setNotice, opening, integrating, stopping,
         authorship, authorshipFailed, references, linkedDrafts,
         // Recording.
@@ -1220,12 +1281,12 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         // Derived values.
         nodes, review, processing, processingStage, section, result, results, target, takes, queued, discarded, savedCaptures,
         needsSignIn, cannotSignIn, processingMessage, processingDetail, statusShown, toastError, toastDetail, health,
-        reviewList, position, waiting, checks, open, generalCheck, progressText, nextReview, readyClean, applyLabel,
+        reviewList, position, waiting, checks, open, generalCheck, progressText, nextReview, readyClean, applyLabel, historyApplyReason,
         recordingNode, upcoming, nextRecording, appliedText, displayOrigins, locked, screenTitle,
         // Actions.
         accept, report, loadAudio, make, prepare, patch, flush, stopListening, choose, aim, openApplied, aimParagraph, reviewAt,
         record, stop, togglePause, edit, choosePassage, checkWords, integrate, playCapture, listen, hear, addAudio, discard,
-        showAudio, close, openView, dismissToast, retrySaved, signInAndResume, titleFor, shownTitle, saveTitle, readUpdated,
+        showAudio, close, openView, restoreHistory, prepareRange, dismissToast, retrySaved, signInAndResume, titleFor, shownTitle, saveTitle, readUpdated,
         chip, step, pathFor, scopeFor, spanLabel, selectionParagraph, nextAfter, applySection, switchReviewOperation, pickFromRail, place,
         // Send finished sections to the card.
         sendToCard,

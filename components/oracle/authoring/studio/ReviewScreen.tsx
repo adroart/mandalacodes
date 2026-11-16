@@ -18,6 +18,7 @@ export type ReviewStageProps=Omit<AppliedPanelProps,'section'|'result'>&Pick<Voi
  'section'|'result'|'draft'|'titleFor'|'integrating'|'saveTitle'|'checks'|'checkAudio'|'listen'|'setResolved'|'choosePassage'|
  'replay'|'activeWord'|'caret'|'setView'|'active'|'setPhrase'|'playCapture'|'report'|'edit'|'queued'|'processing'|
  'savedCaptures'|'openView'|'linkedDrafts'|'onClose'|'onNavigateCard'|'pathFor'|'scopeFor'|'applyLabel'|'processingStage'|'pendingPassage'|'takes'|'switchReviewOperation'
+ |'historyApplyReason'
 >;
 
 /**
@@ -25,11 +26,15 @@ export type ReviewStageProps=Omit<AppliedPanelProps,'section'|'result'>&Pick<Voi
  * comparison host (`SectionPassageReview`), then the unplaced-words and connected-card notes.
  */
 export function ReviewStage(props:ReviewStageProps){
- const {section,result,draft,titleFor,integrating,saveTitle,checks,checkAudio,listen,setResolved,choosePassage,references,replay,activeWord,caret,setView,active,setPhrase,playCapture,report,edit,queued,processing,savedCaptures,openView,linkedDrafts,onClose,onNavigateCard,pathFor,scopeFor,applyLabel,processingStage,pendingPassage,takes,switchReviewOperation}=props;
+ const {section,result,draft,titleFor,integrating,saveTitle,checks,checkAudio,listen,setResolved,choosePassage,references,replay,activeWord,caret,setView,active,setPhrase,playCapture,report,edit,queued,processing,savedCaptures,openView,linkedDrafts,onClose,onNavigateCard,pathFor,scopeFor,applyLabel,historyApplyReason,processingStage,pendingPassage,takes,switchReviewOperation}=props;
  if(pendingPassage){const failed=takes.find(t=>t.captureId===pendingPassage.captureId&&t.state==='failed');return <div className="vs-stage vs-review vs-review-waiting" role="status">
   <p>{failed?'This recording could not be prepared yet. Its audio is saved. Retry it above.':processingStage||'Preparing review…'} Your existing reviews are still saved.</p>
  </div>;}
  return <div className="vs-stage vs-review">
+  <nav className="vs-review-tools" aria-label="Review tools">
+   <button type="button" className="vs-btn" disabled={integrating||!!active} onClick={()=>openView('history')}>History</button>
+   {result&&!result.applied&&<button type="button" className="vs-btn" disabled={integrating||processing||!!active||queued.some(t=>t.startSectionId===section?.id)} onClick={()=>openView('range')}>Replace selected words</button>}
+  </nav>
   {section&&result?<>
    {!result.passageEdit&&<div className="vs-review-head" data-section-id={section.id}>
     {(section.path.length>1||section.id.includes('/selection-'))&&<small>{section.path.slice(0,-1).join(' · ')}{section.id.includes('/selection-')?' · selected passage':''}</small>}
@@ -46,6 +51,7 @@ export function ReviewStage(props:ReviewStageProps){
     <strong>{applyLabel.text}</strong>
     <span>Card {section.cardNumber} · {pathFor(section)} · {result.comparison?'reviewed passages':'whole section'}. Not applied yet. Apply changes your private reading.</span>
    </div>}
+   {historyApplyReason&&<p className="vs-review-status" role="note">{historyApplyReason}</p>}
    {result.applied?<AppliedPanel {...props} section={section} result={result}/>:<>
     {(result as TakeResult).doubtsAvailable===false&&<p className="vs-review-unchecked" role="note">This recording was not double-checked. Listen once before you use it.</p>}
     <SectionPassageReview
@@ -94,7 +100,7 @@ export function ReviewStage(props:ReviewStageProps){
 
 export type ReviewDockProps=Omit<AppliedActionsProps,'section'>&Pick<VoiceStudio,
  'audioUrl'|'playing'|'player'|'clipBounds'|'playhead'|'loop'|'setLoop'|'loopCleanup'|'stopListening'|'replay'|
- 'active'|'listen'|'opening'|'stopping'|'record'|'phrase'|'open'|'applyLabel'|'generalCheck'|'applySection'
+ 'active'|'listen'|'opening'|'stopping'|'record'|'phrase'|'open'|'applyLabel'|'generalCheck'|'applySection'|'historyApplyReason'
 >&{section:CardSection;result:SectionDraftResult};
 
 /**
@@ -102,7 +108,7 @@ export type ReviewDockProps=Omit<AppliedActionsProps,'section'>&Pick<VoiceStudio
  * is applied, otherwise Listen, Re-record and the apply button.
  */
 export function ReviewDock(props:ReviewDockProps){
- const {section,result,audioUrl,playing,player,report,clipBounds,playhead,loop,setLoop,loopCleanup,stopListening,replay,integrating,active,draft,listen,opening,stopping,record,phrase,open,applyLabel,generalCheck,applySection}=props;
+ const {section,result,audioUrl,playing,player,report,clipBounds,playhead,loop,setLoop,loopCleanup,stopListening,replay,integrating,active,draft,listen,opening,stopping,record,phrase,open,applyLabel,generalCheck,applySection,historyApplyReason}=props;
  return <footer className="vs-dock vs-dock--review">
   {audioUrl?<>
    <button className="vs-icon vs-icon--ring" aria-label={playing?'Pause playback':'Play'} onClick={()=>{if(playing)player.current?.pause();else void player.current?.play().catch(report);}}>{playing?<Pause size={18}/>:<Play size={18}/>}</button>
@@ -115,7 +121,7 @@ export function ReviewDock(props:ReviewDockProps){
   </>:result.applied?appliedActions(props):<>
    <button className="vs-btn vs-btn--quiet" disabled={integrating||!!active||!draft?.captureSessionId} onClick={()=>void listen()}><Play size={16}/>Listen</button>
    <button className="vs-btn vs-btn--quiet" disabled={opening||integrating||stopping} onClick={()=>void record(phrase&&phrase.sectionId===section.id?phrase:null,section.id,result.passageEdit)}><Mic size={16}/>{phrase&&phrase.sectionId===section.id?'Re-record selection':'Re-record'}</button>
-   <button className="vs-btn vs-btn--primary" data-action="apply" disabled={!result.text.trim()||integrating||open>0||applyLabel.empty} onClick={()=>void applySection()}>{integrating?'Saving words…':open?`Check ${plural(open,generalCheck?'item':'word')} first`:!result.text.trim()?'No words to use':applyLabel.text}</button>
+   <button className="vs-btn vs-btn--primary" data-action="apply" disabled={!result.text.trim()||integrating||open>0||applyLabel.empty||!!historyApplyReason} onClick={()=>void applySection()}>{integrating?'Saving words…':open?`Check ${plural(open,generalCheck?'item':'word')} first`:!result.text.trim()?'No words to use':applyLabel.text}</button>
   </>}
  </footer>;
 }
