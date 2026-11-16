@@ -103,6 +103,8 @@ Coaching when the coach is not AI. Four things stand in for it, and each is alre
 
 ### 4. The loop: handwriting back into oracle/cards/NN.md, with the AI as typist
 
+**Reference and approval update, 2026-11-16:** Adrian approved card number, section and an exact original quotation, followed by before/after approval. The current local workflow is documented in [handwritten corrections](../../docs/oracle/handwritten-corrections.md). It replaces the sentence-number transcript and patch-command proposal below; the workbook's removed sentence numbers are not restored. The typist transcribes spelling and punctuation verbatim. Sentence pinning and the rest of the historical program below are separate work, not capabilities supplied by the importer.
+
 The five marks on paper. A line through: cut. A word circled with the word above: swap. A caret with a number: insert here, and the text is on the facing page under that number. A star in the margin: true, keep, fixed from now on. A question mark in the margin: I need to go to the source, not done; a resume marker for the next sitting, never for anyone else. Five marks, nothing else. A mark system he has to remember is one he stops using on day three.
 
 Intake. At the end of a booklet (or a card, if he prefers), he photographs the marked pages in order and shares them to one folder per card in the vault, Mandala Codes/oracle/pass/NN/, with the "in my life" memo. The vault already syncs.

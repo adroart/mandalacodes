@@ -806,3 +806,9 @@ Run on one card first, card 6, written new from the source files without opening
 Adrian: "Add the selected-card tells check and fail closed; keep the current writing steps and thresholds."
 
 This correction adds the existing tells strict check for the selected card to `scripts/card-gate.mjs`, and treats an unexpected checker failure as a gate failure. The current writing steps and tells thresholds remain unchanged.
+
+## 2026-11-16, handwritten correction references and approval
+
+Adrian: "Go with your recommendation for handwritten corrections: card number, section and a short quote, then a before/after approval. Have an agent build it. Stay as manager, tell me the model and effort, and leave the editor to its own chat."
+
+This approves a deterministic local import workflow using card number, section and an exact original quotation instead of the retired sentence numbers. Each prepared correction must show the affected text before and after and require approval of that exact proposal before application. It does not approve any particular manuscript correction or change editorial status, writing steps or thresholds.
