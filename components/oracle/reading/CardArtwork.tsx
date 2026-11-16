@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { CARD_BY_NUMBER } from '../../../data/oracleData';
-import { UL_CARD_HERO_SIZES, ulCardHeroImageUrl, ulCardHeroSrcset } from '../../../utils/universalLanguage';
+import { UL_CARD_HERO_SIZES, ulAltText, ulCardHeroImageUrl, ulCardHeroSrcset, ulPieceForCard } from '../../../utils/universalLanguage';
 import { hexagramLineBooleans } from '../HexagramGlyph';
 import './card-artwork.css';
 
@@ -11,6 +11,7 @@ export default function CardArtwork({ cardNumber }: { cardNumber: number }) {
 
 function ArtworkRequest({ cardNumber }: { cardNumber: number }) {
   const card = CARD_BY_NUMBER.get(cardNumber)!;
+  const piece = ulPieceForCard(cardNumber);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [attempt, setAttempt] = useState(0);
   const image = useRef<HTMLImageElement>(null);
@@ -35,7 +36,7 @@ function ArtworkRequest({ cardNumber }: { cardNumber: number }) {
         src={ulCardHeroImageUrl(cardNumber)}
         srcSet={ulCardHeroSrcset(cardNumber)}
         sizes={UL_CARD_HERO_SIZES}
-        alt={`${card.card_name} · Code ${cardNumber}`}
+        alt={piece ? ulAltText(piece, cardNumber) : `${card.card_name} · Code ${cardNumber}`}
         crossOrigin="anonymous"
         decoding="async"
         loading="eager"
