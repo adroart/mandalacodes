@@ -7,7 +7,7 @@ import './dock.css';
 export type DockProps=Pick<VoiceStudio,
  'active'|'stopping'|'opening'|'monitor'|'recordingNode'|'phraseCapture'|'captureFocus'|'upcoming'|'continuous'|
  'togglePause'|'stop'|'pathFor'|'scopeFor'|'queued'|'target'|'shownTitle'|'spanLabel'|'paragraphAim'|'waiting'|
- 'reviewArrival'|'explicitChoice'|'openView'|'results'|'record'|'health'|'nodes'
+ 'reviewArrival'|'explicitChoice'|'openView'|'results'|'record'|'health'|'nodes'|'passageOperation'|'paragraphAim'|'wholeSection'|'passageCapture'|'draft'|'view'|'references'
 >;
 
 /**
@@ -16,10 +16,13 @@ export type DockProps=Pick<VoiceStudio,
  * while re-recording selected words there is no Send, and Stop & review is the main action.
  * Otherwise: where Record will aim, Review, and Record.
  */
-export default function Dock({active,stopping,opening,monitor,recordingNode,phraseCapture,captureFocus,upcoming,continuous,togglePause,stop,pathFor,scopeFor,queued,target,shownTitle,spanLabel,paragraphAim,waiting,reviewArrival,explicitChoice,openView,results,record,health,nodes}:DockProps){
+export default function Dock({active,stopping,opening,monitor,recordingNode,phraseCapture,captureFocus,upcoming,continuous,togglePause,stop,pathFor,scopeFor,queued,target,shownTitle,spanLabel,paragraphAim,waiting,reviewArrival,explicitChoice,openView,results,record,health,nodes,passageOperation,wholeSection,passageCapture,draft,view,references}:DockProps){
  const interrupted=!stopping&&health.microphone==='interrupted';
  // A title shared by several sections (several are called "Reading") is shown with its full path.
  const idleName=target?(nodes.filter(n=>shownTitle(n)===shownTitle(target)).length>1?pathFor(target):shownTitle(target)):'Opening…';
+ const ready=results.filter(r=>!r.applied).length,unplaced=draft?.unassigned.length??0;
+ const blocked=!!target&&(results.some(r=>r.sectionId===target.id&&!r.applied)||queued.some(t=>t.startSectionId===target.id));
+ const stale=!!target&&!!paragraphAim&&paragraphAim.sectionId===target.id&&(references[target.id]??target.text).slice(paragraphAim.start,paragraphAim.end)!==paragraphAim.text;
  return <footer className="vs-dock" data-recording={!!active||undefined}>
   {active?<>
    <div className="vs-recording-status" data-health={interrupted?'interrupted':undefined}>
@@ -32,8 +35,8 @@ export default function Dock({active,stopping,opening,monitor,recordingNode,phra
      :<span className="vs-level" aria-hidden="true" style={{'--level':monitor.paused?0:monitor.level??0} as React.CSSProperties}/>}
    </div>
    <div className="vs-dock-target" aria-live="polite">
-    <strong>{pathFor(recordingNode)}</strong>
-    <span>{phraseCapture.current?'Selected words':scopeFor(recordingNode,captureFocus.current)}</span>
+    <strong>{passageCapture.current?`Card ${recordingNode.cardNumber} · `:''}{pathFor(recordingNode)}</strong>
+    <span>{passageCapture.current?`${passageCapture.current.operation==='add'?'Add after':'Replace'} · ${scopeFor(recordingNode,passageCapture.current.focus)}`:phraseCapture.current?'Selected words':scopeFor(recordingNode,captureFocus.current)}</span>
    </div>
    {upcoming&&<p className="vs-recording-next">{continuous?'Next, recording continues':'Next'} · {pathFor(upcoming)}</p>}
    {health.listening&&<p className="vs-dock-listening">{health.listening}</p>}
@@ -45,11 +48,11 @@ export default function Dock({active,stopping,opening,monitor,recordingNode,phra
    <span className="vs-dock-announce" role="status" aria-live="polite">{health.announcement}</span>
   </>:<>
    <div className="vs-dock-target">
-    <small>Record over{queued.length?<span> · {queued.length} processing</span>:null}</small>
+    <small>{paragraphAim?passageOperation==='add'?'Add after selected passage':passageOperation==='replace'?'Replace selected passage':'Choose Add after or Replace':wholeSection?'Whole section recording':'Tap a passage to edit'}{queued.length?<span> · {queued.length} processing</span>:null}</small>
     <strong>{idleName}<span className="vs-span">{target?spanLabel(target,paragraphAim?.sectionId===target.id?paragraphAim:undefined):''}</span></strong>
    </div>
-   {waiting>0&&<button className="vs-btn" onClick={()=>{reviewArrival.current=true;explicitChoice.current=false;openView(results.some(r=>!r.applied)?'review':'unplaced');}}>Review {waiting}</button>}
-   <button className="vs-record" disabled={opening||stopping||!target} onClick={()=>void record(null,target?.id)}>{opening?'Opening microphone…':'Record'}</button>
+   {waiting>0&&view==='work'&&<button className="vs-btn" onClick={()=>{reviewArrival.current=true;explicitChoice.current=false;openView(ready?'review':'unplaced');}}>{ready?`Review ${ready}`:`Place ${unplaced}`}{ready&&unplaced?` · ${unplaced} unplaced`:''}</button>}
+   <button className="vs-record" disabled={opening||stopping||blocked||stale||!target||!wholeSection&&!passageOperation} onClick={()=>void record(null,target?.id)}>{opening?'Opening microphone…':blocked?'Finish review first':stale?'Choose passage again':passageOperation==='add'?'Record addition':passageOperation==='replace'?'Record replacement':'Record'}</button>
   </>}
  </footer>;
 }

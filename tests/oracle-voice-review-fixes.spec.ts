@@ -25,6 +25,8 @@ async function scriptedSpeech(page:Page,{raw,corrected,doubts,sections}:{raw:str
 async function review(page:Page){
  await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();
  await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();const dialog=page.getByRole('dialog');
+ await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();
+ await dialog.locator('.vs-section[data-section-id="2/CODE/reading"]').getByRole('button',{name:'Record whole section',exact:true}).click();
  await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeEnabled();
  await dialog.getByRole('button',{name:'Recording settings',exact:true}).click();await dialog.getByRole('button',{name:/^Recordings and transcript/}).click();
  await dialog.getByLabel('Add audio file',{exact:true}).setInputFiles({name:'spoken.wav',mimeType:'audio/wav',buffer:wave()});
