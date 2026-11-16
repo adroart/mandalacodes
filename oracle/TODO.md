@@ -1,8 +1,15 @@
 # Universal Language Oracle — TODO
 
-A resumable list of everything outstanding. Read with `ANCHOR.md` (the
-situation) and `VISION.md` (the intent). This file is the working backlog
-— update it as items close. Last revised 2026-05-23.
+Historical backlog, last revised 2026-05-23. Reclassified 2026-11-16 because
+its JSON-overlay implementation and writing instructions have been superseded.
+Use [the current project todo](../TODO.md) for priorities and [INDEX.md](INDEX.md)
+for the authoritative runtime and manuscript paths. For writing, follow
+[CARD-PASS.md](CARD-PASS.md) and [GUIDELINE.md](GUIDELINE.md).
+
+The branch state, completion counts and proposed 122-agent JSON rewrite below
+are historical, not current build instructions. Author card prose only in
+`oracle/cards/NN.md`; preserve Adrian's editorial decisions. Do not restart
+the overlay migration or promote scaffold writing to final from this list.
 
 ---
 

@@ -285,7 +285,12 @@ const UniversalLanguageCard: React.FC = () => {
           the placement, a chart without it says nothing. */}
       <div className="eb-reading ul-chart-row" data-palette={palette}>
         {synthesis?.summary ? (
-          import.meta.env.VITE_ORACLE_APP === 'true'?<WorkingCardIntro cardNumber={card.number} original={synthesis.summary}/>:<p className="ul-essence">{synthesis.summary}</p>
+          <section className="ul-intro" aria-labelledby="ul-intro-heading">
+            <h2 id="ul-intro-heading">Message at a glance</h2>
+            {import.meta.env.VITE_ORACLE_APP === 'true'
+              ? <WorkingCardIntro cardNumber={card.number} original={synthesis.summary}/>
+              : <p className="ul-essence">{synthesis.summary}</p>}
+          </section>
         ) : null}
         <YourPositionCallout gate={card.number} />
         <SaveToCollectionButton
@@ -369,7 +374,14 @@ const chartRowStyles = `
     text-align: center;
     text-wrap: balance;
     max-width: 560px;
-    margin: 0 0 clamp(14px, 2vw, 22px);
+    margin: 0;
+  }
+  .ul-intro { max-width: 560px; min-width: 0; text-align: center; margin-bottom: 8px; }
+  .ul-intro h2 {
+    margin: 0 0 10px;
+    font: 600 12px/1.4 var(--font-controls);
+    letter-spacing: 0.16em;
+    color: var(--l-2);
   }
   @media (max-width: 819px) {
     .ul-chart-row { padding-left: 10px; padding-right: 10px; }

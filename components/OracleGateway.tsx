@@ -11,19 +11,7 @@
 import React, { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ALL_CARDS } from '../data/oracleData';
-
-/* ─── Trigram → line pattern ─────────────────────────────────────────────── */
-
-const TRIGRAM_LINES: Record<string, readonly [boolean, boolean, boolean]> = {
-  '☰': [true,  true,  true ],
-  '☷': [false, false, false],
-  '☳': [false, false, true ],
-  '☵': [false, true,  false],
-  '☶': [true,  false, false],
-  '☴': [true,  true,  false],
-  '☲': [true,  false, true ],
-  '☱': [false, true,  true ],
-};
+import { hexagramLineBooleans, TRIGRAM_LINES } from './oracle/HexagramGlyph';
 
 /* ─── Ring geometry ──────────────────────────────────────────────────────── */
 
@@ -47,9 +35,12 @@ const OracleGateway: React.FC = () => {
       const x           = CX + Math.cos(angle) * R;
       const y           = CY + Math.sin(angle) * R;
       const rotationDeg = (i / 64) * 360 + 180;
-      const uLines = TRIGRAM_LINES[card.iching.upper_trigram.symbol] ?? [true, true, true];
-      const lLines = TRIGRAM_LINES[card.iching.lower_trigram.symbol] ?? [false, false, false];
-      const lines: readonly boolean[] = [...uLines, ...lLines];
+      const upper = card.iching.upper_trigram.symbol;
+      const lower = card.iching.lower_trigram.symbol;
+      const lines = hexagramLineBooleans(
+        upper,
+        TRIGRAM_LINES[lower] ? lower : '☷',
+      );
       return { number: card.number, name: card.card_name, x, y, rotationDeg, lines };
     }),
   []);
