@@ -69,7 +69,6 @@ test('globe has no dream hopping or timed hints with lenses flag', async ({ page
 });
 
 test('globe filter keeps only Series and status with lenses flag', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
   await openFixture(page, '/atlas?lenses=1');
   await page.getByRole('button', { name: 'filter', exact: true }).click();
   const panel = page.getByText('Refine the map').locator('..').locator('..');
