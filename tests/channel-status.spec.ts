@@ -128,7 +128,13 @@ async function showChannelLine(page: Page) {
     const reader = element.closest('.card-reading')!;
     const scroller = reader.querySelector('[data-scroll]')!;
     const rail = reader.querySelector('[data-jumpbar]')!;
-    return Math.abs(element.getBoundingClientRect().top - scroller.getBoundingClientRect().top - rail.getBoundingClientRect().height - 8);
+    // Desktop's rail sits outside the scroller; chapters land 12px below
+    // the scroller's top. Mobile's sticky rail lives inside it and needs its
+    // height plus the 8px breathing room. Match each reader's actual anchor.
+    const inset = reader.classList.contains('card-reading--desktop')
+      ? 12
+      : rail.getBoundingClientRect().height + 8;
+    return Math.abs(element.getBoundingClientRect().top - scroller.getBoundingClientRect().top - inset);
   })).toBeLessThan(2);
   const line = page.locator('[data-channel-status]').first();
   await expect(line).toBeVisible();
