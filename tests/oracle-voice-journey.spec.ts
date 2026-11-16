@@ -96,7 +96,7 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await shot(page,'12-card-reading-updated');
   });
 
-  test('words that fit no section stay saved and are placed by choosing one section',async({page,context,browserName,baseURL})=>{
+  test('words that fit no section stay saved and are placed by choosing one section',async({page,context,browserName,baseURL},info)=>{
    test.skip(browserName!=='chromium','Uses the Chromium fake microphone');await context.grantPermissions(['microphone'],{origin:baseURL!});
    await scriptedSpeech(page,{unplaced:true});const dialog=await openRecording(page);
    await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();
@@ -107,7 +107,17 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await expect(dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-chip')).toHaveText('Check words');
    await expect(dialog.getByRole('button',{name:'1 passage not placed yet'})).toBeVisible();
    await shot(page,'20-unplaced-noted');
-   await dialog.getByRole('button',{name:/^Review \d+ · \d+ unplaced$/}).click();
+   await dialog.locator('.vs-section[data-section-id="2/INTRO"] .vs-para--choice').first().click();
+   await dialog.getByRole('button',{name:'Back',exact:true}).click();
+   const mixedDock=dialog.locator('.vs-dock--idle');
+   await expect(mixedDock.getByRole('button',{name:'Review 2: 1 edit · 1 unplaced'})).toHaveText('Review 2');
+   if(test.info().project.name==='Phone')for(const width of [430,320]){
+    await page.setViewportSize({width,height:812});
+    expect(await mixedDock.locator(':scope > *').evaluateAll(children=>new Set(children.map(child=>Math.round(child.getBoundingClientRect().top))).size)).toBeLessThanOrEqual(2);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.screenshot({path:info.outputPath(`mixed-pending-dock-${width}.png`)});
+   }
+   await mixedDock.getByRole('button',{name:'Review 2: 1 edit · 1 unplaced'}).click();
    await dialog.getByRole('button',{name:/was not placed/}).click();
    await expect(dialog.getByRole('region',{name:'Unplaced words',exact:true})).toContainText('Gate 7');
    await shot(page,'21-unplaced-screen');
