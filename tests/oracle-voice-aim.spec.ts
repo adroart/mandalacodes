@@ -127,7 +127,8 @@ test('words placed by hand are added to the section, and the applied reading kee
  const addition='And this belongs with my notes about Gate 7.';
  await scriptedSpeech(page,{unplaced:true,text:addition});
  const d=await openRecording(page);
- const original=(await section(d,READING).locator('.vs-para').allInnerTexts()).map(t=>t.trim());expect(original.length).toBeGreaterThan(1);
+ const paragraphs=section(d,READING).locator('.vs-para');await expect(paragraphs).toHaveCount(3);
+ const original=(await paragraphs.allInnerTexts()).map(t=>t.trim());expect(original.length).toBeGreaterThan(1);
  await chooseWhole(d);await importAudio(d);
  await d.getByRole('button',{name:/was not placed/}).click();
  await expect(d.getByRole('region',{name:'Unplaced words',exact:true})).toContainText(addition);
