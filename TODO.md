@@ -41,7 +41,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 - [x] **Reconcile existing branches (2026-11-16):** completed against the pinned audit inventory; article-library PR #396 is merged and live at `/learn/`. See [branch integration and release record](todo/plans/unmerged-work-2026-11-16.md). Historical inventory: 57 refs / 34 tips; current disposition of the reviewed 11: 8 incorporated (including #396), 2 superseded, 1 owner-held. No selected missing candidate remains from that review.
 
-- [x] **Article library and local writer, PR #396:** live at [mandalacodes.com/learn](https://mandalacodes.com/learn/). Merged `9de8389e` and deployed build `07c30b99`. Required CI, build/typecheck, unit/article checks, visual review, local draft flow and live-byte proof passed; full evidence and remaining limits are in the [release record](todo/plans/unmerged-work-2026-11-16.md). Hosted Keystatic GitHub mode, physical-phone acceptance, owner-held phrase list and collector hold remain outstanding.
+- [x] **Article library and local writer, PR #396:** live at [mandalacodes.com/learn](https://mandalacodes.com/learn/). Merged `9de8389e` and deployed build `07c30b99`. Required CI, build/typecheck, unit/article checks, visual review, local draft flow and live-byte proof passed; full evidence and remaining limits are in the [release record](todo/plans/unmerged-work-2026-11-16.md). The hosted editor is now live through PR #407; see its [release record](todo/plans/unmerged-work-2026-11-16.md#pr-407-hosted-editor-release). Physical-phone acceptance, owner-held phrase list and collector hold remain outstanding.
 
 - Voice browser race: test delay removed; immediate action passed five desktop and five emulated-phone repetitions, with no runtime defect reproduced. Owner phone acceptance remains below.
 - Offline: production-worker checks prove cached prose only; phone acceptance remains below. Artwork is intentionally network-only.
@@ -248,8 +248,9 @@ Framework built on branch `claude/oracle-mcp-artwork-readings-MMa1k` (pending me
 
 ## Mandala Authority Strategy
 
-- [ ] **Learn editor in the browser** _(band: you-required)_ _(effort: moderate)_ — switch the `/learn` Keystatic editor from local-only mode to GitHub mode so articles can be written from any browser without running the dev server.
-  Today writing requires `npm run write` locally; GitHub mode needs a Keystatic GitHub App and a host with server routes. Steps are in [content-site/README.md](content-site/README.md) "Editing from the browser in production." Done when you can open a hosted Keystatic URL, write an article, and it commits to `main`.
+- [x] **Verify the free hosted Learn editor pilot:** [hosted editor pilot](https://mandalacodes-editor-pilot.netlify.app/keystatic) passed sign-in, synthetic draft save/reopen/edit/save/reopen and image upload checks on 2026-11-16. See the [pilot record](todo/plans/unmerged-work-2026-11-16.md#hosted-editor-pilot).
+- [x] **Hosted Learn editor runtime, PR #407:** merged and live. Post-merge `gate`, `test`, and `test-mobile` all passed on exact source `b8b9f0b0563267d511fd0f899911ef4eb770bbaf`; Cloudflare Pages and Netlify production deploys are verified. The hosted editor passed a fresh browser smoke on a disposable branch. Release evidence and limits: [hosted editor release record](todo/plans/unmerged-work-2026-11-16.md#pr-407-hosted-editor-release).
+- [ ] **Publish an article through the hosted editor** _(band: you-required)_ _(effort: moderate)_ — when ready, select and verify the intended writing branch in the hosted editor, then review the resulting PR and merge through the existing protected-main/Pages flow. Keep publication and editorial review owner-led.
 
 ## Operational notes (not TODOs: context for future-you)
 

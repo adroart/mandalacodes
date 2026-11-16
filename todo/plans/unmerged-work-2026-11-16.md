@@ -16,7 +16,7 @@ PR #396, based on reviewed head `b2bd58e1cd125898798e77012117618538bcadf9`, merg
 
 Required CI passed. Local verification passed build/typecheck, 1,656 unit tests, article-index test, 8 allowance checks, 6 PWA checks, desktop and 375px visual checks in both palettes, and disposable local draft save/reopen, cover upload, caption/credit preview, and local preview. Search, reset, no-result, category/article navigation, and horizontal overflow were visually checked. Draft route/index/RSS/llms/sitemap exclusions and metadata checks passed. Production release proof matched the merge revision, marker, assets and article index. The HTML body comparison excluded only the observed Cloudflare analytics injection; the original HTML bytes were preserved and source bytes matched. Before merge, test-only fixes addressed the library heading and voice missing-audio refresh timing; the affected voice checks passed 10 repetitions.
 
-The historical base, review classification and inventory remain an audit snapshot. Hosted Keystatic GitHub mode and physical-phone acceptance remain open. The owner-held phrase-list work and collector launch hold remain unchanged.
+The historical base, review classification and inventory remain an audit snapshot. The free hosted editor pilot was integrated through PR #407 and is live; its disposable synthetic content remains isolated from main. Physical-phone acceptance remains open. The owner-held phrase-list work and collector launch hold remain unchanged.
 
 ## Selective integration order and acceptance
 
@@ -29,11 +29,36 @@ The historical base, review classification and inventory remain an audit snapsho
    - Completed visual inspection of `/learn/`, categories and article routes on desktop and 375px, in both palettes: real images, readable text/hit targets, no horizontal overflow, working search/reset/no-result/category/article navigation. Metadata resolves to public `/learn/` URLs and JSON-LD editorial-text safety passed. The PWA check separately verified card-to-Learn routing.
    - Completed local writer check at `http://127.0.0.1:4322/keystatic`: a disposable draft saved and reopened; cover upload, caption/credit, and preview passed. The disposable fixture was removed. Drafts were confirmed excluded from production article routes, article index, RSS, sitemap and llms output; preview remains local. No real article publication was part of the check.
    - The November 6 PR description checks were superseded by verification of the reviewed release candidate and deployed bytes recorded above.
-3. **Keep hosted writing separate and unfinished.** #396 retains Keystatic local storage and static production output. It does not supply a GitHub App, hosted server routes, browser authentication or hosted commit-to-main workflow. Keep the existing “Learn editor in the browser” TODO open; hosted-writer requirements/options need a separate bounded assessment.
+3. **Completed: hosted Learn editor, PR #407.** The isolated runtime/configuration changes were reviewed and merged; the Netlify editor and static `/learn/` production deploy are live and verified. Exact post-merge CI, deploy and browser evidence is in [PR #407 hosted editor release](#pr-407-hosted-editor-release). The synthetic branch/content were excluded. Branch-aware hosted draft preview remains unimplemented; Netlify Deploy Previews are private.
 4. **Do not replay voice, memo, QR, manuscript or generated-history commits.** Their evidence and exact disposition are below. Retain the real-phone acceptance task and author-led content decisions. If a new failure is reproduced, repair current main at the failing boundary rather than importing an old branch wholesale.
 5. **Hold the phrase-list WIP for a separate authoring-tool review.** Preserve `d8919b4d`. If phrase measurements are revisited, regenerate from the accepted current manuscripts using `todo/plans/writing-guideline/deck-phrases.mjs` and review the resulting sentence-check changes. Do not cherry-pick an old measured list or promote manuscript status. The generator currently uses a threshold of 16 although its comment/log say 8; establish the intended measurement rule during that review, not in this library integration.
 
 The merge and publication steps are complete for PR #396 as documented above. Collector ledger launch remains held.
+
+## Hosted editor pilot
+
+The free pilot at [https://mandalacodes-editor-pilot.netlify.app/keystatic](https://mandalacodes-editor-pilot.netlify.app/keystatic) was the proof stage for the hosted editor. Its successful Netlify result superseded the earlier Render recommendation in the separate assessment. The reviewed runtime/configuration changes were subsequently integrated through PR #407; the disposable pilot branch and synthetic article were not. The public `/learn/` remains a static production shell. Netlify Deploy Previews are private; branch-aware hosted draft preview is not implemented.
+
+- Netlify site `c23f82b6-864e-4cb6-b164-ea15a91fc89c`, deploy `6afab25db39969828bd6ac38`, from reviewed source `977d8fbd9c648e74e525652df3f270dce1367c24` on `codex/hosted-editor-pilot-20261116`. Pilot source is isolated in `/Users/adrianrasmussen/.codex/worktrees/hosted-editor-pilot-20261116/mandalacodes`.
+- The free plan is hard $0: no card on file and no paid features enabled. Keystatic Cloud project `mandalacodes-editor/editor-pilot` grants repository access only to `adroart/mandalacodes`. The pilot URL is configured as Primary.
+- Live checks passed: sign-in; synthetic draft create/save/reopen/edit/save/reopen; cover and body uploads (115 and 114 bytes) with byte-identical retrieval; anonymous UI access is login-only; unauthenticated image upload returns 401.
+- The initial pilot synthetic content was confined to disposable `learn/editor-pilot-synthetic-20261116`, commits `3ea85d94086f62f849cbcaf64b01827e3d9c85f9` and `f0e830eb9d45e7139487714195d41e22e9568be5`, with `draft: true`. It was not included in PR #407 or merged to main. Setup evidence: `/tmp/mandalacodes-editor-pilot-accounts/setup.md`.
+- Netlify deployment requires a direct upload from `content-site` with `--functions .netlify/v1/functions`, `--prod --no-build --dir dist` and the site ID. The first static-only deploy omitted functions; the corrected upload served the pilot successfully and was superseded by the PR #407 release below.
+- Render was rejected because the free service required a payment card; Cloudflare's Workers runtime was incompatible with the needed editor server APIs. Netlify is the verified free pilot host.
+
+### PR #407 hosted editor release
+
+PR #407 completed the runtime integration. It merged through the normal protected-main flow on 2026-11-16 at 17:19:27 Bali time (UTC+8). Post-merge run [#43838703014](https://github.com/adroart/mandalacodes/actions/runs/43838703014) success was confirmed by the observer at 17:39:47 Bali time (UTC+8) against the exact merged source `b8b9f0b0563267d511fd0f899911ef4eb770bbaf`; all required `gate`, `test`, and `test-mobile` jobs passed.
+
+- Cloudflare Pages `/learn/` is `LIVE_VERIFIED`: deployment `fd6b8d71-90ef-4a1c-a54f-bf25dc1de1f2` at [mandalacodes.com/learn](https://mandalacodes.com/learn/), with exact commit metadata and immutable/canonical byte proof.
+- Netlify hosted editor is `LIVE_VERIFIED`: deployment `6afacaeba9752401629c405b` at [mandalacodes-editor-pilot.netlify.app/keystatic](https://mandalacodes-editor-pilot.netlify.app/keystatic), with the expected SSR function and matching local/immutable/production JavaScript hashes. The free plan remains $0 with no card and no paid feature change.
+- Fresh browser smoke passed sign-in, disposable-branch draft save/reopen/edit, commit `af615294d59f4541ce08fea13178b63aa38af4ab`, both image previews, anonymous login gate, and unauthenticated image upload returning 401. The smoke branch remains separate, and no synthetic files appear in main.
+- Netlify Deploy Previews remain private. Branch-aware hosted draft preview is still not implemented. Select and verify the intended writing branch in the editor; publication proceeds through a reviewed PR and the normal main/Pages flow.
+- Full evidence: `/Users/adrianrasmussen/.codex/releases/pr407-b8b9f0b0/release.json`, `smoke-report.md`, `pages-live-proof.json`, `netlify-asset-proof.json`, and `main-ci-status.json`.
+
+### Next useful work
+
+The hosted editor integration and deployment are complete; do not repeat the PR #407 integration/deploy steps. When the owner is ready, select and verify the intended writing branch in the hosted editor, then review the resulting article PR before publication. The separate owner/device card-2 phone acceptance remains open in TODO; no collector ledger writes or author-held phrase-list changes are implied by this release.
 
 ## Evidence for all 11 unmatched tips
 
@@ -116,6 +141,6 @@ Counts below exclude merge commits and patch-equivalent changes already reachabl
 
 ## Audit scope and handoff
 
-The reconciliation and selected #396 integration, verification, merge and deployment are complete. No further missing branch candidate remains among the reviewed 11; the historical 57-ref/34-tip inventory has not been refreshed. Next owner/device action: card-2 phone acceptance. Hosted Keystatic GitHub mode remains separate; next agent work may assess its requirements/options without implementing the backend. Owner-held phrase-list work and collector launch hold remain outstanding. No change to the collector launch hold follows from this classification.
+The reconciliation and selected #396 integration, verification, merge and deployment are complete. No further missing branch candidate remains among the reviewed 11; the historical 57-ref/34-tip inventory has not been refreshed. PR #407 completed the hosted-editor runtime integration and is live; see its release record above. Next owner-led work can begin with a real article on a writing branch when ready. Owner/device card-2 phone acceptance remains outstanding. Owner-held phrase-list work and collector launch hold remain outstanding. No change to the collector launch hold follows from this classification.
 
 This audit covers fetched repository refs, registered worktrees and the local stash. Unfetched forks, other machines and unreachable/dangling commits are outside the checked scope. Zero unmatched non-merge patches is not authorization to delete a branch: merge-only changes and ownership must be checked separately before any cleanup.
