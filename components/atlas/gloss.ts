@@ -21,7 +21,7 @@ export type GlossTerm = 'dreams' | 'threads' | 'ember';
 /** The ratified one-line gloss for each term. */
 export const GLOSS_TEXT: Record<GlossTerm, string> = {
   dreams: 'one gesture carries you from dream to dream',
-  threads: 'threads join pieces that share a code',
+  threads: 'threads connect placed pieces whose codes share a three-line symbol',
   ember: 'made, not yet claimed; it waits as an ember',
 };
 
