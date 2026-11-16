@@ -1754,7 +1754,7 @@ const AtlasPage: React.FC = () => {
                       fireGloss('threads');
                       setKinshipVisible((v) => !v);
                     }}
-                    title="Threads join pieces that share a code"
+                    title="Threads connect placed pieces whose codes share a three-line symbol"
                     className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
                       kinshipVisible
                         ? 'text-bronze-300'

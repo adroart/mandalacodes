@@ -48,6 +48,9 @@ const STATUS_OPTIONS: ReadonlyArray<{ value: AtlasStatusFilter; label: string }>
   { value: 'seeking', label: 'Seeking ground' },
 ];
 
+const THREADS_HELP = 'Lines connect placed pieces whose codes share a three-line symbol.';
+const SEEKING_HELP = 'Seeking ground means a piece has no public place on the map yet.';
+
 // ─── Kind facet ────────────────────────────────────────────────────────────
 // Ratified labels (todo/plans/claim-code-integration.md, gap 7), verbatim.
 // The three named kinds lead, in this order; every other kind (a category
@@ -163,6 +166,11 @@ const PaperFilters: React.FC<AtlasFiltersProps> = ({
               );
             })}
           </div>
+          {status === 'seeking' && seekingCount > 0 && (
+            <p className="font-reading text-sm text-wood-700 leading-snug max-w-xs sm:text-right">
+              {SEEKING_HELP}
+            </p>
+          )}
           <p
             className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600"
             aria-live="polite"
@@ -280,12 +288,16 @@ const PaperFilters: React.FC<AtlasFiltersProps> = ({
           role="switch"
           aria-checked={kinshipVisible}
           aria-labelledby="atlas-kinship-label"
+          aria-describedby="atlas-paper-threads-help"
           onClick={() => onKinshipChange(!kinshipVisible)}
           className={`${btnBase} ${kinshipVisible ? active : inactive}`}
         >
           {kinshipVisible ? 'On' : 'Off'}
         </button>
       </div>
+      <p id="atlas-paper-threads-help" className="font-reading text-sm text-wood-700 text-right leading-snug">
+        {THREADS_HELP}
+      </p>
       {typeof threadsShown === 'number' && typeof threadsTotal === 'number' && (
         <p className="font-label text-[10px] uppercase tracking-[0.16em] text-wood-500 text-right">
           {threadsShown === threadsTotal
@@ -393,7 +405,14 @@ const StageFilters: React.FC<AtlasFiltersProps> = ({
       {kindOptions && (
         <TextToggle label="Kind" options={kindOptions} value={selectedKind} onChange={onKindChange} />
       )}
-      <TextToggle label="Show" options={STATUS_OPTIONS} value={status} onChange={onStatusChange} />
+      <div className="flex flex-col gap-1">
+        <TextToggle label="Show" options={STATUS_OPTIONS} value={status} onChange={onStatusChange} />
+        {status === 'seeking' && seekingCount > 0 && (
+          <p className="font-reading text-[13px] text-wood-500 leading-snug pl-20">
+            {SEEKING_HELP}
+          </p>
+        )}
+      </div>
       {categoryOptions && (
         <TextToggle
           label="Type"
@@ -415,6 +434,8 @@ const StageFilters: React.FC<AtlasFiltersProps> = ({
           type="button"
           role="switch"
           aria-checked={kinshipVisible}
+          aria-label="Show kinship threads"
+          aria-describedby="atlas-stage-threads-help"
           onClick={() => onKinshipChange(!kinshipVisible)}
           className="relative inline-flex h-[18px] w-9 items-center rounded-full border border-bronze-400/30 transition-colors duration-300"
           style={{
@@ -437,6 +458,9 @@ const StageFilters: React.FC<AtlasFiltersProps> = ({
           </span>
         )}
       </div>
+      <p id="atlas-stage-threads-help" className="font-reading text-[13px] text-wood-500 leading-snug pl-20">
+        {THREADS_HELP}
+      </p>
 
       <p className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 pt-1" aria-live="polite">
         {total} {total === 1 ? 'piece' : 'pieces'}

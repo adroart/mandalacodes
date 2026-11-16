@@ -451,6 +451,11 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
             </>
           )}
         </p>
+        {typeof piece.claimOrdinal === 'number' && !isSeeking && !isUnawakened && (
+          <p className="mt-1 font-reading text-[13px] leading-snug" style={{ color: MUTED }}>
+            Founding light numbers show the order in which pieces were first claimed.
+          </p>
+        )}
         {carriesYourCode && (
           <p className="mt-1.5 font-reading text-[15px] leading-snug" style={{ color: SAGE }}>
             It carries one of your codes.
