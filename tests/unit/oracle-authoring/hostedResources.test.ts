@@ -101,7 +101,7 @@ describe('one deadline that really stops every provider call',()=>{
   await vi.advanceTimersByTimeAsync(1);
   const response=await pending;expect(response.status).toBe(200);
   expect(await response.json()).toMatchObject({doubts:[],doubtsAvailable:false,segments:[{text:'I trust my direction today.'}]});
-  expect(warn.mock.calls).toEqual([['oracle_authoring_provider_failure',{operation:'transcribe',provider:'groq',pass:'second',reason:'grace_elapsed'}]]);
+  expect(warn).not.toHaveBeenCalled();
   expect(upstream.mock.calls.find(([,init])=>isSecond(init))![1].signal!.aborted).toBe(true);
   expect((upstream.mock.calls.find(([,init])=>isSecond(init))![1].signal!.reason as DOMException).name).toBe('AbortError');
  });

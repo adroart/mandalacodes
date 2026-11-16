@@ -271,7 +271,7 @@ async function transcribe(env:AuthoringEnv,body:any,file:File,prompt:string,star
  // throws (an allocation refused included) each leave the first pass standing with doubtsAvailable false.
  let doubts:Doubt[]|undefined,reason='too_long';
  if(other.ok)try{doubts=findDoubts(timed.length?timed:segments,other.text,timed.length>0);}catch{doubts=undefined;reason='comparison_failed';for(const unit of timed){delete unit.doubt;delete unit.heardAlso;}}
- if(other.ok===false)logProvider('transcribe','groq',{pass:'second',...(other.status?{status:other.status}:{}),reason:other.reason});
+ if(other.ok===false){if(other.reason!=='grace_elapsed')logProvider('transcribe','groq',{pass:'second',...(other.status?{status:other.status}:{}),reason:other.reason});}
  else if(!doubts)logProvider('transcribe','groq',{pass:'second',reason});
  logTiming('transcribe','second_window',started,{doubtsAvailable:!!doubts});
  return json({provider:heard.provider,segments,durationMs,doubts:doubts??[],doubtsAvailable:!!doubts});
