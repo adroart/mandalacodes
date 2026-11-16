@@ -87,7 +87,7 @@ Historical baseline on b9da484, before these repairs: 41 failed, 80 passed and 1
 - [x] Refresh the two status documents, both of which now undercount what is built — done 2026-09-22: re-measured [DEVELOPMENT-STATUS.md](todo/DEVELOPMENT-STATUS.md) and its paired [launch-readiness.md](todo/plans/launch-readiness.md) against the current repo (not just the 2026-09-02 patch note). All six quick wins verified shipped (not five), three more "Medium feature" items found shipped (#7, #10, #15), section 0 rewritten to name the actual current gate (`livingLegacy: false` on adrian-website, confirmed still false), and a stale "0/384 changing-line texts" row corrected to 384/384 (verified while fixing the cast-content item above).
   Measured 2026-09-01: five of the six "quick wins" in [DEVELOPMENT-STATUS.md](todo/DEVELOPMENT-STATUS.md) had already shipped, and one file it points at no longer exists. Its section 0 blames an ops gate of database tables and secrets for holding features hostage; the secrets are in fact provisioned, and the real cause is two launch flags on the other repo.
 
-- [ ] Verify the /make note form end to end on the deployed preview after merging the piece-page branch (auth + R2 queue cannot run under plain Vite; a note should appear in AdminAtlas "Make Requests") _(band: agent-runnable)_ _(effort: quick)_ → Plan: [piece-page-acquisition.md](todo/plans/piece-page-acquisition.md)
+- [x] **Old `/make` form acceptance retired here:** `/make` now shows the artist-site handoff before sign-in or input; retired Atlas APIs return 410. The former form/queue acceptance is superseded by the [collector boundary](todo/plans/audit-2026-09-22.md), not a remaining deployment task.
 
 - [ ] Flip finished pieces to the take-it-home door: in the Catalog Room set status available + acquireUrl; the piece page reads it automatically _(band: you-required)_ _(effort: quick)_
 
@@ -103,9 +103,9 @@ Historical baseline on b9da484, before these repairs: 41 failed, 80 passed and 1
 
 - [ ] Scrub the remaining soft source-name phrases in card prose ("the lineage calls this", "the text calls this", "the Eranos source calls this" on cards 1, 4, 5, 6, 13, 40, 60) — your call, since "the lineage" may read as acceptable in-world voice _(band: you-required)_ _(effort: quick)_
 
-- [ ] Finish The Field: the procession (guided founding-story tour) and the piece's yearly ask about its shared words; the three lenses, dream share flow, and tending queue shipped 2026-07-04 on the globe branch _(band: agent-runnable)_ _(effort: moderate)_ → Plan: [living-art-legacy.md](todo/plans/living-art-legacy.md) § M6
+- [ ] **The Field migration requirements:** preserve the unfinished procession and yearly ask from [M6](todo/plans/living-art-legacy.md) for the Adrian-Website ownership migration. The August 9 rehome decision supersedes building these against Mandala Codes’ retired keeper routes; this is held migration work, not a completed feature. _(band: you-required)_ _(effort: moderate)_
 
-  Measured 2026-08-21 against a local dev server on a clean main checkout: dozens of Mobile Chrome specs fail, not five. Spot-checked `typography-contract` and `oracle-entry-codes` fail identically on plain main and on a merge branch, so this is the suite own state, not a regression from any one change. The suite also runs serially (`fullyParallel: false`) and takes over nine minutes, long enough that a full run gets truncated before reaching the later specs — which is why the count kept reading as five. Get one honest full-suite number first, then triage. Until that exists, "the mobile tests pass" is not a claim anyone can make.
+  The August mobile-suite failure warning is historical. The September repair record reports 135 passed / 10 skips locally, and [PR #405’s required mobile CI](https://github.com/adroart/mandalacodes/actions/runs/43826543645/job/133161678147) passed for candidate `0d2ba909`, now live. These results belong to those exact revisions; every later candidate still needs its own required checks.
 
 - [ ] Make Mandala Codes the go-to mandala authority site (multi-phase content, outreach, and press campaign)   → Plan: [mandala-authority.md](todo/plans/mandala-authority.md) _(band: you-required)_ _(effort: moderate)_
 
@@ -127,7 +127,8 @@ Historical baseline on b9da484, before these repairs: 41 failed, 80 passed and 1
 
 - [ ] Retire the legacy oracle data files once every overlay fully covers its content   → Plan: [oracle/TODO.md](oracle/TODO.md) _(band: you-required)_ _(effort: moderate)_
 
-- [ ] Verify all 64 artwork images (Cloudinary URL, correct piece, filename, alt text)   → Plan: [oracle/TODO.md](oracle/TODO.md) _(band: you-required)_ _(effort: moderate)_
+- [x] **Technical artwork mapping check (2026-11-16, local):** all 64 card numbers, media IDs, filename numbers and generated corpus artwork links match the local archive. Reader alt text now uses the mapped artwork title, correcting card 23’s distinct card/artwork names. Five stubbed-media browser checks, three image unit tests and TypeScript pass.
+- [ ] Visually confirm that each of the 64 photographs depicts the intended piece and verify live media availability. Local metadata checks do not prove those facts. _(band: you-required)_ _(effort: moderate)_
 
 - [ ] Build the acquire detail section and configurator (sizes, editions) on the buy sheet   → Plan: [oracle/TODO.md](oracle/TODO.md) _(band: you-required)_ _(effort: moderate)_
 
@@ -217,12 +218,11 @@ The June 2026 structural review wired the deck ↔ atlas ↔ profile ↔ reading
 - [x] **Gateway hexagram consistency (2026-11-16, local):** Gateway now uses the shared trigram line patterns while retaining its compressed orbital drawing, animation and historical unknown-symbol fallback. All 64 rendered six-line patterns pass the browser regression; desktop/mobile before-and-after screens reviewed. Further geometry consolidation is unnecessary for this fix. Test: `oracle-gateway-glyphs.spec.ts`.
 - [ ] Explore whether a per-hexagram transition reading belongs in the cast experience; the former CoinCast component reference is stale and no current generic "becoming" surface was found. This needs content/product framing before implementation. _(you-required)_ → Plan: [interconnection-followups.md](todo/plans/interconnection-followups.md).
 
-The June 2026 reachability audit found every atlas function is wired and has UI, but the public + owner paths assume knowledge the UI never gives. The two correctness lockouts (returning-owner nav, secondary-buyer flow) shipped on `atlas-globe-hud` / PR #49; these three are the remaining guidance gaps.
+The June reachability review predates the retired collector routes. Keep current read-only guidance separate from ownership features that now belong with the Adrian-Website migration.
 
-- [ ] **Owner-journey thread** — give the steward edit page a guided arc instead of a wall of independent toggles: an intro ("you now steward X, here's what you can do"), surface "Letters from the piece" on arrival (today it's a collapsed button a new owner never finds), and add next-step nudges after placing/inscribing _(agent · moderate)_ _(routed → Backlog)_
-  StewardEdit lays out place / inscribe / consent / heirs / letters / export as isolated sections with no connective guidance, so owners discover features by accident and miss letters entirely. Done when a freshly-claimed owner is walked through the core stewardship actions and sees that the piece writes letters back.
+- [ ] **Owner-journey guidance, held for migration:** preserve the introduction, visible letters and next-step guidance requirements for the canonical ownership site. `/atlas/edit` renders the retired collector boundary here; the unused `StewardEdit` component is not authorization to reopen it. _(band: you-required)_ _(effort: moderate)_
 - [x] **Atlas terminology (2026-11-16, local):** thread controls explain the shared three-line symbols, Seeking ground explains the absent public map location, and the selected-piece panel explains founding-light claim order. Desktop/mobile filters and selected-piece screens checked; four browser checks, five existing copy/retired-route unit checks and TypeScript pass. The old claim CTA is excluded because that collector route is retired.
-  The globe shows "threads", "Founding Lights", and "Seeking ground" with zero explanation, so a visitor sees beautiful but silent jargon and the unplaced-pieces list offers no way to act. Done when each term is explained in place and Seeking ground links into the claim flow.
+  The terminology change is being published through [PR #408](https://github.com/adroart/mandalacodes/pull/408), after the recorder release. Claim actions remain excluded under the collector boundary.
 - [x] **Admin outreach-status control** — built on main (`functions/api/atlas/stewards/outreach.ts`, select in `AdminAtlas.tsx`, `tests/unit/stewardsOutreach.test.ts`); unreachable until go-live ops lift the 410 boundary, not missing _(agent · quick)_ _(routed → Backlog)_
 
 ## Oracle MCP, search & personalization

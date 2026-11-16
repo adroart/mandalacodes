@@ -21,6 +21,9 @@ for (const code of [1, 23]) {
     } finally { release(); }
     await expect(art).toHaveAttribute('data-state', 'ready');
     await expect(art.locator('img')).toHaveCSS('visibility', 'visible');
+    if (code === 23) {
+      await expect(art.locator('img')).toHaveAttribute('alt', 'Beneath the Surface, Universal Language 23. Hand-painted multi-dimensional wooden sculpture by Adrian Rasmussen.');
+    }
     await expect(art.getByRole('status')).toHaveCount(0);
   });
 }
