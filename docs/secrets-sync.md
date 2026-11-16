@@ -53,7 +53,7 @@ Current set (updated 2026-07-15 — auth is self-owned Better Auth, not Clerk):
 | `GOOGLE_CLIENT_ID` | plaintext | mandalacodes | "Continue with Google" OAuth (public by design) |
 | `GOOGLE_CLIENT_SECRET` | encrypted | mandalacodes | Google OAuth client secret |
 | `GROQ_API_KEY` | encrypted | mandalacodes | Primary server-side transcription for private reflection recordings (`whisper-large-v3-turbo`); Workers AI is the configured fallback |
-| `ORACLE_API_TOKEN` | encrypted | mandalacodes | Optional bearer gating /api/oracle/recommendation (rate-limited when unset) |
+| `ORACLE_API_TOKEN` | encrypted | mandalacodes | Required server-held bearer key for `POST /api/oracle/recommendation`; missing configuration returns HTTP 503 |
 | `ADMIN_EMAILS` | plaintext | mandalacodes | Admin allowlist for /admin/atlas |
 | `SALE_WEBHOOK_SECRET` | encrypted | **both** | HMAC-SHA256 verification of sale webhooks from adrianrasmussen.com; mandalacodes verifies, adrianrasmussen.com signs. Same value on both projects. Generate with `openssl rand -hex 32`. See `todo/handoff/adrian-website/sale-webhook-spec.md`. |
 | `CLAIM_BRIDGE_SECRET` | encrypted | **both** | HMAC-SHA256 verification of the contested-claim bridge (`functions/api/atlas/claim-bridge.ts`): adrianrasmussen.com signs the request, mandalacodes verifies. Same value on both projects. Distinct from `SALE_WEBHOOK_SECRET` — do not reuse it. Generate with `openssl rand -hex 32`. |
@@ -62,8 +62,12 @@ Current set (updated 2026-07-15 — auth is self-owned Better Auth, not Clerk):
 | `GITHUB_MIRROR_PATH` | plaintext | mandalacodes | Path inside the mirror repo (e.g. `atlas/public.json`). Only `public.json` is ever mirrored — never the ledger or stewards files. |
 
 The sync script `[skip]`s any var with no value in Infisical, so an
-unconfigured optional var (e.g. `ORACLE_API_TOKEN`, `GOOGLE_*` before Google
-sign-in is wired) is simply skipped rather than erroring. The required-vars
+unconfigured optional var (e.g. `GOOGLE_*` before Google sign-in is wired) is
+simply skipped rather than erroring. It also skips `ORACLE_API_TOKEN` if absent,
+but the recommendation POST then fails closed with HTTP 503. Provision this
+secret in Infisical and sync it to Pages before deploying the access change;
+verify the Pages binding is present without printing its value. The calling
+integration must hold the same key server-side. The required-vars
 preflight insists on `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ADMIN_EMAILS`,
 and `GROQ_API_KEY`. Transcription must not deploy with its primary provider
 silently absent.

@@ -27,7 +27,7 @@ In the quote builder, once you have the client's chart (or their birth moment):
 ```
 POST {MANDALA}/api/oracle/recommendation
 Content-Type: application/json
-[ Authorization: Bearer {ORACLE_API_TOKEN}  — only if gated ]
+Authorization: Bearer {ORACLE_API_TOKEN}
 
 {
   "clientName": "Jordan",
@@ -62,14 +62,14 @@ price + availability.
 
 ## Step 3 — config
 
-- **Token:** if you set `ORACLE_API_TOKEN` in the Mandala Codes Pages dashboard,
-  send it as `Authorization: Bearer …` from Adrian-Website (server-side). Leave
-  it unset for an open endpoint (it only returns public deck content keyed by a
-  chart the caller supplies).
-- **CORS:** the endpoint allows `*`. If the quote system calls it from the
-  browser, that's fine; prefer a server-side call so the token isn't exposed. To
-  lock it down, change the `Access-Control-Allow-Origin` in
-  `functions/api/oracle/recommendation.ts` to `adrianrasmussen.com`.
+- **Token:** provision `ORACLE_API_TOKEN` as a Mandala Codes Pages secret before
+  deploying the access change. Keep the matching key on the Adrian-Website
+  server and send `Authorization: Bearer …` on each request. The endpoint returns
+  HTTP 503 when its key is unconfigured and HTTP 401 when the request has no
+  valid bearer key.
+- **CORS:** the endpoint retains `*` and an unauthenticated preflight for
+  compatibility. The quote system calls recommendation POST from its server;
+  never expose the integration key to browser code or client pages.
 
 ## Notes
 

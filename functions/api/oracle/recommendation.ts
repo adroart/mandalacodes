@@ -15,16 +15,15 @@
  *     "recommendation": { intention, closing, picks:[{sphere|gate, reason}] } // optional
  *   }
  *
- * Returns the LookbookData (pieces + resolved recommendation). Read-only deck
- * content keyed by the caller's own chart; optionally gated by ORACLE_API_TOKEN.
+ * Returns the LookbookData (pieces + resolved recommendation). Requires a
+ * server-held ORACLE_API_TOKEN, sent by the calling integration as a bearer key.
  */
 import { assembleLookbook, type ChartInput } from '../../../lib/oracle/recommendation';
 import { buildHologeneticProfile } from '../../../lib/astrology/profile';
 import type { CanonicalCard } from '../../../lib/oracle/types';
 import corpusData from '../../../data/oracle-corpus.json';
-import { checkRateLimit, clientIp, tooManyRequests } from '../_lib/rate-limit.js';
 
-interface Env { ORACLE_API_TOKEN?: string; DB?: unknown }
+interface Env { ORACLE_API_TOKEN?: string }
 
 const CARDS = (corpusData as { cards: CanonicalCard[] }).cards;
 
@@ -40,29 +39,20 @@ const json = (body: unknown, status = 200) =>
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...CORS },
   });
 
-export const onRequestOptions: PagesFunction = async () => new Response(null, { headers: CORS });
+export const onRequestOptions = async () =>
+  new Response(null, { headers: { ...CORS, 'Cache-Control': 'no-store' } });
 
-export const onRequestGet: PagesFunction = async () =>
+export const onRequestGet = async () =>
   json({
     endpoint: 'POST /api/oracle/recommendation',
     body: { clientName: 'optional', profile: 'an 11-sphere chart', utcBirth: 'ISO UTC, computes the chart instead', recommendation: 'optional { intention, closing, picks }' },
   });
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   const required = env.ORACLE_API_TOKEN;
-  if (required) {
-    const tok = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-    if (tok !== required) return json({ error: 'unauthorized' }, 401);
-  } else {
-    // Unauthenticated (no token configured): this runs astronomy compute per
-    // call, so cap it per-IP to prevent a CPU/DoS amplifier. Fail-open.
-    const { ok, retryAfterSec } = await checkRateLimit(
-      env as { DB?: unknown },
-      `oracle:rec:${clientIp(request)}`,
-      { limit: 20, windowMs: 60_000 },
-    );
-    if (!ok) return tooManyRequests(retryAfterSec, CORS);
-  }
+  if (!required) return json({ error: 'service unavailable' }, 503);
+  const auth = request.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i);
+  if (auth?.[1] !== required) return json({ error: 'unauthorized' }, 401);
 
   let body: any;
   try {

@@ -1,5 +1,11 @@
 # Oracle Phase 3c — Hosted search + remote MCP (deployment plan)
 
+> Historical implementation plan. Current access decision (2026-11-16): keep
+> published card/search and all seven read-only hosted MCP tools public. Keep
+> `ORACLE_MCP_TOKEN` unset. Recommendation POST is a separate integration
+> endpoint and requires a server-held `ORACLE_API_TOKEN`; provision it before
+> deploying that access change, or POST fails closed with HTTP 503.
+
 The last piece of [`oracle-mcp-integration-plan.md`](./oracle-mcp-integration-plan.md):
 put the query layer that already runs locally onto a public URL — a REST search
 endpoint for the website and external callers, and the oracle as a **hosted MCP
@@ -253,8 +259,9 @@ is **public, read-only**:
 
 - **REST search/card** — public, CORS `*`, cached 5 min. (Tighten the origin to
   `mandalacodes.com` if you'd rather not let other sites call it.)
-- **Remote MCP** — public read-only, OR a **shared-secret bearer** if you want it
-  private to you:
+- **Remote MCP** — public read-only under the current decision. The optional
+  bearer gate below records the earlier implementation option; it is not the
+  selected configuration:
 
   ```ts
   // top of onRequestPost, before parsing
@@ -265,9 +272,7 @@ is **public, read-only**:
   }
   ```
 
-  Set `ORACLE_MCP_TOKEN` in the Pages dashboard (and via the secrets-sync
-  script) and put the same token in Claude's connector config. Leave it unset
-  for public access.
+  Leave `ORACLE_MCP_TOKEN` unset so public read-only tools stay available.
 
 - **Session auth** is already wired (`functions/api/_lib/auth.js`) if you ever want
   per-user gating, but it's overkill for read-only published content.
@@ -306,7 +311,7 @@ so the path is known; not part of the core 3c deploy.
 2. Commit the new Function files + `data/oracle-corpus.json`.
 3. Push to `main` → Cloudflare Pages auto-builds and deploys (per your existing
    GitHub→Pages hookup). The new routes go live; nothing existing changes.
-4. (If gating) set `ORACLE_MCP_TOKEN` in the Pages dashboard + secrets-sync.
+4. Leave `ORACLE_MCP_TOKEN` unset under the current public read-only decision.
 
 **Verify:**
 - `curl 'https://mandalacodes.com/api/oracle/search?q=creation+and+new+beginnings'`
@@ -341,9 +346,8 @@ it's optional.
 
 ## 11. Decisions for you
 
-1. **Remote MCP visibility** — public read-only (simplest, it's published
-   content) **or** private behind `ORACLE_MCP_TOKEN`? *Recommend: start with the
-   token gate so it's yours, drop it later if you want it public.*
+1. **Remote MCP visibility** — resolved 2026-11-16: public read-only. The
+   earlier token-gate recommendation is superseded.
 2. **REST CORS** — open (`*`, lets the Atlas/other tools call it) or locked to
    `mandalacodes.com`? *Recommend: open; it's read-only public content.*
 3. **Embeddings** — leave at concept-expansion for now, or add Workers AI +

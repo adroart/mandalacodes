@@ -50,7 +50,7 @@ ENCRYPTED_VARS=(
   "CLAIM_BRIDGE_SECRET"
   # Fine-grained GitHub PAT for the public-state mirror (_mirror.ts).
   "GITHUB_MIRROR_TOKEN"
-  # Optional bearer token gating /api/oracle/recommendation.
+  # Required server-held bearer key for recommendation POST; provision before deployment.
   "ORACLE_API_TOKEN"
 )
 
