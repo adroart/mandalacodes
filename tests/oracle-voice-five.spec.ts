@@ -140,7 +140,9 @@ test('section names read without the manuscript dash while ids and matching keep
  expect(raw).toContain('\u2014');
  await expect(head).toHaveText(raw.replace(/\s+\u2014\s+/,' · '));
  const shown=await d.locator('.vs-rail button,.vs-section-title,.vs-dock-target strong').allInnerTexts();expect(shown.join('\n')).not.toContain('\u2014');
- await d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"] .vs-section-head').click();await expect(d.locator('.vs-dock-target strong')).toContainText(raw.replace(/\s+\u2014\s+/,' · ').split(' (')[0]);
+ await d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"] .vs-section-head').click();
+ await d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"]').getByRole('button',{name:'Record whole section',exact:true}).click();
+ await expect(d.locator('.vs-dock-target strong')).toContainText(raw.replace(/\s+\u2014\s+/,' · ').split(' (')[0]);
 });
 
 test('voice drafts opened from the journal keep the Record bar on screen above the tabs',async({page})=>{
