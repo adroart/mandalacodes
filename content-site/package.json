@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@astrojs/markdoc": "^1.0.6",
-    "@astrojs/node": "^10.1.4",
+    "@astrojs/netlify": "^7.0.13",
     "@astrojs/react": "^5.0.7",
     "@astrojs/rss": "^4.0.18",
     "@astrojs/sitemap": "^3.7.3",

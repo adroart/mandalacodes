@@ -5,18 +5,18 @@ import react from '@astrojs/react'
 import markdoc from '@astrojs/markdoc'
 import sitemap from '@astrojs/sitemap'
 import keystatic from '@keystatic/astro'
-import node from '@astrojs/node'
+import netlify from '@astrojs/netlify'
 import tailwindcss from '@tailwindcss/vite'
 
 // The public /learn build remains static. The separate writer build adds only
-// Keystatic's on-demand admin/API routes to a Node server at the root path.
+// Keystatic's on-demand admin/API routes to Netlify Functions at the root path.
 const isDev = process.argv.includes('dev')
 const isWriter = process.env.MANDALA_WRITER_BUILD === '1'
 
 export default defineConfig({
   site: 'https://mandalacodes.com',
   base: isWriter ? '/' : '/learn',
-  adapter: isWriter ? node({ mode: 'standalone' }) : undefined,
+  adapter: isWriter ? netlify() : undefined,
   integrations: [react(), markdoc(), sitemap(), ...(isDev || isWriter ? [keystatic()] : [])],
   vite: {
     // The site bar is the app's own component (../components/NavigationCore.tsx

@@ -44,23 +44,24 @@ content with zero JavaScript.
 
 ## Hosted browser writer pilot
 
-The optional writer build serves `/keystatic` and `/api/keystatic` from a
-separate Astro Node service. It uses Keystatic Cloud authentication and GitHub
-storage, while the normal `npm run build` remains the static Pages build.
-Configure a **free Render web service** against a reviewed pilot branch:
+The optional writer build serves `/keystatic` and `/api/keystatic` through
+Netlify Functions. It uses Keystatic Cloud authentication and GitHub storage,
+while the normal `npm run build` remains the static Cloudflare Pages build.
+Configure a separate **Netlify Free** project against a reviewed pilot branch:
 
-| Render setting | Value |
+| Netlify setting | Value |
 | --- | --- |
-| Root directory | `content-site` |
-| Runtime / plan | Node / Free |
+| Base directory | `content-site` |
+| Plan | Free ($0, hard monthly limit) |
 | Build command | `npm ci && npm run build:writer` |
-| Start command | `node dist/server/entry.mjs` |
-| Environment | `HOST=0.0.0.0`, `NODE_VERSION=22.22.3`, `PUBLIC_KEYSTATIC_CLOUD_PROJECT=<team>/<project>` |
+| Publish directory | `dist` (relative to the base directory) |
+| Environment | `NODE_VERSION=22.22.3`, `PUBLIC_KEYSTATIC_CLOUD_PROJECT=mandalacodes-editor/editor-pilot` |
 
-The project identifier is public. Create it in a dedicated Keystatic Cloud
-team, connect only `adroart/mandalacodes`, and grant the intended editor account.
-Test on Render's `onrender.com` URL before adding a domain. The build was
-tested with Node 22.22.3. Do not turn on a paid plan for this pilot.
+The project identifier is public. The dedicated Keystatic Cloud project is
+connected only to `adroart/mandalacodes`. After Netlify assigns its URL, set
+that URL as the Cloud project's Primary URL before signing in. Test on the
+`netlify.app` URL before adding a domain. The build was tested with Node
+22.22.3. Keep this pilot on Netlify Free, with no payment method or upgrade.
 
 Cloud mode scopes the article and image paths to `content-site/` in GitHub.
 Use a fresh working branch from protected `main`, save the article and artwork,
@@ -70,13 +71,15 @@ article URLs and image paths stay under `/learn/` after merge and Pages rebuild.
 The hosted editor has no branch-aware draft preview; use local `npm run write`
 for private draft preview. Production article routes still exclude drafts.
 
-Local pilot checks: a fresh `npm ci` in `content-site/` followed by
-`PUBLIC_KEYSTATIC_CLOUD_PROJECT=pilot/example npm run build:writer` succeeded
-without root dependencies. The generated browser config contains Cloud storage,
+Local pilot checks: `content-site/` installs and builds without root
+dependencies. The Netlify writer build with
+`PUBLIC_KEYSTATIC_CLOUD_PROJECT=mandalacodes-editor/editor-pilot` succeeded.
+The generated browser config contains Cloud storage,
 the `content-site` prefix, the article path, and `/learn/images/articles/`.
-The normal static build succeeded with no server or editor artifact. An
-anonymous local request received the editor HTML shell; sampled local Cloud
-API URLs returned 404. These responses do not establish live Cloud permissions.
+The normal static build succeeded with no server or editor artifact. The
+compiled Netlify Function served `/keystatic` with status 200 in the local
+standalone function server; sampled Cloud API URLs returned 404 without a
+runtime error. These responses do not establish live Cloud permissions.
 
 Before calling the pilot operational, sign in through the hosted URL, save and
 reopen a draft on a disposable branch, upload a cover and body image, inspect
