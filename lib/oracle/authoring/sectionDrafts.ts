@@ -10,6 +10,8 @@ export interface SectionDraftResult {
  comparison?:PassageComparison;
  /** Comparison baseline is independent of the earlier undo receipt. */
  editIntent?:'replace'|'add'|'revise';
+ /** Present only for the new explicit, single-passage recorder. Older reviews keep their saved meaning. */
+ passageEdit?:{operation:'add'|'replace';focus:{start:number;end:number;text:string};sectionText:string};
  comparisonOriginal?:string;reviewTranscript?:string;reviewIssues?:SectionReviewIssue[];
  /** Per compared passage, keyed by its original span: keep the written words or use the spoken ones. */
  rowChoices?:Record<string,PassageChoice>;
@@ -137,22 +139,35 @@ export async function integrateSectionDraft(sessionId:string,sectionId:string,se
  if(!session||!section||!result)throw new Error('Choose a saved named section to integrate.');if(!result.checked||!result.text.trim())throw new Error('Check your words before integrating this section.');if(result.applied&&(result.takeIds?.length??0)<=1&&(result.editIntent==='add'||result.appliedText===result.text))return session;
  const captureIds=await evidenceCaptures(session,result),captureId=captureIds[0];
  const source=await services.loadSource(session.cardNumber);if(source.hash!==session.sourceHash)throw new Error('The original card changed. Reopen the section and compare it again.');
- const integrationId=`${sectionId}/${await sha256((result.editIntent==='add'?'add/':'')+result.text+(result.rowChoices?JSON.stringify(result.rowChoices):''))}`;let expectedWorkingText:string|undefined;let appliedText=result.text,beforeText=section.text,appliedRevision:number|undefined,beforeWorking:WorkingSection|undefined;
- if(section.kind==='intro'){const previous=await getIntegratedIntro(session.cardNumber);beforeText=previous??section.text;if(result.editIntent==='add')appliedText=prepareSectionEdit(beforeText,result.text,'add');else appliedText=sectionReplacementPlan(result,beforeText)?.text??result.text;}
+ const integrationId=`${sectionId}/${await sha256((result.editIntent==='add'?'add/':'')+result.text+(result.rowChoices?JSON.stringify(result.rowChoices):'')+(result.passageEdit?JSON.stringify(result.passageEdit):''))}`;let expectedWorkingText:string|undefined;let appliedText=result.text,beforeText=section.text,appliedRevision:number|undefined,beforeWorking:WorkingSection|undefined;
+ if(section.kind==='intro'){const previous=await getIntegratedIntro(session.cardNumber);beforeText=previous??section.text;
+  if(result.passageEdit){const {focus,operation,sectionText}=result.passageEdit;if(beforeText!==sectionText||beforeText.slice(focus.start,focus.end)!==focus.text)throw Error('This selected passage changed. Select it again before applying.');appliedText=beforeText.slice(0,focus.start)+(operation==='add'?focus.text+'\n\n'+result.text:result.text)+beforeText.slice(focus.end);}
+  else if(result.editIntent==='add')appliedText=prepareSectionEdit(beforeText,result.text,'add');else appliedText=sectionReplacementPlan(result,beforeText)?.text??result.text;}
  else {
   const existing=await workingCards.get(session.cardNumber,section.lensId),currentText=existing?.text??plainSection(source,section.lensId);
   const evidenceDone=existing?.blocks.some(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId));
   if(!evidenceDone){
    beforeWorking=existing??baseline(source,section.lensId,currentText);
-   const prior=await appliedReference(session.cardNumber,section.id,session.sourceHash);beforeText=prior?.result.appliedText??section.text;
+   const prior=await appliedReference(session.cardNumber,section.id,session.sourceHash);beforeText=result.passageEdit?.sectionText??prior?.result.appliedText??section.text;
+   const focus=result.passageEdit?.focus;
+   if(focus&&(focus.start<0||focus.end<=focus.start||beforeText.slice(focus.start,focus.end)!==focus.text))throw new Error('The selected passage no longer matches the saved recording. Select it again.');
    let start:number;if(currentText===section.sectionText&&section.sectionText.slice(section.start,section.end)===section.text&&!prior)start=section.start;else start=uniquePosition(currentText,beforeText);
-   if(start<0)throw new Error('This section has changed or is no longer unique. Compare its current words before integrating.');
+   if(start<0)throw new Error(result.passageEdit?'This selected passage changed or is no longer unique. Select it again before applying.':'This section has changed or is no longer unique. Compare its current words before integrating.');
    expectedWorkingText=currentText.slice(0,result.editIntent==='add'?start+beforeText.length:start)+(result.editIntent==='add'?'\n\n':'')+result.text+currentText.slice(start+beforeText.length);
    const anchor={id:section.id,cardNumber:session.cardNumber,sectionId:section.lensId,text:beforeText,sectionText:currentText,start,end:start+beforeText.length,sourceHash:session.sourceHash,revision:existing?.revision??0};
-   if(result.editIntent==='add'){await applyPassageAddition(anchor,result.text,services,{sessionId:session.id,captureId,transcriptId:integrationId});appliedText=beforeText+'\n\n'+result.text;}
+   if(result.passageEdit){
+    const point=start+focus!.start,selected={...anchor,text:focus!.text,start:point,end:point+focus!.text.length};
+    const change=result.passageEdit.operation==='add'?focus!.text+'\n\n'+result.text:result.text;
+    appliedText=beforeText.slice(0,focus!.start)+change+beforeText.slice(focus!.end);
+    expectedWorkingText=currentText.slice(0,start)+appliedText+currentText.slice(start+beforeText.length);
+    if(result.passageEdit.operation==='add')await applyPassageAddition(selected,result.text,services,{sessionId:session.id,captureId,transcriptId:integrationId});
+    else await applyPassageReplacement([selected],result.text,services,{sessionId:session.id,captureId,transcriptId:integrationId});
+   }
+   else if(result.editIntent==='add'){await applyPassageAddition(anchor,result.text,services,{sessionId:session.id,captureId,transcriptId:integrationId});appliedText=beforeText+'\n\n'+result.text;}
    else {const plan=sectionReplacementPlan(result,beforeText);if(plan){appliedText=plan.text;expectedWorkingText=currentText.slice(0,start)+plan.text+currentText.slice(start+beforeText.length);await applyPassageEdits({cardNumber:session.cardNumber,sectionId:section.lensId,sectionText:currentText,revision:existing?.revision??0,sourceHash:session.sourceHash},plan.edits.map(edit=>({...edit,start:edit.start+start,end:edit.end+start})),services,{sessionId:session.id,captureId,transcriptId:integrationId});}else await applyPassageReplacement([anchor],result.text,services,{sessionId:session.id,captureId,transcriptId:integrationId});}
-  }else {const prior=await appliedReference(session.cardNumber,section.id,session.sourceHash),baselineText=prior?.result.appliedText??section.text,plan=result.editIntent==='add'?undefined:sectionReplacementPlan(result,baselineText);beforeText=plan?baselineText:existing!.blocks.find(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId))?.replacedText??section.text;if(plan)appliedText=plan.text;const history=await workingCards.versions(session.cardNumber,section.lensId),firstApplied=history.find(version=>version.blocks.some(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId)));expectedWorkingText=firstApplied?.text;beforeWorking=firstApplied?.revision===1?baseline(source,section.lensId,plainSection(source,section.lensId)):history.find(version=>version.revision===(firstApplied?.revision??0)-1);}
-  if(result.editIntent==='add'&&evidenceDone){const block=existing!.blocks.find(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId));beforeText=block?.attachedTo??section.text;appliedText=beforeText+'\n\n'+result.text;}
+  }else {const prior=await appliedReference(session.cardNumber,section.id,session.sourceHash),baselineText=prior?.result.appliedText??section.text,plan=result.passageEdit||result.editIntent==='add'?undefined:sectionReplacementPlan(result,baselineText);beforeText=result.passageEdit?.sectionText??(plan?baselineText:existing!.blocks.find(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId))?.replacedText??section.text);if(plan)appliedText=plan.text;const history=await workingCards.versions(session.cardNumber,section.lensId),firstApplied=history.find(version=>version.blocks.some(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId)));expectedWorkingText=firstApplied?.text;beforeWorking=firstApplied?.revision===1?baseline(source,section.lensId,plainSection(source,section.lensId)):history.find(version=>version.revision===(firstApplied?.revision??0)-1);}
+  if(result.passageEdit&&evidenceDone){const {focus,operation}=result.passageEdit;appliedText=beforeText.slice(0,focus.start)+(operation==='add'?focus.text+'\n\n'+result.text:result.text)+beforeText.slice(focus.end);}
+  else if(result.editIntent==='add'&&evidenceDone){const block=existing!.blocks.find(block=>block.evidence.some(e=>e.sessionId===session.id&&e.transcriptId===integrationId));beforeText=block?.attachedTo??section.text;appliedText=beforeText+'\n\n'+result.text;}
   // The passage helper inserts one evidence record. Preserve every contributing take
   // on that same block without changing its words or promoting adjacent AI prose.
   for(let attempt=0;attempt<4;attempt++){

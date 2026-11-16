@@ -81,6 +81,10 @@ function failureFor(operation:Operation,status:number):Response{
 const GROQ_TRANSCRIPTION='https://api.groq.com/openai/v1/audio/transcriptions',FIRST_MODEL='whisper-large-v3-turbo',SECOND_MODEL='whisper-large-v3';
 /** Both listening passes and any fallback share the one provider timeout the phone already waits within. */
 const LISTEN_BUDGET_MS=90000,MAX_AUDIO_MS=20*60*1000;
+/** Give a second listening a brief chance to finish after the kept transcript is ready. */
+const SECOND_LISTEN_GRACE_MS=1500;
+/** Stage timings contain no spoken words, prompt, audio, account, or provider response. */
+const logTiming=(operation:'transcribe'|'assimilate-sections',stage:string,started:number,extra:Record<string,number|boolean>={})=>console.info('oracle_authoring_timing',{operation,stage,elapsedMs:Date.now()-started,...extra});
 /**
  * Doubt finding compares kept words with second words in windows of bounded memory (transcriptDoubts WINDOW_CELLS);
  * this caps the total work instead. Past it the comparison is skipped and doubts are unavailable: 20 minutes of speech
@@ -215,7 +219,7 @@ const atTokenLimit=(result:any)=>result?.choices?.[0]?.finish_reason==='length'|
  * words. A part that cannot be read comes back as unassigned words. Bounded by request count and the time budget.
  */
 async function reviewSections(provider:WritingProvider,input:any):Promise<Response>{
- const operation='assimilate-sections',deadline=Date.now()+REVIEW_BUDGET_MS;let requests=0;
+ const operation='assimilate-sections',started=Date.now(),deadline=started+REVIEW_BUDGET_MS;let requests=0;
  const preserveWords=(stage:ReviewStage|'merge')=>{logReview(provider.provider,stage);return json({assimilation:validateAssimilation({sections:[],unassigned:[{text:input.words,reason:UNPREPARED}]},input)});};
  const gather=async(ranges:number[][]):Promise<ReviewedPart[]|Response>=>{const results=await Promise.all(ranges.map(([from,to])=>review(from,to)));return results.find((result):result is Response=>result instanceof Response)??(results as ReviewedPart[][]).flat();};
  const splitAgain=(from:number,to:number,status:number)=>{
@@ -239,28 +243,37 @@ async function reviewSections(provider:WritingProvider,input:any):Promise<Respon
  }
  const length=input.words.length;
  const parts=await gather(length>LONG_REVIEW_CHARS?splitAssimilationWords(input.words,0,length,Math.min(MAX_UPFRONT_PARTS,Math.ceil(length/PART_CHARS))):[[0,length]]);
- if(parts instanceof Response)return parts;
- if(parts.length===1){const [part]=parts;if(!part.candidate)return preserveWords(part.stage!);try{return json({assimilation:validateAssimilation(part.candidate,input)});}catch{return preserveWords('evidence');}}
+ if(parts instanceof Response){logTiming(operation,'response',started);return parts;}
+ if(parts.length===1){const [part]=parts;if(!part.candidate){logTiming(operation,'response',started);return preserveWords(part.stage!);}try{const answer=json({assimilation:validateAssimilation(part.candidate,input)});logTiming(operation,'response',started);return answer;}catch{logTiming(operation,'response',started);return preserveWords('evidence');}}
  for(const part of parts)if(!part.candidate)logReview(provider.provider,part.stage!);
- try{return json({assimilation:validateAssimilation(mergeAssimilationParts(input,parts,UNPREPARED),input)});}catch{return preserveWords('merge');}
+ try{const answer=json({assimilation:validateAssimilation(mergeAssimilationParts(input,parts,UNPREPARED),input)});logTiming(operation,'response',started);return answer;}catch{logTiming(operation,'response',started);return preserveWords('merge');}
+}
+/** A settled second pass is used; otherwise the first pass leaves after a bounded grace. */
+async function secondWithinGrace(second:Promise<SecondHearing>,signal:AbortSignal):Promise<SecondHearing>{
+ const stopped=whenAborted(signal);let timer:ReturnType<typeof setTimeout>|undefined;
+ const grace=new Promise<SecondHearing>(resolve=>{timer=setTimeout(()=>resolve({ok:false,reason:'grace_elapsed'}),SECOND_LISTEN_GRACE_MS);});
+ try{return await Promise.race([second,grace,stopped.promise]);}
+ catch(error){return {ok:false,reason:isTimeout(error)?'timeout':'network'};}
+ finally{if(timer!==undefined)clearTimeout(timer);stopped.release();}
 }
 /** Both passes over the one File under the request's deadline; the caller stops whatever is still running when this returns or throws. */
-async function transcribe(env:AuthoringEnv,body:any,file:File,prompt:string,started:number,signal:AbortSignal):Promise<Response>{
+async function transcribe(env:AuthoringEnv,body:any,file:File,prompt:string,started:number,signal:AbortSignal,audioBytes:number):Promise<Response>{
  const first=firstListening(env,file,prompt,started,signal),second=secondListening(env,file,prompt,signal);
- const heard=await first;if(heard instanceof Response)return heard;
+ const heard=await first.finally(()=>logTiming('transcribe','first_listening',started,{audioBytes}));if(heard instanceof Response)return heard;
  const result=heard.raw,durationMs=Math.max(body.durationMs,providerDurationMs(result)??0);
  const rawWords=Array.isArray(result.words)?result.words:Array.isArray(result.segments)?result.segments.flatMap((s:any)=>Array.isArray(s?.words)?s.words:[]):[];
  const words:Unit[]=rawWords.filter((w:any)=>typeof w?.word==='string'&&finite(w.start)&&finite(w.end)).map((w:any)=>({text:w.word,startMs:Math.max(0,toMs(w.start)),endMs:Math.min(durationMs,toMs(w.end))}));
  const segments:any[]=Array.isArray(result.segments)?result.segments.filter((s:any)=>typeof s?.text==='string'&&finite(s.start)&&finite(s.end)).map((s:any)=>{const startMs=Math.max(0,toMs(s.start)),endMs=Math.min(durationMs,toMs(s.end));return {startMs,endMs,text:s.text,...withKnownFixes(s.text),sectionId:body.sectionId??null,timing:'provider',...segmentQuality(s),words:words.filter(w=>w.startMs>=startMs&&w.startMs<endMs&&w.endMs>=w.startMs)};}).filter((s:any)=>s.endMs>s.startMs):[];
  if(!segments.length&&typeof result.text==='string'&&result.text.trim())segments.push({startMs:0,endMs:durationMs,text:result.text,...withKnownFixes(result.text),sectionId:body.sectionId??null,timing:'recording'});
  if(!segments.length)return failure(422,'no_speech','No speech was returned. Your recording is saved.');
- const other=await second,timed=segments.flatMap((s:any)=>s.words??[]) as Unit[];
+ const other=await secondWithinGrace(second,signal),timed=segments.flatMap((s:any)=>s.words??[]) as Unit[];
  // The second listening can only take doubts away, never the take: a failure, the work cap or a comparison that
  // throws (an allocation refused included) each leave the first pass standing with doubtsAvailable false.
  let doubts:Doubt[]|undefined,reason='too_long';
  if(other.ok)try{doubts=findDoubts(timed.length?timed:segments,other.text,timed.length>0);}catch{doubts=undefined;reason='comparison_failed';for(const unit of timed){delete unit.doubt;delete unit.heardAlso;}}
- if(other.ok===false)logProvider('transcribe','groq',{pass:'second',...(other.status?{status:other.status}:{}),reason:other.reason});
+ if(other.ok===false){if(other.reason!=='grace_elapsed')logProvider('transcribe','groq',{pass:'second',...(other.status?{status:other.status}:{}),reason:other.reason});}
  else if(!doubts)logProvider('transcribe','groq',{pass:'second',reason});
+ logTiming('transcribe','second_window',started,{doubtsAvailable:!!doubts});
  return json({provider:heard.provider,segments,durationMs,doubts:doubts??[],doubtsAvailable:!!doubts});
 }
 /** Generous for one person recording section by section; it bounds a runaway loop, not normal work. */
@@ -286,7 +299,9 @@ export async function onRequestPost({request,env}:Context){
    const file=audioFile(takeAudio(body),body.mimeType),prompt=transcriptionPrompt(body.context),started=Date.now(),deadline=listeningDeadline(LISTEN_BUDGET_MS);
    // Both listenings start together; the second never delays or fails the first beyond the shared budget, and is
    // aborted by `stop` on every way out that does not need it.
-   try{return await transcribe(env,body,file,prompt,started,deadline.signal);}finally{deadline.stop();}
+   let answer:Response|undefined;
+   try{answer=await transcribe(env,body,file,prompt,started,deadline.signal,file.size);return answer;}
+   finally{logTiming('transcribe','response',started,answer?{status:answer.status}:{failed:true});deadline.stop();}
   }
   if(body.operation==='propose'){
    const provider=writingProvider(env);if(!provider)return failure(503,'not_configured','Hosted writing is not configured. Your words are saved.');
