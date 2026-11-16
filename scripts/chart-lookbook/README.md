@@ -100,7 +100,13 @@ POST /api/oracle/recommendation        (Mandala Codes — the engine)
 - The **Adrian Rasmussen quote system** calls this, then adds pricing / inventory
   / the purchase flow and renders the client recommendation page + PDF. Meaning
   on Mandala Codes, money on Adrian Rasmussen.
-- Optionally gate it with an `ORACLE_API_TOKEN` env var (Pages dashboard).
+- Before publishing this endpoint, configure `ORACLE_API_TOKEN` as a secret in
+  the Mandala Codes Pages environment. The calling integration keeps the same
+  key on its server and sends `Authorization: Bearer <key>` with each POST.
+  Missing configuration returns HTTP 503; a missing or incorrect key returns
+  HTTP 401. Keep the key out of browsers, profile JSON, and client pages.
+  Public card lookup, search, and the seven read-only Oracle MCP tools do not
+  require this recommendation key.
 
 ## Roadmap — into the site (later)
 
