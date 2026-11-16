@@ -70,7 +70,16 @@ article URLs and image paths stay under `/learn/` after merge and Pages rebuild.
 The hosted editor has no branch-aware draft preview; use local `npm run write`
 for private draft preview. Production article routes still exclude drafts.
 
+Local pilot checks: a fresh `npm ci` in `content-site/` followed by
+`PUBLIC_KEYSTATIC_CLOUD_PROJECT=pilot/example npm run build:writer` succeeded
+without root dependencies. The generated browser config contains Cloud storage,
+the `content-site` prefix, the article path, and `/learn/images/articles/`.
+The normal static build succeeded with no server or editor artifact. An
+anonymous local request received the editor HTML shell; sampled local Cloud
+API URLs returned 404. These responses do not establish live Cloud permissions.
+
 Before calling the pilot operational, sign in through the hosted URL, save and
 reopen a draft on a disposable branch, upload a cover and body image, inspect
 the resulting `.mdoc` and image paths in GitHub, and verify an unauthenticated
-visitor cannot read or mutate the API. Keep test content off `main`.
+visitor cannot save or upload. Repository content is public, so article reads
+need not be private. Keep test content off `main`.
