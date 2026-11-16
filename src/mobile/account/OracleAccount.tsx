@@ -7,6 +7,7 @@ import { useNativeAccountActions } from './NativeAccountProvider';
 import { createProfileBackup, readProfileBackup } from './profileBackup';
 import ReminderSettings from '../reminders/ReminderSettings';
 import SignInPanel, { type SignInActions } from '../../../components/account/SignInPanel';
+import { oracleBuildLine } from '../buildInfo';
 import './account.css';
 
 export default function OracleAccount() {
@@ -59,5 +60,6 @@ export default function OracleAccount() {
       </div>}
       <p role="status" aria-live="polite">{notice}</p>
     </section>
+    <p className="oracle-account-build">{oracleBuildLine()}</p>
   </div>;
 }

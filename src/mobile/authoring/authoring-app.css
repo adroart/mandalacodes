@@ -3,6 +3,6 @@
 .oracle-authoring-page > [role=alert], .oracle-authoring-page > p { padding: 20px; }
 .oracle-authoring-page .oa-header h1 { font-family: var(--font-display); font-size: 30px; }
 .oracle-authoring-page .oa-eyebrow { display: none; }
-/* Opened as its own page (from the journal), the voice workspace holds the screen between the top bar and the tabs, so its Record bar stays in view instead of ending below all the sections. */
-.oracle-authoring-page:has(> .section-voice-studio) { box-sizing:border-box; height:100dvh; min-height:0; padding:var(--nav-height) 0 var(--app-bottom-height); overflow:hidden; display:flex; flex-direction:column; }
+/* Opened as its own page (from the journal), the voice workspace holds the screen between the top bar and the tabs, so its Record bar stays in view instead of ending below all the sections. Inside the card's sheet there is no top bar or tab bar, so this rule stays out of it and the workspace runs edge to edge. */
+.oracle-authoring-page:not(.oracle-authoring-sheet *):has(> .section-voice-studio) { box-sizing:border-box; height:100dvh; min-height:0; padding:var(--nav-height) 0 var(--app-bottom-height); overflow:hidden; display:flex; flex-direction:column; }
 .oracle-authoring-page > .section-voice-studio { flex:1; min-height:0; }

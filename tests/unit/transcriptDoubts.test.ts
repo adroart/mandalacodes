@@ -23,4 +23,12 @@ describe('transcript doubts', () => {
     expect(transcriptDoubts('one two three four five six seven eight', 'alpha beta gamma delta epsilon zeta eta theta')).toEqual([]);
     expect(transcriptDoubts('', 'something')).toEqual([]);
   });
+
+  it('lets the caller drop a difference its own corrections already settle, seeing both runs with their neighbours', () => {
+    const seen: [string, string][] = [];
+    const same = (kept: string, second: string) => { seen.push([kept, second]); return kept.replace('Jean keys', 'Gene Keys') === second; };
+    expect(transcriptDoubts('Reading Jean keys tonight. The potter in Yingj.', 'Reading Gene Keys tonight. The potter in Yingge.', { same })).toEqual([{ heard: 'Yingj', alt: 'Yingge', at: 41 }]);
+    expect(seen[0]).toEqual(['Reading Jean keys tonight.', 'Reading Gene Keys tonight.']);
+    expect(transcriptDoubts('The potter in Yingj.', 'The potter in Yingge.', { same: () => false, context: 0 })).toEqual([{ heard: 'Yingj', alt: 'Yingge', at: 14 }]);
+  });
 });

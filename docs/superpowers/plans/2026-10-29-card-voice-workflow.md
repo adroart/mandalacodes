@@ -1,3 +1,6 @@
+> Kept for history and reasoning. `docs/oracle/VOICE-STATUS.md` describes the current state.
+> Stale here: it says AI processing on the phone goes through AR Create on the paired Mac and describes older screens; today the phone sends to the site first, and the Mac is only a fallback when the site answers 404, 405 or 503.
+
 # Whole-card voice workflow implementation plan
 
 **Goal:** Capture an entire card in one speaking session, assimilate speech into complete named sections, review equal original/human columns, and integrate exact sections into private drafts.

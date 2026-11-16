@@ -1,9 +1,12 @@
 import { validatePassageToolsState } from './passageTools';
-import type { AuthoringSession, StoredAudioChunk } from './types';
+import type { AuthoringSession, Capture, SectionMarker, StoredAudioChunk } from './types';
 import { editorialReceipt, reviewDigest, sessionSources, sourceSnapshot, transcriptCard, validateTranscriptParent } from './workflow';
 export interface SavedSession { session: AuthoringSession; version: number }
 export interface StoredReceipt { id: string; sessionId: string; markdown: string; digest: string }
-const MAX_BYTES = 10 * 1024 * 1024;
+const MAX_BYTES = 10 * 1024 * 1024, MAX_DURATION_MS = 20 * 60 * 1000;
+const TOO_LARGE = 'This recording reached 10 megabytes, the most one take can hold. The audio received so far stays on this device.';
+/** Chunk keys are `${sessionId}/${captureId}/${index}`, so one capture is one primary-key range. */
+const captureRange = (sessionId: string, captureId: string) => { const prefix = `${sessionId}/${captureId}/`; return IDBKeyRange.bound(prefix, `${prefix}\uffff`); };
 // WebKit can reject Blob/File persistence while accepting their identical bytes.
 // Keep old Blob records readable; reconstruct the existing public Blob interface.
 type AudioRecord = Omit<StoredAudioChunk, 'blob'> & { blob?: Blob; bytes?: ArrayBuffer; mimeType?: string };
@@ -45,7 +48,7 @@ export class AuthoringStore {
       const fail = (e: Error) => { failure = e; tx.abort(); };
       tx.oncomplete = () => { db.close(); resolve(value); };
       tx.onerror = event => { const request = event.target as IDBRequest; failure ??= request.error ?? tx.error ?? undefined; };
-      tx.onabort = () => { db.close(); reject(failure ?? tx.error ?? new Error('Local save failed; keep this page open and export your work')); };
+      tx.onabort = () => { db.close(); reject(failure ?? tx.error ?? new Error('This device could not save your work. Audio already saved stays on this device. Free some space and try again.')); };
       try { run(Object.fromEntries(names.map(n => [n, tx.objectStore(n)])), v => { value = v; }, fail); } catch (e) { fail(e as Error); }
     });
   }
@@ -92,24 +95,46 @@ export class AuthoringStore {
     });
   }
   async appendChunk(sessionId: string, captureId: string, index: number, blob: Blob, endMs: number): Promise<void> {
-    if (blob.size > MAX_BYTES) throw new Error('Recording reached 10 MiB. Received chunks remain on this device.');
+    if (blob.size > MAX_BYTES) throw new Error(TOO_LARGE);
     const encoded = await audioRecord({ key: `${sessionId}/${captureId}/${index}`, sessionId, captureId, index, blob, endMs });
     return this.tx(['sessions', 'chunks'], 'readwrite', (s, done, fail) => {
       const r = s.sessions.get(sessionId);
-      const chunks = s.chunks.index('sessionId').getAll(sessionId);
-      let ready = 0;
-      const finish = () => {
-        if (++ready !== 2) return;
+      r.onsuccess = () => {
         const saved = r.result as SavedSession | undefined;
         const capture = saved?.session.captures.find(c => c.id === captureId);
         if (!saved || !capture) return fail(new Error('Recording session not found'));
-        const existing = (chunks.result as AudioRecord[]).filter(c => c.captureId === captureId);
-        if (existing.reduce((total, c) => total + audioSize(c), 0) + blob.size > MAX_BYTES) return fail(new Error('Recording reached 10 MiB. Received chunks remain on this device.'));
-        s.chunks.add(encoded);
-        capture.durationMs = Math.max(capture.durationMs, Math.round(endMs));
-        s.sessions.put({ session: saved.session, version: saved.version + 1 }); done();
+        // The running total spares every write from reading earlier audio back.
+        const write = (previous: number) => {
+          if (previous + blob.size > MAX_BYTES) return fail(new Error(TOO_LARGE));
+          s.chunks.add(encoded);
+          capture.audioBytes = previous + blob.size;
+          capture.durationMs = Math.min(MAX_DURATION_MS, Math.max(capture.durationMs, Math.round(endMs)));
+          s.sessions.put({ session: saved.session, version: saved.version + 1 }); done();
+        };
+        if (typeof capture.audioBytes === 'number' && Number.isFinite(capture.audioBytes) && capture.audioBytes >= 0) return write(capture.audioBytes);
+        // Captures saved before the running total: one keyed read of this capture only, then stored.
+        const earlier = s.chunks.getAll(captureRange(sessionId, captureId));
+        earlier.onsuccess = () => write((earlier.result as AudioRecord[]).reduce((total, c) => total + audioSize(c), 0));
       };
-      r.onsuccess = chunks.onsuccess = finish;
+    });
+  }
+  /** Adds or changes one capture and replaces its markers inside one transaction on the latest saved session, the way
+   * appendChunk writes, so a chunk saved by another take cannot make it fail. `change` runs inside the transaction: keep
+   * it synchronous. Nothing else in the session is touched. */
+  putCapture(sessionId: string, captureId: string, change: (capture: Capture | undefined, markers: SectionMarker[]) => { capture: Capture; markers: SectionMarker[] }): Promise<SavedSession> {
+    return this.tx(['sessions'], 'readwrite', (s, done, fail) => {
+      const r = s.sessions.get(sessionId);
+      r.onsuccess = () => {
+        const saved = r.result as SavedSession | undefined;
+        if (!saved) return fail(new Error('Recording session not found'));
+        const own = saved.session.captures.find(c => c.id === captureId);
+        let next: { capture: Capture; markers: SectionMarker[] };
+        try { next = change(own, saved.session.markers.filter(m => m.captureId === captureId)); } catch (error) { return fail(error as Error); }
+        if (next.capture.id !== captureId || next.markers.some(m => m.captureId !== captureId)) return fail(new Error('A recording can only change its own capture and markers'));
+        const session = { ...saved.session, captures: own ? saved.session.captures.map(c => c.id === captureId ? next.capture : c) : [...saved.session.captures, next.capture], markers: [...saved.session.markers.filter(m => m.captureId !== captureId), ...next.markers] };
+        const value = { session, version: saved.version + 1 };
+        s.sessions.put(value); done(value);
+      };
     });
   }
   async addImportedAudio(session: AuthoringSession, expectedVersion: number, captureId: string, blob: Blob, durationMs: number): Promise<SavedSession> {
@@ -129,10 +154,14 @@ export class AuthoringStore {
   chunks(sessionId: string): Promise<StoredAudioChunk[]> {
     return this.tx(['chunks'], 'readonly', (s, done, fail) => { const r = s.chunks.index('sessionId').getAll(sessionId); r.onsuccess = () => { try { done((r.result as AudioRecord[]).map(audioChunk)); } catch (e) { fail(e as Error); } }; });
   }
+  /** One capture's chunks in recording order, read by key range without touching other captures' audio. */
+  captureChunks(sessionId: string, captureId: string): Promise<StoredAudioChunk[]> {
+    return this.tx(['chunks'], 'readonly', (s, done, fail) => { const r = s.chunks.getAll(captureRange(sessionId, captureId)); r.onsuccess = () => { try { done((r.result as AudioRecord[]).filter(c => c.captureId === captureId).sort((a, b) => a.index - b.index).map(audioChunk)); } catch (e) { fail(e as Error); } }; });
+  }
   async audio(sessionId: string, captureId: string): Promise<Blob> {
     const saved = await this.load(sessionId);
     const capture = saved?.session.captures.find(c => c.id === captureId);
-    const chunks = (await this.chunks(sessionId)).filter(c => c.captureId === captureId).sort((a, b) => a.index - b.index);
+    const chunks = await this.captureChunks(sessionId, captureId);
     if (!capture || !chunks.length) throw new Error('No durable audio was received for this recording');
     return new Blob(chunks.map(c => c.blob), { type: capture.mimeType });
   }

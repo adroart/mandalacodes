@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import {describe,it,expect} from 'vitest';
 import {WorkingCardStore} from '../../../lib/oracle/authoring/humanDrafts';
-import {QuietContinuity,remapVoiceReview,workingSyncChoices,remapWorkingEvidence,safeResume,readVoiceWorkspace,remapLinkedVoiceReviews,remapWorkspaceEvidence,validateVoiceWorkspaceAudio} from '../../../src/mobile/authoring/voiceWorkspaceSync';
+import {QuietContinuity,privateCopyEnabled,remapVoiceReview,workingSyncChoices,remapWorkingEvidence,safeResume,readVoiceWorkspace,remapLinkedVoiceReviews,remapWorkspaceEvidence,validateVoiceWorkspaceAudio} from '../../../src/mobile/authoring/voiceWorkspaceSync';
 const source={cardNumber:1,hash:'hash',revision:'r',markdown:'original',sections:[]};
 const section={id:'1/CODE/reading',cardNumber:1,sourceHash:'hash',text:'original'};
 const draft:any={id:'remote-draft',cardNumber:1,sourceHash:'hash',source,sections:[section],version:4,captureSessionId:'old-audio',captureId:'capture',rawTranscript:'exact original speech',titleEdits:{'1/CODE/reading':{text:'Edited title',updatedAt:'2026-10-29'}},takes:[{id:'take',captureId:'capture',state:'assimilating'}],results:[{sectionId:section.id,text:'spoken',appliedText:'integrated speech',applied:true,checked:true,beforeText:'old',integrationId:'receipt',warnings:[],evidenceQuotes:['exact original speech'],changes:[]}],unassigned:[],state:'complete'};
@@ -39,4 +39,5 @@ describe('private Voice workspace restore',()=>{
 describe('quiet opt-in continuity',()=>{
  it('does no work before opt-in, during recording, or for unchanged state',async()=>{const gate=new QuietContinuity();let saves=0;const save=async()=>{saves++;};await gate.run(false,false,'one',save);await gate.run(true,true,'one',save);expect(saves).toBe(0);await gate.run(true,false,'one',save);await gate.run(true,false,'one',save);expect(saves).toBe(1);await gate.run(true,false,'two',save);expect(saves).toBe(2);});
  it('does not retry an unchanged failed/conflicting copy',async()=>{const gate=new QuietContinuity();let attempts=0;await expect(gate.run(true,false,'same',async()=>{attempts++;throw Error('conflict');})).rejects.toThrow('conflict');await gate.run(true,false,'same',async()=>{attempts++;});expect(attempts).toBe(1);});
+ it('is on by default once signed in and never overrides an explicit off',()=>{expect(privateCopyEnabled(true,null)).toBe(true);expect(privateCopyEnabled(true,'true')).toBe(true);expect(privateCopyEnabled(true,'false')).toBe(false);expect(privateCopyEnabled(false,null)).toBe(false);expect(privateCopyEnabled(false,'true')).toBe(false);});
 });

@@ -15,11 +15,24 @@ npm --prefix mobile test
 npm --prefix mobile run build:simulator
 ```
 
-For a signed device build:
+For a signed device build, use the same account-enabled web build first:
 
 ```sh
+VITE_ORACLE_NATIVE_ACCOUNTS=true npm run build:oracle
 npm --prefix mobile run build:device
 ```
+
+The web build writes `dist-oracle/oracle-build.json` (`accounts`, `commit`,
+`dirty`, `builtAt`). `build:device` first runs `mobile/scripts/check-oracle-build.mjs` and
+stops, before syncing or signing, when that file is missing, says `accounts` is
+false, names a commit other than the current git HEAD, or was built from
+uncommitted changes. It prints one line such
+as `Error: The Oracle web bundle was built without phone sign-in. Run:
+VITE_ORACLE_NATIVE_ACCOUNTS=true npm run build:oracle`. Run that command, commit
+any changes first so the commit matches, and build again. `build:simulator` only
+warns. The account screen ends with a line such as `Oracle · build 19 · a1b2c3d ·
+11 Nov 2026` so a phone can be matched to its bundle. The signing checks below are
+unchanged.
 
 The commands select `/Applications/Xcode.app` for the current command because
 this Mac's global developer path currently points to Command Line Tools.
@@ -27,8 +40,49 @@ Xcode 26 or newer is required; this project was prepared using Xcode 27.1.
 Device builds require the team's Apple account and signing credentials in Xcode.
 They do not install or launch the app.
 
-To install through Xcode, open `mobile/ios/App/App.xcodeproj`, select the connected
-iPhone and the **App** scheme, then run. The home-screen name is **Oracle**.
+Free Personal Team installs use seven-day provisioning profiles. The default
+`build:device` command now requires a fresh signing clock for the app and widget.
+It CMS-decodes the two standard Xcode profile caches and moves only exact free
+development profiles for `com.adrian.oracle` and `com.adrian.oracle.widget`, team
+`X2RS69BS48`, into a private backup. It then builds with Xcode automatic
+provisioning and a new DerivedData directory. It changes no certificates, Apple
+server registrations, installed apps, or app data.
+
+The build succeeds only when both embedded profiles were created after this
+build started (allowing five minutes of clock skew) and each has at least **6 days
+23 hours** remaining at verification. It verifies the actual bundle IDs, signed
+team/entitlements, code signatures, and the signing certificate's presence in each
+profile. A stale profile downloaded again from Apple fails the build. There is no
+freshness override. A build number change or reinstall alone does not reset the
+clock. Free development does not require App Store submission or paid enrollment.
+
+A successful build promotes the verified app to the existing device output path
+below. A failed build leaves that previous output intact and returns nonzero;
+**do not install after a failed build**, including from an older output. Cache
+rollback never overwrites a newly generated profile. Conflicting backups remain
+private for recovery. Audit dates, scope and outcome plus the recovery manifest
+are retained under `~/Library/Application Support/FreshDeviceSigning/` in a
+per-scope directory. Backed-up profiles contain private signing metadata; do not
+share or commit them. Xcode command output is suppressed because it can include
+account and device identifiers. The helper reports sanitized failure messages.
+
+For offline policy tests, run `npm --prefix mobile run test:signing`. Another app
+can use the same helper with `python3 /absolute/path/fresh_device_build.py
+--config /absolute/path/signing.json` from that app's native package directory.
+Copy `scripts/oracle-device-signing.json`, replacing the exact team, app and every
+extension's relative path/bundle ID plus the existing Xcode build settings. No
+wildcard bundle scopes are accepted. This does not change Mosaic's workflow.
+
+After interruption, inspect that run's private `audit.json` and `recovery.json`.
+To recover retained cache entries, import this helper and pass the manifest's
+`(Path(entry['source']), Path(entry['backup']))` pairs to `restore_profiles`.
+It uses atomic, non-overwriting links; entries with an existing destination stay
+in the private backup. Never copy a backup over an existing cache file.
+
+After a successful fresh build, installation is a separate step. Opening Xcode
+and running another build can choose different profiles, so verify that new
+artifact again before installing. The project is `mobile/ios/App/App.xcodeproj`
+and its scheme is **App**. The home-screen name is **Oracle**.
 An unlocked, paired phone with Developer Mode enabled is required.
 
 Build outputs are in `mobile/build/simulator/Build/Products/Debug-iphonesimulator/App.app`
@@ -67,4 +121,4 @@ or installation is needed merely to merge these already-installed source changes
 
 ## Build 13 whole-card voice workflow
 
-Record opens the section-aware studio. Speak across complete named sections, use Next section without restarting the microphone, then Finish & review. AR Create prepares evidence-linked speech cleanup and section assignments. Review Current section beside Your words, check flagged speech, then integrate one section or all ready sections into private working cards. Original audio and transcripts remain saved; neighboring sections remain intact. Intro edits are separate from the main reading. AI processing on the phone uses the private paired Mac bridge.
+Record opens the section-aware studio. Speak across complete named sections, use Next section without restarting the microphone, then Finish & review. AR Create prepares evidence-linked speech cleanup and section assignments. Review Current section beside Your words, check flagged speech, then integrate one section or all ready sections into private working cards. Original audio and transcripts remain saved; neighboring sections remain intact. Intro edits are separate from the main reading. On the phone, recordings go to the site first (signed in, owner account only). The paired Mac bridge is only a fallback, used when the site answers 404, 405 or 503.

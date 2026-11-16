@@ -74,3 +74,58 @@ export function normalizePassageComparison(originalText,spokenText,value){
  if(originalText.slice(originalCursor).trim()||spokenText.slice(textCursor).trim())return;
  return {originalText,spokenText,pairs};
 }
+
+const spoken=text=>/[\p{L}\p{N}]/u.test(text);
+/**
+ * Cut words[from,to) into at most `count` contiguous ranges that together cover every character, each with spoken
+ * words in it. Cuts fall at the start of a sentence nearest an even share, or at a space when there is no sentence end.
+ */
+export function splitAssimilationWords(words,from,to,count){
+ if(!(count>1))return [[from,to]];
+ let cuts=[...words.matchAll(/[.!?…]["”’)\]]*\s+(?=\S)/gu)].map(m=>m.index+m[0].length).filter(at=>at>from&&at<to);
+ if(!cuts.length)cuts=[...words.slice(from,to).matchAll(/\s+(?=\S)/g)].map(m=>from+m.index+m[0].length);
+ const chosen=[];let last=from;
+ for(let k=1;k<count;k++){
+  const ideal=from+(to-from)*k/count;let best=-1;
+  for(const at of cuts)if(at>last&&spoken(words.slice(last,at))&&(best<0||Math.abs(at-ideal)<Math.abs(best-ideal)))best=at;
+  if(best<0)break;chosen.push(best);last=best;
+ }
+ while(chosen.length&&!spoken(words.slice(chosen[chosen.length-1],to)))chosen.pop();
+ const bounds=[from,...chosen,to];return bounds.slice(0,-1).map((at,k)=>[at,bounds[k+1]]);
+}
+/**
+ * The review input for words[from,to): the same sections, the transcript segments placed in that stretch (found by
+ * their text, else by their share of it), the timed markers between its first segment and the next part's, and as
+ * its starting focus the last marker before it. The whole range returns the input itself.
+ */
+export function assimilationPart(input,from,to){
+ if(from===0&&to===input.words.length)return input;
+ const total=input.segments.reduce((n,s)=>n+s.text.length,0)||1;let cursor=0,seen=0;
+ const placed=input.segments.map(segment=>{const text=segment.text.trim(),found=text?input.words.indexOf(text,cursor):-1,at=found>=0?found:Math.max(cursor,Math.round(seen/total*input.words.length));seen+=segment.text.length;if(found>=0)cursor=found+text.length;return at;});
+ const segments=input.segments.filter((_,k)=>placed[k]>=from&&placed[k]<to),after=input.segments.find((_,k)=>placed[k]>=to);
+ const startMs=from===0?0:segments[0]?.startMs,endMs=after?.startMs??Infinity;
+ const markers=startMs===undefined?[]:input.markers.filter(m=>m.atMs>=startMs&&m.atMs<endMs);
+ const before=startMs===undefined?undefined:input.markers.filter(m=>m.atMs<startMs).pop();
+ return {...input,words:input.words.slice(from,to),startSectionId:before?.sectionId??input.startSectionId,markers,segments};
+}
+/**
+ * One candidate review from parts reviewed separately, in spoken order: a section met in several parts is joined
+ * (texts as paragraphs, evidence, cleanup and warnings in order; review issue offsets moved into the whole words;
+ * its passage comparison dropped, as no single pairing covers the joined text). A part without a candidate comes
+ * back whole as unassigned. Validate the result against the whole input with validateAssimilation.
+ */
+export function mergeAssimilationParts(input,parts,reason){
+ const sections=new Map(),unassigned=[];
+ for(const part of parts){
+  if(!part.candidate){const text=input.words.slice(part.from,part.to).trim();if(spoken(text))unassigned.push({text,reason});continue;}
+  for(const section of part.candidate.sections){
+   const issues=(Array.isArray(section.reviewIssues)?section.reviewIssues:[]).map(issue=>({...issue,start:issue.start+part.from,end:issue.end+part.from}));
+   const seen=sections.get(section.sectionId);
+   if(!seen){const {reviewIssues,...rest}=section;sections.set(section.sectionId,{...rest,evidenceQuotes:[...section.evidenceQuotes],changes:[...section.changes],warnings:[...section.warnings],...(issues.length?{reviewIssues:issues}:{})});continue;}
+   seen.text+='\n\n'+section.text;seen.evidenceQuotes.push(...section.evidenceQuotes);seen.changes.push(...section.changes);seen.warnings.push(...section.warnings);
+   if(issues.length)seen.reviewIssues=[...(seen.reviewIssues??[]),...issues];delete seen.comparison;
+  }
+  unassigned.push(...part.candidate.unassigned);
+ }
+ return {sections:[...sections.values()],unassigned};
+}

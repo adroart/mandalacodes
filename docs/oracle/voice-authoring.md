@@ -1,3 +1,6 @@
+> Kept for history and reasoning. `docs/oracle/VOICE-STATUS.md` describes the current state.
+> Stale here: it says the phone needs the paired Mac and Tailscale and that the interface is serif; today the phone sends to the site first (the Mac is only a fallback) and the workspace uses the sans controls font.
+
 # Oracle voice authoring
 
 Current local implementation, 2026-10-28. No canonical manuscript edits, existing

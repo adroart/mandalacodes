@@ -1,3 +1,4 @@
+import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { applyBetter, awaitingBetter, betterView, fromSentenceLines, parseMeta, resolveBetter, toSentenceLines } from '../../utils/oracleBetterTranscript';
 
@@ -63,6 +64,16 @@ function fakeDb(rows: Row[]) {
       };
     },
   };
+}
+
+/** A real SQLite answering the list query, so its SQL (LIMIT, json_extract) is exercised and not stood in for. */
+function sqliteDb(rows: Row[]) {
+  const db = new DatabaseSync(':memory:');
+  db.exec('CREATE TABLE oracle_reflection_sessions (id TEXT PRIMARY KEY, hexagram_number INTEGER); CREATE TABLE oracle_reflection_segments (id TEXT PRIMARY KEY, session_id TEXT, recorded_at TEXT, duration_ms INTEGER, mime_type TEXT, byte_size INTEGER, transcript TEXT, transcription_status TEXT, provider_metadata_json TEXT)');
+  db.prepare('INSERT INTO oracle_reflection_sessions VALUES (?,?)').run(SESSION, 12);
+  const insert = db.prepare('INSERT INTO oracle_reflection_segments VALUES (?,?,?,?,?,?,?,?,?)');
+  for (const r of rows) insert.run(...[r.id, r.session_id, r.recorded_at, r.duration_ms, r.mime_type, r.byte_size, r.transcript, r.transcription_status, r.provider_metadata_json] as (string | number | null)[]);
+  return { prepare: (sql: string) => ({ bind: (...v: unknown[]) => ({ all: async () => ({ results: db.prepare(sql).all(...v as (string | number)[]) }) }) }) };
 }
 
 function fakeBucket() {
@@ -132,6 +143,24 @@ describe('pickup list and audio', () => {
     expect(body.segments.map((s) => s.id)).toEqual([ID]);
     expect(body.segments[0]).toMatchObject({ hexagramNumber: 12, mimeType: 'audio/mp4', draft: { text: 'Lou Yo wrote the classic of tea. It was a book. We drank shaw puerh.', provider: 'groq' }, audioPath: `/api/oracle/pickup/segments/${ID}/audio` });
     expect(body.more).toBe(false);
+  });
+
+  it('still reaches a waiting recording behind more than 200 handled ones, with the rule applied in SQL', async () => {
+    const at = (i: number) => new Date(Date.UTC(2026, 9, 1) + i * 60000).toISOString();
+    const handled = Array.from({ length: 250 }, (_, i) => makeRow({ id: `h-${i}`, recorded_at: at(i), provider_metadata_json: JSON.stringify(i % 2 ? { provider: 'ar-create', arCreate: { state: 'applied', resultHash: HASH_A } } : { provider: 'groq', pickupSkipped: { reason: 'no speech', at: 'x' } }) }));
+    const falsy = [null, false, 0, ''].map((value, i) => makeRow({ id: `f-${i}`, recorded_at: at(300 + i), provider_metadata_json: JSON.stringify({ provider: 'groq', arCreate: value }) }));
+    const unreadable = makeRow({ id: 'bad-json', recorded_at: at(310), provider_metadata_json: '{not json' });
+    const waiting = makeRow({ recorded_at: at(320) });
+    const DB = sqliteDb([...handled, ...falsy, unreadable, waiting]);
+    const first = await pickup('GET', '/api/oracle/pickup/segments?limit=3', [], { env: { DB } });
+    const body = await first.response.json() as { segments: Row[]; more: boolean };
+    expect(first.response.status).toBe(200);
+    expect(body.segments.map((s) => s.id)).toEqual(['f-0', 'f-1', 'f-2']);
+    expect(body.more).toBe(true);
+    const all = await (await pickup('GET', '/api/oracle/pickup/segments?limit=50', [], { env: { DB } })).response.json() as { segments: Row[]; more: boolean };
+    expect(all.segments.map((s) => s.id)).toEqual(['f-0', 'f-1', 'f-2', 'f-3', 'bad-json', ID]);
+    expect(all.more).toBe(false);
+    for (const row of [...handled, ...falsy, unreadable, waiting]) expect(all.segments.some((s) => s.id === row.id)).toBe(awaitingBetter(parseMeta(row.provider_metadata_json)));
   });
 
   it('serves the audio bytes, and a byte range', async () => {

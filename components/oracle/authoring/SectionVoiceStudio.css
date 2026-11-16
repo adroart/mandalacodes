@@ -62,32 +62,42 @@
 .vs-section{position:relative;padding:18px 0 22px;border-top:1px solid var(--vs-rule)}
 .vs-section:first-of-type{border-top:0}
 .vs-lens{margin:2px 0 8px;font:600 12px/1.3 var(--font-controls);letter-spacing:.02em;color:var(--vs-muted)}
-.vs-section-head{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:0;border:0;background:none;color:var(--vs-ink);text-align:left}
+.vs-section-head{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0;border:0;background:none;color:var(--vs-ink);text-align:left}
 .vs-section-head:disabled{opacity:1}
 .vs-aim{display:grid;place-items:center;flex-shrink:0;width:30px;height:30px;border:1px solid var(--vs-rule-2);border-radius:50%;color:var(--vs-muted);transition:background .15s,border-color .15s,color .15s}
 @media(hover:hover){.vs-section-head:hover:enabled .vs-aim{color:var(--vs-ink);border-color:var(--vs-muted)}}
 .vs-section-head[aria-pressed=true] .vs-aim{background:var(--vs-accent);border-color:var(--vs-accent);color:var(--vs-accent-ink)}
-.vs-section[data-recording] .vs-aim{background:var(--vs-rec);border-color:var(--vs-rec);color:#fff;animation:vs-pulse 1.6s ease-in-out infinite}
+/* Red only while the microphone hears him; a paused, interrupted or muted capture stays neutral. */
+.vs-section[data-recording] .vs-aim{background:var(--vs-raised);border-color:var(--vs-rule-2);color:var(--vs-ink-2)}
+.vs-section[data-live] .vs-aim{background:var(--vs-rec);border-color:var(--vs-rec);color:#fff;animation:vs-pulse 1.6s ease-in-out infinite}
 .vs-section-title{flex:1;min-width:0;font:600 16px/1.35 var(--font-controls)}
 .vs-section-text{margin-top:10px;white-space:pre-line;font:400 var(--vs-text)/1.62 var(--font-controls);color:var(--vs-ink-2);overflow-wrap:break-word}
 .vs-section[aria-current=step] .vs-section-text{color:var(--vs-ink)}
 .vs-section-text--paragraphs{white-space:normal}
-.vs-para{position:relative;margin:0 calc(var(--vs-gutter) * -1);padding:4px var(--vs-gutter);white-space:pre-line;cursor:pointer;transition:background .12s}
+.vs-para{position:relative;margin:0 calc(var(--vs-gutter) * -1);padding:4px var(--vs-gutter);white-space:pre-line}
 .vs-para+.vs-para{margin-top:.75em}
-.vs-para[aria-disabled]{cursor:default}
-@media(hover:hover){.vs-para:not([aria-disabled]):hover{background:rgba(255,255,255,.035)}}
+/* Paragraphs are buttons only while the owner is choosing one in the aimed section. */
+.vs-para--choice{display:block;width:calc(100% + var(--vs-gutter) * 2);padding-block:10px;border:1px solid var(--vs-rule-2);border-radius:6px;background:none;color:var(--vs-ink);font:inherit;text-align:left;cursor:pointer;transition:background .12s,border-color .12s}
+@media(hover:hover){.vs-para--choice:hover{background:var(--vs-hover);border-color:var(--vs-muted)}}
+.vs-para--choice:active{background:var(--vs-accent-soft);border-color:var(--vs-accent)}
+.section-voice-studio .vs-para--choice:focus-visible{outline:2px solid var(--vs-accent);outline-offset:-2px}
+.vs-narrow{display:inline-flex;align-items:center;min-height:44px;margin:6px 0 0 40px;padding:0;border:0;background:none;color:var(--vs-ink-2);font:600 14px/1.3 var(--font-controls);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--vs-rule-2)}
+@media(hover:hover){.vs-narrow:hover{color:var(--vs-ink)}}
+.vs-picking{margin:4px 0 0 40px;font:500 14px/1.4 var(--font-controls);color:var(--vs-accent)}
 .vs-para[data-aimed]{padding-top:10px;padding-bottom:12px;background:rgba(255,255,255,.05);color:#fbfaf6}
 .vs-para[data-aimed]::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--vs-accent)}
 .vs-section[data-recording] .vs-para[data-aimed]{background:rgba(255,255,255,.05)}
-.vs-section[data-recording] .vs-para[data-aimed]::before{background:var(--vs-rec)}
-.vs-para-tag{display:block;margin-bottom:4px;font:700 11.5px/1.3 var(--font-controls);letter-spacing:.02em;color:var(--vs-accent)}
+.vs-section[data-recording] .vs-para[data-aimed]::before{background:var(--vs-muted)}
+.vs-section[data-live] .vs-para[data-aimed]::before{background:var(--vs-rec)}
+.vs-para-tag{display:block;margin-bottom:4px;font:700 12px/1.3 var(--font-controls);letter-spacing:.02em;color:var(--vs-accent)}
 .vs-section[data-recording] .vs-para-tag{color:var(--vs-muted)}
 .vs-section[data-paragraph-aim]::before{display:none}
 .vs-section[data-paragraph-aim] .vs-para:not([data-aimed]){color:var(--vs-ink-2)}
 .vs-section[data-paragraph-aim] .vs-section-head[aria-pressed=true] .vs-aim{background:none;border-color:var(--vs-accent);color:var(--vs-accent)}
 .vs-span{font-weight:500;color:var(--vs-ink-2)}
 .vs-section[aria-current=step]::before{content:'';position:absolute;left:calc(var(--vs-gutter) * -1);top:18px;bottom:22px;width:3px;border-radius:0 3px 3px 0;background:var(--vs-accent)}
-.vs-section[data-recording]::before{background:var(--vs-rec)}
+.vs-section[data-recording]::before{background:var(--vs-muted)}
+.vs-section[data-live]::before{background:var(--vs-rec)}
 
 
 /* State chips and dots share one vocabulary */
@@ -104,10 +114,12 @@
 .vs-rail,.vs-index{flex-direction:column}
 .vs-index{display:flex}
 .vs-rail h3,.vs-index h3{margin:18px 10px 4px;font:600 12px/1.3 var(--font-controls);letter-spacing:.02em;color:var(--vs-muted)}
-.vs-rail button,.vs-index button{display:flex;align-items:center;gap:10px;width:100%;min-height:38px;padding:7px 10px;border:0;border-radius:8px;background:none;color:var(--vs-ink-2);text-align:left;font:500 14px/1.35 var(--font-controls)}
+.vs-rail button,.vs-index button{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:7px 10px;border:0;border-radius:8px;background:none;color:var(--vs-ink-2);text-align:left;font:500 14px/1.35 var(--font-controls)}
 @media(hover:hover){.vs-rail button:hover,.vs-index button:hover{background:var(--vs-hover);color:var(--vs-ink)}}
 .vs-rail button[aria-current=step],.vs-index button[aria-current=step]{background:var(--vs-raised);color:var(--vs-ink)}
 .vs-rail button span,.vs-index button span{flex:1;min-width:0}
+.vs-index-state{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;max-width:45%;font:500 12px/1.3 var(--font-controls);color:var(--vs-muted);text-align:right}
+.vs-index-state[data-tone=human]{color:var(--vs-human)}.vs-index-state[data-tone=rec]{color:var(--vs-ink)}
 .vs-rail i,.vs-index i{flex-shrink:0;width:8px;height:8px;border-radius:50%;background:var(--tone)}
 .vs-index{margin:0 -10px}
 .vs-index button{min-height:48px;font-size:15px}
@@ -129,7 +141,7 @@
 .vs-record:disabled{opacity:.5}
 .vs-next{gap:4px;padding:0 8px 0 14px;max-width:46%}
 .vs-next span{display:flex;flex-direction:column;align-items:flex-start;min-width:0;line-height:1.15}
-.vs-next span small{font-size:11px;font-weight:600;opacity:.72}
+.vs-next span small{font-size:12px;font-weight:600;opacity:.72}
 .vs-next span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vs-dock--review{gap:4px;padding-left:10px}
 .vs-dock--review .vs-btn--primary{margin-left:auto}
@@ -171,11 +183,7 @@
 [data-review-pane=words] .ov-text-editor>button{margin-top:8px;min-height:40px;padding:0 12px;border:1px solid var(--vs-rule-2);border-radius:10px;background:none;color:var(--vs-ink-2);font:600 13px var(--font-controls)}
 .section-voice-studio .word-replay{height:auto;overflow:visible;padding:4px 4px 4px 16px;border:0;border-left:3px solid var(--vs-accent);background:none;color:#fbfaf6;font:500 var(--vs-text)/1.62 var(--font-controls)}
 .section-voice-studio .word-replay mark{background:var(--vs-accent);color:var(--vs-accent-ink)}
-.vs-compare-summary{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0;font-size:14px;line-height:1.45;color:var(--vs-ink-2)}
-.vs-compare-summary[data-tone=whole]{padding:2px 0 2px 13px;border-left:3px solid var(--vs-check);color:var(--vs-ink)}
-.vs-compare-summary .vs-mini{margin-left:0}
 .vs-compare[data-mode=passages]{gap:0}
-.vs-compare[data-mode=passages] .vs-compare-summary{margin-bottom:6px}
 .vs-compare[data-mode=passages] .vs-pair,.vs-compare[data-mode=passages] .vs-pair+.vs-pair{gap:8px;padding:16px 0 18px;border-top:1px solid var(--vs-rule)}
 .vs-pair-head{display:flex;align-items:center;justify-content:space-between;gap:12px;grid-column:1/-1;min-height:32px;font:600 12px/1.3 var(--font-controls);letter-spacing:.02em;color:var(--vs-muted)}
 .vs-pair-head b{margin-left:8px;font-weight:700}
@@ -187,7 +195,6 @@
 .vs-compare[data-mode=passages] [data-kind=replaced][data-choice=mine] .vs-original{color:var(--vs-muted)}
 .vs-compare[data-mode=passages] [data-kind=replaced][data-choice=original] .vs-original{color:var(--vs-ink)}
 .vs-unused{margin:0;padding-left:16px;white-space:pre-line;color:var(--vs-muted);text-decoration:line-through;font-size:15px;line-height:1.55}
-.vs-mini--hear{float:right;margin:0 0 4px 8px}
 .vs-applied{display:flex;flex-direction:column;gap:12px}
 .vs-applied-state{display:flex;align-items:center;gap:8px;margin:0;color:var(--vs-human);font:600 14px/1.4 var(--font-controls)}
 .vs-applied-kept,.vs-applied-text{margin:0;padding-left:14px;white-space:pre-line;font:400 var(--vs-text)/1.62 var(--font-controls)}
@@ -229,28 +236,30 @@
 .vs-unplaced small{display:block;margin:0 0 12px 16px;font-size:13px;color:var(--vs-muted)}
 .vs-pre{margin:6px 0 0;padding:14px;border:1px solid var(--vs-rule);border-radius:12px;background:var(--vs-surface);white-space:pre-wrap;font:400 14px/1.6 var(--font-controls);color:var(--vs-ink-2)}
 /* Shared tools rendered inside a screen inherit the same controls. */
-.vs-screen :is(.ov-capture-shelf,.voice-sync-tools,.oracle-mac-connection) button:not([class]),.vs-sync button:not([class]){min-height:40px;padding:0 13px;border:1px solid var(--vs-rule-2);border-radius:10px;background:transparent;color:var(--vs-ink);font:600 13px/1.2 var(--font-controls)}
+.vs-screen :is(.ov-capture-shelf,.voice-sync-tools,.oracle-mac-connection) button:not([class]),.vs-sync button:not([class]){min-height:44px;padding:0 13px;border:1px solid var(--vs-rule-2);border-radius:10px;background:transparent;color:var(--vs-ink);font:600 13px/1.2 var(--font-controls)}
 .vs-screen :is(.ov-capture-shelf,.oracle-mac-connection) :is(button:not([class]),input):disabled,.vs-sync button:disabled{opacity:.42}
-.vs-screen :is(.ov-capture-shelf,.oracle-mac-connection) input:not([type=checkbox]):not([type=radio]){min-height:42px;padding:8px 10px;border:1px solid var(--vs-rule-2);border-radius:10px;background:var(--vs-surface);color:var(--vs-ink);font:14px var(--font-controls)}
+.vs-screen :is(.ov-capture-shelf,.oracle-mac-connection) input:not([type=checkbox]):not([type=radio]){min-height:44px;padding:8px 10px;border:1px solid var(--vs-rule-2);border-radius:10px;background:var(--vs-surface);color:var(--vs-ink);font:16px var(--font-controls)}
 .vs-screen .ov-capture-item{border-bottom-color:var(--vs-rule)}
 .vs-screen .ov-capture-item small,.vs-screen .ov-capture-state,.vs-screen .ov-note,.vs-screen .oracle-mac-connection p{color:var(--vs-muted)}
 .vs-screen .ov-capture-shelf h3,.vs-screen .oracle-mac-connection h2{margin:26px 0 6px;font:600 12px/1.3 var(--font-controls);letter-spacing:.02em;color:var(--vs-muted)}
 .vs-sync{margin-top:8px}
-.vs-sync a{display:inline-flex;align-items:center;min-height:40px;margin:4px 0;padding:0 13px;border:1px solid var(--vs-rule-2);border-radius:10px;color:var(--vs-ink);text-decoration:none;font:600 13px/1.2 var(--font-controls)}
+.vs-sync a{display:inline-flex;align-items:center;min-height:44px;margin:4px 0;padding:0 13px;border:1px solid var(--vs-rule-2);border-radius:10px;color:var(--vs-ink);text-decoration:none;font:600 13px/1.2 var(--font-controls)}
 .vs-sync .voice-sync-tools p{margin:6px 0}
 .vs-sync .voice-sync-tools{padding:0;margin:0;max-width:none;color:var(--vs-ink-2);font-size:14px}
 .vs-sync .voice-sync-tools h2,.vs-sync .voice-sync-tools h3{font:600 12px/1.3 var(--font-controls);letter-spacing:.02em;color:var(--vs-muted)}
 
 /* Message line above the dock */
-.vs-toast{display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0 12px 8px;padding:4px 4px 4px 14px;border:1px solid var(--vs-rule-2);border-radius:12px;background:var(--vs-raised);font-size:14px;line-height:1.4;color:var(--vs-ink)}
+.vs-toast{display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0 12px 8px;padding:0 0 0 14px;border:1px solid var(--vs-rule-2);border-radius:12px;background:var(--vs-raised);font-size:14px;line-height:1.4;color:var(--vs-ink)}
 .vs-toast span{flex:1;min-width:0;padding:6px 0}
 .vs-toast[data-tone=alert]{border-color:var(--vs-rule-2);color:var(--vs-ink-2)}
-.vs-toast .vs-icon{width:36px;height:36px}
+.vs-toast .vs-icon{width:44px;height:44px}
 .vs-processing-status{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;padding:10px 16px;border-bottom:1px solid var(--vs-rule-2);background:var(--vs-raised);font-size:14px;line-height:1.4}
 .vs-processing-status>div:first-child{min-width:0;flex:1}
 .vs-processing-status strong,.vs-processing-status span{display:block}
 .vs-processing-status span{color:var(--vs-ink-2);margin-top:3px;overflow-wrap:anywhere}
 .vs-processing-actions{display:flex;gap:6px;flex-shrink:0}
+/* The status code after a failure: quiet, for reporting what failed. */
+.vs-error-detail{display:block;margin-top:2px;font:400 12px/16px var(--font-controls);color:var(--vs-muted);font-variant-numeric:tabular-nums}
 @media(max-width:440px){.vs-processing-status{flex-wrap:wrap;gap:6px}.vs-processing-status>div:first-child{flex-basis:100%}.vs-processing-actions{margin-left:auto}}
 
 @keyframes vs-pulse{0%,100%{opacity:1}50%{opacity:.45}}
@@ -261,7 +270,7 @@
 @media(max-width:599px){
  .vs-compare[data-mode=passages] [data-kind=replaced] .vs-original{font-size:15px;line-height:1.55}
  .vs-dock--review{gap:2px;padding:8px 10px}
- .vs-dock--review .vs-btn--quiet{flex-direction:column;gap:3px;min-width:60px;min-height:52px;padding:0 6px;font-size:11px;font-weight:600}
+ .vs-dock--review .vs-btn--quiet{flex-direction:column;gap:3px;min-width:60px;min-height:52px;padding:0 6px;font-size:12px;font-weight:600}
  .vs-dock--review .vs-btn--primary{flex:1;min-width:0;min-height:48px;margin-left:6px;padding:0 12px}
  .vs-dock--review .vs-next{max-width:none}
 }
@@ -312,7 +321,8 @@
 .vs-chip[data-tone=ready]{background:var(--vs-raised);color:var(--vs-ink-2)}
 .vs-section-head .vs-chip{max-width:40%;white-space:normal}
 .vs-row-action{min-height:44px}
-.vs-dock{padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));gap:8px}
+/* The bottom safe area belongs to whatever meets the screen edge: the tab bar on the page, the dock in the sheet (authoring-sheet.css). */
+.vs-dock{padding:12px 20px;gap:8px}
 .vs-dock-target strong{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
 .vs-record{background:var(--vs-accent);color:var(--vs-accent-ink);border-radius:6px;white-space:normal;min-width:90px;padding:0 16px}
 @media(hover:hover){.vs-record:hover:enabled{background:#e6c47f}}
@@ -378,3 +388,19 @@
 
 .section-voice-studio{font-style:normal}
 .section-voice-studio .vs-dock-target strong,.section-voice-studio .vs-next-recording h3{color:var(--vs-accent)}
+
+/* Touch targets: every control is at least 44 px in both directions, by padding, never by shrinking type. */
+.vs-section>.vs-link,.vs-link--block{min-height:44px;padding-block:0}
+.vs-para{min-height:44px}
+.section-voice-studio .vs-title-input{min-height:44px}
+.vs-screen .oracle-mac-connection a{display:inline-flex;align-items:center;min-height:44px}
+.vs-screen .ov-capture-shelf input[type=file]{font-size:14px}
+.vs-visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+/* The screen title takes focus on a screen change; it is a landing place, not a control, so it shows no ring after a tap. */
+.vs-bar-title[tabindex]:focus:not(:focus-visible){outline:none}
+
+/* While a software keyboard is open the workspace holds only the visible part of the screen
+   (useVisualViewport): the bar stays at the top and the dock sits directly above the keyboard.
+   Pinned to the visual viewport it leaves the sheet's padding behind, so it applies the top and side
+   insets itself, once; the keyboard covers the home indicator, so the dock needs no bottom inset. */
+.section-voice-studio[data-keyboard]{position:fixed;z-index:90;left:0;right:0;top:var(--vs-vv-top,0px);height:var(--vs-vv-height,100%);padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px)}

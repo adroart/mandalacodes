@@ -54,3 +54,5 @@ export function cardSections(source:SourceSnapshot,introText?:string):CardSectio
  }
  return result;
 }
+/** Display only: the manuscript's structural dash between a heading and its name reads as a middle dot ("Upper trigram · Earth (Kun)"). Ids, stored titles, parsing and matching keep the dash. */
+export const displaySectionTitle=(title:string)=>title.replace(/\s+[\u2014\u2013]\s+/g,' · ');

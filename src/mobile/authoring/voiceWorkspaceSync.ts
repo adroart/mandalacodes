@@ -63,6 +63,10 @@ export function safeResume(resume:ResumePosition|null,draft:SectionDraftSession,
  if(!resume||resume.cardNumber!==draft.cardNumber||!Number.isFinite(resume.positionMs)||resume.positionMs<0||resume.sectionId&&!draft.sections.some(s=>s.id===resume.sectionId))return null;
  const capture=saved.session.captures.find(c=>c.id===resume.captureId);return {...resume,positionMs:capture?Math.min(resume.positionMs,capture.durationMs):0,captureId:capture?.id};
 }
+/** Quiet time after the last change before an automatic private copy is saved. */
+export const PRIVATE_COPY_QUIET_MS=8000;
+/** On by default once signed in; an explicit earlier "false" always wins. Signed out, nothing leaves the phone. */
+export function privateCopyEnabled(signedIn:boolean,stored:string|null):boolean{return signedIn&&stored!=='false';}
 /** Debounced callers keep this gate per mounted account. No polling or unchanged retries. */
 export class QuietContinuity {
  private attempted='';private busy=false;

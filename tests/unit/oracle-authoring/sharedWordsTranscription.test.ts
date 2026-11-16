@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-vi.mock('../../../functions/api/_lib/auth', () => ({ requireUser: vi.fn(async () => ({ userId: 'owner' })) }));
+vi.mock('../../../functions/api/_lib/auth.ts', () => ({ requireAdmin: vi.fn(async () => ({ userId: 'owner' })) }));
 import { onRequestPost } from '../../../functions/api/oracle/authoring/process';
 import type { AuthoringEnv } from '../../../functions/api/oracle/authoring/_shared';
 import { addTranscript, createSession } from '../../../lib/oracle/authoring/workflow';

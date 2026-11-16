@@ -1,37 +1,100 @@
 import { Capacitor } from '../../../mobile/node_modules/@capacitor/core';
 import { createNativeAccountFetch } from '../account/nativeAccountTransport';
-import { exportBundle, importBundle } from '../../../lib/oracle/authoring/transfer';
+import { importBundle } from '../../../lib/oracle/authoring/transfer';
 import type { AuthoringStore } from '../../../lib/oracle/authoring/storage';
+import type { AuthoringSession, Capture } from '../../../lib/oracle/authoring/types';
 export interface ResumePosition { captureId?:string; positionMs:number; cardNumber:number; sectionId?:string; mode?:string }
 export interface PrivateDocument { session: unknown; audio: {captureId:string;mimeType:string;hash:string}[]; format:string;version:number;reviewHash:string;receipts:unknown[]; resume:ResumePosition|null; workspace:Record<string,unknown> }
 export interface RemoteCopy {revision:string|null;document:PrivateDocument|null}
-export class PrivateSyncConflict extends Error { constructor(){super('Another device changed this session. Open its copy and choose what to keep. Your local version is safe.');} }
+export class PrivateSyncConflict extends Error { constructor(){super('A newer copy exists on your account. Show the copies in your account and choose what to keep. Nothing on this phone has changed.');} }
+/** The server asked for audio this phone believed it already held. The save did not commit. */
+class MissingPrivateAudio extends Error {}
+/** The account cannot hold this session in one private copy (too many recordings or too large). Retrying cannot help until its content changes. */
+export type PrivateCopyLimit='too_many_recordings'|'document_too_large';
+export const PRIVATE_COPY_LIMIT_LINE:Record<PrivateCopyLimit,string>={
+ too_many_recordings:'This card has more recordings than one private copy can hold. Everything is still saved on this phone. Start a new session for this card to keep copying.',
+ document_too_large:'This card holds more than one private copy can keep. Everything is still saved on this phone. Start a new session for this card to keep copying.'};
+export class PrivateCopyStopped extends Error { constructor(readonly reason:PrivateCopyLimit){super(PRIVATE_COPY_LIMIT_LINE[reason]);} }
+/** Sessions the server refused for size, by account and remote id, with a fingerprint of the content refused. Lives as long as the page. */
+const stopped=new Map<string,{reason:PrivateCopyLimit;fingerprint:string}>();
+/** A finished capture's audio never changes, so its hash is kept per capture for the life of the page. */
+const hashes=new Map<string,string>();
+const MAX_AUDIO_BYTES=10*1024*1024;
+async function audioHash(blob:Blob){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');}
+function base64(bytes:Uint8Array){let result='';for(let i=0;i<bytes.length;i+=16384)result+=String.fromCharCode(...bytes.subarray(i,i+16384));return btoa(result);}
+type AudioSource=Pick<AuthoringStore,'load'|'audio'|'receipts'>;
+/** What the server keeps beside a capture's audio so the Mac can transcribe it well and the phone can match the result. */
+export interface AudioDetails {durationMs?:number;cardNumber?:number;sectionId?:string;captureId:string;recordedAt?:string}
+export function audioDetails(session:Partial<Pick<AuthoringSession,'source'|'markers'>>,capture:Pick<Capture,'id'|'durationMs'|'recordedAt'|'visibleCardNumber'>):AudioDetails{
+ const card=capture.visibleCardNumber??session.source?.cardNumber;
+ // A section only when every marker of this capture points at the same one.
+ const sections=[...new Set((session.markers??[]).filter(m=>m.captureId===capture.id).map(m=>m.sectionId))];
+ return {captureId:capture.id,...(Number.isSafeInteger(capture.durationMs)&&capture.durationMs>0?{durationMs:capture.durationMs}:{}),...(Number.isSafeInteger(card)?{cardNumber:card}:{}),...(sections.length===1&&sections[0]?{sectionId:sections[0]}:{}),...(capture.recordedAt?{recordedAt:capture.recordedAt}:{})};
+}
 export class PrivateAuthoringSync {
  constructor(private readonly transport:(path:string,init?:RequestInit)=>Promise<Response>=Capacitor.isNativePlatform()?createNativeAccountFetch():fetch){}
  private async call(body:unknown){
   const response=await this.transport('/api/oracle/authoring/private',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(60000)});
   const result=await response.json().catch(()=>null);
+  if(response.status===413&&(result?.code==='too_many_recordings'||result?.code==='document_too_large'))throw new PrivateCopyStopped(result.code);
   if(response.status===409)throw new PrivateSyncConflict();
-  if(!response.ok)throw Error(response.status===401?'Sign in to sync your private work. Your local copy is safe.':result?.error??'Private sync is unavailable. Your local copy is safe.');
+  if(response.status===400&&(result?.missingAudio===true||/Upload all private audio/.test(result?.error??'')))throw new MissingPrivateAudio();
+  if(!response.ok)throw Error(response.status===401?'Sign in to keep a private copy. Everything is still on this phone.':result?.error??'Your account copy could not be reached. Everything is still on this phone.');
   return result;
+ }
+ /** Which of these hashes the account already holds. An older server without `audio-has`, or any failure, answers none: the audio is then simply sent. */
+ private async held(hashes:string[]):Promise<string[]>{
+  const present:string[]=[];
+  try{for(let i=0;i<hashes.length;i+=100){const result=await this.call({operation:'audio-has',hashes:hashes.slice(i,i+100)});if(!Array.isArray(result?.present))return present;present.push(...result.present.filter((hash:unknown)=>typeof hash==='string'&&hashes.includes(hash)));}}catch{/* Unknown is treated as missing. */}
+  return present;
  }
  list(cursor?:string):Promise<{documents:{id:string;revision:string;updatedAt:string}[];cursor:string|null}>{return this.call({operation:'list',cursor});}
  read(id:string):Promise<RemoteCopy>{return this.call({operation:'read',id});}
- /** Caller retains the acknowledged revision per account+remote id. Never guess it from a local save version. */
- async save(store:AuthoringStore,sessionId:string,expectedRevision:string|null,resume:ResumePosition|null,workspace:Record<string,unknown>={},remoteId=sessionId):Promise<string>{
-  const bundle=JSON.parse(await exportBundle(store,sessionId));
-  for(const audio of bundle.audio)await this.call({operation:'audio-put',hash:audio.hash,mimeType:audio.mimeType,audioBase64:audio.base64});
-  // A restored local copy has a fresh id. The remote document retains its stable id.
-  const session={...bundle.session,id:remoteId};
+ /** Caller retains the acknowledged revision per account+remote id. Never guess it from a local save version.
+  * With an accountId, each capture is uploaded at most once per account: hashes the server acknowledged are remembered locally.
+  * A lost record only re-uploads; a record the server contradicts is forgotten and every capture is sent once more. */
+ async save(store:AudioSource,sessionId:string,expectedRevision:string|null,resume:ResumePosition|null,workspace:Record<string,unknown>={},remoteId=sessionId,accountId?:string):Promise<string>{
+  const saved=await store.load(sessionId);if(!saved)throw Error('Session not found');
+  if(saved.session.captures.some(c=>c.status==='recording'))throw Error('Finish the current take before saving a copy.');
+  // A session the server already refused for size stays stopped until its content changes: nothing is hashed or sent.
   const {sha256}=await import('../../../lib/oracle/authoring/workflow');
-  const document={...bundle,session,reviewHash:await sha256(JSON.stringify(session)),audio:bundle.audio.map(({base64,...audio}:any)=>audio),resume,workspace};
-  return (await this.call({operation:'save',id:remoteId,expectedRevision,document})).revision;
+  const session={...saved.session,id:remoteId},stopKey=`${accountId??''}/${remoteId}`,fingerprint=await sha256(JSON.stringify({session,workspace}));
+  const refused=stopped.get(stopKey);if(refused){if(refused.fingerprint===fingerprint)throw new PrivateCopyStopped(refused.reason);stopped.delete(stopKey);}
+  const audio:{captureId:string;mimeType:string;hash:string}[]=[],captureOf=new Map<string,string>(),details=new Map<string,AudioDetails>();
+  for(const capture of saved.session.captures.filter(c=>c.status!=='empty')){const cacheKey=`${sessionId}/${capture.id}`;let hash=hashes.get(cacheKey);if(!hash){hash=await audioHash(await store.audio(sessionId,capture.id));hashes.set(cacheKey,hash);}audio.push({captureId:capture.id,mimeType:capture.mimeType,hash});if(!captureOf.has(hash))captureOf.set(hash,capture.id);if(!details.has(hash))details.set(hash,audioDetails(saved.session,capture));}
+  // A restored local copy has a fresh id. The remote document retains its stable id.
+  const document={format:'oracle-authoring-review',version:1,session,reviewHash:await sha256(JSON.stringify(session)),audio,receipts:await store.receipts(sessionId),resume,workspace};
+  const upload=async(trustRecord:boolean)=>{
+   const known=trustRecord&&accountId?knownPrivateAudio(accountId):new Set<string>(),sent=new Set<string>();
+   // A record that is empty or misses some of these: ask the account which it already holds before sending any.
+   if(trustRecord&&accountId){const unknown=[...new Set(audio.map(item=>item.hash))].filter(hash=>!known.has(hash));if(unknown.length)for(const hash of await this.held(unknown)){known.add(hash);rememberPrivateAudio(accountId,[hash]);}}
+   for(const item of audio){
+    if(known.has(item.hash)||sent.has(item.hash))continue;
+    const blob=await store.audio(sessionId,captureOf.get(item.hash)!);if(blob.size>MAX_AUDIO_BYTES)throw Error('One recording is larger than 10 MB and cannot be copied. It is still on this phone.');
+    // One capture per request; its bytes are encoded only for this request.
+    const result=await this.call({operation:'audio-put',hash:item.hash,mimeType:item.mimeType,details:details.get(item.hash),audioBase64:base64(new Uint8Array(await blob.arrayBuffer()))});
+    sent.add(item.hash);if(accountId&&result?.hash===item.hash)rememberPrivateAudio(accountId,[item.hash]);
+   }
+  };
+  const commit=async()=>(await this.call({operation:'save',id:remoteId,expectedRevision,document})).revision as string;
+  try{
+  await upload(true);
+  try{return await commit();}
+  catch(error){
+   if(!(error instanceof MissingPrivateAudio))throw error;
+   if(accountId)forgetPrivateAudio(accountId,audio.map(item=>item.hash));
+   await upload(false);
+   try{return await commit();}
+   catch(again){if(again instanceof MissingPrivateAudio)throw Error('Your account could not keep every recording. Everything is still on this phone.');throw again;}
+  }
+  }catch(error){if(error instanceof PrivateCopyStopped)stopped.set(stopKey,{reason:error.reason,fingerprint});throw error;}
  }
  /** Restore as a new local copy through the existing validated importer. No local overwrite, even after conflict. */
- async restore(store:AuthoringStore,id:string){
-  const copy=await this.read(id);if(!copy.document||!copy.revision)throw Error('Private session was not found.');
+ async restore(store:AuthoringStore,id:string,accountId?:string){
+  const copy=await this.read(id);if(!copy.document||!copy.revision)throw Error('This copy was not found in your account.');
   const audio=[];for(const item of copy.document.audio){const bytes=await this.call({operation:'audio-get',hash:item.hash});audio.push({...item,base64:bytes.audioBase64});}
   const saved=await importBundle(store,JSON.stringify({...copy.document,audio}));
+  if(accountId)rememberPrivateAudio(accountId,copy.document.audio.map(item=>item.hash));
   return {saved,remoteId:id,revision:copy.revision,resume:copy.document.resume,workspace:copy.document.workspace};
  }
 }
@@ -46,4 +109,17 @@ export function acknowledgePrivateSync(accountId:string,localSessionId:string,li
  if(!accountId||!localSessionId||!link.remoteId||!link.revision)throw Error('A signed-in account and saved revision are required.');
  let links:Record<string,Record<string,PrivateSyncLink>>={};try{links=JSON.parse(localStorage.getItem(LINK_KEY)??'{}');}catch{}
  links[accountId]??={};links[accountId][localSessionId]=link;localStorage.setItem(LINK_KEY,JSON.stringify(links));
+}
+
+const AUDIO_KEY='oracle.privateSync.audio.v1',AUDIO_RECORD_LIMIT=4000;
+function readAudioRecord():Record<string,string[]>{try{const value=JSON.parse(localStorage.getItem(AUDIO_KEY)??'{}');return value&&typeof value==='object'?value:{};}catch{return {};}}
+function writeAudioRecord(record:Record<string,string[]>){try{localStorage.setItem(AUDIO_KEY,JSON.stringify(record));}catch{/* A lost record only costs a re-upload. */}}
+/** Audio hashes this account's server copy acknowledged. Advisory only: the server still checks every reference on save. */
+export function knownPrivateAudio(accountId:string):Set<string>{const list=readAudioRecord()[accountId];return new Set(Array.isArray(list)?list.filter(hash=>typeof hash==='string'):[]);}
+export function rememberPrivateAudio(accountId:string,hashes:string[]){
+ if(!accountId)return;const record=readAudioRecord(),fresh=hashes.filter(hash=>/^[a-f0-9]{64}$/.test(hash));
+ record[accountId]=[...[...knownPrivateAudio(accountId)].filter(hash=>!fresh.includes(hash)),...fresh].slice(-AUDIO_RECORD_LIMIT);writeAudioRecord(record);
+}
+export function forgetPrivateAudio(accountId:string,hashes?:string[]){
+ const record=readAudioRecord();if(!hashes)delete record[accountId];else record[accountId]=[...knownPrivateAudio(accountId)].filter(hash=>!hashes.includes(hash));writeAudioRecord(record);
 }

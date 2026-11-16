@@ -1,3 +1,6 @@
+> Kept for history and reasoning. `docs/oracle/VOICE-STATUS.md` describes the current state.
+> Its Owner correction was reversed in the app by commit 40c3dbf; on 2026-11-11 Adrian decided the correction stands, and it will be restored in Wave 4.
+
 # Oracle voice screens: five focused improvements
 
 Design handoff for Claude Code · 31 October 2026

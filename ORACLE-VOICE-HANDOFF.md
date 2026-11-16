@@ -1,5 +1,8 @@
 # Oracle voice workflow: Adrian's guidance and Claude handoff
 
+> This remains the owner's brief. Current state is in `docs/oracle/VOICE-STATUS.md`.
+> The preview port it names (4242) is stale; the real ports are in the Playwright configs.
+
 Distilled from this project's Oracle voice conversation through 30 October 2026. Read this before changing the workflow. This is a product brief, not an endorsement of the current design. Adrian still finds the interface too complicated and wants a substantially better implementation.
 
 ## Start here, Claude
