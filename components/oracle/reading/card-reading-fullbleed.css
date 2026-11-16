@@ -271,6 +271,21 @@ html.dark .card-reading {
   pointer-events: none;
 }
 
+/* The mobile footer is fixed over the scroller. Keep its recorder cue in the
+   deck slot so scrolling actions such as Save stay unobscured. */
+.card-reading [data-bar-tab="deck"] .oracle-admin-record-hint {
+  position: static;
+  transform: none;
+  max-width: 100%;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 9px;
+  line-height: 1.1;
+  text-align: center;
+  white-space: normal;
+}
+
 .card-reading [data-admin-recorder="available"].is-holding::after {
   transform: scaleX(1);
   transition: transform 650ms linear;
