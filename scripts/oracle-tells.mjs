@@ -5,6 +5,7 @@
 //   node scripts/oracle-tells.mjs            deck totals + worst cards
 //   node scripts/oracle-tells.mjs --json     totals as one JSON line
 //   node scripts/oracle-tells.mjs 03 14      per-card lines for those cards
+//   node scripts/oracle-tells.mjs --strict 03  strict findings involving card 03
 //
 // Promoted 2026-09-16 from the Phase 1 scratch check (todo/plans/personal-pass.md).
 // The Phase 1 clean line is: twoAnds 0, heightOpeners 0, systemWord 0,
@@ -183,13 +184,21 @@ export function analyzeDeck(cardsDir = 'oracle/cards', only = []) {
   return { tot, perCard, sharedStems, openers, subsectionRepeats };
 }
 
-export function violationsForDeck(cardsDir = 'oracle/cards') {
+export function violationsForDeck(cardsDir = 'oracle/cards', only = []) {
   const { openers, subsectionRepeats } = analyzeDeck(cardsDir);
   const violations = [];
-  if (openers.keysInwardFace > 0) {
-    violations.push(`banned KEYS stem "inward face of the Shadow" on ${openers.keysInwardFace} card(s)`);
+  const inwardFace = only.length
+    ? only.filter((id) => {
+        const raw = fs.readFileSync(path.join(cardsDir, `${id}.md`), 'utf8');
+        const keys = (raw.split(/\n## KEYS/)[1] ?? '').split(/\n## DESIGN/)[0];
+        return /inward face of the Shadow/i.test(keys);
+      }).length
+    : openers.keysInwardFace;
+  if (inwardFace > 0) {
+    violations.push(`banned KEYS stem "inward face of the Shadow" on ${inwardFace} card(s)`);
   }
   for (const repeat of subsectionRepeats) {
+    if (only.length && !repeat.cards.some((id) => only.includes(id))) continue;
     violations.push(`subsection opener on ${repeat.count} cards: ${repeat.key}`);
   }
   return violations;
@@ -205,6 +214,11 @@ function main() {
   const strict = args.includes('--strict');
   const cardsDir = process.env.ORACLE_TELLS_CARDS_DIR ?? 'oracle/cards';
   const only = args.filter((a) => /^\d\d$/.test(a));
+  const unknown = args.filter((a) => !['--json', '--strict'].includes(a) && !/^\d\d$/.test(a));
+  if (unknown.length) throw new Error(`Unknown argument: ${unknown.join(', ')}`);
+  for (const id of only) {
+    if (!fs.existsSync(path.join(cardsDir, `${id}.md`))) throw new Error(`Card ${id} is missing from ${cardsDir}`);
+  }
 
   const { tot, perCard, sharedStems, openers, subsectionRepeats } = analyzeDeck(cardsDir, only);
 
@@ -244,7 +258,7 @@ function main() {
     console.log(`cards with none of the hard tells: ${clean.length} of ${tot.cards}: ${clean.join(' ')}`);
   }
 
-  const violations = violationsForDeck(cardsDir);
+  const violations = violationsForDeck(cardsDir, only);
   if (strict && violations.length) {
     console.error('oracle-tells: FAIL');
     for (const v of violations) console.error(`  ${v}`);

@@ -82,7 +82,14 @@ const ls = run(['scripts/lint-slop.mjs', ent]);
 check('entrance slop', ls.ok, ls.out.trim().split('\n').slice(0, 2).join(' / '));
 const lp = run(['--import', 'tsx', 'scripts/lint-oracle-prose.ts']);
 const mine = lp.out.split('\n').filter((l) => l.includes(`${id}.md`));
-check('prose linter', !mine.length, mine.slice(0, 3).join(' / '));
+const lintFinished = lp.out.includes('[lint:prose] checked ');
+check('prose linter', !mine.length && (lp.ok || lintFinished),
+  mine.length ? mine.slice(0, 3).join(' / ') : `linter failed before completing: ${lp.out.trim().split('\n').slice(0, 3).join(' / ')}`);
+const tells = run(['scripts/oracle-tells.mjs', '--strict', id]);
+check('tells check', tells.ok,
+  tells.out.includes('oracle-tells: FAIL')
+    ? tells.out.trim().split('\n').filter((line) => line.includes('oracle-tells: FAIL') || line.startsWith('  ')).slice(0, 4).join(' / ')
+    : `tells checker failed: ${tells.out.trim().split('\n').slice(0, 3).join(' / ')}`);
 
 // ---- 1. the sheet --------------------------------------------------------
 if (!existsSync(sheetPath)) {
