@@ -12,7 +12,6 @@
 
 import React from 'react';
 import { ATLAS_GOLD } from './stageColors';
-import { GLOSS_TEXT, useGloss } from './gloss';
 
 const BRONZE = ATLAS_GOLD;
 
@@ -47,16 +46,7 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
   onRelease,
   inSheet = false,
 }) => {
-  // Gloss "ember" the first time this list shows one (interface law 5).
-  const { active: gloss, fire } = useGloss();
   const hasEmber = members.some((m) => m.status === 'unawakened');
-  const firedEmber = React.useRef(false);
-  React.useEffect(() => {
-    if (hasEmber && !firedEmber.current) {
-      firedEmber.current = true;
-      fire('ember');
-    }
-  }, [hasEmber, fire]);
 
   const scrollCap = inSheet
     ? 'h-full'
@@ -149,18 +139,11 @@ const CityListHUD: React.FC<CityListHUDProps> = ({
           })}
         </ul>
 
-        {/* Once-per-visitor gloss for "ember". */}
-        <p
-          aria-hidden={gloss !== 'ember'}
-          className="mt-3 font-display text-[13px] leading-snug"
-          style={{
-            color: 'rgba(196,170,124,0.85)',
-            opacity: gloss === 'ember' ? 1 : 0,
-            transition: 'opacity 500ms ease',
-          }}
-        >
-          {GLOSS_TEXT.ember}
-        </p>
+        {hasEmber && (
+          <p className="mt-3 font-reading text-[13px] leading-snug text-bronze-300">
+            Ember means a placed piece awaiting its keeper.
+          </p>
+        )}
       </div>
 
       {/* Return: close the whole city. */}

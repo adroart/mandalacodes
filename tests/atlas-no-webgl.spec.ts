@@ -128,7 +128,7 @@ test('title, filters and side panel chrome all render around the constellation',
 
   await expect(page.getByRole('heading', { name: 'Atlas' })).toBeVisible();
   await expect(page.getByText('Series', { exact: true })).toBeVisible();
-  await expect(page.getByText('SHOW KINSHIP THREADS')).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Status filter' })).toBeVisible();
   await expect(
     page.getByText('Tap a point on the globe to see where that piece has come to rest.'),
   ).toBeVisible();

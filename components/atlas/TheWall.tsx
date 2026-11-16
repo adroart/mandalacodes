@@ -29,27 +29,20 @@ import {
 
 /* ─── The wall ────────────────────────────────────────────────────────────
  * The exploratory reading of the one record: every piece a uniform card in a
- * calm grid. Each card is an artifact with two faces, never shown together —
- * the dream rides one side (readable, signed, anchored to its city), the
- * work itself lives on the other (the plate, the year, the size). One
- * control turns the whole wall over in a ripple; a small corner mark turns
- * a single card.
+ * calm grid. Closed cards show artwork and title. Opening one reveals its
+ * public dream and an artwork face. Dream prose is visible only in that
+ * opened record.
  *
  * Clicking a card does NOT open a popup: the card grows in place into the
  * full record, spanning the grid while the other cards slide out of its way
  * (a FLIP reflow), and folds back into its spot on close. The record keeps
  * the same two-face turn; ← → walk the wall in filtered order.
  *
- * Artifact rendering (all GPU transform/opacity, so hundreds of cards keep
- * 60fps): pointer-tracked 3D tilt with a lift, a bronze light sheen that
- * follows the hand across the face, paper grain, the piece's hexagram
- * embossed faintly into the dream face, a slow breathing
- * glow when a life is attached, a staggered rise as the wall assembles, and
- * a slow lens creep on the artwork under the hand. Reduced motion collapses
- * every one of these to a plain swap.
+ * Closed cards retain the pointer tilt and a subtle glow for placed pieces.
+ * The opened record has the dream/art turn and keyboard navigation.
  *
  * The wall shares the ledger's filter grammar and URL params (lk / ls / lq)
- * so a narrowing made here still holds on the ledger or the globe.
+ * so a narrowing made here still holds on the ledger.
  */
 
 export interface WallCard extends LedgerRow {
@@ -80,8 +73,7 @@ const DENSITY_GRID: Record<Density, string> = {
 };
 
 /** How big the open record stands at each density — an NxN block of cells,
- *  never wider than the column count at any breakpoint, so the neighboring
- *  dreams always keep at least one column beside it where the grid allows. */
+ *  never wider than the column count at any breakpoint. */
 const RECORD_SPAN: Record<Density, string> = {
   near: 'col-span-1 min-[420px]:col-span-2 min-[420px]:row-span-2',
   mid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-3',
@@ -267,206 +259,37 @@ const KindMark: React.FC<{ card: WallCard; width: number }> = ({ card, width }) 
 
 const WallTile: React.FC<{
   card: WallCard;
-  face: Face;
-  /** Stagger delay in ms while a whole-wall turn ripples through. */
-  delayMs: number;
-  /** Stagger delay for the rise-in as the wall assembles. */
   riseDelayMs: number;
   density: Density;
   onOpen: (key: string, rect: DOMRect) => void;
-  onTurn: (key: string) => void;
-}> = ({ card, face, delayMs, riseDelayMs, density, onOpen, onTurn }) => {
+}> = ({ card, riseDelayMs, density, onOpen }) => {
   const tilt = useTilt();
   const far = density === 'far';
   const placed = card.norm === 'placed';
-
   const open = () => {
     const rect = tilt.ref.current?.getBoundingClientRect();
     if (rect) onOpen(card.key, rect);
   };
-
   return (
-    <li
-      data-flipkey={card.key}
-      className="wall-rise"
-      style={{ animationDelay: `${riseDelayMs}ms` }}
-    >
-      {/* The tilt wrapper stays FLAT (no preserve-3d, no will-change, no
-          translateZ) with its perspective inline in the transform: a 3D
-          layer here makes Chromium's compositor hit-test drop clicks on the
-          whole card to the page root. The flip child below owns the real 3D
-          (its own perspective property + preserve-3d faces), the structure
-          that hit-tests correctly. onClick also rides here as a safety net —
-          the TurnMark stops propagation, so turning never opens. */}
+    <li data-flipkey={card.key} className="wall-rise" style={{ animationDelay: `${riseDelayMs}ms` }}>
       <div
         ref={tilt.ref}
         onPointerMove={tilt.onMove}
         onPointerLeave={tilt.onLeave}
-        onClick={open}
-        className="group/card relative aspect-[3/4] cursor-pointer"
-        style={{
-          perspective: '1400px',
-          transform:
-            'perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--lift, 1))',
-        }}
+        className="group/card relative aspect-[3/4]"
+        style={{ transform: 'perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--lift, 1))' }}
       >
-        {/* The breathing halo — only where a life is attached. Held close to
-            the edge and faint, a warmth at the rim rather than a bloom that
-            bleeds into the night around it. */}
-        {placed && (
-          <span
-            aria-hidden
-            className="wall-glow pointer-events-none absolute -inset-px"
-            style={{ boxShadow: '0 0 10px rgba(196,170,124,0.2)' }}
-          />
-        )}
-
-        <div
-          className={`absolute inset-0 transition-transform duration-[900ms] ease-[cubic-bezier(.62,.02,.34,1)] [transform-style:preserve-3d] motion-reduce:transition-none ${
-            face === 'art' ? '[transform:rotateY(180deg)]' : ''
-          }`}
-          style={{ transitionDelay: `${delayMs}ms` }}
-        >
-          {/* Dream face — three zones: a slim upper bar carrying the flip
-              button, the dream in the middle, the signature and anchor in the
-              lower bar. Separated zones so nothing overlaps the embossed
-              sigil. The away face keeps paint hidden via backface-visibility
-              but would still catch clicks and tab stops, so pointer-events and
-              focusability follow the turn. */}
-          <div
-            aria-hidden={face === 'art'}
-            className={`absolute inset-0 [backface-visibility:hidden] flex flex-col overflow-hidden border bg-wood-50 ${
-              face === 'art' ? 'pointer-events-none' : ''
-            } ${placed ? 'border-bronze-500/40' : 'border-wood-200'}`}
-            style={{
-              backgroundImage:
-                'linear-gradient(168deg, rgba(222,188,126,0.05), transparent 38%, rgba(21,19,17,0.12))',
-            }}
-          >
-            <Grain />
-            {/* Upper bar: the flip control, tight in the corner. */}
-            <div className="relative z-10 flex items-center justify-end px-3 pt-2 pb-1">
-              <FlipButton
-                label="show art"
-                onTurn={() => onTurn(card.key)}
-                far={far}
-                away={face === 'art'}
-              />
-            </div>
-            {/* Middle: the dream, centered so a short one never leaves a void
-                below it, with the sigil embossed faintly behind only here. */}
-            <button
-              type="button"
-              onClick={open}
-              tabIndex={face === 'art' ? -1 : 0}
-              aria-label={`Open the record of ${card.title}`}
-              className="relative flex-1 min-h-0 w-full flex flex-col justify-center text-left px-4 sm:px-5 pb-1 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-[-2px] group"
-            >
-              <KindMark card={card} width={far ? 56 : 88} />
-              {card.dream ? (
-                <p
-                  className={`relative font-display text-wood-800 group-hover:text-wood-900 transition-colors ${
-                    far
-                      ? 'text-[13px] leading-[1.5] line-clamp-5'
-                      : density === 'near'
-                        ? 'text-[17px] leading-[1.6] line-clamp-[10]'
-                        : 'text-[16px] leading-[1.6] line-clamp-[7]'
-                  }`}
-                >
-                  {card.dream}
-                </p>
-              ) : (
-                <span className="relative m-auto text-center block">
-                  <span
-                    className={`block font-display text-wood-600 leading-snug ${
-                      far ? 'text-[14px]' : 'text-xl'
-                    }`}
-                  >
-                    {card.title}
-                  </span>
-                </span>
-              )}
-            </button>
-            {/* Lower bar: who signed it, where it lives. */}
-            <div className="relative border-t border-wood-200/70 px-3 py-2 text-center">
-              {card.dream && card.signedBy?.name && (
-                <span
-                  className={`block font-display text-wood-600 truncate ${
-                    far ? 'text-[12px]' : 'text-[13px]'
-                  }`}
-                >
-                  {card.signedBy.name}
-                </span>
-              )}
-              <span
-                className={`block font-label uppercase tracking-[0.16em] ${
-                  card.dream ? 'text-bronze-600' : 'text-wood-400'
-                } ${far ? 'text-[9px]' : 'text-[10px]'}`}
-              >
-                {card.dream
-                  ? ledgerStatusLine(card)
-                  : card.norm === 'seeking'
-                    ? 'seeking ground'
-                    : 'waiting for a dream'}
-              </span>
-            </div>
-            <Sheen />
-          </div>
-
-          {/* Art face — the square work framed by an upper and lower bar. The
-              flip button rides the upper bar, the title and details the
-              lower; the piece sits whole between them. */}
-          <div
-            aria-hidden={face === 'dreams'}
-            className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden border bg-[#151311] ${
-              face === 'dreams' ? 'pointer-events-none' : ''
-            } ${placed ? 'border-bronze-500/50' : 'border-wood-800/40'}`}
-          >
-            {/* Upper bar. */}
-            <div className="relative z-10 flex items-center justify-end px-3 pt-2 pb-1.5">
-              <FlipButton
-                label="show dream"
-                onTurn={() => onTurn(card.key)}
-                far={far}
-                dark
-                away={face === 'dreams'}
-              />
-            </div>
-            {/* The piece fills the card edge to edge: a full-width square
-                plate, whole and uncropped. The 3:4 card leaves exactly a slim
-                upper and lower bar around it. */}
-            <button
-              type="button"
-              onClick={open}
-              tabIndex={face === 'dreams' ? -1 : 0}
-              aria-label={`Open the record of ${card.title}`}
-              className="relative w-full aspect-square shrink-0 focus:outline-2 focus:outline-bronze-400 focus:outline-offset-[-2px]"
-            >
-              <ArtworkPlate
-                src={card.coverImage}
-                alt={card.title}
-                title={card.title}
-                aspect="cover"
-              />
-            </button>
-            {/* Lower bar: fills the remaining band and centers its line. */}
-            <div className="relative flex-1 min-h-0 border-t border-white/10 px-3 flex flex-col justify-center text-center">
-              <span
-                className={`block font-display text-[#f0e8d8] leading-snug truncate ${
-                  far ? 'text-[13px]' : 'text-[15px]'
-                }`}
-              >
-                {card.title}
-              </span>
-              {!far && (
-                <span className="block font-label text-[9px] uppercase tracking-[0.16em] text-[#c8b084] truncate">
-                  {[card.year, card.dimensions].filter(Boolean).join(' · ')}
-                </span>
-              )}
-            </div>
-            <Sheen strong />
-          </div>
-        </div>
+        {placed && <span aria-hidden className="wall-glow pointer-events-none absolute -inset-px" style={{ boxShadow: '0 0 10px rgba(196,170,124,0.2)' }} />}
+        <button type="button" onClick={open} aria-label={`Open the record of ${card.title}`} className="absolute inset-0 flex flex-col overflow-hidden border border-bronze-500/40 bg-[#151311] text-left focus:outline-2 focus:outline-bronze-400 focus:outline-offset-[-2px]">
+          <span className="relative w-full aspect-square shrink-0">
+            <ArtworkPlate src={card.coverImage} alt={card.title} title={card.title} aspect="cover" />
+          </span>
+          <span className="relative flex-1 min-h-0 w-full border-t border-white/10 px-3 flex flex-col justify-center text-center">
+            <span className={`block font-display text-[#f0e8d8] leading-snug truncate ${far ? 'text-[13px]' : 'text-[15px]'}`}>{card.title}</span>
+            <span className="block font-label text-[9px] uppercase tracking-[0.16em] text-[#c8b084] truncate">{ledgerStatusLine(card)}</span>
+          </span>
+          <Sheen strong />
+        </button>
       </div>
     </li>
   );
@@ -927,38 +750,7 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
     [cards, kind],
   );
 
-  /* The two whole-wall instruments: which face is out, and how close you
-     stand. A whole-wall turn ripples with a per-card stagger; turning one
-     card is immediate. */
-  const [globalFace, setGlobalFace] = useState<Face>('dreams');
-  const [turned, setTurned] = useState<ReadonlySet<string>>(new Set());
-  const [rippling, setRippling] = useState(false);
-  const rippleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [density, setDensity] = useState<Density>('mid');
-
-  const turnWall = (next: Face) => {
-    if (next === globalFace) return;
-    setGlobalFace(next);
-    setTurned(new Set());
-    setRippling(true);
-    if (rippleTimer.current) clearTimeout(rippleTimer.current);
-    rippleTimer.current = setTimeout(() => setRippling(false), 1600);
-  };
-  useEffect(
-    () => () => {
-      if (rippleTimer.current) clearTimeout(rippleTimer.current);
-    },
-    [],
-  );
-
-  const turnOne = useCallback((key: string) => {
-    setTurned((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }, []);
 
   const visible = useMemo(
     () =>
@@ -1004,13 +796,6 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
     [openIndex, visible],
   );
 
-  const faceOf = (c: WallCard): Face =>
-    turned.has(c.key)
-      ? globalFace === 'dreams'
-        ? 'art'
-        : 'dreams'
-      : globalFace;
-
   const gridRef = useRef<HTMLUListElement | null>(null);
   useGridFlip(gridRef);
 
@@ -1024,33 +809,12 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
         The wall
       </h2>
       <p className="font-reading text-base text-wood-700 leading-[1.7] max-w-prose">
-        Every piece is a card. The dream rides one face, the work the other.
-        Turn them.
+        Explore the artwork, then open a piece to read its dream.
       </p>
 
-      {/* ── The instruments: face, distance, then the filter line ─────────── */}
+      {/* ── Reading distance and wall filters ────────────────────────────── */}
       <div className="mt-6 mb-8 flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
-          <div
-            role="group"
-            aria-label="Which face of the wall is showing"
-            className="flex items-baseline gap-4"
-          >
-            <FaceButton
-              label="the dreams"
-              active={globalFace === 'dreams'}
-              onClick={() => turnWall('dreams')}
-            />
-            <span aria-hidden className="text-wood-300">
-              /
-            </span>
-            <FaceButton
-              label="the art"
-              active={globalFace === 'art'}
-              onClick={() => turnWall('art')}
-            />
-          </div>
-
           <div
             role="group"
             aria-label="How close you stand to the wall"
@@ -1134,7 +898,7 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
                   card={openCard}
                   originRect={originRect}
                   spanClass={RECORD_SPAN[density]}
-                  initialFace={faceOf(openCard)}
+                  initialFace="dreams"
                   hasPrev={openIndex > 0}
                   hasNext={openIndex < visible.length - 1}
                   onStep={stepRecord}
@@ -1147,12 +911,9 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
               <WallTile
                 key={c.key}
                 card={c}
-                face={faceOf(c)}
-                delayMs={rippling ? (i % 36) * 26 : 0}
                 riseDelayMs={(i % 28) * 24}
                 density={density}
                 onOpen={openRecord}
-                onTurn={turnOne}
               />
             );
           })}
@@ -1161,24 +922,5 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
     </section>
   );
 };
-
-const FaceButton: React.FC<{
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}> = ({ label, active, onClick }) => (
-  <button
-    type="button"
-    aria-pressed={active}
-    onClick={onClick}
-    className={`font-display text-xl transition-colors ${
-      active
-        ? 'text-wood-900 border-b border-bronze-600'
-        : 'text-wood-500 border-b border-transparent hover:text-bronze-700'
-    }`}
-  >
-    {label}
-  </button>
-);
 
 export default TheWall;
