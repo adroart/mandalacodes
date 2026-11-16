@@ -51,7 +51,7 @@ test('dream prose appears only inside opened records, with wall search and filte
   await expect(page.getByText(DREAM, { exact: true })).toHaveCount(0);
 });
 
-test('globe keeps only Series and status, and has no dream hopping or timed hints with lenses flag', async ({ page }, testInfo) => {
+test('globe has no dream hopping or timed hints with lenses flag', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openFixture(page, '/atlas?lenses=1&piece=UL-122%3A1');
   await expect(page.getByText(DREAM, { exact: true })).toHaveCount(0);
@@ -64,6 +64,11 @@ test('globe keeps only Series and status, and has no dream hopping or timed hint
   await page.screenshot({ path: testInfo.outputPath('opened-card-1440.png'), scale: 'css' });
   await cardReturn.click();
   await expect(page.getByText(DREAM, { exact: true })).toHaveCount(0);
+});
+
+test('globe filter keeps only Series and status with lenses flag', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openFixture(page, '/atlas?lenses=1');
   await page.getByRole('button', { name: 'filter', exact: true }).click();
   const panel = page.getByText('Refine the map').locator('..').locator('..');
   await expect(panel.getByRole('combobox', { name: 'Series' })).toBeVisible();
