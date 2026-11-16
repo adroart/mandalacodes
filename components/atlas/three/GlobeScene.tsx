@@ -131,14 +131,12 @@ export default function GlobeScene({
     // near-square frame like 767x839 the sphere fills 70% of the height on its
     // own, and no amount of lift makes room for a 40%-tall band. It has to be
     // sized for the room it actually gets.
-    // The words' band is roughly a fixed height in pixels (a five-line dream,
-    // its attribution, the pulse, the door), so its SHARE of the stage grows as
-    // the stage gets shorter. A constant split therefore fails at both ends: it
-    // starves the globe on a tall frame and lets it graze the first line on a
-    // short one. Derive the globe's share from the real stage height instead.
+    // With dream prose inside the opened card, the lower band only holds the
+    // pulse and controls. Give the globe most of the compact phone stage while
+    // keeping a clear margin above that band.
     const stageH = size.height / 1.28;
-    const BAND_PX = 380;
-    const globeBand = Math.max(0.38, Math.min(0.6, 1 - BAND_PX / Math.max(1, stageH)));
+    const BAND_PX = 160;
+    const globeBand = Math.max(0.38, Math.min(0.66, 1 - BAND_PX / Math.max(1, stageH)));
     // Dark kept around the sphere inside its band, as a share of stage height.
     // The atmosphere glow reads wider than the geometry, so it wants to be more
     // generous than it looks.
@@ -153,9 +151,8 @@ export default function GlobeScene({
     camera.position.z = dist;
 
     // Lift the earth clear of the words. The stage's lower band carries the
-    // featured dream and the caption rail; on a phone frame a centred sphere
-    // puts its brightest lit face directly under that text, and the dream ends
-    // up reading across coastlines. A parallel camera pan (position only, never
+    // caption rail; on a phone frame a centred sphere puts its brightest lit
+    // face directly under that text. A parallel camera pan (position only, never
     // lookAt, so there is no perspective skew and marker projection follows for
     // free) raises the sphere into the upper frame instead. Dropping the camera
     // below the axis is what lifts the subject on screen, hence the negation.
@@ -168,7 +165,7 @@ export default function GlobeScene({
     // visible half-height rather than a world distance, so it holds its screen
     // position at every distance and the sphere stays put as the mandala dolly
     // pulls back; (1 - e) hands the whole stage back for the mandala view.
-    const liftFrac = phoneFrame ? (1 - globeBand) * (1 - e) : 0;
+    const liftFrac = phoneFrame ? 0.65 * (1 - globeBand) * (1 - e) : 0;
     const targetLift = -liftFrac * visibleHalfWorld;
     // Ease toward it so a rotation into landscape, or the mandala pull-back,
     // glides instead of snapping.

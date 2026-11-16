@@ -329,11 +329,23 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
   // ─── Piece card: the vessel, one action ────────────────────────────────────
   // The plate, the dream in full, one quiet standing line, and exactly one door:
   // open the book. The card scrolls itself (scrollbar hidden) for a long dream.
-  // No card return: on desktop the control cluster carries `return`, on the
-  // phone the sheet's own close button does. The kin, the read-code row and
-  // the also-resting list all live on the certificate the book door opens.
+  // The desktop card carries its own return so the action remains reachable
+  // when a tall card covers the globe's corner control. The phone sheet owns
+  // its close button. The kin, the read-code row and the also-resting list
+  // all live on the certificate the book door opens.
   return shell(
-    <div className={scrollCap}>
+    <>
+      {!inSheet && (
+        <button
+          type="button"
+          onClick={onRelease}
+          className="absolute right-3 top-3 z-10 min-h-[44px] px-3 font-label text-[11px] uppercase tracking-[0.2em] border border-bronze-400/30 transition-colors hover:border-bronze-300"
+          style={{ color: PARCHMENT, backgroundColor: '#1c1712' }}
+        >
+          return
+        </button>
+      )}
+      <div className={scrollCap}>
       {/* Back to the city list, when this piece was reached through one. This
           is contextual navigation into the list, not a second `return`. */}
       {onBack && (
@@ -483,7 +495,8 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
           <span style={{ color: BRONZE }}>→</span>
         </Link>
       </footer>
-    </div>,
+      </div>
+    </>,
   );
 };
 

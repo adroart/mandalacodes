@@ -35,9 +35,8 @@ test('atlas explains the active filter terms', async ({ page }, testInfo) => {
 
   const filter = page.getByRole('button', { name: 'filter', exact: true });
   if (await filter.count()) await filter.click();
-  const threads = page.getByRole('switch', { name: 'Show kinship threads' });
-  await expect(threads).toBeVisible();
-  await expect(page.getByText('Lines connect placed pieces whose codes share a three-line symbol.')).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Status filter' })).toBeVisible();
+  await expect(page.getByRole('switch', { name: 'Show kinship threads' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Seeking ground', exact: true }).click();
   await expect(page.getByText('Seeking ground means a piece has no public place on the map yet.')).toBeVisible();
   await expect(page.getByRole('link', { name: /claim/i })).toHaveCount(0);
