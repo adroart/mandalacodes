@@ -51,7 +51,7 @@ const SaveToCollectionButton: React.FC<Props> = ({
   if (!account.isSignedIn) {
     return (
       <div className={rootClass}>
-        <SignInTrigger>
+        <SignInTrigger context="save">
           <button type="button" className="stc__btn">
             <span className="stc__btn-label">{label}</span>
             {variant === 'panel' && (
