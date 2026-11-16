@@ -50,7 +50,6 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
   const historyDepthRef = useRef(0);
   const ignoreNextPopRef = useRef(false);
   const { state } = recorder;
-  if (state.status === 'idle') return null;
   const isRecording = state.status === 'recording';
   const isFinished = state.status === 'finished';
   const isSavedConfirmation = state.confirmation === 'saved' && !isFinished;
@@ -116,6 +115,15 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
     return () => window.removeEventListener('popstate', handlePopState);
   }, [recorder]);
 
+  useEffect(() => {
+    if (recorder.isAdmin || !journalOpen) return;
+    restoreJournalFocus.current = false;
+    setJournalOpen(false);
+    setComposer(null);
+  }, [recorder.isAdmin, journalOpen]);
+
+  if (state.status === 'idle') return null;
+
   const pushReflectionLayer = (layer: 'journal' | 'invocation') => {
     window.history.pushState({
       ...(window.history.state as Record<string, unknown> | null),
@@ -180,7 +188,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
           <RecorderIcon name={isFinished ? 'check' : 'finish'} />
           <span className="oracle-bottom-nav__label">{isFinished ? 'Saved' : 'Finish'}</span>
         </button>
-        <button ref={journalButtonRef} className="oracle-bottom-nav__slot reflection-recorder-bar__slot reflection-recorder-bar__control reflection-recorder-bar__journal" type="button" disabled={isFinished} onPointerDown={() => triggerRecorderHaptic('press')} onClick={() => { restoreJournalFocus.current = true; openJournal(); }} aria-haspopup="dialog" aria-label={segmentBadge ? `Journal, ${state.savedSegmentCount} saved ${state.savedSegmentCount === 1 ? 'segment' : 'segments'}` : 'Journal'}>
+        <button ref={journalButtonRef} className="oracle-bottom-nav__slot reflection-recorder-bar__slot reflection-recorder-bar__control reflection-recorder-bar__journal" type="button" disabled={isFinished || !recorder.isAdmin} onPointerDown={() => triggerRecorderHaptic('press')} onClick={() => { restoreJournalFocus.current = true; openJournal(); }} aria-haspopup="dialog" aria-label={segmentBadge ? `Journal, ${state.savedSegmentCount} saved ${state.savedSegmentCount === 1 ? 'segment' : 'segments'}` : 'Journal'}>
           <RecorderIcon name="journal" />
           <span className="oracle-bottom-nav__label">Journal</span>
           {segmentBadge && <span className="reflection-recorder-bar__badge" aria-hidden="true">{segmentBadge}</span>}
@@ -192,9 +200,10 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
       </div>}
       <span className="reflection-recorder-bar__announcement" aria-live="polite">{status}</span>
     </nav>}
-    {journalOpen && <ReflectionJournal
+    {journalOpen && recorder.isAdmin && <ReflectionJournal
       hexagramNumber={hexagramNumber}
       currentSessionId={state.sessionId}
+      pendingCount={state.pendingCount}
       themeStyle={themeStyle}
       inactive={Boolean(composer)}
       onClose={() => void exitReflection()}
@@ -206,6 +215,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
         setJournalOpen(false);
         if (state.status === 'paused') recorder.resume();
       }}
+      onRetryPending={recorder.retryPending}
       onCompose={(sessionId, segments) => {
         restoreJournalFocus.current = false;
         pushReflectionLayer('invocation');
@@ -220,7 +230,7 @@ export const ReflectionRecorderBar: React.FC<Props> = ({ hexagramNumber, recorde
         });
       }}
     />}
-    {composer && <InvocationComposer
+    {composer && recorder.isAdmin && <InvocationComposer
       hexagramNumber={hexagramNumber}
       sessionId={composer.sessionId}
       segments={composer.segments}

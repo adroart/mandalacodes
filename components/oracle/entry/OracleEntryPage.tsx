@@ -324,6 +324,7 @@ ${cell}:has(> span button)::after{opacity:0}`;
             <p className="m-0 mb-[18px] font-reading text-lg leading-[1.5] tracking-[0.015em] text-wood-700">
               Every card is one frequency spoken in four languages. The connections between them are the grammar of the whole.
             </p>
+            <p className="m-0 mb-[18px] font-reading text-sm leading-[1.5] text-wood-700">Downloaded card text can be read offline. Artwork needs an internet connection.</p>
             <div className="flex flex-wrap items-center gap-4">
               <Link to="/the-systems" className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-wood-700 border border-wood-300 px-6 py-3 hover:border-bronze-600 hover:text-wood-900 transition-colors no-underline">Read the full story →</Link>
               <button type="button" onClick={() => setSystemsOpen(false)} className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-paper-50 bg-wood-900 px-7 py-3 hover:bg-bronze-600 transition-colors">Close</button>

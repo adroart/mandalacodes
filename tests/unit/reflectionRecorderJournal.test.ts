@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cycleJournalFocusIndex, journalTranscriptionFailureMessage, moveReflectionSegment, newestReflectionSegments, shouldAutomaticallyTranscribe, transcriptionPollingWindow } from '../../components/oracle/ReflectionJournal';
+import { cycleJournalFocusIndex, journalTranscriptionFailureMessage, moveReflectionSegment, newestReflectionSegments, pendingForCard, shouldAutomaticallyTranscribe, transcriptionPollingWindow } from '../../components/oracle/ReflectionJournal';
 import { ReflectionApiError } from '../../lib/oracle/reflectionApi';
 
 const segment = (id: string, recordedAt: string, sequence: number) => ({ id, recordedAt, sequence });
@@ -45,6 +45,16 @@ describe('reflection recorder journal ordering', () => {
   it('presents freshly loaded segments newest first without changing identity', () => {
     const rows = [segment('old', '2026-07-13T01:00:00Z', 0), segment('new', '2026-07-13T02:00:00Z', 1)];
     expect(newestReflectionSegments(rows).map(({ id }) => id)).toEqual(['new', 'old']);
+  });
+
+  it('shows only this card’s device recordings, newest first', () => {
+    const rows = [
+      { hexagramNumber: 22, recordedAt: '2026-07-13T01:00:00Z', id: 'old' },
+      { hexagramNumber: 23, recordedAt: '2026-07-13T03:00:00Z', id: 'other-card' },
+      { hexagramNumber: 22, recordedAt: '2026-07-13T02:00:00Z', id: 'new' },
+    ];
+    expect(pendingForCard(rows, 22).map(({ id }) => id)).toEqual(['new', 'old']);
+    expect(rows.map(({ id }) => id)).toEqual(['old', 'other-card', 'new']);
   });
 
   it('moves a segment by immutable identity', () => {

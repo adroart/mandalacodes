@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import BetterTranscriptNote from './BetterTranscriptNote';
 import type { ReflectionSegment, ReflectionSession } from '../../types/oracleReflection';
+import { listPendingReflections, type PendingReflection } from '../../lib/oracle/reflectionOutbox';
 import {
   listReflectionSegments,
   listReflectionSessions,
@@ -15,6 +16,10 @@ type OrderedSegment = Pick<ReflectionSegment, 'id' | 'recordedAt' | 'sequence'>;
 
 export function newestReflectionSegments<T extends OrderedSegment>(segments: T[]): T[] {
   return [...segments].sort((a, b) => b.recordedAt.localeCompare(a.recordedAt));
+}
+
+export function pendingForCard<T extends Pick<PendingReflection, 'hexagramNumber' | 'recordedAt'>>(rows: T[], hexagramNumber: number): T[] {
+  return rows.filter((row) => row.hexagramNumber === hexagramNumber).sort((a, b) => b.recordedAt.localeCompare(a.recordedAt));
 }
 
 export function moveReflectionSegment<T extends { id: string }>(segments: T[], id: string, beforeId: string): T[] {
@@ -68,12 +73,14 @@ export function journalTranscriptionFailureMessage(error: unknown): string {
 interface Props {
   hexagramNumber: number;
   currentSessionId: string | null;
+  pendingCount?: number;
   themeStyle?: React.CSSProperties;
   inactive?: boolean;
   onClose(): void;
   onDone(): void;
   onRecordMore?(): void;
   onCompose?(sessionId: string, segments: ReflectionSegment[]): void;
+  onRetryPending?(): Promise<void>;
 }
 
 const formatTime = (value: string) => new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(value));
@@ -83,7 +90,7 @@ const formatDuration = (seconds: number) => {
   return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, '0')}`;
 };
 
-const PrivateAudioPlayer: React.FC<{ segment: ReflectionSegment; index: number }> = ({ segment, index }) => {
+const PrivateAudioPlayer: React.FC<{ segment: Pick<ReflectionSegment, 'id' | 'durationMs'>; index: number; src?: string }> = ({ segment, index, src }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -104,7 +111,7 @@ const PrivateAudioPlayer: React.FC<{ segment: ReflectionSegment; index: number }
       ref={audioRef}
       className="reflection-segment__audio"
       preload="metadata"
-      src={`/api/oracle/reflections/segments/${encodeURIComponent(segment.id)}/audio`}
+      src={src ?? `/api/oracle/reflections/segments/${encodeURIComponent(segment.id)}/audio`}
       onPlay={() => setPlaying(true)}
       onPause={() => setPlaying(false)}
       onEnded={() => { setPlaying(false); setCurrentTime(0); }}
@@ -133,10 +140,22 @@ const PrivateAudioPlayer: React.FC<{ segment: ReflectionSegment; index: number }
   </div>;
 };
 
-export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSessionId, themeStyle, inactive = false, onClose, onDone, onRecordMore, onCompose }) => {
+const PendingAudioPlayer: React.FC<{ segment: PendingReflection; index: number }> = ({ segment, index }) => {
+  const [src, setSrc] = useState('');
+  useEffect(() => {
+    const url = URL.createObjectURL(segment.blob);
+    setSrc(url);
+    return () => URL.revokeObjectURL(url);
+  }, [segment.blob]);
+  return src ? <PrivateAudioPlayer segment={segment} index={index} src={src} /> : null;
+};
+
+export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSessionId, pendingCount, themeStyle, inactive = false, onClose, onDone, onRecordMore, onCompose, onRetryPending }) => {
   const [sessions, setSessions] = useState<{ current: ReflectionSession | null; history: ReflectionSession[] }>({ current: null, history: [] });
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(currentSessionId);
   const [segments, setSegments] = useState<ReflectionSegment[]>([]);
+  const [pending, setPending] = useState<PendingReflection[]>([]);
+  const [sending, setSending] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
@@ -148,7 +167,13 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
   const sheetRef = useRef<HTMLDivElement>(null);
   const autoTranscriptionRef = useRef(new Set<string>());
   const transcriptionPollingRef = useRef<TranscriptionPollingWindow | null>(null);
+  const previousPendingCount = useRef(pendingCount);
   const hasTranscribing = segments.some((segment) => segment.transcriptionStatus === 'transcribing');
+
+  const loadPending = useCallback(async () => {
+    const rows = await listPendingReflections();
+    setPending(pendingForCard(rows, hexagramNumber));
+  }, [hexagramNumber]);
 
   const loadSegments = useCallback(async (sessionId: string, preserveOrder = false) => {
     const rows = await listReflectionSegments(sessionId);
@@ -168,6 +193,51 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
     closeRef.current?.focus();
     return () => { live = false; };
   }, [currentSessionId, hexagramNumber, loadSegments]);
+
+  useEffect(() => {
+    const refresh = () => { void loadPending().catch(() => setMessage('Device recordings could not be loaded. Try reopening Journal.')); };
+    window.addEventListener('online', refresh);
+    return () => window.removeEventListener('online', refresh);
+  }, [loadPending]);
+
+  useEffect(() => {
+    void loadPending().catch(() => setMessage('Device recordings could not be loaded. Try reopening Journal.'));
+  }, [loadPending, pendingCount]);
+
+  useEffect(() => {
+    const previous = previousPendingCount.current;
+    previousPendingCount.current = pendingCount;
+    if (previous === undefined || pendingCount === undefined || pendingCount >= previous) return;
+    void listReflectionSessions(hexagramNumber)
+      .then(async (value) => {
+        setSessions(value);
+        const sessionId = selectedSessionId ?? value.current?.id ?? value.history[0]?.id ?? null;
+        if (sessionId) { setSelectedSessionId(sessionId); await loadSegments(sessionId); }
+      })
+      .catch(() => setMessage('Recording sent, but Journal could not refresh. Reopen it to check.'));
+  }, [hexagramNumber, loadSegments, pendingCount, selectedSessionId]);
+
+  const sendPending = async () => {
+    if (!onRetryPending || sending) return;
+    setSending(true);
+    setMessage('Trying to send recordings…');
+    try {
+      await onRetryPending();
+      await loadPending();
+      const value = await listReflectionSessions(hexagramNumber);
+      setSessions(value);
+      const sessionId = selectedSessionId ?? value.current?.id ?? value.history[0]?.id ?? null;
+      if (sessionId) { setSelectedSessionId(sessionId); await loadSegments(sessionId); }
+      setMessage((await listPendingReflections()).some((row) => row.hexagramNumber === hexagramNumber)
+        ? 'Still saved on this device. Connect and try sending again.'
+        : 'Recordings sent.');
+    } catch {
+      await loadPending().catch(() => undefined);
+      setMessage('Could not confirm delivery. Recordings still on this device may need another try.');
+    } finally {
+      setSending(false);
+    }
+  };
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -293,8 +363,16 @@ export const ReflectionJournal: React.FC<Props> = ({ hexagramNumber, currentSess
         </div>}
 
         <p className="reflection-journal__announce" aria-live="polite">{message}</p>
+        {pending.length > 0 && <div className="reflection-journal__pending" aria-label="Recordings waiting to send">
+          <div className="reflection-journal__pending-heading"><div><h3>On this device</h3><p>Waiting to send when connected. Keep this browser’s data until they have sent.</p></div>
+            {onRetryPending && <button type="button" disabled={sending} onClick={() => void sendPending()}>{sending ? 'Sending…' : 'Try sending'}</button>}</div>
+          {pending.map((segment, index) => <article className="reflection-segment reflection-segment--pending" key={segment.id}>
+            <header className="reflection-segment__header"><span>RECORDING · {formatTime(segment.recordedAt)}</span><span className="reflection-segment__pending-state">Saved on this device · waiting to send</span></header>
+            <PendingAudioPlayer segment={segment} index={index} />
+          </article>)}
+        </div>}
         <div className="reflection-journal__segments" aria-busy={loading}>
-          {!loading && segments.length === 0 && <p className="reflection-journal__empty">Pause a recording to add the first segment.</p>}
+          {!loading && segments.length === 0 && pending.length === 0 && <p className="reflection-journal__empty">Pause a recording to add the first segment.</p>}
           {segments.map((segment, index) => <article
             className={`reflection-segment${index === 0 ? ' is-newest' : ''}`} key={segment.id} draggable
             onDragStart={() => { draggedId.current = segment.id; }}
