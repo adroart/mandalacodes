@@ -80,7 +80,7 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(dialog.locator('.vs-bar-title--passage')).toContainText('Card 2 · Intro · para 1/1');
  const corrected=dialog.locator('[data-review-pane=words]').getByRole('textbox');
  await corrected.fill('My corrected new passage.');await corrected.blur();
- await expect.poll(async()=>page.evaluate(async()=>{const {SectionDraftStore}=await import('/lib/oracle/authoring/sectionDrafts.ts');return (await new SectionDraftStore().list(2))[0]?.results.find(r=>r.sectionId==='2/INTRO')?.text;})).toBe('My corrected new passage.');
+ await expect.poll(async()=>page.evaluate(async()=>{const load=(path:string)=>import(path);const {SectionDraftStore}=await load('/lib/oracle/authoring/sectionDrafts.ts');return (await new SectionDraftStore().list(2))[0]?.results.find((r:any)=>r.sectionId==='2/INTRO')?.text;})).toBe('My corrected new passage.');
  await dialog.locator('[data-action=apply]').click();
  await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Addition applied');
  await expect(dialog.locator('.vs-applied-state')).toContainText('Applied to your private reading.');
