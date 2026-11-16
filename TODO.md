@@ -35,6 +35,8 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 ### Current triage — 2026-11-16
 
+- [ ] **Desktop channel-scroll test geometry:** the existing `channel-status.spec.ts` signed-out test stops before its modal at a chapter offset assertion (34.48 px versus less than 2 px). Mobile passes; a separate direct chart-sign-in check passes on both desktop and mobile. Investigate the positioning helper before treating this as a product defect. _(band: agent-runnable)_ _(effort: quick)_
+
 - [x] **Mobile recorder hint (local):** “Hold to record” stays inside the deck footer button, leaving scrolling actions clear. The regression fails against the old CSS and passes at 320 px and 393 px; recorder activation and the 44 px hit target remain verified.
 
 - [x] **Mobile navigation visibility (local):** desktop links now hide immediately when the header collapses to its mobile menu. A browser regression captures visibility at the resize transition; the previous `transition-all` fails and the color-only transition passes. Desktop, 393 px and 320 px checks pass.
@@ -78,8 +80,7 @@ Historical baseline on b9da484, before these repairs: 41 failed, 80 passed and 1
 
 ### Found in the overnight audit, 2026-09-01
 
-- [ ] The sign-in modal is headlined "Keep your chart" no matter what the visitor clicked _(band: you-required)_ _(effort: quick)_
-  It now reads oddly after clicking Save on a card, which is a new door as of 2026-09-01. Changing it touches the modal site-wide, so it wants your call on the wording rather than an agent's guess.
+- [x] **Action-specific Save sign-in (2026-11-16, local):** per Adrian’s choice, Save opens “Save this code” with collection-specific welcome/password copy; chart sign-in retains “Keep your chart.” Focused Save/chart checks pass on desktop and mobile, Save also passes at 320 px, and typecheck passes. Screens were inspected; authentication behavior is unchanged.
 
 - [ ] The registry lists five waiting rows for mandalas, signature pieces and jewelry _(band: you-required)_ _(effort: quick)_
   They claim nothing and count as nothing, so they are honest, but while they are there the registry's own "awaiting first light" line never appears. Keep them or drop them, your call.
@@ -150,7 +151,8 @@ Historical baseline on b9da484, before these repairs: 41 failed, 80 passed and 1
 
 - [ ] (Optional) Add embeddings via Workers AI + Vectorize if the concept ontology misses real queries   → Plan: [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md) _(band: you-required)_ _(effort: moderate)_
 
-- [ ] Deploy the hosted oracle Functions (`/api/oracle/{search,card,mcp,recommendation}`) by merging to main; optionally set `ORACLE_MCP_TOKEN` / `ORACLE_API_TOKEN` to gate the remote MCP and the recommendation API   → Plan: [docs/oracle-remote-mcp-plan.md](docs/oracle-remote-mcp-plan.md) _(band: you-required)_ _(effort: moderate)_
+- [x] **Hosted Oracle Functions integrated and deployed (verified 2026-11-16):** live search, card lookup and MCP `tools/list` return successful responses; MCP lists seven tools and is publicly callable without a bearer token at this check. Recommendation GET returns endpoint metadata. Source implementation and generated artifacts are already on main.
+- [ ] Decide whether to require tokens for public MCP/recommendation, and verify recommendation POST behavior with approved sample input. GET metadata does not prove recommendation computation or its token configuration. No secrets or access policy changed during verification. → [Hosted Oracle plan](docs/oracle-remote-mcp-plan.md) _(band: you-required)_ _(effort: quick)_
 
 - [ ] Bring sign-up and the energy panels over from Adrian-Website   → Plan: [accounts-branch.md](todo/plans/accounts-branch.md) _(band: you-required)_ _(effort: moderate)_
 

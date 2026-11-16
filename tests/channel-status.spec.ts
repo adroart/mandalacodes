@@ -248,6 +248,21 @@ test.describe('the channel line on the card page', () => {
     await expect(page.getByText('Keep your chart')).toBeVisible();
     await assertFourStandardChecks(page, errors);
   });
+
+  test('chart sign-in keeps its chart wording', async ({ page }, testInfo) => {
+    await page.route('**/api/auth/get-session', (route) => route.fulfill({
+      status: 200, contentType: 'application/json', body: 'null',
+    }));
+    await openCard(page);
+
+    await page.getByRole('button', { name: 'Human Design', exact: true }).first().click();
+    const prompt = page.locator('[data-channel-status="signed-out"]').first();
+    await prompt.getByRole('button').click();
+
+    await expect(page.getByRole('heading', { name: 'Keep your chart' })).toBeVisible();
+    await expect(page.getByText('Your placement, lit across all sixty-four and kept for every visit.')).toBeVisible();
+    await page.screenshot({ path: `test-results/chart-sign-in-${testInfo.project.name}.png` });
+  });
 });
 
 test.describe('your channels, on the profile page', () => {

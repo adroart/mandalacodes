@@ -108,7 +108,7 @@ test.describe('save to collection, on the card reading', () => {
     await assertFourStandardChecks(page, consoleErrors);
   });
 
-  test('signed out: the button opens the sign-in door instead of a wall on the page', async ({ page }) => {
+  test('signed out: the button opens the sign-in door instead of a wall on the page', async ({ page }, testInfo) => {
     const consoleErrors: string[] = [];
     page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
     page.on('pageerror', (err) => consoleErrors.push(String(err)));
@@ -125,9 +125,17 @@ test.describe('save to collection, on the card reading', () => {
     await expect(page.getByText('Something went wrong')).toHaveCount(0);
 
     await saveButton.click();
-    await expect(page.getByText('Keep your chart')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Save this code' })).toBeVisible();
+    await expect(page.getByText('Sign in to keep this code in your collection.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Email me a sign-in code' })).toBeVisible();
-    await page.screenshot({ path: 'test-results/save-to-collection-signed-out.png' });
+    await page.getByRole('button', { name: 'Use email and password' }).click();
+    await expect(page.getByText('Log in to save this code to a collection.')).toBeVisible();
+    await page.screenshot({ path: `test-results/save-to-collection-login-${testInfo.project.name}.png` });
+    await page.getByRole('button', { name: 'Create an account' }).click();
+    await expect(page.getByText('Choose a password to save this code to a collection.')).toBeVisible();
+    await page.screenshot({ path: `test-results/save-to-collection-create-${testInfo.project.name}.png` });
+    await page.getByRole('button', { name: 'Back' }).click();
+    await page.screenshot({ path: `test-results/save-to-collection-signed-out-${testInfo.project.name}.png` });
 
     await assertFourStandardChecks(page, consoleErrors);
   });

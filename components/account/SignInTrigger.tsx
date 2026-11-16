@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import SignInModal from './SignInModal';
+import SignInModal, { type SignInContext } from './SignInModal';
 
 /**
  * Wraps any trigger element so clicking it opens the self-owned sign-in modal.
@@ -7,12 +7,13 @@ import SignInModal from './SignInModal';
 const SignInTrigger: React.FC<{
   children: React.ReactElement;
   onSignedIn?: () => void;
-}> = ({ children, onSignedIn }) => {
+  context?: SignInContext;
+}> = ({ children, onSignedIn, context }) => {
   const [open, setOpen] = useState(false);
   return (
     <>
       {React.cloneElement(children, { onClick: () => setOpen(true) })}
-      {open && <SignInModal onClose={() => setOpen(false)} onSignedIn={onSignedIn} />}
+      {open && <SignInModal context={context} onClose={() => setOpen(false)} onSignedIn={onSignedIn} />}
     </>
   );
 };

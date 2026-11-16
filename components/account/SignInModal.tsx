@@ -46,7 +46,7 @@ const C = {
 };
 
 type Mode = 'welcome' | 'email' | 'password' | 'code';
-type SignInContext = 'reading' | 'codes' | 'default';
+export type SignInContext = 'reading' | 'codes' | 'save' | 'default';
 
 const SignInModal: React.FC<{
   onClose: () => void;
@@ -191,15 +191,22 @@ const SignInModal: React.FC<{
     mode === 'password' ? (createNew ? 'Create your account' : 'Welcome back')
     : mode === 'email' ? 'Sign in with a code'
     : mode === 'code' ? 'Check your email'
+    : context === 'save' ? 'Save this code'
     : 'Keep your chart';
 
   const subline =
     mode === 'password'
       ? (createNew
-          ? 'Choose a password and your chart is kept across every visit.'
-          : 'Log in to find your chart where you left it.')
+          ? context === 'save'
+            ? 'Choose a password to save this code to a collection.'
+            : 'Choose a password and your chart is kept across every visit.'
+          : context === 'save'
+            ? 'Log in to save this code to a collection.'
+            : 'Log in to find your chart where you left it.')
     : mode === 'email' ? "Enter your email and we'll send a six-digit code. No password needed."
     : mode === 'code' ? `We sent a six-digit code to ${email || 'your email'}.`
+    : context === 'save'
+      ? 'Sign in to keep this code in your collection.'
     : context === 'reading'
       ? 'Your placement, kept across every visit and lit on every card.'
       : 'Your placement, lit across all sixty-four and kept for every visit.';
