@@ -53,6 +53,17 @@ it('keeps a pending same-section passage review when another take is queued',asy
  expect(ready.results[0].text).toBe('First preserved proposal.');expect(ready.takes?.map(t=>t.captureId)).toEqual(['clip-1']);
  expect(await(await audio.audio(session.id,'clip-2')).text()).toBe('Audio clip-2');
 });
+it('deliberately re-records the same pending passage and retains both original captures',async()=>{
+ const {source,sections,session,draft}=await fixture(2),chosen=sections[0],focus={start:0,end:chosen.text.length,text:chosen.text},passageEdit={operation:'replace' as const,focus,sectionText:chosen.text};
+ const transcribe=vi.fn(async(_session,_capture:{id:string})=>response(_capture.id==='clip-1'?'First proposal.':'Better proposal.'));
+ const services={loadSource:async()=>source,transcribe};
+ await queueSectionTake(draft.id,'clip-1',chosen.id,services,[],{passageEdit});await waitState(draft.id,'clip-1','review');
+ await queueSectionTake(draft.id,'clip-2',chosen.id,services,[],{passageEdit,reRecordPassage:true});const ready=await waitState(draft.id,'clip-2','review');
+ expect(ready.results).toHaveLength(1);expect(ready.results[0]).toMatchObject({text:'Better proposal.',passageEdit,takeIds:['clip-2']});
+ expect(ready.takes?.map(t=>[t.captureId,t.state])).toEqual([['clip-1','review'],['clip-2','review']]);
+ expect(await(await audio.audio(session.id,'clip-1')).text()).toBe('Audio clip-1');
+ expect(await(await audio.audio(session.id,'clip-2')).text()).toBe('Audio clip-2');
+});
 it('merges parallel takes into separate named sections and aggregates original speech chronologically',async()=>{
  const {source,sections,draft}=await fixture(2);const transcribe=vi.fn(async(_session,capture)=>response(capture.id==='clip-1'?'My drive.':'My centre.'));
  assimilate.mockImplementation(async input=>result(input.startSectionId,input.words));const services={loadSource:async()=>source,transcribe};

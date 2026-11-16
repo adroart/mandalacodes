@@ -29,32 +29,32 @@ Never install an older output after a failed build.
 
 | # | Do this | It should |
 | --- | --- | --- |
-| 1 | Open card 2, press Record, then Record in the workspace | Start within a second or two, with no blank bands top or bottom |
-| 2 | Speak the Intro, press Send & next, keep speaking the Reading | Keep recording with no pause. Count aloud across the press: no number missing, none repeated |
-| 3 | Press Stop & review | Show your words above the original at one text size |
-| 4 | Say one word unclearly on purpose | Mark it, with a row underneath: the word, also heard, Hear it, It's right, Use |
-| 5 | Edit a word with the keyboard up | Keep the apply button visible above the keyboard |
-| 6 | Apply, then Undo, then apply again | Put your words in the reading, take them out, put them back |
-| 7 | Record, then lock the phone for 30 seconds, unlock | Say what happened. The screen should not lock by itself while recording |
-| 8 | Record, then take a call or trigger Siri | Show "Microphone interrupted. What you said so far is saved." and recover afterwards |
-| 9 | Record, then swipe the app away mid-sentence, reopen the card, press Record | Tell you an interrupted recording was saved and is being prepared, and let you record again |
-| 10 | Turn on airplane mode, record a section, turn it off | Say there is no connection, keep the recording, and prepare it once you are back online |
-| 11 | Recording settings, Send finished sections to the card, Send, then cancel the sheet | Say nothing was sent |
-| 12 | Same again, AirDrop the file to the Mac | Say it was sent |
+| 1 | Open card 2 and its voice workspace; tap one Intro paragraph | Open a focused editor naming Card 2, Intro and the exact paragraph. Record stays disabled until you choose an operation |
+| 2 | Choose Add after, then Record addition; say one short paragraph; Stop & review | Keep the selected paragraph and destination visible. Show the original, proposed words, “Not applied yet,” and Apply addition. The recorded words should appear without a section rewrite |
+| 3 | Edit a proposed word with the keyboard up | Keep the destination and Apply addition visible above the keyboard |
+| 4 | Apply addition, then Undo | Add the new paragraph immediately after the selected paragraph in your private reading; Undo restores the prior reading |
+| 5 | Tap the Reading’s second paragraph, choose Replace, record, and Stop & review | Name Card 2, Reading, paragraph 2 of 3, show the exact original and proposed replacement, and offer Apply replacement. Only that paragraph changes if applied |
+| 6 | Say one word unclearly on purpose | If the second listening returns a doubt, show the word, also heard, Hear it, It’s right, Use. If the check times out, say it was not double-checked and keep the transcript editable |
+| 7 | Before applying a pending Reading edit, try another Reading paragraph | Keep the pending words available for review and prevent a second recording for the same section |
 
-Then on the Mac, with the file from step 12:
+Keep the following legacy whole-section, interruption and export checks separate from the new passage test. To start one, tap a section heading and choose **Record whole section** explicitly.
+
+| # | Do this | It should |
+| --- | --- | --- |
+| 8 | Record a whole section, then lock the phone for 30 seconds, unlock | Say what happened. The screen should not lock by itself while recording |
+| 9 | Record a whole section, then take a call or trigger Siri | Show “Microphone interrupted. What you said so far is saved.” and recover afterwards |
+| 10 | Record a whole section, then swipe the app away mid-sentence and reopen the card | Tell you an interrupted recording was saved and is being prepared |
+| 11 | Turn on airplane mode, record a whole section, then turn it off | Say there is no connection, keep the recording, and prepare it once you are back online |
+| 12 | Recording settings, Send finished sections to the card, Send, then cancel the sheet | Say nothing was sent |
+| 13 | Same again, AirDrop the file to the Mac | Say it was sent |
+
+For this phone check, retain the file from step 13. Do not apply it to the canonical card manuscript. The private reading changes in steps 4–5 are separate from that export. A later, separately authorized editorial pass can use the documented dry-run command:
 
 ```bash
 npm run voice:apply -- --file ~/Downloads/oracle-voice-card-02-YYYY-MM-DD.json --dry-run
 ```
 
-Read the report. If it lists what you expect and no conflicts:
-
-```bash
-npm run voice:apply -- --file ~/Downloads/oracle-voice-card-02-YYYY-MM-DD.json
-```
-
-Then follow the commands it prints, and read card 2 on the preview before any second card.
+Read the dry-run report only; this check does not write to the card manuscript.
 
 ## Also tell me
 

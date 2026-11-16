@@ -218,12 +218,14 @@ function launch(id:string,captureId:string,services:AuthoringServices){
  running.set(jobKey,task);
 }
 /** Persist the job before returning; transcription and AI continue independently. */
-export async function queueSectionTake(sessionId:string,captureId:string,startSectionId:string,services:AuthoringServices,markers:{atMs:number;sectionId:string}[]=[],options:{intent?:'replace'|'add'|'revise';continuationOf?:string;focus?:{start:number;end:number;text:string};passageEdit?:NonNullable<SectionDraftResult['passageEdit']>}={}):Promise<TakeSession>{
+export async function queueSectionTake(sessionId:string,captureId:string,startSectionId:string,services:AuthoringServices,markers:{atMs:number;sectionId:string}[]=[],options:{intent?:'replace'|'add'|'revise';continuationOf?:string;focus?:{start:number;end:number;text:string};passageEdit?:NonNullable<SectionDraftResult['passageEdit']>;reRecordPassage?:boolean}={}):Promise<TakeSession>{
  const registered=await change(sessionId,session=>{
   if(!session.sections.some(section=>section.id===startSectionId)||markers.some(m=>!Number.isFinite(m.atMs)||m.atMs<0||!session.sections.some(s=>s.id===m.sectionId)))throw Error('Choose an existing section before sending this take.');
   const existing=session.takes?.find(t=>t.captureId===captureId);
   if(existing&&['queued','transcribing','assimilating','review','discarded'].includes(existing.state))return session;
-  if(options.passageEdit&&(session.results.some(result=>result.sectionId===startSectionId&&!result.applied)||(session.takes??[]).some(take=>take.captureId!==captureId&&take.startSectionId===startSectionId&&['queued','transcribing','assimilating'].includes(take.state))))
+  const prior=session.results.find(result=>result.sectionId===startSectionId&&!result.applied);
+  const sameReview=!!options.reRecordPassage&&!!prior?.passageEdit&&JSON.stringify(prior.passageEdit)===JSON.stringify(options.passageEdit);
+  if(options.passageEdit&&((!!prior&&!sameReview)||(session.takes??[]).some(take=>take.captureId!==captureId&&take.startSectionId===startSectionId&&['queued','transcribing','assimilating'].includes(take.state))))
    throw Error('This section already has words waiting for review or preparation. Finish them before making another recording here. Your saved audio remains available.');
   const parentId=options.continuationOf??existing?.continuationOf,parent=parentId?session.takes?.find(t=>t.captureId===parentId):undefined;
   if(parentId&&(!parent||parentId===captureId||parent.state==='discarded'))throw Error('Continue only a saved recording for this same section.');

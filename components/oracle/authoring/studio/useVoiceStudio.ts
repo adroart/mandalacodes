@@ -408,7 +408,9 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             await recoverInterrupted(current.current!.id);
             let value = current.current!;
             const target = value.sections.find(s => s.id === targetSection) ?? value.sections.find(s => s.id === value.startSectionId)!;
-            if(!phraseTarget&&!passageTarget&&(value.results.some(r=>r.sectionId===target.id&&!r.applied)||(value as TakeSession).takes?.some(t=>t.startSectionId===target.id&&['queued','transcribing','assimilating'].includes(t.state))))
+            const priorPassage=value.results.find(r=>r.sectionId===target.id&&!r.applied);
+            const sameReview=!!passageTarget&&!!priorPassage?.passageEdit&&JSON.stringify(priorPassage.passageEdit)===JSON.stringify(passageTarget);
+            if(!phraseTarget&&((!sameReview&&!!priorPassage)||(value as TakeSession).takes?.some(t=>t.startSectionId===target.id&&['queued','transcribing','assimilating'].includes(t.state))))
                 throw Error('This section already has words waiting for review or preparation. Finish them before making another recording here.');
             phraseCapture.current = phraseTarget;
             let saved = value.captureSessionId ? await audio.load(value.captureSessionId) : null;
@@ -465,7 +467,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                         phraseCapture.current = null;
                         return;
                     }
-                    const queued = await queueSectionTake(id, captureId, captureTarget.current, services, markers.current, { intent: passageCapture.current?.operation ?? (intent === 'auto' ? undefined : intent), continuationOf: continuation.current, focus: focusByCapture.current.get(captureId), passageEdit: passageCapture.current ?? undefined });
+                    const queued = await queueSectionTake(id, captureId, captureTarget.current, services, markers.current, { intent: passageCapture.current?.operation ?? (intent === 'auto' ? undefined : intent), continuationOf: continuation.current, focus: focusByCapture.current.get(captureId), passageEdit: passageCapture.current ?? undefined, reRecordPassage:!!passageTarget });
                     nextContinuation.current = metadata.reason === 'boundary' ? captureId : undefined;
                     if (current.current?.id === id) {
                         accept(queued);

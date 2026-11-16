@@ -30,8 +30,8 @@ function nativeApp(page:Page,capabilities:{status:number;data?:unknown}|'offline
   }};
  },capabilities);
 }
-async function openRecording(page:Page){await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeEnabled();return dialog;}
-async function recordIn(dialog:Locator,sectionId:string){await dialog.locator(`.vs-section[data-section-id="${sectionId}"] .vs-section-head`).click();await dialog.getByRole('button',{name:'Record',exact:true}).click();await expect(dialog.locator('.vs-dock')).toContainText('0:01');}
+async function openRecording(page:Page){await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();const dialog=page.getByRole('dialog');await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();await dialog.locator('.vs-section[data-section-id="2/CODE/reading"]').getByRole('button',{name:'Record whole section',exact:true}).click();await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeEnabled();return dialog;}
+async function recordIn(dialog:Locator,sectionId:string){await dialog.locator(`.vs-section[data-section-id="${sectionId}"] .vs-section-head`).click();await dialog.locator(`.vs-section[data-section-id="${sectionId}"]`).getByRole('button',{name:'Record whole section',exact:true}).click();await dialog.getByRole('button',{name:'Record',exact:true}).click();await expect(dialog.locator('.vs-dock')).toContainText('0:01');}
 const shot=(page:Page,name:string)=>page.screenshot({path:test.info().outputPath(`${test.info().project.name.replace(/\W+/g,'-')}-dock-${name}.png`)});
 const nativeEvent=(page:Page,kind:string)=>page.evaluate(k=>window.dispatchEvent(new CustomEvent('oracle-recording-native',{detail:{kind:k}})),kind);
 /** Nothing in the dock is cut short, and every button is at least 44 px tall with its words showing. */
@@ -49,6 +49,7 @@ test.describe('recording with a browser that hears section names',()=>{
  test('the idle dock names a shared title in full, and the live dock says Pause, Stop & review and Send & next',async({page})=>{
   const d=await openRecording(page),dock=d.locator('.vs-dock');
   await d.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();
+  await d.locator('.vs-section[data-section-id="2/CODE/reading"]').getByRole('button',{name:'Record whole section',exact:true}).click();
   await expect(dock.locator('strong')).toHaveText(/^Universal Language · Reading/);await expectWholeWords(dock);await shot(page,'idle');
   await d.getByRole('button',{name:'Record',exact:true}).click();await expect(dock).toContainText('0:01');
   const pause=dock.getByRole('button',{name:'Pause',exact:true}),review=dock.getByRole('button',{name:'Stop & review',exact:true}),send=dock.getByRole('button',{name:'Send this recording and go to I Ching · Combination',exact:true});
@@ -122,7 +123,7 @@ test('re-recording selected words keeps only Pause and a gold Stop & review',asy
  test.skip(browserName!=='chromium','Uses the Chromium fake microphone.');
  await context.grantPermissions(['microphone'],{origin:baseURL!});await page.addInitScript(fakeRecognition);await scriptedSpeech(page,{flagged:true});
  const d=await openRecording(page);
- await d.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();await d.getByRole('button',{name:'Record',exact:true}).click();await expect(d.locator('.vs-dock')).toContainText('0:01');
+ await d.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();await d.locator('.vs-section[data-section-id="2/CODE/reading"]').getByRole('button',{name:'Record whole section',exact:true}).click();await d.getByRole('button',{name:'Record',exact:true}).click();await expect(d.locator('.vs-dock')).toContainText('0:01');
  await d.getByRole('button',{name:'Stop & review',exact:true}).click();
  const editor=d.locator('.vs-checked-prose').first();await expect(editor).toContainText('my own words');
  await editor.evaluate(el=>{const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let node:Node|null;while((node=walker.nextNode())){const at=node.textContent!.indexOf('own words');if(at<0)continue;const range=document.createRange();range.setStart(node,at);range.setEnd(node,at+9);const selection=window.getSelection()!;selection.removeAllRanges();selection.addRange(range);document.dispatchEvent(new Event('selectionchange'));break;}});

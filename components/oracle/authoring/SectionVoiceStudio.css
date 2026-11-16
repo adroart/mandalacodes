@@ -46,6 +46,8 @@
 .vs-bar-title{display:flex;flex-direction:column;flex:1;min-width:0;padding:0 6px}
 .vs-bar-title strong{font:600 15px/1.25 var(--font-controls);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vs-bar-title small{font-size:12px;line-height:1.3;color:var(--vs-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vs-bar:has(.vs-bar-title--passage){height:auto;min-height:54px}
+.vs-bar-title--passage small{white-space:normal;overflow:visible;text-overflow:clip}
 .vs-bar-title--button{align-items:flex-start;height:44px;justify-content:center;border:0;border-radius:10px;background:none;color:var(--vs-ink);text-align:left}
 @media(hover:hover){.vs-bar-title--button:hover{background:var(--vs-hover)}}
 .vs-bar-end{display:flex;align-items:center;gap:2px}

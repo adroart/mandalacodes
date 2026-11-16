@@ -8,8 +8,8 @@ test('a phone passage edit keeps its destination and operation visible through r
  await page.route('**/api/oracle/authoring/ar-create',async route=>{
   const body=route.request().postDataJSON();
   if(body.operation==='transcribe'){
-   transcriptions++;if(transcriptions===2)await new Promise(done=>setTimeout(done,650));
-   return route.fulfill({json:{provider:'fixture',segments:[{text:'My precise new passage.',startMs:0,endMs:Math.max(1,Math.min(body.durationMs,100)),timing:'provider',sectionId:'CODE'}],doubtsAvailable:false}});
+   transcriptions++;if(transcriptions===3)await new Promise(done=>setTimeout(done,650));
+   return route.fulfill({json:{provider:'fixture',segments:[{text:transcriptions===2?'My better new passage.':'My precise new passage.',startMs:0,endMs:Math.max(1,Math.min(body.durationMs,100)),timing:'provider',sectionId:'CODE'}],doubtsAvailable:false}});
   }
   assimilations++;return route.fulfill({status:500,json:{error:'Explicit passage must not use section assimilation.'}});
  });
@@ -34,6 +34,7 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(dialog.locator('.vs-review-plan')).toContainText('Add after this passage',{timeout:15000});
  await expect(dialog.locator('.vs-review-plan')).toContainText('Not applied yet');
  await expect(dialog.locator('.vs-review-plan')).toContainText('Card 2 · Intro · Paragraph 1 of 1');
+ await expect(dialog.locator('.vs-bar-title--passage')).toContainText('Card 2 · Intro · Paragraph 1 of 1');
  await expect(dialog.locator('[data-review-pane=original]')).toContainText(selected);
  await expect(dialog.locator('[data-review-pane=words]')).toContainText('My precise new passage.');
  await expect(dialog.locator('[data-action=apply]')).toHaveText('Apply addition');
@@ -45,9 +46,19 @@ test('a phone passage edit keeps its destination and operation visible through r
  await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
  const bar=await dialog.locator('.vs-bar').boundingBox(),raisedDock=await dialog.locator('.vs-dock').boundingBox();
  expect(Math.round(raisedDock!.y+raisedDock!.height)).toBe(visible);expect(Math.round(bar!.y)).toBe(0);
+ const destinationBar=dialog.locator('.vs-bar-title--passage');
+ await expect(destinationBar).toContainText('Card 2 · Intro · Paragraph 1 of 1');
+ await expect(dialog.locator('[data-action=apply]')).toHaveText('Apply addition');
+ expect((await destinationBar.boundingBox())!.y+(await destinationBar.boundingBox())!.height).toBeLessThan(raisedDock!.y);
  await words.evaluate(el=>el.scrollIntoView({block:'nearest'}));const wordBox=await words.boundingBox();expect(wordBox!.y).toBeGreaterThanOrEqual(bar!.y+bar!.height-1);expect(wordBox!.y).toBeLessThan(raisedDock!.y);
  await page.screenshot({path:info.outputPath('passage-review-keyboard-phone.png')});
  await page.evaluate(()=>{const vv=window.visualViewport!;delete (vv as any).height;vv.dispatchEvent(new Event('resize'));});
+ await dialog.getByRole('button',{name:'Re-record',exact:true}).click();
+ await expect(dialog.locator('.vs-passage-path')).toContainText('Card 2 · Intro · Paragraph 1 of 1');
+ await expect(dialog.locator('.vs-passage-editor')).toContainText('Adding after this passage');
+ await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
+ await expect(dialog.locator('[data-review-pane=words]')).toContainText('My better new passage.',{timeout:15000});
+ await expect(dialog.locator('.vs-bar-title--passage')).toContainText('Card 2 · Intro · Paragraph 1 of 1');
  await dialog.locator('[data-action=apply]').click();
  await expect(dialog.locator('.vs-applied-state')).toContainText('Applied to your private reading: addition.');
  await expect(dialog.getByRole('button',{name:'Undo',exact:true})).toBeVisible();
