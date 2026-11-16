@@ -3,7 +3,7 @@ import { AuthoringStore, type SavedSession } from '../../../../lib/oracle/author
 import { createSession } from '../../../../lib/oracle/authoring/workflow';
 import { importAudio } from '../../../../lib/oracle/authoring/recorder';
 import { cardSections, displaySectionTitle, type CardSection } from '../../../../lib/oracle/authoring/cardSections';
-import { SectionDraftStore, sectionTitleEdits, createSectionDraftSession, integrateSectionDraft, sectionComparisonOriginal, sectionReviewExceptions, type SectionDraftSession, type SectionDraftResult } from '../../../../lib/oracle/authoring/sectionDrafts';
+import { SectionDraftStore, sectionTitleEdits, createSectionDraftSession, integrateSectionDraft, sectionComparisonOriginal, sectionReviewExceptions, switchPendingPassageOperation, type SectionDraftSession, type SectionDraftResult } from '../../../../lib/oracle/authoring/sectionDrafts';
 import { changeSectionSession, processSectionSession, currentSectionTexts } from '../../../../src/mobile/authoring/sectionWorkflow';
 import { currentNamedReaderSection } from '../../../../src/mobile/authoring/readerContext';
 import { getSynthesis } from '../../../../data/synthesisData';
@@ -1178,6 +1178,29 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         }
     }
     const sendToCard = useSendToCard({ source, services, visible: view === 'settings', recording: !!active, preparing: processing || queued.length > 0 });
+    const switchReviewOperation = (id: string, operation: 'add' | 'replace') => {
+        failed.current = false;
+        const task = pending.current.then(async () => {
+            const saved = current.current;
+            if (!saved)
+                throw Error('Wait for your card to open.');
+            const latestSource = await services.loadSource(saved.cardNumber);
+            if (latestSource.hash !== saved.sourceHash)
+                throw Error('The original card changed. Reopen the section and compare it again.');
+            const currentText = (await currentSectionTexts(saved))[id] ?? saved.sections.find(node => node.id === id)?.text;
+            if (currentText === undefined)
+                throw Error('This selected passage is no longer available. Select it again.');
+            return patch(session => {
+                if (session.sourceHash !== latestSource.hash)
+                    throw Error('The original card changed. Reopen the section and compare it again.');
+                return switchPendingPassageOperation(session, id, operation, currentText);
+            });
+        }).then(() => undefined);
+        pending.current = task.catch(e => {
+            failed.current = true;
+            report(e);
+        });
+    };
     return {
         // Props the screens need.
         source, services, onClose, onEarlier, onNavigateCard, initialAnchors,
@@ -1203,7 +1226,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         accept, report, loadAudio, make, prepare, patch, flush, stopListening, choose, aim, openApplied, aimParagraph, reviewAt,
         record, stop, togglePause, edit, choosePassage, checkWords, integrate, playCapture, listen, hear, addAudio, discard,
         showAudio, close, openView, dismissToast, retrySaved, signInAndResume, titleFor, shownTitle, saveTitle, readUpdated,
-        chip, step, pathFor, scopeFor, spanLabel, selectionParagraph, nextAfter, applySection, pickFromRail, place,
+        chip, step, pathFor, scopeFor, spanLabel, selectionParagraph, nextAfter, applySection, switchReviewOperation, pickFromRail, place,
         // Send finished sections to the card.
         sendToCard,
     };

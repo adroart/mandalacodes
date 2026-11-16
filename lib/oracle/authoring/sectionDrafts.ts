@@ -62,6 +62,19 @@ export interface SectionDraftSession {
  captureSessionId?:string;captureId?:string;markers:{atMs:number;sectionId:string}[];rawTranscript:string;results:SectionDraftResult[];unassigned:{text:string;reason:string}[];
  state:'ready'|'recording'|'transcribing'|'assimilating'|'review'|'complete';error?:string;
 }
+/** Change only the pending proposal's effect; its speech and exact destination remain intact. */
+export function switchPendingPassageOperation(session:SectionDraftSession,sectionId:string,operation:'add'|'replace',currentSectionText:string):SectionDraftSession {
+ const result=session.results.find(item=>item.sectionId===sectionId),passage=result?.passageEdit;
+ if(!passage||result?.applied)throw new Error('Choose a pending passage review before changing Add after or Replace.');
+ const activity=session as SectionDraftSession&{recording?:{sectionId:string};takes?:{startSectionId:string;state:string}[]};
+ if(activity.state==='recording'&&(!activity.recording||activity.recording.sectionId===sectionId)||activity.takes?.some(take=>take.startSectionId===sectionId&&['queued','transcribing','assimilating'].includes(take.state)))throw new Error('Wait for this passage recording to finish before changing its operation.');
+ const {focus,sectionText}=passage;
+ if(session.sourceHash!==session.source.hash||currentSectionText!==sectionText||!Number.isInteger(focus.start)||!Number.isInteger(focus.end)||focus.start<0||focus.end<=focus.start||focus.end>sectionText.length||!focus.text.trim()||sectionText.slice(focus.start,focus.end)!==focus.text)throw new Error('This selected passage changed. Select it again before changing its operation.');
+ if(passage.operation===operation)return session;
+ const {comparison: _comparison,rowChoices: _rowChoices,...rest}=result;
+ const changed:SectionDraftResult={...rest,passageEdit:{...passage,operation},editIntent:operation,checked:false,applied:false};
+ return {...session,results:session.results.map(item=>item.sectionId===sectionId?changed:item)};
+}
 /** Titles are hand-edited metadata; they never enter the spoken passage or its evidence. */
 export function sectionTitleEdits(sessions:SectionDraftSession[],sourceHash:string):Record<string,string>{
  const edits:Record<string,{text:string;updatedAt:string}>={};

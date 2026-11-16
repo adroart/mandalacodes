@@ -17,7 +17,7 @@ const spoken=(words:string)=>words.trim().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]
 export type ReviewStageProps=Omit<AppliedPanelProps,'section'|'result'>&Pick<VoiceStudio,
  'section'|'result'|'draft'|'titleFor'|'integrating'|'saveTitle'|'checks'|'checkAudio'|'listen'|'setResolved'|'choosePassage'|
  'replay'|'activeWord'|'caret'|'setView'|'active'|'setPhrase'|'playCapture'|'report'|'edit'|'queued'|'processing'|
- 'savedCaptures'|'openView'|'linkedDrafts'|'onClose'|'onNavigateCard'|'pathFor'|'scopeFor'|'applyLabel'|'processingStage'|'pendingPassage'|'nodes'|'takes'
+ 'savedCaptures'|'openView'|'linkedDrafts'|'onClose'|'onNavigateCard'|'pathFor'|'scopeFor'|'applyLabel'|'processingStage'|'pendingPassage'|'takes'|'switchReviewOperation'
 >;
 
 /**
@@ -25,21 +25,26 @@ export type ReviewStageProps=Omit<AppliedPanelProps,'section'|'result'>&Pick<Voi
  * comparison host (`SectionPassageReview`), then the unplaced-words and connected-card notes.
  */
 export function ReviewStage(props:ReviewStageProps){
- const {section,result,draft,titleFor,integrating,saveTitle,checks,checkAudio,listen,setResolved,choosePassage,references,replay,activeWord,caret,setView,active,setPhrase,playCapture,report,edit,queued,processing,savedCaptures,openView,linkedDrafts,onClose,onNavigateCard,pathFor,scopeFor,applyLabel,processingStage,pendingPassage,nodes,takes}=props;
- if(pendingPassage){const node=nodes.find(item=>item.id===pendingPassage.sectionId),failed=takes.find(t=>t.captureId===pendingPassage.captureId&&t.state==='failed');return <div className="vs-stage vs-review vs-review-waiting" role="status">
-  <strong>{pendingPassage.operation==='add'?'Addition':'Replacement'} saved</strong>
-  <p>{node?`Card ${node.cardNumber} · ${pathFor(node)} · ${scopeFor(node,pendingPassage.focus)}`:'Selected passage'}</p>
+ const {section,result,draft,titleFor,integrating,saveTitle,checks,checkAudio,listen,setResolved,choosePassage,references,replay,activeWord,caret,setView,active,setPhrase,playCapture,report,edit,queued,processing,savedCaptures,openView,linkedDrafts,onClose,onNavigateCard,pathFor,scopeFor,applyLabel,processingStage,pendingPassage,takes,switchReviewOperation}=props;
+ if(pendingPassage){const failed=takes.find(t=>t.captureId===pendingPassage.captureId&&t.state==='failed');return <div className="vs-stage vs-review vs-review-waiting" role="status">
   <p>{failed?'This recording could not be prepared yet. Its audio is saved. Retry it above.':processingStage||'Preparing review…'} Your existing reviews are still saved.</p>
  </div>;}
  return <div className="vs-stage vs-review">
   {section&&result?<>
-   <div className="vs-review-head" data-section-id={section.id}>
+   {!result.passageEdit&&<div className="vs-review-head" data-section-id={section.id}>
     {(section.path.length>1||section.id.includes('/selection-'))&&<small>{section.path.slice(0,-1).join(' · ')}{section.id.includes('/selection-')?' · selected passage':''}</small>}
     <TitleField key={`${draft!.id}/${section.id}`} label="Section title" value={titleFor(section)} disabled={integrating} save={text=>saveTitle(section.id,text)}/>
-   </div>
-   {!result.applied&&<div className="vs-review-plan" role="note">
-    <strong>{result.passageEdit?result.passageEdit.operation==='add'?'Add after this passage':'Replace this passage':applyLabel.text}</strong>
-    <span>Card {section.cardNumber} · {pathFor(section)} · {result.passageEdit?scopeFor(section,result.passageEdit.focus):result.comparison?'reviewed passages':'whole section'}. Not applied yet. Apply changes your private reading.</span>
+   </div>}
+   {!result.applied&&result.passageEdit&&<>
+    <div className="vs-review-operation" role="group" aria-label="Choose what your saved words will do">
+     <button type="button" className="vs-btn" aria-pressed={result.passageEdit.operation==='add'} disabled={integrating||processing||draft?.state==='recording'||!!active||queued.some(t=>t.startSectionId===section.id)} onClick={()=>void switchReviewOperation(section.id,'add')}>Add after</button>
+     <button type="button" className="vs-btn" aria-pressed={result.passageEdit.operation==='replace'} disabled={integrating||processing||draft?.state==='recording'||!!active||queued.some(t=>t.startSectionId===section.id)} onClick={()=>void switchReviewOperation(section.id,'replace')}>Replace</button>
+    </div>
+    <p className="vs-review-status" role="note">Not applied yet. You can undo after applying.</p>
+   </>}
+   {!result.applied&&!result.passageEdit&&<div className="vs-review-plan" role="note">
+    <strong>{applyLabel.text}</strong>
+    <span>Card {section.cardNumber} · {pathFor(section)} · {result.comparison?'reviewed passages':'whole section'}. Not applied yet. Apply changes your private reading.</span>
    </div>}
    {result.applied?<AppliedPanel {...props} section={section} result={result}/>:<>
     {(result as TakeResult).doubtsAvailable===false&&<p className="vs-review-unchecked" role="note">This recording was not double-checked. Listen once before you use it.</p>}
