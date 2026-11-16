@@ -31,9 +31,7 @@ import { seriesColor } from './atlas/seriesColor';
 import PieceHUD from './atlas/PieceHUD';
 import CityListHUD, { type CityMember } from './atlas/CityListHUD';
 import PhoneHudSheet from './atlas/PhoneHudSheet';
-import { GLOSS_TEXT, useGloss, type GlossTerm } from './atlas/gloss';
 import AtlasOverture from './atlas/AtlasOverture';
-import FeaturedDream, { type FeaturedDreamData } from './atlas/FeaturedDream';
 import SelectionInscription from './atlas/SelectionInscription';
 import { pieceCode } from '../utils/pieceCode';
 import { img } from '../utils/media';
@@ -43,8 +41,7 @@ import { loadAtlasState } from '../lib/atlas/state';
 import { useProfile } from '../lib/profile/context';
 import { useCollections } from '../lib/collections/context';
 import { buildKinshipIndex, MAX_KINSHIP_ARCS } from '../utils/kinship';
-import { buildDreamRoute } from '../utils/dreamStream';
-import { SIZE_BANDS, sizeBandFor, type SizeBand } from '../utils/sizeBands';
+import { sizeBandFor, type SizeBand } from '../utils/sizeBands';
 import type { PublicAtlasState } from '../types';
 import { ATLAS_GOLD, ATLAS_KEPT } from './atlas/stageColors';
 
@@ -58,13 +55,9 @@ const GlobeGL = lazy(() => import('./atlas/GlobeGL'));
 const USE_GL_GLOBE =
   typeof window !== 'undefined' && window.location.search.includes('libglobe');
 
-/* The recentering (Adrian, 2026-07-18): cohesion before interconnection. The
-   dream-hop drift, the threads toggle, the mandala view and its hexagram ring
-   leave the default surface until the core experience — earth, dreams, one
-   clear way in — is cohesive. They are parked, not deleted: `?lenses=1` brings
-   the whole lens layer back so the machinery stays reachable and compiling.
-   The quiet kinship arcs are NOT a lens; they remain always-on as the
-   connective tissue. GlobeScene reads the same flag to mount the ring. */
+/* The optional mandala ring remains behind ?lenses=1 for existing links.
+   Dream hopping and temporary control glosses have been retired. Kinship
+   connections remain part of the globe in either view. */
 const LENSES_ENABLED =
   typeof window !== 'undefined' && /[?&]lenses=1(?:&|$)/.test(window.location.search);
 
@@ -89,14 +82,6 @@ const BIRTH_KEY = '__birth-place__';
 const EMPTY_NODES: GlobeNode[] = [];
 
 const EARTH_RADIUS_KM = 6371;
-
-/* Dream Stream: one gesture equals one hop. The cooldown matches the flight so
-   gestures during a flight are swallowed; the wheel delta threshold keeps a
-   single trackpad flick from firing twice; the swipe threshold ignores small
-   drags of the globe. */
-const STREAM_COOLDOWN_MS = 1500;
-const STREAM_WHEEL_THRESHOLD = 30;
-const STREAM_SWIPE_THRESHOLD = 60;
 
 /* ─── State machine ────────────────────────────────────────────────────────── */
 type FetchState =
@@ -127,16 +112,6 @@ const AtlasPage: React.FC = () => {
   const [status, setStatusState] = useState<AtlasStatusFilter>(() => {
     const s = searchParams.get('status');
     return s === 'placed' || s === 'seeking' ? s : 'all';
-  });
-  const [selectedCategory, setSelectedCategoryState] = useState<string>(
-    () => searchParams.get('category') ?? 'all',
-  );
-  const [selectedKind, setSelectedKindState] = useState<string>(
-    () => searchParams.get('kind') ?? 'all',
-  );
-  const [selectedSize, setSelectedSizeState] = useState<SizeBand | 'all'>(() => {
-    const s = searchParams.get('size');
-    return s && (SIZE_BANDS as readonly string[]).includes(s) ? (s as SizeBand) : 'all';
   });
   const [kinshipVisible, setKinshipVisible] = useState<boolean>(true);
   const [mandala, setMandala] = useState<boolean>(false);
@@ -257,8 +232,8 @@ const AtlasPage: React.FC = () => {
     return () => mq.removeEventListener('change', on);
   }, []);
 
-  // Reduced motion: the overture never animates, the featured dream swaps
-  // plainly. Tracked live so toggling the OS setting takes effect.
+  // Reduced motion settles the overture immediately. Tracked live so toggling
+  // the OS setting takes effect.
   const [reduced, setReduced] = useState<boolean>(
     () =>
       typeof window !== 'undefined' &&
@@ -288,39 +263,19 @@ const AtlasPage: React.FC = () => {
      changes. Phone keeps its Phase 2 half-sheet, unaffected. */
   const [bookOpen, setBookOpen] = useState(false);
 
-  /* Featured dream (one voice at a time): the resting sky shows a single dream,
-     cross-fading through the deterministic dream route roughly every 20s. */
-  const [featuredIdx, setFeaturedIdx] = useState(0);
-  /* The featured dream's tether is retired (see FeaturedDream), so its screen
-     position is no longer tracked at all. It used to be state written on every
-     animation frame, which re-rendered this page 60 times a second while the
-     atlas simply sat at rest — see markerPosRef above for what that costs. */
-  const featuredScreenPos = null;
-
-  // Once-per-visitor glosses for the dreams and threads controls (law 5).
-  const { active: controlGloss, fire: fireGloss } = useGloss();
-
   // Corner chrome fades when the visitor stops interacting, leaving only the
   // turning world. A selected piece or open filters keep the chrome awake.
   const idle = useIdleFade(4000) && !selectedKey && !selectedCity && !filtersOpen;
 
-  /* Dream Stream: the feed-like drift across the dream-bearing lights. When
-     active, one gesture flies to the next light and opens its vessel. */
-  const [streamActive, setStreamActive] = useState<boolean>(false);
-
-  // Esc returns to the resting sky (same as the Back gesture and return), and
-  // exits the stream.
+  // Escape closes a selected piece or city.
   useEffect(() => {
-    if (!selectedKey && !selectedCity && !streamActive) return;
+    if (!selectedKey && !selectedCity) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setStreamActive(false);
-        if (selectedKey || selectedCity) closeSelection();
-      }
+      if (e.key === 'Escape') closeSelection();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedKey, selectedCity, streamActive, closeSelection]);
+  }, [selectedKey, selectedCity, closeSelection]);
   const [use3D] = useState<boolean>(webglAvailable);
 
   /* Per-frame from Globe3D. Everything here is either a ref write or a DOM
@@ -370,19 +325,6 @@ const AtlasPage: React.FC = () => {
     setStatusState(v);
     setFilterParam('status', v);
   };
-  const setSelectedCategory = (v: string) => {
-    setSelectedCategoryState(v);
-    setFilterParam('category', v);
-  };
-  const setSelectedKind = (v: string) => {
-    setSelectedKindState(v);
-    setFilterParam('kind', v);
-  };
-  const setSelectedSize = (v: SizeBand | 'all') => {
-    setSelectedSizeState(v);
-    setFilterParam('size', v);
-  };
-
   /* The visitor's saved birth place (Hologenetic Profile, local-first).
      When present it appears as a sage marker on the globe — the bridge
      between the birthday map and the geography of the placed pieces. */
@@ -426,9 +368,6 @@ const AtlasPage: React.FC = () => {
      overlay at the same dimensions cobe is drawing into. */
   const globeBoxRef = useRef<HTMLDivElement | null>(null);
   const [globeSize, setGlobeSize] = useState({ width: 0, height: 0 });
-  /* The full stage box (not the square globe overlay): the featured dream reads
-     it to place itself off the globe's projected limb. */
-  const [stageDims, setStageDims] = useState({ width: 0, height: 0 });
 
   /* Fetch the canonical public Atlas. Failure is an explicit unavailable
      state because Mandala has no canonical snapshot to display. */
@@ -502,51 +441,19 @@ const AtlasPage: React.FC = () => {
     setSelectedKeyState(match ? match.key : null);
   }, [searchParams, enriched, birthPlace]);
 
-  /* Category and size-band lookups come from the archive, keyed by pieceId. */
-  const categoriesAvailable: string[] = useMemo(() => {
-    const set = new Set<string>();
-    for (const p of enriched) {
-      const c = p.category ?? categoryFor(p.pieceId);
-      if (c) set.add(c);
-    }
-    return Array.from(set).sort();
-  }, [enriched]);
-
-  /* Kind facets present in the data (server-derived on each public piece).
-     The KIND filter row hides unless more than one kind exists. */
-  const kindsAvailable: string[] = useMemo(() => {
-    const set = new Set<string>();
-    for (const p of enriched) {
-      if (p.kind) set.add(p.kind);
-    }
-    return Array.from(set);
-  }, [enriched]);
-
   const sizeBandByPiece = useMemo(() => {
     const map = new Map<string, SizeBand | null>();
     for (const art of FULL_ARCHIVE) map.set(art.id, sizeBandFor(art));
     return map;
   }, []);
 
-  const availableSizes: SizeBand[] = useMemo(
-    () => SIZE_BANDS.filter((b) => enriched.some((p) => sizeBandByPiece.get(p.pieceId) === b)),
-    [enriched, sizeBandByPiece],
+  /* Only the visible Series control narrows the globe. Old kind/category/size
+     URL parameters are ignored so a saved link cannot hide pieces without a
+     way to clear the hidden filter. The wall keeps its own lk/ls/lq controls. */
+  const seriesFiltered: EnrichedPiece[] = useMemo(
+    () => enriched.filter((p) => selectedSeries === 'all' || p.series === selectedSeries),
+    [enriched, selectedSeries],
   );
-
-  /* Apply series, category and size filters to derive what the rest of the
-     page sees. Status stays separate so the counts read pre-status. */
-  const seriesFiltered: EnrichedPiece[] = useMemo(() => {
-    return enriched.filter((p) => {
-      if (selectedSeries !== 'all' && p.series !== selectedSeries) return false;
-      if (selectedKind !== 'all' && p.kind !== selectedKind) return false;
-      if (selectedCategory !== 'all') {
-        const c = p.category ?? categoryFor(p.pieceId);
-        if (c !== selectedCategory) return false;
-      }
-      if (selectedSize !== 'all' && sizeBandByPiece.get(p.pieceId) !== selectedSize) return false;
-      return true;
-    });
-  }, [enriched, selectedSeries, selectedKind, selectedCategory, selectedSize, sizeBandByPiece]);
 
   /* Counts for filter chrome — based on the series filter, before status filter. */
   const placedCount = useMemo(
@@ -691,135 +598,6 @@ const AtlasPage: React.FC = () => {
     return nodes;
   }, [seriesFiltered, status, birthPlace, yourGates, savedCards, sizeBandByPiece]);
 
-  /* ─── Dream Stream ───────────────────────────────────────────────────────
-     The ordered route across the dream-bearing lights (placed, carrying a
-     public dream, mapped to a city). buildDreamRoute is deterministic: it
-     starts at the artist's first light and hops to the nearest not-yet-visited
-     one. Recomputed as filters change the visible set. */
-  const dreamRoute = useMemo(() => {
-    const stops = globeNodes
-      .filter(
-        (n) =>
-          n.status === 'placed' &&
-          typeof n.intention === 'string' &&
-          n.intention.trim().length > 0,
-      )
-      .map((n) => ({ key: n.id, lat: n.lat, lng: n.lng, claimOrdinal: n.ordinal }));
-    return buildDreamRoute(stops);
-  }, [globeNodes]);
-
-  /* Fresh reads for the imperative input handlers, so the wheel/key/touch
-     listeners never close over a stale route or selection. */
-  const dreamRouteRef = useRef(dreamRoute);
-  dreamRouteRef.current = dreamRoute;
-  const selectedKeyForStreamRef = useRef(selectedKey);
-  selectedKeyForStreamRef.current = selectedKey;
-
-  /* One gesture equals one hop. The cooldown (matching the flight) swallows
-     gestures fired mid-flight; advancing wraps at both ends. Held in a ref and
-     refreshed each render so the listeners can stay subscribed to just
-     `streamActive`. */
-  const streamCooldownRef = useRef(0);
-  const lastInputWasTouchRef = useRef(false);
-  const advanceStreamRef = useRef<(dir: 1 | -1) => void>(() => {});
-  advanceStreamRef.current = (dir: 1 | -1) => {
-    const now =
-      typeof performance !== 'undefined' ? performance.now() : Date.now();
-    if (now < streamCooldownRef.current) return;
-    const route = dreamRouteRef.current;
-    if (route.length === 0) return;
-    const cur = selectedKeyForStreamRef.current
-      ? route.indexOf(selectedKeyForStreamRef.current)
-      : -1;
-    const nextIdx =
-      cur === -1
-        ? dir === 1
-          ? 0
-          : route.length - 1
-        : (cur + dir + route.length) % route.length;
-    streamCooldownRef.current = now + STREAM_COOLDOWN_MS;
-    selectPiece(route[nextIdx]);
-  };
-
-  const enterStream = () => {
-    if (dreamRoute.length === 0) return;
-    fireGloss('dreams'); // once-per-visitor gloss for the renamed drift control
-    setMandala(false); // leaving mandala view if it was engaged
-    setStreamActive(true);
-    if (!selectedKey || !dreamRoute.includes(selectedKey)) {
-      selectPiece(dreamRoute[0]);
-    }
-  };
-  const exitStream = () => setStreamActive(false); // keeps the current selection
-
-  /* If the route empties under a filter change while drifting, leave the
-     stream so the "drift" control never lies about being active. */
-  useEffect(() => {
-    if (streamActive && dreamRoute.length === 0) setStreamActive(false);
-  }, [streamActive, dreamRoute]);
-
-  /* Wheel + touch, scoped to the globe stage. A wheel or swipe originating
-     inside the piece card must scroll the card (data-atlas-hud), never advance
-     the stream. Wheel over the globe is consumed so the page never scrolls out
-     from under the reel. */
-  useEffect(() => {
-    if (!streamActive) return;
-    const el = globeBoxRef.current;
-    if (!el) return;
-
-    const onWheel = (e: WheelEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && t.closest('[data-atlas-hud]')) return; // card scrolls itself
-      e.preventDefault();
-      if (Math.abs(e.deltaY) < STREAM_WHEEL_THRESHOLD) return;
-      lastInputWasTouchRef.current = false;
-      advanceStreamRef.current(e.deltaY > 0 ? 1 : -1);
-    };
-
-    let touchStartY: number | null = null;
-    let touchInCard = false;
-    const onTouchStart = (e: TouchEvent) => {
-      const t = e.target as HTMLElement | null;
-      touchInCard = !!(t && t.closest('[data-atlas-hud]'));
-      touchStartY = e.touches[0]?.clientY ?? null;
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      const startY = touchStartY;
-      touchStartY = null;
-      if (touchInCard || startY == null) return;
-      const endY = e.changedTouches[0]?.clientY ?? startY;
-      const dy = endY - startY;
-      if (Math.abs(dy) < STREAM_SWIPE_THRESHOLD) return;
-      lastInputWasTouchRef.current = true;
-      advanceStreamRef.current(dy < 0 ? 1 : -1); // swipe up = next
-    };
-
-    el.addEventListener('wheel', onWheel, { passive: false });
-    el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      el.removeEventListener('wheel', onWheel);
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchend', onTouchEnd);
-    };
-  }, [streamActive]);
-
-  /* Arrow keys advance the stream: right/down onward, left/up back. */
-  useEffect(() => {
-    if (!streamActive) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        lastInputWasTouchRef.current = false;
-        advanceStreamRef.current(1);
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        lastInputWasTouchRef.current = false;
-        advanceStreamRef.current(-1);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [streamActive]);
-
   /* City clusters (Phase 2A): the rendered marker layer. Group the per-piece
      globe nodes by city into one marker apiece — the globe draws these, while
      `globeNodes` stays the per-piece truth for selection, kinship, the HUD and
@@ -903,65 +681,6 @@ const AtlasPage: React.FC = () => {
     if (selectedCity) return `city:${selectedCity}`;
     return null;
   }, [selectedKey, selectedCity, clusterByMember]);
-
-  /* ─── Featured dream (one voice at a time) ───────────────────────────────
-     A per-key lookup of the composed dream for the resting featured slot: the
-     complete public dream, and a Karla sub-line naming the piece by its code,
-     its city, and its founding-light ordinal. Built off the dream route so the
-     order matches the deterministic route the `dreams` reel travels. */
-  const featuredByKey = useMemo(() => {
-    const map = new Map<string, FeaturedDreamData>();
-    for (const p of seriesFiltered) {
-      const text = (p as EnrichedPiece & { intention?: string }).intention;
-      if (p.status !== 'placed' || !text || !text.trim()) continue;
-      const code = pieceCode({
-        pieceId: p.pieceId,
-        series: p.series,
-        category: p.category ?? categoryFor(p.pieceId),
-        cardNumber: cardNumberFor(p.pieceId),
-        isSignaturePiece: signatureFor(p.pieceId),
-        sigilNumber: sigilNumberFor(p.pieceId),
-      });
-      const cityName = p.cityId ? CITIES_BY_ID.get(p.cityId)?.city : undefined;
-      // The place leads, the catalogue follows. `UL № 1` opening the line put an
-      // unexplained initialism in the position of maximum attention, directly
-      // under the most intimate sentence on the page, and buried the one human
-      // fact ("alive in Denpasar") between two inventory numbers. Ordering it
-      // place, ordinal, code lets the sub-line read as a sentence that trails
-      // off into a reference, which is what it is.
-      const parts: string[] = [];
-      if (cityName) parts.push(`alive in ${cityName}`);
-      if (typeof p.claimOrdinal === 'number') {
-        parts.push(`the ${ordinalLabel(p.claimOrdinal)} light`);
-      }
-      parts.push(code);
-      map.set(p.key, { key: p.key, text: text.trim(), standing: parts.join(' · ') });
-    }
-    return map;
-  }, [seriesFiltered]);
-
-  /* The featured dream pauses while a selection is open, the filters are open,
-     or the dream reel is running (interacting), and resumes at rest. It never
-     shows during the overture. */
-  const featuredPaused =
-    !!selectedKey ||
-    !!selectedCity ||
-    filtersOpen ||
-    streamActive ||
-    mandala ||
-    overture !== 'done';
-
-  const featuredKey =
-    dreamRoute.length > 0 ? dreamRoute[featuredIdx % dreamRoute.length] : null;
-  const featuredDream = featuredKey ? featuredByKey.get(featuredKey) ?? null : null;
-  const featuredClusterId = featuredKey ? clusterByMember.get(featuredKey) ?? featuredKey : null;
-
-  /* Cross-fade to the next dream roughly every 20s while at rest. */
-  useEffect(() => {
-    if (featuredPaused || dreamRoute.length <= 1) return;
-    const id = window.setInterval(() => setFeaturedIdx((i) => i + 1), 20_000);
-    return () => window.clearInterval(id);
-  }, [featuredPaused, dreamRoute.length]);
 
   /* A new selection re-opens as the inscription, never the last card. */
   useEffect(() => {
@@ -1239,7 +958,6 @@ const AtlasPage: React.FC = () => {
         const cr = entry.contentRect;
         const d = Math.max(120, Math.min(cr.width, cr.height));
         setGlobeSize({ width: d, height: d });
-        setStageDims({ width: cr.width, height: cr.height });
       }
     });
     ro.observe(el);
@@ -1342,29 +1060,6 @@ const AtlasPage: React.FC = () => {
   const secondaryOpacity = idle ? 0.68 : 1;
   const chromeTierTransition = 'opacity 700ms ease';
 
-  /* The globe's projected screen circle in stage coordinates, so the featured
-     dream can seat itself off the limb (law 2). The camera looks at the origin,
-     so the sphere centres on the stage; at the resting landscape distance it
-     fills ~0.455 of the stage height (measured against the built earth). Phones
-     run in portrait where the camera pulls back, so the featured dream falls
-     back to its bottom-anchored, scrim-backed slot instead of this circle. */
-  const globeCircle = React.useMemo(
-    () =>
-      !isPhone && stageDims.width > 0 && stageDims.height > 0
-        ? {
-            cx: stageDims.width / 2,
-            cy: stageDims.height / 2,
-            r: stageDims.height * 0.455,
-          }
-        : null,
-    [isPhone, stageDims.width, stageDims.height],
-  );
-
-  // Keep the last-shown control gloss term so its line can fade out (rather
-  // than blank instantly) when useGloss clears the active term after ~6s.
-  const lastControlGlossRef = useRef<GlossTerm | null>(null);
-  if (controlGloss) lastControlGlossRef.current = controlGloss;
-
   /* Desktop selection reads as an inscription first (build-order item 3), then
      the full card behind `open the book`. Phone keeps its half-sheet; the
      birth-place and city selections keep their existing panels. */
@@ -1382,9 +1077,6 @@ const AtlasPage: React.FC = () => {
   /* Write the inscription on the side away from the light: when the light sits
      on the right hemisphere, write on the left. */
   const inscriptionAwayLeft = markerRightHalf;
-  /* The featured dream shows only at rest on the WebGL earth. */
-  const showFeatured =
-    use3D && !USE_GL_GLOBE && !featuredPaused && featuredDream != null;
 
   return (
     /* The globe remains an intentional dusk room in both themes. The written
@@ -1400,7 +1092,9 @@ const AtlasPage: React.FC = () => {
           aria-label="Atlas globe"
           className="dark relative w-full overflow-hidden bg-atlas-night text-wood-900 block"
           style={{
-            height: 'calc(100svh - var(--nav-height))',
+            height: isPhone
+              ? 'min(560px, calc(100svh - var(--nav-height)))'
+              : 'calc(100svh - var(--nav-height))',
             minHeight: 'min(560px, calc(100svh - var(--nav-height)))',
             marginBottom: 0,
             // HUD and corner chrome anchor below the fixed nav using this.
@@ -1427,7 +1121,6 @@ const AtlasPage: React.FC = () => {
                   selectedId={selectedKey}
                   onSelect={(id) => selectPiece(id)}
                   kinship={kinshipIndex}
-                  kinshipVisible={kinshipVisible}
                   placedByCard={placedByCard}
                   mandala={mandala}
                   mandalaCaption={`The mandala so far · ${placedByCard.size} of 64 placed`}
@@ -1444,7 +1137,6 @@ const AtlasPage: React.FC = () => {
                   kinSelectedId={selectedKey}
                   onSelect={handleClusterSelect}
                   kinship={kinshipIndex}
-                  kinshipVisible={kinshipVisible}
                   placedByCard={placedByCard}
                   mandala={mandala}
                   // One voice in the caption slot (law): with the mandala view
@@ -1457,12 +1149,7 @@ const AtlasPage: React.FC = () => {
                       : ''
                   }
                   onMarkerScreenPos={handleMarkerScreenPos}
-                  featuredId={showFeatured ? featuredClusterId : null}
-                  /* The featured tether is retired (see FeaturedDream), so
-                     nothing consumes this. Not passing it also stops a second
-                     per-frame projection loop from running at rest, which was
-                     re-rendering this page 60 times a second for a line that is
-                     never drawn. */
+                  featuredId={null}
                   onFeaturedScreenPos={undefined}
                   playIntro={playIntro}
                   onBackgroundClick={closeSelection}
@@ -1477,23 +1164,6 @@ const AtlasPage: React.FC = () => {
               )}
             </Suspense>
           </div>
-
-          {/* ── The featured dream: one voice at a time, at rest ──────────────
-                 Desktop only here: it seats itself in the dark margin beside
-                 the globe. On phones there is no margin to seat it in, so it
-                 joins the lower band below and is rendered inside that stack
-                 instead of floating over the earth. ─────────────────────────── */}
-          {showFeatured && !isPhone && (
-            <FeaturedDream
-              dream={featuredDream}
-              screenPos={featuredScreenPos}
-              globe={globeCircle}
-              isPhone={isPhone}
-              reduced={reduced}
-              opacity={orientationOpacity}
-              onSelect={(key) => selectPiece(key)}
-            />
-          )}
 
           {/* ── The overture: the vision speaks and holds; the earth emerges
                  behind it; one tap releases the words (the living ledger,
@@ -1550,54 +1220,13 @@ const AtlasPage: React.FC = () => {
             </div>
             )}
 
-            {/* ── The lower band ────────────────────────────────────────────────
-                One rail, two zones, one gradient floor.
-
-                What this replaced: six typographic voices stacked at the same
-                size, weight and colour, on two different left rails (the dream
-                indented by its own padding, the caption not), as two separately
-                bottom-anchored blocks that drifted toward each other as the
-                dream's length changed. Nothing was ranked, so the eye had no
-                entry point and no second focal point after the globe.
-
-                What it is now. Zone one is intimate: the dream, then its
-                attribution. A hairline divides. Zone two orients: the pulse
-                (lights lit, the only living number, and the loudest line here),
-                the thesis that glosses it, the door, and last the system voice.
-                Rank is carried by size, case and hue, never by opacity, because
-                opacity is already spent on the idle fade and stacking the two
-                is what pushed this text under the legibility floor.
-
-                Watch the wood scale here. The whole /atlas route sits inside a
-                local `dark` wrapper (see the route root above), and dark
-                INVERTS the ramp: wood-200/300 are near-black, wood-500 upward
-                are the light ones. Reaching for wood-300 to mean "quiet" gives
-                you 1.8:1 on this stage, and wood-200 gives 1.4:1. Quiet on the
-                night is wood-500; wood-700+ is emphasis. Measured against
-                --color-atlas-night; `node tests/_atlas-contrast.mjs` re-measures
-                the whole band in a real browser and fails if any of it slips.
-
-                One voice in the caption slot (Adrian, 2026-07-18): while the
-                mandala speaks, or a birth place is selected, the whole band
-                rests.
-
-                The band also stands for an EMPTY record (2026-09-01). A dark
-                globe with no word at all reads as broken rather than waiting,
-                so the pulse carries the awaiting line instead of a row of
-                zeroes. Every other child here gates itself off with no dream
-                and no piece, so what remains is that one line, the thesis, and
-                the vision. */}
+            {/* The lower band gives the globe its live count and permanent thesis. */}
             {!mandala && (totalCount > 0 || emptySky) && selectedKey !== BIRTH_KEY && (
               <div
                 className="pointer-events-auto absolute inset-x-0 bottom-0 sm:inset-x-auto sm:left-8 sm:bottom-6 sm:max-w-xl"
                 style={{ opacity: orientationOpacity, transition: chromeTierTransition }}
               >
-                {/* The floor: on phones the band lies over the lower dark, so
-                    it carries its own deepening of the night that reaches the
-                    bottom edge and falls to nothing well above the first line.
-                    This is what lets the dream sit in flow without a local
-                    scrim, and what keeps the earth's lower limb from running
-                    through the text the way it used to. */}
+                {/* A soft floor keeps the phone caption readable over the earth. */}
                 <div
                   aria-hidden
                   className="pointer-events-none absolute inset-x-0 bottom-0 sm:hidden"
@@ -1609,35 +1238,6 @@ const AtlasPage: React.FC = () => {
                 />
 
                 <div className="relative px-5 pb-16 sm:px-0 sm:pb-0">
-                  {/* Zone one, phones only: the dream joins the rail instead of
-                      floating over the earth on its own inset. */}
-                  {showFeatured && isPhone && (
-                    <div className="mb-5">
-                      <FeaturedDream
-                        dream={featuredDream}
-                        screenPos={featuredScreenPos}
-                        globe={globeCircle}
-                        isPhone={isPhone}
-                        reduced={reduced}
-                        opacity={1}
-                        inFlow
-                        onSelect={(key) => selectPiece(key)}
-                      />
-                    </div>
-                  )}
-
-                  {/* The divider: the whole hierarchy of the band hangs off this
-                      one hairline. Above it the work speaks; below it the atlas
-                      speaks about itself. Short and left-hung so it reads as a
-                      breath, not a rule across a card. */}
-                  {showFeatured && isPhone && (
-                    <div
-                      aria-hidden
-                      className="mb-4 h-px w-10"
-                      style={{ background: 'rgba(196,170,124,0.3)' }}
-                    />
-                  )}
-
                   {/* The pulse: the one loud line in the band. Lights lit is the
                       only number here that changes when a life is attached, so
                       it leads and the inventory total trails it as a quiet tail
@@ -1686,29 +1286,11 @@ const AtlasPage: React.FC = () => {
                     </button>
                   )}
 
-                  {streamActive && dreamRoute.length > 0 && (
-                    <p className="mt-1 font-display text-[12px] leading-snug tracking-[0.03em] text-wood-500">
-                      dream {Math.max(1, dreamRoute.indexOf(selectedKey ?? '') + 1)} of{' '}
-                      {dreamRoute.length} ·{' '}
-                      {typeof window !== 'undefined' && 'ontouchstart' in window
-                        ? 'swipe onward'
-                        : 'scroll onward'}
-                    </p>
-                  )}
-
                 </div>
               </div>
             )}
 
-            {/* Bottom-right: the control cluster — orientation chrome (floor
-                0.8). mandala, the series legend and your codes live inside the
-                filter sheet as lenses, so with the lens layer parked this is
-                usually a single word. That is the problem it has: one 11px
-                letterspaced word alone in a large field of black disappears
-                even though its contrast passes. It is answered below by giving
-                the control a standing underline (an affordance, not just a
-                colour) and by closing the gap to the caption band, so the two
-                read as one baseline rather than one word adrift. */}
+            {/* Filter and return stay beside the globe at rest. */}
             <div
               className="pointer-events-auto absolute right-5 sm:right-8 bottom-6 flex flex-col items-end gap-2"
               style={{
@@ -1716,54 +1298,7 @@ const AtlasPage: React.FC = () => {
                 transition: chromeTierTransition,
               }}
             >
-              {/* Once-per-visitor gloss for the control just exercised (law 5). */}
-              <p
-                aria-hidden={controlGloss === null}
-                className="font-display text-[13px] leading-snug text-atlas-gold/85 max-w-[62vw] text-right"
-                style={{
-                  opacity: controlGloss === null ? 0 : 1,
-                  transition: 'opacity 500ms ease',
-                }}
-              >
-                {lastControlGlossRef.current ? GLOSS_TEXT[lastControlGlossRef.current] : ''}
-              </p>
               <div className="flex items-center gap-4 sm:gap-6">
-                {/* Parked lenses (Adrian, 2026-07-18): the dream-hop drift and
-                    the threads toggle return only behind ?lenses=1. Without the
-                    flag the cluster is `filter` plus contextual. The kinship
-                    arcs themselves stay always-on regardless — they are the
-                    connective tissue, not a control. */}
-                {LENSES_ENABLED && dreamRoute.length > 0 && (
-                  <button
-                    type="button"
-                    aria-pressed={streamActive}
-                    onClick={() => (streamActive ? exitStream() : enterStream())}
-                    title="Travel from dream to dream, one gesture at a time"
-                    className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
-                      streamActive ? 'text-bronze-400' : 'text-wood-300 hover:text-bronze-400/80'
-                    }`}
-                  >
-                    dreams
-                  </button>
-                )}
-                {LENSES_ENABLED && (
-                  <button
-                    type="button"
-                    aria-pressed={kinshipVisible}
-                    onClick={() => {
-                      fireGloss('threads');
-                      setKinshipVisible((v) => !v);
-                    }}
-                    title="Threads connect placed pieces whose codes share a three-line symbol"
-                    className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors ${
-                      kinshipVisible
-                        ? 'text-bronze-300'
-                        : 'text-wood-300 hover:text-bronze-400/80'
-                    }`}
-                  >
-                    threads
-                  </button>
-                )}
                 <button
                   type="button"
                   aria-expanded={filtersOpen}
@@ -1772,11 +1307,7 @@ const AtlasPage: React.FC = () => {
                 >
                   filter
                   {(selectedSeries !== 'all' ||
-                    selectedKind !== 'all' ||
                     status !== 'all' ||
-                    selectedCategory !== 'all' ||
-                    selectedSize !== 'all' ||
-                    mandala ||
                     focusSeries !== null ||
                     yoursMode) && <span className="text-bronze-400"> · ·</span>}
                 </button>
@@ -1806,13 +1337,13 @@ const AtlasPage: React.FC = () => {
                 }}
               >
                 <div className="flex items-center justify-between mb-6">
-                  <span className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-400/70">
+                  <span className="font-label text-[10px] uppercase tracking-[0.28em] text-[#d6c38a]">
                     Refine the map
                   </span>
                   <button
                     type="button"
                     onClick={() => setFiltersOpen(false)}
-                    className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors"
+                    className="font-label text-[10px] uppercase tracking-[0.2em] text-[#d6c38a] hover:text-[#f0e8d8] transition-colors"
                   >
                     close
                   </button>
@@ -1822,113 +1353,14 @@ const AtlasPage: React.FC = () => {
                   series={availableSeries}
                   selectedSeries={selectedSeries}
                   onSeriesChange={setSelectedSeries}
-                  kinds={kindsAvailable}
-                  selectedKind={selectedKind}
-                  onKindChange={setSelectedKind}
                   status={status}
                   onStatusChange={setStatus}
-                  categories={categoriesAvailable}
-                  selectedCategory={selectedCategory}
-                  onCategoryChange={setSelectedCategory}
-                  availableSizes={availableSizes}
-                  selectedSize={selectedSize}
-                  onSizeChange={setSelectedSize}
                   placedCount={placedCount}
                   seekingCount={seekingCount}
-                  kinshipVisible={kinshipVisible}
-                  onKinshipChange={setKinshipVisible}
                   threadsShown={kinshipIndex?.pairs.length}
                   threadsTotal={kinshipIndex?.totalPairs}
                 />
 
-                {/* Lenses and views live here, not in the daily control gutter:
-                    the mandala view, the series legend, and the your-codes
-                    lens. Each recedes the rest of the field, never removes it. */}
-                <div className="mt-6 pt-5 border-t border-bronze-400/12 flex flex-col gap-4">
-                  {/* Mandala: a parked view (Adrian, 2026-07-18), back only
-                      behind ?lenses=1 while the core experience settles. */}
-                  {LENSES_ENABLED && (
-                    <div className="flex items-baseline gap-4">
-                      <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 w-16 shrink-0">
-                        View
-                      </span>
-                      <button
-                        type="button"
-                        aria-pressed={mandala}
-                        onClick={() => {
-                          const next = !mandala;
-                          setMandala(next);
-                          if (next) setStreamActive(false);
-                        }}
-                        className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
-                          mandala
-                            ? 'text-bronze-300 border-bronze-400/70'
-                            : 'text-wood-400 border-transparent hover:text-bronze-300/80'
-                        }`}
-                      >
-                        mandala
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Your codes: light the pieces carrying one of your own. */}
-                  {yourGates.size > 0 && (
-                    <div className="flex items-baseline gap-4">
-                      <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 w-16 shrink-0">
-                        Lens
-                      </span>
-                      <button
-                        type="button"
-                        aria-pressed={yoursMode}
-                        onClick={() => setYoursMode((v) => !v)}
-                        className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
-                          yoursMode
-                            ? 'text-atlas-kept border-atlas-kept/70'
-                            : 'text-wood-400 border-transparent hover:text-bronze-300/80'
-                        }`}
-                      >
-                        your codes
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Series legend: each series is a lens onto its constellation. */}
-                  {legendSeries.length > 0 && (
-                    <div className="flex items-baseline gap-4">
-                      <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 w-16 shrink-0">
-                        Legend
-                      </span>
-                      <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-                        {legendSeries.map((s) => (
-                          <button
-                            key={s}
-                            type="button"
-                            aria-pressed={focusSeries === s}
-                            onClick={() => setFocusSeries((cur) => (cur === s ? null : s))}
-                            className={`font-display text-[15px] leading-none pb-1 border-b transition-colors duration-200 ${
-                              focusSeries === s
-                                ? 'text-bronze-300 border-bronze-400/70'
-                                : 'text-wood-400 border-transparent hover:text-bronze-300/80'
-                            }`}
-                          >
-                            {s}
-                            <span aria-hidden style={{ color: seriesColor(s) }}>
-                              {' '}·
-                            </span>
-                          </button>
-                        ))}
-                        {hasBirthOrigin && (
-                          <span className="font-display text-[15px] leading-none pb-1 text-wood-400">
-                            your origin
-                            <span aria-hidden className="text-atlas-kept">
-                              {' '}·
-                            </span>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           )}
@@ -2002,16 +1434,11 @@ const AtlasPage: React.FC = () => {
             </svg>
           )}
 
-          {/* ── Selection as inscription (desktop): the dream writes itself
-                 large across the dark on the side away from the light, with one
-                 action, open the book, that reveals the full card below. ────── */}
+          {/* Desktop selection names the piece and opens its full card. */}
           {showInscription && selectedPiece && (
             <SelectionInscription
-              dream={selectedIntention}
-              signedBy={selectedSignedBy}
-              // Place, then ordinal, then code — the same order as the featured
-              // dream's sub-line and the piece card, so the one human fact
-              // leads wherever this line appears.
+              title={selectedPiece.title}
+              // Place, ordinal, and code identify the selected piece.
               standing={[
                 selectedCityName ? `alive in ${selectedCityName}` : null,
                 typeof selectedPiece.claimOrdinal === 'number'
@@ -2070,7 +1497,7 @@ const AtlasPage: React.FC = () => {
               if (isPhone) {
                 return (
                   <PhoneHudSheet
-                    key={streamActive ? selectedKey : 'hud'}
+                    key="hud"
                     onDismiss={closeSelection}
                     onNavigateAway={dismissForNavigation}
                   >
@@ -2083,7 +1510,7 @@ const AtlasPage: React.FC = () => {
               return (
                 <div
                   data-atlas-hud
-                  key={streamActive ? selectedKey : 'hud'}
+                  key="hud"
                   className="absolute z-30 animate-[hud-in_400ms_ease-out] inset-x-auto right-8 bottom-auto left-auto w-[380px] top-[var(--hud-top)]"
                 >
                   {hudContent}
@@ -2143,21 +1570,10 @@ const AtlasPage: React.FC = () => {
                 series={availableSeries}
                 selectedSeries={selectedSeries}
                 onSeriesChange={setSelectedSeries}
-                kinds={kindsAvailable}
-                selectedKind={selectedKind}
-                onKindChange={setSelectedKind}
                 status={status}
                 onStatusChange={setStatus}
-                categories={categoriesAvailable}
-                selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
-                availableSizes={availableSizes}
-                selectedSize={selectedSize}
-                onSizeChange={setSelectedSize}
                 placedCount={placedCount}
                 seekingCount={seekingCount}
-                kinshipVisible={kinshipVisible}
-                onKinshipChange={setKinshipVisible}
                 threadsShown={kinshipIndex?.pairs.length}
                 threadsTotal={kinshipIndex?.totalPairs}
               />

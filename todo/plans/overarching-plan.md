@@ -63,6 +63,9 @@ Either the globe moves to the art site, or the art site's atlas page stays and r
 The intention ritual exists and mounts nowhere public. Decide where a collector anchors intention: at claim on the art site (built), or on the card here. Then it gets one entrance from live navigation. Not two.
 
 ### B5. Bring the atlas back to the intention statement _(you, then agents, moderate)_
+
+**Decided 2026-11-16:** Adrian approved the [Atlas simplification choices](atlas-simplification-2026-11-16.md): simpler globe filters, dreams only in opened piece cards, and retirement of dream-hopping and temporary hints. The record defines the retained wall controls and explanations.
+
 Three cuts to review from your own words: the filter panel, the on-globe dream text, the drift and gloss mechanics. Each is one deletion. You decide which of the three survive; agents remove the rest. See [atlas-interface-redesign.md](atlas-interface-redesign.md) for prior thinking; do not reopen it from scratch.
 
 ### B6. One login across both sites _(park until B2 ships)_
