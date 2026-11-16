@@ -32,7 +32,7 @@ if (cards.length !== 64) {
   throw new Error(`[sitemap] expected 64 cards in data/oracle-corpus.json, found ${cards.length}`);
 }
 
-const staticPaths = ['/universal-language', '/the-systems', '/atlas', '/gateway'];
+const staticPaths = ['/universal-language', '/the-systems', '/about', '/atlas', '/gateway'];
 const cardPaths = cards
   .map((card) => card.number)
   .sort((a, b) => a - b)

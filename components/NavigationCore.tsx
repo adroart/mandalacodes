@@ -43,6 +43,7 @@ export const NAV_ITEMS: NavItem[] = [
   { path: '/the-systems', label: 'The Systems' },
   { path: '/learn', label: 'Learn', external: true },
   { path: '/atlas', label: 'Atlas' },
+  { path: '/about', label: 'About' },
   { path: '/account', label: 'Account', accountAware: true },
 ];
 
