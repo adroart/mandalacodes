@@ -16,7 +16,7 @@ export interface StudioProps{
 }
 
 /** Which screen the studio shows. Every screen but settings unmounts when another one opens. */
-export type View='work'|'passage'|'review'|'settings'|'audio'|'sessions'|'sections'|'cleanup'|'unplaced';
+export type View='work'|'passage'|'review'|'history'|'range'|'settings'|'audio'|'sessions'|'sections'|'cleanup'|'unplaced';
 
 /** The colour of a section's state chip. */
 export type Tone='rec'|'busy'|'ready'|'check'|'human'|'alert';

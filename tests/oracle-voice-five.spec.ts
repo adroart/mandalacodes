@@ -23,7 +23,7 @@ test('a failed transcript visibly retains saved audio and can be retried without
  await page.screenshot({path:info.outputPath('saved-audio-recovery.png')});
  await status.getByRole('button',{name:'Listen',exact:true}).click();await expect(d.getByRole('region',{name:'Audio and transcript'})).toBeVisible();
  await status.getByRole('button',{name:'Retry',exact:true}).click();await expect(status).toHaveCount(0);await expect.poll(()=>calls).toBe(2);
- await d.getByRole('button',{name:'Back',exact:true}).click();await d.getByRole('button',{name:'Back',exact:true}).click();await d.getByRole('button',{name:'Review 1',exact:true}).click();await expect(d.locator('.vs-compare')).toContainText('My saved words.');
+ await d.getByRole('button',{name:'Back',exact:true}).click();await d.getByRole('button',{name:'Back',exact:true}).click();await d.getByRole('button',{name:'Review saved words',exact:true}).click();await expect(d.locator('.vs-compare')).toContainText('My saved words.');
 });
 test('changed words and their inline check lead review; kept AI receives no progress credit',async({page},info)=>{
  const said=await pipeline(page,true,true),d=await open(page);await expectProgress(d,0);await imported(d);
@@ -140,7 +140,9 @@ test('section names read without the manuscript dash while ids and matching keep
  expect(raw).toContain('\u2014');
  await expect(head).toHaveText(raw.replace(/\s+\u2014\s+/,' · '));
  const shown=await d.locator('.vs-rail button,.vs-section-title,.vs-dock-target strong').allInnerTexts();expect(shown.join('\n')).not.toContain('\u2014');
- await d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"] .vs-section-head').click();await expect(d.locator('.vs-dock-target strong')).toContainText(raw.replace(/\s+\u2014\s+/,' · ').split(' (')[0]);
+ await d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"] .vs-section-head').click();
+ await d.locator('.vs-section[data-section-id="2/ICHING/upper-trigram"]').getByRole('button',{name:'Record whole section',exact:true}).click();
+ await expect(d.locator('.vs-dock-target strong')).toContainText(raw.replace(/\s+\u2014\s+/,' · ').split(' (')[0]);
 });
 
 test('voice drafts opened from the journal keep the Record bar on screen above the tabs',async({page})=>{

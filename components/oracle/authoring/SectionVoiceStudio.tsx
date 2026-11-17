@@ -5,6 +5,8 @@ import {ProcessingStatus,Toast} from './studio/StatusBand';
 import SectionIndex from './studio/SectionIndex';
 import Manuscript from './studio/Manuscript';
 import PassageEditor from './studio/PassageEditor';
+import HistoryScreen from './studio/HistoryScreen';
+import RangeScreen from './studio/RangeScreen';
 import Dock from './studio/Dock';
 import {ReviewStage,ReviewDock,PlaybackAudio} from './studio/ReviewScreen';
 import {SectionsPicker,UnplacedScreen,CleanupScreen,SettingsScreen,AudioScreen,SessionsScreen} from './studio/SettingsScreens';
@@ -36,6 +38,10 @@ export default function SectionVoiceStudio(props:StudioProps){
    {view==='passage'&&<PassageEditor {...studio}/>}
 
    {view==='review'&&<ReviewStage {...studio}/>}
+
+   {view==='history'&&<HistoryScreen {...studio}/>}
+
+   {view==='range'&&<RangeScreen {...studio}/>}
 
    {view==='sections'&&<SectionsPicker {...studio}/>}
 

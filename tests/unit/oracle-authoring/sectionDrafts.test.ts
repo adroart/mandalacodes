@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import {beforeEach,expect,it,vi} from 'vitest';
-import {SectionDraftStore,sectionTitleEdits,createSectionDraftSession,integrateSectionDraft,getIntegratedIntro,undoIntegratedSection,DRAFT_HISTORY_KEEP,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
+import {SectionDraftStore,sectionTitleEdits,createSectionDraftSession,integrateSectionDraft,getIntegratedIntro,undoIntegratedSection,switchPendingPassageOperation,prepareSelectedRangeReplacement,listSectionHistory,restoreSectionHistoryAsDraft,sectionReplacementPlan,DRAFT_HISTORY_KEEP,type SectionDraftSession} from '../../../lib/oracle/authoring/sectionDrafts';
 import type {CardSection} from '../../../lib/oracle/authoring/cardSections';
 import {WorkingCardStore,editWorkingText} from '../../../lib/oracle/authoring/humanDrafts';
 import {AuthoringStore} from '../../../lib/oracle/authoring/storage';
@@ -30,6 +30,32 @@ it('replaces only the selected paragraph and refuses a changed anchor before mut
  const next=(await drafts.get(pending.id))!;await drafts.save({...next,results:[{...proposed,text:'A later proposal.'}]},next.version);
  await expect(integrateSectionDraft(pending.id,chosen.id,services)).rejects.toThrow('selected passage changed');
  expect((await working.get(2,'DESIGN'))?.text).toContain('Another hand edit.');
+});
+it('switches a saved passage proposal both ways without losing its speech, anchor, or recording evidence',async()=>{
+ const {session,sections,services}=await reviewTake(),chosen=sections[0],focus={start:0,end:'First drive paragraph.'.length,text:'First drive paragraph.'};
+ const pending=await drafts.save({...session,results:session.results.map((result,index)=>index?result:{...result,text:'Same spoken words.',reviewTranscript:'Same spoken words.',editIntent:'replace',passageEdit:{operation:'replace',focus,sectionText:chosen.text},comparison:{originalText:chosen.text,spokenText:'Same spoken words.',pairs:[]},rowChoices:{'0-22':'mine'},checked:true})} as SectionDraftSession,session.version);
+ const original=pending.results[0],added=await drafts.save(switchPendingPassageOperation(pending,chosen.id,'add',chosen.text),pending.version);
+ expect(added.results[0]).toMatchObject({text:original.text,reviewTranscript:original.reviewTranscript,takeIds:original.takeIds,passageEdit:{operation:'add',focus,sectionText:chosen.text},editIntent:'add',checked:false,applied:false});
+ expect(added.results[0].comparison).toBeUndefined();expect(added.results[0].rowChoices).toBeUndefined();expect(added.rawTranscript).toBe(pending.rawTranscript);
+ expect((await drafts.get(added.id))?.results[0]).toEqual(added.results[0]);
+ const replaced=await drafts.save(switchPendingPassageOperation(added,chosen.id,'replace',chosen.text),added.version);
+ expect(replaced.results[0]).toMatchObject({passageEdit:{operation:'replace',focus,sectionText:chosen.text},editIntent:'replace',text:original.text,takeIds:original.takeIds});
+ const addedAgain=await drafts.save(switchPendingPassageOperation(replaced,chosen.id,'add',chosen.text),replaced.version);
+ const reviewed=await drafts.save({...addedAgain,results:addedAgain.results.map((result,index)=>index?result:{...result,checked:true})},addedAgain.version);
+ await integrateSectionDraft(reviewed.id,chosen.id,services);
+ expect((await working.get(2,'DESIGN'))?.text).toContain('First drive paragraph.\n\nSame spoken words.\n\nSecond drive paragraph.');
+ expect((await working.get(2,'DESIGN'))?.blocks.filter(block=>block.origin==='human').flatMap(block=>block.evidence.map(e=>e.captureId))).toEqual(['earlier']);
+});
+it('refuses an applied, stale, or processing passage operation switch',async()=>{
+ const {session,sections,services}=await review(),chosen=sections[0],focus={start:0,end:'First drive paragraph.'.length,text:'First drive paragraph.'};
+ const pending=await drafts.save({...session,results:[{...session.results[0],editIntent:'replace',passageEdit:{operation:'replace',focus,sectionText:chosen.text}}]},session.version);
+ expect(()=>switchPendingPassageOperation(pending,chosen.id,'add',chosen.text+' changed')).toThrow('selected passage changed');
+ expect(()=>switchPendingPassageOperation({...pending,results:[{...pending.results[0],passageEdit:{operation:'replace',focus:{...focus,text:'Different words.'},sectionText:chosen.text}}]},chosen.id,'add',chosen.text)).toThrow('selected passage changed');
+ expect(()=>switchPendingPassageOperation({...pending,results:[{...pending.results[0],passageEdit:{operation:'replace',focus:{...focus,end:chosen.text.length+1},sectionText:chosen.text}}]},chosen.id,'add',chosen.text)).toThrow('selected passage changed');
+ expect(()=>switchPendingPassageOperation({...pending,takes:[{startSectionId:chosen.id,state:'transcribing'}]} as SectionDraftSession,pending.results[0].sectionId,'add',chosen.text)).toThrow('recording to finish');
+ expect(()=>switchPendingPassageOperation({...pending,state:'recording'},chosen.id,'add',chosen.text)).toThrow('recording to finish');
+ const applied=await integrateSectionDraft(pending.id,chosen.id,services);
+ expect(()=>switchPendingPassageOperation(applied,chosen.id,'add',chosen.text)).toThrow('pending passage review');
 });
 it('rebases a following section and makes repeated integration idempotent',async()=>{const {session,sections,services}=await review();await integrateSectionDraft(session.id,sections[0].id,services);let current=(await drafts.get(session.id))!;current=await drafts.save({...current,results:current.results.map(r=>({...r,checked:true}))},current.version);await integrateSectionDraft(session.id,sections[1].id,services);await integrateSectionDraft(session.id,sections[1].id,services);expect((await working.get(2,'DESIGN'))!.text).toBe('My complete new drive, in my own words.\n\nMy centre receives direction.\n\nThe channel stays here.');expect((await working.get(2,'DESIGN'))!.revision).toBe(2);expect((await drafts.get(session.id))?.state).toBe('complete');});
 it('allows a later session to revise the same named section without overwriting neighbours',async()=>{const {session,sections,source,services}=await review();await integrateSectionDraft(session.id,sections[0].id,services);let later=createSectionDraftSession(source,sections);later=await drafts.save({...later,state:'review',results:[{...session.results[0],text:'A later complete drive.'}]},0);await integrateSectionDraft(later.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.text).toBe('A later complete drive.\n\nThe centre stays here.\n\nThe channel stays here.');});
@@ -118,3 +144,71 @@ it('keeps recent draft history and the version each live receipt was applied in,
  await undoIntegratedSection(session.id,sections[0].id,services);expect((await working.get(2,'DESIGN'))!.text).toBe(session.source.markdown);
 });
 it('does not prune a short history',async()=>{const {session}=await review();let current=session;for(let n=0;n<4;n++)current=await drafts.save({...current,rawTranscript:`Take ${n}.`},current.version);expect((await drafts.versions(session.id)).length).toBe(5);});
+it('selects exact repeated and Unicode words, retains unrelated unassigned entries, and applies only the selected span',async()=>{
+ const {session,sections,services,source}=await review(),section=sections[0],candidate='call 🌿 call after',word='call',start=candidate.lastIndexOf(word),originalText='paragraph.',originalStart=section.text.lastIndexOf(originalText);
+ const pending=await drafts.save({...session,unassigned:[{text:'call 🌿 ',reason:'Earlier entry.'},{text:'old range',reason:'Earlier selection.',rangeSelectionKey:`${session.id}/${section.id}/range`}],results:[{...session.results[0],text:candidate,reviewIssues:[{kind:'ambiguity',quote:'call',start:0,end:4,scope:'rawTranscript',message:'Check'}],changes:[{before:'x',after:'y',reason:'Old check'}],warnings:['Old check']}],rawTranscript:candidate},session.version);
+ const selection={original:{start:originalStart,end:originalStart+originalText.length,text:originalText},candidate:{start,end:start+word.length,text:word},expectedOriginalText:section.text,expectedCandidateText:candidate,expectedDraftVersion:pending.version};
+ const prepared=prepareSelectedRangeReplacement(pending,section.id,selection,section.text);
+ expect(prepared.results[0]).toMatchObject({text:'call',checked:false,changes:[],warnings:[],rangeSelection:{candidateText:candidate}});expect(prepared.results[0].reviewIssues).toBeUndefined();
+ expect(prepared.rawTranscript).toBe(candidate);expect(prepared.unassigned).toEqual([{text:'call 🌿 ',reason:'Earlier entry.'},{text:'call 🌿 ',reason:expect.any(String),rangeSelectionKey:`${session.id}/${section.id}/range`},{text:' after',reason:expect.any(String),rangeSelectionKey:`${session.id}/${section.id}/range`}]);
+ expect(()=>prepareSelectedRangeReplacement({...pending,version:pending.version+1},section.id,selection,section.text)).toThrow('selected words changed');
+ expect(()=>prepareSelectedRangeReplacement(pending,section.id,{...selection,expectedCandidateText:'call 🌿 call changed'},section.text)).toThrow('recorded words changed');
+ expect(()=>prepareSelectedRangeReplacement(pending,section.id,{...selection,candidate:{start:6,end:7,text:candidate.slice(6,7)}},section.text)).toThrow('selected words changed');
+ expect(()=>prepareSelectedRangeReplacement(pending,section.id,selection,section.text.replace('First','Changed'))).toThrow('selected words changed');
+ const saved=await drafts.save({...prepared,results:[{...prepared.results[0],checked:true}]},pending.version),applied=await integrateSectionDraft(saved.id,section.id,services);
+ expect((await working.get(2,'DESIGN'))?.text).toBe('First drive paragraph.\n\nSecond drive call\n\nThe centre stays here.\n\nThe channel stays here.');
+ expect(applied.rawTranscript).toBe(candidate);await undoIntegratedSection(saved.id,section.id,services);expect((await working.get(2,'DESIGN'))?.text).toBe(source.markdown);
+});
+it('restores selected and working history into a new pending named-passage draft with original take provenance',async()=>{
+ const {session,sections,services}=await reviewTake(),section=sections[0],candidate=session.results[0].text,chosen='complete new',candidateStart=candidate.indexOf(chosen),original='Second drive paragraph.',originalStart=section.text.indexOf(original);
+ const prepared=prepareSelectedRangeReplacement(session,section.id,{original:{start:originalStart,end:originalStart+original.length,text:original},candidate:{start:candidateStart,end:candidateStart+chosen.length,text:chosen},expectedOriginalText:section.text,expectedCandidateText:candidate,expectedDraftVersion:session.version},section.text);
+ const selected=await drafts.save({...prepared,results:[{...prepared.results[0],checked:true}]},session.version),applied=await integrateSectionDraft(selected.id,section.id,services),beforeReading=(await working.get(2,'DESIGN'))!;
+ const history=await listSectionHistory(2,section.id,session.sourceHash),selectedEntry=history.find(entry=>entry.kind==='draft'&&entry.version===selected.version)!,workingEntry=history.find(entry=>entry.kind==='working'&&entry.workingRevision===beforeReading.revision)!;
+ expect(workingEntry.restoreDisabledReason).toBeUndefined();expect(workingEntry.text).toBe('First drive paragraph.\n\ncomplete new');
+ for(const entry of [selectedEntry,workingEntry]){
+  const restored=await restoreSectionHistoryAsDraft(entry,applied,services);
+  expect(restored.session.id).not.toBe(session.id);expect(restored.session.results).toHaveLength(1);expect(restored.session).toMatchObject({state:'review',captureSessionId:session.captureSessionId,historyOrigin:{kind:entry.kind,sessionId:session.id,version:entry.version},rawTranscript:session.rawTranscript});
+  expect(restored.session.results[0]).toMatchObject({text:'First drive paragraph.\n\ncomplete new',editIntent:'replace',checked:false,applied:false,takeIds:['earlier']});
+  expect(restored.session.results[0].passageEdit).toBeUndefined();expect((restored.session as SectionDraftSession&{takes?:{state:string}[]}).takes?.map(take=>take.state)).toEqual(['review']);
+  const baseline=restored.session.results[0].historyRestore!.baselineText,phrase='complete new',at=baseline.indexOf(phrase),chosen=restored.session.results[0].text,last=chosen.indexOf(phrase);
+  const narrowed=prepareSelectedRangeReplacement(restored.session,section.id,{original:{start:at,end:at+phrase.length,text:phrase},candidate:{start:last,end:last+phrase.length,text:phrase},expectedOriginalText:baseline,expectedCandidateText:chosen,expectedDraftVersion:restored.session.version},baseline);
+  expect(narrowed.results[0].passageEdit?.focus.text).toBe(phrase);expect(narrowed.results[0].historyRestore).toBeUndefined();
+  expect((await drafts.get(session.id))?.version).toBe(applied.version);expect((await working.get(2,'DESIGN'))?.text).toBe(beforeReading.text);
+ }
+ const later=createSectionDraftSession(session.source,sections,section.id),laterResult={...session.results[0],text:'later words',takeIds:undefined,checked:true,passageEdit:{operation:'replace' as const,focus:{start:'First drive paragraph.\n\n'.length,end:beforeReading.text.indexOf('complete new')+'complete new'.length,text:'complete new'},sectionText:'First drive paragraph.\n\ncomplete new'},editIntent:'replace' as const};
+ const laterSaved=await drafts.save({...later,state:'review',results:[laterResult]},0);await integrateSectionDraft(laterSaved.id,section.id,services);
+ const current=(await drafts.get(laterSaved.id))!,recovered=await restoreSectionHistoryAsDraft(selectedEntry,current,services),reviewed=await drafts.save({...recovered.session,results:[{...recovered.session.results[0],checked:true}]},recovered.session.version);
+ await integrateSectionDraft(reviewed.id,section.id,services);
+ const reread=(await working.get(2,'DESIGN'))!;expect(reread.text).toBe(beforeReading.text);
+ expect(reread.blocks.filter(block=>block.origin==='ai').map(block=>block.text).join('')).toContain('First drive paragraph.');
+ expect(reread.blocks.filter(block=>block.origin==='human').flatMap(block=>block.evidence).some(evidence=>evidence.captureId==='earlier')).toBe(true);
+ await undoIntegratedSection(reviewed.id,section.id,services);expect((await working.get(2,'DESIGN'))?.text).toContain('later words');
+});
+it('shows a full-lens reading revision without an exact named-passage receipt but disables its restore',async()=>{
+ const {session,sections,services}=await review();await integrateSectionDraft(session.id,sections[0].id,services);const first=(await working.get(2,'DESIGN'))!;
+ const changed=await working.save(editWorkingText(first,first.text+'\n\nManual lens note.'),first.revision),history=await listSectionHistory(2,sections[0].id,session.sourceHash),manual=history.find(entry=>entry.kind==='working'&&entry.workingRevision===changed.revision)!;
+ expect(manual.scopeLabel).toBe('Full lens');expect(manual.restoreDisabledReason).toMatch(/no exact restorable named-passage/);
+ await expect(restoreSectionHistoryAsDraft(manual,(await drafts.get(session.id))!,services)).rejects.toThrow('no exact restorable named-passage');
+});
+it('refuses a deletion-only history apply before it can mislabel retained words as recorded speech',()=>{
+ expect(()=>sectionReplacementPlan({sectionId:'2/DESIGN/0',text:'First last',historyRestore:{baselineText:'First added last'},comparisonOriginal:'First added last',evidenceQuotes:[],changes:[],warnings:[],checked:true},'First added last')).toThrow('only removes words');
+});
+it('restores the actual saved passage choices and disables a choice without exact alignment',async()=>{
+ const {source,sections,services}=fixture(),section=sections[0],first='First drive paragraph.',second='Second drive paragraph.',spoken='My first drive.\n\nMy second drive.',spokenFirst='My first drive.',spokenSecond='My second drive.';
+ const comparison={originalText:section.text,spokenText:spoken,pairs:[{originalStart:0,originalEnd:first.length,textStart:0,textEnd:spokenFirst.length},{originalStart:section.text.indexOf(second),originalEnd:section.text.length,textStart:spoken.indexOf(spokenSecond),textEnd:spoken.length}]};
+ const draft=createSectionDraftSession(source,sections),saved=await drafts.save({...draft,state:'review',results:[{sectionId:section.id,text:spoken,comparisonOriginal:section.text,comparison,rowChoices:{[`0-${first.length}`]:'original'},evidenceQuotes:[],changes:[],warnings:[],checked:true}]},0);
+ const aligned=(await listSectionHistory(2,section.id,source.hash)).find(entry=>entry.sessionId===saved.id&&entry.version===saved.version)!;
+ expect(aligned.restoreDisabledReason).toBeUndefined();expect(aligned.text).toBe(first+'\n\n'+spokenSecond);
+ const restored=await restoreSectionHistoryAsDraft(aligned,saved,services);expect(restored.session.results[0].text).toBe(aligned.text);
+ const invalid=await drafts.save({...saved,results:[{...saved.results[0],comparison:undefined}]},saved.version),unmatched=(await listSectionHistory(2,section.id,source.hash)).find(entry=>entry.sessionId===saved.id&&entry.version===invalid.version)!;
+ expect(unmatched.restoreDisabledReason).toMatch(/no longer match/);
+});
+it('refuses a restored proposal after another session changes its named passage',async()=>{
+ const {session,sections,source,services}=await review(),section=sections[0];const applied=await integrateSectionDraft(session.id,section.id,services);
+ const older=(await listSectionHistory(2,section.id,source.hash)).find(entry=>entry.kind==='draft'&&entry.version===session.version)!,restored=await restoreSectionHistoryAsDraft(older,applied,services);
+ const later=createSectionDraftSession(source,sections,section.id),changed=await drafts.save({...later,state:'review',results:[{...session.results[0],text:'A later named passage.',checked:true}]},0);
+ await integrateSectionDraft(changed.id,section.id,services);const before=(await working.get(2,'DESIGN'))!;
+ const checked=await drafts.save({...restored.session,results:[{...restored.session.results[0],checked:true}]},restored.session.version);
+ await expect(integrateSectionDraft(checked.id,section.id,services)).rejects.toThrow('current named passage changed');
+ expect((await working.get(2,'DESIGN'))?.text).toBe(before.text);expect((await working.get(2,'DESIGN'))?.revision).toBe(before.revision);
+});
