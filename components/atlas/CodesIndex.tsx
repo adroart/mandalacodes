@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CARD_BY_NUMBER } from '../../data/oracleData';
+import { artDesignHref } from '../../lib/atlas/artSite';
+import { ulPieceForCard } from '../../utils/universalLanguage';
 import HexagramGlyph from '../oracle/HexagramGlyph';
 import CodePiecesPanel, { type CodePiece } from './CodePiecesPanel';
 import {
@@ -54,7 +56,7 @@ interface CodeRow {
 
 /** Honest one-line tally. Only nonzero states appear; no count is invented. */
 function tally(row: CodeRow): string {
-  if (row.pieces.length === 0) return 'not yet embodied';
+  if (row.pieces.length === 0) return 'no public placements';
   const parts: string[] = [];
   if (row.placed > 0) parts.push(`${row.placed} kept`);
   if (row.seeking > 0) parts.push(`${row.seeking} seeking`);
@@ -186,60 +188,71 @@ const CodesIndex: React.FC<Props> = ({
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0">
           {shown.map(({ row, pieces, open }) => {
             const panelId = `code-panel-${row.number}`;
+            const artwork = ulPieceForCard(row.number);
             return (
               <li key={row.number} className="border-b border-wood-200">
-                <button
-                  type="button"
-                  onClick={() => toggle(row.number)}
-                  aria-expanded={open}
-                  aria-controls={panelId}
-                  className="w-full text-left flex items-center gap-3 py-3 group focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
-                >
-                  <span
-                    className={`shrink-0 transition-colors ${
-                      row.lit ? 'text-bronze-600' : 'text-wood-400'
-                    }`}
-                    aria-hidden
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => toggle(row.number)}
+                    aria-expanded={open}
+                    aria-controls={panelId}
+                    className="flex-1 min-w-0 text-left flex items-center gap-3 py-3 group focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
                   >
-                    <HexagramGlyph gate={row.number} width={22} />
-                  </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="flex items-baseline gap-2">
-                      <span className="font-label text-[11px] tabular-nums text-wood-500 tracking-[0.15em]">
-                        {String(row.number).padStart(2, '0')}
+                    <span
+                      className={`shrink-0 transition-colors ${
+                        row.lit ? 'text-bronze-600' : 'text-wood-400'
+                      }`}
+                      aria-hidden
+                    >
+                      <HexagramGlyph gate={row.number} width={22} />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="flex items-baseline gap-2">
+                        <span className="font-label text-[11px] tabular-nums text-wood-500 tracking-[0.15em]">
+                          {String(row.number).padStart(2, '0')}
+                        </span>
+                        <span
+                          className={`font-reading text-base leading-snug break-words transition-colors ${
+                            row.lit
+                              ? 'text-wood-900 group-hover:text-bronze-700'
+                              : 'text-wood-600 group-hover:text-bronze-700'
+                          }`}
+                        >
+                          {row.name}
+                        </span>
                       </span>
                       <span
-                        className={`font-reading text-base leading-snug truncate transition-colors ${
-                          row.lit
-                            ? 'text-wood-900 group-hover:text-bronze-700'
-                            : 'text-wood-600 group-hover:text-bronze-700'
+                        className={`block font-label text-[11px] uppercase tracking-[0.15em] mt-0.5 ${
+                          row.pieces.length === 0 ? 'text-wood-400' : 'text-wood-600'
                         }`}
                       >
-                        {row.name}
+                        {tally(row)}
                       </span>
                     </span>
                     <span
-                      className={`block font-label text-[11px] uppercase tracking-[0.15em] mt-0.5 ${
-                        row.pieces.length === 0 ? 'text-wood-400' : 'text-wood-600'
+                      aria-hidden
+                      className={`shrink-0 text-bronze-600 text-sm transition-transform duration-200 ${
+                        open ? 'rotate-90' : ''
                       }`}
                     >
-                      {tally(row)}
+                      ›
                     </span>
-                  </span>
-                  <span
-                    aria-hidden
-                    className={`shrink-0 text-bronze-600 text-sm transition-transform duration-200 ${
-                      open ? 'rotate-90' : ''
-                    }`}
-                  >
-                    ›
-                  </span>
-                </button>
+                  </button>
+                  {artwork && (
+                    <a
+                      href={artDesignHref(artwork.id, row.number)}
+                      aria-label={`View ${row.name} artwork`}
+                      className="shrink-0 inline-flex min-h-11 items-center font-label text-xs text-bronze-700 hover:underline focus-visible:outline-2 focus-visible:outline-bronze-700"
+                    >
+                      View artwork ↗
+                    </a>
+                  )}
+                </div>
                 {open && (
                   <div id={panelId} className="pb-4 pl-1 pr-2">
                     <CodePiecesPanel
                       codeNumber={row.number}
-                      codeName={row.name}
                       pieces={pieces}
                       onSelectOnGlobe={onSelectOnGlobe}
                     />
