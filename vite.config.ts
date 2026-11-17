@@ -66,7 +66,7 @@ const previewPrerenderedCards = (): Plugin => ({
         return next();
       }
       const match = url.match(/^\/universal-language\/(\d+)$/);
-      if (/^\/(?:about|artists(?:\/[a-z0-9-]+)?)\/?$/.test(url)) {
+      if (/^\/(?:about|artists(?:\/[a-z0-9-]+)?|light-codes(?:\/[a-z0-9-]+)?)\/?$/.test(url)) {
         const relative = `${url.replace(/\/$/, '')}/index.html`;
         if (fs.existsSync(path.join(__dirname, 'dist', relative))) {
           req.url = `${relative}${req.url?.slice(url.length) ?? ''}`;

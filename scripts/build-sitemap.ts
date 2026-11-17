@@ -18,6 +18,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { featuredArtists } from '../data/featuredArtists';
+import { lightCodes, lightCodeImagePath } from '../data/lightCodes';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://mandalacodes.com';
@@ -33,19 +34,22 @@ if (cards.length !== 64) {
   throw new Error(`[sitemap] expected 64 cards in data/oracle-corpus.json, found ${cards.length}`);
 }
 
-const staticPaths = ['/universal-language', '/the-systems', '/about', '/artists', '/atlas', '/gateway'];
+const staticPaths = ['/universal-language', '/the-systems', '/about', '/artists', '/light-codes', '/atlas', '/gateway'];
 const cardPaths = cards
   .map((card) => card.number)
   .sort((a, b) => a - b)
   .map((number) => `/universal-language/${number}`);
 
-const urls = [...staticPaths, ...featuredArtists.map((artist) => `/artists/${artist.slug}`), ...cardPaths];
+const urls = [...staticPaths, ...featuredArtists.map((artist) => `/artists/${artist.slug}`), ...lightCodes.map((card) => `/light-codes/${card.number}`), ...cardPaths];
 
 const lastmod = new Date().toISOString().slice(0, 10);
 const body = urls
   .map((path) => {
     const artist = featuredArtists.find((entry) => path === `/artists/${entry.slug}`);
-    const image = artist ? `\n    <image:image><image:loc>${SITE_URL}/media/image/${artist.hero.image.split('/').map(encodeURIComponent).join('/')}?w=1200</image:loc></image:image>` : '';
+    const lightCode = /^\/light-codes\/([1-9]\d*)$/.exec(path);
+    const imageUrl = artist ? `${SITE_URL}/media/image/${artist.hero.image.split('/').map(encodeURIComponent).join('/')}?w=1200`
+      : lightCode ? `${SITE_URL}${lightCodeImagePath(Number(lightCode[1]))}` : undefined;
+    const image = imageUrl ? `\n    <image:image><image:loc>${imageUrl}</image:loc></image:image>` : '';
     return `  <url>\n    <loc>${SITE_URL}${path}</loc>\n    <lastmod>${lastmod}</lastmod>${image}\n  </url>`;
   })
   .join('\n');

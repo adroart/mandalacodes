@@ -9,6 +9,8 @@ const OracleSystems = lazy(() => import('./components/OracleSystems'));
 const AboutPage = lazy(() => import('./components/AboutPage'));
 const ArtistsHubPage = lazy(() => import('./components/FeaturedArtistsPage').then((module) => ({ default: module.ArtistsHubPage })));
 const ArtistFeaturePage = lazy(() => import('./components/FeaturedArtistsPage'));
+const LightCodesPage = lazy(() => import('./components/LightCodesPages').then((module) => ({ default: module.LightCodesPage })));
+const LightCodePage = lazy(() => import('./components/LightCodesPages'));
 const AtlasPage = lazy(() => import('./components/AtlasPage'));
 const AdminLogin = lazy(() => import('./components/AdminLogin'));
 const AdminAtlas = lazy(() => import('./components/AdminAtlas'));
@@ -116,6 +118,8 @@ const AppInner: React.FC = () => {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/artists" element={<ArtistsHubPage />} />
                 <Route path="/artists/:slug" element={<ArtistFeaturePage />} />
+                <Route path="/light-codes" element={<LightCodesPage />} />
+                <Route path="/light-codes/:number" element={<LightCodePage />} />
 
                 {/* Universal Language deck */}
                 <Route path="/universal-language" element={<UniversalLanguageIndex />} />
