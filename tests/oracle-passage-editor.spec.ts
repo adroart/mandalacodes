@@ -2,6 +2,42 @@ import {test,expect} from './fixtures';
 
 test.use({viewport:{width:375,height:812},launchOptions:{args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']}});
 
+async function waitForSavedAudio(page: import('@playwright/test').Page,sectionId:string){
+ await expect(page.getByRole('dialog').locator('[data-recording-section-id]')).toHaveAttribute('data-recording-section-id',sectionId);
+ await expect.poll(async()=>page.evaluate(async expected=>{
+  const load=(path:string)=>import(path);
+  const [{SectionDraftStore},{AuthoringStore}]=await Promise.all([load('/lib/oracle/authoring/sectionDrafts.ts'),load('/lib/oracle/authoring/storage.ts')]);
+  const draft=(await new SectionDraftStore().list(2)).find((value:any)=>value.recording?.sectionId===expected&&value.recording?.captureId);if(!draft?.captureSessionId)return 'no matching recording';
+  const store=new AuthoringStore(),saved=await store.load(draft.captureSessionId),capture=saved?.session.captures.find((item:any)=>item.id===draft.recording?.captureId);
+  if(!capture)return 'no capture';
+  return `${draft.recording?.sectionId}|${capture.status}|${(await store.captureChunks(draft.captureSessionId,capture.id)).length}`;
+ },sectionId),{timeout:10000}).toMatch(new RegExp(`^${sectionId.replaceAll('/','\\/')}\\|recording\\|[1-9]`));
+}
+
+async function savedReviewState(page: import('@playwright/test').Page){
+ return page.evaluate(async()=>{
+  const load=(path:string)=>import(path);
+  const [{SectionDraftStore},{AuthoringStore}]=await Promise.all([load('/lib/oracle/authoring/sectionDrafts.ts'),load('/lib/oracle/authoring/storage.ts')]);
+  const draft=(await new SectionDraftStore().list(2)).find((value:any)=>value.results.some((result:any)=>result.sectionId==='2/CODE/reading')),store=new AuthoringStore(),audio=await store.load(draft.captureSessionId);
+  const chunks=await store.chunks(draft.captureSessionId);
+  const digests=await Promise.all(chunks.map(async(chunk:any)=>({key:chunk.key,hash:Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await chunk.blob.arrayBuffer()))).map(b=>b.toString(16).padStart(2,'0')).join('')})));
+  return {results:draft.results,takes:draft.takes,chunks:digests,captures:audio?.session.captures.map((capture:any)=>({id:capture.id,status:capture.status})),recording:draft.recording};
+ });
+}
+
+async function useEmptyMediaRecorder(page: import('@playwright/test').Page){
+ await page.evaluate(()=>{
+  class EmptyMediaRecorder {
+   static isTypeSupported(){return true;}
+   mimeType='audio/webm';state:'inactive'|'recording'|'paused'='inactive';onstop:((event:Event)=>void)|null=null;
+   start(){this.state='recording';}
+   stop(){this.state='inactive';queueMicrotask(()=>this.onstop?.(new Event('stop')));}
+   requestData(){}pause(){this.state='paused';}resume(){this.state='recording';}
+  }
+  Object.defineProperty(window,'MediaRecorder',{value:EmptyMediaRecorder,configurable:true});
+ });
+}
+
 test('a phone passage edit keeps its destination and operation visible through review',async({page,context,baseURL},info)=>{
  await context.grantPermissions(['microphone'],{origin:baseURL!});
  let assimilations=0,transcriptions=0;
@@ -32,6 +68,7 @@ test('a phone passage edit keeps its destination and operation visible through r
  await dialog.getByRole('button',{name:'Record addition',exact:true}).click();
  await expect(dialog.locator('.vs-passage-editor')).toContainText('Adding after this passage');
  await expect(dialog.locator('.vs-dock-target')).toContainText('Add after');
+ await waitForSavedAudio(page,'2/INTRO');
  await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
  await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Review',{timeout:15000});
  await expect(dialog.locator('.vs-review-status')).toHaveText('Not applied yet. You can undo after applying.');
@@ -75,6 +112,7 @@ test('a phone passage edit keeps its destination and operation visible through r
  await dialog.getByRole('button',{name:'Re-record',exact:true}).click();
  await expect(dialog.locator('.vs-passage-path')).toContainText('Card 2 · Intro · Paragraph 1 of 1');
  await expect(dialog.locator('.vs-passage-editor')).toContainText('Adding after this passage');
+ await waitForSavedAudio(page,'2/INTRO');
  await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
  await expect(dialog.locator('[data-review-pane=words]')).toContainText('My better new passage.',{timeout:15000});
  await expect(dialog.locator('.vs-bar-title--passage')).toContainText('Card 2 · Intro · para 1/1');
@@ -114,6 +152,7 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(dialog.getByRole('button',{name:'Record replacement',exact:true})).toBeEnabled();
  await page.screenshot({path:info.outputPath('reading-paragraph-replace-phone.png')});
  await dialog.getByRole('button',{name:'Record replacement',exact:true}).click();
+ await waitForSavedAudio(page,'2/CODE/reading');
  await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
  await expect(dialog.locator('.vs-bar-title--passage')).toContainText('Card 2 · UL Reading · para 2/3');
  await expect(dialog.locator('.vs-bar-title--passage')).toHaveAttribute('aria-label',/Card 2 · Universal Language · Reading · Paragraph 2 of 3/);
@@ -146,4 +185,51 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Review');
  await expect(dialog.getByRole('button',{name:'Re-record',exact:true})).toBeVisible();
  expect(assimilations).toBe(0);
+ const beforeEmpty=await savedReviewState(page),transcriptionsBeforeEmpty=transcriptions;
+ await useEmptyMediaRecorder(page);
+ await dialog.getByRole('button',{name:'Re-record',exact:true}).click();
+ await expect(dialog.locator('[data-recording-section-id]')).toHaveAttribute('data-recording-section-id','2/CODE/reading');
+ await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
+ await expect(dialog.locator('[data-view=review]')).toBeVisible();
+ await expect(dialog.locator('.vs-toast')).toContainText('No audio was captured. Record again when you are ready.');
+ await expect(dialog.locator('.vs-bar-title--passage')).toContainText('Card 2 · UL Reading · para 2/3');
+ await expect(dialog.getByRole('button',{name:'Re-record',exact:true})).toBeEnabled();
+ const afterEmpty=await savedReviewState(page);
+ expect(afterEmpty.results).toEqual(beforeEmpty.results);
+ expect(afterEmpty.takes).toEqual(beforeEmpty.takes);
+ expect(afterEmpty.chunks).toEqual(beforeEmpty.chunks);
+ expect(afterEmpty.captures?.slice(0,-1)).toEqual(beforeEmpty.captures);
+ expect(afterEmpty.captures?.at(-1)?.status).toBe('empty');
+ expect(afterEmpty.recording).toBeUndefined();
+ expect(transcriptions).toBe(transcriptionsBeforeEmpty);
+});
+
+test('an empty new passage recording keeps the selected operation ready to retry',async({page,context,baseURL})=>{
+ await context.grantPermissions(['microphone'],{origin:baseURL!});
+ let transcriptions=0;
+ await page.route('**/api/oracle/authoring/ar-create',route=>{transcriptions++;return route.fulfill({status:500,json:{error:'An empty recording must not reach transcription.'}});});
+ await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();
+ await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();
+ const dialog=page.getByRole('dialog');
+ await dialog.locator('.vs-para--choice').first().click();
+ await dialog.getByRole('button',{name:'Replace',exact:true}).click();
+ await useEmptyMediaRecorder(page);
+ await dialog.getByRole('button',{name:'Record replacement',exact:true}).click();
+ await expect(dialog.locator('[data-recording-section-id]')).toHaveAttribute('data-recording-section-id','2/INTRO');
+ await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
+ await expect(dialog.locator('[data-view=passage]')).toBeVisible();
+ await expect(dialog.locator('.vs-toast')).toContainText('No audio was captured. Record again when you are ready.');
+ await expect(dialog.locator('.vs-passage-path')).toContainText('Card 2 · Intro · Paragraph 1 of 1');
+ await expect(dialog.locator('.vs-passage-editor')).toContainText('Only this passage will be replaced.');
+ await expect(dialog.getByRole('button',{name:'Replace',exact:true})).toHaveAttribute('aria-pressed','true');
+ await expect(dialog.getByRole('button',{name:'Record replacement',exact:true})).toBeEnabled();
+ const stored=await page.evaluate(async()=>{
+  const load=(path:string)=>import(path);
+  const [{SectionDraftStore},{AuthoringStore}]=await Promise.all([load('/lib/oracle/authoring/sectionDrafts.ts'),load('/lib/oracle/authoring/storage.ts')]);
+  const draft=(await new SectionDraftStore().list(2)).find((value:any)=>value.startSectionId==='2/INTRO'),store=new AuthoringStore(),audio=await store.load(draft.captureSessionId);
+  return {results:draft.results,takes:draft.takes,recording:draft.recording,captures:audio?.session.captures.map((capture:any)=>capture.status),chunks:(await store.chunks(draft.captureSessionId)).length};
+ });
+ expect(stored.results).toEqual([]);expect(stored.takes??[]).toEqual([]);
+ expect(stored.recording).toBeUndefined();expect(stored.captures).toEqual(['empty']);expect(stored.chunks).toBe(0);
+ expect(transcriptions).toBe(0);
 });

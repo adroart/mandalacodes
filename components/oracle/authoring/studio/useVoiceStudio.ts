@@ -517,15 +517,29 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                 } };
             if (voiceCommands && !phraseTarget && !passageCapture.current)
                 routeHandle.current = startVoiceRouting(routeConfig.current);
-            void recorder.completion.then(async () => {
+            void recorder.completion.then(async completed => {
                 routeHandle.current?.stop();
                 routeHandle.current = null;
                 handle.current = null;
-                const latest = await changeSectionSession(id, s => ({ ...s, state: s.results.length ? 'review' : 'ready' }));
+                const finishedCapture = completed.session.captures.find(c => c.id === recorder.captureId);
+                const empty = !!finishedCapture && (finishedCapture.status === 'empty' || finishedCapture.durationMs <= 0);
+                const latest = await changeSectionSession(id, s => ({ ...s, state: s.results.length ? 'review' : 'ready',
+                    ...(empty && (s as TakeSession).recording?.captureId === recorder.captureId ? { recording: undefined } : {}) }));
                 accept(latest);
                 if (mounted.current) {
                     setActive(null);
                     setStopping(false);
+                    if (empty) {
+                        setPendingPassage(null);
+                        setNotice('No audio was captured. Record again when you are ready.');
+                        if (passageTarget) {
+                            explicitChoice.current = true;
+                            reviewArrival.current = false;
+                            setFocusId(target.id);
+                        }
+                        setView(passageTarget ? 'review' : passageCapture.current ? 'passage' : 'work');
+                        return;
+                    }
                     if (stopMode.current === 'next')
                         setView('work');
                     else {

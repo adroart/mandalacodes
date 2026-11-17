@@ -7,7 +7,7 @@ const candidate='These are my own words for this reading.';
 async function openPending(page:Page){
  await page.route('**/api/oracle/authoring/ar-create',route=>{const body=route.request().postDataJSON();if(body.operation==='transcribe')return route.fulfill({json:{provider:'fixture',segments:[{text:candidate,startMs:0,endMs:Math.min(body.durationMs,1000),timing:'provider',sectionId:'CODE'}]}});const section=body.assimilation.sections.find((item:{id:string})=>item.id==='2/CODE/reading');return route.fulfill({json:{assimilation:{sections:[{sectionId:section.id,text:candidate,evidenceQuotes:[candidate],changes:[],warnings:[]}],unassigned:[]}}});});
  await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();
- const reading=await page.locator('.card-reading').innerText();
+ const reading=await page.locator('[data-oracle-reader]').innerText();
  await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();const dialog=page.getByRole('dialog');
  await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-section-head').click();
  await dialog.locator('.vs-section[data-section-id="2/CODE/reading"]').getByRole('button',{name:'Record whole section',exact:true}).click();
@@ -45,13 +45,13 @@ test('selected original and recorded words stay locked across focus, stage a pre
  await expect(reviewTitle).toContainText('Card 2 · UL Reading · Selected words');
  await expect(reviewTitle).toHaveAttribute('aria-label',/Card 2 · Universal Language · Reading · Selected words/);
  await expect(reviewTitle).not.toContainText('Whole section');
- expect(await page.locator('.card-reading').innerText()).toBe(reading);
+ await expect.poll(()=>page.locator('[data-oracle-reader]').innerText()).toBe(reading);
  const staged=(await sessions(page)).find(s=>s.id===old.id);
  expect(staged.results.find((r:{sectionId:string})=>r.sectionId==='2/CODE/reading').text).toBe('my own words');
  expect(staged.unassigned.map((item:{text:string})=>item.text).join(' ')).toContain('These are');
  expect(staged.unassigned.map((item:{text:string})=>item.text).join(' ')).toContain('for this reading');
  expect(staged.captureSessionId).toBe(old.captureSessionId);
- await page.reload();await expect(page.locator('.card-reading')).toBeVisible();expect(await page.locator('.card-reading').innerText()).toBe(reading);
+ await page.reload();await expect.poll(()=>page.locator('[data-oracle-reader]').innerText()).toBe(reading);
  await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();
  await page.getByRole('dialog').getByRole('button',{name:/^Review/}).first().click();
  await expect(page.getByRole('dialog').locator('.vs-compare')).toContainText('my own words');
@@ -66,7 +66,7 @@ test('History restores a proposal into a separate pending session and retains th
  await dialog.getByRole('button',{name:'Restore as draft'}).first().click();
  await expect(dialog.locator('.vs-review-status')).toHaveCount(0);
  await expect(dialog.locator('.vs-compare')).toBeVisible();
- expect(await page.locator('.card-reading').innerText()).toBe(reading);
+ await expect.poll(()=>page.locator('[data-oracle-reader]').innerText()).toBe(reading);
  const rows=await sessions(page),unchanged=rows.find(s=>s.id===old.id),restored=rows.find(s=>s.id!==old.id&&s.historyOrigin);
  expect(unchanged.results).toEqual(old.results);
  expect(unchanged.captureSessionId).toBe(old.captureSessionId);
