@@ -43,7 +43,7 @@ Exact commands for every item: [todo/handoff/GO-LIVE-RUNBOOK.md](todo/handoff/GO
 
 - [x] **Reconcile existing branches (2026-11-16):** completed against the pinned audit inventory; article-library PR #396 is merged and live at `/learn/`. See [branch integration and release record](todo/plans/unmerged-work-2026-11-16.md). Historical inventory: 57 refs / 34 tips; current disposition of the reviewed 11: 8 incorporated (including #396), 2 superseded, 1 owner-held. No selected missing candidate remains from that review.
 
-- [x] **Article library and local writer, PR #396:** live at [mandalacodes.com/learn](https://mandalacodes.com/learn/). Merged `9de8389e` and deployed build `07c30b99`. Required CI, build/typecheck, unit/article checks, visual review, local draft flow and live-byte proof passed; full evidence and remaining limits are in the [release record](todo/plans/unmerged-work-2026-11-16.md). Hosted Keystatic GitHub mode, physical-phone acceptance, owner-held phrase list and collector hold remain outstanding.
+- [x] **Article library and local writer, PR #396:** live at [mandalacodes.com/learn](https://mandalacodes.com/learn/). Merged `9de8389e` and deployed build `07c30b99`. Required CI, build/typecheck, unit/article checks, visual review, local draft flow and live-byte proof passed; full evidence and remaining limits are in the [release record](todo/plans/unmerged-work-2026-11-16.md). The hosted editor is now live through PR #407; see its [release record](todo/plans/unmerged-work-2026-11-16.md#pr-407-hosted-editor-release). Physical-phone acceptance, owner-held phrase list and collector hold remain outstanding.
 
 - Voice browser race: test delay removed; immediate action passed five desktop and five emulated-phone repetitions, with no runtime defect reproduced. Owner phone acceptance remains below.
 - Offline: production-worker checks prove cached prose only; phone acceptance remains below. Artwork is intentionally network-only.
@@ -78,8 +78,7 @@ Historical baseline on b9da484, before these repairs: 41 failed, 80 passed and 1
 
 - [x] **Action-specific Save sign-in (2026-11-16, local):** per Adrian’s choice, Save opens “Save this code” with collection-specific welcome/password copy; chart sign-in retains “Keep your chart.” Focused Save/chart checks pass on desktop and mobile, Save also passes at 320 px, and typecheck passes. Screens were inspected; authentication behavior is unchanged.
 
-- [ ] The registry lists five waiting rows for mandalas, signature pieces and jewelry _(band: you-required)_ _(effort: quick)_
-  They claim nothing and count as nothing, so they are honest, but while they are there the registry's own "awaiting first light" line never appears. Keep them or drop them, your call.
+- [x] **Registry placeholders removed (2026-11-16, local):** per Adrian’s “Remove placeholder rows (Recommended)” decision, the public registry shows only real entries. An empty record displays “the sky is waiting for its first light.” Counts, real-entry search and filtered-empty guidance remain intact. Desktop and 320 px browser checks, three existing empty-copy unit checks and typecheck pass; actual screens reviewed. Test: `tests/atlas-registry-empty-record.spec.ts`. Publication remains separate.
 
 - [x] Refresh the two status documents, both of which now undercount what is built — done 2026-09-22: re-measured [DEVELOPMENT-STATUS.md](todo/DEVELOPMENT-STATUS.md) and its paired [launch-readiness.md](todo/plans/launch-readiness.md) against the current repo (not just the 2026-09-02 patch note). All six quick wins verified shipped (not five), three more "Medium feature" items found shipped (#7, #10, #15), section 0 rewritten to name the actual current gate (`livingLegacy: false` on adrian-website, confirmed still false), and a stale "0/384 changing-line texts" row corrected to 384/384 (verified while fixing the cast-content item above).
   Measured 2026-09-01: five of the six "quick wins" in [DEVELOPMENT-STATUS.md](todo/DEVELOPMENT-STATUS.md) had already shipped, and one file it points at no longer exists. Its section 0 blames an ops gate of database tables and secrets for holding features hostage; the secrets are in fact provisioned, and the real cause is two launch flags on the other repo.
@@ -94,7 +93,8 @@ Historical baseline on b9da484, before these repairs: 41 failed, 80 passed and 1
 
 - [ ] Offline phone acceptance _(you-required)_ → Plan: [offline-oracle-completion.md](todo/plans/offline-oracle-completion.md). The production-worker browser check now verifies all 64 prose chunks are cached and untouched-card text renders with network blocked. Phone confirmation of the text-only promise and interrupted-warm recovery remains outstanding; artwork is excluded by design.
 
-- [ ] Decide whether to state the offline promise in the interface, differentiate offline guidance for Atlas vs queued reflections, support a gallery iPad use case, and expose queued reflections as a first-class saved item. Product choices remain owner-required; old proposed update-check, persistent-storage and baseline-test tasks need fresh evidence before reopening. → Plan: [offline-oracle-completion.md](todo/plans/offline-oracle-completion.md)
+- [x] **Offline guidance decisions (2026-11-16):** Adrian approved a brief downloaded-text/artwork note in existing reader guidance, connection-specific Atlas and reflection messages, and visible pending recordings in the existing Journal. Local implementation and verification are recorded in [offline-oracle-completion.md](todo/plans/offline-oracle-completion.md).
+- [x] **Gallery iPad deferred (2026-11-16):** Adrian chose “Defer gallery iPad (Recommended)” until a specific device and gallery use case exist. No dedicated gallery feature or acceptance flow is in scope. Ordinary physical-phone offline acceptance remains above; proposed update-check and persistent-storage enhancements need fresh evidence before reopening. → [Offline plan](todo/plans/offline-oracle-completion.md)
 
 - [ ] Rewrite the 64 opening readings so each speaks the whole code (all traditions as lenses on one energy) and ends lifting, not heavy _(band: you-required)_ _(effort: deep)_ → Plan: [reading-rewrite.md](todo/plans/reading-rewrite.md)
 
@@ -247,8 +247,9 @@ Framework built on branch `claude/oracle-mcp-artwork-readings-MMa1k` (pending me
 
 ## Mandala Authority Strategy
 
-- [ ] **Learn editor in the browser** _(band: you-required)_ _(effort: moderate)_ — switch the `/learn` Keystatic editor from local-only mode to GitHub mode so articles can be written from any browser without running the dev server.
-  Today writing requires `npm run write` locally; GitHub mode needs a Keystatic GitHub App and a host with server routes. Steps are in [content-site/README.md](content-site/README.md) "Editing from the browser in production." Done when you can open a hosted Keystatic URL, write an article, and it commits to `main`.
+- [x] **Verify the free hosted Learn editor pilot:** [hosted editor pilot](https://mandalacodes-editor-pilot.netlify.app/keystatic) passed sign-in, synthetic draft save/reopen/edit/save/reopen and image upload checks on 2026-11-16. See the [pilot record](todo/plans/unmerged-work-2026-11-16.md#hosted-editor-pilot).
+- [x] **Hosted Learn editor runtime, PR #407:** merged and live. Post-merge `gate`, `test`, and `test-mobile` all passed on exact source `b8b9f0b0563267d511fd0f899911ef4eb770bbaf`; Cloudflare Pages and Netlify production deploys are verified. The hosted editor passed a fresh browser smoke on a disposable branch. Release evidence and limits: [hosted editor release record](todo/plans/unmerged-work-2026-11-16.md#pr-407-hosted-editor-release).
+- [ ] **Publish an article through the hosted editor** _(band: you-required)_ _(effort: moderate)_ — when ready, select and verify the intended writing branch in the hosted editor, then review the resulting PR and merge through the existing protected-main/Pages flow. Keep publication and editorial review owner-led.
 
 ## Operational notes (not TODOs: context for future-you)
 

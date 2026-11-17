@@ -4,7 +4,7 @@ For Adrian, with the Mac and the phone. Nothing in the voice work has run on a p
 
 ## Before you start
 
-1. On the Mac, `git checkout main && git pull`.
+1. On the Mac, fetch current `origin/main` and use a clean, isolated worktree at that revision.
 2. In the Cloudflare Pages settings, confirm `ADMIN_EMAILS` holds the email you sign in with on the phone, and that `GROQ_API_KEY` is set.
 3. On the Mac, from a clean committed tree:
 

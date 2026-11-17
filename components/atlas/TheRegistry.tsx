@@ -20,10 +20,6 @@ import {
   type LedgerRow,
   type LedgerStateFilter,
 } from './ledgerRow';
-import {
-  LEDGER_KIND_PLACEHOLDERS,
-  LEDGER_PLACEHOLDER_STATUS,
-} from '../../data/atlasPlaceholder';
 import { sigilFor, useAtlasRecord } from '../../lib/atlas/record';
 
 /* ─── The registry ────────────────────────────────────────────────────────
@@ -46,30 +42,12 @@ import { sigilFor, useAtlasRecord } from '../../lib/atlas/record';
  * hundred lines and stay quiet while you scroll them.
  */
 
-/** The kinds that stand in with ghost rows while they hold nothing real. */
-const FIXED_PLACEHOLDER_KINDS = Object.keys(LEDGER_KIND_PLACEHOLDERS);
-
-/** The ghost rows a fixed kind shows while it has no real entries. */
-function placeholdersFor(kind: string): LedgerRow[] {
-  const titles = (LEDGER_KIND_PLACEHOLDERS as Record<string, readonly string[]>)[kind];
-  if (!titles) return [];
-  return titles.map((title, i) => ({
-    key: `placeholder-${kind}-${i}`,
-    pieceId: '',
-    title,
-    norm: 'at-rest' as const,
-    onGlobe: false,
-    placeholder: true,
-    kind,
-  }));
-}
-
 /* ─── The founding-light order ────────────────────────────────────────────
    The registry's one order, so no second header control is needed: the lit
    pieces first by their founding ordinal, then the rest of what is placed,
    then what is sold and still waiting to be claimed, then what is seeking
-   ground, then what rests with the artist. Ghost rows never mix in — they are
-   appended after everything, at the end of the kinds they stand in for. */
+   ground, then what rests with the artist. The public registry contains only
+   works present in the record. */
 function registryRank(r: LedgerRow): number {
   if (r.norm === 'placed') return typeof r.claimOrdinal === 'number' ? 0 : 1;
   // 'at-rest' WITH a globe seat is an unawakened piece: sold, not yet claimed.
@@ -104,23 +82,6 @@ const RegistryLine: React.FC<{
   open: boolean;
   onToggle: (key: string) => void;
 }> = React.memo(({ row, open, onToggle }) => {
-  if (row.placeholder) {
-    return (
-      <li className="border-b border-wood-200/50">
-        <div className={`py-2.5 ${COLUMNS}`}>
-          <span aria-hidden className="hidden md:block" />
-          <span className="font-reading text-[15px] leading-snug text-wood-400">
-            {row.title}
-          </span>
-          <span aria-hidden className="hidden md:block" />
-          <span className="block mt-0.5 md:mt-0 font-label text-[11px] uppercase tracking-[0.14em] text-wood-400/80">
-            {LEDGER_PLACEHOLDER_STATUS}
-          </span>
-        </div>
-      </li>
-    );
-  }
-
   const place = ledgerPlaceLabel(row);
   const stateLine = ledgerStateLabel(ledgerStateOf(row));
   const piecePath = `/piece/${row.pieceId}${
@@ -348,20 +309,6 @@ const TheRegistry: React.FC = () => {
   );
   const dreamsRiding = useMemo(() => rows.filter((r) => !!r.dream).length, [rows]);
 
-  /* The ghosts stand in only for a kind that holds nothing real, and only
-     while nothing is narrowed: under a filter, empty means empty. They are not
-     pieces, so no tally ever counts them. */
-  const ghosts = useMemo(() => {
-    if (filterActive) return [];
-    const out: LedgerRow[] = [];
-    for (const s of kindSections) {
-      if (!FIXED_PLACEHOLDER_KINDS.includes(s.kind)) continue;
-      if (s.rows.length > 0) continue;
-      out.push(...placeholdersFor(s.kind));
-    }
-    return out;
-  }, [kindSections, filterActive]);
-
   /* One dream open at a time: the table stays a table. */
   const [openKey, setOpenKey] = useState<string | null>(null);
   const toggle = useCallback(
@@ -369,7 +316,7 @@ const TheRegistry: React.FC = () => {
     [],
   );
 
-  const anything = rows.length > 0 || ghosts.length > 0;
+  const anything = rows.length > 0;
 
   return (
     /* The registry keeps the atlas's night register even when the site is in
@@ -470,14 +417,6 @@ const TheRegistry: React.FC = () => {
                       key={row.key}
                       row={row}
                       open={openKey === row.key}
-                      onToggle={toggle}
-                    />
-                  ))}
-                  {ghosts.map((row) => (
-                    <RegistryLine
-                      key={row.key}
-                      row={row}
-                      open={false}
                       onToggle={toggle}
                     />
                   ))}

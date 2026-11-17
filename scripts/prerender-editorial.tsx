@@ -1,0 +1,75 @@
+/** Build crawlable initial HTML from the same React pages and artist data used by the SPA. */
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { StaticRouter } from 'react-router-dom';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import AboutPage, { ABOUT_SCHEMA } from '../components/AboutPage';
+import { ArtistsHubPage, ArtistFeature, artistsSchema, artistSchema } from '../components/FeaturedArtistsPage';
+import { featuredArtists } from '../data/featuredArtists';
+import { lightCodes } from '../data/lightCodes';
+import { LightCodesPage, LightCodeArtwork, lightCodesSchema, lightCodeSchema } from '../components/LightCodesPages';
+import { resolveSeoConfig, resolveCanonicalUrl } from '../useSeoMeta';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const dist = resolve(root, 'dist');
+const template = await readFile(resolve(dist, 'index.html'), 'utf8');
+const headMatch = template.match(/<head>([\s\S]*?)<\/head>/);
+const rootStart = template.indexOf('<div id="root">');
+const rootEnd = template.indexOf('<div class="noise-overlay">', rootStart);
+if (!headMatch || rootStart < 0 || rootEnd < 0) throw new Error('[editorial-prerender] built shell shape changed');
+
+const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const safeJson = (value: object) => JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+
+function setMeta(head: string, kind: 'name' | 'property', name: string, value: string) {
+  const token = `<meta ${kind}="${name}"`;
+  const start = head.indexOf(token);
+  if (start < 0) throw new Error(`[editorial-prerender] missing ${token}`);
+  const end = head.indexOf('>', start);
+  if (end < 0) throw new Error(`[editorial-prerender] malformed ${token}`);
+  const tag = head.slice(start, end + 1);
+  if (!/content="[^"]*"/.test(tag)) throw new Error(`[editorial-prerender] missing content in ${token}`);
+  return head.slice(0, start) + tag.replace(/content="[^"]*"/, `content="${escapeHtml(value)}"`) + head.slice(end + 1);
+}
+
+const pages = [
+  { path: '/about', node: <AboutPage />, schema: ABOUT_SCHEMA, schemaId: 'about-structured-data' },
+  { path: '/artists', node: <ArtistsHubPage />, schema: artistsSchema(), schemaId: 'artists-structured-data' },
+  ...featuredArtists.map((artist) => ({ path: `/artists/${artist.slug}`, node: <ArtistFeature artist={artist} />, schema: artistSchema(artist), schemaId: 'artist-structured-data' })),
+  { path: '/light-codes', node: <LightCodesPage />, schema: lightCodesSchema(), schemaId: 'light-codes-structured-data' },
+  ...lightCodes.map((card) => ({ path: `/light-codes/${card.number}`, node: <LightCodeArtwork card={card} />, schema: lightCodeSchema(card), schemaId: 'light-code-structured-data' })),
+];
+
+for (const { path, node, schema, schemaId } of pages) {
+  const config = resolveSeoConfig(path);
+  const { title, description, image } = config;
+  const canonical = resolveCanonicalUrl(path);
+  let head = headMatch[1].replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`);
+  head = setMeta(head, 'name', 'description', description);
+  head = setMeta(head, 'property', 'og:type', path.startsWith('/artists/') ? 'profile' : 'website');
+  head = setMeta(head, 'property', 'og:title', title);
+  head = setMeta(head, 'property', 'og:description', description);
+  head = setMeta(head, 'property', 'og:image', image);
+  head = setMeta(head, 'property', 'og:image:width', String('imageWidth' in config ? config.imageWidth : 1200));
+  head = setMeta(head, 'property', 'og:image:height', String('imageHeight' in config ? config.imageHeight : 630));
+  head = setMeta(head, 'name', 'twitter:card', 'summary_large_image');
+  head = setMeta(head, 'name', 'twitter:title', title);
+  head = setMeta(head, 'name', 'twitter:description', description);
+  head = setMeta(head, 'name', 'twitter:image', image);
+  const tags = `<link rel="canonical" href="${escapeHtml(canonical)}" />\n    <meta property="og:url" content="${escapeHtml(canonical)}" />\n    <script id="${schemaId}" type="application/ld+json">${safeJson(schema)}</script>`;
+  head = `${head}\n    ${tags}\n  `;
+  const content = renderToStaticMarkup(<StaticRouter location={path}>{node}</StaticRouter>);
+  const html = template
+    .replace(headMatch[0], `<head>${head}</head>`)
+    .replace(template.slice(rootStart, rootEnd), `<div id="root" data-editorial-route="${escapeHtml(path)}"><main id="main-content">${content}</main></div>\n    `);
+  const out = resolve(dist, path.slice(1), 'index.html');
+  await mkdir(dirname(out), { recursive: true });
+  await writeFile(out, html);
+}
+
+const manifestFile = resolve(root, 'functions/_generated/editorial-routes.js');
+await mkdir(dirname(manifestFile), { recursive: true });
+await writeFile(manifestFile, `// Generated by scripts/prerender-editorial.tsx. Do not edit.\nexport const artistSlugs = ${JSON.stringify(featuredArtists.map((artist) => artist.slug))};\nexport const lightCodeCount = ${lightCodes.length};\n`);
+console.log(`[editorial-prerender] wrote ${pages.length} HTML pages and artist route manifest`);
