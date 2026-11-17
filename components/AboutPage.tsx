@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const ABOUT_SCHEMA = {
+export const ABOUT_SCHEMA = {
   '@context': 'https://schema.org',
   '@graph': [
     {
@@ -32,11 +32,11 @@ const ABOUT_SCHEMA = {
 
 const AboutPage: React.FC = () => {
   useEffect(() => {
-    const script = document.createElement('script');
+    const script = (document.getElementById('about-structured-data') as HTMLScriptElement | null) ?? document.createElement('script');
     script.id = 'about-structured-data';
     script.type = 'application/ld+json';
     script.textContent = JSON.stringify(ABOUT_SCHEMA);
-    document.head.appendChild(script);
+    if (!script.isConnected) document.head.appendChild(script);
     return () => script.remove();
   }, []);
 

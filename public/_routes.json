@@ -4,6 +4,10 @@
     "/api/*",
     "/qr/*",
     "/media/*",
+    "/about",
+    "/about/*",
+    "/artists",
+    "/artists/*",
     "/universal-language/*",
     "/piece/*"
   ],

@@ -27,7 +27,7 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
   },
 };
 
-function resolveSeoConfig(pathname: string) {
+export function resolveSeoConfig(pathname: string) {
   const artist = pathname.startsWith('/artists/') ? artistBySlug(pathname.split('/')[2]) : undefined;
   if (artist) return { title: `${artist.name} · Featured Mandala Artist · Mandala Codes`, description: artist.summary, image: `${SITE_ORIGIN}/media/image/${artist.hero.image}?w=1200&h=630` };
   if (pathname === '/artists') return { ...ROUTE_META[pathname], image: `${SITE_ORIGIN}/media/image/adrian-website/creations/mandala/midnight-sunrise-black-gold?w=1200&h=630` };
@@ -35,7 +35,7 @@ function resolveSeoConfig(pathname: string) {
   return { ...ROUTE_META['/'], image: DEFAULT_SEO_IMAGE };
 }
 
-function resolveCanonicalUrl(pathname: string) {
+export function resolveCanonicalUrl(pathname: string) {
   return `${SITE_ORIGIN}${pathname === '/' ? '' : pathname}`;
 }
 
@@ -68,8 +68,9 @@ function setOgUrl(url: string) {
 
 export function useSeoMeta(pathname: string) {
   useEffect(() => {
-    const config = resolveSeoConfig(pathname);
-    const canonicalUrl = resolveCanonicalUrl(pathname);
+    const path = /^\/(?:about|artists(?:\/.*)?)\/$/.test(pathname) ? pathname.slice(0, -1) : pathname;
+    const config = resolveSeoConfig(path);
+    const canonicalUrl = resolveCanonicalUrl(path);
     const image = config.image || DEFAULT_SEO_IMAGE;
 
     document.title = config.title;
