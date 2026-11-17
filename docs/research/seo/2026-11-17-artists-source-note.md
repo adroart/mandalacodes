@@ -1,0 +1,7 @@
+# First artist feature: source and selection
+
+The Adrian feature was adapted from [Adrian-Website](https://github.com/adroart/Adrian-Website) `origin/main` at commit `ab24d140b784dd2aeb1eb867d56c3b0923aeebdf`, specifically `components/About.tsx` and `data/mockData.ts` (`FULL_ARCHIVE`), checked 2026-11-17. The working checkout had no differences from that revision in those files. The biography and process sections paraphrase Adrian's published first-person account; artwork titles, dates, materials, IDs, and images follow the archive. The page links to his published About page and each artwork's `/creations/:id` route.
+
+The six mandala records are an editorial sample for this first feature, not an artist-approved ranking: `MAN-024`, `MAN-007`, `MAN-012`, `MAN-013`, `MAN-021`, `MAN-029`. They show distinct palettes and geometric forms without repeating the archive's generic descriptions as if they were work-specific research. Every selected image returned `200 image/jpeg` from the Mandala Codes media route on 2026-11-17. The optional portrait was omitted because its image ID is absent from that route.
+
+The artist pages use the existing React SPA routing and client-side structured data/metadata pattern. Unlike the separately prerendered Oracle card routes, they do not yet serve feature body text in initial HTML. Static HTML publication requires a dedicated route build/serving path and remains outside this bounded feature change.

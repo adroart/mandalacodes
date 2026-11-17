@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { artistBySlug } from './data/featuredArtists';
 
 const SITE_ORIGIN = 'https://mandalacodes.com';
 const DEFAULT_SEO_IMAGE = `${SITE_ORIGIN}/media/image/48_ttflpq?w=1200&h=630`;
@@ -20,9 +21,16 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
     title: 'About Mandala Codes · Mandala Art and the Universal Language Oracle',
     description: 'Meet Mandala Codes, an editorial home for mandala art and the Universal Language Oracle, edited by artist Adrian Rasmussen.',
   },
+  '/artists': {
+    title: 'Featured Mandala Artists · Mandala Codes',
+    description: 'Explore editorial features on contemporary mandala artists, their practice, and selected work.',
+  },
 };
 
 function resolveSeoConfig(pathname: string) {
+  const artist = pathname.startsWith('/artists/') ? artistBySlug(pathname.split('/')[2]) : undefined;
+  if (artist) return { title: `${artist.name} · Featured Mandala Artist · Mandala Codes`, description: artist.summary, image: `${SITE_ORIGIN}/media/image/${artist.hero.image}?w=1200&h=630` };
+  if (pathname === '/artists') return { ...ROUTE_META[pathname], image: `${SITE_ORIGIN}/media/image/adrian-website/creations/mandala/midnight-sunrise-black-gold?w=1200&h=630` };
   if (ROUTE_META[pathname]) return { ...ROUTE_META[pathname], image: DEFAULT_SEO_IMAGE };
   return { ...ROUTE_META['/'], image: DEFAULT_SEO_IMAGE };
 }

@@ -7,6 +7,8 @@ const OracleGateway = lazy(() => import('./components/OracleGateway'));
 const FamilyReveal = lazy(() => import('./components/FamilyReveal'));
 const OracleSystems = lazy(() => import('./components/OracleSystems'));
 const AboutPage = lazy(() => import('./components/AboutPage'));
+const ArtistsHubPage = lazy(() => import('./components/FeaturedArtistsPage').then((module) => ({ default: module.ArtistsHubPage })));
+const ArtistFeaturePage = lazy(() => import('./components/FeaturedArtistsPage'));
 const AtlasPage = lazy(() => import('./components/AtlasPage'));
 const AdminLogin = lazy(() => import('./components/AdminLogin'));
 const AdminAtlas = lazy(() => import('./components/AdminAtlas'));
@@ -112,6 +114,8 @@ const AppInner: React.FC = () => {
                 {/* The Systems — educational page about I Ching / Gene Keys / Human Design */}
                 <Route path="/the-systems" element={<OracleSystems />} />
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/artists" element={<ArtistsHubPage />} />
+                <Route path="/artists/:slug" element={<ArtistFeaturePage />} />
 
                 {/* Universal Language deck */}
                 <Route path="/universal-language" element={<UniversalLanguageIndex />} />
