@@ -7,7 +7,7 @@ const SECTIONS = [
     label: 'I Ching',
     subtitle: 'The Book of Changes',
     intro:
-      'The oldest of the three, refined over more than three thousand years. Sixty-four hexagrams, each a configuration of heaven and earth, naming a pattern in the present moment.',
+      'The earliest of the three, with a written core from the first millennium BCE. Sixty-four hexagrams, each naming a pattern in the present moment.',
   },
   {
     id: 'genekeys',
@@ -52,7 +52,7 @@ const OracleSystems: React.FC = () => {
           A lineage of changes
         </h1>
         <p className="font-reading text-[18px] sm:text-[20px] text-wood-700 leading-[1.55] sm:leading-[1.5] max-w-prose">
-          The Universal Language reads through three lenses, three vocabularies for the same shape of energy. The I Ching arrives from ancient China. The Gene Keys and Human Design arrive in the last century, descendants and elaborations. None of this is mine. The cards are an offering of gratitude.
+          The Universal Language reads through three lenses, three vocabularies for the same shape of energy. The I Ching arrives from ancient China. Human Design emerged in 1987; the Gene Keys began in 2002, drawing on both earlier systems. None of this is mine. The cards are an offering of gratitude.
         </p>
 
         <p className="font-reading text-[14px] tracking-[0.015em] text-wood-500 leading-[1.6] mt-8 max-w-prose">
@@ -86,13 +86,13 @@ const OracleSystems: React.FC = () => {
 
           <div className="space-y-5 mt-8 font-reading text-[16px] sm:text-[17px] text-wood-800 leading-[1.7]">
             <p>
-              The I Ching is the oldest text in active spiritual use anywhere in the world. Its earliest layers are attributed to the legendary Fu Xi, who is said to have observed the markings on a tortoise shell rising from the Yellow River and seen, in those eight three-line figures, the structure of the cosmos. Whether or not that origin is literal, the symbols themselves came to encode a way of reading change as it moves through any moment.
+              The I Ching is an early Chinese divination classic, with a written core dating to the first millennium BCE. Tradition traces its eight trigrams to the legendary Fu Xi. The symbols came to encode a way of reading change as it moves through any moment.
             </p>
             <p>
-              King Wen of Zhou ordered the sixty-four hexagrams and assigned each its name. His son, the Duke of Zhou, wrote the line statements. Confucius and his school added the Ten Wings, commentaries that turned the oracle into a philosophical text. Across two thousand years more, scholars and mystics returned to those sixty-four images, finding in them whatever the moment required.
+              In traditional accounts, King Wen of Zhou ordered the sixty-four hexagrams and assigned each its name. His son, the Duke of Zhou, is credited with the line statements. Later tradition attributes the Ten Wings to Confucius and his school. These commentaries helped turn the oracle into a philosophical text. Across two thousand years more, scholars and mystics returned to those sixty-four images, finding in them whatever the moment required.
             </p>
             <p>
-              The system reaches the West late. James Legge translates it in 1882. But the translation that opens the I Ching to the modern imagination is Richard Wilhelm's, completed in German in 1924 after twenty years in China studying with the scholar Lao Nai-hsuan. Cary F. Baynes carries it into English in 1950, with a foreword by Carl Jung that frames the book as a study of synchronicity. Almost every Western reader who has touched the I Ching since has touched it through their hands.
+              James Legge published an English translation in 1882. Richard Wilhelm's influential German edition appeared in 1924, developed with the Chinese scholar Lao Naixuan. Cary F. Baynes translated Wilhelm's work into English in 1950, with a foreword by Carl Jung. That edition shaped many Western readers' encounters with the I Ching.
             </p>
 
           </div>
@@ -105,7 +105,7 @@ const OracleSystems: React.FC = () => {
               Richard Wilhelm and Cary F. Baynes
             </p>
             <p className="font-reading text-[15px] text-wood-600 leading-[1.6] mt-1.5 max-w-prose">
-              Whose translation, with Jung's foreword, is the lineage every English reader of the I Ching is standing inside of.
+              Whose edition, with Jung's foreword, has shaped many English-language readers' encounters with the I Ching.
             </p>
           </div>
         </section>
@@ -124,13 +124,13 @@ const OracleSystems: React.FC = () => {
 
           <div className="space-y-5 mt-8 font-reading text-[16px] sm:text-[17px] text-wood-800 leading-[1.7]">
             <p>
-              The Gene Keys are the youngest of the three systems. Richard Rudd received the transmission over a long, contemplative period beginning in the early 2000s, after years of training in Human Design and a lifetime of reading the I Ching. The work is published as a book in 2013.
+              The Gene Keys are the youngest of the three systems. Richard Rudd began conceiving and writing the work in 2002, drawing on his experience with Human Design and the I Ching. The book first appeared in 2009; a later Watkins edition followed in 2013.
             </p>
             <p>
               Where the I Ching reads the moment and Human Design reads the body, the Gene Keys read a person across a lifetime. Each of the sixty-four keys names three frequencies of the same archetype: the Shadow, a habitual pattern under stress; the Gift, what opens when the Shadow is met with awareness; and the Siddhi, the highest expression, often glimpsed before it is lived. The system is offered not as something to know but as something to contemplate, slowly, until it begins to read you back.
             </p>
             <p>
-              The sixty-four Gene Keys correspond directly to the sixty-four hexagrams of the I Ching and to the sixty-four codons of human DNA. This correspondence is not Rudd's invention. It is named in Martin Schönberger's 1973 work, in the writings of Terence McKenna, and most fully developed inside Human Design. Rudd's contribution is the Shadow-Gift-Siddhi spectrum, and the practice of holding all three frequencies as one continuous teaching.
+              The Gene Keys pair sixty-four archetypes with the sixty-four hexagrams of the I Ching and use the genetic code as a contemplative analogy. Rudd's teaching names a Shadow, Gift, and Siddhi for each key, holding the three as one continuous spectrum.
             </p>
 
           </div>
@@ -172,10 +172,10 @@ const OracleSystems: React.FC = () => {
 
           <div className="space-y-5 mt-8 font-reading text-[16px] sm:text-[17px] text-wood-800 leading-[1.7]">
             <p>
-              Human Design enters the world through Alan Robert Krakower, who later took the name Ra Uru Hu. In January of 1987, on the island of Ibiza, he reports an eight-day-and-night encounter with a voice he calls the Voice. What he transcribes during that period becomes the system: a synthesis of the I Ching, Western astrology, the Hindu chakra system, the Kabbalistic Tree of Life, and the science of the neutrino, woven into a single chart called the bodygraph.
+              Human Design enters the world through Robert Allan Krakower, who later took the name Ra Uru Hu. In January of 1987, on the island of Ibiza, he reported an eight-day-and-night encounter with a voice he called the Voice. He described the system that followed as a synthesis of the I Ching, Western astrology, the Hindu chakra system, the Kabbalistic Tree of Life, and ideas about neutrinos, woven into a chart called the bodygraph.
             </p>
             <p>
-              The bodygraph names which centres in a person are defined and which are open. It locates sixty-four gates against the calendar of the sun and the moment of birth. It tells the reader their Type, their Strategy, their Authority: practical instruction for how to make decisions in alignment with their design rather than against it.
+              In Human Design, the bodygraph names which centres in a person are defined and which are open. It locates sixty-four gates against the calendar of the sun and the moment of birth. The system gives the reader a Type, Strategy, and Authority as guidance for making decisions in alignment with their design.
             </p>
             <p>
               Ra spent the rest of his life teaching the system, often in long, recorded lectures. He died in 2011. His teachings have since been carried forward by his students through the International Human Design School and the many independent teachers and analysts working today.
@@ -199,7 +199,7 @@ const OracleSystems: React.FC = () => {
         {/* ── Closing ───────────────────────────────────────────────────── */}
         <section className="pt-20 sm:pt-24 mt-20 border-t border-wood-200">
           <p className="font-reading text-[17px] sm:text-[18px] text-wood-700 leading-[1.7] max-w-prose">
-            The Universal Language Oracle does not improve on these systems. It carries them, sixty-four cards holding the same sixty-four images that have travelled three thousand years through three traditions. Whatever clarity the cards offer belongs to the lineages that arrived first.
+            The Universal Language Oracle does not improve on these systems. It carries them, sixty-four cards holding patterns that have moved from the I Ching into newer traditions. Whatever clarity the cards offer belongs to the lineages that arrived first.
           </p>
 
           <Link
