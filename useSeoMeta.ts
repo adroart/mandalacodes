@@ -16,6 +16,10 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
     title: 'The Systems · I Ching, Gene Keys, Human Design · Mandala Codes',
     description: 'The three traditions woven into the Universal Language deck.',
   },
+  '/about': {
+    title: 'About Mandala Codes · Mandala Art and the Universal Language Oracle',
+    description: 'Meet Mandala Codes, an editorial home for mandala art and the Universal Language Oracle, edited by artist Adrian Rasmussen.',
+  },
 };
 
 function resolveSeoConfig(pathname: string) {
