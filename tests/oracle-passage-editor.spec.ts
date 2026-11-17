@@ -72,6 +72,7 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(dialog.getByRole('button',{name:'Record replacement',exact:true})).toBeEnabled();
  await page.screenshot({path:info.outputPath('reading-paragraph-replace-phone.png')});
  await dialog.getByRole('button',{name:'Record replacement',exact:true}).click();
+ await expect(dialog.locator('.vs-dock')).toContainText('0:01');
  await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
  await expect(dialog.locator('.vs-review-waiting')).toContainText('Card 2 · Universal Language · Reading · Paragraph 2 of 3');
  await expect(dialog.locator('[data-action=apply]')).toHaveCount(0);
