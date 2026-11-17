@@ -23,11 +23,11 @@ export function artistsSchema() {
 
 function StructuredData({ id, data }: { id: string; data: object }) {
   useEffect(() => {
-    const script = document.createElement('script');
+    const script = (document.getElementById(id) as HTMLScriptElement | null) ?? document.createElement('script');
     script.id = id;
     script.type = 'application/ld+json';
     script.textContent = JSON.stringify(data);
-    document.head.appendChild(script);
+    if (!script.isConnected) document.head.appendChild(script);
     return () => script.remove();
   }, [id, data]);
   return null;
@@ -71,7 +71,9 @@ export function ArtistFeature({ artist }: { artist: FeaturedArtist }) {
   useEffect(() => {
     const type = document.querySelector<HTMLMetaElement>('meta[property="og:type"]');
     if (!type) return;
-    const previous = type.content;
+    // A direct request arrives with the prerendered page's profile tag.
+    // Once this route leaves, the shared SPA shell's baseline is website.
+    const previous = type.content === 'profile' ? 'website' : type.content;
     type.content = 'profile';
     return () => {
       if (type.content === 'profile') type.content = previous;

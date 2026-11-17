@@ -66,6 +66,13 @@ const previewPrerenderedCards = (): Plugin => ({
         return next();
       }
       const match = url.match(/^\/universal-language\/(\d+)$/);
+      if (/^\/(?:about|artists(?:\/[a-z0-9-]+)?)\/?$/.test(url)) {
+        const relative = `${url.replace(/\/$/, '')}/index.html`;
+        if (fs.existsSync(path.join(__dirname, 'dist', relative))) {
+          req.url = `${relative}${req.url?.slice(url.length) ?? ''}`;
+        }
+        return next();
+      }
       if (!match) return next();
       const number = Number(match[1]);
       if (!Number.isInteger(number) || number < 1 || number > 64) return next();
