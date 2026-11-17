@@ -1,4 +1,4 @@
-import records from './lightCodes.json';
+import records from './lightCodes.json' with { type: 'json' };
 
 export type LightCodeCategory = 'frequency-foundation' | 'embodied-vibration' | 'resonant-formations';
 export interface LightCode {
