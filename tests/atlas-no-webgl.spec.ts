@@ -152,19 +152,23 @@ test('title, filters and side panel chrome all render around the constellation',
   await expect(page.getByRole('button', { name: 'Seeking ground' })).toBeVisible();
 });
 
-test('withdrawing public locations removes the fallback globe markers', async ({ page }) => {
-  let locationsWithdrawn = false;
+test('only opt-in shows city markers on the fallback globe', async ({ page }) => {
+  let shareCities = false;
   await page.route('**/api/atlas', (route) => route.fulfill({
     status: 200,
     contentType: 'application/json',
-    body: JSON.stringify(locationWithdrawalState(locationsWithdrawn)),
+    body: JSON.stringify(locationWithdrawalState(!shareCities)),
   }));
   await page.goto(`${BASE}/atlas`, { waitUntil: 'networkidle' });
 
   const globe = page.locator('svg[aria-label*="constellation"]');
+  await expect(globe.locator('circle')).toHaveCount(1);
+
+  shareCities = true;
+  await page.reload({ waitUntil: 'networkidle' });
   await expect(globe.locator('circle')).toHaveCount(3);
 
-  locationsWithdrawn = true;
+  shareCities = false;
   await page.reload({ waitUntil: 'networkidle' });
 
   // The boundary circle remains; both actual public-location markers are gone.
