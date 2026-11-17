@@ -11,10 +11,11 @@ export type StudioBarProps=Pick<VoiceStudio,
 export default function StudioBar({view,locked,close,openView,pickerReturn,setPlacing,source,result,position,reviewList,queued,savedCaptures,results,active,integrating,step,progressText,authorship,authorshipFailed,screenTitle,pendingPassage,takes,section,pathFor,scopeFor,nodes}:StudioBarProps){
  const back=(to:View)=><button className="vs-icon" aria-label="Back" onClick={()=>openView(to)}>Back</button>;
  const pendingNode=pendingPassage&&nodes.find(node=>node.id===pendingPassage.sectionId);
- const passageDestination=pendingPassage&&pendingNode?`Card ${pendingNode.cardNumber} · ${pathFor(pendingNode)} · ${scopeFor(pendingNode,pendingPassage.focus)}`:result?.passageEdit&&section?`Card ${section.cardNumber} · ${pathFor(section)} · ${scopeFor(section,result.passageEdit.focus)}`:null;
+ const resultScope=result?.rangeSelection?'Selected words':result?.passageEdit&&section?scopeFor(section,result.passageEdit.focus):null;
+ const passageDestination=pendingPassage&&pendingNode?`Card ${pendingNode.cardNumber} · ${pathFor(pendingNode)} · ${scopeFor(pendingNode,pendingPassage.focus)}`:resultScope&&section?`Card ${section.cardNumber} · ${pathFor(section)} · ${resultScope}`:null;
  const compactPath=(path:string)=>path.replace(/^Universal Language · /,'UL ').replace(/^Gene Keys · /,'GK ').replace(/^Human Design · /,'HD ').replace(/^I Ching · /,'I Ching ');
  const compactScope=(scope:string)=>scope.replace(/^Paragraph (\d+) of (\d+)$/,'para $1/$2');
- const passageShort=pendingPassage&&pendingNode?`Card ${pendingNode.cardNumber} · ${compactPath(pathFor(pendingNode))} · ${compactScope(scopeFor(pendingNode,pendingPassage.focus))}`:result?.passageEdit&&section?`Card ${section.cardNumber} · ${compactPath(pathFor(section))} · ${compactScope(scopeFor(section,result.passageEdit.focus))}`:null;
+ const passageShort=pendingPassage&&pendingNode?`Card ${pendingNode.cardNumber} · ${compactPath(pathFor(pendingNode))} · ${compactScope(scopeFor(pendingNode,pendingPassage.focus))}`:resultScope&&section?`Card ${section.cardNumber} · ${compactPath(pathFor(section))} · ${compactScope(resultScope)}`:null;
  const passageOperation=pendingPassage?.operation??result?.passageEdit?.operation;
  let passageTitle:string|null=null;
  if(passageOperation){

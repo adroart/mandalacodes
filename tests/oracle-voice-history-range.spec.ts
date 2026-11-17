@@ -41,6 +41,10 @@ test('selected original and recorded words stay locked across focus, stage a pre
  if(info.project.name==='Phone')for(const width of [320,430]){await page.setViewportSize({width,height:812});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:info.outputPath(`range-${width}.png`)});}
  await dialog.getByRole('button',{name:'Prepare replacement'}).click();
  await expect(dialog.locator('.vs-review-status')).toContainText('Not applied yet');
+ const reviewTitle=dialog.locator('.vs-bar-title--passage');
+ await expect(reviewTitle).toContainText('Card 2 · UL Reading · Selected words');
+ await expect(reviewTitle).toHaveAttribute('aria-label',/Card 2 · Universal Language · Reading · Selected words/);
+ await expect(reviewTitle).not.toContainText('Whole section');
  expect(await page.locator('.card-reading').innerText()).toBe(reading);
  const staged=(await sessions(page)).find(s=>s.id===old.id);
  expect(staged.results.find((r:{sectionId:string})=>r.sectionId==='2/CODE/reading').text).toBe('my own words');
