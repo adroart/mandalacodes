@@ -76,6 +76,7 @@ const AboutPage: React.FC = () => {
               <p>We treat the mandala as both a living art form and a subject worth studying. The library explores its forms and meanings; the Oracle offers a way to contemplate the 64 codes through artwork and text.</p>
               <p>The I Ching, Gene Keys, and Human Design each have their own language and lineage. Our writing aims to name sources, keep those traditions distinct, and make room for interpretation without presenting it as historical fact.</p>
             </div>
+            <Link to="/artists" className="mt-5 inline-flex min-h-11 items-center font-label text-[15px] font-semibold text-bronze-700 underline underline-offset-4 hover:text-bronze-600">Meet the featured artists →</Link>
           </section>
 
           <section aria-labelledby="editor-title" className="border-t border-wood-200 pt-8 md:border-l md:border-t-0 md:pl-8 md:pt-0">
