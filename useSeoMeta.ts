@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { artistBySlug } from './data/featuredArtists';
+import { lightCodeByNumber, lightCodeImagePath, lightCodeTitle } from './data/lightCodes';
 
 const SITE_ORIGIN = 'https://mandalacodes.com';
 const DEFAULT_SEO_IMAGE = `${SITE_ORIGIN}/media/image/48_ttflpq?w=1200&h=630`;
@@ -25,9 +26,17 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
     title: 'Featured Mandala Artists · Mandala Codes',
     description: 'Explore editorial features on contemporary mandala artists, their practice, and selected work.',
   },
+  '/light-codes': {
+    title: 'Light Codes Artwork · Mandala Codes',
+    description: 'Browse the artwork of 68 numbered Light Codes.',
+  },
 };
 
 export function resolveSeoConfig(pathname: string) {
+  const lightCodeMatch = /^\/light-codes\/([1-9]\d*)$/.exec(pathname);
+  const lightCode = lightCodeMatch ? lightCodeByNumber(lightCodeMatch[1]) : undefined;
+  if (lightCode) return { title: `${lightCodeTitle(lightCode.number)} · Light Codes Artwork · Mandala Codes`, description: `View the artwork for ${lightCodeTitle(lightCode.number)} in the 68-work Light Codes archive.`, image: `${SITE_ORIGIN}${lightCodeImagePath(lightCode.number)}`, imageWidth: lightCode.number === 51 ? 1059 : 1200, imageHeight: 1200 };
+  if (pathname === '/light-codes') return { ...ROUTE_META[pathname], image: `${SITE_ORIGIN}${lightCodeImagePath(1)}`, imageWidth: 1200, imageHeight: 1200 };
   const artist = pathname.startsWith('/artists/') ? artistBySlug(pathname.split('/')[2]) : undefined;
   if (artist) return { title: `${artist.name} · Featured Mandala Artist · Mandala Codes`, description: artist.summary, image: `${SITE_ORIGIN}/media/image/${artist.hero.image}?w=1200&h=630` };
   if (pathname === '/artists') return { ...ROUTE_META[pathname], image: `${SITE_ORIGIN}/media/image/adrian-website/creations/mandala/midnight-sunrise-black-gold?w=1200&h=630` };
@@ -68,7 +77,7 @@ function setOgUrl(url: string) {
 
 export function useSeoMeta(pathname: string) {
   useEffect(() => {
-    const path = /^\/(?:about|artists(?:\/.*)?)\/$/.test(pathname) ? pathname.slice(0, -1) : pathname;
+    const path = /^\/(?:about|artists(?:\/.*)?|light-codes(?:\/.*)?)\/$/.test(pathname) ? pathname.slice(0, -1) : pathname;
     const config = resolveSeoConfig(path);
     const canonicalUrl = resolveCanonicalUrl(path);
     const image = config.image || DEFAULT_SEO_IMAGE;

@@ -12,7 +12,7 @@ export async function serveEditorialPage(context, path) {
   return new Response(html, { headers: { 'content-type': 'text/html;charset=UTF-8' } });
 }
 
-export async function serveArtistNotFound(context) {
+export async function serveEditorialNotFound(context) {
   const url = new URL(context.request.url);
   url.pathname = '/index.html';
   url.search = '';
