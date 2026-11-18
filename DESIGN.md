@@ -1,82 +1,151 @@
 ---
 name: Mandala Codes
 description: A quiet editorial oracle for studying the 64 codes.
+source: src/theme.css (MASTER SCALES, MASTER SPACING + CONTROL HEIGHTS, MASTER CONTROLS)
 colors:
-  paper: "#f5f4f0"
-  deep-wood: "#262321"
-  muted-wood: "#736046"
-  bronze: "#8a744e"
-  bronze-light: "#c4aa7c"
+  ground-dark: "#171310"
+  ground-light: "#f3efe7"
+  ink-dark: "#f3ecde"
+  ink-light: "#272219"
+  action-dark: "#debc7e"
+  action-light: "#a37b38"
+  action-ink: "#211c16"
+  atlas-gold: "#c4aa7c"
 typography:
   display:
     fontFamily: "Cormorant Garamond, serif"
-    fontSize: "36px"
-    fontWeight: 400
+    fontSize: "40px"
     lineHeight: 1.1
+  heading:
+    fontFamily: "Cormorant Garamond, serif"
+    fontSize: "28px"
+    lineHeight: 1.15
+  subhead:
+    fontFamily: "Cormorant Garamond, serif"
+    fontSize: "22px"
+    lineHeight: 1.2
   body:
     fontFamily: "Iowan Old Style, serif"
     fontSize: "17px"
-    fontWeight: 400
     lineHeight: 1.5
+  meta:
+    fontFamily: "Iowan Old Style, serif"
+    fontSize: "14px"
+    lineHeight: 1.4
   label:
     fontFamily: "Iowan Old Style, serif"
-    fontSize: "10px"
-    fontWeight: 400
+    fontSize: "12px"
     lineHeight: 1.2
-    letterSpacing: "0.18em"
+    letterSpacing: "0.16em"
 rounded:
-  subtle: "5px"
-  control: "999px"
+  none: "0px"
+  control: "3px"
+  dialog: "6px"
 spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "16px"
-  lg: "24px"
+  space-1: "4px"
+  space-2: "8px"
+  space-3: "12px"
+  space-4: "16px"
+  space-5: "24px"
+  space-6: "32px"
+  space-7: "48px"
+controls:
+  height-sm: "28px"
+  height: "32px"
+  height-touch: "44px"
 components:
-  filter-control:
-    backgroundColor: "{colors.deep-wood}"
-    textColor: "{colors.paper}"
+  btn-primary:
+    backgroundColor: "{colors.action}"
+    textColor: "{colors.action-ink}"
     typography: "{typography.label}"
     rounded: "{rounded.control}"
-    padding: "5px 7px"
+    height: "{controls.height}"
+    padding: "0 12px"
+  btn-secondary:
+    borderColor: "{colors.action} at 55%"
+    textColor: "{colors.action}"
+    typography: "{typography.label}"
+    rounded: "{rounded.control}"
+    height: "{controls.height}"
+    padding: "0 12px"
+  btn-quiet:
+    textColor: "wood-600, action on hover"
+    typography: "{typography.label}"
+    height: "{controls.height}"
+    padding: "0 4px"
+  btn-icon:
+    size: "{controls.height} square"
+  btn-tab:
+    typography: "{typography.label}"
+    height: "{controls.height-sm}"
+    indicator: "1px action underline when current"
+  btn-chip:
+    typography: "{typography.meta}"
+    rounded: "{rounded.control}"
+    height: "{controls.height-sm}"
+    padding: "0 8px"
+  field:
+    typography: "{typography.meta}"
+    rounded: "{rounded.control}"
+    height: "{controls.height}"
+    padding: "0 12px"
 ---
 
 # Design System: Mandala Codes
 
+The values above are a mirror. The source is `src/theme.css`: change a value there and every page, the admin and the sign-in follow. This file is updated by hand to match it.
+
 ## Overview
 
-**Creative North Star: “The Quiet Oracle Table”**
+**Creative North Star: "The Quiet Oracle Table"**
 
-The interface feels like a carefully arranged study surface: dark, warm, spacious, and precise. The central oracle object carries the visual weight while supporting information sits at the margins in restrained editorial rails. It rejects generic dashboard chrome, floating card stacks, and decorative spiritual effects.
+A carefully arranged study surface: dark, warm and precise. The oracle object carries the visual weight; supporting information sits at the margins in restrained editorial rails. It rejects generic dashboard chrome, floating card stacks and decorative spiritual effects.
+
+**Density:** slim and well spaced, never spacious. Show more on screen. Buttons 32px on a desktop, sections 32 to 48px apart, cards padded 16 to 24px. Touch screens raise every control to 44px; desktop stays slim.
 
 ## Colors
 
-The palette uses warm paper, wood, and bronze neutrals. Bronze is reserved for links, selection, and quiet orientation; sequence colors carry data meaning only.
+Warm paper, wood and bronze neutrals, with a nightfall (dark, the default) and a day book (light) palette. One action gold fills every primary control and lines every secondary one. The atlas stage keeps its own gold (`atlas-gold`) by the two-bronze ruling. Sequence colours carry data meaning only.
 
 ## Typography
 
-Cormorant Garamond carries large display titles. Iowan Old Style carries teaching text, controls, metadata, and the chart’s editorial voice. Cinzel is limited to rare brand and navigational labels.
+Six sizes: 12 label, 14 meta, 17 body, 22 subhead, 28 heading, 40 display. 12px is the floor for anything new; some older files still set 10 and 11px and move up as they are migrated. Cormorant Garamond for display, heading and subhead. Iowan Old Style for reading, controls and metadata. Cinzel only for the brand mark. Uppercase labels always track at 0.16em.
+
+## Spacing and size
+
+One scale: 4, 8, 12, 16, 24, 32, 48. Page gutter 48px on a desktop, 16px on a phone. Controls are 28px (small) or 32px (default) tall on a desktop and 44px on touch screens; buttons, fields, tabs and chips share these heights so they line up in a row.
 
 ## Elevation
 
-The system is flat by default. Structure comes from whitespace, fine rules, tonal contrast, and hierarchy. Shadows are limited to interactive overlays or focused chart spheres.
+Flat by default. Structure comes from whitespace, fine rules, tonal contrast and hierarchy. One shadow (`--shadow-overlay`) for dialogs and sheets.
 
 ## Components
 
-Controls are compact, restrained, and consistent. Filter pills use small uppercase sans labels. Path rows are borderless editorial lines with a subtle tinted hover or selected state. Supporting rails remain visually open rather than becoming cards.
+Seven control variants, all in `src/theme.css`:
+
+- **btn-primary**: the one main action on a surface. Gold fill.
+- **btn-secondary**: equal-weight second actions. Gold hairline.
+- **btn-quiet**: inline actions, back links, retries, log out. No frame.
+- **btn-icon**: square, no label (theme toggle, close, menu).
+- **btn-tab**: text with an underline when current.
+- **btn-chip**: small framed filter, gold when pressed.
+- **field**: inputs, selects, textareas; `field-label` above them.
+
+Add `btn-sm` for the 28px size and `btn-block` for full width.
 
 ## Do's and Don'ts
 
 ### Do:
 
+- **Do** use a master control class or a theme token. A new hard-coded colour or control size fails the style guard test.
 - **Do** keep the profile graph on the true horizontal center axis.
 - **Do** use equal-width supporting rails when information flanks the chart.
-- **Do** preserve warm wood and bronze tokens and the existing type pairing.
 - **Do** provide visible keyboard focus and mobile reflow.
 
 ### Don't:
 
+- **Don't** add a new button look. Pick one of the seven.
+- **Don't** use pill shapes, or radii other than 0, 3 and 6px.
 - **Don't** turn supporting information into floating dashboard cards.
 - **Don't** use hover as the only way to reveal meaning.
-- **Don't** let filters or utilities visually outrank the chart.
-- **Don't** introduce gradients, glassmorphism, or decorative motion.
+- **Don't** introduce gradients, glassmorphism or decorative motion.

@@ -113,11 +113,11 @@ const CollectionsManagerInner: React.FC = () => {
             }
           }}
           placeholder="New collection name"
-          className="flex-1 font-reading text-base px-3 py-2 border border-wood-200 rounded bg-paper-50"
+          className="field flex-1"
         />
         <button
           type="button"
-          className="font-label text-[11px] uppercase tracking-[0.22em] px-4 py-2 bg-bronze-600 text-paper-50 rounded disabled:opacity-50"
+          className="btn btn-primary"
           onClick={async () => {
             if (newName.trim()) {
               try { await createCollection(newName.trim()); setNewName(''); setMutationError(null); }
@@ -129,7 +129,7 @@ const CollectionsManagerInner: React.FC = () => {
           Create
         </button>
       </div>
-      {(error || mutationError) && <p className="font-reading text-rose-800" role="alert">{mutationError || error} <button type="button" className="underline" onClick={() => void reload()}>Retry</button></p>}
+      {(error || mutationError) && <p className="font-reading text-danger-text" role="alert">{mutationError || error} <button type="button" className="btn btn-quiet btn-sm" onClick={() => void reload()}>Retry</button></p>}
 
       {collections.length === 0 ? (
         <p className="font-reading text-wood-700">
@@ -176,7 +176,7 @@ const CollectionsManagerInner: React.FC = () => {
                 )}
                 <button
                   type="button"
-                  className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 hover:text-wood-900"
+                  className="btn btn-quiet btn-sm"
                   onClick={async () => {
                     if (window.confirm(`Delete the collection "${c.name}"?`)) {
                       try { await deleteCollection(c.id); setMutationError(null); }

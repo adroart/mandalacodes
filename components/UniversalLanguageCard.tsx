@@ -363,7 +363,7 @@ const chartRowStyles = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-2);
   }
   .ul-essence {
     font-family: var(--font-reading);
@@ -376,11 +376,15 @@ const chartRowStyles = `
     max-width: 560px;
     margin: 0;
   }
-  .ul-intro { max-width: 560px; min-width: 0; text-align: center; margin-bottom: 8px; }
+  .ul-intro { max-width: 560px; min-width: 0; text-align: center; margin: 0 auto var(--space-2); }
   .ul-intro h2 {
-    margin: 0 0 10px;
-    font: 600 12px/1.4 var(--font-controls);
-    letter-spacing: 0.16em;
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-ui);
+    font-size: var(--text-label);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
     color: var(--l-2);
   }
   @media (max-width: 819px) {
@@ -391,24 +395,34 @@ const chartRowStyles = `
      column, rather than spanning it. Smaller than the panel it replaces on
      purpose: one quiet offer, not a banner. */
   .ul-chart-row .ypc-wrap { width: auto; max-width: 100%; }
+  /* The question, then Save this code as the quieter second line beneath it.
+     Heights, padding and radius come from the master controls. */
   .ul-chart-row .ypc {
     width: auto;
+    min-height: var(--control-h);
     justify-content: center;
     text-align: center;
-    gap: 10px;
-    padding: 10px 18px;
+    gap: var(--space-2);
+    padding: 0 var(--control-pad-x);
+    border-radius: var(--radius-control);
   }
-  .ul-chart-row .ypc__mid { flex: 0 1 auto; align-items: center; gap: 3px; }
-  .ul-chart-row .ypc__title { font-size: 16px; }
-  .ul-chart-row .ypc__title--out { font-size: 15px; }
-  .ul-chart-row .ypc__go { font-size: 9px; letter-spacing: 0.16em; }
+  .ul-chart-row .ypc__mid { flex: 0 1 auto; align-items: center; gap: 2px; }
+  .ul-chart-row .ypc__title,
+  .ul-chart-row .ypc__title--out { font-size: var(--text-meta); }
+  .ul-chart-row .ypc__go { font-size: var(--text-label); letter-spacing: 0; }
 
   /* Keeping the code is the second line. The chip's own colors are the account
      surfaces' paper ones, so they are traded here for the reading's, chooser
      included, since this one sits on the reading. */
   .ul-chart-row .stc__btn {
-    font-size: 12px;
-    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    height: var(--control-h);
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    padding: 0 var(--control-pad-x);
+    border-radius: var(--radius-control);
     /* --l-3 is the palette's faintest step. On Day Book it lands at 1.9 to 1
        against the reader's own paper, which is unreadable at this size, so the
        quiet step here is --l-2: still subordinate to the question above, still

@@ -202,17 +202,24 @@
 .oe-root [data-oe="energyband"]{ order:2 }
 .oe-root [data-oe="railinvite"]{ order:3 }
 
+/* Sizes below come from the master controls in src/theme.css, so the home
+   page's buttons match every other primary and secondary on the site. */
 .oe-root [data-oe="actionrow"] > button{
-  flex:1 1 auto; font-size:13px !important; letter-spacing:.2em !important;
-  padding:16px 28px !important; border-radius:3px !important;
+  flex:1 1 auto; height:var(--control-h) !important;
+  padding:0 var(--control-pad-x) !important;
+  font-size:var(--text-label) !important; letter-spacing:var(--tracking-caps) !important;
+  border-radius:var(--radius-control) !important;
+  background:var(--color-action) !important; border-color:var(--color-action) !important;
+  color:var(--color-action-ink) !important;
 }
 
 /* Today and this year: tiles you can open. Stacked, each with its hexagram,
    name and an arrow, raised a shade from the column. */
 .oe-root [data-oe="energyband"]{ flex-direction:column; gap:10px !important }
 .oe-root [data-oe="energyband"] > button{
-  flex:0 0 auto !important; gap:16px !important; padding:13px 18px !important;
-  border-radius:3px !important; border-color:var(--line2,#d2c7b4) !important;
+  flex:0 0 auto !important; gap:var(--space-4) !important;
+  padding:var(--space-2) var(--space-4) !important;
+  border-radius:var(--radius-control) !important; border-color:var(--line2,#d2c7b4) !important;
 }
 .oe-root [data-oe="energyband"] > button::after{
   content:'→'; margin-left:auto; color:var(--accent,#8a744e); font-size:16px;
@@ -223,9 +230,9 @@
 
 /* Birth time: an outlined button with its line beneath. */
 .oe-root [data-oe="birthbtn"]{
-  display:block; width:100%; padding:15px 16px; cursor:pointer;
-  background:transparent; border:1px solid var(--accent,#8a744e); border-radius:3px;
-  font-family:var(--font-ui); font-size:13px; font-weight:700; letter-spacing:.2em;
+  display:block; width:100%; height:var(--control-h); padding:0 var(--control-pad-x); cursor:pointer;
+  background:transparent; border:1px solid var(--accent,#8a744e); border-radius:var(--radius-control);
+  font-family:var(--font-ui); font-size:var(--text-label); font-weight:700; letter-spacing:var(--tracking-caps);
   text-transform:uppercase; color:var(--accent,#8a744e);
   transition:background .25s ease;
 }

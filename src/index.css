@@ -44,21 +44,8 @@
   /* Updated dynamically by Navigation.tsx based on scroll state. This is the
      first-paint fallback; the live value tracks the bar's real rendered height. */
   --nav-height: 64px;
-
-  /* ─── Type scale ─────────────────────────────────────────────────────────
-   * Semantic sizes paired with their intended font role.
-   * Use these in new components instead of arbitrary text-[14px] values.
-   * Marketing/hero headings can fluid-size via clamp() inline; app UI
-   * (oracle reader, shop, piece pages) should hold to this fixed scale. */
-  --text-eyebrow:  0.6875rem; /* 11px — compact uppercase labels     */
-  --text-caption:  0.8125rem; /* 13px — fine print only              */
-  --text-meta:     0.875rem;  /* 14px — secondary info, dates        */
-  --text-small:    0.9375rem; /* 15px — secondary body               */
-  --text-body:     1rem;      /* 16px — default body                 */
-  --text-lead:     1.0625rem; /* 17px — intro / lyrics               */
-  --text-subhead:  1.375rem;  /* 22px — Cormorant — small titles     */
-  --text-heading:  1.75rem;   /* 28px — Cormorant — page headings    */
-  --text-display:  clamp(2.5rem, 6vw, 4.5rem); /* 40-72px — hero    */
+  /* The type scale, spacing, radii and control sizes live in src/theme.css
+     (MASTER SCALES / MASTER CONTROLS). Do not redefine them here. */
 }
 
 /* ─── Global Typography Foundations ───────────────────────────────────────── */
@@ -185,47 +172,10 @@ blockquote {
 }
 
 
-/* ─── dark-preserve: restores original light-mode colors ────────────────── */
-/* Apply to sections that are intentionally dark (hero, accent blocks,
-   image-overlay gradients). They stay dark in both light & dark mode.      */
-
-.dark .dark-preserve {
-  --color-paper-50: #f5f4f0;
-  --color-paper-100: #ebe8e1;
-  --color-paper-200: #e0dbcf;
-  --color-paper-300: #cfc6b5;
-  --color-wood-50: #faf9f7;
-  --color-wood-100: #f0ece5;
-  --color-wood-200: #e0d8cc;
-  --color-wood-300: #c8bda8;
-  --color-wood-400: #a89070;
-  --color-wood-500: #8f7a5b;
-  --color-wood-600: #736046;
-  --color-wood-700: #524330;
-  --color-wood-800: #3d3226;
-  --color-wood-900: #262321;
-  --color-stone-50: #f7f6f4;
-  --color-stone-100: #ebe9e6;
-  --color-stone-200: #dcd9d4;
-  --color-stone-300: #c2beb8;
-  --color-stone-400: #a39e96;
-  --color-stone-500: #aaa49a;
-  --color-stone-600: #6b665f;
-  --color-stone-700: #524e49;
-  --color-stone-800: #3d3a36;
-  --color-stone-900: #2b2926;
-  --color-stone-950: #23201e;
-  --color-bronze-200: #e6d9c3;
-  --color-bronze-300: #d5c1a0;
-  --color-bronze-400: #c4aa7c;
-  --color-bronze-500: #ab9266;
-  --color-bronze-600: #8a744e;
-}
-
 /* bg-white is a Tailwind built-in — override in dark mode */
 .dark .bg-white,
 .dark .hover\:bg-white:hover {
-  background-color: #1f1d1a;
+  background-color: var(--color-ground-raised);
 }
 /* Semantic status colors on dark backgrounds */
 .dark .bg-green-50 { background-color: #0a2010; }
@@ -240,7 +190,7 @@ blockquote {
 
 /* Body background */
 body { transition: background-color 0.5s ease; }
-html.dark body { background-color: #171310; }
+html.dark body { background-color: var(--color-ground); }
 
 /* On the oracle card page, hold the page (html + body) to the active
    reading surface so chapter swipes don't flash a mismatched colour when
@@ -250,11 +200,11 @@ html.dark body { background-color: #171310; }
    the card component on mount and removed on unmount. */
 html.oracle-card-page,
 html.oracle-card-page body {
-  background-color: #f3efe7;   /* Day Book paper (--l-bg) */
+  background-color: var(--color-ground-reading);   /* Day Book paper (--l-bg) */
 }
 html.dark.oracle-card-page,
 html.dark.oracle-card-page body {
-  background-color: #211c16;   /* Nightfall surface (--l-bg) */
+  background-color: var(--color-ground-reading);   /* Nightfall surface (--l-bg) */
 }
 
 /* Earth's Breath reading palette + keyframes live verbatim in

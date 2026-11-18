@@ -68,7 +68,7 @@ export interface TypeaheadPickerProps<T> {
 
 const VARIANT_INPUT: Record<'admin' | 'book', string> = {
   admin:
-    'w-full border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400',
+    'field',
   book:
     'w-full min-h-[44px] border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400',
 };

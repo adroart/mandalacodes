@@ -129,7 +129,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
   return (
     <form className="profile-form" onSubmit={handleSubmit} noValidate>
       <div className="profile-form__field">
-        <label htmlFor="profile-date" className="profile-form__label">
+        <label htmlFor="profile-date" className="field-label profile-form__label">
           Birth date
         </label>
         <input
@@ -145,14 +145,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
               document.getElementById('profile-time')?.focus();
             }
           }}
-          className="profile-form__input"
+          className="field profile-form__input"
           required
           autoComplete="bday"
         />
       </div>
 
       <div className="profile-form__field">
-        <label htmlFor="profile-time" className="profile-form__label">
+        <label htmlFor="profile-time" className="field-label profile-form__label">
           Birth time
         </label>
         {/* Plain text field rather than type=time: the native picker fights
@@ -165,7 +165,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           inputMode="numeric"
           value={time}
           onChange={(e) => setTime(formatTimeInput(e.target.value))}
-          className="profile-form__input"
+          className="field profile-form__input"
           placeholder="HH:MM"
           maxLength={5}
           autoComplete="off"
@@ -178,7 +178,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
       </div>
 
       <div className="profile-form__field">
-        <label htmlFor="profile-place" className="profile-form__label">
+        <label htmlFor="profile-place" className="field-label profile-form__label">
           Birth place
         </label>
         <input
@@ -193,7 +193,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => window.setTimeout(() => setShowSuggestions(false), 150)}
           onKeyDown={onPlaceKeyDown}
-          className="profile-form__input"
+          className="field profile-form__input"
           placeholder="Type a city, then pick from the list"
           autoComplete="off"
           role="combobox"
@@ -248,7 +248,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
 
       {error && <p className="profile-form__error" role="alert">{error}</p>}
 
-      <button type="submit" className="profile-form__submit" disabled={!canSubmit}>
+      <button type="submit" className="btn btn-primary profile-form__submit" disabled={!canSubmit}>
         {submitting ? 'Building...' : 'Build my profile'}
       </button>
 
@@ -265,29 +265,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           gap: 6px;
           position: relative;
         }
-        .profile-form__label {
-          font-family: var(--font-ui);
-          font-size: 11px;
-          letter-spacing: 0.22em;
-          text-transform: uppercase;
-          color: var(--color-wood-700);
-        }
-        .profile-form__input {
-          font-family: var(--font-ui);
-          font-size: 17px;
-          color: var(--color-wood-900);
-          background: var(--color-paper-50);
-          border: 1px solid color-mix(in oklab, var(--color-wood-600) 30%, transparent);
-          border-radius: 3px;
-          padding: 10px 12px;
-          outline: 2px solid transparent;
-          outline-offset: 2px;
-          transition: border-color 0.2s, outline-color 0.2s;
-        }
-        .profile-form__input:focus-visible {
-          outline-color: var(--color-bronze-500);
-          border-color: var(--color-bronze-500);
-        }
+        /* Field, label and button sizes come from the master controls in
+           src/theme.css (.field, .field-label, .btn). */
         .profile-form__input[aria-invalid='true'] {
           border-color: var(--color-danger-border);
         }
@@ -365,27 +344,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           font-family: var(--font-ui);
           font-size: 12px;
           color: var(--color-wood-600);
-        }
-        .profile-form__submit {
-          align-self: flex-start;
-          font-family: var(--font-ui);
-          font-size: 11px;
-          letter-spacing: 0.22em;
-          text-transform: uppercase;
-          color: var(--color-paper-50);
-          background: var(--color-bronze-600);
-          border: 0;
-          border-radius: 3px;
-          padding: 12px 20px;
-          cursor: pointer;
-          transition: background 0.2s, opacity 0.2s;
-        }
-        .profile-form__submit:hover {
-          background: var(--color-bronze-700, var(--color-bronze-600));
-        }
-        .profile-form__submit:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
         }
       `}</style>
     </form>

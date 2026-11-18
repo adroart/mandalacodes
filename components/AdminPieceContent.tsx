@@ -30,13 +30,11 @@ import {
 // ───────────────────────────────────────────────────────────────────────────
 // Style tokens — mirrored from AdminAtlas.tsx. Keep identical to that file.
 // ───────────────────────────────────────────────────────────────────────────
-const fieldLabel =
-    'font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold block mb-2';
-const fieldInput =
-    'w-full border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
+const fieldLabel = 'field-label';
+const fieldInput = 'field';
 const fieldTextarea = `${fieldInput} resize-y`;
 const sectionTitle = 'font-title text-2xl text-wood-900 mb-2 tracking-[0.05em]';
-const sectionLead = 'font-reading text-sm text-wood-500 mb-6';
+const sectionLead = 'font-reading text-sm text-wood-500 mb-4';
 
 function useAdminFetch(): (input: string, init?: RequestInit) => Promise<Response> {
     const { fetchAuthed } = useAccount();
@@ -149,7 +147,7 @@ const PiecePicker: React.FC<{
                     setFreeText(true);
                     onChange('');
                 }}
-                className="mt-1 font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+                className="btn btn-quiet btn-sm mt-1"
             >
                 piece not listed? enter its id
             </button>
@@ -239,7 +237,7 @@ const ImagesEditor: React.FC<{
                 <button
                     type="button"
                     onClick={add}
-                    className="shrink-0 px-4 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold hover:border-wood-500 hover:text-wood-900 transition-colors"
+                    className="btn btn-secondary shrink-0"
                 >
                     Add
                 </button>
@@ -353,7 +351,7 @@ const PieceContentEditor: React.FC = () => {
     };
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-5 mb-6">
             <h2 className={sectionTitle}>Piece</h2>
             <p className={sectionLead}>
                 Pick a piece, then write its story, materials, provenance, and
@@ -448,7 +446,7 @@ const PieceContentEditor: React.FC = () => {
                     <button
                         onClick={save}
                         disabled={saving}
-                        className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                        className="btn btn-primary btn-block"
                     >
                         {saving ? 'Saving…' : 'Save'}
                     </button>
@@ -465,8 +463,8 @@ const PieceContentEditor: React.FC = () => {
 const AdminPieceContent: React.FC = () => {
     return (
         <AdminLayout>
-            <section className="pt-12 pb-32 px-6">
-                <div className="max-w-2xl mx-auto">
+            <section className="pt-8 pb-24 px-[var(--page-gutter)]">
+                <div className="max-w-3xl mx-auto">
                     <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 font-semibold mb-3">
                         Admin
                     </p>

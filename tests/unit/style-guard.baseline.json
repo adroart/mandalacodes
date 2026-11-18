@@ -1,0 +1,452 @@
+{
+  "totals": {
+    "colors": 1226,
+    "sizes": 1382
+  },
+  "files": {
+    "components/AdminAtlas.tsx": {
+      "colors": 19,
+      "sizes": 5
+    },
+    "components/AdminPieceContent.tsx": {
+      "colors": 1,
+      "sizes": 0
+    },
+    "components/ArtworkDesignPage.tsx": {
+      "colors": 0,
+      "sizes": 2
+    },
+    "components/AtlasPage.tsx": {
+      "colors": 18,
+      "sizes": 1
+    },
+    "components/ChunkErrorBoundary.tsx": {
+      "colors": 0,
+      "sizes": 1
+    },
+    "components/FamilyReveal.tsx": {
+      "colors": 6,
+      "sizes": 5
+    },
+    "components/NavigationCore.tsx": {
+      "colors": 0,
+      "sizes": 2
+    },
+    "components/OracleGateway.tsx": {
+      "colors": 0,
+      "sizes": 2
+    },
+    "components/OracleProfile.tsx": {
+      "colors": 0,
+      "sizes": 3
+    },
+    "components/PiecePage.tsx": {
+      "colors": 2,
+      "sizes": 7
+    },
+    "components/SharedProfile.tsx": {
+      "colors": 0,
+      "sizes": 1
+    },
+    "components/UniversalLanguageCard.tsx": {
+      "colors": 8,
+      "sizes": 6
+    },
+    "components/account/SaveToCollectionButton.tsx": {
+      "colors": 11,
+      "sizes": 8
+    },
+    "components/account/SignInModal.tsx": {
+      "colors": 1,
+      "sizes": 5
+    },
+    "components/account/SignInPanel.tsx": {
+      "colors": 1,
+      "sizes": 7
+    },
+    "components/account/YourChannels.tsx": {
+      "colors": 0,
+      "sizes": 4
+    },
+    "components/account/sign-in-panel.css": {
+      "colors": 0,
+      "sizes": 3
+    },
+    "components/atlas/ArtworkPlate.tsx": {
+      "colors": 1,
+      "sizes": 0
+    },
+    "components/atlas/AtlasFilters.tsx": {
+      "colors": 9,
+      "sizes": 2
+    },
+    "components/atlas/AtlasMovedNotice.tsx": {
+      "colors": 1,
+      "sizes": 1
+    },
+    "components/atlas/AtlasOverture.tsx": {
+      "colors": 4,
+      "sizes": 0
+    },
+    "components/atlas/BookLightBand.tsx": {
+      "colors": 0,
+      "sizes": 1
+    },
+    "components/atlas/CityListHUD.tsx": {
+      "colors": 9,
+      "sizes": 0
+    },
+    "components/atlas/ClaimCeremony.tsx": {
+      "colors": 7,
+      "sizes": 0
+    },
+    "components/atlas/CollectorBoundaryPage.tsx": {
+      "colors": 0,
+      "sizes": 1
+    },
+    "components/atlas/ConsentRings.tsx": {
+      "colors": 8,
+      "sizes": 2
+    },
+    "components/atlas/DreamSignature.tsx": {
+      "colors": 2,
+      "sizes": 0
+    },
+    "components/atlas/FeaturedDream.tsx": {
+      "colors": 10,
+      "sizes": 0
+    },
+    "components/atlas/Globe.tsx": {
+      "colors": 5,
+      "sizes": 3
+    },
+    "components/atlas/GlobeGL.tsx": {
+      "colors": 14,
+      "sizes": 1
+    },
+    "components/atlas/LegacyBook.tsx": {
+      "colors": 0,
+      "sizes": 9
+    },
+    "components/atlas/PhoneHudSheet.tsx": {
+      "colors": 1,
+      "sizes": 0
+    },
+    "components/atlas/PieceHUD.tsx": {
+      "colors": 18,
+      "sizes": 13
+    },
+    "components/atlas/PieceSidePanel.tsx": {
+      "colors": 0,
+      "sizes": 1
+    },
+    "components/atlas/SelectionInscription.tsx": {
+      "colors": 2,
+      "sizes": 1
+    },
+    "components/atlas/StewardClaim.tsx": {
+      "colors": 36,
+      "sizes": 9
+    },
+    "components/atlas/StewardEdit.tsx": {
+      "colors": 1,
+      "sizes": 1
+    },
+    "components/atlas/StewardRequests.tsx": {
+      "colors": 0,
+      "sizes": 5
+    },
+    "components/atlas/TheWall.tsx": {
+      "colors": 21,
+      "sizes": 2
+    },
+    "components/atlas/seriesColor.ts": {
+      "colors": 5,
+      "sizes": 0
+    },
+    "components/atlas/stageColors.ts": {
+      "colors": 7,
+      "sizes": 0
+    },
+    "components/atlas/three/Globe3D.tsx": {
+      "colors": 9,
+      "sizes": 1
+    },
+    "components/atlas/three/GlobeSphere.tsx": {
+      "colors": 1,
+      "sizes": 0
+    },
+    "components/atlas/three/rig.ts": {
+      "colors": 17,
+      "sizes": 0
+    },
+    "components/oracle/BirthTimeModal.tsx": {
+      "colors": 2,
+      "sizes": 7
+    },
+    "components/oracle/BuySheet.tsx": {
+      "colors": 0,
+      "sizes": 1
+    },
+    "components/oracle/OracleShareSheet.tsx": {
+      "colors": 11,
+      "sizes": 0
+    },
+    "components/oracle/ProfileForm.tsx": {
+      "colors": 2,
+      "sizes": 4
+    },
+    "components/oracle/ProfileGraph.tsx": {
+      "colors": 10,
+      "sizes": 23
+    },
+    "components/oracle/YourPositionCallout.tsx": {
+      "colors": 9,
+      "sizes": 4
+    },
+    "components/oracle/YourPositionPopup.tsx": {
+      "colors": 29,
+      "sizes": 16
+    },
+    "components/oracle/authoring/PassageComparison.css": {
+      "colors": 18,
+      "sizes": 32
+    },
+    "components/oracle/authoring/SectionVoiceStudio.css": {
+      "colors": 38,
+      "sizes": 177
+    },
+    "components/oracle/authoring/VoiceSyncTools.css": {
+      "colors": 4,
+      "sizes": 5
+    },
+    "components/oracle/authoring/WordChanges.css": {
+      "colors": 0,
+      "sizes": 1
+    },
+    "components/oracle/authoring/WordReplay.css": {
+      "colors": 7,
+      "sizes": 3
+    },
+    "components/oracle/authoring/WorkingCardReading.css": {
+      "colors": 0,
+      "sizes": 10
+    },
+    "components/oracle/authoring/authoring.css": {
+      "colors": 12,
+      "sizes": 34
+    },
+    "components/oracle/authoring/capture-shelf.css": {
+      "colors": 4,
+      "sizes": 5
+    },
+    "components/oracle/authoring/human-card-authoring.css": {
+      "colors": 30,
+      "sizes": 115
+    },
+    "components/oracle/authoring/passage-reading-controls.css": {
+      "colors": 1,
+      "sizes": 15
+    },
+    "components/oracle/authoring/passage-review.css": {
+      "colors": 3,
+      "sizes": 15
+    },
+    "components/oracle/authoring/reconciliation.css": {
+      "colors": 14,
+      "sizes": 22
+    },
+    "components/oracle/authoring/studio/dock.css": {
+      "colors": 0,
+      "sizes": 2
+    },
+    "components/oracle/authoring/voice-flow.css": {
+      "colors": 38,
+      "sizes": 33
+    },
+    "components/oracle/eb/eb-template.css": {
+      "colors": 42,
+      "sizes": 1
+    },
+    "components/oracle/eb/generated/EBReading.generated.tsx": {
+      "colors": 15,
+      "sizes": 106
+    },
+    "components/oracle/eb/generated/EBReading.host.tsx": {
+      "colors": 16,
+      "sizes": 5
+    },
+    "components/oracle/eb/generated/EBReading.style.css": {
+      "colors": 51,
+      "sizes": 1
+    },
+    "components/oracle/eb/oracle-foundation.css": {
+      "colors": 52,
+      "sizes": 27
+    },
+    "components/oracle/entry/OracleDrawDialog.css": {
+      "colors": 1,
+      "sizes": 68
+    },
+    "components/oracle/entry/OracleEntry.scoped.css": {
+      "colors": 89,
+      "sizes": 8
+    },
+    "components/oracle/entry/OracleEntryPage.tsx": {
+      "colors": 1,
+      "sizes": 5
+    },
+    "components/oracle/entry/OracleRailTop.tsx": {
+      "colors": 13,
+      "sizes": 4
+    },
+    "components/oracle/entry/generated/OracleEntry.generated.tsx": {
+      "colors": 48,
+      "sizes": 18
+    },
+    "components/oracle/entry/generated/OracleEntry.host.tsx": {
+      "colors": 18,
+      "sizes": 0
+    },
+    "components/oracle/entry/generated/OracleEntry.style.css": {
+      "colors": 28,
+      "sizes": 1
+    },
+    "components/oracle/entry/generated/dc-hexagram-element.ts": {
+      "colors": 1,
+      "sizes": 0
+    },
+    "components/oracle/invocation/invocation-composer.css": {
+      "colors": 0,
+      "sizes": 26
+    },
+    "components/oracle/oracle-bottom-navigation.css": {
+      "colors": 0,
+      "sizes": 11
+    },
+    "components/oracle/reading/CardReadingData.tsx": {
+      "colors": 5,
+      "sizes": 0
+    },
+    "components/oracle/reading/card-artwork.css": {
+      "colors": 1,
+      "sizes": 5
+    },
+    "components/oracle/reading/card-reading-fullbleed.css": {
+      "colors": 26,
+      "sizes": 28
+    },
+    "components/oracle/reading/generated/CardReadingBody.generated.tsx": {
+      "colors": 147,
+      "sizes": 72
+    },
+    "components/oracle/reading/generated/CardReadingBody.style.css": {
+      "colors": 1,
+      "sizes": 0
+    },
+    "components/oracle/reading/generated/CardReadingDesktop.generated.tsx": {
+      "colors": 65,
+      "sizes": 22
+    },
+    "components/oracle/reading/generated/CardReadingDesktop.host.tsx": {
+      "colors": 7,
+      "sizes": 0
+    },
+    "components/oracle/reading/generated/CardReadingDesktop.style.css": {
+      "colors": 20,
+      "sizes": 0
+    },
+    "components/oracle/reading/generated/CardReadingMobile.generated.tsx": {
+      "colors": 21,
+      "sizes": 14
+    },
+    "components/oracle/reading/generated/CardReadingMobile.host.tsx": {
+      "colors": 7,
+      "sizes": 0
+    },
+    "components/oracle/reading/generated/CardReadingMobile.style.css": {
+      "colors": 5,
+      "sizes": 0
+    },
+    "components/oracle/reflection-recorder.css": {
+      "colors": 0,
+      "sizes": 45
+    },
+    "components/oracle/related-articles.css": {
+      "colors": 0,
+      "sizes": 8
+    },
+    "components/oracle/relations-stack.css": {
+      "colors": 0,
+      "sizes": 17
+    },
+    "components/oracle/ul-energy-panel.css": {
+      "colors": 0,
+      "sizes": 4
+    },
+    "components/shared/Toggle.tsx": {
+      "colors": 6,
+      "sizes": 1
+    },
+    "components/shared/TypeaheadPicker.tsx": {
+      "colors": 0,
+      "sizes": 1
+    },
+    "shared/nav-shared.css": {
+      "colors": 12,
+      "sizes": 15
+    },
+    "src/index.css": {
+      "colors": 21,
+      "sizes": 8
+    },
+    "src/mobile/account/account.css": {
+      "colors": 0,
+      "sizes": 8
+    },
+    "src/mobile/authoring/BridgeConnection.css": {
+      "colors": 0,
+      "sizes": 3
+    },
+    "src/mobile/authoring/authoring-app.css": {
+      "colors": 0,
+      "sizes": 3
+    },
+    "src/mobile/authoring/authoring-sheet.css": {
+      "colors": 15,
+      "sizes": 9
+    },
+    "src/mobile/discovery/discovery.css": {
+      "colors": 1,
+      "sizes": 29
+    },
+    "src/mobile/journal/journal.css": {
+      "colors": 0,
+      "sizes": 31
+    },
+    "src/mobile/listening/listening.css": {
+      "colors": 0,
+      "sizes": 7
+    },
+    "src/mobile/oracle-app.css": {
+      "colors": 1,
+      "sizes": 56
+    },
+    "src/mobile/oracle-profile.css": {
+      "colors": 2,
+      "sizes": 38
+    },
+    "src/mobile/oracle-reading.css": {
+      "colors": 0,
+      "sizes": 25
+    },
+    "src/mobile/reading/reader-preferences.css": {
+      "colors": 1,
+      "sizes": 7
+    },
+    "src/mobile/reminders/reminders.css": {
+      "colors": 0,
+      "sizes": 6
+    }
+  }
+}

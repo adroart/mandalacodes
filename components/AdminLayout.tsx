@@ -146,7 +146,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
         <button
           onClick={logout}
-          className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-400 hover:text-wood-900 transition-colors font-semibold"
+          className="btn btn-quiet btn-sm"
         >
           Log out
         </button>

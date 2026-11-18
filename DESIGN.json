@@ -1,33 +1,100 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-13T00:00:00.000Z",
+  "generatedAt": "2026-11-18T00:00:00.000Z",
   "title": "Design System: Mandala Codes",
   "extensions": {
     "colorMeta": {
-      "paper": { "role": "neutral", "displayName": "Warm Paper", "canonical": "#f5f4f0" },
-      "deep-wood": { "role": "neutral", "displayName": "Deep Wood", "canonical": "#262321" },
-      "muted-wood": { "role": "neutral", "displayName": "Muted Wood", "canonical": "#736046" },
-      "bronze": { "role": "primary", "displayName": "Aged Bronze", "canonical": "#8a744e" },
-      "bronze-light": { "role": "primary", "displayName": "Lit Bronze", "canonical": "#c4aa7c" }
+      "action-dark": {
+        "role": "primary",
+        "displayName": "Lit Bronze (action, nightfall)",
+        "canonical": "#debc7e"
+      },
+      "action-light": {
+        "role": "primary",
+        "displayName": "Antique Gold (action, day book)",
+        "canonical": "#a37b38"
+      },
+      "ground-dark": {
+        "role": "neutral",
+        "displayName": "Nightfall Ground",
+        "canonical": "#171310"
+      },
+      "ground-light": {
+        "role": "neutral",
+        "displayName": "Day Book Paper",
+        "canonical": "#f3efe7"
+      },
+      "atlas-gold": {
+        "role": "primary",
+        "displayName": "Atlas Gold (stage only)",
+        "canonical": "#c4aa7c"
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Editorial Display", "purpose": "Profile and card titles." },
-      "body": { "displayName": "Teaching Text", "purpose": "Readings and supporting explanation." },
-      "label": { "displayName": "System Label", "purpose": "Controls, metadata, and compact navigation." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero titles, 40px."
+      },
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "Page headings, 28px."
+      },
+      "subhead": {
+        "displayName": "Subhead",
+        "purpose": "Small titles, 22px."
+      },
+      "body": {
+        "displayName": "Reading",
+        "purpose": "Readings, 17px."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Metadata, help text, fields, 14px."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Caps labels and buttons, 12px, 0.16em."
+      }
     },
     "breakpoints": [
-      { "name": "profile-wide", "value": "880px" }
-    ]
+      {
+        "name": "profile-wide",
+        "value": "880px"
+      }
+    ],
+    "source": "src/theme.css"
   },
-  "components": [],
+  "components": [
+    "btn-primary",
+    "btn-secondary",
+    "btn-quiet",
+    "btn-icon",
+    "btn-tab",
+    "btn-chip",
+    "field"
+  ],
   "narrative": {
     "northStar": "The Quiet Oracle Table",
-    "overview": "A warm, spacious study surface where the oracle object remains central and supporting information stays restrained at the margins.",
-    "keyCharacteristics": ["warm", "editorial", "spatially balanced", "quietly interactive"],
-    "rules": [
-      { "name": "The True Center Rule", "body": "Supporting rails must not displace the primary chart from the page axis.", "section": "components" }
+    "overview": "A warm, slim study surface: well spaced, never spacious. The oracle object stays central and supporting information stays restrained at the margins.",
+    "keyCharacteristics": [
+      "warm",
+      "editorial",
+      "spatially balanced",
+      "quietly interactive"
     ],
-    "dos": ["Keep equal-width rails around a centered chart."],
-    "donts": ["Do not convert supporting information into floating dashboard cards."]
+    "rules": [
+      {
+        "name": "The True Center Rule",
+        "body": "Supporting rails must not displace the primary chart from the page axis.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Keep equal-width rails around a centered chart."
+    ],
+    "donts": [
+      "Do not convert supporting information into floating dashboard cards.",
+      "Do not add a button look outside the seven master controls."
+    ]
   }
 }

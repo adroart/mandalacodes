@@ -74,10 +74,10 @@ export function LightCodesPage() {
         <h1 className="mt-3 font-display text-[clamp(2.8rem,8vw,5.5rem)] leading-[0.95]">Light Codes</h1>
         <p className="mt-5 font-reading text-[18px] leading-[1.5] text-wood-800 sm:text-[20px]">Browse 68 numbered works from the Light Codes series.</p>
       </header>
-      <div className="mt-7 flex flex-wrap gap-2 border-y border-wood-300 py-4" role="group" aria-label="Filter artwork by category">
+      <div className="mt-6 flex flex-wrap gap-2 border-y border-wood-300 py-3" role="group" aria-label="Filter artwork by category">
         {(['all', 'frequency-foundation', 'embodied-vibration', 'resonant-formations'] as const).map((value) => <button
           key={value} type="button" aria-label={`${value === 'all' ? 'All artwork' : categoryLabels[value]} (${value === 'all' ? lightCodes.length : counts[value]})`} aria-pressed={category === value} onClick={() => setCategory(value)}
-          className={`min-h-11 rounded-full border px-4 py-2 font-label text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 ${category === value ? 'border-wood-900 bg-wood-900 text-paper-50' : 'border-wood-300 text-wood-800 hover:border-bronze-700'}`}>
+          className="btn btn-chip">
           {value === 'all' ? 'All' : filterLabels[value]} <span aria-hidden="true">{value === 'all' ? lightCodes.length : counts[value]}</span>
         </button>)}
       </div>

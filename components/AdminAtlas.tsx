@@ -40,14 +40,12 @@ function useAdminFetch(): (input: string, init?: RequestInit) => Promise<Respons
 // Style tokens — mirrored from AdminPoetry.tsx so this page sits beside it
 // without drift. Keep these strings identical to that file.
 // ───────────────────────────────────────────────────────────────────────────
-const fieldLabel =
-    'font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold block mb-2';
-const fieldInput =
-    'w-full border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
+const fieldLabel = 'field-label';
+const fieldInput = 'field';
 const sectionTitle =
     'font-title text-2xl text-wood-900 mb-2 tracking-[0.05em]';
 const sectionLead =
-    'font-reading text-sm text-wood-500 mb-6';
+    'font-reading text-sm text-wood-500 mb-4';
 
 const EVENT_TYPES: LedgerEventType[] = [
     'created',
@@ -290,7 +288,7 @@ const PieceSelect: React.FC<{
                     setFreeText(true);
                     onChange('');
                 }}
-                className="mt-1 font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+                className="btn btn-quiet btn-sm mt-1"
             >
                 piece not listed? enter its id
             </button>
@@ -455,7 +453,7 @@ const SeedEventSection: React.FC = () => {
     };
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-5">
             <h2 className={sectionTitle}>Seed Event</h2>
             <p className={sectionLead}>
                 Append a new event to the per-piece ledger. The hash chain is
@@ -559,14 +557,14 @@ const SeedEventSection: React.FC = () => {
                         }
                         rows={3}
                         placeholder="From Adrian's notebook, p.42"
-                        className={`${fieldInput} font-reading text-base leading-[1.7] resize-y`}
+                        className={fieldInput}
                     />
                 </div>
 
                 <button
                     onClick={submit}
                     disabled={saving}
-                    className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                    className="btn btn-primary btn-block"
                 >
                     {saving ? 'Appending...' : 'Append event'}
                 </button>
@@ -669,7 +667,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
     };
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-5">
             <h2 className={sectionTitle}>Add Steward</h2>
             <p className={sectionLead}>
                 Bind a piece to a collector's email. They sign in to
@@ -803,7 +801,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                 <button
                     onClick={submit}
                     disabled={saving}
-                    className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                    className="btn btn-primary btn-block"
                 >
                     {saving ? 'Adding...' : 'Add steward'}
                 </button>
@@ -891,7 +889,7 @@ const PendingSaleRow: React.FC<{
     };
 
     return (
-        <div className="border border-wood-200 p-5 mb-4">
+        <div className="border border-wood-200 p-4 mb-3">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
                 <span className="font-reading text-base text-wood-900">
                     {sale.buyerName ? `${sale.buyerName} (${sale.buyerEmail})` : sale.buyerEmail}
@@ -947,7 +945,7 @@ const PendingSaleRow: React.FC<{
                 <button
                     onClick={confirm}
                     disabled={busy}
-                    className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                    className="btn btn-primary btn-block"
                 >
                     {busy ? 'Working...' : 'Confirm sale'}
                 </button>
@@ -962,7 +960,7 @@ const PendingSaleRow: React.FC<{
                     <button
                         onClick={dismiss}
                         disabled={busy}
-                        className="shrink-0 px-4 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                        className="btn btn-secondary shrink-0"
                     >
                         Dismiss
                     </button>
@@ -1008,7 +1006,7 @@ const PendingSalesSection: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-5">
             <h2 className={sectionTitle}>Pending Sales</h2>
             <p className={sectionLead}>
                 Checkouts reported by adrianrasmussen.com, waiting for your
@@ -1190,7 +1188,7 @@ const TendingSection: React.FC = () => {
     );
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-5">
             <h2 className={sectionTitle}>Tending</h2>
             <p className={sectionLead}>
                 Entries a steward has let ride the map of dreams. Sorting, not
@@ -1295,7 +1293,7 @@ const ClaimRequestsSection: React.FC = () => {
     const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-5">
             <h2 className={sectionTitle}>Claim Requests</h2>
             <p className={sectionLead}>
                 Self-serve stewardship requests. Approving an unclaimed piece
@@ -1315,7 +1313,7 @@ const ClaimRequestsSection: React.FC = () => {
 
             {!loading &&
                 pending.map((r) => (
-                    <div key={r.id} className="border border-wood-200 p-5 mb-4">
+                    <div key={r.id} className="border border-wood-200 p-4 mb-3">
                         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
                             <span className="font-reading text-base text-wood-900">
                                 {resolvePieceTitle(r.pieceId, r.editionNumber)}
@@ -1347,14 +1345,14 @@ const ClaimRequestsSection: React.FC = () => {
                             <button
                                 onClick={() => resolve(r.id, true)}
                                 disabled={busyId === r.id}
-                                className="flex-1 bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                                className="btn btn-primary flex-1"
                             >
                                 {busyId === r.id ? 'Working...' : 'Approve'}
                             </button>
                             <button
                                 onClick={() => resolve(r.id, false)}
                                 disabled={busyId === r.id}
-                                className="flex-1 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                                className="btn btn-secondary flex-1"
                             >
                                 Decline
                             </button>
@@ -1472,7 +1470,7 @@ const HomecomingRow: React.FC<{
     }
 
     return (
-        <div className="border border-wood-200 p-5 mb-4">
+        <div className="border border-wood-200 p-4 mb-3">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
                 <span className="font-reading text-base text-wood-900">
                     {req.requesterEmail}
@@ -1581,7 +1579,7 @@ const HomecomingRow: React.FC<{
                             type="button"
                             onClick={bind}
                             disabled={busy}
-                            className="flex-1 bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                            className="btn btn-primary flex-1"
                         >
                             {busy ? 'Binding...' : 'Recognize and bind'}
                         </button>
@@ -1589,7 +1587,7 @@ const HomecomingRow: React.FC<{
                             type="button"
                             onClick={() => setConfirming(false)}
                             disabled={busy}
-                            className="flex-1 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                            className="btn btn-secondary flex-1"
                         >
                             Cancel
                         </button>
@@ -1601,7 +1599,7 @@ const HomecomingRow: React.FC<{
                         type="button"
                         onClick={() => setConfirming(true)}
                         disabled={busy}
-                        className="flex-1 bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                        className="btn btn-primary flex-1"
                     >
                         Recognize and bind
                     </button>
@@ -1609,7 +1607,7 @@ const HomecomingRow: React.FC<{
                         type="button"
                         onClick={() => resolve({ action: 'decline' })}
                         disabled={busy}
-                        className="flex-1 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                        className="btn btn-secondary flex-1"
                     >
                         Not now
                     </button>
@@ -1656,7 +1654,7 @@ const HomecomingSection: React.FC = () => {
     const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-5">
             <h2 className={sectionTitle}>Homecoming</h2>
             <p className={sectionLead}>
                 People who hold a piece the atlas has never heard of. Recognize
@@ -1813,7 +1811,7 @@ const StewardRoster: React.FC<{
     };
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8">
+        <div className="bg-wood-50 border border-wood-200 p-5">
             <h2 className={sectionTitle}>Steward Roster</h2>
             <p className={sectionLead}>
                 Bound and pending collectors. Status flips from "invited" to
@@ -1913,7 +1911,7 @@ const StewardRoster: React.FC<{
                                                         .value as StewardRecord['outreachStatus'],
                                                 )
                                             }
-                                            className="font-reading text-sm text-wood-700 border border-wood-300 bg-wood-50 px-2 py-1.5 focus:outline-none focus:border-bronze-400 disabled:opacity-40"
+                                            className="field w-auto"
                                         >
                                             {s.outreachStatus === 'claimed' && (
                                                 <option value="claimed" disabled>
@@ -2040,7 +2038,7 @@ const MakeRequestsSection: React.FC = () => {
     const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-5">
             <h2 className={sectionTitle}>Make Requests</h2>
             <p className={sectionLead}>
                 Notes from the /make door: someone wants a piece made (code,
@@ -2058,7 +2056,7 @@ const MakeRequestsSection: React.FC = () => {
 
             {!loading &&
                 pending.map((r) => (
-                    <div key={r.id} className="border border-wood-200 p-5 mb-4">
+                    <div key={r.id} className="border border-wood-200 p-4 mb-3">
                         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
                             <span className="font-reading text-base text-wood-900">
                                 {r.requesterEmail}
@@ -2093,21 +2091,21 @@ const MakeRequestsSection: React.FC = () => {
                         <div className="flex gap-3 mt-4">
                             <a
                                 href={`mailto:${r.requesterEmail}?subject=${encodeURIComponent('Your piece, from the studio')}`}
-                                className="flex-1 text-center bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors"
+                                className="btn btn-primary flex-1"
                             >
                                 Reply by email
                             </a>
                             <button
                                 onClick={() => resolve(r.id, 'answered')}
                                 disabled={busyId === r.id}
-                                className="flex-1 border border-wood-300 text-wood-800 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:border-bronze-500 transition-colors disabled:opacity-40"
+                                className="btn btn-secondary flex-1"
                             >
                                 {busyId === r.id ? 'Working...' : 'Mark answered'}
                             </button>
                             <button
                                 onClick={() => resolve(r.id, 'dismissed')}
                                 disabled={busyId === r.id}
-                                className="flex-1 border border-wood-300 text-stone-600 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:border-stone-400 transition-colors disabled:opacity-40"
+                                className="btn btn-quiet flex-1"
                             >
                                 Dismiss
                             </button>
@@ -2383,7 +2381,7 @@ const CatalogForm: React.FC<{
                         onChange={(e) => set('images', e.target.value)}
                         rows={2}
                         placeholder={'detail_ab12cd\nverso_ef34gh'}
-                        className={`${fieldInput} resize-y`}
+                        className={fieldInput}
                     />
                 </div>
 
@@ -2456,14 +2454,14 @@ const CatalogForm: React.FC<{
                         onChange={(e) => set('notes', e.target.value)}
                         rows={2}
                         placeholder="Anything only you should see"
-                        className={`${fieldInput} font-reading resize-y`}
+                        className={fieldInput}
                     />
                 </div>
 
                 <button
                     onClick={submit}
                     disabled={saving}
-                    className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                    className="btn btn-primary btn-block"
                 >
                     {saving ? 'Saving...' : 'Save the piece'}
                 </button>
@@ -2666,7 +2664,7 @@ const CatalogRow: React.FC<{
     const printed = !!entry.printedAt;
 
     return (
-        <div className="border border-wood-200 p-5 mb-4">
+        <div className="border border-wood-200 p-4 mb-3">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2">
                 <span className="font-title text-base text-wood-900 tracking-[0.05em]">
                     {entry.sigil}
@@ -2822,7 +2820,7 @@ const CatalogSection: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-wood-50 border border-wood-200 p-5">
             <h2 className={sectionTitle}>Catalog</h2>
             <p className={sectionLead}>
                 Every work you have made, entered once. Each piece receives a
@@ -2902,26 +2900,32 @@ const AdminAtlas: React.FC = () => {
 
     return (
         <AdminLayout>
-            <section className="pt-12 pb-32 px-6">
-                <div className="max-w-2xl mx-auto">
+            <section className="pt-8 pb-24 px-[var(--page-gutter)]">
+                <div className="max-w-7xl mx-auto">
                     <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 font-semibold mb-3">
                         Admin
                     </p>
                     <h1 className="font-title text-4xl text-wood-900 mb-2 tracking-[0.05em]">
                         Atlas
                     </h1>
-                    <p className="font-reading text-sm text-wood-500 mb-12">
+                    <p className="font-reading text-sm text-wood-500 mb-6">
                         Seed ledger events and add stewards for the world map.
                     </p>
 
+                    {/* Two columns on a wide screen: catalogue and forms on the
+                        left, the queues on the right. One column on a phone. */}
+                    <div className="grid gap-6 xl:grid-cols-2 xl:items-start [&>*]:min-w-0">
+                    <div className="space-y-6">
                     <CatalogSection />
                     <SeedEventSection />
+                    <IssueStewardKeySection onIssued={loadStewards} />
+                    </div>
+                    <div className="space-y-6">
                     <PendingSalesSection />
                     <TendingSection />
                     <ClaimRequestsSection />
                     <HomecomingSection />
                     <MakeRequestsSection />
-                    <IssueStewardKeySection onIssued={loadStewards} />
                     <StewardRoster
                         stewards={stewards}
                         loading={loading}
@@ -2929,6 +2933,8 @@ const AdminAtlas: React.FC = () => {
                         setStewards={setStewards}
                         onReload={loadStewards}
                     />
+                    </div>
+                    </div>
                 </div>
             </section>
         </AdminLayout>

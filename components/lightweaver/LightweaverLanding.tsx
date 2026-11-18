@@ -77,13 +77,13 @@ const LightweaverLanding: React.FC = () => {
         <section className="mb-10 grid gap-3 sm:grid-cols-2">
           <a
             href={DESIGNER_PATTERNS_URL}
-            className="px-4 py-3 bg-bronze-700 text-paper-50 rounded-md text-sm uppercase tracking-wider hover:bg-bronze-600 transition-colors text-center"
+            className="btn btn-primary"
           >
             Open Studio v3
           </a>
           <a
             href={DEFAULT_CARD_URL}
-            className="px-4 py-3 border border-wood-300 rounded-md text-sm uppercase tracking-wider text-wood-900 hover:border-bronze-700 transition-colors text-center"
+            className="btn btn-secondary"
           >
             Open Card
           </a>
@@ -103,7 +103,7 @@ const LightweaverLanding: React.FC = () => {
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
-                className="w-full bg-paper-100 border border-wood-300 rounded-md px-4 py-3 pr-16 text-wood-900 font-technical text-sm focus:outline-none focus:border-bronze-700"
+                className="field pr-16 font-technical"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-wood-400 font-technical pointer-events-none">
                 .local
@@ -111,7 +111,7 @@ const LightweaverLanding: React.FC = () => {
             </div>
             <button
               type="submit"
-              className="px-6 py-3 bg-bronze-700 text-paper-50 rounded-md text-sm uppercase tracking-wider hover:bg-bronze-600 transition-colors"
+              className="btn btn-primary"
             >
               Open
             </button>
