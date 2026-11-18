@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import CodesIndex, { type CodeIndexEntry } from './CodesIndex';
+import CodesIndex, { findCatalogCodes, type CodeIndexEntry } from './CodesIndex';
 import LedgerPieceRow from './LedgerPieceRow';
 import {
   LedgerControlRow,
@@ -296,7 +296,10 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
     filterActive,
   ]);
 
-  const codeIndexShows = showCodeIndex && (!filterActive || sixtyFourMatches.length > 0);
+  const catalogMatches = useMemo(() => findCatalogCodes(search, state), [search, state]);
+  const codeIndexShows = catalogMatches.size > 0 ||
+    (showCodeIndex && (!filterActive || sixtyFourMatches.length > 0));
+  const codeSectionId = showCodeIndex ? 'codes' : 'catalog-codes';
   const anyContent = codeIndexShows || flatSections.length > 0;
 
   /* ─── The jump rail ─────────────────────────────────────────────────────── */
@@ -304,9 +307,9 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
     const out: Array<{ id: string; label: string; count: number }> = [];
     if (codeIndexShows) {
       out.push({
-        id: 'codes',
-        label: ledgerKindLabel('sixty-four'),
-        count: sixtyFourMatches.length,
+        id: codeSectionId,
+        label: showCodeIndex ? ledgerKindLabel('sixty-four') : 'catalog artworks',
+        count: showCodeIndex ? sixtyFourMatches.length : catalogMatches.size,
       });
     }
     for (const s of flatSections) {
@@ -314,7 +317,7 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
       out.push({ id: s.id, label: s.label, count: s.ghost ? undefined : s.rows.length });
     }
     return out;
-  }, [codeIndexShows, sixtyFourMatches.length, flatSections]);
+  }, [codeIndexShows, codeSectionId, showCodeIndex, catalogMatches.size, sixtyFourMatches.length, flatSections]);
 
   /* The bar's own height is not a constant: the jump rail wraps to a second
      line under place-grouping, and to three on a phone. A fixed scroll-margin
@@ -384,7 +387,8 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
           <LedgerSearchField
             value={typed}
             onChange={setTyped}
-            ariaLabel="Search the ledger by title, city, or dream"
+            ariaLabel="Search the ledger by title, code, city, or dream"
+            placeholder="search titles, codes, cities, dreams"
           />
           <LedgerSelect
             label="status"
@@ -414,6 +418,8 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
             {filterActive
               ? `${matched.length} of ${pool.length} pieces`
               : `${pool.length} pieces`}
+            {catalogMatches.size > 0 &&
+              ` · ${catalogMatches.size} catalog ${catalogMatches.size === 1 ? 'artwork' : 'artworks'}`}
             {dreamsRiding > 0 && ` · ${dreamsRiding} dreams riding`}
           </LedgerTally>
           <LedgerJumpRail sections={railSections} onJump={jumpTo} />
@@ -435,12 +441,14 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
       ) : (
         <div className="flex flex-col gap-14">
           {codeIndexShows && (
-            <div id={anchorId("codes")} style={SECTION_ANCHOR}>
+            <div id={anchorId(codeSectionId)} style={SECTION_ANCHOR}>
               <CodesIndex
                 entries={codeEntries}
                 onSelectOnGlobe={onSelectOnGlobe}
                 stateFilter={state}
                 search={search}
+                catalogMatches={catalogMatches}
+                catalogOnly={!showCodeIndex}
               />
             </div>
           )}

@@ -51,14 +51,14 @@ const AboutPage: React.FC = () => {
           </p>
         </header>
 
-        <nav aria-label="Explore Mandala Codes" className="mt-10 border-y border-wood-300 py-6 sm:mt-12 sm:py-8">
-          <p className="mb-4 font-label text-xs font-semibold uppercase tracking-[0.12em] text-bronze-700">Explore</p>
-          <div className="grid gap-x-9 gap-y-4 sm:grid-cols-3">
-            <Link to="/universal-language" className="group block border-b border-wood-200 pb-3 no-underline hover:border-bronze-600 sm:border-b-0 sm:pb-0">
+        <nav aria-label="Explore Mandala Codes" className="mt-7 border-y border-wood-300 py-4 sm:mt-12 sm:py-8">
+          <p className="mb-3 font-label text-xs font-semibold uppercase tracking-[0.12em] text-bronze-700 sm:mb-4">Explore</p>
+          <div className="grid gap-x-9 gap-y-2.5 sm:grid-cols-3 sm:gap-y-4">
+            <Link to="/universal-language" className="group block border-b border-wood-200 pb-2 no-underline hover:border-bronze-600 sm:border-b-0 sm:pb-0">
               <span className="block font-display text-[25px] leading-tight text-wood-900 group-hover:text-bronze-700">The Oracle</span>
               <span className="mt-1 block font-reading text-[15px] leading-[1.5] text-wood-700">Open the 64-card reader.</span>
             </Link>
-            <Link to="/the-systems" className="group block border-b border-wood-200 pb-3 no-underline hover:border-bronze-600 sm:border-b-0 sm:pb-0">
+            <Link to="/the-systems" className="group block border-b border-wood-200 pb-2 no-underline hover:border-bronze-600 sm:border-b-0 sm:pb-0">
               <span className="block font-display text-[25px] leading-tight text-wood-900 group-hover:text-bronze-700">The Systems</span>
               <span className="mt-1 block font-reading text-[15px] leading-[1.5] text-wood-700">Meet the traditions behind the deck.</span>
             </Link>
@@ -69,7 +69,7 @@ const AboutPage: React.FC = () => {
           </div>
         </nav>
 
-        <div className="mt-9 grid gap-10 md:grid-cols-[minmax(0,1.35fr)_minmax(16rem,0.8fr)] md:gap-16">
+        <div className="mt-7 grid gap-10 sm:mt-9 md:grid-cols-[minmax(0,1.35fr)_minmax(16rem,0.8fr)] md:gap-16">
           <section aria-labelledby="approach-title">
             <h2 id="approach-title" className="font-display text-[31px] leading-tight sm:text-[36px]">The editorial approach</h2>
             <div className="mt-4 space-y-4 font-reading text-[17px] leading-[1.65] text-wood-800">

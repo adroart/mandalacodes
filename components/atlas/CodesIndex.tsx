@@ -21,8 +21,8 @@ import {
  * beneath, two quiet links.
  *
  * The ledger's controls (status / search) reach in here too: when a
- * state or search filter is active, only codes with matching pieces show, each
- * already open on its matches; otherwise the full honest index of all 64 codes
+ * state or search filter is active, only codes with matching catalog artworks
+ * or public pieces show; otherwise the full index of all 64 codes
  * reads, collapsed, with click-to-open. Shareable: `?code=N` opens a code.
  *
  * Simple DOM, no per-row observers: the index may render hundreds of rows and
@@ -42,6 +42,26 @@ interface Props {
   stateFilter?: LedgerStateFilter;
   /** The ledger's search query (default ''). */
   search?: string;
+  catalogMatches: ReadonlySet<number>;
+  /** Other groupings already render matched public pieces in their own sections. */
+  catalogOnly?: boolean;
+}
+
+export function findCatalogCodes(query: string, stateFilter: LedgerStateFilter): Set<number> {
+  const matches = new Set<number>();
+  const term = query.trim().toLowerCase();
+  if (!term || stateFilter !== 'all') return matches;
+
+  const codeNumber = /^(?:code\s+)?(\d{1,2})$/.exec(term);
+  for (const [number, card] of CARD_BY_NUMBER) {
+    const artwork = ulPieceForCard(number);
+    if (!artwork) continue;
+    const matched = codeNumber
+      ? number === Number(codeNumber[1])
+      : artwork.title.toLowerCase().includes(term) || card.card_name.toLowerCase().includes(term);
+    if (matched) matches.add(number);
+  }
+  return matches;
 }
 
 interface CodeRow {
@@ -70,6 +90,8 @@ const CodesIndex: React.FC<Props> = ({
   onSelectOnGlobe,
   stateFilter = 'all',
   search = '',
+  catalogMatches,
+  catalogOnly = false,
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -124,16 +146,17 @@ const CodesIndex: React.FC<Props> = ({
     [stateFilter, search],
   );
 
-  /* Which codes to render, and with which pieces. When filtering, only codes
-     with matches show, each open on its matched pieces; otherwise all 64. */
+  /* Keep catalog matches visible without adding public piece rows. */
   const shown = useMemo(() => {
     if (!filterActive) {
       return rows.map((row) => ({ row, pieces: row.pieces, open: expandedCode === row.number }));
     }
-    return rows
-      .map((row) => ({ row, pieces: matchedOf(row.pieces), open: true }))
-      .filter((r) => r.pieces.length > 0);
-  }, [rows, filterActive, matchedOf, expandedCode]);
+    return rows.flatMap((row) => {
+      const pieces = catalogOnly ? [] : matchedOf(row.pieces);
+      if (!pieces.length && !catalogMatches.has(row.number)) return [];
+      return [{ row, pieces, open: pieces.length > 0 || expandedCode === row.number }];
+    });
+  }, [rows, filterActive, matchedOf, expandedCode, catalogMatches, catalogOnly]);
 
   const toggle = (n: number) => {
     setSearchParams(
