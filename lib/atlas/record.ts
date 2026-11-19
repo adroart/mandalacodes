@@ -162,6 +162,7 @@ export function buildCodeEntries(enriched: readonly EnrichedPiece[]): CodeIndexE
       // writes it inline (Part II.6, ruling 2).
       intention: p.intention,
       signedBy: p.signedBy,
+      placedBy: p.placedBy,
       // Sort keys for the ledger's "most recently anchored" order.
       placedAt: p.placedAt,
       claimOrdinal: p.claimOrdinal,
@@ -210,6 +211,7 @@ export function buildKindSections(
         cityLabel: cityLabelFor(p.cityId),
         intention: p.intention,
         signedBy: p.signedBy,
+        placedBy: p.placedBy,
         placedAt: p.placedAt,
         claimOrdinal: p.claimOrdinal,
       }),

@@ -292,3 +292,16 @@ describe('readCanonicalAtlasState with a collector-field upstream', () => {
     expect(state?.cities[0]?.id).toBe('denpasar-id');
   });
 });
+
+it('keeps placement attribution separate from private identities and removes it with city withdrawal', () => {
+  const fixture = collectorFieldFixture();
+  Object.assign(fixture.lights[0].identity[0], { placedBy: 'Synthetic Keeper' });
+  Object.assign(fixture.lights[0].identity[1], { placedBy: 'Private Keeper' });
+  let state = adaptCollectorFieldState(fixture)!;
+  expect(state.pieces[0].placedBy).toBe('Synthetic Keeper');
+  expect(state.pieces[1].placedBy).toBeUndefined();
+  Object.assign(fixture.lights[0].identity[0], { city: null, status: 'private' });
+  state = adaptCollectorFieldState(fixture)!;
+  expect(state.pieces[0].placedBy).toBeUndefined();
+  expect(state.cities).toHaveLength(0);
+});
