@@ -96,7 +96,7 @@ const CollectionsManagerInner: React.FC = () => {
   };
 
   if (isLoading) {
-    return <p className="font-reading text-wood-700">Loading…</p>;
+    return <p className="font-reading text-ink-soft">Loading…</p>;
   }
 
   return (
@@ -129,16 +129,16 @@ const CollectionsManagerInner: React.FC = () => {
           Create
         </button>
       </div>
-      {(error || mutationError) && <p className="font-reading text-danger-text" role="alert">{mutationError || error} <button type="button" className="btn btn-quiet btn-sm" onClick={() => void reload()}>Retry</button></p>}
+      {(error || mutationError) && <p className="font-reading text-danger" role="alert">{mutationError || error} <button type="button" className="btn btn-quiet btn-sm" onClick={() => void reload()}>Retry</button></p>}
 
       {collections.length === 0 ? (
-        <p className="font-reading text-wood-700">
+        <p className="font-reading text-ink-soft">
           You don't have any collections yet. Create one above, then save cards into it from any reading.
         </p>
       ) : (
         <ul className="space-y-6">
           {collections.map((c) => (
-            <li key={c.id} className="border border-wood-200 rounded p-5">
+            <li key={c.id} className="border border-line rounded p-5">
               <header className="flex items-baseline justify-between mb-4">
                 {editingId === c.id ? (
                   <input
@@ -160,7 +160,7 @@ const CollectionsManagerInner: React.FC = () => {
                       setEditingId(null);
                     }}
                     autoFocus
-                    className="font-display text-xl text-wood-900 bg-transparent border-b border-wood-300 outline-none"
+                    className="font-display text-card-title text-ink bg-transparent border-b border-line-strong outline-none"
                   />
                 ) : (
                   <button
@@ -169,7 +169,7 @@ const CollectionsManagerInner: React.FC = () => {
                       setEditingId(c.id);
                       setEditingName(c.name);
                     }}
-                    className="font-display text-xl text-wood-900 text-left hover:text-bronze-600"
+                    className="font-display text-card-title text-ink text-left hover:text-accent"
                   >
                     {c.name}
                   </button>
@@ -188,14 +188,14 @@ const CollectionsManagerInner: React.FC = () => {
                 </button>
               </header>
               {c.items.length === 0 ? (
-                <p className="font-reading text-sm text-wood-600">No items yet.</p>
+                <p className="font-reading text-caption text-ink-muted">No items yet.</p>
               ) : (
                 <>
                   {(() => {
                     const liveCount = c.items.filter((item) => atlasHrefFor(placementForItem(item))).length;
                     if (liveCount === 0) return null;
                     return (
-                      <p className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 mb-3">
+                      <p className="font-label text-label uppercase tracking-[0.18em] text-ink-faint mb-3">
                         {liveCount} of {c.items.length} of these live on the map
                       </p>
                     );
@@ -208,24 +208,24 @@ const CollectionsManagerInner: React.FC = () => {
                       return (
                         <li
                           key={`${item.kind}_${item.ref}`}
-                          className="flex items-start justify-between gap-3 text-sm"
+                          className="flex items-start justify-between gap-3 text-caption"
                         >
                           <div className="min-w-0">
                             <Link
                               to={itemLink(item)}
-                              className="font-reading text-wood-800 hover:text-bronze-600 truncate block"
+                              className="font-reading text-wood-800 hover:text-accent truncate block"
                             >
                               {itemLabel(item)}
                             </Link>
                             {line && (
-                              <p className="font-reading text-xs text-wood-500 truncate">
+                              <p className="font-reading text-label text-ink-faint truncate">
                                 {line}
                                 {atlasHref && (
                                   <>
                                     {' · '}
                                     <Link
                                       to={atlasHref}
-                                      className="font-label text-[10px] uppercase tracking-[0.14em] text-bronze-600 hover:text-bronze-700"
+                                      className="font-label text-label uppercase tracking-[0.14em] text-accent hover:text-link"
                                     >
                                       On the Atlas
                                     </Link>
@@ -236,7 +236,7 @@ const CollectionsManagerInner: React.FC = () => {
                           </div>
                           <button
                             type="button"
-                            className="font-label text-[10px] uppercase tracking-[0.16em] text-wood-500 hover:text-wood-900 flex-shrink-0"
+                            className="font-label text-label uppercase tracking-[0.16em] text-ink-faint hover:text-ink flex-shrink-0"
                             onClick={async () => { try { await removeItem(c.id, item); setMutationError(null); } catch (err) { setMutationError(err instanceof Error ? err.message : 'Could not remove this item. Try again.'); } }}
                           >
                             Remove

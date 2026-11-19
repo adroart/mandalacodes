@@ -18,17 +18,17 @@
    reading uses inside it, then let the structural overrides below consume it.
    Artwork mats remain explicitly dark. */
 .card-reading {
-  --l-bg:#f3efe7; --l-1:#272219; --l-2:#6b6253; --l-3:#8a8070;
-  --l-rule:rgba(39,34,25,.14); --l-soft:#eae4d7;
-  --accent:#a37b38; --accent-d:#956e2a;
+  --l-bg:var(--page-day); --l-1:var(--shell-base-l-1); --l-2:var(--shell-base-l-2); --l-3:var(--shell-base-l-3);
+  --l-rule:var(--shell-base-l-rule); --l-soft:var(--shell-base-l-soft);
+  --accent:var(--shell-base-accent); --accent-d:var(--shell-base-accent-d);
   background:var(--l-bg) !important;
   color:var(--l-1);
 }
 
 html.dark .card-reading {
-  --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#8d7f69;
-  --l-rule:rgba(168,135,77,.18); --l-soft:#191510;
-  --accent:#a8874d; --accent-d:#c6a667;
+  --l-bg:var(--page-card-night); --l-1:var(--shell-night-l-1); --l-2:var(--shell-night-l-2); --l-3:var(--shell-night-l-3);
+  --l-rule:var(--shell-night-l-rule); --l-soft:var(--shell-night-l-soft);
+  --accent:var(--shell-night-accent); --accent-d:var(--shell-night-accent-d);
 }
 
 /* --app-vh is the viewport's measured height, published by
@@ -769,10 +769,10 @@ html.dark .card-reading {
 /* Daybook shell: imported panels use Nightfall literals. Keep artwork mats
    dark, while matching functional surfaces and text to the parchment reader. */
 html:not(.dark) .card-reading {
-  --l-2:#5f5647;
-  --l-3:#655b4b;
-  --accent:#72541f;
-  --accent-d:#72541f;
+  --l-2:var(--shell-day-l-2);
+  --l-3:var(--shell-day-l-3);
+  --accent:var(--shell-day-accent);
+  --accent-d:var(--shell-day-accent-d);
 }
 html:not(.dark) .card-reading--desktop aside > div:has(> [data-jump="iching"]),
 html:not(.dark) .card-reading--desktop aside a[class^="dcw-cardreadingdesktop-h"] {

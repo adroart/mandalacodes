@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-18T00:00:00.000Z",
+  "generatedAt": "2026-11-19T00:00:00.000Z",
   "title": "Design System: Mandala Codes",
   "extensions": {
     "colorMeta": {
@@ -31,29 +31,45 @@
       }
     },
     "typographyMeta": {
-      "display": {
-        "displayName": "Display",
-        "purpose": "Hero titles, 40px."
+      "page-title": {
+        "displayName": "Page title",
+        "purpose": "Hero and page titles, 40px (type-6)."
       },
-      "heading": {
-        "displayName": "Heading",
-        "purpose": "Page headings, 28px."
+      "section-heading": {
+        "displayName": "Section heading",
+        "purpose": "Section headings, 28px (type-5)."
       },
-      "subhead": {
-        "displayName": "Subhead",
-        "purpose": "Small titles, 22px."
+      "card-title": {
+        "displayName": "Card title",
+        "purpose": "Card and panel titles, 22px (type-4)."
       },
       "body": {
-        "displayName": "Reading",
-        "purpose": "Readings, 17px."
+        "displayName": "Body",
+        "purpose": "Reading text, 17px (type-3)."
       },
-      "meta": {
-        "displayName": "Meta",
-        "purpose": "Metadata, help text, fields, 14px."
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Small text, metadata, help, 14px (type-2)."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Caps labels and buttons, 12px, 0.16em."
+        "purpose": "Caps eyebrows and labels, 12px (type-1)."
+      },
+      "nav": {
+        "displayName": "Nav",
+        "purpose": "Site bar links, 12px (type-1)."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Button text, 12px (type-1)."
+      },
+      "field": {
+        "displayName": "Field",
+        "purpose": "Inputs and selects, 14px (type-2)."
+      },
+      "admin-table": {
+        "displayName": "Admin table",
+        "purpose": "Admin rows and tables, 14px (type-2)."
       }
     },
     "breakpoints": [

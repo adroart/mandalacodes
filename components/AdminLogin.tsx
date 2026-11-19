@@ -7,16 +7,16 @@ const AdminLogin: React.FC = () => {
   const toAtlas = () => navigate('/admin/atlas');
 
   return (
-    <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6 py-16">
+    <section className="min-h-screen bg-admin flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-md">
-        <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 font-semibold text-center mb-3">
+        <p className="font-label text-label uppercase tracking-[0.2em] text-accent font-semibold text-center mb-3">
           Admin
         </p>
-        <h1 className="font-display text-3xl text-wood-900 font-medium mb-8 text-center">
+        <h1 className="font-display text-section-heading text-ink font-medium mb-8 text-center">
           Sign in
         </h1>
         <SignInModal onClose={toAtlas} onSignedIn={toAtlas} />
-        <p className="font-reading text-xs text-wood-500 mt-6 text-center leading-relaxed">
+        <p className="font-reading text-label text-ink-faint mt-6 text-center leading-relaxed">
           Admin access is restricted to the workspace email on file.
         </p>
       </div>

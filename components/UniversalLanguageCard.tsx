@@ -408,7 +408,7 @@ const chartRowStyles = `
   }
   .ul-chart-row .ypc__mid { flex: 0 1 auto; align-items: center; gap: 2px; }
   .ul-chart-row .ypc__title,
-  .ul-chart-row .ypc__title--out { font-size: var(--text-meta); }
+  .ul-chart-row .ypc__title--out { font-size: var(--text-caption); }
   .ul-chart-row .ypc__go { font-size: var(--text-label); letter-spacing: 0; }
 
   /* Keeping the code is the second line. The chip's own colors are the account

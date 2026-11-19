@@ -97,7 +97,7 @@ const anchorId = (id: string) => `ledger-${id}`;
 /* The sticky controls need the page surface behind them. The globe is its own
    dark room now; the written ledger follows Daybook/Nightfall with the rest of
    the site. Fully opaque so dream text never ghosts through the controls. */
-const STICKY_SURFACE = 'bg-paper-50';
+const STICKY_SURFACE = 'bg-page-paper';
 
 const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -370,11 +370,11 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
     <section ref={rootRef} aria-labelledby="atlas-ledger-heading">
       <h2
         id="atlas-ledger-heading"
-        className="font-display text-3xl text-wood-900 font-medium mb-2"
+        className="font-display text-3xl text-ink font-medium mb-2"
       >
         The ledger
       </h2>
-      <p className="font-reading text-base text-wood-700 leading-[1.7] max-w-prose">
+      <p className="font-reading text-base text-ink-soft leading-[1.7] max-w-prose">
         Every piece, every dream, one record.
       </p>
 
@@ -430,11 +430,11 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
         pool.length === 0 ? (
           /* An empty atlas, not an over-narrowed one: no filter reduced this
              to nothing, so there is nothing to loosen. */
-          <p className="font-display text-lg text-wood-700 py-8">
+          <p className="font-display text-lg text-ink-soft py-8">
             the sky is waiting for its first light.
           </p>
         ) : (
-          <p className="font-reading text-base text-wood-600 leading-[1.7] py-8">
+          <p className="font-reading text-base text-ink-muted leading-[1.7] py-8">
             Nothing matches. Loosen a filter.
           </p>
         )
@@ -460,7 +460,7 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
               style={SECTION_ANCHOR}
             >
               <h3
-                className={`font-display text-xl text-wood-900 font-medium ${
+                className={`font-display text-xl text-ink font-medium ${
                   s.ghost || s.rows.length < 2 ? 'mb-4' : 'mb-1'
                 }`}
               >
@@ -469,7 +469,7 @@ const TheLedger: React.FC<Props> = ({ codeEntries, kindSections, onSelectOnGlobe
               {/* The count only where it says something: never for ghosts, and
                   not for a section whose single row is already the answer. */}
               {!s.ghost && s.rows.length > 1 && (
-                <p className="font-label text-[11px] uppercase tracking-[0.16em] text-wood-500 mb-4">
+                <p className="font-label text-[11px] uppercase tracking-[0.16em] text-ink-faint mb-4">
                   {s.rows.length} pieces
                 </p>
               )}

@@ -300,8 +300,8 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
   // fixed bar over moving content has to be opaque; the blur stays only as a
   // fallback flourish for the top-of-page glass state.
   const surface = isScrolled || open
-    ? 'bg-paper-50 border-b border-wood-200'
-    : 'bg-paper-50/85 backdrop-blur-md border-b border-wood-200/50';
+    ? 'bg-page-paper border-b border-line'
+    : 'bg-page-paper/85 backdrop-blur-md border-b border-line/50';
   // On phones the bar stays slim so it reads as a compact top strip above the
   // page chrome (e.g. the card's chapter band); desktop keeps a generous bar.
   const pad = isScrolled ? 'py-1.5 md:py-2' : 'py-2 md:py-2.5';
@@ -327,8 +327,8 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
           aria-label="Mandala Codes home"
         >
           <span
-            className={`font-brand font-normal uppercase whitespace-nowrap text-wood-900 group-hover:text-bronze-600 transition-colors duration-300 ${
-              isScrolled ? 'text-[12px]' : 'text-[13px]'
+            className={`font-brand font-normal uppercase whitespace-nowrap text-ink group-hover:text-accent transition-colors duration-300 ${
+              isScrolled ? 'text-label' : 'text-caption'
             }`}
             style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.2em', marginRight: '-0.2em', lineHeight: 1.22 }}
           >
@@ -352,8 +352,8 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
           }`}
         >
           {desktopItems.map((item, i) => {
-            const linkClass = `group relative text-[13px] uppercase tracking-[0.18em] font-label py-3 px-3.5 2xl:px-5 transition-colors duration-300 font-semibold ${
-              isNavActive(item.path) ? 'text-wood-900' : 'text-wood-700 hover:text-bronze-600'
+            const linkClass = `group relative text-caption uppercase tracking-[0.18em] font-label py-3 px-3.5 2xl:px-5 transition-colors duration-300 font-semibold ${
+              isNavActive(item.path) ? 'text-ink' : 'text-ink-soft hover:text-accent'
             }`;
             const underline = (
               <span
@@ -393,7 +393,7 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
         <button
           ref={controlsRef}
           onClick={toggleDarkMode}
-          className={`inline-flex items-center justify-center shrink-0 text-wood-700 hover:text-bronze-600 transition-colors min-w-[44px] min-h-[44px] ${
+          className={`inline-flex items-center justify-center shrink-0 text-ink-soft hover:text-accent transition-colors min-w-[44px] min-h-[44px] ${
             menuFits ? 'order-4 -mr-2' : 'order-1 -ml-3'
           }`}
           aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -404,7 +404,7 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
         </button>
 
         <button
-          className={`${menuFits ? 'hidden' : 'flex'} order-5 shrink-0 text-wood-900 hover:opacity-70 transition-opacity -mr-3 min-w-[44px] min-h-[44px] items-center justify-center`}
+          className={`${menuFits ? 'hidden' : 'flex'} order-5 shrink-0 text-ink hover:opacity-70 transition-opacity -mr-3 min-w-[44px] min-h-[44px] items-center justify-center`}
           onClick={() => setIsMobileMenuOpen(!open)}
           aria-expanded={open}
           aria-controls="mobile-nav-menu"
@@ -421,11 +421,11 @@ const NavigationCore: React.FC<NavigationCoreProps> = ({ pathname, navigate, Lin
           id="mobile-nav-menu"
           role="navigation"
           aria-label="Mobile navigation"
-          className="absolute top-full left-0 w-full bg-paper-50 border-b border-wood-200 py-10 px-6 flex flex-col gap-7 items-center shadow-2xl"
+          className="absolute top-full left-0 w-full bg-page-paper border-b border-line py-10 px-6 flex flex-col gap-7 items-center shadow-2xl"
         >
           {visibleItems.map((item) => {
-            const itemClass = `text-sm font-label uppercase tracking-[0.2em] font-semibold transition-colors ${
-              isNavActive(item.path) ? 'text-bronze-600' : 'text-wood-800 hover:text-wood-900'
+            const itemClass = `text-caption font-label uppercase tracking-[0.2em] font-semibold transition-colors ${
+              isNavActive(item.path) ? 'text-accent' : 'text-wood-800 hover:text-ink'
             }`;
             return item.external ? (
               <a key={item.path} href={item.path} className={itemClass}>

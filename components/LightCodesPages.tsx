@@ -4,8 +4,8 @@ import { categoryLabels, lightCodeByNumber, lightCodeImagePath, lightCodes, ligh
 import NotFound from './NotFound';
 
 const origin = 'https://mandalacodes.com';
-const label = 'font-label text-xs font-semibold uppercase tracking-[0.12em] text-bronze-700';
-const textLink = 'inline-flex min-h-11 items-center font-label text-[15px] font-semibold text-bronze-700 underline underline-offset-4 hover:text-bronze-600 focus-visible:outline-2 focus-visible:outline-offset-4';
+const label = 'font-label text-label font-semibold uppercase tracking-[0.12em] text-link';
+const textLink = 'inline-flex min-h-11 items-center font-label text-body font-semibold text-link underline underline-offset-4 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4';
 
 export const lightCodesSchema = () => ({
   '@context': 'https://schema.org', '@type': 'CollectionPage',
@@ -65,16 +65,16 @@ export function LightCodesPage() {
     result[card.category] += 1;
     return result;
   }, { 'frequency-foundation': 0, 'embodied-vibration': 0, 'resonant-formations': 0 });
-  return <article className="min-h-screen bg-paper-50 text-wood-900">
+  return <article className="min-h-screen bg-page-paper text-ink">
     <StructuredData id="light-codes-structured-data" data={lightCodesSchema()} />
     <ArtworkImageMeta width={1200} />
     <div className="mx-auto max-w-6xl px-5 pb-20 pt-[calc(var(--nav-height)+2.5rem)] sm:px-8">
       <header className="max-w-3xl">
         <p className={label}>Artwork archive</p>
         <h1 className="mt-3 font-display text-[clamp(2.8rem,8vw,5.5rem)] leading-[0.95]">Light Codes</h1>
-        <p className="mt-5 font-reading text-[18px] leading-[1.5] text-wood-800 sm:text-[20px]">Browse 68 numbered works from the Light Codes series.</p>
+        <p className="mt-5 font-reading text-card-title leading-[1.5] text-wood-800 sm:text-card-title">Browse 68 numbered works from the Light Codes series.</p>
       </header>
-      <div className="mt-6 flex flex-wrap gap-2 border-y border-wood-300 py-3" role="group" aria-label="Filter artwork by category">
+      <div className="mt-6 flex flex-wrap gap-2 border-y border-line-strong py-3" role="group" aria-label="Filter artwork by category">
         {(['all', 'frequency-foundation', 'embodied-vibration', 'resonant-formations'] as const).map((value) => <button
           key={value} type="button" aria-label={`${value === 'all' ? 'All artwork' : categoryLabels[value]} (${value === 'all' ? lightCodes.length : counts[value]})`} aria-pressed={category === value} onClick={() => setCategory(value)}
           className="btn btn-chip">
@@ -84,8 +84,8 @@ export function LightCodesPage() {
       <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4 lg:grid-cols-6" aria-live="polite">
         {shown.map((card) => <Link key={card.number} to={`/light-codes/${card.number}`} className="group block min-w-0 no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bronze-700" aria-label={`View ${lightCodeTitle(card.number)}, ${categoryLabels[card.category]}`}>
           <div className="aspect-square bg-wood-200"><img src={lightCodeImagePath(card.number)} alt={`Artwork for ${lightCodeTitle(card.number)}`} loading={card.number > 8 ? 'lazy' : 'eager'} className="h-full w-full object-contain" /></div>
-          <h2 className="mt-2 font-display text-[21px] leading-tight text-wood-900 group-hover:text-bronze-700">{lightCodeTitle(card.number)}</h2>
-          <p className="mt-0.5 font-reading text-[13px] leading-tight text-wood-700">{categoryLabels[card.category]}</p>
+          <h2 className="mt-2 font-display text-card-title leading-tight text-ink group-hover:text-link">{lightCodeTitle(card.number)}</h2>
+          <p className="mt-0.5 font-reading text-caption leading-tight text-ink-soft">{categoryLabels[card.category]}</p>
         </Link>)}
       </div>
     </div>
@@ -102,7 +102,7 @@ export function LightCodePage() {
 export function LightCodeArtwork({ card }: { card: LightCode }) {
   const previous = card.number > 1 ? card.number - 1 : undefined;
   const next = card.number < lightCodes.length ? card.number + 1 : undefined;
-  return <article className="min-h-screen bg-paper-50 text-wood-900">
+  return <article className="min-h-screen bg-page-paper text-ink">
     <StructuredData id="light-code-structured-data" data={lightCodeSchema(card)} />
     <ArtworkImageMeta width={card.number === 51 ? 1059 : 1200} />
     <div className="mx-auto max-w-5xl px-5 pb-16 pt-[calc(var(--nav-height)+1.5rem)] sm:px-8">
@@ -113,10 +113,10 @@ export function LightCodeArtwork({ card }: { card: LightCode }) {
           {next && <Link className={textLink} to={`/light-codes/${next}`} aria-label={`Next artwork, ${lightCodeTitle(next)}`}>Next →</Link>}
         </div>
       </nav>
-      <div className="mt-4 grid gap-5 border-t border-wood-300 pt-5 md:grid-cols-[minmax(0,1fr)_minmax(12rem,0.4fr)] md:gap-10">
+      <div className="mt-4 grid gap-5 border-t border-line-strong pt-5 md:grid-cols-[minmax(0,1fr)_minmax(12rem,0.4fr)] md:gap-10">
         <div className="min-w-0"><img src={lightCodeImagePath(card.number)} alt={`Artwork for ${lightCodeTitle(card.number)}`} className="mx-auto max-h-[min(72vh,760px)] w-full bg-wood-200 object-contain" /></div>
         <div>
-          <div><p className={label}>Artwork {card.number} of {lightCodes.length}</p><h1 className="mt-3 font-display text-[clamp(2.8rem,7vw,4.7rem)] leading-[0.95]">{lightCodeTitle(card.number)}</h1><p className="mt-4 font-reading text-[17px] text-wood-700">{categoryLabels[card.category]}</p></div>
+          <div><p className={label}>Artwork {card.number} of {lightCodes.length}</p><h1 className="mt-3 font-display text-[clamp(2.8rem,7vw,4.7rem)] leading-[0.95]">{lightCodeTitle(card.number)}</h1><p className="mt-4 font-reading text-body text-ink-soft">{categoryLabels[card.category]}</p></div>
         </div>
       </div>
     </div>

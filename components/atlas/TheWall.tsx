@@ -321,7 +321,7 @@ const FlipButton: React.FC<{
     } ${
       dark
         ? 'text-[#c8b084]/85 hover:text-[#f0e2c2]'
-        : 'text-bronze-600/85 hover:text-bronze-700'
+        : 'text-accent/85 hover:text-link'
     }`}
   >
     {label}
@@ -422,9 +422,9 @@ const WallRecord: React.FC<{
   /* The caption bar's link voice: true underlined links, no arrows, quiet
      until the hand arrives. Close sits a shade dimmer than the rest. */
   const linkClass =
-    'font-label text-[11px] lowercase tracking-[0.08em] underline underline-offset-[5px] decoration-[0.5px] decoration-bronze-500/40 text-bronze-700 hover:text-bronze-600 hover:decoration-bronze-600 transition-colors';
+    'font-label text-[11px] lowercase tracking-[0.08em] underline underline-offset-[5px] decoration-[0.5px] decoration-bronze-500/40 text-link hover:text-accent hover:decoration-bronze-600 transition-colors';
   const closeClass =
-    'font-label text-[11px] lowercase tracking-[0.08em] underline underline-offset-[5px] decoration-[0.5px] decoration-wood-400/40 text-wood-500 hover:text-wood-700 hover:decoration-wood-600 transition-colors';
+    'font-label text-[11px] lowercase tracking-[0.08em] underline underline-offset-[5px] decoration-[0.5px] decoration-wood-400/40 text-ink-faint hover:text-ink-soft hover:decoration-wood-600 transition-colors';
   const linkClassDark =
     'font-label text-[11px] lowercase tracking-[0.08em] underline underline-offset-[5px] decoration-[0.5px] decoration-[#c8b084]/40 text-[#c8b084] hover:text-[#e8d9b0] hover:decoration-[#e8d9b0] transition-colors';
   const closeClassDark =
@@ -457,7 +457,7 @@ const WallRecord: React.FC<{
               Title and links live on separate rows, so nothing overlaps. */}
           <div
             aria-hidden={face === 'art'}
-            className={`absolute inset-0 [backface-visibility:hidden] flex flex-col overflow-hidden border border-bronze-500/30 bg-wood-50 shadow-[0_24px_80px_rgba(21,19,17,0.45)] ${
+            className={`absolute inset-0 [backface-visibility:hidden] flex flex-col overflow-hidden border border-bronze-500/30 bg-card shadow-[0_24px_80px_rgba(21,19,17,0.45)] ${
               face === 'art' ? 'pointer-events-none' : ''
             }`}
           >
@@ -466,10 +466,10 @@ const WallRecord: React.FC<{
             {/* Upper bar: title + anchor, and the flip control tight right. */}
             <div className="relative z-10 flex items-start justify-between gap-4 px-5 sm:px-9 pt-5 pb-2">
               <span className="min-w-0">
-                <span className="block font-display text-[18px] text-wood-900 truncate">
+                <span className="block font-display text-[18px] text-ink truncate">
                   {card.title}
                 </span>
-                <span className="block font-label text-[10px] uppercase tracking-[0.18em] text-bronze-600">
+                <span className="block font-label text-[10px] uppercase tracking-[0.18em] text-accent">
                   {ledgerStatusLine(card)}
                 </span>
               </span>
@@ -484,15 +484,15 @@ const WallRecord: React.FC<{
             <div className="relative flex-1 min-h-0 overflow-y-auto px-5 sm:px-9 pt-2 pb-4">
               {card.dream ? (
                 <>
-                  <p className="font-display text-[20px] sm:text-[23px] leading-[1.75] text-wood-900 whitespace-pre-line">
+                  <p className="font-display text-[20px] sm:text-[23px] leading-[1.75] text-ink whitespace-pre-line">
                     {card.dream}
                   </p>
                   <DreamSignature signedBy={card.signedBy} className="mt-5" />
                 </>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center gap-2">
-                  <p className="font-display text-2xl text-wood-700">{card.title}</p>
-                  <p className="font-label text-[11px] uppercase tracking-[0.16em] text-wood-500">
+                  <p className="font-display text-2xl text-ink-soft">{card.title}</p>
+                  <p className="font-label text-[11px] uppercase tracking-[0.16em] text-ink-faint">
                     {card.norm === 'seeking'
                       ? 'seeking ground'
                       : 'waiting for a dream'}
@@ -501,7 +501,7 @@ const WallRecord: React.FC<{
               )}
             </div>
             {/* Lower bar: walk left and right; the links rest in the middle. */}
-            <div className="relative shrink-0 h-[52px] border-t border-wood-200 bg-wood-50/95 px-3 sm:px-5 flex items-center">
+            <div className="relative shrink-0 h-[52px] border-t border-line bg-card/95 px-3 sm:px-5 flex items-center">
               <StepArrow dir={-1} enabled={hasPrev} onStep={onStep} tone="paper" />
               <span className="mx-auto flex items-center gap-x-6 sm:gap-x-8">
                 {card.onGlobe && (
@@ -609,7 +609,7 @@ const StepArrow: React.FC<{
         dir === 1 ? 'hover:translate-x-0.5' : 'hover:-translate-x-0.5'
       } ${
         tone === 'paper'
-          ? 'text-bronze-600 hover:text-bronze-500'
+          ? 'text-accent hover:text-bronze-500'
           : 'text-[#c8b084] hover:text-[#e8d9b0]'
       }`}
     >
@@ -804,11 +804,11 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
       <style>{WALL_CSS}</style>
       <h2
         id="atlas-wall-heading"
-        className="font-display text-3xl text-wood-900 font-medium mb-2"
+        className="font-display text-3xl text-ink font-medium mb-2"
       >
         The wall
       </h2>
-      <p className="font-reading text-base text-wood-700 leading-[1.7] max-w-prose">
+      <p className="font-reading text-base text-ink-soft leading-[1.7] max-w-prose">
         Explore the artwork, then open a piece to read its dream.
       </p>
 
@@ -820,7 +820,7 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
             aria-label="How close you stand to the wall"
             className="flex items-center gap-2.5 ml-auto"
           >
-            <span className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500">
+            <span className="font-label text-[10px] uppercase tracking-[0.2em] text-ink-faint">
               stand
             </span>
             {(['near', 'mid', 'far'] as const).map((d) => (
@@ -876,11 +876,11 @@ const TheWall: React.FC<Props> = ({ cards, onSelectOnGlobe }) => {
         cards.length === 0 ? (
           /* An empty atlas, not an over-narrowed one: no filter reduced this
              to nothing, so there is nothing to loosen. */
-          <p className="font-display text-lg text-wood-700 py-8">
+          <p className="font-display text-lg text-ink-soft py-8">
             the sky is waiting for its first light.
           </p>
         ) : (
-          <p className="font-reading text-base text-wood-600 leading-[1.7] py-8">
+          <p className="font-reading text-base text-ink-muted leading-[1.7] py-8">
             Nothing matches. Loosen a filter.
           </p>
         )

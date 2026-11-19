@@ -39,7 +39,7 @@ interface Props {
 }
 
 const codeLinkClass =
-  'font-label text-[12px] tracking-[0.03em] lowercase text-bronze-700 hover:text-bronze-600 transition-colors';
+  'font-label text-[12px] tracking-[0.03em] lowercase text-link hover:text-accent transition-colors';
 
 const CodePiecesPanel: React.FC<Props> = ({
   codeNumber,

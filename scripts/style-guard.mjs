@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * Style guard: counts hard-coded colours and hard-coded control sizes in
- * every app style and component file, outside the master style file
- * (src/theme.css).
+ * Style guard: counts hard-coded colours, control sizes, font sizes and
+ * font families in every app style and component file, outside the master
+ * style file (src/theme.css).
  *
- * The master file owns colours, type, spacing, radii and control heights.
+ * The master file owns colours, type, spacing, radii, control heights and
+ * fonts; sections use its roles (text-body, text-ink, bg-page ...).
  * Anything written by hand elsewhere is drift. The counts per file are
  * frozen in tests/unit/style-guard.baseline.json; tests/unit/styleGuard.test.ts
  * fails when any file goes above its frozen count, so the number can only
@@ -43,6 +44,23 @@ const SIZE_RES = [
   /\b(?:h|min-h|p|px|py|pt|pb|pl|pr)-\[\d+(?:\.\d+)?(?:px|rem)\]/g,
 ];
 
+/**
+ * A hard-coded font size: Tailwind arbitrary text-[13px], a CSS font-size in
+ * px or rem, or an inline fontSize. (em sizes are relative, like a drop cap,
+ * and are not counted.)
+ */
+const FONT_SIZE_RES = [
+  /\btext-\[\d+(?:\.\d+)?(?:px|rem|em)\]/g,
+  /\bfont-size\s*:\s*[^;{}\n'"`,]*?\d+(?:\.\d+)?(?:px|rem)/g,
+  /\bfontSize\s*:\s*(?:['"`][^'"`]*\d(?:px|rem)|[1-9]\d*(?:\.\d+)?\b)/g,
+];
+/** A hard-coded font family, named directly instead of var(--font-...). */
+const FONT_RES = [
+  /\bfont-family\s*:\s*['"]/g,
+  /\bfontFamily\s*:\s*['"`](?!var\()/g,
+];
+export const KINDS = ['colors', 'sizes', 'fontSizes', 'fonts'];
+
 function walk(dir, out) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
@@ -68,9 +86,8 @@ export function scanFiles() {
 
 export function countText(text) {
   const colors = (text.match(COLOR_RE) || []).length;
-  let sizes = 0;
-  for (const re of SIZE_RES) sizes += (text.match(re) || []).length;
-  return { colors, sizes };
+  const sum = (res) => res.reduce((n, re) => n + (text.match(re) || []).length, 0);
+  return { colors, sizes: sum(SIZE_RES), fontSizes: sum(FONT_SIZE_RES), fonts: sum(FONT_RES) };
 }
 
 export function countFile(rel) {
@@ -81,15 +98,15 @@ export function countAll() {
   const result = {};
   for (const f of scanFiles()) {
     const c = countFile(f);
-    if (c.colors || c.sizes) result[f] = c;
+    if (KINDS.some((k) => c[k])) result[f] = c;
   }
   return result;
 }
 
 export function totals(counts) {
-  let colors = 0, sizes = 0;
-  for (const c of Object.values(counts)) { colors += c.colors; sizes += c.sizes; }
-  return { colors, sizes };
+  const t = Object.fromEntries(KINDS.map((k) => [k, 0]));
+  for (const c of Object.values(counts)) for (const k of KINDS) t[k] += c[k] || 0;
+  return t;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
@@ -97,10 +114,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
   const t = totals(counts);
   if (process.argv.includes('--write')) {
     fs.writeFileSync(BASELINE_PATH, JSON.stringify({ totals: t, files: counts }, null, 2) + '\n');
-    console.log(`baseline written: ${t.colors} colours, ${t.sizes} sizes in ${Object.keys(counts).length} files`);
+    console.log(`baseline written: ${t.colors} colours, ${t.sizes} sizes, ${t.fontSizes} font sizes, ${t.fonts} font families in ${Object.keys(counts).length} files`);
   } else {
-    console.log(`${t.colors} hard-coded colours, ${t.sizes} hard-coded control sizes`);
-    const worst = Object.entries(counts).sort((a, b) => (b[1].colors + b[1].sizes) - (a[1].colors + a[1].sizes)).slice(0, 15);
-    for (const [f, c] of worst) console.log(`${String(c.colors).padStart(5)} ${String(c.sizes).padStart(5)}  ${f}`);
+    console.log(`${t.colors} colours, ${t.sizes} control sizes, ${t.fontSizes} font sizes, ${t.fonts} font families (hard-coded)`);
+    const sum = (c) => KINDS.reduce((n, k) => n + (c[k] || 0), 0);
+    const worst = Object.entries(counts).sort((a, b) => sum(b[1]) - sum(a[1])).slice(0, 15);
+    for (const [f, c] of worst) console.log(KINDS.map((k) => String(c[k] || 0).padStart(5)).join(' ') + `  ${f}`);
   }
 }

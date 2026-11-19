@@ -33,8 +33,8 @@ import {
 const fieldLabel = 'field-label';
 const fieldInput = 'field';
 const fieldTextarea = `${fieldInput} resize-y`;
-const sectionTitle = 'font-title text-2xl text-wood-900 mb-2 tracking-[0.05em]';
-const sectionLead = 'font-reading text-sm text-wood-500 mb-4';
+const sectionTitle = 'font-title text-card-title text-ink mb-2 tracking-[0.05em]';
+const sectionLead = 'font-reading text-caption text-ink-faint mb-4';
 
 function useAdminFetch(): (input: string, init?: RequestInit) => Promise<Response> {
     const { fetchAuthed } = useAccount();
@@ -96,7 +96,7 @@ const PiecePicker: React.FC<{
                 />
                 <div className="flex items-center justify-between gap-3 mt-1">
                     {uncatalogued ? (
-                        <span className="font-reading text-xs text-stone-500 not-italic">
+                        <span className="font-reading text-label text-stone-500 not-italic">
                             Uncatalogued id — renders by sigil only until its catalog row lands.
                         </span>
                     ) : (
@@ -108,7 +108,7 @@ const PiecePicker: React.FC<{
                             setFreeText(false);
                             onChange('');
                         }}
-                        className="shrink-0 font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                        className="shrink-0 font-label text-label uppercase tracking-[0.15em] text-ink-faint hover:text-ink font-semibold"
                     >
                         choose from list
                     </button>
@@ -135,7 +135,7 @@ const PiecePicker: React.FC<{
                 renderItem={(p) => (
                     <>
                         {p.label}
-                        <span className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 ml-2">
+                        <span className="font-label text-label uppercase tracking-[0.15em] text-wood-400 ml-2">
                             {p.id}
                         </span>
                     </>
@@ -209,7 +209,7 @@ const ImagesEditor: React.FC<{
                                 type="button"
                                 onClick={() => remove(id)}
                                 title="Remove"
-                                className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center bg-wood-900 text-paper-50 text-xs leading-none rounded-full hover:bg-bronze-700"
+                                className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center bg-wood-900 text-ink-inverse text-label leading-none rounded-full hover:bg-bronze-700"
                             >
                                 ×
                             </button>
@@ -243,7 +243,7 @@ const ImagesEditor: React.FC<{
                 </button>
             </div>
             {error && (
-                <p className="font-reading text-sm text-stone-600 mt-2">{error}</p>
+                <p className="font-reading text-caption text-stone-600 mt-2">{error}</p>
             )}
         </div>
     );
@@ -351,7 +351,7 @@ const PieceContentEditor: React.FC = () => {
     };
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-5 mb-6">
+        <div className="bg-card border border-line p-5 mb-6">
             <h2 className={sectionTitle}>Piece</h2>
             <p className={sectionLead}>
                 Pick a piece, then write its story, materials, provenance, and
@@ -366,23 +366,23 @@ const PieceContentEditor: React.FC = () => {
             </div>
 
             {!pieceId && (
-                <p className="font-reading text-sm text-wood-500">
+                <p className="font-reading text-caption text-ink-faint">
                     Choose a piece above to begin.
                 </p>
             )}
 
             {pieceId && loading && (
-                <p className="font-reading text-sm text-wood-500">Loading…</p>
+                <p className="font-reading text-caption text-ink-faint">Loading…</p>
             )}
 
             {pieceId && !loading && (
                 <div className="space-y-6">
                     {loadError && (
-                        <p className="font-reading text-sm text-stone-600">{loadError}</p>
+                        <p className="font-reading text-caption text-stone-600">{loadError}</p>
                     )}
 
                     {staticInfo?.staticDescription && (
-                        <p className="font-reading text-sm text-wood-500 border-l-2 border-wood-200 pl-3">
+                        <p className="font-reading text-caption text-ink-faint border-l-2 border-line pl-3">
                             Current placeholder · {staticInfo.staticDescription}
                         </p>
                     )}
@@ -435,10 +435,10 @@ const PieceContentEditor: React.FC = () => {
                     />
 
                     {saveError && (
-                        <p className="font-reading text-sm text-stone-600">{saveError}</p>
+                        <p className="font-reading text-caption text-stone-600">{saveError}</p>
                     )}
                     {savedAt && (
-                        <p className="font-label text-[11px] uppercase tracking-[0.15em] text-green-800 font-semibold">
+                        <p className="font-label text-label uppercase tracking-[0.15em] text-green-800 font-semibold">
                             Saved · {savedAt}
                         </p>
                     )}
@@ -465,13 +465,13 @@ const AdminPieceContent: React.FC = () => {
         <AdminLayout>
             <section className="pt-8 pb-24 px-[var(--page-gutter)]">
                 <div className="max-w-3xl mx-auto">
-                    <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 font-semibold mb-3">
+                    <p className="font-label text-label uppercase tracking-[0.2em] text-accent font-semibold mb-3">
                         Admin
                     </p>
-                    <h1 className="font-title text-4xl text-wood-900 mb-2 tracking-[0.05em]">
+                    <h1 className="font-title text-page-title text-ink mb-2 tracking-[0.05em]">
                         Piece Content
                     </h1>
-                    <p className="font-reading text-sm text-wood-500 mb-12">
+                    <p className="font-reading text-caption text-ink-faint mb-12">
                         Write each piece's story, materials, provenance, and
                         gallery — no code edits.
                     </p>

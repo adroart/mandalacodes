@@ -70,7 +70,7 @@ const VARIANT_INPUT: Record<'admin' | 'book', string> = {
   admin:
     'field',
   book:
-    'w-full min-h-[44px] border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400',
+    'w-full min-h-[44px] border border-line-strong bg-card px-4 py-3 font-reading text-base text-ink placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400',
 };
 
 const VARIANT_LIST_MAX_HEIGHT: Record<'admin' | 'book', string> = {
@@ -85,15 +85,15 @@ const VARIANT_LIST_MAX_HEIGHT: Record<'admin' | 'book', string> = {
 // touch than the bronze "selected" background.
 function rowClassName(variant: 'admin' | 'book', selected: boolean, highlighted: boolean): string {
   const base = 'px-4 py-2 cursor-pointer font-reading text-sm transition-colors';
-  if (variant === 'book' && selected) return `${base} bg-bronze-100 text-wood-900`;
+  if (variant === 'book' && selected) return `${base} bg-bronze-100 text-ink`;
   if (highlighted) {
     return variant === 'admin'
-      ? `${base} bg-paper-100 text-bronze-700`
-      : `${base} bg-paper-100`;
+      ? `${base} bg-band text-link`
+      : `${base} bg-band`;
   }
   return variant === 'admin'
-    ? `${base} text-wood-700 hover:bg-paper-100 hover:text-bronze-700`
-    : `${base} text-wood-700 hover:bg-paper-100`;
+    ? `${base} text-ink-soft hover:bg-band hover:text-link`
+    : `${base} text-ink-soft hover:bg-band`;
 }
 
 function TypeaheadPickerInner<T>({
@@ -205,7 +205,7 @@ function TypeaheadPickerInner<T>({
         <ul
           id={listId}
           role="listbox"
-          className={`absolute z-10 left-0 right-0 mt-1 ${listMaxHeightClassName ?? VARIANT_LIST_MAX_HEIGHT[variant]} overflow-y-auto bg-wood-50 border border-wood-300 shadow-sm`}
+          className={`absolute z-10 left-0 right-0 mt-1 ${listMaxHeightClassName ?? VARIANT_LIST_MAX_HEIGHT[variant]} overflow-y-auto bg-card border border-line-strong shadow-sm`}
         >
           {matches.map((item, i) => {
             const key = itemKey(item);
@@ -233,7 +233,7 @@ function TypeaheadPickerInner<T>({
       {open && matches.length === 0 && emptyMessage && (
         <ul
           role="listbox"
-          className="absolute z-10 left-0 right-0 mt-1 bg-wood-50 border border-wood-300 shadow-sm"
+          className="absolute z-10 left-0 right-0 mt-1 bg-card border border-line-strong shadow-sm"
         >
           <li className="px-4 py-2 font-reading tracking-[0.015em] text-sm text-stone-600">{emptyMessage}</li>
         </ul>

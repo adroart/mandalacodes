@@ -143,25 +143,40 @@
   --color-action-ink: #211c16;
 
   /* Page grounds (were literals in index.css). */
-  --color-ground: #f3efe7;
-  --color-ground-reading: #f3efe7;
-  --color-ground-raised: #ffffff;
+  /* Page grounds. Day Book and Nightfall values are both set in the
+     MASTER PAGE COLOURS block (:root, below), so one value moves every
+     surface that shares it; these pick the right one for the mode. */
+  --color-ground: var(--page-day);
+  --color-ground-reading: var(--page-day);
+  --color-ground-raised: var(--panel-day);
 
-  /* Type scale: six steps, ratio about 1.2 to 1.4. Tailwind turns each into
-     a text-<name> utility (text-label, text-meta, ...). 12px is the floor:
-     the card reading holds every line to it (tests/card-legibility-floor). */
-  --text-label: 0.75rem;        /* 12px  caps labels, buttons, eyebrows */
-  --text-label--line-height: 1.2;
-  --text-meta: 0.875rem;        /* 14px  metadata, help text, fields    */
-  --text-meta--line-height: 1.4;
-  --text-body: 1.0625rem;       /* 17px  reading                        */
-  --text-body--line-height: 1.5;
-  --text-subhead: 1.375rem;     /* 22px  Cormorant small titles         */
-  --text-subhead--line-height: 1.2;
-  --text-heading: 1.75rem;      /* 28px  Cormorant page headings        */
-  --text-heading--line-height: 1.15;
-  --text-display: 2.5rem;       /* 40px  Cormorant hero                 */
-  --text-display--line-height: 1.1;
+  /* Small site-wide colours: text selection, quote rules, placeholders. */
+  --color-selection: rgb(196 170 124 / 0.25);
+  --color-selection-ink: #262321;
+  --color-quote-rule: #c4aa7c;
+  --color-placeholder: #7a746b;
+
+  /* The type scale itself (six steps) is in the :root block under MASTER
+     TYPE SCALE; the named roles that point at it are in MASTER ROLES. */
+
+  /* Tailwind's own size utilities (text-xs ... text-6xl), declared here so
+     the older files that still use them are steered from this file too.
+     Values are Tailwind's defaults, unchanged. New work uses a role
+     (text-body, text-caption) instead. */
+  --text-xs: 0.75rem;   --text-xs--line-height: 1.3333;
+  --text-sm: 0.875rem;  --text-sm--line-height: 1.4286;
+  --text-base: 1rem;    --text-base--line-height: 1.5;
+  --text-lg: 1.125rem;  --text-lg--line-height: 1.5556;
+  --text-xl: 1.25rem;   --text-xl--line-height: 1.4;
+  --text-2xl: 1.5rem;   --text-2xl--line-height: 1.3333;
+  --text-3xl: 1.875rem; --text-3xl--line-height: 1.2;
+  --text-4xl: 2.25rem;  --text-4xl--line-height: 1.1111;
+  --text-5xl: 3rem;     --text-5xl--line-height: 1;
+  --text-6xl: 3.75rem;  --text-6xl--line-height: 1;
+
+  /* Motion: two easings (Tailwind turns them into ease-glide, ease-soft). */
+  --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);         /* reveals, sheets   */
+  --ease-soft: cubic-bezier(0.25, 0.46, 0.45, 0.94);   /* hovers, underline */
 
   /* Caps tracking: one value for every uppercase label and button. */
   --tracking-caps: 0.16em;
@@ -297,9 +312,13 @@
   --color-action-hover: #e5c98b;
   --color-action-line: rgb(222 188 126 / 0.5);
   --color-action-ink: #211c16;
-  --color-ground: #171310;
-  --color-ground-reading: #211c16;
-  --color-ground-raised: #1f1d1a;
+  --color-ground: var(--page-night);
+  --color-ground-reading: var(--page-paper-night);
+  --color-ground-raised: var(--panel-night);
+  --color-selection: rgb(196 170 124 / 0.31);
+  --color-selection-ink: #f0ede7;
+  --color-quote-rule: #d4b88a;
+  --color-placeholder: #a09a92;
 
   /* Availability: invert for dark-bg readability */
   --color-avail-ready: #e0e0e0;
@@ -341,6 +360,200 @@
   }
 }
 
+/* ─── MASTER PAGE COLOURS ─────────────────────────────────────────────────
+   Every page background on the site, both modes, in one place. Change
+   --page-day and the Day Book background of the home page, the card
+   reading, the paper pages (about, account), the admin and the body
+   all move together; the piece page sits on --color-band. The card reading's Nightfall is a shade deeper than
+   the rest of the site on purpose (tests pin it), so it has its own value. */
+:root {
+  --page-day: #f3efe7;          /* Day Book: every page                     */
+  --page-night: #171310;        /* Nightfall: body and home                 */
+  --page-paper-night: #211c16;  /* Nightfall: about, account, admin        */
+  --page-card-night: #14100b;   /* Nightfall: the card reading              */
+  --panel-day: #ffffff;         /* raised panels and dialogs                */
+  --panel-night: #1f1d1a;
+}
+
+/* ─── MASTER TYPE SCALE ───────────────────────────────────────────────────
+   Six sizes, ratio about 1.2 to 1.4, each with its line-height. Nothing
+   reads these directly: sections read a ROLE below, and each role points at
+   one step. 12px is the floor; the card reading holds every line to it
+   (tests/card-legibility-floor). */
+:root {
+  --type-1: 0.75rem;     --type-1-leading: 1.3333;  /* 12 */
+  --type-2: 0.875rem;    --type-2-leading: 1.4;     /* 14 */
+  --type-3: 1.0625rem;   --type-3-leading: 1.5;     /* 17 */
+  --type-4: 1.375rem;    --type-4-leading: 1.2;     /* 22 */
+  --type-5: 1.75rem;     --type-5-leading: 1.15;    /* 28 */
+  --type-6: 2.5rem;      --type-6-leading: 1.1;     /* 40 */
+
+  /* Hairline borders: one width, everywhere. */
+  --border-hair: 1px;
+
+  /* Durations: quick for hovers, slow for reveals, theme for the day/night
+     crossfade of the page background. */
+  --duration-quick: 150ms;
+  --duration-reveal: 850ms;
+  --duration-theme: 500ms;
+}
+
+/* ─── MASTER ROLES ────────────────────────────────────────────────────────
+   What a section asks for, by name. Change a role here to repoint every
+   section that uses it; change a step or a colour ramp above to move every
+   role built on it. Each role is also a Tailwind utility:
+     font size   text-page-title, text-section-heading, text-card-title,
+                 text-body, text-caption, text-label, text-nav, text-button,
+                 text-field, text-admin-table
+     text colour text-ink, text-ink-soft, text-ink-muted, text-ink-faint,
+                 text-link, text-accent, text-danger, text-ink-inverse
+     surfaces    bg-page, bg-page-paper, bg-admin, bg-band, bg-card,
+                 bg-panel, border-line, border-line-strong, border-line-faint
+   `inline` makes each utility resolve where it is used, so a part of the
+   page that flips to nightfall on its own still gets nightfall colours;
+   `static` keeps every role available to plain CSS files as var(--...). */
+@theme inline static {
+  /* Font by role. The families themselves are in @theme at the top. */
+  --font-plain: "Karla", system-ui, sans-serif;   /* atlas form inputs */
+
+  /* Font size by role. */
+  --text-page-title: var(--type-6);       --text-page-title--line-height: var(--type-6-leading);
+  --text-section-heading: var(--type-5);  --text-section-heading--line-height: var(--type-5-leading);
+  --text-card-title: var(--type-4);       --text-card-title--line-height: var(--type-4-leading);
+  --text-body: var(--type-3);             --text-body--line-height: var(--type-3-leading);
+  --text-caption: var(--type-2);          --text-caption--line-height: var(--type-2-leading);
+  --text-label: var(--type-1);            --text-label--line-height: var(--type-1-leading);
+  --text-nav: var(--type-1);              --text-nav--line-height: var(--type-1-leading);
+  --text-button: var(--type-1);           --text-button--line-height: 1;
+  --text-field: var(--type-2);            --text-field--line-height: var(--type-2-leading);
+  --text-admin-table: var(--type-2);      --text-admin-table--line-height: var(--type-2-leading);
+
+  /* Text colour by role. The ramps flip for nightfall, so these do too. */
+  --color-ink: var(--color-wood-900);          /* main text            */
+  --color-ink-soft: var(--color-wood-700);     /* secondary text       */
+  --color-ink-muted: var(--color-wood-600);    /* muted text, help     */
+  --color-ink-faint: var(--color-wood-500);    /* captions, eyebrows   */
+  --color-ink-inverse: var(--color-paper-50);  /* text on dark fills   */
+  --color-link: var(--color-bronze-700);       /* links, gold text     */
+  --color-accent: var(--color-bronze-600);     /* accents, markers     */
+  --color-danger: var(--color-danger-text);    /* errors               */
+
+  /* Page and surface colour by role. */
+  --color-page: var(--color-ground);              /* site background            */
+  --color-page-paper: var(--color-ground-reading); /* paper pages: reading,
+                                                     about, piece, account     */
+  --color-admin: var(--color-page-paper);         /* admin background           */
+  --color-band: var(--color-paper-100);           /* section bands              */
+  --color-card: var(--color-wood-50);             /* cards, bars, boxes         */
+  --color-panel: var(--color-ground-raised);      /* raised panels, dialogs     */
+  --color-line: var(--color-wood-200);            /* borders and rules          */
+  --color-line-strong: var(--color-wood-300);     /* field and chip borders     */
+  --color-line-faint: var(--color-wood-100);      /* faint dividers             */
+}
+
+/* ─── SURFACE PALETTES ────────────────────────────────────────────────────
+   The home page and the card reading came from design files and keep their
+   own tuned palettes: a tone per reading section, and text greys darkened
+   for the 12px legibility floor. Every value is here; the rules that use
+   them stay in each surface's own stylesheet (OracleEntry.scoped.css,
+   card-reading-fullbleed.css, oracle-foundation.css) so they still win over
+   the generated design CSS. Page backgrounds read MASTER PAGE COLOURS. */
+:root {
+  /* Home page (the invocation): Day Book */
+  --home-day-bg2: #faf7f0;
+  --home-day-surface: #eae4d7;
+  --home-day-ink: #272219;
+  --home-day-ink2: #51493b;
+  --home-day-ink3: #6b6253;
+  --home-day-faint: #8a8070;
+  --home-day-line: #e0d8c6;
+  --home-day-line2: #cfc4ad;
+  --home-day-accent: #a37b38;
+  --home-day-accentDeep: #7a5a22;
+  --home-day-onAccent: #faf7f0;
+  --home-day-codeLabel: #956e2a;
+  --home-day-glow: rgba(196,170,124,0.16);
+  /* Home page (the invocation): Nightfall */
+  --home-night-bg2: #1d1813;
+  --home-night-surface: #241e17;
+  --home-night-ink: #f0ece4;
+  --home-night-ink2: #cfc7b8;
+  --home-night-ink3: #a99a82;
+  --home-night-faint: #8a7c66;
+  --home-night-line: rgba(196,170,124,0.16);
+  --home-night-line2: rgba(196,170,124,0.30);
+  --home-night-accent: #dabd8b;
+  --home-night-accentDeep: #c4a878;
+  --home-night-onAccent: #15110e;
+  --home-night-codeLabel: #e7c98e;
+  --home-night-glow: rgba(217,189,140,0.22);
+  /* Card reading shell (the imported frame): Day Book */
+  --shell-day-l-2: #5f5647;
+  --shell-day-l-3: #655b4b;
+  --shell-day-accent: #72541f;
+  --shell-day-accent-d: #72541f;
+  /* Card reading shell (the imported frame): Nightfall */
+  --shell-night-l-1: #ede4d4;
+  --shell-night-l-2: #cdc0a8;
+  --shell-night-l-3: #8d7f69;
+  --shell-night-l-rule: rgba(168,135,77,.18);
+  --shell-night-l-soft: #191510;
+  --shell-night-accent: #a8874d;
+  --shell-night-accent-d: #c6a667;
+  /* Card reading shell (the imported frame): both modes, before the mode overrides */
+  --shell-base-l-1: #272219;
+  --shell-base-l-2: #6b6253;
+  --shell-base-l-3: #8a8070;
+  --shell-base-l-rule: rgba(39,34,25,.14);
+  --shell-base-l-soft: #eae4d7;
+  --shell-base-accent: #a37b38;
+  --shell-base-accent-d: #956e2a;
+  /* Card reading (the reading itself): Day Book */
+  --reading-day-l-1: #272219;
+  --reading-day-l-2: #5f5647;
+  --reading-day-l-3: #655b4b;
+  --reading-day-l-rule: rgba(39,34,25,.14);
+  --reading-day-l-soft: #f0ece6;
+  --reading-day-d-bg: #efebe4;
+  --reading-day-d-1: #2a2419;
+  --reading-day-d-2: #5f5647;
+  --reading-day-d-3: #655b4b;
+  --reading-day-d-rule: rgba(39,34,25,.13);
+  --reading-day-d-soft: #eeebe5;
+  --reading-day-accent: #72541f;
+  --reading-day-accent-d: #72541f;
+  --reading-day-oracle-section-iching: #efebe4;
+  --reading-day-oracle-section-genekeys: #f0ece6;
+  --reading-day-oracle-section-humandesign: #eeebe5;
+  --reading-day-oracle-section-body: #f0ece5;
+  --reading-day-oracle-section-relations: #eeebe5;
+  --reading-day-oracle-inset-start: #f3efe9;
+  --reading-day-oracle-inset-end: #eeebe5;
+  --reading-day-oracle-footer: #f0ece5;
+  /* Card reading (the reading itself): Nightfall */
+  --reading-night-l-1: #ede4d4;
+  --reading-night-l-2: #cdc0a8;
+  --reading-night-l-3: #8d7f69;
+  --reading-night-l-rule: rgba(168,135,77,.18);
+  --reading-night-l-soft: #1b160f;
+  --reading-night-d-bg: #100d09;
+  --reading-night-d-1: #f3ead9;
+  --reading-night-d-2: #cdc0a8;
+  --reading-night-d-3: #8d7f69;
+  --reading-night-d-rule: rgba(168,135,77,.2);
+  --reading-night-d-soft: #17120c;
+  --reading-night-accent: #a8874d;
+  --reading-night-accent-d: #c6a667;
+  --reading-night-oracle-section-iching: #110e0a;
+  --reading-night-oracle-section-genekeys: #17120c;
+  --reading-night-oracle-section-humandesign: #120f0b;
+  --reading-night-oracle-section-body: #18130d;
+  --reading-night-oracle-section-relations: #100d09;
+  --reading-night-oracle-inset-start: #1d1810;
+  --reading-night-oracle-inset-end: #15110b;
+  --reading-night-oracle-footer: #0a0805;
+}
+
 /* ─── MASTER CONTROLS ──────────────────────────────────────────────────────
    The fixed set of control variants. Every button, tab, chip and field on
    the site is one of these seven. Compose: class="btn btn-primary",
@@ -370,7 +583,7 @@
     border-radius: var(--radius-control);
     background: transparent;
     font-family: var(--font-ui);
-    font-size: var(--text-label);
+    font-size: var(--text-button);
     font-weight: 600;
     line-height: 1;
     letter-spacing: var(--tracking-caps);
@@ -378,7 +591,7 @@
     white-space: nowrap;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+    transition: background-color var(--duration-quick) ease, border-color var(--duration-quick) ease, color var(--duration-quick) ease, opacity var(--duration-quick) ease;
   }
   .btn:focus-visible { outline: 1px solid var(--color-action); outline-offset: 2px; }
   .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
@@ -400,14 +613,14 @@
 
   .btn-quiet {
     padding: 0 var(--space-1);
-    color: var(--color-wood-600);
+    color: var(--color-ink-muted);
   }
   .btn-quiet:hover:not(:disabled) { color: var(--color-action); }
 
   .btn-icon {
     width: var(--control-h);
     padding: 0;
-    color: var(--color-wood-700);
+    color: var(--color-ink-soft);
   }
   .btn-icon:hover:not(:disabled) { color: var(--color-action); }
 
@@ -417,21 +630,21 @@
     border: 0;
     border-bottom: 1px solid transparent;
     border-radius: 0;
-    color: var(--color-wood-500);
+    color: var(--color-ink-faint);
   }
-  .btn-tab:hover:not(:disabled) { color: var(--color-wood-900); }
+  .btn-tab:hover:not(:disabled) { color: var(--color-ink); }
   .btn-tab[aria-selected="true"], .btn-tab[aria-current], .btn-tab.is-active {
-    color: var(--color-wood-900);
+    color: var(--color-ink);
     border-bottom-color: var(--color-action);
   }
 
   .btn-chip {
     height: var(--control-h-sm);
     padding: 0 var(--control-pad-x-sm);
-    border-color: var(--color-wood-300);
-    color: var(--color-wood-700);
+    border-color: var(--color-line-strong);
+    color: var(--color-ink-soft);
     font-family: var(--font-ui);
-    font-size: var(--text-meta);
+    font-size: var(--text-caption);
     font-weight: 400;
     letter-spacing: 0;
     text-transform: none;
@@ -447,12 +660,12 @@
     width: 100%;
     height: var(--control-h);
     padding: 0 var(--control-pad-x);
-    border: 1px solid var(--color-wood-300);
+    border: var(--border-hair) solid var(--color-line-strong);
     border-radius: var(--radius-control);
-    background: var(--color-wood-50);
-    color: var(--color-wood-900);
+    background: var(--color-card);
+    color: var(--color-ink);
     font-family: var(--font-reading);
-    font-size: var(--text-meta);
+    font-size: var(--text-field);
     line-height: 1.2;
   }
   .field::placeholder { color: var(--color-wood-400); }
@@ -473,7 +686,7 @@
     font-weight: 600;
     letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
-    color: var(--color-wood-500);
+    color: var(--color-ink-faint);
   }
 }
 

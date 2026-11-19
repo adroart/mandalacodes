@@ -59,9 +59,9 @@ html {
   font-variant-numeric: lining-nums;
   /* Default the document background to dark so there is never a white frame
      before body/React paint. Light mode opts back out below. */
-  background-color: #171310;
+  background-color: var(--page-night);
 }
-html:not(.dark) { background-color: #f3efe7; }
+html:not(.dark) { background-color: var(--page-day); }
 
 /* Smooth scroll globally — respects reduced-motion preference */
 @media (prefers-reduced-motion: no-preference) {
@@ -70,12 +70,8 @@ html:not(.dark) { background-color: #f3efe7; }
 
 /* #5 Custom selection color — warm palette instead of jarring blue */
 ::selection {
-  background-color: #c4aa7c40;
-  color: #262321;
-}
-.dark ::selection {
-  background-color: #c4aa7c50;
-  color: #f0ede7;
+  background-color: var(--color-selection);
+  color: var(--color-selection-ink);
 }
 
 /* #2 Balanced headings — prevents lopsided line breaks */
@@ -94,13 +90,10 @@ h1, h2, h3, h4, h5, h6 {
 
 /* #11 Blockquote styling — left border, indentation, proper spacing */
 blockquote {
-  border-left: 2px solid #c4aa7c;
+  border-left: 2px solid var(--color-quote-rule);
   padding-left: 1.5rem;
   margin-left: 0;
   margin-right: 0;
-}
-.dark blockquote {
-  border-left-color: #d4b88a;
 }
 
 /* #21 Tabular figures on prices — digits align in columns */
@@ -111,17 +104,14 @@ blockquote {
 
 /* #36 Consistent placeholder styling */
 ::placeholder {
-  color: #7a746b;
+  color: var(--color-placeholder);
   opacity: 1;
 }
 /* #12 Pull-quote base styling */
 .pull-quote {
   position: relative;
   padding-left: 1.5rem;
-  border-left: 2px solid #c4aa7c80;
-}
-.dark .pull-quote {
-  border-left-color: #d4b88a80;
+  border-left: 2px solid color-mix(in srgb, var(--color-quote-rule) 50%, transparent);
 }
 
 /* #30 Article prose refinements */
@@ -146,13 +136,13 @@ blockquote {
 /* #2 Staggered card entrance animation */
 .stagger-in {
   opacity: 0;
-  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUp 0.6s var(--ease-glide) forwards;
 }
 
 /* Card entrance stagger — applies to gallery/masonry grids */
 .card-stagger > * {
   opacity: 0;
-  animation: cardReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: cardReveal 0.5s var(--ease-glide) forwards;
 }
 .card-stagger > *:nth-child(1)  { animation-delay: 0ms; }
 .card-stagger > *:nth-child(2)  { animation-delay: 40ms; }
@@ -189,7 +179,7 @@ blockquote {
 }
 
 /* Body background */
-body { transition: background-color 0.5s ease; }
+body { transition: background-color var(--duration-theme) ease; }
 html.dark body { background-color: var(--color-ground); }
 
 /* On the oracle card page, hold the page (html + body) to the active
@@ -238,8 +228,6 @@ html.dark.oracle-card-page body {
   .eb-reading [style*="animation"], .eb-entrance [style*="animation"] { animation: none !important; }
 }
 
-/* Placeholder text — slightly brighter in dark mode */
-.dark ::placeholder { color: #a09a92; }
 
 /* ─── Scrollbar Hide Utility ───────────────────────────────────────────── */
 /* Used on horizontally-scrollable chip bars and similar UI. */
@@ -255,13 +243,13 @@ html.dark.oracle-card-page body {
    bronze scrollbar, quiet enough not to compete with the words. */
 .dream-well {
   scrollbar-width: thin;
-  scrollbar-color: rgba(196, 170, 124, 0.3) transparent;
+  scrollbar-color: color-mix(in srgb, var(--color-atlas-gold) 30%, transparent) transparent;
 }
 .dream-well::-webkit-scrollbar {
   width: 4px;
 }
 .dream-well::-webkit-scrollbar-thumb {
-  background: rgba(196, 170, 124, 0.3);
+  background: color-mix(in srgb, var(--color-atlas-gold) 30%, transparent);
   border-radius: 2px;
 }
 
@@ -271,7 +259,7 @@ html.dark.oracle-card-page body {
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+  transition: grid-template-rows 0.6s var(--ease-glide),
               opacity 0.5s ease-out;
 }
 .form-reveal.is-open {
@@ -441,7 +429,7 @@ html.dark.oracle-card-page body {
   background-color: currentColor;
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.3s var(--ease-soft);
 }
 .footer-link:hover::after {
   transform: scaleX(1);
@@ -457,7 +445,7 @@ html.dark.oracle-card-page body {
   height: 4px;
   border-radius: 50%;
   background-color: var(--color-bronze-400);
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.3s var(--ease-soft);
 }
 .footer-link:hover::before {
   transform: translateY(-50%) scale(1);
@@ -479,7 +467,7 @@ html.dark.oracle-card-page body {
   background-color: currentColor;
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.3s var(--ease-soft);
 }
 .hover-underline:hover::after {
   transform: scaleX(1);
@@ -548,7 +536,7 @@ html.oracle-card-page body {
 /* Varied reveal animations */
 .reveal-block {
   opacity: 0;
-  transition: opacity 0.85s cubic-bezier(0.16,1,0.3,1), transform 0.85s cubic-bezier(0.16,1,0.3,1);
+  transition: opacity 0.85s var(--ease-glide), transform 0.85s var(--ease-glide);
 }
 .reveal-up    { transform: translateY(36px); }
 .reveal-left  { transform: translateX(-44px); }
@@ -586,7 +574,7 @@ html.oracle-card-page body {
 .tag-line {
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.25s;
+  transition: transform 0.7s var(--ease-glide) 0.25s;
 }
 .reveal-block.is-visible .tag-line { transform: scaleX(1); }
 
@@ -598,10 +586,10 @@ html.oracle-card-page body {
     right: -200px;
     width: 168px;
     font-family: var(--font-display);
-    font-size: 1rem;
-    color: var(--color-wood-600);
+    font-size: var(--text-body);
+    color: var(--color-ink-muted);
     line-height: 1.45;
-    border-left: 1px solid rgba(196,170,124,0.4);
+    border-left: var(--border-hair) solid color-mix(in srgb, var(--color-atlas-gold) 40%, transparent);
     padding-left: 11px;
   }
   .dark .margin-note { color: var(--color-wood-500); }

@@ -11,7 +11,7 @@
    tones (body copy, rules, mats); only the felt anchors are shared. */
 :root,
 [data-theme='dark'] {
-  --bg: #211c16;      /* app dark paper-50 */
+  --bg: var(--page-paper-night, #211c16);  /* master file: Nightfall paper pages */
   --bg-2: #2a241b;    /* app dark paper-200 */
   --bg-3: #191510;    /* app dark paper-100 */
   --ink: #f3ecde;     /* app dark wood-900 cream */
@@ -27,7 +27,7 @@
 }
 
 [data-theme='light'] {
-  --bg: #f3efe7;      /* app paper-50 */
+  --bg: var(--page-day, #f3efe7);          /* master file: Day Book page */
   --bg-2: #eae4d7;    /* app paper-100 */
   --bg-3: #faf7f0;
   --ink: #272219;     /* app wood-900 ink */
