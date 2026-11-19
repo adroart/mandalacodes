@@ -1,0 +1,37 @@
+{
+  "verified_at_utc": "2026-11-16T15:03:12Z",
+  "result": "live_source_verified",
+  "project": "mandalacodes",
+  "production_commit": "b3ca9c9ddf643741352dbfd7e0d03e23871b64b9",
+  "production_tree": "b49210acd78eff1c8b771ecf8c0af583bcd6a203",
+  "cloudflare_deployment_id": "d4c930de-df0d-4882-864c-8747e1a6b41d",
+  "cloudflare_deploy_succeeded_at_utc": "2026-11-16T14:22:14.159491Z",
+  "canonical_url": "https://mandalacodes.com/",
+  "immutable_url": "https://d4c930de.mandalacodes.pages.dev/",
+  "included_merge_commits": {
+    "offline_pr_417": "656e4d4dc3af1b424b56d7ebb67c1bf3daccf1df",
+    "registry_pr_418": "f257c9c6d1f6c14c7297cb5bee076a3cd752bf76"
+  },
+  "ancestry": "Both merge commits are ancestors of the production commit; verified with git merge-base --is-ancestor.",
+  "deployment_metadata": "Cloudflare Pages canonical_deployment and latest_deployment both identify this deployment, with main as production branch and deploy stage success.",
+  "release_marker": "Canonical and immutable /_shared-allowance-release.json both report the full production commit as sourceRevision.",
+  "canonical_and_immutable_source_sha256": {
+    "/_shared-allowance-release.json": "5c5433e8e70c32b00ad10ba2a31319d46b108f64e95630f064e1da7caa069592",
+    "/": "d910c4294febd8fd1afccce930d37b35ddcfd7eaa3f4b527613e77d0e2b0ad6d",
+    "/assets/index-CwUfzell.js": "bb794a675616d39027ddde06ff798e1731772a60b9e4b1f66903d69e5ee997fe",
+    "/assets/index-Dlm1hOM7.css": "548e26ad20d64ece858f5b97ab1882aeac785af6ec93cc68494b2810b8ff7a5a",
+    "/registerSW.js": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b",
+    "/assets/UniversalLanguageCard-B04eMRl4.js": "54f82c9eb149821e69c5c5ea196dfffa0f3e478e1c3e30abb66f703223e6fa4f",
+    "/assets/AtlasPage-BIMsdAhg.js": "c57363978d49b1ae4394a599bd781821b55c576b816583fc15a121c896c2b0d1",
+    "/assets/TheRegistry-CHb1IGpC.js": "d5502d3eedbfeb07ef4ad3d0d95258edd314690afdcd9b47aa0e509e5f0bf219"
+  },
+  "html_normalization": "Raw root HTML differs because the canonical domain injects one Cloudflare Web Analytics script. Only that provider-owned script was removed before comparing the root HTML source hash; all other listed assets matched byte for byte.",
+  "live_bundle_checks": {
+    "atlas_offline_connection_guidance": true,
+    "journal_device_and_pending_recording_guidance": true,
+    "journal_retry_and_local_data_guidance": true,
+    "registry_true_empty_and_filtered_empty_copy": true,
+    "registry_placeholder_creation_marker_absent": true
+  },
+  "limits": "This is deployed source-byte proof. Physical-phone offline acceptance and private recording delivery were not tested. Earlier pinned release observers remain historical needs_attention records and were not resumed."
+}
