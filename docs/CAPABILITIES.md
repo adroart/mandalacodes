@@ -2,7 +2,7 @@
 
 > **GENERATED — do not edit by hand.** Rerun
 > `npx tsx scripts/gen-capabilities-portable.ts`. It reads the code, so it cannot drift.
-> Generated 2026-10-30T03:56:34.794Z.
+> Generated 2026-11-19T13:47:14.930Z.
 
 **At a glance:** 34 commands.
 
