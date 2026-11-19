@@ -76,10 +76,10 @@ const AppInner: React.FC = () => {
   const showNav = !ledHost && !chromeless;
 
   return (
-    <Suspense fallback={<div className="min-h-screen bg-paper-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-page-paper" />}>
       <div
         data-site-shell
-        className="min-h-screen bg-paper-50 text-wood-900 selection:bg-bronze-200 transition-colors duration-500"
+        className="min-h-screen bg-page-paper text-ink selection:bg-bronze-200 transition-colors duration-500"
       >
         {showNav && <Navigation />}
         <main id="main-content">
@@ -188,7 +188,7 @@ const DesignerRedirect: React.FC = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') window.location.replace('/design/');
   }, []);
-  return <div className="min-h-screen bg-paper-50" />;
+  return <div className="min-h-screen bg-page-paper" />;
 };
 
 // Preserve the :number param — and the navigation state (the ritual-entrance

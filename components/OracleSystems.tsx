@@ -43,29 +43,29 @@ const OracleSystems: React.FC = () => {
   }, [hash]);
 
   return (
-    <article className="oracle-systems bg-paper-50 text-wood-900 min-h-screen">
+    <article className="oracle-systems bg-page-paper text-ink min-h-screen">
       <div className="max-w-2xl mx-auto px-5 sm:px-7 pb-20 sm:pb-28 pt-[calc(var(--nav-height)+3rem)] sm:pt-[calc(var(--nav-height)+4rem)]">
-        <p className="font-label text-[11px] uppercase tracking-[0.32em] text-bronze-600 mb-6">
+        <p className="font-label text-[11px] uppercase tracking-[0.32em] text-accent mb-6">
           The Three Systems
         </p>
-        <h1 className="font-display text-[34px] sm:text-[44px] leading-[1.05] tracking-[-0.01em] text-wood-900 mb-6 sm:mb-8">
+        <h1 className="font-display text-[34px] sm:text-[44px] leading-[1.05] tracking-[-0.01em] text-ink mb-6 sm:mb-8">
           A lineage of changes
         </h1>
-        <p className="font-reading text-[18px] sm:text-[20px] text-wood-700 leading-[1.55] sm:leading-[1.5] max-w-prose">
+        <p className="font-reading text-[18px] sm:text-[20px] text-ink-soft leading-[1.55] sm:leading-[1.5] max-w-prose">
           The Universal Language reads through three lenses, three vocabularies for the same shape of energy. The I Ching arrives from ancient China. Human Design emerged in 1987; the Gene Keys began in 2002, drawing on both earlier systems. None of this is mine. The cards are an offering of gratitude.
         </p>
 
-        <p className="font-reading text-[14px] tracking-[0.015em] text-wood-500 leading-[1.6] mt-8 max-w-prose">
+        <p className="font-reading text-[14px] tracking-[0.015em] text-ink-faint leading-[1.6] mt-8 max-w-prose">
           {/* DRAFT — prose to be refined by Adrian */}
           The text below is a working draft. The histories, the names, the lineages each deserve more care than a placeholder can give. Read it as a sketch.
         </p>
 
-        <nav aria-label="Explore systems" className="mt-12 sm:mt-14 flex flex-wrap gap-x-6 gap-y-2 border-y border-wood-200 py-5">
+        <nav aria-label="Explore systems" className="mt-12 sm:mt-14 flex flex-wrap gap-x-6 gap-y-2 border-y border-line py-5">
           {SECTIONS.map((s) => (
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="font-label text-[11px] uppercase tracking-[0.28em] text-wood-600 hover:text-bronze-700 transition-colors"
+              className="font-label text-[11px] uppercase tracking-[0.28em] text-ink-muted hover:text-link transition-colors"
             >
               {s.label}
             </a>
@@ -74,13 +74,13 @@ const OracleSystems: React.FC = () => {
 
         {/* ── I Ching ───────────────────────────────────────────────────── */}
         <section id="iching" className="pt-16 sm:pt-20 scroll-mt-20">
-          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-bronze-600 mb-4">
+          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-accent mb-4">
             One · I Ching
           </p>
-          <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
+          <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-ink">
             The Book of Changes
           </h2>
-          <p className="font-reading text-[15px] tracking-[0.015em] text-wood-500 mt-2">
+          <p className="font-reading text-[15px] tracking-[0.015em] text-ink-faint mt-2">
             attributed to Fu Xi, King Wen, the Duke of Zhou, and Confucius
           </p>
 
@@ -97,14 +97,14 @@ const OracleSystems: React.FC = () => {
 
           </div>
 
-          <div className="mt-10 pt-6 border-t border-wood-200">
-            <p className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
+          <div className="mt-10 pt-6 border-t border-line">
+            <p className="font-label text-[10px] uppercase tracking-[0.28em] text-accent mb-3">
               In gratitude to
             </p>
-            <p className="font-reading text-[18px] text-wood-900">
+            <p className="font-reading text-[18px] text-ink">
               Richard Wilhelm and Cary F. Baynes
             </p>
-            <p className="font-reading text-[15px] text-wood-600 leading-[1.6] mt-1.5 max-w-prose">
+            <p className="font-reading text-[15px] text-ink-muted leading-[1.6] mt-1.5 max-w-prose">
               Whose edition, with Jung's foreword, has shaped many English-language readers' encounters with the I Ching.
             </p>
           </div>
@@ -112,13 +112,13 @@ const OracleSystems: React.FC = () => {
 
         {/* ── Gene Keys ─────────────────────────────────────────────────── */}
         <section id="genekeys" className="pt-20 sm:pt-24 scroll-mt-20">
-          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-bronze-600 mb-4">
+          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-accent mb-4">
             Two · Gene Keys
           </p>
-          <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
+          <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-ink">
             The contemplative path
           </h2>
-          <p className="font-reading text-[15px] tracking-[0.015em] text-wood-500 mt-2">
+          <p className="font-reading text-[15px] tracking-[0.015em] text-ink-faint mt-2">
             transmitted by Richard Rudd, 2002 onward
           </p>
 
@@ -135,22 +135,22 @@ const OracleSystems: React.FC = () => {
 
           </div>
 
-          <div className="mt-10 pt-6 border-t border-wood-200">
-            <p className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
+          <div className="mt-10 pt-6 border-t border-line">
+            <p className="font-label text-[10px] uppercase tracking-[0.28em] text-accent mb-3">
               In gratitude to
             </p>
-            <p className="font-reading text-[18px] text-wood-900">
+            <p className="font-reading text-[18px] text-ink">
               Richard Rudd
             </p>
-            <p className="font-reading text-[15px] text-wood-600 leading-[1.6] mt-1.5 max-w-prose">
+            <p className="font-reading text-[15px] text-ink-muted leading-[1.6] mt-1.5 max-w-prose">
               Whose synthesis offers the I Ching, Human Design, and the wisdom traditions back to a contemporary reader as a contemplative life.
             </p>
-            <p className="font-reading text-[14px] text-wood-500 mt-3">
+            <p className="font-reading text-[14px] text-ink-faint mt-3">
               <a
                 href="https://genekeys.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline decoration-wood-300 underline-offset-[3px] hover:text-bronze-700 hover:decoration-bronze-500 transition-colors"
+                className="underline decoration-wood-300 underline-offset-[3px] hover:text-link hover:decoration-bronze-500 transition-colors"
               >
                 genekeys.com
               </a>
@@ -160,13 +160,13 @@ const OracleSystems: React.FC = () => {
 
         {/* ── Human Design ──────────────────────────────────────────────── */}
         <section id="humandesign" className="pt-20 sm:pt-24 scroll-mt-20">
-          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-bronze-600 mb-4">
+          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-accent mb-4">
             Three · Human Design
           </p>
-          <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-wood-900">
+          <h2 className="font-display text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.005em] text-ink">
             A map of energy
           </h2>
-          <p className="font-reading text-[15px] tracking-[0.015em] text-wood-500 mt-2">
+          <p className="font-reading text-[15px] tracking-[0.015em] text-ink-faint mt-2">
             received by Ra Uru Hu, Ibiza, January 1987
           </p>
 
@@ -183,28 +183,28 @@ const OracleSystems: React.FC = () => {
 
           </div>
 
-          <div className="mt-10 pt-6 border-t border-wood-200">
-            <p className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
+          <div className="mt-10 pt-6 border-t border-line">
+            <p className="font-label text-[10px] uppercase tracking-[0.28em] text-accent mb-3">
               In gratitude to
             </p>
-            <p className="font-reading text-[18px] text-wood-900">
+            <p className="font-reading text-[18px] text-ink">
               Ra Uru Hu
             </p>
-            <p className="font-reading text-[15px] text-wood-600 leading-[1.6] mt-1.5 max-w-prose">
+            <p className="font-reading text-[15px] text-ink-muted leading-[1.6] mt-1.5 max-w-prose">
               Whose transmission gave the West a map of energetic design and a vocabulary for living in alignment with one's own nature.
             </p>
           </div>
         </section>
 
         {/* ── Closing ───────────────────────────────────────────────────── */}
-        <section className="pt-20 sm:pt-24 mt-20 border-t border-wood-200">
-          <p className="font-reading text-[17px] sm:text-[18px] text-wood-700 leading-[1.7] max-w-prose">
+        <section className="pt-20 sm:pt-24 mt-20 border-t border-line">
+          <p className="font-reading text-[17px] sm:text-[18px] text-ink-soft leading-[1.7] max-w-prose">
             The Universal Language Oracle does not improve on these systems. It carries them, sixty-four cards holding patterns that have moved from the I Ching into newer traditions. Whatever clarity the cards offer belongs to the lineages that arrived first.
           </p>
 
           <Link
             to="/universal-language"
-            className="inline-block mt-10 font-label text-[11px] uppercase tracking-[0.32em] text-bronze-700 hover:text-bronze-900 transition-colors"
+            className="inline-block mt-10 font-label text-[11px] uppercase tracking-[0.32em] text-link hover:text-bronze-900 transition-colors"
           >
             Return to the Oracle <span aria-hidden="true">→</span>
           </Link>

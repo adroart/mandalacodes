@@ -50,19 +50,19 @@ const AccountPiecesInner: React.FC = () => {
 
   if (error && pieces === null) {
     return (
-      <p className="font-reading text-wood-700">
-        {error} <button type="button" className="text-bronze-600 underline" onClick={() => setRetry((n) => n + 1)}>Try again</button>
+      <p className="font-reading text-ink-soft">
+        {error} <button type="button" className="text-accent underline" onClick={() => setRetry((n) => n + 1)}>Try again</button>
       </p>
     );
   }
 
   if (pieces === null) {
-    return <p className="font-reading text-wood-700">Loading…</p>;
+    return <p className="font-reading text-ink-soft">Loading…</p>;
   }
 
   if (pieces.length === 0) {
     return (
-      <p className="font-reading text-lg text-wood-700 leading-relaxed max-w-md">
+      <p className="font-reading text-lg text-ink-soft leading-relaxed max-w-md">
         No pieces held under this account yet.{' '}
         <a
           href={
@@ -72,7 +72,7 @@ const AccountPiecesInner: React.FC = () => {
                 )}`
               : 'https://adrianrasmussen.com/creations/multidimensional-art/universal-language'
           }
-          className="text-bronze-600 hover:text-bronze-700"
+          className="text-accent hover:text-link"
         >
           See the work
         </a>
@@ -83,8 +83,8 @@ const AccountPiecesInner: React.FC = () => {
 
   return (
     <>
-      {error && <p className="font-reading text-wood-700 mb-4" role="alert">{error} <button type="button" className="text-bronze-600 underline" onClick={() => setRetry((n) => n + 1)}>Try again</button></p>}
-      <ul className="divide-y divide-wood-200/70 border-y border-wood-200/70">
+      {error && <p className="font-reading text-ink-soft mb-4" role="alert">{error} <button type="button" className="text-accent underline" onClick={() => setRetry((n) => n + 1)}>Try again</button></p>}
+      <ul className="divide-y divide-wood-200/70 border-y border-line/70">
       {pieces.map((piece) => (
         <li key={piece.id} className="py-8 first:pt-0 last:pb-0">
           <div className="flex flex-col sm:flex-row gap-6">
@@ -96,10 +96,10 @@ const AccountPiecesInner: React.FC = () => {
               />
             )}
             <div className="flex-1 min-w-0">
-              <h2 className="font-display text-2xl text-wood-900 leading-tight">
+              <h2 className="font-display text-2xl text-ink leading-tight">
                 {piece.title}
               </h2>
-              <p className="font-reading text-sm text-wood-600 mt-1">
+              <p className="font-reading text-sm text-ink-muted mt-1">
                 {piece.editionNumber != null && piece.editionNumber > 0
                   ? `Edition ${piece.editionNumber}`
                   : 'Unique piece'}
@@ -107,7 +107,7 @@ const AccountPiecesInner: React.FC = () => {
               </p>
 
               {piece.intention && (
-                <p className="font-reading text-lg text-wood-900 leading-relaxed mt-4 max-w-md whitespace-pre-line">
+                <p className="font-reading text-lg text-ink leading-relaxed mt-4 max-w-md whitespace-pre-line">
                   {piece.intention}
                 </p>
               )}
@@ -115,7 +115,7 @@ const AccountPiecesInner: React.FC = () => {
               {piece.cardNumber != null && (
                 <Link
                   to={`/universal-language/${piece.cardNumber}`}
-                  className="inline-block font-reading text-base text-bronze-600 hover:text-bronze-700 mt-4"
+                  className="inline-block font-reading text-base text-accent hover:text-link mt-4"
                 >
                   Read Code {piece.cardNumber}
                 </Link>

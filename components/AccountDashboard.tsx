@@ -9,23 +9,23 @@ const AccountDashboard: React.FC = () => {
   return (
     <AccountLayout title="Your account">
       {email && (
-        <p className="font-reading text-wood-700 mb-8">
-          Signed in as <span className="text-wood-900">{email}</span>.
+        <p className="font-reading text-ink-soft mb-8">
+          Signed in as <span className="text-ink">{email}</span>.
         </p>
       )}
 
       <div className="grid sm:grid-cols-2 gap-6">
         <Link
           to="/profile"
-          className="block p-6 border border-wood-200 rounded hover:border-bronze-500/60 transition-colors"
+          className="block p-6 border border-line rounded hover:border-bronze-500/60 transition-colors"
         >
-          <div className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
+          <div className="font-label text-label uppercase tracking-[0.28em] text-accent mb-3">
             Hologenetic Profile
           </div>
-          <div className="font-display text-xl text-wood-900 mb-1">
+          <div className="font-display text-card-title text-ink mb-1">
             Your birth chart
           </div>
-          <p className="font-reading text-sm text-wood-700">
+          <p className="font-reading text-caption text-ink-soft">
             Enter your birth data once and your eleven positions follow you
             through every reading.
           </p>
@@ -33,30 +33,30 @@ const AccountDashboard: React.FC = () => {
 
         <Link
           to="/account/pieces"
-          className="block p-6 border border-wood-200 rounded hover:border-bronze-500/60 transition-colors"
+          className="block p-6 border border-line rounded hover:border-bronze-500/60 transition-colors"
         >
-          <div className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
+          <div className="font-label text-label uppercase tracking-[0.28em] text-accent mb-3">
             Your pieces
           </div>
-          <div className="font-display text-xl text-wood-900 mb-1">
+          <div className="font-display text-card-title text-ink mb-1">
             The artwork you hold
           </div>
-          <p className="font-reading text-sm text-wood-700">
+          <p className="font-reading text-caption text-ink-soft">
             See where each piece rests, its inscribed intention, and its reading.
           </p>
         </Link>
 
         <Link
           to="/account/collections"
-          className="block p-6 border border-wood-200 rounded hover:border-bronze-500/60 transition-colors"
+          className="block p-6 border border-line rounded hover:border-bronze-500/60 transition-colors"
         >
-          <div className="font-label text-[10px] uppercase tracking-[0.28em] text-bronze-600 mb-3">
+          <div className="font-label text-label uppercase tracking-[0.28em] text-accent mb-3">
             Collections
           </div>
-          <div className="font-display text-xl text-wood-900 mb-1">
+          <div className="font-display text-card-title text-ink mb-1">
             Saved cards
           </div>
-          <p className="font-reading text-sm text-wood-700">
+          <p className="font-reading text-caption text-ink-soft">
             Gather cards into named groupings.
           </p>
         </Link>

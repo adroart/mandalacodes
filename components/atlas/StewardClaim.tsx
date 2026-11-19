@@ -295,7 +295,7 @@ const CeremonyShell: React.FC<{
         type="button"
         onClick={onSkip}
         disabled={skipDisabled}
-        className="absolute top-5 right-6 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors disabled:opacity-40"
+        className="absolute top-5 right-6 font-label text-[10px] uppercase tracking-[0.2em] text-ink-faint hover:text-bronze-300 transition-colors disabled:opacity-40"
         style={{ zIndex: 2 }}
       >
         skip
@@ -318,7 +318,7 @@ const authField: React.CSSProperties = {
   background: 'rgba(20,16,12,0.6)',
   borderRadius: 12,
   padding: '13px 15px',
-  fontFamily: "'Karla', system-ui, sans-serif",
+  fontFamily: 'var(--font-plain)',
   fontSize: 16,
   color: '#e7dcc7',
   marginBottom: 14,
@@ -441,7 +441,7 @@ const ClaimSignIn: React.FC = () => {
             type="button"
             onClick={doGoogle}
             disabled={busy}
-            className="mt-5 block mx-auto font-label text-[11px] lowercase tracking-[0.16em] text-wood-500 hover:text-bronze-300 transition-colors disabled:opacity-40"
+            className="mt-5 block mx-auto font-label text-[11px] lowercase tracking-[0.16em] text-ink-faint hover:text-bronze-300 transition-colors disabled:opacity-40"
           >
             continue with google
           </button>
@@ -451,7 +451,7 @@ const ClaimSignIn: React.FC = () => {
               setError(null);
               setMode('password');
             }}
-            className="mt-3 block mx-auto font-label text-[10px] lowercase tracking-[0.16em] text-wood-500 hover:text-bronze-300 transition-colors"
+            className="mt-3 block mx-auto font-label text-[10px] lowercase tracking-[0.16em] text-ink-faint hover:text-bronze-300 transition-colors"
           >
             use a password instead
           </button>
@@ -553,7 +553,7 @@ const BackLink: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className="mt-4 block mx-auto font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors"
+    className="mt-4 block mx-auto font-label text-[10px] uppercase tracking-[0.2em] text-ink-faint hover:text-bronze-300 transition-colors"
   >
     Back
   </button>
@@ -671,7 +671,7 @@ const CodeEntry: React.FC<{
     <button
       type="button"
       onClick={onNoCode}
-      className="mt-6 block mx-auto max-w-[19rem] font-display text-[13px] leading-relaxed text-wood-500 hover:text-bronze-300 transition-colors"
+      className="mt-6 block mx-auto max-w-[19rem] font-display text-[13px] leading-relaxed text-ink-faint hover:text-bronze-300 transition-colors"
     >
       no code with your piece? sign in with the email it was registered to
     </button>
@@ -948,11 +948,11 @@ const StewardClaim: React.FC = () => {
   //    homecoming door (law 6: nothing dead-ends). Not the dark stage. ──
   if (beat === 'no-record') {
     return (
-      <section className="min-h-screen bg-paper-50 flex items-center justify-center px-6 py-16">
+      <section className="min-h-screen bg-page-paper flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-md text-center">
           <p className="font-display text-[1.0625rem] leading-relaxed text-stone-700 mb-3">
             We don&apos;t have a piece bound to{' '}
-            <span className="text-wood-900">{email ?? 'your email'}</span> yet.
+            <span className="text-ink">{email ?? 'your email'}</span> yet.
           </p>
           {pieceContext ? (
             <div className="text-left">
@@ -974,17 +974,17 @@ const StewardClaim: React.FC = () => {
               piece&apos;s own page.
             </p>
           )}
-          <div className="mt-8 pt-6 border-t border-wood-200 flex flex-col items-center gap-4">
+          <div className="mt-8 pt-6 border-t border-line flex flex-col items-center gap-4">
             <Link
               to="/atlas/homecoming"
-              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-link hover:text-accent transition-colors"
             >
               Holding a piece we do not know? Bring it home →
             </Link>
             {!pieceContext && (
               <Link
                 to="/atlas"
-                className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-500 hover:text-wood-800 transition-colors"
+                className="font-label text-[11px] uppercase tracking-[0.18em] text-ink-faint hover:text-wood-800 transition-colors"
               >
                 Find it on the map →
               </Link>
@@ -1138,7 +1138,7 @@ const StewardClaim: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCodeStep('enter')}
-                  className="mt-6 block mx-auto font-label text-[10px] lowercase tracking-[0.18em] text-wood-500 hover:text-bronze-300 transition-colors"
+                  className="mt-6 block mx-auto font-label text-[10px] lowercase tracking-[0.18em] text-ink-faint hover:text-bronze-300 transition-colors"
                 >
                   back to the code
                 </button>
@@ -1307,7 +1307,7 @@ const StewardClaim: React.FC = () => {
             type="button"
             onClick={() => void inscribeLater()}
             disabled={submitting}
-            className="mt-4 block mx-auto font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors disabled:opacity-40"
+            className="mt-4 block mx-auto font-label text-[10px] uppercase tracking-[0.2em] text-ink-faint hover:text-bronze-300 transition-colors disabled:opacity-40"
           >
             inscribe later
           </button>

@@ -160,7 +160,7 @@ const PhoneHudSheet: React.FC<PhoneHudSheetProps> = ({ onDismiss, onNavigateAway
         <button
           type="button"
           onClick={onDismiss}
-          className="absolute right-2 top-0 flex h-12 items-center gap-2 pl-3 pr-1 font-label text-[11px] uppercase tracking-[0.18em] text-wood-700 hover:text-atlas-gold transition-colors"
+          className="absolute right-2 top-0 flex h-12 items-center gap-2 pl-3 pr-1 font-label text-[11px] uppercase tracking-[0.18em] text-ink-soft hover:text-atlas-gold transition-colors"
         >
           close
           <span aria-hidden className="text-[19px] leading-none">

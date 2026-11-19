@@ -56,14 +56,14 @@ const DreamSignature: React.FC<DreamSignatureProps> = ({
       target="_blank"
       rel="noopener noreferrer nofollow"
       className={`pointer-events-auto underline decoration-1 underline-offset-2 transition-colors ${
-        stage ? 'hover:opacity-80' : 'text-bronze-600 hover:text-bronze-500'
+        stage ? 'hover:opacity-80' : 'text-accent hover:text-bronze-500'
       }`}
       style={stage ? { color: 'rgba(200,176,132,0.9)' } : undefined}
     >
       {name}
     </a>
   ) : (
-    <span className={stage ? '' : 'text-wood-600'} style={stage ? { color: 'rgba(200,176,132,0.85)' } : undefined}>
+    <span className={stage ? '' : 'text-ink-muted'} style={stage ? { color: 'rgba(200,176,132,0.85)' } : undefined}>
       {name}
     </span>
   );

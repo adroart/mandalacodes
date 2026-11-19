@@ -1084,14 +1084,14 @@ const AtlasPage: React.FC = () => {
        record below it belongs to the site's paper system, so Daybook receives
        a warm ledger while Nightfall receives the same dark paper as the rest
        of the site. */
-    <div data-atlas-page className="min-h-screen bg-paper-50 text-wood-900">
+    <div data-atlas-page className="min-h-screen bg-page-paper text-ink">
       {/* ── Immersive globe stage ─────────────────────────────────────────── */}
       {state.kind === 'ready' && use3D && (
         <section
           data-atlas-stage
           ref={globeBoxRef}
           aria-label="Atlas globe"
-          className="dark relative w-full overflow-hidden bg-atlas-night text-wood-900 block"
+          className="dark relative w-full overflow-hidden bg-atlas-night text-ink block"
           style={{
             height: isPhone
               ? 'min(560px, calc(100svh - var(--nav-height)))'
@@ -1250,14 +1250,14 @@ const AtlasPage: React.FC = () => {
                     {emptySky ? (
                       <>
                         no lights yet
-                        <span className="ml-2 normal-case tracking-[0.02em] text-[12px] text-wood-500">
+                        <span className="ml-2 normal-case tracking-[0.02em] text-[12px] text-ink-faint">
                           the sky is waiting for its first light
                         </span>
                       </>
                     ) : (
                       <>
                         {lightsLit} {lightsLit === 1 ? 'light lit' : 'lights lit'}
-                        <span className="ml-2 normal-case tracking-[0.02em] text-[12px] text-wood-500">
+                        <span className="ml-2 normal-case tracking-[0.02em] text-[12px] text-ink-faint">
                           of {totalCount} {totalCount === 1 ? 'piece' : 'pieces'}
                           {!isPhone && hasVisiblePieceMarker && ' · touch a light to read its dream'}
                         </span>
@@ -1270,7 +1270,7 @@ const AtlasPage: React.FC = () => {
                       `the vision` trails it as a small standing link that
                       replays the overture, and rests while a light is open so
                       the line stays calm. */}
-                  <p className="mt-1.5 font-display text-[13px] sm:text-[14px] leading-snug text-wood-500">
+                  <p className="mt-1.5 font-display text-[13px] sm:text-[14px] leading-snug text-ink-faint">
                     Illuminators of the dream, surrounded by resonant dreamers.
                   </p>
                   {/* `the vision` gets its own row rather than trailing the
@@ -1304,7 +1304,7 @@ const AtlasPage: React.FC = () => {
                   type="button"
                   aria-expanded={filtersOpen}
                   onClick={() => setFiltersOpen((o) => !o)}
-                  className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 hover:text-atlas-gold transition-colors border-b border-[rgba(221,212,194,0.32)] hover:border-atlas-gold pb-1"
+                  className="font-label text-[11px] uppercase tracking-[0.2em] text-ink-soft hover:text-atlas-gold transition-colors border-b border-[rgba(221,212,194,0.32)] hover:border-atlas-gold pb-1"
                 >
                   filter
                   {(selectedSeries !== 'all' ||
@@ -1376,7 +1376,7 @@ const AtlasPage: React.FC = () => {
             >
               <span className="whitespace-nowrap font-label text-[12px] sm:text-[13px] tracking-[0.02em] text-atlas-kept">
                 Your birth place
-                <span aria-hidden className="mx-2 text-wood-500">·</span>
+                <span aria-hidden className="mx-2 text-ink-faint">·</span>
                 {birthPlace.label}
               </span>
               <button
@@ -1530,16 +1530,16 @@ const AtlasPage: React.FC = () => {
         >
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] text-wood-600 mb-3"
+            className="flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] text-ink-muted mb-3"
           >
-            <Link to="/" className="hover:text-bronze-700 transition-colors">
+            <Link to="/" className="hover:text-link transition-colors">
               Home
             </Link>
             <span aria-hidden>/</span>
-            <span className="text-wood-900">Atlas</span>
+            <span className="text-ink">Atlas</span>
           </nav>
           <h1
-            className="text-3xl sm:text-5xl text-wood-900 font-medium leading-none"
+            className="text-3xl sm:text-5xl text-ink font-medium leading-none"
             style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.05em' }}
           >
             Atlas
@@ -1594,7 +1594,7 @@ const AtlasPage: React.FC = () => {
       <div className="px-6 pb-32 max-w-7xl mx-auto pt-16">
         {state.kind === 'loading' && (
           <p
-            className="font-display text-lg text-wood-900 py-24 text-center"
+            className="font-display text-lg text-ink py-24 text-center"
             aria-live="polite"
           >
             loading the atlas
@@ -1603,7 +1603,7 @@ const AtlasPage: React.FC = () => {
 
         {state.kind === 'error' && (
           <div
-            className="font-display text-lg text-wood-900 py-24 text-center"
+            className="font-display text-lg text-ink py-24 text-center"
             aria-live="polite"
           >
             <p>{typeof navigator !== 'undefined' && !navigator.onLine ? 'The Atlas needs an internet connection.' : 'the atlas is briefly out of reach.'}</p>
@@ -1631,8 +1631,8 @@ const AtlasPage: React.FC = () => {
                 rail (faint when resting, lit when chosen), a divider binds them
                 into one switch, and the size gap between label and options is
                 closed enough that they read as parts of the same control. */}
-            <div className="mb-8 flex flex-wrap items-baseline gap-x-4 gap-y-2 border-t border-wood-200 pt-10">
-              <span className="shrink-0 font-label text-[10px] uppercase tracking-[0.22em] text-wood-500">
+            <div className="mb-8 flex flex-wrap items-baseline gap-x-4 gap-y-2 border-t border-line pt-10">
+              <span className="shrink-0 font-label text-[10px] uppercase tracking-[0.22em] text-ink-faint">
                 read it as
               </span>
               <div className="flex items-baseline gap-4">
@@ -1642,8 +1642,8 @@ const AtlasPage: React.FC = () => {
                   onClick={() => setLedgerView(false)}
                   className={`font-display text-[17px] leading-none pb-1 border-b transition-colors ${
                     !ledgerView
-                      ? 'text-wood-900 border-bronze-600'
-                      : 'text-wood-500 border-[rgba(196,170,124,0.3)] hover:text-wood-800 hover:border-atlas-gold'
+                      ? 'text-ink border-bronze-600'
+                      : 'text-ink-faint border-[rgba(196,170,124,0.3)] hover:text-wood-800 hover:border-atlas-gold'
                   }`}
                 >
                   the wall
@@ -1657,8 +1657,8 @@ const AtlasPage: React.FC = () => {
                   onClick={() => setLedgerView(true)}
                   className={`font-display text-[17px] leading-none pb-1 border-b transition-colors ${
                     ledgerView
-                      ? 'text-wood-900 border-bronze-600'
-                      : 'text-wood-500 border-wood-200 hover:text-bronze-700 hover:border-bronze-700'
+                      ? 'text-ink border-bronze-600'
+                      : 'text-ink-faint border-line hover:text-link hover:border-bronze-700'
                   }`}
                 >
                   the ledger
@@ -1669,7 +1669,7 @@ const AtlasPage: React.FC = () => {
                   the switch rather than a third option inside it. */}
               <Link
                 to="/atlas/registry"
-                className="ml-auto font-label text-[12px] lowercase tracking-[0.06em] text-bronze-700 hover:text-bronze-600 transition-colors"
+                className="ml-auto font-label text-[12px] lowercase tracking-[0.06em] text-link hover:text-accent transition-colors"
               >
                 the registry →
               </Link>
@@ -1686,7 +1686,7 @@ const AtlasPage: React.FC = () => {
             )}
 
             {/* Generated-at footer note. */}
-            <p className="mt-16 font-label text-[11px] uppercase tracking-[0.18em] text-wood-600">
+            <p className="mt-16 font-label text-[11px] uppercase tracking-[0.18em] text-ink-muted">
               Last gathered{' '}
               {new Date(state.data.generatedAt).toLocaleDateString(undefined, {
                 year: 'numeric',

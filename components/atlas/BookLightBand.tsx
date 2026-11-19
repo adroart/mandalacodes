@@ -52,7 +52,7 @@ const BookLightBand: React.FC<BookLightBandProps> = ({
     <Link
       to={`/atlas?piece=${encodeURIComponent(pieceKey)}`}
       aria-label={`Your light, placed in ${cityName}. Open it on the world map.`}
-      className="group block relative w-full h-[120px] overflow-hidden border border-wood-300 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+      className="group block relative w-full h-[120px] overflow-hidden border border-line-strong focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
     >
       {/* The globe fills the strip; the band height clips it to a horizon. The
           selected node recenters the light and holds it. */}

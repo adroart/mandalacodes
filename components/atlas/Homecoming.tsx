@@ -48,13 +48,13 @@ const formatCityLabel = (city: CityCentroid): string => {
 };
 
 const fieldClass =
-  'w-full bg-transparent border-0 border-b border-wood-300 px-0 py-3 font-display text-[1.0625rem] text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-700 transition-colors';
+  'w-full bg-transparent border-0 border-b border-line-strong px-0 py-3 font-display text-[1.0625rem] text-ink placeholder:text-wood-400 focus:outline-none focus:border-bronze-700 transition-colors';
 
 // Homecoming uses an unboxed, underline-only field treatment. These
 // important-prefixed utilities override the shared picker's raised-paper input
 // while leaving its dropdown on the standard themed overlay surface.
 const cityInputOverride =
-  '!bg-transparent !border-0 !border-b !border-wood-300 !px-0 !text-wood-900 placeholder:!text-wood-400 focus:!outline-none focus:!border-bronze-700 !rounded-none';
+  '!bg-transparent !border-0 !border-b !border-line-strong !px-0 !text-ink placeholder:!text-wood-400 focus:!outline-none focus:!border-bronze-700 !rounded-none';
 
 const labelClass =
   'block font-label text-[11px] uppercase tracking-[0.22em] font-semibold mb-3';
@@ -124,14 +124,14 @@ const Homecoming: React.FC = () => {
   return (
     <section
       data-homecoming-page
-      className="min-h-screen w-full flex items-center justify-center bg-paper-50 px-6 py-20"
+      className="min-h-screen w-full flex items-center justify-center bg-page-paper px-6 py-20"
       style={{
         backgroundImage: 'radial-gradient(120% 90% at 50% 0%, var(--color-wood-50) 0%, transparent 62%)',
       }}
     >
       <div className="w-full max-w-xl">
         <h1
-          className="text-3xl sm:text-4xl mb-6 text-center text-bronze-700"
+          className="text-3xl sm:text-4xl mb-6 text-center text-link"
           style={{
             fontFamily: 'var(--font-brand)',
             letterSpacing: '0.12em',
@@ -140,7 +140,7 @@ const Homecoming: React.FC = () => {
           bring your piece home
         </h1>
         <p
-          className="font-display text-[1.0625rem] leading-relaxed text-center text-wood-700 mb-12"
+          className="font-display text-[1.0625rem] leading-relaxed text-center text-ink-soft mb-12"
         >
           If one of Adrian's works rests with you and the atlas does not know it
           yet, this is its way home.
@@ -151,7 +151,7 @@ const Homecoming: React.FC = () => {
         ) : sent ? (
           <div className="text-center">
             <p
-              className="font-display text-[1.0625rem] leading-relaxed text-wood-700 mb-4"
+              className="font-display text-[1.0625rem] leading-relaxed text-ink-soft mb-4"
             >
               It rests with me now. When I recognize the piece, it will take its
               place among the others, and I will write to you so you can light
@@ -159,7 +159,7 @@ const Homecoming: React.FC = () => {
             </p>
             <Link
               to="/atlas"
-              className="font-label text-[11px] uppercase tracking-[0.22em] font-semibold text-bronze-700 transition-colors"
+              className="font-label text-[11px] uppercase tracking-[0.22em] font-semibold text-link transition-colors"
             >
               return to the world
             </Link>
@@ -167,7 +167,7 @@ const Homecoming: React.FC = () => {
         ) : !isLoaded ? null : !isSignedIn ? (
           <div className="text-center">
             <p
-              className="font-display text-[1.0625rem] leading-relaxed text-wood-700 mb-8"
+              className="font-display text-[1.0625rem] leading-relaxed text-ink-soft mb-8"
             >
               Claim your piece to begin. Your place is kept under the same name
               you use here.
@@ -175,7 +175,7 @@ const Homecoming: React.FC = () => {
             <SignInTrigger>
               <button
                 type="button"
-                className="font-label text-xs uppercase tracking-[0.25em] font-semibold px-8 py-4 border border-bronze-500/50 text-bronze-700 transition-colors hover:border-bronze-700"
+                className="font-label text-xs uppercase tracking-[0.25em] font-semibold px-8 py-4 border border-bronze-500/50 text-link transition-colors hover:border-bronze-700"
               >
                 claim your piece
               </button>
@@ -186,11 +186,11 @@ const Homecoming: React.FC = () => {
             {/* Photographs, the repo has no image upload, so these are links
                 the collector pastes. */}
             <div>
-              <span className={`${labelClass} text-wood-600`}>
+              <span className={`${labelClass} text-ink-muted`}>
                 photographs of the piece
               </span>
               <p
-                className="font-display text-sm leading-relaxed text-wood-700 mb-4"
+                className="font-display text-sm leading-relaxed text-ink-soft mb-4"
               >
                 Paste a web link to a photo. One is enough; up to{' '}
                 {HOMECOMING_MAX_PHOTOS} if you have them.
@@ -218,7 +218,7 @@ const Homecoming: React.FC = () => {
             <div>
               <label
                 htmlFor="homecoming-provenance"
-                className={`${labelClass} text-wood-600`}
+                className={`${labelClass} text-ink-muted`}
               >
                 how it came to you
               </label>
@@ -235,7 +235,7 @@ const Homecoming: React.FC = () => {
 
             {/* Where it rests now, reuses the shared city picker. */}
             <div>
-              <span className={`${labelClass} text-wood-600`}>
+              <span className={`${labelClass} text-ink-muted`}>
                 the city where it rests now
               </span>
               <TypeaheadPicker<CityCentroid>
@@ -255,7 +255,7 @@ const Homecoming: React.FC = () => {
               />
               {cityId && getCityById(cityId) && (
                 <p
-                  className="font-display text-sm text-wood-700 mt-2"
+                  className="font-display text-sm text-ink-soft mt-2"
                 >
                   {formatCityLabel(getCityById(cityId)!)}
                 </p>
@@ -266,7 +266,7 @@ const Homecoming: React.FC = () => {
             <div>
               <label
                 htmlFor="homecoming-note"
-                className={`${labelClass} text-wood-600`}
+                className={`${labelClass} text-ink-muted`}
               >
                 anything else you want me to see
               </label>
@@ -282,7 +282,7 @@ const Homecoming: React.FC = () => {
             </div>
 
             {error && (
-              <p className="font-display text-sm text-danger-text">
+              <p className="font-display text-sm text-danger">
                 {error}
               </p>
             )}
@@ -292,7 +292,7 @@ const Homecoming: React.FC = () => {
                 type="button"
                 onClick={submit}
                 disabled={!canSend}
-                className="font-label text-xs uppercase tracking-[0.25em] font-semibold px-8 py-4 border border-bronze-500/50 text-bronze-700 transition-colors hover:border-bronze-700 disabled:opacity-40"
+                className="font-label text-xs uppercase tracking-[0.25em] font-semibold px-8 py-4 border border-bronze-500/50 text-link transition-colors hover:border-bronze-700 disabled:opacity-40"
               >
                 {busy ? 'sending…' : 'bring it home'}
               </button>

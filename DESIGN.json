@@ -1,33 +1,116 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-13T00:00:00.000Z",
+  "generatedAt": "2026-11-19T00:00:00.000Z",
   "title": "Design System: Mandala Codes",
   "extensions": {
     "colorMeta": {
-      "paper": { "role": "neutral", "displayName": "Warm Paper", "canonical": "#f5f4f0" },
-      "deep-wood": { "role": "neutral", "displayName": "Deep Wood", "canonical": "#262321" },
-      "muted-wood": { "role": "neutral", "displayName": "Muted Wood", "canonical": "#736046" },
-      "bronze": { "role": "primary", "displayName": "Aged Bronze", "canonical": "#8a744e" },
-      "bronze-light": { "role": "primary", "displayName": "Lit Bronze", "canonical": "#c4aa7c" }
+      "action-dark": {
+        "role": "primary",
+        "displayName": "Lit Bronze (action, nightfall)",
+        "canonical": "#debc7e"
+      },
+      "action-light": {
+        "role": "primary",
+        "displayName": "Antique Gold (action, day book)",
+        "canonical": "#a37b38"
+      },
+      "ground-dark": {
+        "role": "neutral",
+        "displayName": "Nightfall Ground",
+        "canonical": "#171310"
+      },
+      "ground-light": {
+        "role": "neutral",
+        "displayName": "Day Book Paper",
+        "canonical": "#f3efe7"
+      },
+      "atlas-gold": {
+        "role": "primary",
+        "displayName": "Atlas Gold (stage only)",
+        "canonical": "#c4aa7c"
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Editorial Display", "purpose": "Profile and card titles." },
-      "body": { "displayName": "Teaching Text", "purpose": "Readings and supporting explanation." },
-      "label": { "displayName": "System Label", "purpose": "Controls, metadata, and compact navigation." }
+      "page-title": {
+        "displayName": "Page title",
+        "purpose": "Hero and page titles, 40px (type-6)."
+      },
+      "section-heading": {
+        "displayName": "Section heading",
+        "purpose": "Section headings, 28px (type-5)."
+      },
+      "card-title": {
+        "displayName": "Card title",
+        "purpose": "Card and panel titles, 22px (type-4)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Reading text, 17px (type-3)."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Small text, metadata, help, 14px (type-2)."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Caps eyebrows and labels, 12px (type-1)."
+      },
+      "nav": {
+        "displayName": "Nav",
+        "purpose": "Site bar links, 12px (type-1)."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Button text, 12px (type-1)."
+      },
+      "field": {
+        "displayName": "Field",
+        "purpose": "Inputs and selects, 14px (type-2)."
+      },
+      "admin-table": {
+        "displayName": "Admin table",
+        "purpose": "Admin rows and tables, 14px (type-2)."
+      }
     },
     "breakpoints": [
-      { "name": "profile-wide", "value": "880px" }
-    ]
+      {
+        "name": "profile-wide",
+        "value": "880px"
+      }
+    ],
+    "source": "src/theme.css"
   },
-  "components": [],
+  "components": [
+    "btn-primary",
+    "btn-secondary",
+    "btn-quiet",
+    "btn-icon",
+    "btn-tab",
+    "btn-chip",
+    "field"
+  ],
   "narrative": {
     "northStar": "The Quiet Oracle Table",
-    "overview": "A warm, spacious study surface where the oracle object remains central and supporting information stays restrained at the margins.",
-    "keyCharacteristics": ["warm", "editorial", "spatially balanced", "quietly interactive"],
-    "rules": [
-      { "name": "The True Center Rule", "body": "Supporting rails must not displace the primary chart from the page axis.", "section": "components" }
+    "overview": "A warm, slim study surface: well spaced, never spacious. The oracle object stays central and supporting information stays restrained at the margins.",
+    "keyCharacteristics": [
+      "warm",
+      "editorial",
+      "spatially balanced",
+      "quietly interactive"
     ],
-    "dos": ["Keep equal-width rails around a centered chart."],
-    "donts": ["Do not convert supporting information into floating dashboard cards."]
+    "rules": [
+      {
+        "name": "The True Center Rule",
+        "body": "Supporting rails must not displace the primary chart from the page axis.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Keep equal-width rails around a centered chart."
+    ],
+    "donts": [
+      "Do not convert supporting information into floating dashboard cards.",
+      "Do not add a button look outside the seven master controls."
+    ]
   }
 }

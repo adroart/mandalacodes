@@ -40,14 +40,12 @@ function useAdminFetch(): (input: string, init?: RequestInit) => Promise<Respons
 // Style tokens — mirrored from AdminPoetry.tsx so this page sits beside it
 // without drift. Keep these strings identical to that file.
 // ───────────────────────────────────────────────────────────────────────────
-const fieldLabel =
-    'font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold block mb-2';
-const fieldInput =
-    'w-full border border-wood-300 bg-wood-50 px-4 py-3 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-none focus:border-bronze-400';
+const fieldLabel = 'field-label';
+const fieldInput = 'field';
 const sectionTitle =
-    'font-title text-2xl text-wood-900 mb-2 tracking-[0.05em]';
+    'font-title text-card-title text-ink mb-2 tracking-[0.05em]';
 const sectionLead =
-    'font-reading text-sm text-wood-500 mb-6';
+    'font-reading text-caption text-ink-faint mb-4';
 
 const EVENT_TYPES: LedgerEventType[] = [
     'created',
@@ -179,39 +177,39 @@ const ClaimCodeReference: React.FC<{
     };
     return (
         <div className="mb-6 border border-bronze-400 bg-bronze-50 px-4 py-4">
-            <p className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold mb-2">
+            <p className="font-label text-label uppercase tracking-[0.15em] text-link font-semibold mb-2">
                 claim code (shown once)
             </p>
             <div className="flex items-center gap-3 flex-wrap">
-                <code className="font-technical text-lg tracking-[0.14em] text-wood-900 select-all">
+                <code className="font-technical text-body tracking-[0.14em] text-ink select-all">
                     {code}
                 </code>
                 <button
                     type="button"
                     onClick={copy}
-                    className="font-label text-[11px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+                    className="font-label text-label uppercase tracking-[0.15em] text-link hover:text-accent font-semibold"
                 >
                     {copied ? 'copied' : 'copy'}
                 </button>
                 <button
                     type="button"
                     onClick={printInsert}
-                    className="font-label text-[11px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+                    className="font-label text-label uppercase tracking-[0.15em] text-link hover:text-accent font-semibold"
                 >
                     print the insert
                 </button>
             </div>
-            <p className="font-reading text-sm text-wood-700 mt-2 not-italic">
+            <p className="font-reading text-caption text-ink-soft mt-2 not-italic">
                 {sigil} · prints on the back insert
             </p>
-            <p className="font-reading text-xs text-stone-600 mt-1 not-italic">
+            <p className="font-reading text-label text-stone-600 mt-1 not-italic">
                 This is the only time the code is shown. Print or store it now;
                 only its hash is kept.
             </p>
             <button
                 type="button"
                 onClick={onDismiss}
-                className="mt-3 font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                className="mt-3 font-label text-label uppercase tracking-[0.15em] text-ink-faint hover:text-ink font-semibold"
             >
                 Dismiss
             </button>
@@ -249,7 +247,7 @@ const PieceSelect: React.FC<{
                 />
                 <div className="flex items-center justify-between gap-3 mt-1">
                     {uncatalogued ? (
-                        <span className="font-reading text-xs text-stone-500 not-italic">
+                        <span className="font-reading text-label text-stone-500 not-italic">
                             Uncatalogued id — renders by sigil only until its catalog row lands.
                         </span>
                     ) : (
@@ -261,7 +259,7 @@ const PieceSelect: React.FC<{
                             setFreeText(false);
                             onChange('');
                         }}
-                        className="shrink-0 font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                        className="shrink-0 font-label text-label uppercase tracking-[0.15em] text-ink-faint hover:text-ink font-semibold"
                     >
                         choose from list
                     </button>
@@ -290,7 +288,7 @@ const PieceSelect: React.FC<{
                     setFreeText(true);
                     onChange('');
                 }}
-                className="mt-1 font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+                className="btn btn-quiet btn-sm mt-1"
             >
                 piece not listed? enter its id
             </button>
@@ -360,14 +358,14 @@ const CityAutocomplete: React.FC<{
                 renderItem={(c) => (
                     <>
                         {c.city}, {c.country}
-                        <span className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 ml-2">
+                        <span className="font-label text-label uppercase tracking-[0.15em] text-wood-400 ml-2">
                             {c.id}
                         </span>
                     </>
                 )}
             />
             {value && (
-                <p className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 mt-1">
+                <p className="font-label text-label uppercase tracking-[0.15em] text-wood-400 mt-1">
                     Selected: {value}
                 </p>
             )}
@@ -455,7 +453,7 @@ const SeedEventSection: React.FC = () => {
     };
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-card border border-line p-5">
             <h2 className={sectionTitle}>Seed Event</h2>
             <p className={sectionLead}>
                 Append a new event to the per-piece ledger. The hash chain is
@@ -463,20 +461,20 @@ const SeedEventSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-4">
+                <p className="font-reading text-caption text-stone-600 mb-4">
                     {error}
                 </p>
             )}
 
             {result && (
                 <div className="mb-6 border border-bronze-300 bg-bronze-50 px-4 py-3">
-                    <p className="font-reading text-sm text-bronze-800 mb-2">
+                    <p className="font-reading text-caption text-bronze-800 mb-2">
                         Event appended.
                     </p>
-                    <p className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 mb-1">
+                    <p className="font-label text-label uppercase tracking-[0.15em] text-ink-faint mb-1">
                         Hash
                     </p>
-                    <code className="block font-technical text-xs text-wood-900 break-all">
+                    <code className="block font-technical text-label text-ink break-all">
                         {result.hash}
                     </code>
                 </div>
@@ -559,14 +557,14 @@ const SeedEventSection: React.FC = () => {
                         }
                         rows={3}
                         placeholder="From Adrian's notebook, p.42"
-                        className={`${fieldInput} font-reading text-base leading-[1.7] resize-y`}
+                        className={fieldInput}
                     />
                 </div>
 
                 <button
                     onClick={submit}
                     disabled={saving}
-                    className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                    className="btn btn-primary btn-block"
                 >
                     {saving ? 'Appending...' : 'Append event'}
                 </button>
@@ -669,7 +667,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
     };
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-card border border-line p-5">
             <h2 className={sectionTitle}>Add Steward</h2>
             <p className={sectionLead}>
                 Bind a piece to a collector's email. They sign in to
@@ -678,7 +676,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
             </p>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-4">
+                <p className="font-reading text-caption text-stone-600 mb-4">
                     {error}
                 </p>
             )}
@@ -695,10 +693,10 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
 
             {success && (
                 <div className="mb-6 border border-bronze-400 bg-bronze-50 px-4 py-4">
-                    <p className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold mb-2">
+                    <p className="font-label text-label uppercase tracking-[0.15em] text-link font-semibold mb-2">
                         Steward added
                     </p>
-                    <p className="font-reading text-sm text-wood-900 mb-2 not-italic">
+                    <p className="font-reading text-caption text-ink mb-2 not-italic">
                         {success.email
                             ? success.name
                                 ? `${success.name} (${success.email})`
@@ -707,7 +705,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                               ? `${success.name} (code only, no email)`
                               : 'code only, no email'}
                     </p>
-                    <p className="font-reading text-sm text-stone-700 mb-3 not-italic">
+                    <p className="font-reading text-caption text-stone-700 mb-3 not-italic">
                         {success.email
                             ? 'Send them this link: '
                             : 'They claim with the code on the back insert at: '}
@@ -719,7 +717,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                     <button
                         type="button"
                         onClick={dismiss}
-                        className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                        className="font-label text-label uppercase tracking-[0.15em] text-ink-faint hover:text-ink font-semibold"
                     >
                         Dismiss
                     </button>
@@ -790,9 +788,9 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                         }
                         className="mt-1"
                     />
-                    <span className="font-reading text-sm text-wood-700 not-italic">
+                    <span className="font-reading text-caption text-ink-soft not-italic">
                         mint claim code
-                        <span className="block font-reading text-xs text-stone-500 not-italic">
+                        <span className="block font-reading text-label text-stone-500 not-italic">
                             Prints on the piece's back insert. Shown once on
                             success; only its hash is stored. Email is optional
                             when a code is minted.
@@ -803,7 +801,7 @@ const IssueStewardKeySection: React.FC<{ onIssued: () => void }> = ({
                 <button
                     onClick={submit}
                     disabled={saving}
-                    className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                    className="btn btn-primary btn-block"
                 >
                     {saving ? 'Adding...' : 'Add steward'}
                 </button>
@@ -891,25 +889,25 @@ const PendingSaleRow: React.FC<{
     };
 
     return (
-        <div className="border border-wood-200 p-5 mb-4">
+        <div className="border border-line p-4 mb-3">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                <span className="font-reading text-base text-wood-900">
+                <span className="font-reading text-body text-ink">
                     {sale.buyerName ? `${sale.buyerName} (${sale.buyerEmail})` : sale.buyerEmail}
                 </span>
-                <span className="font-reading text-sm text-wood-500">
+                <span className="font-reading text-caption text-ink-faint">
                     {formatPrice(sale.priceCents, sale.currency)}
                 </span>
-                <span className="font-reading text-sm text-wood-500">
+                <span className="font-reading text-caption text-ink-faint">
                     {sale.saleDate.slice(0, 10)}
                 </span>
             </div>
-            <p className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 mb-4 break-all">
+            <p className="font-label text-label uppercase tracking-[0.15em] text-wood-400 mb-4 break-all">
                 {sale.saleId}
                 {sale.sku ? ` · sku ${sale.sku}` : ''}
             </p>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-3">{error}</p>
+                <p className="font-reading text-caption text-stone-600 mb-3">{error}</p>
             )}
 
             <div className="space-y-3">
@@ -947,7 +945,7 @@ const PendingSaleRow: React.FC<{
                 <button
                     onClick={confirm}
                     disabled={busy}
-                    className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                    className="btn btn-primary btn-block"
                 >
                     {busy ? 'Working...' : 'Confirm sale'}
                 </button>
@@ -962,7 +960,7 @@ const PendingSaleRow: React.FC<{
                     <button
                         onClick={dismiss}
                         disabled={busy}
-                        className="shrink-0 px-4 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                        className="btn btn-secondary shrink-0"
                     >
                         Dismiss
                     </button>
@@ -1008,7 +1006,7 @@ const PendingSalesSection: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-card border border-line p-5">
             <h2 className={sectionTitle}>Pending Sales</h2>
             <p className={sectionLead}>
                 Checkouts reported by adrianrasmussen.com, waiting for your
@@ -1018,11 +1016,11 @@ const PendingSalesSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading text-caption text-stone-600 mb-4">{error}</p>
             )}
-            {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
+            {loading && <p className="font-reading text-caption text-wood-400">Loading...</p>}
             {!loading && !error && pending.length === 0 && (
-                <p className="font-reading text-sm text-wood-400">No pending sales.</p>
+                <p className="font-reading text-caption text-wood-400">No pending sales.</p>
             )}
 
             {!loading &&
@@ -1031,15 +1029,15 @@ const PendingSalesSection: React.FC = () => {
                 ))}
 
             {!loading && resolved.length > 0 && (
-                <div className="mt-6 border-t border-wood-100 pt-4">
-                    <p className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold mb-2">
+                <div className="mt-6 border-t border-line-faint pt-4">
+                    <p className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold mb-2">
                         Recently resolved
                     </p>
                     <ul className="space-y-1">
                         {resolved.map((s) => (
                             <li
                                 key={s.saleId}
-                                className="font-reading text-sm text-wood-500"
+                                className="font-reading text-caption text-ink-faint"
                             >
                                 {s.status} · {s.buyerEmail} ·{' '}
                                 {formatPrice(s.priceCents, s.currency)}
@@ -1144,44 +1142,44 @@ const TendingSection: React.FC = () => {
             className={`border p-5 mb-4 ${
                 untendedRow
                     ? 'border-bronze-400 bg-bronze-50'
-                    : 'border-wood-200'
+                    : 'border-line'
             }`}
         >
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                <span className="font-reading text-base text-wood-900">
+                <span className="font-reading text-body text-ink">
                     {resolvePieceTitle(i.pieceId, i.editionNumber)}
                 </span>
-                <span className="font-reading text-sm text-wood-500">
+                <span className="font-reading text-caption text-ink-faint">
                     {formatRelative(i.sharedAt)}
                 </span>
                 {untendedRow && (
-                    <span className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold">
+                    <span className="font-label text-label uppercase tracking-[0.15em] text-link font-semibold">
                         untended
                     </span>
                 )}
             </div>
-            <p className="font-reading text-base text-wood-700 mb-4">
+            <p className="font-reading text-body text-ink-soft mb-4">
                 “{i.text}”
             </p>
             <div className="flex gap-3">
                 <button
                     onClick={() => tend(i.id, 'keep')}
                     disabled={busyId === i.id}
-                    className="font-label text-xs uppercase tracking-[0.15em] text-wood-700 font-semibold hover:text-bronze-700 transition-colors disabled:opacity-40"
+                    className="font-label text-label uppercase tracking-[0.15em] text-ink-soft font-semibold hover:text-link transition-colors disabled:opacity-40"
                 >
                     Keep
                 </button>
                 <button
                     onClick={() => tend(i.id, 'rehome')}
                     disabled={busyId === i.id}
-                    className="font-label text-xs uppercase tracking-[0.15em] text-wood-700 font-semibold hover:text-bronze-700 transition-colors disabled:opacity-40"
+                    className="font-label text-label uppercase tracking-[0.15em] text-ink-soft font-semibold hover:text-link transition-colors disabled:opacity-40"
                 >
                     Re-home
                 </button>
                 <button
                     onClick={() => tend(i.id, 'withdraw')}
                     disabled={busyId === i.id}
-                    className="font-label text-xs uppercase tracking-[0.15em] text-wood-700 font-semibold hover:text-bronze-700 transition-colors disabled:opacity-40"
+                    className="font-label text-label uppercase tracking-[0.15em] text-ink-soft font-semibold hover:text-link transition-colors disabled:opacity-40"
                 >
                     Withdraw
                 </button>
@@ -1190,7 +1188,7 @@ const TendingSection: React.FC = () => {
     );
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-card border border-line p-5">
             <h2 className={sectionTitle}>Tending</h2>
             <p className={sectionLead}>
                 Entries a steward has let ride the map of dreams. Sorting, not
@@ -1199,24 +1197,24 @@ const TendingSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading text-caption text-stone-600 mb-4">{error}</p>
             )}
-            {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
+            {loading && <p className="font-reading text-caption text-wood-400">Loading...</p>}
             {!loading && !error && live.length === 0 && (
-                <p className="font-reading text-sm text-wood-400">Nothing live on the map right now.</p>
+                <p className="font-reading text-caption text-wood-400">Nothing live on the map right now.</p>
             )}
 
             {!loading && untended.map((i) => renderLiveRow(i, true))}
             {!loading && tended.map((i) => renderLiveRow(i, false))}
 
             {!loading && settled.length > 0 && (
-                <div className="mt-6 border-t border-wood-100 pt-4">
-                    <p className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold mb-2">
+                <div className="mt-6 border-t border-line-faint pt-4">
+                    <p className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold mb-2">
                         Recently settled
                     </p>
                     <ul className="space-y-1">
                         {settled.map((i) => (
-                            <li key={i.id} className="font-reading text-sm text-wood-500">
+                            <li key={i.id} className="font-reading text-caption text-ink-faint">
                                 {i.status} · {resolvePieceTitle(i.pieceId, i.editionNumber)}
                             </li>
                         ))}
@@ -1295,7 +1293,7 @@ const ClaimRequestsSection: React.FC = () => {
     const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-card border border-line p-5">
             <h2 className={sectionTitle}>Claim Requests</h2>
             <p className={sectionLead}>
                 Self-serve stewardship requests. Approving an unclaimed piece
@@ -1306,28 +1304,28 @@ const ClaimRequestsSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading text-caption text-stone-600 mb-4">{error}</p>
             )}
-            {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
+            {loading && <p className="font-reading text-caption text-wood-400">Loading...</p>}
             {!loading && !error && pending.length === 0 && (
-                <p className="font-reading text-sm text-wood-400">No pending requests.</p>
+                <p className="font-reading text-caption text-wood-400">No pending requests.</p>
             )}
 
             {!loading &&
                 pending.map((r) => (
-                    <div key={r.id} className="border border-wood-200 p-5 mb-4">
+                    <div key={r.id} className="border border-line p-4 mb-3">
                         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                            <span className="font-reading text-base text-wood-900">
+                            <span className="font-reading text-body text-ink">
                                 {resolvePieceTitle(r.pieceId, r.editionNumber)}
                             </span>
-                            <span className="font-reading text-sm text-wood-700">
+                            <span className="font-reading text-caption text-ink-soft">
                                 {r.requesterEmail}
                             </span>
                             <span
-                                className={`font-label text-[10px] uppercase tracking-[0.15em] font-semibold ${
+                                className={`font-label text-label uppercase tracking-[0.15em] font-semibold ${
                                     r.routedTo === 'holder'
                                         ? 'text-stone-500'
-                                        : 'text-bronze-700'
+                                        : 'text-link'
                                 }`}
                             >
                                 {r.routedTo === 'holder'
@@ -1335,11 +1333,11 @@ const ClaimRequestsSection: React.FC = () => {
                                     : 'yours to decide'}
                             </span>
                         </div>
-                        <p className="font-reading text-sm text-wood-500 mb-3">
+                        <p className="font-reading text-caption text-ink-faint mb-3">
                             {formatRelative(r.createdAt)}
                         </p>
                         {r.note && (
-                            <p className="font-reading text-sm text-wood-700 mb-4">
+                            <p className="font-reading text-caption text-ink-soft mb-4">
                                 “{r.note}”
                             </p>
                         )}
@@ -1347,14 +1345,14 @@ const ClaimRequestsSection: React.FC = () => {
                             <button
                                 onClick={() => resolve(r.id, true)}
                                 disabled={busyId === r.id}
-                                className="flex-1 bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                                className="btn btn-primary flex-1"
                             >
                                 {busyId === r.id ? 'Working...' : 'Approve'}
                             </button>
                             <button
                                 onClick={() => resolve(r.id, false)}
                                 disabled={busyId === r.id}
-                                className="flex-1 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                                className="btn btn-secondary flex-1"
                             >
                                 Decline
                             </button>
@@ -1363,13 +1361,13 @@ const ClaimRequestsSection: React.FC = () => {
                 ))}
 
             {!loading && recent.length > 0 && (
-                <div className="mt-6 border-t border-wood-100 pt-4">
-                    <p className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold mb-2">
+                <div className="mt-6 border-t border-line-faint pt-4">
+                    <p className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold mb-2">
                         Recently resolved
                     </p>
                     <ul className="space-y-1">
                         {recent.map((r) => (
-                            <li key={r.id} className="font-reading text-sm text-wood-500">
+                            <li key={r.id} className="font-reading text-caption text-ink-faint">
                                 {r.status} · {resolvePieceTitle(r.pieceId, r.editionNumber)} ·{' '}
                                 {r.requesterEmail}
                             </li>
@@ -1453,17 +1451,17 @@ const HomecomingRow: React.FC<{
     if (boundPath) {
         return (
             <div className="border border-bronze-300 bg-bronze-50 p-5 mb-4">
-                <p className="font-reading text-sm text-bronze-800 mb-2">
+                <p className="font-reading text-caption text-bronze-800 mb-2">
                     Recognized and bound. Send {req.requesterEmail} to the
                     ceremony:
                 </p>
-                <code className="block font-technical text-xs text-wood-900 break-all mb-3">
+                <code className="block font-technical text-label text-ink break-all mb-3">
                     {boundPath}
                 </code>
                 <button
                     type="button"
                     onClick={onResolved}
-                    className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                    className="font-label text-label uppercase tracking-[0.15em] text-ink-faint hover:text-ink font-semibold"
                 >
                     Done
                 </button>
@@ -1472,15 +1470,15 @@ const HomecomingRow: React.FC<{
     }
 
     return (
-        <div className="border border-wood-200 p-5 mb-4">
+        <div className="border border-line p-4 mb-3">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                <span className="font-reading text-base text-wood-900">
+                <span className="font-reading text-body text-ink">
                     {req.requesterEmail}
                 </span>
-                <span className="font-reading text-sm text-wood-500">
+                <span className="font-reading text-caption text-ink-faint">
                     rests in {cityLabelById(req.cityId)}
                 </span>
-                <span className="font-reading text-sm text-wood-500">
+                <span className="font-reading text-caption text-ink-faint">
                     {formatRelative(req.createdAt)}
                 </span>
             </div>
@@ -1499,7 +1497,7 @@ const HomecomingRow: React.FC<{
                             <img
                                 src={url}
                                 alt={`Piece photo ${i + 1}`}
-                                className="h-28 w-28 object-cover border border-wood-200 bg-paper-100"
+                                className="h-28 w-28 object-cover border border-line bg-band"
                                 loading="lazy"
                             />
                         </a>
@@ -1507,21 +1505,21 @@ const HomecomingRow: React.FC<{
                 </div>
             )}
 
-            <p className="font-reading text-base text-wood-700 leading-[1.7] mb-2">
+            <p className="font-reading text-body text-ink-soft leading-[1.7] mb-2">
                 {req.provenance}
             </p>
             {req.note && (
-                <p className="font-reading text-sm text-wood-500 leading-[1.6] mb-2">
+                <p className="font-reading text-caption text-ink-faint leading-[1.6] mb-2">
                     {req.note}
                 </p>
             )}
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 my-3">{error}</p>
+                <p className="font-reading text-caption text-stone-600 my-3">{error}</p>
             )}
 
             {confirming ? (
-                <div className="space-y-3 mt-4 border-t border-wood-100 pt-4">
+                <div className="space-y-3 mt-4 border-t border-line-faint pt-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className={fieldLabel}>Piece id</label>
@@ -1570,7 +1568,7 @@ const HomecomingRow: React.FC<{
                             </select>
                         </div>
                     </div>
-                    <p className="font-reading text-sm text-wood-500 leading-[1.6]">
+                    <p className="font-reading text-caption text-ink-faint leading-[1.6]">
                         This mints the piece, places it in{' '}
                         {cityLabelById(req.cityId)}, and binds it to{' '}
                         {req.requesterEmail}. They walk the ceremony on their next
@@ -1581,7 +1579,7 @@ const HomecomingRow: React.FC<{
                             type="button"
                             onClick={bind}
                             disabled={busy}
-                            className="flex-1 bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                            className="btn btn-primary flex-1"
                         >
                             {busy ? 'Binding...' : 'Recognize and bind'}
                         </button>
@@ -1589,7 +1587,7 @@ const HomecomingRow: React.FC<{
                             type="button"
                             onClick={() => setConfirming(false)}
                             disabled={busy}
-                            className="flex-1 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                            className="btn btn-secondary flex-1"
                         >
                             Cancel
                         </button>
@@ -1601,7 +1599,7 @@ const HomecomingRow: React.FC<{
                         type="button"
                         onClick={() => setConfirming(true)}
                         disabled={busy}
-                        className="flex-1 bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                        className="btn btn-primary flex-1"
                     >
                         Recognize and bind
                     </button>
@@ -1609,7 +1607,7 @@ const HomecomingRow: React.FC<{
                         type="button"
                         onClick={() => resolve({ action: 'decline' })}
                         disabled={busy}
-                        className="flex-1 border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                        className="btn btn-secondary flex-1"
                     >
                         Not now
                     </button>
@@ -1656,7 +1654,7 @@ const HomecomingSection: React.FC = () => {
     const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-card border border-line p-5">
             <h2 className={sectionTitle}>Homecoming</h2>
             <p className={sectionLead}>
                 People who hold a piece the atlas has never heard of. Recognize
@@ -1666,11 +1664,11 @@ const HomecomingSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading text-caption text-stone-600 mb-4">{error}</p>
             )}
-            {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
+            {loading && <p className="font-reading text-caption text-wood-400">Loading...</p>}
             {!loading && !error && pending.length === 0 && (
-                <p className="font-reading text-sm text-wood-400">No pieces waiting to come home.</p>
+                <p className="font-reading text-caption text-wood-400">No pieces waiting to come home.</p>
             )}
 
             {!loading &&
@@ -1679,13 +1677,13 @@ const HomecomingSection: React.FC = () => {
                 ))}
 
             {!loading && recent.length > 0 && (
-                <div className="mt-6 border-t border-wood-100 pt-4">
-                    <p className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold mb-2">
+                <div className="mt-6 border-t border-line-faint pt-4">
+                    <p className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold mb-2">
                         Recently resolved
                     </p>
                     <ul className="space-y-1">
                         {recent.map((r) => (
-                            <li key={r.id} className="font-reading text-sm text-wood-500">
+                            <li key={r.id} className="font-reading text-caption text-ink-faint">
                                 {r.status} · {r.requesterEmail} ·{' '}
                                 {cityLabelById(r.cityId)}
                                 {r.boundTitle ? ` · ${r.boundTitle}` : ''}
@@ -1813,7 +1811,7 @@ const StewardRoster: React.FC<{
     };
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8">
+        <div className="bg-card border border-line p-5">
             <h2 className={sectionTitle}>Steward Roster</h2>
             <p className={sectionLead}>
                 Bound and pending collectors. Status flips from "invited" to
@@ -1823,13 +1821,13 @@ const StewardRoster: React.FC<{
             </p>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600">
+                <p className="font-reading text-caption text-stone-600">
                     {error}
                 </p>
             )}
 
             {rowError && (
-                <p className="font-reading text-sm text-stone-600 mb-4">
+                <p className="font-reading text-caption text-stone-600 mb-4">
                     {rowError}
                 </p>
             )}
@@ -1845,11 +1843,11 @@ const StewardRoster: React.FC<{
             )}
 
             {loading && (
-                <p className="font-reading text-sm text-wood-400">Loading...</p>
+                <p className="font-reading text-caption text-wood-400">Loading...</p>
             )}
 
             {!loading && !error && stewards.length === 0 && (
-                <p className="font-reading text-sm text-wood-400">
+                <p className="font-reading text-caption text-wood-400">
                     No stewards issued yet.
                 </p>
             )}
@@ -1858,26 +1856,26 @@ const StewardRoster: React.FC<{
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="border-b border-wood-200">
-                                <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2 pr-4">
+                            <tr className="border-b border-line">
+                                <th className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold py-2 pr-4">
                                     Piece
                                 </th>
-                                <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2 pr-4">
+                                <th className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold py-2 pr-4">
                                     Name
                                 </th>
-                                <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2 pr-4">
+                                <th className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold py-2 pr-4">
                                     Email
                                 </th>
-                                <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2 pr-4">
+                                <th className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold py-2 pr-4">
                                     Status
                                 </th>
-                                <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2 pr-4">
+                                <th className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold py-2 pr-4">
                                     Issued
                                 </th>
-                                <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2 pr-4">
+                                <th className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold py-2 pr-4">
                                     Last claim
                                 </th>
-                                <th className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 font-semibold py-2">
+                                <th className="font-label text-label uppercase tracking-[0.15em] text-ink-faint font-semibold py-2">
                                     Code
                                 </th>
                             </tr>
@@ -1886,18 +1884,18 @@ const StewardRoster: React.FC<{
                             {stewards.map((s, i) => (
                                 <tr
                                     key={`${s.pieceId}-${s.editionNumber ?? 0}-${i}`}
-                                    className="border-b border-wood-100"
+                                    className="border-b border-line-faint"
                                 >
-                                    <td className="font-reading text-base text-wood-900 py-3 pr-4">
+                                    <td className="font-reading text-body text-ink py-3 pr-4">
                                         {resolvePieceTitle(
                                             s.pieceId,
                                             s.editionNumber,
                                         )}
                                     </td>
-                                    <td className="font-reading text-sm text-wood-700 py-3 pr-4">
+                                    <td className="font-reading text-caption text-ink-soft py-3 pr-4">
                                         {s.name ?? '-'}
                                     </td>
-                                    <td className="font-reading text-sm text-wood-700 py-3 pr-4">
+                                    <td className="font-reading text-caption text-ink-soft py-3 pr-4">
                                         {s.email ?? '-'}
                                     </td>
                                     <td className="py-3 pr-4">
@@ -1913,7 +1911,7 @@ const StewardRoster: React.FC<{
                                                         .value as StewardRecord['outreachStatus'],
                                                 )
                                             }
-                                            className="font-reading text-sm text-wood-700 border border-wood-300 bg-wood-50 px-2 py-1.5 focus:outline-none focus:border-bronze-400 disabled:opacity-40"
+                                            className="field w-auto"
                                         >
                                             {s.outreachStatus === 'claimed' && (
                                                 <option value="claimed" disabled>
@@ -1932,17 +1930,17 @@ const StewardRoster: React.FC<{
                                             )}
                                         </select>
                                     </td>
-                                    <td className="font-reading text-sm text-wood-500 py-3 pr-4">
+                                    <td className="font-reading text-caption text-ink-faint py-3 pr-4">
                                         {formatRelative(s.issuedAt)}
                                     </td>
-                                    <td className="font-reading text-sm text-wood-500 py-3 pr-4">
+                                    <td className="font-reading text-caption text-ink-faint py-3 pr-4">
                                         {s.lastClaimAt
                                             ? formatRelative(s.lastClaimAt)
                                             : '-'}
                                     </td>
                                     <td className="py-3">
                                         {s.outreachStatus === 'claimed' ? (
-                                            <span className="font-reading text-xs text-wood-400 not-italic">
+                                            <span className="font-reading text-label text-wood-400 not-italic">
                                                 claimed
                                             </span>
                                         ) : (
@@ -1950,7 +1948,7 @@ const StewardRoster: React.FC<{
                                                 type="button"
                                                 onClick={() => handleReissue(s)}
                                                 disabled={reissueBusyKey === stewardKey(s)}
-                                                className="font-label text-[11px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold disabled:opacity-40"
+                                                className="font-label text-label uppercase tracking-[0.15em] text-link hover:text-accent font-semibold disabled:opacity-40"
                                             >
                                                 {reissueBusyKey === stewardKey(s)
                                                     ? 'reissuing...'
@@ -2040,7 +2038,7 @@ const MakeRequestsSection: React.FC = () => {
     const recent = requests.filter((r) => r.status !== 'pending').slice(0, 8);
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-card border border-line p-5">
             <h2 className={sectionTitle}>Make Requests</h2>
             <p className={sectionLead}>
                 Notes from the /make door: someone wants a piece made (code,
@@ -2049,65 +2047,65 @@ const MakeRequestsSection: React.FC = () => {
             </p>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-4">{error}</p>
+                <p className="font-reading text-caption text-stone-600 mb-4">{error}</p>
             )}
-            {loading && <p className="font-reading text-sm text-wood-400">Loading...</p>}
+            {loading && <p className="font-reading text-caption text-wood-400">Loading...</p>}
             {!loading && !error && pending.length === 0 && (
-                <p className="font-reading text-sm text-wood-400">No pending notes.</p>
+                <p className="font-reading text-caption text-wood-400">No pending notes.</p>
             )}
 
             {!loading &&
                 pending.map((r) => (
-                    <div key={r.id} className="border border-wood-200 p-5 mb-4">
+                    <div key={r.id} className="border border-line p-4 mb-3">
                         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                            <span className="font-reading text-base text-wood-900">
+                            <span className="font-reading text-body text-ink">
                                 {r.requesterEmail}
                             </span>
                             {typeof r.code === 'number' && (
-                                <span className="font-label text-[10px] uppercase tracking-[0.15em] font-semibold text-bronze-700">
+                                <span className="font-label text-label uppercase tracking-[0.15em] font-semibold text-link">
                                     Code {r.code}
                                 </span>
                             )}
                             {r.pieceId && (
-                                <span className="font-reading text-sm text-wood-700">
+                                <span className="font-reading text-caption text-ink-soft">
                                     from {resolvePieceTitle(r.pieceId, undefined)}
                                 </span>
                             )}
                         </div>
-                        <p className="font-reading text-sm text-wood-500 mb-2">
+                        <p className="font-reading text-caption text-ink-faint mb-2">
                             {formatRelative(r.createdAt)}
                         </p>
-                        <p className="font-reading text-sm text-wood-800 mb-1">
+                        <p className="font-reading text-caption text-wood-800 mb-1">
                             Size: {r.size}
                         </p>
                         {r.palette && (
-                            <p className="font-reading text-sm text-wood-800 mb-1">
+                            <p className="font-reading text-caption text-wood-800 mb-1">
                                 Palette: {r.palette}
                             </p>
                         )}
                         {r.note && (
-                            <p className="font-reading text-sm text-wood-700 mt-2 mb-3">
+                            <p className="font-reading text-caption text-ink-soft mt-2 mb-3">
                                 “{r.note}”
                             </p>
                         )}
                         <div className="flex gap-3 mt-4">
                             <a
                                 href={`mailto:${r.requesterEmail}?subject=${encodeURIComponent('Your piece, from the studio')}`}
-                                className="flex-1 text-center bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors"
+                                className="btn btn-primary flex-1"
                             >
                                 Reply by email
                             </a>
                             <button
                                 onClick={() => resolve(r.id, 'answered')}
                                 disabled={busyId === r.id}
-                                className="flex-1 border border-wood-300 text-wood-800 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:border-bronze-500 transition-colors disabled:opacity-40"
+                                className="btn btn-secondary flex-1"
                             >
                                 {busyId === r.id ? 'Working...' : 'Mark answered'}
                             </button>
                             <button
                                 onClick={() => resolve(r.id, 'dismissed')}
                                 disabled={busyId === r.id}
-                                className="flex-1 border border-wood-300 text-stone-600 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:border-stone-400 transition-colors disabled:opacity-40"
+                                className="btn btn-quiet flex-1"
                             >
                                 Dismiss
                             </button>
@@ -2116,12 +2114,12 @@ const MakeRequestsSection: React.FC = () => {
                 ))}
 
             {recent.length > 0 && (
-                <div className="mt-6 pt-4 border-t border-wood-200">
-                    <p className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500 mb-2">
+                <div className="mt-6 pt-4 border-t border-line">
+                    <p className="font-label text-label uppercase tracking-[0.18em] text-ink-faint mb-2">
                         Recently resolved
                     </p>
                     {recent.map((r) => (
-                        <p key={r.id} className="font-reading text-sm text-wood-600">
+                        <p key={r.id} className="font-reading text-caption text-ink-muted">
                             {r.requesterEmail} · {r.size}
                             {typeof r.code === 'number' ? ` · Code ${r.code}` : ''} ·{' '}
                             {r.status}
@@ -2263,29 +2261,29 @@ const CatalogForm: React.FC<{
     };
 
     return (
-        <div className="border border-wood-200 p-6 mb-6">
-            <h3 className="font-title text-lg text-wood-900 mb-4 tracking-[0.05em]">
+        <div className="border border-line p-6 mb-6">
+            <h3 className="font-title text-body text-ink mb-4 tracking-[0.05em]">
                 add a piece
             </h3>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-4">
+                <p className="font-reading text-caption text-stone-600 mb-4">
                     {error}
                 </p>
             )}
 
             {mintedSigil && (
                 <div className="mb-6 border border-bronze-400 bg-bronze-50 px-4 py-4">
-                    <p className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold mb-2">
+                    <p className="font-label text-label uppercase tracking-[0.15em] text-link font-semibold mb-2">
                         its permanent sigil
                     </p>
-                    <p className="font-title text-2xl text-wood-900 tracking-[0.06em]">
+                    <p className="font-title text-card-title text-ink tracking-[0.06em]">
                         {mintedSigil} · permanent
                     </p>
                     <button
                         type="button"
                         onClick={() => setMintedSigil(null)}
-                        className="mt-3 font-label text-[11px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 font-semibold"
+                        className="mt-3 font-label text-label uppercase tracking-[0.15em] text-ink-faint hover:text-ink font-semibold"
                     >
                         Dismiss
                     </button>
@@ -2333,7 +2331,7 @@ const CatalogForm: React.FC<{
                     )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div>
                         <label className={fieldLabel}>Year</label>
                         <input
@@ -2383,7 +2381,7 @@ const CatalogForm: React.FC<{
                         onChange={(e) => set('images', e.target.value)}
                         rows={2}
                         placeholder={'detail_ab12cd\nverso_ef34gh'}
-                        className={`${fieldInput} resize-y`}
+                        className={fieldInput}
                     />
                 </div>
 
@@ -2456,14 +2454,14 @@ const CatalogForm: React.FC<{
                         onChange={(e) => set('notes', e.target.value)}
                         rows={2}
                         placeholder="Anything only you should see"
-                        className={`${fieldInput} font-reading resize-y`}
+                        className={fieldInput}
                     />
                 </div>
 
                 <button
                     onClick={submit}
                     disabled={saving}
-                    className="w-full bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                    className="btn btn-primary btn-block"
                 >
                     {saving ? 'Saving...' : 'Save the piece'}
                 </button>
@@ -2666,37 +2664,37 @@ const CatalogRow: React.FC<{
     const printed = !!entry.printedAt;
 
     return (
-        <div className="border border-wood-200 p-5 mb-4">
+        <div className="border border-line p-4 mb-3">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2">
-                <span className="font-title text-base text-wood-900 tracking-[0.05em]">
+                <span className="font-title text-body text-ink tracking-[0.05em]">
                     {entry.sigil}
                 </span>
-                <span className="font-reading text-base text-wood-900">
+                <span className="font-reading text-body text-ink">
                     {entry.title}
                 </span>
-                <span className="font-reading text-sm text-wood-500">
+                <span className="font-reading text-caption text-ink-faint">
                     {CATALOG_KIND_LABELS[entry.kind]} · {STATUS_LABELS[entry.status]}
                     {entry.cityId ? ` · ${cityLabelById(entry.cityId)}` : ''}
                 </span>
                 {printed && (
-                    <span className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold">
+                    <span className="font-label text-label uppercase tracking-[0.15em] text-link font-semibold">
                         printed
                     </span>
                 )}
                 {invited && (
-                    <span className="font-label text-[10px] uppercase tracking-[0.15em] text-bronze-700 font-semibold">
+                    <span className="font-label text-label uppercase tracking-[0.15em] text-link font-semibold">
                         invited
                     </span>
                 )}
             </div>
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-2">
+                <p className="font-reading text-caption text-stone-600 mb-2">
                     {error}
                 </p>
             )}
             {note && (
-                <p className="font-reading text-sm text-bronze-700 mb-2 not-italic">
+                <p className="font-reading text-caption text-link mb-2 not-italic">
                     {note}
                 </p>
             )}
@@ -2713,7 +2711,7 @@ const CatalogRow: React.FC<{
 
             <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {inWorld ? (
-                    <span className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-400 font-semibold">
+                    <span className="font-label text-label uppercase tracking-[0.15em] text-wood-400 font-semibold">
                         already in the world
                     </span>
                 ) : (
@@ -2721,7 +2719,7 @@ const CatalogRow: React.FC<{
                         type="button"
                         onClick={enterWorld}
                         disabled={busy === 'world'}
-                        className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-700 hover:text-bronze-700 font-semibold disabled:opacity-40"
+                        className="font-label text-label uppercase tracking-[0.15em] text-ink-soft hover:text-link font-semibold disabled:opacity-40"
                     >
                         {busy === 'world' ? 'entering...' : 'enter the world'}
                     </button>
@@ -2732,7 +2730,7 @@ const CatalogRow: React.FC<{
                         type="button"
                         onClick={invite}
                         disabled={busy === 'invite'}
-                        className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-700 hover:text-bronze-700 font-semibold disabled:opacity-40"
+                        className="font-label text-label uppercase tracking-[0.15em] text-ink-soft hover:text-link font-semibold disabled:opacity-40"
                     >
                         {busy === 'invite' ? 'sending...' : 'invite its keeper'}
                     </button>
@@ -2742,7 +2740,7 @@ const CatalogRow: React.FC<{
                     type="button"
                     onClick={mintCode}
                     disabled={busy === 'code'}
-                    className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-700 hover:text-bronze-700 font-semibold disabled:opacity-40"
+                    className="font-label text-label uppercase tracking-[0.15em] text-ink-soft hover:text-link font-semibold disabled:opacity-40"
                 >
                     {busy === 'code' ? 'minting...' : 'mint claim code'}
                 </button>
@@ -2750,7 +2748,7 @@ const CatalogRow: React.FC<{
                 <button
                     type="button"
                     onClick={printPlaque}
-                    className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-700 hover:text-bronze-700 font-semibold"
+                    className="font-label text-label uppercase tracking-[0.15em] text-ink-soft hover:text-link font-semibold"
                 >
                     print the plaque
                 </button>
@@ -2759,7 +2757,7 @@ const CatalogRow: React.FC<{
                     href={`/piece/${entry.id}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-label text-[11px] uppercase tracking-[0.15em] text-bronze-700 hover:text-bronze-600 font-semibold"
+                    className="font-label text-label uppercase tracking-[0.15em] text-link hover:text-accent font-semibold"
                 >
                     view its certificate
                 </a>
@@ -2822,7 +2820,7 @@ const CatalogSection: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-wood-50 border border-wood-200 p-8 mb-10">
+        <div className="bg-card border border-line p-5">
             <h2 className={sectionTitle}>Catalog</h2>
             <p className={sectionLead}>
                 Every work you have made, entered once. Each piece receives a
@@ -2838,15 +2836,15 @@ const CatalogSection: React.FC = () => {
             />
 
             {error && (
-                <p className="font-reading text-sm text-stone-600 mb-4">
+                <p className="font-reading text-caption text-stone-600 mb-4">
                     {error}
                 </p>
             )}
             {loading && (
-                <p className="font-reading text-sm text-wood-400">Loading...</p>
+                <p className="font-reading text-caption text-wood-400">Loading...</p>
             )}
             {!loading && !error && entries.length === 0 && (
-                <p className="font-reading text-sm text-wood-400">
+                <p className="font-reading text-caption text-wood-400">
                     No pieces catalogued yet.
                 </p>
             )}
@@ -2902,26 +2900,32 @@ const AdminAtlas: React.FC = () => {
 
     return (
         <AdminLayout>
-            <section className="pt-12 pb-32 px-6">
-                <div className="max-w-2xl mx-auto">
-                    <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 font-semibold mb-3">
+            <section className="pt-8 pb-24 px-[var(--page-gutter)]">
+                <div className="max-w-7xl mx-auto">
+                    <p className="font-label text-label uppercase tracking-[0.2em] text-accent font-semibold mb-3">
                         Admin
                     </p>
-                    <h1 className="font-title text-4xl text-wood-900 mb-2 tracking-[0.05em]">
+                    <h1 className="font-title text-page-title text-ink mb-2 tracking-[0.05em]">
                         Atlas
                     </h1>
-                    <p className="font-reading text-sm text-wood-500 mb-12">
+                    <p className="font-reading text-caption text-ink-faint mb-6">
                         Seed ledger events and add stewards for the world map.
                     </p>
 
+                    {/* Two columns on a wide screen: catalogue and forms on the
+                        left, the queues on the right. One column on a phone. */}
+                    <div className="grid gap-6 xl:grid-cols-2 xl:items-start [&>*]:min-w-0">
+                    <div className="space-y-6">
                     <CatalogSection />
                     <SeedEventSection />
+                    <IssueStewardKeySection onIssued={loadStewards} />
+                    </div>
+                    <div className="space-y-6">
                     <PendingSalesSection />
                     <TendingSection />
                     <ClaimRequestsSection />
                     <HomecomingSection />
                     <MakeRequestsSection />
-                    <IssueStewardKeySection onIssued={loadStewards} />
                     <StewardRoster
                         stewards={stewards}
                         loading={loading}
@@ -2929,6 +2933,8 @@ const AdminAtlas: React.FC = () => {
                         setStewards={setStewards}
                         onReload={loadStewards}
                     />
+                    </div>
+                    </div>
                 </div>
             </section>
         </AdminLayout>

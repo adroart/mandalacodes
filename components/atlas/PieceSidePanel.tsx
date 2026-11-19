@@ -73,9 +73,9 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
     return (
       <aside
         aria-label="Selected piece"
-        className="bg-paper-100 border border-wood-200 p-6 sm:p-8 min-h-[16rem] flex items-center justify-center"
+        className="bg-band border border-line p-6 sm:p-8 min-h-[16rem] flex items-center justify-center"
       >
-        <p className="font-reading text-base text-wood-600 max-w-xs text-center leading-[1.7]">
+        <p className="font-reading text-base text-ink-muted max-w-xs text-center leading-[1.7]">
           Tap a point on the globe to see where that piece has come to rest.
         </p>
       </aside>
@@ -105,17 +105,17 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
   return (
     <aside
       aria-label={`Selected piece, ${piece.title}`}
-      className="bg-paper-100 border border-wood-200 p-6 sm:p-8"
+      className="bg-band border border-line p-6 sm:p-8"
     >
-      <p className="font-label text-[11px] uppercase tracking-[0.25em] text-bronze-700 mb-3">
+      <p className="font-label text-[11px] uppercase tracking-[0.25em] text-link mb-3">
         {piece.category ?? 'Selected piece'}
       </p>
-      <h3 className="font-display text-2xl sm:text-3xl text-wood-900 font-medium leading-tight mb-3">
+      <h3 className="font-display text-2xl sm:text-3xl text-ink font-medium leading-tight mb-3">
         {piece.title}
       </h3>
 
       {inlineBits.length > 0 && (
-        <p className="font-reading text-sm text-wood-700 leading-relaxed mb-5">
+        <p className="font-reading text-sm text-ink-soft leading-relaxed mb-5">
           {inlineBits.map((bit, i) => (
             <React.Fragment key={i}>
               {i > 0 && (
@@ -129,13 +129,13 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
         </p>
       )}
 
-      <div className="border-t border-wood-200 pt-5">
-        <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
+      <div className="border-t border-line pt-5">
+        <p className="font-label text-[11px] uppercase tracking-[0.18em] text-ink-muted mb-1">
           Where it rests
         </p>
         <p
           className={`font-reading text-lg leading-snug ${
-            isSeeking || isUnawakened ? 'text-wood-700' : 'text-wood-900'
+            isSeeking || isUnawakened ? 'text-ink-soft' : 'text-ink'
           }`}
         >
           {statusLine}
@@ -144,25 +144,25 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
       </div>
 
       {typeof piece.claimOrdinal === 'number' && (
-        <div className="border-t border-wood-200 pt-5 mt-5">
-          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
+        <div className="border-t border-line pt-5 mt-5">
+          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-ink-muted mb-1">
             Founding light
           </p>
-          <p className="font-reading text-lg text-wood-900 leading-snug">
+          <p className="font-reading text-lg text-ink leading-snug">
             The {ordinalLabel(piece.claimOrdinal)} light
           </p>
-          <p className="font-reading text-sm text-wood-600 leading-snug mt-1">
+          <p className="font-reading text-sm text-ink-muted leading-snug mt-1">
             A founding light marks the order in which a piece was claimed by its keeper.
           </p>
         </div>
       )}
 
-      <div className="border-t border-wood-200 pt-5 mt-5">
+      <div className="border-t border-line pt-5 mt-5">
         <Link
           to={`/piece/${piece.pieceId}${
             typeof piece.editionNumber === 'number' ? `/${piece.editionNumber}` : ''
           }`}
-          className="font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+          className="font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-link hover:text-accent transition-colors"
         >
           Open this piece's book →
         </Link>
@@ -171,14 +171,14 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
       {/* Bridge back into the deck — every Universal Language piece carries
           one of the 64 codes; the reading lives on the card page. */}
       {typeof piece.cardNumber === 'number' && (
-        <div className="border-t border-wood-200 pt-5 mt-5">
-          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
+        <div className="border-t border-line pt-5 mt-5">
+          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-ink-muted mb-1">
             The code it carries
           </p>
           <Link
             to={`/universal-language/${piece.cardNumber}`}
             state={{ ritual: true }}
-            className="font-reading text-lg text-wood-900 hover:text-bronze-700 transition-colors leading-snug"
+            className="font-reading text-lg text-ink hover:text-link transition-colors leading-snug"
           >
             Read Code {piece.cardNumber} →
           </Link>
@@ -186,19 +186,19 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
       )}
 
       {holderChart && (
-        <div className="border-t border-wood-200 pt-5 mt-5">
-          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-1">
+        <div className="border-t border-line pt-5 mt-5">
+          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-ink-muted mb-1">
             Held by a chart of
           </p>
-          <p className="font-reading text-lg text-wood-900 leading-snug">
+          <p className="font-reading text-lg text-ink leading-snug">
             {holderChart.element}
           </p>
         </div>
       )}
 
       {kin && kin.length > 0 && (
-        <div className="border-t border-wood-200 pt-5 mt-5">
-          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 mb-2">
+        <div className="border-t border-line pt-5 mt-5">
+          <p className="font-label text-[11px] uppercase tracking-[0.18em] text-ink-muted mb-2">
             Kin
           </p>
           <ul className="space-y-1.5">
@@ -207,7 +207,7 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectKin?.(k.key)}
-                  className="font-reading text-base text-wood-900 hover:text-bronze-700 transition-colors text-left leading-snug"
+                  className="font-reading text-base text-ink hover:text-link transition-colors text-left leading-snug"
                 >
                   {k.title}
                 </button>

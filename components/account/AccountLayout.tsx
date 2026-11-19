@@ -67,13 +67,13 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({ title, children }) => {
     return (
       <div className="min-h-screen pt-24 pb-28 px-6 md:px-10 max-w-6xl mx-auto">
         <header className="mb-8 md:mb-10 max-w-3xl">
-          <p className="font-label text-[11px] uppercase tracking-[0.32em] text-bronze-600 mb-4">
+          <p className="font-label text-[11px] uppercase tracking-[0.32em] text-accent mb-4">
             Mandala Codes
           </p>
-          <h1 className="font-display text-4xl md:text-5xl leading-[1.05] text-wood-900">
+          <h1 className="font-display text-4xl md:text-5xl leading-[1.05] text-ink">
             Your account
           </h1>
-          <p className="font-reading text-xl md:text-2xl leading-relaxed text-wood-700 mt-4">
+          <p className="font-reading text-xl md:text-2xl leading-relaxed text-ink-soft mt-4">
             One place that holds everything that is yours here.
           </p>
         </header>
@@ -84,7 +84,7 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({ title, children }) => {
         </div>
 
         {/* The features as large full-width link rows. */}
-        <div className="divide-y divide-wood-200/70 border-y border-wood-200/70">
+        <div className="divide-y divide-wood-200/70 border-y border-line/70">
           {SIGNED_OUT_FEATURES.map((f) => (
             <Link
               key={f.to}
@@ -92,19 +92,19 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({ title, children }) => {
               className="group flex items-baseline gap-5 py-7 transition-colors"
             >
               <div className="flex-1">
-                <div className="font-label text-[10px] uppercase tracking-[0.3em] text-bronze-600 mb-2.5">
+                <div className="font-label text-[10px] uppercase tracking-[0.3em] text-accent mb-2.5">
                   {f.kicker}
                 </div>
-                <div className="font-display text-2xl md:text-3xl leading-tight text-wood-900 mb-2 transition-colors group-hover:text-bronze-700">
+                <div className="font-display text-2xl md:text-3xl leading-tight text-ink mb-2 transition-colors group-hover:text-link">
                   {f.title}
                 </div>
-                <p className="font-reading text-[17px] leading-relaxed text-wood-600 max-w-[52ch]">
+                <p className="font-reading text-[17px] leading-relaxed text-ink-muted max-w-[52ch]">
                   {f.body}
                 </p>
               </div>
               <span
                 aria-hidden="true"
-                className="font-reading text-2xl text-wood-300 transition-all duration-300 ease-out group-hover:text-bronze-600 group-hover:translate-x-1 self-center"
+                className="font-reading text-2xl text-wood-300 transition-all duration-300 ease-out group-hover:text-accent group-hover:translate-x-1 self-center"
               >
                 &rarr;
               </span>
@@ -118,7 +118,7 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({ title, children }) => {
   return (
     <div className="min-h-screen pt-28 pb-24 px-6 max-w-5xl mx-auto">
       <header className="mb-10">
-        <h1 className="font-display text-3xl text-wood-900">{title}</h1>
+        <h1 className="font-display text-3xl text-ink">{title}</h1>
       </header>
       <div className="grid md:grid-cols-[180px_1fr] gap-10">
         <nav aria-label="Account">
@@ -134,7 +134,7 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({ title, children }) => {
                     to={item.to}
                     className={[
                       'block font-label text-[11px] uppercase tracking-[0.22em] py-2 transition-colors',
-                      active ? 'text-bronze-600' : 'text-wood-700 hover:text-bronze-600',
+                      active ? 'text-accent' : 'text-ink-soft hover:text-accent',
                     ].join(' ')}
                   >
                     {item.label}

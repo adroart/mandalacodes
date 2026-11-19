@@ -33,7 +33,7 @@ export interface AtlasMovedNoticeProps {
 const TONE = {
   paper: {
     sentence: 'text-stone-700',
-    link: 'text-bronze-700 hover:text-bronze-600',
+    link: 'text-link hover:text-accent',
     sentenceStyle: undefined as React.CSSProperties | undefined,
     linkStyle: undefined as React.CSSProperties | undefined,
   },

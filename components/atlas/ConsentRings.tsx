@@ -97,7 +97,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         }
       >
         {!stage && (
-          <span className="text-wood-900">
+          <span className="text-ink">
             {pieceTitle ? `${pieceTitle} is yours` : 'Your piece is yours'}
           </span>
         )}
@@ -122,7 +122,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         className={
           stage
             ? 'px-2 py-7 mb-8 border-y'
-            : 'border border-wood-200 bg-wood-50 px-6 py-7 mb-8'
+            : 'border border-line bg-card px-6 py-7 mb-8'
         }
         style={stage ? { borderColor: 'rgba(196,170,124,0.22)' } : undefined}
       >
@@ -130,7 +130,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
           className="font-display text-xl leading-snug text-center mb-2"
           style={stage ? { color: '#ece2cf' } : undefined}
         >
-          <span className={stage ? '' : 'text-wood-900'}>
+          <span className={stage ? '' : 'text-ink'}>
             Place your piece as a light on the world map?
           </span>
         </p>
@@ -158,7 +158,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         <div className="mb-8">
           <label
             htmlFor={hopeId}
-            className="block font-display text-[1.0625rem] leading-relaxed text-wood-900 mb-2"
+            className="block font-display text-[1.0625rem] leading-relaxed text-ink mb-2"
           >
             What do you hope this piece holds for you?
           </label>
@@ -170,7 +170,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
             maxLength={2000}
             disabled={submitting}
             placeholder="A few words, if you like."
-            className="w-full border border-wood-300 bg-wood-50 px-4 py-3 font-display text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 disabled:opacity-60"
+            className="w-full border border-line-strong bg-card px-4 py-3 font-display text-base text-ink placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 disabled:opacity-60"
           />
           <p className="font-display text-sm text-stone-600 mt-2">
             Optional, kept in your piece&rsquo;s private book.
@@ -184,7 +184,7 @@ const ConsentRings: React.FC<ConsentRingsProps> = ({
         className={
           stage
             ? 'w-full min-h-[48px] font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 transition-colors disabled:opacity-40 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2'
-            : 'w-full min-h-[48px] bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2'
+            : 'w-full min-h-[48px] bg-wood-900 text-ink-inverse font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2'
         }
         style={
           stage

@@ -57,12 +57,12 @@ import type { Artwork, LedgerEvent, PublicAtlasState } from '../types';
  * text and the single series eyebrow. Enforcing these constants is what makes
  * the page read as one certificate instead of a stack of fragments.
  */
-const LABEL = 'font-label text-[11px] uppercase tracking-[0.2em] text-wood-600';
+const LABEL = 'font-label text-label uppercase tracking-[0.2em] text-ink-muted';
 const LINK =
-  'font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-bronze-600 hover:text-bronze-500 transition-colors';
-const CARD = 'border border-wood-200 bg-paper-100/60';
+  'font-label text-label uppercase tracking-[0.2em] font-semibold text-accent hover:text-bronze-500 transition-colors';
+const CARD = 'border border-line bg-band/60';
 const BUTTON =
-  'inline-block font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3';
+  'inline-block font-label text-label uppercase tracking-[0.2em] font-semibold text-ink-inverse bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3';
 
 /** The hairline rule the certificate is ruled with. */
 const Rule: React.FC<{ className?: string }> = ({ className = '' }) => (
@@ -269,8 +269,8 @@ const PhysicalPiecePage: React.FC = () => {
 
   if (load.kind === 'loading') {
     return (
-      <section className="min-h-screen bg-paper-100 flex items-center justify-center px-6">
-        <p className={`${LABEL} text-wood-500`} aria-live="polite">
+      <section className="min-h-screen bg-band flex items-center justify-center px-6">
+        <p className={`${LABEL} text-ink-faint`} aria-live="polite">
           Opening the certificate
         </p>
       </section>
@@ -279,14 +279,14 @@ const PhysicalPiecePage: React.FC = () => {
 
   if (load.kind === 'error') {
     return (
-      <section className="min-h-screen bg-paper-100 flex flex-col items-center justify-center px-6 text-center">
+      <section className="min-h-screen bg-band flex flex-col items-center justify-center px-6 text-center">
         <h1
-          className="font-display text-3xl text-wood-900 font-medium mb-4"
+          className="font-display text-section-heading text-ink font-medium mb-4"
           style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
         >
           The Atlas record is briefly out of reach.
         </h1>
-        <p className="font-reading text-lg text-wood-700 max-w-md leading-[1.6] mb-8">
+        <p className="font-reading text-body text-ink-soft max-w-md leading-[1.6] mb-8">
           We could not reach the canonical record. Please try again shortly.
         </p>
         <Link to="/atlas" className={LINK}>
@@ -298,14 +298,14 @@ const PhysicalPiecePage: React.FC = () => {
 
   if (load.kind === 'not-found') {
     return (
-      <section className="min-h-screen bg-paper-100 flex flex-col items-center justify-center px-6 text-center">
+      <section className="min-h-screen bg-band flex flex-col items-center justify-center px-6 text-center">
         <h1
-          className="font-display text-3xl text-wood-900 font-medium mb-4"
+          className="font-display text-section-heading text-ink font-medium mb-4"
           style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
         >
           This physical piece could not be found
         </h1>
-        <p className="font-reading text-lg text-wood-700 max-w-md leading-[1.6] mb-8">
+        <p className="font-reading text-body text-ink-soft max-w-md leading-[1.6] mb-8">
           This link does not resolve to a public physical record. Collector
           registration is not open here.
         </p>
@@ -382,7 +382,7 @@ const PhysicalPiecePage: React.FC = () => {
   )}`;
 
   return (
-    <div className="min-h-screen bg-paper-100 text-wood-900">
+    <div className="min-h-screen bg-band text-ink">
       <div className="px-5 sm:px-6 pb-32 max-w-3xl mx-auto pt-[calc(var(--nav-height)+1rem)] sm:pt-[calc(var(--nav-height)+1.75rem)]">
         {/* The way back, and then the breadcrumb.
 
@@ -398,9 +398,9 @@ const PhysicalPiecePage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="mb-4 -ml-1 flex items-center gap-2 px-1 py-1 font-label text-[11px] uppercase tracking-[0.16em] text-wood-600 hover:text-wood-900 transition-colors"
+            className="mb-4 -ml-1 flex items-center gap-2 px-1 py-1 font-label text-label uppercase tracking-[0.16em] text-ink-muted hover:text-ink transition-colors"
           >
-            <span aria-hidden className="text-[15px] leading-none">←</span>
+            <span aria-hidden className="text-body leading-none">←</span>
             close the book
           </button>
         )}
@@ -408,24 +408,24 @@ const PhysicalPiecePage: React.FC = () => {
         {/* Breadcrumb */}
         <nav
           aria-label="Breadcrumb"
-          className="flex flex-wrap items-center gap-2 gap-y-1 font-label text-[11px] uppercase tracking-[0.14em] text-wood-600 mb-5 sm:mb-7"
+          className="flex flex-wrap items-center gap-2 gap-y-1 font-label text-label uppercase tracking-[0.14em] text-ink-muted mb-5 sm:mb-7"
         >
-          <Link to="/" className="hover:text-wood-900 transition-colors">
+          <Link to="/" className="hover:text-ink transition-colors">
             Home
           </Link>
           <span aria-hidden className="text-wood-400">/</span>
-          <Link to="/atlas" className="hover:text-wood-900 transition-colors">
+          <Link to="/atlas" className="hover:text-ink transition-colors">
             Atlas
           </Link>
           <span aria-hidden className="text-wood-400">/</span>
-          <span className="text-wood-900">{cleanTitle}</span>
+          <span className="text-ink">{cleanTitle}</span>
         </nav>
 
         {/* ═══════════════════ THE CERTIFICATE ═══════════════════
             Warm paper, engraved grammar, generous margins. The artwork crowns
             it; one composed object carries the sigil, the ordinal, the dream,
             the city, the lineage, and the seal. */}
-        <article className="relative bg-paper-50 border border-wood-300 shadow-[0_1px_40px_-12px_rgba(39,34,25,0.25)] px-6 py-9 sm:px-12 sm:py-14">
+        <article className="relative bg-page-paper border border-line-strong shadow-[0_1px_40px_-12px_rgba(39,34,25,0.25)] px-6 py-9 sm:px-12 sm:py-14">
           {/* Corner marks: the certificate's quiet engraving. */}
           {(['top-0 left-0 border-t border-l', 'top-0 right-0 border-t border-r',
              'bottom-0 left-0 border-b border-l', 'bottom-0 right-0 border-b border-r'] as const).map((pos) => (
@@ -450,7 +450,7 @@ const PhysicalPiecePage: React.FC = () => {
               />
             </div>
             {editionLine && (
-              <p className="font-label text-[10px] uppercase tracking-[0.3em] text-wood-600 text-center pt-3">
+              <p className="font-label text-label uppercase tracking-[0.3em] text-ink-muted text-center pt-3">
                 {editionLine}
               </p>
             )}
@@ -459,22 +459,22 @@ const PhysicalPiecePage: React.FC = () => {
           {/* ── Series eyebrow, title, sigil ── */}
           <div className="text-center mt-9 sm:mt-11">
             {(piece.series ?? art.series) && (
-              <p className={`${LABEL} text-bronze-600 mb-3`}>
+              <p className={`${LABEL} text-accent mb-3`}>
                 {piece.series ?? art.series}
               </p>
             )}
             <h1
-              className="font-display text-4xl sm:text-5xl text-wood-900 font-medium leading-[1.02]"
+              className="font-display text-page-title sm:text-5xl text-ink font-medium leading-[1.02]"
               style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.02em' }}
             >
               {cleanTitle}
             </h1>
-            <p className="font-label text-[12px] uppercase tracking-[0.32em] text-wood-500 mt-4">
+            <p className="font-label text-label uppercase tracking-[0.32em] text-ink-faint mt-4">
               {sigil}
             </p>
             {/* The stranger's first ground: one plain sentence that names the
                 maker and what this page is, before any invented word lands. */}
-            <p className="font-reading text-[15px] text-wood-600 leading-[1.6] max-w-md mx-auto mt-5">
+            <p className="font-reading text-body text-ink-muted leading-[1.6] max-w-md mx-auto mt-5">
               Made by hand by Adrian Rasmussen. This is a public summary of
               this physical piece. Its canonical Piece Record is held on the artist site.
             </p>
@@ -484,39 +484,39 @@ const PhysicalPiecePage: React.FC = () => {
               screenful, not after 1,800 pixels of scholarship. ── */}
           {seeking && (
             <div className="mt-8 text-center">
-              <div className="mx-auto max-w-md border-y border-wood-300 py-5">
+              <div className="mx-auto max-w-md border-y border-line-strong py-5">
                 {acquireUrl ? (
                   <>
-                    <p className="font-display text-2xl sm:text-[1.75rem] text-wood-800 leading-[1.3]">
+                    <p className="font-display text-card-title sm:text-[1.75rem] text-wood-800 leading-[1.3]">
                       This piece is finished and waiting in the studio. It can
                       be on your wall within the week.{' '}
                       <a
                         href={acquireUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-bronze-600 hover:text-bronze-500 transition-colors whitespace-nowrap"
+                        className="text-accent hover:text-bronze-500 transition-colors whitespace-nowrap"
                       >
                         Take it home →
                       </a>
                     </p>
-                    <p className="font-reading text-base text-wood-600 leading-[1.5] mt-4">
+                    <p className="font-reading text-body text-ink-muted leading-[1.5] mt-4">
                       Not the right size or palette?{' '}
                       <Link
                         to={makeHref}
-                        className="text-bronze-600 hover:text-bronze-500 transition-colors whitespace-nowrap"
+                        className="text-accent hover:text-bronze-500 transition-colors whitespace-nowrap"
                       >
                         Have yours made →
                       </Link>
                     </p>
                   </>
                 ) : (
-                  <p className="font-display text-2xl sm:text-[1.75rem] text-wood-800 leading-[1.3]">
+                  <p className="font-display text-card-title sm:text-[1.75rem] text-wood-800 leading-[1.3]">
                     This design is waiting to be made. Yours would be cut layer
                     by layer: your size, your palette, your dream sealed into
                     it.{' '}
                     <Link
                       to={makeHref}
-                      className="text-bronze-600 hover:text-bronze-500 transition-colors whitespace-nowrap"
+                      className="text-accent hover:text-bronze-500 transition-colors whitespace-nowrap"
                     >
                       Begin your piece →
                     </Link>
@@ -530,17 +530,17 @@ const PhysicalPiecePage: React.FC = () => {
               tamper-evident number nobody can ever take. ── */}
           {claimed && (
             <div className="mt-10 sm:mt-12 text-center">
-              <p className={`${LABEL} text-bronze-600 mb-2`}>Founding light</p>
+              <p className={`${LABEL} text-accent mb-2`}>Founding light</p>
               <p
-                className="font-display text-wood-900 font-medium leading-none"
+                className="font-display text-ink font-medium leading-none"
                 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(3.5rem, 13vw, 6rem)' }}
               >
                 {piece.claimOrdinal}
               </p>
-              <p className="font-display text-lg text-wood-600 mt-3">
+              <p className="font-display text-body text-ink-muted mt-3">
                 the {ordinalLabel(piece.claimOrdinal as number)} light of the constellation
               </p>
-              <p className="font-reading text-sm text-wood-500 mt-1">
+              <p className="font-reading text-caption text-ink-faint mt-1">
                 Each claimed piece receives its number in the order it came to
                 light. It can never change and never be taken away.
               </p>
@@ -554,7 +554,7 @@ const PhysicalPiecePage: React.FC = () => {
             <div className="mt-10 sm:mt-12">
               <Rule className="mx-auto max-w-[5rem]" />
               <p
-                className="font-display text-wood-900 text-center leading-[1.5] mt-8 whitespace-pre-line"
+                className="font-display text-ink text-center leading-[1.5] mt-8 whitespace-pre-line"
                 style={{ fontSize: 'clamp(1.375rem, 2.4vw, 1.5rem)' }}
               >
                 {piece.intention}
@@ -575,12 +575,12 @@ const PhysicalPiecePage: React.FC = () => {
           {(anchoredCity || lineageLine) && (
             <div className="mt-9 sm:mt-11 text-center space-y-1.5">
               {anchoredCity && (
-                <p className="font-display text-xl text-wood-800">
+                <p className="font-display text-card-title text-wood-800">
                   alive in {anchoredCity}
                 </p>
               )}
               {lineageLine && (
-                <p className="font-reading text-lg text-wood-600">{lineageLine}</p>
+                <p className="font-reading text-body text-ink-muted">{lineageLine}</p>
               )}
             </div>
           )}
@@ -592,7 +592,7 @@ const PhysicalPiecePage: React.FC = () => {
           <div className="mt-11 sm:mt-14 mx-auto max-w-md grid grid-cols-2 gap-8 sm:gap-12 text-center">
             <div>
               <p
-                className="font-display text-lg text-wood-900 leading-none pb-2"
+                className="font-display text-body text-ink leading-none pb-2"
                 style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
               >
                 Adrian Rasmussen
@@ -602,7 +602,7 @@ const PhysicalPiecePage: React.FC = () => {
             </div>
             <div>
               <p
-                className="font-display text-lg text-wood-900 leading-none pb-2"
+                className="font-display text-body text-ink leading-none pb-2"
                 style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
               >
                 {claimed ? (piece.signedBy?.name ?? 'Its first keeper') : ' '}
@@ -625,13 +625,13 @@ const PhysicalPiecePage: React.FC = () => {
                 className="absolute inset-1 rounded-full border border-bronze-500/30"
               />
               <span
-                className="font-display text-xl text-bronze-600 relative"
+                className="font-display text-card-title text-accent relative"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 {claimed ? (piece.claimOrdinal as number) : '·'}
               </span>
             </span>
-            <p className="font-reading text-base text-wood-600 leading-[1.55] max-w-md mt-4">
+            <p className="font-reading text-body text-ink-muted leading-[1.55] max-w-md mt-4">
               Recorded in the ledger, the permanent record every piece carries.
               Each entry is sealed against the one before it, so its history
               can never be quietly rewritten.
@@ -644,7 +644,7 @@ const PhysicalPiecePage: React.FC = () => {
           </div>
 
           <div className="mt-10 text-center">
-            <p className="font-reading text-base text-wood-600">Private collector records are managed on the artist site.</p>
+            <p className="font-reading text-body text-ink-muted">Private collector records are managed on the artist site.</p>
             <a className={LINK} href={artInstanceHref(piece.pieceId, piece.publicCode) ?? `${ART_ORIGIN}/atlas`}>
               {piece.publicCode ? 'View this physical Piece Record' : 'View the public artwork atlas'} →
             </a>
@@ -657,14 +657,14 @@ const PhysicalPiecePage: React.FC = () => {
               one": the layers are cut, then painted and assembled by hand,
               pieces are made to order, and a design can exist in numbered
               editions. ── */}
-          <p className="font-reading text-lg text-wood-700 leading-[1.7] text-center max-w-[46ch] mx-auto mt-12 sm:mt-14">
+          <p className="font-reading text-body text-ink-soft leading-[1.7] text-center max-w-[46ch] mx-auto mt-12 sm:mt-14">
             Layers of wood cut to exact depth, each surface painted by hand.
             One of 64 designs.
           </p>
 
           {/* ── The plate line: the certificate's engraved last line, the
               formal particulars in banknote grammar. ── */}
-          <p className="font-label text-[10px] uppercase tracking-[0.28em] text-wood-500 text-center leading-[1.9] mt-6 sm:mt-7">
+          <p className="font-label text-label uppercase tracking-[0.28em] text-ink-faint text-center leading-[1.9] mt-6 sm:mt-7">
             {[
               sigil,
               piece.series ?? art.series,
@@ -692,11 +692,11 @@ const PhysicalPiecePage: React.FC = () => {
               { lead: 'Public record', body: 'What its keeper has chosen to share.' },
               { lead: 'Physical identity', body: 'The artist site holds the canonical Piece Record.' },
             ].map((item) => (
-              <div key={item.lead} className="border-t border-wood-300 pt-4">
-                <p className="font-display text-xl text-wood-900 font-semibold leading-snug">
+              <div key={item.lead} className="border-t border-line-strong pt-4">
+                <p className="font-display text-card-title text-ink font-semibold leading-snug">
                   {item.lead}
                 </p>
-                <p className="font-reading text-base text-wood-600 leading-[1.5] mt-1">
+                <p className="font-reading text-body text-ink-muted leading-[1.5] mt-1">
                   {item.body}
                 </p>
               </div>
@@ -712,7 +712,7 @@ const PhysicalPiecePage: React.FC = () => {
             reads as the piece's own next event, never a sales block. */}
         <div className="mt-14 sm:mt-16">
           {story && (
-            <p className="font-reading text-lg text-wood-800 leading-[1.7] mb-10 whitespace-pre-line">
+            <p className="font-reading text-body text-wood-800 leading-[1.7] mb-10 whitespace-pre-line">
               {story}
             </p>
           )}
@@ -722,7 +722,7 @@ const PhysicalPiecePage: React.FC = () => {
               {content?.materials && (
                 <div>
                   <p className={`${LABEL} mb-2`}>Materials</p>
-                  <p className="font-reading text-base text-wood-800 leading-[1.6] whitespace-pre-line">
+                  <p className="font-reading text-body text-wood-800 leading-[1.6] whitespace-pre-line">
                     {content.materials}
                   </p>
                 </div>
@@ -730,7 +730,7 @@ const PhysicalPiecePage: React.FC = () => {
               {content?.provenance && (
                 <div>
                   <p className={`${LABEL} mb-2`}>Provenance</p>
-                  <p className="font-reading text-base text-wood-800 leading-[1.6] whitespace-pre-line">
+                  <p className="font-reading text-body text-wood-800 leading-[1.6] whitespace-pre-line">
                     {content.provenance}
                   </p>
                 </div>
@@ -761,7 +761,7 @@ const PhysicalPiecePage: React.FC = () => {
 
           <section>
             <h2 className={`${LABEL} text-center mb-8`}>The life of this piece</h2>
-            <ol className="relative ml-[3px] border-l border-wood-300 space-y-6 pb-1 max-w-lg mx-auto">
+            <ol className="relative ml-[3px] border-l border-line-strong space-y-6 pb-1 max-w-lg mx-auto">
               {/* What has happened — filled marks. The code stop rides
                   directly after Created: it is a birth fact, not an event. */}
               {spine.slice(0, 1).map((entry, i) => (
@@ -771,10 +771,10 @@ const PhysicalPiecePage: React.FC = () => {
                     className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
                     style={{ transform: 'translateX(-4px)' }}
                   />
-                  <span className="font-reading text-lg text-wood-900 leading-snug">
+                  <span className="font-reading text-body text-ink leading-snug">
                     {entry.label}
                     {entry.detail && (
-                      <span className="text-wood-600"> · {entry.detail}</span>
+                      <span className="text-ink-muted"> · {entry.detail}</span>
                     )}
                   </span>
                 </li>
@@ -789,9 +789,9 @@ const PhysicalPiecePage: React.FC = () => {
                     style={{ transform: 'translateX(-4px)' }}
                   />
                   <div className="flex items-start justify-between gap-4">
-                    <span className="font-reading text-lg text-wood-900 leading-snug">
+                    <span className="font-reading text-body text-ink leading-snug">
                       Carries the code {card.iching.hexagram_name.replace(/\s*\(.*\)$/, '')}
-                      <span className="text-wood-600"> · Hexagram {cardNumber}</span>{' '}
+                      <span className="text-ink-muted"> · Hexagram {cardNumber}</span>{' '}
                       <Link
                         to={`/universal-language/${cardNumber}`}
                         state={{ ritual: true }}
@@ -800,7 +800,7 @@ const PhysicalPiecePage: React.FC = () => {
                         Read it →
                       </Link>
                     </span>
-                    <span aria-hidden className="shrink-0 text-bronze-600 pt-0.5">
+                    <span aria-hidden className="shrink-0 text-accent pt-0.5">
                       <HexagramSVG
                         upper={card.iching.upper_trigram.symbol}
                         lower={card.iching.lower_trigram.symbol}
@@ -819,10 +819,10 @@ const PhysicalPiecePage: React.FC = () => {
                     className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
                     style={{ transform: 'translateX(-4px)' }}
                   />
-                  <span className="font-reading text-lg text-wood-900 leading-snug">
+                  <span className="font-reading text-body text-ink leading-snug">
                     {entry.label}
                     {entry.detail && (
-                      <span className="text-wood-600"> · {entry.detail}</span>
+                      <span className="text-ink-muted"> · {entry.detail}</span>
                     )}
                   </span>
                 </li>
@@ -836,20 +836,20 @@ const PhysicalPiecePage: React.FC = () => {
                     className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full bg-bronze-400"
                     style={{ transform: 'translateX(-4px)' }}
                   />
-                  <span className="font-reading text-lg text-wood-900 leading-snug">
+                  <span className="font-reading text-body text-ink leading-snug">
                     Its kin
-                    <span className="text-wood-600"> · nearest in pattern, alive elsewhere</span>
+                    <span className="text-ink-muted"> · nearest in pattern, alive elsewhere</span>
                   </span>
                   <ul className="mt-2 space-y-1">
                     {kinEntries.map((k) => (
                       <li key={k.key}>
                         <Link
                           to={`/atlas?piece=${encodeURIComponent(k.atlasParam)}`}
-                          className="font-reading text-base text-wood-800 leading-snug hover:text-bronze-600 transition-colors"
+                          className="font-reading text-body text-wood-800 leading-snug hover:text-accent transition-colors"
                         >
                           {k.title}
                           {k.thread && (
-                            <span className="text-wood-500"> · {k.thread}</span>
+                            <span className="text-ink-faint"> · {k.thread}</span>
                           )}
                         </Link>
                       </li>
@@ -865,10 +865,10 @@ const PhysicalPiecePage: React.FC = () => {
                   <li className="relative pl-6">
                     <span
                       aria-hidden
-                      className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
+                      className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-page-paper"
                       style={{ transform: 'translateX(-4px)' }}
                     />
-                    <span className="font-reading text-lg text-wood-500 leading-snug">
+                    <span className="font-reading text-body text-ink-faint leading-snug">
                       A keeper writes one dream into it{' '}
                       <Link to={claimHref} className={`${LINK} whitespace-nowrap`}>
                         Become its keeper →
@@ -878,10 +878,10 @@ const PhysicalPiecePage: React.FC = () => {
                   <li className="relative pl-6">
                     <span
                       aria-hidden
-                      className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
+                      className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-page-paper"
                       style={{ transform: 'translateX(-4px)' }}
                     />
-                    <span className="font-reading text-lg text-wood-500 leading-snug">
+                    <span className="font-reading text-body text-ink-faint leading-snug">
                       Its light joins the map
                     </span>
                   </li>
@@ -890,10 +890,10 @@ const PhysicalPiecePage: React.FC = () => {
                 <li className="relative pl-6">
                   <span
                     aria-hidden
-                    className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-paper-50"
+                    className="absolute left-0 top-[0.55em] w-[7px] h-[7px] rounded-full border border-wood-400 bg-page-paper"
                     style={{ transform: 'translateX(-4px)' }}
                   />
-                  <span className="font-reading text-lg text-wood-500 leading-snug">
+                  <span className="font-reading text-body text-ink-faint leading-snug">
                     Passed on, someday
                     <span className="text-wood-400"> · the book continues</span>
                   </span>
@@ -905,22 +905,22 @@ const PhysicalPiecePage: React.FC = () => {
           {/* ═══════════════════ THE TWO DOORS ═══════════════════
               One band, two short doors: the holder's and the maker's. */}
           <div className={`${CARD} grid sm:grid-cols-2 mt-14 sm:mt-16`}>
-            <div className="p-6 sm:p-7 border-b sm:border-b-0 sm:border-r border-wood-200">
+            <div className="p-6 sm:p-7 border-b sm:border-b-0 sm:border-r border-line">
               <p className={`${LABEL} mb-3`}>Hold this piece?</p>
-              <p className="font-reading text-base text-wood-700 leading-[1.6] mb-5">
+              <p className="font-reading text-body text-ink-soft leading-[1.6] mb-5">
                 Collector registration is not open here.
               </p>
               <Link to={claimHref} className={BUTTON}>
                 Registration information
               </Link>
-              <p className="font-reading text-sm text-wood-600 mt-3 leading-[1.6]">
+              <p className="font-reading text-caption text-ink-muted mt-3 leading-[1.6]">
                 The artist site manages physical ownership records.
               </p>
 
             </div>
             <div className="p-6 sm:p-7">
               <p className={`${LABEL} mb-3`}>Want one made?</p>
-              <p className="font-reading text-base text-wood-700 leading-[1.6] mb-5">
+              <p className="font-reading text-body text-ink-soft leading-[1.6] mb-5">
                 {claimed
                   ? 'This design can be made again: your size, your palette.'
                   : 'Your size, your palette, cut layer by layer for you.'}
@@ -928,7 +928,7 @@ const PhysicalPiecePage: React.FC = () => {
               <Link to={makeHref} className={BUTTON}>
                 Begin your piece
               </Link>
-              <p className="font-reading text-sm text-wood-600 mt-3 leading-[1.6]">
+              <p className="font-reading text-caption text-ink-muted mt-3 leading-[1.6]">
                 A short note to the studio. Adrian replies himself.
               </p>
             </div>

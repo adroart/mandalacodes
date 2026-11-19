@@ -85,7 +85,7 @@ const ArtworkPlate: React.FC<ArtworkPlateProps> = ({
     <div
       className={`w-full aspect-square flex flex-col items-center justify-center gap-3 text-center px-6 ${className}`}
     >
-      <span className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 text-bronze-400">
+      <span className="font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted text-bronze-400">
         The plate
       </span>
       {fallbackTitle && (

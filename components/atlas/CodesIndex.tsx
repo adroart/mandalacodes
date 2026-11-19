@@ -193,18 +193,18 @@ const CodesIndex: React.FC<Props> = ({
     >
       <h3
         id="atlas-codes-heading"
-        className="font-display text-xl text-wood-900 font-medium mb-2"
+        className="font-display text-xl text-ink font-medium mb-2"
       >
         The sixty-four
       </h3>
-      <p className="font-reading text-sm text-wood-700 leading-[1.7] max-w-prose mb-6">
+      <p className="font-reading text-sm text-ink-soft leading-[1.7] max-w-prose mb-6">
         The whole Universal Language, code by code. {litCount} of 64 carry a piece
         that has found ground.
         {!filterActive && ' Open one to see where its pieces have come to rest.'}
       </p>
 
       {shown.length === 0 ? (
-        <p className="font-reading text-base text-wood-600 leading-[1.7]">
+        <p className="font-reading text-base text-ink-muted leading-[1.7]">
           No code matches those filters.
         </p>
       ) : (
@@ -213,7 +213,7 @@ const CodesIndex: React.FC<Props> = ({
             const panelId = `code-panel-${row.number}`;
             const artwork = ulPieceForCard(row.number);
             return (
-              <li key={row.number} className="border-b border-wood-200">
+              <li key={row.number} className="border-b border-line">
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
@@ -224,7 +224,7 @@ const CodesIndex: React.FC<Props> = ({
                   >
                     <span
                       className={`shrink-0 transition-colors ${
-                        row.lit ? 'text-bronze-600' : 'text-wood-400'
+                        row.lit ? 'text-accent' : 'text-wood-400'
                       }`}
                       aria-hidden
                     >
@@ -232,14 +232,14 @@ const CodesIndex: React.FC<Props> = ({
                     </span>
                     <span className="flex-1 min-w-0">
                       <span className="flex items-baseline gap-2">
-                        <span className="font-label text-[11px] tabular-nums text-wood-500 tracking-[0.15em]">
+                        <span className="font-label text-[11px] tabular-nums text-ink-faint tracking-[0.15em]">
                           {String(row.number).padStart(2, '0')}
                         </span>
                         <span
                           className={`font-reading text-base leading-snug break-words transition-colors ${
                             row.lit
-                              ? 'text-wood-900 group-hover:text-bronze-700'
-                              : 'text-wood-600 group-hover:text-bronze-700'
+                              ? 'text-ink group-hover:text-link'
+                              : 'text-ink-muted group-hover:text-link'
                           }`}
                         >
                           {row.name}
@@ -247,7 +247,7 @@ const CodesIndex: React.FC<Props> = ({
                       </span>
                       <span
                         className={`block font-label text-[11px] uppercase tracking-[0.15em] mt-0.5 ${
-                          row.pieces.length === 0 ? 'text-wood-400' : 'text-wood-600'
+                          row.pieces.length === 0 ? 'text-wood-400' : 'text-ink-muted'
                         }`}
                       >
                         {tally(row)}
@@ -255,7 +255,7 @@ const CodesIndex: React.FC<Props> = ({
                     </span>
                     <span
                       aria-hidden
-                      className={`shrink-0 text-bronze-600 text-sm transition-transform duration-200 ${
+                      className={`shrink-0 text-accent text-sm transition-transform duration-200 ${
                         open ? 'rotate-90' : ''
                       }`}
                     >
@@ -266,7 +266,7 @@ const CodesIndex: React.FC<Props> = ({
                     <a
                       href={artDesignHref(artwork.id, row.number)}
                       aria-label={`View ${row.name} artwork`}
-                      className="shrink-0 inline-flex min-h-11 items-center font-label text-xs text-bronze-700 hover:underline focus-visible:outline-2 focus-visible:outline-bronze-700"
+                      className="shrink-0 inline-flex min-h-11 items-center font-label text-xs text-link hover:underline focus-visible:outline-2 focus-visible:outline-bronze-700"
                     >
                       View artwork ↗
                     </a>

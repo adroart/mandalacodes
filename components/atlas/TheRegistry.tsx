@@ -75,7 +75,7 @@ const COLUMNS =
   'md:grid md:grid-cols-[7rem_minmax(0,1fr)_9rem_minmax(0,1.7fr)] md:items-baseline md:gap-x-6';
 
 const linkClass =
-  'font-label text-[12px] tracking-[0.03em] lowercase text-bronze-700 hover:text-bronze-600 transition-colors';
+  'font-label text-[12px] tracking-[0.03em] lowercase text-link hover:text-accent transition-colors';
 
 const RegistryLine: React.FC<{
   row: LedgerRow;
@@ -93,10 +93,10 @@ const RegistryLine: React.FC<{
     <div className={`py-3 ${COLUMNS}`}>
       {/* phone line one — sigil, then the work */}
       <span className="flex items-baseline gap-3 md:contents">
-        <span className="shrink-0 font-label text-[11px] uppercase tracking-[0.16em] text-wood-500 tabular-nums">
+        <span className="shrink-0 font-label text-[11px] uppercase tracking-[0.16em] text-ink-faint tabular-nums">
           {row.sigil}
         </span>
-        <span className="min-w-0 font-reading text-[15px] leading-snug text-wood-900 md:truncate">
+        <span className="min-w-0 font-reading text-[15px] leading-snug text-ink md:truncate">
           {row.title}
         </span>
       </span>
@@ -104,7 +104,7 @@ const RegistryLine: React.FC<{
       <span className="mt-0.5 flex flex-wrap items-baseline gap-x-2 md:mt-0 md:contents">
         <span
           className={`min-w-0 font-reading text-[14px] leading-snug md:truncate ${
-            row.cityName ? 'text-wood-700' : 'text-wood-500'
+            row.cityName ? 'text-ink-soft' : 'text-ink-faint'
           }`}
         >
           {place}
@@ -112,7 +112,7 @@ const RegistryLine: React.FC<{
         {/* On the wide table this cell IS the dream column, so it speaks only
             for a dreamless row. On a phone it always rides line two. */}
         <span
-          className={`font-label text-[11px] uppercase tracking-[0.14em] text-wood-500 ${
+          className={`font-label text-[11px] uppercase tracking-[0.14em] text-ink-faint ${
             row.dream ? 'md:hidden' : ''
           }`}
         >
@@ -124,7 +124,7 @@ const RegistryLine: React.FC<{
       {row.dream && (
         <span
           className={`block min-w-0 mt-1 md:mt-0 truncate font-display text-[16px] leading-snug transition-colors ${
-            open ? 'text-wood-500' : 'text-wood-700'
+            open ? 'text-ink-faint' : 'text-ink-soft'
           }`}
         >
           {row.dream}
@@ -134,11 +134,11 @@ const RegistryLine: React.FC<{
   );
 
   if (!row.dream) {
-    return <li className="border-b border-wood-200/50">{line}</li>;
+    return <li className="border-b border-line/50">{line}</li>;
   }
 
   return (
-    <li className="border-b border-wood-200/50">
+    <li className="border-b border-line/50">
       <button
         type="button"
         onClick={() => onToggle(row.key)}
@@ -151,7 +151,7 @@ const RegistryLine: React.FC<{
       </button>
       {open && (
         <div id={panelId} className="pb-6 md:pl-[calc(7rem+1.5rem)]">
-          <p className="font-display text-[19px] sm:text-[21px] leading-[1.75] text-wood-900 max-w-prose whitespace-pre-line">
+          <p className="font-display text-[19px] sm:text-[21px] leading-[1.75] text-ink max-w-prose whitespace-pre-line">
             {row.dream}
           </p>
           <DreamSignature signedBy={row.signedBy} tone="stage" className="mt-3" />
@@ -321,13 +321,13 @@ const TheRegistry: React.FC = () => {
   return (
     /* The registry keeps the atlas's night register even when the site is in
        Daybook: it is the same room as the globe, without the globe. */
-    <div className="dark min-h-screen bg-atlas-night text-wood-900">
+    <div className="dark min-h-screen bg-atlas-night text-ink">
       <div className="px-6 pb-32 max-w-7xl mx-auto pt-[calc(var(--nav-height)+2.5rem)]">
         <header className="max-w-prose">
-          <h1 className="font-display text-4xl sm:text-5xl text-wood-900 font-medium leading-tight">
+          <h1 className="font-display text-4xl sm:text-5xl text-ink font-medium leading-tight">
             The registry
           </h1>
-          <p className="mt-3 font-reading text-base text-wood-700 leading-[1.7]">
+          <p className="mt-3 font-reading text-base text-ink-soft leading-[1.7]">
             The whole record, one line per work.
           </p>
           <Link to="/atlas" className={`${linkClass} mt-5 inline-block`}>
@@ -337,7 +337,7 @@ const TheRegistry: React.FC = () => {
 
         {status === 'loading' && (
           <p
-            className="font-display text-lg text-wood-700 py-24 text-center"
+            className="font-display text-lg text-ink-soft py-24 text-center"
             aria-live="polite"
           >
             loading the registry
@@ -346,7 +346,7 @@ const TheRegistry: React.FC = () => {
 
         {status === 'error' && (
           <p
-            className="font-display text-lg text-wood-700 py-24 text-center"
+            className="font-display text-lg text-ink-soft py-24 text-center"
             aria-live="polite"
           >
             the atlas is briefly out of reach.
@@ -390,11 +390,11 @@ const TheRegistry: React.FC = () => {
               pool.length === 0 ? (
                 /* An empty atlas, not an over-narrowed one: no filter reduced
                    this to nothing, so there is nothing to loosen. */
-                <p className="font-display text-lg text-wood-700 py-8">
+                <p className="font-display text-lg text-ink-soft py-8">
                   the sky is waiting for its first light.
                 </p>
               ) : (
-                <p className="font-reading text-base text-wood-600 leading-[1.7] py-8">
+                <p className="font-reading text-base text-ink-muted leading-[1.7] py-8">
                   Nothing matches. Loosen a filter.
                 </p>
               )
@@ -404,7 +404,7 @@ const TheRegistry: React.FC = () => {
                     reads stacked lines that name themselves. */}
                 <div
                   aria-hidden
-                  className={`hidden border-b border-wood-300/60 pb-2 font-label text-[11px] lowercase tracking-[0.1em] text-wood-500 ${COLUMNS}`}
+                  className={`hidden border-b border-line-strong/60 pb-2 font-label text-[11px] lowercase tracking-[0.1em] text-ink-faint ${COLUMNS}`}
                 >
                   <span>sigil</span>
                   <span>work</span>
@@ -425,7 +425,7 @@ const TheRegistry: React.FC = () => {
             )}
 
             {generatedAt && (
-              <p className="mt-16 font-label text-[11px] uppercase tracking-[0.18em] text-wood-600">
+              <p className="mt-16 font-label text-[11px] uppercase tracking-[0.18em] text-ink-muted">
                 Last gathered{' '}
                 {new Date(generatedAt).toLocaleDateString(undefined, {
                   year: 'numeric',

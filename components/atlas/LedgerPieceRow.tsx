@@ -28,12 +28,12 @@ interface Props {
 }
 
 const linkClass =
-  'font-label text-[12px] tracking-[0.03em] lowercase text-bronze-700 hover:text-bronze-600 transition-colors';
+  'font-label text-[12px] tracking-[0.03em] lowercase text-link hover:text-accent transition-colors';
 
 const LedgerPieceRow: React.FC<Props> = ({ row, onSelectOnGlobe }) => {
   if (row.placeholder) {
     return (
-      <li className="py-2.5 border-b border-wood-200/50">
+      <li className="py-2.5 border-b border-line/50">
         <p className="font-reading text-base leading-snug text-wood-400">
           {row.title}
         </p>
@@ -49,12 +49,12 @@ const LedgerPieceRow: React.FC<Props> = ({ row, onSelectOnGlobe }) => {
   }`;
 
   return (
-    <li className="py-3 border-b border-wood-200/60">
-      <p className="font-reading text-base leading-snug text-wood-900">
+    <li className="py-3 border-b border-line/60">
+      <p className="font-reading text-base leading-snug text-ink">
         {/* Its code, when the row is read outside the code index and would
             otherwise lose which of the sixty-four it belongs to. */}
         {typeof row.cardNumber === 'number' && (
-          <span className="mr-2 font-label text-[11px] tabular-nums tracking-[0.15em] text-wood-500">
+          <span className="mr-2 font-label text-[11px] tabular-nums tracking-[0.15em] text-ink-faint">
             {String(row.cardNumber).padStart(2, '0')}
           </span>
         )}
@@ -62,7 +62,7 @@ const LedgerPieceRow: React.FC<Props> = ({ row, onSelectOnGlobe }) => {
         <span aria-hidden className="mx-2 text-wood-400">
           ·
         </span>
-        <span className="font-label text-[11px] uppercase tracking-[0.14em] text-wood-600">
+        <span className="font-label text-[11px] uppercase tracking-[0.14em] text-ink-muted">
           {ledgerStatusLine(row)}
         </span>
       </p>

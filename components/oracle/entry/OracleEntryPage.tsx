@@ -95,7 +95,7 @@ const Overlay: React.FC<{ onClose: () => void; width: string; children: React.Re
   const ref = useRef<HTMLDivElement>(null);
   useDialogFocus(ref, true, onClose);
   return <div onClick={onClose} className="oracle-entry-overlay fixed inset-0 z-[80] flex items-center justify-center p-6 overflow-auto bg-[rgba(30,26,22,0.55)] [backdrop-filter:blur(5px)]">
-    <div ref={ref} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={(e) => e.stopPropagation()} className="bg-paper-50 shadow-[0_24px_60px_rgba(30,26,22,0.4)] cursor-default" style={{ width }}>
+    <div ref={ref} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={(e) => e.stopPropagation()} className="bg-page-paper shadow-[0_24px_60px_rgba(30,26,22,0.4)] cursor-default" style={{ width }}>
       {children}
     </div>
   </div>;
@@ -303,9 +303,9 @@ ${cell}:has(> span button)::after{opacity:0}`;
       {/* Systems overlay (kept from the previous index — the rail links target it) */}
       {systemsOpen && (
         <Overlay label="Oracle systems" onClose={() => setSystemsOpen(false)} width="min(580px, 94vw)">
-          <div className="px-8 pt-[30px] pb-[22px] border-b border-wood-200">
-            <p className="m-0 mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">The Universal Language</p>
-            <h2 className="m-0 font-display font-medium text-[34px] leading-[1.04] text-wood-900">Four systems, one frequency</h2>
+          <div className="px-8 pt-[30px] pb-[22px] border-b border-line">
+            <p className="m-0 mb-1.5 font-label text-label font-bold uppercase tracking-[0.2em] text-accent">The Universal Language</p>
+            <h2 className="m-0 font-display font-medium text-page-title leading-[1.04] text-ink">Four systems, one frequency</h2>
           </div>
           <div className="px-8 pt-2 pb-3.5">
             {[
@@ -314,20 +314,20 @@ ${cell}:has(> span button)::after{opacity:0}`;
               ['Human Design', 'The gate, where the code lives in the bodygraph, and how its energy wants to move through a life.'],
               ['Tarot', 'The codon rings gather the 64 into the Major Arcana, the archetypal throughline that orders the deck.'],
             ].map(([label, body], i, arr) => (
-              <div key={label} className={`flex gap-4 py-[18px] ${i < arr.length - 1 ? 'border-b border-wood-100' : ''}`}>
-                <span className="flex-[0_0_84px] font-label text-[11px] font-bold uppercase tracking-[0.14em] text-wood-700 pt-[3px]">{label}</span>
-                <span className="font-reading text-sm leading-[1.6] text-wood-800">{body}</span>
+              <div key={label} className={`flex gap-4 py-[18px] ${i < arr.length - 1 ? 'border-b border-line-faint' : ''}`}>
+                <span className="flex-[0_0_84px] font-label text-label font-bold uppercase tracking-[0.14em] text-ink-soft pt-[3px]">{label}</span>
+                <span className="font-reading text-caption leading-[1.6] text-wood-800">{body}</span>
               </div>
             ))}
           </div>
-          <div className="px-8 pt-5 pb-[30px] bg-paper-100">
-            <p className="m-0 mb-[18px] font-reading text-lg leading-[1.5] tracking-[0.015em] text-wood-700">
+          <div className="px-8 pt-5 pb-[30px] bg-band">
+            <p className="m-0 mb-[18px] font-reading text-body leading-[1.5] tracking-[0.015em] text-ink-soft">
               Every card is one frequency spoken in four languages. The connections between them are the grammar of the whole.
             </p>
-            <p className="m-0 mb-[18px] font-reading text-sm leading-[1.5] text-wood-700">Downloaded card text can be read offline. Artwork needs an internet connection.</p>
+            <p className="m-0 mb-[18px] font-reading text-caption leading-[1.5] text-ink-soft">Downloaded card text can be read offline. Artwork needs an internet connection.</p>
             <div className="flex flex-wrap items-center gap-4">
-              <Link to="/the-systems" className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-wood-700 border border-wood-300 px-6 py-3 hover:border-bronze-600 hover:text-wood-900 transition-colors no-underline">Read the full story →</Link>
-              <button type="button" onClick={() => setSystemsOpen(false)} className="font-label text-[11px] font-semibold uppercase tracking-[0.18em] text-paper-50 bg-wood-900 px-7 py-3 hover:bg-bronze-600 transition-colors">Close</button>
+              <Link to="/the-systems" className="font-label text-label font-semibold uppercase tracking-[0.18em] text-ink-soft border border-line-strong px-6 py-3 hover:border-bronze-600 hover:text-ink transition-colors no-underline">Read the full story →</Link>
+              <button type="button" onClick={() => setSystemsOpen(false)} className="font-label text-label font-semibold uppercase tracking-[0.18em] text-ink-inverse bg-wood-900 px-7 py-3 hover:bg-bronze-600 transition-colors">Close</button>
             </div>
           </div>
         </Overlay>
@@ -337,14 +337,14 @@ ${cell}:has(> span button)::after{opacity:0}`;
       {gridOpen && (
         <Overlay label="Your codes" onClose={() => setGridOpen(false)} width="min(460px, 94vw)">
           <div className="px-8 pt-8 pb-7">
-            <p className="m-0 mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-bronze-600">Sign in to yours</p>
-            <h2 className="m-0 font-display font-medium text-[30px] leading-[1.05] text-wood-900">Link your birth moment</h2>
-            <p className="m-0 mt-3.5 font-reading text-[13.5px] leading-[1.6] text-wood-700 max-w-[34em]">
+            <p className="m-0 mb-1.5 font-label text-label font-bold uppercase tracking-[0.2em] text-accent">Sign in to yours</p>
+            <h2 className="m-0 font-display font-medium text-section-heading leading-[1.05] text-ink">Link your birth moment</h2>
+            <p className="m-0 mt-3.5 font-reading text-[13.5px] leading-[1.6] text-ink-soft max-w-[34em]">
               Your exact birth moment links you to four of the sixty-four codes. Add your date, time, and place, and your readings will flag when one of your four appears.
             </p>
             <div className="flex flex-wrap items-center gap-x-[18px] gap-y-3.5 mt-6">
-              <Link to="/profile" className="font-label text-[11px] font-bold uppercase tracking-[0.16em] text-paper-50 bg-wood-900 px-6 py-3 hover:bg-bronze-600 transition-colors no-underline">Enter my birth moment →</Link>
-              <button type="button" onClick={() => setGridOpen(false)} className="font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-wood-700 hover:text-wood-900 transition-colors">Not now</button>
+              <Link to="/profile" className="font-label text-label font-bold uppercase tracking-[0.16em] text-ink-inverse bg-wood-900 px-6 py-3 hover:bg-bronze-600 transition-colors no-underline">Enter my birth moment →</Link>
+              <button type="button" onClick={() => setGridOpen(false)} className="font-label text-label font-semibold uppercase tracking-[0.16em] text-ink-soft hover:text-ink transition-colors">Not now</button>
             </div>
           </div>
         </Overlay>

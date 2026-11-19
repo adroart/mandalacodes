@@ -26,7 +26,7 @@ import {
  * prose, Cormorant for ceremonial moments, Cinzel on the title.
  */
 
-const LABEL = 'font-label text-[11px] uppercase tracking-[0.2em] text-wood-600';
+const LABEL = 'font-label text-label uppercase tracking-[0.2em] text-ink-muted';
 
 /** The sizes the studio actually cuts (the archive's real dimensions),
  *  plus the open door. The chosen string is sent as-is. */
@@ -38,7 +38,7 @@ const SIZES = [
 ] as const;
 
 const FIELD =
-  'w-full border border-wood-300 bg-paper-50 px-3 py-2.5 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700';
+  'w-full border border-line-strong bg-page-paper px-3 py-2.5 font-reading text-body text-ink placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700';
 
 const beats = [
   {
@@ -49,7 +49,7 @@ const beats = [
         Begin from a design that spoke to you, or{' '}
         <Link
           to="/profile"
-          className="text-bronze-600 hover:text-bronze-500 transition-colors"
+          className="text-accent hover:text-bronze-500 transition-colors"
         >
           enter your birth date
         </Link>{' '}
@@ -123,18 +123,18 @@ const MakePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-paper-100 text-wood-900">
+    <div className="min-h-screen bg-band text-ink">
       <div className="px-5 sm:px-6 pb-32 max-w-2xl mx-auto pt-[calc(var(--nav-height)+2.5rem)]">
         {/* ── The invitation ── */}
         <header className="text-center">
-          <p className={`${LABEL} text-bronze-600 mb-4`}>The studio</p>
+          <p className={`${LABEL} text-accent mb-4`}>The studio</p>
           <h1
-            className="font-display text-4xl sm:text-5xl text-wood-900 font-medium leading-[1.05]"
+            className="font-display text-page-title sm:text-5xl text-ink font-medium leading-[1.05]"
             style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.02em' }}
           >
             Make yours
           </h1>
-          <p className="font-display text-xl text-wood-700 leading-[1.55] mt-6 max-w-lg mx-auto">
+          <p className="font-display text-card-title text-ink-soft leading-[1.55] mt-6 max-w-lg mx-auto">
             Every piece in the atlas began the same way: someone decided its
             story should exist. Yours can begin here.
           </p>
@@ -143,16 +143,16 @@ const MakePage: React.FC = () => {
         {/* ── The journey, in three beats ── */}
         <ol className="mt-12 sm:mt-14 space-y-7">
           {beats.map((b) => (
-            <li key={b.n} className="flex items-start gap-5 border-t border-wood-300 pt-6">
+            <li key={b.n} className="flex items-start gap-5 border-t border-line-strong pt-6">
               <span
                 aria-hidden
-                className="font-display text-2xl text-bronze-600 leading-none pt-0.5 w-8 shrink-0 text-center"
+                className="font-display text-card-title text-accent leading-none pt-0.5 w-8 shrink-0 text-center"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 {b.n}
               </span>
-              <p className="font-reading text-lg text-wood-700 leading-[1.6]">
-                <span className="font-semibold text-wood-900">{b.lead}</span>{' '}
+              <p className="font-reading text-body text-ink-soft leading-[1.6]">
+                <span className="font-semibold text-ink">{b.lead}</span>{' '}
                 {b.body}
               </p>
             </li>
@@ -160,9 +160,9 @@ const MakePage: React.FC = () => {
         </ol>
 
         {/* ── The note to the studio ── */}
-        <section className="mt-14 border border-wood-200 bg-paper-50/80 p-6 sm:p-8">
+        <section className="mt-14 border border-line bg-page-paper/80 p-6 sm:p-8">
           <h2 className={`${LABEL} mb-2`}>The note to the studio</h2>
-          <p className="font-reading text-base text-wood-600 leading-[1.6] mb-7">
+          <p className="font-reading text-body text-ink-muted leading-[1.6] mb-7">
             A short note: which code, what size, what palette. Adrian replies
             himself within a few days. No payment, no commitment, just the
             beginning of a conversation.
@@ -171,26 +171,26 @@ const MakePage: React.FC = () => {
           {movedBoundary ? (
             <AtlasMovedNotice boundary={movedBoundary} align="left" />
           ) : sent ? (
-            <p className="font-reading text-lg text-wood-800 leading-[1.6]">
+            <p className="font-reading text-body text-wood-800 leading-[1.6]">
               The note is with the studio. Adrian reads every one and will
               reply to your email within a few days. The next line of a
               certificate may now be yours.
             </p>
           ) : !isLoaded ? null : !isSignedIn ? (
             <div>
-              <p className="font-reading text-base text-wood-700 leading-[1.6] mb-4">
+              <p className="font-reading text-body text-ink-soft leading-[1.6] mb-4">
                 Sign in so the reply has somewhere to land.
               </p>
               <SignInTrigger>
-                <span className="inline-block font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3 cursor-pointer">
+                <span className="inline-block font-label text-label uppercase tracking-[0.2em] font-semibold text-ink-inverse bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3 cursor-pointer">
                   Sign in and begin
                 </span>
               </SignInTrigger>
-              <p className="font-reading text-sm text-wood-600 leading-[1.6] mt-4">
+              <p className="font-reading text-caption text-ink-muted leading-[1.6] mt-4">
                 Prefer plain mail? Write to{' '}
                 <a
                   href={`mailto:${SITE.email}`}
-                  className="text-bronze-600 hover:text-bronze-500 transition-colors"
+                  className="text-accent hover:text-bronze-500 transition-colors"
                 >
                   {SITE.email}
                 </a>
@@ -220,7 +220,7 @@ const MakePage: React.FC = () => {
                   {SIZES.map((s) => (
                     <label
                       key={s}
-                      className="flex items-center gap-3 font-reading text-base text-wood-800 cursor-pointer"
+                      className="flex items-center gap-3 font-reading text-body text-wood-800 cursor-pointer"
                     >
                       <input
                         type="radio"
@@ -266,7 +266,7 @@ const MakePage: React.FC = () => {
               </div>
 
               {error && (
-                <p className="font-reading text-base text-stone-600" role="alert">
+                <p className="font-reading text-body text-stone-600" role="alert">
                   {error}
                 </p>
               )}
@@ -276,7 +276,7 @@ const MakePage: React.FC = () => {
                   type="button"
                   onClick={submit}
                   disabled={busy}
-                  className="font-label text-[11px] uppercase tracking-[0.2em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 disabled:opacity-60 transition-colors px-6 py-3"
+                  className="font-label text-label uppercase tracking-[0.2em] font-semibold text-ink-inverse bg-wood-900 hover:bg-wood-800 disabled:opacity-60 transition-colors px-6 py-3"
                 >
                   {busy ? 'Sending' : 'Send the note'}
                 </button>
@@ -286,10 +286,10 @@ const MakePage: React.FC = () => {
         </section>
 
         {pieceId && (
-          <p className="font-reading text-base text-wood-600 text-center mt-8">
+          <p className="font-reading text-body text-ink-muted text-center mt-8">
             <Link
               to={`/piece/${encodeURIComponent(pieceId)}`}
-              className="text-bronze-600 hover:text-bronze-500 transition-colors"
+              className="text-accent hover:text-bronze-500 transition-colors"
             >
               ← Back to the piece you came from
             </Link>
