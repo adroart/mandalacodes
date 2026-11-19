@@ -8,6 +8,7 @@ export interface SelectedPiece {
   series?: string;
   category?: string;
   status: 'seeking' | 'placed' | 'unawakened';
+  placedBy?: string;
   cityLabel?: string;     // e.g. "Lisbon, Portugal"  (omitted when seeking)
   placedAt?: string;      // ISO of most recent placed/moved event
   cardNumber?: number;    // Universal Language code 1–64, when the piece carries one
@@ -138,6 +139,7 @@ const PieceSidePanel: React.FC<PieceSidePanelProps> = ({
           }`}
         >
           {statusLine}
+          {piece.status === 'placed' && piece.cityLabel && piece.placedBy && ` · placed by ${piece.placedBy}`}
         </p>
       </div>
 

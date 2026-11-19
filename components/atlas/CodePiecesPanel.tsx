@@ -18,6 +18,7 @@ export interface CodePiece {
   title: string;
   status: 'seeking' | 'placed' | 'unawakened';
   /** "Bali, Indonesia" — present when placed or unawakened in a known city. */
+  placedBy?: string;
   cityLabel?: string;
   /** "Bali" — city name only, for the "alive in {city}" tail. */
   cityName?: string;

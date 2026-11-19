@@ -866,6 +866,7 @@ const AtlasPage: React.FC = () => {
       category: categoryFor(match.pieceId),
       status: match.status,
       cityLabel: cityLabelFor(match.cityId),
+      placedBy: match.placedBy,
       placedAt: match.placedAt,
       cardNumber: cardNumberFor(match.pieceId),
       claimOrdinal: match.claimOrdinal,
