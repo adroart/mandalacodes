@@ -1,5 +1,7 @@
 # Oracle voice: what is built, what is wrong, and the plan to finish it
 
+For progress since the original audit, see the [current acceptance record](../../docs/oracle/VOICE-STATUS.md#current-acceptance) and [remaining phone checks](../../docs/oracle/VOICE-PHONE-CHECK.md).
+
 Audit date 2026-11-11, against main at `f1002a0`. This is the working plan for the card
 voice workflow in the Oracle app (record over a card section, get the words back, compare,
 apply). It replaces nothing in `ORACLE-VOICE-HANDOFF.md`, which stays the owner brief. It
