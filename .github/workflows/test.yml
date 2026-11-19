@@ -120,6 +120,17 @@ jobs:
       - run: npm ci
       # Vite discovers the separate native HTML entry during dependency scans.
       - run: npm ci --prefix mobile
+      # The runner's HTTP Azure mirror stalled twice while Playwright installed
+      # WebKit's Ubuntu libraries. Use the signed Ubuntu archive over HTTPS.
+      - name: Use HTTPS Ubuntu archive for Playwright dependencies
+        run: |
+          set -euo pipefail
+          mirror_file=/etc/apt/apt-mirrors.txt
+          test -f "$mirror_file"
+          . /etc/os-release
+          test "$VERSION_CODENAME" = noble
+          curl --fail --silent --show-error --head --max-time 15 "https://archive.ubuntu.com/ubuntu/dists/$VERSION_CODENAME/InRelease" >/dev/null
+          printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee "$mirror_file" >/dev/null
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run build
       # --global-timeout 18m: Playwright stops itself and still reports.

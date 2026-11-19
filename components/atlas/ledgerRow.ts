@@ -30,6 +30,7 @@ export interface LedgerRow {
   /** City name only ("Lisbon"), for the "alive in {city}" tail. */
   cityName?: string;
   /** Full place label ("Lisbon, Portugal"), for search only. */
+  placedBy?: string;
   cityLabel?: string;
   /** The public dream, when the keeper lets one ride here. */
   dream?: string;
@@ -409,6 +410,7 @@ export interface LedgerPieceLike {
   title: string;
   status: 'seeking' | 'placed' | 'unawakened';
   cityName?: string;
+  placedBy?: string;
   cityLabel?: string;
   intention?: string;
   signedBy?: { name?: string; link?: string };
@@ -430,6 +432,7 @@ export function atlasPieceToRow(p: LedgerPieceLike): LedgerRow {
     norm: normFromAtlasStatus(p.status),
     cityName: p.cityName,
     cityLabel: p.cityLabel,
+    placedBy: p.status === 'placed' && p.cityLabel ? p.placedBy : undefined,
     dream: p.intention && p.intention.trim() ? p.intention.trim() : undefined,
     signedBy: p.intention && p.intention.trim() ? p.signedBy : undefined,
     onGlobe: p.status === 'placed' || p.status === 'unawakened',

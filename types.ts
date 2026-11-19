@@ -193,6 +193,8 @@ export interface PublicAtlasState {
     pieceId: string;
     /** Canonical public instance code, never an ownership credential. */
     publicCode?: string;
+    /** Keeper-chosen display name, present only with public placement and name consent. */
+    placedBy?: string;
     editionNumber?: number;
     series?: string;
     category?: string;

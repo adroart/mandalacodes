@@ -22,6 +22,7 @@ interface CollectorFieldCity {
 
 interface CollectorFieldIdentity {
   publicCode?: unknown;
+  placedBy?: unknown;
   editionLabel?: unknown;
   status?: unknown;
   ordinal?: unknown;
@@ -112,6 +113,9 @@ export function adaptCollectorFieldState(state: unknown): PublicAtlasState | nul
         ...(typeof identity.publicCode === 'string' && /^AR-[A-Z0-9-]+$/.test(identity.publicCode) ? { publicCode: identity.publicCode } : {}),
         ...(editionNumber !== undefined ? { editionNumber } : {}),
         ...(series ? { series } : {}),
+        ...(centroid && identity.status === 'registered' && typeof identity.placedBy === 'string' &&
+          identity.placedBy.trim() && identity.placedBy.length <= 200
+          ? { placedBy: identity.placedBy.trim() } : {}),
         cityId: centroid ? centroid.id : null,
         status: centroid ? 'placed' : 'seeking',
         pieceType: series === 'Universal Language' ? 'mandala' : 'other',

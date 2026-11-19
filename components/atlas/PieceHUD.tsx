@@ -161,6 +161,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         : 'alive';
   const standingRest = [
     placeText,
+    piece.status === 'placed' && piece.cityLabel && piece.placedBy ? `placed by ${piece.placedBy}` : null,
     !isSeeking && !isUnawakened && typeof piece.claimOrdinal === 'number'
       ? `the ${ordinalLabel(piece.claimOrdinal)} light`
       : null,
