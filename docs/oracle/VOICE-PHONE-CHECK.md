@@ -1,8 +1,12 @@
 # Oracle card voice: the phone check
 
-For Adrian, with the Mac and the phone. Nothing in the voice work has run on a phone yet. The work is merged and deployed (2026-11-12). Do this once, on one card (card 2), and write the result as a row in the device ledger in `docs/oracle/VOICE-STATUS.md` the same day.
+The original Oracle recording chat owns the remaining physical checks with Adrian. Review the [current acceptance record](VOICE-STATUS.md#current-acceptance) before running this checklist. It records the successful History and selected-word preview, live microphone capture and reopen, and the exact signed build. The microphone run covers the save and transcription portion of recording only. Steps 1–13 still need evidence for their exact scenarios where the ledger has no matching result.
+
+Inspect the widget on the Home Screen and verify the empty-capture retry on a build that includes `38eb7d0e`. Use a disposable reading approved by Adrian for physical Apply/Undo. Record the exact build and each outcome in the [device ledger](VOICE-STATUS.md#device-ledger).
 
 ## Before you start
+
+Use the existing installed app for checks it supports. If a new build is needed, follow these steps.
 
 1. On the Mac, fetch current `origin/main` and use a clean, isolated worktree at that revision.
 2. In the Cloudflare Pages settings, confirm `ADMIN_EMAILS` holds the email you sign in with on the phone, and that `GROQ_API_KEY` is set.

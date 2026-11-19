@@ -1,8 +1,25 @@
 # Oracle card voice: status
 
-Written 2026-11-12, updated 2026-11-16. The work was merged to main as 4cb740f (pull request 401) on 2026-11-12 and Cloudflare deployed it. Checked against the live site on 2026-11-13: the new pickup route for app recordings answers 401 without a key, and the process endpoint answers a signed-out request with the new `code` and `retryable` fields. CI passed on the merged commit, including the voice lane's first run on the CI runner (scripted speech). The project todo records a successful device build from main on 2026-11-16; this supersedes the earlier uncompiled-Swift status, not the missing phone acceptance. The current voice workflow still needs a real recording on the phone against the speech provider.
+Written 2026-11-12, updated 2026-11-19. The work was merged to main as 4cb740f (pull request 401) on 2026-11-12 and Cloudflare deployed it. Checked against the live site on 2026-11-13: the new pickup route for app recordings answers 401 without a key, and the process endpoint answers a signed-out request with the new `code` and `retryable` fields. CI passed on the merged commit, including the voice lane's first run on the CI runner (scripted speech).
 
 The plan and its progress are in `todo/plans/oracle-voice-completion.md`. The owner's brief is `ORACLE-VOICE-HANDOFF.md`. The phone checks are in `docs/oracle/VOICE-PHONE-CHECK.md`. Older voice documents are kept for history and each says so at its top.
+
+## Current acceptance
+
+PR #426 merged as `c06f61b29c6826514108fce4f7c4d9d704b2940a` on 2026-11-17. Its Pages receipt matched the live source revision and the immutable deployment's manifest and card-page entry asset bytes. [PR #426](https://github.com/adroart/mandalacodes/pull/426)
+
+| Check | Evidence and remaining work |
+| --- | --- |
+| Installed app and widget signing | Build 19 from `9fd1b270c5d6523449306ff8bc17f0bf4df7f2d8` was installed on 2026-11-17. At installation, the app and widget profiles each had at least 6 days and 23 hours remaining. They expire 2026-11-24 at 04:35:30 and 04:35:28 UTC respectively (12:35:30 and 12:35:28 in Bali). |
+| History, selected words and preservation | On 2026-11-17 the phone restored History into a separate draft, selected spans by native long-press and prepared a replacement. Review showed “Selected words,” both spans and “Not applied yet.” All 752 prior audio chunks and 12 audio sessions retained identical value hashes. The source pending result and working reading texts were preserved, with routine metadata updates. One verification draft remains pending. |
+| Physical microphone and reopen | On 2026-11-19 at 19:36 Bali time, a Card 2 test played synthetic speech through a speaker into the phone microphone. The saved 14.454-second capture decoded, the live service correctly transcribed the phrase with 14 word timings, and the capture survived reopen. Existing audio and working card text were preserved. The temporary test runner was removed. Two synthetic takes remained on Card 2 at the time of the receipt. The original Oracle recording chat tracks their cleanup. The microphone receipt does not identify the installed revision. |
+| Empty-capture retry | PR #426 merged the native repair in `38eb7d0e`. The last verified installed build predates the repair. The Nov 19 microphone success exercised nonempty audio, so native retry behavior remains open. |
+| Widget rendering | Pending a visual inspection on the iPhone. The signing receipt establishes the extension's signature and profile. |
+| Apply and Undo | Browser fixtures cover both operations. Physical Apply/Undo remains pending and requires an owner-approved disposable reading. Keep the owner's pending draft and reading intact. |
+
+The frozen `App.app` passed deep signature verification and matched all 309 bundled web files. Its tree SHA-256 was `7ed4833416a8b06e1dd4d93921e091ca6924fa16406ac91a90293f7da3f3f765`.
+
+The original Oracle recording chat owns the remaining device checks with Adrian. The [phone checklist](VOICE-PHONE-CHECK.md) records the remaining scenarios. The wider Card 2 workflow is still open, including the full passage sequence, uncertain-word review, interruptions, offline recovery and export. The dated installation, physical UI, microphone and publication receipts are retained privately.
 
 ## What it is for
 
@@ -30,8 +47,6 @@ The owner speaks his own words over a card's sections, and those words replace p
 
 ## Open items
 
-- **Not proven on a phone:** everything. See the phone check.
-- **Device acceptance:** a successful device build is recorded in `TODO.md` on 2026-11-16. Recording interruption, sharing and actual phone behavior remain unverified. Re-audit fresh signing before any installation; see `mobile/README.md`.
 - **Two recorders on one microphone:** unknown whether Safari allows it. If it refuses, a boundary falls back to a short gap.
 - **Structured sections:** the apply script writes plain-prose sections only (23 of 33 on card 2). Moving lines, Judgement, Image, Tarot, Deeper correlation and two label lines are reported for a hand edit.
 - **Build gate versus his words:** `npm run build` runs the prose lint as a gate. An em dash or italics inside applied spoken words would stop a build. The apply script reports them; nothing exempts them yet.
@@ -68,4 +83,5 @@ Every phone install gets a row, written the same day. Rows below are only what t
 | 2026-10-31 | 17 | Not recorded | Native Google sign-in return on the iPhone. The website Google login, hosted transcription with word timing and hosted review were checked with generated speech; the record does not say they ran on the phone | The phone rejected the native Google return before token exchange. No later commit touches it. Source: `src/mobile/account/README.md` | Repository text, author not named |
 | 2026-11-03 | 19 | 767ba60 | Not recorded | Commit says it is installed on the iPhone: the five voice screen changes, the artwork loader and the shared word list. Nothing about what worked. Source: `git show -s 767ba60` | Commit message, Claude Opus 5.5 co-author |
 | 2026-11-12 | none (site only) | 4cb740f | Nothing on the phone. Site deploy checked from outside: new pickup route 401 without a key, process endpoint returns the new signed-out answer, card 2 loads | Deployed. No phone install of this work yet | Claude session, 2026-11-13 |
-| Next entry | | | | | |
+| 2026-11-17 | 19 | 9fd1b270 | History restore and selected-word preview | Passed. See current acceptance for signing and preservation evidence. | Oracle History release verification |
+| 2026-11-19 | Not captured | Not captured | Card 2 microphone, save, live transcription and reopen | Passed. See current acceptance for scope and cleanup. | Oracle recording chat |
