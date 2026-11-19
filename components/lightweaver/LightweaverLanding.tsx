@@ -45,19 +45,19 @@ const LightweaverLanding: React.FC = () => {
   };
 
   return (
-    <div data-lightweaver-page className="min-h-screen bg-paper-50 transition-colors">
+    <div data-lightweaver-page className="min-h-screen bg-page-paper transition-colors">
       <div className="max-w-2xl mx-auto px-6 py-16">
         <div className="relative mb-12">
           <a
             href="https://mandalacodes.com/"
-            className="text-xs uppercase tracking-[0.2em] text-bronze-700 hover:text-bronze-800"
+            className="text-label uppercase tracking-[0.2em] text-link hover:text-bronze-800"
           >
             mandalacodes
           </a>
           <button
             type="button"
             onClick={toggleDarkMode}
-            className="absolute right-0 top-1/2 inline-flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-wood-700 transition-colors hover:text-bronze-700"
+            className="absolute right-0 top-1/2 inline-flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-ink-soft transition-colors hover:text-link"
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {isDarkMode
@@ -66,10 +66,10 @@ const LightweaverLanding: React.FC = () => {
           </button>
         </div>
 
-        <h1 className="text-4xl font-light tracking-tight text-wood-900 mb-3">
+        <h1 className="text-page-title font-light tracking-tight text-ink mb-3">
           Lightweaver
         </h1>
-        <p className="text-base text-wood-700 mb-12 leading-relaxed">
+        <p className="text-body text-ink-soft mb-12 leading-relaxed">
           Design online. Install to the card. Run locally from the hardware. No pairing number is
           required for the normal Lightweaver path.
         </p>
@@ -77,20 +77,20 @@ const LightweaverLanding: React.FC = () => {
         <section className="mb-10 grid gap-3 sm:grid-cols-2">
           <a
             href={DESIGNER_PATTERNS_URL}
-            className="px-4 py-3 bg-bronze-700 text-paper-50 rounded-md text-sm uppercase tracking-wider hover:bg-bronze-600 transition-colors text-center"
+            className="btn btn-primary"
           >
             Open Studio v3
           </a>
           <a
             href={DEFAULT_CARD_URL}
-            className="px-4 py-3 border border-wood-300 rounded-md text-sm uppercase tracking-wider text-wood-900 hover:border-bronze-700 transition-colors text-center"
+            className="btn btn-secondary"
           >
             Open Card
           </a>
         </section>
 
         <section className="mb-10">
-          <h2 className="text-xs uppercase tracking-[0.2em] text-bronze-700 mb-4">
+          <h2 className="text-label uppercase tracking-[0.2em] text-link mb-4">
             Open the local card
           </h2>
           <form onSubmit={submit} className="flex flex-col sm:flex-row gap-3">
@@ -103,30 +103,30 @@ const LightweaverLanding: React.FC = () => {
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
-                className="w-full bg-paper-100 border border-wood-300 rounded-md px-4 py-3 pr-16 text-wood-900 font-technical text-sm focus:outline-none focus:border-bronze-700"
+                className="field pr-16 font-technical"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-wood-400 font-technical pointer-events-none">
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-label text-wood-400 font-technical pointer-events-none">
                 .local
               </span>
             </div>
             <button
               type="submit"
-              className="px-6 py-3 bg-bronze-700 text-paper-50 rounded-md text-sm uppercase tracking-wider hover:bg-bronze-600 transition-colors"
+              className="btn btn-primary"
             >
               Open
             </button>
           </form>
-          <p className="text-xs text-wood-700 mt-3 leading-relaxed">
+          <p className="text-label text-ink-soft mt-3 leading-relaxed">
             This opens the card's own page at{' '}
             <span className="font-technical">http://lightweaver.local</span>. If the card is still in
             setup mode, join its <span className="font-technical">Lightweaver-XXXX</span> WiFi network
-            and open <a href={AP_SETUP_URL} className="text-bronze-700 hover:underline">192.168.4.1</a>.
+            and open <a href={AP_SETUP_URL} className="text-link hover:underline">192.168.4.1</a>.
           </p>
         </section>
 
         {saved.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-xs uppercase tracking-[0.2em] text-bronze-700 mb-4">
+            <h2 className="text-label uppercase tracking-[0.2em] text-link mb-4">
               Recent pieces
             </h2>
             <ul className="space-y-2">
@@ -134,15 +134,15 @@ const LightweaverLanding: React.FC = () => {
                 <li key={card.host}>
                   <a
                     href={cardUrlFor(card.host)}
-                    className="flex items-center justify-between bg-paper-100 border border-wood-300 rounded-md px-4 py-3 hover:border-bronze-700 transition-colors"
+                    className="flex items-center justify-between bg-band border border-line-strong rounded-md px-4 py-3 hover:border-bronze-700 transition-colors"
                   >
                     <div>
-                      <div className="text-sm text-wood-900">{card.label}</div>
-                      <div className="text-xs text-wood-700 font-technical">
+                      <div className="text-caption text-ink">{card.label}</div>
+                      <div className="text-label text-ink-soft font-technical">
                         {card.host}.local
                       </div>
                     </div>
-                    <span className="text-xs text-wood-400 font-technical">
+                    <span className="text-label text-wood-400 font-technical">
                       {new Date(card.lastSeenAt).toLocaleDateString()}
                     </span>
                   </a>
@@ -152,22 +152,22 @@ const LightweaverLanding: React.FC = () => {
           </section>
         )}
 
-        <section className="border-t border-wood-200 pt-10 mb-12">
-          <h2 className="text-xs uppercase tracking-[0.2em] text-bronze-700 mb-4">
+        <section className="border-t border-line pt-10 mb-12">
+          <h2 className="text-label uppercase tracking-[0.2em] text-link mb-4">
             New to Lightweaver?
           </h2>
-          <p className="text-sm text-wood-700 mb-6 leading-relaxed">
+          <p className="text-caption text-ink-soft mb-6 leading-relaxed">
             You just unwrapped your piece. Get it running from the hardware first; the web Studio
             is only needed when you want to change the layout or install a new configuration.
           </p>
-          <ol className="space-y-4 mb-6 pl-5 list-decimal text-sm text-wood-900">
+          <ol className="space-y-4 mb-6 pl-5 list-decimal text-caption text-ink">
             <li>
               <strong>Plug it in.</strong> The lights come on. Turn the knob to dim or brighten.
               Press the knob to change patterns.
             </li>
             <li>
               <strong>For more control,</strong> open your phone's WiFi list. Look for a network
-              called <span className="font-technical text-bronze-700">Lightweaver-XXXX</span> and join it.
+              called <span className="font-technical text-link">Lightweaver-XXXX</span> and join it.
             </li>
             <li>
               <strong>A setup page opens automatically.</strong> Enter your home WiFi name and
@@ -175,7 +175,7 @@ const LightweaverLanding: React.FC = () => {
             </li>
             <li>
               <strong>Anytime after that,</strong> from any device on your home WiFi, open{' '}
-              <span className="font-technical text-bronze-700">lightweaver.local</span>{' '}
+              <span className="font-technical text-link">lightweaver.local</span>{' '}
               in a browser. Patterns, colors, brightness, and saved settings all live on the card.
             </li>
             <li>
@@ -183,17 +183,17 @@ const LightweaverLanding: React.FC = () => {
               and colors, copy or download the chip config, then paste it into the card page.
             </li>
           </ol>
-          <p className="text-xs text-wood-700 leading-relaxed">
+          <p className="text-label text-ink-soft leading-relaxed">
             Lost the WiFi later? If the lights start pulsing slowly in warm white, the piece is back
             in setup mode and ready to be joined to a new network. Same steps as above.
           </p>
         </section>
 
-        <section className="border-t border-wood-200 pt-10 mb-12">
-          <h2 className="text-xs uppercase tracking-[0.2em] text-bronze-700 mb-4">
+        <section className="border-t border-line pt-10 mb-12">
+          <h2 className="text-label uppercase tracking-[0.2em] text-link mb-4">
             Why this works the way it works
           </h2>
-          <ul className="space-y-3 text-sm text-wood-700 leading-relaxed list-disc pl-5">
+          <ul className="space-y-3 text-caption text-ink-soft leading-relaxed list-disc pl-5">
             <li>
               Each piece is its own small computer. It plays patterns on its own: no internet, no
               account, no app required.
@@ -214,13 +214,13 @@ const LightweaverLanding: React.FC = () => {
           </ul>
         </section>
 
-        <section className="border-t border-wood-200 pt-10 mb-12">
-          <h2 className="text-xs uppercase tracking-[0.2em] text-bronze-700 mb-4">
+        <section className="border-t border-line pt-10 mb-12">
+          <h2 className="text-label uppercase tracking-[0.2em] text-link mb-4">
             Something's not right
           </h2>
-          <dl className="space-y-5 text-sm text-wood-700 leading-relaxed">
+          <dl className="space-y-5 text-caption text-ink-soft leading-relaxed">
             <div>
-              <dt className="font-medium text-wood-900 mb-1">
+              <dt className="font-medium text-ink mb-1">
                 The lights are off and nothing happens when I plug it in.
               </dt>
               <dd>
@@ -229,7 +229,7 @@ const LightweaverLanding: React.FC = () => {
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-wood-900 mb-1">
+              <dt className="font-medium text-ink mb-1">
                 The piece is pulsing warm white slowly and won't stop.
               </dt>
               <dd>
@@ -239,7 +239,7 @@ const LightweaverLanding: React.FC = () => {
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-wood-900 mb-1">
+              <dt className="font-medium text-ink mb-1">
                 I can't open lightweaver.local on my computer.
               </dt>
               <dd>
@@ -250,7 +250,7 @@ const LightweaverLanding: React.FC = () => {
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-wood-900 mb-1">
+              <dt className="font-medium text-ink mb-1">
                 I want it to do something it doesn't do.
               </dt>
               <dd>
@@ -259,10 +259,10 @@ const LightweaverLanding: React.FC = () => {
               </dd>
             </div>
           </dl>
-          <p className="text-sm text-wood-900 mt-8">
+          <p className="text-caption text-ink mt-8">
             <a
               href="mailto:hello@mandalacodes.com"
-              className="text-bronze-700 hover:underline"
+              className="text-link hover:underline"
             >
               hello@mandalacodes.com
             </a>
@@ -270,24 +270,24 @@ const LightweaverLanding: React.FC = () => {
           </p>
         </section>
 
-        <section className="border-t border-wood-200 pt-10">
-          <h2 className="text-xs uppercase tracking-[0.2em] text-bronze-700 mb-4">
+        <section className="border-t border-line pt-10">
+          <h2 className="text-label uppercase tracking-[0.2em] text-link mb-4">
             Studio and install
           </h2>
-          <p className="text-sm text-wood-700 mb-4 leading-relaxed">
+          <p className="text-caption text-ink-soft mb-4 leading-relaxed">
             For artists and installers. Build the LED layout, choose chip looks, configure outputs,
             and prepare the file the card can actually load.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <a
               href={DESIGNER_PATTERNS_URL}
-              className="inline-block px-6 py-3 border border-wood-300 rounded-md text-sm uppercase tracking-wider text-wood-900 hover:border-bronze-700 transition-colors text-center"
+              className="inline-block px-6 py-3 border border-line-strong rounded-md text-caption uppercase tracking-wider text-ink hover:border-bronze-700 transition-colors text-center"
             >
               Open Studio v3
             </a>
             <a
               href="/design/#screen=layout"
-              className="inline-block px-6 py-3 border border-wood-300 rounded-md text-sm uppercase tracking-wider text-wood-900 hover:border-bronze-700 transition-colors text-center"
+              className="inline-block px-6 py-3 border border-line-strong rounded-md text-caption uppercase tracking-wider text-ink hover:border-bronze-700 transition-colors text-center"
             >
               Edit Layout
             </a>

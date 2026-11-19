@@ -103,11 +103,13 @@
 .ul-rs-member:hover .ul-rs-member__open { border-color: var(--accent); }
 
 /* The open bar's buttons. */
-.ul-rs-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+/* Heights, padding, radius and type from the master controls (src/theme.css);
+   colours stay the reading palette's own. */
+.ul-rs-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
 .ul-rs-btn {
-  display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px;
-  border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent); background: none;
-  color: var(--l-2); font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+  display: inline-flex; align-items: center; justify-content: center; min-height: var(--control-h); padding: 0 var(--control-pad-x);
+  border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent); border-radius: var(--radius-control); background: none;
+  color: var(--l-2); font-family: var(--font-ui); font-size: var(--text-label); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase;
   white-space: nowrap; text-decoration: none; cursor: pointer; transition: border-color .25s, background .25s;
 }
 .ul-rs-btn:hover { border-color: var(--accent); }

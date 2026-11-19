@@ -48,15 +48,15 @@ export const BuySheet: React.FC<{
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="relative z-10 w-full sm:max-w-2xl mx-auto max-h-[90vh] overflow-y-auto bg-paper-100 border-t sm:border border-wood-300/60 sm:rounded-md shadow-[0_-12px_40px_rgba(0,0,0,0.35)] sm:shadow-[0_18px_60px_rgba(0,0,0,0.45)] motion-safe:animate-[buysheet-rise_220ms_cubic-bezier(0.22,1,0.36,1)]"
+        className="relative z-10 w-full sm:max-w-2xl mx-auto max-h-[90vh] overflow-y-auto bg-band border-t sm:border border-line-strong/60 sm:rounded-md shadow-[0_-12px_40px_rgba(0,0,0,0.35)] sm:shadow-[0_18px_60px_rgba(0,0,0,0.45)] motion-safe:animate-[buysheet-rise_220ms_cubic-bezier(0.22,1,0.36,1)]"
       >
         <div className="flex justify-center pt-3 sm:hidden">
           <span className="block w-10 h-1 rounded-full bg-wood-300/70" aria-hidden="true" />
         </div>
 
         <div className="px-6 sm:px-8 pt-4 pb-6">
-          <p className="font-label text-[10px] uppercase tracking-[0.28em] text-wood-500">Code {cardNumber}</p>
-          <h2 className="font-display text-[26px] leading-[1.15] text-wood-900 mt-1">{cardName}</h2>
+          <p className="font-label text-[10px] uppercase tracking-[0.28em] text-ink-faint">Code {cardNumber}</p>
+          <h2 className="font-display text-[26px] leading-[1.15] text-ink mt-1">{cardName}</h2>
 
           <div className="mt-5 flex gap-4">
             <img
@@ -66,20 +66,20 @@ export const BuySheet: React.FC<{
                  there would box in empty space; the ones carrying their own
                  captured ground keep the edge that separates plate from sheet. */
               className={`w-24 h-24 object-contain flex-shrink-0 ${
-                ulCardArtFloatsFree(cardNumber) ? '' : 'border border-wood-300/40'
+                ulCardArtFloatsFree(cardNumber) ? '' : 'border border-line-strong/40'
               }`}
               crossOrigin="anonymous"
             />
             <div className="min-w-0 flex-1 space-y-2">
               {piece?.dimensions && (
-                <p className="font-reading text-[13px] text-wood-700 leading-[1.4]">
-                  <span className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500">Dimensions</span>
+                <p className="font-reading text-[13px] text-ink-soft leading-[1.4]">
+                  <span className="font-label text-[10px] uppercase tracking-[0.18em] text-ink-faint">Dimensions</span>
                   <br />{piece.dimensions}
                 </p>
               )}
               {piece?.material && (
-                <p className="font-reading text-[13px] text-wood-700 leading-[1.4]">
-                  <span className="font-label text-[10px] uppercase tracking-[0.18em] text-wood-500">Material</span>
+                <p className="font-reading text-[13px] text-ink-soft leading-[1.4]">
+                  <span className="font-label text-[10px] uppercase tracking-[0.18em] text-ink-faint">Material</span>
                   <br />{piece.material}
                 </p>
               )}
@@ -87,41 +87,41 @@ export const BuySheet: React.FC<{
           </div>
 
           {piece?.description && (
-            <p className="font-reading text-[14px] text-wood-700 tracking-[0.015em] leading-[1.55] mt-4">
+            <p className="font-reading text-[14px] text-ink-soft tracking-[0.015em] leading-[1.55] mt-4">
               {piece.description}
             </p>
           )}
 
           {pieceHref && (
-            <div className="mt-7 pt-6 border-t border-wood-300/50">
+            <div className="mt-7 pt-6 border-t border-line-strong/50">
               <a
                 href={pieceHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group block bg-paper-50 hover:bg-bronze-50/60 border border-bronze-400/50 hover:border-bronze-500/70 transition-colors"
+                className="group block bg-page-paper hover:bg-bronze-50/60 border border-bronze-400/50 hover:border-bronze-500/70 transition-colors"
               >
                 <div className="h-[2px] w-full bg-bronze-500 group-hover:bg-bronze-400 motion-safe:transition-colors" aria-hidden="true" />
                 <div className="px-5 py-4 flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="font-reading text-[17px] text-wood-900 group-hover:text-bronze-700 leading-tight">
+                    <p className="font-reading text-[17px] text-ink group-hover:text-link leading-tight">
                       View the sculpture
                     </p>
-                    <p className="font-label text-[10px] uppercase tracking-[0.22em] text-wood-500 mt-1.5">
+                    <p className="font-label text-[10px] uppercase tracking-[0.22em] text-ink-faint mt-1.5">
                       On adrianrasmussen.com · Acquire or commission
                     </p>
                   </div>
-                  <span className="font-reading text-[20px] text-bronze-500 group-hover:text-bronze-700" aria-hidden="true">↗</span>
+                  <span className="font-reading text-[20px] text-bronze-500 group-hover:text-link" aria-hidden="true">↗</span>
                 </div>
               </a>
             </div>
           )}
 
-          <div className="mt-6 pt-5 border-t border-wood-300/40">
+          <div className="mt-6 pt-5 border-t border-line-strong/40">
             <a
               href={inquireHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-label text-[11px] uppercase tracking-[0.22em] text-bronze-600 hover:text-bronze-500 font-semibold transition-colors"
+              className="font-label text-[11px] uppercase tracking-[0.22em] text-accent hover:text-bronze-500 font-semibold transition-colors"
             >
               Commission a custom piece ↗
             </a>

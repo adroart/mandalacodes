@@ -535,19 +535,19 @@ const StewardEdit: React.FC = () => {
             <button
               type="button"
               onClick={handleSignInSwitch}
-              className="text-left font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
+              className="text-left font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-link hover:text-accent focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
             >
               Claim with the email your piece was registered to →
             </button>
             <Link
               to="/atlas"
-              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
+              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-link hover:text-accent focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
             >
               Came to it another way? Request stewardship →
             </Link>
             <Link
               to="/atlas/homecoming"
-              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
+              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-link hover:text-accent focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
             >
               Holding a piece we do not know? Bring it home →
             </Link>
@@ -566,7 +566,7 @@ const StewardEdit: React.FC = () => {
           </p>
           <button
             onClick={() => navigate('/atlas/claim', { replace: true })}
-            className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 hover:text-bronze-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 font-semibold"
+            className="font-label text-[11px] uppercase tracking-[0.2em] text-accent hover:text-bronze-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 font-semibold"
           >
             Return to claim
           </button>
@@ -600,7 +600,7 @@ const StewardEdit: React.FC = () => {
             form below always edits the selected piece. */}
         {entries.length > 1 && (
           <div className="mb-10">
-            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
+            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted font-semibold mb-3">
               Choose a piece
             </span>
             <div className="flex flex-wrap gap-2">
@@ -618,8 +618,8 @@ const StewardEdit: React.FC = () => {
                     onClick={() => handlePieceSwitch(i)}
                     className={`min-h-[44px] px-4 py-2 border font-reading text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                       active
-                        ? 'bg-bronze-100 border-bronze-500 text-wood-900'
-                        : 'bg-wood-50 border-wood-300 text-wood-700 hover:bg-paper-100'
+                        ? 'bg-bronze-100 border-bronze-500 text-ink'
+                        : 'bg-card border-line-strong text-ink-soft hover:bg-band'
                     }`}
                   >
                     {label}
@@ -673,7 +673,7 @@ const StewardEdit: React.FC = () => {
             </div>
           )}
           <h2
-            className="font-display text-2xl sm:text-[1.7rem] text-wood-900 font-medium mb-2"
+            className="font-display text-2xl sm:text-[1.7rem] text-ink font-medium mb-2"
             style={{ fontFamily: 'var(--font-brand)', letterSpacing: '0.04em' }}
           >
             You keep {artwork?.title ?? 'this piece'}
@@ -685,7 +685,7 @@ const StewardEdit: React.FC = () => {
           {/* The dream, framed as the first page of the book (display size). */}
           {firstDream && (
             <p
-              className="font-display text-wood-900 leading-[1.3] mt-7 whitespace-pre-line"
+              className="font-display text-ink leading-[1.3] mt-7 whitespace-pre-line"
               style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)' }}
             >
               {firstDream}
@@ -695,16 +695,16 @@ const StewardEdit: React.FC = () => {
           {/* The founding number. */}
           {publicOrdinal != null && (
             <div className="mt-7">
-              <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 mb-1">
+              <p className="font-label text-[11px] uppercase tracking-[0.2em] text-accent mb-1">
                 Founding light
               </p>
               <p
-                className="font-display text-wood-900 font-medium leading-none"
+                className="font-display text-ink font-medium leading-none"
                 style={{ fontFamily: 'var(--font-brand)', fontSize: 'clamp(2.25rem, 9vw, 3.25rem)' }}
               >
                 {publicOrdinal}
               </p>
-              <p className="font-display text-base text-wood-600 mt-2">
+              <p className="font-display text-base text-ink-muted mt-2">
                 the {ordinalLabel(publicOrdinal)} light
               </p>
             </div>
@@ -723,7 +723,7 @@ const StewardEdit: React.FC = () => {
         <div className="mb-10">
           <label
             htmlFor="city-search-input"
-            className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3"
+            className="block font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted font-semibold mb-3"
           >
             Place it
           </label>
@@ -752,7 +752,7 @@ const StewardEdit: React.FC = () => {
         {/* ═══ Chapter: Let it shine ═══
             Map presence, then the constellation of keepers beneath it. */}
         <div className="mb-10">
-          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
+          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted font-semibold mb-3">
             Let it shine
           </span>
           <Toggle
@@ -776,7 +776,7 @@ const StewardEdit: React.FC = () => {
               <a
                 href="#piece-book"
                 onClick={() => setPlaceNudge(null)}
-                className="hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                className="hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
               >
                 Its pages continue below.
               </a>
@@ -788,8 +788,8 @@ const StewardEdit: React.FC = () => {
               wherever the piece's public dream appears. Offered only while the
               dream is public; otherwise a quiet note, since a signature would
               have nowhere to appear. */}
-          <div className="mt-8 pt-8 border-t border-wood-100">
-            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
+          <div className="mt-8 pt-8 border-t border-line-faint">
+            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted font-semibold mb-2">
               Sign your dream
             </span>
             {dreamIsPublic ? (
@@ -801,7 +801,7 @@ const StewardEdit: React.FC = () => {
                 </p>
                 <div className="space-y-4 mb-5">
                   <label className="block">
-                    <span className="block font-label text-[11px] uppercase tracking-[0.16em] text-wood-500 mb-1.5">
+                    <span className="block font-label text-[11px] uppercase tracking-[0.16em] text-ink-faint mb-1.5">
                       name as it should appear
                     </span>
                     <input
@@ -811,11 +811,11 @@ const StewardEdit: React.FC = () => {
                       onChange={e => setSigName(e.target.value)}
                       onBlur={handleSignatureFieldCommit}
                       disabled={sigSaving}
-                      className="w-full border border-wood-300 bg-wood-50 px-3 py-2 font-reading text-base text-wood-900 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                      className="w-full border border-line-strong bg-card px-3 py-2 font-reading text-base text-ink focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
                     />
                   </label>
                   <label className="block">
-                    <span className="block font-label text-[11px] uppercase tracking-[0.16em] text-wood-500 mb-1.5">
+                    <span className="block font-label text-[11px] uppercase tracking-[0.16em] text-ink-faint mb-1.5">
                       one link (https)
                     </span>
                     <input
@@ -827,7 +827,7 @@ const StewardEdit: React.FC = () => {
                       onChange={e => setSigLink(e.target.value)}
                       onBlur={handleSignatureFieldCommit}
                       disabled={sigSaving}
-                      className="w-full border border-wood-300 bg-wood-50 px-3 py-2 font-reading text-base text-wood-900 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                      className="w-full border border-line-strong bg-card px-3 py-2 font-reading text-base text-ink focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
                     />
                   </label>
                 </div>
@@ -847,8 +847,8 @@ const StewardEdit: React.FC = () => {
           </div>
 
           {/* Chart presence — the constellation of keepers, under Let it shine */}
-          <div className="mt-8 pt-8 border-t border-wood-100">
-            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
+          <div className="mt-8 pt-8 border-t border-line-faint">
+            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted font-semibold mb-2">
               Join the constellation of keepers
             </span>
             <p className="font-display text-sm text-stone-600 mb-4">
@@ -872,7 +872,7 @@ const StewardEdit: React.FC = () => {
           {savedAt && (
             <span
               key={savedAt}
-              className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 font-semibold"
+              className="font-label text-[11px] uppercase tracking-[0.2em] text-accent font-semibold"
               style={{ animation: 'fadeIn 0.2s ease-out' }}
             >
               Saved.
@@ -916,11 +916,11 @@ const StewardEdit: React.FC = () => {
         )}
 
         {/* Sign out */}
-        <div className="text-center pt-6 border-t border-wood-200 print:hidden">
+        <div className="text-center pt-6 border-t border-line print:hidden">
           <button
             type="button"
             onClick={handleSignOut}
-            className="font-label text-xs uppercase tracking-[0.15em] text-stone-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
+            className="font-label text-xs uppercase tracking-[0.15em] text-stone-500 hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 transition-colors"
           >
             Sign out
           </button>

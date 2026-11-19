@@ -318,7 +318,7 @@ const PieceHUD: React.FC<PieceHUDProps> = ({
         <button
           type="button"
           onClick={onRelease}
-          className="absolute top-2.5 right-2.5 font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-bronze-300 transition-colors px-2 py-1"
+          className="absolute top-2.5 right-2.5 font-label text-[10px] uppercase tracking-[0.2em] text-ink-faint hover:text-bronze-300 transition-colors px-2 py-1"
         >
           return
         </button>

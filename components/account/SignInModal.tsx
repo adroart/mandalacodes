@@ -145,40 +145,12 @@ const SignInModal: React.FC<{
   };
 
   // ── styles ──
-  const fieldLabel: React.CSSProperties = {
-    display: 'block', textAlign: 'left',
-    fontFamily: 'var(--font-ui)', fontSize: 10, fontWeight: 700,
-    letterSpacing: '0.14em', textTransform: 'uppercase', color: C.sub, margin: '0 0 6px',
-  };
-  const fieldStyle: React.CSSProperties = {
-    width: '100%', border: `1px solid ${C.fieldBorder}`, background: C.field,
-    borderRadius: 12, padding: '13px 15px',
-    fontFamily: 'var(--font-ui)', fontSize: 16, color: C.ink, marginBottom: 14,
-  };
-  const primaryStyle: React.CSSProperties = {
-    width: '100%', cursor: 'pointer', background: C.bronze, color: C.onBronze, border: 'none',
-    borderRadius: 12, padding: 14,
-    fontFamily: 'var(--font-ui)', fontSize: 13, fontWeight: 700,
-    letterSpacing: '0.12em', textTransform: 'uppercase',
-  };
-  const pillPrimary: React.CSSProperties = {
-    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-    cursor: 'pointer', background: C.bronze, color: C.onBronze, border: 'none',
-    borderRadius: 999, padding: 14,
-    fontFamily: 'var(--font-ui)', fontSize: 14, fontWeight: 700, marginBottom: 10,
-  };
-  const pillSecondary: React.CSSProperties = {
-    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-    cursor: 'pointer', background: C.surface, color: C.ink, border: `1px solid ${C.fieldBorder}`,
-    borderRadius: 999, padding: 13,
-    fontFamily: 'var(--font-ui)', fontSize: 14, fontWeight: 500, marginBottom: 10,
-  };
-  const backBtn: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: 'none',
-    border: 'none', padding: 0, margin: '0 auto 16px',
-    fontFamily: 'var(--font-ui)', fontSize: 11, fontWeight: 700,
-    letterSpacing: '0.12em', textTransform: 'uppercase', color: C.bronze,
-  };
+  // Sizes, radii and colours come from the master controls in src/theme.css
+  // (.btn, .field, .field-label). Only layout spacing is set here.
+  const fieldLabel: React.CSSProperties = { textAlign: 'left' };
+  const fieldStyle: React.CSSProperties = { marginBottom: 'var(--space-3)' };
+  const stack: React.CSSProperties = { marginBottom: 'var(--space-2)' };
+  const backBtn: React.CSSProperties = { display: 'flex', margin: '0 auto var(--space-3)' };
   const altLine: React.CSSProperties = {
     marginTop: 14, fontFamily: 'var(--font-ui)', fontSize: 12, color: C.sub,
   };
@@ -223,13 +195,13 @@ const SignInModal: React.FC<{
       <div
         style={{
           width: '100%', maxWidth: 340, background: C.surface,
-          borderRadius: 20, boxShadow: '0 24px 60px -20px rgba(0,0,0,0.45)',
-          padding: '30px 26px', color: C.ink, textAlign: 'center',
+          borderRadius: 'var(--radius-dialog)', boxShadow: 'var(--shadow-overlay)',
+          padding: 'var(--space-5)', color: C.ink, textAlign: 'center',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {mode !== 'welcome' && (
-          <button type="button" style={backBtn} onClick={() => { setError(null); setMode('welcome'); }}>
+          <button type="button" className="btn btn-quiet btn-sm" style={backBtn} onClick={() => { setError(null); setMode('welcome'); }}>
             ← Back
           </button>
         )}
@@ -281,13 +253,14 @@ const SignInModal: React.FC<{
             or sets you up; the auth flows are unchanged. ── */}
         {mode === 'welcome' && (
           <>
-            <button type="button" onClick={() => { setError(null); setMode('email'); }} disabled={busy} style={pillPrimary}>
+            <button type="button" onClick={() => { setError(null); setMode('email'); }} disabled={busy} className="btn btn-primary btn-block" style={stack}>
               Email me a sign-in code
             </button>
             <button
               type="button"
               onClick={() => { setError(null); setCreateNew(false); setMode('password'); }}
-              style={pillSecondary}
+              className="btn btn-secondary btn-block"
+              style={stack}
             >
               Use email and password
             </button>
@@ -295,12 +268,8 @@ const SignInModal: React.FC<{
               type="button"
               onClick={doGoogle}
               disabled={busy}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                margin: '10px auto 0', padding: 4, display: 'block',
-                fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 600,
-                letterSpacing: '0.06em', textTransform: 'lowercase', color: C.sub,
-              }}
+              className="btn btn-quiet"
+              style={{ display: 'flex', margin: 'var(--space-2) auto 0', textTransform: 'lowercase' }}
             >
               continue with google
             </button>
@@ -318,19 +287,19 @@ const SignInModal: React.FC<{
           <>
             {createNew && (
               <>
-                <label style={fieldLabel}>Name (optional)</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} style={fieldStyle} placeholder="Your name" />
+                <label className="field-label" style={fieldLabel}>Name (optional)</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} className="field" style={fieldStyle} placeholder="Your name" />
               </>
             )}
-            <label style={fieldLabel}>Email</label>
-            <input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} style={fieldStyle} placeholder="you@example.com" />
-            <label style={fieldLabel}>Password</label>
+            <label className="field-label" style={fieldLabel}>Email</label>
+            <input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} className="field" style={fieldStyle} placeholder="you@example.com" />
+            <label className="field-label" style={fieldLabel}>Password</label>
             <input
               type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && doPassword()} style={fieldStyle}
+              onKeyDown={(e) => e.key === 'Enter' && doPassword()} className="field" style={fieldStyle}
               placeholder={createNew ? 'At least 8 characters' : 'Your password'}
             />
-            <button type="button" onClick={doPassword} disabled={busy || !email.trim() || !password} style={primaryStyle}>
+            <button type="button" onClick={doPassword} disabled={busy || !email.trim() || !password} className="btn btn-primary btn-block">
               {busy ? 'Please wait…' : createNew ? 'Create account' : 'Log in'}
             </button>
             <p style={altLine}>
@@ -355,12 +324,12 @@ const SignInModal: React.FC<{
         {/* ── Email entry for the code path ── */}
         {mode === 'email' && (
           <>
-            <label style={fieldLabel}>Email</label>
+            <label className="field-label" style={fieldLabel}>Email</label>
             <input
               type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendCode()} style={fieldStyle} placeholder="you@example.com"
+              onKeyDown={(e) => e.key === 'Enter' && sendCode()} className="field" style={fieldStyle} placeholder="you@example.com"
             />
-            <button type="button" onClick={sendCode} disabled={busy || !email.trim()} style={primaryStyle}>
+            <button type="button" onClick={sendCode} disabled={busy || !email.trim()} className="btn btn-primary btn-block">
               {busy ? 'Sending…' : 'Email me a code'}
             </button>
           </>
@@ -369,14 +338,14 @@ const SignInModal: React.FC<{
         {/* ── Code verify ── */}
         {mode === 'code' && (
           <>
-            <label style={fieldLabel}>Six-digit code</label>
+            <label className="field-label" style={fieldLabel}>Six-digit code</label>
             <input
               type="text" inputMode="numeric" autoFocus value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               onKeyDown={(e) => e.key === 'Enter' && verify()}
-              style={{ ...fieldStyle, textAlign: 'center', letterSpacing: '0.3em' }} placeholder="123456"
+              className="field" style={{ ...fieldStyle, textAlign: 'center', letterSpacing: '0.3em' }} placeholder="123456"
             />
-            <button type="button" onClick={verify} disabled={busy || code.length < 6} style={primaryStyle}>
+            <button type="button" onClick={verify} disabled={busy || code.length < 6} className="btn btn-primary btn-block">
               {busy ? 'Verifying…' : 'Continue'}
             </button>
             <p style={altLine}>

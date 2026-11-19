@@ -125,7 +125,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
 
   return (
     <div className="mb-10 print:hidden">
-      <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-3">
+      <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted font-semibold mb-3">
         Requests
       </span>
       <p className="font-reading text-base text-stone-700 leading-[1.6] mb-4">
@@ -139,15 +139,15 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
 
       <ul className="space-y-4">
         {forThisPiece.map((r) => (
-          <li key={r.id} className="border border-wood-200 bg-wood-50 p-5">
-            <p className="font-reading text-sm text-wood-900 mb-1">
+          <li key={r.id} className="border border-line bg-card p-5">
+            <p className="font-reading text-sm text-ink mb-1">
               {r.requesterEmail}
             </p>
             <p className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-400 mb-3">
               {new Date(r.createdAt).toLocaleDateString()}
             </p>
             {r.note && (
-              <p className="font-reading text-sm text-wood-700 mb-4">
+              <p className="font-reading text-sm text-ink-soft mb-4">
                 “{r.note}”
               </p>
             )}
@@ -155,7 +155,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
             {confirmingId === r.id ? (
               <div className="space-y-3">
                 <div>
-                  <span className="block font-label text-[11px] uppercase tracking-[0.15em] text-wood-600 font-semibold mb-2">
+                  <span className="block font-label text-[11px] uppercase tracking-[0.15em] text-ink-muted font-semibold mb-2">
                     How did it pass to them?
                   </span>
                   <div className="flex gap-2">
@@ -167,8 +167,8 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
                         onClick={() => setTransferKind(kind)}
                         className={`min-h-[44px] px-4 py-2 border font-reading text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                           transferKind === kind
-                            ? 'bg-bronze-100 border-bronze-500 text-wood-900'
-                            : 'bg-wood-50 border-wood-300 text-wood-700 hover:bg-paper-100'
+                            ? 'bg-bronze-100 border-bronze-500 text-ink'
+                            : 'bg-card border-line-strong text-ink-soft hover:bg-band'
                         }`}
                       >
                         {kind === 'sale' ? 'I sold it' : 'I gave it'}
@@ -185,7 +185,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
                     type="button"
                     onClick={() => resolve(r.id, true)}
                     disabled={busyId === r.id}
-                    className="flex-1 min-h-[44px] bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                    className="flex-1 min-h-[44px] bg-wood-900 text-ink-inverse font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
                   >
                     {busyId === r.id ? 'Passing it on...' : 'Yes, pass it on'}
                   </button>
@@ -193,7 +193,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
                     type="button"
                     onClick={() => setConfirmingId(null)}
                     disabled={busyId === r.id}
-                    className="flex-1 min-h-[44px] border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                    className="flex-1 min-h-[44px] border border-line-strong text-ink-soft font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-ink transition-colors disabled:opacity-40"
                   >
                     Not yet
                   </button>
@@ -205,7 +205,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
                   type="button"
                   onClick={() => setConfirmingId(r.id)}
                   disabled={busyId === r.id}
-                  className="flex-1 min-h-[44px] bg-wood-900 text-paper-50 font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
+                  className="flex-1 min-h-[44px] bg-wood-900 text-ink-inverse font-label text-xs uppercase tracking-[0.2em] font-semibold py-3 hover:bg-bronze-700 transition-colors disabled:opacity-40"
                 >
                   Approve
                 </button>
@@ -213,7 +213,7 @@ const StewardRequests: React.FC<StewardRequestsProps> = ({
                   type="button"
                   onClick={() => resolve(r.id, false)}
                   disabled={busyId === r.id}
-                  className="flex-1 min-h-[44px] border border-wood-300 text-wood-700 font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-wood-900 transition-colors disabled:opacity-40"
+                  className="flex-1 min-h-[44px] border border-line-strong text-ink-soft font-label text-xs uppercase tracking-[0.15em] font-semibold py-3 hover:border-wood-500 hover:text-ink transition-colors disabled:opacity-40"
                 >
                   Decline
                 </button>

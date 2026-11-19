@@ -82,7 +82,7 @@ test('light mode reaches every remaining paper route family', async ({ page }) =
     { route: '/gateway', selector: '#main-content > .route-fade-in > div', property: 'background-color', value: 'rgb(243, 239, 231)' },
     { route: '/family', selector: '.family-reveal', property: 'background-color', value: 'rgb(243, 239, 231)' },
     { route: '/make', selector: '#main-content section', property: 'background-color', value: 'rgb(243, 239, 231)' },
-    { route: '/piece/UL-100', selector: '#main-content > .route-fade-in > .bg-paper-100', property: 'background-color', value: 'rgb(234, 228, 215)' },
+    { route: '/piece/UL-100', selector: '#main-content > .route-fade-in > .bg-band', property: 'background-color', value: 'rgb(234, 228, 215)' },
     { route: '/admin/login', selector: '#main-content h1', property: 'color', value: 'rgb(39, 34, 25)' },
     { route: '/account', selector: '#main-content h1', property: 'color', value: 'rgb(39, 34, 25)' },
     { route: '/account/collections', selector: '#main-content h1', property: 'color', value: 'rgb(39, 34, 25)' },

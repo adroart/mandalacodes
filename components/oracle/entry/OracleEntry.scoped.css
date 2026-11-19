@@ -7,31 +7,31 @@
 .oe-root * { box-sizing: border-box; }
 
 .oe-root [data-theme="light"] {
-  --bg:#f3efe7; --bg2:#faf7f0; --surface:#eae4d7; --ink:#272219; --ink2:#51493b;
-  --ink3:#6b6253; --faint:#8a8070; --line:#e0d8c6; --line2:#cfc4ad;
-  --accent:#a37b38; --accentDeep:#7a5a22; --onAccent:#faf7f0; --codeLabel:#956e2a;
-  --glow:rgba(196,170,124,0.16);
+  --bg:var(--page-day); --bg2:var(--home-day-bg2); --surface:var(--home-day-surface); --ink:var(--home-day-ink); --ink2:var(--home-day-ink2);
+  --ink3:var(--home-day-ink3); --faint:var(--home-day-faint); --line:var(--home-day-line); --line2:var(--home-day-line2);
+  --accent:var(--home-day-accent); --accentDeep:var(--home-day-accentDeep); --onAccent:var(--home-day-onAccent); --codeLabel:var(--home-day-codeLabel);
+  --glow:var(--home-day-glow);
   --heroWash:radial-gradient(135% 80% at 50% -8%, rgba(196,170,124,0.16), transparent 60%);
 }
 .oe-root[data-theme="light"], .oe-root.oe-light {
-  --bg:#f3efe7; --bg2:#faf7f0; --surface:#eae4d7; --ink:#272219; --ink2:#51493b;
-  --ink3:#6b6253; --faint:#8a8070; --line:#e0d8c6; --line2:#cfc4ad;
-  --accent:#a37b38; --accentDeep:#7a5a22; --onAccent:#faf7f0; --codeLabel:#956e2a;
-  --glow:rgba(196,170,124,0.16);
+  --bg:var(--page-day); --bg2:var(--home-day-bg2); --surface:var(--home-day-surface); --ink:var(--home-day-ink); --ink2:var(--home-day-ink2);
+  --ink3:var(--home-day-ink3); --faint:var(--home-day-faint); --line:var(--home-day-line); --line2:var(--home-day-line2);
+  --accent:var(--home-day-accent); --accentDeep:var(--home-day-accentDeep); --onAccent:var(--home-day-onAccent); --codeLabel:var(--home-day-codeLabel);
+  --glow:var(--home-day-glow);
   --heroWash:radial-gradient(135% 80% at 50% -8%, rgba(196,170,124,0.16), transparent 60%);
 }
 .oe-root [data-theme="dark"] {
-  --bg:#15110e; --bg2:#1d1813; --surface:#241e17; --ink:#f0ece4; --ink2:#cfc7b8;
-  --ink3:#a99a82; --faint:#8a7c66; --line:rgba(196,170,124,0.16); --line2:rgba(196,170,124,0.30);
-  --accent:#dabd8b; --accentDeep:#c4a878; --onAccent:#15110e; --codeLabel:#e7c98e;
-  --glow:rgba(217,189,140,0.22);
+  --bg:var(--page-night); --bg2:var(--home-night-bg2); --surface:var(--home-night-surface); --ink:var(--home-night-ink); --ink2:var(--home-night-ink2);
+  --ink3:var(--home-night-ink3); --faint:var(--home-night-faint); --line:var(--home-night-line); --line2:var(--home-night-line2);
+  --accent:var(--home-night-accent); --accentDeep:var(--home-night-accentDeep); --onAccent:var(--home-night-onAccent); --codeLabel:var(--home-night-codeLabel);
+  --glow:var(--home-night-glow);
   --heroWash:radial-gradient(135% 82% at 50% -8%, rgba(217,189,140,0.18), transparent 62%);
 }
 .oe-root[data-theme="dark"], .oe-root.oe-dark {
-  --bg:#15110e; --bg2:#1d1813; --surface:#241e17; --ink:#f0ece4; --ink2:#cfc7b8;
-  --ink3:#a99a82; --faint:#8a7c66; --line:rgba(196,170,124,0.16); --line2:rgba(196,170,124,0.30);
-  --accent:#dabd8b; --accentDeep:#c4a878; --onAccent:#15110e; --codeLabel:#e7c98e;
-  --glow:rgba(217,189,140,0.22);
+  --bg:var(--page-night); --bg2:var(--home-night-bg2); --surface:var(--home-night-surface); --ink:var(--home-night-ink); --ink2:var(--home-night-ink2);
+  --ink3:var(--home-night-ink3); --faint:var(--home-night-faint); --line:var(--home-night-line); --line2:var(--home-night-line2);
+  --accent:var(--home-night-accent); --accentDeep:var(--home-night-accentDeep); --onAccent:var(--home-night-onAccent); --codeLabel:var(--home-night-codeLabel);
+  --glow:var(--home-night-glow);
   --heroWash:radial-gradient(135% 82% at 50% -8%, rgba(217,189,140,0.18), transparent 62%);
 }
 
@@ -202,17 +202,24 @@
 .oe-root [data-oe="energyband"]{ order:2 }
 .oe-root [data-oe="railinvite"]{ order:3 }
 
+/* Sizes below come from the master controls in src/theme.css, so the home
+   page's buttons match every other primary and secondary on the site. */
 .oe-root [data-oe="actionrow"] > button{
-  flex:1 1 auto; font-size:13px !important; letter-spacing:.2em !important;
-  padding:16px 28px !important; border-radius:3px !important;
+  flex:1 1 auto; height:var(--control-h) !important;
+  padding:0 var(--control-pad-x) !important;
+  font-size:var(--text-label) !important; letter-spacing:var(--tracking-caps) !important;
+  border-radius:var(--radius-control) !important;
+  background:var(--color-action) !important; border-color:var(--color-action) !important;
+  color:var(--color-action-ink) !important;
 }
 
 /* Today and this year: tiles you can open. Stacked, each with its hexagram,
    name and an arrow, raised a shade from the column. */
 .oe-root [data-oe="energyband"]{ flex-direction:column; gap:10px !important }
 .oe-root [data-oe="energyband"] > button{
-  flex:0 0 auto !important; gap:16px !important; padding:13px 18px !important;
-  border-radius:3px !important; border-color:var(--line2,#d2c7b4) !important;
+  flex:0 0 auto !important; gap:var(--space-4) !important;
+  padding:var(--space-2) var(--space-4) !important;
+  border-radius:var(--radius-control) !important; border-color:var(--line2,#d2c7b4) !important;
 }
 .oe-root [data-oe="energyband"] > button::after{
   content:'→'; margin-left:auto; color:var(--accent,#8a744e); font-size:16px;
@@ -223,9 +230,9 @@
 
 /* Birth time: an outlined button with its line beneath. */
 .oe-root [data-oe="birthbtn"]{
-  display:block; width:100%; padding:15px 16px; cursor:pointer;
-  background:transparent; border:1px solid var(--accent,#8a744e); border-radius:3px;
-  font-family:var(--font-ui); font-size:13px; font-weight:700; letter-spacing:.2em;
+  display:block; width:100%; height:var(--control-h); padding:0 var(--control-pad-x); cursor:pointer;
+  background:transparent; border:1px solid var(--accent,#8a744e); border-radius:var(--radius-control);
+  font-family:var(--font-ui); font-size:var(--text-label); font-weight:700; letter-spacing:var(--tracking-caps);
   text-transform:uppercase; color:var(--accent,#8a744e);
   transition:background .25s ease;
 }

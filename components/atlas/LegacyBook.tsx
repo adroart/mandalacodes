@@ -624,7 +624,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           <p className="font-display text-base text-stone-500">[entry removed]</p>
         ) : view.body !== undefined ? (
           <>
-            <p className="font-display text-[1.0625rem] leading-relaxed text-wood-900 whitespace-pre-line">
+            <p className="font-display text-[1.0625rem] leading-relaxed text-ink whitespace-pre-line">
               {view.body}
             </p>
             {view.state === 'sealed' && (
@@ -647,13 +647,13 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               </p>
             )}
             {isShared ? (
-              <p className="font-reading text-sm text-wood-700">
+              <p className="font-reading text-sm text-ink-soft">
                 The piece carries these words on the map.{' '}
                 <button
                   type="button"
                   onClick={() => handleToggleShare(view, false)}
                   disabled={shareBusy === view.id}
-                  className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                  className="font-label text-[10px] uppercase tracking-[0.15em] text-ink-faint hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
                 >
                   take them back
                 </button>
@@ -663,7 +663,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                 type="button"
                 onClick={() => handleToggleShare(view, true)}
                 disabled={shareBusy === view.id}
-                className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                className="font-label text-[10px] uppercase tracking-[0.15em] text-ink-faint hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
               >
                 Let the piece carry these words on the map
               </button>
@@ -683,7 +683,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
   // or writes the record, so when it has moved the book is the notice.
   if (movedBoundary) {
     return (
-      <div className="mb-10 pt-10 border-t border-wood-200">
+      <div className="mb-10 pt-10 border-t border-line">
         <AtlasMovedNotice boundary={movedBoundary} align="left" className="max-w-md" />
       </div>
     );
@@ -695,8 +695,8 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
       <div className="print:hidden">
         {/* ═══ Chapter: Write into the record ═══
             The book's pages, then the tool to add one. */}
-        <div id="piece-book" className="mb-10 pt-10 border-t border-wood-200 scroll-mt-6">
-          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-5">
+        <div id="piece-book" className="mb-10 pt-10 border-t border-line scroll-mt-6">
+          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted font-semibold mb-5">
             Write into the record
           </span>
           {inscriptions === null ? (
@@ -727,8 +727,8 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                 onClick={() => setKind(k)}
                 className={`min-h-[44px] px-4 py-2 border font-reading text-sm transition-colors focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 ${
                   kind === k
-                    ? 'bg-bronze-100 border-bronze-500 text-wood-900'
-                    : 'bg-wood-50 border-wood-300 text-wood-700 hover:bg-paper-100'
+                    ? 'bg-bronze-100 border-bronze-500 text-ink'
+                    : 'bg-card border-line-strong text-ink-soft hover:bg-band'
                 }`}
               >
                 {KIND_LABELS[k]}
@@ -742,7 +742,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             maxLength={2000}
             aria-label="Your entry"
             placeholder="What should this piece carry forward?"
-            className="w-full border border-wood-300 bg-wood-50 px-4 py-3 font-display text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 mb-3"
+            className="w-full border border-line-strong bg-card px-4 py-3 font-display text-base text-ink placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 mb-3"
           />
           <div className="mb-3">
             <label
@@ -756,7 +756,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                 id="seal-mode"
                 value={sealMode}
                 onChange={(e) => setSealMode(e.target.value as typeof sealMode)}
-                className="min-h-[44px] border border-wood-300 bg-wood-50 px-3 py-2 font-reading text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                className="min-h-[44px] border border-line-strong bg-card px-3 py-2 font-reading text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
               >
                 <option value="none">Open — readable now</option>
                 <option value="date">Sealed until a date</option>
@@ -768,7 +768,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                   value={sealDate}
                   onChange={(e) => setSealDate(e.target.value)}
                   aria-label="Seal opens on"
-                  className="min-h-[44px] border border-wood-300 bg-wood-50 px-3 py-2 font-reading text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                  className="min-h-[44px] border border-line-strong bg-card px-3 py-2 font-reading text-sm text-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
                 />
               )}
             </div>
@@ -781,7 +781,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
           <button
             type="submit"
             disabled={submitting}
-            className="min-h-[44px] px-6 py-2 bg-wood-900 text-paper-50 font-label text-[11px] uppercase tracking-[0.2em] font-semibold hover:bg-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+            className="min-h-[44px] px-6 py-2 bg-wood-900 text-ink-inverse font-label text-[11px] uppercase tracking-[0.2em] font-semibold hover:bg-wood-800 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
           >
             {submitting ? 'Inscribing…' : 'Inscribe'}
           </button>
@@ -798,7 +798,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               <button
                 type="button"
                 onClick={() => setInscribeNudge(null)}
-                className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                className="font-label text-[10px] uppercase tracking-[0.15em] text-ink-faint hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
               >
                 dismiss
               </button>
@@ -809,7 +809,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               <a
                 href="#pass-it-on"
                 onClick={() => setInscribeNudge(null)}
-                className="hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                className="hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
               >
                 Further down, you can name who inherits it.
               </a>
@@ -820,18 +820,18 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
         {/* ═══ Chapter: Letters ═══
             The piece writes back; and the permanent door to the ignition
             replay lives here (Phase 4). */}
-        <div className="mb-10 pt-10 border-t border-wood-200">
+        <div className="mb-10 pt-10 border-t border-line">
           {letters !== null && letters.length > 0 && (
             <>
               <button
                 type="button"
                 onClick={handleOpenLetters}
                 aria-expanded={lettersOpen}
-                className="flex items-center gap-3 font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                className="flex items-center gap-3 font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted font-semibold focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
               >
                 <span>Letters</span>
                 {unread > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-bronze-600 text-paper-50 font-reading text-[11px] font-semibold tracking-normal">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-bronze-600 text-ink-inverse font-reading text-[11px] font-semibold tracking-normal">
                     {unread}
                   </span>
                 )}
@@ -845,13 +845,13 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                     <li
                       key={letter.id}
                       className={`border-l-2 pl-5 py-1 ${
-                        letter.readAt ? 'border-wood-200' : 'border-bronze-400'
+                        letter.readAt ? 'border-line' : 'border-bronze-400'
                       }`}
                     >
                       <span className="font-label text-[10px] uppercase tracking-[0.2em] text-stone-500">
                         {formatDate(letter.createdAt)} · {LETTER_KIND_LABELS[letter.kind]}
                       </span>
-                      <p className="font-display text-[1.0625rem] leading-[1.7] text-wood-900 mt-1 whitespace-pre-line">
+                      <p className="font-display text-[1.0625rem] leading-[1.7] text-ink mt-1 whitespace-pre-line">
                         {letter.body}
                       </p>
                       {letter.kind === 'words-anniversary' && (
@@ -865,7 +865,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleKeepWords(letter.id)}
-                                className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+                                className="font-label text-[10px] uppercase tracking-[0.15em] text-ink-faint hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
                               >
                                 keep carrying them
                               </button>
@@ -873,7 +873,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                                 type="button"
                                 onClick={() => handleToggleShare(liveSharedView, false)}
                                 disabled={shareBusy === liveSharedView.id}
-                                className="font-label text-[10px] uppercase tracking-[0.15em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                                className="font-label text-[10px] uppercase tracking-[0.15em] text-ink-faint hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
                               >
                                 return them to the book
                               </button>
@@ -904,7 +904,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               to={`/atlas/claim?ceremony=${steward.pieceId}${
                 steward.editionNumber != null ? `:${steward.editionNumber}` : ''
               }`}
-              className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="font-label text-[10px] uppercase tracking-[0.2em] text-ink-faint hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             >
               replay the ignition
             </Link>
@@ -913,8 +913,8 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
 
         {/* ═══ Chapter: Pass it on ═══
             Heirs, then the book as a possession you carry away. */}
-        <div id="pass-it-on" className="mb-10 pt-10 border-t border-wood-200 scroll-mt-6">
-          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
+        <div id="pass-it-on" className="mb-10 pt-10 border-t border-line scroll-mt-6">
+          <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted font-semibold mb-2">
             Pass it on
           </span>
           <p className="font-display text-sm text-stone-600 mb-4">
@@ -932,7 +932,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
                     type="button"
                     onClick={() => handleRevokeHeir(h)}
                     disabled={heirBusy}
-                    className="font-label text-[10px] uppercase tracking-[0.15em] text-stone-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+                    className="font-label text-[10px] uppercase tracking-[0.15em] text-stone-500 hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
                   >
                     Remove
                   </button>
@@ -947,7 +947,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               onChange={(e) => setHeirEmail(e.target.value)}
               placeholder="heir@example.com"
               aria-label="Heir email"
-              className="flex-1 min-w-[200px] min-h-[44px] border border-wood-300 bg-wood-50 px-4 py-2 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="flex-1 min-w-[200px] min-h-[44px] border border-line-strong bg-card px-4 py-2 font-reading text-sm text-ink placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             />
             <input
               type="text"
@@ -955,12 +955,12 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               onChange={(e) => setHeirName(e.target.value)}
               placeholder="Name (optional)"
               aria-label="Heir name"
-              className="flex-1 min-w-[140px] min-h-[44px] border border-wood-300 bg-wood-50 px-4 py-2 font-reading text-sm text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="flex-1 min-w-[140px] min-h-[44px] border border-line-strong bg-card px-4 py-2 font-reading text-sm text-ink placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             />
             <button
               type="submit"
               disabled={heirBusy}
-              className="min-h-[44px] px-5 py-2 border border-wood-300 bg-wood-50 font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 font-semibold hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+              className="min-h-[44px] px-5 py-2 border border-line-strong bg-card font-label text-[11px] uppercase tracking-[0.2em] text-ink-soft font-semibold hover:bg-band focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
             >
               Register
             </button>
@@ -971,8 +971,8 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
 
           {/* The book as possession — the continuity promise, stated as
               ownership. Same mechanics as before: a self-verifying export. */}
-          <div className="mt-10 pt-8 border-t border-wood-100">
-            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-wood-600 font-semibold mb-2">
+          <div className="mt-10 pt-8 border-t border-line-faint">
+            <span className="block font-label text-[11px] uppercase tracking-[0.2em] text-ink-muted font-semibold mb-2">
               Carry it with you
             </span>
             <p className="font-display text-[15px] leading-relaxed text-stone-600 mb-4">
@@ -982,14 +982,14 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
             <button
               type="button"
               onClick={handleDownload}
-              className="min-h-[44px] px-5 py-2 border border-wood-300 bg-wood-50 font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 font-semibold hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="min-h-[44px] px-5 py-2 border border-line-strong bg-card font-label text-[11px] uppercase tracking-[0.2em] text-ink-soft font-semibold hover:bg-band focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             >
               Download the book (JSON)
             </button>
             <button
               type="button"
               onClick={() => window.print()}
-              className="min-h-[44px] px-5 py-2 border border-wood-300 bg-wood-50 font-label text-[11px] uppercase tracking-[0.2em] text-wood-700 font-semibold hover:bg-paper-100 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
+              className="min-h-[44px] px-5 py-2 border border-line-strong bg-card font-label text-[11px] uppercase tracking-[0.2em] text-ink-soft font-semibold hover:bg-band focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2"
             >
               Print / save as PDF
             </button>
@@ -1004,7 +1004,7 @@ const LegacyBook: React.FC<LegacyBookProps> = ({
               type="button"
               onClick={handleDownloadCard}
               disabled={cardBusy}
-              className="font-label text-[10px] uppercase tracking-[0.2em] text-wood-500 hover:text-wood-900 hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
+              className="font-label text-[10px] uppercase tracking-[0.2em] text-ink-faint hover:text-ink hover:underline focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 disabled:opacity-60"
             >
               {cardBusy ? 'making the card' : 'download the card'}
             </button>

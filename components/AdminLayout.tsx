@@ -71,7 +71,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   if (movedBoundary) {
     return (
-      <div className="min-h-screen bg-paper-50 flex items-center justify-center px-6">
+      <div className="min-h-screen bg-admin flex items-center justify-center px-6">
         <AtlasMovedNotice boundary={movedBoundary} className="max-w-md" />
       </div>
     );
@@ -79,8 +79,8 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   if (!isLoaded || adminVerified === 'checking') {
     return (
-      <div className="min-h-screen bg-paper-50 flex items-center justify-center">
-        <span className="font-label text-xs uppercase tracking-[0.2em] text-wood-400 font-semibold">
+      <div className="min-h-screen bg-admin flex items-center justify-center">
+        <span className="font-label text-label uppercase tracking-[0.2em] text-wood-400 font-semibold">
           Checking session...
         </span>
       </div>
@@ -89,24 +89,24 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   if (adminVerified === 'no') {
     return (
-      <div className="min-h-screen bg-paper-50 flex items-center justify-center px-6">
+      <div className="min-h-screen bg-admin flex items-center justify-center px-6">
         <div className="max-w-md text-center">
-          <p className="font-label text-[11px] uppercase tracking-[0.2em] text-bronze-600 font-semibold mb-3">
+          <p className="font-label text-label uppercase tracking-[0.2em] text-accent font-semibold mb-3">
             Access denied
           </p>
-          <h1 className="font-display text-2xl text-wood-900 font-medium mb-4">
+          <h1 className="font-display text-card-title text-ink font-medium mb-4">
             Not an admin.
           </h1>
-          <p className="font-reading text-sm text-wood-600 leading-relaxed mb-8">
+          <p className="font-reading text-caption text-ink-muted leading-relaxed mb-8">
             You are signed in as{' '}
-            <span className="text-wood-900">
+            <span className="text-ink">
               {email ?? 'unknown'}
             </span>
             , but that email is not on the admin allowlist.
           </p>
           <button
             onClick={logout}
-            className="font-label text-[11px] uppercase tracking-[0.2em] text-wood-500 hover:text-wood-900 transition-colors font-semibold"
+            className="font-label text-label uppercase tracking-[0.2em] text-ink-faint hover:text-ink transition-colors font-semibold"
           >
             Sign out
           </button>
@@ -116,37 +116,37 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-paper-50">
-      <div className="border-b border-wood-200 bg-wood-50 px-6 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-admin">
+      <div className="border-b border-line bg-card px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-5">
           <Link
             to="/admin/atlas"
-            className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors font-semibold flex items-center gap-1.5 ${
+            className={`font-label text-label uppercase tracking-[0.2em] transition-colors font-semibold flex items-center gap-1.5 ${
               location.pathname === '/admin/atlas'
                 ? 'text-bronze-800'
-                : 'text-bronze-600 hover:text-bronze-800'
+                : 'text-accent hover:text-bronze-800'
             }`}
           >
             Atlas
           </Link>
           <Link
             to="/admin/piece-content"
-            className={`font-label text-[11px] uppercase tracking-[0.2em] transition-colors font-semibold ${
+            className={`font-label text-label uppercase tracking-[0.2em] transition-colors font-semibold ${
               location.pathname === '/admin/piece-content'
                 ? 'text-bronze-800'
-                : 'text-bronze-600 hover:text-bronze-800'
+                : 'text-accent hover:text-bronze-800'
             }`}
           >
             Piece Content
           </Link>
           <span className="text-wood-200">|</span>
-          <span className="font-reading text-xs text-wood-400">
+          <span className="font-reading text-label text-wood-400">
             {email}
           </span>
         </div>
         <button
           onClick={logout}
-          className="font-label text-[11px] uppercase tracking-[0.15em] text-wood-400 hover:text-wood-900 transition-colors font-semibold"
+          className="btn btn-quiet btn-sm"
         >
           Log out
         </button>

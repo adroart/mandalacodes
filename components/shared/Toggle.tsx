@@ -73,7 +73,7 @@ const Toggle: React.FC<ToggleProps> = ({
             ? ''
             : checked
               ? 'bg-bronze-400 border-bronze-500'
-              : 'bg-paper-100 border-wood-300'
+              : 'bg-band border-line-strong'
         }`}
         style={
           stage

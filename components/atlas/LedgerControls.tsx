@@ -41,7 +41,7 @@ export function LedgerSearchField({
       // Its own full-width line on a phone (basis-full), then the leading
       // control on the one desktop line. Sharing a row at 390px squeezed it
       // to a stub.
-      className="min-w-0 basis-full sm:basis-auto sm:flex-1 sm:max-w-xs h-11 bg-transparent border-b border-wood-300 font-reading text-base text-wood-900 placeholder:text-wood-500 focus:outline-none focus:border-bronze-600 transition-colors"
+      className="min-w-0 basis-full sm:basis-auto sm:flex-1 sm:max-w-xs h-11 bg-transparent border-b border-line-strong font-reading text-base text-ink placeholder:text-ink-faint focus:outline-none focus:border-bronze-600 transition-colors"
     />
   );
 }
@@ -72,7 +72,7 @@ export function LedgerSelect<T extends string>({
     <span className="inline-flex items-center gap-2 h-11 shrink-0">
       <label
         htmlFor={id}
-        className="font-label text-[11px] uppercase tracking-[0.16em] text-wood-500"
+        className="font-label text-[11px] uppercase tracking-[0.16em] text-ink-faint"
       >
         {label}
       </label>
@@ -86,12 +86,12 @@ export function LedgerSelect<T extends string>({
              up and every control clears the 44px minimum. */
           className={`appearance-none h-11 bg-transparent border-b pr-5 font-reading text-[15px] cursor-pointer focus:outline-none focus:border-bronze-600 transition-colors ${
             emphasis
-              ? 'text-bronze-700 border-bronze-600'
-              : 'text-wood-700 border-wood-300 hover:text-bronze-700'
+              ? 'text-link border-bronze-600'
+              : 'text-ink-soft border-line-strong hover:text-link'
           }`}
         >
           {options.map((o) => (
-            <option key={o.value} value={o.value} className="text-wood-900">
+            <option key={o.value} value={o.value} className="text-ink">
               {typeof o.count === 'number' ? `${o.label} (${o.count})` : o.label}
             </option>
           ))}
@@ -99,7 +99,7 @@ export function LedgerSelect<T extends string>({
         <span
           aria-hidden
           className={`pointer-events-none absolute right-0 text-[10px] ${
-            emphasis ? 'text-bronze-600' : 'text-wood-400'
+            emphasis ? 'text-accent' : 'text-wood-400'
           }`}
         >
           ▾
@@ -114,7 +114,7 @@ export function LedgerSelect<T extends string>({
 /** The row the controls sit on: one hairline, wrapping, nothing else. */
 export function LedgerControlRow({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-7 gap-y-1 border-b border-wood-300/70 pb-1">
+    <div className="flex flex-wrap items-center gap-x-7 gap-y-1 border-b border-line-strong/70 pb-1">
       {children}
     </div>
   );
@@ -134,7 +134,7 @@ export function LedgerTally({
     <span className="inline-flex items-center gap-4">
       <span
         aria-live="polite"
-        className="font-label text-[11px] uppercase tracking-[0.16em] text-wood-600"
+        className="font-label text-[11px] uppercase tracking-[0.16em] text-ink-muted"
       >
         {children}
       </span>
@@ -142,7 +142,7 @@ export function LedgerTally({
         <button
           type="button"
           onClick={onClear}
-          className="font-label text-[11px] uppercase tracking-[0.16em] text-bronze-700 hover:text-bronze-600 underline underline-offset-4 decoration-bronze-600/40 transition-colors"
+          className="font-label text-[11px] uppercase tracking-[0.16em] text-link hover:text-accent underline underline-offset-4 decoration-bronze-600/40 transition-colors"
         >
           clear
         </button>
@@ -172,7 +172,7 @@ export function LedgerJumpRail({
           key={s.id}
           type="button"
           onClick={() => onJump(s.id)}
-          className="font-label text-[11px] lowercase tracking-[0.06em] text-wood-600 hover:text-bronze-700 transition-colors"
+          className="font-label text-[11px] lowercase tracking-[0.06em] text-ink-muted hover:text-link transition-colors"
         >
           {s.label}
           {typeof s.count === 'number' && (

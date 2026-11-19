@@ -98,7 +98,7 @@ const RequestStewardship: React.FC<{
            in place with a modal and stay on this piece: once signed in the
            signed-in branch below shows the request-stewardship form, which is
            the right path for them. Never send them to /atlas/claim. */
-        <p className="font-reading text-sm text-wood-600 leading-[1.6]">
+        <p className="font-reading text-sm text-ink-muted leading-[1.6]">
           {leadIn === undefined ? (
             <>
               Hold this piece but arrived another way: an auction, a gift, an
@@ -110,7 +110,7 @@ const RequestStewardship: React.FC<{
           <SignInTrigger>
             <button
               type="button"
-              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-link hover:text-accent transition-colors"
             >
               Sign in to request stewardship →
             </button>
@@ -119,7 +119,7 @@ const RequestStewardship: React.FC<{
       )}
       {isSignedIn && (
         !open ? (
-          <p className="font-reading text-sm text-wood-600 leading-[1.6]">
+          <p className="font-reading text-sm text-ink-muted leading-[1.6]">
             {leadIn === undefined ? (
               <>Hold this piece but arrived another way?{' '}</>
             ) : (
@@ -128,7 +128,7 @@ const RequestStewardship: React.FC<{
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+              className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-link hover:text-accent transition-colors"
             >
               Request stewardship →
             </button>
@@ -137,7 +137,7 @@ const RequestStewardship: React.FC<{
           <div className="space-y-3">
             <label
               htmlFor="request-note"
-              className="block font-label text-[11px] uppercase tracking-[0.18em] text-wood-600 font-semibold"
+              className="block font-label text-[11px] uppercase tracking-[0.18em] text-ink-muted font-semibold"
             >
               How did it come to you? (optional)
             </label>
@@ -148,7 +148,7 @@ const RequestStewardship: React.FC<{
               maxLength={500}
               rows={3}
               placeholder="Bought at the Vienna auction, lot 12…"
-              className="w-full border border-wood-300 bg-paper-50 px-4 py-3 font-reading text-base text-wood-900 placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 resize-y"
+              className="w-full border border-line-strong bg-page-paper px-4 py-3 font-reading text-base text-ink placeholder:text-wood-400 focus:outline-2 focus:outline-bronze-700 focus:outline-offset-2 focus:border-bronze-400 resize-y"
             />
             {error && (
               <p className="font-reading font-medium text-sm text-stone-600">{error}</p>
@@ -157,7 +157,7 @@ const RequestStewardship: React.FC<{
               type="button"
               onClick={submit}
               disabled={busy}
-              className="inline-block font-label text-xs uppercase tracking-[0.18em] font-semibold text-paper-50 bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3 disabled:opacity-40"
+              className="inline-block font-label text-xs uppercase tracking-[0.18em] font-semibold text-ink-inverse bg-wood-900 hover:bg-wood-800 transition-colors px-6 py-3 disabled:opacity-40"
             >
               {busy ? 'Sending...' : 'Send request'}
             </button>
@@ -168,11 +168,11 @@ const RequestStewardship: React.FC<{
       {/* The Homecoming door: for whoever holds a piece the atlas has never
           heard of, where even a stewardship request has no piece to point at.
           The one quiet way out of the no-record dead-end. */}
-      <p className="font-reading text-sm text-wood-500 leading-[1.6] mt-6">
+      <p className="font-reading text-sm text-ink-faint leading-[1.6] mt-6">
         Holding a piece we do not know?{' '}
         <Link
           to="/atlas/homecoming"
-          className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-bronze-700 hover:text-bronze-600 transition-colors"
+          className="font-label text-[11px] uppercase tracking-[0.18em] font-semibold text-link hover:text-accent transition-colors"
         >
           Bring it home →
         </Link>

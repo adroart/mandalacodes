@@ -2,39 +2,39 @@
 html.oracle-card-page, html.oracle-card-page body { overflow-x: clip; }
 .eb-reading, .eb-entrance,
 .eb-reading[data-palette="daybook"], .eb-entrance[data-palette="daybook"] {
-  --l-bg:#f3efe7; --l-1:#272219; --l-2:#5f5647; --l-3:#655b4b;
-  --l-rule:rgba(39,34,25,.14); --l-soft:#f0ece6;
-  --d-bg:#efebe4; --d-1:#2a2419; --d-2:#5f5647; --d-3:#655b4b;
-  --d-rule:rgba(39,34,25,.13); --d-soft:#eeebe5;
-  --accent:#72541f; --accent-d:#72541f;
-  --oracle-section-main:#f3efe7;
-  --oracle-section-iching:#efebe4;
-  --oracle-section-genekeys:#f0ece6;
-  --oracle-section-humandesign:#eeebe5;
-  --oracle-section-body:#f0ece5;
-  --oracle-section-relations:#eeebe5;
-  --oracle-inset-start:#f3efe9;
-  --oracle-inset-end:#eeebe5;
-  --oracle-footer:#f0ece5;
+  --l-bg:var(--page-day); --l-1:var(--reading-day-l-1); --l-2:var(--reading-day-l-2); --l-3:var(--reading-day-l-3);
+  --l-rule:var(--reading-day-l-rule); --l-soft:var(--reading-day-l-soft);
+  --d-bg:var(--reading-day-d-bg); --d-1:var(--reading-day-d-1); --d-2:var(--reading-day-d-2); --d-3:var(--reading-day-d-3);
+  --d-rule:var(--reading-day-d-rule); --d-soft:var(--reading-day-d-soft);
+  --accent:var(--reading-day-accent); --accent-d:var(--reading-day-accent-d);
+  --oracle-section-main:var(--page-day);
+  --oracle-section-iching:var(--reading-day-oracle-section-iching);
+  --oracle-section-genekeys:var(--reading-day-oracle-section-genekeys);
+  --oracle-section-humandesign:var(--reading-day-oracle-section-humandesign);
+  --oracle-section-body:var(--reading-day-oracle-section-body);
+  --oracle-section-relations:var(--reading-day-oracle-section-relations);
+  --oracle-inset-start:var(--reading-day-oracle-inset-start);
+  --oracle-inset-end:var(--reading-day-oracle-inset-end);
+  --oracle-footer:var(--reading-day-oracle-footer);
 }
 .eb-reading[data-palette="nightfall"], .eb-entrance[data-palette="nightfall"] {
-  --l-bg:#14100b; --l-1:#ede4d4; --l-2:#cdc0a8; --l-3:#8d7f69;
-  --l-rule:rgba(168,135,77,.18); --l-soft:#1b160f;
-  --d-bg:#100d09; --d-1:#f3ead9; --d-2:#cdc0a8; --d-3:#8d7f69;
-  --d-rule:rgba(168,135,77,.2); --d-soft:#17120c;
-  --accent:#a8874d; --accent-d:#c6a667;
-  --oracle-section-main:#14100b;
-  --oracle-section-iching:#110e0a;
-  --oracle-section-genekeys:#17120c;
-  --oracle-section-humandesign:#120f0b;
-  --oracle-section-body:#18130d;
-  --oracle-section-relations:#100d09;
-  --oracle-inset-start:#1d1810;
-  --oracle-inset-end:#15110b;
-  --oracle-footer:#0a0805;
+  --l-bg:var(--page-card-night); --l-1:var(--reading-night-l-1); --l-2:var(--reading-night-l-2); --l-3:var(--reading-night-l-3);
+  --l-rule:var(--reading-night-l-rule); --l-soft:var(--reading-night-l-soft);
+  --d-bg:var(--reading-night-d-bg); --d-1:var(--reading-night-d-1); --d-2:var(--reading-night-d-2); --d-3:var(--reading-night-d-3);
+  --d-rule:var(--reading-night-d-rule); --d-soft:var(--reading-night-d-soft);
+  --accent:var(--reading-night-accent); --accent-d:var(--reading-night-accent-d);
+  --oracle-section-main:var(--page-card-night);
+  --oracle-section-iching:var(--reading-night-oracle-section-iching);
+  --oracle-section-genekeys:var(--reading-night-oracle-section-genekeys);
+  --oracle-section-humandesign:var(--reading-night-oracle-section-humandesign);
+  --oracle-section-body:var(--reading-night-oracle-section-body);
+  --oracle-section-relations:var(--reading-night-oracle-section-relations);
+  --oracle-inset-start:var(--reading-night-oracle-inset-start);
+  --oracle-inset-end:var(--reading-night-oracle-inset-end);
+  --oracle-footer:var(--reading-night-oracle-footer);
 }
-html.oracle-card-page, html.oracle-card-page body { background:#f3efe7 !important; }
-html.dark.oracle-card-page, html.dark.oracle-card-page body { background:#14100b !important; }
+html.oracle-card-page, html.oracle-card-page body { background:var(--page-day) !important; }
+html.dark.oracle-card-page, html.dark.oracle-card-page body { background:var(--page-card-night) !important; }
 html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mobile > section > div > footer) { display:none !important; }
 .eb-reading[data-oracle-reader] { min-height:100vh; padding-top:var(--nav-height,64px); padding-bottom:calc(58px + env(safe-area-inset-bottom,0px)); background:var(--l-bg); overflow:clip; }
 .oracle-reading-progress { position:sticky; z-index:91; top:var(--nav-height,64px); color:var(--l-1); background:color-mix(in oklab,var(--l-bg) 86%,transparent); border-bottom:1px solid var(--l-rule); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
@@ -129,7 +129,7 @@ html.oracle-entrance-active :is(.site-bar-root,[data-jumpbar],.card-reading--mob
 }
 html:is(.dark,[data-theme='dark']) [data-oracle-grain="reading"] { opacity:.34; mix-blend-mode:screen; }
 html.oracle-entrance-active [data-oracle-grain="reading"] { z-index:1001; }
-[data-oracle-veil] { position:fixed; inset:0; z-index:999; pointer-events:none; opacity:0; background:#14100b; }
+[data-oracle-veil] { position:fixed; inset:0; z-index:999; pointer-events:none; opacity:0; background:var(--page-card-night); }
 .oracle-entrance-portal {
   position:fixed; inset:0; z-index:1000; isolation:isolate; display:flex; flex-direction:column;
   align-items:center; justify-content:center; overflow:hidden; cursor:pointer; user-select:none;
