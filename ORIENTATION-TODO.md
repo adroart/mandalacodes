@@ -1,6 +1,6 @@
 # Mandala Codes orientation TODO
 
-Last reviewed 2026-11-19. Scope: Mandala Codes and Adrian Rasmussen Art, from a reading to an exact artwork, purchasing, and keeper registration. This is a detailed acceptance inventory, not authorization to enable registration, change real keeper choices, or implement the whole roadmap.
+Last reviewed 2026-11-21. Scope: Mandala Codes and Adrian Rasmussen Art, from a reading to an exact artwork, purchasing, and keeper registration. This is a detailed acceptance inventory, not authorization to enable registration, change real keeper choices, or implement the whole roadmap.
 
 ## Current priority
 
@@ -95,7 +95,7 @@ These cover the product direction beyond the Atlas fix. They were not all re-pro
 
 - [ ] If included in the orientation, enter representative birth data and verify the calculated profile, its eleven positions and links back to cards.
 - [ ] Check anonymous versus signed-in behavior, save and return, account recovery and sign-out boundaries. Keep birth data private.
-- [ ] Confirm each sign-in entrance explains the action it supports; the old TODO flags generic “Keep your chart” copy after saving a card.
+- [ ] Confirm each sign-in entrance explains the action it supports. The Save and chart entrances were checked with action-specific wording in the 2026-11-16 release, build `e37cc5ed`. [PR #411](https://github.com/adroart/mandalacodes/pull/411)
 - [ ] Treat cross-site shared login and a consolidated “my pieces” surface as scope decisions requiring current inspection, not prerequisites silently added to the Atlas release.
 
 ### 7. Actual phone, accessibility and resilience
@@ -106,6 +106,10 @@ These cover the product direction beyond the Atlas fix. They were not all re-pro
 - [ ] Exercise slow/failed feed loading, image failure, refresh and back navigation. Empty, private and error states must be distinguishable.
 - [ ] For an offline promise: load/install as intended, enter airplane mode, reload, open an untouched card and confirm both words and picture; test pending reflection handling without losing private data.
 - [ ] Decide the actual offline promise, cache persistence expectations and gallery-iPad scope before adding offline features or marketing claims.
+
+**Native Oracle voice, 2026-11-20.** Installed iPhone build 19 (`66abeefd`) verified widget rendering, and the earlier microphone check verified capture, transcription and reopen with nonempty audio. Native empty-capture retry was deferred after the automation preflight timed out. Adrian chose to leave the two blank verification sessions in place and asked to leave the phone disconnected. The temporary runner was removed and owner records were preserved. Interruption, offline recovery and physical Apply/Undo remain open. [Native acceptance and device ledger](docs/oracle/VOICE-STATUS.md#current-acceptance)
+
+**Service worker caching repaired, 2026-11-21.** A Cloudflare cache rule now respects the origin browser TTL for only `mandalacodes.com/sw.js` and `mandalacodes.com/registerSW.js`. The zone’s four-hour browser TTL default still applies elsewhere. The rule sets no edge TTL override and required no purge. On deployment `a4587ddb-3885-4628-89d4-2e61747f9ea7` (`b88bf134`), both scripts returned `Cache-Control: no-cache` on the public domain and the immutable Pages deployment, with matching bytes.
 
 ### 8. Commerce, content and discoverability
 
