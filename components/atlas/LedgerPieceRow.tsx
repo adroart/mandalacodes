@@ -67,6 +67,10 @@ const LedgerPieceRow: React.FC<Props> = ({ row, onSelectOnGlobe }) => {
         </span>
       </p>
 
+      {row.placedBy && (
+        <p className="mt-1 font-reading text-sm text-wood-700">Placed by {row.placedBy}</p>
+      )}
+
       {row.dream && (
         <>
           <p className="mt-2 font-display text-[17px] leading-[1.65] text-wood-800 max-w-prose">

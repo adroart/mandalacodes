@@ -150,7 +150,7 @@ Preserve raw audio/transcripts, timing, exact source snapshots/hashes, human pro
 
 At the time of this handoff, the new web workflow is built and locally verified. Hosted phone-independent processing/private sync require the new routes, server-side provider configuration and authenticated native session readiness. The native account flag defaults off in this candidate. Read the hosted document before promising standalone phone behavior. A local preview is not proof of a deployment or phone installation.
 
-Build 13 was the last phone installation verified in this conversation. The later design/flow changes must not be described as installed without fresh signed-build/device proof. The user wants to run the app directly; Tailscale or a paired Mac should not become a mysterious mandatory requirement for ordinary use. Where dependencies remain, explain them honestly and build the proper hosted path.
+Build 13 was the last phone installation verified at the time of this handoff. See the [device ledger](docs/oracle/VOICE-STATUS.md#device-ledger) for later installations and physical checks. The user wants to run the app directly; Tailscale or a paired Mac should not become a mysterious mandatory requirement for ordinary use. Where dependencies remain, explain them honestly and build the proper hosted path.
 
 Release through the repository's existing checks and exact-revision background delivery procedure. Keep product editing independent of release supervision. Do not use a model to poll CI. Report Publishing in background until independent production proof exists.
 
