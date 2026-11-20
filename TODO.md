@@ -2,6 +2,10 @@
 
 Living list of what's outstanding on the oracle. Loose priority order, top items block more than bottom items.
 
+## Standing orientation and cross-site acceptance
+
+Start with [ORIENTATION-TODO.md](ORIENTATION-TODO.md) for the reading → Atlas → exact artwork journey, remaining sale/registration acceptance, privacy checks and public registration launch gates. Maintain progress there. Older items below are historical backlog and need current verification before execution; the retired-ledger operations remain on hold.
+
 ## Go-live ops — ON HOLD 2026-08-09, do not run
 
 **The ownership record moved to the Adrian Rasmussen site.** Adrian ratified on 2026-08-09 that the
