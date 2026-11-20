@@ -2,7 +2,7 @@
 
 The original Oracle recording chat owns the remaining physical checks with Adrian. Review the [current acceptance record](VOICE-STATUS.md#current-acceptance) before running this checklist. It records the successful History and selected-word preview, live microphone capture and reopen, plus the exact installed build and the verified Home Screen widget. The microphone run covers the save and transcription portion of recording only. Steps 1–13 still need evidence for their exact scenarios where the ledger has no matching result.
 
-Verify native empty-capture retry using the installed build `66abeefd`, which includes `38eb7d0e`. Use a disposable reading approved by Adrian for physical Apply/Undo. Record the exact build and each outcome in the [device ledger](VOICE-STATUS.md#device-ledger).
+On 2026-11-20 Adrian asked to leave the phone disconnected after the physical empty-capture retry attempt stalled during automation setup. If he resumes phone acceptance, verify native empty-capture retry using a build that includes `38eb7d0e`. The installed build `66abeefd` contains the repair. Use a disposable reading approved by Adrian for physical Apply/Undo. Record the exact build and each outcome in the [device ledger](VOICE-STATUS.md#device-ledger).
 
 ## Before you start
 
