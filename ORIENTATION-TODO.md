@@ -109,7 +109,7 @@ These cover the product direction beyond the Atlas fix. They were not all re-pro
 
 **Native Oracle voice, 2026-11-20.** Installed iPhone build 19 (`66abeefd`) verified widget rendering, and the earlier microphone check verified capture, transcription and reopen with nonempty audio. Native empty-capture retry was deferred after the automation preflight timed out. Adrian chose to leave the two blank verification sessions in place and asked to leave the phone disconnected. The temporary runner was removed and owner records were preserved. Interruption, offline recovery and physical Apply/Undo remain open. [Native acceptance and device ledger](docs/oracle/VOICE-STATUS.md#current-acceptance)
 
-**Service worker caching, 2026-11-21.** At Mandala deployment `a4587ddb-3885-4628-89d4-2e61747f9ea7` (`b88bf134`), canonical `/sw.js` and `/registerSW.js` served the same bytes as the immutable Pages deployment. The canonical domain sent `Cache-Control: max-age=14400` for both files, while the immutable deployment sent `Cache-Control: no-cache`. Browser update timing on the canonical domain remains open.
+**Service worker caching repaired, 2026-11-21.** A Cloudflare cache rule now respects the origin browser TTL for only `mandalacodes.com/sw.js` and `mandalacodes.com/registerSW.js`. The zone’s four-hour browser TTL default still applies elsewhere. The rule sets no edge TTL override and required no purge. On deployment `a4587ddb-3885-4628-89d4-2e61747f9ea7` (`b88bf134`), both scripts returned `Cache-Control: no-cache` on the public domain and the immutable Pages deployment, with matching bytes.
 
 ### 8. Commerce, content and discoverability
 
