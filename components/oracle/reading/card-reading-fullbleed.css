@@ -46,6 +46,7 @@ html.dark .card-reading {
 .card-reading--desktop > section {
   position: fixed;
   inset: 0;
+  display: flex !important;
   padding: 0 !important;
   overflow: hidden;
   background: var(--l-bg) !important;
@@ -56,7 +57,9 @@ html.dark .card-reading {
 .card-reading--desktop > section > div {
   width: 100% !important;
   max-width: none !important;
-  height: 100% !important;
+  /* The shell is a flex row (set above), so a panel with no height of its own
+     stretches to the shell's full height. */
+  height: auto !important;
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
