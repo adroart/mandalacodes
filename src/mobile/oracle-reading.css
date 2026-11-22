@@ -136,7 +136,7 @@
 
 /* The app bar replaces the reader's website destinations in both orientations. */
 /* Pinned between the top of the screen and the app's tab bar, for the same reason as the website's shell (see card-reading-fullbleed.css). */
-.oracle-app-shell[data-app-page="reading"] .card-reading > section { inset:0 0 var(--app-bottom-height) 0; }
+.oracle-app-shell[data-app-page="reading"] .card-reading { inset:0 0 var(--app-bottom-height) 0; }
 .oracle-app-shell[data-app-page="reading"] .card-reading > section > div > footer,
 .oracle-app-shell[data-app-page="reading"] .card-reading--desktop > section > div > header { display:none !important; }
 .oracle-app-shell[data-app-page="reading"] .card-reading--desktop > section > div { padding-top:var(--nav-height); }

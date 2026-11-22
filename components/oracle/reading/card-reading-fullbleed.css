@@ -42,10 +42,19 @@ html.dark .card-reading {
    the edges there is no number to go stale: the browser keeps the shell exactly
    as tall as the screen, the same way it keeps the site's other fixed bars on
    the floor, and the page under it has nothing left to scroll. */
-.card-reading--mobile > section,
-.card-reading--desktop > section {
+.card-reading--mobile,
+.card-reading--desktop {
   position: fixed;
   inset: 0;
+  display: flex;
+}
+
+/* The design's page section fills that frame and lays the panel out as a row,
+   so the panel stretches to the full height without a size of its own. */
+.card-reading--mobile > section,
+.card-reading--desktop > section {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex !important;
   padding: 0 !important;
   overflow: hidden;
@@ -57,7 +66,7 @@ html.dark .card-reading {
 .card-reading--desktop > section > div {
   width: 100% !important;
   max-width: none !important;
-  /* The shell is a flex row (set above), so a panel with no height of its own
+  /* The section is a flex row (set above), so a panel with no height of its own
      stretches to the shell's full height. */
   height: auto !important;
   border: 0 !important;
