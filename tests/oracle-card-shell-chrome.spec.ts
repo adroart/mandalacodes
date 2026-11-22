@@ -67,6 +67,33 @@ test('the shell follows the viewport when the browser toolbar changes its height
     .toBe(0);
 });
 
+/* On an iPhone the page under the shell can end up taller than the screen
+   (100vh there is the height with the toolbar hidden), and the keyboard or a
+   pinch can leave the page scrolled. While the shell sat in the page flow, that
+   scroll carried it up and left an empty band of about a quarter of the screen
+   under the bar. The shell is pinned to the screen, so neither can move it. */
+test('the reading bar stays on the floor when the page under the shell scrolls', async ({ page }) => {
+  await openReading(page);
+  const gap = await page.evaluate(async () => {
+    const filler = document.createElement('div');
+    filler.style.height = `${window.innerHeight}px`;
+    document.body.append(filler);
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+    const scrolled = window.scrollY;
+    const bar = document.querySelector('.card-reading--mobile > section > div > footer')!;
+    const panel = document.querySelector('.card-reading--mobile > section > div')!;
+    return {
+      scrolled,
+      underBar: Math.round(window.innerHeight - bar.getBoundingClientRect().bottom),
+      panelTop: Math.round(panel.getBoundingClientRect().top),
+    };
+  });
+  expect(gap.scrolled).toBeGreaterThan(100);
+  expect(gap.underBar).toBe(0);
+  expect(gap.panelTop).toBe(0);
+});
+
 test('a QR arrival never collapses the top space the lens rail sits in', async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto(`${CARD}?ref=qr`);
