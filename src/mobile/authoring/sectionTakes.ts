@@ -8,10 +8,15 @@ import {correctedSpeech,restoreSpokenWords} from './knownWordFixes';
 import {cardSections} from '../../../lib/oracle/authoring/cardSections';
 import {currentSectionTexts} from './sectionWorkflow';
 import {recoverCapture} from '../../../lib/oracle/authoring/recorder';
+import {rebasePassageEdit,spansOverlap} from '../../../lib/oracle/authoring/passageSpans';
+import {defaultSentenceChoices,sentenceComparison} from '../../../lib/oracle/authoring/passageSentences';
 
 export interface SectionTake {
  id:string;captureId:string;startSectionId:string;markers:{atMs:number;sectionId:string}[];
- state:'queued'|'transcribing'|'assimilating'|'review'|'discarded'|'failed';
+ /** `waiting`: its words are ready, but another edit in the same section is still under review. They take their turn when it is applied. */
+ state:'queued'|'transcribing'|'assimilating'|'review'|'waiting'|'discarded'|'failed';
+ /** The prepared review a `waiting` take holds until its section is free. */
+ heldResult?:TakeResult;
  error?:string;resultSectionIds?:string[];createdAt:string;
  /** The status code (or offline/timeout) behind `error`, kept so the speaker can report what failed. */
  errorDetail?:string;
@@ -109,11 +114,96 @@ function preservesIntegration(prior:TakeResult|undefined,result:TakeResult):Take
  return prior?.appliedText&&(prior.text!==result.text||prior.editIntent!==result.editIntent||JSON.stringify(prior.takeIds??[])!==JSON.stringify(result.takeIds??[]))?{...result,applied:false,appliedText:prior.appliedText,beforeText:prior.beforeText,appliedAt:prior.appliedAt,appliedRevision:prior.appliedRevision,integrationId:prior.integrationId,beforeWorking:prior.beforeWorking}:result;
 }
 
+type PreparedSection=Omit<TakeResult,"checked">&{checked?:boolean};
+/** A passage take's review, built the same way as any take's, for a passage edit that may be held or rebased. */
+function passageResult(result:PreparedSection,rootTake:SectionTake,chainIds:string[],edit:NonNullable<SectionDraftResult['passageEdit']>,words:string,transcript:Parameters<typeof transcriptionReviewIssues>[1],listening:{doubtsAvailable?:boolean},intent:'replace'|'add'|'revise'):TakeResult{
+ const heardIssues=transcriptionReviewIssues(words,transcript,result.evidenceQuotes),uncertain=heardIssues.map(issue=>issue.quote.trim());
+ // Spoken over a whole passage: lined up with it sentence by sentence, so each sentence can keep the old words or use the new.
+ const sentencesCompared=edit.operation==='replace'?sentenceComparison(edit.focus.text,result.text):undefined;
+ return {...result,...listening,comparison:sentencesCompared,rowChoices:defaultSentenceChoices(sentencesCompared),passageEdit:edit,editIntent:intent,reviewTranscript:words,comparisonOriginal:edit.sectionText,reviewIssues:[...(result.reviewIssues??[]),...heardIssues],takeIds:chainIds,checked:false,warnings:[...new Set([...result.warnings,...(uncertain.length?[`Check possible mishearings against your audio: ${[...new Set(uncertain)].join(', ')}`]:[])])]};
+}
+/** Whether two passage edits of one section could touch the same words. Different section versions compare by their words. */
+function passagesClash(a:NonNullable<SectionDraftResult['passageEdit']>,b:NonNullable<SectionDraftResult['passageEdit']>):boolean{
+ if(a.sectionText===b.sectionText)return spansOverlap(a.focus,b.focus)||(a.operation==='add'||b.operation==='add')&&a.focus.start===b.focus.start;
+ return a.focus.text.includes(b.focus.text)||b.focus.text.includes(a.focus.text);
+}
+/**
+ * Why a new passage recording cannot go to this section yet, or '' when it can. Several passages of one
+ * section may be recorded one after another: each waits its turn for review. Only words that another edit
+ * is already changing, or a whole-section review, stand in the way.
+ */
+export function passageRecordingConflict(session:TakeSession,sectionId:string,edit:NonNullable<SectionDraftResult['passageEdit']>,options:{captureId?:string;sameReview?:boolean}={}):string{
+ const prior=session.results.find(result=>result.sectionId===sectionId&&!result.applied);
+ if(prior&&!options.sameReview){
+  if(!prior.passageEdit)return 'This section has a whole-section review waiting. Review it before recording a passage here.';
+  if(passagesClash(prior.passageEdit,edit))return 'These words already have an edit waiting for review. Review it, or re-record it from review.';
+ }
+ for(const take of session.takes??[]){
+  if(take.captureId===options.captureId||take.startSectionId!==sectionId||!['queued','transcribing','assimilating','waiting'].includes(take.state))continue;
+  if(!take.passageEdit)return 'A whole-section recording for this section is still being prepared. Wait for it before recording a passage here.';
+  if(passagesClash(take.passageEdit,edit))return 'A recording for these words is already being prepared. Wait for it, then review it.';
+ }
+ return '';
+}
+/** A passage recorded earlier in the same section that is still being prepared: it is reviewed first. */
+const earlierInFlight=(session:TakeSession,take:SectionTake)=>(session.takes??[]).some(other=>other.captureId!==take.captureId&&other.startSectionId===take.startSectionId&&!!other.passageEdit&&['queued','transcribing','assimilating'].includes(other.state)&&other.createdAt<take.createdAt);
+/** Waiting takes that can move into review now: their section is free and nothing recorded before them there is still being prepared. */
+function promotable(session:TakeSession,keep?:string):SectionTake[]{
+ const free=new Set<string>();
+ return (session.takes??[]).filter(take=>take.state==='waiting'&&take.heldResult&&take.startSectionId!==keep).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)).filter(take=>{
+  if(free.has(take.startSectionId)||session.results.some(r=>r.sectionId===take.startSectionId&&!r.applied)||earlierInFlight(session,take))return false;
+  free.add(take.startSectionId);return true;
+ });
+}
+/** Writes a finished passage take: into review when its section is free, held when another edit there is under review. */
+function placePassageTake(current:TakeSession,captureId:string,rootTake:SectionTake,chainIds:string[],sections:PreparedSection[],context:{words:string;transcript:Parameters<typeof transcriptionReviewIssues>[1];listening:{doubtsAvailable?:boolean};intent:'replace'|'add'|'revise';latestAudio:AuthoringSession;passageNow:string;unassigned:{text:string;reason:string}[]}):TakeSession{
+ const sectionId=rootTake.startSectionId,edit=rootTake.passageEdit!,prepared=sections.find(result=>result.sectionId===sectionId);
+ const discarded=new Set((current.takes??[]).filter(t=>t.state==='discarded').map(t=>t.captureId));
+ const base={...current,rawTranscript:rawSpeech(context.latestAudio,discarded),unassigned:[...current.unassigned.filter(u=>!u.takeId||!chainIds.includes(u.takeId)),...context.unassigned.map(u=>({...u,takeId:captureId}))]};
+ const done=(session:TakeSession,values:Partial<SectionTake>)=>{const next=updateTake(session,captureId,{preparedFingerprints:undefined,resultSectionIds:[sectionId],error:undefined,retryAt:undefined,retryAttempts:0,...values});return {...next,state:stateAfter(current,context.latestAudio.captures.some(c=>c.status==='recording'))==='recording'?'recording' as const:next.results.length?'review' as const:'ready' as const};};
+ if(!prepared)return done(base,{state:'review'});
+ const prior=current.results.find(result=>result.sectionId===sectionId);
+ const sameReview=!!prior?.passageEdit&&JSON.stringify(prior.passageEdit)===JSON.stringify(edit);
+ const own=current.takes?.find(t=>t.captureId===captureId);
+ if(prior&&!prior.applied&&!sameReview||own&&earlierInFlight(current,own))return done(base,{state:'waiting',heldResult:passageResult(prepared,rootTake,chainIds,edit,context.words,context.transcript,context.listening,context.intent)});
+ const rebased=rebasePassageEdit(edit,context.passageNow);
+ if(!rebased)return done({...base,unassigned:[...base.unassigned,{text:prepared.text,reason:'The passage these words were for has changed. Place them again.',takeId:captureId}]},{state:'review'});
+ const result=preservesIntegration(prior,passageResult(prepared,rootTake,chainIds,rebased,context.words,context.transcript,context.listening,context.intent));
+ const order=new Map(current.sections.map((section,index)=>[section.id,index]));
+ const results=[...base.results.filter(r=>r.sectionId!==sectionId),result].sort((a,b)=>(order.get(a.sectionId)??0)-(order.get(b.sectionId)??0));
+ return done({...base,results},{state:'review',preparedFingerprints:{[sectionId]:fingerprint(result)}});
+}
+/**
+ * Moves the earliest waiting passage of each free section into review, carried onto the section's current
+ * words. `keep` names a section whose just-applied review should stay on screen (its Undo lives there).
+ * Words whose passage is no longer there word for word go to the unplaced words instead.
+ */
+export async function promoteWaitingTakes(sessionId:string,keep?:string):Promise<TakeSession|undefined>{
+ const session=await getTakeSession(sessionId);
+ // Nothing is saved when nothing can move, so a caller may ask after every change without a loop.
+ if(!session||!promotable(session,keep).length)return session;
+ const references=await currentSectionTexts(session);
+ return change(sessionId,current=>{
+  let next=current,moved=false;
+  for(const take of promotable(current,keep)){
+   const sectionId=take.startSectionId,prior=next.results.find(result=>result.sectionId===sectionId);
+   const held=take.heldResult!,text=references[sectionId]??next.sections.find(section=>section.id===sectionId)?.text??'';
+   const edit=held.passageEdit&&rebasePassageEdit(held.passageEdit,text);
+   moved=true;
+   if(!edit){next=updateTake({...next,unassigned:[...next.unassigned,{text:held.text,reason:'The passage these words were for has changed. Place them again.',takeId:take.captureId}]},take.captureId,{state:'review',heldResult:undefined});continue;}
+   // The sentence comparison is against the passage's own words, which moved but did not change.
+   const result=preservesIntegration(prior,{...held,passageEdit:edit,comparisonOriginal:edit.sectionText});
+   const order=new Map(next.sections.map((section,index)=>[section.id,index]));
+   next=updateTake({...next,results:[...next.results.filter(r=>r.sectionId!==sectionId),result].sort((a,b)=>(order.get(a.sectionId)??0)-(order.get(b.sectionId)??0))},take.captureId,{state:'review',heldResult:undefined,preparedFingerprints:{[sectionId]:fingerprint(result)}});
+  }
+  return moved?{...next,state:next.state==='recording'?'recording':'review'}:current;
+ });
+}
 function launch(id:string,captureId:string,services:AuthoringServices){
  const jobKey=key(id,captureId);if(running.has(jobKey))return;
  const task=(async()=>{try{
   let session=await getTakeSession(id),take=session?.takes?.find(t=>t.captureId===captureId);
-  if(!session||!take||take.state==='discarded'||take.state==='review')return;
+  if(!session||!take||take.state==='discarded'||take.state==='review'||take.state==='waiting')return;
   if(!session.captureSessionId||!services.transcribe)throw Error('Transcription is not connected. Your saved take can be retried.');
   let saved=await audio.load(session.captureSessionId);if(!saved)throw Error('The original audio session could not be found.');
   const capture=saved.session.captures.find(c=>c.id===captureId);
@@ -182,8 +272,12 @@ function launch(id:string,captureId:string,services:AuthoringServices){
   }
   const localSections=prepared.sections.filter(result=>session!.sections.some(section=>section.id===result.sectionId));
   const latestAudio=await audio.load(saved.session.id);if(!latestAudio)throw Error('The saved audio session could not be read.');
+  const passageNow=rootTake.passageEdit?(await currentSectionTexts(session))[rootTake.startSectionId]??session.sections.find(section=>section.id===rootTake.startSectionId)?.text:undefined;
   await change(id,current=>{
    const own=current.takes?.find(t=>t.captureId===captureId);if(!own||own.state==='discarded')return current;
+   // A chosen passage is anchored by its own words, not by the section's state when it was sent: another
+   // passage of the same section may have been applied meanwhile. One still under review goes first.
+   if(rootTake.passageEdit&&passageNow!==undefined)return placePassageTake(current,captureId,rootTake,chainIds,localSections,{words,transcript,listening,intent,latestAudio:latestAudio.session,passageNow,unassigned:prepared.unassigned});
    for(const result of localSections){
     const prior=current.results.find(r=>r.sectionId===result.sectionId),stamp=fingerprint(prior);
     const initial=continuationChain(current,captureId)[0];
@@ -225,8 +319,8 @@ export async function queueSectionTake(sessionId:string,captureId:string,startSe
   if(existing&&['queued','transcribing','assimilating','review','discarded'].includes(existing.state))return session;
   const prior=session.results.find(result=>result.sectionId===startSectionId&&!result.applied);
   const sameReview=!!options.reRecordPassage&&!!prior?.passageEdit&&JSON.stringify(prior.passageEdit)===JSON.stringify(options.passageEdit);
-  if(options.passageEdit&&((!!prior&&!sameReview)||(session.takes??[]).some(take=>take.captureId!==captureId&&take.startSectionId===startSectionId&&['queued','transcribing','assimilating'].includes(take.state))))
-   throw Error('This section already has words waiting for review or preparation. Finish them before making another recording here. Your saved audio remains available.');
+  const conflict=options.passageEdit?passageRecordingConflict(session,startSectionId,options.passageEdit,{captureId,sameReview}):'';
+  if(conflict)throw Error(`${conflict} Your saved audio remains available.`);
   const parentId=options.continuationOf??existing?.continuationOf,parent=parentId?session.takes?.find(t=>t.captureId===parentId):undefined;
   if(parentId&&(!parent||parentId===captureId||parent.state==='discarded'))throw Error('Continue only a saved recording for this same section.');
   if(parentId&&continuationChain(session,parentId).some(part=>part.captureId===captureId))throw Error('A recording cannot continue itself.');

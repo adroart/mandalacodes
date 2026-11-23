@@ -1,3 +1,4 @@
+import {defaultSentenceChoices,sentenceComparison,withChosenPassageText} from './passageSentences';
 import {applyComparisonEdits,buildPassageComparison,comparisonEdits,comparisonRows,type PassageChoice,type PassageComparison} from './passageComparison';
 import type {AuthoringServices,SourceSnapshot,Transcript,TranscriptDoubt} from './types';
 import type {CardSection} from './cardSections';
@@ -77,7 +78,9 @@ export function switchPendingPassageOperation(session:SectionDraftSession,sectio
  if(session.sourceHash!==session.source.hash||currentSectionText!==sectionText||!Number.isInteger(focus.start)||!Number.isInteger(focus.end)||focus.start<0||focus.end<=focus.start||focus.end>sectionText.length||!focus.text.trim()||sectionText.slice(focus.start,focus.end)!==focus.text)throw new Error('This selected passage changed. Select it again before changing its operation.');
  if(passage.operation===operation)return session;
  const {comparison: _comparison,rowChoices: _rowChoices,...rest}=result;
- const changed:SectionDraftResult={...rest,passageEdit:{...passage,operation},editIntent:operation,checked:false,applied:false};
+ // Replace lines the words up with the passage sentence by sentence; Add after has nothing to choose between.
+ const sentencesCompared=operation==='replace'?sentenceComparison(focus.text,result.text):undefined;
+ const changed:SectionDraftResult={...rest,...(sentencesCompared?{comparison:sentencesCompared,rowChoices:defaultSentenceChoices(sentencesCompared)}:{}),passageEdit:{...passage,operation},editIntent:operation,checked:false,applied:false};
  return {...session,results:session.results.map(item=>item.sectionId===sectionId?changed:item)};
 }
 export interface ExactTextRange {start:number;end:number;text:string}
@@ -172,7 +175,7 @@ export async function listSectionHistory(cardNumber:number,sectionId:string,sour
   const key=`${session.id}/${result.text}/${result.editIntent??'replace'}/${JSON.stringify(result.passageEdit??null)}/${JSON.stringify(result.comparison??null)}/${JSON.stringify(result.rowChoices??null)}/${!!result.applied}/${JSON.stringify(result.takeIds??[])}`;
   if(seen.has(key))continue;seen.add(key);
   let proposal=result.text,restoreDisabledReason:string|undefined;
-  if(result.passageEdit)proposal=result.passageEdit.sectionText.slice(0,result.passageEdit.focus.start)+(result.passageEdit.operation==='add'?result.passageEdit.focus.text+'\n\n'+result.text:result.text)+result.passageEdit.sectionText.slice(result.passageEdit.focus.end);
+  if(result.passageEdit)proposal=result.passageEdit.sectionText.slice(0,result.passageEdit.focus.start)+(result.passageEdit.operation==='add'?result.passageEdit.focus.text+'\n\n'+result.text:withChosenPassageText(result).text)+result.passageEdit.sectionText.slice(result.passageEdit.focus.end);
   else if(result.editIntent==='add')proposal=(result.beforeText??result.comparisonOriginal??version.sections.find(section=>section.id===sectionId)?.text??'').trimEnd()+'\n\n'+result.text.trim();
   else if(result.comparison||result.rowChoices){
    const original=sectionComparisonOriginal(result,version.sections.find(section=>section.id===sectionId)?.text??'');
@@ -262,7 +265,8 @@ export function sectionReplacementPlan(result:SectionDraftResult,beforeText:stri
  return {edits,text:applyComparisonEdits(beforeText,edits)};
 }
 export async function integrateSectionDraft(sessionId:string,sectionId:string,services:AuthoringServices):Promise<SectionDraftSession>{
- const session=await drafts.get(sessionId),section=session?.sections.find(s=>s.id===sectionId),result=session?.results.find(r=>r.sectionId===sectionId);
+ // A passage replacement applies the sentences chosen in review, each from the new words or the old.
+ const session=await drafts.get(sessionId),section=session?.sections.find(s=>s.id===sectionId),saved=session?.results.find(r=>r.sectionId===sectionId),result=saved&&withChosenPassageText(saved);
  if(!session||!section||!result)throw new Error('Choose a saved named section to integrate.');if(!result.checked||!result.text.trim())throw new Error('Check your words before integrating this section.');if(result.applied&&(result.takeIds?.length??0)<=1&&(result.editIntent==='add'||result.appliedText===result.text))return session;
  const captureIds=await evidenceCaptures(session,result),captureId=captureIds[0];
  const source=await services.loadSource(session.cardNumber);if(source.hash!==session.sourceHash)throw new Error('The original card changed. Reopen the section and compare it again.');
@@ -307,7 +311,7 @@ export async function integrateSectionDraft(sessionId:string,sectionId:string,se
    try{appliedRevision=(await workingCards.save({...latest,blocks},latest.revision)).revision;break;}catch(error){if(attempt===3||!/Another tab/.test(String(error)))throw error;}
   }
  }
- return patchResult(session.id,section.id,current=>({...current,applied:current.text===result.text,appliedText,beforeText,appliedAt:new Date().toISOString(),appliedRevision,integrationId,beforeWorking}));
+ return patchResult(session.id,section.id,current=>({...current,applied:withChosenPassageText(current).text===result.text,appliedText,beforeText,appliedAt:new Date().toISOString(),appliedRevision,integrationId,beforeWorking}));
 }
 /** Latest integrated intro only; a pending correction never hides the current reading. */
 export async function getIntegratedIntro(cardNumber:number):Promise<string|undefined>{const sessions=await drafts.list(cardNumber);return sessions.flatMap(session=>session.results.filter(result=>session.sections.some(section=>section.id===result.sectionId&&section.kind==='intro')&&result.appliedText&&result.appliedAt)).sort((a,b)=>b.appliedAt!.localeCompare(a.appliedAt!))[0]?.appliedText;}

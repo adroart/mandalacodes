@@ -78,7 +78,7 @@ export function ReviewStage(props:ReviewStageProps){
      onSelection={(from,to,text,baseText)=>{if(to>from&&text.trim())setPhrase({sectionId:section.id,from,to,text,baseText});else setPhrase(null);}}
      onReplay={(from,to)=>void listen(from,to)}
      onSeek={word=>{if(word.captureId)void playCapture(word.captureId,word.startMs).catch(report);}}
-     onEdit={(i,replacement)=>edit(section.id,sectionComparisonOriginal(result,references[section.id]??section.text),i,replacement)}
+     onEdit={(i,replacement)=>edit(section.id,result.passageEdit?.operation==='replace'&&result.comparison?result.passageEdit.focus.text:sectionComparisonOriginal(result,references[section.id]??section.text),i,replacement)}
     />
    </>}
   </>:<div className="vs-empty">

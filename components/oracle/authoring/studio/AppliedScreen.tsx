@@ -28,7 +28,7 @@ export function AppliedPanel({section,result,authorship,nextRecording,pathFor,re
 
 export type AppliedActionsProps=Pick<VoiceStudio,
  'integrating'|'draft'|'services'|'accept'|'setNotice'|'report'|'readUpdated'|'nextReview'|'nextRecording'|
- 'choose'|'close'|'queued'
+ 'choose'|'close'|'queued'|'waitingHere'|'nextHere'
 >&{section:CardSection};
 
 /**
@@ -36,11 +36,13 @@ export type AppliedActionsProps=Pick<VoiceStudio,
  * The dock calls this as a plain function, not as `<AppliedActions/>`: its fragment then stands where the
  * dock's other button rows stand, so React keeps the same button nodes when a section is applied or undone.
  */
-export function appliedActions({section,integrating,draft,services,accept,setNotice,report,readUpdated,nextReview,nextRecording,choose,close,queued}:AppliedActionsProps){
+export function appliedActions({section,integrating,draft,services,accept,setNotice,report,readUpdated,nextReview,nextRecording,choose,close,queued,waitingHere,nextHere}:AppliedActionsProps){
  return <>
   <button className="vs-btn vs-btn--quiet" disabled={integrating} onClick={()=>void undoIntegratedSection(draft!.id,section.id,services).then(value=>{accept(value);setNotice('Undone. The earlier words are back in your reading.');}).catch(report)}><Undo2 size={16}/>Undo</button>
   <button className="vs-btn vs-btn--quiet" onClick={readUpdated}><BookOpen size={16}/>See in card</button>
-  {nextReview
+  {waitingHere>0
+   ?<button className="vs-btn vs-btn--primary" disabled={integrating} onClick={()=>void nextHere()}>{waitingHere===1?'Next edit here':`Next edit here (${waitingHere})`}</button>
+   :nextReview
    ?<button className={`vs-btn${nextRecording?' vs-btn--quiet':' vs-btn--primary'}`} onClick={()=>void choose(nextReview.id).catch(report)}>Next to review</button>
    :!nextRecording
     ?<button className="vs-btn vs-btn--primary" onClick={()=>void close()}>Finish</button>

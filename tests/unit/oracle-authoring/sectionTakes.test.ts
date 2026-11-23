@@ -6,12 +6,12 @@ import {WorkingCardStore} from '../../../lib/oracle/authoring/humanDrafts';
 import {cardSections} from '../../../lib/oracle/authoring/cardSections';
 import {createSession,sourceSnapshot} from '../../../lib/oracle/authoring/workflow';
 import {assimilateSections} from '../../../src/mobile/authoring/sectionAssimilation';
-import {discardSectionTake,getTakeSession,queueSectionTake,restoreSectionTake,resumeSectionTakes,type TakeSession} from '../../../src/mobile/authoring/sectionTakes';
+import {discardSectionTake,getTakeSession,promoteWaitingTakes,queueSectionTake,restoreSectionTake,resumeSectionTakes,type TakeSession} from '../../../src/mobile/authoring/sectionTakes';
+import {currentSectionTexts} from '../../../src/mobile/authoring/sectionWorkflow';
 vi.mock('../../../src/mobile/authoring/sectionAssimilation',()=>({assimilateSections:vi.fn()}));
 const assimilate=vi.mocked(assimilateSections),audio=new AuthoringStore(),drafts=new SectionDraftStore();
 beforeEach(async()=>{vi.clearAllMocks();vi.stubGlobal('window',new EventTarget());const values=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>values.set(key,value),removeItem:(key:string)=>values.delete(key)});for(const name of ['oracle-section-drafts-v1','oracle-working-cards-v1','oracle-authoring-v1'])await new Promise<void>((resolve,reject)=>{const req=indexedDB.deleteDatabase(name);req.onsuccess=()=>resolve();req.onerror=()=>reject(req.error);});});
-async function fixture(count=1){
- const markdown='### The drive — Gate 2\nFirst original drive.\n\n### Where it lives\nThe centre remains.';
+async function fixture(count=1,markdown='### The drive — Gate 2\nFirst original drive.\n\n### Where it lives\nThe centre remains.'){
  const source=await sourceSnapshot(2,'original',markdown,[{id:'DESIGN',title:'Human Design',start:0,end:markdown.length}]),sections=cardSections(source),session=createSession(source);
  session.captures=Array.from({length:count},(_,index)=>({id:`clip-${index+1}`,recordedAt:session.createdAt,mimeType:'audio/wav',durationMs:1000,status:'ready' as const,origin:'microphone' as const,visibleCardNumber:2}));
  await audio.save(session,0);for(const capture of session.captures)await audio.appendChunk(session.id,capture.id,0,new Blob([`Audio ${capture.id}`],{type:'audio/wav'}),1000);
@@ -47,9 +47,9 @@ it('keeps a pending same-section passage review when another take is queued',asy
  const waiting=deferred<ReturnType<typeof response>>();
  const services={loadSource:async()=>source,transcribe:async()=>waiting.promise};
  await queueSectionTake(draft.id,'clip-1',chosen.id,services,[],{passageEdit});await waitState(draft.id,'clip-1','transcribing');
- await expect(queueSectionTake(draft.id,'clip-2',chosen.id,services,[],{passageEdit})).rejects.toThrow('waiting for review or preparation');
+ await expect(queueSectionTake(draft.id,'clip-2',chosen.id,services,[],{passageEdit})).rejects.toThrow('already being prepared');
  waiting.resolve(response('First preserved proposal.'));const ready=await waitState(draft.id,'clip-1','review');
- await expect(queueSectionTake(draft.id,'clip-2',chosen.id,services,[],{passageEdit})).rejects.toThrow('waiting for review or preparation');
+ await expect(queueSectionTake(draft.id,'clip-2',chosen.id,services,[],{passageEdit})).rejects.toThrow('already have an edit waiting for review');
  expect(ready.results[0].text).toBe('First preserved proposal.');expect(ready.takes?.map(t=>t.captureId)).toEqual(['clip-1']);
  expect(await(await audio.audio(session.id,'clip-2')).text()).toBe('Audio clip-2');
 });
@@ -183,4 +183,59 @@ it('refuses changed duplicate related sources while preserving cached audio meta
  const saved=(await audio.load(session.id))!;await audio.save({...saved.session,relatedSources:[related]},saved.version);
  await queueSectionTake(draft.id,'clip-1',sections[0].id,{loadSource:async number=>number===14?updated:source,transcribe:async()=>response('Next card fourteen. My words.')});const failed=await waitState(draft.id,'clip-1','failed');
  expect(failed.takes?.[0].error).toContain('related card changed');expect(assimilate).not.toHaveBeenCalled();const preserved=(await audio.load(session.id))!.session;expect(preserved.relatedSources?.[0].hash).toBe(related.hash);expect(preserved.captures).toHaveLength(1);expect(preserved.transcript[0].raw).toBe('Next card fourteen. My words.');
+});
+it('records a second passage of the same section while the first waits for review, then gives it its turn',async()=>{
+ const second='Second original drive. It keeps going.';
+ const {source,sections,draft}=await fixture(2,`### The drive — Gate 2\nFirst original drive.\n\n${second}\n\n### Where it lives\nThe centre remains.`);
+ const chosen=sections[0],text=chosen.text,at=text.indexOf(second);
+ const first={operation:'replace' as const,focus:{start:0,end:'First original drive.'.length,text:'First original drive.'},sectionText:text};
+ const later={operation:'replace' as const,focus:{start:at,end:at+second.length,text:second},sectionText:text};
+ const services={loadSource:async()=>source,transcribe:async(_session:unknown,capture:{id:string})=>response(capture.id==='clip-1'?'My first paragraph.':'A better second drive. It keeps on going.')};
+ await queueSectionTake(draft.id,'clip-1',chosen.id,services,[],{passageEdit:first,focus:first.focus});await waitState(draft.id,'clip-1','review');
+ await queueSectionTake(draft.id,'clip-2',chosen.id,services,[],{passageEdit:later,focus:later.focus});
+ const held=await waitState(draft.id,'clip-2','waiting');
+ expect(held.results).toHaveLength(1);expect(held.results[0].text).toBe('My first paragraph.');
+ // Spoken over a two-sentence passage: lined up sentence by sentence.
+ expect(held.takes?.find(t=>t.captureId==='clip-2')?.heldResult?.comparison?.pairs).toHaveLength(2);
+ const checked=await drafts.save({...held,results:held.results.map(r=>({...r,checked:true}))},held.version);
+ await integrateSectionDraft(checked.id,chosen.id,services);
+ const promoted=(await promoteWaitingTakes(draft.id))!;
+ expect(promoted.takes?.find(t=>t.captureId==='clip-2')?.state).toBe('review');
+ const next=promoted.results.find(r=>r.sectionId===chosen.id)!;
+ expect(next.applied).toBe(false);expect(next.text).toBe('A better second drive. It keeps on going.');
+ expect(next.passageEdit?.sectionText).toBe(`My first paragraph.\n\n${second}`);
+ expect(next.passageEdit?.focus.text).toBe(second);
+ // Keep the old second sentence, use the new first one.
+ const keepOld={...next.rowChoices,[`${second.indexOf('It')}-${second.length}`]:'original' as const};
+ await drafts.save({...promoted,results:promoted.results.map(r=>({...r,checked:true,rowChoices:keepOld}))},promoted.version);
+ const done=await integrateSectionDraft(draft.id,chosen.id,services);
+ expect((await currentSectionTexts(done))[chosen.id]).toBe('My first paragraph.\n\nA better second drive. It keeps going.');
+});
+it('keeps a just-applied section on screen until the speaker moves on',async()=>{
+ const {source,sections,draft}=await fixture(2,'### The drive — Gate 2\nFirst original drive.\n\nSecond original drive.\n\n### Where it lives\nThe centre remains.');
+ const chosen=sections[0],text=chosen.text,at=text.indexOf('Second');
+ const first={operation:'replace' as const,focus:{start:0,end:21,text:'First original drive.'},sectionText:text};
+ const later={operation:'add' as const,focus:{start:at,end:text.length,text:text.slice(at)},sectionText:text};
+ const services={loadSource:async()=>source,transcribe:async(_s:unknown,capture:{id:string})=>response(capture.id==='clip-1'?'One.':'Two.')};
+ await queueSectionTake(draft.id,'clip-1',chosen.id,services,[],{passageEdit:first});await waitState(draft.id,'clip-1','review');
+ await queueSectionTake(draft.id,'clip-2',chosen.id,services,[],{passageEdit:later});const held=await waitState(draft.id,'clip-2','waiting');
+ await drafts.save({...held,results:held.results.map(r=>({...r,checked:true}))},held.version);await integrateSectionDraft(draft.id,chosen.id,services);
+ expect((await promoteWaitingTakes(draft.id,chosen.id))?.takes?.find(t=>t.captureId==='clip-2')?.state).toBe('waiting');
+ expect((await promoteWaitingTakes(draft.id))?.results[0]).toMatchObject({text:'Two.',applied:false,passageEdit:{operation:'add'}});
+});
+it('sends waiting words to the unplaced list when their passage is gone',async()=>{
+ const {source,sections,draft}=await fixture(2,'### The drive — Gate 2\nFirst original drive.\n\nSecond original drive.\n\n### Where it lives\nThe centre remains.');
+ const chosen=sections[0],text=chosen.text,at=text.indexOf('Second');
+ const whole={operation:'replace' as const,focus:{start:at,end:text.length,text:text.slice(at)},sectionText:text};
+ const part={operation:'replace' as const,focus:{start:0,end:5,text:'First'},sectionText:text};
+ const services={loadSource:async()=>source,transcribe:async(_s:unknown,capture:{id:string})=>response(capture.id==='clip-1'?'Replaced.':'Opening')};
+ await queueSectionTake(draft.id,'clip-1',chosen.id,services,[],{passageEdit:whole});const first=await waitState(draft.id,'clip-1','review');
+ await queueSectionTake(draft.id,'clip-2',chosen.id,services,[],{passageEdit:part});await waitState(draft.id,'clip-2','waiting');
+ // The first review is edited by hand so it also rewrites the words the second recording was aimed at.
+ const latest=(await getTakeSession(draft.id))!;
+ await drafts.save({...latest,results:latest.results.map(r=>({...r,checked:true,passageEdit:{...r.passageEdit!,focus:{start:0,end:text.length,text}}}))},latest.version);
+ void first;await integrateSectionDraft(draft.id,chosen.id,services);
+ const moved=(await promoteWaitingTakes(draft.id))!;
+ expect(moved.takes?.find(t=>t.captureId==='clip-2')?.state).toBe('review');
+ expect(moved.unassigned).toEqual([expect.objectContaining({text:'Opening',takeId:'clip-2'})]);
 });

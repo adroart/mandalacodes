@@ -91,9 +91,10 @@
 .vs-passage-path{display:block;color:var(--vs-muted);font:600 13px/1.4 var(--font-controls);overflow-wrap:anywhere}
 .vs-passage-selected{margin:12px 0 0;padding:12px 14px;border-left:3px solid var(--vs-accent);background:var(--vs-raised);font:400 var(--vs-text)/1.55 var(--font-controls);white-space:pre-line;overflow-wrap:anywhere}
 .vs-passage-instruction{margin:16px 0 0;color:var(--vs-ink-2);font-size:14px}
-.vs-passage-effect{margin:10px 0 0;color:var(--vs-ink-2);font-size:14px;line-height:1.45}
+.vs-passage-effect,.vs-passage-queue{margin:10px 0 0;color:var(--vs-ink-2);font-size:14px;line-height:1.45}
 .vs-passage-stale{margin:12px 0;color:var(--vs-rec);font-size:14px}
 .vs-passage-pending{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin:14px 0 0;color:var(--vs-ink-2);font-size:14px;line-height:1.45}
+.vs-para-states{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
 .vs-review-plan{display:flex;flex-direction:column;gap:3px;margin:0 0 14px;padding:10px 12px;border:1px solid var(--vs-rule-2);border-radius:8px;color:var(--vs-ink-2);font-size:13px;line-height:1.4}
 .vs-review-plan strong{color:var(--vs-ink);font-size:14px}
 .vs-review-operation{display:flex;gap:8px;margin:0 0 10px}
