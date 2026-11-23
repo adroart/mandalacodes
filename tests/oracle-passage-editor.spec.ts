@@ -56,36 +56,29 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(dialog.locator('.vs-dock-target small')).toHaveCount(0);
  await passage.click();await expect(dialog.locator('[data-view=passage]')).toBeVisible();
  await expect(dialog.locator('.vs-passage-path')).toContainText('Card 2 · Intro · Paragraph 1 of 1');
- await expect(dialog.getByRole('button',{name:'Record',exact:true})).toBeDisabled();
  const selected=await dialog.locator('.vs-passage-selected').innerText();
  expect(selected.length).toBeGreaterThan(10);
- await dialog.getByRole('button',{name:'Add after',exact:true}).click();
- await expect(dialog.getByRole('button',{name:'Record addition',exact:true})).toBeEnabled();
+ // The tap itself starts recording over the passage; Add after can be chosen in review.
+ await expect(dialog.locator('.vs-passage-editor')).toContainText('Replacing this passage');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- const editor=await dialog.locator('.vs-passage-editor').boundingBox(),actions=await dialog.locator('.vs-passage-actions').boundingBox(),dock=await dialog.locator('.vs-dock').boundingBox();
- expect(editor&&actions&&dock).toBeTruthy();expect(actions!.y).toBeGreaterThan(editor!.y);expect(actions!.y+actions!.height).toBeLessThan(dock!.y);
- await page.screenshot({path:info.outputPath('passage-choice-phone.png')});
- await dialog.getByRole('button',{name:'Record addition',exact:true}).click();
- await expect(dialog.locator('.vs-passage-editor')).toContainText('Adding after this passage');
- await expect(dialog.locator('.vs-dock-target')).toContainText('Add after');
+ await page.screenshot({path:info.outputPath('passage-recording-phone.png')});
  await waitForSavedAudio(page,'2/INTRO');
  await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
  await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Review',{timeout:15000});
- await expect(dialog.locator('.vs-review-status')).toHaveText('Not applied yet. You can undo after applying.');
+ await expect(dialog.locator('.vs-review-status')).toHaveCount(0);
  await expect(dialog.locator('.vs-review-head, .vs-review-plan')).toHaveCount(0);
  await expect(dialog.locator('.vs-bar-title--passage')).toContainText('Card 2 · Intro · para 1/1');
  await expect(dialog.locator('.vs-bar-title--passage')).toHaveAttribute('aria-label',/Card 2 · Intro · Paragraph 1 of 1/);
- await expect(dialog.getByRole('button',{name:'Add after',exact:true})).toHaveAttribute('aria-pressed','true');
- await expect(dialog.locator('[data-review-pane=original]')).toContainText(selected);
+ await expect(dialog.getByRole('button',{name:'Replace',exact:true})).toHaveAttribute('aria-pressed','true');
+ // Your words first, the old ones quietly beneath.
+ await expect(dialog.locator('[data-review-pane]').first()).toHaveAttribute('data-review-pane','words');
+ expect((await dialog.locator('[data-review-pane=original] .vs-original').allInnerTexts()).join(' ')).toBe(selected);
  await expect(dialog.locator('[data-review-pane=words]')).toContainText('My precise new passage.');
  await expect(dialog.locator('.vs-replacement-scope')).toHaveCount(0);
- await expect(dialog.locator('[data-action=apply]')).toHaveText('Apply addition');
- await dialog.getByRole('button',{name:'Replace',exact:true}).click();
- await expect(dialog.getByRole('button',{name:'Replace',exact:true})).toHaveAttribute('aria-pressed','true');
- await expect(dialog.locator('[data-review-pane=original]')).toContainText(selected);
- await expect(dialog.locator('[data-review-pane=words]')).toContainText('My precise new passage.');
  await expect(dialog.locator('[data-action=apply]')).toHaveText('Apply replacement');
  await dialog.getByRole('button',{name:'Add after',exact:true}).click();
+ await expect(dialog.getByRole('button',{name:'Add after',exact:true})).toHaveAttribute('aria-pressed','true');
+ await expect(dialog.locator('[data-review-pane=original]')).toContainText(selected);
  await expect(dialog.locator('[data-action=apply]')).toHaveText('Apply addition');
  expect(assimilations).toBe(0);
  await page.screenshot({path:info.outputPath('passage-review-phone.png')});
@@ -130,28 +123,6 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(reading).toHaveCount(3);
  await reading.nth(1).click();
  await expect(dialog.locator('.vs-passage-path')).toContainText('Card 2 · Universal Language · Reading · Paragraph 2 of 3');
- await dialog.getByRole('button',{name:'Back',exact:true}).click();
- const workDock=dialog.locator('.vs-dock--idle');
- await expect(workDock).toContainText('Reading · paragraph 2');
- await expect(workDock.getByRole('button',{name:'Edit passage',exact:true})).toBeVisible();
- await expect(workDock.getByRole('button',{name:/Review 1: 1 edit/})).toBeVisible();
- await expect(workDock.locator('.vs-dock-review')).toHaveText('Review 1');
- await expect(workDock.getByRole('button',{name:'Record',exact:true})).toHaveCount(0);
- for(const width of [430,320]){
-  await page.setViewportSize({width,height:812});
-  expect(await workDock.locator(':scope > *').evaluateAll(children=>new Set(children.map(child=>Math.round(child.getBoundingClientRect().top))).size)).toBeLessThanOrEqual(2);
-  expect((await workDock.locator('.vs-dock-target strong').boundingBox())!.height).toBeLessThanOrEqual(21);
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  for(const button of await workDock.getByRole('button').all())expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  await page.screenshot({path:info.outputPath(`selected-passage-compact-dock-${width}.png`)});
- }
- await page.setViewportSize({width:375,height:812});
- await workDock.getByRole('button',{name:'Edit passage',exact:true}).click();
- await expect(dialog.getByRole('button',{name:'Add after',exact:true})).toBeVisible();
- await dialog.getByRole('button',{name:'Replace',exact:true}).click();
- await expect(dialog.getByRole('button',{name:'Record replacement',exact:true})).toBeEnabled();
- await page.screenshot({path:info.outputPath('reading-paragraph-replace-phone.png')});
- await dialog.getByRole('button',{name:'Record replacement',exact:true}).click();
  await expect(dialog.locator('.vs-dock')).toContainText('0:01');
  await waitForSavedAudio(page,'2/CODE/reading');
  await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
@@ -160,7 +131,8 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(dialog.locator('[data-action=apply]')).toHaveCount(0);
  await expect.poll(async()=>page.evaluate(async()=>{const load=(path:string)=>import(path);const {SectionDraftStore}=await load('/lib/oracle/authoring/sectionDrafts.ts');const values=await new SectionDraftStore().list(2);return values.map((value:any)=>({takes:value.takes?.map((t:any)=>[t.startSectionId,t.state,t.error])??[],results:value.results?.map((r:any)=>[r.sectionId,r.passageEdit?.operation,r.applied])??[]}));}),{timeout:15000}).toEqual(expect.arrayContaining([expect.objectContaining({takes:expect.arrayContaining([expect.arrayContaining(['2/CODE/reading','review'])]),results:expect.arrayContaining([expect.arrayContaining(['2/CODE/reading','replace'])])})]));
  await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Review',{timeout:15000});
- await expect(dialog.locator('.vs-review-status')).toContainText('Not applied yet');
+ // Reviewed where it sits: the paragraphs around it read as they do in the card.
+ await expect(dialog.locator('.vs-review-context')).toHaveCount(2);
  await expect(dialog.locator('.vs-review-head, .vs-review-plan, .vs-replacement-scope')).toHaveCount(0);
  for(const width of [430,320]){
   await page.setViewportSize({width,height:812});
@@ -168,10 +140,12 @@ test('a phone passage edit keeps its destination and operation visible through r
   await page.screenshot({path:info.outputPath(`explicit-replace-review-${width}.png`)});
  }
  await dialog.getByRole('button',{name:'Back',exact:true}).click();
- await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-para--choice').first().click();
+ await expect(dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-para--choice').nth(1).locator('.vs-chip')).toHaveText('Ready to review');
+ // The paragraph already under review is held back until that review is done.
+ await dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-para--choice').nth(1).click();
  const blockedDock=dialog.locator('.vs-dock--blocked');
- await expect(dialog.locator('.vs-passage-pending')).toContainText('re-record that edit');
- await expect(dialog.locator('.vs-passage-actions')).toHaveCount(0);
+ await expect(dialog.locator('.vs-passage-pending')).toContainText('re-record it from review');
+ await expect(dialog.locator('.vs-dock-choice')).toHaveCount(0);
  await expect(dialog.locator('.vs-passage-instruction')).toHaveCount(0);
  await expect(blockedDock.getByRole('button',{name:'Review saved words',exact:true})).toBeVisible();
  await expect(blockedDock.getByRole('button',{name:/Record/})).toHaveCount(0);
@@ -212,18 +186,16 @@ test('an empty new passage recording keeps the selected operation ready to retry
  await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();
  await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();
  const dialog=page.getByRole('dialog');
- await dialog.locator('.vs-para--choice').first().click();
- await dialog.getByRole('button',{name:'Replace',exact:true}).click();
  await useEmptyMediaRecorder(page);
- await dialog.getByRole('button',{name:'Record replacement',exact:true}).click();
+ await dialog.locator('.vs-para--choice').first().click();
  await expect(dialog.locator('[data-recording-section-id]')).toHaveAttribute('data-recording-section-id','2/INTRO');
  await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
  await expect(dialog.locator('[data-view=passage]')).toBeVisible();
  await expect(dialog.locator('.vs-toast')).toContainText('No audio was captured. Record again when you are ready.');
  await expect(dialog.locator('.vs-passage-path')).toContainText('Card 2 · Intro · Paragraph 1 of 1');
- await expect(dialog.locator('.vs-passage-editor')).toContainText('Only this passage will be replaced.');
+ await expect(dialog.locator('.vs-passage-editor')).toContainText('Replace: speak the whole passage.');
  await expect(dialog.getByRole('button',{name:'Replace',exact:true})).toHaveAttribute('aria-pressed','true');
- await expect(dialog.getByRole('button',{name:'Record replacement',exact:true})).toBeEnabled();
+ await expect(dialog.getByRole('button',{name:'Replace',exact:true})).toBeEnabled();
  const stored=await page.evaluate(async()=>{
   const load=(path:string)=>import(path);
   const [{SectionDraftStore},{AuthoringStore}]=await Promise.all([load('/lib/oracle/authoring/sectionDrafts.ts'),load('/lib/oracle/authoring/storage.ts')]);
@@ -233,4 +205,54 @@ test('an empty new passage recording keeps the selected operation ready to retry
  expect(stored.results).toEqual([]);expect(stored.takes??[]).toEqual([]);
  expect(stored.recording).toBeUndefined();expect(stored.captures).toEqual(['empty']);expect(stored.chunks).toBe(0);
  expect(transcriptions).toBe(0);
+});
+
+test('records passage after passage without waiting, then keeps the best sentences of each',async({page,context,baseURL},info)=>{
+ await context.grantPermissions(['microphone'],{origin:baseURL!});
+ let transcriptions=0;const release:(()=>void)[]=[];
+ await page.route('**/api/oracle/authoring/ar-create',async route=>{
+  const body=route.request().postDataJSON();
+  if(body.operation!=='transcribe')return route.fulfill({status:500,json:{error:'Explicit passage must not use section assimilation.'}});
+  const n=++transcriptions;
+  // The first answer is held back: the second recording must start while it is still being prepared.
+  if(n===1)await new Promise<void>(done=>release.push(done));
+  return route.fulfill({json:{provider:'fixture',segments:[{text:n===1?'My whole new first paragraph.':'My fresh opening line. A second new line.',startMs:0,endMs:Math.max(1,Math.min(body.durationMs,100)),timing:'provider',sectionId:'CODE'}],doubtsAvailable:false}});
+ });
+ await page.goto('/universal-language/2');await expect(page.locator('.card-reading')).toBeVisible();
+ await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();
+ const dialog=page.getByRole('dialog'),reading=dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-para--choice');
+ await reading.first().click();
+ await waitForSavedAudio(page,'2/CODE/reading');
+ const firstText=await dialog.locator('.vs-passage-selected').innerText();
+ await dialog.getByRole('button',{name:'Next passage',exact:true}).click();
+ // The next paragraph records at once, while the first recording is still with the speech service.
+ await expect(dialog.locator('.vs-passage-selected')).not.toHaveText(firstText);
+ await expect(dialog.getByRole('button',{name:'Next passage',exact:true})).toBeEnabled();
+ const second=await dialog.locator('.vs-passage-selected').innerText();
+ await expect.poll(()=>transcriptions,{timeout:10000}).toBe(1);
+ await waitForSavedAudio(page,'2/CODE/reading');
+ await page.screenshot({path:info.outputPath('next-passage-recording-phone.png')});
+ await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
+ await expect.poll(()=>transcriptions,{timeout:10000}).toBe(2);
+ release.forEach(done=>done());
+ await expect(dialog.locator('[data-review-pane=words]')).toContainText('My whole new first paragraph.');
+ await dialog.locator('[data-action=apply]').click();
+ // The next edit opens by itself.
+ await expect(dialog.locator('.vs-toast')).toContainText('Applied. The next edit is open.');
+ await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Review');
+ await expect(dialog.locator('.vs-bar-title--passage')).toContainText('para 2/3');
+ const pairs=dialog.locator('.vs-pair');
+ const sentenceCount=await pairs.count();
+ expect(sentenceCount).toBeGreaterThan(1);
+ await expect(pairs.first()).toContainText('My fresh opening line.');
+ await page.screenshot({path:info.outputPath('sentence-review-phone.png')});
+ // Keep the old words for the first sentence; the rest uses the new words.
+ await pairs.first().getByRole('button',{name:'Original',exact:true}).click();
+ await expect(pairs.first()).toHaveAttribute('data-choice','original');
+ await dialog.locator('[data-action=apply]').click();
+ await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Replacement applied');
+ const finalText=await page.evaluate(async()=>{const load=(path:string)=>import(path);const [{SectionDraftStore},{currentSectionTexts}]=await Promise.all([load('/lib/oracle/authoring/sectionDrafts.ts'),load('/src/mobile/authoring/sectionWorkflow.ts')]);const draft=(await new SectionDraftStore().list(2)).find((value:any)=>value.results.some((r:any)=>r.sectionId==='2/CODE/reading'));return (await currentSectionTexts(draft))['2/CODE/reading'];});
+ const firstOld=second.match(/^[^.!?…]*[.!?…]+["”’)\]]*/)![0];
+ expect(finalText.startsWith('My whole new first paragraph.\n\n'+firstOld)).toBe(true);
+ expect(finalText).not.toContain('My fresh opening line.');
 });

@@ -107,8 +107,6 @@ for(const [label,size] of [['phone',{width:390,height:844}],['desktop',{width:14
    await expect(dialog.locator('.vs-section[data-section-id="2/CODE/reading"] .vs-chip')).toHaveText('Check words');
    await expect(dialog.getByRole('button',{name:'1 passage not placed yet'})).toBeVisible();
    await shot(page,'20-unplaced-noted');
-   await dialog.locator('.vs-section[data-section-id="2/INTRO"] .vs-para--choice').first().click();
-   await dialog.getByRole('button',{name:'Back',exact:true}).click();
    const mixedDock=dialog.locator('.vs-dock--idle');
    await expect(mixedDock.getByRole('button',{name:'Review 2: 1 edit · 1 unplaced'})).toHaveText('Review 2');
    if(test.info().project.name==='Phone')for(const width of [430,320]){

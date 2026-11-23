@@ -3,6 +3,7 @@ import {ChevronRight,Pause,Play,Mic,Repeat} from 'lucide-react';
 import type {CardSection} from '../../../../lib/oracle/authoring/cardSections';
 import {sectionComparisonOriginal,type SectionDraftResult} from '../../../../lib/oracle/authoring/sectionDrafts';
 import type {TakeResult} from '../../../../src/mobile/authoring/sectionTakes';
+import {readingParagraphs} from '../../../../lib/oracle/authoring/passageComparison';
 import {activeReplayWord} from '../../../../lib/oracle/authoring/wordReplay';
 import {loopVoicePhrase} from '../../../../src/mobile/authoring/voiceTargets';
 import SectionPassageReview from '../SectionPassageReview';
@@ -30,23 +31,15 @@ export function ReviewStage(props:ReviewStageProps){
  if(pendingPassage){const failed=takes.find(t=>t.captureId===pendingPassage.captureId&&t.state==='failed');return <div className="vs-stage vs-review vs-review-waiting" role="status">
   <p>{failed?'This recording could not be prepared yet. Its audio is saved. Retry it above.':processingStage||'Preparing review…'} Your existing reviews are still saved.</p>
  </div>;}
+ // A passage is reviewed where it sits in the card: the paragraphs around it read as they are.
+ const passage=result&&!result.applied?result.passageEdit:undefined;
+ const context=passage?{before:readingParagraphs(passage.sectionText.slice(0,passage.focus.start)),after:readingParagraphs(passage.sectionText.slice(passage.focus.end)).map(p=>({...p,start:p.start+passage.focus.end}))}:undefined;
  return <div className="vs-stage vs-review">
-  <nav className="vs-review-tools" aria-label="Review tools">
-   <button type="button" className="vs-btn" disabled={integrating||!!active} onClick={()=>openView('history')}>History</button>
-   {result&&!result.applied&&<button type="button" className="vs-btn" disabled={integrating||processing||!!active||queued.some(t=>t.startSectionId===section?.id)} onClick={()=>openView('range')}>Replace selected words</button>}
-  </nav>
   {section&&result?<>
    {!result.passageEdit&&<div className="vs-review-head" data-section-id={section.id}>
     {(section.path.length>1||section.id.includes('/selection-'))&&<small>{section.path.slice(0,-1).join(' · ')}{section.id.includes('/selection-')?' · selected passage':''}</small>}
     <TitleField key={`${draft!.id}/${section.id}`} label="Section title" value={titleFor(section)} disabled={integrating} save={text=>saveTitle(section.id,text)}/>
    </div>}
-   {!result.applied&&result.passageEdit&&<>
-    <div className="vs-review-operation" role="group" aria-label="Choose what your saved words will do">
-     <button type="button" className="vs-btn" aria-pressed={result.passageEdit.operation==='add'} disabled={integrating||processing||draft?.state==='recording'||!!active||queued.some(t=>t.startSectionId===section.id)} onClick={()=>void switchReviewOperation(section.id,'add')}>Add after</button>
-     <button type="button" className="vs-btn" aria-pressed={result.passageEdit.operation==='replace'} disabled={integrating||processing||draft?.state==='recording'||!!active||queued.some(t=>t.startSectionId===section.id)} onClick={()=>void switchReviewOperation(section.id,'replace')}>Replace</button>
-    </div>
-    <p className="vs-review-status" role="note">Not applied yet. You can undo after applying.</p>
-   </>}
    {!result.applied&&!result.passageEdit&&<div className="vs-review-plan" role="note">
     <strong>{applyLabel.text}</strong>
     <span>Card {section.cardNumber} · {pathFor(section)} · {result.comparison?'reviewed passages':'whole section'}. Not applied yet. Apply changes your private reading.</span>
@@ -54,6 +47,7 @@ export function ReviewStage(props:ReviewStageProps){
    {historyApplyReason&&<p className="vs-review-status" role="note">{historyApplyReason}</p>}
    {result.applied?<AppliedPanel {...props} section={section} result={result}/>:<>
     {(result as TakeResult).doubtsAvailable===false&&<p className="vs-review-unchecked" role="note">This recording was not double-checked. Listen once before you use it.</p>}
+    {context&&context.before.map(p=><p key={'b'+p.start} className="vs-review-context">{p.text}</p>)}
     <SectionPassageReview
      checks={checks.map(c=>({key:c.key,quote:c.quote,message:c.message,done:c.done,...checkAudio.stateFor(c),...(c.quote&&typeof c.issue?.heardAlso==='string'&&spoken(c.issue.heardAlso).toLowerCase()!==c.quote.toLowerCase()?{heardAlso:spoken(c.issue.heardAlso)}:{})}))}
      onHearCheck={key=>{const c=checks.find(c=>c.key===key);if(c)void checkAudio.hearCheck(c);}}
@@ -78,13 +72,25 @@ export function ReviewStage(props:ReviewStageProps){
      onSelection={(from,to,text,baseText)=>{if(to>from&&text.trim())setPhrase({sectionId:section.id,from,to,text,baseText});else setPhrase(null);}}
      onReplay={(from,to)=>void listen(from,to)}
      onSeek={word=>{if(word.captureId)void playCapture(word.captureId,word.startMs).catch(report);}}
-     onEdit={(i,replacement)=>edit(section.id,sectionComparisonOriginal(result,references[section.id]??section.text),i,replacement)}
+     onEdit={(i,replacement)=>edit(section.id,result.passageEdit?.operation==='replace'&&result.comparison?result.passageEdit.focus.text:sectionComparisonOriginal(result,references[section.id]??section.text),i,replacement)}
     />
+    {context&&context.after.map(p=><p key={'a'+p.start} className="vs-review-context">{p.text}</p>)}
    </>}
   </>:<div className="vs-empty">
    <p>{queued.length||processing?`Your recording is saved. ${processingStage||'Preparing review…'}`:savedCaptures.length?'Your audio is saved. The transcript is not ready yet.':'Nothing to review yet. Choose a passage, then record.'}</p>
    <button className="vs-btn" onClick={()=>openView('work')}>Back to the card</button>
   </div>}
+  {/* Less used tools sit after the words, so the words come first. */}
+  {section&&result&&!result.applied&&result.passageEdit&&<>
+    <div className="vs-review-operation" role="group" aria-label="Choose what your saved words will do">
+     <button type="button" className="vs-btn vs-btn--quiet" aria-pressed={result.passageEdit.operation==='add'} disabled={integrating||processing||draft?.state==='recording'||!!active||queued.some(t=>t.startSectionId===section.id)} onClick={()=>void switchReviewOperation(section.id,'add')}>Add after</button>
+     <button type="button" className="vs-btn vs-btn--quiet" aria-pressed={result.passageEdit.operation==='replace'} disabled={integrating||processing||draft?.state==='recording'||!!active||queued.some(t=>t.startSectionId===section.id)} onClick={()=>void switchReviewOperation(section.id,'replace')}>Replace</button>
+    </div>
+  </>}
+  <nav className="vs-review-tools vs-review-tools--end" aria-label="Review tools">
+   <button type="button" className="vs-btn vs-btn--quiet" disabled={integrating||!!active} onClick={()=>openView('history')}>History</button>
+   {result&&!result.applied&&<button type="button" className="vs-btn vs-btn--quiet" disabled={integrating||processing||!!active||queued.some(t=>t.startSectionId===section?.id)} onClick={()=>openView('range')}>Replace selected words</button>}
+  </nav>
   {!!draft?.unassigned.length&&<button className="vs-note" onClick={()=>openView('unplaced')}>
    <span>{plural(draft.unassigned.length,'passage')} from your recording {draft.unassigned.length===1?'was':'were'} not placed.</span>
    <strong>Place {draft.unassigned.length===1?'it':'them'}<ChevronRight size={15}/></strong>

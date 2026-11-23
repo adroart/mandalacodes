@@ -14,7 +14,7 @@ export default function StudioBar({view,locked,close,openView,pickerReturn,setPl
  const resultScope=result?.rangeSelection?'Selected words':result?.passageEdit&&section?scopeFor(section,result.passageEdit.focus):null;
  const passageDestination=pendingPassage&&pendingNode?`Card ${pendingNode.cardNumber} · ${pathFor(pendingNode)} · ${scopeFor(pendingNode,pendingPassage.focus)}`:resultScope&&section?`Card ${section.cardNumber} · ${pathFor(section)} · ${resultScope}`:null;
  const compactPath=(path:string)=>path.replace(/^Universal Language · /,'UL ').replace(/^Gene Keys · /,'GK ').replace(/^Human Design · /,'HD ').replace(/^I Ching · /,'I Ching ');
- const compactScope=(scope:string)=>scope.replace(/^Paragraph (\d+) of (\d+)$/,'para $1/$2');
+ const compactScope=(scope:string)=>scope.replace(/^Paragraph (\d+) of (\d+)$/,'para $1/$2').replace(/^Words in paragraph (\d+) of (\d+)$/,'words, para $1/$2');
  const passageShort=pendingPassage&&pendingNode?`Card ${pendingNode.cardNumber} · ${compactPath(pathFor(pendingNode))} · ${compactScope(scopeFor(pendingNode,pendingPassage.focus))}`:resultScope&&section?`Card ${section.cardNumber} · ${compactPath(pathFor(section))} · ${compactScope(resultScope)}`:null;
  const passageOperation=pendingPassage?.operation??result?.passageEdit?.operation;
  let passageTitle:string|null=null;
