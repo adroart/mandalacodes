@@ -145,7 +145,6 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
         <BirthTimeModal
           initial={initialInputs}
           onClose={() => setFormOpen(false)}
-          onLogIn={accountsAvailable ? () => { setFormOpen(false); setSignInOpen(true); } : undefined}
           onSeeChart={() => { setFormOpen(false); navigate('/profile'); }}
           onSave={accountsAvailable ? () => { setFormOpen(false); setSignInOpen(true); } : undefined}
         />

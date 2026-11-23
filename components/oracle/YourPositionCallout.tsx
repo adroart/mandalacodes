@@ -111,7 +111,6 @@ const YourPositionCallout: React.FC<Props> = ({ gate }) => {
         <BirthTimeModal
           showCardOption
           onClose={() => setFormOpen(false)}
-          onLogIn={() => { setFormOpen(false); setSaveOpen(true); }}
           onSeeChart={() => { setFormOpen(false); navigate('/profile'); }}
           onBackToCard={() => setFormOpen(false)}
           onSave={() => { setFormOpen(false); setSaveOpen(true); }}

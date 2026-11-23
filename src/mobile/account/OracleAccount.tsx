@@ -6,7 +6,7 @@ import type { ProfileInputs } from '../../../lib/profile/storage';
 import { useNativeAccountActions } from './NativeAccountProvider';
 import { createProfileBackup, readProfileBackup } from './profileBackup';
 import ReminderSettings from '../reminders/ReminderSettings';
-import SignInPanel, { type SignInActions } from '../../../components/account/SignInPanel';
+import SignInPanel from '../../../components/account/SignInPanel';
 import { oracleBuildLine } from '../buildInfo';
 import './account.css';
 
@@ -21,16 +21,6 @@ export default function OracleAccount() {
   const [showRestore,setShowRestore]=useState(false);
   const report = (error:unknown) => setNotice(error instanceof Error ? error.message : 'Please try again.');
   const exportText = profile ? createProfileBackup(profile.inputs) : '';
-  const nativeResult = async (operation: () => Promise<void>) => {
-    try { await operation(); return {}; } catch (error) { return { error }; }
-  };
-  const signInActions: SignInActions = {
-    sendSignInCode: email => nativeResult(() => actions.sendCode(email)),
-    verifySignInCode: (email, code) => nativeResult(() => actions.verifyCode(email, code)),
-    signInWithPassword: (email, password) => nativeResult(() => actions.signInWithPassword(email, password)),
-    signUpWithPassword: (email, password, name) => nativeResult(() => actions.signUpWithPassword(email, password, name)),
-    signInWithGoogle: () => nativeResult(() => actions.signInWithGoogle()),
-  };
   return <div className="oracle-account-page">
     <header><p className="oracle-account-eyebrow">Mandala Codes</p><h1>Your account</h1><p className="oracle-account-intro">One place that holds everything that is yours here.</p></header>
     <section className={account.isSignedIn || !actions.enabled ? 'oracle-account-section' : 'oracle-account-signin'} aria-label={account.isSignedIn ? 'Signed-in account' : 'Sign in'}>
@@ -40,7 +30,7 @@ export default function OracleAccount() {
         {syncError && <button onClick={retrySync} disabled={isLoading}>Retry chart sync</button>}
         <button disabled={actions.busy} onClick={() => {void actions.signOut().catch(() => undefined);}}>Sign out</button>
         <p className="oracle-account-detail">Journal and audio are not included in account sync yet.</p>
-      </> : <SignInPanel bare horizontal authActions={signInActions} googleReturnsToApp />}
+      </> : <SignInPanel bare horizontal />}
       {account.isSignedIn && actions.error && <p role="alert">{actions.error}</p>}
     </section>
     <ReminderSettings />

@@ -127,8 +127,8 @@ test.describe('save to collection, on the card reading', () => {
     await saveButton.click();
     await expect(page.getByRole('heading', { name: 'Save this code' })).toBeVisible();
     await expect(page.getByText('Sign in to keep this code in your collection.')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Email me a sign-in code' })).toBeVisible();
-    await page.getByRole('button', { name: 'Use email and password' }).click();
+    await expect(page.getByRole('button', { name: 'Sign in with an email code' })).toBeVisible();
+    await page.getByRole('button', { name: 'Sign in with a password' }).click();
     await expect(page.getByText('Log in to save this code to a collection.')).toBeVisible();
     await page.screenshot({ path: `test-results/save-to-collection-login-${testInfo.project.name}.png` });
     await page.getByRole('button', { name: 'Create an account' }).click();
