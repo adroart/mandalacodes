@@ -9,6 +9,7 @@ import { currentNamedReaderSection } from '../../../../src/mobile/authoring/read
 import { getSynthesis } from '../../../../data/synthesisData';
 import { replaceComparisonPassage, buildPassageComparison, comparisonRows, readingParagraphs, type PassageChoice } from '../../../../lib/oracle/authoring/passageComparison';
 import { queueSectionTake, discardSectionTake, recoverInterruptedRecordings, withRecordingDestination, passageRecordingConflict, promoteWaitingTakes, type TakeSession, type RecordingDestination } from '../../../../src/mobile/authoring/sectionTakes';
+import { followingParagraph } from '../../../../lib/oracle/authoring/passageSpans';
 import { buildWordReplay, activeReplayWord, type ReplayWord } from '../../../../lib/oracle/authoring/wordReplay';
 import { focusedVoiceSections } from '../../../../src/mobile/authoring/focusSections';
 import { startVoiceCapturePass, type VoiceCapturePass } from '../../../../src/mobile/authoring/voiceCapturePass';
@@ -123,6 +124,8 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     const player = useRef<HTMLAudioElement>(null);
     const recordingTarget = useRef('');
     const stopMode = useRef<'next' | 'review' | 'save'>('review');
+    /** The paragraph Next passage moved to, recorded as soon as the microphone is free. */
+    const autoRecord = useRef<{ sectionId: string; operation: 'add' | 'replace' } | null>(null);
     const [stopping, setStopping] = useState(false);
     const [replay, setReplay] = useState<{
         text: string;
@@ -539,6 +542,28 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                 if (mounted.current) {
                     setActive(null);
                     setStopping(false);
+                    if (stopMode.current === 'save') {
+                        // Next passage: this one is saved (or skipped when nothing was said) and the
+                        // following paragraph starts recording at once, with the same operation.
+                        setPendingPassage(null);
+                        const followed = passageCapture.current;
+                        const texts = await currentSectionTexts(latest);
+                        const following = followed ? followingParagraph(latest.sections, texts, recordingTarget.current, followed.focus) : undefined;
+                        setParagraphAim(following ? { sectionId: following.sectionId, start: following.start, end: following.end, text: following.text } : null);
+                        setPassageOperation(following && followed ? followed.operation : null);
+                        if (following && followed) {
+                            autoRecord.current = { sectionId: following.sectionId, operation: followed.operation };
+                            setTargetId(following.sectionId);
+                            setFocusId(following.sectionId);
+                            reveal(following.sectionId, true);
+                            setView('passage');
+                        }
+                        else {
+                            setView('work');
+                            setNotice(empty ? 'That was the last passage here.' : 'Saved. That was the last passage here, and your words are being prepared.');
+                        }
+                        return;
+                    }
                     if (empty) {
                         setPendingPassage(null);
                         setNotice('No audio was captured. Record again when you are ready.');
@@ -552,14 +577,6 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                     }
                     if (stopMode.current === 'next')
                         setView('work');
-                    else if (stopMode.current === 'save') {
-                        // Back to the card at once: the words are prepared in the background and wait in review.
-                        setParagraphAim(null);
-                        setPassageOperation(null);
-                                        setPendingPassage(null);
-                        setView('work');
-                        setNotice('Saved. Your words are being prepared, so choose the next passage when you are ready.');
-                    }
                     else {
                         explicitChoice.current = true;
                         setFocusId(recordingTarget.current);
@@ -1160,6 +1177,18 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     } : undefined;
     /** Why the aimed passage cannot be recorded yet, or '' when it can (other passages may still be preparing or waiting). */
     const aimConflict = draft && target && aimedEdit && !active ? passageRecordingConflict(draft as TakeSession, target.id, aimedEdit) : '';
+    useEffect(() => {
+        const next = autoRecord.current;
+        if (!next || active || opening || stopping || handle.current || paragraphAim?.sectionId !== next.sectionId)
+            return;
+        autoRecord.current = null;
+        // Words already waiting for this paragraph: stay on it and say why, rather than record over them.
+        if (aimConflict) {
+            setNotice(aimConflict);
+            return;
+        }
+        void record(null, next.sectionId, undefined, false, next.operation);
+    }, [paragraphAim, !!active, opening, stopping, aimConflict]);
     /** Each paragraph's own recordings: preparing, waiting their turn, ready to review or needing attention. */
     const passageStates = (node: CardSection) => {
         const text = references[node.id] ?? node.text;

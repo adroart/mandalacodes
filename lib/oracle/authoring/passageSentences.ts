@@ -23,11 +23,20 @@ function similarity(a:string,b:string):number{
 }
 
 /**
+ * A sentence spoken again with most of its words kept: the speaker polishing it. The new words are used
+ * without asking, so only sentences that really changed are put to a choice.
+ */
+export function polished(original:string,spoken:string):boolean{
+ return !!original.trim()&&!!spoken.trim()&&similarity(original,spoken)>=0.6;
+}
+
+/**
  * Line up the paragraph's sentences with the spoken ones, in order. Every pairing that keeps the order is
  * preferred over leaving a sentence alone, so a reworded sentence still stands against the one it replaces;
  * among those, the pairing whose sentences share the most words wins. Sentences left over are new (spoken
  * only) or unspoken (written only). Returns no comparison when there is only one sentence on each side,
- * where a sentence-by-sentence choice would be the same as the whole.
+ * where a sentence-by-sentence choice would be the same as the whole, or when every sentence was only
+ * polished, where there is nothing to choose.
  */
 export function sentenceComparison(original:string,spoken:string):PassageComparison|undefined{
  const a=sentences(original),b=sentences(spoken);
@@ -50,6 +59,7 @@ export function sentenceComparison(original:string,spoken:string):PassageCompari
   pairs.push({originalStart,originalEnd,textStart,textEnd});
   originalCursor=originalEnd;textCursor=textEnd;
  }
+ if(steps.every(step=>step.i!==undefined&&step.j!==undefined&&polished(a[step.i].text,b[step.j].text)))return;
  return {originalText:original,spokenText:spoken,pairs};
 }
 

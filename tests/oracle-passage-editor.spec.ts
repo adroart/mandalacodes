@@ -257,24 +257,18 @@ test('records passage after passage without waiting, then keeps the best sentenc
  await reading.first().click();
  await dialog.getByRole('button',{name:'Replace',exact:true}).click();
  await waitForSavedAudio(page,'2/CODE/reading');
+ const firstText=await dialog.locator('.vs-passage-selected').innerText();
  await dialog.getByRole('button',{name:'Next passage',exact:true}).click();
- // Straight back to the card while the first recording is still with the speech service.
- await expect(dialog.locator('[data-view=work]')).toBeVisible();
- await expect(reading.first().locator('.vs-chip')).toHaveText('Preparing');
- await expect.poll(()=>transcriptions,{timeout:10000}).toBe(1);
- await reading.nth(1).click();
+ // The next paragraph records at once, while the first recording is still with the speech service.
+ await expect(dialog.locator('.vs-passage-selected')).not.toHaveText(firstText);
+ await expect(dialog.getByRole('button',{name:'Next passage',exact:true})).toBeEnabled();
  const second=await dialog.locator('.vs-passage-selected').innerText();
- await expect(dialog.locator('.vs-passage-queue')).toContainText('Another edit in this section is saved');
- await dialog.getByRole('button',{name:'Replace',exact:true}).click();
+ await expect.poll(()=>transcriptions,{timeout:10000}).toBe(1);
  await waitForSavedAudio(page,'2/CODE/reading');
- await dialog.getByRole('button',{name:'Next passage',exact:true}).click();
- await expect(dialog.locator('[data-view=work]')).toBeVisible();
+ await page.screenshot({path:info.outputPath('next-passage-recording-phone.png')});
+ await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
  await expect.poll(()=>transcriptions,{timeout:10000}).toBe(2);
  release.forEach(done=>done());
- await expect(reading.first().locator('.vs-chip')).toHaveText('Ready to review',{timeout:15000});
- await expect(reading.nth(1).locator('.vs-chip')).toHaveText('Waiting its turn',{timeout:15000});
- await page.screenshot({path:info.outputPath('passages-waiting-phone.png')});
- await dialog.locator('.vs-dock-review').click();
  await expect(dialog.locator('[data-review-pane=words]')).toContainText('My whole new first paragraph.');
  await dialog.locator('[data-action=apply]').click();
  await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Replacement applied');

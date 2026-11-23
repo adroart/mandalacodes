@@ -6,6 +6,7 @@ import type {ReplayWord} from '../../../lib/oracle/authoring/wordReplay';
 import EditableText from './EditableText';
 import CheckedEditableText,{UnplacedWordCheck,type ReviewWordCheck} from './CheckedEditableText';
 import WordReplay from './WordReplay';
+import {polished} from '../../../lib/oracle/authoring/passageSentences';
 import './passage-review.css';
 interface Props {
  original:string;text:string;intent?:'replace'|'add'|'revise';explicitPassage?:'add'|'replace';comparison?:PassageComparison;choices?:Record<string,PassageChoice>;disabled:boolean;replayDisabled:boolean;sessionKey:string;
@@ -57,6 +58,9 @@ export default function SectionPassageReview(props:Props){
     // version quietly beneath it, and a two-way switch between them.
     const sides:[string,string]=row.kind==='unspoken'?['Remove','Keep']:row.kind==='new'?['Use','Leave out']:['New words','Original'];
     const name=row.kind==='new'?'New sentence':`Sentence ${index+1}`;
+    // Only polished: the new words are used without a choice to make. Editing them is still possible.
+    if(row.kind==='replaced'&&row.choice==='mine'&&polished(row.original,row.text))
+     return <div className="vs-pair vs-pair--sentence" role="group" key={`${props.sessionKey}/${row.key}`} data-passage-index={index} data-kind="polished" data-choice={row.choice} aria-label={`${name}: your words`}>{human}</div>;
     const other=(tag:string,text:string,pane:'original'|'words')=><section key={pane} data-review-pane={pane} className="vs-sentence-other" aria-label={pane==='original'?`Original sentence ${index+1}`:`Your words for sentence ${index+1}`}><span>{tag}</span><div className={pane==='original'?'vs-original':'vs-unused'}>{text}</div></section>;
     const body=row.kind==='unspoken'
      ?[<section key="original" data-review-pane="original" aria-label={`Original sentence ${index+1}`}><div className="vs-original" data-removed={row.choice==='mine'||undefined}>{row.original}</div></section>]

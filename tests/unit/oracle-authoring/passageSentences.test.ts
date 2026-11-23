@@ -1,7 +1,7 @@
 import {describe,expect,it} from 'vitest';
 import {buildPassageComparison,comparisonRows} from '../../../lib/oracle/authoring/passageComparison';
-import {chosenPassageText,defaultSentenceChoices,sentenceComparison,sentences,withChosenPassageText} from '../../../lib/oracle/authoring/passageSentences';
-import {rebasePassageEdit,spansOverlap} from '../../../lib/oracle/authoring/passageSpans';
+import {chosenPassageText,defaultSentenceChoices,polished,sentenceComparison,sentences,withChosenPassageText} from '../../../lib/oracle/authoring/passageSentences';
+import {followingParagraph,rebasePassageEdit,spansOverlap} from '../../../lib/oracle/authoring/passageSpans';
 
 const original='The gift is quiet. It grows when you rest. Then it waits for you.';
 
@@ -34,6 +34,11 @@ describe('lining up a paragraph and the words spoken over it',()=>{
   expect(sentenceComparison('Only one.','Just this.')).toBeUndefined();
   expect(chosenPassageText('Only one.','Just this.',undefined,undefined)).toBe('Just this.');
  });
+ it('asks nothing when every sentence was only polished',()=>{
+  expect(polished('It grows when you rest.','It grows when you rest a while.')).toBe(true);
+  expect(polished('It grows when you rest.','It opens when you stop.')).toBe(false);
+  expect(sentenceComparison(original,'The gift is so quiet. It grows when you rest. Then it waits there for you.')).toBeUndefined();
+ });
  it('applies the chosen sentences only to a passage replacement',()=>{
   const spoken='The gift is calm. It opens when you stop. Then it waits for you.',comparison=sentenceComparison(original,spoken)!;
   const rows=comparisonRows(buildPassageComparison(original,spoken,comparison));
@@ -56,5 +61,11 @@ describe('passages recorded one after another',()=>{
   expect(newer.slice(moved.focus.start,moved.focus.end)).toBe('It waits for you.');
   expect(rebasePassageEdit(edit,'Nothing like it.')).toBeUndefined();
   expect(rebasePassageEdit(edit,'It waits for you.\n\nIt waits for you.')).toBeUndefined();
+ });
+ it('moves on to the next paragraph, then to the next section',()=>{
+  const sections=[{id:'a',text:'One.\n\nTwo.'},{id:'b',text:''},{id:'c',text:'Three.\n\nFour.'}];
+  expect(followingParagraph(sections,{},'a',{start:0,end:4,text:'One.'})).toEqual({sectionId:'a',start:6,end:10,text:'Two.'});
+  expect(followingParagraph(sections,{},'a',{start:6,end:10,text:'Two.'})).toEqual({sectionId:'c',start:0,end:6,text:'Three.'});
+  expect(followingParagraph(sections,{c:'Changed.'},'c',{start:0,end:8,text:'Changed.'})).toBeUndefined();
  });
 });

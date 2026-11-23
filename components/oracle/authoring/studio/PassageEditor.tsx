@@ -27,6 +27,6 @@ export default function PassageEditor({nodes,paragraphAim,passageOperation,passa
   </>}
   {!active&&!valid&&<p className="vs-passage-stale" role="alert">This passage changed. Choose it again in the card.</p>}
   {!active&&valid&&aimConflict&&<p className="vs-passage-pending" role="note">{aimConflict}</p>}
-  {active&&<p className="vs-passage-effect">{operation==='add'?'Adding after this passage':'Replacing this passage'}. Choose Next passage to keep going while these words are prepared.</p>}
+  {active&&<p className="vs-passage-effect">{operation==='add'?'Adding after this passage':'Replacing this passage'}. Next passage saves these words and starts on the next one.</p>}
  </div>;
 }
