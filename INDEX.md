@@ -178,7 +178,6 @@ hooks/  (4 files, 658 lines)
 │   ├── useDialogFocus.ts  → useDialogFocus
 │   ├── useMetaTags.ts  → useMetaTags
 │   ├── useReflectionRecorder.ts  → ReflectionRecorderStatus, ReflectionRecorderState, ReflectionRecorderAction, initialReflectionRecorderState, commitBoundaryReason +11 more
-│   └── useViewportHeightVar.ts  → useViewportHeightVar
 lib/  (59 files, 6,890 lines)
 │   ├── account/  (4 files, 338 lines)
 │   │   ├── AccountProvider.tsx  → AccountProvider
@@ -463,7 +462,6 @@ functions/universal-language/[number].js → onRequest
 hooks/useDialogFocus.ts → useDialogFocus
 hooks/useMetaTags.ts → useMetaTags
 hooks/useReflectionRecorder.ts → ReflectionRecorderStatus, ReflectionRecorderState, ReflectionRecorderAction, initialReflectionRecorderState, commitBoundaryReason, segmentLimitWarning, transcriptionRecorderNotice, transcriptionRecorderFailureNotice, finishAfterLocalPersistence, exitAfterFinish, createSingleFlight, createSegmentStartGuard, reflectionRecorderReducer, failReflectionRecorder, UseReflectionRecorderResult, useReflectionRecorder
-hooks/useViewportHeightVar.ts → useViewportHeightVar
 lib/account/AccountProvider.tsx → AccountProvider
 lib/account/auth.server.js → createAuth
 lib/account/authClient.ts → authClient, sendSignInCode, verifySignInCode, signUpWithPassword, signInWithPassword, signInWithGoogle, signOut

@@ -31,16 +31,32 @@ html.dark .card-reading {
   --accent:var(--shell-night-accent); --accent-d:var(--shell-night-accent-d);
 }
 
-/* --app-vh is the viewport's measured height, published by
-   hooks/useViewportHeightVar while a reading is mounted. 100dvh is the same
-   idea in pure CSS and stays as the fallback, but iOS resolves it a toolbar
-   state behind: in Safari and in the in-app browser a QR scan opens, the shell
-   could end short of the screen, which lifted the bottom bar off the floor and
-   left a dead band beneath it. The measured height is never stale. */
+/* The shell is pinned to the screen's own edges (position:fixed, inset:0)
+   rather than given a height. Every earlier version gave it a number, first
+   100dvh and then window.innerHeight measured by a script, and on iPhone the
+   number was sometimes smaller than the screen: iOS resolves 100dvh a toolbar
+   state late, and its innerHeight shrinks while the keyboard is up or the page
+   is pinch-zoomed. A shell shorter than the screen lifts the bottom bar off the
+   floor and leaves an empty band below it, and because the shell sat in the
+   page flow, the page itself could then be scrolled up past the bar. Pinned to
+   the edges there is no number to go stale: the browser keeps the shell exactly
+   as tall as the screen, the same way it keeps the site's other fixed bars on
+   the floor, and the page under it has nothing left to scroll. */
+.card-reading--mobile,
+.card-reading--desktop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+}
+
+/* The design's page section fills that frame and lays the panel out as a row,
+   so the panel stretches to the full height without a size of its own. */
 .card-reading--mobile > section,
 .card-reading--desktop > section {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex !important;
   padding: 0 !important;
-  min-height: var(--app-vh, 100dvh);
   overflow: hidden;
   background: var(--l-bg) !important;
 }
@@ -50,7 +66,9 @@ html.dark .card-reading {
 .card-reading--desktop > section > div {
   width: 100% !important;
   max-width: none !important;
-  height: var(--app-vh, 100dvh) !important;
+  /* The section is a flex row (set above), so a panel with no height of its own
+     stretches to the shell's full height. */
+  height: auto !important;
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
@@ -322,6 +340,9 @@ html.dark .card-reading {
      under the site bar. `auto` is the modern path; nothing about the feel of
      the scroll changes. */
   -webkit-overflow-scrolling: auto !important;
+  /* A flick that reaches the top or the end of the reading stops there instead
+     of carrying on into the page and bouncing the whole screen, bar and all. */
+  overscroll-behavior: contain;
 }
 
 /* The whole top area comes from the design now: its artwork in the shell, and

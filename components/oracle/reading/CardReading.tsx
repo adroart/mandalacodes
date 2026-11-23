@@ -19,7 +19,6 @@
    locked desktop design. One data bag still feeds both, so there is a single
    wiring surface — only the markup forks. */
 import React, { useEffect, useState } from 'react';
-import { useViewportHeightVar } from '../../../hooks/useViewportHeightVar';
 import CardReadingMobileHost, { type CardReadingMobileData } from './generated/CardReadingMobile.host';
 import CardReadingDesktopHost, { type CardReadingDesktopData } from './generated/CardReadingDesktop.host';
 import './generated/CardReadingMobile.style.css';
@@ -120,9 +119,6 @@ export const CardReading: React.FC<CardReadingProps> = ({
   lenses, meta, headerLabels, tabs, railNode, variant, reading, artwork, artFloatsFree, cardKicker, cardName, hexLines, hexHref, cardNumber, elementLine, gateLine, keynotes, topNav, forMeHref, pieceHref, familyHref,
 }) => {
   const isDesktop = useIsDesktop(variant);
-  /* The shell fills the screen and pins a bar to its bottom edge, so it needs
-     the viewport's real height rather than iOS's lazily-resolved 100dvh. */
-  useViewportHeightVar();
 
   /* One bag, two shapes. Each host falls back to its design file's own defaults
      for anything not supplied, so an unconfigured render matches the source. */
