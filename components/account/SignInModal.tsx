@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  sendSignInCode,
-  verifySignInCode,
-  signInWithPassword,
-  signUpWithPassword,
-  signInWithGoogle,
-} from '../../lib/account/authClient';
+import { useSignInActions } from './signInActions';
 
 /**
  * The "Welcome" sign-in modal.
@@ -52,7 +46,13 @@ const SignInModal: React.FC<{
   onClose: () => void;
   onSignedIn?: () => void;
   context?: SignInContext;
-}> = ({ onClose, onSignedIn, context = 'default' }) => {
+  /** Opened from a "Log in" link: greet a returning member, not a newcomer. */
+  returning?: boolean;
+}> = ({ onClose, onSignedIn, context = 'default', returning = false }) => {
+  const {
+    sendSignInCode, verifySignInCode, signInWithPassword, signUpWithPassword, signInWithGoogle,
+    googleReturnsToApp,
+  } = useSignInActions();
   const [mode, setMode] = useState<Mode>('welcome');
   const [createNew, setCreateNew] = useState(false); // password panel: create vs log in
   const [email, setEmail] = useState('');
@@ -78,14 +78,21 @@ const SignInModal: React.FC<{
         // Better Auth's client resolves with { error } rather than throwing
         // (e.g. PROVIDER_NOT_FOUND when Google isn't configured server-side).
         // Without this check the button silently stayed disabled forever.
+        // The app's native flow carries a plain message of its own (cancelled,
+        // timed out); show that rather than a generic one.
         setBusy(false);
-        setError('Google sign-in is not available right now. Try a code or password below.');
+        setError(googleReturnsToApp && error instanceof Error
+          ? error.message
+          : 'Google sign-in did not start. Try a code or your password instead.');
+        return;
       }
-      // On success the client redirects the browser to Google; leave busy=true
-      // so the button stays disabled through the navigation.
+      // The app finishes Google in place, so it is signed in now. On the
+      // website the client is redirecting the browser to Google; leave
+      // busy=true so the button stays disabled through the navigation.
+      if (googleReturnsToApp) done();
     } catch {
       setBusy(false);
-      setError('Could not start Google sign-in. Try a code or password below.');
+      setError('Could not start Google sign-in. Try a code or your password instead.');
     }
   };
 
@@ -163,6 +170,7 @@ const SignInModal: React.FC<{
     mode === 'password' ? (createNew ? 'Create your account' : 'Welcome back')
     : mode === 'email' ? 'Sign in with a code'
     : mode === 'code' ? 'Check your email'
+    : returning ? 'Welcome back'
     : context === 'save' ? 'Save this code'
     : 'Keep your chart';
 
@@ -177,6 +185,7 @@ const SignInModal: React.FC<{
             : 'Log in to find your chart where you left it.')
     : mode === 'email' ? "Enter your email and we'll send a six-digit code. No password needed."
     : mode === 'code' ? `We sent a six-digit code to ${email || 'your email'}.`
+    : returning ? 'Sign in to find your chart where you left it.'
     : context === 'save'
       ? 'Sign in to keep this code in your collection.'
     : context === 'reading'
@@ -254,7 +263,7 @@ const SignInModal: React.FC<{
         {mode === 'welcome' && (
           <>
             <button type="button" onClick={() => { setError(null); setMode('email'); }} disabled={busy} className="btn btn-primary btn-block" style={stack}>
-              Email me a sign-in code
+              Sign in with an email code
             </button>
             <button
               type="button"
@@ -262,7 +271,7 @@ const SignInModal: React.FC<{
               className="btn btn-secondary btn-block"
               style={stack}
             >
-              Use email and password
+              Sign in with a password
             </button>
             <button
               type="button"
@@ -277,7 +286,7 @@ const SignInModal: React.FC<{
               marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.line}`,
               fontFamily: 'var(--font-ui)', fontSize: 13, color: C.sub,
             }}>
-              Every option signs you in or sets you up. One account, however you return.
+              Already have an account? Any of these signs you in. New here? They set you up.
             </p>
           </>
         )}

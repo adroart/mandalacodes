@@ -3,6 +3,7 @@ import { Capacitor } from '../../../mobile/node_modules/@capacitor/core';
 import { AccountContext, type AccountState } from '../../../lib/account/useAccount';
 import { accountResult, createNativeAccountFetch } from './nativeAccountTransport';
 import { startNativeGoogleSignIn } from './nativeGoogleSignIn';
+import { SignInActionsProvider, type SignInActions } from '../../../components/account/signInActions';
 
 interface Session { user: { id: string; email: string } }
 interface Actions {
@@ -120,5 +121,21 @@ export function NativeAccountProvider({ children, enabled = false }: {children:R
   }), [run]);
   const value = useMemo<AccountState>(() => ({available:active,isLoaded:loaded,isSignedIn:!!session,userId:session?.user.id ?? null,email:session?.user.email ?? null,fetchAuthed:fetchNative}), [active, loaded, session]);
   const actions = useMemo(() => ({enabled:active,busy,error,sendCode,verifyCode,signInWithPassword,signUpWithPassword,signInWithGoogle,signOut,refresh}), [active,busy,error,sendCode,verifyCode,signInWithPassword,signUpWithPassword,signInWithGoogle,signOut,refresh]);
-  return <ActionsContext.Provider value={actions}><AccountContext.Provider value={value}>{children}</AccountContext.Provider></ActionsContext.Provider>;
+  // Every shared sign-in screen (the account page and the Welcome modal opened
+  // from the deck, a reading or Save) signs the app in through these, never
+  // through the website's browser client.
+  const signInActions = useMemo<SignInActions>(() => {
+    const result = async (operation: () => Promise<void>) => {
+      try { await operation(); return {}; } catch (error) { return { error }; }
+    };
+    return {
+      sendSignInCode: email => result(() => sendCode(email)),
+      verifySignInCode: (email, code) => result(() => verifyCode(email, code)),
+      signInWithPassword: (email, password) => result(() => signInWithPassword(email, password)),
+      signUpWithPassword: (email, password, name) => result(() => signUpWithPassword(email, password, name)),
+      signInWithGoogle: () => result(() => signInWithGoogle()),
+      googleReturnsToApp: true,
+    };
+  }, [sendCode, verifyCode, signInWithPassword, signUpWithPassword, signInWithGoogle]);
+  return <ActionsContext.Provider value={actions}><SignInActionsProvider value={signInActions}><AccountContext.Provider value={value}>{children}</AccountContext.Provider></SignInActionsProvider></ActionsContext.Provider>;
 }

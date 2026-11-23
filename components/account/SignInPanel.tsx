@@ -1,12 +1,6 @@
 import React, { useId, useState } from 'react';
 import './sign-in-panel.css';
-import {
-  sendSignInCode,
-  verifySignInCode,
-  signInWithPassword,
-  signUpWithPassword,
-  signInWithGoogle,
-} from '../../lib/account/authClient';
+import { useSignInActions, type SignInActions } from './signInActions';
 
 /**
  * The sign-in form, free of any modal chrome. Three ways in:
@@ -40,20 +34,14 @@ const C = {
 
 type Mode = 'login' | 'signup' | 'code-email' | 'code-verify';
 
-export interface SignInActions {
-  sendSignInCode(email: string): Promise<{ error?: unknown }>;
-  verifySignInCode(email: string, code: string): Promise<{ error?: unknown }>;
-  signInWithPassword(email: string, password: string): Promise<{ error?: unknown }>;
-  signUpWithPassword(email: string, password: string, name?: string): Promise<{ error?: unknown }>;
-  signInWithGoogle(callbackURL?: string): Promise<{ error?: unknown }>;
-}
-const websiteActions: SignInActions = { sendSignInCode, verifySignInCode, signInWithPassword, signUpWithPassword, signInWithGoogle };
+export type { SignInActions } from './signInActions';
 interface SignInPanelProps {
   onSignedIn?: () => void;
   bare?: boolean;
   horizontal?: boolean;
   authActions?: SignInActions;
-  /** Native browser authentication returns here; website OAuth navigates away. */
+  /** Native browser authentication returns here; website OAuth navigates away.
+   *  Defaults to what the provided actions say. */
   googleReturnsToApp?: boolean;
 }
 
@@ -69,7 +57,10 @@ interface SignInPanelProps {
  *   of one tall column. The short code modes stay vertical. Mobile collapses
  *   back to a column automatically.
  */
-const SignInPanel: React.FC<SignInPanelProps> = ({ onSignedIn, bare = false, horizontal = false, authActions = websiteActions, googleReturnsToApp = false }) => {
+const SignInPanel: React.FC<SignInPanelProps> = ({ onSignedIn, bare = false, horizontal = false, authActions: givenActions, googleReturnsToApp: givenReturnsToApp }) => {
+  const contextActions = useSignInActions();
+  const authActions = givenActions ?? contextActions;
+  const googleReturnsToApp = givenReturnsToApp ?? !!authActions.googleReturnsToApp;
   const fieldId = useId();
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
