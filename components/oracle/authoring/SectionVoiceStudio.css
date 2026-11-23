@@ -463,3 +463,8 @@
    Pinned to the visual viewport it leaves the sheet's padding behind, so it applies the top and side
    insets itself, once; the keyboard covers the home indicator, so the dock needs no bottom inset. */
 .section-voice-studio[data-keyboard]{position:fixed;z-index:90;left:0;right:0;top:var(--vs-vv-top,0px);height:var(--vs-vv-height,100%);padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px)}
+/* Passage screen: one tap on Replace or Add after chooses and starts recording. */
+.vs-dock-choice{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:8px;grid-column:1/-1;width:100%}
+.vs-dock-choice>*{width:100%;min-width:0;justify-content:center}
+.vs-dock-choice .vs-btn[aria-pressed=true]{border-color:var(--vs-accent);color:var(--vs-accent)}
+.vs-review-tools--end{margin:18px 0 0}

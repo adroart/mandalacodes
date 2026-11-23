@@ -69,3 +69,12 @@
 }
 
 .section-voice-studio .vs-compare.vs-compare--human-first .vs-pair[data-kind=unspoken]{padding-block:10px;gap:4px}
+/* One passage spoken again, sentence by sentence: the words that will be used, then the other version quietly. */
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair.vs-pair--sentence{grid-template-columns:minmax(0,1fr)}
+.section-voice-studio .vs-sentence-switch{display:inline-flex;flex-shrink:0;align-self:stretch;border:1px solid var(--vs-rule-2);overflow:hidden}
+.section-voice-studio .vs-sentence-switch button{padding:0 .9em;border:0;background:none;color:var(--vs-ink-2);font:inherit;letter-spacing:inherit;text-transform:none;cursor:pointer}
+.section-voice-studio .vs-sentence-switch button+button{border-left:1px solid var(--vs-rule-2)}
+.section-voice-studio .vs-sentence-switch button[aria-pressed=true]{background:var(--vs-accent-soft);color:var(--vs-accent)}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-sentence-other{display:flex;gap:.6em;align-items:baseline}
+.section-voice-studio .vs-sentence-other>span{flex-shrink:0;color:var(--vs-muted);font-weight:600;font-size:.8em}
+.section-voice-studio .vs-compare.vs-compare--human-first .vs-pair--sentence [data-review-pane=original] .vs-original[data-removed]{text-decoration:line-through}

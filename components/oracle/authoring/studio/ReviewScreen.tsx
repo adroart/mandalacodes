@@ -31,10 +31,6 @@ export function ReviewStage(props:ReviewStageProps){
   <p>{failed?'This recording could not be prepared yet. Its audio is saved. Retry it above.':processingStage||'Preparing review…'} Your existing reviews are still saved.</p>
  </div>;}
  return <div className="vs-stage vs-review">
-  <nav className="vs-review-tools" aria-label="Review tools">
-   <button type="button" className="vs-btn" disabled={integrating||!!active} onClick={()=>openView('history')}>History</button>
-   {result&&!result.applied&&<button type="button" className="vs-btn" disabled={integrating||processing||!!active||queued.some(t=>t.startSectionId===section?.id)} onClick={()=>openView('range')}>Replace selected words</button>}
-  </nav>
   {section&&result?<>
    {!result.passageEdit&&<div className="vs-review-head" data-section-id={section.id}>
     {(section.path.length>1||section.id.includes('/selection-'))&&<small>{section.path.slice(0,-1).join(' · ')}{section.id.includes('/selection-')?' · selected passage':''}</small>}
@@ -85,6 +81,11 @@ export function ReviewStage(props:ReviewStageProps){
    <p>{queued.length||processing?`Your recording is saved. ${processingStage||'Preparing review…'}`:savedCaptures.length?'Your audio is saved. The transcript is not ready yet.':'Nothing to review yet. Choose a passage, then record.'}</p>
    <button className="vs-btn" onClick={()=>openView('work')}>Back to the card</button>
   </div>}
+  {/* Less used tools sit after the words, so the words come first. */}
+  <nav className="vs-review-tools vs-review-tools--end" aria-label="Review tools">
+   <button type="button" className="vs-btn vs-btn--quiet" disabled={integrating||!!active} onClick={()=>openView('history')}>History</button>
+   {result&&!result.applied&&<button type="button" className="vs-btn vs-btn--quiet" disabled={integrating||processing||!!active||queued.some(t=>t.startSectionId===section?.id)} onClick={()=>openView('range')}>Replace selected words</button>}
+  </nav>
   {!!draft?.unassigned.length&&<button className="vs-note" onClick={()=>openView('unplaced')}>
    <span>{plural(draft.unassigned.length,'passage')} from your recording {draft.unassigned.length===1?'was':'were'} not placed.</span>
    <strong>Place {draft.unassigned.length===1?'it':'them'}<ChevronRight size={15}/></strong>

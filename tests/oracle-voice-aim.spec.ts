@@ -43,7 +43,8 @@ test.describe('choosing what a recording replaces',()=>{
   await choices.nth(1).click();
   await expect(d.locator('.vs-passage-path')).toContainText('Card 2 · Universal Language · Reading · Paragraph 2 of 3');
   await expect(d.locator('.vs-manuscript')).toHaveCount(0);
-  await expect(d.getByRole('button',{name:'Record',exact:true})).toBeDisabled();
+  // No separate Record step: Add after and Replace each start recording.
+  await expect(d.getByRole('button',{name:'Record',exact:true})).toHaveCount(0);
   await expect(d.getByRole('button',{name:'Add after',exact:true})).toBeVisible();
   await expect(d.getByRole('button',{name:'Replace',exact:true})).toBeVisible();
  });
@@ -59,11 +60,9 @@ test.describe('choosing what a recording replaces',()=>{
 
  test('Add after and Replace each name the chosen paragraph; whole-section mode is separate',async({page})=>{
   const d=await openRecording(page);await section(d,READING).getByRole('button',{name:/^Edit paragraph 2:/}).click();
-  await d.getByRole('button',{name:'Add after',exact:true}).click();
-  await expect(d.getByRole('button',{name:'Record addition',exact:true})).toBeEnabled();
+  await expect(d.locator('.vs-dock-choice').getByRole('button',{name:'Add after',exact:true})).toBeEnabled();
   await expect(d.locator('.vs-passage-path')).toContainText('Paragraph 2 of 3');
-  await d.getByRole('button',{name:'Replace',exact:true}).click();
-  await expect(d.getByRole('button',{name:'Record replacement',exact:true})).toBeEnabled();
+  await expect(d.locator('.vs-dock-choice').getByRole('button',{name:'Replace',exact:true})).toBeEnabled();
   await d.getByRole('button',{name:'Back',exact:true}).click();await chooseWhole(d);
   await expect(destination(d)).toContainText('all 3 paragraphs');
   await expect(d.getByRole('button',{name:'Record',exact:true})).toBeEnabled();
@@ -78,8 +77,7 @@ test.describe('while the microphone is live',()=>{
 
  test('nothing can change the destination',async({page})=>{
   const d=await openRecording(page);await section(d,READING).getByRole('button',{name:/^Edit paragraph 2:/}).click();
-  await d.getByRole('button',{name:'Replace',exact:true}).click();
-  await d.getByRole('button',{name:'Record replacement',exact:true}).click();await expect(d.locator('.vs-dock')).toContainText('0:01');
+  await d.getByRole('button',{name:'Replace',exact:true}).click();await expect(d.locator('.vs-dock')).toContainText('0:01');
   await expect(d.locator('.vs-dock')).toContainText('Paragraph 2 of');
   await expect(d.locator('.vs-dock')).toContainText('Replace');
   await expect(d.locator('.vs-manuscript')).toHaveCount(0);
@@ -121,7 +119,7 @@ test('"Re-record this passage" arrives aimed at that paragraph',async({page})=>{
  await expect(d.locator('.vs-passage-path')).toContainText(/Paragraph \d+ of \d+/);
  await expect(d.getByRole('button',{name:'Add after',exact:true})).toBeVisible();
  await expect(d.getByRole('button',{name:'Replace',exact:true})).toBeVisible();
- await expect(d.getByRole('button',{name:'Record',exact:true})).toBeDisabled();
+ await expect(d.getByRole('button',{name:'Record',exact:true})).toHaveCount(0);
 });
 
 test('words placed by hand are added to the section, and the applied reading keeps its paragraphs',async({page})=>{

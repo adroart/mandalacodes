@@ -1,7 +1,7 @@
 import type {VoiceStudio} from './types';
 
 export type PassageEditorProps=Pick<VoiceStudio,
- 'nodes'|'paragraphAim'|'passageOperation'|'setPassageOperation'|'passageCapture'|'recordingTarget'|'active'|'pathFor'|'scopeFor'|'references'|'results'|'queued'|
+ 'nodes'|'paragraphAim'|'passageOperation'|'passageCapture'|'recordingTarget'|'active'|'pathFor'|'scopeFor'|'references'|'results'|'queued'|
  'aimConflict'|'waitingTakes'
 >;
 
@@ -10,7 +10,7 @@ export type PassageEditorProps=Pick<VoiceStudio,
  * Other passages of the same section may already be saved: they wait their turn, and only an edit of
  * these same words holds this one back.
  */
-export default function PassageEditor({nodes,paragraphAim,passageOperation,setPassageOperation,passageCapture,recordingTarget,active,pathFor,scopeFor,references,results,queued,aimConflict,waitingTakes}:PassageEditorProps){
+export default function PassageEditor({nodes,paragraphAim,passageOperation,passageCapture,recordingTarget,active,pathFor,scopeFor,references,results,queued,aimConflict,waitingTakes}:PassageEditorProps){
  const chosen=active?passageCapture.current?.focus:paragraphAim;
  const node=nodes.find(item=>item.id===(active?recordingTarget.current:paragraphAim?.sectionId));
  const operation=active?passageCapture.current?.operation:passageOperation;
@@ -22,12 +22,7 @@ export default function PassageEditor({nodes,paragraphAim,passageOperation,setPa
   <small className="vs-passage-path">Card {node.cardNumber} · {pathFor(node)} · {scopeFor(node,chosen)}</small>
   <p className="vs-passage-selected">{chosen.text}</p>
   {!active&&!aimConflict&&valid&&<>
-   <p className="vs-passage-instruction">Choose what your new words will do:</p>
-   <div className="vs-passage-actions" role="group" aria-label="Choose how to edit this passage">
-    <button type="button" className="vs-btn" aria-pressed={passageOperation==='add'} onClick={()=>setPassageOperation('add')}>Add after</button>
-    <button type="button" className="vs-btn" aria-pressed={passageOperation==='replace'} onClick={()=>setPassageOperation('replace')}>Replace</button>
-   </div>
-   {operation&&<p className="vs-passage-effect">{operation==='add'?'This passage stays. Your new words will follow it.':'Only this passage will be replaced.'} {operation==='replace'?'Speak the whole passage: in review you keep your new words or the old ones, sentence by sentence.':'You can edit the transcript before applying.'}</p>}
+   <p className="vs-passage-instruction">{passageOperation==='add'?'Add after: this passage stays and your new words follow it.':passageOperation==='replace'?'Replace: speak the whole passage. In review you keep your new words or the old ones, sentence by sentence.':'Tap Replace to speak this passage again, or Add after to follow it with new words. Recording starts at once.'}</p>
    {otherEdits>0&&<p className="vs-passage-queue" role="note">{otherEdits===1?'Another edit in this section is':`${otherEdits} other edits in this section are`} saved. Each waits its turn for review.</p>}
   </>}
   {!active&&!valid&&<p className="vs-passage-stale" role="alert">This passage changed. Choose it again in the card.</p>}

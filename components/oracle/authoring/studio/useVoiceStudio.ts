@@ -387,14 +387,18 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             stopListening();
         setView('review');
     };
-    const record = async (phraseTarget: typeof phrase = null, targetSection = targetId, passageTarget?:NonNullable<SectionDraftResult['passageEdit']>, recordWhole=false) => {
+    /** `operation` starts a passage recording in one tap: Replace or Add after chooses and records together. */
+    const record = async (phraseTarget: typeof phrase = null, targetSection = targetId, passageTarget?:NonNullable<SectionDraftResult['passageEdit']>, recordWhole=false, operation?: 'add' | 'replace') => {
+        const chosenOperation = operation ?? passageOperation;
+        if (operation)
+            setPassageOperation(operation);
         if (!current.current || opening || handle.current || stopping)
             return;
         setOpening(true);
         explicitChoice.current = false;
         setError('');
         setNotice('');
-        setView(passageTarget||passageOperation?'passage':'work');
+        setView(passageTarget||chosenOperation?'passage':'work');
         setReplay(null);
         player.current?.pause();
         setAudioUrl('');
@@ -411,7 +415,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             const target = value.sections.find(s => s.id === targetSection) ?? value.sections.find(s => s.id === value.startSectionId)!;
             const priorPassage=value.results.find(r=>r.sectionId===target.id&&!r.applied);
             const sameReview=!!passageTarget&&!!priorPassage?.passageEdit&&JSON.stringify(priorPassage.passageEdit)===JSON.stringify(passageTarget);
-            const passageAimed=!!passageTarget||!!passageOperation&&paragraphAim?.sectionId===target.id;
+            const passageAimed=!!passageTarget||!!chosenOperation&&paragraphAim?.sectionId===target.id;
             if(!phraseTarget&&!passageAimed&&((!sameReview&&!!priorPassage)||(value as TakeSession).takes?.some(t=>t.startSectionId===target.id&&['queued','transcribing','assimilating','waiting'].includes(t.state))))
                 throw Error('This section already has words waiting for review or preparation. Finish them before making another recording here.');
             phraseCapture.current = phraseTarget;
@@ -425,8 +429,8 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                 throw Error('A recording is still being saved in another window. Close it there, then try again.');
             captureFocus.current = !phraseTarget && passageTarget?passageTarget.focus:!phraseTarget && paragraphAim?.sectionId === target.id ? { start: paragraphAim.start, end: paragraphAim.end, text: paragraphAim.text } : undefined;
             const sectionText = (await currentSectionTexts(value))[target.id] ?? target.text;
-            passageCapture.current = phraseTarget ? null : passageTarget??(captureFocus.current && passageOperation
-                ? {operation:passageOperation,focus:captureFocus.current,sectionText} : null);
+            passageCapture.current = phraseTarget ? null : passageTarget??(captureFocus.current && chosenOperation
+                ? {operation:chosenOperation,focus:captureFocus.current,sectionText} : null);
             if(passageTarget&&sectionText!==passageTarget.sectionText)throw Error('This passage changed. Select it again before recording.');
             if (passageCapture.current && sectionText.slice(passageCapture.current.focus.start, passageCapture.current.focus.end) !== passageCapture.current.focus.text)
                 throw Error('This passage changed. Select it again before recording.');

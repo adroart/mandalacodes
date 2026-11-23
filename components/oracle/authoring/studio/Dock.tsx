@@ -1,4 +1,5 @@
 import React from 'react';
+import {Mic} from 'lucide-react';
 import {time} from './format';
 import {HEALTH_COPY} from './useRecordingHealth';
 import type {VoiceStudio} from './types';
@@ -62,6 +63,11 @@ export default function Dock({active,stopping,opening,monitor,recordingNode,phra
     </div>}
     {waiting>0&&view==='work'&&<button className="vs-btn vs-dock-review" aria-label={`${ready?'Review':'Place'} ${waiting}: ${reviewCount}`} onClick={()=>{reviewArrival.current=true;explicitChoice.current=false;openView(ready?'review':'unplaced');}}>{ready?'Review':'Place'} {waiting}</button>}
     {view==='work'&&paragraphAim?<button className="vs-record" onClick={()=>openView('passage')}>Edit passage</button>
+    :view==='passage'&&paragraphAim?<div className="vs-dock-choice" role="group" aria-label="Record for this passage">
+     {/* One tap chooses what the words do and starts the microphone. */}
+     <button type="button" className="vs-btn vs-dock-choice-add" aria-pressed={passageOperation==='add'} disabled={opening||stopping||stale} onClick={()=>void record(null,target?.id,undefined,false,'add')}><Mic size={16} aria-hidden="true"/>Add after</button>
+     <button type="button" className="vs-record" aria-pressed={passageOperation==='replace'} disabled={opening||stopping||stale} onClick={()=>void record(null,target?.id,undefined,false,'replace')}><Mic size={17} aria-hidden="true"/>{opening?'Opening microphone…':stale?'Choose passage again':'Replace'}</button>
+    </div>
     :<button className="vs-record" disabled={opening||stopping||stale||!target||!wholeSection&&!passageOperation} onClick={()=>void record(null,target?.id)}>{opening?'Opening microphone…':stale?'Choose passage again':passageOperation==='add'?'Record addition':passageOperation==='replace'?'Record replacement':'Record'}</button>}
    </>}
  </footer>;

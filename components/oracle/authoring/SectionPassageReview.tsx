@@ -52,6 +52,26 @@ export default function SectionPassageReview(props:Props){
     {(!passages||row.choice!=='mine')&&<h4>{row.choice!=='mine'?'Not being used':props.explicitPassage==='add'?'Your addition':add?'Your addition':'Your words'}{row.choice==='mine'&&<Pencil size={12} aria-hidden="true"/>}{!passages&&!add&&!props.explicitPassage&&<span className="vs-replacement-scope">{paragraphs>1?`Replaces all ${paragraphs} paragraphs`:'Replaces this paragraph'}</span>}</h4>}
     {row.choice!=='mine'?<p className="vs-unused">{row.text}</p>:props.replay?<WordReplay text={row.text} words={tokens} activeIndex={active} onSeek={props.onSeek}/>:checkedRows.current.keys.has(row.key)?<CheckedEditableText key={props.sessionKey+'/'+index} label={label2} value={row.text} checks={rowChecks.map(check=>({...check,unanchored:checkRow(check)<0}))} disabled={props.disabled} caret={caret} save={replacement=>props.onEdit(index,replacement)} onSelection={(from,to,text,value)=>props.onSelection?.(row.textStart+from,row.textStart+to,text,props.text.slice(0,row.textStart)+value+props.text.slice(row.textEnd))} {...actions}/>:<EditableText autoSize="content" hideLabel caret={caret} onSelection={(from,to,text,value)=>props.onSelection?.(row.textStart+from,row.textStart+to,text,props.text.slice(0,row.textStart)+value+props.text.slice(row.textEnd))} key={props.sessionKey+'/'+index} label={label2} value={row.text} disabled={props.disabled} save={replacement=>props.onEdit(index,replacement)}/>}
    </section>:null;
+   if(props.explicitPassage&&passages){
+    // One passage spoken again: each sentence shows the words that will be used first, the other
+    // version quietly beneath it, and a two-way switch between them.
+    const sides:[string,string]=row.kind==='unspoken'?['Remove','Keep']:row.kind==='new'?['Use','Leave out']:['New words','Original'];
+    const name=row.kind==='new'?'New sentence':`Sentence ${index+1}`;
+    const other=(tag:string,text:string,pane:'original'|'words')=><section key={pane} data-review-pane={pane} className="vs-sentence-other" aria-label={pane==='original'?`Original sentence ${index+1}`:`Your words for sentence ${index+1}`}><span>{tag}</span><div className={pane==='original'?'vs-original':'vs-unused'}>{text}</div></section>;
+    const body=row.kind==='unspoken'
+     ?[<section key="original" data-review-pane="original" aria-label={`Original sentence ${index+1}`}><div className="vs-original" data-removed={row.choice==='mine'||undefined}>{row.original}</div></section>]
+     :row.choice==='mine'?[human,...(row.original.trim()?[other('Was',row.original,'original')]:[])]
+     :[...(row.original.trim()?[<section key="original" data-review-pane="original" aria-label={`Original sentence ${index+1}`}><div className="vs-original">{row.original}</div></section>]:[]),other(row.kind==='new'?'Left out':'Not using',row.text,'words')];
+    return <div className="vs-pair vs-pair--sentence" role="group" key={`${props.sessionKey}/${row.key}`} data-passage-index={index} data-kind={row.kind} data-choice={row.choice} aria-label={`${name}: ${label}`}>
+     <header className="vs-pair-head"><span>{name}{row.kind==='unspoken'&&<b data-tone="removed">Not spoken</b>}</span>
+      {props.onChoose&&<span className="vs-sentence-switch" role="group" aria-label={`${name}: choose`}>
+       <button type="button" aria-pressed={row.choice==='mine'} disabled={props.disabled} onClick={()=>row.choice!=='mine'&&props.onChoose!(row.key,'mine')}>{sides[0]}</button>
+       <button type="button" aria-pressed={row.choice==='original'} disabled={props.disabled} onClick={()=>row.choice!=='original'&&props.onChoose!(row.key,'original')}>{sides[1]}</button>
+      </span>}
+     </header>
+     {body}
+    </div>;
+   }
    return <div className="vs-pair" role="group" key={`${props.sessionKey}/${row.key}`} data-passage-index={index} data-kind={passages?row.kind:'whole'} data-choice={row.choice} aria-label={passages?`${row.kind==='new'?`New ${unit.toLowerCase()}`:`${unit} ${index+1}`}: ${label}`:undefined}>
     {passages&&<header className="vs-pair-head"><span>{row.kind==='new'?`New ${unit.toLowerCase()}`:`${unit} ${index+1}`}<b data-tone={row.choice==='mine'&&row.kind!=='unspoken'?'mine':row.kind==='unspoken'&&row.choice==='mine'?'removed':'kept'}>{label}</b></span>{props.onChoose&&<button type="button" className="vs-row-action" disabled={props.disabled} onClick={()=>props.onChoose!(row.key,row.choice==='mine'?'original':'mine')}>{action}</button>}</header>}
     {props.explicitPassage?[...(row.original.trim()?[original]:[]),human]:row.choice==='mine'?[human,...(row.original.trim()?[original]:[])]:[...(row.original.trim()?[original]:[]),human]}
