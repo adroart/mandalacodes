@@ -78,7 +78,8 @@ export default function SectionPassageReview(props:Props){
    }
    return <div className="vs-pair" role="group" key={`${props.sessionKey}/${row.key}`} data-passage-index={index} data-kind={passages?row.kind:'whole'} data-choice={row.choice} aria-label={passages?`${row.kind==='new'?`New ${unit.toLowerCase()}`:`${unit} ${index+1}`}: ${label}`:undefined}>
     {passages&&<header className="vs-pair-head"><span>{row.kind==='new'?`New ${unit.toLowerCase()}`:`${unit} ${index+1}`}<b data-tone={row.choice==='mine'&&row.kind!=='unspoken'?'mine':row.kind==='unspoken'&&row.choice==='mine'?'removed':'kept'}>{label}</b></span>{props.onChoose&&<button type="button" className="vs-row-action" disabled={props.disabled} onClick={()=>props.onChoose!(row.key,row.choice==='mine'?'original':'mine')}>{action}</button>}</header>}
-    {props.explicitPassage?[...(row.original.trim()?[original]:[]),human]:row.choice==='mine'?[human,...(row.original.trim()?[original]:[])]:[...(row.original.trim()?[original]:[]),human]}
+    {props.explicitPassage==='replace'&&human&&row.choice==='mine'?[human,...(row.original.trim()?[<section key="original" data-review-pane="original" className="vs-sentence-other" aria-label="Selected passage"><span>Was</span><div className="vs-original">{row.original}</div></section>]:[])]
+     :props.explicitPassage?[...(row.original.trim()?[original]:[]),human]:row.choice==='mine'?[human,...(row.original.trim()?[original]:[])]:[...(row.original.trim()?[original]:[]),human]}
    </div>;
   })}
   {firstEditable===undefined&&checks.map(check=><UnplacedWordCheck key={check.key} check={check} disabled={props.disabled} {...actions}/>)}

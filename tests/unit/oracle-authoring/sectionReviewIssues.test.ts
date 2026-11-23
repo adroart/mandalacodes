@@ -27,3 +27,8 @@ it('recognizes conservative opening add and replace instructions without interpr
  for(const words of ['Replace this section.','Rewrite the whole section.','Start over.','I add love to my work.','When I append meaning, I change it.','The words say add this.','My paragraph. Add this later.','Additional meaning comes.'])expect(inferSpokenEditIntent(words,true)).toBe('replace');
  expect(inferSpokenEditIntent('My words override the earlier reading.',false)).toBe('replace');
 });
+it('asks only about words the service was really unsure of',()=>{
+ const raw='It stays clear today.';
+ const issues=transcriptionReviewIssues(raw,[{raw,captureId:'take',words:[{text:'It',startMs:0,endMs:100,probability:.55},{text:'stays',startMs:100,endMs:200,probability:.3},{text:'clear',startMs:200,endMs:300},{text:'today.',startMs:300,endMs:400}],doubts:[{text:'clear',startMs:200,endMs:300,heardAlso:'Clear'},{text:'today',startMs:300,endMs:400,heardAlso:'to day'}]}],[raw]);
+ expect(issues.map(issue=>issue.quote)).toEqual(['stays','today']);
+});

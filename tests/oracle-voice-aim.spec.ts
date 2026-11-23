@@ -1,6 +1,6 @@
 import {test,expect,type Page,type Locator} from './fixtures';
 /**
- * Aiming is explicit. Each passage opens a focused editor, where Add after or Replace is chosen before recording. Nothing
+ * Aiming is explicit. Tapping a passage starts recording over it (Replace); Add after is chosen in review. Nothing
  * moves the destination while the microphone is live, and an interrupted microphone does not look live.
  * Also: words placed by hand are added to the section, and the review's word-check rows share one shape.
  * Speech processing is a fixture; it proves the interface only.
@@ -37,33 +37,10 @@ const RED='rgb(239, 85, 72)';
 test.describe('choosing what a recording replaces',()=>{
  test.beforeEach(async({page})=>{await scriptedSpeech(page);});
 
- test('tapping a paragraph opens its exact destination and waits for an operation',async({page})=>{
+ test('whole-section mode is chosen from the section heading, separate from tapping a paragraph',async({page})=>{
   const d=await openRecording(page),reading=section(d,READING),choices=reading.getByRole('button',{name:/^Edit paragraph \d+: /});
   await expect(choices).toHaveCount(3);for(const choice of await choices.all())expect((await choice.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  await choices.nth(1).click();
-  await expect(d.locator('.vs-passage-path')).toContainText('Card 2 · Universal Language · Reading · Paragraph 2 of 3');
-  await expect(d.locator('.vs-manuscript')).toHaveCount(0);
-  // No separate Record step: Add after and Replace each start recording.
-  await expect(d.getByRole('button',{name:'Record',exact:true})).toHaveCount(0);
-  await expect(d.getByRole('button',{name:'Add after',exact:true})).toBeVisible();
-  await expect(d.getByRole('button',{name:'Replace',exact:true})).toBeVisible();
- });
-
- test('the focused operation choices are full touch targets and Back restores the manuscript',async({page})=>{
-  const d=await openRecording(page);await section(d,READING).getByRole('button',{name:/^Edit paragraph 2:/}).click();
-  for(const name of ['Add after','Replace'])expect((await d.getByRole('button',{name,exact:true}).boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  await shot(page,'focused-choice');
-  await d.getByRole('button',{name:'Back',exact:true}).click();await expect(section(d,READING)).toBeVisible();
-  await expect(d.getByRole('button',{name:'Edit passage',exact:true})).toBeVisible();
-  await expect(d.getByRole('button',{name:'Record',exact:true})).toHaveCount(0);
- });
-
- test('Add after and Replace each name the chosen paragraph; whole-section mode is separate',async({page})=>{
-  const d=await openRecording(page);await section(d,READING).getByRole('button',{name:/^Edit paragraph 2:/}).click();
-  await expect(d.locator('.vs-dock-choice').getByRole('button',{name:'Add after',exact:true})).toBeEnabled();
-  await expect(d.locator('.vs-passage-path')).toContainText('Paragraph 2 of 3');
-  await expect(d.locator('.vs-dock-choice').getByRole('button',{name:'Replace',exact:true})).toBeEnabled();
-  await d.getByRole('button',{name:'Back',exact:true}).click();await chooseWhole(d);
+  await chooseWhole(d);
   await expect(destination(d)).toContainText('all 3 paragraphs');
   await expect(d.getByRole('button',{name:'Record',exact:true})).toBeEnabled();
  });
@@ -75,9 +52,20 @@ test.describe('while the microphone is live',()=>{
   await context.grantPermissions(['microphone'],{origin:baseURL!});await scriptedSpeech(page);
  });
 
+ test('tapping a paragraph starts recording over it at once, with full touch targets',async({page})=>{
+  const d=await openRecording(page);await section(d,READING).getByRole('button',{name:/^Edit paragraph 2:/}).click();
+  await expect(d.locator('.vs-dock')).toContainText('0:01');
+  await expect(d.locator('.vs-passage-path')).toContainText('Card 2 · Universal Language · Reading · Paragraph 2 of 3');
+  await expect(d.locator('.vs-passage-effect')).toContainText('Replacing this passage');
+  await expect(d.getByRole('button',{name:'Add after',exact:true})).toHaveCount(0);
+  for(const name of ['Next passage','Stop & review'])expect((await d.getByRole('button',{name,exact:true}).boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await shot(page,'tap-and-talk');
+  await d.getByRole('button',{name:'Stop & review',exact:true}).click();
+ });
+
  test('nothing can change the destination',async({page})=>{
   const d=await openRecording(page);await section(d,READING).getByRole('button',{name:/^Edit paragraph 2:/}).click();
-  await d.getByRole('button',{name:'Replace',exact:true}).click();await expect(d.locator('.vs-dock')).toContainText('0:01');
+  await expect(d.locator('.vs-dock')).toContainText('0:01');
   await expect(d.locator('.vs-dock')).toContainText('Paragraph 2 of');
   await expect(d.locator('.vs-dock')).toContainText('Replace');
   await expect(d.locator('.vs-manuscript')).toHaveCount(0);
@@ -132,11 +120,8 @@ test('words placed by hand are added to the section, and the applied reading kee
  await d.getByRole('button',{name:'Back',exact:true}).click();
  if(!(await d.locator('[data-view=work]').isVisible()))await d.getByRole('button',{name:'Back',exact:true}).click();
  await expect(d.locator('[data-view=work]')).toBeVisible();
- await section(d,'2/INTRO').getByRole('button',{name:/^Edit paragraph 1:/}).click();
- await d.getByRole('button',{name:'Back',exact:true}).click();
  const dock=d.locator('.vs-dock--idle');
  await expect(dock.getByRole('button',{name:'Place 1: 1 unplaced'})).toHaveText('Place 1');
- await expect(dock.getByRole('button',{name:'Edit passage',exact:true})).toBeVisible();
  if(test.info().project.name==='Phone'){
   expect(await dock.locator(':scope > *').evaluateAll(children=>new Set(children.map(child=>Math.round(child.getBoundingClientRect().top))).size)).toBeLessThanOrEqual(2);
   await shot(page,'saved-words-compact-dock');

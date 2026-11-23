@@ -236,6 +236,22 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                 }
                 if (initialSessionId)
                     setView('review');
+                else if (!reading && !initialAnchors?.length) {
+                    // Pick up where he left off: the paragraph after the furthest one already recorded.
+                    const texts = await currentSectionTexts(previous);
+                    const edits = [...previous.results.map(r => ({ sectionId: r.sectionId, edit: r.passageEdit })),
+                        ...((previous as TakeSession).takes ?? []).filter(t => t.state !== 'discarded').map(t => ({ sectionId: t.startSectionId, edit: t.passageEdit }))];
+                    const order = (sectionId: string) => previous.sections.findIndex(n => n.id === sectionId);
+                    const last = edits.flatMap(({ sectionId, edit }) => edit ? [{ sectionId, edit }] : [])
+                        .sort((a, b) => order(a.sectionId) - order(b.sectionId) || a.edit.focus.end - b.edit.focus.end).at(-1);
+                    const next = last ? followingParagraph(previous.sections, texts, last.sectionId, last.edit.focus) : undefined;
+                    if (alive && next) {
+                        setTargetId(next.sectionId);
+                        setFocusId(next.sectionId);
+                        setParagraphAim({ sectionId: next.sectionId, start: next.start, end: next.end, text: next.text });
+                        requestAnimationFrame(() => reveal(next.sectionId));
+                    }
+                }
                 await loadAudio(previous);
                 recovering.current = recoverInterrupted(previous.id).catch(report);
                 await recovering.current;
@@ -360,18 +376,22 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         }
         reviewAt(id);
     };
-    /** Only this paragraph can change; its neighbours stay whatever is said. */
+    /**
+     * Only this paragraph can change; its neighbours stay whatever is said. Tapping a paragraph starts
+     * recording over it at once (Replace); Add after can still be chosen in review.
+     */
     const aimParagraph = (id: string, paragraph: {
         start: number;
         end: number;
         text: string;
-    }) => {
+    }, startRecording = true) => {
         if (handle.current || opening)
             return;
         setTargetId(id);
         setFocusId(id);
         setParagraphAim({ sectionId: id, ...paragraph });
-        setPassageOperation(null);
+        setPassageOperation(startRecording ? 'replace' : null);
+        autoRecord.current = startRecording ? { sectionId: id, operation: 'replace' } : null;
         setWholeSection(false);
         setError('');
         setView('passage');
@@ -714,9 +734,11 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             }
             if (all)
                 setNotice(`${plural(targets.length, 'section')} saved to your reading.`);
+            return true;
         }
         catch (e) {
             report(e);
+            return false;
         }
         finally {
             setIntegrating(false);
@@ -1316,7 +1338,18 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
             return;
         if (checks.length && !open)
             checkWords(section.id, true);
-        await integrate();
+        const passage = !!result.passageEdit, waitingNext = waitingHere > 0, elsewhere = nextReview;
+        if (!await integrate() || !passage)
+            return;
+        // Reviews follow one another: the next edit opens by itself, and Undo stays in History.
+        if (waitingNext) {
+            await nextHere();
+            setNotice('Applied. The next edit is open.');
+        }
+        else if (elsewhere && results.some(r => r.sectionId === elsewhere.id && !r.applied && r.passageEdit)) {
+            await choose(elsewhere.id).catch(report);
+            setNotice('Applied. The next edit is open.');
+        }
     };
     const recordingNode = active ? nodes.find(n => n.id === recordingTarget.current) ?? target : target;
     const upcoming = active && !phraseCapture.current && !passageCapture.current ? nextAfter(recordingTarget.current) : undefined;

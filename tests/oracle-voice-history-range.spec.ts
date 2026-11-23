@@ -40,7 +40,7 @@ test('selected original and recorded words stay locked across focus, stage a pre
  await expect(dialog.getByRole('region',{name:'Replacement preview'}).locator('p')).toHaveText(originalText.split('\n\n')[0].replace('Trust','my own words'));
  if(info.project.name==='Phone')for(const width of [320,430]){await page.setViewportSize({width,height:812});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:info.outputPath(`range-${width}.png`)});}
  await dialog.getByRole('button',{name:'Prepare replacement'}).click();
- await expect(dialog.locator('.vs-review-status')).toContainText('Not applied yet');
+ await expect(dialog.locator('[data-action=apply]')).toBeVisible();
  const reviewTitle=dialog.locator('.vs-bar-title--passage');
  await expect(reviewTitle).toContainText('Card 2 · UL Reading · Selected words');
  await expect(reviewTitle).toHaveAttribute('aria-label',/Card 2 · Universal Language · Reading · Selected words/);

@@ -94,10 +94,16 @@
 .vs-passage-effect,.vs-passage-queue{margin:10px 0 0;color:var(--vs-ink-2);font-size:14px;line-height:1.45}
 .vs-passage-stale{margin:12px 0;color:var(--vs-rec);font-size:14px}
 .vs-passage-pending{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin:14px 0 0;color:var(--vs-ink-2);font-size:14px;line-height:1.45}
-.vs-para-states{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.vs-para-states{display:flex;gap:.3em;float:right;margin:.5em 0 0 .5em}
+/* Each recording on a paragraph is one quiet mark; its words are in the title and for screen readers. */
+.vs-para-states .vs-chip{width:.5em;height:.5em;padding:0;border-radius:50%;background:currentColor}
+.vs-para-states .vs-chip[data-tone=busy]{animation:vs-blink 1.2s ease-in-out infinite}
+.vs-para-states .vs-chip[data-tone=busy]::after{content:none}
 .vs-review-plan{display:flex;flex-direction:column;gap:3px;margin:0 0 14px;padding:10px 12px;border:1px solid var(--vs-rule-2);border-radius:8px;color:var(--vs-ink-2);font-size:13px;line-height:1.4}
 .vs-review-plan strong{color:var(--vs-ink);font-size:14px}
-.vs-review-operation{display:flex;gap:8px;margin:0 0 10px}
+.vs-review-operation{display:flex;gap:8px;margin:18px 0 0}
+/* The card around a passage under review reads as the card does, only quieter. */
+.vs-review-context{color:var(--vs-muted);white-space:pre-line;margin:.75em 0}
 .vs-review-operation .vs-btn{flex:1;min-width:0}
 .vs-review-operation .vs-btn[aria-pressed=true]{border-color:var(--vs-accent);background:var(--vs-accent-soft);color:var(--vs-accent)}
 .vs-review-status{margin:0 0 14px;color:var(--vs-ink-2);font:500 13px/1.4 var(--font-controls)}

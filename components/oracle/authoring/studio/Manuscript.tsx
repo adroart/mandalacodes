@@ -28,12 +28,12 @@ export default function Manuscript({active,opening:starting,monitor,phraseCaptur
  // Red means the microphone is hearing him: an interrupted or muted capture is shown neutral.
  const live=!!active&&!monitor.paused&&health.microphone!=='interrupted';
  return <div ref={manuscript} className="vs-stage vs-manuscript" aria-label="Card manuscript">
-  <p className="vs-lead">Tap the passage you want to edit, then choose what happens to it. You can record one passage after another: each is prepared in the background and waits for your review.</p>
+  <p className="vs-lead">Tap a passage and start talking. Next passage moves on while your words are prepared.</p>
   {nodes.map((node,i)=>{
    const state=chip(node),aimed=(active?recordingTarget.current:targetId)===node.id;
    const text=references[node.id]??node.text,paragraphs=readingParagraphs(text),states=passageStates(node);
    const focus=active?captureFocus.current&&recordingTarget.current===node.id?captureFocus.current:undefined:paragraphAim?.sectionId===node.id?paragraphAim:undefined;
-   const tag=(on:boolean)=>on&&<span className="vs-para-tag">{active?'Recording for this passage':passageOperation==='add'?'Add after this passage':passageOperation==='replace'?'Replace this passage':'Selected passage'}</span>;
+   const tag=(on:boolean)=>on&&<span className="vs-para-tag">{active?'Recording for this passage':passageOperation==='add'?'Add after this passage':passageOperation==='replace'?'Replace this passage':'Next to record'}</span>;
    return <section key={node.id} className="vs-section" data-paragraph-aim={!!focus||undefined} data-section-id={node.id} aria-label={node.path.join(' · ')} aria-current={aimed?'step':undefined} data-recording={active&&!monitor.paused&&recordingTarget.current===node.id||undefined} data-live={live&&recordingTarget.current===node.id||undefined}>
     {node.lensId!==nodes[i-1]?.lensId&&node.path.length>1&&<p className="vs-lens">{node.path[0]}</p>}
     <button className="vs-section-head" aria-pressed={aimed&&wholeSection} aria-label={`${shownTitle(node)}, choose this section`} disabled={locked} onClick={()=>aim(node.id)}>
@@ -46,7 +46,7 @@ export default function Manuscript({active,opening:starting,monitor,phraseCaptur
       const on=!!focus&&p.start<=focus.start&&focus.start+focus.text.length<=p.end;
       // Recordings already saved for this paragraph, so the next one can be started without waiting for them.
       const own=states.filter(state=>p.start<=state.start&&state.start<p.end);
-      const status=own.length?<span className="vs-para-states">{[...new Set(own.map(state=>state.label))].map(label=><span key={label} className="vs-chip" data-tone={own.find(state=>state.label===label)!.tone}>{label}</span>)}</span>:null;
+      const status=own.length?<span className="vs-para-states">{[...new Set(own.map(state=>state.label))].map(label=><span key={label} className="vs-chip" title={label} data-tone={own.find(state=>state.label===label)!.tone}><span className="vs-visually-hidden">{label}</span></span>)}</span>:null;
       return locked?<p key={p.start} className="vs-para" data-aimed={on||undefined}>{tag(on)}{status}{p.text}</p>
        :<button type="button" key={p.start} className="vs-para vs-para--choice" data-aimed={on||undefined} aria-pressed={on} aria-label={`Edit paragraph ${n+1}: ${opening(p.text)}${own.length?` (${[...new Set(own.map(state=>state.label))].join(', ')})`:''}`} onClick={()=>aimParagraph(node.id,p)}>{tag(on)}{status}{p.text}</button>;
      })}

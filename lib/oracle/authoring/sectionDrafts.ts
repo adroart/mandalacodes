@@ -34,8 +34,14 @@ export interface SectionReviewIssue {
 /** Surface only actionable exceptions; no audio confidence is inferred from an AI warning. */
 export function sectionReviewExceptions(result:SectionDraftResult){return {issues:result.reviewIssues??[],warnings:result.warnings,changes:result.changes,needsReview:!!(result.reviewIssues?.length||result.warnings.length)};}
 export function sectionComparisonOriginal(result:SectionDraftResult,fallback:string):string{return result.comparisonOriginal??result.comparison?.originalText??result.appliedText??fallback;}
-/** Locate provider words within their real transcript segment, including repeated words. A word is flagged by `uncertainWord`;
+/** Locate provider words within their real transcript segment, including repeated words. A word is flagged by `reviewWorthy`;
  * a passage without word timings is flagged by its own exact doubt runs. */
+/**
+ * Only words the speech service was really unsure of are put to a check before applying: a doubt, or a
+ * probability under .45. Merely low-ish words are left alone so review stays short.
+ */
+const reviewWorthy=(word:Parameters<typeof uncertainWord>[0]&object)=>uncertainWord(word)&&(word.doubt===true||(word.probability??0)<.45);
+const same=(a:string,b:string)=>a.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim()===b.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
 export function transcriptionReviewIssues(rawTranscript:string,transcripts:(Pick<Transcript,'raw'|'words'|'captureId'>&{doubts?:TranscriptDoubt[]})[],evidenceQuotes:string[]):SectionReviewIssue[]{
  const issues:SectionReviewIssue[]=[];let segmentCursor=0;
  // Exact evidence containment avoids assigning a warning to an unrelated section.
@@ -46,13 +52,15 @@ export function transcriptionReviewIssues(rawTranscript:string,transcripts:(Pick
   let wordCursor=0;
   for(const word of transcript.words??[]){
    const local=transcript.raw.indexOf(word.text,wordCursor);if(local<0)continue;wordCursor=local+word.text.length;
-   if(!uncertainWord(word))continue;
+   if(!reviewWorthy(word))continue;
    const start=segmentStart+local,end=start+word.text.length;
    if(belongs(start,end))issues.push({kind:'transcription',quote:rawTranscript.slice(start,end),start,end,scope:'rawTranscript',message:message(word.text),...(word.probability!==undefined?{probability:word.probability}:{}),startMs:word.startMs,endMs:word.endMs,captureId:transcript.captureId,...(typeof word.heardAlso==='string'?{heardAlso:word.heardAlso}:{})});
   }
   let doubtCursor=0;
   for(const doubt of transcript.doubts??[]){
    if(typeof doubt?.text!=='string'||!doubt.text.trim())continue;
+   // A second listening that heard the same words raises no question.
+   if(typeof doubt.heardAlso==='string'&&same(doubt.heardAlso,doubt.text))continue;
    const local=transcript.raw.indexOf(doubt.text,doubtCursor);if(local<0)continue;doubtCursor=local+doubt.text.length;
    const start=segmentStart+local,end=start+doubt.text.length;
    if(belongs(start,end))issues.push({kind:'transcription',quote:rawTranscript.slice(start,end),start,end,scope:'rawTranscript',message:message(doubt.text),startMs:doubt.startMs,endMs:doubt.endMs,captureId:transcript.captureId,heardAlso:doubt.heardAlso});
