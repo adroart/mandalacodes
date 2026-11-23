@@ -6,6 +6,8 @@ import type { ProfileInputs } from '../../lib/profile/storage';
 interface ProfileFormProps {
   initial?: ProfileInputs | null;
   onSaved?: () => void;
+  /** The birth-time card: short labels, no hints, "Show my cards". */
+  compact?: boolean;
 }
 
 /* 24-hour time entry as plain text. Strip non-digits, cap at 4 digits, and
@@ -26,7 +28,7 @@ function isValidTime(value: string): boolean {
   return h >= 0 && h <= 23 && min >= 0 && min <= 59;
 }
 
-const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
+const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved, compact = false }) => {
   const { save } = useProfile();
   const [date, setDate] = useState<string>(initial?.date ?? '');
   const [time, setTime] = useState<string>(initial?.time ?? '');
@@ -130,7 +132,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
     <form className="profile-form" onSubmit={handleSubmit} noValidate>
       <div className="profile-form__field">
         <label htmlFor="profile-date" className="field-label profile-form__label">
-          Birth date
+          {compact ? 'Date' : 'Birth date'}
         </label>
         <input
           id="profile-date"
@@ -153,7 +155,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
 
       <div className="profile-form__field">
         <label htmlFor="profile-time" className="field-label profile-form__label">
-          Birth time
+          {compact ? 'Time' : 'Birth time'}
         </label>
         {/* Plain text field rather than type=time: the native picker fights
            free 24-hour typing (typing "23" in the hour column gets coerced).
@@ -166,20 +168,20 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           value={time}
           onChange={(e) => setTime(formatTimeInput(e.target.value))}
           className="field profile-form__input"
-          placeholder="HH:MM"
+          placeholder={compact ? '23:45' : 'HH:MM'}
           maxLength={5}
           autoComplete="off"
           required
           aria-invalid={!!time && !isValidTime(time)}
         />
-        <p className="profile-form__help">
+        {!compact && <p className="profile-form__help">
           24-hour time, e.g. 23:45. As exact as possible: every minute matters for the moving positions.
-        </p>
+        </p>}
       </div>
 
       <div className="profile-form__field">
         <label htmlFor="profile-place" className="field-label profile-form__label">
-          Birth place
+          {compact ? 'Place' : 'Birth place'}
         </label>
         <input
           id="profile-place"
@@ -194,7 +196,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
           onBlur={() => window.setTimeout(() => setShowSuggestions(false), 150)}
           onKeyDown={onPlaceKeyDown}
           className="field profile-form__input"
-          placeholder="Type a city, then pick from the list"
+          placeholder={compact ? 'City' : 'Type a city, then pick from the list'}
           autoComplete="off"
           role="combobox"
           aria-expanded={showSuggestions && suggestions.length > 0}
@@ -239,7 +241,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
             </p>
           )
         )}
-        {place && (
+        {place && !compact && (
           <p className="profile-form__help">
             {place.tzId} resolved from {place.label}
           </p>
@@ -249,7 +251,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial, onSaved }) => {
       {error && <p className="profile-form__error" role="alert">{error}</p>}
 
       <button type="submit" className="btn btn-primary profile-form__submit" disabled={!canSubmit}>
-        {submitting ? 'Building...' : 'Build my profile'}
+        {submitting ? 'Building...' : compact ? 'Show my cards' : 'Build my profile'}
       </button>
 
       <style>{`

@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import type { ProfileInputs } from '../../lib/profile/storage';
 import ProfileForm from './ProfileForm';
+import SignInPanel from '../account/SignInPanel';
+import { useAccount } from '../../lib/account/useAccount';
 
 /**
  * The birth-time entry popup. A warm, on-theme modal (same chrome as the
@@ -11,8 +13,10 @@ import ProfileForm from './ProfileForm';
  * oracle index rail-top. The chart computes locally on save; no account needed.
  *
  * Two steps:
- *   form    → the birth-date / time / place form, with a quiet "already have an
- *             account? log in" line for returning members (calls `onLogIn`).
+ *   form    → a "New here | Sign in" switch at the top (when accounts are on),
+ *             then either the birth-date / time / place form or the sign-in
+ *             form, in the same card. Someone with an account sees where to
+ *             sign in before anything else (Adrian, 2026-11-23, direction B).
  *   confirm → after the chart is computed, a confirmation offering three ways
  *             on: see the whole chart, go back to the card, or save by creating
  *             an account. The callers wire what each action does.
@@ -37,8 +41,6 @@ const BirthTimeModal: React.FC<{
   /** Offer "back to this card" on the confirmation (true on a card surface). */
   showCardOption?: boolean;
   onClose: () => void;
-  /** Returning member chose to log in instead of entering a birth time. */
-  onLogIn?: () => void;
   /** Confirmation: go to the full Hologenetic chart. */
   onSeeChart?: () => void;
   /** Confirmation: keep reading this card (just close). */
@@ -49,12 +51,13 @@ const BirthTimeModal: React.FC<{
   initial,
   showCardOption = false,
   onClose,
-  onLogIn,
   onSeeChart,
   onBackToCard,
   onSave,
 }) => {
   const [step, setStep] = useState<'form' | 'confirm'>('form');
+  const [tab, setTab] = useState<'new' | 'signin'>('new');
+  const { available: canSignIn } = useAccount();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -95,10 +98,6 @@ const BirthTimeModal: React.FC<{
     border: `1px solid ${C.fieldBorder}`, borderRadius: 12, padding: 13, marginBottom: 10,
     fontFamily: 'var(--font-ui)', fontSize: 17, fontWeight: 500,
   };
-  const quietLink: React.CSSProperties = {
-    color: C.bronze, textDecoration: 'none', fontWeight: 700, background: 'none', border: 'none',
-    cursor: 'pointer', font: 'inherit', padding: 0,
-  };
 
   return createPortal(
     <div
@@ -113,7 +112,7 @@ const BirthTimeModal: React.FC<{
       <div
         className="oracle-birth-panel"
         style={{
-          width: '100%', maxWidth: 380, maxHeight: '88vh', overflowY: 'auto',
+          width: '100%', maxWidth: 420, maxHeight: '92vh', overflowY: 'auto',
           background: C.surface, borderRadius: 20,
           boxShadow: '0 24px 60px -20px rgba(0,0,0,0.45)',
           padding: '28px 26px', color: C.ink, textAlign: 'center',
@@ -123,36 +122,33 @@ const BirthTimeModal: React.FC<{
         {import.meta.env.VITE_ORACLE_APP === 'true' && <button type="button" className="oracle-birth-close" aria-label="Close birth time" onClick={onClose}><X size={20} aria-hidden="true" /></button>}
         {step === 'form' && (
           <>
-            {ring}
-            {brand}
-            <h2 style={{
-              fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 28,
-              lineHeight: 1.05, color: C.ink, margin: '0 0 6px',
-            }}>
-              Enter your birth time
-            </h2>
-            <p style={{
-              fontFamily: 'var(--font-reading)', letterSpacing: '0.015em', fontSize: 17,
-              color: C.sub, lineHeight: 1.35, margin: '0 0 18px',
-            }}>
-              See which cards are most relevant to you, lit throughout the oracle.
-            </p>
-
-            <div style={{ textAlign: 'left' }}>
-              <ProfileForm initial={initial} onSaved={() => setStep('confirm')} />
-            </div>
-
-            {onLogIn && (
-              <p style={{
-                marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.line}`,
-                fontFamily: 'var(--font-ui)', fontSize: 13, color: C.sub,
-              }}>
-                Already have an account?{' '}
-                <button type="button" style={quietLink} onClick={onLogIn}>
-                  Log in
-                </button>
-              </p>
+            {canSignIn && (
+              <div className="birth-card__switch" role="tablist" aria-label="New here or sign in">
+                <button type="button" role="tab" aria-selected={tab === 'new'} onClick={() => setTab('new')}>New here</button>
+                <button type="button" role="tab" aria-selected={tab === 'signin'} onClick={() => setTab('signin')}>Sign in</button>
+              </div>
             )}
+            {tab === 'new' || !canSignIn ? (
+              <>
+                <h2 className="birth-card__title">When were you born?</h2>
+                <div style={{ textAlign: 'left' }}>
+                  <ProfileForm compact initial={initial} onSaved={() => setStep('confirm')} />
+                </div>
+              </>
+            ) : (
+              <div style={{ textAlign: 'left' }}>
+                <SignInPanel bare untitled onSignedIn={onClose} />
+              </div>
+            )}
+            <style>{`
+              .birth-card__switch { display: flex; gap: var(--space-1); padding: var(--space-1); margin: 0 0 var(--space-5); border-radius: var(--space-3); background: color-mix(in oklab, var(--color-wood-900) 8%, transparent); }
+              .birth-card__switch button { flex: 1; min-height: var(--space-7); border: 0; border-radius: var(--space-2); background: transparent; cursor: pointer; font-family: var(--font-ui); font-size: var(--text-lg); color: var(--color-wood-900); }
+              .birth-card__switch button[aria-selected='true'] { background: var(--color-bronze-700); color: var(--color-paper-50); font-weight: 600; }
+              .birth-card__title { font-family: var(--font-display); font-weight: 500; font-size: var(--text-4xl); line-height: 1.05; color: var(--color-wood-900); margin: 0 0 var(--space-5); }
+              .oracle-birth-panel .profile-form { gap: var(--space-4); max-width: none; }
+              .oracle-birth-panel .profile-form .field { min-height: var(--space-7); font-size: var(--text-xl); }
+              .oracle-birth-panel .profile-form__submit { min-height: var(--space-7); font-size: var(--text-base); margin-top: var(--space-1); }
+            `}</style>
           </>
         )}
 

@@ -76,7 +76,6 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
-  const [returning, setReturning] = useState(false);
   const name = friendlyName(displayName);
 
   // A single quiet account line, folded INTO the card under a hairline. Signed
@@ -146,14 +145,13 @@ const OracleRailTop: React.FC<OracleRailTopProps> = ({
         <BirthTimeModal
           initial={initialInputs}
           onClose={() => setFormOpen(false)}
-          onLogIn={accountsAvailable ? () => { setFormOpen(false); setReturning(true); setSignInOpen(true); } : undefined}
           onSeeChart={() => { setFormOpen(false); navigate('/profile'); }}
-          onSave={accountsAvailable ? () => { setFormOpen(false); setReturning(false); setSignInOpen(true); } : undefined}
+          onSave={accountsAvailable ? () => { setFormOpen(false); setSignInOpen(true); } : undefined}
         />
       )}
 
       {signInOpen && (
-        <SignInModal context="reading" returning={returning} onClose={() => setSignInOpen(false)} onSignedIn={() => setSignInOpen(false)} />
+        <SignInModal context="reading" onClose={() => setSignInOpen(false)} onSignedIn={() => setSignInOpen(false)} />
       )}
     </>
   );

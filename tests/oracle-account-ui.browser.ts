@@ -230,7 +230,7 @@ test('signing in from Studio resumes an auth-blocked saved take once without ope
  const calls=await page.evaluate(()=>(window as any).recoveryCalls);expect(calls.filter((call:any)=>call.operation==='transcribe')).toHaveLength(1);expect(calls.filter((call:any)=>call.operation==='assimilate-sections')).toHaveLength(1);expect(calls.filter((call:any)=>call.path==='/api/auth/native/exchange')).toHaveLength(1);expect(await page.evaluate(()=>(window as any).recoveryMicCalls)).toBe(0);
 });
 
-test('the Welcome modal in the app signs in through the phone, so Google works from the deck',async({page})=>{
+test('the birth time card in the app signs in through the phone, so Google works from the deck',async({page})=>{
  await page.addInitScript(()=>{
   const w=window as any;w.modalSignedIn=false;w.modalCalls=[];
   w.__nativeAccountFixture=async(path:string,options:any)=>{
@@ -246,11 +246,10 @@ test('the Welcome modal in the app signs in through the phone, so Google works f
  });
  await page.goto('/universal-language');
  await page.getByRole('button',{name:'Enter your birth time',exact:true}).click();
- await page.getByRole('button',{name:'Log in',exact:true}).click();
- await expect(page.getByRole('heading',{name:'Welcome back',exact:true})).toBeVisible();
- await expect(page.getByText('Already have an account? Any of these signs you in.')).toBeVisible();
+ await page.getByRole('tab',{name:'Sign in',exact:true}).click();
+ await expect(page.getByLabel('Email',{exact:true})).toBeVisible();
  await page.evaluate(()=>{const w=window as any;w.webkit.messageHandlers.oracleGoogleAuth.postMessage=(body:any)=>{if(body.action==='start')window.dispatchEvent(new CustomEvent('oracle-google-result',{detail:{id:body.id,state:body.state,code:'c'.repeat(43)}}));};});
  await page.getByRole('button',{name:'continue with google',exact:true}).click();
- await expect(page.getByRole('heading',{name:'Welcome back',exact:true})).toBeHidden();
+ await expect(page.getByRole('tab',{name:'Sign in',exact:true})).toBeHidden();
  expect(await page.evaluate(()=>(window as any).modalCalls.filter((path:string)=>path==='/api/auth/native/exchange'))).toHaveLength(1);
 });

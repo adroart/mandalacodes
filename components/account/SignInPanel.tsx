@@ -43,6 +43,8 @@ interface SignInPanelProps {
   /** Native browser authentication returns here; website OAuth navigates away.
    *  Defaults to what the provided actions say. */
   googleReturnsToApp?: boolean;
+  /** Drop the small heading too, where the surrounding card already says "Sign in". */
+  untitled?: boolean;
 }
 
 
@@ -57,7 +59,7 @@ interface SignInPanelProps {
  *   of one tall column. The short code modes stay vertical. Mobile collapses
  *   back to a column automatically.
  */
-const SignInPanel: React.FC<SignInPanelProps> = ({ onSignedIn, bare = false, horizontal = false, authActions: givenActions, googleReturnsToApp: givenReturnsToApp }) => {
+const SignInPanel: React.FC<SignInPanelProps> = ({ onSignedIn, bare = false, horizontal = false, authActions: givenActions, googleReturnsToApp: givenReturnsToApp, untitled = false }) => {
   const contextActions = useSignInActions();
   const authActions = givenActions ?? contextActions;
   const googleReturnsToApp = givenReturnsToApp ?? !!authActions.googleReturnsToApp;
@@ -199,7 +201,7 @@ const SignInPanel: React.FC<SignInPanelProps> = ({ onSignedIn, bare = false, hor
       {/* Bare mode (inside the account page) drops the brand line and the big
           serif title — the page already carries "Your account" — and shows
           just a quiet sub-heading so the form reads as a section, not a card. */}
-      {bare ? (
+      {untitled ? null : bare ? (
         <div style={{ marginBottom: 22 }}>
           <p style={{ fontFamily: 'var(--font-ui)', fontSize: 10, letterSpacing: '0.28em', textTransform: 'uppercase', color: C.bronze, fontWeight: 600, margin: 0 }}>
             {title}

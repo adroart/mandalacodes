@@ -186,7 +186,7 @@ test('removes the chart prompt as soon as a birth moment is added', async ({ pag
   await page.fill('#profile-time', '1430');
   await page.fill('#profile-place', 'Jakarta');
   await page.locator('.profile-form__suggestion').first().click();
-  await page.getByRole('button', { name: 'Build my profile' }).click();
+  await page.getByRole('button', { name: 'Show my cards' }).click();
 
   await expect(page.getByRole('heading', { name: 'Your chart is lit' })).toBeVisible();
   await expect(page.locator('.ypc--out')).toHaveCount(0);

@@ -250,7 +250,6 @@ const OracleBottomNavigation: React.FC<Props> = ({ current, palette, pieceId, on
         <BirthTimeModal
           showCardOption
           onClose={() => setBirthOpen(false)}
-          onLogIn={() => setBirthOpen(false)}
           onSeeChart={() => { setBirthOpen(false); navigate('/profile'); }}
           onBackToCard={() => setBirthOpen(false)}
           onSave={() => setBirthOpen(false)}
