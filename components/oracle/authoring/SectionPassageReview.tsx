@@ -12,7 +12,7 @@ interface Props {
  original:string;text:string;intent?:'replace'|'add'|'revise';explicitPassage?:'add'|'replace';comparison?:PassageComparison;choices?:Record<string,PassageChoice>;disabled:boolean;replayDisabled:boolean;sessionKey:string;
  replay:{text:string;words:ReplayWord[];captureId:string}|null;activeWord:number;
  /** Character offset in text to return the cursor to after listening. */
- caret?:number;cleanupCount?:number;onCleanup?:()=>void;onChoose?:(key:string,choice:PassageChoice)=>void;
+ readOnlyWords?:boolean;caret?:number;cleanupCount?:number;onCleanup?:()=>void;onChoose?:(key:string,choice:PassageChoice)=>void;
  /** Word checks; `playing` and `audio` are each row's playback state, `heardAlso` what a second listening heard there. */
  checks?:ReviewWordCheck[];onHearCheck?:(key:string)=>void;onStopCheck?:(key:string)=>void;onConfirmCheck?:(key:string)=>void;onReopenCheck?:(key:string)=>void;
  onSelection?:(from:number,to:number,text:string,baseText:string)=>void;onReplay:(from?:number,to?:number)=>void;onSeek:(word:ReplayWord)=>void;onEdit:(index:number,replacement:string)=>Promise<void>;
@@ -51,7 +51,7 @@ export default function SectionPassageReview(props:Props){
    </section>;
    const human=row.kind!=='unspoken'?<section key="words" data-review-pane="words" aria-label={!passages?'Your section words':`Your words for passage ${index+1}`}>
     {(!passages||row.choice!=='mine')&&<h4>{row.choice!=='mine'?'Not being used':props.explicitPassage==='add'?'Your addition':add?'Your addition':'Your words'}{row.choice==='mine'&&<Pencil size={12} aria-hidden="true"/>}{!passages&&!add&&!props.explicitPassage&&<span className="vs-replacement-scope">{paragraphs>1?`Replaces all ${paragraphs} paragraphs`:'Replaces this paragraph'}</span>}</h4>}
-    {row.choice!=='mine'?<p className="vs-unused">{row.text}</p>:props.replay?<WordReplay text={row.text} words={tokens} activeIndex={active} onSeek={props.onSeek}/>:checkedRows.current.keys.has(row.key)?<CheckedEditableText key={props.sessionKey+'/'+index} label={label2} value={row.text} checks={rowChecks.map(check=>({...check,unanchored:checkRow(check)<0}))} disabled={props.disabled} caret={caret} save={replacement=>props.onEdit(index,replacement)} onSelection={(from,to,text,value)=>props.onSelection?.(row.textStart+from,row.textStart+to,text,props.text.slice(0,row.textStart)+value+props.text.slice(row.textEnd))} {...actions}/>:<EditableText autoSize="content" hideLabel caret={caret} onSelection={(from,to,text,value)=>props.onSelection?.(row.textStart+from,row.textStart+to,text,props.text.slice(0,row.textStart)+value+props.text.slice(row.textEnd))} key={props.sessionKey+'/'+index} label={label2} value={row.text} disabled={props.disabled} save={replacement=>props.onEdit(index,replacement)}/>}
+    {row.choice!=='mine'?<p className="vs-unused">{row.text}</p>:props.readOnlyWords?<p className="vs-take-sentence">{row.text}</p>:props.replay?<WordReplay text={row.text} words={tokens} activeIndex={active} onSeek={props.onSeek}/>:checkedRows.current.keys.has(row.key)?<CheckedEditableText key={props.sessionKey+'/'+index} label={label2} value={row.text} checks={rowChecks.map(check=>({...check,unanchored:checkRow(check)<0}))} disabled={props.disabled} caret={caret} save={replacement=>props.onEdit(index,replacement)} onSelection={(from,to,text,value)=>props.onSelection?.(row.textStart+from,row.textStart+to,text,props.text.slice(0,row.textStart)+value+props.text.slice(row.textEnd))} {...actions}/>:<EditableText autoSize="content" hideLabel caret={caret} onSelection={(from,to,text,value)=>props.onSelection?.(row.textStart+from,row.textStart+to,text,props.text.slice(0,row.textStart)+value+props.text.slice(row.textEnd))} key={props.sessionKey+'/'+index} label={label2} value={row.text} disabled={props.disabled} save={replacement=>props.onEdit(index,replacement)}/>}
    </section>:null;
    if(props.explicitPassage&&passages){
     // One passage spoken again: each sentence shows the words that will be used first, the other
@@ -67,10 +67,10 @@ export default function SectionPassageReview(props:Props){
      :row.choice==='mine'?[human,...(row.original.trim()?[other('Was',row.original,'original')]:[])]
      :[...(row.original.trim()?[<section key="original" data-review-pane="original" aria-label={`Original sentence ${index+1}`}><div className="vs-original">{row.original}</div></section>]:[]),other(row.kind==='new'?'Left out':'Not using',row.text,'words')];
     return <div className="vs-pair vs-pair--sentence" role="group" key={`${props.sessionKey}/${row.key}`} data-passage-index={index} data-kind={row.kind} data-choice={row.choice} aria-label={`${name}: ${label}`}>
-     <header className="vs-pair-head"><span>{name}{row.kind==='unspoken'&&<b data-tone="removed">Not spoken</b>}</span>
+     <header className="vs-pair-head"><span>{name}{row.kind==='unspoken'&&<b data-tone="removed">No match</b>}</span>
       {props.onChoose&&<span className="vs-sentence-switch" role="group" aria-label={`${name}: choose`}>
-       <button type="button" aria-pressed={row.choice==='mine'} disabled={props.disabled} onClick={()=>row.choice!=='mine'&&props.onChoose!(row.key,'mine')}>{sides[0]}</button>
-       <button type="button" aria-pressed={row.choice==='original'} disabled={props.disabled} onClick={()=>row.choice!=='original'&&props.onChoose!(row.key,'original')}>{sides[1]}</button>
+       <button type="button" className="btn btn-chip btn-sm" aria-pressed={row.choice==='mine'} disabled={props.disabled} onClick={()=>row.choice!=='mine'&&props.onChoose!(row.key,'mine')}>{sides[0]}</button>
+       <button type="button" className="btn btn-chip btn-sm" aria-pressed={row.choice==='original'} disabled={props.disabled} onClick={()=>row.choice!=='original'&&props.onChoose!(row.key,'original')}>{sides[1]}</button>
       </span>}
      </header>
      {body}

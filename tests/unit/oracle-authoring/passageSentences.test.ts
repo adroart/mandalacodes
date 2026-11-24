@@ -69,3 +69,12 @@ describe('passages recorded one after another',()=>{
   expect(followingParagraph(sections,{c:'Changed.'},'c',{start:0,end:8,text:'Changed.'})).toBeUndefined();
  });
 });
+
+it('applies the full draft verbatim if the speaker has made no sentence choices',()=>{
+ const original='I see the kind moments. Calm lives here. Make a choice.';
+ const text='I see the kind moments.\n\nMake a choice.';
+ const comparison=sentenceComparison(original,text);
+ expect(comparison).toBeDefined();
+ expect(withChosenPassageText({text,comparison,rowChoices:defaultSentenceChoices(comparison),
+  passageEdit:{operation:'replace',focus:{start:0,end:original.length,text:original}}}).text).toBe(text);
+});

@@ -29,16 +29,17 @@ export function checkedEditorText(root:Node):string {
 }
 
 /** The actions for one check, in the order the design gives them. Never rendered inside prose. */
-export function WordCheckActions({check,disabled,onHearCheck,onStopCheck,onConfirmCheck,onReopenCheck,onUse}:{check:ReviewWordCheck;onUse?:()=>void}&CheckActions){
+export function WordCheckActions({check,disabled,onHearCheck,onStopCheck,onConfirmCheck,onReopenCheck,onUse,compact}:{check:ReviewWordCheck;onUse?:()=>void;compact?:boolean}&CheckActions){
  if(check.done)return <span className="vs-word-check-actions"><button type="button" disabled={disabled} onClick={()=>onReopenCheck?.(check.key)}>Check again</button></span>;
+ const control=compact?'btn btn-quiet btn-sm':undefined;
  const listen=check.canHear?'Hear it':'Listen to recording';
- return <span className="vs-word-check-actions">
+ return <span className={compact?'vs-take-check-actions':'vs-word-check-actions'}>
   {check.audio==='unavailable'?<span className="vs-word-check-status">Audio unavailable</span>
-   :check.audio==='failed'?<><span className="vs-word-check-status" role="status">Audio could not play.</span>{onHearCheck&&<button type="button" disabled={disabled} onClick={()=>onHearCheck(check.key)}>Try audio again</button>}</>
-   :check.playing?<button type="button" disabled={disabled} onClick={()=>(onStopCheck??onHearCheck)?.(check.key)}>Stop clip</button>
-   :onHearCheck&&<button type="button" disabled={disabled} onClick={()=>onHearCheck(check.key)}>{listen}</button>}
-  <button type="button" disabled={disabled} onClick={()=>onConfirmCheck?.(check.key)}>{check.quote?'It’s right':'I’ve checked this'}</button>
-  {onUse&&check.heardAlso&&<button type="button" className="vs-word-check-use" disabled={disabled} onClick={onUse}>Use “{check.heardAlso}”</button>}
+   :check.audio==='failed'?<><span className="vs-word-check-status" role="status">Audio could not play.</span>{onHearCheck&&<button type="button" className={control} disabled={disabled} onClick={()=>onHearCheck(check.key)}>Try audio again</button>}</>
+   :check.playing?<button type="button" className={control} disabled={disabled} onClick={()=>(onStopCheck??onHearCheck)?.(check.key)}>Stop clip</button>
+   :onHearCheck&&<button type="button" className={control} disabled={disabled} onClick={()=>onHearCheck(check.key)}>{listen}</button>}
+  <button type="button" className={control} disabled={disabled} onClick={()=>onConfirmCheck?.(check.key)}>{check.quote?'It’s right':'I’ve checked this'}</button>
+  {onUse&&check.heardAlso&&<button type="button" className={compact?'btn btn-secondary btn-sm':'vs-word-check-use'} disabled={disabled} onClick={onUse}>Use “{check.heardAlso}”</button>}
  </span>;
 }
 
@@ -75,21 +76,20 @@ export default function CheckedEditableText({label,value,checks,disabled,caret,s
  const select=()=>{const el=root.current,selection=window.getSelection();if(!el||!selection?.rangeCount)return;const range=selection.getRangeAt(0);if(!el.contains(range.startContainer)||!el.contains(range.endContainer))return;const prefix=range.cloneRange();prefix.selectNodeContents(el);prefix.setEnd(range.startContainer,range.startOffset);const from=checkedEditorText(prefix.cloneContents()),selected=checkedEditorText(range.cloneContents());onSelection?.(from.length,from.length+selected.length,selected,checkedEditorText(el));};
  const input=()=>{if(!root.current)return;latest.current=checkedEditorText(root.current);markChanged(root.current);dirty.current=true;onSelection?.(0,0,'',latest.current);clearTimeout(timer.current);timer.current=setTimeout(()=>void flush(),600);};
  const insert=(text:string)=>{const el=root.current,selection=window.getSelection();if(!el||!selection?.rangeCount)return;const range=selection.getRangeAt(0);if(!el.contains(range.commonAncestorContainer))return;range.deleteContents();const node=document.createTextNode(text);range.insertNode(node);range.setStart(node,text.length);range.collapse(true);selection.removeAllRanges();selection.addRange(range);input();};
- /**
-  * Put the other wording in place of exactly the marked occurrence, through the browser's own editing so the normal
-  * undo brings the word back. Only the editable text changes; the saved transcript and audio are never touched.
-  */
+ const [alternateUndo,setAlternateUndo]=useState<{before:string;after:string;key:string}>();
  const use=(key:string)=>{
-  const el=root.current,check=anchored.find(item=>item.key===key),word=el?.querySelector<HTMLElement>(`.vs-inline-word-check[data-check-key="${CSS.escape(key)}"] .vs-checked-word`);
-  if(disabled||!el||!check?.heardAlso||!word)return;
-  // Typing inside the mark since it was drawn means he already changed it: never overwrite that.
-  if((word.textContent??'').toLowerCase()!==display.slice(check.from,check.to).toLowerCase())return;
-  el.focus({preventScroll:true});
-  const range=document.createRange();range.selectNodeContents(word);const selection=window.getSelection();selection?.removeAllRanges();selection?.addRange(range);
-  if(!document.execCommand('insertText',false,check.heardAlso)){range.deleteContents();range.insertNode(document.createTextNode(check.heardAlso));input();}
-  setUsed(value=>new Set(value).add(key));setDisplay(latest.current);void flush();
-  // When the other wording still holds the quoted word, removing it cannot settle the check, so confirm it instead.
+  const check=anchored.find(item=>item.key===key);
+  if(disabled||!check?.heardAlso||latest.current!==display)return;
+  const after=display.slice(0,check.from)+check.heardAlso+display.slice(check.to);
+  latest.current=after;dirty.current=true;setUsed(value=>new Set(value).add(key));setDisplay(after);void flush();
+  setAlternateUndo({before:display,after,key});
   if(check.quote&&placeReviewChecks(check.heardAlso,[{key,quote:check.quote,message:check.message,done:false,canHear:false}])[0]?.from!==undefined)onConfirmCheck?.(key);
+ };
+ const undoAlternate=()=>{
+  if(!alternateUndo||latest.current!==alternateUndo.after)return;
+  latest.current=alternateUndo.before;dirty.current=true;setDisplay(alternateUndo.before);
+  setUsed(value=>{const next=new Set(value);next.delete(alternateUndo.key);return next;});
+  actions.onReopenCheck?.(alternateUndo.key);setAlternateUndo(undefined);void flush();
  };
  /** Bring a marked word into view and select it, so he can listen, retype or re-record it. */
  const show=(key:string)=>{const el=root.current,word=el?.querySelector<HTMLElement>(`.vs-inline-word-check[data-check-key="${CSS.escape(key)}"] .vs-checked-word`);if(!el||!word)return;word.scrollIntoView({block:'center',behavior:'smooth'});if(disabled)return;el.focus({preventScroll:true});const range=document.createRange();range.selectNodeContents(word);const selection=window.getSelection();selection?.removeAllRanges();selection?.addRange(range);};
@@ -125,6 +125,7 @@ export default function CheckedEditableText({label,value,checks,disabled,caret,s
   {rows.length>0&&<div className="vs-word-check-rows" role="group" aria-label="Words to check">
    {rows.map(check=><WordCheckRow key={check.key} check={check} onShow={show} onUse={use} disabled={disabled} {...actions}/>)}
   </div>}
+  {alternateUndo&&display===alternateUndo.after&&<button type="button" className="btn btn-quiet btn-sm" disabled={disabled} onClick={undoAlternate}>Undo word replacement</button>}
   {failed&&<button type="button" className="vs-link" onClick={()=>void flush()}>Retry saving these words</button>}
  </div>;
 }

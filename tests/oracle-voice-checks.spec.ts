@@ -58,8 +58,9 @@ test('a word heard two ways offers the other wording, replaces only that occurre
  await chess.getByRole('button',{name:'Use “chest”',exact:true}).click();
  await expect.poll(()=>prose(editor)).toBe('I can feel direction in my chest before I find my words.');
  await expect(chess).toHaveCount(0);await expect(apply).toHaveText('Check 1 word first');
- // The normal text undo brings the word back, with its check.
- await editor.press('ControlOrMeta+z');
+ // Undo restores the original word and its check without entering the editor.
+ await expect(editor).not.toBeFocused();
+ await dialog.getByRole('button',{name:'Undo word replacement',exact:true}).click();
  await expect.poll(()=>prose(editor)).toBe(said);
  await editor.blur();await expect(chess).toHaveCount(1);await expect(apply).toHaveText('Check 2 words first');
  await chess.getByRole('button',{name:'Use “chest”',exact:true}).click();await editor.blur();

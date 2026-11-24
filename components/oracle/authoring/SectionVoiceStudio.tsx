@@ -1,4 +1,4 @@
-import {useRef} from 'react';
+import {useRef,useState} from 'react';
 import {useVoiceStudio} from './studio/useVoiceStudio';
 import StudioBar from './studio/StudioBar';
 import {ProcessingStatus,Toast} from './studio/StatusBand';
@@ -22,22 +22,25 @@ import './SectionVoiceStudio.css';
 export default function SectionVoiceStudio(props:StudioProps){
  const studio=useVoiceStudio(props);
  const {view,active,recordingTarget,opening,integrating,step,statusShown,notice,toastError,section,result,draft,audioUrl,pickFromRail,manuscript,monitor,targetId,pendingPassage}=studio;
+ const [editingKey,setEditingKey]=useState<string>();
+ const reviewKey=JSON.stringify([draft?.id,section?.id,result?.takeIds,result?.passageEdit?.focus]);
+ const editing=view==='review'&&!result?.applied&&editingKey===reviewKey;
  const root=useRef<HTMLElement>(null);
  useVisualViewport(root);
  useScreenFocus(root,view==='review'&&result?.applied?'applied':view);
  useManuscriptScroll(root,manuscript,view,targetId,draft?.id,!!active);
  const announcement=useRecordingAnnouncement(!!active,monitor.paused);
- return <section ref={root} className="section-voice-studio" aria-label="Voice recording" data-view={view} data-recording-section-id={active?recordingTarget.current:undefined} data-authoring-protected={!!active||opening||integrating||undefined} onKeyDown={e=>{if(view!=='review'||(e.target as HTMLElement).closest('textarea,input,[contenteditable=true],button'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();step(e.key==='ArrowRight'?1:-1);}}}>
-  <StudioBar {...studio}/>
-  {statusShown&&<ProcessingStatus {...studio}/>}
+ return <section ref={root} className="section-voice-studio" aria-label="Voice recording" data-view={view} data-editing={editing||undefined} data-recording-section-id={active?recordingTarget.current:undefined} data-authoring-protected={!!active||opening||integrating||editing||undefined} onKeyDown={e=>{if(view!=='review'||(e.target as HTMLElement).closest('textarea,input,[contenteditable=true],button'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();step(e.key==='ArrowRight'?1:-1);}}}>
+  {!editing&&<StudioBar {...studio}/>}
+  {!editing&&statusShown&&<ProcessingStatus {...studio}/>}
   <div className="vs-main">
-   {(view==='work'||view==='review')&&<SectionIndex {...studio} onPick={pickFromRail} mode="rail"/>}
+   {!editing&&(view==='work'||view==='review')&&<SectionIndex {...studio} onPick={pickFromRail} mode="rail"/>}
 
    {view==='work'&&<Manuscript {...studio}/>}
 
    {view==='passage'&&<PassageEditor {...studio}/>}
 
-   {view==='review'&&<ReviewStage {...studio}/>}
+   {view==='review'&&<ReviewStage {...studio} reviewKey={reviewKey} editing={editing} onEditing={value=>setEditingKey(value?reviewKey:undefined)}/>}
 
    {view==='history'&&<HistoryScreen {...studio}/>}
 
@@ -56,11 +59,11 @@ export default function SectionVoiceStudio(props:StudioProps){
    {view==='sessions'&&<SessionsScreen {...studio}/>}
   </div>
 
-  {(notice||toastError)&&<Toast {...studio}/>}
+  {!editing&&(notice||toastError)&&<Toast {...studio}/>}
 
   {(view==='work'||view==='passage')&&<Dock {...studio}/>}
 
-  {view==='review'&&!pendingPassage&&section&&result&&<ReviewDock {...studio} section={section} result={result}/>}
+  {!editing&&view==='review'&&!pendingPassage&&section&&result&&<ReviewDock {...studio} section={section} result={result}/>}
 
   {audioUrl&&<PlaybackAudio {...studio}/>}
   <p className="vs-visually-hidden" role="status" aria-live="polite" data-recording-announcement>{announcement}</p>

@@ -9,6 +9,7 @@ import { currentNamedReaderSection } from '../../../../src/mobile/authoring/read
 import { getSynthesis } from '../../../../data/synthesisData';
 import { replaceComparisonPassage, buildPassageComparison, comparisonRows, readingParagraphs, type PassageChoice } from '../../../../lib/oracle/authoring/passageComparison';
 import { queueSectionTake, discardSectionTake, recoverInterruptedRecordings, withRecordingDestination, passageRecordingConflict, promoteWaitingTakes, type TakeSession, type RecordingDestination } from '../../../../src/mobile/authoring/sectionTakes';
+import { defaultSentenceChoices, sentenceComparison, withChosenPassageText } from '../../../../lib/oracle/authoring/passageSentences';
 import { followingParagraph } from '../../../../lib/oracle/authoring/passageSpans';
 import { buildWordReplay, activeReplayWord, type ReplayWord } from '../../../../lib/oracle/authoring/wordReplay';
 import { focusedVoiceSections } from '../../../../src/mobile/authoring/focusSections';
@@ -328,7 +329,9 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         accept(value);
         return value;
     };
+    const remainingPlayback = useRef<string[]>([]);
     const stopListening = () => {
+        remainingPlayback.current = [];
         const at = replay?.words[activeWord]?.from;
         player.current?.pause();
         loopCleanup.current?.();
@@ -682,6 +685,32 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         });
         return task;
     };
+    const editFullTake = (id: string, before: string, text: string, wordRange?: {from:number;to:number}) => {
+        const sessionId = current.current?.id;
+        const task = pending.current.then(async () => {
+            if (!sessionId || current.current?.id !== sessionId)
+                throw Error('This recording changed. Reopen its review.');
+            await patch(s => ({...s, results: s.results.map(r => {
+                if (r.sectionId !== id) return r;
+                if (!r.passageEdit || r.applied || r.text !== before)
+                    throw Error('This draft changed. Reopen its review.');
+                const original = r.passageEdit.focus.text;
+                const pair = wordRange && r.comparison?.pairs.findIndex(p => p.textStart <= wordRange.from && p.textEnd >= wordRange.to);
+                if (pair !== undefined && pair >= 0 && r.comparison) {
+                    const span = r.comparison.pairs[pair];
+                    const next = replaceComparisonPassage(original, before, r.comparison, pair,
+                        text.slice(span.textStart, span.textEnd + text.length - before.length));
+                    if (next.comparison && next.text === text)
+                        return {...r, ...next, checked:false};
+                }
+                const comparison = r.passageEdit.operation === 'replace' ? sentenceComparison(original, text) : undefined;
+                return {...r, text, comparison, rowChoices:defaultSentenceChoices(comparison), checked:false};
+            })}));
+            failed.current = false;
+        });
+        pending.current = task.catch(() => {failed.current = true;});
+        return task;
+    };
     const choosePassage = (id: string, key: string, choice: PassageChoice) => {
         failed.current = false;
         const task = pending.current.then(() => patch(s => ({ ...s, results: s.results.map(r => r.sectionId === id ? { ...r, rowChoices: { ...r.rowChoices, [key]: choice } } : r) }))).then(() => undefined);
@@ -766,6 +795,18 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
                 return;
             const saved = await audio.load(draft.captureSessionId);
             const words = buildWordReplay(candidate.text, saved?.session.transcript ?? [], candidate.evidenceQuotes);
+            remainingPlayback.current = [];
+            if (candidate.passageEdit && !candidate.rangeSelection && to === undefined && from === 0) {
+                const ids = candidate.takeIds?.length ? candidate.takeIds : draft.captureId ? [draft.captureId] : [];
+                if (ids.length) {
+                    clipBounds.current = null;
+                    remainingPlayback.current = ids.slice(1);
+                    setReplay({text:candidate.text, words, captureId:ids[0]});
+                    setActiveWord(-1);
+                    await playCapture(ids[0], 0);
+                    return;
+                }
+            }
             const bounds = phraseReplayBounds(words, from, to ?? candidate.text.length);
             const captureId = bounds?.captureId ?? words.find(w => w.captureId)?.captureId ?? candidate.takeIds?.[0] ?? draft.captureId ?? saved?.session.captures[0]?.id;
             if (!captureId)
@@ -782,6 +823,10 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         catch (e) {
             report(e);
         }
+    };
+    const playNextTake = () => {
+        const next = remainingPlayback.current.shift();
+        if (next) void playCapture(next, 0).catch(report);
     };
     const hear = (issue: NonNullable<SectionDraftResult['reviewIssues']>[number]) => {
         if (!issue.captureId || issue.startMs === undefined)
@@ -1317,7 +1362,7 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
     const applyLabel = (() => {
         if (!result || !section)
             return { text: '', empty: false };
-        if(result.passageEdit)return {text:result.passageEdit.operation==='add'?'Apply addition':'Apply replacement',empty:false};
+        if(result.passageEdit)return {text:result.passageEdit.operation==='add'?'Apply addition':'Apply replacement',empty:!withChosenPassageText(result).text.trim()};
         if (result.editIntent === 'add')
             return { text: 'Add my words', empty: false };
         const base = sectionComparisonOriginal(result, references[section.id] ?? section.text);
@@ -1447,8 +1492,8 @@ export function useVoiceStudio({ source, services, sectionId, onClose, onEarlier
         reviewList, position, waiting, waitingTakes, waitingHere, nextHere, aimConflict, passageStates, checks, open, generalCheck, progressText, nextReview, readyClean, applyLabel, historyApplyReason,
         recordingNode, upcoming, nextRecording, appliedText, displayOrigins, locked, screenTitle,
         // Actions.
-        accept, report, loadAudio, make, prepare, patch, flush, stopListening, choose, aim, openApplied, aimParagraph, reviewAt,
-        record, stop, togglePause, edit, choosePassage, checkWords, integrate, playCapture, listen, hear, addAudio, discard,
+        accept, report, loadAudio, make, prepare, patch, flush, stopListening, playNextTake, choose, aim, openApplied, aimParagraph, reviewAt,
+        record, stop, togglePause, edit, editFullTake, choosePassage, checkWords, integrate, playCapture, listen, hear, addAudio, discard,
         showAudio, close, openView, restoreHistory, prepareRange, dismissToast, retrySaved, signInAndResume, titleFor, shownTitle, saveTitle, readUpdated,
         chip, step, pathFor, scopeFor, spanLabel, selectionParagraph, nextAfter, applySection, switchReviewOperation, pickFromRail, place,
         // Send finished sections to the card.

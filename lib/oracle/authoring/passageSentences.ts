@@ -84,5 +84,9 @@ export function chosenPassageText(original:string,text:string,comparison:Passage
 /** A passage review with the words that will actually be applied, for Apply and History. Other reviews are returned as they are. */
 export function withChosenPassageText<T extends {text:string;comparison?:PassageComparison;rowChoices?:Record<string,PassageChoice>;passageEdit?:{operation:'add'|'replace';focus:TextSpan}}>(result:T):T{
  if(result.passageEdit?.operation!=='replace'||!result.comparison)return result;
+ // Default rows describe the comparison, but applying them would reconstruct the
+ // draft from sentence fragments. Only an explicit choice should change its words.
+ const defaults=defaultSentenceChoices(result.comparison);
+ if(!Object.entries(result.rowChoices??{}).some(([key,choice])=>choice!==(defaults?.[key]??'mine')))return result;
  return {...result,text:chosenPassageText(result.passageEdit.focus.text,result.text,result.comparison,result.rowChoices)};
 }

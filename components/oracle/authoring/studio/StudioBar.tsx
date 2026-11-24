@@ -16,6 +16,7 @@ export default function StudioBar({view,locked,close,openView,pickerReturn,setPl
  const compactPath=(path:string)=>path.replace(/^Universal Language · /,'UL ').replace(/^Gene Keys · /,'GK ').replace(/^Human Design · /,'HD ').replace(/^I Ching · /,'I Ching ');
  const compactScope=(scope:string)=>scope.replace(/^Paragraph (\d+) of (\d+)$/,'para $1/$2').replace(/^Words in paragraph (\d+) of (\d+)$/,'words, para $1/$2');
  const passageShort=pendingPassage&&pendingNode?`Card ${pendingNode.cardNumber} · ${compactPath(pathFor(pendingNode))} · ${compactScope(scopeFor(pendingNode,pendingPassage.focus))}`:resultScope&&section?`Card ${section.cardNumber} · ${compactPath(pathFor(section))} · ${compactScope(resultScope)}`:null;
+ const scopeSeparator=passageShort?.lastIndexOf(' · ')??-1;
  const passageOperation=pendingPassage?.operation??result?.passageEdit?.operation;
  let passageTitle:string|null=null;
  if(passageOperation){
@@ -33,7 +34,7 @@ export default function StudioBar({view,locked,close,openView,pickerReturn,setPl
   {view==='work'&&<div className="vs-bar-title" tabIndex={-1} data-screen-title><strong>Code {source.cardNumber} · {CARD_BY_NUMBER.get(source.cardNumber)?.card_name??'Oracle'}</strong></div>}
   {view==='review'&&<button className={`vs-bar-title vs-bar-title--button${passageDestination?' vs-bar-title--passage':''}`} data-screen-title aria-label={passageTitle&&passageDestination?`${passageTitle}. ${passageDestination}. Choose a section to review`:'Choose a section to review'} onClick={()=>{pickerReturn.current='review';setPlacing(null);openView('sections');}}>
    <strong>{passageTitle??(pendingPassage?takes.some(t=>t.captureId===pendingPassage.captureId&&t.state==='failed')?'Needs attention':'Preparing review':result?.applied?'Applied':'Review')}</strong>
-   <small>{passageShort??(pendingPassage?'Saved recording':position>=0?`${position+1} of ${reviewList.length}`:queued.length?'Processing':savedCaptures.length?'Transcript pending':'Nothing to review yet')}</small>
+   <small>{passageShort&&scopeSeparator>=0?<><span className="vs-review-path">{passageShort.slice(0,scopeSeparator)}</span><span>{passageShort.slice(scopeSeparator)}</span></>:passageShort??(pendingPassage?'Saved recording':position>=0?`${position+1} of ${reviewList.length}`:queued.length?'Processing':savedCaptures.length?'Transcript pending':'Nothing to review yet')}</small>
   </button>}
   {view!=='work'&&view!=='review'&&<div className="vs-bar-title" tabIndex={-1} data-screen-title><strong>{screenTitle[view]}</strong></div>}
   <div className="vs-bar-end">

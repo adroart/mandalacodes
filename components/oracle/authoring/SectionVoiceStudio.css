@@ -474,3 +474,88 @@
 .vs-dock-choice>*{width:100%;min-width:0;justify-content:center}
 .vs-dock-choice .vs-btn[aria-pressed=true]{border-color:var(--vs-accent);color:var(--vs-accent)}
 .vs-review-tools--end{margin:18px 0 0}
+
+/* Passage review uses one line of context and one row of actions. */
+.section-voice-studio[data-view=review] .vs-bar {
+ height:auto;min-height:var(--control-h);padding-inline:var(--space-2);
+}
+.section-voice-studio[data-view=review] .vs-bar-title {
+ flex-direction:row;align-items:center;justify-content:flex-start;gap:var(--space-2);
+ min-height:var(--control-h);padding-block:0;
+}
+.section-voice-studio[data-view=review] .vs-bar-title strong {
+ flex-shrink:0;white-space:nowrap;font-size:var(--text-sm);
+}
+.section-voice-studio[data-view=review] .vs-bar-title small {
+ min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--text-xs);
+}
+.section-voice-studio[data-view=review] .vs-bar-title--passage small {display:flex}
+.section-voice-studio .vs-review-path {min-width:0;overflow:hidden;text-overflow:ellipsis}
+.section-voice-studio .vs-review-path + span {flex-shrink:0;white-space:pre}
+.section-voice-studio[data-view=review] .vs-review {
+ padding-block:var(--space-2) var(--space-4);
+}
+.section-voice-studio .vs-review-operation {
+ gap:var(--space-2);margin-block:var(--space-2) 0;
+}
+.section-voice-studio .vs-review-actions {
+ min-height:0;gap:var(--space-2);padding-block:var(--space-1);
+}
+.oracle-authoring-sheet .section-voice-studio .vs-review-actions {
+ padding-bottom:calc(var(--space-1) + env(safe-area-inset-bottom,0px));
+}
+.section-voice-studio .vs-review-actions .btn {min-width:0}
+.section-voice-studio .vs-review-actions [data-action=apply] {
+ margin-inline-start:auto;white-space:normal;text-align:center;
+}
+
+.section-voice-studio .vs-full-take {min-width:0}
+.section-voice-studio .vs-take-tools,
+.section-voice-studio .vs-take-check,
+.section-voice-studio .vs-take-check-actions {
+ display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2);
+}
+.section-voice-studio .vs-take-tools .btn,
+.section-voice-studio .vs-take-check .btn,
+.section-voice-studio .vs-review-actions .btn,
+.section-voice-studio .vs-take-done .btn {text-transform:none;letter-spacing:normal}
+.section-voice-studio .vs-take-tools .btn-quiet[aria-pressed=true] {color:var(--color-action)}
+.section-voice-studio .vs-take-tools--secondary {margin-block-start:var(--space-2)}
+.section-voice-studio .vs-take-edit {margin-inline-start:auto}
+.section-voice-studio .vs-take-text,
+.section-voice-studio .vs-take-sentence,
+.section-voice-studio .vs-take-editor textarea {
+ margin:0;color:var(--vs-ink);font:400 var(--text-base)/var(--text-base--line-height) var(--font-controls);
+ white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.section-voice-studio .vs-take-text {
+ padding:var(--space-2) 0;
+}
+.section-voice-studio .vs-take-text[data-review-pane=original] {color:var(--vs-muted)}
+.section-voice-studio .vs-take-text .vs-take-word {
+ display:inline;height:auto;padding:0;border:0;border-radius:0;letter-spacing:normal;text-transform:none;
+ background:none;color:inherit;font:inherit;white-space:inherit;
+ text-decoration:underline dotted var(--color-action);
+}
+.section-voice-studio .vs-take-word[aria-pressed=true] {color:var(--color-action)}
+.section-voice-studio .vs-take-check {font-size:var(--text-sm);color:var(--vs-ink-2)}
+.section-voice-studio .vs-take-check-actions {min-width:0}
+.section-voice-studio .vs-take-check-actions .btn {white-space:normal;height:auto;min-height:var(--control-h-sm)}
+.section-voice-studio[data-editing] .vs-review {
+ display:flex;flex-direction:column;overflow:hidden;padding:var(--space-2) var(--space-2) 0;
+}
+.section-voice-studio .vs-take-editor {
+ display:flex;flex-direction:column;flex:1;min-height:0;width:100%;
+}
+.section-voice-studio .vs-take-editor textarea {
+ flex:1;min-height:0;width:100%;resize:none;border:0;background:none;
+ padding:var(--space-2) var(--space-3);
+}
+.section-voice-studio .vs-take-done {
+ display:flex;align-items:center;justify-content:flex-end;gap:var(--space-2);
+ padding-block:var(--space-1) calc(var(--space-1) + env(safe-area-inset-bottom,0px));
+}
+.section-voice-studio[data-keyboard] .vs-take-done {padding-block-end:var(--space-1)}
+.section-voice-studio :is(.vs-review-operation,.vs-sentence-switch) .btn-chip[aria-pressed=true] {
+ background:var(--vs-accent-soft);
+}
