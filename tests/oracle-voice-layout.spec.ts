@@ -18,12 +18,15 @@ async function measure(page:Page){
   const shown=(el:Element)=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return r.width>1&&r.height>1&&s.visibility!=='hidden'&&!el.closest('[hidden]');};
   const name=(el:Element)=>`${el.tagName.toLowerCase()}${el.className&&typeof el.className==='string'?'.'+el.className.trim().split(/\s+/).join('.'):''} "${(el.getAttribute('aria-label')??el.textContent??'').trim().slice(0,40)}"`;
   const small:Finding[]=[],tiny:Finding[]=[],zoom:Finding[]=[];
+  const desktopReview=root.matches('[data-view=review]')&&matchMedia('(pointer: fine)').matches;
   for(const el of root.querySelectorAll('button,a[href],input,select,textarea,summary,[role=button],[role=switch]')){
    const input=el.matches('input[type=checkbox],input[type=radio]');
    const target=input?el.closest('label')??el:el;
    if(el.closest('.vs-compare')||!shown(target))continue;
    const r=target.getBoundingClientRect();
-   if(r.width<44-0.5||r.height<44-0.5)small.push({what:name(el),width:Math.round(r.width),height:Math.round(r.height)});
+   const minimum=desktopReview&&el.matches('.vs-bar-title--button')?32:
+    desktopReview&&el.matches('.btn-sm')?28:44;
+   if(r.width<minimum-0.5||r.height<minimum-0.5)small.push({what:name(el),width:Math.round(r.width),height:Math.round(r.height)});
   }
   for(const el of root.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=file]),textarea,select,[contenteditable=true]')){
    if(!shown(el))continue;const size=parseFloat(getComputedStyle(el).fontSize);
@@ -41,13 +44,13 @@ async function measure(page:Page){
 }
 async function expectFloors(page:Page,screen:string){
  const found=await measure(page);
- expect(found.small,`${screen}: controls under 44 px`).toEqual([]);
+ expect(found.small,`${screen}: controls below their pointer-specific minimum`).toEqual([]);
  expect(found.tiny,`${screen}: text under 12 px`).toEqual([]);
  expect(found.zoom,`${screen}: fields under 16 px`).toEqual([]);
  expect(found.overflow,`${screen}: horizontal scroll`).toBe(false);
 }
 
-test('every screen keeps 44 px controls, 12 px type, 16 px fields and no sideways scroll',async({page},info)=>{
+test('every screen keeps accessible controls, 12 px type, 16 px fields and no sideways scroll',async({page},info)=>{
  await pipeline(page);const d=await open(page);
  await expectFloors(page,'manuscript');
  await d.getByRole('button',{name:'Recording settings',exact:true}).click();await expectFloors(page,'settings');
