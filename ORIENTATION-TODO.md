@@ -122,6 +122,8 @@ These cover the product direction beyond the Atlas fix. They were not all re-pro
 
 ## Decisions and later work, not automatic registration blockers
 
+On 2026-11-24, local Oracle review checks covered the full recording draft, optional sentence comparison, one-tap word correction and Undo, and a right-aligned Done above a simulated phone keyboard. Physical keyboard and production acceptance are separate.
+
 The older Mandala TODO and cross-site plan contain these themes. Their status needs reconciliation against current code and shipped work before scheduling them:
 
 - Adrian's whole-deck voice and source review: five-card pilot, opening/entrance decisions, Gene Keys/Human Design personal pass, moving-line voice pass, invocations and artwork-specific readings. The 384 moving-line texts already exist; do not reopen them as empty placeholders.

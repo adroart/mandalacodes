@@ -45,7 +45,7 @@ test('a phone passage edit keeps its destination and operation visible through r
   const body=route.request().postDataJSON();
   if(body.operation==='transcribe'){
    transcriptions++;if(transcriptions===3)await new Promise(done=>setTimeout(done,650));
-   return route.fulfill({json:{provider:'fixture',segments:[{text:transcriptions===2?'My better new passage.':'My precise new passage.',startMs:0,endMs:Math.max(1,Math.min(body.durationMs,100)),timing:'provider',sectionId:'CODE'}],doubtsAvailable:false}});
+   return route.fulfill({json:{provider:'fixture',segments:[{text:transcriptions===2?'My better new passage.':'My precise new passage.',startMs:0,endMs:Math.max(1,Math.min(body.durationMs,100)),timing:'provider',sectionId:'CODE'}],doubtsAvailable:true,...(transcriptions===1?{doubts:[{text:'precise',heardAlso:'present',startMs:0,endMs:1}]}:{})}});
   }
   assimilations++;return route.fulfill({status:500,json:{error:'Explicit passage must not use section assimilation.'}});
  });
@@ -70,37 +70,58 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect(dialog.locator('.vs-bar-title--passage')).toContainText('Card 2 · Intro · para 1/1');
  await expect(dialog.locator('.vs-bar-title--passage')).toHaveAttribute('aria-label',/Card 2 · Intro · Paragraph 1 of 1/);
  await expect(dialog.getByRole('button',{name:'Replace',exact:true})).toHaveAttribute('aria-pressed','true');
- // Your words first, the old ones quietly beneath.
+ // The complete take opens first. The original is one tap away.
  await expect(dialog.locator('[data-review-pane]').first()).toHaveAttribute('data-review-pane','words');
- expect((await dialog.locator('[data-review-pane=original] .vs-original').allInnerTexts()).join(' ')).toBe(selected);
+ await expect(dialog.locator('[data-review-pane=original]')).toHaveCount(0);
+ await dialog.getByRole('button',{name:'Original',exact:true}).click();
+ await expect(dialog.locator('[data-review-pane=original]')).toHaveText(selected);
+ await dialog.getByRole('button',{name:'Draft',exact:true}).click();
  await expect(dialog.locator('[data-review-pane=words]')).toContainText('My precise new passage.');
+ await dialog.getByRole('button',{name:'Check “precise”',exact:true}).click();
+ await dialog.getByRole('button',{name:'Use “present”',exact:true}).click();
+ await expect(dialog.locator('[data-review-pane=words]')).toHaveText('My present new passage.');
+ await expect(dialog.getByRole('textbox')).toHaveCount(0);
+ await expect(dialog.locator('[data-editing]')).toHaveCount(0);
+ await dialog.getByRole('button',{name:'Undo',exact:true}).click();
+ await expect(dialog.locator('[data-review-pane=words]')).toHaveText('My precise new passage.');
+ await dialog.getByRole('button',{name:'It’s right',exact:true}).click();
+
  await expect(dialog.locator('.vs-replacement-scope')).toHaveCount(0);
  await expect(dialog.locator('[data-action=apply]')).toHaveText('Apply replacement');
  await dialog.getByRole('button',{name:'Add after',exact:true}).click();
  await expect(dialog.getByRole('button',{name:'Add after',exact:true})).toHaveAttribute('aria-pressed','true');
- await expect(dialog.locator('[data-review-pane=original]')).toContainText(selected);
+ await expect(dialog.locator('[data-review-pane=words]')).toContainText('My precise new passage.');
  await expect(dialog.locator('[data-action=apply]')).toHaveText('Apply addition');
  expect(assimilations).toBe(0);
  await page.screenshot({path:info.outputPath('passage-review-phone.png')});
  for(const width of [430,320]){
   await page.setViewportSize({width,height:812});
   await expect(dialog.locator('.vs-bar-title--passage')).toBeVisible();
+  const heading=await dialog.locator('.vs-bar-title--passage strong').boundingBox();
+  const scope=await dialog.locator('.vs-bar-title--passage small').boundingBox();
+  expect(Math.abs(heading!.y+heading!.height/2-scope!.y-scope!.height/2)).toBeLessThan(2);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:info.outputPath(`explicit-add-review-${width}.png`)});
  }
  await page.setViewportSize({width:375,height:812});
- const words=dialog.locator('[data-review-pane=words]').getByRole('textbox');await words.click();
+ await dialog.getByRole('button',{name:'Edit',exact:true}).click();
+ const words=dialog.getByRole('textbox',{name:'Edit recorded passage'});
+ await expect(words).toBeFocused();
  const visible=page.viewportSize()!.height-320;
  await page.evaluate(height=>{const vv=window.visualViewport!;Object.defineProperty(vv,'height',{configurable:true,get:()=>height});vv.dispatchEvent(new Event('resize'));},visible);
- await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
- const bar=await dialog.locator('.vs-bar').boundingBox(),raisedDock=await dialog.locator('.vs-dock').boundingBox();
- expect(Math.round(raisedDock!.y+raisedDock!.height)).toBe(visible);expect(Math.round(bar!.y)).toBe(0);
- const destinationBar=dialog.locator('.vs-bar-title--passage');
- await expect(destinationBar).toContainText('Card 2 · Intro · para 1/1');
- await expect(dialog.locator('[data-action=apply]')).toHaveText('Apply addition');
- expect((await destinationBar.boundingBox())!.y+(await destinationBar.boundingBox())!.height).toBeLessThan(raisedDock!.y);
- await words.evaluate(el=>el.scrollIntoView({block:'nearest'}));const wordBox=await words.boundingBox();expect(wordBox!.y).toBeGreaterThanOrEqual(bar!.y+bar!.height-1);expect(wordBox!.y).toBeLessThan(raisedDock!.y);
+ const done=dialog.getByRole('button',{name:'Done',exact:true});
+ await expect(dialog.locator('.vs-bar, .vs-dock')).toHaveCount(0);
+ await expect.poll(async()=>Math.round((await done.boundingBox())!.x+(await done.boundingBox())!.width)).toBeGreaterThan(350);
+ await expect.poll(async()=>Math.round((await done.boundingBox())!.y+(await done.boundingBox())!.height)).toBeLessThanOrEqual(visible);
+ await expect(words).toBeInViewport();
+ const longTake=Array.from({length:20},(_,i)=>`Spoken line ${i+1} stays in the draft.`).join('\n');
+ await words.fill(longTake);
+ await words.press('End');
+ await expect.poll(()=>words.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+ await expect(done).toBeInViewport();
+ await words.fill('My precise new passage.');
  await page.screenshot({path:info.outputPath('passage-review-keyboard-phone.png')});
+ await done.click();
  await page.evaluate(()=>{const vv=window.visualViewport!;delete (vv as any).height;vv.dispatchEvent(new Event('resize'));});
  await dialog.getByRole('button',{name:'Re-record',exact:true}).click();
  await expect(dialog.locator('.vs-passage-path')).toContainText('Card 2 · Intro · Paragraph 1 of 1');
@@ -109,8 +130,9 @@ test('a phone passage edit keeps its destination and operation visible through r
  await dialog.getByRole('button',{name:'Stop & review',exact:true}).click();
  await expect(dialog.locator('[data-review-pane=words]')).toContainText('My better new passage.',{timeout:15000});
  await expect(dialog.locator('.vs-bar-title--passage')).toContainText('Card 2 · Intro · para 1/1');
- const corrected=dialog.locator('[data-review-pane=words]').getByRole('textbox');
- await corrected.fill('My corrected new passage.');await corrected.blur();
+ await dialog.getByRole('button',{name:'Edit',exact:true}).click();
+ await dialog.getByRole('textbox',{name:'Edit recorded passage'}).fill('My corrected new passage.');
+ await dialog.getByRole('button',{name:'Done',exact:true}).click();
  await expect.poll(async()=>page.evaluate(async()=>{const load=(path:string)=>import(path);const {SectionDraftStore}=await load('/lib/oracle/authoring/sectionDrafts.ts');return (await new SectionDraftStore().list(2))[0]?.results.find((r:any)=>r.sectionId==='2/INTRO')?.text;})).toBe('My corrected new passage.');
  await dialog.locator('[data-action=apply]').click();
  await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Addition applied');
@@ -132,7 +154,7 @@ test('a phone passage edit keeps its destination and operation visible through r
  await expect.poll(async()=>page.evaluate(async()=>{const load=(path:string)=>import(path);const {SectionDraftStore}=await load('/lib/oracle/authoring/sectionDrafts.ts');const values=await new SectionDraftStore().list(2);return values.map((value:any)=>({takes:value.takes?.map((t:any)=>[t.startSectionId,t.state,t.error])??[],results:value.results?.map((r:any)=>[r.sectionId,r.passageEdit?.operation,r.applied])??[]}));}),{timeout:15000}).toEqual(expect.arrayContaining([expect.objectContaining({takes:expect.arrayContaining([expect.arrayContaining(['2/CODE/reading','review'])]),results:expect.arrayContaining([expect.arrayContaining(['2/CODE/reading','replace'])])})]));
  await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Review',{timeout:15000});
  // Reviewed where it sits: the paragraphs around it read as they do in the card.
- await expect(dialog.locator('.vs-review-context')).toHaveCount(2);
+ await expect(dialog.locator('.vs-review-context')).toHaveCount(0);
  await expect(dialog.locator('.vs-review-head, .vs-review-plan, .vs-replacement-scope')).toHaveCount(0);
  for(const width of [430,320]){
   await page.setViewportSize({width,height:812});
@@ -241,6 +263,8 @@ test('records passage after passage without waiting, then keeps the best sentenc
  await expect(dialog.locator('.vs-toast')).toContainText('Applied. The next edit is open.');
  await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Review');
  await expect(dialog.locator('.vs-bar-title--passage')).toContainText('para 2/3');
+ await expect(dialog.locator('[data-review-pane=words]')).toHaveText('My fresh opening line. A second new line.');
+ await dialog.getByRole('button',{name:'Compare sentences',exact:true}).click();
  const pairs=dialog.locator('.vs-pair');
  const sentenceCount=await pairs.count();
  expect(sentenceCount).toBeGreaterThan(1);
@@ -249,6 +273,8 @@ test('records passage after passage without waiting, then keeps the best sentenc
  // Keep the old words for the first sentence; the rest uses the new words.
  await pairs.first().getByRole('button',{name:'Original',exact:true}).click();
  await expect(pairs.first()).toHaveAttribute('data-choice','original');
+ await dialog.getByRole('button',{name:'Preview',exact:true}).click();
+ await expect(dialog.locator('[data-review-pane=preview]')).toContainText('A second new line.');
  await dialog.locator('[data-action=apply]').click();
  await expect(dialog.locator('.vs-bar-title--passage strong')).toHaveText('Replacement applied');
  const finalText=await page.evaluate(async()=>{const load=(path:string)=>import(path);const [{SectionDraftStore},{currentSectionTexts}]=await Promise.all([load('/lib/oracle/authoring/sectionDrafts.ts'),load('/src/mobile/authoring/sectionWorkflow.ts')]);const draft=(await new SectionDraftStore().list(2)).find((value:any)=>value.results.some((r:any)=>r.sectionId==='2/CODE/reading'));return (await currentSectionTexts(draft))['2/CODE/reading'];});

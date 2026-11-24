@@ -54,7 +54,7 @@ test('selected original and recorded words stay locked across focus, stage a pre
  await page.reload();await expect.poll(()=>page.locator('[data-oracle-reader]').innerText()).toBe(reading);
  await page.getByRole('button',{name:'Record a voice rewrite',exact:true}).click();
  await page.getByRole('dialog').getByRole('button',{name:/^Review/}).first().click();
- await expect(page.getByRole('dialog').locator('.vs-compare')).toContainText('my own words');
+ await expect(page.getByRole('dialog').locator('[data-review-pane=words]')).toHaveText('my own words');
 });
 
 test('History restores a proposal into a separate pending session and retains the original draft and audio',async({page},info)=>{
