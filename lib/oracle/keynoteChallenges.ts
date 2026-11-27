@@ -1,134 +1,141 @@
 /**
  * Which keynotes name a challenge inside the energy, rather than the energy
  * lived well. The card entrance shows the lived-well keynotes on top and these
- * below them (Adrian, 2026-11-27). The cards themselves are not changed: their
- * `_Keywords:_` lines keep their words and order, and this list only sorts them
- * for display. A keynote that is not listed here is shown with the lived-well
- * ones. Every phrase here must appear on a card (tests/unit/keynoteChallenges.test.ts).
+ * below them (Adrian, 2026-11-27). Every card has seven: four lived well, then
+ * these three, in that order on its `_Keywords:_` line. A keynote that is not
+ * listed here is shown with the lived-well ones. Every phrase here must appear
+ * on a card (tests/unit/keynoteChallenges.test.ts). Change this list whenever a
+ * challenge keynote is reworded.
  */
 export const KEYNOTE_CHALLENGES: ReadonlySet<string> = new Set([
   // 1
-  'The Dry Spell Between', 'Waiting for the Next Wave',
+  "Dry Spells", "Waiting for Inspiration", "Forcing It",
   // 2
-  'Feeling Lost',
+  "Feeling Lost", "Needing Control", "Losing Yourself in Others",
   // 3
-  'Not Yet Settled', 'The Pull to Hurry',
+  "Unsettled", "Rushing", "Fear of Chaos",
   // 4
-  'Needing a Reason',
+  "Needing Reasons", "Nit-Picking", "Not Wanting to Know",
   // 5
-  'Restless Waiting', 'Moving Too Soon',
+  "Restlessness", "Moving Too Soon", "Expecting the Worst",
   // 6
-  'Friction Between Two People', 'Feeling a Quarrel Coming', 'The Need to Be Right',
+  "Friction With Others", "A Fight Brewing", "Needing to Be Right",
   // 7
-  'Wanting to Be Seen', 'Us and Them',
+  "Needing Credit", "Us and Them", "Bossiness",
   // 8
-  'The Fear of Standing Out', 'Alone for a While',
+  "Fear of Standing Out", "Loneliness", "Trying to Fit In",
   // 9
-  'Bored With Good Work', 'Going in Circles',
+  "Boredom", "Going in Circles", "Putting It Off",
   // 10
-  'Watching Your Every Step', 'Searching for Yourself',
+  "Self-Conscious", "Searching for Yourself", "Self-Absorbed",
   // 11
-  'Lost in a Haze',
+  "Head in the Clouds", "Too Many Ideas", "Daydreaming",
   // 12
-  'Keeping Your Heart Guarded',
+  "A Guarded Heart", "Feeling Superior", "Hurtful Words",
   // 13
-  'Hearing Only Bad News',
+  "Expecting Bad News", "Holding Grudges", "Only Seeing Your Side",
   // 14
-  'Settling for Less',
+  "Settling for Less", "Work You Hate", "Feeling Powerless",
   // 15
-  'The Grey Days',
+  "Dull Days", "Going to Extremes", "Feeling Empty",
   // 16
-  'Plans Left on the Table',
+  "Unfinished Plans", "Not Caring", "Easily Fooled",
   // 17
-  'A Mind Made Up Young',
+  "A Closed Mind", "Opinionated", "Self-Criticism",
   // 18
-  'Seeing the Flaw First', 'Needing to Be Right',
+  "Fault-Finding", "Needing to Be Right", "Never Good Enough",
   // 19
-  'Giving Until Empty', 'Needing to Be Needed',
+  "Giving Until Empty", "Needing to Be Needed", "Withdrawing",
   // 20
-  'Busy Instead of Present',
-  // 21, 45
-  'Deciding for Others', 'Holding On Too Tight',
+  "Too Busy to Be Present", "Going Through the Motions", "Rushing Around",
+  // 21
+  "Controlling Others", "Holding On Too Tight", "Giving In",
   // 22
-  'Blaming Someone Else', 'Swallowing What You Feel',
+  "Blaming Others", "Swallowing Feelings", "Keeping Up Appearances",
   // 23
-  'A Life Grown Too Complicated',
+  "Overcomplicating", "Scattered", "Saying Too Much",
   // 24
-  'Going Round in Circles',
+  "Hooked on Habits", "Repeating Patterns", "Frozen by Worry",
   // 25
-  'A Tight Chest', 'Worry With No Cause',
+  "A Tight Chest", "Needless Worry", "Going Cold",
   // 26
-  "Never Feeling It's Enough", 'Unable to Rest',
+  "Never Satisfied", "Can't Rest", "Showing Off",
+  // 27
+  "Self-Sacrifice", "Selfishness", "Fussing Over Others",
   // 28
-  'Days With No Point', 'Afraid to Really Live',
+  "Feeling Pointless", "Afraid to Live", "Reckless Risks",
   // 29
-  'Doubts at the Hard Moments', 'Holding a Part Back',
+  "Doubting When It's Hard", "Holding Back", "Overcommitting",
   // 30
-  "Wanting What You Don't Need", 'The Crash After Hope',
+  "Wanting What You Don't Need", "Crashing After Hope", "Too Serious",
   // 31
-  'Needing to Be Seen', 'Falling in Front of Everyone',
+  "Needing Attention", "Public Embarrassment", "Looking Down on Others",
   // 32
-  'Afraid of Failing', 'Rushing Through the Day',
+  "Fear of Failure", "Always Rushing", "Stuck in Old Ways",
   // 33
-  'The Same Mistake Again',
+  "Repeating Mistakes", "Bottling It Up", "Quick to Judge",
   // 34
-  'Taking the Easy Way', 'Pushing Too Hard', 'Busy but Powerless',
+  "The Easy Way Out", "Pushing Too Hard", "Busy but Powerless",
   // 35
-  'Wanting It All Now',
+  "Wanting It All Now", "Easily Bored", "Never Slowing Down",
   // 36
-  'The Fear of Suffering',
+  "Fear of Pain", "Nervousness", "Living in Crisis",
   // 37
-  'Hoping for Something Back',
+  "Expecting Something Back", "Clinging to Old Ties", "Turning Cold",
   // 38
-  'Fighting the Wrong Thing',
+  "Fighting the Wrong Battle", "Giving Up Too Soon", "Picking Fights",
   // 39
-  'Buttons Being Pushed',
+  "Easily Triggered", "Feeling Trapped", "Stirring Things Up",
   // 40
-  'Tired All the Way Down',
+  "Exhaustion", "Overdoing It", "Resentment",
   // 41
-  'Living on Hope',
+  "Living on Hope", "Dreaming, Not Doing", "Rushing Into Things",
   // 42
-  'Waiting for Life to Start',
+  "Waiting for Life to Start", "Expecting Too Much", "Half-Finished Things",
   // 43
-  'Too Busy to Hear',
+  "Too Busy to Listen", "Worrying", "Talking Over Others",
   // 44
-  'The Same Lesson Returning', "Kept at Arm's Length",
+  "Repeating Lessons", "Keeping People Away", "Misjudging People",
   // 45
-  'The Fear of Not Enough',
+  "Fear of Not Having Enough", "Holding On Too Tight", "Throwing Your Weight Around",
   // 46
-  'Worrying How It Goes',
+  "Worrying How It Turns Out", "Unable to Play", "Not Taking Anything Seriously",
   // 47
-  'Worn Out and Hemmed In', 'Old Fears Handed Down',
+  "Worn Out and Trapped", "Inherited Fears", "Hopelessness",
   // 48
-  'Fear of Not Being Enough',
+  "Feeling Inadequate", "Playing It Safe", "Cutting Corners",
   // 49
-  'Set Off Before You Think',
+  "Reacting Without Thinking", "Pushing People Away", "Too Comfortable to Change",
   // 50
-  'Carrying Too Much',
+  "Carrying Too Much", "Letting Things Slide", "Ignoring Problems",
   // 51
-  'Braced for the Next Blow',
+  "Bracing for the Worst", "Avoiding Change", "Snapping at People",
   // 52
-  'Feeling Stuck',
+  "Feeling Stuck", "Can't Sit Still", "Wound Up",
   // 53
-  'Always Chasing the Next Thing', 'Fear at the Start',
+  "Chasing the Next Thing", "Fear of Starting", "Losing Interest",
   // 54
-  'Never Enough',
+  "Never Enough", "Wanting More and More", "Aiming Too Low",
   // 55
-  'Chasing the Next High', 'Blaming the World',
+  "Chasing Highs", "Blaming the World", "Complaining",
   // 56
-  'Always on the Move',
+  "Always on the Move", "Too Much at Once", "Sulking",
+  // 57
+  "Hesitating", "Acting From Fear", "Uneasy for No Reason",
   // 58
-  'Restless for More', 'Chasing Tomorrow',
+  "Restless for More", "Living for Tomorrow", "Fixing Other People",
   // 59
-  'Holding Something Back',
+  "Keeping Secrets", "Feeling Left Out", "Intruding",
   // 60
-  'A Rule Kept Too Long',
+  "Rigid Rules", "No Structure", "Feeling Boxed In",
   // 61
-  'A Restless Mind',
+  "A Restless Mind", "Losing the Magic", "Blind Belief",
   // 62
-  'Lost in the Details', 'Planning Too Much',
+  "Lost in Details", "Overplanning", "Correcting Everyone",
   // 63
-  'Doubt Turned Inward',
+  "Self-Doubt", "Suspicion", "Endless Questions",
+  // 64
+  "Copying Others", "Confusion", "Not Knowing Where to Start",
 ]);
 
 /** A card's keynotes split into the lived-well ones and the challenges, each in card order. */

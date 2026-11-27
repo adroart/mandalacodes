@@ -17,8 +17,12 @@ describe('keynote challenges', () => {
     expect([...KEYNOTE_CHALLENGES].filter((phrase) => !all.has(phrase))).toEqual([]);
   });
 
-  it('leaves at least four lived-well keynotes on every card', () => {
-    for (const keynotes of keynotesByCard) expect(splitKeynotes(keynotes).gifts.length).toBeGreaterThanOrEqual(4);
+  it('gives every card four lived-well keynotes, then three challenges', () => {
+    for (const keynotes of keynotesByCard) {
+      const { gifts, challenges } = splitKeynotes(keynotes);
+      expect([gifts.length, challenges.length]).toEqual([4, 3]);
+      expect(keynotes).toEqual([...gifts, ...challenges]);
+    }
   });
 
   it('keeps card order inside each half', () => {
