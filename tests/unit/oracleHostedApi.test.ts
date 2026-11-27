@@ -46,18 +46,18 @@ describe('hosted Oracle REST parity', () => {
 
   it('searches the same complete Markdown-derived fields as the local MCP', async () => {
     const corpus = await loadCorpus();
-    const localHits = searchCorpus(corpus, 'rough moves', { limit: 8, expand: false })
+    const localHits = searchCorpus(corpus, 'roots first', { limit: 8, expand: false })
       .map(withoutLocalSearchExtras);
     const response = await searchCards({
-      request: new Request('https://example.test/api/oracle/search?q=rough%20moves&limit=8&literal=1'),
+      request: new Request('https://example.test/api/oracle/search?q=roots%20first&limit=8&literal=1'),
     } as never);
     const body = await response.json() as { query: string; hits: unknown[] };
 
-    expect(body.query).toBe('rough moves');
+    expect(body.query).toBe('roots first');
     expect(body.hits).toEqual(localHits);
     expect(body.hits).toContainEqual(expect.objectContaining({
       number: 3,
-      matched: expect.arrayContaining(['rough']),
+      matched: expect.arrayContaining(['roots']),
     }));
   });
 });
