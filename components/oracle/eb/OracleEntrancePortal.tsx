@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { splitKeynotes } from '../../../lib/oracle/keynoteChallenges';
 
 interface OracleEntrancePortalProps {
   active: boolean;
@@ -90,6 +91,7 @@ export function OracleEntrancePortal({
   }, [active]);
 
   if (typeof document === 'undefined') return null;
+  const { gifts, challenges } = splitKeynotes(keywords);
 
   return createPortal(
     <>
@@ -121,7 +123,10 @@ export function OracleEntrancePortal({
             <div className="oracle-entrance-portal__center">
               {entranceCenter}
               <ul>
-                {keywords.map((keyword) => <li key={keyword}>{keyword}</li>)}
+                {gifts.map((keyword) => <li key={keyword}>{keyword}</li>)}
+                {challenges.map((keyword, index) => (
+                  <li key={keyword} data-keynote="challenge" data-keynote-first={index === 0 ? '' : undefined}>{keyword}</li>
+                ))}
               </ul>
             </div>
           </div>
