@@ -102,7 +102,7 @@ jobs:
   # The current-frame mobile checks use Vite dev. Offline QR and Learn routing
   # require the actual generated worker and run against production preview.
   # Build once before either lane so their static Learn assets are identical.
-  test-mobile:
+  mobile-chrome:
     # Pinned: ubuntu-latest moved to 26.04 on 2026-11-03 and Playwright 1.60 cannot install Chromium there
     # ("does not support chromium on ubuntu26.04-x64"). Move back to ubuntu-latest once Playwright supports it.
     runs-on: ubuntu-24.04
@@ -147,11 +147,6 @@ jobs:
       - run: npm run test:oracle-account
         env:
           CI: true
-      # The phone voice studio specs start their own Vite server on port 4279.
-      # They import from mobile/node_modules, installed by the earlier mobile ci.
-      - run: npm run test:oracle-voice
-        env:
-          CI: true
       - run: npm --prefix mobile test
       # Node tests that need no local sockets (the two bridge tests bind loopback ports and stay manual).
       - run: npm run test:node:ci
@@ -173,3 +168,49 @@ jobs:
             test-results/
           retention-days: 7
           if-no-files-found: ignore
+
+  oracle-voice:
+    runs-on: ubuntu-24.04
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix mobile
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:oracle-voice
+        env:
+          CI: true
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-oracle-voice-report
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # Keep the required check stable when its browser jobs run in parallel.
+  test-mobile:
+    runs-on: ubuntu-latest
+    needs: [gate, mobile-chrome, oracle-voice]
+    if: always()
+    timeout-minutes: 3
+    steps:
+      - name: Verify both browser job results
+        env:
+          GATE_RESULT: ${{ needs.gate.result }}
+          RUN_BROWSER: ${{ needs.gate.outputs.run }}
+          MOBILE_RESULT: ${{ needs.mobile-chrome.result }}
+          VOICE_RESULT: ${{ needs.oracle-voice.result }}
+        run: |
+          set -euo pipefail
+          case "$GATE_RESULT:$RUN_BROWSER:$MOBILE_RESULT:$VOICE_RESULT" in
+            success:true:success:success) echo "Both browser jobs passed." ;;
+            success:false:skipped:skipped) echo "The gate selected no browser jobs." ;;
+            *) echo "::error::gate=$GATE_RESULT run=$RUN_BROWSER mobile=$MOBILE_RESULT voice=$VOICE_RESULT"; exit 1 ;;
+          esac
