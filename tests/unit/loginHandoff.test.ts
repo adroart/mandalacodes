@@ -22,6 +22,8 @@
 import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 
+import { onRequest as authorizeLightweaver } from '../../functions/api/auth/lightweaver/authorize.js';
+import { onRequest as exchangeLightweaver } from '../../functions/api/auth/lightweaver/exchange.js';
 import { createAuth } from '../../lib/account/auth.server.js';
 import { onRequest as mintHandoff } from '../../functions/api/auth/handoff.js';
 import { onRequest as acceptHandoff } from '../../functions/api/auth/handoff/accept.js';
@@ -330,4 +332,82 @@ it('preserves a previously verified owner password across OTP sign-in', async ()
   } finally {
     db.close();
   }
+});
+
+describe('Lightweaver project library identity handoff', () => {
+  const state = 's'.repeat(43);
+  const verifier = 'v'.repeat(43);
+  async function start(env: ReturnType<typeof baseEnv>, cookie?: string, extra = '') {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+    const challenge = Buffer.from(digest).toString('base64url');
+    const request = new Request(`https://mandalacodes.com/api/auth/lightweaver/authorize?state=${state}&code_challenge=${challenge}${extra}`, {
+      headers: cookie ? { Cookie: cookie } : {},
+    });
+    return authorizeLightweaver({ request, env });
+  }
+  function exchange(env: ReturnType<typeof baseEnv>, code: string, key = verifier) {
+    return exchangeLightweaver({ env, request: new Request('https://mandalacodes.com/api/auth/lightweaver/exchange', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, code_verifier: key }),
+    }) });
+  }
+
+  it('reuses a verified Mandala session and redeems an identity once for the originating Studio browser', async () => {
+    const db = freshDb();
+    const env = baseEnv(db);
+    const cookie = await signIn(env);
+    const result = await start(env, cookie, '&redirect_uri=https://other.example/');
+    const callback = new URL(result.headers.get('Location')!);
+    expect(callback.origin + callback.pathname).toBe('https://led.mandalacodes.com/api/account/mandala/callback');
+    expect(callback.searchParams.get('state')).toBe(state);
+    const code = callback.searchParams.get('code')!;
+    expect(code).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect((await exchange(env, code, 'x'.repeat(43))).status).toBe(400);
+    const opened = await exchange(env, code);
+    expect(opened.status).toBe(200);
+    expect(opened.headers.get('Set-Cookie')).toBeNull();
+    expect(await opened.json()).toEqual({
+      email: 'collector@example.com', subject: expect.any(String), email_verified: true, google_subject: null,
+    });
+    expect((await exchange(env, code)).status).toBe(400);
+    const expiry = new URL((await start(env, cookie)).headers.get('Location')!);
+    db.exec("UPDATE verification SET expiresAt = 1 WHERE identifier LIKE 'lightweaver-identity:%'");
+    expect((await exchange(env, expiry.searchParams.get('code')!)).status).toBe(400);
+    db.close();
+  });
+
+  it('keeps Google on the existing Mandala callback and returns an OAuth cookie', async () => {
+    const db = freshDb();
+    const env = baseEnv(db, { GOOGLE_CLIENT_ID: 'client.test', GOOGLE_CLIENT_SECRET: 'test-only' });
+    const result = await start(env);
+    const url = new URL(result.headers.get('Location')!);
+    expect(url.origin).toBe('https://accounts.google.com');
+    expect(url.searchParams.get('redirect_uri')).toBe('https://mandalacodes.com/api/auth/callback/google');
+    expect(result.headers.getSetCookie().length).toBeGreaterThan(0);
+    const cancelled = new URL((await start(env, undefined, '&cancelled=1')).headers.get('Location')!);
+    expect(cancelled.searchParams.get('error')).toBe('access_denied');
+    db.close();
+  });
+
+  it('attests only a verified mailbox matching its Google account', async () => {
+    const db = freshDb();
+    const env = baseEnv(db);
+    const cookie = await signIn(env, 'editor@example.org');
+    const { id } = db.prepare('SELECT id FROM user').get() as { id: string };
+    const claims = { iss: 'https://accounts.google.com', sub: 'google-id', email_verified: true, email: 'editor@example.org' };
+    const token = (data: object) => 'header.' + Buffer.from(JSON.stringify(data)).toString('base64url') + '.signature';
+    db.prepare('INSERT INTO account(id,userId,accountId,providerId,idToken,createdAt,updatedAt) VALUES(?,?,?,?,?,?,?)')
+      .run('g1', id, 'google-id', 'google', token(claims), 1, 1);
+    const authorize = async () => new URL((await start(env, cookie, '&resumed=1')).headers.get('Location')!);
+    expect((await authorize()).searchParams.get('error')).toBe('access_denied');
+    const update = db.prepare('UPDATE account SET idToken = ? WHERE id = ?');
+    update.run(token({ ...claims, hd: 'example.org', email: 'someone@example.org' }), 'g1');
+    expect((await authorize()).searchParams.get('error')).toBe('access_denied');
+    update.run(token({ ...claims, hd: 'example.org' }), 'g1');
+    const code = (await authorize()).searchParams.get('code');
+    expect(code).toBeTruthy();
+    expect(await (await exchange(env, code!)).json()).toMatchObject({ email: claims.email, google_subject: claims.sub });
+    db.exec('UPDATE user SET emailVerified = 0');
+    expect((await authorize()).searchParams.get('error')).toBe('access_denied');
+    db.close();
+  });
 });
