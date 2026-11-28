@@ -1,0 +1,51 @@
+name: Merge danger
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize, labeled, unlabeled, ready_for_review]
+
+permissions:
+  pull-requests: read
+
+concurrency:
+  group: merge-danger-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  merge-danger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Require a risk classification and owner approval for one-way doors
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HAS_APPROVAL: ${{ contains(github.event.pull_request.labels.*.name, 'owner-approved') }}
+          REPO_OWNER: ${{ github.event.repository.owner.login }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          door="$(printf '%s\n' "$PR_BODY" | perl -0pe 's/<!--.*?-->//gs' | tr -d '\r' | awk '
+            /^##[[:space:]]+Merge danger[[:space:]]*$/ { active = 1; next }
+            /^#{1,2}[[:space:]]/ { active = 0 }
+            active && /^[[:space:]]*Door:/ { sub(/^[[:space:]]*Door:[[:space:]]*/, ""); sub(/[[:space:]]+$/, ""); print tolower($0) }
+          ')"
+          case "$door" in
+            "two-way door") echo "Two-way door." ;;
+            "one-way door")
+              if [ "$HAS_APPROVAL" = true ]; then
+                approver="$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/events" \
+                  --jq '.[] | select((.event == "labeled" or .event == "unlabeled") and .label.name == "owner-approved") | [.event, .actor.login] | join(":")' | tail -n 1)"
+                if [ "$approver" = "labeled:$REPO_OWNER" ]; then
+                  echo "The repository owner approved this one-way door."
+                  exit 0
+                fi
+              fi
+              echo "::error::This one-way door requires the repository owner to apply the owner-approved label."
+              exit 1
+              ;;
+            *)
+              echo "::error::Add a '## Merge danger' section with exactly one 'Door: two-way door' or 'Door: one-way door' line."
+              exit 1
+              ;;
+          esac
