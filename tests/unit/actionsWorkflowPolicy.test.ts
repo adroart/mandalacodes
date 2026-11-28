@@ -40,9 +40,15 @@ describe('GitHub Actions test workflow policy', () => {
     expect(gateRun).toContain('pulls/${{ github.event.pull_request.number }}/files');
     expect(gateRun).toContain("^([^/]+\\.md|docs/.*|todo/.*)$");
     expect(workflow.jobs.gate.permissions['pull-requests']).toBe('read');
-    for (const name of Object.keys(workflow.jobs).filter((n) => n !== 'gate')) {
+    for (const name of ['test', 'mobile-chrome', 'oracle-voice']) {
       expect(workflow.jobs[name].needs, name).toBe('gate');
       expect(workflow.jobs[name].if, name).toContain("needs.gate.outputs.run == 'true'");
     }
+    expect(workflow.jobs['test-mobile'].needs).toEqual(['gate', 'mobile-chrome', 'oracle-voice']);
+    expect(workflow.jobs['test-mobile'].if).toBe('always()');
+    expect(workflow.jobs['mobile-chrome'].steps.some((step: { run?: string }) =>
+      step.run?.startsWith('npm run test:mobile '))).toBe(true);
+    expect(workflow.jobs['oracle-voice'].steps.some((step: { run?: string }) =>
+      step.run === 'npm run test:oracle-voice')).toBe(true);
   });
 });
